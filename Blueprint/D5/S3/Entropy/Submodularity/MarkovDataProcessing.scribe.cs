@@ -163,8 +163,9 @@ internal sealed class MarkovDataProcessingDocument : IScribeDocumentDefinition
             OpenBracket, Call("Fintype", thirdType), CloseBracket, Comma, RowBreak, Grp(),
             law, Colon, Sp, new Formula.TypeArrow(productType, real), Comma, Sp,
             lawHypothesis, Sp, Rightarrow, RowBreak, Grp(),
-            Call("conditionalMutualInformation", law), Sp, Eq, Sp, D(0),
-            Sp, Iff, Sp, Parenthesized(factorization), Dot,
+            Parenthesized(Seq(
+                Call("conditionalMutualInformation", law), Sp, Eq, Sp, D(0),
+                Sp, Iff, Sp, Parenthesized(factorization))), Dot,
             End, Grp(F.Id("gathered"))));
     }
 
