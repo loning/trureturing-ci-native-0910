@@ -1,5 +1,10 @@
 import LeanInformationAudit.Projection.ProjectionSeal
 
+/-!
+This full-analysis fixture is outside the default target because its measured cost
+is 297-310 seconds; build it with `lake build LeanInformationAuditAnalysis`.
+-/
+
 open Lean Lean.Meta Lean.Elab.Command LeanInformationAudit
 open D5.S3.ConceptDynamics.InformationEscape D5.S3.ConceptDynamics.CIRPT
 

@@ -2,6 +2,11 @@ import LeanInformationAudit.Projection.ProjectionSeal
 import D5.S3.ConceptDynamics.InformationEscapeRealizations.UnifiedCausalCatalog
 import LeanInformationAudit.Tests.Projection.FixtureState
 
+/-!
+This full-analysis fixture is outside the default target because its measured cost
+is 1249 seconds; build it with `lake build LeanInformationAuditAnalysis`.
+-/
+
 open Lean Lean.Meta Lean.Elab.Command LeanInformationAudit
 open D5.S3.ConceptDynamics.InformationEscape
 open D5.S3.ConceptDynamics.InformationEscapeRealizations.UnifiedCausalAlignment

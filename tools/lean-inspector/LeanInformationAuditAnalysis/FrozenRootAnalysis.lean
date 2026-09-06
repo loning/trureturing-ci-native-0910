@@ -2,10 +2,16 @@ import D5.S3.ConceptDynamics.InformationEscape.InformationRoot
 import LeanInformationAudit.SealCommand
 import LeanInformationAudit.Tests.Projection.FixtureState
 
+/-!
+This full-analysis fixture is outside the default target because its measured cost
+is 470 seconds; build it with `lake build LeanInformationAuditAnalysis`.
+-/
+
 open Lean Lean.Elab.Command LeanInformationAudit
+open LeanInformationAudit.Tests.Projection
 open D5.S3.ConceptDynamics.InformationEscape
 
-namespace LeanInformationAudit.Tests.Projection.FrozenRootAnalysis
+namespace LeanInformationAuditAnalysis.FrozenRootAnalysis
 
 set_option maxRecDepth 100000
 set_option maxHeartbeats 16000000
@@ -43,4 +49,4 @@ run_cmd do
     throwError "frozen root analysis arena inventory"
   logInfo m!"frozen root analysis: 11 arenas; unique counts {observed}"
 
-end LeanInformationAudit.Tests.Projection.FrozenRootAnalysis
+end LeanInformationAuditAnalysis.FrozenRootAnalysis
