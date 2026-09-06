@@ -6,7 +6,7 @@ namespace StrataLint.Scribe.Blueprint.D5.S3.Weil.ZetaGamma;
 
 internal sealed class GammaFactsCompleteDocument : IScribeDocumentDefinition
 {
-    private const string Declaration = "Zeta23.gammaFacts";
+    private const string Declaration = "D5/S3/Weil/ZetaGamma/GammaFactsComplete.gammaFacts";
 
     public DocumentDefinition Create()
     {
@@ -17,7 +17,7 @@ internal sealed class GammaFactsCompleteDocument : IScribeDocumentDefinition
                 DescribeId.Create("gammafactscomplete"),
                 DeclarationHandle.Create(Declaration),
                 H("Complete GammaFacts Assembly"),
-                StatementSource.FromAuthor(Disp(F.Id("GammaFactsComplete"))),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text("All Gamma-side fields are assembled without hypotheses."))),
                 DescribeRole.Theorem))));

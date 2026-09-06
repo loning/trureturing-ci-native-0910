@@ -19,8 +19,7 @@ internal sealed class WeilEvaluationObservableSubspaceDocument
                 DeclarationHandle.Create(
                     Prefix + "finite_weil_evaluation_observable_subspace_spec"),
                 H("Finite scalar Weil evaluations obey both observable-range constraints"),
-                StatementSource.FromAuthor(Disp(F.Id(
-                    "evaluation vectors are multiplicity-fiber constant and reflection even"))),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(
                     Paragraph(Text(
@@ -33,8 +32,7 @@ internal sealed class WeilEvaluationObservableSubspaceDocument
                 DeclarationHandle.Create(
                     Prefix + "finiteWeilCoordinateEvaluation_not_surjective_of_two_copies"),
                 H("Multiplicity copies obstruct ambient surjectivity"),
-                StatementSource.FromAuthor(Disp(F.Id(
-                    "multiplicity at least two implies scalar coordinate evaluation is not surjective"))),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
                     "A scalar test cannot assign different values to two copies of the same analytic zero. The proof supplies an explicit ambient target vector separating the two copies and derives a contradiction from fiber constancy."))),

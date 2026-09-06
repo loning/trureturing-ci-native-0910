@@ -22,11 +22,7 @@ internal sealed class ZeroDataSemanticNonvacuityDocument : IScribeDocumentDefini
                 DescribeId.Create("zero-data-universal-claim-realized-with-an-actual-zero"),
                 DeclarationHandle.Create(Declaration),
                 H("Universal claims acquire a real witness"),
-                StatementSource.FromAuthor(Disp(Seq(
-                    Call("RiemannVonMangoldt", F.Id("zetaZeroConfig")), Sp, And, Sp,
-                    Call("Forall", zeroData, predicate), Sp, Implies, Sp,
-                    Call("Exists", zeroData, Seq(predicate, Sp, And, Sp,
-                        Call("ExistsNontrivialZero", F.Id("rho"))))))),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(
                     Paragraph(Text(

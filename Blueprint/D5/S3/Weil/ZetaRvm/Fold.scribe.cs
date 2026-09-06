@@ -6,7 +6,7 @@ namespace StrataLint.Scribe.Blueprint.D5.S3.Weil.ZetaRvm;
 
 internal sealed class FoldDocument : IScribeDocumentDefinition
 {
-    private const string Declaration = "Zeta23.RvM.Ncount_eq_im_halfContour";
+    private const string Declaration = "D5/S3/Weil/ZetaRvm/Fold.Ncount_eq_im_halfContour";
 
     public DocumentDefinition Create()
     {
@@ -17,7 +17,7 @@ internal sealed class FoldDocument : IScribeDocumentDefinition
                 DescribeId.Create("fold"),
                 DeclarationHandle.Create(Declaration),
                 H("Completed-Zeta Contour Fold"),
-                StatementSource.FromAuthor(Disp(F.Id("Fold"))),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text("Functional-equation symmetry folds the full argument-principle contour."))),
                 DescribeRole.Theorem))));

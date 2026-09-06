@@ -6,7 +6,7 @@ namespace StrataLint.Scribe.Blueprint.D5.S3.Weil.ZetaRvm;
 
 internal sealed class ReZeroCountDocument : IScribeDocumentDefinition
 {
-    private const string Declaration = "Zeta23.RvM.reZeroSet_card_le";
+    private const string Declaration = "D5/S3/Weil/ZetaRvm/ReZeroCount.reZeroSet_card_le";
 
     public DocumentDefinition Create()
     {
@@ -17,7 +17,7 @@ internal sealed class ReZeroCountDocument : IScribeDocumentDefinition
                 DescribeId.Create("rezerocount"),
                 DeclarationHandle.Create(Declaration),
                 H("Jensen Real-Zero Count"),
-                StatementSource.FromAuthor(Disp(F.Id("ReZeroCount"))),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text("Jensen theory bounds the real-part crossing count by a logarithmic term."))),
                 DescribeRole.Theorem))));

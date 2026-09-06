@@ -6,7 +6,7 @@ namespace StrataLint.Scribe.Blueprint.D5.S3.Weil.ZetaRvm;
 
 internal sealed class BacklundDocument : IScribeDocumentDefinition
 {
-    private const string Declaration = "Zeta23.RvM.backlund_horizontal";
+    private const string Declaration = "D5/S3/Weil/ZetaRvm/Backlund.backlund_horizontal";
 
     public DocumentDefinition Create()
     {
@@ -17,7 +17,7 @@ internal sealed class BacklundDocument : IScribeDocumentDefinition
                 DescribeId.Create("backlund"),
                 DeclarationHandle.Create(Declaration),
                 H("Backlund Horizontal Bound"),
-                StatementSource.FromAuthor(Disp(F.Id("Backlund"))),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text("The horizontal argument variation and vertical line are logarithmically controlled."))),
                 DescribeRole.Theorem))));

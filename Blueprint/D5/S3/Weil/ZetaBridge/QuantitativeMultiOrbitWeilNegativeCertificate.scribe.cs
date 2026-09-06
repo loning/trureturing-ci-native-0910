@@ -19,8 +19,7 @@ internal sealed class QuantitativeMultiOrbitWeilNegativeCertificateDocument
                 DeclarationHandle.Create(
                     Prefix + "strictNegative_of_uniformQuadraticRemainder"),
                 H("A strict diagonal margin dominates a uniform quadratic remainder"),
-                StatementSource.FromAuthor(Disp(F.Id(
-                    "epsilon below margin implies target plus remainder is strictly negative on every nonzero vector"))),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(
                     Paragraph(Text(
@@ -31,8 +30,7 @@ internal sealed class QuantitativeMultiOrbitWeilNegativeCertificateDocument
                 DeclarationHandle.Create(
                     Prefix + "quantitative_multiOrbit_weil_negative_certificate"),
                 H("A certified reduced frame yields an injective family of negative full Weil tests"),
-                StatementSource.FromAuthor(Disp(F.Id(
-                    "frameOddSynthesis is injective and every nonzero synthesized coefficient vector has negative full zeroSum"))),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(
                     Paragraph(Text(

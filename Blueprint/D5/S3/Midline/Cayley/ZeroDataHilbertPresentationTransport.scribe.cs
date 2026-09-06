@@ -19,9 +19,7 @@ internal sealed class ZeroDataHilbertPresentationTransportDocument : IScribeDocu
                     DescribeId.Create("zero-data-hilbert-transport-intertwines-mirror"),
                     DeclarationHandle.Create(Module + "zeroHilbertPresentationUnitary_intertwines_mirror"),
                     H("The Hilbert transport intertwines mirror symmetry"),
-                    StatementSource.FromAuthor(Disp(Seq(
-                        F.Id("T_{Z,Z'} J_Z"), Sp, EqualTo, Sp,
-                        F.Id("J_{Z'} T_{Z,Z'}")))),
+                    StatementSource.WithoutFormula(),
                     AssessedProvenance.FromRepo(),
                     Blocks(Paragraph(Text(
                         "The coordinate equivalence is the unique zero-preserving reindexing lifted through analytic multiplicity fibers."))),
@@ -30,9 +28,7 @@ internal sealed class ZeroDataHilbertPresentationTransportDocument : IScribeDocu
                     DescribeId.Create("zero-data-hilbert-transport-preserves-krein"),
                     DeclarationHandle.Create(Module + "zeroHilbertPresentationUnitary_preserves_krein"),
                     H("The Hilbert transport preserves the Krein form"),
-                    StatementSource.FromAuthor(Disp(Seq(
-                        F.Id("[T psi,T phi]_{J'}"), Sp, EqualTo, Sp,
-                        F.Id("[psi,phi]_J")))),
+                    StatementSource.WithoutFormula(),
                     AssessedProvenance.FromRepo(),
                     Blocks(Paragraph(Text(
                         "The same unitary also intertwines the zero Cayley operators, so the operator geometry is presentation independent."))),

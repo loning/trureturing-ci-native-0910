@@ -19,7 +19,7 @@ internal sealed class CanonicalZetaMirrorFundamentalSymmetryDocument : IScribeDo
                     DescribeId.Create("mirror-fundamental-symmetry-self-adjoint"),
                     DeclarationHandle.Create(Module + "mirrorFundamentalSymmetry_inner_left"),
                     H("The mirror is self-adjoint in inner-product form"),
-                    StatementSource.FromAuthor(Disp(F.Id("<J psi,phi> = <psi,J phi>"))),
+                    StatementSource.WithoutFormula(),
                     AssessedProvenance.FromRepo(),
                     Blocks(Paragraph(Text(
                         "The multiplicity-preserving mirror permutation is represented by the repository's ell-two reindexing linear isometry."))),
@@ -28,9 +28,7 @@ internal sealed class CanonicalZetaMirrorFundamentalSymmetryDocument : IScribeDo
                     DescribeId.Create("mirror-odd-vector-negative"),
                     DeclarationHandle.Create(Module + "mirror_odd_vector_strictly_negative"),
                     H("Every moved mirror coordinate gives a strict negative direction"),
-                    StatementSource.FromAuthor(Disp(Seq(
-                        F.Id("M(v) != v"), Sp, Implies, Sp,
-                        F.Id("[v_-,v_-]_J < 0")))),
+                    StatementSource.WithoutFormula(),
                     AssessedProvenance.FromRepo(),
                     Blocks(Paragraph(Text(
                         "Antisymmetrizing a coordinate basis vector produces a nonzero minus-one eigenvector of the mirror."))),

@@ -6,7 +6,7 @@ namespace StrataLint.Scribe.Blueprint.D5.S3.Weil.ZetaRvm;
 
 internal sealed class GammaSideDocument : IScribeDocumentDefinition
 {
-    private const string Declaration = "Zeta23.RvM.gamma_side";
+    private const string Declaration = "D5/S3/Weil/ZetaRvm/GammaSide.gamma_side";
 
     public DocumentDefinition Create()
     {
@@ -17,7 +17,7 @@ internal sealed class GammaSideDocument : IScribeDocumentDefinition
                 DescribeId.Create("gammaside"),
                 DeclarationHandle.Create(Declaration),
                 H("Riemann-von Mangoldt Gamma Side"),
-                StatementSource.FromAuthor(Disp(F.Id("GammaSide"))),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text("The folded Gamma logarithmic derivative equals the mu integral."))),
                 DescribeRole.Theorem))));

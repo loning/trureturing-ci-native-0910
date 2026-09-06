@@ -19,9 +19,7 @@ internal sealed class ZeroDataPresentationEquivDocument : IScribeDocumentDefinit
                     DescribeId.Create("zero-data-presentation-equivalence-unique"),
                     DeclarationHandle.Create(Module + "zeroDataPresentationEquiv_unique"),
                     H("Zero-preserving reindexing is unique"),
-                    StatementSource.FromAuthor(Disp(Seq(
-                        F.Id("Z'.zero(e(n)) = Z.zero(n)"), Sp, Implies, Sp,
-                        F.Id("e = zeroDataPresentationEquiv(Z,Z')")))),
+                    StatementSource.WithoutFormula(),
                     AssessedProvenance.FromRepo(),
                     Blocks(Paragraph(Text(
                         "The construction reuses the existing equivalence from each ZeroData presentation to the canonical nontrivial-zero subtype."))),
@@ -30,7 +28,7 @@ internal sealed class ZeroDataPresentationEquivDocument : IScribeDocumentDefinit
                     DescribeId.Create("zero-data-presentation-mirror-equivariance"),
                     DeclarationHandle.Create(Module + "zeroDataPresentationEquiv_mirror"),
                     H("Presentation transport intertwines the mirror"),
-                    StatementSource.FromAuthor(Disp(F.Id("e(M_Z(n)) = M_Z'(e(n))"))),
+                    StatementSource.WithoutFormula(),
                     AssessedProvenance.FromRepo(),
                     Blocks(Paragraph(Text(
                         "Reflection, conjugation, multiplicity, and the same-height mirror are transported by the unique reindexing."))),

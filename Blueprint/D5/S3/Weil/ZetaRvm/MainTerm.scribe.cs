@@ -6,7 +6,7 @@ namespace StrataLint.Scribe.Blueprint.D5.S3.Weil.ZetaRvm;
 
 internal sealed class MainTermDocument : IScribeDocumentDefinition
 {
-    private const string Declaration = "Zeta23.RvM.rvM_main";
+    private const string Declaration = "D5/S3/Weil/ZetaRvm/MainTerm.rvM_main";
 
     public DocumentDefinition Create()
     {
@@ -17,7 +17,7 @@ internal sealed class MainTermDocument : IScribeDocumentDefinition
                 DescribeId.Create("mainterm"),
                 DeclarationHandle.Create(Declaration),
                 H("Riemann-von Mangoldt Main Term"),
-                StatementSource.FromAuthor(Disp(F.Id("MainTerm"))),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text("The dyadic multiplicity count has its classical main term and logarithmic error."))),
                 DescribeRole.Theorem))));

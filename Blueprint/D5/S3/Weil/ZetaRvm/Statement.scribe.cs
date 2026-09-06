@@ -6,7 +6,7 @@ namespace StrataLint.Scribe.Blueprint.D5.S3.Weil.ZetaRvm;
 
 internal sealed class StatementDocument : IScribeDocumentDefinition
 {
-    private const string Declaration = "Zeta23.RvM.riemannVonMangoldt";
+    private const string Declaration = "D5/S3/Weil/ZetaRvm/Statement.riemannVonMangoldt";
 
     public DocumentDefinition Create()
     {
@@ -17,7 +17,7 @@ internal sealed class StatementDocument : IScribeDocumentDefinition
                 DescribeId.Create("statement"),
                 DeclarationHandle.Create(Declaration),
                 H("Riemann-von Mangoldt Statement"),
-                StatementSource.FromAuthor(Disp(F.Id("Statement"))),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text("The main term and local count assemble the canonical Riemann-von Mangoldt certificate."))),
                 DescribeRole.Theorem))));

@@ -19,9 +19,7 @@ internal sealed class CanonicalZeroDataFromRiemannVonMangoldtDocument : IScribeD
                 DescribeId.Create("riemann-von-mangoldt-supplies-nonempty-zero-data"),
                 DeclarationHandle.Create(Declaration),
                 H("Canonical nonvacuity source"),
-                StatementSource.FromAuthor(Disp(Seq(
-                    Call("RiemannVonMangoldt", F.Id("zetaZeroConfig")), Sp, Implies, Sp,
-                    Call("Nonempty", F.Id("ZeroData"))))),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(
                     Paragraph(Text(

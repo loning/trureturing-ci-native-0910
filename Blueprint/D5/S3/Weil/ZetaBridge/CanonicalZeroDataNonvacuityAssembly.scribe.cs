@@ -12,8 +12,6 @@ internal sealed class CanonicalZeroDataNonvacuityAssemblyDocument : IScribeDocum
 
     public DocumentDefinition Create()
     {
-        Formula zeroSet = F.Id("{rho | IsNontrivialZero rho}");
-
         return DocumentDefinition.Create(ScribeNode.Create(
             "Assemble Riemann-von Mangoldt growth into a faithful, exhaustive, nonvacuous ZeroData certificate.",
             H("Closed Canonical ZeroData Nonvacuity Chain"),
@@ -21,11 +19,7 @@ internal sealed class CanonicalZeroDataNonvacuityAssemblyDocument : IScribeDocum
                 DescribeId.Create("riemann-von-mangoldt-closes-the-zero-data-nonvacuity-chain"),
                 DeclarationHandle.Create(Declaration),
                 H("Count growth to semantic realization"),
-                StatementSource.FromAuthor(Disp(Seq(
-                    Call("RiemannVonMangoldt", F.Id("zetaZeroConfig")), Sp, Implies, Sp,
-                    Call("Infinite", zeroSet), Sp, And, Sp,
-                    Call("Nonempty", F.Id("ZeroData")), Sp, And, Sp,
-                    Call("Exists", F.Id("CanonicalZeroDataCertificate"))))),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(
                     Paragraph(Text(

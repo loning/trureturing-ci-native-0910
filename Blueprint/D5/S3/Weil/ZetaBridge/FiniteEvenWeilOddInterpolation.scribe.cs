@@ -19,8 +19,7 @@ internal sealed class FiniteEvenWeilOddInterpolationDocument
                 DeclarationHandle.Create(
                     Prefix + "finite_even_weil_odd_interpolation_spec"),
                 H("Reduced odd evaluation has an explicit finite right inverse"),
-                StatementSource.FromAuthor(Disp(F.Id(
-                    "frameOddReadout (frameOddSynthesis a) equals a and the basis Gram has full negative index"))),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(
                     Paragraph(Text(
@@ -32,8 +31,7 @@ internal sealed class FiniteEvenWeilOddInterpolationDocument
                 DescribeId.Create("observable-odd-gram-negative-index"),
                 DeclarationHandle.Create(Prefix + "frameOddGram_negIndex"),
                 H("The observable odd Gram index equals the number of independent orbit channels"),
-                StatementSource.FromAuthor(Disp(F.Id(
-                    "negIndex(-4 diagonal multiplicity) equals the finite frame cardinality"))),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
                     "The basis Gram is exactly minus four times the positive analytic-multiplicity diagonal. Consequently its negative is positive definite and the repository spectral inertia owner computes one negative direction per independently interpolated orbit channel. Multiplicity changes the weight and strict margin, not the scalar observer dimension."))),

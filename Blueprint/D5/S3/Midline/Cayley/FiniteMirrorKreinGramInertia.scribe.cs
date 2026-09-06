@@ -19,8 +19,7 @@ internal sealed class FiniteMirrorKreinGramInertiaDocument : IScribeDocumentDefi
                     DescribeId.Create("finite-mirror-krein-gram-is-negative-identity"),
                     DeclarationHandle.Create(Module + "finiteMirrorOddKreinGram_eq"),
                     H("The actual odd Gram matrix is -2 I"),
-                    StatementSource.FromAuthor(Disp(Seq(
-                        F.Id("G_T^-"), Sp, EqualTo, Sp, F.Id("-2 I")))),
+                    StatementSource.WithoutFormula(),
                     AssessedProvenance.FromRepo(),
                     Blocks(Paragraph(Text(
                         "The matrix entries are computed from genuine odd vectors inside the multiplicity-expanded zero Hilbert space and the actual mirror Krein form."))),
@@ -29,9 +28,7 @@ internal sealed class FiniteMirrorKreinGramInertiaDocument : IScribeDocumentDefi
                     DescribeId.Create("finite-mirror-krein-gram-negative-index"),
                     DeclarationHandle.Create(Module + "finiteMirrorOddKreinGram_negIndex"),
                     H("The actual Gram negative index equals the mirror-orbit multiplicity count"),
-                    StatementSource.FromAuthor(Disp(Seq(
-                        Call("negIndex", F.Id("G_T^-")), Sp, EqualTo, Sp,
-                        F.Id("kappa_T")))),
+                    StatementSource.WithoutFormula(),
                     AssessedProvenance.FromRepo(),
                     Blocks(Paragraph(Text(
                         "This is a spectral inertia theorem for a concrete Hermitian Gram matrix, not a definition of an abstract negative dimension."))),

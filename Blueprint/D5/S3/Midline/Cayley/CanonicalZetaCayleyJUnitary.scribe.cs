@@ -19,7 +19,7 @@ internal sealed class CanonicalZetaCayleyJUnitaryDocument : IScribeDocumentDefin
                     DescribeId.Create("cayley-mirror-coefficient-reciprocity"),
                     DeclarationHandle.Create(Module + "cayleyCoefficient_mirrorIndex"),
                     H("Mirror Cayley coefficients are inverse conjugates"),
-                    StatementSource.FromAuthor(Disp(F.Id("c(M rho) = conj(c(rho))^(-1)"))),
+                    StatementSource.WithoutFormula(),
                     AssessedProvenance.FromRepo(),
                     Blocks(Paragraph(Text(
                         "This is the coefficient-level consequence of the existing Cayley mirror-coordinate theorem."))),
@@ -28,7 +28,7 @@ internal sealed class CanonicalZetaCayleyJUnitaryDocument : IScribeDocumentDefin
                     DescribeId.Create("zero-cayley-operator-j-unitary"),
                     DeclarationHandle.Create(Module + "zeroCayleyOperator_j_unitary"),
                     H("The zero Cayley operator is J-unitary"),
-                    StatementSource.FromAuthor(Disp(F.Id("U* J U = J"))),
+                    StatementSource.WithoutFormula(),
                     AssessedProvenance.FromRepo(),
                     Blocks(Paragraph(Text(
                         "Coordinatewise inverse-conjugate coefficients preserve the mirror Krein form, and summation yields the operator identity."))),

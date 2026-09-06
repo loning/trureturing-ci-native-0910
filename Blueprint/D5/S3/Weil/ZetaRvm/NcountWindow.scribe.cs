@@ -6,7 +6,7 @@ namespace StrataLint.Scribe.Blueprint.D5.S3.Weil.ZetaRvm;
 
 internal sealed class NcountWindowDocument : IScribeDocumentDefinition
 {
-    private const string Declaration = "Zeta23.Ncount_add";
+    private const string Declaration = "D5/S3/Weil/ZetaRvm/NcountWindow.Ncount_add";
 
     public DocumentDefinition Create()
     {
@@ -17,7 +17,7 @@ internal sealed class NcountWindowDocument : IScribeDocumentDefinition
                 DescribeId.Create("ncountwindow"),
                 DeclarationHandle.Create(Declaration),
                 H("Zero-Count Window Arithmetic"),
-                StatementSource.FromAuthor(Disp(F.Id("NcountWindow"))),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text("Multiplicity-weighted zero counts are additive across adjacent windows."))),
                 DescribeRole.Theorem))));

@@ -6,7 +6,7 @@ namespace StrataLint.Scribe.Blueprint.D5.S3.Weil.ZetaGamma;
 
 internal sealed class GammaIntMuDocument : IScribeDocumentDefinition
 {
-    private const string Declaration = "Zeta23.MuInts.int_mu_of_stirling";
+    private const string Declaration = "D5/S3/Weil/ZetaGamma/GammaIntMu.int_mu_of_stirling";
 
     public DocumentDefinition Create()
     {
@@ -17,7 +17,7 @@ internal sealed class GammaIntMuDocument : IScribeDocumentDefinition
                 DescribeId.Create("gammaintmu"),
                 DeclarationHandle.Create(Declaration),
                 H("Gamma Integral Estimates"),
-                StatementSource.FromAuthor(Disp(F.Id("GammaIntMu"))),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text("The Stirling estimate yields the first and second dyadic mu-integral asymptotics."))),
                 DescribeRole.Theorem))));

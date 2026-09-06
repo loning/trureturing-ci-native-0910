@@ -6,7 +6,7 @@ namespace StrataLint.Scribe.Blueprint.D5.S3.Weil.ZetaRvm;
 
 internal sealed class DefsDocument : IScribeDocumentDefinition
 {
-    private const string Declaration = "Zeta23.RvM.halfContour_add";
+    private const string Declaration = "D5/S3/Weil/ZetaRvm/Defs.halfContour_add";
 
     public DocumentDefinition Create()
     {
@@ -17,7 +17,7 @@ internal sealed class DefsDocument : IScribeDocumentDefinition
                 DescribeId.Create("defs"),
                 DeclarationHandle.Create(Declaration),
                 H("Riemann-von Mangoldt Definitions"),
-                StatementSource.FromAuthor(Disp(F.Id("Defs"))),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text("The right-half contour and its additive law are fixed."))),
                 DescribeRole.Theorem))));

@@ -19,9 +19,7 @@ internal sealed class CanonicalZeroDataProviderDocument : IScribeDocumentDefinit
                 DescribeId.Create("canonical-zero-sum-agrees-with-every-exhaustive-enumeration"),
                 DeclarationHandle.Create(Declaration),
                 H("Canonicality at the observable level"),
-                StatementSource.FromAuthor(Disp(Seq(
-                    Call("zeroSum", F.Id("canonicalZeroData(S)")), Sp, Eq, Sp,
-                    Call("zeroSum", F.Id("Z"))))),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(
                     Paragraph(Text(

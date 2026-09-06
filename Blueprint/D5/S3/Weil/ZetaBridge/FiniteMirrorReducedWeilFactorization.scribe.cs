@@ -19,8 +19,7 @@ internal sealed class FiniteMirrorReducedWeilFactorizationDocument
                 DeclarationHandle.Create(
                     Prefix + "truncatedZeroSum_convolutionSquare_eq_reducedMirrorForm"),
                 H("The actual finite convolution-square zero sum is a reduced mirror form"),
-                StatementSource.FromAuthor(Disp(F.Id(
-                    "truncatedZeroSum Z (convolutionSquare g) T equals the finite multiplicity-weighted mirror form of the reduced evaluation vector"))),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(
                     Paragraph(Text(
@@ -33,8 +32,7 @@ internal sealed class FiniteMirrorReducedWeilFactorizationDocument
                 DeclarationHandle.Create(
                     Prefix + "finite_offLine_orbit_block_factorization"),
                 H("Finite orbit blocks split into positive even energy minus positive odd energy"),
-                StatementSource.FromAuthor(Disp(F.Id(
-                    "finiteOrbitBlockRealValue equals finiteOrbitEvenEnergy minus finiteOrbitOddEnergy"))),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
                     "The theorem sums the established one-orbit parity decomposition over an arbitrary finite family. Both aggregate channel energies remain nonnegative. Orbit disjointness is required only when identifying the block sum with a union of zero indices, not for the algebraic decomposition."))),

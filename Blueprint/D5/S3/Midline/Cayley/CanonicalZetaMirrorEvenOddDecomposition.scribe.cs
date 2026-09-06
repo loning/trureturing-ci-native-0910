@@ -19,8 +19,7 @@ internal sealed class CanonicalZetaMirrorEvenOddDecompositionDocument : IScribeD
                     DescribeId.Create("mirror-even-odd-projections-orthogonal"),
                     DeclarationHandle.Create(Module + "mirror_even_odd_inner_eq_zero"),
                     H("Mirror parity sectors are Hilbert orthogonal"),
-                    StatementSource.FromAuthor(Disp(Seq(
-                        F.Id("<P_+ psi,P_- phi>"), Sp, EqualTo, Sp, D(0)))),
+                    StatementSource.WithoutFormula(),
                     AssessedProvenance.FromRepo(),
                     Blocks(Paragraph(Text(
                         "The proof uses the self-adjoint involution laws rather than introducing an abstract orthogonal decomposition axiom."))),
@@ -29,9 +28,7 @@ internal sealed class CanonicalZetaMirrorEvenOddDecompositionDocument : IScribeD
                     DescribeId.Create("mirror-krein-energy-decomposition"),
                     DeclarationHandle.Create(Module + "mirrorKreinForm_re_eq_even_norm_sq_sub_odd_norm_sq"),
                     H("The Krein form is even energy minus odd energy"),
-                    StatementSource.FromAuthor(Disp(Seq(
-                        F.Id("Re[psi,psi]_J"), Sp, EqualTo, Sp,
-                        F.Id("||P_+ psi||^2 - ||P_- psi||^2")))),
+                    StatementSource.WithoutFormula(),
                     AssessedProvenance.FromRepo(),
                     Blocks(Paragraph(Text(
                         "The normalized projections are idempotent, mutually annihilating, and reconstruct every vector."))),

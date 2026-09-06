@@ -19,8 +19,7 @@ internal sealed class CanonicalZetaCayleyKreinInverseDocument : IScribeDocumentD
                     DescribeId.Create("zero-cayley-invertible-without-rh"),
                     DeclarationHandle.Create(Module + "zeroCayleyOperator_isUnit_unconditional"),
                     H("The zero Cayley operator is unconditionally invertible"),
-                    StatementSource.FromAuthor(Disp(Seq(
-                        Call("IsUnit", F.Id("U_Z"))))),
+                    StatementSource.WithoutFormula(),
                     AssessedProvenance.FromRepo(),
                     Blocks(Paragraph(Text(
                         "The reciprocal multiplier is bounded by transporting the original bounded coefficients through mirror permutation and conjugation."))),
@@ -29,9 +28,7 @@ internal sealed class CanonicalZetaCayleyKreinInverseDocument : IScribeDocumentD
                     DescribeId.Create("zero-cayley-krein-inverse-formula"),
                     DeclarationHandle.Create(Module + "zeroCayleyKreinInverse_eq_explicit"),
                     H("The explicit inverse equals J U-star J"),
-                    StatementSource.FromAuthor(Disp(Seq(
-                        F.Id("U_Z^{-1}"), Sp, EqualTo, Sp,
-                        F.Id("J_Z U_Z^* J_Z")))),
+                    StatementSource.WithoutFormula(),
                     AssessedProvenance.FromRepo(),
                     Blocks(Paragraph(Text(
                         "The same proof yields the companion conservation identity U J U-star = J without ordinary unitarity."))),

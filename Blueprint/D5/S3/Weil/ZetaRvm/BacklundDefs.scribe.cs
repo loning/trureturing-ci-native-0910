@@ -6,7 +6,7 @@ namespace StrataLint.Scribe.Blueprint.D5.S3.Weil.ZetaRvm;
 
 internal sealed class BacklundDefsDocument : IScribeDocumentDefinition
 {
-    private const string Declaration = "Zeta23.RvM.mem_reZeroSet";
+    private const string Declaration = "D5/S3/Weil/ZetaRvm/BacklundDefs.mem_reZeroSet";
 
     public DocumentDefinition Create()
     {
@@ -17,7 +17,7 @@ internal sealed class BacklundDefsDocument : IScribeDocumentDefinition
                 DescribeId.Create("backlunddefs"),
                 DeclarationHandle.Create(Declaration),
                 H("Backlund Definitions"),
-                StatementSource.FromAuthor(Disp(F.Id("BacklundDefs"))),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text("The real-part zero set used in Backlund's bound is fixed."))),
                 DescribeRole.Theorem))));

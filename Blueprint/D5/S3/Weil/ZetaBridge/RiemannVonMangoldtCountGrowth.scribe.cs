@@ -19,9 +19,7 @@ internal sealed class RiemannVonMangoldtCountGrowthDocument : IScribeDocumentDef
                 DescribeId.Create("riemann-von-mangoldt-forces-dyadic-zero-count-growth"),
                 DeclarationHandle.Create(Declaration),
                 H("Dyadic zero counts tend to infinity"),
-                StatementSource.FromAuthor(Disp(Seq(
-                    Call("RiemannVonMangoldt", F.Id("Z")), Sp, Implies, Sp,
-                    Call("Tendsto", F.Id("N_Z(T,2T)"), F.Id("atTop"))))),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(
                     Paragraph(Text(

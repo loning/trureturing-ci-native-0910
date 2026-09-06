@@ -6,7 +6,7 @@ namespace StrataLint.Scribe.Blueprint.D5.S3.Weil.ZetaPntBase;
 
 internal sealed class ZetaConjDocument : IScribeDocumentDefinition
 {
-    private const string Declaration = "logDerivZeta_conj'";
+    private const string Declaration = "D5/S3/Weil/ZetaPntBase/ZetaConj.logDerivZeta_conj";
 
     public DocumentDefinition Create()
     {
@@ -17,7 +17,7 @@ internal sealed class ZetaConjDocument : IScribeDocumentDefinition
                 DescribeId.Create("zetaconj"),
                 DeclarationHandle.Create(Declaration),
                 H("Zeta Conjugation Identities"),
-                StatementSource.FromAuthor(Disp(F.Id("ZetaConj"))),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text("Complex conjugation commutes with the zeta logarithmic derivative."))),
                 DescribeRole.Theorem))));
