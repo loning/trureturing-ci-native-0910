@@ -34,6 +34,8 @@ noncomputable section
 
 namespace D5.S3.Weil.ZetaBridge.CanonicalZeroDataNonvacuityAssembly
 
+open scoped ComplexConjugate
+
 open D5.S3.Weil.ZeroSum
 open D5.S3.Weil.ZetaBridge.CanonicalZeroDataFromRiemannVonMangoldt
 open D5.S3.Weil.ZetaBridge.CanonicalZeroDataProvider
