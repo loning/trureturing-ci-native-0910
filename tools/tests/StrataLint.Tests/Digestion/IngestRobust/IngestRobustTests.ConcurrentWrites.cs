@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using System.Text;
 using StrataLint.Cli;
 using StrataLint.Engine;
@@ -15,6 +14,7 @@ public sealed partial class IngestRobustTests
         var fixture = ConcurrentClaimFixture();
         using var temporary = new TemporaryDirectory();
         WriteFixture(temporary, fixture);
+        using var gitDirectory = DirectoryLedgerTestSupport.UseGitDirectoryPointer(temporary);
         RawRepositorySnapshot? afterWinner = null;
         var dependencies = new ReportFreeIngestDependencies(BeforeCommit: () =>
         {
@@ -43,8 +43,8 @@ public sealed partial class IngestRobustTests
         fixture.Files[newSource] = "## Claim 4\n\nGamma fact.\n";
         using var temporary = new TemporaryDirectory();
         WriteFixture(temporary, fixture);
-        var lockPath = ExpectedIngestLockPath(temporary);
-        Directory.CreateDirectory(Path.GetDirectoryName(lockPath)!);
+        using var gitDirectory = DirectoryLedgerTestSupport.UseGitDirectoryPointer(temporary);
+        var lockPath = ExpectedIngestLockPath(gitDirectory);
         var before = DirectoryLedgerTestSupport.ReadRepository(temporary);
         using (var peerLock = new FileStream(lockPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
         {
@@ -72,6 +72,7 @@ public sealed partial class IngestRobustTests
         var fixture = ConcurrentClaimFixture();
         using var temporary = new TemporaryDirectory();
         WriteFixture(temporary, fixture);
+        using var gitDirectory = DirectoryLedgerTestSupport.UseGitDirectoryPointer(temporary);
         var before = DirectoryLedgerTestSupport.ReadRepository(temporary);
         using var publication = new IngestPublicationBarrier();
         var dependencies = new ReportFreeIngestDependencies(CommitLedgerFile: publication.Commit);
@@ -97,12 +98,12 @@ public sealed partial class IngestRobustTests
 
         Assert.True(committed.Success, committed.Error);
         Assert.False(peer.Success);
-        Assert.Equal($"INGEST_INVALID digestion ledger is being written by another ingest ({ExpectedIngestLockPath(temporary)})\n",
+        Assert.Equal($"INGEST_INVALID digestion ledger is being written by another ingest ({ExpectedIngestLockPath(gitDirectory)})\n",
             peer.Error);
         AssertSameRepository(beforePeer, afterPeer);
         AssertExistingLedgerFilesUnchanged(before, DirectoryLedgerTestSupport.ReadRepository(temporary));
         AssertSingleClaim(temporary, "alpha");
-        using var released = new FileStream(ExpectedIngestLockPath(temporary),
+        using var released = new FileStream(ExpectedIngestLockPath(gitDirectory),
             FileMode.Open, FileAccess.ReadWrite, FileShare.None);
     }
 
@@ -112,6 +113,7 @@ public sealed partial class IngestRobustTests
         var fixture = Fixture(Ledger(populated: false), AlphaText + Addition);
         using var temporary = new TemporaryDirectory();
         WriteFixture(temporary, fixture);
+        using var gitDirectory = DirectoryLedgerTestSupport.UseGitDirectoryPointer(temporary);
         var peer = Environment(fixture, temporary).Ingest(Arguments("beta"));
         Assert.True(peer.Success, peer.Error);
         var before = DirectoryLedgerTestSupport.ReadRepository(temporary);
@@ -131,7 +133,7 @@ public sealed partial class IngestRobustTests
             // Probe exclusivity only; no ingest transaction is invoked from this locked fault seam.
             Assert.Throws<IOException>(() =>
             {
-                using var probe = new FileStream(ExpectedIngestLockPath(temporary),
+                using var probe = new FileStream(ExpectedIngestLockPath(gitDirectory),
                     FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
             });
             if (attempts == 2)
@@ -181,12 +183,8 @@ public sealed partial class IngestRobustTests
             File.ReadAllBytes(Path.Combine(temporary.Path, DigestionCasStore.RootPath, atomId)));
     }
 
-    private static string ExpectedIngestLockPath(TemporaryDirectory temporary)
-    {
-        var root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(temporary.Path));
-        var digest = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(root)));
-        return Path.Combine(Path.GetTempPath(), "stratalint-ingest", digest + ".lock");
-    }
+    private static string ExpectedIngestLockPath(TemporaryDirectory gitDirectory) =>
+        Path.Combine(gitDirectory.Path, "stratalint-ingest.lock");
 
     private static void AssertSameRepository(RawRepositorySnapshot before, RawRepositorySnapshot after)
     {

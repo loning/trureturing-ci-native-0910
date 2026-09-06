@@ -1,21 +1,22 @@
 using System.Collections.Immutable;
-using System.Security.Cryptography;
-using System.Text;
 using StrataLint.Engine;
 
 namespace StrataLint.Cli;
 
 internal static partial class IngestCommand
 {
+    internal static string ReportFreeCommitLockPath(string gitDirectory) =>
+        Path.Combine(gitDirectory, "stratalint-ingest.lock");
+
     private static FileStream AcquireReportFreeCommitLock(string repositoryRoot)
     {
-        var root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(repositoryRoot));
-        var digest = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(root)));
-        var directory = Path.Combine(Path.GetTempPath(), "stratalint-ingest");
-        Directory.CreateDirectory(directory);
-        var path = Path.Combine(directory, digest + ".lock");
+        var directory = GitWorktreeDirectory.Read(repositoryRoot)
+            ?? throw new InvalidOperationException(
+                "repository root has no .git; report-free ingest requires a git worktree");
+        var path = ReportFreeCommitLockPath(directory);
         try
         {
+            // Unix mutual exclusion requires a local filesystem supporting flock and file locking enabled.
             // Keep the file after release: unlinking it would let peers lock different inodes.
             return new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
         }

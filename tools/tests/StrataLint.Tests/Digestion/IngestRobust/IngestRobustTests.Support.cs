@@ -156,6 +156,7 @@ public sealed partial class IngestRobustTests
 
     private static void WriteFixture(TemporaryDirectory temporary, RuleFixture fixture)
     {
+        Directory.CreateDirectory(Path.Combine(temporary.Path, ".git"));
         foreach (var (path, text) in fixture.Files)
         {
             var fullPath = Path.Combine(temporary.Path, path);

@@ -6,6 +6,15 @@ namespace StrataLint.Tests;
 
 internal static class DirectoryLedgerTestSupport
 {
+    internal static TemporaryDirectory UseGitDirectoryPointer(TemporaryDirectory repository)
+    {
+        var gitDirectory = new TemporaryDirectory();
+        var dotGit = Path.Combine(repository.Path, ".git");
+        if (Directory.Exists(dotGit)) Directory.Delete(dotGit);
+        File.WriteAllText(dotGit, "gitdir: " + gitDirectory.Path + "\n");
+        return gitDirectory;
+    }
+
     internal static Dictionary<string, string> Project(IReadOnlyDictionary<string, string> files)
     {
         var ledger = BackfillInventoryLoader.Load(Decode(files));
@@ -138,7 +147,7 @@ internal static class DirectoryLedgerTestSupport
     internal static string RepositoryImage(TemporaryDirectory repository)
     {
         var root = Path.GetFullPath(repository.Path);
-        return string.Concat(Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories)
+        return string.Concat(RepositoryFiles(repository)
             .Order(StringComparer.Ordinal)
             .Select(path => Path.GetRelativePath(root, path).Replace(Path.DirectorySeparatorChar, '/')
                 + "\0"
@@ -147,7 +156,7 @@ internal static class DirectoryLedgerTestSupport
     }
 
     internal static RawRepositorySnapshot ReadRepository(TemporaryDirectory repository) =>
-        RawRepositorySnapshot.Create(Directory.EnumerateFiles(repository.Path, "*", SearchOption.AllDirectories)
+        RawRepositorySnapshot.Create(RepositoryFiles(repository)
             .Select(path => new RawRepositoryEntry(
                 Path.GetRelativePath(repository.Path, path).Replace(Path.DirectorySeparatorChar, '/'),
                 ImmutableArray.CreateRange(File.ReadAllBytes(path)))));
@@ -159,10 +168,7 @@ internal static class DirectoryLedgerTestSupport
     {
         var repositoryRoot = repository.Path;
         var result = new Dictionary<string, string>(files, StringComparer.Ordinal);
-        foreach (var path in Directory.EnumerateFiles(
-                     repositoryRoot,
-                     "*",
-                     SearchOption.AllDirectories))
+        foreach (var path in RepositoryFiles(repository))
         {
             var relative = Path.GetRelativePath(repositoryRoot, path)
                 .Replace(Path.DirectorySeparatorChar, '/');
@@ -170,6 +176,15 @@ internal static class DirectoryLedgerTestSupport
         }
 
         return result;
+    }
+
+    // Git administrative files are outside the repository content snapshot.
+    private static IEnumerable<string> RepositoryFiles(TemporaryDirectory repository)
+    {
+        var dotGit = Path.Combine(repository.Path, ".git");
+        return Directory.EnumerateFiles(repository.Path, "*", SearchOption.AllDirectories)
+            .Where(path => path != dotGit
+                && !path.StartsWith(dotGit + Path.DirectorySeparatorChar, StringComparison.Ordinal));
     }
 
     internal static string Image(BackfillInventoryDocument ledger)
