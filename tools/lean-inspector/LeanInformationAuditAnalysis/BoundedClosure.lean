@@ -1,11 +1,16 @@
 import LeanInformationAudit.Projection.ProjectionSeal
+import LeanInformationAudit.Tests.Projection.FixtureState
 
 /-!
-This full-analysis fixture is outside the default target because its measured cost
-is 297-310 seconds; build it with `lake build LeanInformationAuditAnalysis`.
+This standalone full-analysis fixture is not part of any lake target because its
+measured cost is 297-310 seconds. Run it with
+`lake env lean tools/lean-inspector/LeanInformationAuditAnalysis/BoundedClosure.lean`.
+It writes `bounded-analysis.json` and `bounded-analysis.txt` under
+`IE_PROJECTION_OUTPUT_DIR`, or a fresh temporary directory when unset.
 -/
 
 open Lean Lean.Meta Lean.Elab.Command LeanInformationAudit
+open LeanInformationAudit.Tests.Projection
 open D5.S3.ConceptDynamics.InformationEscape D5.S3.ConceptDynamics.CIRPT
 
 namespace BoundedClosure
@@ -133,7 +138,9 @@ run_cmd do
   let .ok artifact := Json.parse json | throwError "duplicate view JSON"
   let rows := (artifact.getObjValAs? (Array Json) "catalogs").toOption.get!
   unless rows.size == 1 do throwError "duplicate view missing catalog"
-  let .ok _ := serializeAsciiArtifact #[record] | throwError "duplicate view ASCII"
+  let .ok ascii := serializeAsciiArtifact #[record] | throwError "duplicate view ASCII"
+  liftIO <| IO.FS.writeFile (← fixturePath "bounded-analysis.json") json
+  liftIO <| IO.FS.writeFile (← fixturePath "bounded-analysis.txt") ascii
   logInfo "duplicate analysis view serialized: 16 occurrences, 9 nodes, complete=false"
 
 end BoundedClosure

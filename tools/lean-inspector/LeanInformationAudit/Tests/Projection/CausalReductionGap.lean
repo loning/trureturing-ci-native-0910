@@ -12,7 +12,7 @@ abbrev catalog : Catalog unifiedArena := Catalog.ofVector
   ![unifiedCounterfactualUnit, unifiedInterventionUnit, unifiedObservationUnit]
 
 /- The direct route still cannot reduce the frozen sum-valued readout decisions.
-The positive LeanInformationAuditAnalysis.CausalProjection fixture exercises the
+The positive standalone causal projection fixture exercises the
 certified reflection bridge. -/
 /--
 error: reduceEval: failed to evaluate argument

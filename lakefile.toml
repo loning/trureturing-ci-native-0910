@@ -24,9 +24,3 @@ name = "LeanInformationAudit"
 srcDir = "tools/lean-inspector"
 roots = ["LeanInformationAudit"]
 globs = ["LeanInformationAudit.+"]
-
-[[lean_lib]]
-name = "LeanInformationAuditAnalysis"
-srcDir = "tools/lean-inspector"
-roots = ["LeanInformationAuditAnalysis"]
-globs = ["LeanInformationAuditAnalysis.+"]
