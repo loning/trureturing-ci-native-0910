@@ -5,7 +5,12 @@ set -euo pipefail
 # Exit 64 means bad arguments, 66 missing inputs, 69 missing tools, 73 output
 # unavailable; otherwise preserve the failing command's exit code. Only exit 0
 # and ANALYSIS_FIXTURES_EXIT=0 indicate that all fixtures finished.
-trap 'status=$?; printf "ANALYSIS_FIXTURES_EXIT=%s\n" "$status"; exit "$status"' EXIT
+finish() {
+  local fixture_exit=$?
+  printf 'ANALYSIS_FIXTURES_EXIT=%s\n' "$fixture_exit"
+  exit "$fixture_exit"
+}
+trap finish EXIT
 
 fail() {
   printf '%s\n' "$2" >&2
