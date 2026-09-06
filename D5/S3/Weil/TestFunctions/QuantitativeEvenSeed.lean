@@ -44,7 +44,7 @@ def normalizedEvenSeed (h : ℝ) (hh : 0 < h) : WeilTestFunction where
   toFun x := ((radiusBump h hh).normed volume x : ℂ)
   contDiff' := Complex.ofRealCLM.contDiff.comp (radiusBump h hh).contDiff_normed
   hasCompactSupport' :=
-    (radiusBump h hh).hasCompactSupport_normed.comp_left (by simp)
+    (radiusBump h hh).hasCompactSupport_normed.comp_left Complex.ofReal_zero
   even' x := by exact_mod_cast (radiusBump h hh).normed_neg (μ := volume) x
 
 /-- The seed has unit integral. -/
@@ -97,10 +97,12 @@ theorem fourierLaplace_sub_one_norm_le
       psi.hasCompactSupport.mul_left
   have heq : fourierLaplace psi z - 1 =
       ∫ x : ℝ, (fourierKernel z x - 1) * psi x := by
-    rw [fourierLaplace_apply, ← hmass, ← integral_sub hprod psi.integrable]
-    apply integral_congr_ae
-    filter_upwards with x
-    ring
+    have hsplit : (∫ x : ℝ, (fourierKernel z x - 1) * psi x) =
+        (∫ x : ℝ, fourierKernel z x * psi x) - ∫ x : ℝ, psi x := by
+      rw [← integral_sub hprod psi.integrable]
+      exact integral_congr_ae (Filter.Eventually.of_forall fun x => by ring)
+    rw [hsplit, hmass, fourierLaplace_apply]
+    rfl
   have hpoint (x : ℝ) : ‖(fourierKernel z x - 1) * psi x‖ ≤
       (2 * h * ‖z‖) * ‖psi x‖ := by
     by_cases hx : psi x = 0
