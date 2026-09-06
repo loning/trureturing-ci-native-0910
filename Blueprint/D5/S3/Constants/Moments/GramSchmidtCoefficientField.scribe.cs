@@ -64,7 +64,7 @@ internal sealed class GramSchmidtCoefficientFieldDocument : IScribeDocumentDefin
         Formula orthogonal = Call("gramSchmidtBasis", power);
 
         return Disp(new Formula.Aligned([
-            Seq(field, Sp, Eq, Sp, Call("Subfield.closure", Call("range", Call("coeff", q)))),
+            Seq(field, Sp, Eq, Sp, Call("subfieldClosure", Call("range", Call("coeff", q)))),
             Seq(Call("m", n), Sp, Eq, Sp, Frac,
                 Grp(Call("trace", new Formula.Power(matrix, n))), Grp(degree)),
             Seq(Open, Forall, Sp, x, Comma, Sp, y, Sp, InMacro, Sp, F.Id("E"), Comma, Sp,
