@@ -183,12 +183,13 @@ theorem centered_quartic_invariant_bounds (u v w : ℝ)
   rw [← hr] at hc
   norm_num [centeredQuartic, coeff_add, coeff_C_mul_X_pow, coeff_C_mul_X,
     coeff_X_pow, coeff_X, coeff_C, Fin.sum_univ_succ] at hc
+  change 0 = -r 3 + -r 2 + -r 1 + -r 0 at hc
   have hcenter : r 0 + r 1 + r 2 + r 3 = 0 := by linarith
   have hu0 := congrArg (fun p : ℝ[X] => p.coeff 2) hr
   have hw0 := congrArg (fun p : ℝ[X] => p.coeff 0) hr
   norm_num [centeredQuartic, Fin.prod_univ_succ, coeff_mul,
-    Finset.sum_antidiagonal_eq_sum_range_succ, Finset.sum_range_succ,
-    coeff_add, coeff_sub, coeff_X_pow, coeff_X, coeff_C] at hu0 hw0
+    Finset.Nat.sum_antidiagonal_eq_sum_range_succ_mk, Finset.sum_range_succ,
+    coeff_add, coeff_sub, coeff_X_pow, coeff_X, coeff_C, Fin.succ] at hu0 hw0
   have hu : u = r 0*r 1 + r 0*r 2 + r 0*r 3 + r 1*r 2 + r 1*r 3 + r 2*r 3 := by
     nlinarith [hu0]
   have hw : w = r 0*r 1*r 2*r 3 := by nlinarith [hw0]
@@ -204,10 +205,78 @@ theorem centered_quartic_invariant_bounds (u v w : ℝ)
   · have hbound : 0 ≤ u^2-4*w := by rw [hb]; positivity
     linarith
 
+/-- Nonnegative factors in the squared variable, with no hypothesis from Theorem 5.6. -/
+theorem centered_factorization (u v w U V W : ℝ)
+    (hp : RealRooted4 (centeredQuartic u v w))
+    (hq : RealRooted4 (centeredQuartic U V W)) :
+    ∃ s t : ℝ, 0 ≤ s ∧ 0 ≤ t ∧
+      square4 (centeredQuartic u v w) (centeredQuartic U V W) =
+        (X^2 - C s) * (X^2 - C t) := by
+  obtain ⟨hu, hi, hib⟩ := centered_quartic_invariant_bounds u v w hp
+  obtain ⟨hU, hj, hjb⟩ := centered_quartic_invariant_bounds U V W hq
+  let A := 16*u*U/15
+  let B := (u^2+12*w)*(U^2+12*W)/60
+  let D := A^2-4*B
+  have hA : 0 ≤ A := by
+    dsimp [A]
+    exact div_nonneg
+      (mul_nonneg_of_nonpos_of_nonpos (mul_nonpos_of_nonneg_of_nonpos (by norm_num) hu) hU)
+      (by norm_num)
+  have hB : 0 ≤ B := div_nonneg (mul_nonneg hi hj) (by norm_num)
+  have hrem : D - 16*u^2*U^2/225 =
+      (4*u^2*(4*U^2-(U^2+12*W)) + (U^2+12*W)*(4*u^2-(u^2+12*w))) / 15 := by
+    dsimp [D, A, B]
+    ring
+  have hrem0 : 0 ≤
+      (4*u^2*(4*U^2-(U^2+12*W)) + (U^2+12*W)*(4*u^2-(u^2+12*w))) / 15 :=
+    div_nonneg (add_nonneg
+      (mul_nonneg (mul_nonneg (by norm_num) (sq_nonneg u)) (sub_nonneg.mpr hjb))
+      (mul_nonneg hj (sub_nonneg.mpr hib))) (by norm_num)
+  have hDlower : 16*u^2*U^2/225 ≤ D := by linarith [hrem0]
+  have hD : 0 ≤ D := le_trans (by positivity) hDlower
+  have hsqrt : Real.sqrt D ≤ A := Real.sqrt_le_iff.mpr ⟨hA, by dsimp [D]; linarith⟩
+  let s := (A + Real.sqrt D)/2
+  have hdisc : discrim 1 (-A) B = Real.sqrt D * Real.sqrt D := by
+    rw [Real.mul_self_sqrt hD]
+    dsimp [discrim, D]
+    ring
+  have hsroot : 1*(s*s) + (-A)*s + B = 0 :=
+    (quadratic_eq_zero_iff (by norm_num) hdisc s).mpr (Or.inl (by dsimp [s]; ring))
+  have hsquad : s*s - A*s + B = 0 := by simpa [sub_eq_add_neg] using hsroot
+  obtain ⟨t, -, hsum, hprod⟩ := vieta_formula_quadratic hsquad
+  have ht : t = (A - Real.sqrt D)/2 := by dsimp [s] at hsum; linarith
+  refine ⟨s, t, ?_, ?_, ?_⟩
+  · exact div_nonneg (add_nonneg hA (Real.sqrt_nonneg _)) (by norm_num)
+  · rw [ht]
+    exact div_nonneg (sub_nonneg.mpr hsqrt) (by norm_num)
+  · rw [centered_expansion]
+    change X^4 - C A * X^2 + C B = (X^2-C s)*(X^2-C t)
+    rw [← hsum, ← hprod]
+    simp only [map_add, map_mul]
+    ring
+
+/-- Conjecture 5.3 for centered monic quartics, including all multiplicities.
+The exhibited roots are `sqrt s`, `-sqrt s`, `sqrt t`, `-sqrt t`. -/
+theorem centered_real_rooted (u v w U V W : ℝ)
+    (hp : RealRooted4 (centeredQuartic u v w))
+    (hq : RealRooted4 (centeredQuartic U V W)) :
+    RealRooted4 (square4 (centeredQuartic u v w) (centeredQuartic U V W)) := by
+  obtain ⟨s, t, hs, ht, hfactor⟩ := centered_factorization u v w U V W hp hq
+  refine ⟨![Real.sqrt s, -Real.sqrt s, Real.sqrt t, -Real.sqrt t], ?_⟩
+  rw [hfactor]
+  have hsC : (C (Real.sqrt s) : ℝ[X])^2 = C s := by rw [← map_pow, Real.sq_sqrt hs]
+  have htC : (C (Real.sqrt t) : ℝ[X])^2 = C t := by rw [← map_pow, Real.sq_sqrt ht]
+  calc
+    (X^2-C s)*(X^2-C t) =
+        (X^2-(C (Real.sqrt s))^2)*(X^2-(C (Real.sqrt t))^2) := by rw [hsC, htC]
+    _ = _ := by simp [Fin.prod_univ_succ]; ring
+
 #print axioms centered_sum_squares
 #print axioms centered_invariant_sos
 #print axioms centered_product_sos
 #print axioms centered_expansion
 #print axioms centered_quartic_invariant_bounds
+#print axioms centered_factorization
+#print axioms centered_real_rooted
 
 end D5.S3.Zeros.Convolution.FiniteFreeCommutatorDegreeFour
