@@ -3,7 +3,7 @@
    mirror-B: D5/B/S1/Phase/IntervalSampling
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
-   utility: none; proof_shape=bind-only; admission_basis=atom-required-bridge
+   utility: none
    digest: Irrational rotations sample half-open intervals with their lengths as frequencies. -/
 
 import D5.S1.Phase.ContinuousAverage

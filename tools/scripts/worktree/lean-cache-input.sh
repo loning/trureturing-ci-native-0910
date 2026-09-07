@@ -13,8 +13,8 @@ if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
       *) echo "lean-cache-input: unknown argument '$1'" >&2; exit 2 ;;
     esac
   done
-  [[ "$COMMAND" == "address" ]] \
-    || { echo "usage: lean-cache-input.sh address --repository DIR" >&2; exit 2; }
+  [[ "$COMMAND" == "address" || "$COMMAND" == "dependency-address" ]] \
+    || { echo "usage: lean-cache-input.sh address|dependency-address --repository DIR" >&2; exit 2; }
   [[ -n "$REPOSITORY" && "$REPOSITORY" == /* && -d "$REPOSITORY" ]] \
     || { echo "lean-cache-input: --repository requires an absolute directory" >&2; exit 2; }
   REPOSITORY="$(cd "$REPOSITORY" && pwd -P)"
@@ -314,6 +314,16 @@ append_manifest_entry() {
   printf '%s\0%s\0' "$relative" "$path" >> "${manifest}.requests"
 }
 
+# Dependency preimage uses the same manifest form, with only the pinned inputs.
+lean_dependency_sha256() {
+  local manifest="$TMP_ROOT/dependency.manifest"
+  : > "${manifest}.requests"
+  append_manifest_entry "$manifest" "lean-toolchain" || return 2
+  append_manifest_entry "$manifest" "lake-manifest.json" || return 2
+  materialize_manifest "$manifest" || return 2
+  hash_file "$manifest"
+}
+
 # Lean input preimage v1: root, sorted D5 sources, sorted inspector Lean
 # sources; then toolchain, manifest, and lakefiles in their declared order.
 lean_cache_address() {
@@ -362,6 +372,10 @@ lean_cache_address() {
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
   prepare_memo
-  lean_cache_address
+  if [[ "$COMMAND" == "dependency-address" ]]; then
+    lean_dependency_sha256
+  else
+    lean_cache_address
+  fi
   store_memo_updates
 fi
