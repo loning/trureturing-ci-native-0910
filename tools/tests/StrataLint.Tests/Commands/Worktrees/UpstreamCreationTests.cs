@@ -121,13 +121,14 @@ public sealed partial class WorktreeCommandTests
     [InlineData("add-rejected")]
     [InlineData("post-checkout")]
     [InlineData("inherit-partial")]
+    [InlineData("policy-changed")]
     public void FailedCreationRestoresTrackingAndAllowsImmediateNativeEquivalentRetry(string failure)
     {
         using var repository = new TemporaryDirectory();
         var inherit = failure == "inherit-partial";
         var revision = inherit ? "dev" : "origin/dev";
         InitializeUpstreamRepository(repository.Path, inherit ? "inherit" : "true", revision,
-            inherit ? "never" : "remote", inherit ? "multiple" : "none");
+            inherit || failure == "policy-changed" ? "never" : "remote", inherit ? "multiple" : "none");
         var oracle = NativeUpstreamOracle(repository.Path, revision);
         var before = ReadUpstreamConfiguration(repository.Path);
         var target = Path.Combine(repository.Path, "upstream-target");
@@ -144,6 +145,11 @@ public sealed partial class WorktreeCommandTests
         Assert.False(Directory.Exists(target));
         Assert.False(Directory.Exists(WorktreeMetadataPath(repository.Path, target)));
 
+        if (failure == "policy-changed")
+        {
+            Assert.Equal("always\n", WorktreeHookFixture.RunGit(repository.Path, "config", "--get", "branch.autoSetupRebase"));
+            oracle = NativeUpstreamOracle(repository.Path, revision);
+        }
         var retry = WorktreeCommand.Run(repository.Path, UpstreamArguments(target, revision));
 
         Assert.True(retry.Success, retry.Error);
@@ -153,9 +159,12 @@ public sealed partial class WorktreeCommandTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void TrackingRollbackPreservesPreexistingAndConcurrentConfiguration(bool concurrent)
+    [InlineData("tracking-timeout")]
+    [InlineData("concurrent-config")]
+    [InlineData("concurrent-unset-remote")]
+    [InlineData("concurrent-unset-merge")]
+    [InlineData("concurrent-unset-rebase")]
+    public void TrackingRollbackPreservesPreexistingAndConcurrentConfiguration(string failure)
     {
         using var repository = new TemporaryDirectory();
         InitializeUpstreamRepository(repository.Path, "true", "origin/dev", "always", "none");
@@ -165,18 +174,29 @@ public sealed partial class WorktreeCommandTests
         WorktreeHookFixture.RunGit(repository.Path, "config", $"branch.{UpstreamBranch}.description", "keep");
         var before = ReadUpstreamConfiguration(repository.Path);
         var target = Path.Combine(repository.Path, "upstream-target");
-        var runner = new UpstreamFailureRunner(target, concurrent ? "concurrent-config" : "tracking-timeout");
+        var runner = new UpstreamFailureRunner(target, failure);
+        var deletedKey = failure.StartsWith("concurrent-unset-", StringComparison.Ordinal)
+            ? $"branch.{UpstreamBranch}.{failure["concurrent-unset-".Length..]}" : null;
+        if (deletedKey is not null)
+            WorktreeHookFixture.Install(repository.Path, "post-checkout", $$"""
+                git config --unset-all '{{deletedKey}}'
+                echo 'simulated upstream configuration deletion' >&2
+                exit 1
+                """ + "\n");
 
         var failed = WorktreeCommand.Run(repository.Path, UpstreamArguments(target, "origin/dev"), runner);
 
         Assert.False(failed.Success);
         using var receipt = JsonDocument.Parse(failed.Error["WORKTREE_FAILED ".Length..]);
         Assert.Contains("simulated upstream", receipt.RootElement.GetProperty("reason").GetString(), StringComparison.Ordinal);
-        if (concurrent)
+        if (failure.StartsWith("concurrent-", StringComparison.Ordinal))
         {
             Assert.Contains("tracking changed", receipt.RootElement.GetProperty("cleanup_error").GetString(), StringComparison.Ordinal);
-            Assert.Equal("refs/heads/concurrent\n", WorktreeHookFixture.RunGit(repository.Path,
-                "config", "--get", $"branch.{UpstreamBranch}.merge"));
+            if (deletedKey is not null)
+                Assert.Equal(1, GitExit(repository.Path, "config", "--get", deletedKey));
+            else
+                Assert.Equal("refs/heads/concurrent\n", WorktreeHookFixture.RunGit(repository.Path,
+                    "config", "--get", $"branch.{UpstreamBranch}.merge"));
         }
         else
         {
@@ -249,9 +269,16 @@ public sealed partial class WorktreeCommandTests
 
         public ProcessOutput Run(string fileName, IReadOnlyList<string> arguments, string workingDirectory, TimeSpan timeout)
         {
-            var tracking = fileName == "git" && arguments.FirstOrDefault() == "branch"
+            var tracking = fileName == "git" && arguments.Contains("branch", StringComparer.Ordinal)
                 && arguments.Any(argument => argument.StartsWith("--set-upstream-to=", StringComparison.Ordinal));
             var add = fileName == "git" && arguments.Take(2).SequenceEqual(["worktree", "add"]);
+            if (!failed && failure == "policy-changed" && fileName == "git" && arguments.FirstOrDefault() == "update-ref"
+                && arguments.Contains("--create-reflog", StringComparer.Ordinal))
+                WorktreeHookFixture.Install(workingDirectory, "reference-transaction", """
+                    if [ "$1" = prepared ]; then
+                        git config branch.autoSetupRebase always
+                    fi
+                    """ + "\n");
             if (!failed && failure == "foreign-branch" && fileName == "git" && arguments.FirstOrDefault() == "update-ref"
                 && arguments.Contains("--create-reflog", StringComparer.Ordinal))
             {
@@ -261,7 +288,7 @@ public sealed partial class WorktreeCommandTests
                 WorktreeHookFixture.RunGit(workingDirectory, "config", $"branch.{UpstreamBranch}.remote", "foreign");
                 WorktreeHookFixture.RunGit(workingDirectory, "config", $"branch.{UpstreamBranch}.merge", "refs/heads/foreign");
             }
-            if (!failed && add && failure == "add-rejected")
+            if (!failed && add && failure is "add-rejected" or "policy-changed")
             {
                 failed = true;
                 var hook = WorktreeHookFixture.Install(workingDirectory, "reference-transaction", """
