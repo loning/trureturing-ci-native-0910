@@ -1,0 +1,34 @@
+{
+  "status": "LITERAL_LEAN_SECTOR_DATA_REPLAYED_EXACTLY",
+  "source_sha256": "3618ffc6662f9ae2229a44e7a13ba158dfb76a55b4bb20065b894f814a3f2d2e",
+  "source_git_blob": "3c4e9894b625e13e2c15b1918670d247adc2fb29",
+  "audit_git_blob": "bfa5dbf66665200eda7958ee2a60f956bcb4f529",
+  "nodes": 237,
+  "expression_dag_nodes": 285,
+  "excluded": 119,
+  "split": 118,
+  "actual_matrix_rational_checks": 720,
+  "negative_controls_rejected": [
+    "missing_final_branch",
+    "cyclic_child",
+    "both_halves_use_left_child",
+    "changed_outcome_same_expression",
+    "wrong_annotation_box",
+    "incomplete_root_domain",
+    "forged_exclusion_bound"
+  ],
+  "symbolic_rational_function_identity_check": {
+    "outcomes": [0, 1, 2, 3, 4, 5],
+    "variables": ["s", "t0", "t1", "t2", "t3", "t4"],
+    "all_six_differences_zero": true,
+    "method": "SymPy exact rational-function cancellation; external diagnostic, not Lean proof"
+  },
+  "phase_radius": "1/5",
+  "residual_tolerance": "1/64",
+  "sign_chart": 0,
+  "complete_32_chart_coverage": false,
+  "lean_elaboration_executed": false,
+  "universal_soundness_machine_checked": false,
+  "floating_point_in_acceptance": false,
+  "audit_scope": "Literal expression DAG, paths and codes with documented fixed domain and decoding; not a parser or proof checker for arbitrary Lean programs."
+}
