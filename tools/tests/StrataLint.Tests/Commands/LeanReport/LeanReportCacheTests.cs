@@ -557,23 +557,16 @@ public sealed partial class LeanReportCacheTests
                 MakeExecutable(executable.Path);
             }
 
-            var result = TestProcessRunner.Run(
+            var run = RunWithFailureDiagnostics(
                 "env",
                 arguments,
                 Repo,
-                TestBudgets.WorkflowProcessHangGuard,
-                int.MaxValue);
-            _lastPairResult = result;
-            _lastPairFailureDiagnostic = result.ExitCode == 0
-                ? null
-                : BuildProcessFailureDiagnostic(
-                    "env",
-                    arguments,
-                    Repo,
-                    result,
-                    executableFixtures,
-                    searchPath);
-            return result;
+                executableFixtures,
+                searchPath,
+                _tmp.Path);
+            _lastPairResult = run.Result;
+            _lastPairFailureDiagnostic = run.Diagnostic;
+            return run.Result;
         }
 
         internal void AddLegacyLogsToCacheEntry(string address)
