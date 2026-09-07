@@ -326,31 +326,4 @@ public sealed partial class CoverAtomTests
         var after = DirectoryLedgerTestSupport.Image(afterDocument);
         return new CoverExecution(result, after, before, afterDocument);
     }
-
-    private static string ExpectedAlignedScribeImage(
-        CoverInputs inputs,
-        ScribeEmissionRecord verifiedRecord)
-    {
-        var sources = inputs.Document.RequireDigestionSources()
-            .Select(source => source with
-            {
-                Entries = source.Entries.Select(entry => entry with
-                {
-                    Receipts = entry.Receipts with
-                    {
-                        Scribe = entry.Receipts.Scribe.Select(receipt =>
-                            entry.AtomId == CoverWorld.DefaultAtomId
-                                && receipt.Gid == inputs.Gid
-                                ? receipt with
-                                {
-                                    DefinitionSha256 = verifiedRecord.DefinitionSha256,
-                                    EmissionSha256 = verifiedRecord.EmissionSha256,
-                                }
-                                : receipt).ToImmutableArray(),
-                    },
-                }).ToImmutableArray(),
-            })
-            .ToImmutableArray();
-        return DirectoryLedgerTestSupport.Image(inputs.Document.WithDigestionSources(sources));
-    }
 }
