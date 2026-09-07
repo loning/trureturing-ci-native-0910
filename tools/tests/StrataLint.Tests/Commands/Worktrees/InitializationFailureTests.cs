@@ -53,6 +53,7 @@ public sealed partial class WorktreeCommandTests
     [Theory]
     [InlineData("branch-foreign-nonzero")]
     [InlineData("branch-foreign-timeout")]
+    [InlineData("branch-recreated")]
     public void FailedBranchCreateIfAbsentPreservesIndependentBranchAtSameOid(string failure)
     {
         using var repository = new TemporaryDirectory();
@@ -81,6 +82,8 @@ public sealed partial class WorktreeCommandTests
     [InlineData("branch-changed", "initialization branch changed")]
     [InlineData("cleanup-branch-changed", "initialization branch changed")]
     [InlineData("cleanup-branch-race", "cannot lock ref")]
+    [InlineData("cleanup-branch-recreated", "initialization branch ownership changed")]
+    [InlineData("cleanup-branch-symbolic", "initialization branch changed")]
     public void BranchRollbackPreservesConcurrentRefUpdates(string failure, string cleanupError)
     {
         using var repository = new TemporaryDirectory();
@@ -347,6 +350,9 @@ public sealed partial class WorktreeCommandTests
             var add = fileName == "git" && arguments.Take(2).SequenceEqual(["worktree", "add"]);
             var checkout = fileName == "git" && arguments.FirstOrDefault() is "checkout" or "reset";
             var foreignTarget = failure.StartsWith("foreign-elsewhere", StringComparison.Ordinal) ? foreignPath! : target;
+            if (fileName == "git" && arguments.FirstOrDefault() == "for-each-ref"
+                && failure is "cleanup-branch-recreated" or "cleanup-branch-symbolic")
+                ReplaceBranch(workingDirectory, branchRef, failure == "cleanup-branch-symbolic");
             if (add)
             {
                 var token = arguments[arguments.ToList().IndexOf("--reason") + 1];
@@ -515,6 +521,7 @@ public sealed partial class WorktreeCommandTests
                 Assert.False(Directory.Exists(target));
                 Assert.False(Directory.Exists(WorktreeMetadataPath(workingDirectory, target)));
                 if (failure == "branch-changed") MoveBranch(workingDirectory, branchRef);
+                if (failure == "branch-recreated") ReplaceBranch(workingDirectory, branchRef, false);
                 return FailInitialization(failure);
             }
             if (add && result.ExitCode == 0 && failure == "cleanup-branch-changed") MoveBranch(workingDirectory, branchRef);
@@ -525,6 +532,20 @@ public sealed partial class WorktreeCommandTests
                 && (failure.StartsWith("add-", StringComparison.Ordinal) || failure.StartsWith("cleanup-", StringComparison.Ordinal)))
                 return FailInitialization(failure);
             return result;
+        }
+
+        private void ReplaceBranch(string repository, string branchRef, bool symbolic)
+        {
+            ChangedBranchOid = WorktreeHookFixture.RunGit(repository, "rev-parse", "HEAD").Trim();
+            WorktreeHookFixture.RunGit(repository, "update-ref", "--no-deref", "-d", branchRef, ChangedBranchOid);
+            if (symbolic)
+            {
+                var targetRef = WorktreeHookFixture.RunGit(repository, "symbolic-ref", "HEAD").Trim();
+                WorktreeHookFixture.RunGit(repository, "symbolic-ref", branchRef, targetRef);
+            }
+            else
+                WorktreeHookFixture.RunGit(repository, "update-ref", "--create-reflog", "-m", ForeignLock,
+                    branchRef, ChangedBranchOid, new string('0', ChangedBranchOid.Length));
         }
 
         private void MoveBranch(string repository, string branchRef)
