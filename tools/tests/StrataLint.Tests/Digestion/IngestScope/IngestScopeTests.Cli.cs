@@ -146,7 +146,7 @@ public sealed partial class IngestScopeTests
     }
 
     [Fact]
-    public void IngestScope_UnselectedNonCanonicalEntryKeepsOriginalBytes()
+    public void IngestScope_UnselectedEntryWithNonCanonicalLayoutKeepsOriginalBytes()
     {
         var document = Ledger();
         var alpha = document.RequireDigestionSources()[0];
@@ -166,17 +166,12 @@ public sealed partial class IngestScopeTests
         foreach (var files in new[] { fixture.Files, fixture.Baseline })
         {
             var text = files[AtomPath(entry)];
-            foreach (var indent in new[] { "  ", "    " })
-            {
-                var suffix = indent.Length == 2
-                    ? $"\n{indent}  target_statement_id: {hashes}\n"
-                    : $"\n{indent}  definition_sha256: {hashes}\n{indent}  emission_sha256: {hashes}\n";
-                var first = $"{indent}- gid: D5/S0/Carrier/Alpha.a{suffix}";
-                var second = $"{indent}- gid: D5/S0/Carrier/Zeta.z{suffix}";
-                Assert.Contains(first + second, text, StringComparison.Ordinal);
-                text = text.Replace(first + second, second + first, StringComparison.Ordinal);
-                Assert.True(text.IndexOf(second, StringComparison.Ordinal) < text.IndexOf(first, StringComparison.Ordinal));
-            }
+            var suffix = $"\n      definition_sha256: {hashes}\n      emission_sha256: {hashes}\n";
+            var first = $"    - gid: D5/S0/Carrier/Alpha.a{suffix}";
+            var second = $"    - gid: D5/S0/Carrier/Zeta.z{suffix}";
+            Assert.Contains(first + second, text, StringComparison.Ordinal);
+            text = text.Replace(first + second, second + first, StringComparison.Ordinal);
+            Assert.True(text.IndexOf(second, StringComparison.Ordinal) < text.IndexOf(first, StringComparison.Ordinal));
             files[AtomPath(entry)] = "# preserve entry layout\r\n\r\n"
                 + text.Replace("\n", "\r\n", StringComparison.Ordinal);
         }
@@ -202,5 +197,37 @@ public sealed partial class IngestScopeTests
                 Image(beforePreserved, SourcePrefix("alpha")),
                 Image(preservedRaw, SourcePrefix("alpha")));
         }
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("alpha")]
+    [InlineData("beta")]
+    public void IngestScope_UnsortedCoverageFailsClosedWithoutWrites(string? sourceId)
+    {
+        var document = Ledger();
+        var alpha = document.RequireDigestionSources()[0];
+        var entry = alpha.Entries[0] with
+        {
+            Coverage = [new("D5/S0/Carrier/Alpha.a", null), new("D5/S0/Carrier/Zeta.z", null)],
+        };
+        document = document.WithDigestionSources(
+            [alpha with { Entries = [entry] }, document.RequireDigestionSources()[1]]);
+        var fixture = Fixture(document);
+        var path = AtomPath(entry);
+        const string first = "  - gid: D5/S0/Carrier/Alpha.a\n    target_statement_id: null\n";
+        const string second = "  - gid: D5/S0/Carrier/Zeta.z\n    target_statement_id: null\n";
+        Assert.Contains(first + second, fixture.Files[path], StringComparison.Ordinal);
+        fixture.Files[path] = fixture.Files[path].Replace(first + second, second + first, StringComparison.Ordinal);
+        using var temporary = new TemporaryDirectory();
+        WriteFixture(temporary, fixture);
+        var before = DirectoryLedgerTestSupport.RepositoryImage(temporary);
+
+        var result = Environment(fixture, temporary).Ingest(
+            sourceId is null ? Arguments() : Arguments(sourceId));
+
+        Assert.False(result.Success);
+        Assert.Contains("BACKFILL_COVERAGE_ORDER", result.Error, StringComparison.Ordinal);
+        Assert.Equal(before, DirectoryLedgerTestSupport.RepositoryImage(temporary));
     }
 }
