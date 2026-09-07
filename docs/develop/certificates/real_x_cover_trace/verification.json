@@ -1,0 +1,126 @@
+{
+  "status": "ALL_32_TRACES_EXPORTED_AND_REPLAYED",
+  "parameters": {
+    "epsilon": "1/64",
+    "outer_tube_radius": "1/16",
+    "dyadic_bits": 40
+  },
+  "charts": 32,
+  "nodes": 4900318,
+  "trace_bytes": 323067709,
+  "pending": 0,
+  "unresolved": 0,
+  "lean_kernel_verified": false,
+  "independence": "Replayer does not call the search or its proposal heuristic. Numeric enclosure evaluator and arithmetic are shared with the pinned reference. This is not independent-author or kernel verification.",
+  "source_sha256": {
+    "check_real_x_cover_trace.cpp": "b65155dafddafaa42385dd4eea4961c5b62e765113adab721495eeacf8b02742",
+    "check_real_x_balanced_sublevel.cpp": "e77d0222c4986c8fe6e54358bdfd0f4f22e65f53eca1eff5fa3a7023f01d35a9",
+    "check_real_x_global_cover.cpp": "dc71bf13400feffc555040172682ad40d6ab378f2466b80da19237ea1f01b531",
+    "centers.txt": "86543588ac1be4032fc4a16231bb0cbae77b0d5078a114b8397050bc24fb7155",
+    "D5/S3/Quantum/Tomography/CayleyHadamardDifferential.lean": "841ea01fcf55241b9c26aa0e2ffeaa79c5ec66969916374cd98df0049a214cb0",
+    "D5/S0/Certificates/FiniteSublevelCover.lean": "876f7cee470e5efc9551f4f07362ff45e029ce5faa70cb491b82d8c3a9154922",
+    "Blueprint/D5/S3/Quantum/Tomography/CayleyHadamardDifferential.scribe.cs": "5c5eceb0ea7c7ae0a61dd1d8ae314adb3186cbbb34f213967c0087497c23bb12",
+    "Blueprint/D5/S0/Certificates/FiniteSublevelCover.scribe.cs": "0159671ad003bd07e4b66a46e45c043a73ab290dd19c28a72984de861c47ef0f",
+    "scripts/research/test_real_x_cover_trace.py": "fe6df7df46fd88a39702f6f71160083900c982d7fa9e27212004def41a6a11a6",
+    "scripts/research/check_real_x_cover_trace.cpp": "b65155dafddafaa42385dd4eea4961c5b62e765113adab721495eeacf8b02742"
+  },
+  "source_parent": "0e24cf84f2cf77106057502ae668ee97da496d13",
+  "parameter_scope": "Same seed and global six-residual sublevel as the prior balanced certificate; no new Hadamard region is excluded.",
+  "local_refinement_trace_included": false,
+  "kernel_obligations": [
+    "Lean elaboration and transitive axiom checking",
+    "Universal interval-expression and rounding soundness",
+    "Actual trace decoding into locally proved LocalStep constructors",
+    "Reciprocal-chart tube inclusion and actual seed Gram identification",
+    "Label-five residual refinement and complete projector-to-graph assembly"
+  ],
+  "diagnostics": {
+    "status": "DIAGNOSTICS_PASSED",
+    "derivative": {
+      "cases": 128,
+      "residual_enclosures": 640,
+      "Jacobian_enclosures": 3200,
+      "quotient_identity_cases": 300,
+      "half_derivative_detected_cases": 3197,
+      "exact_arithmetic": "fractions.Fraction",
+      "scope": "Finite point regressions; not universal interval soundness or Lean elaboration."
+    },
+    "rejected_traces": [
+      {
+        "mutation": "missing_end",
+        "exit": 1,
+        "diagnostic": "TRACE REJECTED: extra instructions after proof closure"
+      },
+      {
+        "mutation": "missing_branch",
+        "exit": 1,
+        "diagnostic": "TRACE REJECTED: missing proof branch"
+      },
+      {
+        "mutation": "extra_instruction",
+        "exit": 1,
+        "diagnostic": "TRACE REJECTED: extra instructions after proof closure"
+      },
+      {
+        "mutation": "wrong_residual_band",
+        "exit": 1,
+        "diagnostic": "TRACE REJECTED: trace parameters disagree with requested theorem"
+      },
+      {
+        "mutation": "boundary_cut",
+        "exit": 1,
+        "diagnostic": "TRACE REJECTED: split is not interior"
+      },
+      {
+        "mutation": "false_guard",
+        "exit": 1,
+        "diagnostic": "TRACE REJECTED: tube inclusion is false"
+      },
+      {
+        "mutation": "false_empty_image",
+        "exit": 1,
+        "diagnostic": "TRACE REJECTED: empty-contraction claim is false"
+      },
+      {
+        "mutation": "false_residual_exclusion",
+        "exit": 1,
+        "diagnostic": "TRACE REJECTED: residual exclusion is false"
+      }
+    ],
+    "lean_kernel_verified": false
+  },
+  "per_chart": [
+    {"chart": 0, "nodes": 228880, "trace_sha256": "2c1aba1beace462f3cc37881ab774a6662ada4c9776c7048ec0887b46b372748"},
+    {"chart": 1, "nodes": 97009, "trace_sha256": "3873af9eb900a5eec625c056d17b3d6958116d8d275e47d00b6993c909127491"},
+    {"chart": 2, "nodes": 97732, "trace_sha256": "3e0bc529c77345cc934f9c691b1d369b24b6dc8e4bcbfe3e23e5bd5d358234b6"},
+    {"chart": 3, "nodes": 102802, "trace_sha256": "a5083c019206af5ca70ad1c88d1eba3d4e78ab481c9e1bb3a09e2cfaa0940901"},
+    {"chart": 4, "nodes": 155503, "trace_sha256": "8236ea8565dfd800cdb5a3dee1b9c4e55f538822d012b1926c441c93a6fe1ed6"},
+    {"chart": 5, "nodes": 139833, "trace_sha256": "aa2f1ab65b4a978ab987579df2f1853919e510117c74ab1d5593c81f43db46f4"},
+    {"chart": 6, "nodes": 136078, "trace_sha256": "7c4083e669cc5af3b44a5a265272eaedc099918b11a64c035ea420bf1cb600e5"},
+    {"chart": 7, "nodes": 245974, "trace_sha256": "2f668b3e9689167fe1e9fdfbadb708f6783f0c308b705a162e71580169fab5cd"},
+    {"chart": 8, "nodes": 110929, "trace_sha256": "67472b46bd5ca1de43e163ba8d69872603c3093f4c05fcd7677d4b55473791f2"},
+    {"chart": 9, "nodes": 84930, "trace_sha256": "fc782cfe298b1ef0674a9b8a1826d1b74684d3f0bae7e2fef9b562c9703638d6"},
+    {"chart": 10, "nodes": 141208, "trace_sha256": "c62f98393a12f06b104e76601a006a83f83ee94f7b4eb0fd53b685deca853f97"},
+    {"chart": 11, "nodes": 332975, "trace_sha256": "532f66925876997220fc569aa17103d920572d83fe9137ee7bb33cf38b041cf2"},
+    {"chart": 12, "nodes": 98804, "trace_sha256": "523c35387ea0475632a9d18c3a1244ab6b16c731db4536c1796c98a2963da6a5"},
+    {"chart": 13, "nodes": 140543, "trace_sha256": "6583bf133b8ca67bd8ef2eb0d1cd709f56b01344c5226c5c15d2dae620a101dd"},
+    {"chart": 14, "nodes": 69214, "trace_sha256": "01f399a9b3ba17ce1a7b6fd742dfd4806e89f7200badf6d5414d1c03159f2be8"},
+    {"chart": 15, "nodes": 222017, "trace_sha256": "bc11deeff68ab134dd25f3514322b5b91118686fead47fe080369046e507101e"},
+    {"chart": 16, "nodes": 114514, "trace_sha256": "41f97c6395484396aee9c6fdb7e725821ac69b4ab344287399e5a036267304b3"},
+    {"chart": 17, "nodes": 137828, "trace_sha256": "e41c535b14c351a04f1670d7ed88ce0e481956919fdb91ba43b78783458aa285"},
+    {"chart": 18, "nodes": 89462, "trace_sha256": "3bf9e76eb47835ccca6b99660e6b063c0bc50c8992b16ae0ef8f52ae70ad7cc9"},
+    {"chart": 19, "nodes": 330769, "trace_sha256": "ec8f784bfaac109420ee34241a466c296d3be8c08012f0aac8195e0633bd7191"},
+    {"chart": 20, "nodes": 107455, "trace_sha256": "fd9a08e331f7ffd59a4078b827191d8350b390f1f6bd0e76b9db3b73eb1c126c"},
+    {"chart": 21, "nodes": 71703, "trace_sha256": "c7556ebd0c4be1c4e6983ef893a7f0e65d9a811378b36acbac7a4c509f6c5e67"},
+    {"chart": 22, "nodes": 144415, "trace_sha256": "4fdcda7b53979b13abccbe447ee0c52d69d68daabe1c81f8c02bbf87dbd50821"},
+    {"chart": 23, "nodes": 230353, "trace_sha256": "597a7994fe9f7d19b3957586bd0d3742a0faef472eea49a4730f149820fbee82"},
+    {"chart": 24, "nodes": 135753, "trace_sha256": "9122aba4d028ad936c0db76ba03fba165d8f44e150ef5372b8c5ec8554813adc"},
+    {"chart": 25, "nodes": 154170, "trace_sha256": "a207d7700e0fbaeb5cd464a6857f99b60a4c8ad7ddc53938285ed6ce374f0b53"},
+    {"chart": 26, "nodes": 150104, "trace_sha256": "c2b284efa2c65c7d475054a3dc424dd0aedfc730adda3bfa3c88096525998181"},
+    {"chart": 27, "nodes": 268633, "trace_sha256": "df2772e7c34e788077c9db98ab31ad0cb07cac93917a7a2ba835a37cebefc8b5"},
+    {"chart": 28, "nodes": 246794, "trace_sha256": "f737a5ad19e2cf25edb858e088ccd342ec6ca891a4e5c6c6b46b28f8b796a2fb"},
+    {"chart": 29, "nodes": 114995, "trace_sha256": "3e09c604d16f9c278184c164484036b21a77d40119a4c8a0637cc595ab7af8bd"},
+    {"chart": 30, "nodes": 112384, "trace_sha256": "d712e2ff7aefc5dfd4d58cc359bb41c3203b1622ec22b0dbee287ef39b2fe222"},
+    {"chart": 31, "nodes": 86555, "trace_sha256": "c76aff688c771fda6a29c7a63c84c6bc7f28e6245d92b2a1905f4aa45bdb8013"}
+  ]
+}
