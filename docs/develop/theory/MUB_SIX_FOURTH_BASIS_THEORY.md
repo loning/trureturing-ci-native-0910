@@ -2000,3 +2000,89 @@ U_\triangle(T)=\{v\in U(T):\exists w,z\in U(T),\ (v,w,z)\text{ pairwise orthogon
 若它对所有实际共同无偏正交三元组成立，则将任意六元 completion 分成两组三元组，得到总 collision 至少四，亦即 `alpha_S(C)>=1`。随后第 31 节排除两个 MUB completions 的预算等号。此三元组 inequality 当前仅是明确的下一项证书目标，不是本轮已经证明的下界。
 
 主线继续避免逐行下界和已被反例否定的全局到逐模蕴含。真正下一步是：精确全局 root cover、triangle-bearing locus 的排除证书，或实际三元组/完整基的 projector-affinity certificate。
+
+## 37. 2026-09-07：实际残差导数与完整覆盖推导记录
+
+本节推进局部排除的认证链，不扩大已排除的 Hadamard 参数区域。此前的 `real_x_balanced_sublevel` 证书覆盖同一精确种子的全部六残差子水平集 `|r_a|<=1/64`，外管半径为 `1/16`。其 4,900,318 个节点统计只是执行诊断，不能单独充当 Lean 的穷尽证明。
+
+### 37.1 从实际 signed-Cayley 表达式推导方向导数
+
+写 `x_i(q)=m_i+q v_i`，并沿用既有紧坐标图的实虚部：
+
+```math
+u_i(q)=s_i\frac{1-x_i(q)^2+2i x_i(q)}{1+x_i(q)^2}.
+```
+
+分母在整个实轴严格为正。实际导数为：
+
+```math
+\dot u_i(q)=
+\frac{-4s_i x_i(q)v_i+2i s_i(1-x_i(q)^2)v_i}
+     {(1+x_i(q)^2)^2}.
+```
+
+对实际矩阵 `H` 令 `y=H^dagger u`、`dot y=H^dagger dot u`，则：
+
+```math
+\frac{d}{dq}(|y_a(q)|^2-6)
+=2\left(\Re y_a\Re\dot y_a+\Im y_a\Im\dot y_a\right).
+```
+
+新真源 `CayleyHadamardDifferential.lean` 的公共定理 `signed_cayley_hadamard_residual_hasDerivAt` 从 Mathlib 的商、乘积、有限和求导规则证明这个实际标量路径导数。没有提供 Jacobian 正确性的假设。取 `s_0=1,m_0=v_0=0` 得到验证器的五变量去相位情形。这里证明的是所有指定方向上的路径导数，尚未单独构造一个完整 Frechet-Jacobian 数据接口。
+
+第二个公共定理 `signed_cayley_balanced_sublevel_row_enclosure` 把实际导数接入原有六残差守恒对偶和 scalar mean-value inequality。令 `f_a(q)=|y_a(q)|^2-6`、`g(q)=m_k+qv_k-sum_a c_a f_a(q)`。若在整个闭区间上 `|g'(q)|<=R`，且端点残差在 `lo,hi` 中，则：
+
+```math
+m_k-c\cdot f(0)-R+L\le m_k+v_k
+\le m_k-c\cdot f(0)+R+U,
+```
+
+其中 `L,U` 正是 `hadamard_residual_box_dual` 的平移系数端点界。`HH^dagger=6I` 和 `s_i^2=1` 是实际矩阵与相位条件。数值区间对上述实际导数的包含性仍须证明，不能由有限测试代替。
+
+### 37.2 有限的是证明节点，连续候选空间保持不变
+
+检索并读取 `FiniteExhaustion` 与 `FiniteBranchAtlas` 后，确认其有限性前提作用在 Candidate。不能把共同无偏向量空间换成观测到的六十个标签来调用它们。
+
+新的 `D5/S0/Certificates/FiniteSublevelCover.lean` 只把证明节点编号限制为 `Fin n`。实际候选类型 `X` 可以是连续相位空间。`LocalStep` 的每个构造都要求对应的 Lean 证明：目标集合包含、残差区间排除、守恒区间排除、完整二分，或保留全部小残差点的收缩。子节点编号必须严格小于父节点，避免循环论证。
+
+主定理 `sublevel_mem_target_of_local_steps` 通过自然数强归纳推出：
+
+```math
+x\in B_{root},\quad\forall a\ |f_a(x)|\le\varepsilon
+\quad\Longrightarrow\quad x\in T.
+```
+
+它不假设全局覆盖，不要求根唯一或存在，也不要求 `X` 有限。分裂必须覆盖整个父集合，包括公共边界。收缩必须保留整个闭子水平集，不能只保留精确零点。
+
+这是局部证明的逻辑组合定理，不是区间求值器、文件解析器，也不是具体轨迹已经满足 `LocalStep` 的证明。具体实例仍需要构造每个节点的证明项。
+
+### 37.3 全部 32 图的推导轨迹已经导出并逐条重放
+
+新增 `scripts/research/check_real_x_cover_trace.cpp`，直接包含现有 balanced-sublevel owner，复用其种子、40 位向外取整区间、残差求值、Cayley 图转换与守恒对偶。导出时每个新计算的收缩像都与未修改的 `balanced_krawczyk` 逐端点比较。
+
+推导文件记录六种操作：直接入管 `G`、残差排除 `R`、收缩后空交 `E`、收缩后入管 `K`、继续收缩 `C`、闭二分 `S`。预条件矩阵以 25 个精确 dyadic 整数记录，作为不可信建议。重放不调用搜索或浮点逆矩阵建议，重新计算每一步的区间界，且要求所有分支终结后才接受 `END`。
+
+本轮实际执行全部 32 图的导出与重放，共 4,900,318 个节点，零待处理、零未决；原始轨迹共 323,067,709 字节。完整轨迹已生成并随本轮交付包提供，仓库保留生成器、检查器、逐图摘要与哈希，可重新生成。哈希只用于字节识别。
+
+八类损坏轨迹均被拒绝：缺结束标记、截断分支、额外指令、错误残差阈值、边界处非法二分、错误入管、错误空交、错误残差排除。另一个 `Fraction` dual-number 实现检查了 640 个残差值和 3,200 个 Jacobian 条目的点包含，以及 300 个商求导恒等式实例。这些是有限开发诊断；C++ 重放仍共享原区间算术与求值器，不是独立作者审稿或内核证明。
+
+本轮轨迹只覆盖外管。标签 5 的 945 节点残差保持细化尚未导出成同一轨迹格式，有限图实例仍需该细化。没有把旧报告重新命名成新的认证结果。
+
+### 37.4 内核闭合边界
+
+本轮 Lean 证明源码已配套 Scribe，但执行环境没有 Lean/lake。直接下载失败，已尝试的官方 Linux 构建 artifact 又超过连接器大小上限，所以未执行 elaboration、kernel checking 或传递公理审计。源码中的 `#print axioms` 不是已经运行的审计记录。
+
+当前还需要同时闭合：
+
+1. 有理区间四则运算、向外取整及实际残差与导数的普遍包含性。
+2. 轨迹解码、坐标互换与每条具体指令到 `LocalStep` 证明的转换。
+3. 与 C++ 实际使用的 `Fin 6` 种子逐项一致的 Gram/常数证明，以及标签 5 细化记录。
+4. 通过既有 `FlatProjectorDephasing`、紧 Cayley 覆盖和 `RealXFinitePartnerCertificate`，将实际投影与全部局部证据组合成最终实例。
+
+所以本轮没有得到“整个 PR 已经内核接受”，也没有扩大局部排除区域。它补出了实际导数的证明源码，并把此前只留下统计数的搜索变成完整可逐节点审计的证明数据。有限局部规则的归纳，不应被宣传为具体 490 万条数值指令已经通过 Lean。
+
+### 37.5 接下来只接受真实实例的消元
+
+下一项应以一条真实 `R` 或 `E` 叶为最小内核实例，完整证明其精确常数、区间计算与排除结论，然后按同一经证明的解释器覆盖全部记录。只增加一个接受“每叶正确”假设的封装不会消除剩余义务。
+
+经典商求导、均值不等式和有限强归纳不主张数学首创。研究价值来自它们在具体 MUB 局部排除证书中的完整、可复核实例化。整个 strict-X 家族及六维四 MUB 全局问题仍未闭合。
