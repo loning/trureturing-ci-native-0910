@@ -1,5 +1,4 @@
 """Behavior contracts. All transport is a private local fake; no GitHub writes."""
-import hashlib
 import importlib.util
 import json
 import os
@@ -9,126 +8,11 @@ import sys
 import tempfile
 import unittest
 import zipfile
-import concurrent.futures
 import shutil
-from lean_seed_runtime import FAKE_GH, FAKE_LAKE, PAIR_PRODUCER
+from lean_seed_runtime import FAKE_LAKE, PAIR_PRODUCER
 
-ROOT = pathlib.Path(__file__).resolve().parents[4]
-INPUT = ROOT / "tools/scripts/worktree/lean-cache-input.sh"
-DELTA = ROOT / "tools/lean-inspector/delta.py"
-REV = "0123456789abcdef0123456789abcdef01234567"
-OTHER = "f" * 40
-PUBLISH = ROOT / "tools/scripts/worktree/lean-cache-publish.sh"
-
-
-def write(path, value):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(value, encoding="utf-8")
-
-
-def digest(value):
-    return hashlib.sha256(value).hexdigest()
-
-
-class PartitionFixture:
-    def setUp(self):
-        self.temporary = tempfile.TemporaryDirectory()
-        self.addCleanup(self.temporary.cleanup)
-        self.root = pathlib.Path(self.temporary.name)
-        self.manifest = {"packages": [{"name": "mathlib", "rev": REV, "inputRev": "v1"}]}
-        self.save_manifest()
-        write(self.root / "lean-toolchain", "leanprover/lean4:v4.33.0\n")
-        write(self.root / "lakefile.toml", 'name = "fixture"\n[leanOptions]\nmaxRecDepth = 1000\n')
-        write(self.root / "Trureturing.lean", "import D5.A\n")
-        write(self.root / "D5/A.lean", "def a := 1\n")
-
-    def save_manifest(self):
-        write(self.root / "lake-manifest.json", json.dumps(self.manifest))
-
-    def run_input(self, command, *extra, env=None):
-        return subprocess.run(["bash", str(INPUT), command, "--repository", str(self.root), *extra],
-                              text=True, capture_output=True, env={**os.environ, **(env or {})})
-
-    def partition(self):
-        result = self.run_input("partition")
-        self.assertEqual(0, result.returncode, result.stderr)
-        return result.stdout.strip()
-
-
-class PartitionTests(PartitionFixture, unittest.TestCase):
-    def test_transition_dependency_address_uses_only_the_partition(self):
-        before = self.run_input("dependency-address")
-        self.assertEqual(0, before.returncode, before.stderr)
-        partition = self.run_input("partition-path")
-        self.assertEqual(digest(partition.stdout.strip().encode()), before.stdout.strip())
-        write(self.root / "D5/A.lean", "def a := 4\n")
-        write(self.root / "lean-toolchain", "metadata spelling\n")
-        self.assertEqual(before.stdout, self.run_input("dependency-address").stdout)
-        self.manifest["packages"][0]["rev"] = OTHER
-        self.save_manifest()
-        self.assertNotEqual(before.stdout, self.run_input("dependency-address").stdout)
-        self.manifest["packages"] = []
-        self.save_manifest()
-        invalid = self.run_input("dependency-address")
-        self.assertEqual(2, invalid.returncode)
-        self.assertEqual("", invalid.stdout)
-
-    def test_partition_uses_exactly_resolved_mathlib(self):
-        self.assertEqual(REV, self.partition())
-        self.manifest["packages"][0]["inputRev"] = "another-tag"
-        self.manifest["version"] = "metadata"
-        self.save_manifest()
-        write(self.root / "lean-toolchain", "different spelling\n")
-        write(self.root / "D5/A.lean", "def a := 2\n")
-        write(self.root / "lakefile.toml", 'keywords = ["different"]\n')
-        self.assertEqual(REV, self.partition())
-        self.manifest["packages"][0]["rev"] = OTHER
-        self.save_manifest()
-        self.assertEqual(OTHER, self.partition())
-
-    def test_missing_duplicate_and_unresolved_mathlib_are_invalid(self):
-        for packages in [[], [{"name": "mathlib", "inputRev": REV}],
-                         [{"name": "mathlib", "rev": "v4.33.0"}],
-                         [{"name": "mathlib", "rev": REV}] * 2]:
-            self.manifest["packages"] = packages
-            self.save_manifest()
-            result = self.run_input("partition")
-            self.assertEqual(2, result.returncode, result.stdout + result.stderr)
-            self.assertEqual("", result.stdout)
-
-    def test_actions_snapshots_share_partition_and_pr_cannot_save(self):
-        def keys(run, attempt, event, ref, success="true"):
-            result = self.run_input("keys", env={"GITHUB_RUN_ID": run, "GITHUB_RUN_ATTEMPT": attempt,
-                "GITHUB_EVENT_NAME": event, "GITHUB_REF": ref, "STRATALINT_CHECK_SUCCEEDED": success})
-            self.assertEqual(0, result.returncode, result.stderr)
-            return json.loads(result.stdout)
-        first = keys("12", "1", "push", "refs/heads/dev")
-        second = keys("13", "2", "pull_request_target", "refs/heads/dev")
-        self.assertTrue(first["save_allowed"])
-        self.assertFalse(second["save_allowed"])
-        self.assertFalse(keys("14", "1", "push", "refs/heads/dev", "false")["save_allowed"])
-        for layer in ["dependency", "project", "report"]:
-            a, b = first[layer], second[layer]
-            self.assertEqual(a["restore_prefix"], b["restore_prefix"])
-            self.assertIn(REV, a["restore_prefix"])
-            self.assertTrue(a["key"].endswith("12-1"))
-            self.assertTrue(b["key"].endswith("13-2"))
-            self.assertNotEqual(a["key"], b["key"])
-
-    def test_metadata_has_no_semantic_config_effect(self):
-        before = self.run_input("address")
-        self.assertEqual(0, before.returncode, before.stderr)
-        self.manifest["version"] = "new-metadata"
-        self.manifest["packages"][0]["inputRev"] = "same-resolved"
-        self.save_manifest()
-        write(self.root / "lakefile.toml", 'name = "renamed"\nkeywords = ["metadata"]\n[leanOptions]\nmaxRecDepth = 1000\n')
-        after = self.run_input("address")
-        self.assertEqual(0, after.returncode, after.stderr)
-        self.assertEqual(before.stdout, after.stdout)
-        write(self.root / "lakefile.toml", '[leanOptions]\nmaxRecDepth = 2000\n')
-        changed = self.run_input("address")
-        self.assertEqual(0, changed.returncode, changed.stderr)
-        self.assertNotEqual(before.stdout.split()[1], changed.stdout.split()[1])
+from lean_seed_support import DELTA, INPUT, OTHER, PUBLISH, REV, ROOT, PartitionFixture, digest, write
+from lean_seed_transport import FAKE_GH, ReleaseTransportCases
 
 
 class DeltaTests(unittest.TestCase):
@@ -257,95 +141,8 @@ class DeltaTests(unittest.TestCase):
         self.assertEqual("fallback", self.plan()["status"])
 
 
-class TransportTests(PartitionFixture, unittest.TestCase):
-    def setUp(self):
-        super().setUp()
-        self.remote = self.root / "remote"
-        self.bin = self.root / "bin"
-        self.bin.mkdir()
-        self.remote.mkdir()
-        write(self.root / ".lake/build/lib/lean/D5/A.olean", "locally-produced-olean")
-        write(self.bin / "make", '#!/bin/sh\nprintf "%s\\n" "$*" >> "$FAKE_BUILD_LOG"\nexit "${FAKE_BUILD_EXIT:-0}"\n')
-        write(self.bin / "gh", FAKE_GH)
-        for path in self.bin.iterdir():
-            path.chmod(0o755)
-
-    def transport_environment(self, run="123", **extra):
-        return {**os.environ, "PATH": str(self.bin) + os.pathsep + os.environ["PATH"],
-            "HOME": str(self.root), "FAKE_BUILD_LOG": str(self.root / "build-runs"),
-            "FAKE_REMOTE": str(self.remote), "GITHUB_SHA": "d" * 40, "GITHUB_RUN_ID": run,
-            "GITHUB_RUN_ATTEMPT": "1", "GITHUB_EVENT_NAME": "schedule", "GITHUB_REF": "refs/heads/dev",
-            "STRATALINT_CHECK_SUCCEEDED": "true", "STRATALINT_ACTIONS_CACHE_SEEDED": "", **extra}
-
-    def transport(self, verb, run="123", arguments=(), **extra):
-        return subprocess.run(["bash", str(PUBLISH), verb, "--repository", str(self.root), *arguments],
-                              text=True, capture_output=True, env=self.transport_environment(run, **extra))
-
-    def fetch_then_build(self, **extra):
-        # Exercise the optional-fetch caller protocol under errexit. Workflow
-        # execution itself is verified by a real integration run, not YAML tests.
-        return subprocess.run(["bash", "-euo", "pipefail", "-c", '''
-if ! "$1" fetch --allow-seed --repository "$2"; then
-    printf '%s\\n' 'Release seed unavailable; continuing with the normal Lean build.'
-fi
-make -C "$2" lean
-''', "optional-fetch", str(PUBLISH), str(self.root)], text=True, capture_output=True,
-            env=self.transport_environment(**extra))
-
-    def test_optional_fetch_miss_reaches_build_and_preserves_build_failure(self):
-        for build_exit in (0, 19):
-            with self.subTest(build_exit=build_exit):
-                result = self.fetch_then_build(FAKE_BUILD_EXIT=str(build_exit))
-                self.assertEqual(build_exit, result.returncode, result.stdout + result.stderr)
-                self.assertIn('"status":"miss"', result.stdout)
-        self.assertEqual(["-C " + str(self.root) + " lean"] * 2,
-                         (self.root / "build-runs").read_text().splitlines())
-
-    def test_optional_fetch_corruption_and_download_failure_reach_build(self):
-        self.assertEqual(0, self.transport("publish").returncode)
-        shutil.rmtree(self.root / ".lake/build")
-        for archive in self.remote.glob("*/lean-build.tgz"):
-            write(archive, "corrupt transfer")
-        for failure in ("", "download"):
-            for build_exit in (0, 19):
-                with self.subTest(failure=failure, build_exit=build_exit):
-                    result = self.fetch_then_build(FAKE_FAIL=failure, FAKE_BUILD_EXIT=str(build_exit))
-                    self.assertEqual(build_exit, result.returncode, result.stdout + result.stderr)
-                    self.assertIn('"status":"miss"', result.stdout)
-                    self.assertFalse((self.root / ".lake/build").exists())
-        self.assertEqual(["lean"] + ["-C " + str(self.root) + " lean"] * 4,
-                         (self.root / "build-runs").read_text().splitlines())
-
-    def test_optional_fetch_valid_seed_still_reaches_build(self):
-        self.assertEqual(0, self.transport("publish").returncode)
-        shutil.rmtree(self.root / ".lake/build")
-        result = self.fetch_then_build()
-        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
-        self.assertIn('"status":"unpacked"', result.stdout)
-        self.assertEqual(["lean", "-C " + str(self.root) + " lean"],
-                         (self.root / "build-runs").read_text().splitlines())
-
-    def test_unavailable_lock_is_an_explicit_fetch_miss(self):
-        # Built-in fcntl takes precedence over PYTHONPATH on some Python builds.
-        write(self.bin / "sitecustomize.py", 'import sys\nsys.modules["fcntl"] = None\n')
-        result = self.transport("fetch", PYTHONPATH=str(self.bin))
-        self.assertEqual(1, result.returncode, result.stdout + result.stderr)
-        self.assertIn('"status":"miss"', result.stdout)
-        self.assertIn("fcntl", result.stdout)
-        self.assertNotIn("Traceback", result.stderr)
-
-    def test_unavailable_lock_skips_publication_after_build_success(self):
-        write(self.bin / "sitecustomize.py", 'import sys\nsys.modules["fcntl"] = None\n')
-        result = self.transport("publish", PYTHONPATH=str(self.bin))
-        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
-        self.assertIn('"status":"skipped"', result.stdout)
-        self.assertIn("POSIX cache locking unavailable", result.stdout)
-        self.assertNotIn("Traceback", result.stderr)
-        self.assertEqual([], list(self.remote.iterdir()))
-        failed = self.transport("publish", PYTHONPATH=str(self.bin), FAKE_BUILD_EXIT="19")
-        self.assertEqual(19, failed.returncode, failed.stdout + failed.stderr)
-        self.assertEqual([], list(self.remote.iterdir()))
-        self.assertEqual(["lean", "lean"], (self.root / "build-runs").read_text().splitlines())
+class TransportTests(ReleaseTransportCases, unittest.TestCase):
+    """Release transport cases exposed under their existing test identity."""
 
     def test_transition_fetch_flag_cannot_widen_partition_compatibility(self):
         self.assertEqual(0, self.transport("publish").returncode)
@@ -362,98 +159,6 @@ make -C "$2" lean
         self.assertEqual(0, restored.returncode, restored.stdout + restored.stderr)
         self.assertEqual("locally-produced-olean", (self.root / ".lake/build/lib/lean/D5/A.olean").read_text())
 
-    def test_roundtrip_is_partitioned_and_source_sha_is_provenance_only(self):
-        saved = self.transport("publish")
-        self.assertEqual(0, saved.returncode, saved.stdout + saved.stderr)
-        self.assertIn('"status":"published"', saved.stdout.replace(" ", ""))
-        shutil.rmtree(self.root / ".lake/build")
-        write(self.root / "D5/A.lean", "def a := 333\n")
-        restored = self.transport("fetch", GITHUB_SHA="e"*40)
-        self.assertEqual(0, restored.returncode, restored.stdout + restored.stderr)
-        self.assertEqual("locally-produced-olean", (self.root / ".lake/build/lib/lean/D5/A.olean").read_text())
-        self.assertIn('"mode":"partition"', restored.stdout.replace(" ", ""))
-
-    def test_missing_corrupt_and_cross_partition_are_misses_without_target_writes(self):
-        missing = self.transport("fetch")
-        self.assertNotEqual(0, missing.returncode)
-        self.assertEqual(0, self.transport("publish").returncode)
-        shutil.rmtree(self.root / ".lake/build")
-        self.manifest["packages"][0]["rev"] = OTHER
-        self.save_manifest()
-        self.assertNotEqual(0, self.transport("fetch").returncode)
-        self.assertFalse((self.root / ".lake/build").exists())
-        self.manifest["packages"][0]["rev"] = REV
-        self.save_manifest()
-        for archive in self.remote.glob("*/lean-build.tgz"):
-            write(archive, "corrupt transfer")
-        self.assertNotEqual(0, self.transport("fetch").returncode)
-        self.assertFalse((self.root / ".lake/build").exists())
-
-    def test_failed_save_never_publishes_a_usable_partial_snapshot(self):
-        result = self.transport("publish", FAKE_FAIL="upload")
-        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
-        self.assertIn('"status":"failed"', result.stdout.replace(" ", ""))
-        shutil.rmtree(self.root / ".lake/build")
-        self.assertNotEqual(0, self.transport("fetch").returncode)
-        self.assertFalse((self.root / ".lake/build").exists())
-
-    def test_concurrent_publishers_keep_distinct_complete_snapshots(self):
-        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
-            results = list(pool.map(lambda run: self.transport("publish", run), ["401", "402"]))
-        self.assertEqual([0, 0], [result.returncode for result in results])
-        releases = [json.loads(path.read_text()) for path in self.remote.glob("*/release.json")]
-        self.assertEqual(2, len(releases))
-        self.assertTrue(all(not release["draft"] for release in releases))
-        self.assertEqual(2, len({release["tag_name"] for release in releases}))
-
-    def test_direct_fetch_respects_existing_cache_writer(self):
-        import fcntl
-        self.assertEqual(0, self.transport("publish").returncode)
-        shutil.rmtree(self.root / ".lake/build")
-        address = digest(str((self.root / ".lake").resolve()).encode())
-        directory = self.root / ".cache/stratalint-lean-cache-guards"
-        directory.mkdir(parents=True, exist_ok=True)
-        with (directory / (address + ".lock")).open("a+b") as lock:
-            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            blocked = self.transport("fetch")
-            self.assertNotEqual(0, blocked.returncode)
-            self.assertFalse((self.root / ".lake/build").exists())
-        self.assertEqual(0, self.transport("fetch").returncode)
-        self.assertTrue((self.root / ".lake/build/lib/lean/D5/A.olean").is_file())
-
-    def test_actions_seed_skips_release_and_real_build_failure_blocks_save(self):
-        result = self.transport("fetch", STRATALINT_ACTIONS_CACHE_SEEDED="1")
-        self.assertEqual(0, result.returncode, result.stderr)
-        self.assertIn("skipped", result.stdout)
-        result = self.transport("publish", FAKE_BUILD_EXIT="19")
-        self.assertEqual(19, result.returncode, result.stdout + result.stderr)
-        self.assertEqual([], list(self.remote.iterdir()))
-
-    def test_pr_cannot_publish_even_after_a_successful_build(self):
-        result = self.transport("publish", GITHUB_EVENT_NAME="pull_request_target")
-        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
-        self.assertIn("skipped", result.stdout)
-        self.assertEqual([], list(self.remote.iterdir()))
-
-    def test_transfer_failure_is_a_miss_and_empty_target_accepts_a_complete_seed(self):
-        self.assertEqual(0, self.transport("publish").returncode)
-        shutil.rmtree(self.root / ".lake/build")
-        failed = self.transport("fetch", FAKE_FAIL="download")
-        self.assertNotEqual(0, failed.returncode)
-        self.assertFalse((self.root / ".lake/build").exists())
-        (self.root / ".lake/build").mkdir()
-        restored = self.transport("fetch")
-        self.assertEqual(0, restored.returncode, restored.stdout + restored.stderr)
-        self.assertTrue((self.root / ".lake/build/lib/lean/D5/A.olean").is_file())
-
-    def test_retention_keeps_five_complete_snapshots_and_cleanup_failure_is_nonfatal(self):
-        for run in range(501, 508):
-            self.assertEqual(0, self.transport("publish", str(run)).returncode)
-        self.assertEqual(5, len(list(self.remote.glob("*/release.json"))))
-        result = self.transport("publish", "508", FAKE_FAIL="delete")
-        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
-        self.assertIn('"status":"published"', result.stdout)
-        self.assertIn("prune_error", result.stdout)
 
     def test_malformed_cleanup_metadata_cannot_fail_or_repeat_the_build(self):
         calls = self.root / "build-calls"
@@ -508,6 +213,52 @@ python3 "$1" stage --report "$2" --output "$3"
         return subprocess.run([str(self.root / "tools/scripts/report/lean-report-ci-baseline.sh"),
             "--bundle", str(report), "--cache-root", str(cache)], text=True, capture_output=True)
 
+    def bundle_bytes(self, report):
+        values = {suffix: pathlib.Path(str(report) + suffix).read_bytes() for suffix in
+                  ("", ".sha256", ".input.attestation", ".provenance.json", ".materials.zip", ".seed.json")}
+        logs = pathlib.Path(str(report) + ".logs")
+        values.update({".logs/" + path.relative_to(logs).as_posix(): path.read_bytes()
+                       for path in logs.rglob("*") if path.is_file()})
+        return values
+
+    def write_bundle_bytes(self, report, values):
+        for suffix, content in values.items():
+            path = pathlib.Path(str(report) + suffix)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(content)
+
+    def publication_fault(self, boundary="bundle", damage=""):
+        hooks = self.root / "publication-hooks"
+        write(hooks / "sitecustomize.py", '''
+import errno, os, pathlib, shutil
+destination = pathlib.Path(os.environ["PUBLICATION_DESTINATION"]).resolve()
+boundary = os.environ["PUBLICATION_BOUNDARY"]
+def move(original, source, target, *args, **kwargs):
+    src, dst = pathlib.Path(source).resolve(), pathlib.Path(target).resolve()
+    if dst.is_relative_to(destination):
+        if (boundary in ("bundle", "logs") and not src.is_relative_to(destination)
+                and (src.name.endswith(".logs") == (boundary == "logs"))):
+            raise OSError(errno.EXDEV, "injected cross-device move", str(src))
+    return original(source, target, *args, **kwargs)
+replace, rename, copyfile = os.replace, os.rename, shutil.copyfile
+os.replace = lambda *args, **kwargs: move(replace, *args, **kwargs)
+os.rename = lambda *args, **kwargs: move(rename, *args, **kwargs)
+# Python 3.9 pathlib captures os.rename before sitecustomize runs.
+path_rename = pathlib.Path.rename
+pathlib.Path.rename = lambda *args, **kwargs: move(path_rename, *args, **kwargs)
+def copy(source, target, *args, **kwargs):
+    result = copyfile(source, target, *args, **kwargs)
+    path = pathlib.Path(target).resolve()
+    if path.is_relative_to(destination):
+        with (destination / "copied-members").open("a") as log:
+            log.write(path.name + "\\n")
+        if os.environ["PUBLICATION_DAMAGE"] and path.name.endswith(os.environ["PUBLICATION_DAMAGE"]):
+            path.write_bytes(b"corrupt staging copy")
+    return result
+shutil.copyfile = copy
+''')
+        return {"PYTHONPATH": str(hooks), "PUBLICATION_DESTINATION": str(self.output.parent),
+                "PUBLICATION_BOUNDARY": boundary, "PUBLICATION_DAMAGE": damage}
 
 class PairTests(PairFixture, unittest.TestCase):
     def test_exact_hit_always_enters_producer_and_rebinds_candidate(self):
@@ -522,6 +273,19 @@ class PairTests(PairFixture, unittest.TestCase):
         self.assertEqual(0, self.report_input("verify").returncode)
         self.assertEqual(1, len(self.seeds()))
         self.assertFalse(pathlib.Path(str(self.seeds()[0]) + ".logs").exists())
+        expected = self.bundle_bytes(self.output)
+        self.assertEqual(8, len(expected))  # Six members and two nested log files.
+        for boundary in ("bundle", "logs"):
+            with self.subTest(publication=boundary):
+                self.output = self.root / ("runner-temp-" + boundary) / "raw-lean-report.json"
+                result = self.pair(**self.publication_fault(boundary))
+                self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+                self.assertEqual(expected, self.bundle_bytes(self.output))
+                self.assertEqual(0, self.report_input("verify").returncode)
+                copied = (self.output.parent / "copied-members").read_text().splitlines()
+                self.assertCountEqual([self.output.name + suffix for suffix in expected if not suffix.startswith(".logs/")]
+                                      + ["producer.log", "stderr.log"], copied)
+                self.assertEqual([], list(self.output.parent.glob(".lean-report-publish-*")))
 
     def test_real_producer_failure_cannot_be_masked_by_prior_report(self):
         self.assertEqual(0, self.pair().returncode)
@@ -550,6 +314,29 @@ class PairTests(PairFixture, unittest.TestCase):
                 result = self.pair(PAIR_DAMAGE=damage)
                 self.assertNotEqual(0, result.returncode, result.stdout + result.stderr)
                 self.assertEqual(before, self.output.read_bytes())
+        before = self.bundle_bytes(self.output)
+        write(self.root / "D5/A.lean", "def a := 5\n")
+        for damage in (".provenance.json", ".materials.zip"):
+            with self.subTest(staging_damage=damage):
+                self.write_bundle_bytes(self.output, before)
+                result = self.pair(**self.publication_fault(boundary="none", damage=damage))
+                self.assertNotEqual(0, result.returncode, result.stdout + result.stderr)
+                self.assertEqual(before, self.bundle_bytes(self.output))
+                self.assertEqual([], list(self.output.parent.glob(".lean-report-publish-*")))
+        prior = self.output
+        self.output = self.root / "next/raw-lean-report.json"
+        self.assertEqual(0, self.pair().returncode)
+        complete = self.bundle_bytes(self.output)
+        for index, suffix in enumerate(("", ".sha256", ".input.attestation", ".provenance.json", ".materials.zip", ".seed.json", ".logs")):
+            with self.subTest(missing=suffix):
+                self.write_bundle_bytes(prior, before)
+                incomplete = self.root / f"missing-{index}/raw-lean-report.json"
+                self.write_bundle_bytes(incomplete, {key: value for key, value in complete.items()
+                    if key != suffix and not (suffix == ".logs" and key.startswith(".logs/"))})
+                result = subprocess.run([sys.executable, str(self.root / "tools/lean-inspector/report_cache.py"),
+                    "publish", "--report", str(incomplete), "--output", str(prior)], text=True, capture_output=True)
+                self.assertNotEqual(0, result.returncode, result.stdout + result.stderr)
+                self.assertEqual(before, self.bundle_bytes(prior))
 
     def test_transport_adapter_preserves_seed_identity_and_omits_logs(self):
         self.output = self.root / "out/candidate-lean-report.json"

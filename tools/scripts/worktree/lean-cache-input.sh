@@ -15,7 +15,7 @@ if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
   done
   [[ "$COMMAND" == "address" || "$COMMAND" == "dependency-address" \
     || "$COMMAND" == "partition" || "$COMMAND" == "partition-path" || "$COMMAND" == "keys" ]] \
-    || { echo "usage: lean-cache-input.sh address|partition|partition-path|keys --repository DIR" >&2; exit 2; }
+    || { echo "usage: lean-cache-input.sh address|dependency-address|partition|partition-path|keys --repository DIR" >&2; exit 2; }
   [[ -n "$REPOSITORY" && "$REPOSITORY" == /* && -d "$REPOSITORY" ]] \
     || { echo "lean-cache-input: --repository requires an absolute directory" >&2; exit 2; }
   REPOSITORY="$(cd "$REPOSITORY" && pwd -P)"
@@ -333,15 +333,11 @@ append_manifest_entry() {
   printf '%s\0%s\0' "$relative" "$path" >> "${manifest}.requests"
 }
 
-# Lean input preimage v1: root, sorted D5 sources, sorted inspector Lean
-# sources and structured semantic configuration. These are report validation
-# inputs only; they never select a remote or local seed partition.
-lean_cache_address() {
+# Shared source preimage: root, sorted D5 sources, sorted inspector Lean sources.
+lean_sources_sha256() {
   local sources_manifest="$TMP_ROOT/sources.manifest"
   local sources_list="$TMP_ROOT/sources.list"
   local inspector_sources_list="$TMP_ROOT/inspector-sources.list"
-  local config_manifest="$TMP_ROOT/config.manifest"
-  local sources_sha256 config_sha256
 
   : > "$sources_manifest"
   : > "${sources_manifest}.requests"
@@ -360,18 +356,54 @@ lean_cache_address() {
     done < "$inspector_sources_list"
   fi
   materialize_manifest "$sources_manifest" || return 2
-  sources_sha256="$(hash_file "$sources_manifest")" || return 2
+  hash_file "$sources_manifest"
+}
 
+# Report validation stays semantic; these inputs never select seed partitions.
+lean_cache_address() {
+  local config_manifest="$TMP_ROOT/config.manifest"
+  local sources_sha256 config_sha256
+  sources_sha256="$(lean_sources_sha256)" || return 2
   lean_semantic_config > "$config_manifest" || return 2
   config_sha256="$(hash_file "$config_manifest")" || return 2
 
   printf '%s %s\n' "$sources_sha256" "$config_sha256"
 }
 
-if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+# Temporary byte contract for ci.yml and lean-cache-publish.yml. Remove this
+# adapter and both direct legacy commands when those callers migrate to keys.
+lean_legacy_address() {
+  local manifest="$TMP_ROOT/legacy.manifest"
+  local sources_sha256 config_sha256 lakefile_count=0 lakefile
   if [[ "$COMMAND" == "address" ]]; then
+    sources_sha256="$(lean_sources_sha256)" || return 2
+  fi
+  : > "${manifest}.requests"
+  append_manifest_entry "$manifest" "lean-toolchain" || return 2
+  append_manifest_entry "$manifest" "lake-manifest.json" || return 2
+  if [[ "$COMMAND" == "address" ]]; then
+    for lakefile in lakefile.toml lakefile.lean; do
+      if [[ -f "$REPOSITORY/$lakefile" ]]; then
+        append_manifest_entry "$manifest" "$lakefile" || return 2
+        lakefile_count=$((lakefile_count + 1))
+      fi
+    done
+    [[ "$lakefile_count" -gt 0 ]] \
+      || { echo "lean-cache-input: repository has no lakefile" >&2; return 2; }
+  fi
+  materialize_manifest "$manifest" || return 2
+  config_sha256="$(hash_file "$manifest")" || return 2
+  if [[ "$COMMAND" == "address" ]]; then
+    printf '%s %s\n' "$sources_sha256" "$config_sha256"
+  else
+    printf '%s\n' "$config_sha256"
+  fi
+}
+
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+  if [[ "$COMMAND" == "address" || "$COMMAND" == "dependency-address" ]]; then
     prepare_memo
-    lean_cache_address
+    lean_legacy_address
     store_memo_updates
   else
     lean_partition_helper "$COMMAND"

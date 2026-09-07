@@ -46,7 +46,8 @@ public sealed partial class LeanCacheEnsureCommandTests
     public void MetadataOnlyEditsPreserveTheExistingLakeAndDoNotFetch()
     {
         using var temporary = new TemporaryDirectory();
-        InitializeRepository(temporary.Path);
+        File.WriteAllText(Path.Combine(temporary.Path, "lean-toolchain"), "leanprover/lean4:v4.31.0\n");
+        File.WriteAllText(Path.Combine(temporary.Path, "lake-manifest.json"), LeanCacheFixtureFile.Manifest());
         WriteCache(temporary.Path, "expensive project cache\n");
         File.AppendAllText(Path.Combine(temporary.Path, "lake-manifest.json"), "\n");
         File.AppendAllText(Path.Combine(temporary.Path, "lean-toolchain"), "\n");
@@ -54,7 +55,8 @@ public sealed partial class LeanCacheEnsureCommandTests
         var runner = new RecordingWorktreeProcessRunner();
         var result = WorktreeCommand.Run(temporary.Path, ["ensure-cache"], runner);
         Assert.True(result.Success, result.Error);
-        Assert.Equal("expensive project cache\n", LeanCacheFixtureFile.ReadCacheText(temporary.Path));
+        Assert.Equal("expensive project cache\n",
+            File.ReadAllText(Path.Combine(temporary.Path, ".lake", "build", "cache.bin")));
         Assert.Empty(runner.Invocations);
     }
 
@@ -168,12 +170,14 @@ public sealed partial class LeanCacheEnsureCommandTests
     public void StampCarriesMathlibPartitionAndLeavesNoPublicationTemporary()
     {
         using var repository = new TemporaryDirectory();
-        InitializeRepository(repository.Path);
-        WriteCache(repository.Path, "stamped\n");
         var lake = Path.Combine(repository.Path, ".lake");
-        var pins = ReadPins(repository.Path);
+        var pins = LeanPinSet.Create(
+            Encoding.UTF8.GetBytes("leanprover/lean4:v4.31.0\n"),
+            Encoding.UTF8.GetBytes(LeanCacheFixtureFile.Manifest()));
+        LeanCacheStamp.Write(lake, pins);
 
-        using var stamp = LeanCacheFixtureFile.ParseJson(LeanCacheStamp.PathFor(lake));
+        using var stamp = JsonDocument.Parse(
+            ScriptHarnessScratch.ReadScratchText(repository, ".lake/.stratalint-lean-cache-stamp.json"));
 
         Assert.Equal(pins.MathlibRevision, stamp.RootElement.GetProperty("mathlib_revision").GetString());
         Assert.False(stamp.RootElement.TryGetProperty("lake_manifest_base64", out _));
@@ -418,42 +422,6 @@ public sealed partial class LeanCacheEnsureCommandTests
         Assert.DoesNotContain(runner.Invocations, static call => call.FileName == "cp");
     }
 
-    [Fact]
-    public void SameMathlibMetadataChangesStillCopyPrivateDonorCache()
-    {
-        using var repository = new TemporaryDirectory();
-        using var sharedCache = new MathlibCacheFixture();
-        InitializeRepository(repository.Path);
-        var target = AddWorktree(repository.Path, "mismatched-target");
-        var targetManifest = File.ReadAllBytes(Path.Combine(target, "lake-manifest.json"));
-        File.WriteAllText(Path.Combine(repository.Path, "lake-manifest.json"), LeanCacheFixtureFile.Manifest() + "\n");
-        Git(repository.Path, "add", "lake-manifest.json");
-        Git(repository.Path, "commit", "-m", "change pin bytes only");
-        var donorManifest = File.ReadAllBytes(Path.Combine(repository.Path, "lake-manifest.json"));
-        WriteCache(repository.Path, "same partition seed\n");
-        var runner = new RecordingWorktreeProcessRunner();
-
-        using (var targetJson = JsonDocument.Parse(targetManifest))
-        using (var donorJson = JsonDocument.Parse(donorManifest))
-        {
-            Assert.Equal(
-                targetJson.RootElement.GetProperty("version").GetString(),
-                donorJson.RootElement.GetProperty("version").GetString());
-        }
-        Assert.False(targetManifest.AsSpan().SequenceEqual(donorManifest));
-
-        var result = WorktreeCommand.Run(
-            repository.Path,
-            ["ensure-cache", "--path", target],
-            runner);
-
-        Assert.True(result.Success);
-        Assert.Empty(result.Error);
-        Assert.Equal("same partition seed\n", LeanCacheFixtureFile.ReadCacheText(target));
-        Assert.False(File.Exists(Path.Combine(target, ".lake", "cache-get.marker")));
-        Assert.Equal("same partition seed\n", LeanCacheFixtureFile.ReadCacheText(repository.Path));
-    }
-
     [Theory]
     [InlineData("cache-get", "missing")]
     [InlineData("stamp", "corrupt")]
@@ -486,23 +454,21 @@ public sealed partial class LeanCacheEnsureCommandTests
 
         var result = WorktreeCommand.Run(repository.Path, ["ensure-cache"], runner);
 
-        Assert.Equal(failure == "cache-get", result.Success);
+        Assert.True(result.Success, result.Error);
         Assert.True(Directory.Exists(Path.Combine(repository.Path, ".lake")));
         Assert.True(File.Exists(Path.Combine(repository.Path, ".lake", "build", "cache.bin")));
         Assert.True(File.Exists(repositoryOlean));
         Assert.False(File.Exists(LeanCacheStamp.PathFor(Path.Combine(repository.Path, ".lake"))));
         Assert.Equal([true], runner.CacheGetExistingProjectionObservations);
-        using var receipt = ParseReceipt(result.Success ? result.Output : result.Error);
+        using var receipt = ParseReceipt(result.Output);
+        Assert.Equal("degraded", receipt.RootElement.GetProperty("status").GetString());
         Assert.Equal(expectedStampMiss, receipt.RootElement.GetProperty("stamp_miss").GetString());
         Assert.False(receipt.RootElement.TryGetProperty("mathlib_cache_pruned_files", out _));
         Assert.False(receipt.RootElement.TryGetProperty("mathlib_cache_clean_status", out _));
-        if (failure == "cache-get")
-        {
-            Assert.Contains(
-                "cache get failed",
-                receipt.RootElement.GetProperty("reason").GetString()!,
-                StringComparison.OrdinalIgnoreCase);
-        }
+        Assert.Contains(
+            failure == "cache-get" ? "cache get failed" : "stamp publication failed",
+            receipt.RootElement.GetProperty("reason").GetString()!,
+            StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

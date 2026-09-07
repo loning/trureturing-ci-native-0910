@@ -7,7 +7,7 @@ public sealed partial class LeanCacheProvisionerTests
 {
 
     [Fact]
-    public void StampFailureAndCleanupFailurePreserveBothCausesWithoutPruneAccounting()
+    public void CacheGetFailureAndCleanupFailurePreserveBothCausesWithoutPruneAccounting()
     {
         using var target = new TemporaryDirectory();
         using var sharedCache = new MathlibCacheFixture();
@@ -15,7 +15,7 @@ public sealed partial class LeanCacheProvisionerTests
         var lake = Path.Combine(target.Path, ".lake");
         var runner = new RecordingWorktreeProcessRunner
         {
-            BlockStampAfterCacheGet = true,
+            FailLake = true,
         };
         using var writerGuard = LeanCacheWriterGuard.TryAcquire(lake);
         Assert.NotNull(writerGuard);
@@ -37,11 +37,44 @@ public sealed partial class LeanCacheProvisionerTests
         Assert.Contains(
             aggregate.InnerExceptions,
             static inner => inner is LeanCacheProvisionException
-                && inner.Message.Contains("stamp publication failed", StringComparison.Ordinal));
+                && inner.Message.Contains("cache get failed", StringComparison.Ordinal));
         Assert.Contains(
             aggregate.InnerExceptions,
             static inner => inner is IOException
                 && inner.Message.Contains("partial cache cleanup failed", StringComparison.Ordinal));
+        Assert.False(exception.SafeToContinueToBuild);
+    }
+
+    [Fact]
+    public void StampFailurePreservesUsableCacheWithoutAttemptingCleanup()
+    {
+        using var target = new TemporaryDirectory();
+        using var sharedCache = new MathlibCacheFixture();
+        WritePins(target.Path);
+        var lake = Path.Combine(target.Path, ".lake");
+        var runner = new RecordingWorktreeProcessRunner { BlockStampAfterCacheGet = true };
+        using var writerGuard = LeanCacheWriterGuard.TryAcquire(lake);
+        Assert.NotNull(writerGuard);
+        var cleanupCalls = 0;
+
+        var exception = Assert.Throws<LeanCacheProvisionException>(() =>
+            LeanCacheProvisioner.Provision(
+                new LeanCacheDonorSelection(null, "fixture has no donor"),
+                target.Path,
+                ReadPins(target.Path),
+                "lake",
+                runner,
+                writerGuard,
+                new RecordingDirectoryCloner(),
+                LeanCachePublisher.Instance,
+                _ => cleanupCalls++));
+
+        Assert.True(exception.SafeToContinueToBuild);
+        Assert.Contains("stamp publication failed", exception.Message, StringComparison.Ordinal);
+        Assert.Equal(0, cleanupCalls);
+        Assert.True(Directory.Exists(LeanCacheStamp.PathFor(lake)));
+        Assert.True(File.Exists(Path.Combine(lake, "cache-get.marker")));
+        Assert.Equal(0, LeanCacheProvisioner.InspectMathlibOleans(lake).MissingFiles);
     }
 
     [Fact]
