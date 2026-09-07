@@ -18,5 +18,47 @@
                 H("Exact arithmetic for the existing prime-three inputs"),
                 StatementSource.FromLean(), AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text("With the unchanged global lower bound, finite-candidate energy ceiling, genuine-model distance and old full-residual coefficient cap, the rational t=1/100000 and s=1/10000 retain more than 99997/100000 of the shifted gap and give coefficient below 5151/50. The stated true-model energy width then gives Fourier error below 681/1000000. This theorem checks implications between rational constants only. It does not regenerate or independently prove the inherited spectral, form-domain, Fourier or model certificates."))),
+                DescribeRole.Theorem),
+            Describe.Lean(
+                DescribeId.Create("genuine-model-prime-three-centered-budget"),
+                DeclarationHandle.Create(Owner + "prime_three_centered_budget"),
+                H("Exact rational centered-certificate arithmetic"),
+                StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("From the archived energy values, the two rational balancing parameters and C<108, exact arithmetic proves the anchor and normalized-error guards. The model-origin floor, log(3)<11/10 and complete centered residual cap remain independent analytic or interval inputs. This does not claim a new spectral enclosure."))),
+                DescribeRole.Theorem),
+            Describe.Lean(
+                DescribeId.Create("genuine-model-model-centered-readout-identity"),
+                DeclarationHandle.Create(Owner + "model_centered_readout_identity"),
+                H("Center the actual normalized observable"),
+                StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("The Riesz vector g-conj(<g,e>/<g0,e>)*g0 annihilates the same genuine model. The exact quotient identity and required conjugation are proved before any estimate. The anchor and actual denominator remain nonzero in this algebraic lemma."))),
+                DescribeRole.Theorem),
+            Describe.Lean(
+                DescribeId.Create("genuine-model-annihilating-energy-dual-transport"),
+                DeclarationHandle.Create(Owner + "annihilating_energy_dual_transport"),
+                H("Preserve annihilation during the hyperplane change"),
+                StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("Use beta=<k,f>/<k,e> to eliminate the old candidate direction. Since the centered readout annihilates e, its value is unchanged. Positive-form energy Young and the independently justified new-complement gap give a multiplicative coefficient. No additive old candidate-readout term is present. The old dual coefficient must certify this centered Riesz vector, not the uncentered g."))),
+                DescribeRole.Theorem),
+            Describe.Lean(
+                DescribeId.Create("genuine-model-positive-form-centered-readout-bound"),
+                DeclarationHandle.Create(Owner + "positive_form_centered_readout_bound"),
+                H("Derive a uniform four-times centered coefficient"),
+                StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("The already-owned positive shifted-form theorem derives the kappa/4 new gap from the original relative-angle condition. When epsilon<=1/2 and model energy<=kappa/4, the centered coefficient is at most 4C. The whole-domain shifted positivity and the centered old dual certificate remain essential."))),
+                DescribeRole.Theorem),
+            Describe.Lean(
+                DescribeId.Create("genuine-model-model-centered-projective-ratio-bound"),
+                DeclarationHandle.Create(Owner + "model_centered_projective_ratio_bound"),
+                H("Actual eigenvector ratio with a derived anchor"),
+                StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("Use the existing projective Rayleigh enclosure and energy identity to derive q(w)<=nu. The squared origin-kernel margin yields a nonzero denominator for the actual eigenvector; its phase and scale cancel in the quotient. Combine this with the multiplicative centered estimate. The conclusion compares the actual eigenvector and the same genuine model."))),
+                DescribeRole.Theorem),
+            Describe.Lean(
+                DescribeId.Create("genuine-model-model-centered-normalized-uniform-limit"),
+                DeclarationHandle.Create(Owner + "model_centered_normalized_uniform_limit"),
+                H("A single centered directional rate on moving domains"),
+                StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("The target set, operators, domains, eigenvectors and readouts may vary with scale. The derived anchor and four-times centered coefficient reduce normalized uniform error to nu*C/b^2 tending to zero. This is not a proof of that arithmetic rate for the actual unbounded Weil/prolate family. The generic readout can use the already-identified Fourier Riesz vector; no new Fourier definition or interval-oracle theorem is introduced."))),
                 DescribeRole.Theorem))));
 }
