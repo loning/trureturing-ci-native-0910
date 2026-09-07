@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Observer/ProductMeasures/FinitePmfLikelihood.productLaw_ac_of_summable
     target_statement_id: sha256:7c8019b9ff1f542d5403f686df40b9f72d979be45a97949a559ad69ed71cb670
 receipts:
-  scribe:
-    - gid: D5/S3/Observer/ProductMeasures/FinitePmfLikelihood.productLaw_ac_of_summable
-      definition_sha256: sha256:be4d8c1be25bdccbabdd97a0d928bccb4ba1d7387517b265404b62ace3197161
-      emission_sha256: sha256:7718557ffe37a58274ebd3708dabd94082e15f1ea1f3e952cd91abb512523d35
   unresolved_subitems: []

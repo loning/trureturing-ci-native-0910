@@ -99,7 +99,7 @@ public sealed class RuleCatalogAssociationTests
     {
         var uniqueFinding = new RuleFinding("unique/path.txt", "finding from rule seventeen");
         var registrations = Enumerable.Range(1, 23).Except([5])
-            .Append(25).Append(26).Append(28).Append(30).Append(31).Append(32)
+            .Append(25).Append(26).Append(28).Append(30).Append(31).Append(32).Append(33)
             .Select(number => new RuleRegistration(
                 Descriptor(
                     number,
@@ -215,7 +215,7 @@ public sealed class RuleCatalogAssociationTests
         var setterId = RuleId.CreateKnown(1);
         var finderId = RuleId.CreateKnown(2);
         var remainingIds = Enumerable.Range(1, 23).Except([5, 7, 9, 13, 14])
-            .Append(25).Append(26).Append(28).Append(30).Append(31).Append(32)
+            .Append(25).Append(26).Append(28).Append(30).Append(31).Append(32).Append(33)
             .Select(RuleId.CreateKnown)
             .Where(id => id != setterId && id != finderId)
             .ToImmutableArray();
@@ -259,7 +259,7 @@ public sealed class RuleCatalogAssociationTests
     {
         var rule = new CountingUnaffectedRule();
         var registrations = Enumerable.Range(1, 23).Except([5])
-            .Append(25).Append(26).Append(28).Append(30).Append(31).Append(32)
+            .Append(25).Append(26).Append(28).Append(30).Append(31).Append(32).Append(33)
             .Select(number => Registration(
                 Descriptor(
                     number,
@@ -414,10 +414,10 @@ public sealed class RuleCatalogAssociationTests
     [Fact]
     public void DefaultCatalogRootMatchesCharacterizedRegressionValue()
     {
-        // Recharacterized 2026-09-07 with SL-032.
-        // Previous root: sha256:b4e098cea888de68e804c8883d030ffeba598419261e961c97726613371fe48e.
+        // Recharacterized 2026-09-07 with SL-033; independently computed with Ruby SHA-256.
+        // Previous root: sha256:81c7c69b842771aaf8f1f678c3c4fb466ae2938ae6085c6f0ce0e70cb44bab7e.
         Assert.Equal(
-            "sha256:81c7c69b842771aaf8f1f678c3c4fb466ae2938ae6085c6f0ce0e70cb44bab7e",
+            "sha256:b276eef4632135feff663e5a4fe2d4d4b073767522cf2defff3f145895602af1",
             RuleCatalog.Default.RootSha256);
     }
 
@@ -455,7 +455,7 @@ public sealed class RuleCatalogAssociationTests
     {
         var state = new OrderDependentState();
         var registrations = Enumerable.Range(1, 23).Except([5])
-            .Append(25).Append(26).Append(28).Append(30).Append(31).Append(32)
+            .Append(25).Append(26).Append(28).Append(30).Append(31).Append(32).Append(33)
             .Select(number => new RuleRegistration(
                 Descriptor(number, $"descriptor {number}", DisplaySeverity.Error, AdmissionEffect.Block),
                 number switch

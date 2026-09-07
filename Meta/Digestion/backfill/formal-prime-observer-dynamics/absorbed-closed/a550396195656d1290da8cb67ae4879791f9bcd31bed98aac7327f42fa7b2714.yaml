@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/RefinementGeometry/DynamicIndistinguishabilityCoordinatewise.dynamic_indistinguishability_iff_coordinatewise
     target_statement_id: sha256:9fed20be7ddaceda1409d75892204e7277b06d6f31ec211cbaba73aa0378f0dc
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/RefinementGeometry/DynamicIndistinguishabilityCoordinatewise.dynamic_indistinguishability_iff_coordinatewise
-      definition_sha256: sha256:ac1a634459456f444447b2217bbb26ad50a2074b076a8dfe82aea753f40321cc
-      emission_sha256: sha256:2739519b8b3baeb4de8cf92d2eefb4092dc30ce3bce8817f43be6e55e2a48e44
   unresolved_subitems: []

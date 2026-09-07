@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/ObservationOrder/PureReadoutOrderIndependence.pure_readout_order_independence
     target_statement_id: sha256:0f7ec8a0b5350bde0df91e53278e45fbf1ae1dc76feaee42b62b7537f2a23f74
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/ObservationOrder/PureReadoutOrderIndependence.pure_readout_order_independence
-      definition_sha256: sha256:b4c8f313d2845c0bdfa7d01a8dab64a144f49dc00cce056f5a3b633916cbf45d
-      emission_sha256: sha256:fcfecd0411553214628302ce0b563b8ff113bb2adf30ec85388fe89f7d5abc01
   unresolved_subitems: []

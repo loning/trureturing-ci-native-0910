@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Epistemic/EpistemicChangeTrichotomy.changed_conclusion_exposes_epistemic_component
     target_statement_id: sha256:9ee262485477a4a313def31e8daaac14ca4715862a3cf0e154c540c3a3c4c938
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Epistemic/EpistemicChangeTrichotomy.changed_conclusion_exposes_epistemic_component
-      definition_sha256: sha256:365a221555538830759f83d1ec5fc268832014e69f91b9fbe3da0489a0400e7f
-      emission_sha256: sha256:dd159030459240c3736c97278edae10c181d67d86700e71f80bc1aefce7cefef
   unresolved_subitems: []

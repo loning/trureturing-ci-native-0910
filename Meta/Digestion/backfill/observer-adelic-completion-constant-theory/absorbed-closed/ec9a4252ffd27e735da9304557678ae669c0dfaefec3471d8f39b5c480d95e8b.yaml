@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Weil/Pick/UniversalNormalizedSaturationCell.universal_normalized_saturation_cell
     target_statement_id: sha256:b968d7d386f91f123cadaa55a61e424a3221dd2da34d7428618273cf566dbb4c
 receipts:
-  scribe:
-    - gid: D5/S3/Weil/Pick/UniversalNormalizedSaturationCell.universal_normalized_saturation_cell
-      definition_sha256: sha256:c9e1c61176a7736c7f3d27713efeb3dfd580b02b2cf38e69d1a9745bfdd130ec
-      emission_sha256: sha256:c0de0efe3e7033c5871e4a8ce2ab1ef2abf95450f0cf4038855ba420e82f85a4
   unresolved_subitems: []

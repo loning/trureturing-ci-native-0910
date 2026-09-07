@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Disclosure/ExactTargetLeakConsequences.exact_target_leak_consequences
     target_statement_id: sha256:ad2e3e8503bd409a4b8bdba47cbb8186d5429b5708325673bc58502948109df2
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Disclosure/ExactTargetLeakConsequences.exact_target_leak_consequences
-      definition_sha256: sha256:126c2b6a4d780f9b7fa4c3c738dd18bb6bc0499cd4ee561ff20428dfe5ac4156
-      emission_sha256: sha256:e5c51f2e874939a998b9f2f2d1341e1b43827ab3c5e01b51a32ec4ca090ba10e
   unresolved_subitems: []

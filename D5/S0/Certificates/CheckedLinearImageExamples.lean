@@ -3,6 +3,7 @@
    mirror-B: D5/B/S0/Certificates/CheckedLinearImageExamples
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: kind=certified-instance; basis=terminal=gid:D5/S0/Certificates/CheckedLinearImageExamples.capped_fixture_real_image
    digest: Capped four-cell payloads exercise real image certification and mutation rejection. -/
 
 import D5.S0.Certificates.CheckedLinearImage

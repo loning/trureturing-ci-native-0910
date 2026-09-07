@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Faithfulness/CoordinateDeletionRobustness.coordinate_deletion_robustness
     target_statement_id: sha256:b1159158c6442b0d8a0d69e1cf16b8e82e875b458818e2b7b27879d9af247f3b
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Faithfulness/CoordinateDeletionRobustness.coordinate_deletion_robustness
-      definition_sha256: sha256:02d24692dabbd5749ab6b70da39966431372a09b12ffec0d107b1b1b25dadd3a
-      emission_sha256: sha256:39474a3f87ba9b75706df2a20d27413d50372b188a6889b91581741ca0b23fd3
   unresolved_subitems: []

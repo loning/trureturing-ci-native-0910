@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Fibers/CanonicalAdmissibleFiberDecomposition.canonical_admissible_fiber_decomposition
     target_statement_id: sha256:01380891f2d3a4b4f6aa99bec46b82e2ab7345a25a8d8d5d6859a4feb83489b6
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Fibers/CanonicalAdmissibleFiberDecomposition.canonical_admissible_fiber_decomposition
-      definition_sha256: sha256:213a062c6110a0bafe97e60e6b666cd544651968134ce66ce68281c6eaac4ccd
-      emission_sha256: sha256:2c07ad870335702c55ed05eb6a035a352a63e180011d4f412211c1fcdc8efa55
   unresolved_subitems: []
