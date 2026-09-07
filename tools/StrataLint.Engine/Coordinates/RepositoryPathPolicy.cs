@@ -23,6 +23,10 @@ internal static partial class RepositoryPathPolicy
     // Persistent truth-release publisher. `.github` remains an explicit allowlist.
     internal const string TruthReleasePublicationWorkflowPath =
         ".github/workflows/truth-release-publish.yml";
+    // 消化浮账报警(#6092 的降级形态):定时跑全库 ingest,发现未入账的理论内容就报到
+    // 该 issue。只观察与报告,不写仓库。`.github` 仍是显式白名单,故在此具名登记。
+    internal const string DigestionBackfillAlarmWorkflowPath =
+        ".github/workflows/digestion-backfill-alarm.yml";
     internal const string HarnessGatePath = ".github/scripts/harness-gate.sh";
     internal const string RepositoryCoordinate = "the-omega-institute/trureturing";
 
@@ -145,6 +149,7 @@ internal static partial class RepositoryPathPolicy
             or WorkflowPath
             or CachePublicationWorkflowPath
             or TruthReleasePublicationWorkflowPath
+            or DigestionBackfillAlarmWorkflowPath
             or ".github/CODEOWNERS"
             or HarnessGatePath
             || value.StartsWith("tools/", StringComparison.Ordinal)
