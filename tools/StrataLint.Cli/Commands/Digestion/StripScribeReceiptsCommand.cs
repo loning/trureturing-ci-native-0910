@@ -30,13 +30,17 @@ internal static class StripScribeReceiptsCommand
             if (document.RequireDigestionEntries().IsEmpty)
                 throw new InvalidOperationException("digestion ledger contains no atom entries");
             var plan = Plan(document, options.SourceIds);
-            var selected = plan.Changes.Select(static change => (change.SourceId, change.AtomId)).ToHashSet();
+            var stripped = plan.Changes.Select(static change => (change.SourceId, change.AtomId)).ToHashSet();
+            // The writer stopped emitting `receipts.scribe` before the last data sweep, so a
+            // canonical rewrite of a legacy entry now serialises to the same bytes on both sides
+            // and every comparison-guarded writer skips it. Selecting on *disk* bytes is what
+            // still reaches those entries; without it the legacy key can never be removed.
+            var normalized = StaleOnDisk(plan.Document, options.SourceIds, current, stripped);
+            var selected = stripped.Union(normalized).ToHashSet();
             var replacements = plan.Document.RequireDigestionEntries()
                 .Where(entry => selected.Contains((entry.SourceId, entry.AtomId)))
                 .ToDictionary(
-                    static entry => $"{BackfillInventoryLoader.RootPath}{entry.SourceId}/"
-                        + $"{DigestionStatusNames.Migration(entry.ProjectedStatus.Migration)}-"
-                        + $"{DigestionStatusNames.Truth(entry.ProjectedStatus.Truth)}/{entry.AtomId}.yaml",
+                    static entry => EntryPath(entry),
                     BackfillInventoryWriter.WriteAtom,
                     StringComparer.Ordinal);
             // Rewriting both versions now omits Scribe, so select writes from the strip plan.
@@ -47,7 +51,7 @@ internal static class StripScribeReceiptsCommand
             var updates = IngestCommand.LedgerUpdates(current, replacement);
             if (!options.DryRun)
                 applyUpdates(repositoryRoot, current, updates);
-            return new CommandResult(true, Render(plan, options.DryRun), string.Empty);
+            return new CommandResult(true, Render(plan, normalized.Count, options.DryRun), string.Empty);
         }
         catch (Exception exception) when (exception is not OutOfMemoryException)
         {
@@ -97,6 +101,42 @@ internal static class StripScribeReceiptsCommand
         return new StripPlan(replacement, changes.ToImmutable());
     }
 
+    internal static string EntryPath(DigestionLedgerEntry entry) =>
+        $"{BackfillInventoryLoader.RootPath}{entry.SourceId}/"
+        + $"{DigestionStatusNames.Migration(entry.ProjectedStatus.Migration)}-"
+        + $"{DigestionStatusNames.Truth(entry.ProjectedStatus.Truth)}/{entry.AtomId}.yaml";
+
+    /// Entries whose committed bytes differ from what the canonical writer produces today.
+    /// An entry already selected by the receipt strip is excluded so it is counted once.
+    internal static HashSet<(string SourceId, string AtomId)> StaleOnDisk(
+        BackfillInventoryDocument document,
+        ImmutableArray<string> sourceIds,
+        RawRepositorySnapshot current,
+        IReadOnlyCollection<(string SourceId, string AtomId)> alreadySelected)
+    {
+        var selectedSources = sourceIds.ToHashSet(StringComparer.Ordinal);
+        var strippedKeys = alreadySelected.ToHashSet();
+        var onDisk = current.Entries.ToDictionary(
+            static entry => entry.Path,
+            static entry => entry.Bytes,
+            StringComparer.Ordinal);
+        var stale = new HashSet<(string SourceId, string AtomId)>();
+        foreach (var entry in document.RequireDigestionEntries())
+        {
+            if (selectedSources.Count != 0 && !selectedSources.Contains(entry.SourceId))
+                continue;
+            if (strippedKeys.Contains((entry.SourceId, entry.AtomId)))
+                continue;
+            if (!onDisk.TryGetValue(EntryPath(entry), out var committed))
+                continue;
+            if (committed.AsSpan().SequenceEqual(BackfillInventoryWriter.WriteAtom(entry).AsSpan()))
+                continue;
+            stale.Add((entry.SourceId, entry.AtomId));
+        }
+
+        return stale;
+    }
+
     private static StripOptions Parse(IReadOnlyList<string> arguments)
     {
         var sources = ImmutableArray.CreateBuilder<string>();
@@ -140,7 +180,7 @@ internal static class StripScribeReceiptsCommand
         return lines.Length == 0 ? exception.GetType().Name : string.Join(' ', lines);
     }
 
-    private static string Render(StripPlan plan, bool dryRun)
+    private static string Render(StripPlan plan, int normalized, bool dryRun)
     {
         var changes = plan.Changes
             .OrderBy(static change => change.SourceId, StringComparer.Ordinal)
@@ -149,6 +189,7 @@ internal static class StripScribeReceiptsCommand
         return string.Concat(changes.Select(change =>
                 $"SCRIBE_STRIP source={change.SourceId} atom={change.AtomId} receipts={change.ReceiptCount}\n"))
             + $"SCRIBE_STRIP_SUMMARY entries={changes.Length} receipts={changes.Sum(static change => change.ReceiptCount)} "
+            + $"normalized={normalized} "
             + $"dry_run={dryRun.ToString().ToLowerInvariant()}\n";
     }
 
