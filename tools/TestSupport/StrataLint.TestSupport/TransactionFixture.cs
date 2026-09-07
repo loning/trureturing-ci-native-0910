@@ -387,47 +387,6 @@ internal sealed partial class TransactionFixture
                 --cover-atom) atom=${parts[index+1]} ;;
                 --gid) gid=${parts[index+1]} ;;
               esac
-            done
-            if [[ ${PLAYBOOK_COVER_DISPOSITION_FAILURE:-0} == 1 ]]; then
-              printf 'atom_id: %s\ncoverage: false\naligned: false\ncover_disposition: synthetic\n' "$atom" \
-                > Meta/BACKFILL.yaml
-              echo 'COVER_INVALID synthetic disposition' >&2
-              exit 1
-            fi
-            secondary=''
-            existing_atom=$(sed -n 's/^atom_id: //p' Meta/BACKFILL.yaml)
-            if [[ $existing_atom == "$atom" ]] \
-                && grep -q '^coverage: true$' Meta/BACKFILL.yaml; then
-              echo "COVER_INVALID cover atom $atom already has coverage: $gid" >&2
-              exit 1
-            fi
-            printf 'atom_id: %s\ncoverage: true\naligned: false\n%s\n' \
-              "$atom" "$secondary" > Meta/BACKFILL.yaml
-            ;;
-        esac
-            done
-            definition_path="Blueprint/${gid%.*}.scribe.cs"
-            verified_emission=''
-            if [[ -s $definition_path ]] \
-                && grep -q "^atom_id: ${atom}$" Meta/BACKFILL.yaml \
-                && grep -q '^coverage: true$' Meta/BACKFILL.yaml; then
-              verified_emission='emission: covered'
-            fi
-            [[ $verified_emission == 'emission: covered' ]] || {
-              echo 'ALIGN_SCRIBE_RECEIPT_INVALID no verified in-process Scribe emission' >&2
-              exit 1
-            }
-            secondary=''
-            grep -q '^secondary: true$' Meta/BACKFILL.yaml && secondary='secondary: true'
-            if grep -q '^aligned: covered$' Meta/BACKFILL.yaml; then
-              echo 'ALIGN_SCRIBE_RECEIPT ledger_changed=false'
-            else
-              printf 'atom_id: %s\ncoverage: true\naligned: covered\n%s\n' \
-                "$atom" "$secondary" > Meta/BACKFILL.yaml
-              echo 'ALIGN_SCRIBE_RECEIPT ledger_changed=true'
-            fi
-            ;;
-        esac
         """);
 
     internal ProcessOutput Run(

@@ -71,8 +71,6 @@ cover:
 cover-batch:
 	@/bin/bash tools/scripts/workflow/playbook-workflows.sh cover-batch "$(BASE)" "$(ATOMS)"
 
-scribe-seed:
-	@dotnet run --project tools/StrataLint.Cli/StrataLint.Cli.csproj --configuration Release -- align-scribe-receipt --seed-missing --pairs "$(PAIRS)" --base "$(BASE)"
 decompose:
 	@dotnet run --project tools/StrataLint.Cli/StrataLint.Cli.csproj --configuration Release -- decompose-atom --atom "$(ATOM_ID)" --base "$(BASE)" $(if $(filter 1,$(DRY_RUN)),--dry-run,)
 

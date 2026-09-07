@@ -156,6 +156,9 @@ internal static partial class CoverAtomCommand
                 inputPaths.Add(ScribeEmissionAttestation.EmissionPath(documentGid));
             }
 
+            var repositoryPaths = repositoryChanges.Entries
+                .Select(static entry => entry.Path.Value)
+                .ToHashSet(StringComparer.Ordinal);
             var authorityChanges = RawChangeSet.CreateWithKinds(
                 repositoryChanges.Entries
                     .Select(static entry => (Path: entry.Path.Value, Kind: entry.Kind))
