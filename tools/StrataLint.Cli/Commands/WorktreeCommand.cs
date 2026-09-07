@@ -87,6 +87,7 @@ internal static class WorktreeCommand
 
         WorktreeOptions? options = null;
         var worktreeCreated = false;
+        string? creationLock = null;
         var halfBuiltRecovered = false;
         try
         {
@@ -97,14 +98,24 @@ internal static class WorktreeCommand
             var pins = LeanPinSet.ReadBase(options.Source, options.Base, runner);
             var donor = ProbeDonor(options, pins, runner);
 
+            creationLock = $"worktree-init:{Guid.NewGuid():N}";
             RunRequired(
                 runner,
                 "git",
-                ["worktree", "add", "-b", options.Branch, options.Path, options.Base],
+                ["worktree", "add", "-b", options.Branch, "--no-checkout", "--lock",
+                    "--reason", creationLock, options.Path, options.Base],
                 options.Source,
-                TimeSpan.FromSeconds(120),
+                BoundedProcessRunner.HangDetectionBudget,
                 "git worktree add failed");
             worktreeCreated = true;
+            WorktreeCreationSafety.ValidateCreatedWorktree(options, runner);
+            RunRequired(
+                runner,
+                "git",
+                ["checkout", "--force", "--no-recurse-submodules", "HEAD"],
+                options.Path,
+                BoundedProcessRunner.HangDetectionBudget,
+                "git worktree checkout failed");
             EnsureReviewScaffoldIgnores(options.Path);
             if (!options.SkipRestore)
             {
@@ -117,6 +128,13 @@ internal static class WorktreeCommand
                     "dotnet restore failed");
             }
             WorktreeCreationSafety.ValidateCreatedWorktree(options, runner);
+            RunRequired(
+                runner,
+                "git",
+                ["worktree", "unlock", options.Path],
+                options.Source,
+                BoundedProcessRunner.HangDetectionBudget,
+                "git worktree unlock failed");
 
             var summary = JsonSerializer.Serialize(new
             {
@@ -135,9 +153,21 @@ internal static class WorktreeCommand
         }
         catch (Exception exception)
         {
-            var cleanup = options is not null && worktreeCreated
-                ? Cleanup(options, runner)
-                : string.Empty;
+            var cleanup = string.Empty;
+            try
+            {
+                // A timed-out add can register the tree before acknowledging success.
+                if (options is not null && (worktreeCreated
+                    || (creationLock is not null
+                        && WorktreeCreationSafety.HasCreationLock(options, creationLock, runner))))
+                {
+                    cleanup = Cleanup(options, runner);
+                }
+            }
+            catch (Exception cleanupException) when (cleanupException is not OutOfMemoryException)
+            {
+                cleanup = cleanupException.Message;
+            }
             var receipt = JsonSerializer.Serialize(new
             {
                 @event = "worktree_init",
@@ -480,9 +510,9 @@ internal static class WorktreeCommand
         var removal = RunProcess(
             runner,
             "git",
-            ["worktree", "remove", "--force", options.Path],
+            ["worktree", "remove", "--force", "--force", options.Path],
             options.Source,
-            TimeSpan.FromSeconds(120));
+            BoundedProcessRunner.HangDetectionBudget);
         if (removal.ExitCode != 0 && Directory.Exists(options.Path))
         {
             errors.Add(ProcessError(removal, "git worktree remove failed"));

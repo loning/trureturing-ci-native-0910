@@ -222,7 +222,7 @@ internal sealed class RecordingWorktreeProcessRunner : IWorktreeProcessRunner
             && arguments.Take(2).SequenceEqual(["worktree", "add"])
             && result.ExitCode == 0)
         {
-            AfterWorktreeAdd?.Invoke(arguments[4]);
+            AfterWorktreeAdd?.Invoke(arguments[^2]);
         }
         if (fileName == "cp" && result.ExitCode == 0) copyCompleted = true;
         return result;

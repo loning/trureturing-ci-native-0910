@@ -7,6 +7,26 @@ internal static class WorktreeCreationSafety
 {
     private static readonly UTF8Encoding StrictUtf8 = new(false, true);
 
+    internal static bool HasCreationLock(
+        WorktreeOptions options,
+        string creationLock,
+        IWorktreeProcessRunner runner)
+    {
+        var inventory = RunGit(
+            options.Source,
+            ["worktree", "list", "--porcelain", "-z"],
+            runner,
+            "could not inspect initialization ownership");
+        var expected = PhysicalPathAllowMissing(options.Path);
+        return StrictUtf8.GetString(inventory.StandardOutput)
+            .Split("\0\0", StringSplitOptions.RemoveEmptyEntries)
+            .Select(static record => record.Split('\0'))
+            .Any(fields => fields.Contains($"locked {creationLock}", StringComparer.Ordinal)
+                && fields.Contains($"branch refs/heads/{options.Branch}", StringComparer.Ordinal)
+                && fields.Any(field => field.StartsWith("worktree ", StringComparison.Ordinal)
+                    && PathsEqual(expected, PhysicalPathAllowMissing(field["worktree ".Length..]))));
+    }
+
     internal static bool RecoverHalfBuiltWorktree(
         WorktreeOptions options,
         IWorktreeProcessRunner runner)
