@@ -1,0 +1,28 @@
+{
+  "status": "EXACT_SYMBOLIC_AND_GAUSSIAN_RATIONAL_DIAGNOSTICS",
+  "symbolic_identities": {
+    "plus_derivative": true,
+    "minus_derivative": true,
+    "reciprocal_transition": true,
+    "paired_phase_product": true
+  },
+  "scalar_domain_cases": 360,
+  "coordinate_cases_on_one_exact_order_six_seed": 36,
+  "dephased_Jacobian_entry_checks": 900,
+  "negative_controls_rejected": [
+    "pointwise_normSq_complexification",
+    "missing_dual_derivative",
+    "Cayley_poles",
+    "zero_chart_inverse",
+    "unconditional_Newton_invariance",
+    "omitted_residual_forcing"
+  ],
+  "domain": "10*abs(Im z)<3*(1+normSq z)",
+  "denominator_normSq_lower": "2/5",
+  "unit_phase_normSq_range": ["1/4", "4"],
+  "Jacobian_entry_bound_d6_unit_H": 120,
+  "lean_elaboration_executed": false,
+  "complete_cover_kernel_verified": false,
+  "full_cover_replayed_this_round": false,
+  "new_parameter_region_excluded": false
+}
