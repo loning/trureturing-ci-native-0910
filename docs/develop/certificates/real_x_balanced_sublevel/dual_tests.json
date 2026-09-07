@@ -1,0 +1,24 @@
+{
+  "status": "EXACT_DUAL_TESTS_PASSED",
+  "box_hyperplane_vertex_cases": 1203,
+  "strictly_tightened_cases": 1198,
+  "balanced_twenty_vertex_tests": 200,
+  "missing_balance_counterexample": true,
+  "reversed_interval_rejected": true,
+  "overflow_rejected": true,
+  "actual_seed_gram": {
+    "field": "Q(i,sqrt(21))",
+    "unit_entries": true,
+    "both_grams_six_I": true,
+    "conservation_used_only_for_this_exact_seed": true
+  },
+  "exact_seed_phase_tests": 100,
+  "malformed_cover_reports_rejected": 4,
+  "lean_kernel_verified": false,
+  "scope": "finite exact development tests against a separately implemented LP vertex oracle",
+  "source_sha256": {
+    "test_real_x_balanced_sublevel.py": "fdca182b28358fcadb469485b53511f64a1f72781e9cf7b8b652350adb3d242e",
+    "check_real_x_balanced_sublevel.cpp": "e77d0222c4986c8fe6e54358bdfd0f4f22e65f53eca1eff5fa3a7023f01d35a9",
+    "check_real_x_global_cover.cpp": "dc71bf13400feffc555040172682ad40d6ab378f2466b80da19237ea1f01b531"
+  }
+}
