@@ -454,23 +454,21 @@ public sealed partial class LeanCacheEnsureCommandTests
 
         var result = WorktreeCommand.Run(repository.Path, ["ensure-cache"], runner);
 
-        Assert.Equal(failure == "cache-get", result.Success);
+        Assert.True(result.Success, result.Error);
         Assert.True(Directory.Exists(Path.Combine(repository.Path, ".lake")));
         Assert.True(File.Exists(Path.Combine(repository.Path, ".lake", "build", "cache.bin")));
         Assert.True(File.Exists(repositoryOlean));
         Assert.False(File.Exists(LeanCacheStamp.PathFor(Path.Combine(repository.Path, ".lake"))));
         Assert.Equal([true], runner.CacheGetExistingProjectionObservations);
-        using var receipt = ParseReceipt(result.Success ? result.Output : result.Error);
+        using var receipt = ParseReceipt(result.Output);
+        Assert.Equal("degraded", receipt.RootElement.GetProperty("status").GetString());
         Assert.Equal(expectedStampMiss, receipt.RootElement.GetProperty("stamp_miss").GetString());
         Assert.False(receipt.RootElement.TryGetProperty("mathlib_cache_pruned_files", out _));
         Assert.False(receipt.RootElement.TryGetProperty("mathlib_cache_clean_status", out _));
-        if (failure == "cache-get")
-        {
-            Assert.Contains(
-                "cache get failed",
-                receipt.RootElement.GetProperty("reason").GetString()!,
-                StringComparison.OrdinalIgnoreCase);
-        }
+        Assert.Contains(
+            failure == "cache-get" ? "cache get failed" : "stamp publication failed",
+            receipt.RootElement.GetProperty("reason").GetString()!,
+            StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
