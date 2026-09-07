@@ -8,5 +8,4 @@ coverage_gids:
   - gid: D5/S3/Constants/Values.deltaMean
     target_statement_id: sha256:09a77f9d2a015ce70ba843403a383d703d0854c02f0d5ce58ef5bf378b172ba0
 receipts:
-  scribe: []
   unresolved_subitems: []
