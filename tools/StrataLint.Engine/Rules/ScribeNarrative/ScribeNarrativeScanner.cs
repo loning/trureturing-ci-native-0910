@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Text;
 
 namespace StrataLint.Engine;
 
@@ -178,7 +179,7 @@ internal static class ScribeNarrativeScanner
         var line = token.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
         if (token.Kind() is SyntaxKind.MultiLineRawStringLiteralToken or SyntaxKind.Utf8MultiLineRawStringLiteralToken)
             line++;
-        return new TextPart(token.ValueText, line, token.Text.Contains('\n'));
+        return new TextPart(token.ValueText, line, token.Text.IndexOfAny(['\r', '\n']) >= 0);
     }
 
     private static Regex Pattern(string pattern) => new(pattern,
@@ -188,7 +189,10 @@ internal static class ScribeNarrativeScanner
         Regex? Subject = null, Regex? Relation = null,
         Regex? DocumentSubject = null, Regex? DocumentRelation = null);
 
-    private sealed record TextPart(string Value, int Line, bool PhysicalNewlines);
+    private sealed record TextPart(string Value, int Line, bool PhysicalNewlines)
+    {
+        internal SourceText? PhysicalText { get; } = PhysicalNewlines ? SourceText.From(Value) : null;
+    }
 
     private sealed class Carrier(List<TextPart> parts)
     {
@@ -199,7 +203,7 @@ internal static class ScribeNarrativeScanner
             foreach (var part in parts)
             {
                 if (offset < part.Value.Length)
-                    return part.Line + (part.PhysicalNewlines ? part.Value.AsSpan(0, offset).Count('\n') : 0);
+                    return part.Line + (part.PhysicalText?.Lines.GetLinePosition(offset).Line ?? 0);
                 offset -= part.Value.Length;
             }
             return parts.Count == 0 ? 1 : parts[^1].Line;

@@ -184,6 +184,13 @@ public sealed class ScribeNarrativeProvenanceRuleTests
     }
 
     [Fact]
+    public void CarriageReturnOnlyLinesDoNotDuplicateCjkFindings()
+    {
+        var finding = Assert.Single(Evaluate("// clean\r// \u4E2D"));
+        Assert.Contains("(line 2)", finding.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void ConcatenatedMatchUsesTheLineOfItsFirstCharacter()
     {
         var finding = Assert.Single(Evaluate("Text(\"clean \" +\n \"diges\" + \"tion\");"));
