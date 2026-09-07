@@ -30,7 +30,7 @@ set_option backward.isDefEq.respectTransparency false
 
 namespace D5.S3.Zeros.Convolution.EulerianSquareRow32
 
-theorem row_0 : row 0 =
+private theorem row_0 : row 0 =
   [1] := by
   rfl
 

@@ -136,11 +136,11 @@ private theorem row_33 : row 33 =
   decide
 
 set_option maxHeartbeats 4000000 in
+-- The finite matrix product contains 34 exact coefficient computations.
 private theorem bc_values (k : Nat) (hk : k <= 33) :
     bc 33 k = (0 :: (gcs ++ [1])).getD k 0 := by
   interval_cases k <;>
     norm_num [bc, Finset.sum_Icc_succ_top, A,
-      EulerianSquareRow32.row_0,
       EulerianSquareRow32.row_1,
       EulerianSquareRow32.row_2,
       EulerianSquareRow32.row_3,
@@ -180,6 +180,7 @@ theorem factor_row32 : B 32 = X * H32 := by
   exact EulerianSquareRow32.factor_row32
 
 set_option maxHeartbeats 4000000 in
+-- Expanding the certified coefficients requires a large polynomial normalization.
 /-- Exact ordinary matrix multiplication binds the new certificate to B 33. -/
 theorem factor_row33 : B 33 = X * H33 := by
   norm_num [B, Finset.sum_range_succ, bc_values, H33, gcs, hp]
@@ -202,7 +203,169 @@ private theorem H32_anchor : H32.Splits ∧
   subst x
   norm_num [H32, fcs, hp] at hx
 
+private def boxHorner (a b d : Int) : List Int → Int × Int
+  | [] => (1, 1)
+  | c :: cs =>
+      let q := boxHorner a b d cs
+      (c * d ^ (cs.length + 1) + min (a * q.2) (b * q.2),
+       c * d ^ (cs.length + 1) + max (a * q.1) (b * q.1))
+
+private theorem mul_box {a b t l u v : Real} (ht : t <= 0)
+    (ha : a <= t) (hb : t <= b) (hl : l <= v) (hu : v <= u) :
+    min (a * u) (b * u) <= t * v ∧ t * v <= max (a * l) (b * l) := by
+  constructor
+  · apply le_trans _ (mul_le_mul_of_nonpos_left hu ht)
+    rcases le_total 0 u with h | h
+    · exact (min_le_left _ _).trans (mul_le_mul_of_nonneg_right ha h)
+    · exact (min_le_right _ _).trans (mul_le_mul_of_nonpos_right hb h)
+  · apply le_trans (mul_le_mul_of_nonpos_left hl ht)
+    rcases le_total 0 l with h | h
+    · exact (mul_le_mul_of_nonneg_right hb h).trans (le_max_right _ _)
+    · exact (mul_le_mul_of_nonpos_right ha h).trans (le_max_left _ _)
+
+private theorem boxHorner_spec (cs : List Int) (a b d : Int) (x : Real)
+    (ha : (a : Real) <= d * x) (hb : (d : Real) * x <= b) (hb0 : b <= 0) :
+    ((boxHorner a b d cs).1 : Real) <= (d : Real) ^ cs.length * (hp cs).eval x ∧
+    (d : Real) ^ cs.length * (hp cs).eval x <= (boxHorner a b d cs).2 := by
+  induction cs with
+  | nil => simp [boxHorner, hp]
+  | cons c cs ih =>
+    have ht : (d : Real) * x <= 0 := hb.trans (by exact_mod_cast hb0)
+    have h := mul_box ht ha hb ih.1 ih.2
+    have he : (d : Real) ^ (cs.length + 1) * (hp (c :: cs)).eval x =
+        (c : Real) * (d : Real) ^ (cs.length + 1) +
+          ((d : Real) * x) * ((d : Real) ^ cs.length * (hp cs).eval x) := by
+      simp only [hp, eval_add, eval_C, eval_mul, eval_X, pow_succ]
+      ring
+    simp only [boxHorner, List.length_cons, Int.cast_add, Int.cast_mul,
+      Int.cast_pow, Int.cast_min, Int.cast_max]
+    rw [he]
+    constructor <;> linarith only [h.1, h.2]
+
+private theorem root_between_split (p : Real[X]) (hs : p.Splits) (hm : p.Monic)
+    (a b : Real) (hab : a < b) (hv : p.eval a * p.eval b < 0) :
+    ∃ x, a < x ∧ x < b ∧ p.eval x = 0 := by
+  classical
+  by_contra h
+  push Not at h
+  have hp : 0 <= (p.roots.map (fun x => (a - x) * (b - x))).prod := by
+    apply Multiset.prod_nonneg
+    intro y hy
+    obtain ⟨x, hx, rfl⟩ := Multiset.mem_map.mp hy
+    have hr := (mem_roots hm.ne_zero).mp hx
+    by_cases ha : a < x
+    · have hb : b <= x := le_of_not_gt (fun hbx => h x ha hbx hr)
+      exact mul_nonneg_of_nonpos_of_nonpos (by linarith) (by linarith)
+    · have hx : x <= a := le_of_not_gt ha
+      exact mul_nonneg (by linarith) (by linarith)
+  rw [Multiset.prod_map_mul,
+    ← hs.eval_eq_prod_roots_of_monic hm a,
+    ← hs.eval_eq_prod_roots_of_monic hm b] at hp
+  exact (not_lt_of_ge hp) hv
+
+private theorem sign_change_from_hv (cs : List Int) (a b d : Int) (hd : 0 < d)
+    (h : hv a d cs * hv b d cs < 0) :
+    (hp cs).eval ((a : Real) / d) * (hp cs).eval ((b : Real) / d) < 0 := by
+  rcases mul_neg_iff.mp h with h | h
+  · exact mul_neg_of_pos_of_neg (eval_pos cs a d hd h.1) (eval_neg cs b d hd h.2)
+  · exact mul_neg_of_neg_of_pos (eval_neg cs a d hd h.1) (eval_pos cs b d hd h.2)
+
+
+private def boxes (i : Fin 31) : Int × Int × Int :=
+  ([(-10569646080, -7247757312, 1),
+    (-1992294400, -1241513984, 1),
+    (-921553, -770048, 2),
+    (-118144, -100352, 1),
+    (-6753, -6016, 1),
+    (-2048, -1920, 1),
+    (-4311, -4224, 8),
+    (-13805, -13726, 64),
+    (-26442, -26387, 256),
+    (-54321, -54272, 1024),
+    (-251341, -251296, 8192),
+    (-38548, -38545, 2048),
+    (-398299, -398286, 32768),
+    (-66944, -66943, 8192),
+    (-2966353, -2966334, 524288),
+    (-2099076, -2099063, 524288),
+    (-3016078, -3016069, 1048576),
+    (-4373229, -4373216, 2097152),
+    (-3181017, -3181008, 2097152),
+    (-4615496, -4615483, 4194304),
+    (-829485, -829480, 1048576),
+    (-2345270, -2345255, 4194304),
+    (-807100, -807079, 2097152),
+    (-266904, -266887, 1048576),
+    (-20807, -20804, 131072),
+    (-23773, -23756, 262144),
+    (-5934, -5911, 131072),
+    (-590, -583, 32768),
+    (-1353, -1248, 262144),
+    (-837, -560, 1048576),
+    (-4809, -376, 67108864)] : List (Int × Int × Int)).getD i.val (0, 0, 1)
+
+private def lower (i : Fin 31) : Rat := (boxes i).1 / ((boxes i).2.2 : Rat)
+private def upper (i : Fin 31) : Rat := (boxes i).2.1 / ((boxes i).2.2 : Rat)
+private def leftEnd : Rat := -274877906944
+private def rightEnd : Rat := -1 / 1099511627776
+
+private theorem boxes_proper : ∀ i,
+    0 < (boxes i).2.2 ∧ (boxes i).1 < (boxes i).2.1 ∧ (boxes i).2.1 < 0 := by
+  decide +kernel
+
+private theorem boxes_ordered : ∀ i j, i < j → upper i < lower j := by
+  decide +kernel
+
+private theorem boxes_outer : ∀ i, leftEnd < lower i ∧ upper i < rightEnd := by
+  decide +kernel
+
+set_option maxHeartbeats 4000000 in
+-- Each of the 31 cases checks two endpoint signs and one interval enclosure.
+private theorem numeric_signs : ∀ i,
+    hv (boxes i).1 (boxes i).2.2 fcs * hv (boxes i).2.1 (boxes i).2.2 fcs < 0 ∧
+      (if i.val % 2 = 0 then (boxHorner (boxes i).1 (boxes i).2.1 (boxes i).2.2 gcs).2 < 0
+       else 0 < (boxHorner (boxes i).1 (boxes i).2.1 (boxes i).2.2 gcs).1) := by
+  intro i
+  fin_cases i <;> norm_num [boxes, List.getD, hv, boxHorner, fcs, gcs]
+
+private theorem left_positive : 0 < H33.eval (leftEnd : Real) := by
+  convert eval_pos gcs (-274877906944) 1 (by norm_num)
+    (by norm_num [hv, gcs]) using 1; norm_num [H33, leftEnd]
+
+private theorem right_positive : 0 < H33.eval (rightEnd : Real) := by
+  convert eval_pos gcs (-1) 1099511627776 (by norm_num)
+    (by norm_num [hv, gcs]) using 1; norm_num [H33, rightEnd]
+
+private theorem signs_in_boxes (i : Fin 31) (x : Real)
+    (ha : (lower i : Real) < x) (hb : x < (upper i : Real)) :
+    if i.val % 2 = 0 then H33.eval x < 0 else 0 < H33.eval x := by
+  have hd : (0 : Real) < (boxes i).2.2 := by exact_mod_cast (boxes_proper i).1
+  have ha' : ((boxes i).1 : Real) <= ((boxes i).2.2 : Real) * x := by
+    rw [mul_comm]
+    apply (div_le_iff₀ hd).mp
+    simpa [lower] using ha.le
+  have hb' : ((boxes i).2.2 : Real) * x <= ((boxes i).2.1 : Real) := by
+    rw [mul_comm]
+    apply (le_div_iff₀ hd).mp
+    simpa [upper] using hb.le
+  have h := boxHorner_spec gcs (boxes i).1 (boxes i).2.1 (boxes i).2.2 x
+    ha' hb' (boxes_proper i).2.2.le
+  have hc := (numeric_signs i).2
+  have hpow := pow_pos hd gcs.length
+  change _ <= (↑(boxes i).2.2 : Real) ^ gcs.length * H33.eval x ∧
+    (↑(boxes i).2.2 : Real) ^ gcs.length * H33.eval x <= _ at h
+  split_ifs with he
+  · rw [if_pos he] at hc
+    have hn : ((boxHorner (boxes i).1 (boxes i).2.1 (boxes i).2.2 gcs).2 : Real) < 0 := by
+      exact_mod_cast hc
+    nlinarith only [h.2, hn, hpow]
+  · rw [if_neg he] at hc
+    have hp : (0 : Real) < (boxHorner (boxes i).1 (boxes i).2.1 (boxes i).2.2 gcs).1 := by
+      exact_mod_cast hc
+    exact (mul_pos_iff_of_pos_left hpow).mp (hp.trans_le h.1)
+
+#print axioms numeric_signs
+#print axioms signs_in_boxes
 #print axioms factor_row33
 
 end D5.S3.Zeros.Convolution.EulerianSquareRow33
-
