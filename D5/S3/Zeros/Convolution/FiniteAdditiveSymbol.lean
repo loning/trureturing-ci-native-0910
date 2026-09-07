@@ -181,7 +181,7 @@ theorem operator_eq_additiveConvolution (n : ℕ) (p q : ℝ[X]) (hq : q.natDegr
 private theorem translation_eval (q : ℝ[X]) (z w : ℂ) :
     (taylor (X : ℝ[X]) (q.map C)).eval₂ (eval₂RingHom Complex.ofRealHom z) w =
       q.eval₂ Complex.ofRealHom (w+z) := by
-  simp [taylor_apply, eval₂_comp, eval₂_map, eval₂_add, RingHom.comp_assoc]
+  simp [taylor_apply, eval₂_comp, eval₂_map, eval₂_add]
 
 private theorem stable_translation {q : ℝ[X]} (hq : q.Splits) (hq0 : q ≠ 0)
     (z w : ℂ) (hz : 0 < z.im) (hw : 0 < w.im) :

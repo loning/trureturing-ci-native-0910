@@ -124,7 +124,7 @@ private theorem even_coeff (m k : ℕ) (p : ℝ[X]) :
     (expand ℝ 2 p).coeff (2*m-2*k) = p.coeff (m-k) := by
   rw [← Nat.mul_sub_left_distrib, coeff_expand_mul' (by norm_num)]
 
-private theorem odd_coeff (m k : ℕ) (p : ℝ[X]) (hk : 2*k+1 ≤ 2*m) :
+private theorem odd_coeff (m k : ℕ) (p : ℝ[X]) (hk : 2 * k + 1 ≤ 2 * m) :
     (expand ℝ 2 p).coeff (2*m-(2*k+1)) = 0 := by
   rw [coeff_expand (by norm_num), if_neg (by omega)]
 
@@ -140,7 +140,7 @@ private theorem sum_even (f : ℕ → ℝ) : ∀ k : ℕ,
         Finset.sum_range_succ, Finset.sum_range_succ,
         ih (fun i hi => ho i (by omega)), ho k (by omega), add_zero,
         Finset.sum_range_succ]
-      simp only [show 2*k+1+1 = 2*(k+1) by omega]
+      simp only [Finset.sum_range_succ, show 2*k+1+1 = 2*(k+1) by omega]
 
 private theorem even_additive_coeff (m k : ℕ) (p q : ℝ[X]) (hk : k ≤ m) :
     (additiveConvolution (2*m) (expand ℝ 2 p) (expand ℝ 2 q)).coeff (2*m-2*k) =
@@ -161,7 +161,7 @@ private theorem even_additive_coeff (m k : ℕ) (p q : ℝ[X]) (hk : k ≤ m) :
   have hwj := (weight_pos m (k-i) (by omega)).ne'
   field_simp
 
-private theorem odd_additive_coeff (m k : ℕ) (p q : ℝ[X]) (hk : 2*k+1 ≤ 2*m) :
+private theorem odd_additive_coeff (m k : ℕ) (p q : ℝ[X]) (hk : 2 * k + 1 ≤ 2 * m) :
     (additiveConvolution (2*m) (expand ℝ 2 p) (expand ℝ 2 q)).coeff (2*m-(2*k+1)) = 0 := by
   rw [coeff_additiveConvolution (2*m) _ _ (2*k+1) hk]
   suffices hs : (∑ i ∈ Finset.range (2*k+1+1),
@@ -219,8 +219,8 @@ theorem preserves_nonnegative_roots (hBB : FiniteSymbolCriterion) (m : ℕ) (_hm
 /-- The coefficient specification uniquely identifies the reconstructed polynomial. -/
 theorem eq_of_coefficients (m : ℕ) (p q r : ℝ[X]) (hr : r.natDegree ≤ m)
     (hc : ∀ k ≤ m, elementaryCoeff m r k = weight m k *
-      ∑ i ∈ Finset.range (k+1), elementaryCoeff m p i * elementaryCoeff m q (k-i) /
-        (weight m i * weight m (k-i))) : r = rectangularBoxplus m p q := by
+      ∑ i ∈ Finset.range (k + 1), elementaryCoeff m p i * elementaryCoeff m q (k - i) /
+        (weight m i * weight m (k - i))) : r = rectangularBoxplus m p q := by
   ext t
   by_cases ht : t ≤ m
   · have h := (hc (m-t) (by omega)).trans (definition_consistency m p q (m-t) (by omega)).symm
