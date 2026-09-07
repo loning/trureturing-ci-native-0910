@@ -123,4 +123,66 @@ theorem large_prime_product_le {n : ℕ} (hn : 0 < n) {y : ℝ} (hy : 2 ≤ y) :
       simp only [div_eq_mul_inv, mul_inv_rev]
       ring
 
+/-- Split the divisor-sum ratio into a small-prime product and a large-prime error. -/
+theorem sigma_split {n : ℕ} (hn : 0 < n) {y : ℝ} (hy : 2 ≤ y) :
+    (ArithmeticFunction.sigma 1 n : ℝ) / n ≤
+      (∏ p ∈ Ioc (0 : ℕ) ⌊y⌋₊ with p.Prime, (1 - 1 / (p : ℝ))⁻¹) *
+        Real.exp (2 * Real.log n / (y * Real.log y)) := by
+  have hfactor (p : ℕ) (hp : p.Prime) :
+      (1 : ℝ) ≤ (1 - 1 / (p : ℝ))⁻¹ := by
+    have hp1 : (1 : ℝ) < p := by
+      simpa only [Nat.cast_one] using (Nat.cast_lt (α := ℝ)).mpr hp.one_lt
+    have hrecip : 1 / (p : ℝ) < 1 := by
+      simpa only [one_div] using inv_lt_one_of_one_lt₀ hp1
+    exact (one_le_inv₀ (sub_pos.mpr hrecip)).mpr
+      (sub_le_self 1 (div_nonneg zero_le_one (Nat.cast_nonneg p)))
+  have hgeom (p : ℕ) (hp : p.Prime) (a : ℕ) :
+      (∑ i ∈ Finset.range (a + 1), (p : ℝ) ^ i) / (p : ℝ) ^ a ≤
+        (1 - 1 / (p : ℝ))⁻¹ := by
+    have hp1 : (1 : ℝ) < p := by
+      simpa only [Nat.cast_one] using (Nat.cast_lt (α := ℝ)).mpr hp.one_lt
+    have hp0 : (0 : ℝ) < p := Nat.cast_pos.mpr hp.pos
+    have hpm : (0 : ℝ) < (p : ℝ) - 1 := sub_pos.mpr hp1
+    have hpow : (0 : ℝ) < (p : ℝ) ^ a := pow_pos hp0 a
+    rw [geom_sum_eq hp1.ne']
+    calc
+      ((p : ℝ) ^ (a + 1) - 1) / (p - 1) / p ^ a ≤
+          (p : ℝ) ^ (a + 1) / (p - 1) / p ^ a :=
+        div_le_div_of_nonneg_right
+          (div_le_div_of_nonneg_right (sub_le_self _ zero_le_one) hpm.le) hpow.le
+      _ = (1 - 1 / (p : ℝ))⁻¹ := by
+        rw [pow_succ, div_right_comm, mul_div_cancel_left₀ _ hpow.ne',
+          one_sub_div hp0.ne', inv_div]
+  have hsigma : (ArithmeticFunction.sigma 1 n : ℝ) / n ≤
+      ∏ p ∈ n.primeFactors, (1 - 1 / (p : ℝ))⁻¹ := by
+    have hnprod : (n : ℝ) = ∏ p ∈ n.primeFactors, (p : ℝ) ^ n.factorization p := by
+      simpa only [Nat.cast_prod, Nat.cast_pow] using
+        congrArg (fun k : ℕ => (k : ℝ)) (Nat.prod_primeFactors_pow_factorization hn.ne')
+    have hsigmaprod : (ArithmeticFunction.sigma 1 n : ℝ) =
+        ∏ p ∈ n.primeFactors, ∑ i ∈ Finset.range (n.factorization p + 1), (p : ℝ) ^ i := by
+      simpa only [Nat.cast_prod, Nat.cast_sum, Nat.cast_pow, mul_one] using
+        congrArg (fun k : ℕ => (k : ℝ))
+          (ArithmeticFunction.sigma_eq_prod_primeFactors_sum_range_factorization_pow_mul
+            (k := 1) hn.ne')
+    rw [hsigmaprod, hnprod, ← Finset.prod_div_distrib]
+    exact Finset.prod_le_prod
+      (fun p _ => div_nonneg
+        (Finset.sum_nonneg (fun i _ => pow_nonneg (Nat.cast_nonneg p) i))
+        (pow_nonneg (Nat.cast_nonneg p) _))
+      (fun p hp => hgeom p (Nat.prime_of_mem_primeFactors hp) _)
+  have hsplit :
+      (∏ p ∈ n.primeFactors, (1 - 1 / (p : ℝ))⁻¹) =
+      (∏ p ∈ n.primeFactors.filter (fun p : ℕ => (p : ℝ) ≤ y),
+        (1 - 1 / (p : ℝ))⁻¹) *
+      (∏ p ∈ largePrimes n y, (1 - 1 / (p : ℝ))⁻¹) := by
+    simpa only [not_le, largePrimes] using
+      (Finset.prod_filter_mul_prod_filter_not n.primeFactors
+        (fun p : ℕ => (p : ℝ) ≤ y) (fun p => (1 - 1 / (p : ℝ))⁻¹)).symm
+  exact hsigma.trans (hsplit.trans_le
+    (mul_le_mul (small_prime_product_le n y) (large_prime_product_le hn hy)
+      (Finset.prod_nonneg (fun p hp => zero_le_one.trans
+        (hfactor p (Nat.prime_of_mem_primeFactors (Finset.mem_filter.mp hp).1))))
+      (Finset.prod_nonneg (fun p hp => zero_le_one.trans
+        (hfactor p (Finset.mem_filter.mp hp).2)))))
+
 end D5.S3.Weil.GronwallUpperEnvelope
