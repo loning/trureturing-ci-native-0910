@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/DecisionValueScale/StrictMonotoneObjectiveArgmaxAlignment.strict_monotone_factorization_preserves_argmax
     target_statement_id: sha256:d6c76b7d18cc6de461faf33fd26feb728af4c06c20148f6a204dd460e8da9ac3
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/DecisionValueScale/StrictMonotoneObjectiveArgmaxAlignment.strict_monotone_factorization_preserves_argmax
-      definition_sha256: sha256:c408d42cb093d93b41ce1ce4997e311a4b5d2a74eac29f9143a8c88cc4ee4199
-      emission_sha256: sha256:0ef6c45d0fe6fd53ead6ab11a87e3b9eb5234ff2c09d3b47cee19a0d4336682b
   unresolved_subitems: []

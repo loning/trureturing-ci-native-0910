@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Faithfulness/BareValueObservationNoninjective.bare_value_observation_not_injective
     target_statement_id: sha256:f090f969202194de31027a02278a3fa55bf698e371baf9e766bbfe8cea59f316
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Faithfulness/BareValueObservationNoninjective.bare_value_observation_not_injective
-      definition_sha256: sha256:fd8f23c06dcd223e3e8ba9d997cec19aca98667d05ddcc33c94f1fa9279a3fb8
-      emission_sha256: sha256:9c98d9dbb5edbd72204c50f1c00772983080b9b88f8e39069837dbcc2eec75d2
   unresolved_subitems: []

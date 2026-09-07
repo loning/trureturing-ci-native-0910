@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Weil/Scattering/ShiftedResonanceCriterion.horizontal_resonance_line_iff_critical_line
     target_statement_id: sha256:80d9bdbd3929e2d8701ea643ff364ba2a98e79e27ad9f1f5c7666695b8342624
 receipts:
-  scribe:
-    - gid: D5/S3/Weil/Scattering/ShiftedResonanceCriterion.horizontal_resonance_line_iff_critical_line
-      definition_sha256: sha256:5aa1456947ce6fd14f0718fcc1543fd7c712f14c780bc0433d3585be631180eb
-      emission_sha256: sha256:f9b8d849fd556e121d3b80f5f2457bd19469118dd34f94081e31969108911951
   unresolved_subitems: []

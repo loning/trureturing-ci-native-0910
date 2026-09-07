@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Reporting/TruthfulReportBlocksInvertedSpectrum.truthful_public_report_forces_phenomenal_agreement
     target_statement_id: sha256:a07a906681d40d6d75bb000086b1fa6e3670eab919b1a2b64343c8d2215f489a
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Reporting/TruthfulReportBlocksInvertedSpectrum.truthful_public_report_forces_phenomenal_agreement
-      definition_sha256: sha256:25498d76477545e77d663a8a535c709cc44a76c5902c70d2e2f4c4a3c6c637e2
-      emission_sha256: sha256:b0074650c860372236a3f087818fdae641ac303b2ad7f557de84ef9395e19ff3
   unresolved_subitems: []

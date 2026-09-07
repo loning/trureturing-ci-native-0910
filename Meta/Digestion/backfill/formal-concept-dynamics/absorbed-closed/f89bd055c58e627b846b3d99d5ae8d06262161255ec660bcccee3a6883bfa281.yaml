@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Topology/UniversalT0Quotient.universal_t0_quotient
     target_statement_id: sha256:dfc32a63125d0c51d28a2756ffa4a71fe920e61c9b97b626e06d6ac43941222c
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Topology/UniversalT0Quotient.universal_t0_quotient
-      definition_sha256: sha256:2874f16f031be8fcab22cfa9c353cf92c2a0901158d84439aaad985eff11a0d9
-      emission_sha256: sha256:90051e4cd9a85a2575cd414f59491d47dd610be439b14799774bb99dad06821f
   unresolved_subitems: []

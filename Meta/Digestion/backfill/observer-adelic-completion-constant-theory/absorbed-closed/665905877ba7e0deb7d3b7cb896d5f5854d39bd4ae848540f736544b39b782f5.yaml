@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Constants/Characterizations/LocalPrecisionUnit.local_precision_unit_unique
     target_statement_id: sha256:c37dd76aa4251f3a3f147cba04e534b3d799c40738f1c5dc5bd80cbb84fcfd7a
 receipts:
-  scribe:
-    - gid: D5/S3/Constants/Characterizations/LocalPrecisionUnit.local_precision_unit_unique
-      definition_sha256: sha256:0d8a85075c86b8ca0d0157f7439f592e151544f28b0ed14bad7b65e9bed693ac
-      emission_sha256: sha256:f6cfe5cf8cdcf660d63de6b5f02311be2232658d9bcaba36ab70152284510579
   unresolved_subitems: []

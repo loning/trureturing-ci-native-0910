@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Causal/InterventionEffectiveness.intervention_effectiveness
     target_statement_id: sha256:0f6eec8e3c3aa47910318c098b4e1694a7b42f17992c92f601ea8bfc3c043a59
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Causal/InterventionEffectiveness.intervention_effectiveness
-      definition_sha256: sha256:d8a1bf6bedb5e571fb9eaebe3d5e052e395f02992421d3bc4533decdac02cca1
-      emission_sha256: sha256:9578b5dffaca9845e02ebdbba05425f50b280844e9f21731c0beedc6196263e6
   unresolved_subitems: []

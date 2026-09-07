@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/DecisionValue/FiniteHorizonOptimalActionDescent.finite_horizon_optimal_actions_descend
     target_statement_id: sha256:a80913e339cbcd36f2481666c7040c5c236a3746dfd5e6d7d1e2590ee42cb6ac
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/DecisionValue/FiniteHorizonOptimalActionDescent.finite_horizon_optimal_actions_descend
-      definition_sha256: sha256:8b11231406559e845d54de2e4bcf097627de00d022d4a948d613e39b43c9cec3
-      emission_sha256: sha256:03c61aba24eacbe4239d778d9ffabf23808598ff68d1d9720b80b2abd95231bc
   unresolved_subitems: []

@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Estimation/DecisionRisk/PosteriorStoppingMapErrorBound.posterior_stopping_map_error_bound
     target_statement_id: sha256:f61e316d70105da23b28445bedcc0ce3b39783696cb02b28e243dd19e0065971
 receipts:
-  scribe:
-    - gid: D5/S3/Estimation/DecisionRisk/PosteriorStoppingMapErrorBound.posterior_stopping_map_error_bound
-      definition_sha256: sha256:0c7a07fbfde986883cb936b8d394fc737eb4581dbe355e23894c496cd4f3b10b
-      emission_sha256: sha256:84cd5778c024dfdce7b303cb609d50e1734a72014f7e460c688c3b885a73a61a
   unresolved_subitems: []
