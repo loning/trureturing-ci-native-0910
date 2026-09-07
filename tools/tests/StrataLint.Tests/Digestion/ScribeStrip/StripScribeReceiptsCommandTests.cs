@@ -10,10 +10,14 @@ public sealed class StripScribeReceiptsCommandTests
     public void RootUsageListsStripScribeReceipts()
     {
         var console = new BufferedConsole();
+        var environment = new ProductionCliEnvironment(
+            "synthetic-repository",
+            new FakeRepositoryGateway(RawChangeSet.Create([]), null, null),
+            new FakeLeanReportSource(null));
 
         var exitCode = CliApplication.Run(
             Array.Empty<string>(),
-            new StubCliEnvironment(new AdmissionOutcome.InfrastructureFailure("unused")),
+            environment,
             console);
 
         Assert.Equal(2, exitCode);
