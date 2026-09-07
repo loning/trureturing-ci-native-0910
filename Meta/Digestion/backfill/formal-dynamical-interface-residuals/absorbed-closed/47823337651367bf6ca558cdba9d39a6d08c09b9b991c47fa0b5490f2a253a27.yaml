@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Observer/BlockStructure/ProjectionCommutatorCrossBlockCriterion.projection_commutator_cross_blocks
     target_statement_id: sha256:db139326a5732205e3b3d3cf375d5ab1555b3efdb45972a4223d0c6ac8d42b67
 receipts:
-  scribe:
-    - gid: D5/S3/Observer/BlockStructure/ProjectionCommutatorCrossBlockCriterion.projection_commutator_cross_blocks
-      definition_sha256: sha256:5acc4905d4faef3ca056da3e003d875c692b4224fc1045ca1d3222762eeb438b
-      emission_sha256: sha256:aa1da66d4f455d6c9fb92b4dea324fa0b32e5677a4fecee1780c775061036995
   unresolved_subitems: []

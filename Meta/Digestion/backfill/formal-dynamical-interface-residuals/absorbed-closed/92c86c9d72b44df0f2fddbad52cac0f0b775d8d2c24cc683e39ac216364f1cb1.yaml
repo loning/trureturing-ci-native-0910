@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Estimation/DecisionRisk/StochasticDescentLumpability.descent_defect_zero_iff_strongly_lumpable
     target_statement_id: sha256:9d9c846b44393474b2df65fa499eda9c413155767dbcb9f2ebd90914badd03d2
 receipts:
-  scribe:
-    - gid: D5/S3/Estimation/DecisionRisk/StochasticDescentLumpability.descent_defect_zero_iff_strongly_lumpable
-      definition_sha256: sha256:4c5b234a63f6e82e1dd517dd4ae93bf22c81687b27de33cf2d9e327ad162c271
-      emission_sha256: sha256:1d69a06498e90a2fb35154131cc33ae2ea357383a6fc0a0253bac77140c73e5f
   unresolved_subitems: []

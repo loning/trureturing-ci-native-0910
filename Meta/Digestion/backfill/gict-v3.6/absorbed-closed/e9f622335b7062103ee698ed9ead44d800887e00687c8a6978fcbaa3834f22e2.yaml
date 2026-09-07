@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/QuantumStates/GNSExpectation.expectation_eq_preGNS_norm_sq
     target_statement_id: sha256:eeadf45c2fd295bcc9ad1f2a21b8df5515a241b064672fa079f107ceb2d74176
 receipts:
-  scribe:
-    - gid: D5/S3/QuantumStates/GNSExpectation.expectation_eq_preGNS_norm_sq
-      definition_sha256: sha256:d195431805680708d78eb69c3e2a6fc40e09e0c7552a699559af4122b86ba006
-      emission_sha256: sha256:adf9c0810b60a962228af8667bfd3432710cf8409e475d2ff12c5cb79fed08b7
   unresolved_subitems: []
