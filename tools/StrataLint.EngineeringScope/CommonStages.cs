@@ -1,10 +1,12 @@
 using System.Diagnostics;
+using System.Text;
 using System.Text.Json;
 using StrataLint.Engine;
 
 namespace StrataLint.EngineeringScope;
 
-internal sealed class CommonStages(string root, TextWriter output)
+internal sealed class CommonStages(string root, TextWriter output, CancellationToken deadlineCancellation = default,
+    Action<Process>? processExited = null)
 {
     private readonly List<StageStep> steps = [];
     private string stage = "input";
@@ -89,7 +91,7 @@ internal sealed class CommonStages(string root, TextWriter output)
         RequireBinary(engineering, CommonExecutionEvidence.ScribePath);
         RequireBinary(engineering, "tools/StrataLint.EngineeringScope/bin/Release/net10.0/StrataLint.EngineeringScope.dll");
         File.Delete(Path.Combine(root, CommonExecutionEvidence.CurrentPath));
-        Step("lean-report", "make", ["lean-report"]);
+        Step("lean-report", "/usr/bin/env", [$"STRATALINT_LEAN_CLI_DLL={Path.Combine(root, CommonExecutionEvidence.CliPath)}", "make", "lean-report"]);
         _ = RawLeanReportArtifact.ReadFile(Path.Combine(root, CommonExecutionEvidence.ReportPath), CommonExecutionEvidence.Snapshot(root), validateMaterials: true);
         Step("scribe", "/bin/bash", ["tools/scripts/workflow/scribe-content-checks.sh", CommonExecutionEvidence.ReportPath, CommonExecutionEvidence.ScribePath]);
         Step("filemap", "dotnet", [CommonExecutionEvidence.CliPath, "filemap-conform"]);
@@ -131,8 +133,10 @@ internal sealed class CommonStages(string root, TextWriter output)
 
     private (int Exit, string Text) Capture(string executable, string[] arguments)
     {
-        var timeout = TimeSpan.FromHours(2);
-        var deadline = Environment.GetEnvironmentVariable("PREFLIGHT_DEADLINE_AT");
+        if (deadlineCancellation.IsCancellationRequested) throw new TimeoutException("PREFLIGHT_BUDGET_EXHAUSTED owner=outer-deadline");
+        // Injected deadlines are advanced by their owner, independent of the ambient clock.
+        var timeout = deadlineCancellation.CanBeCanceled ? Timeout.InfiniteTimeSpan : TimeSpan.FromHours(2);
+        var deadline = deadlineCancellation.CanBeCanceled ? null : Environment.GetEnvironmentVariable("PREFLIGHT_DEADLINE_AT");
         if (deadline is not null)
         {
             if (!long.TryParse(deadline, out var seconds)) throw new ArgumentException("invalid PREFLIGHT_DEADLINE_AT");
@@ -143,18 +147,50 @@ internal sealed class CommonStages(string root, TextWriter output)
         start.Environment["DOTNET_CLI_UI_LANGUAGE"] = "en-US";
         foreach (var arg in arguments) start.ArgumentList.Add(arg);
         using var process = Process.Start(start) ?? throw new IOException("cannot start " + executable);
-        var stdout = process.StandardOutput.ReadToEndAsync();
-        var stderr = process.StandardError.ReadToEndAsync();
-        using var cancellation = new CancellationTokenSource(timeout);
-        try { process.WaitForExitAsync(cancellation.Token).GetAwaiter().GetResult(); }
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(deadlineCancellation);
+        cancellation.CancelAfter(timeout);
+        var stdoutText = new StringBuilder();
+        var stderrText = new StringBuilder();
+        var stdout = Drain(process.StandardOutput, stdoutText, cancellation.Token);
+        var stderr = Drain(process.StandardError, stderrText, cancellation.Token);
+        try
+        {
+            process.WaitForExitAsync(cancellation.Token).GetAwaiter().GetResult();
+            processExited?.Invoke(process);
+            Task.WhenAll(stdout, stderr).WaitAsync(cancellation.Token).GetAwaiter().GetResult();
+            cancellation.Token.ThrowIfCancellationRequested();
+            return (process.ExitCode, Captured(stdoutText) + Captured(stderrText));
+        }
         catch (OperationCanceledException)
         {
-            process.Kill(entireProcessTree: true);
-            process.WaitForExit();
-            return (124, stdout.GetAwaiter().GetResult() + stderr.GetAwaiter().GetResult()
+            try { if (!process.HasExited) process.Kill(entireProcessTree: true); }
+            catch (InvalidOperationException) { } // Exit can race the kill.
+            // Reaping and cancelled readers cannot keep a failed stage from reporting.
+            using var cleanup = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            try
+            {
+                Task.WhenAll(stdout, stderr, process.WaitForExitAsync(cleanup.Token))
+                    .WaitAsync(cleanup.Token).GetAwaiter().GetResult();
+            }
+            catch (OperationCanceledException) { }
+            return (124, Captured(stdoutText) + Captured(stderrText)
                 + "\nstage deadline exceeded: " + executable + "\n");
         }
-        return (process.ExitCode, stdout.GetAwaiter().GetResult() + stderr.GetAwaiter().GetResult());
+    }
+
+    private static async Task Drain(StreamReader reader, StringBuilder text, CancellationToken cancellation)
+    {
+        var buffer = new char[4096];
+        int count;
+        while ((count = await reader.ReadAsync(buffer.AsMemory(), cancellation).ConfigureAwait(false)) != 0)
+        {
+            lock (text) text.Append(buffer, 0, count);
+        }
+    }
+
+    private static string Captured(StringBuilder text)
+    {
+        lock (text) return text.ToString();
     }
 
     private sealed class StageFailure(int exit, string message) : Exception(message)
