@@ -1,3 +1,3 @@
-# AGENTS.md → CLAUDE.md
+# Agent 必读入口
 
-本仓库所有 agent 的必读标架是 [CLAUDE.md](./CLAUDE.md)(权威原文,一名一址,同一真源)。请完整阅读 CLAUDE.md 后再作用于本库。
+所有 agent 在本仓库开展任何工作前,必须完整阅读 [CLAUDE.md](./CLAUDE.md)。它是本仓库工作宪章的唯一权威原文;本文件仅作入口。

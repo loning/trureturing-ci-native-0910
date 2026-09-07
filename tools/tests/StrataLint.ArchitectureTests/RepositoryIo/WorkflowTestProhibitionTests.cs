@@ -108,8 +108,8 @@ public sealed class WorkflowTestProhibitionTests
 
         Assert.True(
             hits.Count == 0,
-            "器律⑦′:测试不得读本仓真实 workflow —— 它只校验 workflow「长什么样」,校验不了"
-                + "它「会不会执行」,给出的绿是假绿。正确性由真跑判(器律⑦)。\n"
+            "CLAUDE.md「测试与验证强度」:测试不得读本仓真实 workflow —— 它只校验 workflow「长什么样」,校验不了"
+                + "它「会不会执行」,给出的绿是假绿。正确性由真跑判(见「CI、判官改造与阻塞 hotfix」)。\n"
                 + string.Join("\n", hits.Select(static hit => $"  {hit.Path}:{hit.Line}")));
     }
 

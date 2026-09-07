@@ -13,7 +13,7 @@ internal static partial class JudgeSurfaceRevisionScanner
     private const int MaximumYamlDepth = 64;
 
     private const string Suffix =
-        " (SL-030, CLAUDE.md rule 19: base data enters the candidate judge through its snapshot reader)";
+        " (SL-030, CLAUDE.md, candidate judge policy: base data enters the candidate judge through its snapshot reader)";
 
     // `github.base_ref`, `github.event.pull_request.base.sha` and the bracket spelling
     // `pull_request['base']['sha']` of the same expression (review round 15).

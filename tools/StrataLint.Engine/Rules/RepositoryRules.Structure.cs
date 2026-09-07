@@ -69,11 +69,11 @@ internal static partial class RepositoryRules
 
     // The repository-wide capacity net tolerates a band above the admission limit.
     // Capacity is pressure, not correctness: an overfull bucket is a signal to split
-    // (CLAUDE.md 8), and by the tiers of 20 a reversible content-level fact belongs in
+    // (CLAUDE.md, structural growth), and by its detection tiers a reversible content-level fact belongs in
     // detect-and-correct. Without the band, two PRs branched from the same base can each
     // add one file to a bucket holding limit-1, each see the limit and admit, and their union
     // of limit+1 turns the repository-wide scan red - blocking every unrelated PR until
-    // someone splits. That is what made strict (now forbidden, 19) load-bearing. The
+    // someone splits. That is what made strict (forbidden by CLAUDE.md, mechanical admission) load-bearing. The
     // admission rule keeps the unbanded limit, so the next change that introduces a
     // capacity-counted path absent from its protected baseline is still refused and the split
     // pressure lands exactly where it belongs.
@@ -222,7 +222,7 @@ internal static partial class RepositoryRules
                 // 所以能治的是别让它连坐,并把分裂压力压在真正加长它的那次改动上。
                 //
                 // 检测不降级:超线仍然出 finding,无辜者那条是 Observe;全仓检测由 push
-                // 侧的 capacity-audit 承担。第20条要的正是这个形状:窄化阻断须以加强检测为对价。
+                // 侧的 capacity-audit 承担。CLAUDE.md「检测分级与根因」要求这个形状:窄化阻断须以加强检测为对价。
                 var baselineLineCount = context.Baseline.Files.TryGetValue(path, out var baselineFile)
                     ? CountArtifactLines(baselineFile.Text)
                     : 0;
@@ -231,7 +231,7 @@ internal static partial class RepositoryRules
                     : new RuleFinding(
                         path.Value,
                         $"artifact is overfull at {lineCount} lines (hard limit "
-                        + $"{ArtifactHardLineLimit}; split per CLAUDE.md 8), but this change "
+                        + $"{ArtifactHardLineLimit}; split per CLAUDE.md, structural growth), but this change "
                         + "did not grow it",
                         AdmissionEffect.Observe));
             }
@@ -292,7 +292,7 @@ internal static partial class RepositoryRules
                     item.Key,
                     $"directory contains {item.Value.Count} files (admission limit "
                     + $"{DirectoryFileLimit}, repository tolerance "
-                    + $"{DirectoryToleranceLimit}; split per CLAUDE.md 8)"));
+                    + $"{DirectoryToleranceLimit}; split per CLAUDE.md, structural growth)"));
             }
             else
             {
@@ -301,7 +301,7 @@ internal static partial class RepositoryRules
                     $"directory is overfull at {item.Value.Count} files (admission limit "
                     + $"{DirectoryFileLimit}, repository tolerance "
                     + $"{DirectoryToleranceLimit}), but this change introduced no capacity-counted "
-                    + "path absent from the protected baseline; split per CLAUDE.md 8",
+                    + "path absent from the protected baseline; split per CLAUDE.md, structural growth",
                     AdmissionEffect.Observe));
             }
         }

@@ -1,6 +1,6 @@
-# openproblem — 开放问题线的两阶段落地管线(器律⑨:器住仓库)
+# openproblem — 开放问题线的两阶段落地管线(CLAUDE.md「器的居所与语义工具」)
 
-CLAUDE.md 5⁵(开放问题线三档律)的操作面。所有脚本以宿主后台作业逐席运行(器律⑥),判绿只认 result.json / status.json 与哨兵,不认退出码。
+CLAUDE.md「开放问题的三档选题」的操作面。所有脚本以宿主后台作业逐席运行(CLAUDE.md「作业生命周期、等待与日志」),判绿只认 result.json / status.json 与哨兵,不认退出码。
 运行目录约定:`OP_SCRATCH` = 本会话的 scratchpad(briefs/、results/、probes/ 三个子目录);python 工具以该目录为第一个参数或工作目录。
 
 ## 流程(每条 lane)

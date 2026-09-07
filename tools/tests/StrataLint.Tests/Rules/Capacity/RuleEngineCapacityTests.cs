@@ -138,7 +138,7 @@ public sealed class RuleEngineCapacityTests
         Assert.Equal(
             $"directory contains {L + 1} files (admission limit {RepositoryRules.DirectoryFileLimit}, "
             + $"repository tolerance {RepositoryRules.DirectoryToleranceLimit}; "
-            + "split per CLAUDE.md 8)",
+            + "split per CLAUDE.md, structural growth)",
             diagnostic.Message);
     }
 
@@ -197,7 +197,7 @@ public sealed class RuleEngineCapacityTests
         Assert.Equal(
             $"directory contains {L + 2} files (admission limit {RepositoryRules.DirectoryFileLimit}, "
             + $"repository tolerance {RepositoryRules.DirectoryToleranceLimit}; "
-            + "split per CLAUDE.md 8)",
+            + "split per CLAUDE.md, structural growth)",
             diagnostic.Message);
     }
 
@@ -579,7 +579,7 @@ public sealed class RuleEngineCapacityTests
             $"directory is overfull at {currentCount} files (admission limit "
             + $"{RepositoryRules.DirectoryFileLimit}, repository tolerance "
             + $"{RepositoryRules.DirectoryToleranceLimit}), but this change introduced no "
-            + "capacity-counted path absent from the protected baseline; split per CLAUDE.md 8",
+            + "capacity-counted path absent from the protected baseline; split per CLAUDE.md, structural growth",
             diagnostic.Message);
     }
 
@@ -592,7 +592,7 @@ public sealed class RuleEngineCapacityTests
         Assert.Equal(
             $"directory contains {currentCount} files (admission limit "
             + $"{RepositoryRules.DirectoryFileLimit}, repository tolerance "
-            + $"{RepositoryRules.DirectoryToleranceLimit}; split per CLAUDE.md 8)",
+            + $"{RepositoryRules.DirectoryToleranceLimit}; split per CLAUDE.md, structural growth)",
             diagnostic.Message);
     }
     // 2026-08-15 实测的连坐:dev 上 DigestionLedgerAligner.cs 因两个 PR 的**并集**达到 823 行

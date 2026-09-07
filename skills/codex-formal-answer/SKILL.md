@@ -29,14 +29,14 @@ The three clauses are one theorem chain in the self anchors below: the answer's 
 
 ## Read first
 
-- `CLAUDE.md`, especially items 4, 5-double-prime, 6, 11, 15, 18, and 20-prime, plus section VI's ban on hedge-words substituting for measurement.
+- `CLAUDE.md`, especially the sections on evidence strength, scientific reasoning, current-state structure, library-before-proof, autonomy, classification, and error-driven detection.
 - `agents/CONTEXT.md` and `agents/echo-template.md`.
 - `docs/develop/spec/golden-ledger-repo-spec.md`, `Meta/FILEMAP.toml`, `Meta/domains.yaml`, and `make help` when repository mutation is in scope.
 - Existing Lean declarations and Describe sources reached by Step 2; read `tools/lean-inspector/Inspector.lean` only when an axiom-closure report is material.
 
 ## Method anchors
 
-`CLAUDE.md` item 5-double-prime solely owns the meanings of the eight disciplines and marks their use as agent reasoning as analogical. The registry below supplies only grep-resolvable frozen declaration addresses; it does not restate theorem content or assert a one-to-one discipline/declaration mapping. The forward-commitment discipline has no single frozen declaration and is carried by the existing machinery named in `CLAUDE.md`. The Pareto discipline has two anchors.
+`CLAUDE.md`'s scientific reasoning section solely owns the meanings of the eight disciplines and marks their use as agent reasoning as analogical. The registry below supplies only grep-resolvable frozen declaration addresses; it does not restate theorem content or assert a one-to-one discipline/declaration mapping. The forward-commitment discipline has no single frozen declaration and is carried by the existing machinery named in `CLAUDE.md`. The Pareto discipline has two anchors.
 
 - `lookup_copy_zero_loss_and_nonanticipating_failure` - `D5/S3/ConceptDynamics/DefinitionEscapeAdjudication/RetrospectiveLookupFailure.lean`
 - `blind_residual_charge_decomposition` - `D5/S3/ConceptDynamics/EscapeSpectrum/BlindResidualChargeDecomposition.lean`
@@ -73,7 +73,7 @@ Follow the steps in order. Do not pass a step until its postcondition holds.
 
 ### 0. Fix the answer commitment
 
-Before searching, record the candidate answer propositions, what would count as answering each one, what would refute each one, and the bounded stopping and settlement criteria. Apply the forward-commitment discipline from `CLAUDE.md` item 5-double-prime; do not revise the criteria to fit evidence already seen.
+Before searching, record the candidate answer propositions, what would count as answering each one, what would refute each one, and the bounded stopping and settlement criteria. Apply the forward-commitment discipline from `CLAUDE.md`'s scientific reasoning section; do not revise the criteria to fit evidence already seen.
 
 Postcondition: the answer, refutation, and stop conditions are fixed before evidence collection.
 
@@ -92,12 +92,12 @@ Postcondition: every material clause has one stable-keyed record, one fixed clas
 Execute `C`, `F`, and `M` in that order and retain queries, result counts, addresses, and reuse decisions.
 
 1. `C`: enumerate text-bearing semantic surfaces from `Meta/FILEMAP.toml`; search at least `D5/`, `Blueprint/`, `Library/`, `Problems/`, `docs/develop/theory/`, `Evidence/`, `Chronicle/`, and `Meta/Digestion/`. Search original wording, translations, historical terms, synonyms, antonyms, and structural roles; follow relevant references and Describe dependencies.
-2. `F`: trace useful concepts to exact declarations and statement shapes in `D5/`, rendered meanings in `Blueprint/`, and pinned abstractions in `.lake/packages/mathlib/Mathlib/`. Search the proposed conclusion, its negation, and counterexample shapes. Follow `CLAUDE.md` item 11's repository, mathlib, third-party, local-proof order. Stop external theorem search at an exact repository hit, but continue inferential completion unless that one declaration closes the complete proposition. Reuse and apply the strongest exact declaration that supplies the needed claim; never reprove it or add a renamed copy. A weaker exact hit does not license rebuilding what a stronger declaration already supplies.
+2. `F`: trace useful concepts to exact declarations and statement shapes in `D5/`, rendered meanings in `Blueprint/`, and pinned abstractions in `.lake/packages/mathlib/Mathlib/`. Search the proposed conclusion, its negation, and counterexample shapes. Follow `CLAUDE.md`'s library-before-proof section's repository, mathlib, third-party, local-proof order. Stop external theorem search at an exact repository hit, but continue inferential completion unless that one declaration closes the complete proposition. Reuse and apply the strongest exact declaration that supplies the needed claim; never reprove it or add a renamed copy. A weaker exact hit does not license rebuilding what a stronger declaration already supplies.
 3. `M`: construct the candidate `P`, reusable `G`, and applying `S` from discovered carriers, relations, contexts, histories, modalities, observers, and premises. Map what the declarations jointly imply and name the remaining inferential gap. A hit list or prose synthesis does not answer a complex question that still requires composition.
 
 Do not call search complete when output was truncated, a referenced source was unopened, or either the semantic or statement-shape pass was skipped. Prose may choose vocabulary and model boundaries; only compiled Lean can establish a formal outcome.
 
-Invoke the remaining disciplines from `CLAUDE.md` item 5-double-prime here. Bind lookup-copy, blind-residual, budget-envelope, Pareto/gain, and dependency-closure admission to `C`/`F`/`M` route evaluation, and record each application and result; Step 5 owns append-only and local settlement.
+Invoke the remaining disciplines from `CLAUDE.md`'s scientific reasoning section here. Bind lookup-copy, blind-residual, budget-envelope, Pareto/gain, and dependency-closure admission to `C`/`F`/`M` route evaluation, and record each application and result; Step 5 owns append-only and local settlement.
 
 Search chooses only the implementation route: reuse one exact compiled declaration that already supplies the complete reusable `G`; otherwise compile a new load-bearing abstract `G` for canonical retention; or, for a `not-formalizable` record only, produce no Lean. There is no successful thin-only route: when no existing theorem covers the complete inference and no reusable `G` can be built, the formal result remains `open`. Failed proof, unavailable compiler, elapsed effort, and convenience do not revise Step 1; they leave the internal result unsettled.
 
@@ -149,7 +149,7 @@ These ordered rules are exhaustive and single-valued by first-match evaluation. 
 
 For a formalizable assertion not covered by an existing complete `project-source`, Step 4's compiled abstract `G`, applying `tracked-S`, and passed `generalization-audit` are preconditions for a settled formal result. Compilation of `tracked-S` alone earns retention but not settlement: it cannot bypass library growth, and the reusable gap remains `open`.
 
-Emit one immutable internal settlement record per material assertion. It contains a unique record id, the stable assertion key, an explicit initial `active` status, the exact proposition, outcome, every undischarged condition, the unsettled reason where applicable, whether the claim is a formal result or a judgment, and the maximum permitted public claim. Set that maximum from the outcome: `proved` permits exact `P`; `refuted` permits exact negation of `P`; `conditional` permits only the consequent under every undischarged condition; `open` permits neither `P` nor its negation; and `not-formalized` permits only the recorded nonformal judgment, never a formal-grade claim. No outcome is allowed without an exact compiled proposition or an explicit record of its absence. Apply the local-settlement duty from `CLAUDE.md` item 5-double-prime; do not leave an elapsed task disguised as still progressing.
+Emit one immutable internal settlement record per material assertion. It contains a unique record id, the stable assertion key, an explicit initial `active` status, the exact proposition, outcome, every undischarged condition, the unsettled reason where applicable, whether the claim is a formal result or a judgment, and the maximum permitted public claim. Set that maximum from the outcome: `proved` permits exact `P`; `refuted` permits exact negation of `P`; `conditional` permits only the consequent under every undischarged condition; `open` permits neither `P` nor its negation; and `not-formalized` permits only the recorded nonformal judgment, never a formal-grade claim. No outcome is allowed without an exact compiled proposition or an explicit record of its absence. Apply the local-settlement duty from `CLAUDE.md`'s scientific reasoning section; do not leave an elapsed task disguised as still progressing.
 
 After any revision of `P` or `G`, append a validity delta that explicitly assigns `void` to each superseded active record for that assertion key, names every earlier settlement that still stands, and append a replacement settlement as `active`. The latest status assignment is the record's effective `active` or `void` status; never overwrite a record or delta, and keep exactly one active settlement per key.
 

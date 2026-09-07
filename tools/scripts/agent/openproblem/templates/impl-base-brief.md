@@ -1,6 +1,6 @@
 # sshx implementation-seat brief — lane `op-w1-ppn` — PrimaryPseudoperfectPorts — the port-composition algebra of primary pseudoperfect numbers (Erdős #313 context; PZG 候签定理 4.91–4.95) (probe-verified; same-PR deposit [+ cover]; open the PR, no auto-merge)
 
-You are the single `implementation_worker` (codex-cli). Return exactly one result envelope (contract appended). Follow `skills/codex-formalize/SKILL.md` (state machine 0→8; Step 6 fidelity gate; Step 7–8 doors; 5⁗ report fields) and `CLAUDE.md` 5⁗. Long commands in the foreground; judge by bare exit codes; never pipe a judgment command.
+You are the single `implementation_worker` (codex-cli). Return exactly one result envelope (contract appended). Follow `skills/codex-formalize/SKILL.md` (state machine 0→8; Step 6 fidelity gate; Step 7–8 doors; first-freeze report fields) and `CLAUDE.md` sections on first-freeze shape and admission. Long commands in the foreground; judge by bare exit codes; never pipe a judgment command.
 
 ## GoalArtifact (complete; cite in visible_inputs)
 ```yaml
@@ -14,11 +14,11 @@ normalized_goal: |
   PRIMARILY IN SERVICE OF OPEN PROBLEMS: a ChatGPT-Pro (nyxid) seat searches for open problems (external literature
   and repo-internal open nodes) that this project's frozen Lean/Mathlib infrastructure is suited to attack; codex-cli
   seats probe and implement them in reused isolated worktrees; every result lands as a PR to dev carrying kernel-verified
-  content with an escape witness (CLAUDE.md 5⁗), frozen-ledger entry, Blueprint mirror and honest body, passes the
+  content with an escape witness (CLAUDE.md, first-freeze shape and admission), frozen-ledger entry, Blueprint mirror and honest body, passes the
   review triplet, is merged, and the main checkout is re-synced. Do not dwell on one problem: when a problem stalls,
   record the honest open state and move to a nearby problem; keep searching nearby problems continuously.
 constraints:
-  - CLAUDE.md invariant frame (no sorry outside X_Frontier; no new axiom; atoms immutable; bind-first; library-before-proof; echo fidelity; no human-review gate; provenance triple in PR bodies; small PRs; 5⁗ escape content — bind-only corollaries never land alone).
+  - CLAUDE.md invariant frame (no sorry outside X_Frontier; no new axiom; atoms immutable; bind-first; library-before-proof; echo fidelity; no human-review gate; provenance triple in PR bodies; small PRs; first-freeze escape content — bind-only corollaries never land alone).
   - Implementation seats follow skills/codex-formalize/SKILL.md; never hand-edit Meta/Digestion/** or Golden/Frozen/**.
   - Carrier composition (user 2026-09-02 + /goal 2026-09-04): every multi-seat stage = exactly ONE nyxid-oracle (ChatGPT Pro) seat + all remaining seats codex-cli; NO isolated-token-subagent seats; which named seat gets the nyxid seat is drawn by a mechanical random source per stage; `tests` review seat is never nyxid. Implementation and probe seats are codex-cli. codex 429/queueing → wait and retry, never substitute.
   - Worktrees: main checkout stays on dev and is only synced with `git pull --ff-only origin dev`; all work in reused locked worktrees (trureturing-la108-m1a-v2, -la120-m3e, -la114-m3ac, -la118-germ-gab) or new `make worktree` lanes; keep the main checkout Lean cache warm (donor).

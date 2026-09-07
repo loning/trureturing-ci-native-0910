@@ -37,7 +37,7 @@ internal static class RepositoryCapacityAudit
                 item.Key,
                 $"directory contains {item.Value} files (admission limit "
                 + $"{RepositoryRules.DirectoryFileLimit}, repository tolerance "
-                + $"{RepositoryRules.DirectoryToleranceLimit}; split per CLAUDE.md 8)")));
+                + $"{RepositoryRules.DirectoryToleranceLimit}; split per CLAUDE.md, structural growth)")));
         return findings;
     }
 }

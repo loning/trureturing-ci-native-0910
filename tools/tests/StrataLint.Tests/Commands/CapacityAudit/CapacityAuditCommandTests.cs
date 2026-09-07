@@ -69,7 +69,7 @@ public sealed class CapacityAuditCommandTests
             $"CAPACITY_AUDIT Synthetic/Bucket: directory contains "
             + $"{RepositoryRules.DirectoryToleranceLimit + 1} files (admission limit "
             + $"{RepositoryRules.DirectoryFileLimit}, repository tolerance "
-            + $"{RepositoryRules.DirectoryToleranceLimit}; split per CLAUDE.md 8)\n",
+            + $"{RepositoryRules.DirectoryToleranceLimit}; split per CLAUDE.md, structural growth)\n",
             result.Output);
         Assert.Empty(result.Error);
     }
@@ -132,7 +132,7 @@ public sealed class CapacityAuditCommandTests
             $"CAPACITY_AUDIT Synthetic/Bucket: directory contains "
             + $"{RepositoryRules.DirectoryToleranceLimit + 1} files (admission limit "
             + $"{RepositoryRules.DirectoryFileLimit}, repository tolerance "
-            + $"{RepositoryRules.DirectoryToleranceLimit}; split per CLAUDE.md 8)\n",
+            + $"{RepositoryRules.DirectoryToleranceLimit}; split per CLAUDE.md, structural growth)\n",
             console.Output);
         Assert.Empty(console.Error);
     }
