@@ -3,6 +3,7 @@
    mirror-B: none(waiver:formal-unit-only)
    mirror-E: none(waiver:algebraically-proved)
    anchors: [mathlib/module/Mathlib.Logic.Relation]
+   utility: none
    digest: Raw carry paths have a unique signed bottom-carry charge, classified by golden phases. -/
 
 import D5.S1.Digit.CarryStepConfluence
