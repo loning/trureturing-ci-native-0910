@@ -16,6 +16,8 @@ internal sealed class MinkowskiNullConeRigidityDocument : IScribeDocumentDefinit
                 "Let d be any natural number, let V be the product of the real line and "
                 + "Euclidean d-space, and let S be any real quadratic form on V.")),
             Paragraph(Math(In(Seq(
+                Subscript(F.Id("V"), F.Id("d")), Sp, Eq, Sp, Mathbb, Grp(F.Id("R")),
+                Sp, Times, Sp, Mathbb, Grp(F.Id("R")), Caret, Grp(F.Id("d")), Comma, Sp,
                 Subscript(F.Id("g"), F.Id("d")), Open, F.Id("t"), Comma, Sp,
                 F.Id("w"), Close, Sp, Eq, Sp, Square(F.Id("t")), Sp, Minus, Sp,
                 NormSquare(F.Id("w")), Comma, Sp,
@@ -24,7 +26,7 @@ internal sealed class MinkowskiNullConeRigidityDocument : IScribeDocumentDefinit
                 F.Id("y"), Close, Sp, Eq, Sp,
                 Apply(F.Id("S"), Seq(F.Id("x"), Plus, F.Id("y"))), Sp, Minus, Sp,
                 Apply(F.Id("S"), F.Id("x")), Sp, Minus, Sp,
-                Apply(F.Id("S"), F.Id("y"))))),
+                Apply(F.Id("S"), F.Id("y")))))),
             Describe.Lean(
                 DescribeId.Create("spatial-rigidity"),
                 DeclarationHandle.Create(Module + "null_cone_spatial_rigidity"),
