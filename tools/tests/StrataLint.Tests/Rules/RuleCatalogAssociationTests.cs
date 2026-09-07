@@ -30,11 +30,11 @@ public sealed class RuleCatalogAssociationTests
     }
 
     [Fact]
-    public void EveryActiveRepositoryRuleDeclaresAnAffectedClosure()
+    public void EveryActiveDeltaPredicateDeclaresAnAffectedClosure()
     {
-        var affectedPredicateType = typeof(Func<RuleEvaluationContext, bool>);
+        var affectedPredicateType = typeof(Func<DeltaRuleContext, bool>);
         var active = RepositoryRules.CreateRegistrations()
-            .Where(static registration => registration.Descriptor.Lifecycle is RuleLifecycle.Active);
+            .Where(static registration => registration.Descriptor.Lifecycle is RuleLifecycle.Active && registration.Rule.HasDeltaPredicate);
 
         foreach (var registration in active)
         {
@@ -431,7 +431,7 @@ public sealed class RuleCatalogAssociationTests
         var registrations = RepositoryRules.CreateRegistrations();
         var catalog = RuleCatalog.CreateForTesting(registrations);
         var fixture = new RuleFixture();
-        RuleEvaluationContext context;
+        DeltaRuleContext context;
         if (scenario == "shared-rule-implementation")
         {
             context = fixture.Build(RawChangeSet.Create(
@@ -536,7 +536,7 @@ public sealed class RuleCatalogAssociationTests
     private static IRepositoryRule PredicateRule(Func<string, bool> predicate) =>
         new FakeRule(file => predicate(file.Path.Value), ImmutableArray<RuleFinding>.Empty);
 
-    private static RepositoryFile Artifact(RuleEvaluationContext context, string path) =>
+    private static RepositoryFile Artifact(DeltaRuleContext context, string path) =>
         context.Current.Files.Single(pair => pair.Key.Value == path).Value;
 
     private sealed class FakeRule(
@@ -546,18 +546,20 @@ public sealed class RuleCatalogAssociationTests
         public bool AppliesTo(RepositoryFile artifact, RuleApplicabilityContext context) =>
             appliesTo(artifact);
 
-        public ImmutableArray<RuleFinding> Evaluate(RuleEvaluationContext context) => findings;
+        public ImmutableArray<RuleFinding> EvaluateCurrent(CurrentRuleContext context) => findings;
     }
 
     private sealed class CountingUnaffectedRule : IRepositoryRule
     {
+        public bool HasCurrentPredicate => false;
+        public bool HasDeltaPredicate => true;
         internal int EvaluationCount { get; private set; }
 
         public bool AppliesTo(RepositoryFile artifact, RuleApplicabilityContext context) => false;
 
-        public bool IsAffectedBy(RuleEvaluationContext context) => false;
+        public bool IsAffectedBy(DeltaRuleContext context) => false;
 
-        public ImmutableArray<RuleFinding> Evaluate(RuleEvaluationContext context)
+        public ImmutableArray<RuleFinding> EvaluateDelta(DeltaRuleContext context)
         {
             EvaluationCount++;
             return [];
@@ -573,7 +575,7 @@ public sealed class RuleCatalogAssociationTests
     {
         public bool AppliesTo(RepositoryFile artifact, RuleApplicabilityContext context) => true;
 
-        public ImmutableArray<RuleFinding> Evaluate(RuleEvaluationContext context)
+        public ImmutableArray<RuleFinding> EvaluateCurrent(CurrentRuleContext context)
         {
             state.IsSet = true;
             return [];
@@ -584,7 +586,7 @@ public sealed class RuleCatalogAssociationTests
     {
         public bool AppliesTo(RepositoryFile artifact, RuleApplicabilityContext context) => true;
 
-        public ImmutableArray<RuleFinding> Evaluate(RuleEvaluationContext context) =>
+        public ImmutableArray<RuleFinding> EvaluateCurrent(CurrentRuleContext context) =>
             state.IsSet
                 ? []
                 : [new RuleFinding("synthetic/order-dependent.txt", "state was unset")];

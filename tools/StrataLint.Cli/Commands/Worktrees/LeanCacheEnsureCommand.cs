@@ -563,18 +563,8 @@ internal static partial class LeanCacheEnsureCommand
     }
 
     /// <summary>
-    /// 归档取回的预算。
-    ///
-    /// 【这里曾直接沿用 provision 预算（3600s），那是错的】评审席指出并经亲验：本路径在
-    /// CI 上位于 `lean-inspect` job 内，而该 job 的 `timeout-minutes: 45`（2700s）。
-    /// 一个 3600s 的预算**大于它所在的整个 job**，即归档一旦挂住就能吃光全部预算，
-    /// 把「取不到就降级」变成「job 超时取消」。复用一个值不等于它在这个域里成立 ——
-    /// 我按复用选值，没把**外层容量**放进推导（「量腹而食」）。
-    ///
-    /// 现按 `C_i = min_j U_{i,j} - R_i` 取：唯一适用上限是 job 预算，具名保留是
-    /// 归档之后仍必须跑完的产出工作（Lean 报告生产），故
-    ///   archive ≤ job_budget − post_archive_reserve。
-    /// 两项都取自本仓既有真源，不新立裸数；比值向下取整到分钟。
+    /// Optional archive attempts retain the existing warm-path cap. The shared
+    /// stage deadline separately bounds normal production after a cache miss.
     /// </summary>
     private static TimeSpan ArchiveBudget =>
         TimeSpan.FromMinutes(

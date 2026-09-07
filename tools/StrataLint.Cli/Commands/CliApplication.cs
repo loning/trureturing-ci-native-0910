@@ -17,6 +17,10 @@ internal interface ICliEnvironment
 
     AdmissionOutcome Check(IReadOnlyList<string> arguments);
 
+    ExplicitCommandResult CheckCurrent(IReadOnlyList<string> arguments);
+
+    ExplicitCommandResult CheckDelta(IReadOnlyList<string> arguments);
+
     AdmissionTopologyOutcome Topology(IReadOnlyList<string> arguments);
 
     CommandResult Coverage(IReadOnlyList<string> arguments);
@@ -105,6 +109,10 @@ internal static class CliApplication
                 RenderExplicit(environment.CapacityAudit(tail), console),
             ["check"] = static (environment, tail, console) =>
                 RenderAdmission(environment.Check(tail), console),
+            ["check-current"] = static (environment, tail, console) =>
+                RenderExplicit(environment.CheckCurrent(tail), console),
+            ["check-delta"] = static (environment, tail, console) =>
+                RenderExplicit(environment.CheckDelta(tail), console),
             ["clean-lanes"] = static (environment, tail, console) =>
                 RenderCommand(environment.CleanLanes(tail), console),
             ["coverage"] = static (environment, tail, console) =>

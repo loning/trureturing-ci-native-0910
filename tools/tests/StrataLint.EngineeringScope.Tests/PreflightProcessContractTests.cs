@@ -1,0 +1,132 @@
+using System.Diagnostics;
+using StrataLint.TestSupport;
+using Xunit;
+
+namespace StrataLint.EngineeringScope.Tests;
+
+public sealed class PreflightProcessContractTests
+{
+    [Fact]
+    public void DefaultPushRunsCommonStagesOnceWithoutParentOrRemote()
+    {
+        using var fixture = new Fixture();
+        var result = fixture.Preflight("push", "");
+        Assert.Equal(0, result.Exit);
+        Assert.Equal(new[] { "engineering", "current" }, fixture.Calls());
+    }
+
+    [Fact]
+    public void DivergentPrChecksSynthesizedTreeAndCleansCandidate()
+    {
+        using var fixture = new Fixture();
+        var fork = fixture.Git("rev-parse", "HEAD").Trim();
+        fixture.Write("base-only", "base data");
+        fixture.Commit();
+        var basis = fixture.Git("rev-parse", "HEAD").Trim();
+        fixture.Git("checkout", "--detach", fork);
+        fixture.Write("head-only", "candidate data");
+        fixture.Commit();
+        var result = fixture.Preflight("pr", basis);
+        Assert.True(result.Exit == 0, result.Text);
+        Assert.Equal(new[] { "engineering", "current", "delta" }, fixture.Calls());
+        Assert.Contains("merged=yes", result.Text, StringComparison.Ordinal);
+        Assert.False(TemporaryFileSystem.File.Exists(Path.Combine(fixture.Root, "base-only")));
+        Assert.Empty(fixture.Git("status", "--porcelain"));
+        var candidateLine = result.Text.Split('\n').Single(line => line.StartsWith("PREFLIGHT_CANDIDATE path=", StringComparison.Ordinal));
+        Assert.False(TemporaryFileSystem.Directory.Exists(candidateLine["PREFLIGHT_CANDIDATE path=".Length..]));
+    }
+
+    [Theory]
+    [InlineData("", false)]
+    [InlineData("dev", false)]
+    [InlineData("0000000000000000000000000000000000000000", false)]
+    [InlineData("HEAD", true)]
+    public void InvalidBaseOrUntrackedInputRejectsBeforeStages(string basis, bool dirty)
+    {
+        using var fixture = new Fixture();
+        if (basis == "HEAD") basis = fixture.Git("rev-parse", "HEAD").Trim();
+        if (dirty) fixture.Write("untracked", "dirty");
+        Assert.Equal(2, fixture.Preflight("pr", basis).Exit);
+        Assert.Empty(fixture.Calls());
+    }
+
+    [Fact]
+    public void ConflictStopsBeforeExecutingCandidate()
+    {
+        using var fixture = new Fixture();
+        fixture.Write("conflict", "original"); fixture.Commit();
+        var fork = fixture.Git("rev-parse", "HEAD").Trim();
+        fixture.Write("conflict", "base"); fixture.Commit();
+        var basis = fixture.Git("rev-parse", "HEAD").Trim();
+        fixture.Git("checkout", "--detach", fork);
+        fixture.Write("conflict", "head"); fixture.Commit();
+        var result = fixture.Preflight("pr", basis);
+        Assert.Equal(1, result.Exit);
+        Assert.Empty(fixture.Calls());
+    }
+
+    [Theory]
+    [InlineData("1", 1)]
+    [InlineData("19", 2)]
+    [InlineData("3", 2)]
+    public void CommonFailureStopsLaterStagesAndNormalizesExit(string raw, int expected)
+    {
+        using var fixture = new Fixture();
+        Assert.Equal(expected, fixture.Preflight("push", "", raw).Exit);
+        Assert.Equal(new[] { "engineering" }, fixture.Calls());
+    }
+
+    private sealed class Fixture : IDisposable
+    {
+        private readonly string scratch = TemporaryFileSystem.Directory.CreateTempSubdirectory("preflight-contract-").FullName;
+        internal string Root => Path.Combine(scratch, "repository");
+        private string CallsPath => Path.Combine(scratch, "calls");
+        internal Fixture()
+        {
+            TemporaryFileSystem.Directory.CreateDirectory(Root);
+            var source = RootOfCheckout();
+            Write("tools/scripts/preflight.sh", File.ReadAllText(Path.Combine(source, "tools/scripts/preflight.sh")));
+            Write("tools/scripts/ci-stage.sh", """
+                #!/bin/bash
+                printf '%s\n' "$1" >> "$CONTRACT_CALLS"
+                if [[ -f base-only && -f head-only ]]; then printf 'merged=yes\n'; fi
+                exit "${CONTRACT_EXIT:-0}"
+                """);
+            Git("init", "-q"); Git("config", "user.name", "Fixture"); Git("config", "user.email", "fixture@example.invalid");
+            Commit();
+        }
+        internal void Write(string path, string text)
+        {
+            var full = Path.Combine(Root, path);
+            TemporaryFileSystem.Directory.CreateDirectory(Path.GetDirectoryName(full)!);
+            TemporaryFileSystem.File.WriteAllText(full, text);
+        }
+        internal void Commit() { Git("add", "."); Git("commit", "-qm", "fixture"); }
+        internal string Git(params string[] args)
+        {
+            var result = Run("git", args);
+            Assert.True(result.Exit == 0, result.Text);
+            return result.Text;
+        }
+        internal (int Exit, string Text) Preflight(string mode, string basis, string raw = "0") =>
+            Run("/bin/bash", ["tools/scripts/preflight.sh"], new() { ["MODE"] = mode, ["BASE"] = basis, ["CONTRACT_CALLS"] = CallsPath, ["CONTRACT_EXIT"] = raw });
+        internal string[] Calls() => TemporaryFileSystem.File.Exists(CallsPath) ? TemporaryFileSystem.File.ReadAllText(CallsPath).Split('\n', StringSplitOptions.RemoveEmptyEntries) : [];
+        private (int Exit, string Text) Run(string executable, string[] args, Dictionary<string, string>? environment = null)
+        {
+            var start = new ProcessStartInfo(executable) { WorkingDirectory = Root, RedirectStandardOutput = true, RedirectStandardError = true };
+            foreach (var arg in args) start.ArgumentList.Add(arg);
+            foreach (var pair in environment ?? []) start.Environment[pair.Key] = pair.Value;
+            using var process = Process.Start(start)!;
+            var stdout = process.StandardOutput.ReadToEndAsync(); var stderr = process.StandardError.ReadToEndAsync();
+            Assert.True(process.WaitForExit(30_000), "process exceeded fixture timeout");
+            return (process.ExitCode, stdout.GetAwaiter().GetResult() + stderr.GetAwaiter().GetResult());
+        }
+        private static string RootOfCheckout()
+        {
+            for (var dir = new DirectoryInfo(AppContext.BaseDirectory); dir is not null; dir = dir.Parent)
+                if (File.Exists(Path.Combine(dir.FullName, "CLAUDE.md"))) return dir.FullName;
+            throw new DirectoryNotFoundException("test checkout not found");
+        }
+        public void Dispose() => TemporaryFileSystem.Directory.Delete(scratch, recursive: true);
+    }
+}

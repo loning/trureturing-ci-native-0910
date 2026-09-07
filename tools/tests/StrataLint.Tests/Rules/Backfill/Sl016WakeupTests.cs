@@ -454,14 +454,16 @@ public sealed class Sl016WakeupTests
     }
 
     [Fact]
-    public void FullEvaluateRemainsAvailableForProducerRecomputation()
+    public void DocumentValidationRemainsAvailableForProducerRecomputation()
     {
         var (context, _) = EvaluateReceiptIntegrityGap(
             "coverage-target-mismatch",
             gapExistsInBaseline: true);
 
         Assert.Contains(
-            BackfillInventoryRule.Evaluate(context),
+            BackfillInventoryRule.EvaluateDocument(
+                new BackfillInventoryValidationContext(context.Current, context.Baseline, context.Policy, context.Lean),
+                BackfillInventoryLoader.Load(context.Current)),
             static finding => finding.Message.Contains(
                 "coverage-target-mismatch",
                 StringComparison.Ordinal));
@@ -531,7 +533,7 @@ public sealed class Sl016WakeupTests
         }
     }
 
-    private static (RuleEvaluationContext Context, SingleRuleEvaluation Evaluation)
+    private static (DeltaRuleContext Context, SingleRuleEvaluation Evaluation)
         EvaluateReceiptIntegrityGap(
             string? mismatchCode,
             bool gapExistsInBaseline,

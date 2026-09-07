@@ -55,18 +55,8 @@ class PartitionFixture:
 
 
 class PartitionTests(PartitionFixture, unittest.TestCase):
-    def test_legacy_dependency_address_keeps_digest_shape_and_partition_only(self):
-        before = self.run_input("dependency-address")
-        self.assertEqual(0, before.returncode, before.stderr)
-        self.assertRegex(before.stdout, r"^[0-9a-f]{64}\n$")
-        self.manifest["packages"][0]["inputRev"] = "new-requested-ref"
-        self.save_manifest()
-        write(self.root / "lean-toolchain", "metadata-spelling\n")
-        write(self.root / "lakefile.toml", 'keywords = ["metadata"]\n')
-        self.assertEqual(before.stdout, self.run_input("dependency-address").stdout)
-        self.manifest["packages"][0]["rev"] = OTHER
-        self.save_manifest()
-        self.assertNotEqual(before.stdout, self.run_input("dependency-address").stdout)
+    def test_retired_dependency_address_is_rejected(self):
+        self.assertEqual(2, self.run_input("dependency-address").returncode)
 
     def test_partition_uses_exactly_resolved_mathlib(self):
         self.assertEqual(REV, self.partition())
@@ -237,17 +227,8 @@ class TransportTests(PartitionFixture, unittest.TestCase):
         return subprocess.run(["bash", str(PUBLISH), verb, "--repository", str(self.root), *arguments],
                               text=True, capture_output=True, env=environment)
 
-    def test_legacy_fetch_flag_cannot_enable_cross_partition_selection(self):
-        self.assertEqual(0, self.transport("publish").returncode)
-        shutil.rmtree(self.root / ".lake/build")
-        restored = self.transport("fetch", arguments=("--allow-seed",))
-        self.assertEqual(0, restored.returncode, restored.stdout + restored.stderr)
-        self.assertTrue((self.root / ".lake/build/lib/lean/D5/A.olean").is_file())
-        shutil.rmtree(self.root / ".lake/build")
-        self.manifest["packages"][0]["rev"] = OTHER
-        self.save_manifest()
-        self.assertNotEqual(0, self.transport("fetch", arguments=("--allow-seed",)).returncode)
-        self.assertFalse((self.root / ".lake/build").exists())
+    def test_retired_fetch_flag_is_rejected(self):
+        self.assertEqual(2, self.transport("fetch", arguments=("--allow-seed",)).returncode)
 
     def test_roundtrip_is_partitioned_and_source_sha_is_provenance_only(self):
         saved = self.transport("publish")
@@ -341,6 +322,17 @@ class TransportTests(PartitionFixture, unittest.TestCase):
         self.assertEqual(0, result.returncode, result.stdout + result.stderr)
         self.assertIn('"status":"published"', result.stdout)
         self.assertIn("prune_error", result.stdout)
+
+    def test_malformed_cleanup_metadata_cannot_fail_or_repeat_the_build(self):
+        calls = self.root / "build-calls"
+        write(self.bin / "make", '#!/bin/sh\necho build >> "$FAKE_BUILD_CALLS"\nexit 0\n')
+        malformed = [("FAKE_API_JSON", "[]"), ("FAKE_LIST_JSON", '["invalid"]'),
+                     ("FAKE_LIST_JSON", '[{"tagName":12,"createdAt":"today","isDraft":false}]')]
+        for index, (field, value) in enumerate(malformed):
+            result = self.transport("publish", str(601 + index), FAKE_BUILD_CALLS=str(calls), **{field: value})
+            self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+            self.assertIn('"prune_error":', result.stdout)
+        self.assertEqual(["build"] * len(malformed), calls.read_text().splitlines())
 
 
 class PairFixture(PartitionFixture):
@@ -572,6 +564,10 @@ import hashlib, json, os, pathlib, shutil, sys
 args = sys.argv[1:]
 root = pathlib.Path(os.environ["FAKE_REMOTE"])
 if len(args) > 1 and os.environ.get("FAKE_FAIL") == args[1] and args[1] != "upload": sys.exit(23)
+if args[:2] == ["release", "list"] and "FAKE_LIST_JSON" in os.environ:
+    print(os.environ["FAKE_LIST_JSON"]); sys.exit(0)
+if args[0] == "api" and "FAKE_API_JSON" in os.environ:
+    print(os.environ["FAKE_API_JSON"]); sys.exit(0)
 def option(name): return args[args.index(name)+1]
 def metadata(directory):
     value = json.loads((directory / "release.json").read_text())

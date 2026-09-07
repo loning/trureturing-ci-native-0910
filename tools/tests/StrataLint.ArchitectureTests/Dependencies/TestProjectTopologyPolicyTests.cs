@@ -532,25 +532,13 @@ public sealed partial class TestProjectTopologyPolicyTests
     }
 
     [Fact]
-    public void CurrentRepositoryCandidateDeltaIsAcceptedByTheSameRatchet()
+    public void CurrentRepositoryTopologyContainsKnownDebtAndOwnedPairs()
     {
         var root = RepositoryLayout.FindRoot();
-        var protectedBase = ReadProtectedBase(root);
         var candidate = Decode(GitRepositorySnapshotReader.ReadCurrent(root));
-        var result = TestProjectTopologyPolicy.EvaluateSnapshots(protectedBase, candidate);
-
-        Assert.True(result.IsAccepted, result.Message);
-
-        // 此处曾是 `Assert.NotEmpty(result.BaseDebt)`,假定 base 上总有存量债。
-        // 该假定与棘轮本身矛盾:棘轮要求债只减不增,故「还清」是它的目标状态,
-        // 而那条断言把目标状态判成失败 —— 债从 5 还到 0 后它必红。
-        // 保留的是真正承重的部分:债的种类必须都是已知类别,且债务集单调不增;
-        // base 债为空时该包含式即强制候选债也为空(棘轮的全树判词)。
+        var debt = TestProjectTopologyPolicy.CalculateDebt(TestProjectTopologyPolicy.ReadSnapshotProjects(candidate));
         Assert.All(
-            result.CandidateDebt,
-            debt => Assert.Contains(debt, result.BaseDebt));
-        Assert.All(
-            result.BaseDebt.Concat(result.CandidateDebt),
+            debt,
             static debt => Assert.Contains(
                 debt.Kind,
                 new[]
@@ -562,8 +550,7 @@ public sealed partial class TestProjectTopologyPolicyTests
                     "orphan-owned-project",
                     "owned-test-to-owned-test-reference",
                 }));
-        AssertHasDebtFreePair(protectedBase, result.BaseDebt);
-        AssertHasDebtFreePair(candidate, result.CandidateDebt);
+        AssertHasDebtFreePair(candidate, debt);
     }
 
     [Fact]
@@ -733,20 +720,4 @@ public sealed partial class TestProjectTopologyPolicyTests
         });
     }
 
-    private static RepositorySnapshot ReadProtectedBase(string root)
-    {
-        try
-        {
-            return Decode(GitRepositorySnapshotReader.ReadRevision(root, "HEAD^1"));
-        }
-        catch (InvalidOperationException exception) when (exception.Message.Contains(
-                   "Not a valid object name HEAD^1",
-                   StringComparison.Ordinal))
-        {
-            // This worker checkout is rooted at a shallow protected-base commit. The required
-            // engineering executor itself rejects a CI checkout without HEAD^1, so this local
-            // allow-side fallback cannot weaken the admission path.
-            return Decode(GitRepositorySnapshotReader.ReadRevision(root, "HEAD"));
-        }
-    }
 }

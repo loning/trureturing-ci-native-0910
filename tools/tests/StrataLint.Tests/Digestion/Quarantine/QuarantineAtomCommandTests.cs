@@ -530,6 +530,10 @@ public sealed class QuarantineAtomCommandTests
         }
 
         public ExplicitCommandResult CapacityAudit(IReadOnlyList<string> arguments) => throw Unsupported();
+        public ExplicitCommandResult CheckCurrent(IReadOnlyList<string> arguments) => throw new NotSupportedException();
+
+        public ExplicitCommandResult CheckDelta(IReadOnlyList<string> arguments) => throw new NotSupportedException();
+
         public AdmissionOutcome Check(IReadOnlyList<string> arguments) => throw Unsupported();
         public AdmissionTopologyOutcome Topology(IReadOnlyList<string> arguments) => throw Unsupported();
         public CommandResult Coverage(IReadOnlyList<string> arguments) => throw Unsupported();

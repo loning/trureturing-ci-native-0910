@@ -189,12 +189,14 @@ internal static class ScribeMetadataReferenceResolver
         }
     }
 
-    private static string PackageDirectory(string id, string version) => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-        ".nuget",
-        "packages",
-        id.ToLowerInvariant(),
-        version.ToLowerInvariant());
+    private static string PackageDirectory(string id, string version)
+    {
+        var configured = Environment.GetEnvironmentVariable("NUGET_PACKAGES");
+        var root = string.IsNullOrWhiteSpace(configured)
+            ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".nuget", "packages")
+            : configured;
+        return Path.Combine(root, id.ToLowerInvariant(), version.ToLowerInvariant());
+    }
 
     private static string NormalizeVersion(string version)
     {

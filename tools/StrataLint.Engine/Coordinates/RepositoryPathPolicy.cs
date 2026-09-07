@@ -24,7 +24,6 @@ internal static partial class RepositoryPathPolicy
     // Persistent truth-release publisher. `.github` remains an explicit allowlist.
     internal const string TruthReleasePublicationWorkflowPath =
         ".github/workflows/truth-release-publish.yml";
-    internal const string HarnessGatePath = ".github/scripts/harness-gate.sh";
     internal const string RepositoryCoordinate = "the-omega-institute/trureturing";
 
     internal static bool ContainsRepositorySourceMaterializationIndicator(string value) =>
@@ -148,7 +147,6 @@ internal static partial class RepositoryPathPolicy
             or CachePublicationWorkflowPath
             or TruthReleasePublicationWorkflowPath
             or ".github/CODEOWNERS"
-            or HarnessGatePath
             || value.StartsWith("tools/", StringComparison.Ordinal)
             || DigestionCasStore.IsCanonicalPath(value)
             || BackfillInventoryLoader.IsCanonicalPath(value)

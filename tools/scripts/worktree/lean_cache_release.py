@@ -45,10 +45,14 @@ def prune(partition, tag):
     pruned = 0
     try:
         current = json.loads(gh("api", f"repos/{REPO}/releases/tags/{tag}"))
-        if current.get("draft") is not False:
+        if not isinstance(current, dict) or current.get("draft") is not False:
             raise ValueError("new snapshot is not readable as published; pruned nothing")
         releases = json.loads(gh("release", "list", "--repo", REPO, "--limit", "100",
             "--json", "tagName,createdAt,isDraft"))
+        if not isinstance(releases, list) or any(not isinstance(item, dict)
+                or not isinstance(item.get("tagName"), str) or not isinstance(item.get("createdAt"), str)
+                or not isinstance(item.get("isDraft"), bool) for item in releases):
+            raise ValueError("snapshot cleanup metadata is malformed; pruned nothing")
         snapshots = sorted((item for item in releases if item.get("isDraft") is False
             and item.get("tagName", "").startswith(prefix(partition))),
             key=lambda item: item["createdAt"], reverse=True)
@@ -220,9 +224,6 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("command", choices=("address", "publish", "fetch"))
     parser.add_argument("--repository", type=pathlib.Path, default=pathlib.Path(__file__).resolve().parents[3])
-    # Transitional no-op for the existing CI caller. Layer 4 removes both the
-    # caller argument and this alias; it cannot widen partition compatibility.
-    parser.add_argument("--allow-seed", action="store_true", help=argparse.SUPPRESS)
     # Internal handoff from LeanArchiveFetch after its typed guard assertion.
     parser.add_argument("--writer-owned", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()

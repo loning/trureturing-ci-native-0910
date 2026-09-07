@@ -6,13 +6,15 @@ namespace StrataLint.Tests;
 [Collection("Lean cache environment")]
 public sealed class LeanCacheEnsureScriptTests
 {
-    [Fact]
-    public void MissingLakeDelegatesToCanonicalWorktreeEnsureCacheCommand()
+    [Theory]
+    [InlineData("tools/scripts/worktree/lean-cache-ensure.sh", "ensure-cache")]
+    [InlineData("tools/scripts/worktree/lean-cache-run.sh", "with-cache-writer")]
+    public void MissingLakeDelegatesToCandidateBuiltDllWithoutRestoreOrBuild(string scriptPath, string command)
     {
         if (OperatingSystem.IsWindows()) return;
 
         using var fixture = new TemporaryDirectory();
-        var installed = InstallScript(fixture.Path);
+        var installed = InstallScript(fixture.Path, scriptPath);
         Directory.CreateDirectory(installed.Bin);
         var dotnet = Path.Combine(installed.Bin, "dotnet");
         File.WriteAllText(
@@ -48,21 +50,12 @@ public sealed class LeanCacheEnsureScriptTests
             4096);
         Assert.Equal(0, canonicalRoot.ExitCode);
         var canonicalRepository = Encoding.UTF8.GetString(canonicalRoot.StandardOutput).TrimEnd('\n');
-        var project = Path.Combine(
-            canonicalRepository,
-            "tools",
-            "StrataLint.Cli",
-            "StrataLint.Cli.csproj");
+        var dll = Path.Combine(canonicalRepository, "tools/StrataLint.Cli/bin/Release/net10.0/StrataLint.dll");
         Assert.Equal(
             string.Join('\n',
-                "run",
-                "--project",
-                project,
-                "--configuration",
-                "Release",
-                "--",
+                dll,
                 "worktree",
-                "ensure-cache") + "\n",
+                command) + (command == "with-cache-writer" ? "\n--" : "") + "\n",
             installed.ArgumentsText);
         Assert.Equal(canonicalRepository + "\n", installed.DotnetCwdText);
     }
@@ -108,17 +101,17 @@ public sealed class LeanCacheEnsureScriptTests
     private const string LeanCacheEnsureScriptPath =
         "tools/scripts/worktree/lean-cache-ensure.sh";
 
-    private static InstalledScript InstallScript(string fixtureRoot)
+    private static InstalledScript InstallScript(string fixtureRoot, string scriptPath = LeanCacheEnsureScriptPath)
     {
         var repository = Path.Combine(fixtureRoot, "repository");
         var caller = Path.Combine(fixtureRoot, "caller");
         var script = Path.Combine(
             repository,
-            LeanCacheEnsureScriptPath.Replace('/', Path.DirectorySeparatorChar));
+            scriptPath.Replace('/', Path.DirectorySeparatorChar));
         Directory.CreateDirectory(Path.GetDirectoryName(script)!);
         Directory.CreateDirectory(caller);
         File.Copy(
-            Path.Combine(TestRepositoryLayout.FindRoot(), LeanCacheEnsureScriptPath),
+            Path.Combine(TestRepositoryLayout.FindRoot(), scriptPath),
             script);
         return new InstalledScript(fixtureRoot, repository, caller, script);
     }

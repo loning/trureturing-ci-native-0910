@@ -10,7 +10,7 @@ LAKE_BIN="${LAKE_BIN:-$(command -v lake || true)}"
 [[ -n "$LAKE_BIN" && "$LAKE_BIN" == /* && -x "$LAKE_BIN" ]] \
   || { echo "lean-report.sh: an absolute lake executable is required" >&2; exit 2; }
 
-# Layer 4 transports this partitioned root with the canonical report key.
+# Every invocation enters the incremental producer with optional partitioned seeds.
 export STRATALINT_REPORT_CACHE_ROOT="${STRATALINT_REPORT_CACHE_ROOT:-$ROOT/.lake/report-cache}"
 
 exec "$PAIR" \

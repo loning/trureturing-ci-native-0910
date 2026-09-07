@@ -674,16 +674,11 @@ public sealed class LeanCacheRunScriptTests
         Assert.Equal(
             new[]
             {
-                "run",
-                "--project",
                 Path.Combine(
                     LeanCacheGuard.PhysicalPath(repository),
                     "tools",
                     "StrataLint.Cli",
-                    "StrataLint.Cli.csproj"),
-                "--configuration",
-                "Release",
-                "--",
+                    "bin", "Release", "net10.0", "StrataLint.dll"),
                 "worktree",
                 "with-cache-writer",
                 "--",

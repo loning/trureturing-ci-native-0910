@@ -13,9 +13,9 @@ if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
       *) echo "lean-cache-input: unknown argument '$1'" >&2; exit 2 ;;
     esac
   done
-  [[ "$COMMAND" == "address" || "$COMMAND" == "dependency-address" \
+  [[ "$COMMAND" == "address" \
     || "$COMMAND" == "partition" || "$COMMAND" == "partition-path" || "$COMMAND" == "keys" ]] \
-    || { echo "usage: lean-cache-input.sh address|dependency-address|partition|partition-path|keys --repository DIR" >&2; exit 2; }
+    || { echo "usage: lean-cache-input.sh address|partition|partition-path|keys --repository DIR" >&2; exit 2; }
   [[ -n "$REPOSITORY" && "$REPOSITORY" == /* && -d "$REPOSITORY" ]] \
     || { echo "lean-cache-input: --repository requires an absolute directory" >&2; exit 2; }
   REPOSITORY="$(cd "$REPOSITORY" && pwd -P)"
@@ -333,15 +333,6 @@ append_manifest_entry() {
   printf '%s\0%s\0' "$relative" "$path" >> "${manifest}.requests"
 }
 
-# Keep the legacy digest-shaped CLI result until workflow callers use keys.
-# Its only input is the same resolved revision returned by partition.
-lean_dependency_address() {
-  local revision
-  revision="$(lean_partition_helper partition)" || return 2
-  printf '%s' "$revision" > "$TMP_ROOT/dependency-partition"
-  hash_file "$TMP_ROOT/dependency-partition"
-}
-
 # Lean input preimage v1: root, sorted D5 sources, sorted inspector Lean
 # sources and structured semantic configuration. These are report validation
 # inputs only; they never select a remote or local seed partition.
@@ -378,9 +369,7 @@ lean_cache_address() {
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
-  if [[ "$COMMAND" == "dependency-address" ]]; then
-    lean_dependency_address
-  elif [[ "$COMMAND" == "address" ]]; then
+  if [[ "$COMMAND" == "address" ]]; then
     prepare_memo
     lean_cache_address
     store_memo_updates

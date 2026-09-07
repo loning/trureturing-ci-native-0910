@@ -65,7 +65,7 @@ public sealed partial class ScriptTestGateClosureTests
         RawRepositoryEntry.FromText(
             "tools/scripts/report/report-supervisor.sh",
             "#!/usr/bin/env bash\nexit 0\n"),
-        RawRepositoryEntry.FromText(".github/workflows/ci.yml", "name: synthetic\n"),
+        RawRepositoryEntry.FromText(".github/workflows/ci-pr.yml", "name: synthetic\n"),
     ]));
 
     private static string ProjectText(string owner, params string[] references) =>

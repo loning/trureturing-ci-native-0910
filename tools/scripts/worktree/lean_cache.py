@@ -45,12 +45,14 @@ def actions_keys(root: pathlib.Path) -> dict:
               "partition": partition_path(root),
               "save_allowed": os.environ.get("GITHUB_EVENT_NAME") == "push"
                   and os.environ.get("GITHUB_REF") == "refs/heads/dev"
+                  and os.environ.get("STRATALINT_CACHE_WRITES", "true") == "true"
                   and os.environ.get("STRATALINT_CHECK_SUCCEEDED") == "true"}
     paths = {"dependency": ".lake/packages", "project": ".lake/build",
              "report": ".lake/report-cache"}
     for layer, path in paths.items():
         prefix = f"lean-{layer}-v3-{revision}-{system}-{machine}-"
-        result[layer] = {"restore_prefix": prefix, "key": f"{prefix}{run}-{attempt}", "path": path}
+        result[layer] = {"restore_prefix": prefix, "key": f"{prefix}{run}-{attempt}",
+                         "path": "build/lean-cache/" + layer, "target": path}
     result["release_prefix"] = f"lean-cache-v2-{revision}-{system}-{machine}-"
     return result
 
