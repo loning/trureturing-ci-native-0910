@@ -232,7 +232,7 @@ def closedNegation (env : Environment) (input : ModuleInput) (utility : UtilityI
   if !claim.levelParams.isEmpty || !result.levelParams.isEmpty
       || !closedExpression claim.type || !closedExpression claim.value
       || !closedExpression result.type || !closedExpression result.value then return false
-  let check : MetaM Bool := do
+  let check : MetaM Bool := Meta.withTransparency .all do
     if !(← Meta.isDefEq claim.type (mkSort .zero)) then return false
     let expected := mkApp (mkConst ``Not) (mkConst claim.name)
     if !(← Meta.isDefEq result.type expected) then return false

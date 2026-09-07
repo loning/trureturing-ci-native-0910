@@ -8,6 +8,65 @@ namespace StrataLint.Tests;
 
 public sealed class UtilityRefutationProducerTests
 {
+    [Theory]
+    [InlineData("expanded", "ChangedContent")]
+    [InlineData("expanded", "PreDeposit")]
+    [InlineData("expanded", "FirstFreeze")]
+    [InlineData("companion", "ChangedContent")]
+    [InlineData("companion", "PreDeposit")]
+    [InlineData("companion", "FirstFreeze")]
+    public void RealLeanAcceptsIrreducibleClaimRefutationsInEveryPhase(string result, string phase)
+    {
+        using var temporary = new TemporaryDirectory();
+        var root = temporary.Path;
+        const string path = "D5/S0/Carrier/RefutationProbe.lean";
+        const string gid = "D5/S0/Carrier/RefutationProbe";
+        const string module = "D5.S0.Carrier.RefutationProbe";
+        const string claimGid = gid + ".claim";
+        var utility = $"kind=certified-instance; basis=refutes=gid:{claimGid}; result={gid}.{result}; claim={claimGid}";
+        var source = $"/- GID: {gid}\n   generality: I\n   mirror-B: D5/B/S0/Carrier/RefutationProbe\n"
+            + "   mirror-E: none(waiver:pure-definition)\n   anchors: []\n"
+            + $"   utility: {utility}\n   digest: Synthetic irreducible claim refutation. -/\n"
+            + """
+            @[irreducible] def claim : Prop := forall n : Nat, n + 1 = n
+            theorem expanded : Not (forall n : Nat, n + 1 = n) := by
+              intro h
+              exact Nat.noConfusion (h 0)
+            theorem companion : Not claim := by
+              unfold claim
+              exact expanded
+            """ + "\n";
+        var sourceHash = "sha256:" + Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(source)));
+        Directory.CreateDirectory(Path.Combine(root, "D5", "S0", "Carrier"));
+        File.Copy(Path.Combine(TestRepositoryLayout.FindRoot(), "lean-toolchain"), Path.Combine(root, "lean-toolchain"));
+        File.WriteAllText(Path.Combine(root, "lakefile.toml"),
+            "name = \"refutation_fixture\"\ndefaultTargets = [\"D5\"]\n[[lean_lib]]\nname = \"D5\"\nglobs = [\"D5.+\"]\n");
+        File.WriteAllText(Path.Combine(root, path), source);
+        Run("lake", ["build"], root);
+
+        var inspector = Path.Combine(TestRepositoryLayout.FindRoot(), "tools", "lean-inspector", "Inspector.lean");
+        var compactor = Path.Combine(TestRepositoryLayout.FindRoot(), "tools", "lean-inspector", "materials.py");
+        var inputs = Path.Combine(root, "utility.json");
+        var output = Path.Combine(root, "report.json");
+        File.WriteAllText(inputs, JsonSerializer.Serialize(new[] { new {
+            modulePath = path, claimGid, claimModule = module, claimSelector = "claim",
+            claimSourcePath = path, claimSourceSha256 = sourceHash,
+            resultGid = gid + "." + result, resultModule = module, resultSelector = result,
+        } }));
+        Run("lake", ["env", "lean", "--run", inspector,
+            "--output", output + ".spool", "--material-spool", output + ".materials",
+            "--utility-input", inputs, module, path, sourceHash], root);
+        Run("python3", [compactor, "compact", output + ".spool", output + ".materials", output], root);
+        var snapshot = Assert.IsType<SnapshotDecodeOutcome.Decoded>(SnapshotDecoder.Decode(
+            RawRepositorySnapshot.Create([RawRepositoryEntry.FromText(path, source)]))).Snapshot;
+        var report = RawLeanReportArtifact.ReadFile(output, snapshot);
+        var validation = UtilityDeclarationValidator.Validate(Enum.Parse<UtilityValidationPhase>(phase),
+            RepoPath.CreateKnown(path), utility, snapshot, () => report);
+
+        Assert.True(validation.IsAccepted, $"{result}/{phase}: {validation.Failure} {validation.Detail}");
+        Assert.True(report.Files[RepoPath.CreateKnown(path)].Refutation!.IsClosedNegation);
+    }
+
     [Fact]
     public void RealLeanProducesTypedRefutationsAndRejectsPositiveOrConditionalRelabeling()
     {
