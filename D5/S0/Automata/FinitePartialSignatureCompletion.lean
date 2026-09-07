@@ -63,6 +63,8 @@ structure Completion
       (signature (returnState target)).2 =
         requirements.returnRequirement target
 
+attribute [instance] Completion.stateFintype
+
 namespace Completion
 
 variable {Output Class Full OutputOnly ReturnOnly : Type u}
@@ -93,7 +95,7 @@ theorem fullOutputMap_injective (completion : Completion requirements) :
                   completion.signature (completion.fullState leftFull) :=
                 (completion.full_spec leftFull).symm
               _ = completion.signature (completion.fullState rightFull) := by
-                rw [equal]
+                exact congrArg completion.signature equal
               _ = requirements.fullSignature rightFull :=
                 completion.full_spec rightFull
           exact congrArg Sum.inl
@@ -110,7 +112,7 @@ theorem fullOutputMap_injective (completion : Completion requirements) :
                 rw [completion.full_spec]
               _ = (completion.signature
                     (completion.outputState output)).1 := by
-                rw [equal]
+                exact congrArg (fun state => (completion.signature state).1) equal
               _ = requirements.outputRequirement output :=
                 completion.output_spec output
           exact requirements.output_fresh output leftFull firstEqual.symm
@@ -128,7 +130,7 @@ theorem fullOutputMap_injective (completion : Completion requirements) :
                 (completion.output_spec leftOutput).symm
               _ = (completion.signature
                     (completion.fullState full)).1 := by
-                rw [equal]
+                exact congrArg (fun state => (completion.signature state).1) equal
               _ = (requirements.fullSignature full).1 := by
                 rw [completion.full_spec]
           exact requirements.output_fresh leftOutput full firstEqual
@@ -143,7 +145,7 @@ theorem fullOutputMap_injective (completion : Completion requirements) :
                 (completion.output_spec leftOutput).symm
               _ = (completion.signature
                     (completion.outputState rightOutput)).1 := by
-                rw [equal]
+                exact congrArg (fun state => (completion.signature state).1) equal
               _ = requirements.outputRequirement rightOutput :=
                 completion.output_spec rightOutput
           exact congrArg Sum.inr
@@ -172,7 +174,7 @@ theorem fullReturnMap_injective (completion : Completion requirements) :
                   completion.signature (completion.fullState leftFull) :=
                 (completion.full_spec leftFull).symm
               _ = completion.signature (completion.fullState rightFull) := by
-                rw [equal]
+                exact congrArg completion.signature equal
               _ = requirements.fullSignature rightFull :=
                 completion.full_spec rightFull
           exact congrArg Sum.inl
@@ -189,7 +191,7 @@ theorem fullReturnMap_injective (completion : Completion requirements) :
                 rw [completion.full_spec]
               _ = (completion.signature
                     (completion.returnState target)).2 := by
-                rw [equal]
+                exact congrArg (fun state => (completion.signature state).2) equal
               _ = requirements.returnRequirement target :=
                 completion.return_spec target
           exact requirements.return_fresh target leftFull secondEqual.symm
@@ -207,7 +209,7 @@ theorem fullReturnMap_injective (completion : Completion requirements) :
                 (completion.return_spec leftTarget).symm
               _ = (completion.signature
                     (completion.fullState full)).2 := by
-                rw [equal]
+                exact congrArg (fun state => (completion.signature state).2) equal
               _ = (requirements.fullSignature full).2 := by
                 rw [completion.full_spec]
           exact requirements.return_fresh leftTarget full secondEqual
@@ -222,7 +224,7 @@ theorem fullReturnMap_injective (completion : Completion requirements) :
                 (completion.return_spec leftTarget).symm
               _ = (completion.signature
                     (completion.returnState rightTarget)).2 := by
-                rw [equal]
+                exact congrArg (fun state => (completion.signature state).2) equal
               _ = requirements.returnRequirement rightTarget :=
                 completion.return_spec rightTarget
           exact congrArg Sum.inr
@@ -366,7 +368,7 @@ private theorem signatureWhenOutputLeReturn_injective
                   ((Fintype.equivFin ReturnOnly).symm leftIndex) =
                 requirements.returnRequirement
                   ((Fintype.equivFin ReturnOnly).symm rightIndex) := by
-            simpa [returnAtIndex] using congrArg Prod.snd equal
+            simpa [signatureWhenOutputLeReturn, returnAtIndex] using congrArg Prod.snd equal
           have indexPreimageEqual :
               (Fintype.equivFin ReturnOnly).symm leftIndex =
                 (Fintype.equivFin ReturnOnly).symm rightIndex :=
@@ -402,8 +404,8 @@ private theorem completionWhenOutputLeReturn_card
     (bound : Fintype.card OutputOnly ≤ Fintype.card ReturnOnly) :
     Fintype.card (completionWhenOutputLeReturn requirements bound).State =
       requiredSignatureCount requirements := by
-  simp [completionWhenOutputLeReturn, requiredSignatureCount,
-    Nat.max_eq_right bound]
+  change Fintype.card (Full ⊕ Fin (Fintype.card ReturnOnly)) = _
+  simp [requiredSignatureCount, Nat.max_eq_right bound]
 
 private noncomputable def returnAtOutputIndex
     (bound : Fintype.card ReturnOnly ≤ Fintype.card OutputOnly)
@@ -489,7 +491,7 @@ private theorem signatureWhenReturnLeOutput_injective
                   ((Fintype.equivFin OutputOnly).symm leftIndex) =
                 requirements.outputRequirement
                   ((Fintype.equivFin OutputOnly).symm rightIndex) := by
-            simpa [outputAtIndex] using congrArg Prod.fst equal
+            simpa [signatureWhenReturnLeOutput, outputAtIndex] using congrArg Prod.fst equal
           have indexPreimageEqual :
               (Fintype.equivFin OutputOnly).symm leftIndex =
                 (Fintype.equivFin OutputOnly).symm rightIndex :=
@@ -525,12 +527,12 @@ private theorem completionWhenReturnLeOutput_card
     (bound : Fintype.card ReturnOnly ≤ Fintype.card OutputOnly) :
     Fintype.card (completionWhenReturnLeOutput requirements bound).State =
       requiredSignatureCount requirements := by
-  simp [completionWhenReturnLeOutput, requiredSignatureCount,
-    Nat.max_eq_left bound]
+  change Fintype.card (Full ⊕ Fin (Fintype.card OutputOnly)) = _
+  simp [requiredSignatureCount, Nat.max_eq_left bound]
 
 /-- Sharpness: normalized partial-signature data always has an injective
 completion attaining the universal lower bound. -/
-noncomputable theorem exists_optimal_completion :
+theorem exists_optimal_completion :
     ∃ completion : Completion requirements,
       Fintype.card completion.State =
         requiredSignatureCount requirements := by
