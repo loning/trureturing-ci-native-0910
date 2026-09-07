@@ -21,7 +21,7 @@ public sealed partial class CleanLanesCommandTests
 
         Assert.True(result.Success, result.Error);
         Assert.Equal(busy ? "in_use" : "merged_clean", ReasonFor(result.Output, lane));
-        Assert.Equal(busy, Directory.Exists(lane));
+        CleanLanesFixture.AssertDirectoryExists(lane, busy);
         Assert.Equal(busy ? 1 : 2, runner.StreamedSnapshots);
     }
 
@@ -36,7 +36,7 @@ public sealed partial class CleanLanesCommandTests
 
         Assert.True(result.Success, result.Error);
         Assert.Equal("merged_clean", ReasonFor(result.Output, lane));
-        Assert.False(Directory.Exists(lane));
+        CleanLanesFixture.AssertDirectoryExists(lane, false);
         Assert.Single(runner.Invocations, call =>
             call.WorkingDirectory == lane
             && call.Arguments.SequenceEqual(["rev-parse", "--absolute-git-dir"]));

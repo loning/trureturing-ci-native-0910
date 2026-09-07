@@ -22,26 +22,28 @@ internal static class BoundedProcessRunner
     // Flow the startup seam into Task.Run without sharing overrides between checks.
     internal static readonly AsyncLocal<Func<Process, bool>?> StartProcess = new();
 
-    internal static StreamedProcessOutput<T> RunStreaming<T>(
-        string fileName,
-        IEnumerable<string> arguments,
-        string workingDirectory,
-        TimeSpan timeout,
-        int maximumErrorBytes,
-        Func<Stream, CancellationToken, Task<T>> readStandardOutput)
-    {
-        var result = Run(fileName, arguments, workingDirectory, timeout, maximumErrorBytes);
-        using var stream = new MemoryStream(result.StandardOutput, writable: false);
-        return new StreamedProcessOutput<T>(result.ExitCode,
-            readStandardOutput(stream, CancellationToken.None).GetAwaiter().GetResult(), result.StandardError);
-    }
-
     internal static ProcessOutput Run(
         string fileName,
         IEnumerable<string> arguments,
         string workingDirectory,
         TimeSpan timeout,
         int maximumOutputBytes,
+        ReadOnlyMemory<byte> standardInput = default,
+        IReadOnlyDictionary<string, string>? environment = null)
+    {
+        var result = RunStreaming(fileName, arguments, workingDirectory, timeout, maximumOutputBytes,
+            (stream, cancellation) => ReadLimitedAsync(stream, maximumOutputBytes, cancellation),
+            standardInput, environment);
+        return new ProcessOutput(result.ExitCode, result.StandardOutput, result.StandardError);
+    }
+
+    internal static StreamedProcessOutput<T> RunStreaming<T>(
+        string fileName,
+        IEnumerable<string> arguments,
+        string workingDirectory,
+        TimeSpan timeout,
+        int maximumErrorBytes,
+        Func<Stream, CancellationToken, Task<T>> readStandardOutput,
         ReadOnlyMemory<byte> standardInput = default,
         IReadOnlyDictionary<string, string>? environment = null)
     {
@@ -77,13 +79,12 @@ internal static class BoundedProcessRunner
         using var cancellation = new CancellationTokenSource(timeout);
         try
         {
-            var stdout = ReadLimitedAsync(
+            var stdout = readStandardOutput(
                 process.StandardOutput.BaseStream,
-                maximumOutputBytes,
                 cancellation.Token);
             var stderr = ReadLimitedAsync(
                 process.StandardError.BaseStream,
-                maximumOutputBytes,
+                maximumErrorBytes,
                 cancellation.Token);
             var stdin = standardInput.IsEmpty
                 ? Task.CompletedTask
@@ -100,7 +101,7 @@ internal static class BoundedProcessRunner
             {
                 // The child owns whether it consumes stdin; preserve its completed verdict.
             }
-            return new ProcessOutput(
+            return new StreamedProcessOutput<T>(
                 process.ExitCode,
                 stdout.GetAwaiter().GetResult(),
                 stderr.GetAwaiter().GetResult());
