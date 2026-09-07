@@ -395,6 +395,34 @@ public sealed class TypeModelTests
     }
 
     [Fact]
+    public void AnalysisFixtureWorkflowIsClosedWorldRegisteredAndBootstrapProtected()
+    {
+        const string value = ".github/workflows/lean-analysis-fixtures.yml";
+        var path = RepoPath.CreateKnown(value);
+
+        Assert.Null(RepositoryPathPolicy.Validate(path, Policy()));
+        Assert.False(RepositoryPathPolicy.TryResolve(path, out _));
+        var outcome = BootstrapGate.Evaluate(RawChangeSet.Create([value]));
+        var verification = Assert.IsType<BootstrapOutcome.ProtectedSurfaceVerificationRequired>(outcome);
+        Assert.Contains(verification.ChangeSet.Paths, item => item == path);
+    }
+
+    [Theory]
+    [InlineData(".github/workflows/lean-analysis-fixtures.yaml")]
+    [InlineData(".github/workflows/lean-analysis-fixtures-copy.yml")]
+    [InlineData(".github/workflows/nested/lean-analysis-fixtures.yml")]
+    public void AnalysisFixtureWorkflowNeighborsRemainSl000Blocked(string value)
+    {
+        var path = RepoPath.CreateKnown(value);
+
+        var issue = Assert.IsType<RepositoryPathIssue>(RepositoryPathPolicy.Validate(path, Policy()));
+
+        Assert.Equal("SL-000", issue.RuleId.Value);
+        Assert.Equal(value, issue.Path);
+        Assert.Equal("unknown GitHub control artifact", issue.Message);
+    }
+
+    [Fact]
     public void HarnessGateScriptIsClosedWorldRegisteredAndBootstrapProtected()
     {
         const string value = RuleFixture.HarnessGatePath;
