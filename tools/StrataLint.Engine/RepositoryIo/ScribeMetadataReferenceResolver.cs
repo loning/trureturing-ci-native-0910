@@ -189,7 +189,7 @@ internal static class ScribeMetadataReferenceResolver
         }
     }
 
-    private static string PackageDirectory(string id, string version) => Path.Combine(
+    internal static string PackageDirectory(string id, string version) => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
         ".nuget",
         "packages",
