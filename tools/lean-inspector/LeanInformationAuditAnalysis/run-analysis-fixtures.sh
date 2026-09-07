@@ -3,6 +3,9 @@ set -euo pipefail
 
 # Run after make lean-cache-ensure. Lake builds the non-default analysis library
 # and its dependencies; the library's own traces are cleared to repeat exports.
+# The recursive LeanInformationAuditAnalysis.+ glob covers this directory dedicated
+# to opt-in full analyses; adding an exporting fixture requires updating this
+# runner's artifact inventory.
 # Exit 64 means bad arguments, 66 missing inputs, 69 missing tools, 73 output
 # unavailable; otherwise preserve the failing command's exit code. Only exit 0
 # and ANALYSIS_FIXTURES_EXIT=0 indicate that all fixtures finished.
