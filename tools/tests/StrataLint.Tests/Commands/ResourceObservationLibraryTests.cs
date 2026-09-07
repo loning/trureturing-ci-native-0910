@@ -351,7 +351,19 @@ public sealed class ResourceObservationLibraryTests
 
         var result = Run(
             temporary,
-            "source \"$1\"\nresource_observe_sample() { return 0; }\nresource_observe_periodically() { return 97; }\nobserved_command() { wait \"$sampler_pid\" 2>/dev/null; bash -c 'exit 0'; }\nresource_observe_run_periodic observed_command\n");
+            """
+            source "$1"
+            resource_observe_sample() { return 0; }
+            sampler_fifo="$PWD/sampler-exited"
+            mkfifo "$sampler_fifo"
+            resource_observe_periodically() { exec 9>"$sampler_fifo"; exec bash -c 'exit 97'; }
+            observed_command() {
+              # Only the sampler PID owns write fd 9 after exec; EOF proves that PID exited and closed it.
+              read -r _ <"$sampler_fifo" || [[ "$?" -eq 1 ]]
+              bash -c 'exit 0'
+            }
+            resource_observe_run_periodic observed_command
+            """);
 
         Assert.Equal(0, result.ExitCode);
         Assert.Contains(
@@ -368,7 +380,21 @@ public sealed class ResourceObservationLibraryTests
 
         var result = Run(
             temporary,
-            "source \"$1\"\nresource_observe_sample() { return 0; }\nresource_observe_periodically() { return 97; }\nwrapped_command() { wait \"$sampler_pid\" 2>/dev/null || [[ \"$?\" -eq 97 ]]; bash -c 'exit 23'; bash -c 'exit 0'; }\nset -e\nresource_observe_run_periodic wrapped_command\n");
+            """
+            source "$1"
+            resource_observe_sample() { return 0; }
+            sampler_fifo="$PWD/sampler-exited"
+            mkfifo "$sampler_fifo"
+            resource_observe_periodically() { exec 9>"$sampler_fifo"; exec bash -c 'exit 97'; }
+            wrapped_command() {
+              # Only the sampler PID owns write fd 9 after exec; EOF proves that PID exited and closed it.
+              read -r _ <"$sampler_fifo" || [[ "$?" -eq 1 ]]
+              bash -c 'exit 23'
+              bash -c 'exit 0'
+            }
+            set -e
+            resource_observe_run_periodic wrapped_command
+            """);
 
         Assert.Equal(23, result.ExitCode);
         Assert.Contains(
@@ -385,7 +411,19 @@ public sealed class ResourceObservationLibraryTests
 
         var result = Run(
             temporary,
-            "source \"$1\"\nresource_observe_sample() { return 19; }\nresource_observe_periodically() { return 97; }\nobserved_command() { wait \"$sampler_pid\" 2>/dev/null; bash -c 'exit 0'; }\nresource_observe_run_periodic observed_command\n");
+            """
+            source "$1"
+            resource_observe_sample() { return 19; }
+            sampler_fifo="$PWD/sampler-exited"
+            mkfifo "$sampler_fifo"
+            resource_observe_periodically() { exec 9>"$sampler_fifo"; exec bash -c 'exit 97'; }
+            observed_command() {
+              # Only the sampler PID owns write fd 9 after exec; EOF proves that PID exited and closed it.
+              read -r _ <"$sampler_fifo" || [[ "$?" -eq 1 ]]
+              bash -c 'exit 0'
+            }
+            resource_observe_run_periodic observed_command
+            """);
 
         Assert.Equal(0, result.ExitCode);
         Assert.Contains(
@@ -419,7 +457,18 @@ public sealed class ResourceObservationLibraryTests
 
         var result = Run(
             temporary,
-            "source \"$1\"\nresource_observe_sample() { return 0; }\nresource_observe_periodically() { return 5; }\nobserved_command() { wait \"$sampler_pid\"; local sampler_exit=$?; [[ \"$sampler_exit\" -eq 5 ]]; }\nresource_observe_run_periodic observed_command\n");
+            """
+            source "$1"
+            resource_observe_sample() { return 0; }
+            sampler_fifo="$PWD/sampler-exited"
+            mkfifo "$sampler_fifo"
+            resource_observe_periodically() { exec 9>"$sampler_fifo"; exec bash -c 'exit 5'; }
+            observed_command() {
+              # Only the sampler PID owns write fd 9 after exec; EOF proves that PID exited and closed it.
+              read -r _ <"$sampler_fifo" || [[ "$?" -eq 1 ]]
+            }
+            resource_observe_run_periodic observed_command
+            """);
 
         Assert.Equal(0, result.ExitCode);
         Assert.Contains(
