@@ -42,9 +42,11 @@ theorem eight_step_layer_cutoff {p k : ℕ} (hp : p.Prime) (hk : 1 ≤ k) :
     have hk2 : k ≤ 2 := by
       by_contra h
       have h3 := denominator_mono p (show 3 ≤ k by omega)
-      have h2 : layerDenominator 2 3 ≤ layerDenominator p 3 :=
-        sum_le_sum fun i _ => Nat.pow_le_pow_left hp.two_le (i + 1)
-      norm_num [layerDenominator, sum_range_succ] at h2
+      have h2 : 14 ≤ layerDenominator p 3 := by
+        calc
+          14 = layerDenominator 2 3 := by decide
+          _ ≤ layerDenominator p 3 :=
+            sum_le_sum fun i _ => Nat.pow_le_pow_left hp.two_le (i + 1)
       omega
     rcases (show k = 1 ∨ k = 2 by omega) with rfl | rfl
     · have hp14 : p < 14 := by simpa [layerDenominator, sum_range_succ] using hd
@@ -58,6 +60,39 @@ theorem eight_step_layer_cutoff {p k : ℕ} (hp : p.Prime) (hk : 1 ≤ k) :
     rcases h with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ |
       ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
     all_goals norm_num [layerDenominator, sum_range_succ]
+
+private def optimalExponent (p : ℕ) : ℕ :=
+  if p = 2 ∨ p = 3 then 2 else if p = 5 ∨ p = 7 ∨ p = 11 ∨ p = 13 then 1 else 0
+
+private theorem cutoff_exponent {p k : ℕ} (hp : p.Prime) (hk : 1 ≤ k) :
+    layerDenominator p k < 14 ↔ k ≤ optimalExponent p := by
+  rw [eight_step_layer_cutoff hp hk]
+  simp only [mem_insert, mem_singleton, Prod.mk.injEq]
+  unfold optimalExponent
+  split_ifs <;> omega
+
+private theorem denominator_pos {p k : ℕ} (hp : p.Prime) (hk : 1 ≤ k) :
+    0 < layerDenominator p k := by
+  have h := denominator_mono p hk
+  have h1 : layerDenominator p 1 = p := by simp [layerDenominator]
+  rw [h1] at h
+  exact hp.pos.trans_le h
+
+private theorem layer_ratio_identity {p k : ℕ} (hp : p.Prime) (hk : 1 ≤ k) :
+    (1 - (p : ℝ)⁻¹ ^ (k + 1)) / (1 - (p : ℝ)⁻¹ ^ k) =
+      1 + 1 / (layerDenominator p k : ℝ) := by
+  have hp0 : (p : ℝ) ≠ 0 := by exact_mod_cast hp.ne_zero
+  have hp1 : (p : ℝ) ≠ 1 := by exact_mod_cast hp.ne_one
+  have hpk : (p : ℝ) ^ k ≠ 1 :=
+    ne_of_gt (one_lt_pow₀ (by exact_mod_cast hp.one_lt) (by omega))
+  have hd : (layerDenominator p k : ℝ) =
+      ((p : ℝ) ^ k - 1) / ((p : ℝ) - 1) * p := by
+    simp only [layerDenominator, Nat.cast_sum, Nat.cast_pow, pow_succ, ← sum_mul]
+    rw [geom_sum_eq hp1]
+  rw [hd]
+  simp only [inv_pow, pow_succ]
+  field_simp
+  <;> ring
 
 #print axioms eight_step_layer_cutoff
 
