@@ -173,7 +173,7 @@ public sealed partial class ProductionEnvironmentTests
         return current with { Baseline = baseline };
     }
 
-    private static CoverInputs WithSiblingDuplicateCoverageReceipt(CoverInputs inputs)
+    private static CoverInputs WithSiblingDuplicateScribeReceipt(CoverInputs inputs)
     {
         var siblingAtomId = CoverWorld.OtherAtomId;
         var documentGid = inputs.Gid[..inputs.Gid.LastIndexOf('.')];
@@ -189,12 +189,15 @@ public sealed partial class ProductionEnvironmentTests
                             Coverage =
                             [
                                 new DigestionCoverageEdge(inputs.Gid, targetStatementId),
-                                new DigestionCoverageEdge(inputs.Gid, targetStatementId),
                             ],
                             Receipts = entry.Receipts with
                             {
                                 Scribe =
                                 [
+                                    new DigestionScribeReceipt(
+                                        inputs.Gid,
+                                        verified.DefinitionSha256,
+                                        verified.EmissionSha256),
                                     new DigestionScribeReceipt(
                                         inputs.Gid,
                                         verified.DefinitionSha256,

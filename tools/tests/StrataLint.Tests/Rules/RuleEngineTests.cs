@@ -355,9 +355,8 @@ public sealed class RuleEngineTests
         fixture.Files[RuleFixture.FixtureBackfillAtomPath] = fixture.Files[
                 RuleFixture.FixtureBackfillAtomPath]
             .Replace(
-                "coverage_gids:\n  - gid: D5/S0/Carrier/BackfillTarget\n    target_statement_id: null",
-                "coverage_gids:\n  - gid: D5/S0/Carrier/BackfillTarget\n    target_statement_id: null\n"
-                    + "  - gid: D5/S0/Carrier/BackfillTarget\n    target_statement_id: null",
+                "gid: D5/S0/Carrier/BackfillTarget",
+                "gid: not-a-gid",
                 StringComparison.Ordinal);
 
         var diagnostics = RuleCatalog.Default.EvaluateSingle(
@@ -366,6 +365,8 @@ public sealed class RuleEngineTests
 
         Assert.Contains(diagnostics, diagnostic => diagnostic.Message ==
             $"entry {RuleFixture.FixtureAtomId} CAS blob is missing: {RuleFixture.FixtureCasPath}");
+        Assert.Contains(diagnostics, diagnostic => diagnostic.Message ==
+            $"entry {RuleFixture.FixtureAtomId} has invalid coverage GID not-a-gid");
     }
 
     private static string RemoveGenreMarkers(string metadata) => metadata
@@ -383,9 +384,8 @@ public sealed class RuleEngineTests
         fixture.Files[RuleFixture.FixtureBackfillAtomPath] = fixture.Files[
                 RuleFixture.FixtureBackfillAtomPath]
             .Replace(
-                "coverage_gids:\n  - gid: D5/S0/Carrier/BackfillTarget\n    target_statement_id: null",
-                "coverage_gids:\n  - gid: D5/S0/Carrier/BackfillTarget\n    target_statement_id: null\n"
-                    + "  - gid: D5/S0/Carrier/BackfillTarget\n    target_statement_id: null",
+                "gid: D5/S0/Carrier/BackfillTarget",
+                "gid: not-a-gid",
                 StringComparison.Ordinal);
 
         var completed = Assert.IsType<RuleExecutionOutcome.Completed>(
@@ -397,6 +397,8 @@ public sealed class RuleEngineTests
             && diagnostic.Message.Contains(
                 $"entry {RuleFixture.FixtureAtomId} CAS blob hash mismatch: {RuleFixture.FixtureCasPath}",
                 StringComparison.Ordinal));
+        Assert.Contains(completed.Capability.Diagnostics, diagnostic => diagnostic.Message ==
+            $"entry {RuleFixture.FixtureAtomId} has invalid coverage GID not-a-gid");
     }
 
     [Fact]
