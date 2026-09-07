@@ -89,7 +89,7 @@ internal sealed class CommonStages(string root, TextWriter output)
         RequireBinary(engineering, CommonExecutionEvidence.ScribePath);
         RequireBinary(engineering, "tools/StrataLint.EngineeringScope/bin/Release/net10.0/StrataLint.EngineeringScope.dll");
         File.Delete(Path.Combine(root, CommonExecutionEvidence.CurrentPath));
-        Step("lean-report", "make", ["lean-report"]);
+        Step("lean-report", "/usr/bin/env", [$"STRATALINT_LEAN_CLI_DLL={Path.Combine(root, CommonExecutionEvidence.CliPath)}", "make", "lean-report"]);
         _ = RawLeanReportArtifact.ReadFile(Path.Combine(root, CommonExecutionEvidence.ReportPath), CommonExecutionEvidence.Snapshot(root), validateMaterials: true);
         Step("scribe", "/bin/bash", ["tools/scripts/workflow/scribe-content-checks.sh", CommonExecutionEvidence.ReportPath, CommonExecutionEvidence.ScribePath]);
         Step("filemap", "dotnet", [CommonExecutionEvidence.CliPath, "filemap-conform"]);
