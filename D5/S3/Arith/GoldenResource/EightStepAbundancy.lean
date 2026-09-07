@@ -271,8 +271,11 @@ private theorem comparison_count : ArithmeticFunction.cardFactors 5040 = 8 := by
   rw [show (5040 : ℕ) = 2 ^ 4 * 3 ^ 2 * 5 ^ 1 * 7 ^ 1 by norm_num]
   rw [ArithmeticFunction.cardFactors_mul (by norm_num) (by norm_num),
     ArithmeticFunction.cardFactors_mul (by norm_num) (by norm_num),
-    ArithmeticFunction.cardFactors_mul (by norm_num) (by norm_num)]
-  norm_num [ArithmeticFunction.cardFactors_apply_prime_pow]
+    ArithmeticFunction.cardFactors_mul (by norm_num) (by norm_num),
+    ArithmeticFunction.cardFactors_apply_prime_pow (by decide : Nat.Prime 2),
+    ArithmeticFunction.cardFactors_apply_prime_pow (by decide : Nat.Prime 3),
+    ArithmeticFunction.cardFactors_apply_prime_pow (by decide : Nat.Prime 5),
+    ArithmeticFunction.cardFactors_apply_prime_pow (by decide : Nat.Prime 7)]
 
 private theorem target_value : benefit 180180 = 224 / 55 := by
   have hs : ArithmeticFunction.sigma 1 180180 = 733824 := by
@@ -337,7 +340,8 @@ theorem eight_step_abundancy_optimum :
         change benefit n = 224 / 55 at h
         rw [h]
       · intro h
-        simpa [h] using target_value
+        subst n
+        exact target_value
   · change benefit 5040 < benefit 180180
     rw [comparison_value, target_value]
     norm_num
