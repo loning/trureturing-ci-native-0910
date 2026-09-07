@@ -495,7 +495,7 @@ public sealed partial class ProductionEnvironmentTests
         {
             OtherAtomGid = "D5/S0/Carrier/Probe.probe",
         });
-        var inputs = DirectoryInputs(WithSiblingDuplicateCoverageReceipt(materialized));
+        var inputs = DirectoryInputs(WithSiblingDuplicateScribeReceipt(materialized));
         using var temporary = new TemporaryDirectory();
         DirectoryLedgerTestSupport.Write(temporary.Path, inputs.Files);
         var before = DirectoryLedgerTestSupport.Image(temporary.Path);
