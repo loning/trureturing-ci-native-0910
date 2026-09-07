@@ -1306,3 +1306,348 @@ analogy. No new zero-free endpoint or RH conclusion is asserted in this incremen
 Robin criterion*. arXiv:2511.02106 (2025). The statistic and the explicit cutoff
 change together in their Robin-type equivalence.
 https://arxiv.org/abs/2511.02106
+
+
+## 23. Additive charts, multiplicative odds and type-dependent projective flow
+
+This continuation reads dev at 3478a75a07f72d4a71d995bc1071d999ffd2f2bd and
+continues the exact-grid source at 65af741aefefef2a9a5f549b5b0910d23d325dcb.
+The mathematical target remains a common complex zero-free neighborhood through
+activity 51/20. The new analytic construction below gives explicit widths;
+it does not change the preceding finite coefficient or geometric payloads.
+
+Three existing dev sources provide relevant, distinct structures:
+
+* GoldenEulerStepPhaseLaw proves Euler's sine/cosine expression for the prime
+  step phase, unit norm, the golden long-step factorization using phi^2=phi+1,
+  and the loss of adjacent order when only scalar phases are multiplied.
+* PrimeGoldenComplexMode retains a positive amplitude and a phase separately;
+  its norm recovers the amplitude. Its damping hypotheses matter for recovering
+  the prime label from that amplitude.
+* Quantum/Algebra/WeylDisplacement proves the finite-window shift/clock
+  composition law with its symplectic phase, including a genuine two-address
+  anticommutation example. It is a projective operator representation.
+
+These existing results were read as actual source, not inferred from names.
+They are not imported as hard-core inequalities. Spatial grid translations act
+on vertices and configurations, while the following translations act on message
+coordinates. Section 20 supplies the exact observable correspondence between
+the geometric model and these message coordinates.
+
+For a fixed type with Psi(x)=b-a*x, use the odds coordinate
+
+\[
+ q=\frac{x}{b-ax},\qquad m=\frac{\log q}{b}.
+\]
+
+The inverse is f(m)=b exp(bm)/(1+a exp(bm)). The new inverse_odds theorem gives
+q(f(m))=exp(bm) exactly. Thus m -> m+u+iv multiplies the odds by
+exp(bu) exp(ibv): real shifts change the modulus, imaginary shifts rotate phase.
+The modulus identity and exponential factorization are formalized together.
+
+In the original x coordinate, an odds multiplier E acts as
+
+\[
+ T_{k,E}(x)=\frac{Ex}{1+k(E-1)x},\qquad k=a/b.
+\]
+
+Its matrix is [[E,0],[k(E-1),1]]. The exact pole-free composition is
+T_(k,E) composed with T_(k,F)=T_(k,EF). For two different type ratios k,l,
+the difference between the lower-left entries of the two matrix products is
+
+\[
+ \boxed{(k-l)(E-1)(F-1).}
+\tag{23.1}
+\]
+
+Consequently, type-dependent projective transport generally retains ordering
+information that scalar phase multiplication loses. The first two actual
+coefficient pairs give k=2544246/2780973 and l=782543/1650757, with
+k-l=224855659987/510078960729, a nonzero exact rational. For E=F=2 and x=1/2,
+the two projective compositions differ by the exact rational recorded by the
+replay. That diagnostic is outside the small analytic tube below and asserts
+only the algebraic ordering distinction. Equation (23.1) also permits nonzero
+ordering defects for multipliers arbitrarily close to one.
+
+The golden ratio can be used as a step parameter and its quadratic identity
+then gives the existing long-step factorization. No golden-ratio value has
+been shown to optimize the present coefficients or the activity width. The
+real golden ratio, a phase angle, and a logarithmic coordinate are different
+parameters. Likewise, the finite Weyl operator law and the present fractional
+linear action are different representations; no isomorphism between them is
+asserted. A physical wave-particle statement would additionally require a
+specified quantum state space, observables and measurement probabilities.
+The classical hard-core partition is not assigned that interpretation here.
+
+## 24. One-log holomorphic coordinates and the exact full Jacobian
+
+Write Log for the principal complex logarithm. Define
+
+\[
+ \chi_i(x)=-\frac{\operatorname{Log}(b_i/x-a_i)}{b_i},\qquad
+ f_i(m)=\frac{b_i e^{b_i m}}{1+a_i e^{b_i m}}.
+\]
+
+On the positive real interval this agrees with Section 16's coordinate.
+AffineChart proves, with explicit pole and slit-plane hypotheses,
+
+\[
+ \chi_i'(x)=\frac1{x\Psi_i(x)},\qquad
+ f_i'(m)=f_i(m)\Psi_i(f_i(m)).
+\]
+
+It also proves the real-center inverse and the two-sided inverse on the
+principal strip -pi<Im(b_i*m)<pi. The later tube excludes wrapping uniformly.
+All formulas include a_i=0. No logarithm of activity is used, so activity zero
+is inside the same analytic construction.
+
+For a subset S of actual geometric children put
+
+\[
+ P=\prod_{j\in S}f_j(m_j),\qquad
+ H=b_i-a_i+b_i zP,\qquad G_{i,S}(z,m)=-\operatorname{Log}(H)/b_i.
+\]
+
+The empty product is one. On the pole-free domain, the inverse is exactly
+f_i(G_(i,S))=(1+zP)^(-1). The new TypedJacobian derives the full differential,
+including simultaneous changes in activity and every child coordinate:
+
+\[
+ \boxed{dG=-\frac{P}{H}\,dz
+ -\sum_{j\in S}\frac{zP\Psi_j(f_j(m_j))}{H}\,dm_j.}
+\tag{24.1}
+\]
+
+The source proves this along arbitrary differentiable complex input curves
+and separately proves joint complex differentiability on the finite-dimensional
+product domain. It does not infer holomorphy from a sampled derivative fit.
+The child coefficient is algebraically identical to
+-(1-y)Psi_j(x_j)/Psi_i(y), where y=(1+zP)^(-1). Thus the existing real row
+certificate controls the actual Jacobian of the constructed map.
+
+## 25. Explicit widths and pole-free quantitative estimates
+
+The existing coefficient certificate gives a_i>=0 and
+b_i-a_i>=10577/1000000. The added finite source check gives b_i<=3 on the same
+Lean-owned payload. The analysis uses the weaker common bounds
+
+\[
+ 0\le a_i,\quad b_i-a_i\ge1/100,\quad b_i\le3.
+\]
+
+Choose the explicit widths
+
+\[
+ \boxed{\delta=10^{-20},\qquad\epsilon=10^{-30},\qquad
+ \gamma=999/1000,\quad\gamma'=1999/2000.}
+\tag{25.1}
+\]
+
+For r in [1/4,1], let c_i(r) be the real value of chi_i(r). If
+|m-c_i(r)|<=delta, set u=m-c_i(r), E=exp(b_i*u), and k=a_i*r/b_i in [0,1].
+Exact algebra gives
+
+\[
+ f_i(m)=\frac{rE}{1+k(E-1)}.
+\]
+
+The exponential bound |exp(w)-1|<=2|w| for |w|<=1 gives |E-1|<=6delta.
+Hence |1+k(E-1)|>=1/2. The exact difference numerator is
+r(1-k)(E-1), giving |f_i(m)-r|<=12delta<=100delta and |f_i(m)|<=2.
+This simultaneously excludes every inverse-coordinate pole.
+
+The following deliberately loose estimates hold for every subset of at most
+four children, so the same constants also cover the unconditioned root.
+Put P0=prod(r_j), choose real lambda in [0,3], and |z-lambda|<=epsilon.
+The finite-product induction and triangle inequalities give
+
+\[
+\begin{aligned}
+ |P|&\le16,&0\le P_0&\le1,\\
+ |P-P_0|&\le6400\delta,&
+ |zP-\lambda P_0|&\le16\epsilon+19200\delta\le20000\delta.
+\end{aligned}
+\]
+
+For H0=b_i-a_i+b_i*lambda*P0, we have H0>=1/100 and
+|H-H0|<=60000delta. Consequently,
+
+\[
+ \boxed{\operatorname{Re}H\ge1/200,\qquad
+ \operatorname{Re}(1+zP)\ge1/2.}
+\tag{25.2}
+\]
+
+This explicitly excludes the logarithm cut, the transformed-map pole and the
+vacancy denominator zero. The activity derivative satisfies |P/H|<=3200<=10000.
+No compactness-only assertion is used to select these widths.
+
+For one child coefficient in (24.1), compare the complex value with the same
+real anchor. We use |Psi_j(x_j)-Psi_j(r_j)|<=300delta, |Psi_j(x_j)|<=9,
+|lambda*P0*Psi_j(r_j)|<=9 and the denominator floors above. The exact quotient
+estimate is
+
+\[
+ \left|\frac{u}{v}-\frac{u_0}{v_0}\right|
+ \le200|u-u_0|+20000|u_0||v-v_0|.
+\]
+
+The numerator perturbation is at most 180900delta. Thus each Jacobian entry
+changes by at most
+
+\[
+ (200\cdot180900+20000\cdot9\cdot60000)\delta
+ =10836180000\delta<10^{11}\delta.
+\]
+
+At most four entries contribute, so their sum changes by at most 10^12 delta.
+The real certificate therefore gives the strict complex row bound
+
+\[
+ \sum_{j\in S}|\partial_{m_j}G|
+ \le\gamma+10^{12}\delta<\gamma'.
+\tag{25.3}
+\]
+
+This last contraction use is for genuine nonroot pruning rows. At the root
+only (25.2) is used; no three-child contraction is imposed on four children.
+
+## 26. The actual all-type invariant complex neighborhoods
+
+Define the following open sets using the actual 881 coefficient assignments:
+
+\[
+ \Omega_i=\bigcup_{r\in[20/71,1]}B(c_i(r),\delta),\qquad
+ U_\epsilon=\bigcup_{\lambda\in[0,51/20]}B(\lambda,\epsilon).
+\]
+
+Every child subset must refer to genuine successors of the existing geometric
+transition. Pruning in AdaptiveComplexNeighborhood records exactly that fact;
+its default child accessor is never used for an active nonexistent direction.
+
+Choose a real anchor for each input point. Interpolate linearly from the real
+activity and message anchors to the complex inputs. Along the whole segment,
+the inverse-coordinate and denominator estimates remain valid. Applying the
+actual derivative (24.1), the real mean-value estimate on [0,1], and (25.3)
+gives
+
+\[
+ |G_{i,S}(z,m)-G_{i,S}(\lambda,c(r))|
+ \le\gamma'\delta+10000\epsilon<\delta.
+\]
+
+The remaining exact positive slack is 499/10^26. The real output is the center
+of y=(1+lambda*prod(r_j))^(-1), and y lies in [20/71,1]. Therefore
+
+\[
+ \boxed{z\in U_\epsilon,\quad m_j\in\Omega_{j}\ (j\in S)
+ \quad\Longrightarrow\quad G_{i,S}(z,m)\in\Omega_i.}
+\tag{26.1}
+\]
+
+The quantified theorem covers every actual type and every valid pruning,
+including leaves. There is no supplied complex Lipschitz or invariance premise.
+The proof reuses the existing full-real-box all-pruning certificate, identifies
+it with the real Jacobian, then derives the complex estimates.
+
+The sets are proved open. Every m in Omega_i satisfies |Im(b_i*m)|<=3delta<pi,
+so the principal chart is genuinely inverse to f_i on the whole constructed
+message domain. The transformed map is jointly holomorphic there, and its
+inverse coordinate is exactly the vacancy recursion. For four first-child
+messages in Omega_0, the source proves
+
+\[
+ \operatorname{Re}\left(1+z\prod_{e=0}^{3}f_0(m_e)\right)\ge1/2,
+\]
+
+hence the root denominator is nonzero. Missing first children may use c_0(1),
+whose inverse is exactly one.
+
+The same epsilon works independently of the finite domain, holes, root position
+and recursion depth. The number 10^-30 is a sufficient explicit width, with no
+claim of optimality or physical significance.
+
+### Relation to the graph theorem
+
+Combining (26.1) with Section 20 gives the following complete paper induction.
+Carry both nonvanishing of each smaller-domain partition and a typed inverse
+message representation. For an internal node, each present child has the exact
+successor type and fewer vertices; absent children contribute one. The new
+analytic theorem puts the parent message in its own Omega and excludes its
+local denominator zero. The exact graph recursion proves parent nonvanishing.
+For an arbitrary unconditioned root, center its vertex, use the four smaller
+rootDomain instances at type zero and the separate four-factor denominator
+bound. The empty partition is one. Strong induction on finite cardinality
+therefore gives the candidate explicit consequence
+
+\[
+ z\in U_\epsilon\ \Longrightarrow\ Z_{\rm grid}(V;z)\ne0
+ \quad\text{for every finite induced grid domain }V.
+\tag{26.2}
+\]
+
+The new Lean endpoint is the all-type analytic theorem and its root bound.
+The final simultaneous finite-graph induction in this paragraph has not been
+assembled as a public Lean theorem in this increment. Prior coefficient and
+geometric proof scripts also retain their stated uncompiled status. Thus
+(26.2) is a paper consequence of the delivered certificate chain, not a
+kernel-verified zero-free theorem or an independently reviewed new record.
+
+## 27. Source scope, verification and the next mathematical target
+
+Six new Lean owners under HardCore/Holomorphic have six canonical Scribe
+companions: AffineChart, TypedJacobian, TubeEstimates, RowTubeBounds,
+InvariantTube and AdaptiveComplexNeighborhood. Their 47 explicitly named public
+declarations are paired with StatementSource.FromLean handles. Existing
+geometry, independent-set sums, real-message certificates and coefficient
+payloads are unchanged.
+
+Mathlib source interfaces were checked at db584cd6d46c92f209a44c0f1c829460d327499d:
+complex logarithm differentiation, the slit-plane criterion, exponential
+remainder bound, full Frechet finite-product derivative, complex-to-real
+restriction and the one-dimensional mean-value inequality. The genuine joint
+holomorphy proof uses HasFDerivAt.finsetProd, rather than the scalar-only
+DifferentiableAt.fun_finsetProd overload. The repository information-escape
+specification read in this continuation is version 4.3, blob
+473d684ffda13d291c7df78f0edd8d4922550be6. No new information arena, score or
+sealing assertion is attached to the analytic result.
+
+Reproduce the supplementary research checks with
+
+```sh
+python research/hard_core_weitz/verify_holomorphic_tube.py
+```
+
+The executed run checks all numerical proof budgets with exact Fraction
+arithmetic and ten symbolic rational identities with SymPy. At 110 decimal
+digits, it checks 384 three-child pruning cases and 48 four-child root cases,
+including zero slope and activity zero. Exactly 313 of the three-child cases
+satisfy the separately evaluated exact real-anchor row test and receive the
+additional contraction/invariance checks. The maximum simultaneous derivative
+error is 2.97533988991e-110. Four negative controls detect a missing x factor in
+the chart derivative, principal-branch wrapping, an unsupported larger activity
+width, and commuting distinct-type projective maps.
+
+Two final executions produced byte-identical JSON. This is a separate
+implementation by the same assistant, not independent-author review. The
+optional coefficient-source scan was not part of that recorded execution;
+the existing full 881-row rational certificate was not rerun. Its unchanged
+source theorem is a dependency, and the new b_i<=3 check is a finite Lean proof
+script requesting kernel reduction. Numerical regression does not certify any
+universal Lean proof term.
+
+No Lean/lake executable is present in the authoring runtime. Source elaboration,
+kernel checking, executed axiom closure and Scribe emission have not occurred.
+The scripts are mathematically reviewed candidate formalizations, with no new
+axioms, admits or native_decide verdicts. The real-to-complex principle is prior
+art from Shao and Sun [5]; the exact finite-type coordinate, explicit constants
+and the projective ordering calculation are the present application. No
+first-formalization or literature-priority claim is established.
+
+The next direct target is the simultaneous actual-grid cardinality induction
+in (26.2), with the existing exact coordinate/partition bridge as its consumer.
+After that, the same local derivative accounting can control the analytic
+logarithm of the actual partition and its activity derivative through exact
+vertex elimination. A sharper epsilon should use actual type-dependent margins
+and coefficient ratios; arbitrary phase compression or inserting a golden
+constant does not preserve those estimates without a separate theorem.
