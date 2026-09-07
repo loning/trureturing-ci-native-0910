@@ -150,8 +150,7 @@ public sealed class LeanCacheInputScriptTests
         private readonly TemporaryDirectory temporary = new();
         private readonly string repository;
         private readonly string bin;
-        private readonly string candidateLeaf =
-            Path.Combine(TestRepositoryLayout.FindRoot(), LeafPath);
+        private readonly string candidateLeaf;
         private readonly string reportCalls;
         private readonly string lakeCalls;
         private readonly string payload;
@@ -165,6 +164,7 @@ public sealed class LeanCacheInputScriptTests
             reportCalls = Path.Combine(temporary.Path, "report.calls");
             lakeCalls = Path.Combine(temporary.Path, "lake.calls");
             publishedManifest = Path.Combine(temporary.Path, "published.manifest");
+            candidateLeaf = Path.Combine(temporary.Path, "candidate-leaf.sh");
             foreach (var directory in new[] { repository, bin, payload, Path.Combine(repository, ".lake/build") })
                 ScriptHarnessScratch.EnsureDirectory(directory);
             Write("Trureturing.lean", "import D5.Zeta\n");
@@ -181,6 +181,8 @@ public sealed class LeanCacheInputScriptTests
             Write("tools/StrataLint.Engine/CanonicalWriter.cs", "// report only\n");
             ScriptHarnessScratch.CopyScriptInto(
                 Path.Combine(TestRepositoryLayout.FindRoot(), PublisherPath), Path.Combine(repository, PublisherPath));
+            ScriptHarnessScratch.CopyScriptInto(
+                Path.Combine(TestRepositoryLayout.FindRoot(), LeafPath), candidateLeaf);
             WriteStub(Path.Combine(repository, LeafPath), "exec /bin/bash \"$LEAN_INPUT_CANDIDATE\" \"$@\"");
             WriteStub(Path.Combine(repository, "tools/scripts/report/lean-report-input.sh"),
                 "printf 'called\\n' >> \"$LEAN_INPUT_REPORT_CALLS\"\nexit 73");
