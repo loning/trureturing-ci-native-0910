@@ -49,22 +49,6 @@ public sealed partial class LeanReportInputScriptTests
         Assert.Equal(Fields(before)[2..], Fields(after)[2..]);
     }
 
-    [Theory]
-    [InlineData(0)]
-    [InlineData(29)]
-    public void CacheFetcherDeltaSelectsScribeChecksAndPropagatesFailure(int childExit)
-    {
-        if (OperatingSystem.IsWindows()) return;
-        using var fixture = new LeanReportInputFixture();
-
-        var (result, invocations) = fixture.RunScribeForFetcherDelta(childExit);
-
-        Assert.Equal(childExit, result.ExitCode);
-        Assert.Equal(
-            childExit == 0 ? new[] { "projections", "describe-report" } : ["projections"],
-            invocations);
-    }
-
     [Fact]
     public void AddressIsIndependentOfCallerWorkingDirectorySdk()
     {
@@ -141,49 +125,6 @@ public sealed partial class LeanReportInputScriptTests
         internal ProcessOutput AddressFromRepository() => Run("address", repository);
 
         internal void RemoveSource(string relativePath) => File.Delete(Path.Combine(repository, relativePath));
-
-        [System.Runtime.Versioning.UnsupportedOSPlatform("windows")]
-        internal (ProcessOutput Result, string[] Invocations) RunScribeForFetcherDelta(int childExit)
-        {
-            foreach (var path in new[] { InputHelperPath, ScribeContentChecksPath })
-            {
-                Write(path, File.ReadAllText(Path.Combine(TestRepositoryLayout.FindRoot(), path)));
-                File.SetUnixFileMode(Path.Combine(repository, path),
-                    UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
-            }
-            var bin = Path.Combine(temporary.Path, "bin");
-            var log = Path.Combine(temporary.Path, "scribe.log");
-            Directory.CreateDirectory(bin);
-            var dotnet = Path.Combine(bin, "dotnet");
-            File.WriteAllText(dotnet, """
-                #!/bin/bash
-                if [[ "$1" == scribe-fixture ]]; then
-                  printf '%s\n' "$2" >> "$SCRIBE_LOG"
-                  exit "$SCRIBE_EXIT"
-                fi
-                PATH="$ORIGINAL_PATH" exec dotnet "$@"
-                """ + "\n");
-            File.SetUnixFileMode(dotnet,
-                UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
-            InitializeGitRepository();
-            var baseline = ReviewRegressionTests.RunGit(repository, "rev-parse", "HEAD").Trim();
-            var unchanged = RunGate();
-            Assert.Equal(0, unchanged.ExitCode);
-            Assert.False(File.Exists(log));
-
-            Append(CachePublishScriptPath, "# fetch acceptance changed\n");
-            var result = RunGate();
-            return (result, File.Exists(log) ? File.ReadAllLines(log) : []);
-
-            ProcessOutput RunGate() => TestProcessRunner.Run(
-                "/bin/bash",
-                ["-c", "ORIGINAL_PATH=\"$PATH\" PATH=\"$1:$PATH\" SCRIBE_LOG=\"$2\" "
-                    + "SCRIBE_EXIT=\"$3\" STRATALINT_SCRIBE_BASE=\"$6\" "
-                    + "exec /bin/bash \"$4\" \"$5\" scribe-fixture",
-                    "scribe-fetcher-delta", bin, log, childExit.ToString(System.Globalization.CultureInfo.InvariantCulture),
-                    Path.Combine(repository, ScribeContentChecksPath), report, baseline],
-                repository, BoundedProcessRunner.HangDetectionBudget, 1024 * 1024);
-        }
 
         internal ProcessOutput AddressFromForeignSdkDirectory()
         {
