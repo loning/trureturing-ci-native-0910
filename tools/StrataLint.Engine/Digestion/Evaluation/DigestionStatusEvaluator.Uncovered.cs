@@ -61,7 +61,6 @@ internal static partial class DigestionStatusEvaluator
                 snapshot,
                 emptyLeanReport,
                 emptyTruthStates,
-                verifiedScribeEmissions: null,
                 frozenStatements,
                 genreChecks[entry.SourceId],
                 changes,
