@@ -2070,7 +2070,7 @@ P_nx\to x
 | 超限基残余塔 | `D5/S3/Quantum/Completion/TransfiniteBasisResidualTower.transfinite_basis_residual_tower` | 第 18 节 |
 | 多目标最小充分性 | `D5/S3/ConceptDynamics/Refinement/MultiTargetMinimalSufficiency.multi_target_minimal_sufficiency` | 第 1、15 节 |
 | 非忠实接口遗漏未来义务 | `D5/S3/ConceptDynamics/Contracts/FutureObligationIncompleteness.nonfaithful_interface_future_incomplete` | 第 20 节 |
-| 相邻 core 边唯一 | `D5/S1/Words/Expansions/BasePhiNegativePrefixTridentEdge.frontier_consecutive_core_adjacent` | 第 19 节 |
+| 相邻 core 边唯一 | `D5/S3/Words/Expansions/BasePhiNegativePrefixTridentEdge.frontier_consecutive_core_adjacent` | 第 19 节 |
 | 相位 trace 与 gap phase 等价 | `D5/S1/Words/Expansions/BasePhiNegativePrefixTridentEdge.phase_enriched_core_trace_iff_gap_phase` | 第 19 节 |
 
 ---
@@ -2364,3 +2364,87 @@ PR 5882 已有系数 C_g(v)=2 Re〈g,v〉−q(v)+‖P_(k⊥)(g−Mv)‖²/κ 的
 本轮的有限精确代数检查覆盖三个约束、首项恒等式、双侧余项与删去任一矩的负控；实际 c=3、5、11 符号另作数值检查。这里的包络较保守，数值诊断未证明实际最低模态误差更小。新源码属于逻辑审查后的候选证明，尚未执行 Lean 内核和 Scribe 发射。没有据此宣称真实最低模态趋于 Xi、全尺度 simple-even 或 RH。
 
 文献与真源：CCM, *Zeta spectral triples*, EMS Press (2026), DOI `10.4171/ELM/37/3`, §8；M. Suzuki, *Weil’s quadratic form via the screw function*, arXiv:2606.09096v1, Theorems 1.1、1.4 与 §8.5；`WeilArithmeticCouplingJet.arithmetic_coupling_first_jet_error`；`WeilEvenFourierObservationTail.exterior_inverse_fourth_bound`；`CoerciveDualCertificate.dual_energy_readout`。
+
+---
+
+# 2026-09-07 增补：非零矩缺陷、有限精度包围与严格尾界验收
+
+本节继续 PR 6029，在原精确矩消去定理之上允许两个矩非零。新增 `WeilArithmeticResidualPrecision.lean` 及同名 Scribe，继续使用原 `arithmeticBoundarySymbol`、`couplingColumn`、`couplingFirstJet` 和 `arithmeticResidualTail`。本节规定的是数学输入的误差半径与结论的验收条件，没有把计算时设置的工作位数当作误差证明。
+
+## A. 精度输入必须是对实际数学值的包围
+
+对有限支撑 S，令 v_n、s_n 为实际系数与实际算术符号，令 v̂_n、ŝ_n 为精确解释的中心值。中心可取有理数或二进有理数；显示的小数需要按其准确语义解码。输入为绝对误差条件
+\[
+|v_n-\widehat v_n|\le e_{v,n},\qquad
+|s_n-\widehat s_n|\le e_{s,n}\qquad(n\in S).
+\]
+复数矩形区间的实、虚误差半径为 a、b 时，可取复模半径 sqrt(a²+b²)，也可安全取有理上界 a+b。若已证明两个分量的绝对误差分别不超过 2⁻ᵇ，则 2¹⁻ᵇ 是复模半径的一个安全上界；这句话不把 b 位工作精度等同于该分量误差条件。如果选择的实际试探就是精确解码后的中心，便可取 e_v=0，无须虚构一个未知精确优化器。
+
+所有包围必须覆盖算术符号的无穷级数余项、输入常数、函数求值与转换舍入。输出精度标签或区间包含零均不能提供精确零等式。FLINT 官方 *Using ball arithmetic* 文档以包含原则定义球算术，并明确区分工作精度、区间半径与零判断；本节使用的是该包含语义。引用：`https://flintlib.org/doc/using.html`。
+
+## B. 两个矩与系数质量的误差传播
+
+`finite_moment_enclosures` 从逐项包围推出
+\[
+\left|\sum_{n\in S}v_n\right|\le E_0:=\left|\sum_{n\in S}\widehat v_n\right|+\sum_{n\in S}e_{v,n},
+\]
+\[
+\left|\sum_{n\in S}s_nv_n\right|\le E_1:=\left|\sum_{n\in S}\widehat s_n\widehat v_n\right|
++\sum_{n\in S}\left(|\widehat s_n|e_{v,n}+e_{s,n}|\widehat v_n|+e_{s,n}e_{v,n}\right),
+\]
+\[
+\sum_{n\in S}|v_n|\le V:=\sum_{n\in S}(|\widehat v_n|+e_{v,n}).
+\]
+乘积误差 e_s e_v 被完整保留。中心矩没有被要求等于零，它们的实际模仍进入预算。可以再用向上包围的有理数替代 E0、E1、V。
+
+若 d=|S|，各系数误差不超过 ε_v，各符号误差不超过 ε_s，则 E1 可用中心矩模加 ε_v∑|ŝ_n|+ε_s∑|v̂_n|+d ε_v ε_s 包围。这是上述有限和定理的直接应用。提高工作精度的目的，是得到能够通过后述验收不等式的这些半径，固定的十进制位数不作为普遍成功条件。
+
+## C. 带非零矩的全部外部模态
+
+取对原算术包络的上界 B≥B_c，以及严格正的下界 0<p≤π。令 H≥|η|、W≥|w|，支撑满足 |n|≤N。选择自然数 M，要求
+\[
+\boxed{M>0,\qquad M\ge2N,\qquad M\ge2W.}
+\]
+如果 η、w 也有中心与半径，使用 H≥|η̂|+e_η、W≥|ŵ|+e_w；不能只用中心频率决定分母是否远离零。定义
+\[
+D=\frac{E_1+BE_0}{p},\qquad Q=\frac43H+\frac{4BNV}{p}.
+\]
+由原首项恒等式得 |J_v(m)|≤D/|m|，由原一阶余项定理得 |A_v(m)−J_v(m)|≤4BNV/(p|m|²)。因此，对原定义的两侧完整残差，有
+\[
+|r_j^\pm|\le\frac{D}{m_j}+\frac{Q}{m_j^2},\qquad m_j=M+j+1.
+\]
+令 F(x)=D²/x+DQ/x²+Q²/(3x³)。新证明直接验证 F(x)−F(x+1)≥(D/(x+1)+Q/(x+1)²)²，随后对有限部分和望远镜累加，再用标准实级数定理得到平方可和性与
+\[
+\boxed{\sum_{j\ge0}(|r_j^+|^2+|r_j^-|^2)
+\le\mathcal T(D,Q,M):=2\left(\frac{D^2}{M}+\frac{DQ}{M^2}+\frac{Q^2}{3M^3}\right).}
+\]
+`arithmetic_residual_defect_tail_bound` 证明这一全尾结论；`rounded_arithmetic_residual_tail_bound` 再消费 B 节以及 η、w 的输入包围。原残差定义没有改动，没有有限高频终止点，也没有输入残差已经平方可和的前提。交叉项 DQ/M² 不能删除。
+
+## D. 验收条件、误差单位与可执行有理检验
+
+τ 在本节表示平方尾质量预算。目标若是尾部范数不超过 ε，应使用 τ=ε²。对 M>0，`precision_tail_bound_iff` 给出精确等价
+\[
+\boxed{\mathcal T(D,Q,M)\le\tau\quad\Longleftrightarrow\quad
+6D^2M^2+6DQM+2Q^2\le3\tau M^3.}
+\]
+`residualTailCheck` 在有理数上执行右侧不等式，同时检查 N、W、D、Q、τ 非负以及 C 节的全部分离条件。它只使用精确有理运算。`residual_tail_check_sound` 把返回 true 转换为实数意义的尾预算不等式；`rounded_residual_certificate_sound` 将其与明确的输入包围合成，推出原实际系数残差的全尾上界。
+
+因此，true 的含义是所给预算通过数学验收。输入的超越数包围仍须证明，不能由这个布尔值替代。false 只表示当前证书未被接受，不证明真实尾部超标。误差上界允许等号；下游 Fourier 非零判据还必须要求总误差严格小于已认证的候选下界，不能把尾部验收的非严格不等式误用为严格非零裕量。
+
+精确标量例子：M=1000、N=64、W=10、Q=1、τ=10⁻⁹ 时，D=10⁻⁶ 的尾预算为 1003003/1500000000000000，小于 τ，检查接受；D=10⁻² 的尾预算为 331/1500000000，大于 τ，检查拒绝。这两个例子只测试标量验收，未指定真实算术试探或宣称实际谱证书成功。源码另含零截断、支撑分离失败、频率分离失败的拒绝例子。
+
+## E. 截断长度必须与精度预算联动
+
+`precision_tail_bound_of_balance` 证明：D、Q、γ 非负且 DM≤γQ 时，
+\[
+\boxed{\mathcal T(D,Q,M)\le2(\gamma^2+\gamma+1/3)\,\frac{Q^2}{M^3}.}
+\]
+这明确规定了保持该立方平方尾预算的一个充分条件。对固定非零 D，所给包络含 M⁻¹ 项，不能继续标注统一的 M⁻³ 速度；但 D、Q 固定时完整包络仍趋零，不能误说存在不可消除的正误差地板。对变化的真实物理尺度，B、V、H、N、M 和矩缺陷都必须一起计入，单纯增加截断或工作位数不会自动证明所需尺度率。
+
+现有能量对偶消费者还要求试探与候选精确正交。有限精度配对接近零不等于满足该条件。可先在有限精确系数上做候选投影，再对投影后的同一试探重新计算两个矩及全部预算；投影自身的舍入必须重新计入。此处没有新增投影构造定理，也没有以本轮尾部验收替代候选正交、真实算子定义域、基识别、内区残差和强制性条件。
+
+## F. 验证范围
+
+本轮九个公开声明有同一 Scribe 中的九个精确句柄。数学检查实际执行了一个混合望远镜恒等式、250 组精确误差包围、1145 组复数乘积恒等式、1920 个双侧残差点检查、各 250 组有理验收等价、有限尾和及精度平衡检查，并拒绝八个指定错误变体。残差点检查使用有界模型符号及分母常数 3，未冒充真实 prime-pole-Gamma 计算。没有运行新的实际 prolate、Weil 或区间函数求值认证。
+
+这些精确有限诊断未调用 Lean。源码仍为数学与接口审查后的候选证明，Lean elaboration、内核公理闭包及 Scribe 发射尚未执行。本节给出有限精度误差传播与严格验收链，未完成规范 Weil 算子的全尺度模态逼近或 Xi 极限。
