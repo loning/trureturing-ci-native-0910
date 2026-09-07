@@ -44,6 +44,8 @@ internal interface ICliEnvironment
 
     CommandResult CoverAtom(IReadOnlyList<string> arguments);
 
+    CommandResult CoverBatch(IReadOnlyList<string> arguments);
+
     CommandResult QuarantineAtom(IReadOnlyList<string> arguments);
     CommandResult SettleAtom(IReadOnlyList<string> arguments);
 
@@ -113,6 +115,8 @@ internal static class CliApplication
                 RenderCommand(environment.Coverage(tail), console),
             ["cover-atom"] = static (environment, tail, console) =>
                 RenderCommand(environment.CoverAtom(tail), console),
+            ["cover-batch"] = static (environment, tail, console) =>
+                RenderCommand(environment.CoverBatch(tail), console),
             ["quarantine-atom"] = static (environment, tail, console) =>
                 RenderCommand(environment.QuarantineAtom(tail), console),
             ["settle-atom"] = static (environment, tail, console) =>

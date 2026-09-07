@@ -149,6 +149,7 @@ public sealed class LeanInspectorScriptTests
             + "<TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>\n");
         Write(repository, "tools/StrataLint.Cli/Fixture.cs", "System.Console.WriteLine(\"[]\");\n");
         Write(repository, "tools/scripts/lean-report-pair.sh", "#!/usr/bin/env bash\n");
+        Write(repository, "tools/scripts/worktree/lean-cache-publish.sh", "#!/usr/bin/env bash\n");
         Write(repository, "tools/scripts/workflow/scribe-content-checks.sh", "#!/usr/bin/env bash\n");
         Write(repository, ".github/workflows/ci.yml",
             "jobs:\n  lean-inspect:\n    steps: []\n  baseline-admission:\n    steps: []\n");

@@ -15,6 +15,9 @@ public sealed class EngineeringScopeProgramTests
     private const string NewProductProject = "tools/NewProduct/NewProduct.csproj";
     private const string NewProductTestsProject =
         "tools/tests/NewProduct.Tests/NewProduct.Tests.csproj";
+    // 这个项目由 WriteGateInfrastructure 写进夹具树,且是 IsTestProject=true 的真项目;
+    // 它**不出现在**任何 SelectedProjects 断言里,正是「CI 永不选中脚本测试项目」
+    // (owner 2026-09-07)在端到端边界上的证据 —— 不是夹具漏写。
     private const string ScriptTestsProject =
         "tools/tests/StrataLint.ScriptTests/StrataLint.ScriptTests.csproj";
     private const string ProductFeature = "tools/Product/Feature.cs";
@@ -101,8 +104,51 @@ public sealed class EngineeringScopeProgramTests
             root => WriteFile(root, ProductFeature, "internal sealed class Feature { public int Value => 1; }\n"));
 
         Assert.True(result.ExitCode == 0, result.Diagnostic);
-        Assert.Equal([ProductTestsProject, ScriptTestsProject], result.SelectedProjects);
+        Assert.Equal([ProductTestsProject], result.SelectedProjects);
         Assert.Contains("ENGINEERING_TEST_PLAN state=full", result.Output, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void DigestionOnlyContentChangeSelectsNoEngineeringTests()
+    {
+        const string path = "Meta/Digestion/backfill/source/residual-open/atom.yaml";
+        var result = RunBoundary(
+            root =>
+            {
+                WriteProductProjects(root);
+                WriteFile(root, path, "# before\n");
+                WriteAdmissionPlaneFileMap(root, (path, "content"));
+            },
+            root => WriteFile(root, path, "# after\n"));
+
+        Assert.True(result.ExitCode == 0, result.Diagnostic);
+        Assert.Empty(result.SelectedProjects);
+        Assert.Contains("ENGINEERING_TEST_PLAN state=none", result.Output, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ChangingOnlyTheScriptTestsProjectSelectsNoTestProjectAtAll()
+    {
+        // owner 2026-09-07:脚本 / make target 测试保留在树上,CI 永不执行它们。
+        // 本例走 Program 的真实边界(真 git 树 + 真 plan),而非 policy 的合成 topology:
+        // 只改该项目自己的源文件时,计划必须为空 —— 既不选它,也不因它而选别的。
+        var result = RunBoundary(
+            root =>
+            {
+                WriteProductProjects(root);
+                WriteFile(
+                    root,
+                    "tools/tests/StrataLint.ScriptTests/WarmDonorScriptTests.cs",
+                    "internal sealed class WarmDonorScriptTests { }\n");
+            },
+            root => WriteFile(
+                root,
+                "tools/tests/StrataLint.ScriptTests/WarmDonorScriptTests.cs",
+                "internal sealed class WarmDonorScriptTests { public int Value => 1; }\n"));
+
+        Assert.True(result.ExitCode == 0, result.Diagnostic);
+        Assert.Empty(result.SelectedProjects);
+        Assert.Contains("ENGINEERING_TEST_PLAN state=none", result.Output, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -117,7 +163,7 @@ public sealed class EngineeringScopeProgramTests
             root => WriteAdmissionPlaneFileMap(root, (FileMapPath, "judge")));
 
         Assert.True(result.ExitCode == 0, result.Diagnostic);
-        Assert.Equal([ProductTestsProject, ScriptTestsProject], result.SelectedProjects);
+        Assert.Equal([ProductTestsProject], result.SelectedProjects);
         Assert.Contains("ENGINEERING_TEST_PLAN state=full", result.Output, StringComparison.Ordinal);
         Assert.Contains(
             "candidate admission plane judgeonly requires full engineering",
@@ -145,7 +191,7 @@ public sealed class EngineeringScopeProgramTests
             });
 
         Assert.True(result.ExitCode == 0, result.Diagnostic);
-        Assert.Equal([ProductTestsProject, ScriptTestsProject], result.SelectedProjects);
+        Assert.Equal([ProductTestsProject], result.SelectedProjects);
         Assert.Contains("ENGINEERING_TEST_PLAN state=full", result.Output, StringComparison.Ordinal);
     }
 
@@ -161,7 +207,7 @@ public sealed class EngineeringScopeProgramTests
             root => WriteAdmissionPlaneFileMap(root, (FileMapPath, "judge")));
 
         Assert.True(result.ExitCode == 0, result.Diagnostic);
-        Assert.Equal([ProductTestsProject, ScriptTestsProject], result.SelectedProjects);
+        Assert.Equal([ProductTestsProject], result.SelectedProjects);
         Assert.Contains("ENGINEERING_TEST_PLAN state=full", result.Output, StringComparison.Ordinal);
         Assert.Contains(
             "candidate admission plane judgeonly requires full engineering",

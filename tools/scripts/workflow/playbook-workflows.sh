@@ -10,8 +10,6 @@ COMMAND="${1:-}"
 BASE="${2:-origin/dev}"
 ATOM_ID="${3:-}"
 GID="${4:-}"
-BATCH_ATOM_IDS=()
-BATCH_GIDS=()
 COVER_FAILURE_REASON=""
 
 run_cli() {
@@ -100,48 +98,12 @@ require_transaction_arguments() {
 }
 
 require_cover_batch_arguments() {
-  local atoms_file="$ATOM_ID" line atom gid remainder status line_number=0
+  local atoms_file="$ATOM_ID"
   if [[ -z "$atoms_file" || -n "$GID" || ! -f "$atoms_file" || ! -r "$atoms_file" ]]; then
     echo "usage: playbook-workflows.sh cover-batch BASE ATOMS_FILE" >&2
     return 2
   fi
 
-  while IFS= read -r line || [[ -n "$line" ]]; do
-    line_number=$((line_number + 1))
-    if [[ "$line" == *$'\r'* || "$line" != *$'\t'* ]]; then
-      echo "PLAYBOOK_INVALID cover-batch line $line_number must be ATOM_ID<TAB>GID" >&2
-      return 2
-    fi
-    atom="${line%%$'\t'*}"
-    remainder="${line#*$'\t'}"
-    if [[ "$remainder" == *$'\t'* ]]; then
-      echo "PLAYBOOK_INVALID cover-batch line $line_number must contain exactly two TSV fields" >&2
-      return 2
-    fi
-    gid="$remainder"
-    ATOM_ID="$atom"
-    GID="$gid"
-    if require_transaction_arguments; then
-      :
-    else
-      status=$?
-      return "$status"
-    fi
-    BATCH_ATOM_IDS+=("$atom")
-    BATCH_GIDS+=("$gid")
-  done < "$atoms_file"
-
-  if [[ "${#BATCH_ATOM_IDS[@]}" -eq 0 ]]; then
-    echo "PLAYBOOK_INVALID cover-batch input is empty: $atoms_file" >&2
-    return 2
-  fi
-}
-
-derive_cover_batch_row_state() {
-  local index="$1"
-  ATOM_ID="${BATCH_ATOM_IDS[index]}"
-  GID="${BATCH_GIDS[index]}"
-  require_transaction_arguments
 }
 
 
@@ -288,10 +250,6 @@ cover_row() {
   fi
 }
 
-cover_batch_row() {
-  cover_row
-}
-
 cd "$ROOT"
 case "$COMMAND" in
   deliver-check)
@@ -341,11 +299,7 @@ case "$COMMAND" in
   cover-batch)
     require_cover_batch_arguments
     step lean-report make lean-report
-    for index in "${!BATCH_ATOM_IDS[@]}"; do
-      derive_cover_batch_row_state "$index"
-      cover_batch_row
-    done
-    step emit make emit
+    step cover-batch run_cli cover-batch --atoms "$ATOM_ID" --base "$BASE"
     ;;
   *)
     echo "usage: playbook-workflows.sh deliver-check|deposit|cover|cover-batch [BASE] [ATOM_ID GID|ATOMS_FILE]" >&2

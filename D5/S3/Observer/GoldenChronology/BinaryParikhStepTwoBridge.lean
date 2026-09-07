@@ -3,6 +3,7 @@
    mirror-B: none(waiver:new-cross-library-adapter)
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: kind=certified-instance; basis=terminal=gid:D5/S3/Observer/GoldenChronology/BinaryParikhStepTwoBridge.binary_parikh_arbitrary_word_collision
    digest: Binary Parikh matrices realize count and ordered-pair Chen coordinates. -/
 
 import D5.S3.Observer.Chronology.StepTwoChronologicalSignature

@@ -3,6 +3,7 @@
    mirror-B: none(waiver:new-cross-library-adapter)
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: kind=certified-instance; basis=terminal=gid:D5/S1/Words/GoldenRecovery/GoldenFactorSecondOrderBinomialRigidity.legal_golden_first_order_collision
    digest: True count and scattered true-false count recover a consecutive golden factor. -/
 
 import D5.S1.Words.GoldenFactorComplexity

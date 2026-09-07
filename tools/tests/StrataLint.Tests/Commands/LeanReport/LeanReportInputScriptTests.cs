@@ -263,6 +263,7 @@ public sealed partial class LeanReportInputScriptTests
         Assert.Contains(DocumentsLockPath, paths);
         Assert.Contains(ScribeContentChecksPath, paths);
         Assert.Contains(JudgeContentAddressPath, paths);
+        Assert.Contains(CachePublishScriptPath, paths);
         Assert.Contains(derivedProbe, paths);
         Assert.DoesNotContain(TestSourcePath, paths);
     }
@@ -372,6 +373,7 @@ public sealed partial class LeanReportInputScriptTests
     [InlineData("input-helper")]
     [InlineData("raw-report")]
     [InlineData("canonical-writer")]
+    [InlineData("cache-fetcher")]
     public void RepositoryInputDriftMakesAnExistingReportStale(string mutation)
     {
         using var fixture = new LeanReportInputFixture();
@@ -579,6 +581,7 @@ public sealed partial class LeanReportInputScriptTests
                 "input-helper" => InputHelperPath,
                 "raw-report" => RawReportPath,
                 "canonical-writer" => CanonicalWriterPath,
+                "cache-fetcher" => CachePublishScriptPath,
                 _ => throw new InvalidOperationException($"unknown mutation {mutation}"),
             };
             File.AppendAllText(

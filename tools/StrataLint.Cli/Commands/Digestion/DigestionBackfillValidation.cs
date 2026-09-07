@@ -12,7 +12,10 @@ internal static class DigestionBackfillValidation
         AcceptedLeanClosure lean,
         RawChangeSet? changes = null,
         RawChangeSet? casChanges = null,
-        RawChangeSet? projectedStatusChanges = null)
+        RawChangeSet? projectedStatusChanges = null,
+        BackfillInventoryDocument? baselineDocument = null,
+        FrozenStatementIndex? frozenStatementIndex = null,
+        IReadOnlyDictionary<RepoPath, TruthState>? truthStates = null)
     {
         var findings = BackfillInventoryRule.EvaluateDocument(
             new BackfillInventoryValidationContext(
@@ -22,7 +25,10 @@ internal static class DigestionBackfillValidation
                 lean,
                 changes,
                 CasChanges: casChanges,
-                ProjectedStatusChanges: projectedStatusChanges),
+                ProjectedStatusChanges: projectedStatusChanges,
+                BaselineDocument: baselineDocument,
+                FrozenStatementIndex: frozenStatementIndex,
+                TruthStates: truthStates),
             document);
         return RenderOrThrow(findings);
     }

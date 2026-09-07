@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json;
 using StrataLint.Cli;
 using StrataLint.Engine;
 
@@ -74,11 +75,22 @@ public sealed partial class WorktreeCommandTests
         InitializeRepository(repository.Path);
         var branch = $"{WorktreeCommand.CreationNamespace}/math/unusable-postcondition";
         var target = Path.Combine(repository.Path, "unusable-postcondition");
+        var other = Path.Combine(repository.Path, "other", "unusable-postcondition");
+        WorktreeHookFixture.RunGit(repository.Path, "worktree", "add", "--detach", "--lock", "--reason", "keep", other, "HEAD");
+        var otherMetadata = GitWorktreeDirectory.Read(other)!;
+        var stale = Path.Combine(repository.Path, "stale-registration");
+        WorktreeHookFixture.RunGit(repository.Path, "worktree", "add", "--detach", stale, "HEAD");
+        var staleMetadata = GitWorktreeDirectory.Read(stale)!;
+        Directory.Delete(stale, recursive: true);
+        string? ownedMetadata = null;
         var runner = new RecordingWorktreeProcessRunner
         {
-            AfterWorktreeAdd = path => File.WriteAllText(
-                Path.Combine(path, ".git"),
-                $"gitdir: {Path.Combine(repository.Path, ".git", "worktrees", "missing")}\n"),
+            AfterWorktreeAdd = path =>
+            {
+                ownedMetadata = GitWorktreeDirectory.Read(path)!;
+                File.WriteAllText(Path.Combine(path, ".git"),
+                    $"gitdir: {Path.Combine(repository.Path, ".git", "worktrees", "missing")}\n");
+            },
         };
 
         var result = WorktreeCommand.Run(
@@ -95,6 +107,25 @@ public sealed partial class WorktreeCommandTests
         Assert.False(result.Success);
         Assert.Contains("not a git repository", result.Error, StringComparison.OrdinalIgnoreCase);
         Assert.False(Directory.Exists(target));
+        Assert.NotNull(ownedMetadata);
+        Assert.NotEqual(otherMetadata, ownedMetadata);
+        Assert.False(Directory.Exists(ownedMetadata));
+        using var receipt = JsonDocument.Parse(result.Error["WORKTREE_FAILED ".Length..]);
+        Assert.Equal(JsonValueKind.Null, receipt.RootElement.GetProperty("cleanup_error").ValueKind);
+        var inventory = WorktreeHookFixture.RunGit(repository.Path, "worktree", "list", "--porcelain");
+        Assert.DoesNotContain($"worktree {LeanCacheGuard.PhysicalPath(target)}\n", inventory, StringComparison.Ordinal);
+        Assert.DoesNotContain($"branch refs/heads/{branch}\n", inventory, StringComparison.Ordinal);
+        Assert.Equal(1, GitExit(repository.Path, "show-ref", "--verify", "--quiet", $"refs/heads/{branch}"));
+        WorktreeFixtureFile.AssertContent(Path.Combine(otherMetadata, "locked"), "keep\n");
+        WorktreeFixtureFile.AssertContent(Path.Combine(other, "README.md"), "# worktree fixture\n");
+        Assert.True(Directory.Exists(staleMetadata));
+
+        var retry = WorktreeCommand.Run(repository.Path,
+            ["--kind", "math", "--name", "unusable-postcondition", "--path", target, "--base", "HEAD", "--skip-restore"]);
+
+        Assert.True(retry.Success, retry.Error);
+        AssertRegisteredAndUsable(repository.Path, target, branch);
+        Assert.False(File.Exists(Path.Combine(GitWorktreeDirectory.Read(target)!, "locked")));
     }
 
     [Fact]
@@ -187,14 +218,14 @@ public sealed partial class WorktreeCommandTests
             4096).ExitCode;
 }
 
-// SL-003 的 conservative-unknown 判据只接受两种路径形状——`RepositoryRelativePath.Create("字面量")`
-// 与 `Path.Combine(RepositoryLayout.FindRoot(), "字面量"…)`——**两者都是仓库路径**,临时夹具目录
-// 结构上满足不了。而 `ScribeTestMapDeriver` 会沿 `LocalCalls`(:511-519)**传递地**跟进同类型内的
-// 被调方法,故收进同一个 partial class 的 helper 无效(实测:第二次 preflight 判词一字未变)。
-// `LocalCalls` 只捕获裸标识符与 `this.` 两种形状,**限定调用不被跟进**,故读取放在独立类型里。
-// 仓内同形写法见 MissingStampDonorTests.cs:625(辅助类上的属性,属性访问不是 invocation)。
 internal static class WorktreeFixtureFile
 {
-    internal static void AssertContent(string path, string expected) =>
-        Assert.Equal(expected, File.ReadAllText(path));
+    internal static void AssertContent(string path, string expected)
+    {
+        // Git can return the physical /private/var spelling of the macOS temporary root.
+        var temporaryRoot = Path.GetTempPath();
+        var relative = Path.GetRelativePath(LeanCacheGuard.PhysicalPath(temporaryRoot), LeanCacheGuard.PhysicalPath(path));
+        var temporaryPath = Path.Combine(temporaryRoot, relative);
+        Assert.Equal(expected, StrataLint.TestSupport.TemporaryFileSystem.File.ReadAllText(temporaryPath));
+    }
 }
