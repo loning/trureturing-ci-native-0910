@@ -122,6 +122,71 @@ consumer-to-prerequisite direction. `computational_content.kind: none`:
 these are general analytic estimates, not finite certificates or numerical
 reductions. This port does not establish Robin's inequality or Gronwall.
 
+## Gronwall Upper-Envelope Gap
+
+Let `E(y) = product (p prime, p <= y), (1 - 1/p)^(-1)` and
+`R(n) = sigma(n)/(exp(gamma) * n * log(log(n)))`. The following is a
+consumer-to-prerequisite plan, not a claim that the unmeasured steps compile.
+`self` means a repository proof is still needed, not a novel mathematical result.
+
+| Sublemma | Status | Evidence or remaining obligation |
+| --- | --- | --- |
+| `product (1-1/p) ~ exp(-gamma)/log(y)` | upstream | The three E3 endpoints above, now ported and checked. |
+| Reciprocate asymptotic equivalence | mathlib | `Asymptotics.IsEquivalent.inv`; rewrite the comparison as `exp(gamma)*log(y)`, then extract an eventual upper bound. This specialization is not measured here. |
+| Exact sigma prime-factor product | mathlib | `ArithmeticFunction.sigma_eq_prod_primeFactors_sum_range_factorization_pow_mul`, compiler-checked in the leaf log. |
+| `sigma(p^a)/p^a <= (1-1/p)^(-1)` | self | Closed by the measured leaf below, using the pinned prime-power and geometric-sum identities. |
+| Extend the product over small prime divisors to all primes at most `y` | self | Factors are at least one; still needs the finite-set and floor interfaces. |
+| Count prime divisors greater than `y`: `card <= log(n)/log(y)` | self | Use `Nat.prod_primeFactors_dvd` and sum/product logarithms; the specialized inequality is not measured. |
+| Bound the large-prime product by `exp(2*log(n)/(y*log(y)))` | self | For `p > y >= 2`, `-log(1-1/p) <= 1/(p-1) <= 2/p`; sum the preceding count estimate. |
+| SigmaSplit: `sigma(n)/n <= E(y)*exp(2*log(n)/(y*log(y)))` | self | Combine the exact factors, small-prime padding, and large-prime estimate. |
+| Gronwall upper envelope | self | Substitute `y=log(n)`; the tail is `exp(2/log(log(n))) -> 1`. Combine with sharp Mertens and denominator positivity to get every requested epsilon bound. |
+
+No PNT or RH premise enters this upper-envelope route. Mertens removes the
+sharp-constant analytic dependency; it does not supply SigmaSplit. The equality
+`limsup sigma(n)/(n*log(log(n))) = exp(gamma)` additionally needs the lower
+limsup construction, for example integers with sufficiently saturated small
+prime powers. That lower half is separate and was not proved in this attempt.
+
+Measured leaf, in `GronwallLeaf.lean` (external probe, not an independent deposit):
+
+```lean
+theorem sigma_prime_pow_ratio_le {p : Nat} (hp : p.Prime) (a : Nat) :
+    (ArithmeticFunction.sigma 1 (p ^ a) : Real) / (p : Real) ^ a <=
+      (1 - 1 / (p : Real))⁻¹ := by
+  have hp1 : (1 : Real) < p := by exact_mod_cast hp.one_lt
+  have hp0 : (0 : Real) < p := lt_trans zero_lt_one hp1
+  have hpow : (0 : Real) < (p : Real) ^ a := pow_pos hp0 a
+  have hfactor : (ArithmeticFunction.sigma 1 (p ^ a) : Real) =
+      ∑ i ∈ Finset.range (a + 1), (p : Real) ^ i := by
+    exact_mod_cast ArithmeticFunction.sigma_one_apply_prime_pow hp (i := a)
+  rw [hfactor, geom_sum_eq (ne_of_gt hp1)]
+  calc
+    ((p : Real) ^ (a + 1) - 1) / (p - 1) / p ^ a <=
+        (p : Real) ^ (a + 1) / (p - 1) / p ^ a := by
+      gcongr
+      linarith
+    _ = (1 - 1 / (p : Real))⁻¹ := by
+      rw [pow_succ]
+      field_simp
+      <;> ring
+```
+
+Command: `make -f Makefile -f <attempt>/probe.mk lean PROBE=<attempt>/GronwallLeaf.lean`.
+Exit: 0. Wall time: 56.590490625 seconds, warm local tree, root build included.
+Stuck at: none in this leaf; SigmaSplit remains unmeasured. The optional final
+`ring` generated an unused-tactic warning because `field_simp` already closed
+the goal; the measured source is retained unchanged.
+
+```text
+'GronwallLeaf.sigma_prime_pow_ratio_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+```
+
+Search scope: D5 sigma/prime-factor/product candidates, pinned
+`ArithmeticFunction/Misc.lean`, `Algebra/Field/GeomSum.lean`,
+`Algebra/Order/Field/GeomSum.lean`, and the inspected upstream Mertens source.
+The exact sigma bound was not found in those searched candidates. The proof
+reuses the two exact identities found in Mathlib, rather than re-proving them.
+
 Retirement condition: once this repository's own pinned Mathlib contains
 equivalent declarations, replace the matching source port with imports and
 applications of those declarations. Upstream acceptance alone is not the trigger.
