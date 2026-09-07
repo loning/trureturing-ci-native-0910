@@ -448,7 +448,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          printf '%s\n' 'Actions project layer absent; resolve and validate a release seed (exact -> config prefix -> same-toolchain seed), then run lake build within the unchanged job budget (spec §12.4 budgeted source rebuild; §15 controlled CI recovery). Download, validation, or build failures remain terminal.'
+          printf '%s\n' 'Actions project layer absent; resolve and validate a release seed (exact -> config prefix -> same-toolchain seed), then run lake build within the unchanged job budget (spec §12.4 budgeted source rebuild; §15 controlled CI recovery). A nonzero download, validation, or build result terminates the job.'
           PATH="$HOME/.elan/bin:$PATH" candidate/tools/scripts/worktree/lean-cache-publish.sh fetch --allow-seed --repository "$GITHUB_WORKSPACE/candidate"
       - name: Build candidate Lean project
         id: lean-build
