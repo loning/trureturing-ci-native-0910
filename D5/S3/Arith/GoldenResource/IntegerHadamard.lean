@@ -109,6 +109,20 @@ theorem nondiagonal_integer_det_gap (T : Matrix n n ℤ)
   have hne := mt heq.mp hoff
   omega
 
+-- The integer matrix with rows (2, 1) and (1, 2) satisfies both hypotheses.
+example : ∃ T : Matrix (Fin 2) (Fin 2) ℤ,
+    (T.map fun z => (z : ℝ)).PosDef ∧ T ≠ diagonal T.diag := by
+  let T : Matrix (Fin 2) (Fin 2) ℤ :=
+    1 + vecMulVec (fun _ => 1) (fun _ => 1)
+  refine ⟨T, ?_, ?_⟩
+  · have h := (Matrix.PosDef.one (n := Fin 2) (R := ℝ)).add_posSemidef
+      (Matrix.posSemidef_vecMulVec_self_star (fun _ : Fin 2 => (1 : ℝ)))
+    convert h using 1 <;> ext i j <;>
+      simp [T, Matrix.map, Matrix.vecMulVec, Matrix.one_apply]
+  · intro h
+    have h01 := congrArg (fun A : Matrix (Fin 2) (Fin 2) ℤ => A 0 1) h
+    norm_num [T, Matrix.one_apply, Matrix.diagonal, Matrix.vecMulVec] at h01
+
 #print axioms integer_posDef_hadamard
 #print axioms nondiagonal_integer_det_gap
 
