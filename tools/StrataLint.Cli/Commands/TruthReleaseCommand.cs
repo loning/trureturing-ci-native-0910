@@ -54,7 +54,8 @@ internal static class TruthReleaseCommand
             var truth = preparation.Truth;
             var sourceTree = Bare(identity.TreeOid);
             var truthExportBytes = TruthExportJsonWriter.Write(TruthExportProjection.Project(
-                frozen.Capability.ActiveFrozenNodes,
+                preparation.Catalog.ClosedNodes,
+                frozen.Capability.ActiveFrozenNodes.Select(static node => node.RepoPath).ToImmutableHashSet(),
                 identity.Revision,
                 sourceTree));
             var projection = TruthDagProjectionAssembler.Build(

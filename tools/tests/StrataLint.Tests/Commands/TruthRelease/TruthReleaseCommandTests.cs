@@ -65,6 +65,29 @@ public sealed class TruthReleaseCommandTests
     }
 
     [Fact]
+    public void ClosedModuleWithoutFreezeIsIncludedInVerifiedRelease()
+    {
+        using var fixture = CreateFixture(includeUnfrozenModule: true);
+        using var output = new TemporaryDirectory();
+
+        var (exitCode, console) = Run(fixture, output.Path, GreenTrustArguments());
+
+        Assert.True(exitCode == 0, console.Error);
+        var digest = Assert.Single(console.Output.Split(' ', StringSplitOptions.RemoveEmptyEntries),
+            static part => part.StartsWith("release_digest=", StringComparison.Ordinal))
+            ["release_digest=".Length..].TrimEnd();
+        var verified = TruthReleaseVerification.Verify(output.Path, digest);
+        Assert.Equal(3, verified.ReadTruthExport().Nodes.Length);
+        using var document = JsonDocument.Parse(File.ReadAllBytes(
+            Path.Combine(output.Path, TruthReleaseBundleWriter.TruthExportFileName)));
+        var nodes = document.RootElement.GetProperty("nodes").EnumerateArray().ToArray();
+        Assert.Equal(2, nodes.Count(node => node.GetProperty("freeze_status").GetString() == "frozen"));
+        var unfrozen = Assert.Single(nodes,
+            node => node.GetProperty("freeze_status").GetString() == "proven-not-yet-frozen");
+        Assert.Equal(PathFor("Unfrozen"), unfrozen.GetProperty("repo_path").GetString());
+    }
+
+    [Fact]
     public void MissingPrecomputedReportFailsClosedWithoutWritingABundle()
     {
         using var fixture = CreateFixture();
@@ -136,7 +159,7 @@ public sealed class TruthReleaseCommandTests
         "--required-check", "Content-addressed dev baseline admission=success",
     ];
 
-    private static Fixture CreateFixture(bool receiptIntegrityMismatch = false)
+    private static Fixture CreateFixture(bool receiptIntegrityMismatch = false, bool includeUnfrozenModule = false)
     {
         var repositoryRoot = TestRepositoryLayout.FindRoot();
         var blueprintSourcePath = $"Blueprint/{BlueprintGid}.scribe.cs";
@@ -212,11 +235,16 @@ public sealed class TruthReleaseCommandTests
                 adjacency)).Capability;
         var ledgerFiles = EventFiles(realCatalog, "git-sha1:" + generatorBlob);
         AddLedgerFiles(files, ledgerFiles);
+        if (includeUnfrozenModule)
+        {
+            files[PathFor("Unfrozen")] = "theorem unfrozen : True := by trivial\n";
+            reports[PathFor("Unfrozen")] = new(
+                ["D5.S0.Carrier.Dependency"], [Declaration("unfrozen")]);
+            report = LeanAxiomReport.Create(reports);
+        }
         WriteFiles(
             gitRoot,
-            files.Where(static pair => pair.Key.StartsWith(
-                FrozenLedgerChangeClassifier.AcceptedRoot + "/",
-                StringComparison.Ordinal)));
+            files);
         CommitAll(gitRoot, "fixture frozen ledger");
         var sourceCommit = GitObject(gitRoot, "HEAD");
         var sourceTree = GitObject(gitRoot, "HEAD^{tree}");
