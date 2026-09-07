@@ -101,6 +101,10 @@ internal sealed partial class ProductionCliEnvironment
     public CommandResult QuarantineAtom(IReadOnlyList<string> arguments) =>
         QuarantineAtomCommand.Run(repositoryRoot, repository, arguments);
 
+    public CommandResult CoverBatch(IReadOnlyList<string> arguments) =>
+        CoverBatchCommand.Run(repositoryRoot, repository, leanReportSource,
+            scribeEmissionVerifier, timeProvider.GetUtcNow(), arguments);
+
     public CommandResult SettleAtom(IReadOnlyList<string> arguments) =>
         SettleAtomCommand.Run(repositoryRoot, repository, arguments);
 

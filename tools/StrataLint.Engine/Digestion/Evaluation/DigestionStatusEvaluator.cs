@@ -20,7 +20,8 @@ internal static partial class DigestionStatusEvaluator
         Func<string, bool>? isBaseFactAffected = null,
         RawChangeSet? projectedStatusChanges = null,
         IReadOnlyDictionary<RepoPath, TruthState>? truthStates = null,
-        Func<string, TheoryAtomizerWithContentKinds>? contentKindAtomizerResolver = null)
+        Func<string, TheoryAtomizerWithContentKinds>? contentKindAtomizerResolver = null,
+        FrozenStatementIndex? frozenStatementIndex = null)
     {
         ArgumentNullException.ThrowIfNull(document);
         ArgumentNullException.ThrowIfNull(snapshot);
@@ -70,7 +71,7 @@ internal static partial class DigestionStatusEvaluator
                 static source => source.SourceId,
                 static source => source.GenreRegistryCheck,
                 StringComparer.Ordinal);
-        var frozenStatements = new Lazy<FrozenStatementIndex>(() => FrozenStatementIndex.Create(
+        var frozenStatements = new Lazy<FrozenStatementIndex>(() => frozenStatementIndex ?? FrozenStatementIndex.Create(
             FrozenStateCatalog.Load(snapshot),
             lean.Report));
         var statusAuthorityChangedAtomIds = ResolveStatusAuthorityChangedAtomIds(
