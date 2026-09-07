@@ -427,7 +427,7 @@ harness 的本质,就是**给各类事定义"这类该怎么处理"**——先�
   **③ 开工先利器**:新 worktree 经 `make worktree` 钉版创建,不手搓、不 symlink;创建时永不物化 Lean 缓存,canonical Lean wrapper 按需 ensure,`make lean-cache-ensure` 仅作可选显式预热。Lean 构建走 `make lean`/`make lean-report`(内含 ensure),**禁止冷裸 `lake build`/`lake env lean`**(用户 2026-08-22,#2762)。donor clonefile 只在 `.lake` 不存在时可达;`.lake` 已有而 stamp 缺失按「missing ≠ stale」原地重产、永不 clonefile,此 fail-safe 不改。冷树先裸跑 lake 会创建无 stamp 的 `.lake`,丧失 donor 资格并全量重编。裸 lake 仅允许 stamp 在位的热树增量调试;`.lake` 缺失或无 stamp,先 ensure。
   〔守护:**软+硬投影**·意图不可 lint;brief 构建步骤必须写 make 目标,否则按 #2762 打回;worker 违律判据为 ensure 收据 `stamp_miss:missing` 与 `clonefile_attempts:0` 同现〕
   **④ 用器看征不看愿;原材料由产生处保证(用户 2026-07-23 定)**:判定看退出码,不看已用时间;判活看 CPU 增量,不看输出静默;完成认哨兵与产物,不认口头。误导信号须修产生它的 harness,不能只要求下游警惕。输出必须定标到实例/时间窗、无歧义(一信号一义)、权威(唯一真源)、fail-closed;采集条件须匹配结论适用域。诊断规范:过载直接读 CPU idle% + memory_pressure,不认混入阻塞线程的 load average;append-only 日志按本次 boot 给 current/full/last 计数,不能拿全历史数回答「现在」;wrapper/任务通知的 exit 0 不替代命令哨兵真实退出码;exit 143 须对齐 sync 日志时间戳,区分 restart/watchdog。信号误导一次即补其产生处,工具缺先铸;同类新事重复三遍,先铸器再做事(第16/18/20′条)。
-  **⑤ 【硬门】异常最终落在 codex CLI,必读实际日志,禁猜(用户 2026-07-29 立、08-01 硬化)**:适用于 codex 运行失败、超时、无结果及 `/sshx` 席异常退出或 `abstain`。**读原始日志前不得归因、写尸检、提本仓/上游 issue、声明完成或据表层症状选修法**;表层症状只证明观测者没看见。读 codex 逐动作 rollout `~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl`,并连读派席载体的运行信封(实际 prompt、stdout/stderr、退出码、终态)。按逐动作时间戳、相邻间隔、命令频次、结束方式分辨 idle 与连续活动。连续活动≠hung,0% CPU≠死,超时≠题难,空 stdout≠没干活;验证重试耗尽不能归咎数学。
+  **⑤ 【硬门】异常最终落在 codex CLI,必读实际日志,禁猜(用户 2026-07-29 立、08-01 硬化)**:适用于 codex 运行失败、超时、无结果及 `/sshx` 席异常退出或 `abstain`。**读原始日志前不得归因、写尸检、提本仓/上游 issue、声明完成或据表层症状选修法**;表层症状只证明观测者没看见。读 codex 逐动作 rollout `~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl`,派席载体若有落盘运行信封,一并读其实际 prompt、stdout/stderr、退出码与终态。按逐动作时间戳、相邻间隔、命令频次、结束方式分辨 idle 与连续活动。连续活动≠hung,0% CPU≠死,超时≠题难,空 stdout≠没干活;验证重试耗尽不能归咎数学。
   **任何失败结论必须引用实际存在的日志路径**;无引用或路径不存在,结论无效,须撤回重做,不是待补证据。〔守护:**硬门(行为)+半硬(机器)**·路径存在性可判但尚无 lint,永久工单 #707 须先回答本机路径在 CI 不可移植的问题;当前靠评审,未 lint 不构成豁免〕
   **⑥ 长操作走宿主后台作业,禁 shell 甩后台(用户 2026-08-15 定,08-28 硬化)**:预期超过前台预算或时长未知的命令,一律用宿主机制(Claude Code Bash `run_in_background: true`,其他宿主用等价物)。Claude Bash 前台上限600s,超值静默截断并在10分钟 exit143。被调命令本身须是完整长任务,内部等齐子进程,真实退出码落哨兵文件;判绿只认哨兵。适用面含 codex/sshx 席位、CI等待、全量 `dotnet test`、`make preflight/gate/lean-report/worktree`。
   禁 `nohup … &`、`( … )&`、`setsid … &`:launcher 先 exit0 会使宿主清整个进程组,wrapper 返回值可能恒0,进程也脱离生命周期与完成通知,`pgrep` 不能判完成。一调用对应一个完整长任务;并行则开多个宿主后台作业。**脚本内部 `&` 合法的唯一边界:同一条命令内有 `wait` 收齐所有子进程,启动器最后返回**;不得事后补 wait。先实测被调程序是否同步阻塞,不能凭印象假定它 detach。自问「这条命令返回时,任务结束了吗」;未结束就用宿主后台机制。
@@ -448,7 +448,7 @@ harness 的本质,就是**给各类事定义"这类该怎么处理"**——先�
   **①′ 必须实际触发新判官(用户 2026-09-07 定)**:层PR绿只证对存量无害,SL-029又使其diff通常不触新判据。故层合入后、合dev新增量前,向同一integration再开最小**触发PR**:正例应产具名finding,或负例应无该finding,注明预期,让三门在真实 `pull_request_target` 事件运行并读到判官输出。验完关闭不合,载荷不进任何分支。存量无害与对靶命中缺一不可。
   `ci.yml` 已实测支持 `'integration-**'`(#4201),protected-base取merge-ref `HEAD^1`,即integration tip而非dev,故已合层不阻碍后续层。被revert过的原分支因原提交仍在历史可能无新commit;须新lane做 `git revert -m 1 <revert提交>` 造新提交。**不得直接在integration做revert-of-revert**:它只保持干净dev起点+已验层,所有改动经lane PR进入。
   〔守护:**软+硬投影**·分支名不能证明流程,靠评审;PR须引三条链接:层在integration三门绿、同integration触发PR的run与判官实际输出(finding代码或Observe行,注明正/负例)、合入dev新增量后的复测绿。缺一无效〕
-  **⑦‴ dev 因 harness 红时,纯内容 lane 改投 `integration-theory-<date>`(用户 2026-08-31 定)**:封闭作用面仅四类增加数据:①`D5/**/*.lean`;②`Blueprint/**/*.scribe.cs`及其md投影;③冻结条目面(`Golden/Frozen/accepted/**`为本款原路径,现行冻结状态面依第7′条);④`Meta/Digestion/**`。触及 `tools/**`、workflow、判官/准入面的PR不适用。判据是**红因层次**:harness逻辑、自锁、workflow/准入面红才改投;Lean编译、SL-008、coverage账等内容对象红须修本lane。
+  **⑦‴ dev 因 harness 红时,纯内容 lane 改投 `integration-theory-<date>`(用户 2026-08-31 定)**:封闭作用面仅四类增加数据:①`D5/**/*.lean`;②`Blueprint/**/*.scribe.cs`及其md投影;③`Golden/Frozen/accepted/**`;④`Meta/Digestion/**`。触及 `tools/**`、workflow、判官/准入面的PR不适用。判据是**红因层次**:harness逻辑、自锁、workflow/准入面红才改投;Lean编译、SL-008、coverage账等内容对象红须修本lane。**原文待收口**:本款封闭集的accepted路径与第7′条当前state路径尚未同步,本次删例不自行扩张应急例外。
   从当时dev新建带新日期的integration-theory,已有他人创建且当前绿者直接复用;内容PR改base到它,三门照跑。**dev首次恢复三门绿即整体PR合回**,带dev新增量复测,不得活过下一次harness红;合回立即删除,下次新日重开,不复用陈旧分支。创建与dev红绿时间须可由CI历史对账。内容改投与⑦⁗恢复dev并行,不能替代修复。
   2026-08-31案的事实边界保留:dev红已证,「全部open PR同红」未逐一闭合为 `ASSUMED-UNVERIFIED`;测试计划同时读 `BaseSnapshot`、candidate程序集与测试发现输入,不由base单独决定。
   〔守护:**全软+no consumer**·须引用那条dev红判词原文以供评审;当前无消费者强制该字段,正文检查后可编辑,不得称硬投影。缺引用无改投依据;integration与回dev均不豁免检测〕
@@ -465,7 +465,7 @@ harness 的本质,就是**给各类事定义"这类该怎么处理"**——先�
 *成熟锚*:工具随代码走(monorepo tooling)、vendoring、Infrastructure as Code(环境由仓库定义,非宿主状态)、dotfiles 可移植性教训。
 〔守护:**软 + 硬投影**·「该不该入仓」靠评审与本条;硬投影=CLAUDE.md 与 skill 中引用的器路径必须是仓内 tracked 文件,指向 `~/` 或 scratchpad 即红〕
 - **引用必须机械可判,悬空即红(用户 2026-08-12 定)**:GID、路径、类型名、组件id、内容摘要、entrypoint、ticket、anchor等引用,须有消费者从被指向侧重算/查找,fail-closed验存在与一致;格式合法不等于指向正确。新增指向字段同PR给检测消费者,否则不得进schema;发现未检测引用只有补检测,或删字段并同步删规范声明两条出路。SL-018对values的现役义务须实执:以candidate inspector report验GID唯一存在、`kind=def`、标准三公理闭包、statement SHA-256与投影一致,不能只验唯一性/十六进制格式。
-  〔守护:**半硬**·每类是否有fail-closed消费者可普查,当前无统一lint;靠评审,格式校验不得冒充指向校验。既有消费者:BackfillInventoryRule(ticket)、AnchorReferenceRule(anchor/GID)、FileMapPolicy(`verified_by`)、TowerActualValidator(members)、GateAuthorityTests(`root_id`/entrypoint)〕
+  〔守护:**半硬**·每类是否有fail-closed消费者可普查,当前无统一lint;靠评审,格式校验不得冒充指向校验。2026-08-12 历史普查消费者:BackfillInventoryRule(ticket)、AnchorReferenceRule(anchor/GID)、FileMapPolicy(`verified_by`)、TowerActualValidator(members)、GateAuthorityTests(`root_id`/entrypoint);不据此声称这些消费者当前仍现役。当日 SL-018 values 仅验格式、无人比对的缺口在案,未经复测不得称已补〕
   *成熟锚*:外键与参照完整性、Merkle校验、链接检查、编译期符号解析。
 - **检测存在须由变异证明;机制在不等于检测在(2026-08-16)**:打断生产机制必须有具名测试红,否则未覆盖,即第20条所禁的检测降级。**有效变异三项合取**:`compile_errors=0` ∧ 退出码非零 ∧ 具名 `[FAIL]` 测试;变异整块删除,不留 `if(false)` 等不可达代码导致编译假红。审diff删增两侧分别核对测试身份,净数持平不证明钉子仍在;放行侧独立测试,防「什么都拒」通过全套拒绝测试。期望值须独立算,不得调用被测函数生成期望而断言恒真。
   〔守护:**软+硬投影**·完成声明须给**六元组**:「变异位置 → 具名红测试 → `compile_errors` → 退出码 → 还原 → 预期红的条数与名字(跑之前写下)」。缺一不认,还原逐字节核对。第六项于2026-08-24补,用于核对该红者是否都红。实得少于预期须逐条判是未覆盖该变异还是自指/恒真;多于预期须查变异越界,越界则变异无效。**不要求预期与实得机械相等,要求所有差额归因并同列完成声明**;不得事后改称本来只该红这些〕
@@ -513,7 +513,7 @@ harness 的本质,就是**给各类事定义"这类该怎么处理"**——先�
   **许可集必须唯一真源,测试钉成员恰为该集合**,任何放宽走τ=0贵路;变异加入一公理必须有具名红测试,写入路径不得绕门。逐**字段**分类:真源=树上无物可重导、断言当时事件,必守;加工产物=由原料哈希而成且携权威,存值是地址,重算来验证属重放;纯投影=同一值第二名字,按一名一址消除。机器可查升级比对对象、许可集真源/变异红、写入入口。
   〔守护:**软+硬投影**·目的靠评审;许可集、比对对象、入口可机查。**2026-08-16现状边界**:写入门1016事件为证、每PR运行;EnvironmentRecoordinate计数0,唯一真跑#1947整体回滚,升级门跨时间不退化尚未经成功实证,记open。不得把此历史读数冒充新近验证〕
   *成熟锚*:内容寻址/Merkle、增量构建、append-only日志、既判力。
-  〔守护:**软+硬投影**·重放vs查询靠评审;schema可判日后必要原料与派生值同事件保存,changed-path可判验证限base→candidate增量。**未裁决张力**:本款升级门全量重算与第20‴条准入门禁止全量派生的作用域尚未明确对齐,不在本次文字整理中裁决〕
+  〔守护:**软+硬投影**·重放vs查询靠评审;schema可判日后必要原料与派生值同事件保存,changed-path可判验证限base→candidate增量。本款定升级重验对象,第20‴条定受影响依赖闭包;本次整理不新增实现判定〕
 - **无为而治;道法自然;上善若水,利万物而不争**——稳态全自主、系统自转、地址由算法算出、harness 服务下级不争特权(第 22/6 条 + 第〇节)。
 
 **砺·生于忧患**
