@@ -108,10 +108,12 @@ public sealed partial class LeanReportInputScriptTests
                 CliProjectPath, EngineProjectPath, TruthProjectPath,
                 "Directory.Build.props", "Directory.Packages.props", "global.json",
                 inspectorScriptPath, inspectorSourcePath, InputHelperPath,
+                BundleValidatorPath,
                 PairScriptPath, SupervisorScriptPath, CiBaselineScriptPath,
                 CacheEnsureScriptPath, CachePublishScriptPath,
                 ResourceObservationLibraryPath, ToolchainInstallerPath,
                 JudgeContentAddressPath, ScribeContentChecksPath, WorkflowPath,
+                LeanInspectSegmentPath, SegmentEvidenceLibraryPath,
                 EngineLockPath, CliLockPath, TruthLockPath,
             ];
             var producerManifest = string.Concat(producerPaths.Select(path =>
