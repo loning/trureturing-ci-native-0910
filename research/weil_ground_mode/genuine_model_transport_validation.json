@@ -1,0 +1,42 @@
+{
+  "exact_checks": {
+    "complex_domain_cases": 800,
+    "coercivity_transfers": 800,
+    "full_residual_identities": 800,
+    "signed_objective_identities": 800,
+    "transported_budget_bounds": 800,
+    "wrong_conjugation_detected": 799,
+    "omitted_model_action_controls": 4
+  },
+  "lean_executed": false,
+  "actual_Weil_spectrum_recomputed": false,
+  "scope": "Exact Gaussian-rational finite model diagnostics only; universal proofs are separate Candidate Lean sources.",
+  "interval_replays": [
+    {
+      "digits": 100,
+      "coefficient": "50215304403347426619711856303873/480665586193000000000000000000",
+      "model_modulus_floor": {
+        "lower": "652035064142797/500000000000000000",
+        "upper": "260814025657119/200000000000000000"
+      }
+    },
+    {
+      "digits": 120,
+      "coefficient": "50215304403347426619711856303873/480665586193000000000000000000",
+      "model_modulus_floor": {
+        "lower": "652035064142797/500000000000000000",
+        "upper": "260814025657119/200000000000000000"
+      }
+    }
+  ],
+  "rejected_inputs": [
+    "model-distance",
+    "wrong-alignment",
+    "missing-model-action",
+    "changed-proposal",
+    "changed-owned-verifier",
+    "precision"
+  ],
+  "upstream_prolate_and_spectral_verifiers_replayed": false,
+  "prior_full_residual_transport_verifier_replayed": true
+}

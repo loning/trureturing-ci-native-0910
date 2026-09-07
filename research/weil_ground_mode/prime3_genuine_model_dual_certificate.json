@@ -1,0 +1,99 @@
+{
+  "status": "all recentering, full-residual and genuine-model box checks passed",
+  "digits": 110,
+  "scale": "a=log(3)/2; same aligned unit genuine evenized prolate model",
+  "query_box": {
+    "real": [
+      "1999999/100000",
+      "2000001/100000"
+    ],
+    "imag": [
+      "24999/100000",
+      "25001/100000"
+    ]
+  },
+  "full_box_not_samples": true,
+  "model_input_projection": {
+    "selected_fields": {
+      "proposal_sha256": "242c9897bbd247ef0485039e6dcde819a351c5900ceac52fecc420934c1896db",
+      "model_distance": "113/100000",
+      "true_polynomial_error": "[0.000000000000000000000003375094012530229259045410607296258173721575046655266260839287525362079140381574988098620274521337373855657829134005, 0.000000000000000000000003375094012530229259045410607296258173721575046655266260839287525362079140381574988098620274521337376879382625379405]",
+      "polynomial_overlap": "[-0.9999993777935479474012864518698854191232773510727684875665040370665191869376514117178368227286418915121494615150742, -0.9999993777935479474012864518698854191232773510727684875665040370665191869376514117178368227286418906162475645560626]",
+      "rayleigh": [
+        "594911359/10000000000000000",
+        "929549/15625000000000"
+      ],
+      "full_residual": [
+        "9166619/100000000000",
+        "458331/5000000000"
+      ]
+    },
+    "semantic_projection_sha256": "0ae6b79a562cc98a6303d396c7b3dce630982d0c83a3ba4b90a8c350a3cc577b",
+    "scope": "Selected mathematical fields from the immutable #5602 model, energy and full residual records. These analytic premises are not reverified here; no full input-file attestation is claimed."
+  },
+  "proposal_sha256": "242c9897bbd247ef0485039e6dcde819a351c5900ceac52fecc420934c1896db",
+  "old_full_residual_verifier_replayed": true,
+  "old_full_residual_coefficient": {
+    "lower": "102162131958909784713/1000000000000000000",
+    "upper": "102233746529387197253/1000000000000000000"
+  },
+  "old_input_scope": "Only the pinned primitive definitions and constants are executed, under explicitly supplied standard-library globals. The input SHA identifies the complete local source bytes read, which are not asserted equal to the complete upstream file.",
+  "arithmetic_input_sha256": "01742064ae378b0a723224d251a54be4f89b8a2b3c14ac4f49e53d7dec9253ee",
+  "trial_sha256": "bd2ac5d0d67c458440cb163de37fb4802f4a944d11545f28ec8799c7be1baf53",
+  "checker_sha256": "69d1e5f8bc872618c3de8ea80921affd561df3b06bab22ba49f16490a4faf352",
+  "polynomial_model_norm": {
+    "lower": "362742327143056811/125000000000000000",
+    "upper": "2901938617144454489/1000000000000000000"
+  },
+  "aligned_polynomial_Fourier_real": {
+    "lower": "624700798507893/500000000000000000",
+    "upper": "1249401597015787/1000000000000000000"
+  },
+  "aligned_polynomial_Fourier_imag": {
+    "lower": "-406857764975389/1000000000000000000",
+    "upper": "-101714441243847/250000000000000000"
+  },
+  "model_Fourier_modulus_floor": {
+    "lower": "652035064142797/500000000000000000",
+    "upper": "260814025657119/200000000000000000"
+  },
+  "model_Fourier_modulus_upper": {
+    "lower": "661942710230257/500000000000000000",
+    "upper": "264777084092103/200000000000000000"
+  },
+  "Fourier_derivative_norm_upper": {
+    "lower": "5160232337218721/7812500000000000",
+    "upper": "660509739163996289/1000000000000000000"
+  },
+  "raw_candidate_residual_component": {
+    "lower": "338740763397937/250000000000000000",
+    "upper": "271764622374019/200000000000000000"
+  },
+  "genuine_model_complement_threshold": "2944818597/249717500000000",
+  "used_rational_threshold": "1179/100000000",
+  "coefficient_bound": "50215304403347426619711856303873/480665586193000000000000000000",
+  "coefficient_upper": "105",
+  "model_to_ground_Fourier_error_upper": "7/10000",
+  "genuine_model_Fourier_modulus_lower": "13/10000",
+  "actual_aligned_mode_modulus_lower": "3/5000",
+  "normalization": "p_e=u/<e,u>, where e is the aligned UNIT genuine prolate model, not p_k",
+  "proof_chain": [
+    "Actual model-complement coercivity from its full residual and distance to k",
+    "Repair v_e=v-<e,v>e inside the actual linear operator domain",
+    "Full infinite-support correction beta*(A-mu)e retained in projected residual",
+    "Existing energy-dual/projective theorem applied about e with the new positive threshold"
+  ],
+  "analytic_premises": [
+    "Inherited full spectral and actual form/operator-domain certificates at c=3, not recomputed",
+    "Inherited true prolate spectral identification, aligned distance, full Rayleigh interval and graph residual, not rerun",
+    "Fourier/basis/Parseval identification from prior certificate and compact-support derivative estimate",
+    "The original genuine model and trial belong to the same actual operator domain"
+  ],
+  "not_claimed": [
+    "Lean kernel verification",
+    "a new eigenvalue enclosure",
+    "larger support window",
+    "zero count or Xi zero theorem",
+    "unbounded-scale decay of the genuine-model directional budget"
+  ]
+}
