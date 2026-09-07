@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S1/Digit/GreedyFloorSqrtRunBlocks.maximal_decreasing_run_lengths
     target_statement_id: sha256:19c1d60a2f22d1b39efa87cf434c0ca8a790f0808554be5e2c36c2b029127cb1
 receipts:
-  scribe:
-    - gid: D5/S1/Digit/GreedyFloorSqrtRunBlocks.maximal_decreasing_run_lengths
-      definition_sha256: sha256:c19a6dbef33f23cc7b5c115aa31624b468cee4d95d2441e701034673eb975307
-      emission_sha256: sha256:d5456ec7e401e011a75f188c84d890199f1e1447f03d977da6dfc48c064415fd
   unresolved_subitems: []
