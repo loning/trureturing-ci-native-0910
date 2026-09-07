@@ -257,8 +257,12 @@ public sealed class ScribeNarrativeProvenanceRuleTests
         var classes = new[] { ScribeNarrativeScanner.DigestionLedgerReference,
             ScribeNarrativeScanner.TheoryVolumeReference, ScribeNarrativeScanner.GovernanceProcessReference };
         foreach (var rule in classes)
-        foreach (var pattern in new[] { rule.Direct, rule.Subject, rule.Relation, rule.DocumentSubject, rule.DocumentRelation })
-            if (pattern is not null) Assert.True(pattern.Options.HasFlag(RegexOptions.NonBacktracking));
+        foreach (var pattern in new[] { rule.Direct, rule.Subject, rule.Relation }.Concat(rule.Grammar ?? []))
+            if (pattern is not null)
+            {
+                Assert.True(pattern.Options.HasFlag(RegexOptions.NonBacktracking));
+                Assert.True(pattern.Options.HasFlag(RegexOptions.IgnoreCase));
+            }
     }
 
     [Fact]

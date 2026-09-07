@@ -42,10 +42,14 @@ internal static class ScribeNarrativeScanner
             + @"|\batoms?\s+(?:sha256:)?[0-9a-f]{40,64}\b"
             + @"|\b[a-z][a-z0-9-]*-residual-[0-9a-f]{8,}\b"
             + @"|\b(?:theorem|definition|lemma|corollary|remark|proposition|section|appendix)/\d+(?:\.\d+)*\b"),
-        Pattern(@"\b(?:source|corollary|deposited|container|anchor|candidate|ingested|host|multi-clause|same|that|this|the)\s+atoms?(?:'s)?\b"),
-        Pattern(@"\b(?:subitem\w*|clause\w*|claim\w*|assert\w*|states|stated|statements?|(?:proof\s+)?skeleton|does\s+not\s+(?:specify|assert|claim|cover)|registration\s+statements?|elsewhere\s+in\s+(?:that|the\s+same|this)\s+atoms?|record(?:ed|s)?\s+(?:in|by|as)\s+(?:the\s+)?(?:digestion\s+)?(?:ledger|receipt|backfill)|absorb\w*|digest\w*|backfill\w*|receipt\w*|formaliz\w*|verbatim|pre-committed|traceab\w*)\b"),
-        Pattern(@"\b(?:source|corollary|deposited|container|anchor|candidate|ingested|host|multi-clause)\s+atoms?(?:'s)?\b"),
-        Pattern(@"\b(?:closes?|closure|(?:names?|claims?|clauses?|statements?)\s+(?:are|is)\s+recorded)\b"));
+        Grammar:
+        [
+            // Documentary speech acts bind the verb to the atom, not to a nearby mathematical noun.
+            Pattern(@"\b(?:source|corollary|deposited|container|anchor|candidate|ingested|host|multi-clause|same|that|this|the)\s+atoms?\s+(?:(?:also|only|itself|explicitly|merely|already|still)\s+)?(?:does\s+not\s+|do\s+not\s+|never\s+|cannot\s+)?(?:states?|stated|asserts?|asserted|claims?|claimed|reports?|reported|records?|recorded|requires?|required|specif(?:y|ies|ied)|names?|named|lists?|listed|reads|says|mentions?|describes?|declares?|registers?|supplies\s+the\s+(?:clause|claim|statement)|ends\s+(?:at|after|immediately)|carries\s+(?:a|the|no)\s+(?:pre-committed\s+)?(?:receipt|(?:numerical\s+)?certificate|clause|claim))\b"),
+            Pattern(@"\b(?:closes?|closed|closing|discharges?|discharged|absorbs?|absorbed|formaliz(?:es|ed|e|ing)|digests?|digested|covers?\s+only|cover\s+only|covered\s+only|does\s+not\s+(?:close|formalize|discharge)|not\s+(?:asserted|claimed)\s+here)\b[^.;:!?]{0,60}?\b(?:multi-clause|corollary|source|deposited|container|anchor|candidate|host|ingested|generic|the|this|that|same|its)\s+atoms?\b"),
+            Pattern(@"\batoms?'s\s+(?:proof\s+skeleton|separate\s+claims?|claims?|clauses?|subitems?|statements?|registration|traceability\s+demand|compatibility\s+claim|theorem\s+name|explicit\s+\w+\s+property|numerical\s+certificates?)\b"
+                + @"|\bin\s+(?:that|the\s+same|this)\s+atoms?\b[^.;:!?]*\b(?:stated|asserted|claims?|statements?|families|clauses?|subitems?|certificates?|remarks?|interpretations?|postmortem|registration)\b|\b(?:stated|asserted|claims?|statements?|families|clauses?|subitems?|certificates?|remarks?|interpretations?|postmortem|registration)\b[^.;:!?]*\bin\s+(?:that|the\s+same|this)\s+atoms?\b")
+        ]);
 
     internal static readonly NarrativeClass TheoryVolumeReference = new(
         nameof(TheoryVolumeReference), "theory volume",
@@ -96,16 +100,15 @@ internal static class ScribeNarrativeScanner
 
     private static void AddNarrative(NarrativeClass rule, Carrier carrier, List<ScribeNarrativeFinding> findings)
     {
-        foreach (Match match in rule.Direct.Matches(carrier.Text)) Add(match.Value, match.Index);
+        foreach (var pattern in new[] { rule.Direct }.Concat(rule.Grammar ?? []))
+            foreach (Match match in pattern.Matches(carrier.Text)) Add(match.Value, match.Index);
         if (rule.Subject is null || rule.Relation is null) return;
         var start = 0;
         for (var end = 0; end <= carrier.Text.Length; end++)
         {
             if (end < carrier.Text.Length && carrier.Text[end] is not ('.' or ';' or ':' or '!' or '?')) continue;
             var sentence = carrier.Text[start..end];
-            if ((rule.Subject.IsMatch(sentence) && rule.Relation.IsMatch(sentence))
-                || (rule.DocumentSubject?.IsMatch(sentence) == true
-                    && rule.DocumentRelation?.IsMatch(sentence) == true))
+            if (rule.Subject.IsMatch(sentence) && rule.Relation.IsMatch(sentence))
             {
                 var trimmed = sentence.Trim();
                 Add(trimmed, start + sentence.IndexOf(trimmed, StringComparison.Ordinal));
@@ -187,7 +190,7 @@ internal static class ScribeNarrativeScanner
 
     internal sealed record NarrativeClass(string Name, string Layer, Regex Direct,
         Regex? Subject = null, Regex? Relation = null,
-        Regex? DocumentSubject = null, Regex? DocumentRelation = null);
+        Regex[]? Grammar = null);
 
     private sealed record TextPart(string Value, int Line, bool PhysicalNewlines)
     {
