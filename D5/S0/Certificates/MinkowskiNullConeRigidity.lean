@@ -84,6 +84,13 @@ theorem no_one_space_dimension_counterexample :
   rintro ⟨S, hnull, hnonproportional⟩
   exact hnonproportional (S (1, 0)) (eq_smul_minkowski_of_null S hnull)
 
+example (d : Nat) : Space d := (1, 0)
+
+example (d : Nat) : exists S : QuadraticForm Real (Space d),
+    (forall v, minkowski d v = 0 -> S v = 0) ∧ S (1, 0) ≠ 0 := by
+  refine ⟨minkowski d, fun _ h => h, ?_⟩
+  simp [minkowski_apply]
+
 #print axioms null_cone_spatial_rigidity
 #print axioms eq_smul_minkowski_of_null
 #print axioms exists_smul_minkowski_of_null
