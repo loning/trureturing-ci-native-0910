@@ -20,7 +20,7 @@ internal sealed class VonMangoldtRecurrenceDocument : IScribeDocumentDefinition
                     "The indices i and j range over Fin r, coerced to natural numbers in sums. "
                     + "The Boolean selector takes b at true and a at false. Increasing enumeration "
                     + "of the infinite prime set supplies disjoint pairs. For the product modulus "
-                    + "at j, choose the residue minus j. The frozen finite CRT realizes these "
+                    + "at j, choose the residue minus j. The finite CRT realizes these "
                     + "residues; adding B times the positive product of all moduli makes the "
                     + "representative at least B. Two distinct prime divisors exclude a prime power. "
                     + "All statements include r equal to zero, with empty families and product one."))),
@@ -57,7 +57,7 @@ internal sealed class VonMangoldtRecurrenceDocument : IScribeDocumentDefinition
                     "Choose a zero window starting at N at least N0. The shifted complex sequence "
                     + "is a solution of LinearRecurrence with order r and coefficients c. Its "
                     + "initial r values agree with zero, so eq_iff_eqOn_range_order makes the whole "
-                    + "shifted sequence zero. A prime at least N plus one contradicts the frozen "
+                    + "shifted sequence zero. A prime at least N plus one contradicts the "
                     + "nonzero prime-address theorem at exponent one. For r equal to zero the "
                     + "range and sum are empty, and the same uniqueness theorem applies."))),
                 DescribeRole.Theorem),

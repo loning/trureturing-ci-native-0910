@@ -29,7 +29,7 @@ theorem arbitrarily_late_two_prime_factor_window (r B : ℕ) :
       (∀ j, a j * b j ≠ 0) ∧
       Pairwise (Nat.Coprime on fun j => a j * b j) ∧
       (∀ j, a j * b j ∣ N + j) ∧
-      (∀ j, ¬ IsPrimePow (N + j)) := by
+      (∀ j : Fin r, ¬ IsPrimePow (N + j)) := by
   classical
   let f := Nat.nth Nat.Prime
   have hf : Function.Injective f :=
@@ -151,7 +151,8 @@ theorem vonMangoldt_no_eventual_real_linear_recurrence :
   apply vonMangoldt_no_eventual_complex_linear_recurrence
   refine ⟨r, fun j => (c j : ℂ), N0, ?_⟩
   intro n hn
-  exact_mod_cast hrec n hn
+  simpa only [Complex.ofReal_sum, Complex.ofReal_mul] using
+    congrArg Complex.ofReal (hrec n hn)
 
 example : Nonempty (ℕ × ℕ) := ⟨(0, 0)⟩
 example : Nonempty ℂ := ⟨0⟩
