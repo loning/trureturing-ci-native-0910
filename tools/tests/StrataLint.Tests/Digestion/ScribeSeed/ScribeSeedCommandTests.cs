@@ -424,5 +424,7 @@ internal sealed class ScribeSeedFixture
         new(changes, Raw(Document), Raw(Baseline));
 
     internal static string EntryPath(DigestionLedgerEntry entry) =>
-        BackfillInventoryLoader.RootPath + entry.SourceId + "/partial-closed/" + entry.AtomId + ".yaml";
+        BackfillInventoryLoader.RootPath + entry.SourceId + "/"
+        + DigestionStatusNames.Migration(entry.ProjectedStatus.Migration) + "-"
+        + DigestionStatusNames.Truth(entry.ProjectedStatus.Truth) + "/" + entry.AtomId + ".yaml";
 }

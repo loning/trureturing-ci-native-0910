@@ -145,6 +145,28 @@ jobs:
         id: build-candidate
         if: steps.judge-cache.outputs.cache-hit != 'true' && github.event_name != 'schedule'
         run: make -C candidate/tools dotnet
+      - name: Stage judge binaries for the shared cache (dev push only)
+        id: stage-judge
+        if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .judge-binaries/cli .judge-binaries/scribe
+          dotnet publish candidate/tools/StrataLint.Cli/StrataLint.Cli.csproj \
+            --configuration Release --output .judge-binaries/cli
+          dotnet publish candidate/tools/StrataLint.Scribe.Documents/StrataLint.Scribe.Documents.csproj \
+            --configuration Release --output .judge-binaries/scribe
+          test -s .judge-binaries/cli/StrataLint.dll
+          test -s .judge-binaries/scribe/StrataLint.Scribe.Documents.dll
+      - name: Save judge binaries and candidate build outputs by content address (dev push only)
+        if: steps.build-candidate.outcome == 'success' && steps.stage-judge.outcome == 'success' && github.event_name == 'push' && github.ref == 'refs/heads/dev'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            .judge-binaries
+            candidate/tools/**/bin
+            candidate/tools/**/obj
+          key: stratalint-judge-binaries-v2-${{ runner.os }}-${{ steps.judge-address.outputs.runtime }}-${{ steps.judge-address.outputs.address }}
       - name: Signal PR head branch grammar
         if: github.event_name == 'pull_request_target' && github.event.pull_request.base.ref == 'dev'
         shell: bash
@@ -199,28 +221,6 @@ jobs:
             test "${actual_lines[$index]}" = "$expected_line"
             ((index += 1))
           done
-      - name: Stage judge binaries for the shared cache (dev push only)
-        id: stage-judge
-        if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p .judge-binaries/cli .judge-binaries/scribe
-          dotnet publish candidate/tools/StrataLint.Cli/StrataLint.Cli.csproj \
-            --configuration Release --output .judge-binaries/cli
-          dotnet publish candidate/tools/StrataLint.Scribe.Documents/StrataLint.Scribe.Documents.csproj \
-            --configuration Release --output .judge-binaries/scribe
-          test -s .judge-binaries/cli/StrataLint.dll
-          test -s .judge-binaries/scribe/StrataLint.Scribe.Documents.dll
-      - name: Save judge binaries and candidate build outputs by content address (dev push only)
-        if: steps.build-candidate.outcome == 'success' && steps.stage-judge.outcome == 'success' && github.event_name == 'push' && github.ref == 'refs/heads/dev'
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            .judge-binaries
-            candidate/tools/**/bin
-            candidate/tools/**/obj
-          key: stratalint-judge-binaries-v2-${{ runner.os }}-${{ steps.judge-address.outputs.runtime }}-${{ steps.judge-address.outputs.address }}
       - name: Save elan toolchain for engineering checks (dev push only)
         if: always() && steps.install-elan.outcome == 'success' && github.event_name == 'push' && github.ref == 'refs/heads/dev'
         uses: actions/cache/save@v4
@@ -506,17 +506,6 @@ jobs:
             --lake-bin "$HOME/.elan/bin/lake" \
             --candidate-root "$GITHUB_WORKSPACE/candidate" \
             --candidate-output "$reports/candidate-lean-report.json"
-      - name: Run complete mathematical content checks
-        shell: bash
-        run: |
-          set -euo pipefail
-          report="$RUNNER_TEMP/raw-lean-reports/candidate-lean-report.json"
-          scribe="$GITHUB_WORKSPACE/.judge-binaries/scribe/StrataLint.Scribe.Documents.dll"
-          test -s "$report"
-          test -s "$scribe"
-          base="${{ steps.base.outputs.sha }}"
-          /bin/bash "$GITHUB_WORKSPACE/candidate/tools/scripts/workflow/scribe-content-checks.sh" \
-            "$report" "$scribe" "$base"
       - name: Stage candidate canonical Lean report cache
         shell: bash
         run: |
@@ -546,6 +535,17 @@ jobs:
         with:
           path: .canonical-lean-report-cache
           key: stratalint-canonical-lean-report-v2-${{ steps.lean-report-input.outputs.address }}
+      - name: Run complete mathematical content checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          report="$RUNNER_TEMP/raw-lean-reports/candidate-lean-report.json"
+          scribe="$GITHUB_WORKSPACE/.judge-binaries/scribe/StrataLint.Scribe.Documents.dll"
+          test -s "$report"
+          test -s "$scribe"
+          base="${{ steps.base.outputs.sha }}"
+          /bin/bash "$GITHUB_WORKSPACE/candidate/tools/scripts/workflow/scribe-content-checks.sh" \
+            "$report" "$scribe" "$base"
       - name: Upload raw Lean reports and producer logs
         if: always()
         uses: actions/upload-artifact@v4
