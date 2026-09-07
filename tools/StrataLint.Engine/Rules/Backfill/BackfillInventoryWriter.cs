@@ -87,12 +87,29 @@ internal static class BackfillInventoryWriter
     private static DigestionLedgerEntry WithCanonicalGidOrder(DigestionLedgerEntry entry) =>
         entry with
         {
-            Coverage = StableOrderByGid(entry.Coverage, static edge => edge.Gid),
+            Coverage = CanonicalCoverage(entry.Coverage),
             Receipts = entry.Receipts with
             {
                 Scribe = StableOrderByGid(entry.Receipts.Scribe, static receipt => receipt.Gid),
             },
         };
+
+    private static ImmutableArray<DigestionCoverageEdge> CanonicalCoverage(
+        ImmutableArray<DigestionCoverageEdge> edges)
+    {
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var edge in edges)
+        {
+            if (!seen.Add(edge.Gid))
+            {
+                throw new InvalidOperationException(
+                    $"BACKFILL_COVERAGE_DUPLICATE_GID: coverage_gids contains duplicate gid {edge.Gid}");
+            }
+        }
+
+        edges = StableOrderByGid(edges, static edge => edge.Gid);
+        return edges;
+    }
 
     private static ImmutableArray<T> StableOrderByGid<T>(
         ImmutableArray<T> values,
