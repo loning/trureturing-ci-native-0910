@@ -372,10 +372,6 @@ jobs:
           source="$GITHUB_WORKSPACE/.canonical-lean-report-cache/raw-lean-report.json"
           reports="$RUNNER_TEMP/raw-lean-reports"
           mkdir -p "$reports"
-          # verify 需要 .sha256 旁文件(lean-report-input.sh:100),故一并要求存在。
-          for suffix in '' .sha256 .input.attestation .provenance.json .materials.zip; do
-            test -s "${source}${suffix}"
-          done
           helper="$GITHUB_WORKSPACE/candidate/tools/scripts/report/lean-report-input.sh"
           # 缓存条目对候选树重新验一次地址与报告哈希;不符即整体回落,不静默使用。
           "$helper" verify --repository "$GITHUB_WORKSPACE/candidate" --report "$source"
@@ -391,12 +387,8 @@ jobs:
               producer_sha256: $producer, repository_inspector_sha256: $producer,
               lean_sources_sha256: $sources, lean_config_sha256: $config, report_sha256: $report}
             and (.[0].mode == "produced" or .[0].mode == "cached"))' "${source}.provenance.json" > /dev/null
-          for suffix in '' .input.attestation .provenance.json .materials.zip; do
-            cp "${source}${suffix}" "$reports/candidate-lean-report.json${suffix}"
-          done
-          printf '%s  %s\n' \
-            "$(sha256sum "$reports/candidate-lean-report.json" | cut -d ' ' -f 1)" \
-            "candidate-lean-report.json" > "$reports/candidate-lean-report.json.sha256"
+          python3 "$GITHUB_WORKSPACE/candidate/tools/lean-inspector/report_cache.py" stage \
+            --report "$source" --output "$reports/candidate-lean-report.json"
           printf '%s\n' "canonical Lean reports served from cached input address" >> "$GITHUB_STEP_SUMMARY"
       - name: Restore elan and pinned Lean toolchains
         if: steps.report-reuse.outcome != 'success'
@@ -515,17 +507,8 @@ jobs:
           set -euo pipefail
           source="$RUNNER_TEMP/raw-lean-reports/candidate-lean-report.json"
           target="$GITHUB_WORKSPACE/.canonical-lean-report-cache/raw-lean-report.json"
-          mkdir -p "$(dirname "$target")"
-          for suffix in '' .input.attestation .provenance.json .materials.zip; do
-            test -s "${source}${suffix}"
-            cp "${source}${suffix}" "${target}${suffix}"
-          done
-          read -r declaredSha256 declaredName < "${source}.sha256"
-          reportSha256="$(sha256sum "$target" | cut -d ' ' -f 1)"
-          test "$declaredSha256" = "$reportSha256"
-          test "$declaredName" = "$(basename "$source")"
-          printf '%s  %s\n' "$reportSha256" "$(basename "$target")" > "${target}.sha256"
-          cp -R "${source}.logs" "${target}.logs" 2>/dev/null || true
+          python3 "$GITHUB_WORKSPACE/candidate/tools/lean-inspector/report_cache.py" stage \
+            --report "$source" --output "$target"
           "$GITHUB_WORKSPACE/candidate/tools/scripts/report/lean-report-input.sh" verify \
             --repository "$GITHUB_WORKSPACE/candidate" \
             --report "$target"

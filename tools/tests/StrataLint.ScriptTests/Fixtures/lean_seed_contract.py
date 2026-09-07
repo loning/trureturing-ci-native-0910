@@ -477,6 +477,18 @@ class PairFixture(PartitionFixture):
     def seeds(self):
         return list(self.cache.glob("*/*/*/raw-lean-report.json"))
 
+    def stage_report(self, target):
+        return subprocess.run(["bash", "-euo", "pipefail", "-c", '''
+python3 "$1" stage --report "$2" --output "$3"
+"$4" verify --repository "$5" --report "$3"
+''', "stage-report", str(self.root / "tools/lean-inspector/report_cache.py"),
+            str(self.output), str(target), str(self.helper), str(self.root)],
+            text=True, capture_output=True)
+
+    def import_report(self, report, cache):
+        return subprocess.run([str(self.root / "tools/scripts/report/lean-report-ci-baseline.sh"),
+            "--bundle", str(report), "--cache-root", str(cache)], text=True, capture_output=True)
+
 
 class PairTests(PairFixture, unittest.TestCase):
     def test_exact_hit_always_enters_producer_and_rebinds_candidate(self):
@@ -521,18 +533,46 @@ class PairTests(PairFixture, unittest.TestCase):
                 self.assertEqual(before, self.output.read_bytes())
 
     def test_transport_adapter_preserves_seed_identity_and_omits_logs(self):
+        self.output = self.root / "out/candidate-lean-report.json"
         self.assertEqual(0, self.pair().returncode)
+        before = {p.name.removeprefix(self.output.name): p.read_bytes()
+                  for p in self.output.parent.iterdir() if p.is_file()}
+        self.assertEqual(6, len(before))
+        staged = self.root / "staged/raw-lean-report.json"
+        for unused in range(2):
+            result = self.stage_report(staged)
+            self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        transported = self.root / "transported/raw-lean-report.json"
+        shutil.copytree(staged.parent, transported.parent)
+        for suffix, content in before.items():
+            self.assertEqual(content, pathlib.Path(str(self.output) + suffix).read_bytes())
+            expected = (digest(before[""]) + "  raw-lean-report.json\n").encode() if suffix == ".sha256" else content
+            self.assertEqual(expected, pathlib.Path(str(staged) + suffix).read_bytes())
+            self.assertEqual(expected, pathlib.Path(str(transported) + suffix).read_bytes())
         target = self.root / "imported"
-        result = subprocess.run([str(self.root / "tools/scripts/report/lean-report-ci-baseline.sh"),
-            "--bundle", str(self.output), "--cache-root", str(target)], text=True, capture_output=True)
+        result = self.import_report(transported, target)
         self.assertEqual(0, result.returncode, result.stderr)
         self.assertEqual(str(target), result.stdout.strip())
         imported = list(target.glob("*/*/*/raw-lean-report.json"))
         self.assertEqual(1, len(imported))
-        for suffix in ["", ".input.attestation", ".provenance.json", ".materials.zip", ".seed.json"]:
-            self.assertEqual(pathlib.Path(str(self.output)+suffix).read_bytes(),
+        for suffix in before:
+            self.assertEqual(pathlib.Path(str(transported)+suffix).read_bytes(),
                              pathlib.Path(str(imported[0])+suffix).read_bytes())
         self.assertFalse(pathlib.Path(str(imported[0])+".logs").exists())
+        for suffix in before:
+            for damage in ("missing", "corrupt"):
+                with self.subTest(suffix=suffix, damage=damage):
+                    member = pathlib.Path(str(transported) + suffix)
+                    content = member.read_bytes()
+                    if damage == "missing": member.unlink()
+                    else: member.write_bytes(b"corrupt")
+                    missed = self.import_report(transported, self.root / "unusable")
+                    self.assertEqual(0, missed.returncode, missed.stderr)
+                    self.assertEqual("", missed.stdout)
+                    self.assertFalse((self.root / "unusable").exists())
+                    member.write_bytes(content)
+        write(self.root / "D5/A.lean", "def a := 5\n")
+        self.assertEqual(2, self.stage_report(staged).returncode)
 
     def test_input_follows_transitive_program_dependencies_without_workflow(self):
         before = self.report_input()
@@ -585,14 +625,30 @@ class InspectorTests(PairFixture, unittest.TestCase):
                 "STRATALINT_REPORT_CACHE_ROOT": str(self.cache), **extra})
 
     def test_inspector_runs_lake_on_exact_seed_with_zero_reinspection(self):
+        self.output = self.root / "out/candidate-lean-report.json"
         first = self.pair()
         self.assertEqual(0, first.returncode, first.stdout + first.stderr)
+        staged = self.root / "staged/raw-lean-report.json"
+        stage = self.stage_report(staged)
+        self.assertEqual(0, stage.returncode, stage.stdout + stage.stderr)
+        transported = self.root / "transported/raw-lean-report.json"
+        shutil.copytree(staged.parent, transported.parent)
+        imported = self.import_report(transported, self.root / "imported")
+        self.assertEqual(0, imported.returncode, imported.stderr)
+        self.assertEqual(str(self.root / "imported"), imported.stdout.strip())
+        self.cache = pathlib.Path(imported.stdout.strip())
+        self.output = self.root / "next/candidate-lean-report.json"
         second = self.pair()
         self.assertEqual(0, second.returncode, second.stdout + second.stderr)
         self.assertIn("LEAN_REPORT_DELTA mode=reuse changed=0 added=0 removed=0 recheck=0", second.stdout)
+        write(self.root / "D5/A.lean", "def a := 3\n")
+        third = self.pair()
+        self.assertEqual(0, third.returncode, third.stdout + third.stderr)
+        self.assertIn("LEAN_REPORT_DELTA_PLAN mode=delta changed=1 added=0 removed=0 recheck=1", third.stdout)
+        self.assertIn("LEAN_REPORT_DELTA mode=delta changed=1 added=0 removed=0 recheck=1", third.stdout)
         commands = (self.root / "lake-runs").read_text().splitlines()
-        self.assertEqual(2, commands.count("build"))
-        self.assertEqual(1, sum("--run" in command for command in commands))
+        self.assertEqual(3, commands.count("build"))
+        self.assertEqual(2, sum("--run" in command for command in commands))
 
     def test_report_staging_does_not_preempt_cold_cache_provisioning(self):
         self.output = self.root / ".lake/build/stratalint/raw-lean-report.json"
