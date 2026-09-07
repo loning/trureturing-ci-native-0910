@@ -65,7 +65,7 @@ public enum FormulaLayoutMode
 public enum FormulaLatexMacro
 {
     Delta, Gamma, Lambda, Leftrightarrow, Re, Rightarrow, Sigma, Vert,
-    Alpha, Begin, Beta, Cdot, Circ, DeltaLower, Ell, Emptyset, End, Equiv,
+    Alpha, Begin, Beta, Cdot, Circ, Cup, DeltaLower, Ell, Emptyset, End, Equiv,
     Exists, Exp, Forall, Frac, GammaLower, Gcd, Ge, Geq, Iff, Implies, In,
     Infty, Int, Iota, Kappa, Ker, LambdaLower, Land, Langle, Le, Left, Leq,
     Lfloor, Lim, Log, Longrightarrow, Lor, Lvert, Mapsto, Mathbb, Mathbf,
