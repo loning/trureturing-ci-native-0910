@@ -4,7 +4,6 @@ fingerprints:
 cas_ref: sha256:2fc87bd896e19b6efca9dbdf486e7c2d9416ca08cc82806cf9561316ab1844eb
 coverage_gids: []
 receipts:
-  scribe: []
   unresolved_subitems: []
   chain_atoms:
     - 520ce083bc57c98c087ce4b585ede78c322ac6ef43dfb495cd0c2bc5c91c730e
