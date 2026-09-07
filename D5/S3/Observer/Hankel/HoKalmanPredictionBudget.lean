@@ -143,7 +143,15 @@ theorem run_prediction_error_bound {h p m r : Nat}
     (norm_realMatrix_le_absSum _) hA (norm_realMatrix_le_absSum _) hB
     (norm_realMatrix_le_absSum _) hC n
   rw [htrue n] at hh
-  simpa only [outputErrorBudget, cast_markovBudget, realMatrix_mul, realMatrix_pow] using hh
+  have hstate (a da b db : ℚ) (k : Nat) :
+      ((stateBudget a da b db k : ℚ) : ℝ) =
+        stateBudget (a : ℝ) (da : ℝ) (b : ℝ) (db : ℝ) k := by
+    induction k with
+    | zero => rfl
+    | succ k ih =>
+      simp only [stateBudget, Rat.cast_add, Rat.cast_mul, Rat.cast_pow, ih]
+  simpa only [outputErrorBudget, markovBudget, Rat.cast_add, Rat.cast_mul, Rat.cast_pow,
+    hstate, realMatrix_mul, realMatrix_pow] using hh
 
 #print axioms run_prediction_error_bound
 

@@ -8,7 +8,6 @@
 import Mathlib.LinearAlgebra.Matrix.Adjugate
 import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
 import Mathlib.LinearAlgebra.Matrix.Rank
-import Mathlib.Tactic.Omega
 
 set_option autoImplicit false
 set_option relaxedAutoImplicit false

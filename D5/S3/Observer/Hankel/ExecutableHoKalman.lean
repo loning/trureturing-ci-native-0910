@@ -26,7 +26,7 @@ def tuples {α : Type*} (xs : List α) : (n : Nat) → List (Fin n → α)
 /-- Every tuple over the supplied finite alphabet is enumerated. -/
 theorem mem_tuples {α : Type*} (xs : List α) (n : Nat) (f : Fin n → α)
     (hf : ∀ i, f i ∈ xs) : f ∈ tuples xs n := by
-  induction n generalizing f with
+  induction n with
   | zero =>
     have he : f = (fun i : Fin 0 => Fin.elim0 i) := by
       funext i
@@ -51,10 +51,10 @@ theorem mem_allPivots {h p m r : Nat} (q : Pivot h p m r) :
   constructor
   · apply mem_tuples
     intro i
-    simp
+    exact List.mem_product.mpr ⟨by simp, by simp⟩
   · apply mem_tuples
     intro i
-    simp
+    exact List.mem_product.mpr ⟨by simp, by simp⟩
 
 /-- A computable rational upper bound for every row-sum operator norm. -/
 def absSum {a b : Nat} (M : Matrix (Fin a) (Fin b) ℚ) : ℚ :=
@@ -166,11 +166,17 @@ private def scalarExample : Samples ℚ 1 1 1 :=
 -- Kernel-reduction examples. They are source checks, not a recorded compiler run.
 example : (run 1 scalarExample (1 / 1000)).map
     (fun out => (out.A 0 0, out.B 0 0, out.C 0 0)) =
-      some ((501 / 1001 : ℚ), (1 : ℚ), (1001 / 1000 : ℚ)) := by decide
+      some ((501 / 1001 : ℚ), (1 : ℚ), (1001 / 1000 : ℚ)) := by
+  norm_num [run, choosePivot, scan, allPivots, tuples, acceptable, absSum,
+    baseBlock, shiftBlock, inputBlock, outputBlock, adjInverse, fittedA, fittedB, fittedC, List.finRange, List.product, List.flatMap, List.map, scalarExample]
 
-example : (run 1 scalarExample (-1)).isNone = true := by decide
+example : (run 1 scalarExample (-1)).isNone = true := by
+  norm_num [run, choosePivot, scan, allPivots, tuples, acceptable, absSum,
+    baseBlock, shiftBlock, inputBlock, outputBlock, adjInverse, fittedA, fittedB, fittedC, List.finRange, List.product, List.flatMap, List.map]
 
-example : (run 1 (fun _ _ _ => (0 : ℚ) : Samples ℚ 1 1 1) 0).isNone = true := by decide
+example : (run 1 (fun _ _ _ => (0 : ℚ) : Samples ℚ 1 1 1) 0).isNone = true := by
+  norm_num [run, choosePivot, scan, allPivots, tuples, acceptable, absSum,
+    baseBlock, shiftBlock, inputBlock, outputBlock, adjInverse, fittedA, fittedB, fittedC, List.finRange, List.product, List.flatMap, List.map]
 
 #print axioms choosePivot_success
 #print axioms run_exact_recovery

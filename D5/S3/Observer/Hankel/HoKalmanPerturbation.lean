@@ -24,10 +24,11 @@ theorem norm_le_of_row_sum_le {a b : Nat}
     (hM : ∀ i, ∑ j, ‖M i j‖ ≤ t) : ‖M‖ ≤ t := by
   rw [Matrix.linfty_opNorm_def]
   have hh : (Finset.univ.sup fun i : Fin a => ∑ j : Fin b, ‖M i j‖₊) ≤
-      (⟨t, ht⟩ : ℝ≥0) := by
+      (NNReal.mk t ht) := by
     apply Finset.sup_le
     intro i _
-    exact_mod_cast hM i
+    apply NNReal.coe_le_coe.mp
+    simpa only [NNReal.coe_sum, coe_nnnorm, NNReal.coe_mk] using hM i
   exact_mod_cast hh
 
 /-- Entrywise uncertainty is converted to an operator-norm budget, with its dimension factor. -/
@@ -94,10 +95,9 @@ theorem solve_error_le {r b : Nat}
   have hK0 : 0 ≤ δK := (norm_nonneg _).trans hK
   have hL0 : 0 ≤ δL := (norm_nonneg _).trans hL
   have hXnorm : ‖X‖ ≤ H + ‖Q * Lh - X‖ := by
-    calc
-      ‖X‖ = ‖Q * Lh - (Q * Lh - X)‖ := by rw [sub_sub_cancel]
-      _ ≤ ‖Q * Lh‖ + ‖Q * Lh - X‖ := norm_sub_le _ _
-      _ ≤ H + ‖Q * Lh - X‖ := add_le_add_right hH _
+    have htriangle := norm_sub_le (Q * Lh) (Q * Lh - X)
+    rw [sub_sub_cancel] at htriangle
+    exact htriangle.trans (add_le_add hH le_rfl)
   have he : ‖Q * Lh - X‖ ≤ q * (δL + δK * ‖X‖) := by
     rw [solve_error_identity K Kh Q L Lh X hQ hX]
     calc
@@ -112,7 +112,7 @@ theorem solve_error_le {r b : Nat}
           (mul_le_mul_of_nonneg_right hK (norm_nonneg _))
   have he' : ‖Q * Lh - X‖ ≤ q * (δL + δK * (H + ‖Q * Lh - X‖)) :=
     he.trans (mul_le_mul_of_nonneg_left
-      (add_le_add_left (mul_le_mul_of_nonneg_left hXnorm hK0) δL) hq0)
+      (add_le_add le_rfl (mul_le_mul_of_nonneg_left hXnorm hK0)) hq0)
   apply (le_div_iff₀ (sub_pos.mpr hmargin)).mpr
   nlinarith [he']
 

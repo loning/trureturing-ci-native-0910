@@ -53,7 +53,9 @@ def realMatrix {a b : Nat} (M : Matrix (Fin a) (Fin b) ℚ) :
 @[simp] theorem realMatrix_one (r : Nat) :
     realMatrix (1 : Matrix (Fin r) (Fin r) ℚ) = 1 := by
   ext i j
-  simp [realMatrix, Matrix.one_apply]
+  by_cases hij : i = j <;>
+    simp only [realMatrix, Matrix.one_apply, hij, if_true, if_false,
+      Rat.cast_one, Rat.cast_zero]
 
 /-- Interpret all finite samples without changing the input indexing. -/
 def realSamples {h p m : Nat} (s : Samples ℚ h p m) : Samples ℝ h p m :=
@@ -121,7 +123,12 @@ theorem run_noisy_recovery {h p m r : Nat}
   let Q := realMatrix (adjInverse (baseBlock sh out.pivot))
   have hQ : Q * baseBlock (realSamples sh) out.pivot = 1 := by
     have hh := congrArg (@realMatrix r r) (adjInverse_mul (baseBlock sh out.pivot) hkhat)
-    simpa only [realMatrix_mul, realMatrix_one] using hh
+    have hbase : realMatrix (baseBlock sh out.pivot) =
+        baseBlock (realSamples sh) out.pivot := by
+      ext i j
+      rfl
+    rw [realMatrix_mul, realMatrix_one, hbase] at hh
+    exact hh
   have hq : ‖Q‖ ≤ (inverseBudget sh out.pivot : ℝ) :=
     norm_realMatrix_le_absSum _
   have hεR : (0 : ℝ) ≤ (ε : ℝ) := by exact_mod_cast hε
@@ -167,7 +174,11 @@ theorem run_noisy_recovery {h p m r : Nat}
   · rw [hB, hFB]
     simpa [bErrorBudget] using hEB
   · rw [hC]
-    simpa only [fittedC, cErrorBudget, Rat.cast_mul, Rat.cast_natCast] using hW
+    have houtput : realMatrix (outputBlock sh out.pivot) =
+        outputBlock (realSamples sh) out.pivot := by
+      ext i j
+      rfl
+    simpa only [fittedC, houtput, cErrorBudget, Rat.cast_mul, Rat.cast_natCast] using hW
 
 /-- A successful noisy-data certificate excludes every compatible model of
 strictly smaller state dimension. The candidate dimension d need not equal r. -/
@@ -184,7 +195,12 @@ theorem run_order_lower_bound {h p m r d : Nat}
   let Q := realMatrix (adjInverse (baseBlock sh out.pivot))
   have hQ : Q * baseBlock (realSamples sh) out.pivot = 1 := by
     have hh := congrArg (@realMatrix r r) (adjInverse_mul (baseBlock sh out.pivot) hkhat)
-    simpa only [realMatrix_mul, realMatrix_one] using hh
+    have hbase : realMatrix (baseBlock sh out.pivot) =
+        baseBlock (realSamples sh) out.pivot := by
+      ext i j
+      rfl
+    rw [realMatrix_mul, realMatrix_one, hbase] at hh
+    exact hh
   have hq : ‖Q‖ ≤ (inverseBudget sh out.pivot : ℝ) := norm_realMatrix_le_absSum _
   have hεR : (0 : ℝ) ≤ (ε : ℝ) := by exact_mod_cast hε
   have hmQ : inverseBudget sh out.pivot * ((r : ℚ) * ε) < 1 := by
