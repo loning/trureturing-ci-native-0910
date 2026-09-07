@@ -1,0 +1,48 @@
+{
+  "exact_algebra": {
+    "gaussian_moment_cases": 120,
+    "paired_jet_identities": 1920,
+    "two_sided_coefficient_checks": 3840,
+    "finite_tail_checks": 120,
+    "cauchy_inverse_checks": 1920,
+    "reciprocal_steps": 147,
+    "retained_only_residual_counterexample": true
+  },
+  "interval_replays": [
+    {
+      "digits": 50,
+      "dual_budget": {
+        "lower": "102162131958909784713/1000000000000000000",
+        "upper": "102233746529387197253/1000000000000000000"
+      }
+    },
+    {
+      "digits": 90,
+      "dual_budget": {
+        "lower": "102162131958909784713/1000000000000000000",
+        "upper": "102233746529387197253/1000000000000000000"
+      }
+    }
+  ],
+  "dyadic_accumulator_cases": 4,
+  "larger_boxes_failing_this_fixed_budget": [
+    {
+      "radius": "1/1000",
+      "guard": "Directional coefficient not below 103"
+    },
+    {
+      "radius": "1/10000",
+      "guard": "Candidate floor not above 27/20000"
+    }
+  ],
+  "negative_inputs_rejected": [
+    "arithmetic-sign",
+    "missing-trial-coordinate",
+    "insufficient-cutoff",
+    "insufficient-precision",
+    "unsafe-Fourier-band"
+  ],
+  "lean_executed": false,
+  "upstream_spectral_verifier_executed": false,
+  "scope": "single-author finite diagnostics and full-residual interval transport; no independent proof reviewer"
+}

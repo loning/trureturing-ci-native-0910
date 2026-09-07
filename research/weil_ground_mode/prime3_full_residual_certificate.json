@@ -1,0 +1,96 @@
+{
+  "status": "all new full-residual interval comparisons passed",
+  "digits": 60,
+  "N": 64,
+  "M": 8192,
+  "query_center": [
+    "20",
+    "1/4"
+  ],
+  "query_box": {
+    "real": [
+      "1999999/100000",
+      "2000001/100000"
+    ],
+    "imag": [
+      "24999/100000",
+      "25001/100000"
+    ]
+  },
+  "covers_entire_query_box": true,
+  "candidate_integer_energy": "1208925819614761052253583",
+  "candidate_literal_sha256": "0a56b05b79c741e7a5548a23dd2eb980b619e260dc10db23bdcfa44c38a467b1",
+  "arithmetic_input_sha256": "01742064ae378b0a723224d251a54be4f89b8a2b3c14ac4f49e53d7dec9253ee",
+  "arithmetic_primitive_AST_sha256": "e1e24029a943c47a946cab463e5af5462a00f7b0dbfbb30761dc985f84debfa5",
+  "arithmetic_input_scope": "Only the pinned primitive definitions and constants are executed, under explicitly supplied standard-library globals. The input SHA identifies the complete local source bytes read, which are not asserted equal to the complete upstream file.",
+  "trial_sha256": "bd2ac5d0d67c458440cb163de37fb4802f4a944d11545f28ec8799c7be1baf53",
+  "checker_sha256": "35c4376cf0638a9aa1dff5b69d042f0191e103d6c9fb941efc5d83f2a1302eea",
+  "spectral_premises": {
+    "ell": "2252813807/40960000000000000",
+    "upper": "560909/10000000000000",
+    "threshold": "3/250000"
+  },
+  "candidate_orthogonality": "exact Gaussian-rational elimination; no tolerance",
+  "trial_norm_sq": {
+    "lower": "10912790126901076623/250000000000000000",
+    "upper": "43651160507604306493/1000000000000000000"
+  },
+  "trial_pairing": {
+    "lower": "944050162139351859/1000000000000000000",
+    "upper": "11801564025779153/12500000000000000"
+  },
+  "trial_shifted_energy": {
+    "lower": "11350309517054019/15625000000000000",
+    "upper": "726419809095425319/1000000000000000000"
+  },
+  "objective": {
+    "lower": "726050321989549/625000000000000",
+    "upper": "36307201094787727/31250000000000000"
+  },
+  "projected_residual_head_sq": {
+    "lower": "281886738950123/250000000000000000",
+    "upper": "564200097740517/500000000000000000"
+  },
+  "observed_two_sided_residual_sq": {
+    "lower": "38892936346259/500000000000000000",
+    "upper": "77786278239197/1000000000000000000"
+  },
+  "uncomputed_two_sided_residual_sq_upper": {
+    "lower": "1117529956569/1000000000000000000",
+    "upper": "558764978503/500000000000000000"
+  },
+  "full_projected_residual_sq_upper": {
+    "lower": "1206450358449579/1000000000000000000",
+    "upper": "301826000919309/250000000000000000"
+  },
+  "full_dual_budget_upper": {
+    "lower": "102162131958909784713/1000000000000000000",
+    "upper": "102233746529387197253/1000000000000000000"
+  },
+  "candidate_modulus": {
+    "lower": "1354963053688811/1000000000000000000",
+    "upper": "679411555783243/500000000000000000"
+  },
+  "claimed_rational_bounds": {
+    "dual_budget": "103",
+    "Fourier_error": "7/20000",
+    "candidate_modulus_lower": "27/20000",
+    "actual_mode_modulus_lower": "1/1000"
+  },
+  "tail_scope": "Both signs are evaluated independently in the finite exterior. All four boundary moments are interval-evaluated. Upper-expression intervals are not lower bounds on the actual omitted norm.",
+  "method": "arbitrary finite trial, actual shifted arithmetic action, complete projected residual, existing coercive dual variational theorem",
+  "analytic_obligations": [
+    "Existing complete Weil spectral inequalities; original LDL verifier not rerun",
+    "Arithmetic Fourier-basis identification and actual operator-domain inclusion of the finite trial",
+    "Continuous Fourier/Riesz identification, Parseval, and correct physical prefactor",
+    "Actual lowest-mode evenness under the compatible full-space reflection symmetry; the Riesz vector used here is the even Fourier projection"
+  ],
+  "not_claimed": [
+    "full upstream-file attestation",
+    "kernel checking",
+    "a new eigenvalue enclosure",
+    "a zero count",
+    "unbounded-scale Weil/prolate convergence",
+    "RH"
+  ]
+}
