@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Analytic/PrimeProducts/FiniteOffsetSingularSeries.finite_offset_blocking_and_singular_series
     target_statement_id: sha256:c16de240cdf8d81eb84bc85c3cf2015f5469c3c27ad98d5c915fda73597c1adc
 receipts:
-  scribe: []
   unresolved_subitems: []

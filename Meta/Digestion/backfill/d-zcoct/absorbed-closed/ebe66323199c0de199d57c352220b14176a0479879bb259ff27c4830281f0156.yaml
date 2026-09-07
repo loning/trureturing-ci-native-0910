@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Quantum/Measurements/HorizontalCasimir.horizontal_casimir_eq_zero_iff
     target_statement_id: sha256:6b1c21ea8e7ab91cc00396e41e50ee497cd6bc39f2593fb8727af3df7dd0f231
 receipts:
-  scribe: []
   unresolved_subitems: []

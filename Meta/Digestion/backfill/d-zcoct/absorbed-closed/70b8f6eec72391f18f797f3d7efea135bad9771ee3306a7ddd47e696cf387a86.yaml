@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Midline/Cayley/CayleyCriticalLineZetaCriterion.cayley_critical_line_zeta_criterion
     target_statement_id: sha256:5f9545369c0d90054138c7a85af22538cacd45cd35bc71489f80af45e0ca9307
 receipts:
-  scribe: []
   unresolved_subitems: []
