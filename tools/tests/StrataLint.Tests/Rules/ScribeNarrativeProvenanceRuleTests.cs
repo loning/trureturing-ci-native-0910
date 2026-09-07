@@ -58,6 +58,81 @@ public sealed class ScribeNarrativeProvenanceRuleTests
     public void MathematicalProseIsAllowed(string prose) => Assert.Empty(Evaluate(Text(prose)));
 
     [Theory]
+    [InlineData("The atom carries positive mass.")]
+    [InlineData("The atom covers the bottom element.")]
+    [InlineData("The atom is a closed singleton.")]
+    [InlineData("The atom lies in a closed set.")]
+    [InlineData("The source atom has compact closure.")]
+    [InlineData("The closure of each source atom is compact.")]
+    [InlineData("The candidate atom lies in the closure of a measurable set.")]
+    [InlineData("The atom does not cover the top element.")]
+    [InlineData("The anchor atom supports a positive measure.")]
+    [InlineData("Each source atom is closed and carries positive mass.")]
+    [InlineData("The atom's mass is recorded in the table.")]
+    [InlineData("The closure of the atom is a closed set.")]
+    [InlineData("The closed support of the source atom is compact.")]
+    [InlineData("This open cover covers only the candidate atom.")]
+    [InlineData("The closed source atom is measurable.")]
+    [InlineData("The closed support of the candidate atom is compact.")]
+    [InlineData("In the three-element chain, the top element covers only the anchor atom.")]
+    [InlineData("The source atom is closed and the candidate atom carries positive mass.")]
+    [InlineData("The anchor atom's explicit measurability property is preserved.")]
+    [InlineData("The source atom state has unit norm.")]
+    [InlineData("The closed support contains the source atom.")]
+    [InlineData("The closure of the candidate atom is closed and contains the anchor atom.")]
+    [InlineData("The compact set covers only the candidate atom.")]
+    [InlineData("The closed unit interval contains the anchor atom.")]
+    [InlineData("The closed neighborhood of the anchor atom is compact.")]
+    [InlineData("A closed set containing the candidate atom exists.")]
+    [InlineData("The closed candidate atom has mass one.")]
+    [InlineData("The closed anchor atom supports a probability measure.")]
+    [InlineData("The open source atom lies in the support.")]
+    [InlineData("The compact candidate atom is measurable.")]
+    [InlineData("The measurable anchor atom has positive mass.")]
+    [InlineData("The closed container atom is a singleton.")]
+    [InlineData("The closed host atom is compact.")]
+    [InlineData("The source atom is closed, and the candidate atom carries positive mass.")]
+    [InlineData("The candidate atom is compact, and the anchor atom is measurable.")]
+    [InlineData("The host atom is covered by an open set, and the container atom has mass one.")]
+    [InlineData("This theorem formalizes the support, and the candidate atom is measurable.")]
+    [InlineData("The source atom state that we normalized has unit norm.")]
+    [InlineData("The candidate atom state which represents the measurement is normalized.")]
+    [InlineData("The anchor atom state the lemma constructs has unit norm.")]
+    [InlineData("The source atom states are orthogonal.")]
+    [InlineData("The candidate atom mass is positive.")]
+    [InlineData("The anchor atom support is compact.")]
+    [InlineData("The host atom state has unit norm.")]
+    [InlineData("The container atom states form an orthonormal basis.")]
+    [InlineData("The source atom is open.")]
+    [InlineData("The candidate atom is compact.")]
+    [InlineData("The anchor atom is measurable.")]
+    [InlineData("The atom is covered by two open sets.")]
+    [InlineData("That atom carries mass one.")]
+    [InlineData("The same atom has mass two.")]
+    [InlineData("The container atom supports the restricted measure.")]
+    [InlineData("The host atom lies in the support of the measure.")]
+    [InlineData("The source atom is recorded in the table.")]
+    [InlineData("The candidate atom is explicit.")]
+    [InlineData("The anchor atom has an explicit measurability property.")]
+    [InlineData("The source atom's explicit compactness property is preserved.")]
+    [InlineData("The candidate atom's explicit positivity property is preserved.")]
+    [InlineData("The host atom's explicit integrability property is preserved.")]
+    [InlineData("The atom names a coordinate.")]
+    [InlineData("That atom lists a coordinate in the finite enumeration.")]
+    [InlineData("The same atom reads as coordinate zero.")]
+    [InlineData("The container atom is stated in Theorem 3.")]
+    [InlineData("The host atom is asserted by the lemma.")]
+    [InlineData("The source atom is stated in the theorem.")]
+    [InlineData("The candidate atom is asserted by the lemma.")]
+    [InlineData("The anchor atom covers the least element.")]
+    [InlineData("The container atom does not cover the top element.")]
+    [InlineData("The host atom is closed under the operation.")]
+    [InlineData("That atom has compact closure.")]
+    [InlineData("The same atom is open in the relative topology.")]
+    [InlineData("The same atom's state is recorded by the register map.")]
+    public void AdversarialMathematicalAtomProseIsAllowed(string prose) => Assert.Empty(Evaluate(Text(prose)));
+
+    [Theory]
     [InlineData("The atom's proof skeleton establishes injectivity from coprimality and then obtains surjectivity by counting the two finite carriers.")]
     [InlineData("The atom does not specify the conditional probability law needed to derive the claimed exact expectation.")]
     [InlineData("It does not claim the later numerical extrapolation, decimal values, method assessment, or the registration statements in that atom.")]
@@ -105,12 +180,22 @@ public sealed class ScribeNarrativeProvenanceRuleTests
         AssertClass(Text(prose), "DigestionLedgerReference", "digestion ledger");
 
     [Theory]
-    [InlineData(60, true)]
-    [InlineData(61, false)]
+    [InlineData(40, true)]
+    [InlineData(41, false)]
     public void DocumentaryObjectGapIsBounded(int gap, bool blocked)
     {
         var findings = Evaluate(Text("formalizes" + new string(' ', gap) + "source atom"));
         Assert.Equal(blocked, findings.Any());
+    }
+
+    [Theory]
+    [InlineData(40, true)]
+    [InlineData(41, false)]
+    public void DocumentaryLocativeGapIsBounded(int gap, bool blocked)
+    {
+        var spacing = new string(' ', gap);
+        Assert.Equal(blocked, Evaluate(Text("in that atom" + spacing + "statements")).Any());
+        Assert.Equal(blocked, Evaluate(Text("statements" + spacing + "in that atom")).Any());
     }
 
     [Theory]
@@ -119,6 +204,7 @@ public sealed class ScribeNarrativeProvenanceRuleTests
     [InlineData(":")]
     [InlineData("!")]
     [InlineData("?")]
+    [InlineData(",")]
     public void DocumentaryGrammarDoesNotCrossSentenceBoundaries(string boundary)
     {
         Assert.Empty(Evaluate(Text("formalizes" + boundary + " the source atom")));
@@ -198,12 +284,12 @@ public sealed class ScribeNarrativeProvenanceRuleTests
     [InlineData("/// source atom states a claim\nclass C {}")]
     [InlineData("Text(@\"source atom states a claim\");")]
     [InlineData("Text(\"\"\"source atom states a claim\"\"\");")]
-    [InlineData("Text($\"source atom states {x}\");")]
-    [InlineData("Text($@\"source atom states {x}\");")]
-    [InlineData("Text($\"\"\"source atom states {x}\"\"\");")]
-    [InlineData("Text(\"source \" + \"atom states\");")]
-    [InlineData("Text((\"source \" + (\"atom \" + \"states\")));")]
-    [InlineData("Text(\"source \\u0061tom states\");")]
+    [InlineData("Text($\"source atom states the {x}\");")]
+    [InlineData("Text($@\"source atom states the {x}\");")]
+    [InlineData("Text($\"\"\"source atom states the {x}\"\"\");")]
+    [InlineData("Text(\"source \" + \"atom states the result\");")]
+    [InlineData("Text((\"source \" + (\"atom \" + \"states the result\")));")]
+    [InlineData("Text(\"source \\u0061tom states the result\");")]
     [InlineData("Text(\"This closes atom generic-residual-1798510a7ffd337203122c\" + \"e61979bcb8bf790bba93f6b013f118ed868eb5a7c0\");")]
     public void TextCarriersAreDecodedAndConcatenated(string source) =>
         AssertClass(source, "DigestionLedgerReference", "digestion ledger");
