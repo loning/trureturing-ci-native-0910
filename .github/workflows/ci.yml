@@ -301,6 +301,9 @@ jobs:
             candidate/tools/**/bin
             candidate/tools/**/obj
           key: stratalint-judge-binaries-v2-${{ runner.os }}-${{ steps.judge-address.outputs.runtime }}-${{ steps.judge-address.outputs.address }}
+      - name: Build candidate tools before Lean report production
+        shell: bash
+        run: make -C candidate/tools dotnet
       - name: Resolve checked merge result's dev parent
         id: base
         shell: bash
@@ -469,15 +472,6 @@ jobs:
             candidate/.lake/.stratalint-lean-cache-stamp.json
             ~/.cache/mathlib
           key: ${{ runner.os }}-${{ runner.arch }}-lake-deps-v2-${{ steps.lean-input.outputs.dependency_sha256 }}
-      - name: Build Scribe binary on judge cache miss
-        if: steps.judge-cache.outputs.cache-hit != 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p .judge-binaries/scribe
-          dotnet build candidate/tools/StrataLint.Scribe.Documents/StrataLint.Scribe.Documents.csproj \
-            --configuration Release \
-            --output .judge-binaries/scribe
       - name: Produce source-bound canonical Lean reports
         if: steps.report-reuse.outcome != 'success'
         env: { GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }
@@ -527,7 +521,7 @@ jobs:
         run: |
           set -euo pipefail
           report="$RUNNER_TEMP/raw-lean-reports/candidate-lean-report.json"
-          scribe="$GITHUB_WORKSPACE/.judge-binaries/scribe/StrataLint.Scribe.Documents.dll"
+          scribe="$GITHUB_WORKSPACE/candidate/tools/StrataLint.Scribe.Documents/bin/Release/net10.0/StrataLint.Scribe.Documents.dll"
           test -s "$report"
           test -s "$scribe"
           /bin/bash "$GITHUB_WORKSPACE/candidate/tools/scripts/workflow/scribe-content-checks.sh" \
