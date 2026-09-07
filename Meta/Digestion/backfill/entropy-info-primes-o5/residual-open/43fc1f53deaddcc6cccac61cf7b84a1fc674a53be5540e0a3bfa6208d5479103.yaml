@@ -1,3 +1,4 @@
+# Integration CI probe: canonical digestion data remains admissible.
 fingerprints:
   raw_sha256: sha256:43fc1f53deaddcc6cccac61cf7b84a1fc674a53be5540e0a3bfa6208d5479103
   normalized_sha256: sha256:43fc1f53deaddcc6cccac61cf7b84a1fc674a53be5540e0a3bfa6208d5479103
