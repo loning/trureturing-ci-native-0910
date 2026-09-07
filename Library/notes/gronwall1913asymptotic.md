@@ -37,3 +37,10 @@ Provenance: consensus-rnd implementation worker gronwall-lower-0907/attempt-1;
 one Codex worker, no additional skill or review seats. The user supplied the
 prime-power route. This worker checked the finite estimates and the exact
 epsilon statements with Lean through `make lean`.
+
+## Locator
+
+- DOI: https://doi.org/10.1090/s0002-9947-1913-1500940-6
+- Checked statement: https://en.wikipedia.org/wiki/Divisor_function#Growth_rate
+- Verification scope: Crossref bibliographic metadata and the secondary-source
+  limsup formula. No original-paper theorem number or proof is attributed.
