@@ -170,6 +170,10 @@ internal static partial class RepositoryRules
                 UtilityAdmissionRule.Evaluate,
                 UtilityAdmissionRule.IsAffectedBy,
                 UtilityAdmissionRule.Evaluate)),
+        Register(
+            32,
+            "Scribe narrative provenance",
+            new RepositoryRule(ScribeDefinitionScoped, ScribeNarrativeProvenance, ScribeSourceAffected)),
     ];
 
     private static RuleRegistration Register(
