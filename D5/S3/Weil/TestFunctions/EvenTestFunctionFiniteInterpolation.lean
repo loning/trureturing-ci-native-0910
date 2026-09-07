@@ -27,6 +27,7 @@ open Complex Function MeasureTheory Metric Polynomial Set
 open scoped ComplexConjugate ContDiff
 open D5.S3.Weil.FourierLaplace
 open D5.S3.Weil.TestFunctions
+open D5.S3.Weil.InterpolationJets
 
 namespace D5.S3.Weil.TestFunctions.EvenTestFunctionFiniteInterpolation
 
