@@ -4,7 +4,7 @@
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
    utility: kind=certified-instance; basis=terminal=gid:D5/S3/Zeros/Convolution/FiniteFreeCommutatorDegreeFour.centered_real_rooted
-   digest: The source-defined finite free commutator of centered real-rooted quartics is real-rooted. -/
+   digest: The source-defined commutator preserves real-rootedness of centered quartics. -/
 
 import Mathlib.Algebra.QuadraticDiscriminant
 import Mathlib.Algebra.Polynomial.BigOperators
@@ -190,6 +190,9 @@ theorem centered_quartic_invariant_bounds (u v w : ℝ)
   norm_num [centeredQuartic, Fin.prod_univ_succ, coeff_mul,
     Finset.Nat.sum_antidiagonal_eq_sum_range_succ_mk, Finset.sum_range_succ,
     coeff_add, coeff_sub, coeff_X_pow, coeff_X, coeff_C, Fin.succ] at hu0 hw0
+  change u = -(r 0 * (-r 1 + (-r 2 + -r 3))) +
+    (-(r 1 * (-r 2 + -r 3)) + r 2 * r 3) at hu0
+  change w = r 0 * (r 1 * (r 2 * r 3)) at hw0
   have hu : u = r 0*r 1 + r 0*r 2 + r 0*r 3 + r 1*r 2 + r 1*r 3 + r 2*r 3 := by
     nlinarith [hu0]
   have hw : w = r 0*r 1*r 2*r 3 := by nlinarith [hw0]
@@ -271,6 +274,17 @@ theorem centered_real_rooted (u v w U V W : ℝ)
         (X^2-(C (Real.sqrt s))^2)*(X^2-(C (Real.sqrt t))^2) := by rw [hsC, htC]
     _ = _ := by simp [Fin.prod_univ_succ]; ring
 
+example : RealRooted4 (centeredQuartic (-5) 0 4) := by
+  refine ⟨![-2, -1, 1, 2], ?_⟩
+  norm_num [centeredQuartic, Fin.prod_univ_succ]
+  ring
+
+example : ¬ ((-5 : ℝ)^2 ≥ 12*4) := by norm_num
+
+#print axioms dilate_centered
+#print axioms symmetrize_centered
+#print axioms multiplicative_even
+#print axioms commutatorKernel_four
 #print axioms centered_sum_squares
 #print axioms centered_invariant_sos
 #print axioms centered_product_sos
