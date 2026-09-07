@@ -193,7 +193,7 @@ internal static partial class CleanLanesCommand
         {
             var result = runner.Run(
                 "lsof",
-                ["-nP", "-F0pfn"],
+                ["-nP", "-F0pftn"],
                 Path.GetTempPath(),
                 BoundedProcessRunner.HangDetectionBudget);
             if (result.ExitCode != 0
@@ -224,6 +224,7 @@ internal static partial class CleanLanesCommand
         var processSeen = false;
         var fileSeen = false;
         var nameSeen = true;
+        string? fileType = null;
         var index = 0;
         while (index < bytes.Length)
         {
@@ -251,9 +252,25 @@ internal static partial class CleanLanesCommand
                     if (!processSeen || field.Length == 1 || !nameSeen) return false;
                     fileSeen = true;
                     nameSeen = false;
+                    fileType = null;
+                    break;
+                case 't':
+                    if (!processSeen || !fileSeen || nameSeen
+                        || fileType is not null || field.Length == 1)
+                    {
+                        return false;
+                    }
+
+                    fileType = field[1..];
                     break;
                 case 'n':
-                    if (!processSeen || !fileSeen || nameSeen || field.Length == 1) return false;
+                    if (!processSeen || !fileSeen || nameSeen) return false;
+                    // macOS emits a present but empty name for these kernel descriptors.
+                    if (field.Length == 1 && fileType is not ("NPOLICY" or "NEXUS" or "PIPE"))
+                    {
+                        return false;
+                    }
+
                     nameSeen = true;
                     var observedPath = field[1..];
                     if (Path.IsPathRooted(observedPath))
