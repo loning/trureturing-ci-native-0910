@@ -1,8 +1,11 @@
 """Discover executable script and local Python dependencies from producer entrypoints."""
 import ast
+import hashlib
+import json
 import pathlib
 import re
 import sys
+from dotnet_producer import project_inputs
 
 root = pathlib.Path(sys.argv[1]).resolve()
 scope = sys.argv[2]
@@ -13,7 +16,7 @@ if scope == "lean-report":
         inspector_entrypoint,
         pathlib.PurePosixPath("tools/scripts/lean-report-pair.sh"),
         pathlib.PurePosixPath("tools/scripts/report/lean-report-input.sh"),
-        # LeanArchiveFetch crosses the compiled CLI boundary at this entrypoint.
+        # LeanArchiveFetch.Run executes this optional seed fetcher under the C# writer guard.
         pathlib.PurePosixPath("tools/scripts/worktree/lean-cache-publish.sh"),
     )
 elif scope == "scribe-content":
@@ -24,7 +27,7 @@ else:
     raise SystemExit(f"lean-report-input: unknown producer scope: {scope}")
 reference_pattern = re.compile(
     r"(?P<path>(?:\$[A-Za-z_][A-Za-z0-9_]*|\$\{[A-Za-z_][A-Za-z0-9_]*\}|[A-Za-z0-9_.-]+)"
-    r"(?:/[A-Za-z0-9_.$@{}+-]+)+\.(?:sh|py))(?![A-Za-z0-9_.])"
+    r"(?:/[A-Za-z0-9_.$@{}+-]+)+\.(?:sh|py|csproj|dll))(?![A-Za-z0-9_.])"
 )
 
 
@@ -71,6 +74,7 @@ def normalize(reference, source):
 
 pending = list(entrypoints)
 reachable = set()
+semantics = set()
 while pending:
     source = pending.pop()
     if source in reachable:
@@ -79,6 +83,14 @@ while pending:
     if text is None:
         continue
     reachable.add(source)
+    if source.suffix == ".csproj":
+        try:
+            inputs, values = project_inputs(root, source)
+        except (ValueError, KeyError, OSError) as error:
+            raise SystemExit(f"lean-report-input: {error}") from error
+        reachable.update(pathlib.PurePosixPath(path.as_posix()) for path in inputs)
+        semantics.update(values)
+        continue
     if source.suffix == ".py":
         for node in ast.walk(ast.parse(text, filename=str(source))):
             if isinstance(node, ast.Import):
@@ -98,9 +110,27 @@ while pending:
     for match in reference_pattern.finditer(text):
         if text[max(0, match.start() - 3):match.start()] == "://":
             continue
+        if match.group("path").endswith(".csproj") and not re.search(
+                r"--project\s+[\"']?$", text[:match.start()]):
+            continue
         referenced = normalize(match.group("path"), source)
+        if referenced.suffix == ".dll":
+            # Shared stages invoke Release DLLs; evaluate the source project
+            # beside that bin directory without making binaries producer inputs.
+            if "bin" not in referenced.parts:
+                raise SystemExit(f"lean-report-input: producer DLL has no project output path: {referenced}")
+            directory = root.joinpath(*referenced.parts[:referenced.parts.index("bin")])
+            projects = sorted(directory.glob("*.csproj"))
+            if len(projects) != 1:
+                raise SystemExit(f"lean-report-input: producer DLL requires one source project: {referenced}")
+            referenced = pathlib.PurePosixPath(projects[0].relative_to(root).as_posix())
         if referenced not in reachable:
             pending.append(referenced)
 
 for relative in sorted(reachable, key=lambda path: path.as_posix().encode("utf-8")):
     print(relative.as_posix())
+
+if len(sys.argv) == 4:
+    value = json.dumps(sorted(semantics), separators=(",", ":")).encode("utf-8")
+    pathlib.Path(sys.argv[3]).write_text(hashlib.sha256(value).hexdigest() + "  @msbuild-semantics\n",
+                                      encoding="utf-8")

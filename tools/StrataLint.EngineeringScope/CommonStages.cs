@@ -121,7 +121,8 @@ internal sealed class CommonStages(string root, TextWriter output)
         var full = Path.Combine(root, log);
         Directory.CreateDirectory(Path.GetDirectoryName(full)!);
         File.WriteAllText(full, result.Text);
-        var exit = proof is null ? Normalize(result.Exit, allowAnnotation) : proof(result.Exit, result.Text) ? 0 : 1;
+        var exit = proof is null ? Normalize(result.Exit, allowAnnotation)
+            : result.Exit is not (0 or 1) ? 2 : proof(result.Exit, result.Text) ? 0 : 1;
         steps.Add(new(name, result.Exit, exit, exit == 0 ? "executed" : "failed", log));
         output.WriteLine(result.Text);
         if (exit != 0) throw new StageFailure(exit, $"{name} failed: raw_exit={result.Exit}; log={log}");

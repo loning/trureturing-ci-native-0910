@@ -9,7 +9,8 @@ public sealed class PreflightProcessContractTests
     [Fact]
     public void DefaultPushRunsCommonStagesOnceWithoutParentOrRemote()
     {
-        using var fixture = new Fixture();
+        using var fixture = new Fixture(File.ReadAllText(
+            Path.Combine(TestRepositoryLayout.FindRoot(), "tools/scripts/preflight.sh")));
         var result = fixture.Preflight("push", "");
         Assert.Equal(0, result.Exit);
         Assert.Equal(new[] { "engineering", "current" }, fixture.Calls());
@@ -18,7 +19,8 @@ public sealed class PreflightProcessContractTests
     [Fact]
     public void DivergentPrChecksSynthesizedTreeAndCleansCandidate()
     {
-        using var fixture = new Fixture();
+        using var fixture = new Fixture(File.ReadAllText(
+            Path.Combine(TestRepositoryLayout.FindRoot(), "tools/scripts/preflight.sh")));
         var fork = fixture.Git("rev-parse", "HEAD").Trim();
         fixture.Write("base-only", "base data");
         fixture.Commit();
@@ -43,7 +45,8 @@ public sealed class PreflightProcessContractTests
     [InlineData("HEAD", true)]
     public void InvalidBaseOrUntrackedInputRejectsBeforeStages(string basis, bool dirty)
     {
-        using var fixture = new Fixture();
+        using var fixture = new Fixture(File.ReadAllText(
+            Path.Combine(TestRepositoryLayout.FindRoot(), "tools/scripts/preflight.sh")));
         if (basis == "HEAD") basis = fixture.Git("rev-parse", "HEAD").Trim();
         if (dirty) fixture.Write("untracked", "dirty");
         Assert.Equal(2, fixture.Preflight("pr", basis).Exit);
@@ -53,7 +56,8 @@ public sealed class PreflightProcessContractTests
     [Fact]
     public void ConflictStopsBeforeExecutingCandidate()
     {
-        using var fixture = new Fixture();
+        using var fixture = new Fixture(File.ReadAllText(
+            Path.Combine(TestRepositoryLayout.FindRoot(), "tools/scripts/preflight.sh")));
         fixture.Write("conflict", "original"); fixture.Commit();
         var fork = fixture.Git("rev-parse", "HEAD").Trim();
         fixture.Write("conflict", "base"); fixture.Commit();
@@ -71,7 +75,8 @@ public sealed class PreflightProcessContractTests
     [InlineData("3", 2)]
     public void CommonFailureStopsLaterStagesAndNormalizesExit(string raw, int expected)
     {
-        using var fixture = new Fixture();
+        using var fixture = new Fixture(File.ReadAllText(
+            Path.Combine(TestRepositoryLayout.FindRoot(), "tools/scripts/preflight.sh")));
         Assert.Equal(expected, fixture.Preflight("push", "", raw).Exit);
         Assert.Equal(new[] { "engineering" }, fixture.Calls());
     }
@@ -81,11 +86,10 @@ public sealed class PreflightProcessContractTests
         private readonly string scratch = TemporaryFileSystem.Directory.CreateTempSubdirectory("preflight-contract-").FullName;
         internal string Root => Path.Combine(scratch, "repository");
         private string CallsPath => Path.Combine(scratch, "calls");
-        internal Fixture()
+        internal Fixture(string preflightScript)
         {
             TemporaryFileSystem.Directory.CreateDirectory(Root);
-            var source = RootOfCheckout();
-            Write("tools/scripts/preflight.sh", File.ReadAllText(Path.Combine(source, "tools/scripts/preflight.sh")));
+            Write("tools/scripts/preflight.sh", preflightScript);
             Write("tools/scripts/ci-stage.sh", """
                 #!/bin/bash
                 printf '%s\n' "$1" >> "$CONTRACT_CALLS"
@@ -120,12 +124,6 @@ public sealed class PreflightProcessContractTests
             var stdout = process.StandardOutput.ReadToEndAsync(); var stderr = process.StandardError.ReadToEndAsync();
             Assert.True(process.WaitForExit(30_000), "process exceeded fixture timeout");
             return (process.ExitCode, stdout.GetAwaiter().GetResult() + stderr.GetAwaiter().GetResult());
-        }
-        private static string RootOfCheckout()
-        {
-            for (var dir = new DirectoryInfo(AppContext.BaseDirectory); dir is not null; dir = dir.Parent)
-                if (File.Exists(Path.Combine(dir.FullName, "CLAUDE.md"))) return dir.FullName;
-            throw new DirectoryNotFoundException("test checkout not found");
         }
         public void Dispose() => TemporaryFileSystem.Directory.Delete(scratch, recursive: true);
     }

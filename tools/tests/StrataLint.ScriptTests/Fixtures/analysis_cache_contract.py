@@ -26,6 +26,7 @@ class CurrentCacheTests(unittest.TestCase):
                 self.assertTrue(cli.is_file(), str(cli))
                 write(runtime / "dotnet", '''#!/usr/bin/env bash
 set -euo pipefail
+if [[ "$1" == msbuild ]]; then exec "$ANALYSIS_REAL_DOTNET" "$@"; fi
 [[ "$#" -ge 5 && "$1" == "$PWD/tools/StrataLint.Cli/bin/Release/net10.0/StrataLint.dll" &&
    "$2" == worktree && "$3" == with-cache-writer && "$4" == -- ]] || exit 86
 exec "$ANALYSIS_REAL_DOTNET" "$ANALYSIS_TEST_CLI" worktree with-cache-writer --path "$PWD" -- "${@:5}"
@@ -37,6 +38,14 @@ exec "$ANALYSIS_REAL_DOTNET" "$ANALYSIS_TEST_CLI" worktree with-cache-writer --p
                     path.chmod(0o755)
                 shutil.copy2(ROOT / "tools/scripts/worktree/lean-cache-run.sh",
                              root / "tools/scripts/worktree/lean-cache-run.sh")
+                # The runtime stub still has an explicit source project for
+                # compiler-owned producer discovery through its DLL entrypoint.
+                write(root / "global.json", "{}\n")
+                write(root / "producer.props", "<Project />\n")
+                write(root / "tools/StrataLint.Cli/StrataLint.Cli.csproj",
+                      '<Project><Import Project="../../producer.props" />'
+                      '<ItemGroup><Compile Include="Fixture.cs" /></ItemGroup></Project>\n')
+                write(root / "tools/StrataLint.Cli/Fixture.cs", "internal class Fixture { }\n")
                 lake = lean_seed_contract.FAKE_LAKE.replace('if args == ["build"]:', '''if args == ["exe", "cache", "get"]:
     (root / ".lake/packages").mkdir(parents=True, exist_ok=True)
     sys.exit(0)

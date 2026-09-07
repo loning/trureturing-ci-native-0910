@@ -11,6 +11,7 @@ import unittest
 import zipfile
 import concurrent.futures
 import shutil
+from lean_seed_runtime import FAKE_GH, FAKE_LAKE, PAIR_PRODUCER
 
 ROOT = pathlib.Path(__file__).resolve().parents[4]
 INPUT = ROOT / "tools/scripts/worktree/lean-cache-input.sh"
@@ -495,6 +496,18 @@ class PairFixture(PartitionFixture):
     def seeds(self):
         return list(self.cache.glob("*/*/*/raw-lean-report.json"))
 
+    def stage_report(self, target):
+        return subprocess.run(["bash", "-euo", "pipefail", "-c", '''
+python3 "$1" stage --report "$2" --output "$3"
+"$4" verify --repository "$5" --report "$3"
+''', "stage-report", str(self.root / "tools/lean-inspector/report_cache.py"),
+            str(self.output), str(target), str(self.helper), str(self.root)],
+            text=True, capture_output=True)
+
+    def import_report(self, report, cache):
+        return subprocess.run([str(self.root / "tools/scripts/report/lean-report-ci-baseline.sh"),
+            "--bundle", str(report), "--cache-root", str(cache)], text=True, capture_output=True)
+
 
 class PairTests(PairFixture, unittest.TestCase):
     def test_exact_hit_always_enters_producer_and_rebinds_candidate(self):
@@ -539,18 +552,46 @@ class PairTests(PairFixture, unittest.TestCase):
                 self.assertEqual(before, self.output.read_bytes())
 
     def test_transport_adapter_preserves_seed_identity_and_omits_logs(self):
+        self.output = self.root / "out/candidate-lean-report.json"
         self.assertEqual(0, self.pair().returncode)
+        before = {p.name.removeprefix(self.output.name): p.read_bytes()
+                  for p in self.output.parent.iterdir() if p.is_file()}
+        self.assertEqual(6, len(before))
+        staged = self.root / "staged/raw-lean-report.json"
+        for unused in range(2):
+            result = self.stage_report(staged)
+            self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        transported = self.root / "transported/raw-lean-report.json"
+        shutil.copytree(staged.parent, transported.parent)
+        for suffix, content in before.items():
+            self.assertEqual(content, pathlib.Path(str(self.output) + suffix).read_bytes())
+            expected = (digest(before[""]) + "  raw-lean-report.json\n").encode() if suffix == ".sha256" else content
+            self.assertEqual(expected, pathlib.Path(str(staged) + suffix).read_bytes())
+            self.assertEqual(expected, pathlib.Path(str(transported) + suffix).read_bytes())
         target = self.root / "imported"
-        result = subprocess.run([str(self.root / "tools/scripts/report/lean-report-ci-baseline.sh"),
-            "--bundle", str(self.output), "--cache-root", str(target)], text=True, capture_output=True)
+        result = self.import_report(transported, target)
         self.assertEqual(0, result.returncode, result.stderr)
         self.assertEqual(str(target), result.stdout.strip())
         imported = list(target.glob("*/*/*/raw-lean-report.json"))
         self.assertEqual(1, len(imported))
-        for suffix in ["", ".input.attestation", ".provenance.json", ".materials.zip", ".seed.json"]:
-            self.assertEqual(pathlib.Path(str(self.output)+suffix).read_bytes(),
+        for suffix in before:
+            self.assertEqual(pathlib.Path(str(transported)+suffix).read_bytes(),
                              pathlib.Path(str(imported[0])+suffix).read_bytes())
         self.assertFalse(pathlib.Path(str(imported[0])+".logs").exists())
+        for suffix in before:
+            for damage in ("missing", "corrupt"):
+                with self.subTest(suffix=suffix, damage=damage):
+                    member = pathlib.Path(str(transported) + suffix)
+                    content = member.read_bytes()
+                    if damage == "missing": member.unlink()
+                    else: member.write_bytes(b"corrupt")
+                    missed = self.import_report(transported, self.root / "unusable")
+                    self.assertEqual(0, missed.returncode, missed.stderr)
+                    self.assertEqual("", missed.stdout)
+                    self.assertFalse((self.root / "unusable").exists())
+                    member.write_bytes(content)
+        write(self.root / "D5/A.lean", "def a := 5\n")
+        self.assertEqual(2, self.stage_report(staged).returncode)
 
     def test_input_follows_transitive_program_dependencies_without_workflow(self):
         before = self.report_input()
@@ -574,11 +615,90 @@ class PairTests(PairFixture, unittest.TestCase):
         self.assertEqual(0, self.pair().returncode)
         write(self.root / "lakefile.toml", 'name = "renamed"\nkeywords = ["metadata"]\n[leanOptions]\nmaxRecDepth = 1000\n')
         self.assertEqual(0, self.report_input("verify").returncode)
+        fetcher = self.root / "tools/scripts/worktree/lean-cache-publish.sh"
+        write(fetcher, fetcher.read_text() + "\n# fetch acceptance changed\n")
+        self.assertEqual(2, self.report_input("verify").returncode)
+        self.assertEqual(0, self.pair().returncode)
         write(self.root / "D5/A.lean", "def a := 4\n")
         self.assertEqual(2, self.report_input("verify").returncode)
         self.assertEqual(0, self.pair().returncode)
         write(self.root / "lakefile.toml", '[leanOptions]\nmaxRecDepth = 2000\n')
         self.assertEqual(2, self.report_input("verify").returncode)
+
+
+class ProducerClosureTests(PairFixture, unittest.TestCase):
+    def setUp(self):
+        super().setUp()
+        shutil.copyfile(ROOT / "tools/lean-inspector/inspect.sh", self.producer)
+        # Copy source inputs, never retained binaries or another worktree.
+        for directory, children, files in os.walk(ROOT / "tools"):
+            children[:] = [name for name in children if name not in
+                           ("bin", "obj", "tests", "TestSupport", "scripts", "lean-inspector")]
+            for name in files:
+                source = pathlib.Path(directory) / name
+                target = self.root / source.relative_to(ROOT)
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(source, target)
+        for name in ("Directory.Build.props", "Directory.Packages.props", "global.json"):
+            shutil.copyfile(ROOT / name, self.root / name)
+
+    def address(self):
+        result = self.report_input()
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        fields = result.stdout.split()
+        self.assertEqual(4, len(fields))
+        return fields
+
+    def assert_invalidates(self, before):
+        after = self.address()
+        self.assertNotEqual(before[:2], after[:2])
+        self.assertEqual(before[2:], after[2:])
+        self.assertEqual(REV, self.partition())
+        # Feed the real address into the existing incremental planner contract.
+        delta = DeltaTests()
+        delta.setUp()
+        self.addCleanup(delta.doCleanups)
+        delta.producer = before[1]
+        delta.store()
+        self.assertEqual("reuse", delta.plan()["status"])
+        plan = delta.plan(producer=after[1])
+        self.assertEqual("delta", plan["status"])
+        self.assertEqual(["A", "B", "C", "D"], plan["recheck"])
+        self.assertTrue(plan["semantic_changed"])
+
+    def test_actual_cache_writer_source_invalidates_address_and_reuse(self):
+        before = self.address()
+        owner = self.root / "tools/StrataLint.Cli/Commands/Worktrees/LeanCacheEnsureCommand.cs"
+        original = owner.read_bytes()
+        write(owner, owner.read_text().replace('var receipt = ensured.Output;',
+                                             'var receipt = ensured.Output + "producer-change";'))
+        self.assertNotEqual(digest(original), digest(owner.read_bytes()))
+        self.assert_invalidates(before)
+        paths = self.report_input("producer-paths")
+        self.assertEqual(0, paths.returncode, paths.stderr)
+        self.assertIn(str(owner.relative_to(self.root)), paths.stdout.splitlines())
+        self.assertIn("tools/StrataLint.Engine/Runtime/BoundedProcessRunner.cs", paths.stdout.splitlines())
+        self.assertIn("tools/scripts/worktree/lean-cache-publish.sh", paths.stdout.splitlines())
+
+    def test_semantic_build_inputs_and_required_members(self):
+        before = self.address()
+        write(self.root / "lakefile.toml", 'name = "renamed"\nkeywords = ["metadata"]\n[leanOptions]\nmaxRecDepth = 1000\n')
+        self.manifest["packages"][0]["inputRev"] = "metadata-tag"
+        self.save_manifest()
+        write(self.root / "README.md", "irrelevant metadata\n")
+        self.assertEqual(before, self.address())
+        imported = self.root / "tools/report-options.props"
+        write(imported, '<Project><PropertyGroup><DefineConstants>REPORT_OPTION</DefineConstants></PropertyGroup></Project>')
+        props = self.root / "Directory.Build.props"
+        write(props, props.read_text().replace('</Project>', '<Import Project="tools/report-options.props" /></Project>'))
+        self.assert_invalidates(before)
+        before = self.address()
+        write(imported, imported.read_text().replace("REPORT_OPTION", "REPORT_OPTION_CHANGED"))
+        self.assert_invalidates(before)
+        imported.unlink()
+        self.assertNotEqual(0, self.report_input().returncode)
+        write(imported, '<Project><ItemGroup><Compile Include="RequiredProducer.cs" /></ItemGroup></Project>')
+        self.assertNotEqual(0, self.report_input().returncode)
 
 
 class InspectorTests(PairFixture, unittest.TestCase):
@@ -603,14 +723,30 @@ class InspectorTests(PairFixture, unittest.TestCase):
                 "STRATALINT_REPORT_CACHE_ROOT": str(self.cache), **extra})
 
     def test_inspector_runs_lake_on_exact_seed_with_zero_reinspection(self):
+        self.output = self.root / "out/candidate-lean-report.json"
         first = self.pair()
         self.assertEqual(0, first.returncode, first.stdout + first.stderr)
+        staged = self.root / "staged/raw-lean-report.json"
+        stage = self.stage_report(staged)
+        self.assertEqual(0, stage.returncode, stage.stdout + stage.stderr)
+        transported = self.root / "transported/raw-lean-report.json"
+        shutil.copytree(staged.parent, transported.parent)
+        imported = self.import_report(transported, self.root / "imported")
+        self.assertEqual(0, imported.returncode, imported.stderr)
+        self.assertEqual(str(self.root / "imported"), imported.stdout.strip())
+        self.cache = pathlib.Path(imported.stdout.strip())
+        self.output = self.root / "next/candidate-lean-report.json"
         second = self.pair()
         self.assertEqual(0, second.returncode, second.stdout + second.stderr)
         self.assertIn("LEAN_REPORT_DELTA mode=reuse changed=0 added=0 removed=0 recheck=0", second.stdout)
+        write(self.root / "D5/A.lean", "def a := 3\n")
+        third = self.pair()
+        self.assertEqual(0, third.returncode, third.stdout + third.stderr)
+        self.assertIn("LEAN_REPORT_DELTA_PLAN mode=delta changed=1 added=0 removed=0 recheck=1", third.stdout)
+        self.assertIn("LEAN_REPORT_DELTA mode=delta changed=1 added=0 removed=0 recheck=1", third.stdout)
         commands = (self.root / "lake-runs").read_text().splitlines()
-        self.assertEqual(2, commands.count("build"))
-        self.assertEqual(1, sum("--run" in command for command in commands))
+        self.assertEqual(3, commands.count("build"))
+        self.assertEqual(2, sum("--run" in command for command in commands))
 
     def test_report_staging_does_not_preempt_cold_cache_provisioning(self):
         self.output = self.root / ".lake/build/stratalint/raw-lean-report.json"
@@ -643,97 +779,6 @@ class InspectorTests(PairFixture, unittest.TestCase):
         result = self.pair(LAKE_INSPECT_FAIL="23")
         self.assertEqual(23, result.returncode, result.stdout + result.stderr)
         self.assertEqual(before, self.output.read_bytes())
-
-
-FAKE_LAKE = '''#!/usr/bin/env python3
-import json, os, pathlib, sys
-args = sys.argv[1:]
-root = pathlib.Path.cwd()
-with (root/"lake-runs").open("a") as log: log.write(" ".join(args)+"\\n")
-if args == ["build"]:
-    if os.environ.get("LAKE_EXPECT_NO_LAKE") and (root/".lake").exists(): sys.exit(29)
-    sys.exit(int(os.environ.get("LAKE_BUILD_FAIL", "0")))
-if "--print-prefix" in args: print(pathlib.Path(__file__).parent.parent); sys.exit(0)
-if "--deps" in args: print(pathlib.Path(__file__).parent.parent/"lib/lean/Init.olean"); sys.exit(0)
-if os.environ.get("LAKE_INSPECT_FAIL"): sys.exit(int(os.environ["LAKE_INSPECT_FAIL"]))
-output = pathlib.Path(args[args.index("--output")+1])
-modules = []
-values = args[args.index("--material-spool")+2:]
-for index in range(0, len(values), 3):
-    module, source, sha = values[index:index+3]
-    modules.append({"module": module, "source_path": source, "source_sha256": sha, "imports": [], "declarations": []})
-output.write_text(json.dumps({"schema":"stratalint-lean-inspector-spool-v1", "modules":sorted(modules, key=lambda m: m["module"])})+"\\n")
-'''
-
-
-PAIR_PRODUCER = '''#!/usr/bin/env python3
-import hashlib, json, os, pathlib, sys, zipfile
-args = sys.argv[1:]
-root = pathlib.Path(args[args.index("--repository")+1])
-output = pathlib.Path(args[args.index("--output")+1])
-with (root / "producer-runs").open("a") as log: log.write("entered\\n")
-if os.environ.get("PAIR_FAIL"): sys.exit(int(os.environ["PAIR_FAIL"]))
-modules = [{"module": str(p.relative_to(root))[:-5].replace("/", "."),
-    "source_path": str(p.relative_to(root)), "source_sha256": "sha256:"+hashlib.sha256(p.read_bytes()).hexdigest(),
-    "imports": [], "declarations": []} for p in sorted([root/"Trureturing.lean", root/"D5/A.lean"])]
-output.write_text(json.dumps({"modules": modules, "schema": "stratalint-raw-lean-report-v2"}, sort_keys=True)+"\\n")
-with zipfile.ZipFile(str(output)+".materials.zip", "w"): pass
-pathlib.Path(str(output)+".sha256").write_text(hashlib.sha256(output.read_bytes()).hexdigest()+"  "+output.name+"\\n")
-pathlib.Path(str(output)+".seed.json").write_text(json.dumps({"runtime_sha256":"c"*64}))
-logs = pathlib.Path(str(output)+".logs"); logs.mkdir()
-(logs/"producer.log").write_text("produced\\n")
-damage = os.environ.get("PAIR_DAMAGE")
-if damage == "logs": (logs/"producer.log").unlink()
-if damage == "materials": pathlib.Path(str(output)+".materials.zip").write_text("corrupt")
-if damage == "checksum": pathlib.Path(str(output)+".sha256").write_text("bad")
-if damage == "report": output.write_text("bad")
-'''
-
-
-FAKE_GH = '''#!/usr/bin/env python3
-import hashlib, json, os, pathlib, shutil, sys
-args = sys.argv[1:]
-root = pathlib.Path(os.environ["FAKE_REMOTE"])
-if len(args) > 1 and os.environ.get("FAKE_FAIL") == args[1] and args[1] != "upload": sys.exit(23)
-if args[:2] == ["release", "list"] and "FAKE_LIST_JSON" in os.environ:
-    print(os.environ["FAKE_LIST_JSON"]); sys.exit(0)
-if args[0] == "api" and "FAKE_API_JSON" in os.environ:
-    print(os.environ["FAKE_API_JSON"]); sys.exit(0)
-def option(name): return args[args.index(name)+1]
-def metadata(directory):
-    value = json.loads((directory / "release.json").read_text())
-    value["assets"] = [{"name": p.name, "digest": "sha256:" + hashlib.sha256(p.read_bytes()).hexdigest()}
-                       for p in directory.iterdir() if p.name != "release.json"]
-    return value
-if args[:2] == ["release", "list"]:
-    print(json.dumps([{"tagName": p.parent.name, "createdAt": p.parent.name, "isDraft": json.loads(p.read_text())["draft"]}
-                      for p in root.glob("*/release.json")]))
-elif args[0] == "api":
-    directory = root / args[1].split("/")[-1]
-    print(json.dumps(metadata(directory)))
-else:
-    verb, tag = args[1:3]
-    directory = root / tag
-    if verb == "create":
-        directory.mkdir()
-        (directory / "release.json").write_text(json.dumps({"tag_name": tag, "target_commitish": option("--target"), "draft": True}))
-    elif verb == "upload":
-        for value in args[3:]:
-            if pathlib.Path(value).is_file(): shutil.copyfile(value, directory / pathlib.Path(value).name)
-        if os.environ.get("FAKE_FAIL") == "upload": sys.exit(23)
-    elif verb == "edit":
-        value = json.loads((directory / "release.json").read_text()); value["draft"] = False
-        (directory / "release.json").write_text(json.dumps(value))
-    elif verb == "download":
-        destination = pathlib.Path(option("--dir")); destination.mkdir(exist_ok=True)
-        for path in directory.iterdir():
-            if path.name != "release.json": shutil.copyfile(path, destination / path.name)
-    elif verb == "view":
-        if not directory.exists(): sys.exit(1)
-        print(json.dumps(metadata(directory)))
-    elif verb == "delete": shutil.rmtree(directory)
-    else: sys.exit(2)
-'''
 
 
 if __name__ == "__main__":

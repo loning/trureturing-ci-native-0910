@@ -5,13 +5,11 @@ namespace StrataLint.Engine;
 
 internal static class EngineeringTestPlanPolicy
 {
-    // Dev retired this project's CI admission role; make -C tools test retains it locally.
-    private const string ScriptTestsProject = "tools/tests/StrataLint.ScriptTests/StrataLint.ScriptTests.csproj";
-
     internal static ImmutableArray<string> Evaluate(TestProjectTopologySnapshot candidate) =>
         candidate.Projects.Where(IsTestProject)
             .Select(static project => project.Path)
-            .Where(static path => path != ScriptTestsProject)
+            // The script suite remains locally runnable but was retired from CI on 2026-09-07.
+            .Where(static path => path != "tools/tests/StrataLint.ScriptTests/StrataLint.ScriptTests.csproj")
             .Distinct(StringComparer.Ordinal)
             .Order(StringComparer.Ordinal)
             .ToImmutableArray();

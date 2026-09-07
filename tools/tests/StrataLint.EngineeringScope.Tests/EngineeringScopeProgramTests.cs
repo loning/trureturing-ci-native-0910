@@ -32,9 +32,9 @@ public sealed class EngineeringScopeProgramTests
                 """);
             TemporaryFileSystem.File.WriteAllText(Path.Combine(directory, "Probe.cs"),
                 "using Xunit; public sealed class Probe { [Fact] public void Runs() { Assert.True(" + (passes ? "true" : "false") + "); } }");
-            var excluded = Path.Combine(root, "tools/tests/StrataLint.ScriptTests");
-            TemporaryFileSystem.Directory.CreateDirectory(excluded);
-            TemporaryFileSystem.File.WriteAllText(Path.Combine(excluded, "StrataLint.ScriptTests.csproj"),
+            var retiredSuite = Path.Combine(root, "tools/tests/StrataLint.ScriptTests");
+            TemporaryFileSystem.Directory.CreateDirectory(retiredSuite);
+            TemporaryFileSystem.File.WriteAllText(Path.Combine(retiredSuite, "StrataLint.ScriptTests.csproj"),
                 "<Project><PropertyGroup><IsTestProject>true</IsTestProject></PropertyGroup></Project>");
             Run(root, "git", ["init", "-q"]);
             Run(root, "git", ["add", "."]);

@@ -13,6 +13,7 @@ finish() {
   exit "$rc"
 }
 trap finish EXIT
+trap 'exit 2' HUP INT TERM
 if [[ -n "${PREFLIGHT_DEADLINE_AT:-}" ]]; then
   [[ "$PREFLIGHT_DEADLINE_AT" =~ ^[0-9]{1,11}$ ]] || exit 2
   [[ "$PREFLIGHT_DEADLINE_AT" -gt "$(date +%s)" ]] || { echo 'PREFLIGHT_BUDGET_EXHAUSTED owner=outer-deadline' >&2; exit 2; }
@@ -21,8 +22,10 @@ case "$stage" in
   engineering)
     [[ $# == 1 ]] || exit 2
     export CI=true
-    dotnet restore tools/StrataLint.EngineeringScope/StrataLint.EngineeringScope.csproj --locked-mode
-    dotnet build tools/StrataLint.EngineeringScope/StrataLint.EngineeringScope.csproj --configuration Release --no-restore --warnaserror
+    /bin/bash tools/scripts/report/report-supervisor.sh --role ci-bootstrap-restore -- \
+      dotnet restore tools/StrataLint.EngineeringScope/StrataLint.EngineeringScope.csproj --locked-mode
+    /bin/bash tools/scripts/report/report-supervisor.sh --role ci-bootstrap-build -- \
+      dotnet build tools/StrataLint.EngineeringScope/StrataLint.EngineeringScope.csproj --configuration Release --no-restore --warnaserror
     dotnet "$runner" engineering --repository "$ROOT"
     ;;
   current)

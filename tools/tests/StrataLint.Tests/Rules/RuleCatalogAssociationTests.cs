@@ -32,17 +32,14 @@ public sealed class RuleCatalogAssociationTests
     [Fact]
     public void EveryActiveDeltaPredicateDeclaresAnAffectedClosure()
     {
-        var affectedPredicateType = typeof(Func<DeltaRuleContext, bool>);
+        var context = new RuleFixture().BuildScopeProbe(RawChangeSet.Create([]));
         var active = RepositoryRules.CreateRegistrations()
             .Where(static registration => registration.Descriptor.Lifecycle is RuleLifecycle.Active && registration.Rule.HasDeltaPredicate);
 
         foreach (var registration in active)
         {
-            var predicateField = registration.Rule.GetType()
-                .GetFields(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
-                .SingleOrDefault(field => field.FieldType == affectedPredicateType);
-            Assert.True(
-                predicateField?.GetValue(registration.Rule) is not null,
+            // A missing predicate defaults to affected, so an empty delta must exercise the closure.
+            Assert.False(registration.Rule.IsAffectedBy(context),
                 $"{registration.Descriptor.Id.Value} has no explicit affected closure");
         }
     }

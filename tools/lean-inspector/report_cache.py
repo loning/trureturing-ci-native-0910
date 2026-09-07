@@ -41,6 +41,20 @@ def seed_valid(report: pathlib.Path, partition: str) -> bool:
     return valid_bundle(report, partition, allow_logs=True) is not None
 
 
+def copy_bundle(report: pathlib.Path, output: pathlib.Path) -> None:
+    output.parent.mkdir(parents=True, exist_ok=True)
+    for suffix in SUFFIXES:
+        shutil.copyfile(member(report, suffix), member(output, suffix))
+    member(output, ".sha256").write_text(f"{sha(output)}  {output.name}\n")
+
+
+def stage(args: argparse.Namespace) -> None:
+    # Transport carries the producer's seed identity; logs remain with its output.
+    if valid_bundle(args.report, allow_logs=True) is None:
+        raise ValueError("produced report bundle is invalid")
+    copy_bundle(args.report, args.output)
+
+
 def bind(args: argparse.Namespace) -> None:
     report_sha = validate(args.report)
     logs = member(args.report, ".logs")
@@ -90,9 +104,7 @@ def store(args: argparse.Namespace) -> bool:
     staged = pathlib.Path(tempfile.mkdtemp(prefix=".staging-", dir=target))
     try:
         report = staged / "raw-lean-report.json"
-        for suffix in SUFFIXES:
-            shutil.copyfile(member(args.report, suffix), member(report, suffix))
-        member(report, ".sha256").write_text(f"{sha(report)}  raw-lean-report.json\n")
+        copy_bundle(args.report, report)
         try:
             staged.rename(snapshot)
         except FileExistsError:
@@ -120,7 +132,7 @@ def publish(args: argparse.Namespace) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("command", choices=["bind", "store", "import", "publish", "validate"])
+    parser.add_argument("command", choices=["bind", "stage", "store", "import", "publish", "validate"])
     parser.add_argument("--repository", type=pathlib.Path)
     parser.add_argument("--report", required=True, type=pathlib.Path)
     parser.add_argument("--cache-root", type=pathlib.Path)
