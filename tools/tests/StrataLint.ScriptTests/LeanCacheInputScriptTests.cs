@@ -127,6 +127,43 @@ public sealed class LeanCacheInputScriptTests
     }
 
     [Fact]
+    public void DependencyAddressTracksOnlyPinnedInputs()
+    {
+        if (OperatingSystem.IsWindows()) return;
+        using var fixture = new LeanInputFixture();
+        var before = fixture.ReadDependencyAddress();
+        foreach (var path in new[] { "lakefile.toml", "lakefile.lean", "D5/Zeta.lean" })
+        {
+            fixture.Write(path, fixture.Inputs[path] + "\n");
+            Assert.Equal(before, fixture.ReadDependencyAddress());
+        }
+        foreach (var path in new[] { "lean-toolchain", "lake-manifest.json" })
+        {
+            fixture.Write(path, fixture.Inputs[path] + "\n");
+            var after = fixture.ReadDependencyAddress();
+            Assert.NotEqual(before, after);
+            before = after;
+        }
+    }
+
+    [Fact]
+    public void DependencyAddressRejectsMissingPinnedInputs()
+    {
+        if (OperatingSystem.IsWindows()) return;
+        foreach (var path in new[] { "lean-toolchain", "lake-manifest.json" })
+        {
+            using var fixture = new LeanInputFixture();
+            fixture.ReadDependencyAddress();
+            fixture.RemoveInput(path);
+
+            var result = fixture.RunLeaf("dependency-address");
+
+            Assert.Equal(2, result.ExitCode);
+            Assert.Equal(string.Empty, result.Output);
+        }
+    }
+
+    [Fact]
     public void LeanInspectorDefaultTargetRemainsASourceInput()
     {
         if (OperatingSystem.IsWindows()) return;
@@ -253,6 +290,7 @@ public sealed class LeanCacheInputScriptTests
             .Concat(Inputs.Keys.Where(path => path.StartsWith("D5/", StringComparison.Ordinal) && path.EndsWith(".lean", StringComparison.Ordinal)).Order(StringComparer.Ordinal))
             .Concat(Inputs.Keys.Where(path => path.StartsWith("tools/lean-inspector/", StringComparison.Ordinal) && path.EndsWith(".lean", StringComparison.Ordinal)).Order(StringComparer.Ordinal)));
         internal string ExpectedConfig => HashManifest(["lean-toolchain", "lake-manifest.json", "lakefile.toml", "lakefile.lean"]);
+        internal string ExpectedDependency => HashManifest(["lean-toolchain", "lake-manifest.json"]);
         internal string Tag => $"lean-cache-v1-leanprover-lean4-v4-31-0-{ExpectedConfig[..16]}-{ExpectedSources[..16]}";
         internal string[] LakeCalls => ScriptHarnessScratch.ReadRecordedCalls(lakeCalls);
         internal string PublishedManifest => FixtureFile.ReadAllText(publishedManifest);
@@ -277,7 +315,7 @@ public sealed class LeanCacheInputScriptTests
                 ScriptHarnessScratch.DeleteScratchFile(Path.Combine(repository, relative));
         }
 
-        internal Attempt RunLeaf() => Run("/bin/bash", candidateLeaf, "address", "--repository", repository);
+        internal Attempt RunLeaf(string verb = "address") => Run("/bin/bash", candidateLeaf, verb, "--repository", repository);
         internal Attempt RunPublisher(string verb) => Run("/bin/bash", Path.Combine(repository, PublisherPath), verb, "--repository", repository);
 
         internal string ReadAddresses()
@@ -285,6 +323,14 @@ public sealed class LeanCacheInputScriptTests
             var result = RunLeaf();
             AssertIndependentSuccess(result);
             Assert.Matches("^[0-9a-f]{64} [0-9a-f]{64}\n$", result.Output);
+            return result.Output;
+        }
+
+        internal string ReadDependencyAddress()
+        {
+            var result = RunLeaf("dependency-address");
+            AssertIndependentSuccess(result);
+            Assert.Equal($"{ExpectedDependency}\n", result.Output);
             return result.Output;
         }
 
