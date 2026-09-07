@@ -47,7 +47,7 @@ private theorem geom_pos {p : ℕ} (hp : p.Prime) (a : ℕ) :
     exact (pow_pos (inv_pos.mpr hpR) i).le
   · exact ⟨0, by simp, by simp⟩
 
-private theorem geom_mono {p : ℕ} (hp : p.Prime) {a b : ℕ} (hab : a ≤ b) :
+private theorem geom_mono {p a b : ℕ} (hab : a ≤ b) :
     reciprocalGeomSum p a ≤ reciprocalGeomSum p b := by
   apply Finset.sum_le_sum_of_subset_of_nonneg (Finset.range_mono (by omega))
   intro i _ _
@@ -94,8 +94,6 @@ theorem padding_eq_prime_power_mul {p A n : ℕ} (ha : n.factorization p ≤ A) 
   conv_lhs =>
     arg 2
     rw [← Nat.ordProj_mul_ordCompl_eq_self n p]
-  change p ^ (A + 1 - n.factorization p) *
-    (p ^ n.factorization p * (ordCompl[p] n)) = _
   rw [← mul_assoc, ← pow_add, Nat.sub_add_cancel (by omega)]
 
 /-- The padding multiplier lies between one and `p ^ (A + 1)`. -/
@@ -126,7 +124,7 @@ theorem padding_abundancy {p A n : ℕ} (hp : p.Prime) (hn : n ≠ 0)
   calc
     _ ≤ reciprocalGeomSum p A *
         ((ArithmeticFunction.sigma 1 (ordCompl[p] n) : ℝ) / (ordCompl[p] n : ℕ)) :=
-      mul_le_mul_of_nonneg_right (geom_mono hp ha) hnonneg
+      mul_le_mul_of_nonneg_right (geom_mono ha) hnonneg
     _ = _ := by
       unfold paddingRho
       field_simp [(geom_pos hp (A + 1)).ne']
