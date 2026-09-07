@@ -44,11 +44,15 @@ internal static class ScribeNarrativeScanner
             + @"|\b(?:theorem|definition|lemma|corollary|remark|proposition|section|appendix)/\d+(?:\.\d+)*\b"),
         Grammar:
         [
-            // Documentary speech acts bind the verb to the atom, not to a nearby mathematical noun.
-            Pattern(@"\b(?:source|corollary|deposited|container|anchor|candidate|ingested|host|multi-clause|same|that|this|the)\s+atoms?\s+(?:(?:also|only|itself|explicitly|merely|already|still)\s+)?(?:does\s+not\s+|do\s+not\s+|never\s+|cannot\s+)?(?:states?|stated|asserts?|asserted|claims?|claimed|reports?|reported|records?|recorded|requires?|required|specif(?:y|ies|ied)|names?|named|lists?|listed|reads|says|mentions?|describes?|declares?|registers?|supplies\s+the\s+(?:clause|claim|statement)|ends\s+(?:at|after|immediately)|carries\s+(?:a|the|no)\s+(?:pre-committed\s+)?(?:receipt|(?:numerical\s+)?certificate|clause|claim))\b"),
-            Pattern(@"\b(?:closes?|closed|closing|discharges?|discharged|absorbs?|absorbed|formaliz(?:es|ed|e|ing)|digests?|digested|covers?\s+only|cover\s+only|covered\s+only|does\s+not\s+(?:close|formalize|discharge)|not\s+(?:asserted|claimed)\s+here)\b[^.;:!?]{0,60}?\b(?:multi-clause|corollary|source|deposited|container|anchor|candidate|host|ingested|generic|the|this|that|same|its)\s+atoms?\b"),
-            Pattern(@"\batoms?'s\s+(?:proof\s+skeleton|separate\s+claims?|claims?|clauses?|subitems?|statements?|registration|traceability\s+demand|compatibility\s+claim|theorem\s+name|explicit\s+\w+\s+property|numerical\s+certificates?)\b"
-                + @"|\bin\s+(?:that|the\s+same|this)\s+atoms?\b[^.;:!?]*\b(?:stated|asserted|claims?|statements?|families|clauses?|subitems?|certificates?|remarks?|interpretations?|postmortem|registration)\b|\b(?:stated|asserted|claims?|statements?|families|clauses?|subitems?|certificates?|remarks?|interpretations?|postmortem|registration)\b[^.;:!?]*\bin\s+(?:that|the\s+same|this)\s+atoms?\b")
+            // This Block rule favors precision: fixed documentary forms, with bounded clause-local relations.
+            Pattern(@"\b(?:source|corollary|deposited|container|anchor|candidate|ingested|host|multi-clause|same|that|this|the)\s+atoms?\s+(?:(?:also|only|itself|explicitly|merely|already|still)\s+)?(?:does\s+not\s+|do\s+not\s+|never\s+|cannot\s+)?"
+                + @"(?:(?:states|stated|asserts|asserted|claims|claimed|reports|reported|specif(?:y|ies|ied)|requires|required|records|recorded)\s+(?:that|the|an?|its|no|only|nothing|exactly|which|what|whether|how|this|these|those|such|every|each|all|both|neither|two|three|one|more|less|at\s+most|at\s+least)"
+                + @"|ends\s+(?:at|after|immediately)|carries\s+(?:a|the|no)\s+(?:pre-committed\s+)?(?:receipt|(?:numerical\s+)?certificate|clause|claim))\b"),
+            Pattern(@"\b(?:closes?|closing|discharges?|discharged|absorbs?|absorbed|formaliz(?:es|ed|e|ing)|digests?|digested|does\s+not\s+(?:close|formalize|discharge))\b[^.;:!?,]{0,40}?\b(?:multi-clause|corollary|source|deposited|container|anchor|candidate|host|ingested|generic|the|this|that|same|its)\s+atoms?\b"
+                + @"|\bcovers?\s+only\s+the\s+[\w-]+\s+(?:clause|subitem|claim|statement)s?\s+of\s+(?:the\s+)?(?:multi-clause|corollary|source|deposited|container|anchor|candidate|host|ingested)\s+atoms?\b"),
+            Pattern(@"\batoms?'s\s+(?:proof\s+skeleton|separate\s+claims?|claims?|clauses?|subitems?|statements?|registration|traceability\s+demand|compatibility\s+claim|theorem\s+name|numerical\s+certificates?|explicit\s+diagonal\s+property)\b"
+                + @"|\bin\s+(?:that|the\s+same|this)\s+atoms?\b[^.;:!?,]{0,40}?\b(?:stated|asserted|claims?|statements?|families|clauses?|subitems?|certificates?|remarks?|interpretations?|postmortem|registration)\b"
+                + @"|\b(?:stated|asserted|claims?|statements?|families|clauses?|subitems?|certificates?|remarks?|interpretations?|postmortem|registration)\b[^.;:!?,]{0,40}?\bin\s+(?:that|the\s+same|this)\s+atoms?\b")
         ]);
 
     internal static readonly NarrativeClass TheoryVolumeReference = new(

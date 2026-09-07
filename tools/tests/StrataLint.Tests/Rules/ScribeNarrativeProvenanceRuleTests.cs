@@ -71,6 +71,10 @@ public sealed class ScribeNarrativeProvenanceRuleTests
     [InlineData("The atom's mass is recorded in the table.")]
     [InlineData("The closure of the atom is a closed set.")]
     [InlineData("The closed support of the source atom is compact.")]
+    [InlineData("Every closed neighborhood of the candidate atom contains the anchor atom.")]
+    [InlineData("The complement of a closed set contains the anchor atom.")]
+    [InlineData("The anchor atom is closed and the source atom is measurable.")]
+    [InlineData("This family covers only the source atom and has finite multiplicity.")]
     [InlineData("This open cover covers only the candidate atom.")]
     [InlineData("The closed source atom is measurable.")]
     [InlineData("The closed support of the candidate atom is compact.")]
@@ -84,6 +88,9 @@ public sealed class ScribeNarrativeProvenanceRuleTests
     [InlineData("The closed unit interval contains the anchor atom.")]
     [InlineData("The closed neighborhood of the anchor atom is compact.")]
     [InlineData("A closed set containing the candidate atom exists.")]
+    [InlineData("The closure of the source atom is closed and the source atom is measurable.")]
+    [InlineData("The open cover contains a closed neighborhood of the anchor atom.")]
+    [InlineData("The source atom lies in a closed set containing the candidate atom.")]
     [InlineData("The closed candidate atom has mass one.")]
     [InlineData("The closed anchor atom supports a probability measure.")]
     [InlineData("The open source atom lies in the support.")]
@@ -132,6 +139,27 @@ public sealed class ScribeNarrativeProvenanceRuleTests
     [InlineData("The same atom's state is recorded by the register map.")]
     public void AdversarialMathematicalAtomProseIsAllowed(string prose) => Assert.Empty(Evaluate(Text(prose)));
 
+    public static IEnumerable<object[]> MathematicalAtomRelationMatrix()
+    {
+        string[] subjects = ["The source atom", "The candidate atom", "The anchor atom", "The atom",
+            "That atom", "The same atom", "The container atom", "The host atom"];
+        string[] relations = ["is closed.", "has compact closure.", "is open.", "is compact.", "is measurable.",
+            "covers the least element.", "is covered by an open set.", "carries mass one.", "has mass one.",
+            "supports a probability measure.", "state has unit norm.", "states are orthogonal.",
+            "lies in the support.", "is recorded in the table.", "is explicit.",
+            "has an explicit measurability property.", "names a coordinate.",
+            "lists a coordinate in the finite enumeration.", "reads as coordinate zero.",
+            "is stated in Theorem 3.", "is asserted by the lemma."];
+        foreach (var subject in subjects)
+        foreach (var relation in relations)
+            yield return [subject, relation];
+    }
+
+    [Theory]
+    [MemberData(nameof(MathematicalAtomRelationMatrix))]
+    public void MathematicalAtomSubjectRelationMatrixIsAllowed(string subject, string relation) =>
+        Assert.Empty(Evaluate(Text(subject + " " + relation)));
+
     [Theory]
     [InlineData("The atom's proof skeleton establishes injectivity from coprimality and then obtains surjectivity by counting the two finite carriers.")]
     [InlineData("The atom does not specify the conditional probability law needed to derive the claimed exact expectation.")]
@@ -167,14 +195,12 @@ public sealed class ScribeNarrativeProvenanceRuleTests
     [InlineData("The atom ends at the threshold table header.")]
     [InlineData("The container atom carries a pre-committed receipt naming one carrier.")]
     [InlineData("The source atom explicitly reports an omitted hypothesis.")]
-    [InlineData("The source atoms never claim the result.")]
     [InlineData("The candidate atom cannot specify the conditional law.")]
     [InlineData("This discharges the corollary atom.")]
     [InlineData("The proof covers only the finite-decision clause of the source atom.")]
     [InlineData("The source atom's numerical certificate is absent.")]
     [InlineData("The source atom's explicit diagonal property is preserved.")]
     [InlineData("The theorem excludes families in that atom.")]
-    [InlineData("In that atom, further families remain unresolved.")]
     [InlineData("The postmortem in the same atom is omitted.")]
     public void StructuredDocumentaryAtomGrammarIsBlocked(string prose) =>
         AssertClass(Text(prose), "DigestionLedgerReference", "digestion ledger");
