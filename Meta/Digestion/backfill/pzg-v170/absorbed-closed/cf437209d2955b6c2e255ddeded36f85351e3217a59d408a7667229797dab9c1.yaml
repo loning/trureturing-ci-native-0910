@@ -1,0 +1,18 @@
+fingerprints:
+  raw_sha256: sha256:cf437209d2955b6c2e255ddeded36f85351e3217a59d408a7667229797dab9c1
+  normalized_sha256: sha256:cf437209d2955b6c2e255ddeded36f85351e3217a59d408a7667229797dab9c1
+cas_ref: sha256:cf437209d2955b6c2e255ddeded36f85351e3217a59d408a7667229797dab9c1
+coverage_gids:
+  - gid: D5/S3/Factorization/DeeplyCompositeLcmRank.deeply_composite_lcm_sqrt_rank
+    target_statement_id: sha256:f583a7f077dada24dcd37ea00678aecae48a691e0ff7f4efab6c0627912b4ad6
+  - gid: D5/S3/Factorization/DeeplyCompositeLcmRank.oeis_a095848_lcm_sqrt_rank
+    target_statement_id: sha256:78236b08464910fee1fa6089b78bfe5ab879683937057cf0d0dbbe0bc85c057a
+receipts:
+  scribe:
+    - gid: D5/S3/Factorization/DeeplyCompositeLcmRank.deeply_composite_lcm_sqrt_rank
+      definition_sha256: sha256:15ee5fa5c8491b3de8c34f5b2c02513e8b5f03c0bdaffa635a680a5a72d56397
+      emission_sha256: sha256:a3f52a4e94dc3d0808205b3529557f3a007db2adfbfb7bf8a1bff6be3f4a2dea
+    - gid: D5/S3/Factorization/DeeplyCompositeLcmRank.oeis_a095848_lcm_sqrt_rank
+      definition_sha256: sha256:15ee5fa5c8491b3de8c34f5b2c02513e8b5f03c0bdaffa635a680a5a72d56397
+      emission_sha256: sha256:a3f52a4e94dc3d0808205b3529557f3a007db2adfbfb7bf8a1bff6be3f4a2dea
+  unresolved_subitems: []
