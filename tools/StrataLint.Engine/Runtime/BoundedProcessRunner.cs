@@ -4,6 +4,8 @@ namespace StrataLint.Engine;
 
 internal sealed record ProcessOutput(int ExitCode, byte[] StandardOutput, byte[] StandardError);
 
+internal sealed record StreamedProcessOutput<T>(int ExitCode, T StandardOutput, byte[] StandardError);
+
 internal static class BoundedProcessRunner
 {
     internal delegate ProcessOutput ProcessRunner(
@@ -19,6 +21,20 @@ internal static class BoundedProcessRunner
 
     // Flow the startup seam into Task.Run without sharing overrides between checks.
     internal static readonly AsyncLocal<Func<Process, bool>?> StartProcess = new();
+
+    internal static StreamedProcessOutput<T> RunStreaming<T>(
+        string fileName,
+        IEnumerable<string> arguments,
+        string workingDirectory,
+        TimeSpan timeout,
+        int maximumErrorBytes,
+        Func<Stream, CancellationToken, Task<T>> readStandardOutput)
+    {
+        var result = Run(fileName, arguments, workingDirectory, timeout, maximumErrorBytes);
+        using var stream = new MemoryStream(result.StandardOutput, writable: false);
+        return new StreamedProcessOutput<T>(result.ExitCode,
+            readStandardOutput(stream, CancellationToken.None).GetAwaiter().GetResult(), result.StandardError);
+    }
 
     internal static ProcessOutput Run(
         string fileName,
