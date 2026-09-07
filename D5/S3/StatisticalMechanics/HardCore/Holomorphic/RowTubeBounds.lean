@@ -26,7 +26,7 @@ private theorem coeff_facts {a b : ℝ} (h : CoeffBound a b) :
   exact ⟨by linarith,ha,by linarith,by linarith,hb⟩
 
 /-- Bounds are uniform in every child subset of cardinality at most four.
-The real-row hypothesis only enters the final Jacobian estimate, not pole control. -/
+Real-row contraction is consumed later; these estimates use only coefficient ranges. -/
 theorem row_tube_bounds {ι : Type*} [DecidableEq ι]
     (s : Finset ι) (hs : s.card ≤ 4) (a0 b0 : ℝ) (a b : ι → ℝ)
     (hc0 : CoeffBound a0 b0) (hc : ∀ j ∈ s, CoeffBound (a j) (b j))
@@ -34,7 +34,7 @@ theorem row_tube_bounds {ι : Type*} [DecidableEq ι]
     (lam : ℝ) (hlam : 0 ≤ lam ∧ lam ≤ 3)
     (z : ℂ) (hz : ‖z-(lam:ℂ)‖ ≤ epsilon)
     (m : ι → ℂ) (hm : ∀ j ∈ s, ‖m j-center (a j) (b j) (r j)‖ ≤ delta) :
-    (∀ j ∈ s, 1+(a j:ℂ)*Complex.exp ((b j:ℂ)*m j) ≠ 0) ∧
+    (∀ j ∈ s, 1+(a j:ℂ)*Complex.exp (b j*m j) ≠ 0) ∧
     (1/200:ℝ) ≤ (logArgument s a0 b0 (fun j => a j) (fun j => b j) z m).re ∧
     (1/2:ℝ) ≤ (1+z*messageProduct s (fun j => a j) (fun j => b j) m).re ∧
     ‖activityEntry s a0 b0 (fun j => a j) (fun j => b j) z m‖ ≤ 10000 ∧
@@ -47,8 +47,8 @@ theorem row_tube_bounds {ι : Type*} [DecidableEq ι]
   let P0 : ℝ := ∏ j ∈ s, r j
   let A : ℂ := z*P
   let A0 : ℝ := lam*P0
-  let H : ℂ := (b0:ℂ)-a0+(b0:ℂ)*A
-  let H0 : ℝ := b0-a0+b0*A0
+  let H : ℂ := (b0:ℂ)-a0+(b0:ℂ)*z*P
+  let H0 : ℝ := b0-a0+b0*lam*P0
   have cf := coeff_facts hc0
   have xi (j) (hj : j ∈ s) :=
     inverse_tube (a j) (b j) (r j) (hc j hj).1 (hc j hj).2.1 (hc j hj).2.2
@@ -75,7 +75,7 @@ theorem row_tube_bounds {ι : Type*} [DecidableEq ι]
           abs_of_nonneg hlam.1] using hlam.2) hPd (norm_nonneg _) (by norm_num))
       _ ≤ _ := by norm_num [delta,epsilon]
   have hH0 : (1/100:ℝ) ≤ H0 := by
-    dsimp [H0]; nlinarith [mul_nonneg cf.2.2.2.1 hA0.1, hc0.2.1]
+    dsimp [H0, A0] at *; nlinarith [mul_nonneg cf.2.2.2.1 hA0.1, hc0.2.1]
   have hHd : ‖H-(H0:ℂ)‖ ≤ 60000*delta := by
     have heq : H-(H0:ℂ) = (b0:ℂ)*(A-(A0:ℂ)) := by
       dsimp [H,H0]; push_cast; ring
@@ -151,7 +151,7 @@ theorem row_tube_bounds {ι : Type*} [DecidableEq ι]
             (norm_nonneg _) (by norm_num))
         _ ≤ _ := by norm_num [delta]
     simpa [jacobianEntry, logArgument, messageProduct, A,A0,P,P0,H,H0,Qj,Q0,
-      neg_mul] using hbound
+      neg_mul, mul_assoc] using hbound
 
 #print axioms row_tube_bounds
 end D5.S3.StatisticalMechanics.HardCore.Holomorphic.RowTubeBounds
