@@ -155,10 +155,6 @@ public sealed partial class IngestScopeTests
         entry = entry with
         {
             Coverage = [new("D5/S0/Carrier/Zeta.z", hashes), new("D5/S0/Carrier/Alpha.a", hashes)],
-            Receipts = entry.Receipts with
-            {
-                Scribe = [new("D5/S0/Carrier/Zeta.z", hashes, hashes), new("D5/S0/Carrier/Alpha.a", hashes, hashes)],
-            },
         };
         alpha = alpha with { Entries = [entry], AcknowledgedStale = [entry.AtomId] };
         document = document.WithDigestionSources([alpha, document.RequireDigestionSources()[1]]);

@@ -156,7 +156,7 @@ internal static partial class DigestionIngestor
                         item.SuggestedAtomId,
                         item.Atom.Fingerprints,
                         Coverage: inheritedCoverage,
-                        new DigestionReceipts([], inheritedUnresolvedSubitems, [], null),
+                        new DigestionReceipts(inheritedUnresolvedSubitems, [], null),
                         item.ProjectedStatus,
                         CasRef: captured.Reference);
                     if (!globalEntries.TryAdd(admitted.AtomId, admitted))
@@ -361,7 +361,6 @@ internal static partial class DigestionIngestor
                 new DigestionFingerprints(group.Key, normalizedFingerprints[0]),
                 coverage,
                 new DigestionReceipts(
-                    [],
                     members.SelectMany(static item => item.Entry.Receipts.UnresolvedSubitems)
                         .Distinct(StringComparer.Ordinal)
                         .Order(StringComparer.Ordinal)

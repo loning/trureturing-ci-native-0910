@@ -640,8 +640,7 @@ public sealed class Sl016WakeupTests
         "coverage_gids:\n"
             + "  - gid: D5/S0/Carrier/BackfillTarget\n"
             + "    target_statement_id: null\n"
-            + "receipts:\n"
-            + "  scribe: []",
+            + "receipts:\n",
         receiptProjection,
         StringComparison.Ordinal);
 
@@ -677,8 +676,7 @@ public sealed class Sl016WakeupTests
         var receipt = "coverage_gids:\n"
             + $"  - gid: {targetGid}\n"
             + $"    target_statement_id: {targetStatementId}\n"
-            + "receipts:\n"
-            + "  scribe: []";
+            + "receipts:\n";
         foreach (var files in new[] { fixture.Files, fixture.Baseline })
         {
             files[AtomPath] = AddReceipts(files[AtomPath], receipt);

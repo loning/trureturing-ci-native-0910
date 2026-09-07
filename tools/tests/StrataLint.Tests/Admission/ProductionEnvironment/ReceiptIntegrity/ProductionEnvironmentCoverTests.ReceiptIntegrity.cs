@@ -50,16 +50,6 @@ public sealed partial class ProductionEnvironmentTests
                                     siblingGid,
                                     targetStatementId),
                             ],
-                            Receipts = entry.Receipts with
-                            {
-                                Scribe =
-                                [
-                                    new DigestionScribeReceipt(
-                                        siblingGid,
-                                        baselineVerified.DefinitionSha256,
-                                        baselineVerified.EmissionSha256),
-                                ],
-                            },
                         }
                         : entry).ToImmutableArray(),
                 })

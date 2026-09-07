@@ -212,14 +212,6 @@ internal static partial class CoverWorld
         var coverageEdges = coverage
             .Select(gid => new DigestionCoverageEdge(gid, targetStatementId))
             .ToImmutableArray();
-        var scribeReceipts = coverage.Length == 1
-            && definitionSha256 is not null
-            && emissionSha256 is not null
-                ? ImmutableArray.Create(new DigestionScribeReceipt(
-                    coverage[0],
-                    definitionSha256,
-                    emissionSha256))
-                : [];
         var tailAuthorization = tailAuthPath is not null && tailAuthSha is not null
             ? new DigestionExternalReceipt(tailAuthPath, tailAuthSha)
             : null;
@@ -231,7 +223,6 @@ internal static partial class CoverWorld
             fingerprints,
             coverageEdges,
             new DigestionReceipts(
-                scribeReceipts,
                 unresolvedSubitems,
                 [],
                 tailAuthorization),

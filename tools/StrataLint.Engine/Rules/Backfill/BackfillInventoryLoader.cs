@@ -189,21 +189,8 @@ internal sealed partial class BackfillInventoryDocument
         ExactKeys(
             receipts,
             ["unresolved_subitems"],
-            ["scribe", "chain_atoms", "tail_authorization", "quarantine", "nonpropositional", "cover_disposition"],
+            ["chain_atoms", "tail_authorization", "quarantine", "nonpropositional", "cover_disposition"],
             $"entry {atomId} receipts");
-        var scribe = ImmutableArray.CreateBuilder<DigestionScribeReceipt>();
-        foreach (var rawScribe in receipts.ContainsKey("scribe")
-                     ? List(receipts, "scribe", $"entry {atomId} scribe receipts must be a list")
-                     : [])
-        {
-            var item = Mapping(rawScribe, $"entry {atomId} scribe receipt must be a mapping");
-            ExactKeys(item, ["gid", "definition_sha256", "emission_sha256"], $"entry {atomId} scribe receipt");
-            scribe.Add(new DigestionScribeReceipt(
-                Scalar(item, "gid", $"entry {atomId} scribe gid"),
-                Scalar(item, "definition_sha256", $"entry {atomId} definition_sha256"),
-                Scalar(item, "emission_sha256", $"entry {atomId} emission_sha256")));
-        }
-
         DigestionExternalReceipt? tailAuthorization = null;
         if (receipts.GetValueOrDefault("tail_authorization") is { } rawTail)
         {
@@ -262,7 +249,6 @@ internal sealed partial class BackfillInventoryDocument
         }
 
         return new DigestionReceipts(
-            scribe.ToImmutable(),
             Strings(
                 List(receipts, "unresolved_subitems", $"entry {atomId} unresolved_subitems must be a list"),
                 $"entry {atomId} unresolved_subitems"),

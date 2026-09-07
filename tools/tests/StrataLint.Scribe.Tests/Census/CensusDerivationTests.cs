@@ -112,7 +112,6 @@ public sealed class CensusDerivationTests
                 cas_ref: sha256:0000000000000000000000000000000000000000000000000000000000000000
                 coverage_gids: []
                 receipts:
-                  scribe: []
                   unresolved_subitems: []
                   chain_atoms: []
                   tail_authorization: null

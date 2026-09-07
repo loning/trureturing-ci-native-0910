@@ -111,9 +111,6 @@ internal sealed partial class ProductionCliEnvironment
     public CommandResult DecomposeAtom(IReadOnlyList<string> arguments) =>
         DecomposeAtomCommand.Run(repositoryRoot, repository, arguments);
 
-    public CommandResult StripScribeReceipts(IReadOnlyList<string> arguments) =>
-        StripScribeReceiptsCommand.Run(repositoryRoot, repository, arguments);
-
     public CommandResult Route(IReadOnlyList<string> arguments)
     {
         try
