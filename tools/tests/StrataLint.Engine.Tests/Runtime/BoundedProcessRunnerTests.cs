@@ -1,7 +1,92 @@
+using StrataLint.TestSupport;
+
 namespace StrataLint.Engine.Tests;
 
 public sealed class BoundedProcessRunnerTests
 {
+    [Xunit.SkippableTheory]
+    [InlineData(false, 16)]
+    [InlineData(false, 17)]
+    [InlineData(true, 16)]
+    [InlineData(true, 17)]
+    public void BufferedStdoutAndStreamingStderrKeepTheirBounds(bool stderr, int bytes)
+    {
+        if (OperatingSystem.IsWindows()) return;
+        void RunAndAssert()
+        {
+            var count = bytes.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            if (stderr)
+            {
+                var result = TestProcessRunner.Classify(() => BoundedProcessRunner.RunStreaming(
+                    "/bin/sh", ["-c", "head -c \"$1\" /dev/zero >&2", "stderr-probe", count],
+                    Path.GetTempPath(), BoundedProcessRunner.HangDetectionBudget, 16,
+                    async (stream, cancellation) =>
+                    {
+                        using var reader = new StreamReader(stream);
+                        return await reader.ReadToEndAsync(cancellation);
+                    }), "/bin/sh");
+                Assert.Equal(0, result.ExitCode);
+                Assert.Empty(result.StandardOutput);
+                Assert.Equal(bytes, result.StandardError.Length);
+            }
+            else
+            {
+                var result = TestProcessRunner.Run(
+                    "/usr/bin/head", ["-c", count, "/dev/zero"], Path.GetTempPath(),
+                    BoundedProcessRunner.HangDetectionBudget, 16);
+                Assert.Equal(0, result.ExitCode);
+                Assert.Equal(bytes, result.StandardOutput.Length);
+            }
+        }
+        InvalidOperationException? exceeded = null;
+        try { RunAndAssert(); }
+        catch (InvalidOperationException exception) { exceeded = exception; }
+        if (bytes <= 16) Assert.Null(exceeded);
+        else Assert.Contains("process output exceeded 16 bytes",
+            Assert.IsType<InvalidOperationException>(exceeded).Message, StringComparison.Ordinal);
+    }
+
+    [Xunit.SkippableFact]
+    public void StreamingOutputDoesNotApplyStderrLimitToStdout()
+    {
+        if (OperatingSystem.IsWindows()) return;
+
+        var result = TestProcessRunner.Classify(() => BoundedProcessRunner.RunStreaming(
+            "/usr/bin/head", ["-c", "4096", "/dev/zero"], Path.GetTempPath(),
+            BoundedProcessRunner.HangDetectionBudget, 16,
+            async (stream, cancellation) =>
+            {
+                var buffer = new byte[257];
+                var total = 0;
+                int count;
+                while ((count = await stream.ReadAsync(buffer, cancellation)) != 0) total += count;
+                return total;
+            }), "/usr/bin/head");
+
+        Assert.Equal(0, result.ExitCode);
+        Assert.Equal(4096, result.StandardOutput);
+        Assert.Empty(result.StandardError);
+    }
+
+    [Xunit.SkippableFact]
+    public void StreamingOutputPreservesChildExitAndStderr()
+    {
+        if (OperatingSystem.IsWindows()) return;
+
+        var result = TestProcessRunner.Classify(() => BoundedProcessRunner.RunStreaming(
+            "/bin/sh", ["-c", "printf out; printf err >&2; exit 7"], Path.GetTempPath(),
+            BoundedProcessRunner.HangDetectionBudget, 16,
+            async (stream, cancellation) =>
+            {
+                using var reader = new StreamReader(stream);
+                return await reader.ReadToEndAsync(cancellation);
+            }), "/bin/sh");
+
+        Assert.Equal(7, result.ExitCode);
+        Assert.Equal("out", result.StandardOutput);
+        Assert.Equal("err", System.Text.Encoding.UTF8.GetString(result.StandardError));
+    }
+
     [Fact]
     public void ChildExitIsNotMaskedByClosedStandardInputPipe()
     {

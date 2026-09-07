@@ -379,6 +379,9 @@ internal sealed partial class TransactionFixture
               exit 75
             fi
             ;;
+          cover-batch)
+            exit "${PLAYBOOK_COVER_DISPOSITION_FAILURE:-0}"
+            ;;
           cover-atom)
             atom=''
             gid=''

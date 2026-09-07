@@ -66,7 +66,7 @@ internal static partial class CleanLanesCommand
         RegisteredWorktree? refreshed;
         try
         {
-            refreshed = ReadWorktrees(repositoryRoot, runner)
+            refreshed = ReadWorktrees(repositoryRoot, runner, resolveGitDirectories: false)
                 .SingleOrDefault(candidate => string.Equals(
                     candidate.Path,
                     item.Path,
