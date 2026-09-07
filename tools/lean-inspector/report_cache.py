@@ -120,14 +120,25 @@ def publish(args: argparse.Namespace) -> None:
     if valid_bundle(args.report, allow_logs=True) is None:
         raise ValueError("produced report bundle is invalid")
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    for suffix in SUFFIXES:
-        os.replace(member(args.report, suffix), member(args.output, suffix))
-    logs = member(args.output, ".logs")
-    if logs.is_dir():
-        shutil.rmtree(logs)
-    elif logs.exists():
-        logs.unlink()
-    member(args.report, ".logs").rename(logs)
+    # Production stays outside .lake until cold provisioning is finished. The
+    # output can be on another filesystem (for example RUNNER_TEMP), so only
+    # destination-local staging may participate in the final moves.
+    with tempfile.TemporaryDirectory(prefix=".lean-report-publish-", dir=args.output.parent) as temporary:
+        staged = pathlib.Path(temporary) / args.output.name
+        copy_bundle(args.report, staged)
+        staged_logs = member(staged, ".logs")
+        shutil.copytree(member(args.report, ".logs"), staged_logs)
+        if (valid_bundle(staged, allow_logs=True) is None
+                or not any(path.is_file() for path in staged_logs.rglob("*"))):
+            raise ValueError("staged report bundle is invalid")
+        for suffix in SUFFIXES:
+            os.replace(member(staged, suffix), member(args.output, suffix))
+        logs = member(args.output, ".logs")
+        if logs.is_dir():
+            shutil.rmtree(logs)
+        elif logs.exists():
+            logs.unlink()
+        staged_logs.rename(logs)
 
 
 def main() -> int:

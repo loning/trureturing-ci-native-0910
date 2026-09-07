@@ -13,6 +13,7 @@ import shutil
 import subprocess
 import tarfile
 import tempfile
+import time
 
 from lean_cache import partition_path
 
@@ -22,6 +23,12 @@ REPO = os.environ.get("STRATALINT_CACHE_REPO", "the-omega-institute/trureturing"
 # Issue #6194, run 34119746844: Release assets must be strictly below 2 GiB.
 # Keep dev's 1.5 GiB headroom and two-digit, at-most-100-part inventory.
 CHUNK_BYTES = 1610612736
+# Optional transport policy (#5985, 2026-09-08): a ten-minute operation ceiling,
+# configurable downward, leaves headroom over the recorded 5m08s Release fetch
+# (#2634). This is a policy choice, not a throughput derivation or a copy of the
+# C# ArchiveBudget. Review against real multipart transfers during integration.
+# Fetch includes all snapshot attempts; publish starts only after make lean.
+RELEASE_OPERATION_TIMEOUT_SECONDS = 600
 
 
 def sha(path):
@@ -32,8 +39,27 @@ def sha(path):
     return value.hexdigest()
 
 
-def gh(*args):
-    return subprocess.run(["gh", *args], check=True, capture_output=True, text=True).stdout
+def operation_deadline():
+    variable = "STRATALINT_LEAN_CACHE_RELEASE_TIMEOUT_SECONDS"
+    try:
+        seconds = int(os.environ.get(variable, str(RELEASE_OPERATION_TIMEOUT_SECONDS)))
+        if not 0 < seconds <= RELEASE_OPERATION_TIMEOUT_SECONDS:
+            raise ValueError()
+    except ValueError:
+        raise ValueError(f"{variable} must be 1..{RELEASE_OPERATION_TIMEOUT_SECONDS}") from None
+    return time.monotonic() + seconds
+
+
+def remaining(deadline):
+    seconds = deadline - time.monotonic()
+    if seconds <= 0:
+        raise TimeoutError("Release operation deadline exhausted")
+    return seconds
+
+
+def gh(deadline, *args):
+    return subprocess.run(["gh", *args], check=True, capture_output=True, text=True,
+                          timeout=remaining(deadline)).stdout
 
 
 def receipt(verb, status, **fields):
@@ -85,13 +111,13 @@ def declared_parts(manifest):
     return parts
 
 
-def prune(partition, tag):
+def prune(partition, tag, deadline):
     pruned = 0
     try:
-        current = json.loads(gh("api", f"repos/{REPO}/releases/tags/{tag}"))
+        current = json.loads(gh(deadline, "api", f"repos/{REPO}/releases/tags/{tag}"))
         if current.get("draft") is not False:
             raise ValueError("new snapshot is not readable as published; pruned nothing")
-        releases = json.loads(gh("release", "list", "--repo", REPO, "--limit", "100",
+        releases = json.loads(gh(deadline, "release", "list", "--repo", REPO, "--limit", "100",
             "--json", "tagName,createdAt,isDraft"))
         snapshots = sorted((item for item in releases if item.get("isDraft") is False
             and item.get("tagName", "").startswith(prefix(partition))),
@@ -100,7 +126,7 @@ def prune(partition, tag):
         for old in snapshots[5:]:
             if old["tagName"] == tag:
                 continue
-            gh("release", "delete", old["tagName"], "--repo", REPO, "--yes", "--cleanup-tag")
+            gh(deadline, "release", "delete", old["tagName"], "--repo", REPO, "--yes", "--cleanup-tag")
             pruned += 1
         return pruned, None
     except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as error:
@@ -130,6 +156,7 @@ def publish(root, partition):
         receipt("publish", "skipped", reason="Release publication requires the scheduled dev producer")
         return 0
     try:
+        deadline = operation_deadline()
         commit = os.environ.get("GITHUB_SHA", "")
         run = os.environ.get("GITHUB_RUN_ID", "")
         attempt = os.environ.get("GITHUB_RUN_ATTEMPT", "")
@@ -154,12 +181,12 @@ def publish(root, partition):
             (stage / MANIFEST).write_text(json.dumps(metadata, sort_keys=True) + "\n")
             # Never clobber an existing snapshot. Failed/racing publishers leave
             # at most a draft, which fetch never considers an applicable seed.
-            gh("release", "create", tag, "--repo", REPO, "--draft", "--target", commit,
+            gh(deadline, "release", "create", tag, "--repo", REPO, "--draft", "--target", commit,
                "--title", "Lean cache " + partition, "--notes", "Successful Lean build; incremental seed only.")
-            gh("release", "upload", tag, *(str(stage / part["name"]) for part in metadata["parts"]),
+            gh(deadline, "release", "upload", tag, *(str(stage / part["name"]) for part in metadata["parts"]),
                str(stage / MANIFEST), "--repo", REPO)
-            gh("release", "edit", tag, "--repo", REPO, "--draft=false")
-            pruned, prune_error = prune(partition, tag)
+            gh(deadline, "release", "edit", tag, "--repo", REPO, "--draft=false")
+            pruned, prune_error = prune(partition, tag, deadline)
             receipt("publish", "published", tag=tag, pruned=pruned, prune_error=prune_error, **metadata)
     except ImportError as error:
         receipt("publish", "skipped", reason="POSIX cache locking unavailable: " + str(error))
@@ -168,11 +195,11 @@ def publish(root, partition):
     return 0
 
 
-def restore_snapshot(root, partition, tag, stage):
-    metadata = json.loads(gh("api", f"repos/{REPO}/releases/tags/{tag}"))
+def restore_snapshot(root, partition, tag, stage, deadline):
+    metadata = json.loads(gh(deadline, "api", f"repos/{REPO}/releases/tags/{tag}"))
     if metadata.get("draft") is not False or metadata.get("tag_name") != tag:
         raise ValueError("snapshot is not published")
-    gh("release", "download", tag, "--repo", REPO, "--dir", str(stage),
+    gh(deadline, "release", "download", tag, "--repo", REPO, "--dir", str(stage),
        "--pattern", MANIFEST)
     manifest = json.loads((stage / MANIFEST).read_text())
     if not isinstance(manifest, dict):
@@ -193,7 +220,7 @@ def restore_snapshot(root, partition, tag, stage):
     recorded = {asset["name"]: asset.get("digest") for asset in assets}
     if recorded[MANIFEST] != "sha256:" + sha(stage / MANIFEST):
         raise ValueError("transferred asset digest mismatch")
-    gh("release", "download", tag, "--repo", REPO, "--dir", str(stage),
+    gh(deadline, "release", "download", tag, "--repo", REPO, "--dir", str(stage),
        *(argument for part in parts for argument in ("--pattern", part["name"])))
     for part in parts:
         path = stage / part["name"]
@@ -224,6 +251,7 @@ def restore_snapshot(root, partition, tag, stage):
         archive.extractall(unpacked, members=members)
     if not (unpacked / "build").is_dir():
         raise ValueError("archive has no project build")
+    remaining(deadline)
     lake = root / ".lake"
     if lake.is_symlink():
         raise ValueError("shared cache target is forbidden")
@@ -254,29 +282,33 @@ def fetch(root, partition, writer_owned=False):
         receipt("fetch", "skipped", reason="Actions supplied an applicable seed")
         return 0
     try:
+        deadline = operation_deadline()
         with contextlib.nullcontext() if writer_owned else cache_guard(root):
-            return fetch_locked(root, partition)
-    except (OSError, ImportError) as error:
+            return fetch_locked(root, partition, deadline)
+    except (OSError, ImportError, ValueError) as error:
         receipt("fetch", "miss", reason=str(error), partition=partition)
         return 1
 
 
-def fetch_locked(root, partition):
+def fetch_locked(root, partition, deadline):
     reason = "no published snapshot in this partition"
     try:
-        releases = json.loads(gh("release", "list", "--repo", REPO, "--limit", "100",
+        releases = json.loads(gh(deadline, "release", "list", "--repo", REPO, "--limit", "100",
             "--json", "tagName,createdAt,isDraft"))
         for release in sorted(releases, key=lambda item: item["createdAt"], reverse=True):
             tag = release.get("tagName", "")
             if release.get("isDraft") is not False or not tag.startswith(prefix(partition)):
                 continue
+            remaining(deadline)
             try:
                 with tempfile.TemporaryDirectory(prefix="lean-fetch-") as temporary:
-                    restore_snapshot(root, partition, tag, pathlib.Path(temporary))
+                    restore_snapshot(root, partition, tag, pathlib.Path(temporary), deadline)
                 return 0
             except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError, tarfile.TarError) as error:
                 reason = str(error)
                 receipt("fetch", "miss", reason=reason, resolved=tag, partition=partition)
+                if isinstance(error, (TimeoutError, subprocess.TimeoutExpired)):
+                    break
     except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as error:
         reason = str(error)
     receipt("fetch", "miss", reason=reason, partition=partition)

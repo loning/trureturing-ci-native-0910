@@ -287,6 +287,106 @@ make -C "$2" lean
 ''', "optional-fetch", str(PUBLISH), str(self.root)], text=True, capture_output=True,
             env=self.transport_environment(**extra))
 
+    def deadline_probe(self, seconds, step=0):
+        # Keep subprocess's own wait clock real. Only the operation's monotonic
+        # clock advances at completed gh calls, independently of machine speed.
+        write(self.bin / "sitecustomize.py", '''
+import json, os, pathlib, subprocess, time
+original = subprocess.run
+clock = 0
+time.monotonic = lambda: clock
+def run(args, *rest, **kwargs):
+    global clock
+    if args[0] != "gh": return original(args, *rest, **kwargs)
+    with (pathlib.Path(os.environ["FAKE_REMOTE"]).parent / "gh-budgets").open("a") as log:
+        log.write(json.dumps({"args": args[1:], "timeout": kwargs.get("timeout")}) + "\\n")
+    # Infrastructure hang guard for the pre-fix unbounded call. Whether the
+    # production owner supplied a timeout, not elapsed time, decides the test.
+    kwargs.setdefault("timeout", 1)
+    try: return original(args, *rest, **kwargs)
+    finally: clock += int(os.environ["FAKE_CLOCK_STEP"])
+subprocess.run = run
+''')
+        (self.root / "gh-budgets").unlink(missing_ok=True)
+        return {"PYTHONPATH": str(self.bin), "FAKE_CLOCK_STEP": str(step),
+                "STRATALINT_LEAN_CACHE_RELEASE_TIMEOUT_SECONDS": str(seconds)}
+
+    def gh_budgets(self):
+        return [json.loads(line) for line in (self.root / "gh-budgets").read_text().splitlines()]
+
+    def test_hanging_direct_fetch_is_bounded_and_fallback_preserves_build_exit(self):
+        self.assertEqual(0, self.transport("publish").returncode)
+        shutil.rmtree(self.root / ".lake/build")
+        for operation in ("list", "api", "download"):
+            for build_exit in (0, 19):
+                with self.subTest(operation=operation, build_exit=build_exit):
+                    result = self.fetch_then_build(**self.deadline_probe(1),
+                        FAKE_HANG=operation, FAKE_BUILD_EXIT=str(build_exit))
+                    self.assertEqual(build_exit, result.returncode, result.stdout + result.stderr)
+                    self.assertIn('"status":"miss"', result.stdout)
+                    self.assertIn("timed out", result.stdout)
+                    self.assertEqual([1] * len(self.gh_budgets()),
+                                     [call["timeout"] for call in self.gh_budgets()])
+                    self.assertFalse((self.root / ".lake/build").exists())
+        self.assertEqual(["lean"] + ["-C " + str(self.root) + " lean"] * 6,
+                         (self.root / "build-runs").read_text().splitlines())
+
+    def test_fetch_deadline_is_shared_across_snapshots(self):
+        for run in (501, 502):
+            self.assertEqual(0, self.transport("publish", str(run)).returncode)
+        shutil.rmtree(self.root / ".lake/build")
+        result = self.fetch_then_build(**self.deadline_probe(3, step=1), FAKE_FAIL="download")
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertIn("deadline exhausted", result.stdout)
+        self.assertEqual([3, 2, 1], [call["timeout"] for call in self.gh_budgets()])
+        snapshots = [call for call in self.gh_budgets() if call["args"][0] == "api"]
+        self.assertEqual(1, len(snapshots))
+        self.assertIn("502-1", snapshots[0]["args"][1])
+        self.assertFalse((self.root / ".lake/build").exists())
+
+    def test_hanging_publication_and_prune_are_optional_after_real_build(self):
+        for run, operation in enumerate(("create", "upload", "edit"), 501):
+            with self.subTest(operation=operation):
+                result = self.transport("publish", str(run), **self.deadline_probe(1), FAKE_HANG=operation)
+                self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+                self.assertIn('"status":"failed"', result.stdout)
+                self.assertIn("timed out", result.stdout)
+                self.assertEqual([1] * len(self.gh_budgets()),
+                                 [call["timeout"] for call in self.gh_budgets()])
+        for run in range(601, 606):
+            self.assertEqual(0, self.transport("publish", str(run)).returncode)
+        result = self.transport("publish", "606", **self.deadline_probe(1), FAKE_HANG="delete")
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertIn('"status":"published"', result.stdout)
+        self.assertIn("timed out", result.stdout)
+        self.assertEqual([1] * len(self.gh_budgets()), [call["timeout"] for call in self.gh_budgets()])
+        failed = self.transport("publish", **self.deadline_probe(1), FAKE_HANG="create", FAKE_BUILD_EXIT="19")
+        self.assertEqual(19, failed.returncode, failed.stdout + failed.stderr)
+        self.assertFalse((self.root / "gh-budgets").exists())
+
+    def test_publication_and_prune_share_one_deadline(self):
+        for run in range(501, 506):
+            self.assertEqual(0, self.transport("publish", str(run)).returncode)
+        result = self.transport("publish", "506", **self.deadline_probe(5, step=1))
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertIn('"status":"published"', result.stdout)
+        self.assertIn("deadline exhausted", result.stdout)
+        self.assertEqual([5, 4, 3, 2, 1], [call["timeout"] for call in self.gh_budgets()])
+        self.assertEqual(6, len(list(self.remote.glob("*/release.json"))))
+
+    def test_invalid_release_budget_is_optional_but_real_build_failure_is_not(self):
+        for value in ("0", "-1", "nan", "601"):
+            with self.subTest(budget=value):
+                environment = {"STRATALINT_LEAN_CACHE_RELEASE_TIMEOUT_SECONDS": value}
+                fetched = self.fetch_then_build(**environment)
+                self.assertEqual(0, fetched.returncode, fetched.stdout + fetched.stderr)
+                self.assertIn("STRATALINT_LEAN_CACHE_RELEASE_TIMEOUT_SECONDS", fetched.stdout)
+                published = self.transport("publish", **environment)
+                self.assertEqual(0, published.returncode, published.stdout + published.stderr)
+                self.assertIn('"status":"failed"', published.stdout)
+                self.assertEqual(19, self.transport("publish", **environment, FAKE_BUILD_EXIT="19").returncode)
+                self.assertEqual([], list(self.remote.iterdir()))
+
     def test_optional_fetch_miss_reaches_build_and_preserves_build_failure(self):
         for build_exit in (0, 19):
             with self.subTest(build_exit=build_exit):
@@ -489,6 +589,53 @@ python3 "$1" stage --report "$2" --output "$3"
         return subprocess.run([str(self.root / "tools/scripts/report/lean-report-ci-baseline.sh"),
             "--bundle", str(report), "--cache-root", str(cache)], text=True, capture_output=True)
 
+    def bundle_bytes(self, report):
+        values = {suffix: pathlib.Path(str(report) + suffix).read_bytes() for suffix in
+                  ("", ".sha256", ".input.attestation", ".provenance.json", ".materials.zip", ".seed.json")}
+        logs = pathlib.Path(str(report) + ".logs")
+        values.update({".logs/" + path.relative_to(logs).as_posix(): path.read_bytes()
+                       for path in logs.rglob("*") if path.is_file()})
+        return values
+
+    def write_bundle_bytes(self, report, values):
+        for suffix, content in values.items():
+            path = pathlib.Path(str(report) + suffix)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(content)
+
+    def publication_fault(self, boundary="bundle", damage=""):
+        hooks = self.root / "publication-hooks"
+        write(hooks / "sitecustomize.py", '''
+import errno, os, pathlib, shutil
+destination = pathlib.Path(os.environ["PUBLICATION_DESTINATION"]).resolve()
+boundary = os.environ["PUBLICATION_BOUNDARY"]
+def move(original, source, target, *args, **kwargs):
+    src, dst = pathlib.Path(source).resolve(), pathlib.Path(target).resolve()
+    if dst.is_relative_to(destination):
+        if (boundary in ("bundle", "logs") and not src.is_relative_to(destination)
+                and (src.name.endswith(".logs") == (boundary == "logs"))):
+            raise OSError(errno.EXDEV, "injected cross-device move", str(src))
+    return original(source, target, *args, **kwargs)
+replace, rename, copyfile = os.replace, os.rename, shutil.copyfile
+os.replace = lambda *args, **kwargs: move(replace, *args, **kwargs)
+os.rename = lambda *args, **kwargs: move(rename, *args, **kwargs)
+# Python 3.9 pathlib captures os.rename before sitecustomize runs.
+path_rename = pathlib.Path.rename
+pathlib.Path.rename = lambda *args, **kwargs: move(path_rename, *args, **kwargs)
+def copy(source, target, *args, **kwargs):
+    result = copyfile(source, target, *args, **kwargs)
+    path = pathlib.Path(target).resolve()
+    if path.is_relative_to(destination):
+        with (destination / "copied-members").open("a") as log:
+            log.write(path.name + "\\n")
+        if os.environ["PUBLICATION_DAMAGE"] and path.name.endswith(os.environ["PUBLICATION_DAMAGE"]):
+            path.write_bytes(b"corrupt staging copy")
+    return result
+shutil.copyfile = copy
+''')
+        return {"PYTHONPATH": str(hooks), "PUBLICATION_DESTINATION": str(self.output.parent),
+                "PUBLICATION_BOUNDARY": boundary, "PUBLICATION_DAMAGE": damage}
+
 
 class PairTests(PairFixture, unittest.TestCase):
     def test_exact_hit_always_enters_producer_and_rebinds_candidate(self):
@@ -503,6 +650,19 @@ class PairTests(PairFixture, unittest.TestCase):
         self.assertEqual(0, self.report_input("verify").returncode)
         self.assertEqual(1, len(self.seeds()))
         self.assertFalse(pathlib.Path(str(self.seeds()[0]) + ".logs").exists())
+        expected = self.bundle_bytes(self.output)
+        self.assertEqual(8, len(expected))  # Six members and two nested log files.
+        for boundary in ("bundle", "logs"):
+            with self.subTest(publication=boundary):
+                self.output = self.root / ("runner-temp-" + boundary) / "raw-lean-report.json"
+                result = self.pair(**self.publication_fault(boundary))
+                self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+                self.assertEqual(expected, self.bundle_bytes(self.output))
+                self.assertEqual(0, self.report_input("verify").returncode)
+                copied = (self.output.parent / "copied-members").read_text().splitlines()
+                self.assertCountEqual([self.output.name + suffix for suffix in expected if not suffix.startswith(".logs/")]
+                                      + ["producer.log", "stderr.log"], copied)
+                self.assertEqual([], list(self.output.parent.glob(".lean-report-publish-*")))
 
     def test_real_producer_failure_cannot_be_masked_by_prior_report(self):
         self.assertEqual(0, self.pair().returncode)
@@ -531,6 +691,29 @@ class PairTests(PairFixture, unittest.TestCase):
                 result = self.pair(PAIR_DAMAGE=damage)
                 self.assertNotEqual(0, result.returncode, result.stdout + result.stderr)
                 self.assertEqual(before, self.output.read_bytes())
+        before = self.bundle_bytes(self.output)
+        write(self.root / "D5/A.lean", "def a := 5\n")
+        for damage in (".provenance.json", ".materials.zip"):
+            with self.subTest(staging_damage=damage):
+                self.write_bundle_bytes(self.output, before)
+                result = self.pair(**self.publication_fault(boundary="none", damage=damage))
+                self.assertNotEqual(0, result.returncode, result.stdout + result.stderr)
+                self.assertEqual(before, self.bundle_bytes(self.output))
+                self.assertEqual([], list(self.output.parent.glob(".lean-report-publish-*")))
+        prior = self.output
+        self.output = self.root / "next/raw-lean-report.json"
+        self.assertEqual(0, self.pair().returncode)
+        complete = self.bundle_bytes(self.output)
+        for index, suffix in enumerate(("", ".sha256", ".input.attestation", ".provenance.json", ".materials.zip", ".seed.json", ".logs")):
+            with self.subTest(missing=suffix):
+                self.write_bundle_bytes(prior, before)
+                incomplete = self.root / f"missing-{index}/raw-lean-report.json"
+                self.write_bundle_bytes(incomplete, {key: value for key, value in complete.items()
+                    if key != suffix and not (suffix == ".logs" and key.startswith(".logs/"))})
+                result = subprocess.run([sys.executable, str(self.root / "tools/lean-inspector/report_cache.py"),
+                    "publish", "--report", str(incomplete), "--output", str(prior)], text=True, capture_output=True)
+                self.assertNotEqual(0, result.returncode, result.stdout + result.stderr)
+                self.assertEqual(before, self.bundle_bytes(prior))
 
     def test_transport_adapter_preserves_seed_identity_and_omits_logs(self):
         self.output = self.root / "out/candidate-lean-report.json"
@@ -784,7 +967,7 @@ output.write_text(json.dumps({"schema":"stratalint-lean-inspector-spool-v1", "mo
 
 
 PAIR_PRODUCER = '''#!/usr/bin/env python3
-import hashlib, json, os, pathlib, sys, zipfile
+import hashlib, json, os, pathlib, shutil, sys, zipfile
 args = sys.argv[1:]
 root = pathlib.Path(args[args.index("--repository")+1])
 output = pathlib.Path(args[args.index("--output")+1])
@@ -799,8 +982,10 @@ pathlib.Path(str(output)+".sha256").write_text(hashlib.sha256(output.read_bytes(
 pathlib.Path(str(output)+".seed.json").write_text(json.dumps({"runtime_sha256":"c"*64}))
 logs = pathlib.Path(str(output)+".logs"); logs.mkdir()
 (logs/"producer.log").write_text("produced\\n")
+(logs/"subprocess").mkdir()
+(logs/"subprocess/stderr.log").write_bytes(b"diagnostic\\x00bytes\\n")
 damage = os.environ.get("PAIR_DAMAGE")
-if damage == "logs": (logs/"producer.log").unlink()
+if damage == "logs": shutil.rmtree(logs)
 if damage == "materials": pathlib.Path(str(output)+".materials.zip").write_text("corrupt")
 if damage == "checksum": pathlib.Path(str(output)+".sha256").write_text("bad")
 if damage == "report": output.write_text("bad")
@@ -811,6 +996,9 @@ FAKE_GH = '''#!/usr/bin/env python3
 import hashlib, json, os, pathlib, shutil, sys
 args = sys.argv[1:]
 root = pathlib.Path(os.environ["FAKE_REMOTE"])
+if os.environ.get("FAKE_HANG") == ("api" if args[0] == "api" else args[1]):
+    import signal
+    signal.pause()
 if len(args) > 1 and os.environ.get("FAKE_FAIL") == args[1] and args[1] != "upload": sys.exit(23)
 def option(name): return args[args.index(name)+1]
 def metadata(directory):
