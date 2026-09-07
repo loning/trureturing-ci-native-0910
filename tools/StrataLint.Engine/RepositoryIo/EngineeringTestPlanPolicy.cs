@@ -18,58 +18,30 @@ internal static class EngineeringTestPlanPolicy
 {
     private static readonly Uri RepositoryUri = new("https://repository.invalid/");
 
-    internal static EngineeringTestPlan Evaluate(
-        IReadOnlyList<string> changedPaths,
-        RepositorySnapshot protectedBase,
-        RepositorySnapshot candidate,
-        IReadOnlyCollection<string> protectedBaseControllerInputs,
-        IReadOnlyCollection<string> candidateControllerInputs,
-        bool full = false,
-        AdmissionPlaneDecision? admissionPlane = null)
-    {
-        ArgumentNullException.ThrowIfNull(protectedBase);
-        ArgumentNullException.ThrowIfNull(candidate);
-        ArgumentNullException.ThrowIfNull(protectedBaseControllerInputs);
-        ArgumentNullException.ThrowIfNull(candidateControllerInputs);
+    // CI 的测试执行计划永不选中的项目(owner 2026-09-07)。
+    //
+    // `StrataLint.ScriptTests` 的被测对象是仓库 shell 脚本与 make target:它能证合成夹具里
+    // 打印了什么,不能证真实管线会不会正确执行 —— 器律⑦′ 对 workflow 的同一判断,此处施于
+    // 脚本。而它的代价是实测的:2026-09-07 一天内这族测试三次阻塞无关 PR(#4873、#5249、
+    // #5060 与 #5672),此前决定「何时跑它」的那台派生闭包机器自身也打过两个解全仓阻塞的
+    // hotfix(13b3f08eb5、b9770f831b)。
+    //
+    // 测试**保留在树上**:`make -C tools test` 跑整个解决方案,本地照跑;移出的只是 CI 的
+    // 判据面。判据由「碰了派生闭包才跑」变成常量「从不」,故那台派生机器随本次改动退役。
+    private static readonly ImmutableArray<string> ContinuousIntegrationExclusions =
+    [
+        "tools/tests/StrataLint.ScriptTests/StrataLint.ScriptTests.csproj",
+    ];
 
-        if (!full && admissionPlane is null
-            && candidate.TryGetFile(AdmissionPlanePolicy.FileMapPath, out var fileMap))
-        {
-            admissionPlane = AdmissionPlanePolicy.Evaluate(fileMap.RawBytes.AsSpan(), changedPaths);
-        }
-
-        var plan = EvaluateOrdinary(
-            changedPaths,
-            RepositoryRules.ReadSnapshotProjects(protectedBase),
-            RepositoryRules.ReadSnapshotProjects(candidate),
-            full,
-            digestionContentOnly: admissionPlane is
-            {
-                IsAdmissible: true,
-                Classification: AdmissionPlaneClassification.ContentOnly,
-            });
-        if (full) return plan;
-
-        var protectedClosure = ScriptTestGateClosurePolicy.Derive(
-            protectedBase,
-            protectedBaseControllerInputs);
-        var candidateClosure = ScriptTestGateClosurePolicy.Derive(
-            candidate,
-            candidateControllerInputs);
-        return ApplyScriptTestGate(
-            plan,
-            plan.Kind == EngineeringTestPlanKind.Selected
-                && plan.Projects.Contains(ScriptTestGateClosurePolicy.ProjectPath)
-            || plan.ChangedPaths.Any(path => protectedClosure.Covers(path)
-                || candidateClosure.Covers(path)));
-    }
+    private static bool IsExcludedFromContinuousIntegration(string projectPath) =>
+        ContinuousIntegrationExclusions.Contains(projectPath, StringComparer.Ordinal);
 
     internal static EngineeringTestPlan EvaluateOrdinary(
         IReadOnlyList<string> changedPaths,
         TestProjectTopologySnapshot protectedBase,
         TestProjectTopologySnapshot candidate,
         bool full = false,
-        bool digestionContentOnly = false)
+        AdmissionPlaneDecision? admissionPlane = null)
     {
         ArgumentNullException.ThrowIfNull(changedPaths);
         ArgumentNullException.ThrowIfNull(protectedBase);
@@ -86,6 +58,7 @@ internal static class EngineeringTestPlanPolicy
         var baseTestProjects = baseProjects
             .Where(static project => project.Classification == ProjectClassification.Test)
             .Select(static project => project.Path)
+            .Where(static path => !IsExcludedFromContinuousIntegration(path))
             .ToImmutableArray();
         var baseProjectPaths = baseProjects
             .Select(static project => project.Path)
@@ -102,6 +75,7 @@ internal static class EngineeringTestPlanPolicy
             })
             .Where(static path => path is not null)
             .Select(static path => path!)
+            .Where(static path => !IsExcludedFromContinuousIntegration(path))
             .Order(StringComparer.Ordinal)
             .ToImmutableArray();
         var allTestProjects = baseTestProjects
@@ -119,7 +93,8 @@ internal static class EngineeringTestPlanPolicy
                 "FULL=1 selects every protected-base and candidate-added test project");
         }
 
-        var unownedDigestionData = digestionContentOnly
+        var unownedDigestionData = admissionPlane is
+            { IsAdmissible: true, Classification: AdmissionPlaneClassification.ContentOnly }
             && changed.Length > 0
             && changed.All(static path => BackfillInventoryLoader.IsCanonicalPath(path)
                 || DigestionCasStore.IsCanonicalPath(path));
@@ -160,37 +135,6 @@ internal static class EngineeringTestPlanPolicy
                 changed,
                 selected,
                 $"selected {selected.Length} protected-base reverse-dependent or candidate-added test projects");
-    }
-
-    private static EngineeringTestPlan ApplyScriptTestGate(
-        EngineeringTestPlan plan,
-        bool include)
-    {
-        var projects = plan.Projects.ToHashSet(StringComparer.Ordinal);
-        if (include)
-        {
-            projects.Add(ScriptTestGateClosurePolicy.ProjectPath);
-            var includedProjects = projects.Order(StringComparer.Ordinal).ToImmutableArray();
-            return plan with
-            {
-                Kind = plan.Kind == EngineeringTestPlanKind.Full
-                    ? EngineeringTestPlanKind.Full
-                    : EngineeringTestPlanKind.Selected,
-                Projects = includedProjects,
-                Reason = plan.Reason + "; ScriptTests gate included by derived closure intersection",
-            };
-        }
-
-        projects.Remove(ScriptTestGateClosurePolicy.ProjectPath);
-        var selected = projects.Order(StringComparer.Ordinal).ToImmutableArray();
-        return plan with
-        {
-            Kind = selected.Length == 0
-                ? EngineeringTestPlanKind.None
-                : EngineeringTestPlanKind.Selected,
-            Projects = selected,
-            Reason = plan.Reason + "; ScriptTests gate excluded because the candidate delta misses the derived closure",
-        };
     }
 
     private static ProjectNode? FindOwner(IEnumerable<ProjectNode> projects, string changedPath) =>

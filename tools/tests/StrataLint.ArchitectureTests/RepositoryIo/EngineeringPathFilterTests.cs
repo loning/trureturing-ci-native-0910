@@ -1,6 +1,6 @@
 namespace StrataLint.ArchitectureTests;
 
-public sealed class EngineeringPathFilterTests
+public sealed partial class EngineeringPathFilterTests
 {
     private const string ScribeProject =
         "tools/StrataLint.Scribe/StrataLint.Scribe.csproj";
@@ -137,7 +137,7 @@ public sealed class EngineeringPathFilterTests
 
         Assert.Equal(EngineeringTestPlanKind.Full, plan.Kind);
         Assert.Equal(
-            [ArchitectureTestsProject, EngineTestsProject, ScribeTestsProject, ScriptTestsProject],
+            [ArchitectureTestsProject, EngineTestsProject, ScribeTestsProject],
             plan.Projects.ToArray());
     }
 
@@ -178,6 +178,65 @@ public sealed class EngineeringPathFilterTests
         Assert.Equal(
             [ArchitectureTestsProject, ScribeTestsProject],
             calls.Order(StringComparer.Ordinal));
+    }
+
+    [Fact]
+    public void ScriptTestsProjectIsExcludedEvenWhenItsOwnSourceChanges()
+    {
+        var topology = Topology(scribeTestsReferenceScribe: true);
+        var plan = EngineeringTestPlanPolicy.EvaluateOrdinary(
+            ["tools/tests/StrataLint.ScriptTests/WarmDonorScriptTests.cs"],
+            topology,
+            topology);
+
+        Assert.Equal(EngineeringTestPlanKind.None, plan.Kind);
+        Assert.Empty(plan.Projects);
+    }
+
+    [Fact]
+    public void FullPlanExcludesTheScriptTestsProjectButKeepsTheOtherTestProjects()
+    {
+        var topology = Topology(scribeTestsReferenceScribe: true);
+        var plan = EngineeringTestPlanPolicy.EvaluateOrdinary(
+            ["D5/S3/UnownedChange.lean"],
+            topology,
+            topology,
+            full: true);
+
+        Assert.DoesNotContain(
+            "tools/tests/StrataLint.ScriptTests/StrataLint.ScriptTests.csproj",
+            plan.Projects);
+        // 阴性对照:排除的是具名的那一个,不是「排除一切」。
+        Assert.Equal(
+            [ArchitectureTestsProject, EngineTestsProject, ScribeTestsProject],
+            plan.Projects.ToArray());
+    }
+
+    [Fact]
+    public void CandidateAddedScriptTestsProjectIsExcludedToo()
+    {
+        var protectedBase = new TestProjectTopologySnapshot(
+        [
+            Project(EngineProject, isTest: false),
+            Project(EngineTestsProject, isTest: true, EngineProject),
+        ]);
+        var candidate = new TestProjectTopologySnapshot(
+        [
+            Project(EngineProject, isTest: false),
+            Project(EngineTestsProject, isTest: true, EngineProject),
+            Project(ScriptTestsProject, isTest: true, EngineProject),
+        ]);
+
+        var plan = EngineeringTestPlanPolicy.EvaluateOrdinary(
+            ["tools/StrataLint.Engine/Rules.cs"],
+            protectedBase,
+            candidate);
+
+        // 候选新增也走同一排除,否则「删掉再加回来」即可绕过。
+        Assert.DoesNotContain(
+            "tools/tests/StrataLint.ScriptTests/StrataLint.ScriptTests.csproj",
+            plan.Projects);
+        Assert.Contains(EngineTestsProject, plan.Projects);
     }
 
     private static TestProjectTopologySnapshot Topology(
