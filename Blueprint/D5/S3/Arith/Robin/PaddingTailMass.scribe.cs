@@ -15,7 +15,7 @@ internal sealed class PaddingTailMassDocument : IScribeDocumentDefinition
                 DescribeId.Create("padding-tail-mass"),
                 DeclarationHandle.Create(Prefix + "padding_tail_mass"),
                 H("Uniform tail mass estimate"),
-                StatementSource.FromLean(),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(
                     Paragraph(Text(
@@ -37,7 +37,7 @@ internal sealed class PaddingTailMassDocument : IScribeDocumentDefinition
                 DescribeId.Create("bounded-exponent-mass-escape"),
                 DeclarationHandle.Create(Prefix + "bounded_exponent_mass_tendsto_zero"),
                 H("Window escape with an explicit finite-set premise"),
-                StatementSource.FromLean(),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(
                     Paragraph(Text(

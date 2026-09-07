@@ -15,7 +15,7 @@ internal sealed class PaddingRatioDocument : IScribeDocumentDefinition
                 DescribeId.Create("padding-abundancy"),
                 DeclarationHandle.Create(Prefix + "padding_abundancy"),
                 H("Local divisor sum comparison"),
-                StatementSource.FromLean(),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
                     "For a prime p and natural bound A, padding multiplies n by "
@@ -29,7 +29,7 @@ internal sealed class PaddingRatioDocument : IScribeDocumentDefinition
                 DescribeId.Create("padding-ratio"),
                 DeclarationHandle.Create(Prefix + "padding_ratio"),
                 H("Eventual strict relative gain"),
-                StatementSource.FromLean(),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(
                     Paragraph(Text(
