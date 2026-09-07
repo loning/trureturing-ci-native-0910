@@ -16,8 +16,10 @@ public sealed partial class CleanLanesCommandTests
     [InlineData("missing-type", "in_use_unknown")]
     [InlineData("missing-name", "in_use_unknown")]
     [InlineData("duplicate-type", "in_use_unknown")]
+    [InlineData("duplicate-after-policy", "in_use_unknown")]
     [InlineData("busy-after-policy", "in_use")]
     [InlineData("busy-before-policy", "in_use")]
+    [InlineData("busy-next-process", "in_use")]
     [InlineData("malformed-after-policy", "in_use_unknown")]
     public void UnnamedDescriptorsPreserveCleanupSafety(string scenario, string expectedReason)
     {
@@ -25,9 +27,10 @@ public sealed partial class CleanLanesCommandTests
         const string branch = "harness/unnamed-descriptor";
         var lane = fixture.AddLandedLane(branch);
         var head = fixture.Head(lane);
-        var idle = Encoding.UTF8.GetString(IdleLsofOutput().StandardOutput);
-        var policy = "f7\0tNPOLICY\0n\0";
-        var busy = $"f8\0tDIR\0n{lane}\0";
+        var idle = Encoding.UTF8.GetString(IdleLsofOutput().StandardOutput)
+            .Replace("p123\0", "p123\0\n", StringComparison.Ordinal) + "\n";
+        var policy = "f7\0tNPOLICY\0n\0\n";
+        var busy = $"f8\0tDIR\0n{lane}\0\n";
         var suffix = scenario switch
         {
             "network-policy" => policy,
@@ -40,8 +43,10 @@ public sealed partial class CleanLanesCommandTests
             "missing-type" => "f7\0n\0",
             "missing-name" => "f7\0tNPOLICY\0",
             "duplicate-type" => "f7\0tREG\0tNPOLICY\0n\0",
+            "duplicate-after-policy" => "f7\0tNPOLICY\0tREG\0n\0",
             "busy-after-policy" => policy + busy,
             "busy-before-policy" => busy + policy,
+            "busy-next-process" => policy + "p456\0\n" + busy,
             "malformed-after-policy" => policy + "f8\0",
             _ => throw new InvalidOperationException(scenario),
         };
