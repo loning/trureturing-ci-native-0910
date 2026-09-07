@@ -66,7 +66,7 @@ theorem scalar_series_analytic_unit_disk (a : ℕ → ℂ)
       FormalMultilinearSeries.ofScalars_apply_eq, smul_eq_mul]
   rw [← sum_eq]
   intro z hz
-  apply p.analyticOnNhd
+  apply (FormalMultilinearSeries.analyticOnNhd (p := p))
   have hn : ‖z‖₊ < (1 : ℝ≥0) := by
     exact_mod_cast (show ‖z‖ < 1 from by simpa only [Metric.mem_ball, dist_zero_right] using hz)
   have he : edist z 0 < (1 : ℝ≥0∞) := by
