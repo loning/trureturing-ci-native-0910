@@ -46,9 +46,11 @@ private theorem prod_hasDerivAt (s : Finset ι) (f : ι → ℂ → ℂ)
     (hf : ∀ j ∈ s, HasDerivAt (f j) (f j t*r j) t) :
     HasDerivAt (fun u => ∏ j ∈ s, f j u)
       ((∏ j ∈ s, f j t)*(∑ j ∈ s, r j)) t := by
+  revert hf
   induction s using Finset.induction_on with
-  | empty => simpa using hasDerivAt_const t (1:ℂ)
+  | empty => intro hf; simpa using hasDerivAt_const t (1:ℂ)
   | @insert j s hj ih =>
+      intro hf
       have h := (hf j (Finset.mem_insert_self _ _)).mul
         (ih (fun k hk => hf k (Finset.mem_insert_of_mem hk)))
       convert h using 1 <;> simp [Finset.prod_insert, Finset.sum_insert, hj] <;> ring
@@ -73,7 +75,7 @@ theorem rowMap_hasDerivAt (s : Finset ι) (a0 b0 : ℂ) (a b : ι → ℂ)
       dsimp [x] <;> ring
   have hp := prod_hasDerivAt s (fun j u => inverse (a j) (b j) (m j u))
     (fun j => psi (a j) (b j) (x j)*m' j) t hi
-  have hh := ((((hz.mul hp).const_mul b0).const_add (b0-a0)).clog hH).neg.div_const b0
+  have hh := ((((hz.const_mul b0).mul hp).const_add (b0-a0)).clog hH).neg.div_const b0
   have hn : logArgument s a0 b0 a b (z t) (fun j => m j t) ≠ 0 :=
     Complex.slitPlane_ne_zero hH
   convert hh using 1
@@ -106,7 +108,7 @@ theorem rowMap_differentiableAt [Fintype ι] (s : Finset ι)
   have hp : DifferentiableAt ℂ
       (fun q : ℂ × (ι → ℂ) => messageProduct s a b q.2) p := by
     unfold messageProduct
-    exact DifferentiableAt.fun_finsetProd (fun j hj => hi j hj)
+    exact (HasFDerivAt.finsetProd (fun j hj => (hi j hj).hasFDerivAt)).differentiableAt
   have hh : DifferentiableAt ℂ
       (fun q : ℂ × (ι → ℂ) => logArgument s a0 b0 a b q.1 q.2) p := by
     dsimp [logArgument]
