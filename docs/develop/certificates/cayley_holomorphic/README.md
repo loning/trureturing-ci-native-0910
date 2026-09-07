@@ -138,3 +138,144 @@ These finite diagnostics do not prove the general Lean statements. No Lean/lake 
 The parameter-Krawczyk work of Duff and Lee, *Certified homotopy tracking using the Krawczyk method*, arXiv:2402.07053, supplies method context for checked local analytic neighborhoods. Lee, *A priori bounds for certified Krawczyk homotopy tracking*, arXiv:2512.01355, supplies context for explicit step budgets. Neither work supplies our concrete whole-space MUB coverage or implies it from path tracking alone.
 
 The remaining concrete task is to bind these formulas to the rational interval-expression evaluator and check the complex derivative/retention bounds at every required contraction and chart transition of the actual covering forest. Uniform pole separation removes a common analytic-domain obligation, but does not discharge those numerical local proofs. The four-MUB problem and the complete strict-X branch exclusion are not solved by this increment.
+
+## 6. Projective reanchoring without accumulated complex-domain loss
+
+The prior domain handles signed Cayley transitions and restrictions. It does
+not preserve a fixed independent annulus under division by a new anchor. For
+example, the phase values 3/2 and 2/3 are individually in (1/2,2), but their
+ratio is 9/4. This does not invalidate the earlier fixed-anchor theorem. It
+identifies a missing hypothesis for unrestricted reanchoring.
+
+For R>1, use the open set of nonzero phase vectors
+
+```math
+\Omega_R=\{w\in\mathbb C^6:|w_i|<R|w_j|\text{ for every }i,j\}.
+```
+
+The strict self-pair inequality rules out zero coordinates. Every vector of
+unit phases is in this set. Common nonzero scaling, coordinate permutation,
+fixed unit coordinate prefactors and conjugation preserve the domain. Hence,
+for every anchor a,
+
+```math
+w'_i=w_i/w_a,\qquad
+w'\in\Omega_R,\qquad w'_a=1,\qquad 1/R<|w'_i|<R.
+```
+
+Successive anchor changes use the same R. Restricting a candidate set during
+certified pruning also does not widen Omega_R. These statements do not make a
+Boolean pruning operation holomorphic, and do not make an arbitrary Newton
+map a self-map.
+
+### Actual residual preservation
+
+On nonzero phases define the Laurent readout
+
+```math
+A_a(w)=\sum_i\overline{H_{ia}}w_i,\qquad
+B_a(w)=\sum_i H_{ia}/w_i,\qquad
+F_a(w)=A_a(w)B_a(w)-6.
+```
+
+This is a coordinate representation of the existing paired residual. Its
+fixed-matrix identity is
+
+```math
+F(cw)=F(w)\quad(c\ne0).
+```
+
+Indeed A(cw)=cA(w) and B(cw)=c^{-1}B(w). Reanchoring therefore preserves every
+residual exactly, including every nonzero residual tolerance band. On the
+real unit-phase torus this complex scaling action restricts to the usual
+common U(1) phase freedom.
+
+For the existing Cayley prefactors, with |s_i|=1 and both poles excluded,
+
+```math
+F_H\bigl((s_i(1+iz_i)/(1-iz_i))_i\bigr)
+=\operatorname{pairedCayleyResidual}(H,s,z).
+```
+
+This equality is a public theorem in the new source, so the new coordinates
+do not replace the original problem with an unrelated holomorphic function.
+H stays fixed. Independent coordinate phase changes preserve Omega_R, but
+generally change F_H unless H is also transformed by the appropriate row
+gauge. That distinction is included in both the theorem statements and a
+negative diagnostic.
+
+### Scale-independent Jacobian envelope
+
+The ordinary complex derivative has entries
+
+```math
+J_{ak}(w)=\overline{H_{ka}}B_a(w)-H_{ka}A_a(w)/w_k^2.
+```
+
+The entries w_k J_ak are invariant under common scaling. Expand them before
+taking norms:
+
+```math
+w_kJ_{ak}
+=\sum_{j\ne k}\left(
+\overline{H_{ka}}H_{ja}\frac{w_k}{w_j}
+-\overline{H_{ja}}H_{ka}\frac{w_j}{w_k}\right).
+```
+
+If every |H_ia|<=M and w is in Omega_R, all ratios have modulus less than R.
+There are only five nonzero-index pairs in each sum, so
+
+```math
+\boxed{|w_kJ_{ak}|\le10RM^2.}
+```
+
+For R=2 and M=1, the bound is 20 per Euler-scaled entry. It is NOT a direct
+replacement for the earlier bound on the Cayley Jacobian. The coordinates and
+input vector norms differ, so a numerical preconditioner must be transported
+using the actual chain rule. No lower singular-value bound follows from this
+upper envelope. The full six-variable derivative also retains the common-scale
+null direction; an invertible Newton system still requires a gauge choice.
+
+The local logarithmic chart w_i=s_i exp(i theta_i) has Jacobian i w_k J_ak.
+Its natural complex domain is the convex imaginary-oscillation strip
+
+```math
+\max_i\Im\theta_i-\min_j\Im\theta_j<\log R.
+```
+
+This describes a useful future route to scale-independent Taylor bounds. No
+exponential interval checker or new Newton contraction instance is delivered
+in this increment.
+
+### Delivered proof sources and executed checks
+
+New owner, with matching Scribe:
+
+```text
+D5/S3/Quantum/Tomography/ProjectiveHadamardNeighborhood.lean
+Blueprint/D5/S3/Quantum/Tomography/ProjectiveHadamardNeighborhood.scribe.cs
+```
+
+The four public theorems establish reanchoring with residual preservation,
+open-domain/gauge properties, the actual complex derivative with its scaled
+bound, and equality with the existing paired Cayley residual. They reuse the
+existing phase and residual owner, Matrix.mulVec/vecMul, continuous linear
+projections and complex derivative rules. No interval, Hadamard, basis or
+rank-one-context definition is duplicated.
+
+`check_projective_hadamard_neighborhood.py` was run with exact Gaussian-rational
+arithmetic. It checked 64 matrix/phase families, 384 anchor changes, 2304
+Jacobian entries via independently coded dual arithmetic, 2304 scaled-entry
+bounds, 64 paired-coordinate bindings and 128 domain covariance checks.
+It rejects the independent-annulus reanchoring mistake, a zero phase, inverse
+at zero, the wrong reciprocal derivative sign and spurious fixed-H independent
+phase invariance. The test seed lies on a seam; it calibrates a theorem valid
+for any fixed bounded matrix and is not a new strict-X exclusion.
+
+The result is in `projective_verification.json`. These are finite diagnostics,
+not a universal proof or an independent expert review. Lean/lake elaboration
+and Scribe rendering were not executed. No full cover was re-run, no additional
+Hadamard parameter region was excluded, and no kernel-admission or information
+seal is claimed. The analytic domain can now follow anchor changes without
+width loss; numerical contraction/retention bounds for the actual forest are
+still separate obligations.
