@@ -242,7 +242,12 @@ public sealed partial class CoverAtomTests
             BackfillInventoryLoader.LoadRoot(temporary.Path).RequireDigestionEntries(),
             candidate => candidate.AtomId == spec.AtomId);
         Assert.Empty(entry.Receipts.Scribe);
-        var written = DirectoryLedgerTestSupport.Image(temporary.Path);
+        var written = File.ReadAllText(Path.Combine(
+            temporary.Path,
+            BackfillInventoryLoader.RootPath,
+            entry.SourceId,
+            "absorbed-closed",
+            entry.AtomId + ".yaml"));
         Assert.DoesNotContain("scribe:", written, StringComparison.Ordinal);
     }
 
