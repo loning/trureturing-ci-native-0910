@@ -45,6 +45,10 @@ public sealed class ScribeCoverageDeltaTests
         {
             Coverage = [entry.Coverage[0] with { TargetStatementId = null }],
         });
+        fixture.Document = ScribeSeedFixture.Map(fixture.Document, entry => entry with
+        {
+            ProjectedStatus = new DigestionStatus(DigestionMigrationState.Absorbed, DigestionTruthState.Closed),
+        });
         var repository = fixture.Gateway(RawChangeSet.Create([ScribeSeedFixture.EntryPath(fixture.First)]));
 
         var result = DigestStatusCommand.Run(repository, new FakeLeanReportSource(fixture.Inputs.Report),
@@ -78,6 +82,10 @@ public sealed class ScribeCoverageDeltaTests
     {
         var fixture = new ScribeSeedFixture();
         fixture.Baseline = ScribeSeedFixture.Map(fixture.Baseline, entry => entry with { Coverage = [] });
+        fixture.Document = ScribeSeedFixture.Map(fixture.Document, entry => entry with
+        {
+            ProjectedStatus = new DigestionStatus(DigestionMigrationState.Absorbed, DigestionTruthState.Closed),
+        });
         var repository = fixture.Gateway(RawChangeSet.Create([ScribeSeedFixture.EntryPath(fixture.First)]));
 
         var result = DigestStatusCommand.Run(repository, new FakeLeanReportSource(fixture.Inputs.Report),
