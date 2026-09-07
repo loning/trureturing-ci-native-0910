@@ -91,6 +91,7 @@ internal static class WorktreeCommand
         string? branchOid = null;
         string? creationLock = null;
         string? creationMetadata = null;
+        WorktreeBranchTracking? branchTracking = null;
         var halfBuiltRecovered = false;
         try
         {
@@ -100,6 +101,7 @@ internal static class WorktreeCommand
             branchOid = VerifyBase(options, runner);
             var pins = LeanPinSet.ReadBase(options.Source, branchOid, runner);
             var donor = ProbeDonor(options, pins, runner);
+            branchTracking = WorktreeBranchTracking.Prepare(options, runner);
 
             creationLock = $"worktree-init:{Guid.NewGuid():N}";
             RunRequired(
@@ -111,6 +113,7 @@ internal static class WorktreeCommand
                 BoundedProcessRunner.HangDetectionBudget,
                 "git branch creation failed");
             branchCreated = true;
+            branchTracking?.Apply(options, runner);
             RunRequired(
                 runner,
                 "git",
@@ -170,7 +173,10 @@ internal static class WorktreeCommand
                     if (worktreeCreated || creationMetadata is not null)
                         cleanup = Cleanup(options, creationLock, creationMetadata, runner);
                     if (cleanup.Length == 0)
+                    {
                         WorktreeCreationSafety.CleanupCreatedBranch(options, creationLock, branchOid, branchCreated, runner);
+                        branchTracking?.Rollback(options, runner);
+                    }
                 }
             }
             catch (Exception cleanupException) when (cleanupException is not OutOfMemoryException)
