@@ -550,8 +550,10 @@ public sealed partial class LeanCacheEnsureCommandTests
 [Collection("Lean cache environment")]
 public sealed class LeanCacheRunScriptTests
 {
-    [Fact]
-    public void AdapterDelegatesWrappedCommandToCanonicalWriterJudgeWithoutExecutingItDirectly()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AdapterDelegatesWrappedCommandToCanonicalWriterJudgeWithoutExecutingItDirectly(bool boundDll)
     {
         if (OperatingSystem.IsWindows()) return;
 
@@ -567,6 +569,7 @@ public sealed class LeanCacheRunScriptTests
         var arguments = Path.Combine(fixture.Path, "dotnet-arguments");
         var wrappedMarker = Path.Combine(fixture.Path, "wrapped-command-ran");
         var wrapped = Path.Combine(fixture.Path, "wrapped-command");
+        var cliDll = Path.Combine(fixture.Path, "bound-candidate.dll");
         Directory.CreateDirectory(Path.GetDirectoryName(script)!);
         Directory.CreateDirectory(bin);
         File.Copy(
@@ -583,13 +586,14 @@ public sealed class LeanCacheRunScriptTests
             "/bin/bash",
             [
                 "-c",
-                "PATH=\"$1:$PATH\" DOTNET_ARGUMENTS=\"$2\" WRAPPED_MARKER=\"$3\" exec /bin/bash \"$4\" \"$5\" payload",
+                "PATH=\"$1:$PATH\" DOTNET_ARGUMENTS=\"$2\" WRAPPED_MARKER=\"$3\" STRATALINT_LEAN_CLI_DLL=\"$6\" exec /bin/bash \"$4\" \"$5\" payload",
                 "lean-cache-run-test",
                 bin,
                 arguments,
                 wrappedMarker,
                 script,
                 wrapped,
+                boundDll ? cliDll : "",
             ],
             fixture.Path,
             TestBudgets.ScriptProcessHangGuard,
@@ -597,20 +601,24 @@ public sealed class LeanCacheRunScriptTests
 
         Assert.Equal(97, result.ExitCode);
         Assert.False(File.Exists(wrappedMarker));
+        string[] cliArguments = boundDll ? [cliDll] :
+        [
+            "run",
+            "--project",
+            Path.Combine(LeanCacheGuard.PhysicalPath(repository), "tools", "StrataLint.Cli", "StrataLint.Cli.csproj"),
+            "--configuration",
+            "Release",
+            "--",
+        ];
         Assert.Equal(
-            new[]
+            cliArguments.Concat(new[]
             {
-                Path.Combine(
-                    LeanCacheGuard.PhysicalPath(repository),
-                    "tools",
-                    "StrataLint.Cli",
-                    "bin", "Release", "net10.0", "StrataLint.dll"),
                 "worktree",
                 "with-cache-writer",
                 "--",
                 wrapped,
                 "payload",
-            },
+            }),
             File.ReadAllLines(arguments));
     }
 
