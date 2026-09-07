@@ -76,6 +76,9 @@ internal sealed class StubCliEnvironment(
     public CommandResult AlignScribeReceipt(IReadOnlyList<string> arguments) =>
         new(false, string.Empty, "align-scribe-receipt is not configured in this fixture");
 
+    public CommandResult StripScribeReceipts(IReadOnlyList<string> arguments) =>
+        new(false, string.Empty, "strip-scribe-receipts is not configured in this fixture");
+
     public CommandResult Route(IReadOnlyList<string> arguments) =>
         new(false, string.Empty, "route is not configured in this fixture");
 

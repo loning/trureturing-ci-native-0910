@@ -68,7 +68,10 @@ internal sealed class GreedyThreeSumfreeTwoParameterDocument : IScribeDocumentDe
                 + "four exceptions and the non-strict cutoff z at least g+d agree with the "
                 + "published version. The result is universal in both parameters; finite "
                 + "prefix checks are anonymous fidelity examples, not separate certificates.",
-                DescribeRole.Theorem),
+                DescribeRole.Theorem,
+                new OpenProblemResolutionClaim(
+                    ProblemSlugRef.Create("greedy-three-sumfree-two-parameter"),
+                    ResolutionKind.Proved)),
             Node("s_eq_A", "The greedy sequence equals the interval candidate",
                 Disp(Seq(Parameters("g", "d"), Hypotheses(), Sp, Implies, Sp,
                     Parenthesized(Seq(Call("S", G(), DeltaParameter()), Sp, Eq, Sp,
@@ -78,11 +81,12 @@ internal sealed class GreedyThreeSumfreeTwoParameterDocument : IScribeDocumentDe
                 DescribeRole.Theorem))));
 
     private static DocumentBlock Node(string name, string title, Formula formula,
-        string prose, DescribeRole role) => Describe.Lean(
+        string prose, DescribeRole role,
+        OpenProblemResolutionClaim? resolves = null) => Describe.Lean(
         DescribeId.Create("greedy-three-sumfree-" + name.Replace('_', '-').ToLowerInvariant()),
         DeclarationHandle.Create("D5/S1/Words/Sumfree/GreedyThreeSumfreeTwoParameter." + name),
         H(title), StatementSource.FromAuthor(formula), AssessedProvenance.FromRepo(),
-        Blocks(Paragraph(Text(prose))), role);
+        Blocks(Paragraph(Text(prose))), role, resolves);
 
     private static Formula RestrictedFormula()
     {
