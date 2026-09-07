@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Entropy/Feedback/DemonIdentity.demon_average_divergence_eq
     target_statement_id: sha256:15e5d42ec57f262d820334e1a5eaa1e91b37b64b86c36d219891f67002f20495
 receipts:
-  scribe: []
   unresolved_subitems: []

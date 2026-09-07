@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S0/Tower/GoldenClauseTwo/ErrataPackage.golden_clause_two_errata_package
     target_statement_id: sha256:b6de95b778f368e80f476378436d5e85f3ba5c8a1ed0265e27114c0ab5e7dc2f
 receipts:
-  scribe: []
   unresolved_subitems: []

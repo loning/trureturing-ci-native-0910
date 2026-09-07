@@ -8,5 +8,4 @@ coverage_gids:
   - gid: D5/S0/Tower/Champions/RadixTable.radix_champion_table
     target_statement_id: sha256:dd749cba80303728dea4d1012345ab977146f857a23b0610d6ff9db1430c74bf
 receipts:
-  scribe: []
   unresolved_subitems: []
