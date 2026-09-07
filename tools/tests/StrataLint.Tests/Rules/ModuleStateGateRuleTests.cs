@@ -78,7 +78,8 @@ public sealed class ModuleStateGateRuleTests
     }
 
     [Fact]
-    public void CandidateWithoutD5ModuleDoesNotExecuteRule()
+    [BaseFactScopeProbe(34)]
+    public void Sl034ScopesCandidateWithoutD5Module()
     {
         var fixture = new RuleFixture();
         fixture.Files["docs/new-note.md"] = "fixture\n";
