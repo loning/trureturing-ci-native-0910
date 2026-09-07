@@ -443,8 +443,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          printf '%s\n' 'Actions project 层缺席;取 release cache,取回失败即失败,不回落编译'
-          PATH="$HOME/.elan/bin:$PATH" candidate/tools/scripts/worktree/lean-cache-publish.sh fetch --repository "$GITHUB_WORKSPACE/candidate"
+          printf '%s\n' 'Actions project 层缺席;取 release cache:精确 → config 前缀 → 同工具链最近一层做种子,差量由 lake build 在本 job 预算内补齐(工程优化规范 §15 有预算的源码重建);连种子都没有才失败'
+          PATH="$HOME/.elan/bin:$PATH" candidate/tools/scripts/worktree/lean-cache-publish.sh fetch --allow-seed --repository "$GITHUB_WORKSPACE/candidate"
       - name: Produce source-bound canonical Lean reports
         if: steps.report-reuse.outcome != 'success'
         env: { GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }
