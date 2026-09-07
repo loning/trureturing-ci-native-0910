@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S1/Depth/GoldenHurwitzBound.golden_hurwitz_bound
     target_statement_id: sha256:a982663a06856268f59db877cde7130b5e4c1680c150e2a63098e4e9c9d4a8e7
 receipts:
-  scribe:
-    - gid: D5/S1/Depth/GoldenHurwitzBound.golden_hurwitz_bound
-      definition_sha256: sha256:00205d7a3236aa28935a239f6d2689840fc88c2986ee248eb1175ca398776d4b
-      emission_sha256: sha256:2943b22923e29ffb33d052e45317935d18f375808013876f6c994d3915101477
   unresolved_subitems: []

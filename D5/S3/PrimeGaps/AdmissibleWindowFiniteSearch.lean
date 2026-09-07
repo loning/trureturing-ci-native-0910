@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/PrimeGaps/AdmissibleWindowFiniteSearch
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: kind=checker; basis=consumer=D5/S3/PrimeGaps/OptimalAdmissibleEightTuple.admissibleWindowWitness_8_26; instance=D5/S3/PrimeGaps/OptimalAdmissibleEightTuple.admissibleWindowWitness_8_26
    digest: Normalize admissible windows and reflect their existence into finite even-subset search. -/
 
 import D5.S3.PrimeGaps.DHLAdmissibleDiameterTransfer

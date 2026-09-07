@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S1/FixedPoints/Algebraic/GoldenFixedPoint.golden_fixed_point_unique
     target_statement_id: sha256:771aee0dba83a9ce3372477e12c888e107eba4084f286c96b7b01362ddf3e60f
 receipts:
-  scribe:
-    - gid: D5/S1/FixedPoints/Algebraic/GoldenFixedPoint.golden_fixed_point_unique
-      definition_sha256: sha256:bda08199f1e8febd30347a1ecc8a03e786924516f7c2733bae1266279e1a1229
-      emission_sha256: sha256:0ed78a7e292621f227f5302b35ec36ce492c0c38d25fadd95e6c447c2846c057
   unresolved_subitems: []

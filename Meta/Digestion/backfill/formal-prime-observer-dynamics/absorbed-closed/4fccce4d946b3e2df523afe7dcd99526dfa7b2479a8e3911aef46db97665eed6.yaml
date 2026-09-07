@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Analytic/PrimeProducts/DistinctPrimeFactorCountBound.distinct_prime_factor_count_bound
     target_statement_id: sha256:54910541fa3ba546530e061db8e1b036b6ce09dc64bc51b0e977ef3347de3361
 receipts:
-  scribe:
-    - gid: D5/S3/Analytic/PrimeProducts/DistinctPrimeFactorCountBound.distinct_prime_factor_count_bound
-      definition_sha256: sha256:3c351f65940cf9679e77062d93d2dff342324450eedccb67b7d63ad1c59cbb61
-      emission_sha256: sha256:4ec4c38e060ae4fc154390319e1dcd88a3bc542bd893a95fb539e07ef2d4b706
   unresolved_subitems: []

@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Observer/Chronology/SignatureOrderedMoment
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: none
    digest: Finite signatures store event squares and ordered pairs; Magnus is their antisymmetrization. -/
 
 import D5.S3.Observer.Chronology.PrimeGoldenThirdOrderChronologyEscape

@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/LegitimacyCorrectness.authorized_process_can_fail_factually
     target_statement_id: sha256:5474bf28d2b4d9c9ccd4962e3c5965143a3533e751a56bbce886981e2ce669c1
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/LegitimacyCorrectness.authorized_process_can_fail_factually
-      definition_sha256: sha256:c43520fd6f0fb4e532fbd4a1375a8f37bcd7de83471e063e42940df596b0cc53
-      emission_sha256: sha256:61fe7b0f16e6179b6a07d0a1f65ce5569c403aa740225043331931be686a3650
   unresolved_subitems: []

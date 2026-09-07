@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ObserverMemory/FiniteCountermodels/CounterfactualFairnessDoesNotImplyGroupParity.counterfactual_fairness_does_not_imply_group_parity
     target_statement_id: sha256:6e290b4c6a8eacc48925421a130e4cf8eec704514136051d502e3dead01be8d2
 receipts:
-  scribe:
-    - gid: D5/S3/ObserverMemory/FiniteCountermodels/CounterfactualFairnessDoesNotImplyGroupParity.counterfactual_fairness_does_not_imply_group_parity
-      definition_sha256: sha256:0f48e91464cd82955dd349525234dd80227081e35b5ca75b9d0d6f21c475999e
-      emission_sha256: sha256:2b4c46089c618b561c3b67629d385a02dfe8559a797ce79faeb398f0e0b4220d
   unresolved_subitems: []

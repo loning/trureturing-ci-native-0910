@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Analytic/Isolation/MeromorphicContinuationUniqueness.meromorphic_continuation_unique
     target_statement_id: sha256:02162bb4b666beca5a369c05397549f5e3561b542b0670b4204386385c730959
 receipts:
-  scribe:
-    - gid: D5/S3/Analytic/Isolation/MeromorphicContinuationUniqueness.meromorphic_continuation_unique
-      definition_sha256: sha256:b16a772f06ff6d6fd8e4eb39e5331a6aec65ab41ea1144ff39490776e4725721
-      emission_sha256: sha256:3879c9bfa2072084f166084fb192465d65a6681fd03f616216f81301c1c838bb
   unresolved_subitems: []

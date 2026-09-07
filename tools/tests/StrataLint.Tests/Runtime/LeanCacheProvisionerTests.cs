@@ -565,7 +565,8 @@ public sealed partial class LeanCacheProvisionerTests
     private static void WritePins(string root)
     {
         File.WriteAllText(Path.Combine(root, "lean-toolchain"), "leanprover/lean4:v4.33.0\n");
-        File.WriteAllText(Path.Combine(root, "lake-manifest.json"), "{\"version\":\"1.1.0\"}\n");
+        File.WriteAllText(Path.Combine(root, "lake-manifest.json"),
+            "{\"packages\":[{\"name\":\"mathlib\",\"rev\":\"0123456789abcdef0123456789abcdef01234567\"}]}\n");
     }
 
     private static LeanPinSet ReadPins(string root) =>

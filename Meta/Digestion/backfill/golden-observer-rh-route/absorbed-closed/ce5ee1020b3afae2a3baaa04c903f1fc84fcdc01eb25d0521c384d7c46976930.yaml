@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Weil/ZeroInfinitude/ArchimedeanDivergence.archimedean_divergence_of_decay
     target_statement_id: sha256:238ed1567cb63d2d6c6ac0b00e1a837408ca8337ea92f4818ecf70dc807d5b7d
 receipts:
-  scribe:
-    - gid: D5/S3/Weil/ZeroInfinitude/ArchimedeanDivergence.archimedean_divergence_of_decay
-      definition_sha256: sha256:035e368973ce38ca987dc1dbb504de1fd75a0dec6c800e2d5188ba1ddb526dc3
-      emission_sha256: sha256:1a6c5d9c9274cf9c8683758fca47e0df3b9072262057af9ef2cb39b5239e9052
   unresolved_subitems: []

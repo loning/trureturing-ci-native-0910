@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Constants/Radicals/SqrtThreeThreshold.three_lt_two_mul_sqrt_three
     target_statement_id: sha256:e7bbf8841c116faa63d7f25f61e6929a2e6b290d0dab3f3d3f4bf96fc4ccc2b8
 receipts:
-  scribe:
-    - gid: D5/S3/Constants/Radicals/SqrtThreeThreshold.three_lt_two_mul_sqrt_three
-      definition_sha256: sha256:98094b535cdc63e16c6beba946f33f01d9ca2379b5cca9355e76061c1191166a
-      emission_sha256: sha256:996e5292e47f0b838cab753398478a4f60ddad6bb803b32959fac3826b70620a
   unresolved_subitems: []

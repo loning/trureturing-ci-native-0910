@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Interpretation/InterpretationFixedPoint.conceptual_equivalence_and_stability_reach_fixed_point
     target_statement_id: sha256:28c632c9c420b38fe831e1f807011b1dc96eb1d53351a7b1572250029bf5d96e
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Interpretation/InterpretationFixedPoint.conceptual_equivalence_and_stability_reach_fixed_point
-      definition_sha256: sha256:fa8abee60665e57e40ea4c15e8f6a76ae040cd0be5a373a057e6eb1fb7251b00
-      emission_sha256: sha256:2c58016319c01d198e6a9c578058d878248eccbd89fb197bf414a889be360ab7
   unresolved_subitems: []

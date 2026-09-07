@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Midline/Cayley/RadialBoundaryPhaseDerivative.radial_boundary_phase_derivative
     target_statement_id: sha256:3c438d9a17fbad0658851ddafa36b5b2d0882a82d7fcacb3b389c9533183143d
 receipts:
-  scribe:
-    - gid: D5/S3/Midline/Cayley/RadialBoundaryPhaseDerivative.radial_boundary_phase_derivative
-      definition_sha256: sha256:9a6eb8b3f3af8db5cf603503523d89800508164e2c32ea6361ebe6af9f51bd6c
-      emission_sha256: sha256:321261976cbf925dfba4e33b2aa84f2daa547762d9d2fa661014d71d45ed2f9f
   unresolved_subitems: []

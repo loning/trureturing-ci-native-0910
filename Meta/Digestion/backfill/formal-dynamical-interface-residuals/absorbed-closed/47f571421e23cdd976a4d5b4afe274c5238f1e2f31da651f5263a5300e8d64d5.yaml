@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Quantum/Completion/UniformCompletionObstruction.uniform_completion_obstruction
     target_statement_id: sha256:46d1f68e4a9263c2ca8c47dd711fdd156bbdd6a0dd788d908f7248577d719467
 receipts:
-  scribe:
-    - gid: D5/S3/Quantum/Completion/UniformCompletionObstruction.uniform_completion_obstruction
-      definition_sha256: sha256:f06ea1ed86644495121f7dfd79d9dd54f866d9a50964335f1ee3731c570147e6
-      emission_sha256: sha256:c7d9e60815461a93079cd58375e0c807220b8152f10e5b49c33c813f30fa68fd
   unresolved_subitems: []

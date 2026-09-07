@@ -639,6 +639,16 @@ artifact_id = "none"
 runtime_disposition = "committed-source"
 
 [[files]]
+pattern = "tools/tests/StrataLint.ScriptTests/Fixtures/*.py"
+kind = "program"
+admission_plane = "judge"
+produced_by = "none"
+consumed_by = ["dotnet"]
+verified_by = ["dotnet-test"]
+artifact_id = "none"
+runtime_disposition = "committed-source"
+
+[[files]]
 pattern = "tools/tests/StrataLint.Tests/Fixtures/fixture-registry.yaml"
 kind = "data"
 admission_plane = "content"

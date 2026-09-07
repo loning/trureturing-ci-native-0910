@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Aggregation/SymmetricGainAllocation.symmetric_gain_allocation
     target_statement_id: sha256:451f1dda61afd67d9da4b2c6a75c836227c403040edb7752ac5ad1321c9c6c7b
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Aggregation/SymmetricGainAllocation.symmetric_gain_allocation
-      definition_sha256: sha256:68d631736d954ca0cd482b38b2b8f2c66e0fbcf8743afefccdce9c5b49268539
-      emission_sha256: sha256:300a104f82bcc5d1cc8fd3c6ac0b2951c65ce8f2f0dc3d501c50bbc01e708d4c
   unresolved_subitems: []

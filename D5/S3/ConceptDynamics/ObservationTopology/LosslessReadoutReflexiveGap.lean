@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/ConceptDynamics/ObservationTopology/LosslessReadoutReflexiveGap
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: none
    digest: A lossless readout captures all predicates but no same-state catalog captures them all. -/
 
 import D5.S3.ConceptDynamics.Dialectics.RealizedReadoutCompatibility

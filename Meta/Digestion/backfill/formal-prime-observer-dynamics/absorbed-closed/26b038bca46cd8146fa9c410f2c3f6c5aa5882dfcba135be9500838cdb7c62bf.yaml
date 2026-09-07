@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S0/Observation/NewtonPowerSumCharacteristicPolynomial.matrix_charpoly_eq_of_spectral_power_sums_eq
     target_statement_id: sha256:643fa65f421e5735d7a9f8d900d15d5764a584ba062abe62736fcaa96c96f280
 receipts:
-  scribe:
-    - gid: D5/S0/Observation/NewtonPowerSumCharacteristicPolynomial.matrix_charpoly_eq_of_spectral_power_sums_eq
-      definition_sha256: sha256:810baba05ce5c3345bd4dde234c3b016e82f81709e5004137d45b259ef498cc3
-      emission_sha256: sha256:d6eb831400fce4cf665b78b8b548079fe025a075021d7cf54be38580db1305ae
   unresolved_subitems: []

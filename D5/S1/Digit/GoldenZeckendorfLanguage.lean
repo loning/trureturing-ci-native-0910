@@ -3,6 +3,7 @@
    mirror-B: D5/B/S1/Digit/GoldenZeckendorfLanguage
    mirror-E: none(waiver:arithmetic-language-bridge)
    anchors: [mathlib/module/Mathlib.Data.Nat.Fib.Zeckendorf]
+   utility: none
    digest: Canonical dense MSD Zeckendorf words execute in the binary base. -/
 
 import D5.S0.Automata.BinaryZeckendorfLanguage

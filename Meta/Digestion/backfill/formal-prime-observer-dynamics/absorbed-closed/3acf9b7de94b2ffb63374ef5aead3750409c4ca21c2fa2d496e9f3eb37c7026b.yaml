@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Entropy/Submodularity/SelectedObservationInformationMonotonicityCanonical.selected_observation_information_monotone_canonical
     target_statement_id: sha256:8b702ad57c140218ac12a71c3029c5fd73f464e2c9ceb68fb0bb53ea4118264a
 receipts:
-  scribe:
-    - gid: D5/S3/Entropy/Submodularity/SelectedObservationInformationMonotonicityCanonical.selected_observation_information_monotone_canonical
-      definition_sha256: sha256:efc8610e821318610e4ca78e5a0dc515cdd7bd6774efba317477476fc43a751b
-      emission_sha256: sha256:0d224fc12c85ad37ac7c6c1b3d0d042d7bd512de5958d36ca218749babf7221a
   unresolved_subitems: []

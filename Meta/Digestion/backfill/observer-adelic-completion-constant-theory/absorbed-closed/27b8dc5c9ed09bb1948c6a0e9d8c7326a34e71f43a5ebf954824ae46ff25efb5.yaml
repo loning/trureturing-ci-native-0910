@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Entropy/Observation/DualRepairEntropyDecomposition.dual_repair_entropy_decomposition
     target_statement_id: sha256:73d4879c1ca2fea780d04473eea2621afd886f55e7343545485eddbdf7524084
 receipts:
-  scribe:
-    - gid: D5/S3/Entropy/Observation/DualRepairEntropyDecomposition.dual_repair_entropy_decomposition
-      definition_sha256: sha256:1f96965ed3a8aead1b481423a29dee669b7ef37f4956639205e4bb311de8647f
-      emission_sha256: sha256:5d10317163d9e013c630104f5ab64bf5f74056c37ac6a081feb11b11346c2ee1
   unresolved_subitems: []

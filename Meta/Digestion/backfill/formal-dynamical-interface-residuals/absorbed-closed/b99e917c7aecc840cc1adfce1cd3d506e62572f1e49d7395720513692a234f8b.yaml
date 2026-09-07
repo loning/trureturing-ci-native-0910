@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Prediction/PredictiveMemoryEntropyLowerBound.predictive_memory_entropy_lower_bound
     target_statement_id: sha256:dd6b4f9ce102eb6eb9a55c80948ed6a5df05be840efc159c2a81fdbfe05faf90
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Prediction/PredictiveMemoryEntropyLowerBound.predictive_memory_entropy_lower_bound
-      definition_sha256: sha256:ed901825118a2af4c8a6bace07dbff8b78e7d608b47c9b36e1ecfcffc265ea42
-      emission_sha256: sha256:2a8244042b2438ddcaae182762862e66472977af6e40867bbf5b33b880f81520
   unresolved_subitems: []
