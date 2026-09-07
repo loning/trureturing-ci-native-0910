@@ -1,0 +1,29 @@
+{
+  "status": "EXACT_FINITE_DIAGNOSTICS_ONLY",
+  "families": 64,
+  "reanchoring_checks": 384,
+  "complex_jacobian_entries_by_dual_arithmetic": 2304,
+  "scaled_derivative_bounds": 2304,
+  "paired_owner_bindings": 64,
+  "monomial_and_conjugate_domain_checks": 128,
+  "bound_squared": 400,
+  "maximum_observed_scaled_squared": "17977148010075941012056245299898553754/195826092780271318012019615409765625",
+  "negative_controls": [
+    "independent_annulus_reanchoring_loss",
+    "zero_phase_domain",
+    "zero_inverse",
+    "wrong_reciprocal_derivative_sign",
+    "fixed_H_independent_phase_invariance"
+  ],
+  "lean_elaboration_executed": false,
+  "scribe_rendered": false,
+  "complete_cover_replayed": false,
+  "new_Hadamard_region_excluded": false,
+  "scope": "Exact rational samples diagnose errors; universal claims depend on the Lean proof, not this report.",
+  "source_sha256": {
+    "D5/S3/Quantum/Tomography/ProjectiveHadamardNeighborhood.lean": "10d3eee12ba3f471f2b147217568392265e02cb6158639362abe01668d498ed1",
+    "Blueprint/D5/S3/Quantum/Tomography/ProjectiveHadamardNeighborhood.scribe.cs": "f01c23652e70b61febf486caaebc1fa4a4be6ad800c5a2352637a5458511c890",
+    "scripts/research/check_projective_hadamard_neighborhood.py": "124d70d00a2e92ca28f6ecd689e6b5f18033e59d469dc9b1ab689ef12776b573",
+    "docs/develop/certificates/cayley_holomorphic/README.md": "b083d2fcabb5c8545070396902a33ff7b9c5c78ee0b4f8d88c7f9de222175fe9"
+  }
+}
