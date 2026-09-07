@@ -5,9 +5,8 @@
 # tag 绑定 (toolchain, os, arch, config_sha256, sources_sha256) 五元组；同一元组只发一次。
 #
 # 这个归档**不是权威**：它是一个加速器，不构成独立的 admission 证据。消费侧 (`fetch`)
-# 对**依赖层身份** (`toolchain`/`config_sha256`)、归档完整性与摘要一律 fail-closed;
-# 唯独 `sources_sha256` 允许回退到同 config 的最近一份,差量交给 `lake build` 补——
-# 那是加速器该有的形状,不是把关。
+# 对 toolchain、归档完整性与摘要一律 fail-closed;默认只允许 sources 回退到同 config
+# 的最近一份。fetch --allow-seed 另允许同工具链的 project 种子,差量交给 lake build。
 #
 # 【勘误：这里曾写「永远不进 admission 信任链」，那句话是假的】
 #
@@ -70,20 +69,23 @@ sha256_of() {
 
 usage() {
   cat >&2 <<'USAGE'
-usage: lean-cache-publish.sh <address|publish|fetch> [--repository DIR]
+usage: lean-cache-publish.sh <address|publish|fetch> [--repository DIR] [--allow-seed]
 
   address   打印当前工作树对应的缓存 tag 与其五元组，不做任何网络访问
   publish   若该 tag 尚不存在，打包 .lake/build 并发布为该 tag 的资产
-  fetch     取回与当前工作树完全匹配的归档并解包；任何不匹配即 fail-closed
+  fetch     精确地址优先,其次同 config 前缀;校验失败即 fail-closed
+  --allow-seed  仅供 fetch:两级均无层时,允许同工具链最近的 project 层作种子
 USAGE
   exit 2
 }
 
 repository="$ROOT"
+allow_seed=0
 shift || true
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --repository) repository="${2:?--repository needs a value}"; shift 2 ;;
+    --allow-seed) [[ "$VERB" == fetch ]] || usage; allow_seed=1; shift ;;
     *) usage ;;
   esac
 done
@@ -253,15 +255,36 @@ case "$VERB" in
     # 旧基底里过期的模块会被重编译。这正是 mathlib `lake exe cache get` 的模型。
     resolved="$tag"
     mode="exact"
+    seed_config=""
     if ! gh release download "$tag" --repo "$REPO" --dir "$staged" --pattern "$asset" --pattern 'manifest.txt' >/dev/null 2>&1; then
       prefix="lean-cache-v1-${slug}-${config_sha256:0:16}-"
-      resolved="$(gh release list --repo "$REPO" --limit 100 --json tagName --jq '.[].tagName' 2>/dev/null \
-                    | grep "^${prefix}" | head -1)"
-      [[ -n "$resolved" ]] \
-        || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"no release for this address nor its config prefix"}\n' "$tag"; exit 1; }
+      releases="$(gh release list --repo "$REPO" --limit 100 --json tagName,createdAt \
+        --jq 'sort_by(.createdAt) | reverse | .[].tagName' 2>/dev/null)" \
+        || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"could not list releases"}\n' "$tag"; exit 1; }
+      resolved=""
+      seed=""
+      while IFS= read -r release_tag; do
+        if [[ "$release_tag" == "$prefix"* ]]; then
+          resolved="$release_tag"
+          break
+        fi
+        if [[ -z "$seed" && "$release_tag" == "lean-cache-v1-${slug}-"* ]]; then
+          seed="$release_tag"
+        fi
+      done <<< "$releases"
       mode="prefix"
+      if [[ -z "$resolved" && "$allow_seed" == 1 && -n "$seed" ]]; then
+        resolved="$seed"
+        mode="seed"
+        seed_config="${seed#"lean-cache-v1-${slug}-"}"
+        seed_config="${seed_config%%-*}"
+        [[ "$seed_config" =~ ^[0-9a-f]{16}$ ]] \
+          || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"seed tag has a malformed config address"}\n' "$tag"; exit 1; }
+      fi
+      [[ -n "$resolved" ]] \
+        || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"no release for this address nor its config prefix or an allowed same-toolchain seed"}\n' "$tag"; exit 1; }
       gh release download "$resolved" --repo "$REPO" --dir "$staged" --pattern "$asset" --pattern 'manifest.txt' >/dev/null 2>&1 \
-        || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"prefix candidate %s could not be downloaded"}\n' "$tag" "$resolved"; exit 1; }
+        || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"%s candidate %s could not be downloaded"}\n' "$tag" "$mode" "$resolved"; exit 1; }
     fi
     [[ -f "$staged/$asset" && -f "$staged/manifest.txt" ]] \
       || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"release is missing the archive or its manifest"}\n' "$tag"; exit 1; }
@@ -272,12 +295,21 @@ case "$VERB" in
       || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"manifest declares no digest"}\n' "$tag"; exit 1; }
     [[ "$declared" == "$actual" ]] \
       || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"digest mismatch"}\n' "$tag"; exit 1; }
-    # 严格相等的只有依赖层身份。`os`/`arch` 不承重(olean 无平台相关二进制,
-    # mathlib 亦对所有平台发同一份);`sources_sha256` 在前缀回退下必然不同,
-    # 那正是回退的用途,由 lake 补差量兜底。
+    # Seed safety (#5994): mathlib is restored separately, keyed by the candidate's
+    # manifest and toolchain; lakefile changes affect only the project cache key.
+    # This archive supplies only the project layer. For an honestly produced cache,
+    # each module's content-addressed .trace depHash makes lake build rebuild what
+    # config/source changes invalidate, so stale oleans are not reused as current.
+    # This is build invalidation, not output authentication; the trust limit above
+    # still applies. Exact/prefix keep full config equality; seed binds its own tag.
     for field in toolchain config_sha256; do
       want="$(emit_address | sed -n "s/^${field}=//p")"
       got="$(sed -n "s/^${field}=//p" "$staged/manifest.txt")"
+      if [[ "$mode" == seed && "$field" == config_sha256 ]]; then
+        [[ "$got" =~ ^[0-9a-f]{64}$ && "${got:0:16}" == "$seed_config" ]] \
+          || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"seed config does not match its release tag"}\n' "$tag"; exit 1; }
+        continue
+      fi
       [[ "$want" == "$got" ]] \
         || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"%s mismatch"}\n' "$tag" "$field"; exit 1; }
     done
@@ -375,8 +407,12 @@ fail_provenance() {
     }
     consume_verified_archive
     got_sources="$(sed -n 's/^sources_sha256=//p' "$staged/manifest.txt")"
-    printf 'LEAN_CACHE_FETCH {"status":"unpacked","mode":"%s","tag":"%s","resolved":"%s","fetched_sources_sha256":"%s","sha256":"%s","producer_commit_sha":"%s","workflow_run_id":"%s"}\n' \
-      "$mode" "$tag" "$resolved" "$got_sources" "$actual" "$producer_commit_sha" "$archive_run_id"
+    seed_fields=""
+    if [[ "$mode" == seed ]]; then
+      seed_fields=",\"seed_config\":\"${seed_config}\",\"candidate_config\":\"${config_sha256}\""
+    fi
+    printf 'LEAN_CACHE_FETCH {"status":"unpacked","mode":"%s","tag":"%s","resolved":"%s","fetched_sources_sha256":"%s","sha256":"%s","producer_commit_sha":"%s","workflow_run_id":"%s"%s}\n' \
+      "$mode" "$tag" "$resolved" "$got_sources" "$actual" "$producer_commit_sha" "$archive_run_id" "$seed_fields"
     ;;
 
   *) usage ;;
