@@ -220,12 +220,21 @@ theorem padding_ratio {p : ℕ} (hp : p.Prime) (A : ℕ) :
       simp only [robinRatio, div_eq_mul_inv, mul_inv_rev]
       ring
 
+#print axioms robinRatio
+#print axioms padding
+#print axioms paddingRho
+#print axioms paddingQ
+#print axioms geom_pos
+#print axioms geom_mono
 #print axioms padding_constants
+#print axioms sigma_prime_power_normalized
+#print axioms sigma_pow_mul_normalized
 #print axioms padding_eq_prime_power_mul
 #print axioms padding_bounds
 #print axioms padding_abundancy
 #print axioms loglog_pos
 #print axioms robinRatio_nonneg
+#print axioms tendsto_loglog_scale
 #print axioms padding_ratio
 
 end

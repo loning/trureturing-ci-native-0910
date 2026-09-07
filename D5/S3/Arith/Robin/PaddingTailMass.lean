@@ -99,7 +99,7 @@ theorem padding_tail_mass {p : ℕ} (hp : p.Prime) (A : ℕ)
   let f : Fin (A + 1) × ℕ → ℝ := fun z => waveWeight r z.2
   have hf0 : 0 ≤ f := fun z => weight_nonneg r z.2
   have hf : Summable f := (summable_prod_of_nonneg hf0).mpr
-    ⟨fun _ => hs r hr, summable_of_finite _⟩
+    ⟨fun _ => hs r hr, Summable.of_finite⟩
   have hcomp := tsum_comp_le_tsum_of_inj hf hf0 hinj
   have htotal : (∑' z, f z) = (A + 1 : ℝ) * wavePartition r := by
     rw [hf.tsum_prod]
@@ -137,10 +137,10 @@ private theorem mass_split_bound {p A N : ℕ} {r : ℝ}
   by_cases ht : N ≤ n
   · have hn : ¬n < N := by omega
     by_cases h0 : 5040 < n <;> by_cases hv : n.factorization p ≤ A <;>
-      simp [Set.indicator_apply, h0, hv, ht, hn, weight_nonneg]
+      simp [h0, hv, ht, hn, weight_nonneg]
   · have hn : n < N := by omega
     by_cases h0 : 5040 < n <;> by_cases hv : n.factorization p ≤ A <;>
-      simp [Set.indicator_apply, h0, hv, ht, hn, weight_nonneg]
+      simp [h0, hv, ht, hn, weight_nonneg]
 
 /-- Every bounded prime-exponent window loses all mass, assuming summability,
 positive partition functions, and the separate finite-set mass escape premise. -/
@@ -172,7 +172,10 @@ theorem bounded_exponent_mass_tendsto_zero {p : ℕ} (hp : p.Prime) (A : ℕ)
 #print axioms wavePartition
 #print axioms waveMass
 #print axioms FiniteMassEscape
+#print axioms weight_nonneg
+#print axioms weight_padding_le
 #print axioms padding_tail_mass
+#print axioms mass_split_bound
 #print axioms bounded_exponent_mass_tendsto_zero
 
 end
