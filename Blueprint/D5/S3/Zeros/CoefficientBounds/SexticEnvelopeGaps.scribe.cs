@@ -24,4 +24,3 @@ internal sealed class SexticEnvelopeGapsDocument : IScribeDocumentDefinition
                     + "consumer is SexticEnvelope.centered_real_sextic_envelope."))),
                 DescribeRole.Theorem))));
 }
-

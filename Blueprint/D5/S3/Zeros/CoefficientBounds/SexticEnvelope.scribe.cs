@@ -23,4 +23,3 @@ internal sealed class SexticEnvelopeDocument : IScribeDocumentDefinition
                     + "check proves that (X^2-h^2)^3 attains both joint bounds for every real h."))),
                 DescribeRole.Theorem))));
 }
-
