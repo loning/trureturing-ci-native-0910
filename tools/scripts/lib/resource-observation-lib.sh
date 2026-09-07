@@ -354,6 +354,11 @@ resource_observation_handle_signal() {
   return "$prior_status"
 }
 
+resource_observation_start_sampler() {
+  resource_observe_periodically "$@" &
+  resource_observation_sampler_pid=$!
+}
+
 resource_observe_run_periodic() {
   local sampler_pid=""
   local sampler_status=0
@@ -363,6 +368,7 @@ resource_observe_run_periodic() {
   local previous_int=""
   local previous_term=""
   local resource_observation_last_signal="UNAVAILABLE"
+  local resource_observation_sampler_pid=""
   local root_pid="$$"
   local workspace="${GITHUB_WORKSPACE:-}"
   local runner_temp="${RUNNER_TEMP:-}"
@@ -376,12 +382,21 @@ resource_observe_run_periodic() {
   trap 'resource_observation_handle_signal HUP "$?" "$root_pid" "$workspace" "$runner_temp" "$sampler_pid"' HUP
   trap 'resource_observation_handle_signal INT "$?" "$root_pid" "$workspace" "$runner_temp" "$sampler_pid"' INT
   trap 'resource_observation_handle_signal TERM "$?" "$root_pid" "$workspace" "$runner_temp" "$sampler_pid"' TERM
-  resource_observe_periodically \
+  if resource_observation_start_sampler \
     "$root_pid" \
     "$workspace" \
     "$runner_temp" \
-    "${RESOURCE_OBSERVATION_INTERVAL_SECONDS:-30}" &
-  sampler_pid=$!
+    "${RESOURCE_OBSERVATION_INTERVAL_SECONDS:-30}"; then
+    if [[ "$resource_observation_sampler_pid" =~ ^[1-9][0-9]*$ ]]; then
+      sampler_pid="$resource_observation_sampler_pid"
+    else
+      sampler_status=1
+      printf 'RESOURCE_OBSERVATION_SAMPLER status=UNAVAILABLE exit=%s\n' "$sampler_status"
+    fi
+  else
+    sampler_status=$?
+    printf 'RESOURCE_OBSERVATION_SAMPLER status=UNAVAILABLE exit=%s\n' "$sampler_status"
+  fi
   if [[ $- == *e* ]]; then
     had_errexit=1
     set +e
@@ -395,14 +410,16 @@ resource_observe_run_periodic() {
     command_status=$?
   fi
 
-  kill "$sampler_pid" 2>/dev/null || true
-  if wait "$sampler_pid" 2>/dev/null; then
-    sampler_status=0
-  else
-    sampler_status=$?
-  fi
-  if [[ "$sampler_status" -ne 0 ]]; then
-    printf 'RESOURCE_OBSERVATION_SAMPLER status=UNAVAILABLE exit=%s\n' "$sampler_status"
+  if [[ -n "$sampler_pid" ]]; then
+    kill "$sampler_pid" 2>/dev/null || true
+    if wait "$sampler_pid" 2>/dev/null; then
+      sampler_status=0
+    else
+      sampler_status=$?
+    fi
+    if [[ "$sampler_status" -ne 0 ]]; then
+      printf 'RESOURCE_OBSERVATION_SAMPLER status=UNAVAILABLE exit=%s\n' "$sampler_status"
+    fi
   fi
   resource_observe_sample 0 "$root_pid" "$workspace" "$runner_temp" final "" "$command_status" "$resource_observation_last_signal" || true
   trap - HUP INT TERM

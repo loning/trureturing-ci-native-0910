@@ -343,11 +343,27 @@ public sealed class ResourceObservationLibraryTests
         Assert.DoesNotContain("pid:201", output, StringComparison.Ordinal);
     }
 
-    // The stub installs a TERM trap so that both interleavings report exit=97 (#5973).
-    // resource_observe_run_periodic kills the sampler unconditionally; a stub that only
-    // "return 97" loses that race under load and is reaped with 143 instead, which made
-    // these two assertions intermittently red on CI while the property they are named for
-    // -- the command's own exit code -- held in both orderings.
+    [Fact]
+    public void SamplerFailureIsReportedBeforeObservedCommandStarts()
+    {
+        if (OperatingSystem.IsWindows()) return;
+        using var temporary = new TemporaryDirectory();
+
+        var result = Run(
+            temporary,
+            "source \"$1\"\nresource_observe_sample() { return 0; }\nresource_observation_start_sampler() { return 97; }\nobserved_command() { printf 'COMMAND\\n'; }\nresource_observe_run_periodic observed_command\n");
+
+        Assert.Equal(0, result.ExitCode);
+        var lines = Encoding.UTF8.GetString(result.StandardOutput)
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        const string samplerFailure = "RESOURCE_OBSERVATION_SAMPLER status=UNAVAILABLE exit=97";
+        Assert.Contains(samplerFailure, lines);
+        Assert.Contains("COMMAND", lines);
+        Assert.True(
+            Array.IndexOf(lines, samplerFailure) < Array.IndexOf(lines, "COMMAND"),
+            string.Join(Environment.NewLine, lines));
+    }
+
     [Fact]
     public void SamplerFailureDoesNotChangeSuccessfulCommandExitCode()
     {
@@ -356,7 +372,7 @@ public sealed class ResourceObservationLibraryTests
 
         var result = Run(
             temporary,
-            "source \"$1\"\nresource_observe_periodically() { trap \"exit 97\" TERM; return 97; }\nresource_observe_run_periodic bash -c 'exit 0'\n");
+            "source \"$1\"\nresource_observation_start_sampler() { return 97; }\nresource_observe_run_periodic bash -c 'exit 0'\n");
 
         Assert.Equal(0, result.ExitCode);
         Assert.Contains(
@@ -373,7 +389,7 @@ public sealed class ResourceObservationLibraryTests
 
         var result = Run(
             temporary,
-            "source \"$1\"\nresource_observe_periodically() { trap \"exit 97\" TERM; return 97; }\nwrapped_command() { bash -c 'exit 23'; bash -c 'exit 0'; }\nset -e\nresource_observe_run_periodic wrapped_command\n");
+            "source \"$1\"\nresource_observation_start_sampler() { return 97; }\nwrapped_command() { bash -c 'exit 23'; bash -c 'exit 0'; }\nset -e\nresource_observe_run_periodic wrapped_command\n");
 
         Assert.Equal(23, result.ExitCode);
         Assert.Contains(
