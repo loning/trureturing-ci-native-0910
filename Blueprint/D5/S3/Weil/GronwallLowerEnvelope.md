@@ -2,7 +2,7 @@
 
 ## Abstract
 
-Powers of primorials attain the sharp lower Gronwall envelope.
+Powers of primorials attain the sharp lower Gronwall envelope, and the logarithmic Robin margin has lower limit zero.
 
 **Theorem 1.1 (Arbitrarily Large Near-Maximal Divisor Sums).**
 
@@ -28,7 +28,21 @@ Lean statement: `D5/S3/Weil/GronwallLowerEnvelope.gronwall_envelopes`
 
 The existing eventual upper envelope and the arbitrarily large lower witnesses are packaged with the same positive epsilon. These are the two epsilon conditions for the normalized Gronwall limsup to equal one.
 
+**Theorem 1.3 (The Logarithmic Robin Margin Has Lower Limit Zero).**
+
+Lean statement: `D5/S3/Weil/GronwallLowerEnvelope.robin_log_margin_liminf`
+
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/GronwallLowerEnvelope.robin_log_margin_liminf` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+The margin is gamma plus log log log n minus log(sigma(n)/n). For n at least 5041 it equals the negative logarithm of the normalized Robin ratio. The eventual upper Gronwall envelope gives lower limit at least zero; the arbitrarily late lower witnesses give lower limit at most zero. This companion corollary is unconditional and asserts no Robin criterion equivalent to the Riemann hypothesis.
+
 ## References
 
 - Truth anchor: `D5/S3/Weil/GronwallLowerEnvelope.gronwall_envelopes`
 - Truth anchor: `D5/S3/Weil/GronwallLowerEnvelope.gronwall_lower_envelope`
+- Truth anchor: `D5/S3/Weil/GronwallLowerEnvelope.robin_log_margin_liminf`
+- Dependency: [D5/S3/Arith/Robin/PaddingRatio](../Arith/Robin/PaddingRatio.md)

@@ -188,3 +188,32 @@ conflicts=0`. It added only the upper state shard and accepted event
 `2f5adf076e66565f8231e8f57e0973540395ef4a2817fa550f3acc35129ef596.json`.
 The module pin is
 `sha256:5649f49b7a510331194224220fb89ddf3339817611eac068d46a8679c5424e27`.
+
+## Deposit Receipt
+
+After the prerequisite repair, this canonical command returned `EXIT=0`:
+
+```sh
+make deposit ATOM_ID=ddb4f6fb76c318def9a52083b7e6ec453a0a2d09275271d1f568671179949b74 GID=D5/S3/Weil/GronwallLowerEnvelope.robin_log_margin_liminf BASE=809b94047831081e39cb208190827842c473aec7
+```
+
+The workflow requires a declaration selector in GID; the bare module address
+in the brief is therefore resolved to the exact liminf theorem above.
+The lower writer receipt is `selectors_considered=3656 changed=0 added=1
+unchanged=3655 conflicts=0`. The new state shard is
+`Golden/Frozen/state/D5/S3/Weil/GronwallLowerEnvelope.lean.json`, with module pin
+`sha256:c60de55af3115013bec6914e8646e38d066c81c25fded53f1dc362ec12766da0`.
+Its accepted event is
+`Golden/Frozen/accepted/c96dca6ca8759722b55d4763a3244f50cb191eefa742d548f34953a014b0e227.json`.
+It freezes all ten declarations and records the upper and PaddingRatio events
+as prerequisites. No previously accepted event or previously frozen source
+was edited.
+
+The anchor moved from `residual-open` to `absorbed-closed`, with
+`target_statement_id=sha256:c87d805981b4faae9762314dd5e88987c8aff0aed2a46bde06299be0ac7495bb`.
+The report producer reused the validated warm-cache input
+`sha256:1cf48422bf9b77f028924692050ca07e6087cb2562b2b6b7a7e1525c2443c59a`;
+the raw report SHA-256 is
+`80a722a8eeac2169f844a4bf3be55a760e44a8ed147a53297e70e9ebaf2c2183`.
+The initial failed deposit and the successful retry are both retained in the
+attempt directory as `deposit.log` and `deposit-retry.log`.
