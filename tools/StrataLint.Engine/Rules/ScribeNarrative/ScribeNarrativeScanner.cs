@@ -16,7 +16,8 @@ internal static class ScribeNarrativeScanner
         or >= 0x2F00 and <= 0x2FDF // Kangxi Radicals: U+2F00-U+2FDF
         or >= 0x3000 and <= 0x303F // CJK Symbols and Punctuation: U+3000-U+303F
         or >= 0x31C0 and <= 0x31EF // CJK Strokes: U+31C0-U+31EF
-        or >= 0x3200 and <= 0x33FF // Enclosed CJK Letters and Months + CJK Compatibility: U+3200-U+33FF
+        // Enclosed CJK Letters and Months: U+3200-U+32FF; CJK Compatibility: U+3300-U+33FF
+        or >= 0x3200 and <= 0x33FF
         or >= 0x3400 and <= 0x4DBF // CJK Unified Ideographs Extension A: U+3400-U+4DBF
         or >= 0x4E00 and <= 0x9FFF // CJK Unified Ideographs: U+4E00-U+9FFF
         or >= 0xF900 and <= 0xFAFF // CJK Compatibility Ideographs: U+F900-U+FAFF
@@ -24,8 +25,13 @@ internal static class ScribeNarrativeScanner
         or >= 0xFE30 and <= 0xFE4F // CJK Compatibility Forms: U+FE30-U+FE4F
         or >= 0xFE50 and <= 0xFE6F // Small Form Variants: U+FE50-U+FE6F
         or >= 0xFF00 and <= 0xFFEF // Halfwidth and Fullwidth Forms: U+FF00-U+FFEF
-        or >= 0x20000 and <= 0x2FA1F // CJK Extensions B-F and Compatibility Supplement: U+20000-U+2FA1F
-        or >= 0x30000 and <= 0x323AF; // CJK Extensions G-H: U+30000-U+323AF
+        // Pinned U+20000-U+2FA1F span, including gaps between these blocks:
+        // CJK Unified Ideographs Extension B: U+20000-U+2A6DF; C: U+2A700-U+2B73F;
+        // D: U+2B740-U+2B81F; E: U+2B820-U+2CEAF; F: U+2CEB0-U+2EBEF; I: U+2EBF0-U+2EE5F;
+        // CJK Compatibility Ideographs Supplement: U+2F800-U+2FA1F.
+        or >= 0x20000 and <= 0x2FA1F
+        // CJK Unified Ideographs Extension G: U+30000-U+3134F; H: U+31350-U+323AF.
+        or >= 0x30000 and <= 0x323AF;
 
     internal static readonly NarrativeClass DigestionLedgerReference = new(
         nameof(DigestionLedgerReference), "digestion ledger",
