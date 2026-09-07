@@ -41,6 +41,28 @@ public sealed class EngineeringScopeProgramTests
     }
 
     [Fact]
+    public void CandidateDeletedBaseTestProjectIsExcludedAndReported()
+    {
+        var result = RunBoundary(
+            WriteProductProjects,
+            root =>
+            {
+                TemporaryFileSystem.File.Delete(Path.Combine(root, ProductTestsProject));
+                TemporaryFileSystem.File.Delete(Path.Combine(
+                    root,
+                    Path.GetDirectoryName(ProductTestsProject)!,
+                    "SmokeTests.cs"));
+            });
+
+        Assert.True(result.ExitCode == 0, result.Diagnostic);
+        Assert.Empty(result.SelectedProjects);
+        Assert.Contains(
+            $"ENGINEERING_TEST_PROJECT_REMOVED project={JsonSerializer.Serialize(ProductTestsProject)}",
+            result.Output,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void CandidateNewXunitProjectWithoutLiteralIsTestProjectIsSelected()
     {
         var result = RunBoundary(
