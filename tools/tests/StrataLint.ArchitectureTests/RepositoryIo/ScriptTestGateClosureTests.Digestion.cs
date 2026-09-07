@@ -33,7 +33,7 @@ public sealed partial class ScriptTestGateClosureTests
 
         Assert.Equal(EngineeringTestPlanKind.None, plan.Kind);
         Assert.Empty(plan.Projects);
-        Assert.Equal([path], plan.ChangedPaths);
+        Assert.Equal(path, Assert.Single(plan.ChangedPaths));
     }
 
     [Fact]
@@ -127,7 +127,7 @@ public sealed partial class ScriptTestGateClosureTests
             [DigestionCasPath], snapshot, snapshot, [DigestionCasPath], []);
 
         Assert.Equal(EngineeringTestPlanKind.Selected, plan.Kind);
-        Assert.Equal([ScriptTestsProject], plan.Projects);
+        Assert.Equal(ScriptTestsProject, Assert.Single(plan.Projects));
     }
 
     private static RepositorySnapshot DigestionPlanSnapshot() => WithFiles(CurrentSnapshot(),
