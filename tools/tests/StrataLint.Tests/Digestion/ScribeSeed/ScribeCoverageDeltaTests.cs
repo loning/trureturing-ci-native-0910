@@ -11,8 +11,15 @@ public sealed class ScribeCoverageDeltaTests
     {
         var fixture = new ScribeSeedFixture();
         fixture.Baseline = ScribeSeedFixture.Map(fixture.Baseline, entry => entry with { Coverage = [] });
+        fixture.Document = ScribeSeedFixture.Map(fixture.Document, entry => entry with
+        {
+            ProjectedStatus = new DigestionStatus(DigestionMigrationState.Absorbed, DigestionTruthState.Closed),
+        });
         var context = AdmissionContext(fixture,
-            RawChangeSet.Create([ScribeSeedFixture.EntryPath(fixture.First)]));
+            RawChangeSet.CreateWithKinds([
+                (ScribeSeedFixture.EntryPath(fixture.Baseline.RequireDigestionEntries()[0]), RawChangeKind.Deleted),
+                (ScribeSeedFixture.EntryPath(fixture.First), RawChangeKind.Added),
+            ]));
 
         var findings = BackfillInventoryRule.EvaluateCandidateDelta(context);
 
@@ -38,6 +45,10 @@ public sealed class ScribeCoverageDeltaTests
         {
             Coverage = [entry.Coverage[0] with { TargetStatementId = null }],
         });
+        fixture.Document = ScribeSeedFixture.Map(fixture.Document, entry => entry with
+        {
+            ProjectedStatus = new DigestionStatus(DigestionMigrationState.Absorbed, DigestionTruthState.Closed),
+        });
         var repository = fixture.Gateway(RawChangeSet.Create([ScribeSeedFixture.EntryPath(fixture.First)]));
 
         var result = DigestStatusCommand.Run(repository, new FakeLeanReportSource(fixture.Inputs.Report),
@@ -45,11 +56,12 @@ public sealed class ScribeCoverageDeltaTests
             FakeAtomHistorySource.ForPaths(fixture.Files.Keys), new DigestAgeClock());
 
         Assert.True(result.Success, result.Error);
-        Assert.Contains("gaps=scribe-receipt-missing", result.Output, StringComparison.Ordinal);
+        Assert.Contains("absorbed-closed", result.Output, StringComparison.Ordinal);
+        Assert.DoesNotContain("scribe-", result.Output, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void FullScanStillUsesProtectedBaseEdgeValuesForReceiptDebt()
+    public void FullScanAbsorbsCompleteCoverageWithoutScribeReceipts()
     {
         var fixture = new ScribeSeedFixture(84);
         var repository = fixture.Gateway(RawChangeSet.Create([]));
@@ -60,7 +72,9 @@ public sealed class ScribeCoverageDeltaTests
 
         Assert.True(result.Success, result.Error);
         Assert.Equal(84, result.Output.Split('\n').Count(line =>
-            line.Contains("gaps=scribe-receipt-missing", StringComparison.Ordinal)));
+            line.StartsWith("ENTRY ", StringComparison.Ordinal)
+                && line.Contains("absorbed-closed", StringComparison.Ordinal)));
+        Assert.DoesNotContain("scribe-", result.Output, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -68,6 +82,10 @@ public sealed class ScribeCoverageDeltaTests
     {
         var fixture = new ScribeSeedFixture();
         fixture.Baseline = ScribeSeedFixture.Map(fixture.Baseline, entry => entry with { Coverage = [] });
+        fixture.Document = ScribeSeedFixture.Map(fixture.Document, entry => entry with
+        {
+            ProjectedStatus = new DigestionStatus(DigestionMigrationState.Absorbed, DigestionTruthState.Closed),
+        });
         var repository = fixture.Gateway(RawChangeSet.Create([ScribeSeedFixture.EntryPath(fixture.First)]));
 
         var result = DigestStatusCommand.Run(repository, new FakeLeanReportSource(fixture.Inputs.Report),
@@ -75,11 +93,12 @@ public sealed class ScribeCoverageDeltaTests
             FakeAtomHistorySource.ForPaths(fixture.Files.Keys), new DigestAgeClock());
 
         Assert.True(result.Success, result.Error);
-        Assert.Contains("gaps=scribe-receipt-missing", result.Output, StringComparison.Ordinal);
+        Assert.Contains("absorbed-closed", result.Output, StringComparison.Ordinal);
+        Assert.DoesNotContain("scribe-", result.Output, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void UnrelatedDeltaWith84MissingScribeReceiptsIsNonBlockingAndObservable()
+    public void UnrelatedDeltaRetainsPartialBaselineWithoutScribeGaps()
     {
         var fixture = new ScribeSeedFixture(84);
         var repository = fixture.Gateway(RawChangeSet.Create(["notes/unrelated.txt"]));
@@ -90,7 +109,9 @@ public sealed class ScribeCoverageDeltaTests
 
         Assert.True(result.Success, result.Error);
         Assert.Equal(84, result.Output.Split('\n').Count(line =>
-            line.Contains("gaps=scribe-receipt-missing", StringComparison.Ordinal)));
+            line.StartsWith("ENTRY ", StringComparison.Ordinal)
+                && line.Contains("partial-closed", StringComparison.Ordinal)));
+        Assert.DoesNotContain("scribe-", result.Output, StringComparison.Ordinal);
     }
 
     private static RuleEvaluationContext AdmissionContext(ScribeSeedFixture fixture, RawChangeSet changes)

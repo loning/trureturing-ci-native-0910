@@ -10,7 +10,6 @@ internal static class DigestionBackfillValidation
         RepositorySnapshot baseline,
         ValidatedPolicy policy,
         AcceptedLeanClosure lean,
-        VerifiedScribeEmissions verifiedScribeEmissions,
         RawChangeSet? changes = null,
         RawChangeSet? casChanges = null,
         RawChangeSet? projectedStatusChanges = null)
@@ -21,7 +20,6 @@ internal static class DigestionBackfillValidation
                 baseline,
                 policy,
                 lean,
-                verifiedScribeEmissions,
                 changes,
                 CasChanges: casChanges,
                 ProjectedStatusChanges: projectedStatusChanges),
