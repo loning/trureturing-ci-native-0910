@@ -82,7 +82,9 @@ private theorem hp_monic (cs : List ℤ) : (hp cs).Monic := by
   rw [Monic.def, leadingCoeff, (hp_degree cs).1]
   induction cs with
   | nil => simp [hp]
-  | cons c cs ih => simpa [hp, coeff_X_mul] using ih
+  | cons c cs ih =>
+    simpa only [hp, List.length_cons, coeff_add, coeff_C, coeff_X_mul,
+      Nat.add_one_ne_zero, if_false, zero_add] using ih
 
 private theorem hv_spec (cs : List ℤ) (a b : ℤ) (x : ℝ)
     (hx : (a : ℝ) = (b : ℝ) * x) :
