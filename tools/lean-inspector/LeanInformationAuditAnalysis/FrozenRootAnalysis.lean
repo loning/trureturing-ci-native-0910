@@ -3,9 +3,10 @@ import LeanInformationAudit.SealCommand
 import LeanInformationAudit.Tests.Projection.FixtureState
 
 /-!
-This standalone full-analysis fixture is not part of any lake target because its
-measured cost is 470 seconds. Run it with
-`lake env lean tools/lean-inspector/LeanInformationAuditAnalysis/FrozenRootAnalysis.lean`.
+This full-analysis fixture belongs to the non-default `LeanInformationAuditAnalysis`
+library. Build it with `lake build LeanInformationAuditAnalysis` after
+`make lean-cache-ensure`. Use `run-analysis-fixtures.sh OUTPUT_DIRECTORY` to rebuild
+the analysis modules and hash their artifacts, including on a warm build.
 It writes `frozen-seal.json`, `frozen-analysis.json`, and `frozen-analysis.txt` under
 `IE_PROJECTION_OUTPUT_DIR`, or a fresh temporary directory when unset.
 -/

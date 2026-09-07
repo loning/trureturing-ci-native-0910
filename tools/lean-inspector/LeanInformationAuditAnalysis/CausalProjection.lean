@@ -3,9 +3,10 @@ import D5.S3.ConceptDynamics.InformationEscapeRealizations.UnifiedCausalCatalog
 import LeanInformationAudit.Tests.Projection.FixtureState
 
 /-!
-This standalone full-analysis fixture is not part of any lake target because its
-measured cost is 1249 seconds. Run it with
-`lake env lean tools/lean-inspector/LeanInformationAuditAnalysis/CausalProjection.lean`.
+This full-analysis fixture belongs to the non-default `LeanInformationAuditAnalysis`
+library. Build it with `lake build LeanInformationAuditAnalysis` after
+`make lean-cache-ensure`. Use `run-analysis-fixtures.sh OUTPUT_DIRECTORY` to rebuild
+the analysis modules and hash their artifacts, including on a warm build.
 It writes `causal-analysis.json` and `causal-analysis.txt` under
 `IE_PROJECTION_OUTPUT_DIR`, or a fresh temporary directory when unset.
 -/
