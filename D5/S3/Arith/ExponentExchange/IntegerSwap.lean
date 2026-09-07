@@ -46,7 +46,6 @@ private theorem normalized_sigma_prime_pow {p : ℕ} (hp : p.Prime) (a : ℕ) :
   rw [geom_sum_eq hp1, geom_sum_inv hp1 hp0]
   simp only [inv_pow, pow_succ]
   field_simp
-  <;> ring
 
 private theorem normalized_sigma_mul {u v : ℕ} (h : u.Coprime v) :
     (ArithmeticFunction.sigma 1 (u * v) : ℝ) / (u * v : ℕ) =
