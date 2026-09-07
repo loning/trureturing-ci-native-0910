@@ -56,7 +56,7 @@ internal sealed class UnknownCouplingFairMediationDocument : IScribeDocumentDefi
     }
     private static Formula C(string name, params Formula[] values)
     {
-        var xs = new List<Formula> { Operatorname, Grp(name), Open };
+        var xs = new List<Formula> { Operatorname, Grp(V(name)), Open };
         for (var i = 0; i < values.Length; i++)
         { if (i > 0) xs.AddRange([Comma, Sp]); xs.Add(values[i]); }
         xs.Add(Close); return Seq([.. xs]);
