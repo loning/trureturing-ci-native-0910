@@ -267,17 +267,15 @@ public sealed partial class ScriptTestGateClosureTests
         Assert.Contains("unrecognised-sink operation value", Flatten(error), StringComparison.Ordinal);
     }
 
-    [Fact]
-    public void ActualStrataLintScriptTestsProjectClosureDerivesSuccessfully()
-    {
-        var snapshot = Decode(GitRepositorySnapshotReader.ReadCurrent(RepositoryLayout.FindRoot()));
-
-        var closure = Derive(snapshot, []);
-
-        Assert.Contains(ScriptTestsProject, closure.ExactPaths);
-        Assert.Contains("tools/scripts/worktree/lean-cache-input.sh", closure.ExactPaths);
-        Assert.Contains("tools/scripts/worktree/lean-cache-publish.sh", closure.ExactPaths);
-    }
+    // A test deriving over the real tree would be the direct evidence that the
+    // recognition below recovers lean-cache-input.sh from the actual
+    // StrataLint.ScriptTests project. It cannot exist here: reading the tree needs
+    // a production loader called on FindRoot(), which the deriver classifies
+    // IndirectViaProductionLoader by design, and SL-003 blocks a newly introduced
+    // unknown identity outright. Measured, not inferred: the probe reported
+    // UNKNOWN_COUNT=1 for exactly that shape. A prior layer deleted such a test
+    // for the same reason. The end-to-end evidence is a content-plane PR going
+    // green, since only those reach this derivation at all (issue #5340).
 
     [Theory]
     [InlineData(
