@@ -351,8 +351,11 @@ private theorem centered_translate (a u v w t : ℝ) :
     coeff_C_mul_X, coeff_X_pow, coeff_C, map_zero, zero_mul, add_zero, coeff_zero]
   split_ifs <;> first | contradiction | omega | ring
 
-/-- Conjecture 5.3 for every pair in P_5(R). No centering, simplicity of roots,
-or factorization assumption from Theorem 5.6 is required. -/
+/-- Conjecture 5.3 at degree five, for every pair in P_5(R), with no hypotheses
+beyond real-rootedness. Theorem 5.6 of the source is stated for even degrees 2m
+under a factorization hypothesis on Q_m(Sym(q)); it does not cover this odd
+degree. Theorem 5.6 never carried a centering or simple-roots hypothesis, so
+those are not assumptions this result removes. -/
 theorem real_rooted (p q : ℝ[X]) (hp : RealRooted5 p) (hq : RealRooted5 q) :
     RealRooted5 (square5 p q) := by
   obtain ⟨a, u, v, w, t, rfl⟩ := exists_quintic p hp
