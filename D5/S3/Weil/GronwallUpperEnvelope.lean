@@ -185,4 +185,66 @@ theorem sigma_split {n : ℕ} (hn : 0 < n) {y : ℝ} (hy : 2 ≤ y) :
       (Finset.prod_nonneg (fun p hp => zero_le_one.trans
         (hfactor p (Finset.mem_filter.mp hp).2)))))
 
+/-- The eventual upper envelope in Gronwall's theorem. -/
+theorem gronwall_upper_envelope (ε : ℝ) (hε : 0 < ε) :
+    ∃ N : ℕ, ∀ n : ℕ, N ≤ n →
+      (ArithmeticFunction.sigma 1 n : ℝ) /
+        (Real.exp Real.eulerMascheroniConstant * n * Real.log (Real.log n)) ≤ 1 + ε := by
+  have hmertens : Tendsto
+      (fun x : ℝ =>
+        (∏ p ∈ Ioc (0 : ℕ) ⌊x⌋₊ with p.Prime, (1 - 1 / (p : ℝ))⁻¹) /
+          (Real.exp Real.eulerMascheroniConstant * Real.log x)) atTop (𝓝 1) := by
+    have hne : ∀ᶠ x : ℝ in atTop,
+        (Real.exp (-Real.eulerMascheroniConstant) / Real.log x)⁻¹ ≠ 0 := by
+      filter_upwards [eventually_gt_atTop (1 : ℝ)] with x hx
+      exact inv_ne_zero (div_ne_zero (Real.exp_ne_zero _) (Real.log_pos hx).ne')
+    -- The frozen Mertens III declaration is the input to the normalized limit.
+    have h := (isEquivalent_iff_tendsto_one hne).mp Mertens.E₃.bound''.inv
+    simpa only [Pi.div_apply, Pi.inv_apply, inv_div, Real.exp_neg,
+      div_inv_eq_mul, Finset.prod_inv_distrib, mul_comm] using h
+  have hlog : Tendsto (fun n : ℕ => Real.log (n : ℝ)) atTop atTop :=
+    Real.tendsto_log_atTop.comp tendsto_natCast_atTop_atTop
+  have hexp : Tendsto (fun n : ℕ => Real.exp (2 / Real.log (Real.log (n : ℝ))))
+      atTop (𝓝 1) := by
+    simpa only [Real.exp_zero] using
+      ((Real.tendsto_log_atTop.comp hlog).const_div_atTop (2 : ℝ)).rexp
+  have hbound : Tendsto
+      (fun n : ℕ =>
+        ((∏ p ∈ Ioc (0 : ℕ) ⌊Real.log (n : ℝ)⌋₊ with p.Prime,
+          (1 - 1 / (p : ℝ))⁻¹) /
+            (Real.exp Real.eulerMascheroniConstant * Real.log (Real.log n))) *
+          Real.exp (2 / Real.log (Real.log (n : ℝ)))) atTop (𝓝 1) := by
+    simpa only [one_mul, Function.comp_apply] using (hmertens.comp hlog).mul hexp
+  apply eventually_atTop.mp
+  filter_upwards [eventually_gt_atTop (0 : ℕ),
+    hlog.eventually (eventually_ge_atTop (2 : ℝ)),
+    hbound.eventually_lt_const (lt_add_of_pos_right 1 hε)] with n hn hcut hupper
+  have hlogpos : 0 < Real.log (n : ℝ) := lt_of_lt_of_le two_pos hcut
+  have hloglogpos : 0 < Real.log (Real.log (n : ℝ)) :=
+    Real.log_pos (lt_of_lt_of_le one_lt_two hcut)
+  have hden : 0 < Real.exp Real.eulerMascheroniConstant * Real.log (Real.log (n : ℝ)) :=
+    mul_pos (Real.exp_pos _) hloglogpos
+  have hsplit := div_le_div_of_nonneg_right (sigma_split hn hcut) hden.le
+  have hcancel : 2 * Real.log (n : ℝ) /
+      (Real.log n * Real.log (Real.log n)) = 2 / Real.log (Real.log (n : ℝ)) := by
+    rw [mul_comm (Real.log (n : ℝ)), ← div_div, mul_div_cancel_right₀ _ hlogpos.ne']
+  rw [hcancel] at hsplit
+  have hnormalize : (ArithmeticFunction.sigma 1 n : ℝ) /
+      (Real.exp Real.eulerMascheroniConstant * n * Real.log (Real.log n)) =
+      ((ArithmeticFunction.sigma 1 n : ℝ) / n) /
+        (Real.exp Real.eulerMascheroniConstant * Real.log (Real.log n)) := by
+    rw [div_div]
+    congr 1
+    ring
+  rw [hnormalize]
+  exact hsplit.trans (by
+    rw [div_right_comm] at hupper
+    exact hupper.le)
+
+#print axioms small_prime_product_le
+#print axioms large_prime_count_le
+#print axioms large_prime_product_le
+#print axioms sigma_split
+#print axioms gronwall_upper_envelope
+
 end D5.S3.Weil.GronwallUpperEnvelope
