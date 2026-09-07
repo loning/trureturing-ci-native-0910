@@ -506,17 +506,6 @@ jobs:
             --lake-bin "$HOME/.elan/bin/lake" \
             --candidate-root "$GITHUB_WORKSPACE/candidate" \
             --candidate-output "$reports/candidate-lean-report.json"
-      - name: Run complete mathematical content checks
-        shell: bash
-        run: |
-          set -euo pipefail
-          report="$RUNNER_TEMP/raw-lean-reports/candidate-lean-report.json"
-          scribe="$GITHUB_WORKSPACE/.judge-binaries/scribe/StrataLint.Scribe.Documents.dll"
-          test -s "$report"
-          test -s "$scribe"
-          base="${{ steps.base.outputs.sha }}"
-          /bin/bash "$GITHUB_WORKSPACE/candidate/tools/scripts/workflow/scribe-content-checks.sh" \
-            "$report" "$scribe" "$base"
       - name: Stage candidate canonical Lean report cache
         shell: bash
         run: |
@@ -546,6 +535,17 @@ jobs:
         with:
           path: .canonical-lean-report-cache
           key: stratalint-canonical-lean-report-v2-${{ steps.lean-report-input.outputs.address }}
+      - name: Run complete mathematical content checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          report="$RUNNER_TEMP/raw-lean-reports/candidate-lean-report.json"
+          scribe="$GITHUB_WORKSPACE/.judge-binaries/scribe/StrataLint.Scribe.Documents.dll"
+          test -s "$report"
+          test -s "$scribe"
+          base="${{ steps.base.outputs.sha }}"
+          /bin/bash "$GITHUB_WORKSPACE/candidate/tools/scripts/workflow/scribe-content-checks.sh" \
+            "$report" "$scribe" "$base"
       - name: Upload raw Lean reports and producer logs
         if: always()
         uses: actions/upload-artifact@v4
