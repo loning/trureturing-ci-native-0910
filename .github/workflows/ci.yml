@@ -445,6 +445,10 @@ jobs:
           "$GITHUB_WORKSPACE/candidate/tools/scripts/workflow/install-lean-toolchain.sh" candidate/lean-toolchain
       # Dependency olean compatibility follows lean-toolchain + pinned lake-manifest.json.
       # The lakefile only shapes the project layer, whose config_sha256 key stays broader.
+      # Prefix restore may cross manifest/toolchain versions; it is a best-effort seed.
+      # Lake traces determine validity; the prefix alone guarantees neither correctness
+      # nor a warm build within 45 minutes. Nonzero download, validation, or build
+      # results remain terminal.
       - name: Restore candidate Lean dependency artifacts
         id: lake-deps-cache
         if: steps.report-reuse.outcome != 'success'
