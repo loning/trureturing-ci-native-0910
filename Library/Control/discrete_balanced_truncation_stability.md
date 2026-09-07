@@ -1,3 +1,16 @@
+---
+bibkey: discrete_balanced_truncation_stability
+authors: Igor Pontes Duff and Patrick Kürschner
+year: 2021
+title: Numerical computation and new output bounds for time-limited balanced truncation of discrete-time systems
+doi: 10.1016/j.laa.2020.09.029
+claim: Ordinary infinite-horizon discrete balanced truncation of a stable system preserves stability under ordered singular-value cuts.
+strata_touched:
+  - D5/S3/Observer/Hankel/OrderedStableBalancedTruncation
+license: citation-only
+triage: anchor
+---
+
 # Discrete-time balanced truncation: ordered cuts and strict stability
 
 ## Verified locator
