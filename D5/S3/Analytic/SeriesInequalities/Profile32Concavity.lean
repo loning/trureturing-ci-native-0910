@@ -14,7 +14,7 @@ import Mathlib.Algebra.Polynomial.Roots
 import Mathlib.Tactic
 
 /- Development of the requested concavity theorem; not yet deposited.
-   All current declarations concern universal real polynomial or radical inequalities.
+   The declarations concern universal real inequalities, cubic coordinates, and derivatives.
    They are not bounded enumeration, a checker, a numeric reduction with undischarged
    numeric premises, or a certified finite instance. -/
 
@@ -193,7 +193,7 @@ theorem chart_root_order (z : ℝ) (hz : z ∈ Set.Ioo (-1) 1) :
 
 theorem roots_product (u v w : ℝ) :
     (((X - C u) * (X - C v) * (X - C w)).roots.toFinset : Finset ℝ) = {u,v,w} := by
-  simp [Polynomial.roots_mul, mul_ne_zero, Polynomial.X_sub_C_ne_zero]
+  simp [Polynomial.roots_mul, Polynomial.X_sub_C_ne_zero]
 
 theorem phi32_product (u v w : ℝ) (huv : u ≠ v) (huw : u ≠ w) (hvw : v ≠ w) :
     phi32 ((X - C u) * (X - C v) * (X - C w)) =
@@ -217,8 +217,81 @@ theorem middle_term_hasDerivAt_zero :
   simpa [Function.comp_def, Real.rpow_eq_pow] using h
 
 #print axioms cubic_chart_factor
+#print axioms chart_root_order
+#print axioms roots_product
 #print axioms phi32_product
 #print axioms middle_term_contDiff
 #print axioms middle_term_hasDerivAt_zero
+
+def commonScale (z : ℝ) : ℝ := Real.sqrt (3 + z^2) / (6 * (1-z^2))
+def profileSum (z : ℝ) : ℝ :=
+  Real.rpow (3 - 2*z - z^2) (3/2 : ℝ) +
+    Real.rpow |4*z| (3/2 : ℝ) + Real.rpow (3 + 2*z - z^2) (3/2 : ℝ)
+
+theorem chart_scores (z : ℝ) (hz : z ∈ Set.Ioo (-1) 1) :
+    ((leftRoot z-middleRoot z)⁻¹ + (leftRoot z-rightRoot z)⁻¹ =
+      -commonScale z*(3 - 2*z - z^2)) ∧
+    ((middleRoot z-leftRoot z)⁻¹ + (middleRoot z-rightRoot z)⁻¹ =
+      -commonScale z*(4*z)) ∧
+    ((rightRoot z-leftRoot z)⁻¹ + (rightRoot z-middleRoot z)⁻¹ =
+      commonScale z*(3 + 2*z - z^2)) := by
+  have hp : 0 < 1+z := by linarith only [hz.1]
+  have hm : 0 < 1-z := sub_pos.mpr hz.2
+  have hz2 : z^2 < 1 := by nlinarith [mul_pos hp hm]
+  have hd : 0 < Real.sqrt (3 + z^2) := Real.sqrt_pos.mpr (by positivity)
+  have h1 : leftRoot z-middleRoot z = -3*(1+z)/Real.sqrt (3+z^2) := by
+    unfold leftRoot middleRoot; ring
+  have h2 : leftRoot z-rightRoot z = -6/Real.sqrt (3+z^2) := by
+    unfold leftRoot rightRoot; ring
+  have h3 : middleRoot z-leftRoot z = 3*(1+z)/Real.sqrt (3+z^2) := by
+    unfold leftRoot middleRoot; ring
+  have h4 : middleRoot z-rightRoot z = -3*(1-z)/Real.sqrt (3+z^2) := by
+    unfold middleRoot rightRoot; ring
+  have h5 : rightRoot z-leftRoot z = 6/Real.sqrt (3+z^2) := by
+    unfold leftRoot rightRoot; ring
+  have h6 : rightRoot z-middleRoot z = 3*(1-z)/Real.sqrt (3+z^2) := by
+    unfold middleRoot rightRoot; ring
+  rw [h1, h2, h3, h4, h5, h6]
+  unfold commonScale
+  refine ⟨?_, ?_, ?_⟩ <;>
+    field_simp [hp.ne', hm.ne', hd.ne', (sub_pos.mpr hz2).ne'] <;> ring
+
+theorem profile32_chart (z : ℝ) (hz : z ∈ Set.Ioo (-1) 1) :
+    profile32 (chart z) = weight z * Real.rpow (profileSum z) (-(4/3 : ℝ)) := by
+  have hp : 0 < 1+z := by linarith only [hz.1]
+  have hm : 0 < 1-z := sub_pos.mpr hz.2
+  have hz2 : z^2 < 1 := by nlinarith [mul_pos hp hm]
+  have ha : 0 < 3 - 2*z - z^2 := by nlinarith only [hz.2, hz2]
+  have hc : 0 < 3 + 2*z - z^2 := by nlinarith only [hz.1, hz2]
+  have hk : 0 < commonScale z := by
+    unfold commonScale
+    exact div_pos (Real.sqrt_pos.mpr (by positivity))
+      (mul_pos (by norm_num) (sub_pos.mpr hz2))
+  have hs : 0 ≤ profileSum z := by
+    unfold profileSum
+    simp only [Real.rpow_eq_pow]
+    positivity
+  have hord := chart_root_order z hz
+  have hsc := chart_scores z hz
+  rw [profile32, cubic_chart_factor, phi32_product _ _ _ hord.1.ne
+    (hord.1.trans hord.2).ne hord.2.ne, hsc.1, hsc.2.1, hsc.2.2]
+  simp only [Real.rpow_eq_pow, abs_mul, abs_neg, abs_of_pos hk, abs_of_pos ha, abs_of_pos hc]
+  rw [← abs_mul (4:ℝ) z]
+  rw [Real.mul_rpow hk.le ha.le, Real.mul_rpow hk.le (abs_nonneg (4*z)),
+    Real.mul_rpow hk.le hc.le, ← mul_add, ← mul_add]
+  change (commonScale z ^ (3/2 : ℝ) * profileSum z) ^ (-(4/3 : ℝ)) =
+    weight z * profileSum z ^ (-(4/3 : ℝ))
+  rw [Real.mul_rpow (Real.rpow_nonneg hk.le _) hs, ← Real.rpow_mul hk.le]
+  have hexp : (3/2 : ℝ) * (-(4/3 : ℝ)) = -(2:ℝ) := by norm_num
+  rw [hexp]
+  congr 1
+  rw [Real.rpow_neg hk.le, Real.rpow_two]
+  unfold commonScale weight
+  have hd : (Real.sqrt (3+z^2))^2 = 3+z^2 := Real.sq_sqrt (by positivity)
+  field_simp
+  nlinarith only [hd]
+
+#print axioms chart_scores
+#print axioms profile32_chart
 
 end D5.S3.Analytic.SeriesInequalities.Profile32Concavity
