@@ -42,7 +42,8 @@ public sealed class UtilityRefutationProducerTests
         File.WriteAllText(Path.Combine(root, "lakefile.toml"),
             "name = \"refutation_fixture\"\ndefaultTargets = [\"D5\"]\n[[lean_lib]]\nname = \"D5\"\nglobs = [\"D5.+\"]\n");
         File.WriteAllText(Path.Combine(root, path), source);
-        Run("lake", ["build"], root);
+        RequireSuccess(TestProcessRunner.Run("lake", ["build"], root,
+            TestBudgets.LeanProcessHangGuard, 8 * 1024 * 1024));
 
         var inspector = Path.Combine(TestRepositoryLayout.FindRoot(), "tools", "lean-inspector", "Inspector.lean");
         var compactor = Path.Combine(TestRepositoryLayout.FindRoot(), "tools", "lean-inspector", "materials.py");
@@ -53,10 +54,12 @@ public sealed class UtilityRefutationProducerTests
             claimSourcePath = path, claimSourceSha256 = sourceHash,
             resultGid = gid + "." + result, resultModule = module, resultSelector = result,
         } }));
-        Run("lake", ["env", "lean", "--run", inspector,
+        RequireSuccess(TestProcessRunner.Run("lake", ["env", "lean", "--run", inspector,
             "--output", output + ".spool", "--material-spool", output + ".materials",
-            "--utility-input", inputs, module, path, sourceHash], root);
-        Run("python3", [compactor, "compact", output + ".spool", output + ".materials", output], root);
+            "--utility-input", inputs, module, path, sourceHash], root,
+            TestBudgets.LeanProcessHangGuard, 8 * 1024 * 1024));
+        RequireSuccess(TestProcessRunner.Run("python3", [compactor, "compact", output + ".spool", output + ".materials", output], root,
+            TestBudgets.LeanProcessHangGuard, 8 * 1024 * 1024));
         var snapshot = Assert.IsType<SnapshotDecodeOutcome.Decoded>(SnapshotDecoder.Decode(
             RawRepositorySnapshot.Create([RawRepositoryEntry.FromText(path, source)]))).Snapshot;
         var report = RawLeanReportArtifact.ReadFile(output, snapshot);
@@ -105,7 +108,8 @@ public sealed class UtilityRefutationProducerTests
             "name = \"refutation_fixture\"\ndefaultTargets = [\"D5\"]\n[[lean_lib]]\nname = \"D5\"\nglobs = [\"D5.+\"]\n");
         File.WriteAllText(Path.Combine(root, path), declarations);
         File.WriteAllText(Path.Combine(root, externalPath), externalSource);
-        Run("lake", ["build"], root);
+        RequireSuccess(TestProcessRunner.Run("lake", ["build"], root,
+            TestBudgets.LeanProcessHangGuard, 8 * 1024 * 1024));
 
         var inspector = Path.Combine(TestRepositoryLayout.FindRoot(), "tools", "lean-inspector", "Inspector.lean");
         var compactor = Path.Combine(TestRepositoryLayout.FindRoot(), "tools", "lean-inspector", "materials.py");
@@ -127,7 +131,8 @@ public sealed class UtilityRefutationProducerTests
                 + "   mirror-E: none(waiver:pure-definition)\n   anchors: []\n"
                 + $"   utility: {utility}\n   digest: Synthetic refutation. -/\n" + declarations;
             File.WriteAllText(Path.Combine(root, path), source);
-            Run("lake", ["build"], root);
+            RequireSuccess(TestProcessRunner.Run("lake", ["build"], root,
+                TestBudgets.LeanProcessHangGuard, 8 * 1024 * 1024));
             File.WriteAllText(inputs, JsonSerializer.Serialize(new[] { new {
                 modulePath = path, claimGid, claimModule, claimSelector = claim,
                 claimSourcePath = claim == "external_law" ? externalPath : path,
@@ -135,13 +140,15 @@ public sealed class UtilityRefutationProducerTests
                     claim == "external_law" ? externalSource : source))),
                 resultGid = gid + "." + result, resultModule = "D5.S0.Carrier.Probe", resultSelector = result,
             } }));
-            Run("lake", ["env", "lean", "--run", inspector,
+            RequireSuccess(TestProcessRunner.Run("lake", ["env", "lean", "--run", inspector,
                 "--output", output + ".spool", "--material-spool", output + ".materials",
                 "--utility-input", inputs, "D5.S0.Carrier.Probe", path,
                 "sha256:" + Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(source))),
                 "D5.S0.Carrier.Law", externalPath,
-                "sha256:" + Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(externalSource)))], root);
-            Run("python3", [compactor, "compact", output + ".spool", output + ".materials", output], root);
+                "sha256:" + Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(externalSource)))], root,
+                TestBudgets.LeanProcessHangGuard, 8 * 1024 * 1024));
+            RequireSuccess(TestProcessRunner.Run("python3", [compactor, "compact", output + ".spool", output + ".materials", output], root,
+                TestBudgets.LeanProcessHangGuard, 8 * 1024 * 1024));
             var snapshot = Assert.IsType<SnapshotDecodeOutcome.Decoded>(SnapshotDecoder.Decode(
                 RawRepositorySnapshot.Create([RawRepositoryEntry.FromText(path, source),
                     RawRepositoryEntry.FromText(externalPath, externalSource)]))).Snapshot;
@@ -156,12 +163,14 @@ public sealed class UtilityRefutationProducerTests
             if (claim == "external_law")
             {
                 // A delta report may inspect only the changed result, with its claim reused from the baseline.
-                Run("lake", ["env", "lean", "--run", inspector,
+                RequireSuccess(TestProcessRunner.Run("lake", ["env", "lean", "--run", inspector,
                     "--output", output + ".subset.spool", "--material-spool", output + ".subset.materials",
                     "--utility-input", inputs, "D5.S0.Carrier.Probe", path,
-                    "sha256:" + Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(source)))], root);
-                Run("python3", [compactor, "compact", output + ".subset.spool", output + ".subset.materials",
-                    output + ".subset"], root);
+                    "sha256:" + Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(source)))], root,
+                    TestBudgets.LeanProcessHangGuard, 8 * 1024 * 1024));
+                RequireSuccess(TestProcessRunner.Run("python3", [compactor, "compact", output + ".subset.spool", output + ".subset.materials",
+                    output + ".subset"], root,
+                    TestBudgets.LeanProcessHangGuard, 8 * 1024 * 1024));
                 using var subset = JsonDocument.Parse(FixtureFile.ReadAllBytes(output + ".subset"));
                 var modules = subset.RootElement.GetProperty("modules");
                 Assert.Equal(1, modules.GetArrayLength());
@@ -170,9 +179,8 @@ public sealed class UtilityRefutationProducerTests
         }
     }
 
-    private static void Run(string executable, string[] arguments, string root)
+    private static void RequireSuccess(ProcessOutput result)
     {
-        var result = TestProcessRunner.Run(executable, arguments, root, TestBudgets.LeanProcessHangGuard, 8 * 1024 * 1024);
         Assert.True(result.ExitCode == 0, Encoding.UTF8.GetString(result.StandardOutput) + Encoding.UTF8.GetString(result.StandardError));
     }
 }
