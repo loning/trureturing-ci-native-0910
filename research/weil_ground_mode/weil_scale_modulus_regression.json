@@ -1,0 +1,37 @@
+{
+  "source_sha256": "2cf557efe7833d5d5a6066f23a29f4a27e0624f989c743cb68e5fa010b224d38",
+  "exact_high_frequency_floors": 600,
+  "exact_Gamma_derivative_term_comparisons": 600,
+  "exact_symbolic_derivative_and_square_identities": 2,
+  "exact_harmonic_dyadic_floors": 11,
+  "exact_exponential_polynomial_comparisons": 997,
+  "exact_edge_strip_norm_witnesses": 29,
+  "actual_cosine_multiplier_diagnostics": 126,
+  "actual_digamma_scaling_diagnostics": 28,
+  "actual_digamma_log_derivative_diagnostics": 5,
+  "finite_derivative_sum_differences": [
+    "1.56445251006893194e-12",
+    "1.56445248559631432e-8",
+    "1.56445006256865747e-6",
+    "0.000156420779770021265",
+    "0.610053522238484778"
+  ],
+  "prime_power_factorization_cross_checks": 999,
+  "all_prime_powers_through_12": [
+    2,
+    3,
+    4,
+    5,
+    7,
+    8,
+    9,
+    11
+  ],
+  "negative_controls": [
+    "dropping composite prime powers changes the actual finite action",
+    "a vanishing ordinary norm at prime activation contradicts the exact edge-block eigenvalues"
+  ],
+  "local_resolvent_gap_rational_guard": true,
+  "status": "All exact arithmetic and separate-expression diagnostics passed.",
+  "scope": "Single-author diagnostics, not Lean elaboration, a full operator-domain proof or a newly computed spectral gap. Nondirected digamma and cosine comparisons are not interval evidence."
+}
