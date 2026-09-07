@@ -11,6 +11,8 @@ internal sealed record ScribeNarrativeFinding(string Class, string MatchedText, 
 
 internal static class ScribeNarrativeScanner
 {
+    private const string TheoryVolumeAlphabet = @"(?:pzg|gict|dect|bedc|fpod|qdo|cone)";
+
     internal static readonly Func<Rune, bool> CjkSourceCharacter = static rune => rune.Value is
         >= 0x2E80 and <= 0x2EFF // CJK Radicals Supplement: U+2E80-U+2EFF
         or >= 0x2F00 and <= 0x2FDF // Kangxi Radicals: U+2F00-U+2FDF
@@ -47,8 +49,8 @@ internal static class ScribeNarrativeScanner
     internal static readonly NarrativeClass TheoryVolumeReference = new(
         nameof(TheoryVolumeReference), "theory volume",
         Pattern(@"\b(?:docs/develop/theory|theory\s+volumes?)\b"
-            + @"|\b(?:PZG|GICT|DECT|BEDC|FPOD)\b\s+(?:\d+(?:\.\d+)*|(?:Theorem|Remark|Definition|Proposition|Lemma|Corollary|Section|part|volume|source|line)\s+\d+(?:\.\d+)*|v\d+)\b"
-            + @"|\b[a-z]{2,5}-v\d{1,4}\b"));
+            + @"|\b" + TheoryVolumeAlphabet + @"\b\s+(?:\d+(?:\.\d+)*|(?:Theorem|Remark|Definition|Proposition|Lemma|Corollary|Section|part|volume|source|line)\s+\d+(?:\.\d+)*|v\d+)\b"
+            + @"|\b" + TheoryVolumeAlphabet + @"-v\d+(?:\.\d+)*\b"));
 
     internal static readonly NarrativeClass GovernanceProcessReference = new(
         nameof(GovernanceProcessReference), "governance process",

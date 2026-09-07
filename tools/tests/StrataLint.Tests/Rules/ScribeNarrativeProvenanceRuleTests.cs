@@ -86,6 +86,8 @@ public sealed class ScribeNarrativeProvenanceRuleTests
     [InlineData("docs/develop/theory/x.md")]
     [InlineData("the window remains recorded in the theory volume")]
     [InlineData("pzg-v170")]
+    [InlineData("gict-v3.6")]
+    [InlineData("cone-v1")]
     [InlineData("qdo-v1 theorem/38.1")]
     [InlineData("BEDC 12.3")]
     [InlineData("FPOD v12")]
@@ -167,6 +169,7 @@ public sealed class ScribeNarrativeProvenanceRuleTests
     [InlineData("Text($\"mass {atom_id}\");")]
     [InlineData("Text(\"source \", \"atom states\");")]
     [InlineData("Text($\"source {x}atom states\");")]
+    [InlineData("DescribeId.Create(\"candidate-square-tail-v60\")")]
     public void IdentifiersAndUnconnectedTextAreAllowed(string source) => Assert.Empty(Evaluate(source));
 
     [Fact]
