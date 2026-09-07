@@ -3,8 +3,8 @@
    mirror-B: D5/B/S3/QuantumBounds/AffineEndpointPath
    mirror-E: none(waiver:algebraically-proved)
    anchors: []
-   digest: Finite complex paths with fixed endpoints are equivalent to compatible differences.
-   utility: none -/
+   utility: none
+   digest: Finite complex paths with fixed endpoints are equivalent to compatible differences. -/
 
 import Mathlib.Algebra.BigOperators.Fin
 import Mathlib.Data.Complex.Basic
