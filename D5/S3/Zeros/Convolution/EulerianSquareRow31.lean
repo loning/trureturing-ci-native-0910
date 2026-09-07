@@ -6,7 +6,7 @@
    utility: kind=certified-instance; basis=terminal=gid:D5/S3/Zeros/Convolution/EulerianSquareRow31.certified_row31
    digest: The ordinary Eulerian matrix square has only real nonpositive roots in row 31. -/
 
-/-!
+/-
 Mao--Wang, arXiv:2607.01572v1, Conjecture 4.1 (PDF p. 11), A^2 at n=31 only.
 The paper reports the first 30 rows; no worldwide priority claim is made,
 and we do not claim the authors have not computed row 31.
@@ -77,6 +77,12 @@ private theorem hp_degree (cs : List ℤ) :
     refine ⟨hd, fun hz => ?_⟩
     rw [hz, natDegree_zero] at hd
     simp at hd
+
+private theorem hp_monic (cs : List ℤ) : (hp cs).Monic := by
+  rw [Monic.def, leadingCoeff, (hp_degree cs).1]
+  induction cs with
+  | nil => simp [hp]
+  | cons c cs ih => simpa [hp, coeff_X_mul] using ih
 
 private theorem hv_spec (cs : List ℤ) (a b : ℤ) (x : ℝ)
     (hx : (a : ℝ) = (b : ℝ) * x) :
@@ -444,129 +450,134 @@ theorem factor_row31 : B 31 = X * H := by
 
 private theorem H_degree : H.natDegree = 30 ∧ H ≠ 0 := hp_degree cs
 
+/-- The certificate is for a monic polynomial of degree 31. -/
+theorem row31_monic_degree : (B 31).Monic ∧ (B 31).natDegree = 31 := by
+  rw [factor_row31]
+  exact ⟨monic_X.mul (hp_monic cs), by rw [natDegree_X_mul H_degree.2, H_degree.1]⟩
+
 private theorem sign_0 : 0 < H.eval ((-20952087472775824235368025761820633369787448936103936 : ℝ) / 1) := by
-  exact eval_pos cs (-20952087472775824235368025761820633369787448936103936) 1 (by norm_num)
-    (by norm_num [hv, cs])
+  convert eval_pos cs (-20952087472775824235368025761820633369787448936103936) 1 (by norm_num)
+    (by norm_num [hv, cs]) using 1 <;> norm_num [H]
 
 private theorem sign_1 : H.eval ((-3221225472 : ℝ) / 1) < 0 := by
-  exact eval_neg cs (-3221225472) 1 (by norm_num)
-    (by norm_num [hv, cs])
+  convert eval_neg cs (-3221225472) 1 (by norm_num)
+    (by norm_num [hv, cs]) using 1 <;> norm_num [H]
 
 private theorem sign_2 : 0 < H.eval ((-536870912 : ℝ) / 1) := by
-  exact eval_pos cs (-536870912) 1 (by norm_num)
-    (by norm_num [hv, cs])
+  convert eval_pos cs (-536870912) 1 (by norm_num)
+    (by norm_num [hv, cs]) using 1 <;> norm_num [H]
 
 private theorem sign_3 : H.eval ((-229376 : ℝ) / 1) < 0 := by
-  exact eval_neg cs (-229376) 1 (by norm_num)
-    (by norm_num [hv, cs])
+  convert eval_neg cs (-229376) 1 (by norm_num)
+    (by norm_num [hv, cs]) using 1 <;> norm_num [H]
 
 private theorem sign_4 : 0 < H.eval ((-65536 : ℝ) / 1) := by
-  exact eval_pos cs (-65536) 1 (by norm_num)
-    (by norm_num [hv, cs])
+  convert eval_pos cs (-65536) 1 (by norm_num)
+    (by norm_num [hv, cs]) using 1 <;> norm_num [H]
 
 private theorem sign_5 : H.eval ((-4096 : ℝ) / 1) < 0 := by
-  exact eval_neg cs (-4096) 1 (by norm_num)
-    (by norm_num [hv, cs])
+  convert eval_neg cs (-4096) 1 (by norm_num)
+    (by norm_num [hv, cs]) using 1 <;> norm_num [H]
 
 private theorem sign_6 : 0 < H.eval ((-1280 : ℝ) / 1) := by
-  exact eval_pos cs (-1280) 1 (by norm_num)
-    (by norm_num [hv, cs])
+  convert eval_pos cs (-1280) 1 (by norm_num)
+    (by norm_num [hv, cs]) using 1 <;> norm_num [H]
 
 private theorem sign_7 : H.eval ((-384 : ℝ) / 1) < 0 := by
-  exact eval_neg cs (-384) 1 (by norm_num)
-    (by norm_num [hv, cs])
+  convert eval_neg cs (-384) 1 (by norm_num)
+    (by norm_num [hv, cs]) using 1 <;> norm_num [H]
 
 private theorem sign_8 : 0 < H.eval ((-160 : ℝ) / 1) := by
-  exact eval_pos cs (-160) 1 (by norm_num)
-    (by norm_num [hv, cs])
+  convert eval_pos cs (-160) 1 (by norm_num)
+    (by norm_num [hv, cs]) using 1 <;> norm_num [H]
 
 private theorem sign_9 : H.eval ((-80 : ℝ) / 1) < 0 := by
-  exact eval_neg cs (-80) 1 (by norm_num)
-    (by norm_num [hv, cs])
+  convert eval_neg cs (-80) 1 (by norm_num)
+    (by norm_num [hv, cs]) using 1 <;> norm_num [H]
 
 private theorem sign_10 : 0 < H.eval ((-40 : ℝ) / 1) := by
-  exact eval_pos cs (-40) 1 (by norm_num)
-    (by norm_num [hv, cs])
+  convert eval_pos cs (-40) 1 (by norm_num)
+    (by norm_num [hv, cs]) using 1 <;> norm_num [H]
 
 private theorem sign_11 : H.eval ((-24 : ℝ) / 1) < 0 := by
-  exact eval_neg cs (-24) 1 (by norm_num)
-    (by norm_num [hv, cs])
+  convert eval_neg cs (-24) 1 (by norm_num)
+    (by norm_num [hv, cs]) using 1 <;> norm_num [H]
 
 private theorem sign_12 : 0 < H.eval ((-14 : ℝ) / 1) := by
-  exact eval_pos cs (-14) 1 (by norm_num)
-    (by norm_num [hv, cs])
+  convert eval_pos cs (-14) 1 (by norm_num)
+    (by norm_num [hv, cs]) using 1 <;> norm_num [H]
 
 private theorem sign_13 : H.eval ((-10 : ℝ) / 1) < 0 := by
-  exact eval_neg cs (-10) 1 (by norm_num)
-    (by norm_num [hv, cs])
+  convert eval_neg cs (-10) 1 (by norm_num)
+    (by norm_num [hv, cs]) using 1 <;> norm_num [H]
 
 private theorem sign_14 : 0 < H.eval ((-6 : ℝ) / 1) := by
-  exact eval_pos cs (-6) 1 (by norm_num)
-    (by norm_num [hv, cs])
+  convert eval_pos cs (-6) 1 (by norm_num)
+    (by norm_num [hv, cs]) using 1 <;> norm_num [H]
 
 private theorem sign_15 : H.eval ((-4 : ℝ) / 1) < 0 := by
-  exact eval_neg cs (-4) 1 (by norm_num)
-    (by norm_num [hv, cs])
+  convert eval_neg cs (-4) 1 (by norm_num)
+    (by norm_num [hv, cs]) using 1 <;> norm_num [H]
 
 private theorem sign_16 : 0 < H.eval ((-3 : ℝ) / 1) := by
-  exact eval_pos cs (-3) 1 (by norm_num)
-    (by norm_num [hv, cs])
+  convert eval_pos cs (-3) 1 (by norm_num)
+    (by norm_num [hv, cs]) using 1 <;> norm_num [H]
 
 private theorem sign_17 : H.eval ((-2 : ℝ) / 1) < 0 := by
-  exact eval_neg cs (-2) 1 (by norm_num)
-    (by norm_num [hv, cs])
+  convert eval_neg cs (-2) 1 (by norm_num)
+    (by norm_num [hv, cs]) using 1 <;> norm_num [H]
 
 private theorem sign_18 : 0 < H.eval ((-3 : ℝ) / 2) := by
-  exact eval_pos cs (-3) 2 (by norm_num)
-    (by norm_num [hv, cs])
+  convert eval_pos cs (-3) 2 (by norm_num)
+    (by norm_num [hv, cs]) using 1 <;> norm_num [H]
 
 private theorem sign_19 : H.eval ((-5 : ℝ) / 4) < 0 := by
-  exact eval_neg cs (-5) 4 (by norm_num)
-    (by norm_num [hv, cs])
+  convert eval_neg cs (-5) 4 (by norm_num)
+    (by norm_num [hv, cs]) using 1 <;> norm_num [H]
 
 private theorem sign_20 : 0 < H.eval ((-7 : ℝ) / 8) := by
-  exact eval_pos cs (-7) 8 (by norm_num)
-    (by norm_num [hv, cs])
+  convert eval_pos cs (-7) 8 (by norm_num)
+    (by norm_num [hv, cs]) using 1 <;> norm_num [H]
 
 private theorem sign_21 : H.eval ((-5 : ℝ) / 8) < 0 := by
-  exact eval_neg cs (-5) 8 (by norm_num)
-    (by norm_num [hv, cs])
+  convert eval_neg cs (-5) 8 (by norm_num)
+    (by norm_num [hv, cs]) using 1 <;> norm_num [H]
 
 private theorem sign_22 : 0 < H.eval ((-3 : ℝ) / 8) := by
-  exact eval_pos cs (-3) 8 (by norm_num)
-    (by norm_num [hv, cs])
+  convert eval_pos cs (-3) 8 (by norm_num)
+    (by norm_num [hv, cs]) using 1 <;> norm_num [H]
 
 private theorem sign_23 : H.eval ((-1 : ℝ) / 4) < 0 := by
-  exact eval_neg cs (-1) 4 (by norm_num)
-    (by norm_num [hv, cs])
+  convert eval_neg cs (-1) 4 (by norm_num)
+    (by norm_num [hv, cs]) using 1 <;> norm_num [H]
 
 private theorem sign_24 : 0 < H.eval ((-5 : ℝ) / 32) := by
-  exact eval_pos cs (-5) 32 (by norm_num)
-    (by norm_num [hv, cs])
+  convert eval_pos cs (-5) 32 (by norm_num)
+    (by norm_num [hv, cs]) using 1 <;> norm_num [H]
 
 private theorem sign_25 : H.eval ((-3 : ℝ) / 32) < 0 := by
-  exact eval_neg cs (-3) 32 (by norm_num)
-    (by norm_num [hv, cs])
+  convert eval_neg cs (-3) 32 (by norm_num)
+    (by norm_num [hv, cs]) using 1 <;> norm_num [H]
 
 private theorem sign_26 : 0 < H.eval ((-3 : ℝ) / 64) := by
-  exact eval_pos cs (-3) 64 (by norm_num)
-    (by norm_num [hv, cs])
+  convert eval_pos cs (-3) 64 (by norm_num)
+    (by norm_num [hv, cs]) using 1 <;> norm_num [H]
 
 private theorem sign_27 : H.eval ((-5 : ℝ) / 256) < 0 := by
-  exact eval_neg cs (-5) 256 (by norm_num)
-    (by norm_num [hv, cs])
+  convert eval_neg cs (-5) 256 (by norm_num)
+    (by norm_num [hv, cs]) using 1 <;> norm_num [H]
 
 private theorem sign_28 : 0 < H.eval ((-5 : ℝ) / 1024) := by
-  exact eval_pos cs (-5) 1024 (by norm_num)
-    (by norm_num [hv, cs])
+  convert eval_pos cs (-5) 1024 (by norm_num)
+    (by norm_num [hv, cs]) using 1 <;> norm_num [H]
 
 private theorem sign_29 : H.eval ((-5 : ℝ) / 8192) < 0 := by
-  exact eval_neg cs (-5) 8192 (by norm_num)
-    (by norm_num [hv, cs])
+  convert eval_neg cs (-5) 8192 (by norm_num)
+    (by norm_num [hv, cs]) using 1 <;> norm_num [H]
 
 private theorem sign_30 : 0 < H.eval ((-1 : ℝ) / 131072) := by
-  exact eval_pos cs (-1) 131072 (by norm_num)
-    (by norm_num [hv, cs])
+  convert eval_pos cs (-1) 131072 (by norm_num)
+    (by norm_num [hv, cs]) using 1 <;> norm_num [H]
 
 private def ends (i : Fin 31) : ℚ :=
   ([(-20952087472775824235368025761820633369787448936103936 : ℚ) / 1, (-3221225472 : ℚ) / 1, (-536870912 : ℚ) / 1, (-229376 : ℚ) / 1, (-65536 : ℚ) / 1, (-4096 : ℚ) / 1, (-1280 : ℚ) / 1, (-384 : ℚ) / 1, (-160 : ℚ) / 1, (-80 : ℚ) / 1, (-40 : ℚ) / 1, (-24 : ℚ) / 1, (-14 : ℚ) / 1, (-10 : ℚ) / 1, (-6 : ℚ) / 1, (-4 : ℚ) / 1, (-3 : ℚ) / 1, (-2 : ℚ) / 1, (-3 : ℚ) / 2, (-5 : ℚ) / 4, (-7 : ℚ) / 8, (-5 : ℚ) / 8, (-3 : ℚ) / 8, (-1 : ℚ) / 4, (-5 : ℚ) / 32, (-3 : ℚ) / 32, (-3 : ℚ) / 64, (-5 : ℚ) / 256, (-5 : ℚ) / 1024, (-5 : ℚ) / 8192, (-1 : ℚ) / 131072] : List ℚ).getD i.val 0
