@@ -48,7 +48,8 @@ internal sealed class CanonicalLiLocalExpansionDocument : IScribeDocumentDefinit
                     "The all-order Mobius derivative identity follows by induction from the "
                     + "higher product rule for multiplication by the coordinate. Conjugation "
                     + "of the entire xi reading makes the generator's derivatives at zero "
-                    + "real. This proves the unchanged preregistered escape witness."))),
+                    + "real, so each Taylor coefficient of the generator is the canonical Li "
+                    + "coefficient of the next index."))),
                 DescribeRole.Theorem),
             Describe.Lean(
                 DescribeId.Create("canonical-li-local-has-sum"),
@@ -92,10 +93,10 @@ internal sealed class CanonicalLiLocalExpansionDocument : IScribeDocumentDefinit
                 StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
-                    "The preceding layer's strict positivity transfers along the first-value "
-                    + "identity. Zero and positivity are bind-only companion results for the "
-                    + "inputs of LiCaratheodoryIdentity. L1 proves only the local generating "
-                    + "expansion; L2 and any claim to close the full atom remain outside this work."))),
+                    "The strict positivity of the first canonical Li coefficient transfers "
+                    + "along the identity for its closed form. Together with the vanishing "
+                    + "zeroth coefficient it supplies the initial values that the Li-Caratheodory "
+                    + "identity takes as inputs."))),
                 DescribeRole.Theorem)),
         []));
 }
