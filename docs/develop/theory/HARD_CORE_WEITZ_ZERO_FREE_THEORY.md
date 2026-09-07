@@ -1866,3 +1866,210 @@ and now supplies its missing all-domain consumer. The endpoint 2.55 is the
 specific proposed extension under investigation; no priority claim, optimal
 critical threshold, RH consequence, or solution of the full square-lattice
 phase-transition problem is asserted.
+
+
+## 31. Branch-correct local logarithmic squares
+
+This continuation verifies the seven preceding delivery blobs at
+`a565cc4798502a5c77c703aabaf8d4eff98033ad` against the retained delivery bytes;
+all seven match. The current dev source read is
+`63ba7cc8376be34ff5ba4ed3bb73c0eab56f1f6d`. The existing v4.33.0 Mathlib pin
+is `db584cd6d46c92f209a44c0f1c829460d327499d`. The new mathematics consumes the
+actual finite-grid endpoint without changing its coefficient or geometric data.
+
+Define the actual insertion factor
+
+\[
+ R(V,v;z)=\frac{Z(V;z)}{Z(V\setminus\{v\};z)}.
+\]
+
+The preceding origin half-plane theorem transports through the actual marked
+translation, so Re R(V,v;z)>=1/2 for every marked vertex and z in U_epsilon.
+An absent vertex has factor one, justified by the established nonzero partition.
+The principal logarithm of each factor therefore has imaginary part strictly
+between -pi/2 and pi/2.
+
+For any two vertices u,v, exact cancellation gives the multiplicative square
+
+\[
+ R(V,u;z)R(V\setminus\{u\},v;z)
+ =R(V,v;z)R(V\setminus\{v\},u;z).
+\]
+
+The four individual factors are in the right half-plane. The sum of the two
+arguments on either side lies strictly between -pi and pi. Mathlib's actual
+principal-log multiplication theorem therefore upgrades the square to
+
+\[
+\boxed{
+ \operatorname{Log}R(V,u;z)+\operatorname{Log}R(V\setminus\{u\},v;z)
+ =\operatorname{Log}R(V,v;z)+\operatorname{Log}R(V\setminus\{v\},u;z).
+}
+\tag{31.1}
+\]
+
+The equality is exact in the complex numbers, with no unresolved multiple of
+2*pi*i. This proves zero additive circulation around every actual deletion
+square. It is a concrete local flatness statement for the intended observable.
+No global principal-log identity for Z(V;z) is assumed.
+
+This yields a more local proof of deletion-order independence than the
+connected-domain uniqueness argument proposed in Section 29. Adjacent swaps
+of vertices generate every finite permutation, and each swap is certified by
+(31.1). The argument works pointwise throughout the activity tube and does not
+need a separate connectedness theorem. It also covers permutations of partial
+lists and lists containing repeated or absent vertices.
+
+## 32. One normalized holomorphic logarithm from every complete deletion order
+
+For a list l=(v1,...,vk), define the ordered sum of principal local logs along
+successive actual domains W0=V, Wj=W(j-1)\{vj}. The new source proves
+
+\[
+ \exp F_{V,l}(z)=\frac{Z(V;z)}{Z(W_k;z)},\qquad F_{V,l}(0)=0.
+\]
+
+This statement explicitly retains the remaining domain for an incomplete list.
+For a complete distinct enumeration of V, Wk is empty and its partition is one.
+Choose the existing Finset.toList enumeration to define F_V. Every other
+complete distinct enumeration gives the same exact complex value by the
+permutation theorem. Thus the chosen enumeration is absent from the mathematical
+content of F_V.
+
+Each local factor is the quotient of two entire independent-configuration sums,
+with a nonzero denominator on U_epsilon and image in the right half-plane.
+Differentiating its principal logarithm gives
+
+\[
+ \frac{d}{dz}\operatorname{Log}R(V,v;z)
+ =\frac{Z'_V(z)}{Z_V(z)}-
+   \frac{Z'_{V\setminus\{v\}}(z)}{Z_{V\setminus\{v\}}(z)}.
+\]
+
+The derivatives telescope on partial lists as well. For a complete list the
+remaining empty-domain derivative is zero. The concrete endpoint is therefore
+
+\[
+\boxed{
+ \exp F_V(z)=Z_V(z),\qquad F_V(0)=0,\qquad
+ F'_V(z)=\frac{Z'_V(z)}{Z_V(z)},\qquad
+ F_V\text{ is holomorphic on }U_\epsilon.
+}
+\tag{32.1}
+\]
+
+All statements use the original activity neighborhood, with no graph-dependent
+shrinking or supplied logarithm-existence premise. The candidate proof also
+establishes the exact canonical deletion equation
+
+\[
+ F_V(z)=\operatorname{Log}R(V,v;z)+F_{V\setminus\{v\}}(z).
+\tag{32.2}
+\]
+
+Uniqueness among all normalized holomorphic logarithms can also be deduced on
+the connected tube, but that broader uniqueness theorem is not a public
+statement in this increment. What is proved in source is exact independence
+from every complete distinct deletion enumeration.
+
+### Why the full principal logarithm would be incorrect
+
+Even inside the tiny common activity tube, a large finite collection of isolated
+vertices has Z(z)=(1+z)^N and normalized log N*Log(1+z). At N=10^32 and
+z=i/(3*10^30), the latter has imaginary part approximately 33.3333, outside the
+principal strip. Its exponential still equals the correct partition. The
+principal logarithm of the exponential differs by 5*(2*pi*i).
+
+The supplementary regression evaluates this closed isolated-vertex formula;
+it does not enumerate an enormous graph or certify the example with interval
+arithmetic. The structural point is general: positive-real-part local factors
+can accumulate phase. The local square proof preserves that accumulated phase
+while ensuring it does not depend on deletion order.
+
+## 33. Volume control and the next observable bridge
+
+Direct comparison of actual independent configurations with all vertex subsets
+gives, on the whole complex plane,
+
+\[
+ |Z_V(z)|\le\sum_{S\subseteq V}|z|^{|S|}=(1+|z|)^{|V|}.
+\]
+
+On U_epsilon, |z|<3. Combined with the preceding lower bound 2^(-|V|),
+exp(F_V)=Z_V, and the local argument bound, the new source proves
+
+\[
+\boxed{
+ -|V|\log2\le\operatorname{Re}F_V(z)\le |V|\log4,
+ \qquad |\operatorname{Im}F_V(z)|\le |V|\pi/2.
+}
+\tag{33.1}
+\]
+
+For nonempty domains, the normalized finite-volume pressure F_V/|V| is therefore
+uniformly bounded on the same complex neighborhood. This is a concrete input
+for a normal-family argument, rather than a conclusion about an infinite-volume
+limit. Identifying that limit still needs real-volume convergence and boundary
+or tiling control. Chen, Shao and Shi [1] study precisely this relation between
+uniform zero-freeness and analytic free energy; their result is literature
+context, not an implicit assumption that the present finite-domain limit exists.
+
+The next finite observable identity can be derived before addressing the limit.
+Differentiating the actual independent-set polynomial and counting each occupied
+vertex once gives
+
+\[
+ zZ'_V(z)=\sum_{v\in V}\bigl(Z_V(z)-Z_{V\setminus\{v\}}(z)\bigr),
+ \qquad
+ zF'_V(z)=\sum_{v\in V}(1-\alpha(V,v;z)).
+\tag{33.2}
+\]
+
+This uses actual configurations, not independence between neighbors. The
+identity avoids dividing by z and therefore includes z=0. Equation (33.2) is
+the next proposed formalization target; it is not counted among the current
+public declarations. On positive real activity it links the derivative to
+expected particle number after the Gibbs probability measure is explicitly
+constructed. Such a probability interpretation is not assigned to general
+complex activities.
+
+## 34. Source and verification status
+
+The two new owners PartitionLogCocycle and NormalizedPartitionLog have two
+canonical Scribe companions and 26 explicitly named public declarations.
+They reuse the existing actual partitions, marked translations, zero-free
+endpoint and ordered deletion domains. There is no parallel partition model,
+new activity width or finite-state payload.
+
+The supplementary verifier reads actual configuration polynomials from the
+existing direct independent-subset enumerator. Exact rational and Gaussian-
+rational arithmetic checks products, half-planes and logarithmic-derivative
+quotients. Principal-log and exponential values are supplemental 100-digit
+mpmath regressions, not exact transcendental certificates. It covers all 512
+subdomains of a three-by-three square at six activities and checks:
+
+- 3012 deletion squares and 3072 partial/repeated/absent deletion lists;
+- 27804 complete deletion orders and exact derivative telescopes;
+- 24732 order comparisons, 27804 volume bounds and 4634 zero normalizations;
+- three negative controls for branch wrapping, inferring log equality from
+  exponential equality alone, and reusing an undeleted sibling domain.
+
+```sh
+python research/hard_core_weitz/verify_normalized_partition_log.py
+```
+
+Two final runs on the assembled source bytes produced identical JSON. The
+maximum square-log and complete-order errors were respectively
+2.85746847821e-101 and 5.71493695641e-101. These numbers describe finite numerical
+regressions. They do not establish the universal statements or validate their
+proof terms. The implementation is by the same assistant, not an independent
+author review. Existing coefficient, geometric and holomorphic proof scripts
+remain dependencies and were not recompiled or rerun by this verifier.
+
+The source proofs were logically reviewed against the pinned Mathlib logarithm
+branch, finite-product, permutation and derivative interfaces. No Lean/lake
+executable is available in this runtime, so Lean elaboration, kernel acceptance,
+executed axiom closure and Scribe emission remain unperformed. The current result
+is a candidate formalization of the normalized finite-volume log and its bounds.
+It does not claim a new numerical zero-free threshold, mathematical priority or
+an established thermodynamic limit.
