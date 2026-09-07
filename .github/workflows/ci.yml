@@ -45,9 +45,6 @@ jobs:
     # 30 分钟给 full scope 留约 50% 余量;同文件的 Lean report job 预算已是 45 分钟。
     timeout-minutes: 30
     steps:
-      - name: Wait for the GitHub merge ref
-        if: github.event_name == 'pull_request_target'
-        run: "set -euo pipefail\nfor attempt in {1..25}; do\n  timestamp=\"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\"\n  printf '%s poll=%s/25\\n' \"$timestamp\" \"$attempt\"\n  if git ls-remote --exit-code \"https://github.com/${{ github.repository }}.git\" \"refs/pull/${{ github.event.pull_request.number }}/merge\" >/dev/null 2>&1; then exit 0; fi\n  sleep 5\ndone\nprintf '%s\\n' \"merge ref absent after 125s (conflicted PR or still computing)\"\nexit 0"
       - name: Check out candidate
         id: checkout-merge
         continue-on-error: ${{ github.event_name == 'pull_request_target' }}
@@ -248,9 +245,6 @@ jobs:
     outputs:
       baseline_sha: ${{ steps.base.outputs.sha }}
     steps:
-      - name: Wait for the GitHub merge ref
-        if: github.event_name == 'pull_request_target'
-        run: "set -euo pipefail\nfor attempt in {1..25}; do\n  timestamp=\"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\"\n  printf '%s poll=%s/25\\n' \"$timestamp\" \"$attempt\"\n  if git ls-remote --exit-code \"https://github.com/${{ github.repository }}.git\" \"refs/pull/${{ github.event.pull_request.number }}/merge\" >/dev/null 2>&1; then exit 0; fi\n  sleep 5\ndone\nprintf '%s\\n' \"merge ref absent after 125s (conflicted PR or still computing)\"\nexit 0"
       - name: Check out candidate with history
         id: checkout-merge
         continue-on-error: ${{ github.event_name == 'pull_request_target' }}
@@ -365,30 +359,9 @@ jobs:
           path: .canonical-lean-report-cache
           key: stratalint-canonical-lean-report-v2-${{ steps.lean-report-input.outputs.address }}
           restore-keys: stratalint-canonical-lean-report-v2-
-      # policy-override PERF-20260907-SINGLEFLIGHT (permanent local case), 2026-09-07,
-      # owner: repository tau=0 owner; domain: report-miss wait. This is not a derived value.
-      # 300s sleep; wait/restore/verify caps 6/2/2 minutes (600s total, excluding runner scheduling).
-      # User's fixed 68-run replay: 6 duplicate full producers; no post-change speed measurement.
-      # Negative: an unpublished/failed leader adds waiting then full fallback; no leader election.
-      # Exit: remove or recalibrate after the first integration window measures reuse and added latency.
-      - name: Wait for an in-flight canonical Lean report
-        id: report-cache-wait
-        if: steps.lean-report-input.outputs.address != '' && steps.report-cache.outcome == 'success' && steps.report-cache.outputs.cache-hit != 'true'
-        continue-on-error: true
-        timeout-minutes: 6
-        run: sleep 300
-      - name: Retry the exact canonical Lean report address
-        id: report-cache-retry
-        if: steps.report-cache-wait.outcome == 'success'
-        continue-on-error: true
-        timeout-minutes: 2
-        uses: actions/cache/restore@v4
-        with:
-          path: .canonical-lean-report-cache
-          key: stratalint-canonical-lean-report-v2-${{ steps.lean-report-input.outputs.address }}
       - name: Serve candidate canonical Lean report from the cached address
         id: report-reuse
-        if: (steps.report-cache.outcome == 'success' && steps.report-cache.outputs.cache-hit == 'true') || (steps.report-cache-retry.outcome == 'success' && steps.report-cache-retry.outputs.cache-hit == 'true')
+        if: steps.report-cache.outcome == 'success' && steps.report-cache.outputs.cache-hit == 'true'
         # 这一步失败必须**回落**到完整生产路径,而不是让整个 job 红:缓存是加速,不是权威。
         # 下面四个重活步骤的守卫是 `outcome != 'success'`,故失败与跳过都会走原路。
         continue-on-error: true
@@ -616,9 +589,6 @@ jobs:
     env:
       DEV_BASELINE_SHA: ${{ needs.lean-inspect.outputs.baseline_sha }}
     steps:
-      - name: Wait for the GitHub merge ref
-        if: github.event_name == 'pull_request_target'
-        run: "set -euo pipefail\nfor attempt in {1..25}; do\n  timestamp=\"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\"\n  printf '%s poll=%s/25\\n' \"$timestamp\" \"$attempt\"\n  if git ls-remote --exit-code \"https://github.com/${{ github.repository }}.git\" \"refs/pull/${{ github.event.pull_request.number }}/merge\" >/dev/null 2>&1; then exit 0; fi\n  sleep 5\ndone\nprintf '%s\\n' \"merge ref absent after 125s (conflicted PR or still computing)\"\nexit 0"
       - name: Check out candidate with history
         id: checkout-merge
         continue-on-error: ${{ github.event_name == 'pull_request_target' }}
