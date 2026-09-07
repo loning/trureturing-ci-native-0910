@@ -6,6 +6,57 @@ namespace StrataLint.Tests;
 
 public sealed partial class CleanLanesCommandTests
 {
+    [Fact]
+    public void ProductionStreamingAdapterAcceptsOutputBeyondTheBufferedLimit()
+    {
+        if (OperatingSystem.IsWindows()) return;
+        IWorktreeProcessRunner runner = new ProductionWorktreeProcessRunner();
+        var result = runner.RunStreaming("/usr/bin/head", ["-c", "67108865", "/dev/zero"],
+            Path.GetTempPath(), BoundedProcessRunner.HangDetectionBudget,
+            async (stream, cancellation) =>
+            {
+                var total = 0L;
+                var buffer = new byte[8192];
+                int count;
+                while ((count = await stream.ReadAsync(buffer, cancellation)) != 0) total += count;
+                return total;
+            });
+        Assert.Equal(0, result.ExitCode);
+        Assert.Equal(67108865L, result.StandardOutput);
+        Assert.Empty(result.StandardError);
+    }
+
+    [Theory]
+    [InlineData("truncated")]
+    [InlineData("invalid-utf8")]
+    [InlineData("oversized-field")]
+    public void MalformedStreamsAreDrainedAndCannotAuthorizeRemoval(string scenario)
+    {
+        using var fixture = new CleanLanesFixture();
+        const string branch = "harness/malformed-stream";
+        var lane = fixture.AddLandedLane(branch);
+        var idle = IdleLsofOutput().StandardOutput;
+        Func<Stream> snapshot = scenario switch
+        {
+            "truncated" => () => new ShortReadStream([.. idle, .. Encoding.UTF8.GetBytes("\np456")]),
+            "invalid-utf8" => () => new ShortReadStream([.. idle,
+                .. Encoding.UTF8.GetBytes("\nf9\0tDIR\0n"), 0xc3, 0x28, 0,
+                .. Encoding.UTF8.GetBytes("\np456\0\nf1\0tDIR\0n/tmp/outside\0\n")]),
+            "oversized-field" => () => new RepeatedDescriptorStream(null, oversizedField: true),
+            _ => throw new InvalidOperationException(scenario),
+        };
+        var runner = new StreamingLsofRunner(fixture.CreateRunner((fileName, _, _) =>
+            fileName == "gh" ? SuccessfulPrOutput(branch, fixture.Head(lane)) : null), snapshot);
+
+        var result = fixture.RunWithProductionProbes(runner, "--force");
+
+        Assert.True(result.Success, result.Error);
+        Assert.Equal("in_use_unknown", ReasonFor(result.Output, lane));
+        CleanLanesFixture.AssertDirectoryExists(lane, true);
+        Assert.Equal(1, runner.StreamedSnapshots);
+        Assert.Equal(1, runner.DrainedSnapshots);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -15,7 +66,8 @@ public sealed partial class CleanLanesCommandTests
         const string branch = "harness/large-process-snapshot";
         var lane = fixture.AddLandedLane(branch);
         var runner = new StreamingLsofRunner(fixture.CreateRunner((fileName, _, _) =>
-            fileName == "gh" ? SuccessfulPrOutput(branch, fixture.Head(lane)) : null), lane, busy);
+            fileName == "gh" ? SuccessfulPrOutput(branch, fixture.Head(lane)) : null),
+            () => new RepeatedDescriptorStream(busy ? lane : null));
 
         var result = fixture.RunWithProductionProbes(runner, "--force");
 
@@ -42,10 +94,11 @@ public sealed partial class CleanLanesCommandTests
             && call.Arguments.SequenceEqual(["rev-parse", "--absolute-git-dir"]));
     }
 
-    private sealed class StreamingLsofRunner(IWorktreeProcessRunner inner, string lane, bool busy)
+    private sealed class StreamingLsofRunner(IWorktreeProcessRunner inner, Func<Stream> snapshot)
         : IWorktreeProcessRunner
     {
         internal int StreamedSnapshots { get; private set; }
+        internal int DrainedSnapshots { get; private set; }
 
         public ProcessOutput Run(string fileName, IReadOnlyList<string> arguments, string workingDirectory, TimeSpan timeout) =>
             fileName == "lsof"
@@ -58,35 +111,44 @@ public sealed partial class CleanLanesCommandTests
             Assert.Equal("lsof", fileName);
             Assert.Equal(new[] { "-nP", "-F0pftn" }, arguments);
             StreamedSnapshots++;
-            using var stream = new RepeatedDescriptorStream(busy ? lane : null);
-            return new StreamedProcessOutput<T>(0,
-                readStandardOutput(stream, CancellationToken.None).GetAwaiter().GetResult(), []);
+            using var stream = snapshot();
+            var result = readStandardOutput(stream, CancellationToken.None).GetAwaiter().GetResult();
+            if (stream.Position == stream.Length) DrainedSnapshots++;
+            return new StreamedProcessOutput<T>(0, result, []);
         }
     }
 
-    private sealed class RepeatedDescriptorStream(string? busyPath) : Stream
+    private sealed class ShortReadStream(byte[] bytes) : MemoryStream(bytes, writable: false)
     {
-        private static readonly byte[] Header = Encoding.UTF8.GetBytes("p123\0\n");
-        private static readonly byte[] Record = Encoding.UTF8.GetBytes("f1\0tREG\0n/tmp/outside-lane-\u00e9\0\n");
+        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) =>
+            base.ReadAsync(buffer[..Math.Min(2, buffer.Length)], cancellationToken);
+    }
+
+    private sealed class RepeatedDescriptorStream(string? busyPath, bool oversizedField = false) : Stream
+    {
+        private readonly byte[] header = Encoding.UTF8.GetBytes(oversizedField ? "p123\0\nf1\0tREG\0n" : "p123\0\n");
+        private readonly byte[] record = Encoding.UTF8.GetBytes(oversizedField ? "x" : "f1\0tREG\0n/tmp/outside-lane-\u00e9\0\n");
         private const int PreviousSnapshotLimit = 64 * 1024 * 1024;
-        private static readonly long RepeatedLength = (PreviousSnapshotLimit / Record.Length + 1L) * Record.Length;
-        private readonly byte[] tail = busyPath is null ? [] : Encoding.UTF8.GetBytes($"f2\0tDIR\0n{busyPath}\0\n");
+        private long RepeatedLength => (PreviousSnapshotLimit / record.Length + 1L) * record.Length;
+        private readonly byte[] tail = oversizedField ? Encoding.UTF8.GetBytes("\0\nf2\0tDIR\0n/tmp/outside\0\n")
+            : busyPath is null ? [] : Encoding.UTF8.GetBytes($"f2\0tDIR\0n{busyPath}\0\n");
         private long offset;
 
         public override bool CanRead => true;
         public override bool CanSeek => false;
         public override bool CanWrite => false;
-        public override long Length => Header.Length + RepeatedLength + tail.Length;
+        public override long Length => header.Length + RepeatedLength + tail.Length;
         public override long Position { get => offset; set => throw new NotSupportedException(); }
 
         public override int Read(byte[] buffer, int start, int count)
         {
-            var read = (int)Math.Min(count, Length - offset);
+            var endOfRecords = header.Length + RepeatedLength;
+            var read = (int)Math.Min(count, endOfRecords + tail.Length - offset);
             for (var index = 0; index < read; index++, offset++)
             {
-                buffer[start + index] = offset < Header.Length ? Header[offset]
-                    : offset < Header.Length + RepeatedLength ? Record[(offset - Header.Length) % Record.Length]
-                    : tail[offset - Header.Length - RepeatedLength];
+                buffer[start + index] = offset < header.Length ? header[offset]
+                    : offset < endOfRecords ? record[(offset - header.Length) % record.Length]
+                    : tail[offset - endOfRecords];
             }
             return read;
         }
