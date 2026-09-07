@@ -47,7 +47,6 @@ internal interface ICliEnvironment
 
     CommandResult DecomposeAtom(IReadOnlyList<string> arguments);
 
-    CommandResult AlignScribeReceipt(IReadOnlyList<string> arguments);
 
     CommandResult Route(IReadOnlyList<string> arguments);
 
@@ -99,8 +98,6 @@ internal static class CliApplication
         {
             ["align-digestion-status"] = static (environment, tail, console) =>
                 RenderCommand(environment.AlignDigestionStatus(tail), console),
-            ["align-scribe-receipt"] = static (environment, tail, console) =>
-                RenderCommand(environment.AlignScribeReceipt(tail), console),
             ["capacity-audit"] = static (environment, tail, console) =>
                 RenderExplicit(environment.CapacityAudit(tail), console),
             ["check"] = static (environment, tail, console) =>
