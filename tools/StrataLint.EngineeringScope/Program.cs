@@ -96,7 +96,8 @@ internal static class Program
             protectedBase,
             candidate,
             protectedBaseEvaluatorPaths,
-            candidateEvaluatorPaths);
+            candidateEvaluatorPaths,
+            admissionPlane: admissionPlane);
         return ExecutePlan(options.RepositoryRoot, plan);
     }
 
