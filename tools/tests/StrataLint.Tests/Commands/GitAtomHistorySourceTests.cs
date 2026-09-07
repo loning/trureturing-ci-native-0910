@@ -186,7 +186,7 @@ public sealed class GitAtomHistorySourceTests
             ["-i", $"PATH={Environment.GetEnvironmentVariable("PATH")}",
                 $"HOME={temporary.Path}", $"TMPDIR={temporary.Path}", "LC_ALL=C", "LANG=C",
                 .. environment,
-                "dotnet", "vstest", Path.Combine(AppContext.BaseDirectory, "StrataLint.ScriptTests.dll"),
+                "dotnet", "vstest", Path.Combine(AppContext.BaseDirectory, "StrataLint.Tests.dll"),
                 "--TestCaseFilter:DisplayName~ReaddedMergeAtomRetainsSideBranchCommitterTimeAcrossGitConfig"
                     + $"&DisplayName~{configuration}",
                 "--Logger:trx;LogFileName=child.trx", $"--ResultsDirectory:{temporary.Path}"],

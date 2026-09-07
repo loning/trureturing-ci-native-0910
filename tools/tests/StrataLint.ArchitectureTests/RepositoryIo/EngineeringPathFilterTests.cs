@@ -12,8 +12,6 @@ public sealed class EngineeringPathFilterTests
         "tools/tests/StrataLint.Engine.Tests/StrataLint.Engine.Tests.csproj";
     private const string ArchitectureTestsProject =
         "tools/tests/StrataLint.ArchitectureTests/StrataLint.ArchitectureTests.csproj";
-    private const string ScriptTestsProject =
-        "tools/tests/StrataLint.ScriptTests/StrataLint.ScriptTests.csproj";
     private const string TestSupportProject =
         "tools/TestSupport/StrataLint.TestSupport/StrataLint.TestSupport.csproj";
     private const string CandidateAddedProject =
@@ -137,7 +135,7 @@ public sealed class EngineeringPathFilterTests
 
         Assert.Equal(EngineeringTestPlanKind.Full, plan.Kind);
         Assert.Equal(
-            [ArchitectureTestsProject, EngineTestsProject, ScribeTestsProject, ScriptTestsProject],
+            [ArchitectureTestsProject, EngineTestsProject, ScribeTestsProject],
             plan.Projects.ToArray());
     }
 
@@ -196,7 +194,6 @@ public sealed class EngineeringPathFilterTests
             isTest: true,
             scribeTestsReferenceScribe ? [ScribeProject] : []),
         Project(EngineTestsProject, isTest: true, EngineProject),
-        Project(ScriptTestsProject, isTest: true, EngineProject),
         Project(
             ArchitectureTestsProject,
             isTest: true,

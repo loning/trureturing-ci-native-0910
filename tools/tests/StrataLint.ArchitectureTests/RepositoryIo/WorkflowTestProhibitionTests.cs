@@ -1,9 +1,13 @@
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Text.RegularExpressions;
 
 namespace StrataLint.ArchitectureTests;
 
 /// <summary>
-/// 永久禁令(用户 2026-08-29 定,CLAUDE.md 器律⑦′):**不得对 GitHub Actions workflow 写测试。**
+/// 永久禁令(用户 2026-08-29、owner 2026-09-07 定,CLAUDE.md 器律⑦′):
+/// **不得对 GitHub Actions workflow、仓库 shell 脚本或 make target 写测试。**
 ///
 /// **为什么**:workflow 测试只能校验 workflow 文本**长什么样**,校验不了它**会不会执行**,
 /// 故它给出的绿是假绿。本仓两条实测判例:
@@ -11,10 +15,14 @@ namespace StrataLint.ArchitectureTests;
 ///    结构派生的整套机器,**16 个测试全过**(`compile_errors=0`);
 /// ② PR #2337 改 workflow,本地 `make preflight` 退出 0 被当成预证绿,合入后连挖五条缺陷,
 ///    其中 `filemap-conform` 依赖进程 CWD 那条**只能由真跑暴露**。
-/// 唯一有效的 workflow 验证是让它在真实事件上跑一次(CLAUDE.md 器律⑦),那是 CI 的活,
-/// 不是单元测试的活。形状测试付的是每次改动的税,买到的是零信息。
+/// 唯一有效的 workflow、脚本与 make target 验证是让它在真实管线里跑一次
+/// (CLAUDE.md 器律⑦),那是 CI 的活,不是单元测试的活。形状测试付的是每次改动的税,
+/// 买到的是零信息。2026-09-07 同族测试一天内三次阻塞无关 PR:#4873
+/// (`ResourceObservationLibraryTests`)、#5249 (`LeanReportCacheTests`)及 #5060/#5672
+/// (`EngineeringScopeProgramTests`)。#5249 的测试面随本次删除消失,底层归因仍为 open。
 ///
-/// **作用面**:`tools/tests/**` 下的 C# 源码不得引用 `.github/workflows` 路径。
+/// **作用面**:`tools/tests/**` 下的 C# 源码不得读取真实 `.github/workflows` 路径,
+/// 也不得执行 `tools/scripts/**` 下的仓库 shell 脚本、仓库 `Makefile` 的副本或 make target。
 ///
 /// **诚实边界(这是形状扫描,不是完备保证)**——反例集合两维:
 /// ① 绕过检查:字符串拼接、变量路径、从文件或环境变量读路径、非 C# 载体(shell/python
@@ -34,15 +42,24 @@ public sealed class WorkflowTestProhibitionTests
     /// 测试通过。豁免的判据只有一条——**被测对象是消费 workflow 的生产逻辑,而不是 workflow
     /// 本身**;这类测试即使删掉 workflow 也仍有意义,故不属本禁令射程。
     /// </summary>
+    private static readonly IReadOnlySet<string> ProductionConsumerExemptionCeiling =
+        new HashSet<string>(StringComparer.Ordinal)
+        {
+            "tools/tests/StrataLint.Tests/Admission/ReviewRegressionTests.Helpers.cs",
+        };
+
     private static readonly IReadOnlyDictionary<string, string> ProductionConsumerExemptions =
         new Dictionary<string, string>(StringComparer.Ordinal)
         {
             ["tools/tests/StrataLint.Tests/Admission/ReviewRegressionTests.Helpers.cs"] =
                 "在夹具仓内合成一份 workflow 喂 AdmissionTopology;不读本仓真实 workflow。",
-            ["tools/tests/StrataLint.Tests/Commands/LeanReport/LeanReportInputScriptTests.cs"] =
-                "生产脚本 lean-report-input.sh 自己解析 ci.yml(缺 job boundaries 即 SystemExit),"
-                + "夹具必须喂它;被测的是该脚本的 producer-paths 派生。",
         };
+
+    // Owner 2026-09-07 established no inherited script/make exemptions. Keeping the collection
+    // explicit lets the scanner fail closed if an exemption is ever introduced without removing
+    // this zero-growth guard.
+    private static readonly IReadOnlySet<string> ScriptAndMakeConsumerExemptions =
+        new HashSet<string>(StringComparer.Ordinal);
 
     private static readonly Regex WorkflowReference = new(
         @"\.github/workflows|""\.github""\s*,\s*""workflows""",
@@ -51,7 +68,7 @@ public sealed class WorkflowTestProhibitionTests
     /// <summary>
     /// 窄谓词:**同一行**同时出现真实仓根 accessor 与 workflow 路径,即「读本仓真实 workflow」。
     /// 这才是器律⑦′ 的实质判据——该律禁的是断言**真实** workflow 的内容,不禁止在夹具仓里
-    /// 合成一份 workflow 喂给被测的生产逻辑(后者正是既有豁免集两项的理由原文)。
+    /// 合成一份 workflow 喂给被测的生产逻辑(后者正是既有豁免项的理由原文)。
     ///
     /// **为什么禁令不能用宽正则 <see cref="WorkflowReference"/>**:实测 dev 上 11 个测试源命中
     /// 宽正则,其中 9 个是合成夹具、Assert.DoesNotContain、或本判官自己的正则字面量(自指
@@ -78,6 +95,10 @@ public sealed class WorkflowTestProhibitionTests
         var tracked = TrackedTestSources();
         var referencing = ScanAll().Select(static hit => hit.Path).ToHashSet(StringComparer.Ordinal);
 
+        Assert.All(
+            ProductionConsumerExemptions.Keys,
+            exemption => Assert.Contains(exemption, ProductionConsumerExemptionCeiling));
+
         Assert.All(ProductionConsumerExemptions, entry =>
         {
             Assert.Contains(entry.Key, tracked);
@@ -87,6 +108,10 @@ public sealed class WorkflowTestProhibitionTests
             Assert.False(string.IsNullOrWhiteSpace(entry.Value), $"豁免必须写明理由:{entry.Key}");
         });
     }
+
+    [Fact]
+    public void ScriptAndMakeExemptionSetCannotGrow() =>
+        Assert.Empty(ScriptAndMakeConsumerExemptions);
 
     private static IReadOnlyList<string> TrackedTestSources() =>
         GitIndexRepositoryFiles
@@ -114,6 +139,22 @@ public sealed class WorkflowTestProhibitionTests
     }
 
     /// <summary>
+    /// Owner 2026-09-07:测试不得启动仓库 shell 脚本或 make target。扫描以 Roslyn 绑定
+    /// Process/TestProcessRunner 的真实符号,避免把同名 fake 当成执行;它仍只作早反馈,
+    /// 跨程序集 helper 间接、运行时路径与非 C# 测试载体属已声明的 fail-open 边界。
+    /// </summary>
+    [Fact]
+    public void NoTestSourceExecutesRepositoryShellScriptOrMakeTarget()
+    {
+        var hits = ScanRepositoryScriptAndMakeExecutions();
+
+        Assert.True(
+            hits.Count == 0,
+            "器律⑦′:测试不得执行仓库 shell 脚本或 make target;正确性只由真实 CI 运行与评审守。\n"
+                + string.Join("\n", hits.Select(static hit => $"  {hit.Path}:{hit.Line}")));
+    }
+
+    /// <summary>
     /// 放行侧钉子。第Ⅵ节:「一个『什么都拒绝』的坏门能通过一整套只测拒绝的用例」——把窄谓词
     /// 误写宽(退化回 WorkflowReference)会把这些**合法的合成夹具**一并判红,而只测拒绝的
     /// 用例结构上看不见这一点。
@@ -126,13 +167,49 @@ public sealed class WorkflowTestProhibitionTests
             .ToHashSet(StringComparer.Ordinal);
 
         Assert.DoesNotContain(
-            "tools/tests/StrataLint.ArchitectureTests/RepositoryIo/ScriptTestGateClosureTests.Fixture.cs",
-            flagged);
-        Assert.DoesNotContain(
-            "tools/tests/StrataLint.Tests/Commands/LeanReport/LeanReportCacheTests.cs",
+            "tools/tests/StrataLint.Tests/Admission/ReviewRegressionTests.Helpers.cs",
             flagged);
         Assert.DoesNotContain(
             "tools/tests/StrataLint.Tests/Rules/JudgeSurfaceRevisionRuleTests.cs",
+            flagged);
+    }
+
+    /// <summary>
+    /// 放行侧钉子:只测试 C# 程序逻辑、但在合成输入里出现脚本路径的文件不得被扩大射程。
+    /// </summary>
+    [Fact]
+    public void ProgramLogicFixturesThatMentionScriptsAreNotFlagged()
+    {
+        var flagged = ScanRepositoryScriptAndMakeExecutions()
+            .Select(static hit => hit.Path)
+            .ToHashSet(StringComparer.Ordinal);
+
+        Assert.DoesNotContain(
+            "tools/tests/StrataLint.Tests/Rules/JudgeSurfaceRevisionRuleTests.cs",
+            flagged);
+        Assert.DoesNotContain(
+            "tools/tests/StrataLint.Tests/FrozenLedger/FrozenSurfaceRuleTests.cs",
+            flagged);
+        Assert.DoesNotContain(
+            "tools/tests/StrataLint.Tests/Rules/Scoping/ActiveRuleScopeProbeTests.cs",
+            flagged);
+        Assert.DoesNotContain(
+            "tools/tests/StrataLint.Scribe.Tests/Projection/RendererCorpusContractTests.cs",
+            flagged);
+        Assert.DoesNotContain(
+            "tools/tests/StrataLint.ArchitectureTests/Determinism/BannedApiCoverageTests.cs",
+            flagged);
+        Assert.DoesNotContain(
+            "tools/tests/StrataLint.Tests/Commands/CliVerbLinkageTests.cs",
+            flagged);
+        Assert.DoesNotContain(
+            "tools/tests/StrataLint.Tests/Digestion/Ledger/LedgerWriterProductionPathTests.cs",
+            flagged);
+        Assert.DoesNotContain(
+            "tools/tests/StrataLint.Tests/Commands/Worktrees/ColdBuildGuardTests.cs",
+            flagged);
+        Assert.DoesNotContain(
+            "tools/tests/StrataLint.ArchitectureTests/Runtime/ColdBuildBudgetReviewLineTests.cs",
             flagged);
     }
 
@@ -149,6 +226,19 @@ public sealed class WorkflowTestProhibitionTests
         Assert.Contains(
             "tools/tests/StrataLint.ArchitectureTests/RepositoryIo/WorkflowTestProhibitionTests.cs",
             tracked);
+    }
+
+    [Fact]
+    public void ThePositiveControlCannotBeDeleted()
+    {
+        var root = RepositoryLayout.FindRoot();
+        var source = File.ReadAllText(Path.Combine(
+            root,
+            "tools/tests/StrataLint.ArchitectureTests/RepositoryIo/WorkflowTestProhibitionTests.cs"));
+
+        Assert.Matches(
+            @"\[Fact\]\s+public void TheScanSurfaceActuallyEnumeratesTheTestTree\(\)",
+            source);
     }
 
     private static IReadOnlyList<(string Path, int Line)> ScanRealWorkflowReads()
@@ -199,5 +289,107 @@ public sealed class WorkflowTestProhibitionTests
         }
 
         return hits;
+    }
+
+    private static IReadOnlyList<(string Path, int Line)> ScanRepositoryScriptAndMakeExecutions()
+    {
+        var root = RepositoryLayout.FindRoot();
+        var hits = new List<(string, int)>();
+        var sources = GitIndexRepositoryFiles.EnumerateDeclared(root, "tools/tests")
+            .Where(static file => file.RelativePath.EndsWith(".cs", StringComparison.Ordinal))
+            .Where(file => !ScriptAndMakeConsumerExemptions.Contains(file.RelativePath))
+            .Select(file => (
+                File: file,
+                Tree: CSharpSyntaxTree.ParseText(
+                    File.ReadAllText(file.FullPath),
+                    CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Preview),
+                    file.RelativePath)))
+            .ToArray();
+        var compilation = CSharpCompilation.Create(
+            "ScriptAndMakeTestProhibitionAnalysis",
+            sources.Select(static source => source.Tree),
+            SemanticReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true));
+
+        foreach (var source in sources)
+        {
+            var model = compilation.GetSemanticModel(source.Tree, ignoreAccessibility: true);
+            var syntaxRoot = source.Tree.GetRoot();
+            foreach (var invocation in syntaxRoot.DescendantNodes().OfType<InvocationExpressionSyntax>())
+            {
+                if (!IsProcessLaunch(model.GetSymbolInfo(invocation))
+                    || invocation.FirstAncestorOrSelf<BaseMethodDeclarationSyntax>() is not { } method)
+                {
+                    continue;
+                }
+
+                var constants = method.DescendantNodes()
+                    .OfType<ExpressionSyntax>()
+                    .Select(expression => model.GetConstantValue(expression))
+                    .Where(static value => value.HasValue && value.Value is string)
+                    .Select(static value => (string)value.Value!)
+                    .ToArray();
+                var launchesMake = constants.Any(value => IsExecutable(value, "make"));
+                var launchesShell = constants.Any(value =>
+                    IsExecutable(value, "bash") || IsExecutable(value, "sh"));
+                var namesRepositoryScript = constants.Any(static value =>
+                        value.Replace('\\', '/').Contains("tools/scripts/", StringComparison.Ordinal))
+                    || method.DescendantNodes().OfType<InvocationExpressionSyntax>()
+                        .Any(candidate => IsToolsScriptsPathCombine(candidate, model));
+                if (launchesMake || launchesShell && namesRepositoryScript)
+                {
+                    hits.Add((
+                        source.File.RelativePath,
+                        invocation.GetLocation().GetLineSpan().StartLinePosition.Line + 1));
+                    break;
+                }
+            }
+        }
+
+        return hits;
+    }
+
+    private static bool IsProcessLaunch(SymbolInfo info) =>
+        info.Symbol is IMethodSymbol method && method.Name is "Run" or "Start"
+        && method.ContainingType.ToDisplayString() is
+            "StrataLint.TestSupport.TestProcessRunner"
+            or "StrataLint.Engine.BoundedProcessRunner"
+            or "System.Diagnostics.Process";
+
+    private static bool IsToolsScriptsPathCombine(
+        InvocationExpressionSyntax invocation,
+        SemanticModel model)
+    {
+        if (model.GetSymbolInfo(invocation).Symbol is not IMethodSymbol { Name: "Combine" } method
+            || method.ContainingType.ToDisplayString() != "System.IO.Path")
+        {
+            return false;
+        }
+
+        var values = invocation.ArgumentList.Arguments
+            .Select(argument => model.GetConstantValue(argument.Expression))
+            .Where(static value => value.HasValue && value.Value is string)
+            .Select(static value => (string)value.Value!)
+            .ToArray();
+        return values.Zip(values.Skip(1)).Any(static pair =>
+            pair.First == "tools" && pair.Second == "scripts");
+    }
+
+    private static bool IsExecutable(string value, string executable) =>
+        string.Equals(value, executable, StringComparison.Ordinal)
+        || value.Replace('\\', '/').EndsWith('/' + executable, StringComparison.Ordinal);
+
+    private static IEnumerable<MetadataReference> SemanticReferences()
+    {
+        var trustedPlatformAssemblies = AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") as string
+            ?? throw new InvalidOperationException(
+                "The runtime did not expose TRUSTED_PLATFORM_ASSEMBLIES for Roslyn analysis.");
+        return trustedPlatformAssemblies
+            .Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
+            .Concat(AppDomain.CurrentDomain.GetAssemblies()
+                .Where(static assembly => !assembly.IsDynamic && !string.IsNullOrEmpty(assembly.Location))
+                .Select(static assembly => assembly.Location))
+            .Distinct(StringComparer.Ordinal)
+            .Select(static path => MetadataReference.CreateFromFile(path));
     }
 }

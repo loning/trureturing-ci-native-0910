@@ -15,8 +15,6 @@ public sealed class EngineeringScopeProgramTests
     private const string NewProductProject = "tools/NewProduct/NewProduct.csproj";
     private const string NewProductTestsProject =
         "tools/tests/NewProduct.Tests/NewProduct.Tests.csproj";
-    private const string ScriptTestsProject =
-        "tools/tests/StrataLint.ScriptTests/StrataLint.ScriptTests.csproj";
     private const string ProductFeature = "tools/Product/Feature.cs";
     private const string FileMapPath = "Meta/FILEMAP.toml";
 
@@ -101,7 +99,7 @@ public sealed class EngineeringScopeProgramTests
             root => WriteFile(root, ProductFeature, "internal sealed class Feature { public int Value => 1; }\n"));
 
         Assert.True(result.ExitCode == 0, result.Diagnostic);
-        Assert.Equal([ProductTestsProject, ScriptTestsProject], result.SelectedProjects);
+        Assert.Equal([ProductTestsProject], result.SelectedProjects);
         Assert.Contains("ENGINEERING_TEST_PLAN state=full", result.Output, StringComparison.Ordinal);
     }
 
@@ -117,7 +115,7 @@ public sealed class EngineeringScopeProgramTests
             root => WriteAdmissionPlaneFileMap(root, (FileMapPath, "judge")));
 
         Assert.True(result.ExitCode == 0, result.Diagnostic);
-        Assert.Equal([ProductTestsProject, ScriptTestsProject], result.SelectedProjects);
+        Assert.Equal([ProductTestsProject], result.SelectedProjects);
         Assert.Contains("ENGINEERING_TEST_PLAN state=full", result.Output, StringComparison.Ordinal);
         Assert.Contains(
             "candidate admission plane judgeonly requires full engineering",
@@ -145,7 +143,7 @@ public sealed class EngineeringScopeProgramTests
             });
 
         Assert.True(result.ExitCode == 0, result.Diagnostic);
-        Assert.Equal([ProductTestsProject, ScriptTestsProject], result.SelectedProjects);
+        Assert.Equal([ProductTestsProject], result.SelectedProjects);
         Assert.Contains("ENGINEERING_TEST_PLAN state=full", result.Output, StringComparison.Ordinal);
     }
 
@@ -161,7 +159,7 @@ public sealed class EngineeringScopeProgramTests
             root => WriteAdmissionPlaneFileMap(root, (FileMapPath, "judge")));
 
         Assert.True(result.ExitCode == 0, result.Diagnostic);
-        Assert.Equal([ProductTestsProject, ScriptTestsProject], result.SelectedProjects);
+        Assert.Equal([ProductTestsProject], result.SelectedProjects);
         Assert.Contains("ENGINEERING_TEST_PLAN state=full", result.Output, StringComparison.Ordinal);
         Assert.Contains(
             "candidate admission plane judgeonly requires full engineering",
@@ -372,29 +370,6 @@ public sealed class EngineeringScopeProgramTests
     private static void WriteGateInfrastructure(string root)
     {
         WriteAdmissionPlaneFileMap(root, ("**", "content"));
-        WriteProject(root, ScriptTestsProject, isTest: true);
-        WriteFile(
-            root,
-            "tools/tests/StrataLint.ScriptTests/packages.lock.json",
-            """
-            {
-              "version": 2,
-              "dependencies": {
-                "net10.0": {
-                  "xunit.assert": { "type": "Transitive", "resolved": "2.9.3" },
-                  "xunit.extensibility.core": { "type": "Transitive", "resolved": "2.9.3" }
-                }
-              }
-            }
-
-            """);
-        WriteProject(
-            root,
-            "tools/StrataLint.EngineeringScope/StrataLint.EngineeringScope.csproj",
-            isTest: false);
-        WriteFile(root, "Directory.Build.props", "<Project />\n");
-        WriteFile(root, "Directory.Packages.props", "<Project />\n");
-        WriteFile(root, "tools/scripts/report/report-supervisor.sh", "exit 0\n");
     }
 
     private static void WriteAdmissionPlaneFileMap(

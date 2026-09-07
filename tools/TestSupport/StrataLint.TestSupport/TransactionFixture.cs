@@ -5,7 +5,7 @@ using System.Text.Json;
 namespace StrataLint.TestSupport;
 
 // playbook-workflows.sh 的脚本 harness:建临时仓、铺桩、执行脚本、收集调用记录。
-// 被 StrataLint.Tests 的 7 个测试文件与 StrataLint.ScriptTests 的 1 个共同消费,
+// 被 StrataLint.Tests 的测试文件共同消费,
 // 故它是**共享测试脚手架**,归宿是本程序集(非测试程序集),不是任一测试程序集内部。
 //
 // 迁到这里之前经三层改造,每层都是搬迁的前置条件:

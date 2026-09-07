@@ -4,7 +4,7 @@ SHELL := /bin/bash
 HERE := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 BASE ?= origin/dev
 REPOSITORY ?= $(HERE)/..
-CHECK_FAST_FILTER := FullyQualifiedName~StrataLint.Tests.CapacityAuditCommandTests|FullyQualifiedName~StrataLint.ArchitectureTests.RepositoryIoAccessPolicyTests|FullyQualifiedName~StrataLint.ArchitectureTests.BannedApiCoverageTests|FullyQualifiedName=StrataLint.Tests.MakeWorkflowTests.CheckFastFilterIsNonEmptyAndPinsRequiredRepositoryChecks
+CHECK_FAST_FILTER := FullyQualifiedName~StrataLint.Tests.CapacityAuditCommandTests|FullyQualifiedName~StrataLint.ArchitectureTests.RepositoryIoAccessPolicyTests|FullyQualifiedName~StrataLint.ArchitectureTests.BannedApiCoverageTests|FullyQualifiedName=StrataLint.ArchitectureTests.WorkflowTestProhibitionTests.NoTestSourceExecutesRepositoryShellScriptOrMakeTarget
 .PHONY: help dotnet check-fast test engineering-tests selftest capacity-audit update-renderer-contract clean-lanes
 
 help:
