@@ -292,7 +292,7 @@ public sealed class RuleCatalogAssociationTests
     [InlineData("tools/StrataLint.Engine/Revocation/TrustedRevocationReceipts.cs")]
     [InlineData("tools/StrataLint.Engine/StrataLint.Engine.csproj")]
     [InlineData("Directory.Build.targets")]
-    public void EveryActiveRuleWakesWhenSharedRuleImplementationChanges(string changedPath)
+    public void SharedRuleImplementationChangesRespectDeltaOnlyRuleScoping(string changedPath)
     {
         var context = new RuleFixture().Build(RawChangeSet.Create([changedPath]));
 
@@ -301,9 +301,10 @@ public sealed class RuleCatalogAssociationTests
         var completed = Assert.IsType<RuleExecutionOutcome.Completed>(outcome).Capability;
         var active = RuleCatalog.Default.Descriptors
             .Where(static descriptor => descriptor.Lifecycle == RuleLifecycle.Active)
-            .Select(static descriptor => descriptor.Id);
+            .Select(static descriptor => descriptor.Id)
+            .Where(static id => id != RuleId.CreateKnown(34));
         Assert.Equal(active, completed.ExecutedRules);
-        Assert.Empty(completed.SkippedRules);
+        Assert.Equal(RuleId.CreateKnown(34), Assert.Single(completed.SkippedRules));
     }
 
     [Fact]

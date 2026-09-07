@@ -137,7 +137,24 @@ public sealed class ModuleStateGateRuleTests
         var completed = Assert.IsType<RuleExecutionOutcome.Completed>(
             RuleCatalog.Default.Execute(context)).Capability;
 
+        Assert.DoesNotContain(completed.ExecutedRules, id => id.Value == Rule);
         Assert.Empty(Diagnostics(completed));
+    }
+
+    [Fact]
+    public void AddedClosedModuleStillBlocksWhenRuleImplementationChanges()
+    {
+        var fixture = new RuleFixture();
+        AddModule(fixture, ClosedPath, "def newClosed : Nat := 0", []);
+        fixture.Files[ImplementationPath] = "// changed judge\n";
+
+        var diagnostic = Assert.Single(Evaluate(fixture,
+            (ImplementationPath, RawChangeKind.Added),
+            (ClosedPath, RawChangeKind.Added)));
+
+        Assert.Equal(AdmissionEffect.Block, diagnostic.AdmissionEffect);
+        Assert.Equal(ClosedPath, diagnostic.Path);
+        Assert.Contains(ClosedPath, diagnostic.Message, StringComparison.Ordinal);
     }
 
     [Fact]
