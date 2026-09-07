@@ -1,7 +1,7 @@
 ---
 slug: golden-ratio-base4-dfao-minimality
 bibkey: barnoffbrightshallit2024using
-arxiv_id: 2405.02727
+doi: 10.48550/arXiv.2405.02727
 triage: window
 motivation_gids:
   - D5/S0/Conventions/WDigits
