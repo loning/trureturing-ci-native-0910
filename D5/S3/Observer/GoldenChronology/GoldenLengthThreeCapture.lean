@@ -3,6 +3,7 @@
    mirror-B: none(waiver:new-cross-library-adapter)
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: kind=bounded-enumeration; basis=terminal=gid:D5/S3/Observer/GoldenChronology/GoldenLengthThreeCapture.full_presentation_faithful_but_not_irredundant
    digest: Exact shared-arena capture detects redundancy among golden count and Magnus views. -/
 
 import D5.S3.Observer.GoldenChronology.GoldenMagnusParityRecovery
