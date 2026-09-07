@@ -27,7 +27,7 @@ public sealed class StripScribeReceiptsCommandTests
         var result = StripScribeReceiptsCommand.Run(
             "synthetic-repository",
             new FakeRepositoryGateway(RawChangeSet.Create([]), fixture.Raw(document), fixture.Raw(document)),
-            ["--base", "baseline", "--dry-run"]);
+            ["--dry-run"]);
 
         Assert.True(result.Success, result.Error);
         Assert.Equal(
@@ -45,7 +45,24 @@ public sealed class StripScribeReceiptsCommandTests
         var result = StripScribeReceiptsCommand.Run(
             "synthetic-repository",
             new FakeRepositoryGateway(RawChangeSet.Create([]), fixture.Raw(document), fixture.Raw(document)),
-            ["--base", "baseline", "--source", "missing-v0.1"],
+            ["--source", "missing-v0.1"],
+            (_, _, _) => applyCalls++);
+
+        Assert.False(result.Success);
+        Assert.Equal(0, applyCalls);
+        Assert.Empty(result.Output);
+        Assert.Equal("SCRIBE_STRIP_INVALID unknown source: missing-v0.1\n", result.Error);
+    }
+
+    [Fact]
+    public void PlannerRejectsValidAndUnknownSourceSelectorsTogether()
+    {
+        var (fixture, document) = TwoSourceDocumentWithReceipts();
+        var applyCalls = 0;
+        var result = StripScribeReceiptsCommand.Run(
+            "synthetic-repository",
+            new FakeRepositoryGateway(RawChangeSet.Create([]), fixture.Raw(document), fixture.Raw(document)),
+            ["--source", "alpha-v0.1", "--source", "missing-v0.1"],
             (_, _, _) => applyCalls++);
 
         Assert.False(result.Success);
@@ -62,7 +79,7 @@ public sealed class StripScribeReceiptsCommandTests
         var result = StripScribeReceiptsCommand.Run(
             "synthetic-repository",
             new FakeRepositoryGateway(RawChangeSet.Create([]), fixture.Raw(document), fixture.Raw(document)),
-            ["--base", "baseline", "--source", "alpha-v0.1", "--source", "alpha-v0.1"],
+            ["--source", "alpha-v0.1", "--source", "alpha-v0.1"],
             (_, _, _) => applyCalls++);
 
         Assert.False(result.Success);
@@ -108,7 +125,7 @@ public sealed class StripScribeReceiptsCommandTests
         var result = StripScribeReceiptsCommand.Run(
             "synthetic-repository",
             new FakeRepositoryGateway(RawChangeSet.Create([]), malformed, fixture.Raw(document)),
-            ["--base", "baseline"],
+            [],
             (_, _, _) => applyCalls++);
 
         Assert.False(result.Success);
@@ -118,6 +135,78 @@ public sealed class StripScribeReceiptsCommandTests
         Assert.EndsWith("\n", result.Error, StringComparison.Ordinal);
         Assert.Equal(1, result.Error.Count(static character => character == '\n'));
         Assert.DoesNotContain('\r', result.Error);
+    }
+
+    [Fact]
+    public void UnparsableUnselectedEntryAfterValidEntryAbortsWithoutWriting()
+    {
+        var (fixture, document) = TwoSourceDocumentWithReceipts();
+        var entries = document.RequireDigestionEntries();
+        var valid = fixture.Raw(document);
+        var malformedPath = ScribeSeedFixture.EntryPath(entries[1]);
+        var malformed = RawRepositorySnapshot.Create(valid.Entries.Select(rawEntry =>
+            rawEntry.Path == malformedPath
+                ? RawRepositoryEntry.FromText(rawEntry.Path, "schema: [unclosed\n")
+                : rawEntry));
+        var applyCalls = 0;
+
+        var result = StripScribeReceiptsCommand.Run(
+            "synthetic-repository",
+            new FakeRepositoryGateway(RawChangeSet.Create([]), malformed, fixture.Raw(document)),
+            ["--source", "alpha-v0.1"],
+            (_, _, _) => applyCalls++);
+
+        Assert.False(result.Success);
+        Assert.Equal(0, applyCalls);
+        Assert.Empty(result.Output);
+        Assert.StartsWith("SCRIBE_STRIP_INVALID ", result.Error, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void EmptyDirectoryLedgerIsRejectedWithoutWriting()
+    {
+        var (fixture, document) = TwoSourceDocumentWithReceipts();
+        var empty = document.WithDigestionSources(document.RequireDigestionSources()
+            .Select(static source => source with { Entries = [] })
+            .ToImmutableArray());
+        var raw = fixture.Raw(empty);
+        var applyCalls = 0;
+
+        var result = StripScribeReceiptsCommand.Run(
+            "synthetic-repository",
+            new FakeRepositoryGateway(RawChangeSet.Create([]), raw, raw),
+            [],
+            (_, _, _) => applyCalls++);
+
+        Assert.False(result.Success);
+        Assert.Equal(0, applyCalls);
+        Assert.Empty(result.Output);
+        Assert.Equal("SCRIBE_STRIP_INVALID digestion ledger contains no atom entries\n", result.Error);
+    }
+
+    [Fact]
+    public void BaseOptionIsRejectedAndNoRevisionIsRead()
+    {
+        var (fixture, document) = TwoSourceDocumentWithReceipts();
+        var repository = new FakeRepositoryGateway(
+            RawChangeSet.Create([]),
+            fixture.Raw(document),
+            fixture.Raw(document));
+        var applyCalls = 0;
+
+        var result = StripScribeReceiptsCommand.Run(
+            "synthetic-repository",
+            repository,
+            ["--base", "baseline"],
+            (_, _, _) => applyCalls++);
+
+        Assert.False(result.Success);
+        Assert.Equal(0, applyCalls);
+        Assert.Empty(repository.ReadRevisionCalls);
+        Assert.Equal(
+            "SCRIBE_STRIP_INVALID USAGE: StrataLint strip-scribe-receipts "
+            + "[--source SOURCE_ID]... [--dry-run]\n",
+            result.Error);
     }
 
     [Fact]
@@ -145,7 +234,7 @@ public sealed class StripScribeReceiptsCommandTests
             new FakeLeanReportSource(fixture.Inputs.Report));
 
         var exitCode = CliApplication.Run(
-            ["strip-scribe-receipts", "--base", "baseline", "--source", "alpha-v0.1"],
+            ["strip-scribe-receipts", "--source", "alpha-v0.1"],
             environment,
             console);
 
@@ -170,6 +259,62 @@ public sealed class StripScribeReceiptsCommandTests
     }
 
     [Fact]
+    public void RealWriterIsIdempotentAcrossReloadedOnDiskOutput()
+    {
+        var (fixture, document) = TwoSourceDocumentWithReceipts();
+        var files = new Dictionary<string, string>(fixture.Files, StringComparer.Ordinal);
+        DirectoryLedgerTestSupport.ReplaceWithProjection(files, document);
+        using var temporary = new TemporaryDirectory();
+        DirectoryLedgerTestSupport.Write(temporary.Path, files);
+
+        var firstConsole = new BufferedConsole();
+        var firstEnvironment = new ProductionCliEnvironment(
+            temporary.Path,
+            new FakeRepositoryGateway(
+                RawChangeSet.Create([]),
+                DirectoryLedgerTestSupport.ReadRepository(temporary),
+                null),
+            new FakeLeanReportSource(fixture.Inputs.Report));
+
+        var firstExitCode = CliApplication.Run(
+            ["strip-scribe-receipts"],
+            firstEnvironment,
+            firstConsole);
+
+        Assert.Equal(0, firstExitCode);
+        Assert.Empty(firstConsole.Error);
+        Assert.EndsWith(
+            "SCRIBE_STRIP_SUMMARY entries=2 receipts=3 dry_run=false\n",
+            firstConsole.Output,
+            StringComparison.Ordinal);
+        Assert.All(
+            BackfillInventoryLoader.LoadRoot(temporary.Path).RequireDigestionEntries(),
+            static entry => Assert.Empty(entry.Receipts.Scribe));
+        var afterFirst = DirectoryLedgerTestSupport.RepositoryImage(temporary);
+
+        var secondConsole = new BufferedConsole();
+        var secondEnvironment = new ProductionCliEnvironment(
+            temporary.Path,
+            new FakeRepositoryGateway(
+                RawChangeSet.Create([]),
+                DirectoryLedgerTestSupport.ReadRepository(temporary),
+                null),
+            new FakeLeanReportSource(fixture.Inputs.Report));
+
+        var secondExitCode = CliApplication.Run(
+            ["strip-scribe-receipts"],
+            secondEnvironment,
+            secondConsole);
+
+        Assert.Equal(0, secondExitCode);
+        Assert.Empty(secondConsole.Error);
+        Assert.Equal(
+            "SCRIBE_STRIP_SUMMARY entries=0 receipts=0 dry_run=false\n",
+            secondConsole.Output);
+        Assert.Equal(afterFirst, DirectoryLedgerTestSupport.RepositoryImage(temporary));
+    }
+
+    [Fact]
     public void DryRunReportsEveryPlannedEntryWithoutWriting()
     {
         var (fixture, document) = TwoSourceDocumentWithReceipts();
@@ -177,7 +322,7 @@ public sealed class StripScribeReceiptsCommandTests
         var result = StripScribeReceiptsCommand.Run(
             "synthetic-repository",
             new FakeRepositoryGateway(RawChangeSet.Create([]), fixture.Raw(document), fixture.Raw(document)),
-            ["--base", "baseline", "--dry-run"],
+            ["--dry-run"],
             (_, _, _) => applyCalls++);
 
         Assert.True(result.Success, result.Error);
@@ -188,6 +333,32 @@ public sealed class StripScribeReceiptsCommandTests
             "SCRIBE_STRIP_SUMMARY entries=2 receipts=3 dry_run=true\n",
             result.Output,
             StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ReportOrderIsCanonicalAcrossSnapshotEnumerationOrder()
+    {
+        var (fixture, document) = TwoSourceDocumentWithReceipts();
+        var forward = fixture.Raw(document);
+        var reverse = RawRepositorySnapshot.Create(forward.Entries.Reverse());
+
+        var first = StripScribeReceiptsCommand.Run(
+            "synthetic-repository",
+            new FakeRepositoryGateway(RawChangeSet.Create([]), forward, null),
+            ["--dry-run"]);
+        var second = StripScribeReceiptsCommand.Run(
+            "synthetic-repository",
+            new FakeRepositoryGateway(RawChangeSet.Create([]), reverse, null),
+            ["--dry-run"]);
+
+        Assert.True(first.Success, first.Error);
+        Assert.True(second.Success, second.Error);
+        Assert.Equal(first.Output, second.Output);
+        Assert.Equal(
+            $"SCRIBE_STRIP source=alpha-v0.1 atom={document.RequireDigestionSources()[0].Entries[0].AtomId} receipts=2\n"
+            + $"SCRIBE_STRIP source=beta-v0.1 atom={document.RequireDigestionSources()[1].Entries[0].AtomId} receipts=1\n"
+            + "SCRIBE_STRIP_SUMMARY entries=2 receipts=3 dry_run=true\n",
+            second.Output);
     }
 
     [Fact]
@@ -205,7 +376,7 @@ public sealed class StripScribeReceiptsCommandTests
         var result = StripScribeReceiptsCommand.Run(
             "synthetic-repository",
             new FakeRepositoryGateway(RawChangeSet.Create([]), fixture.Raw(document), fixture.Raw(document)),
-            ["--base", "baseline"],
+            [],
             static (_, _, _) => { });
 
         Assert.True(result.Success, result.Error);
@@ -218,7 +389,7 @@ public sealed class StripScribeReceiptsCommandTests
         var result = StripScribeReceiptsCommand.Run(
             "synthetic-repository",
             new MultilineFailureRepositoryGateway(),
-            ["--base", "baseline"],
+            [],
             static (_, _, _) => { });
 
         Assert.False(result.Success);

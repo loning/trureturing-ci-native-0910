@@ -6,7 +6,7 @@ namespace StrataLint.Cli;
 internal static class StripScribeReceiptsCommand
 {
     private const string Usage =
-        "USAGE: StrataLint strip-scribe-receipts --base REV [--source SOURCE_ID]... [--dry-run]";
+        "USAGE: StrataLint strip-scribe-receipts [--source SOURCE_ID]... [--dry-run]";
 
     internal static CommandResult Run(
         string repositoryRoot,
@@ -27,7 +27,8 @@ internal static class StripScribeReceiptsCommand
             var options = Parse(arguments);
             var current = repository.ReadCurrent();
             var document = BackfillInventoryLoader.Load(Decode(current));
-            _ = Decode(repository.ReadRevision(options.BaseRevision));
+            if (document.RequireDigestionEntries().IsEmpty)
+                throw new InvalidOperationException("digestion ledger contains no atom entries");
             var plan = Plan(document, options.SourceIds);
             var replacement = IngestCommand.ReplaceLedger(current, document, plan.Document);
             var updates = IngestCommand.LedgerUpdates(current, replacement);
@@ -85,14 +86,12 @@ internal static class StripScribeReceiptsCommand
 
     private static StripOptions Parse(IReadOnlyList<string> arguments)
     {
-        string? baseline = null;
         var sources = ImmutableArray.CreateBuilder<string>();
         var dryRun = false;
         for (var index = 0; index < arguments.Count; index++)
         {
             switch (arguments[index])
             {
-                case "--base" when baseline is null: baseline = Value(); break;
                 case "--source": sources.Add(Value()); break;
                 case "--dry-run" when !dryRun: dryRun = true; break;
                 default: throw new InvalidOperationException(Usage);
@@ -111,9 +110,7 @@ internal static class StripScribeReceiptsCommand
             }
         }
 
-        if (baseline is null)
-            throw new InvalidOperationException(Usage);
-        return new StripOptions(baseline, sources.ToImmutable(), dryRun);
+        return new StripOptions(sources.ToImmutable(), dryRun);
     }
 
     private static RepositorySnapshot Decode(RawRepositorySnapshot raw) => SnapshotDecoder.Decode(raw) switch
@@ -143,7 +140,6 @@ internal static class StripScribeReceiptsCommand
     }
 
     private sealed record StripOptions(
-        string BaseRevision,
         ImmutableArray<string> SourceIds,
         bool DryRun);
 
