@@ -1,0 +1,19 @@
+{
+  "exact_antiderivative_checks": 2,
+  "exact_dyadic_partitions": 4,
+  "full_residual_atom_vs_combined_point_checks": 12,
+  "full_residual_reflection_checks": 12,
+  "point_precision_decimal_digits": 90,
+  "maximum_relative_point_discrepancy": "2.4481138911366843708e-79",
+  "maximum_relative_reflection_discrepancy": "0.0",
+  "nonzero_exterior_Gamma_image_witness": "0.30928954191760774168",
+  "exact_analytic_toy_Cauchy_checks": 20,
+  "log_kernel_envelope_diagnostics": 20,
+  "inherited_ground_enclosure_energy_weighted_excitation_bracket": [
+    "187/100",
+    "62/25"
+  ],
+  "source_sha256": "b6d8953e4ada7a225a8a56aa4b511c69009971e081435f18d6135e62f00d2041",
+  "status": "All exact identities, full atom-action comparisons and diagnostic bounds passed.",
+  "scope": "Second implementation by the same assistant. Nondirected point evaluations are diagnostics. The excitation bracket inherits the earlier paper/full-Weil ground certificate; that old LDL certificate was not rerun. No Lean/Scribe execution is asserted."
+}
