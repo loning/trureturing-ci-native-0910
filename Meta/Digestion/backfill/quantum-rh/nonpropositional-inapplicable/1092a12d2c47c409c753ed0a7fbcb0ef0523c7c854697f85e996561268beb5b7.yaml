@@ -4,7 +4,6 @@ fingerprints:
 cas_ref: sha256:1092a12d2c47c409c753ed0a7fbcb0ef0523c7c854697f85e996561268beb5b7
 coverage_gids: []
 receipts:
-  scribe: []
   unresolved_subitems: []
   nonpropositional:
     justification: 'Interpretive commentary on the equivalence proved in atom 9f39c1efbb8145daca469dc7c4dce48bea4cf9574fd663aba32c3cfb8ba508f4: it says the positive-weight Fibonacci-chain model is substantive, but introduces no proposition beyond that theorem.'

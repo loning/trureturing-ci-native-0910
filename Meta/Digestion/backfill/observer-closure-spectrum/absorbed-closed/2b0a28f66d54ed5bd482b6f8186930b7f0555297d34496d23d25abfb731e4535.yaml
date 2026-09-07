@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Postprocessing/PostprocessingResolutionMonotonicity.postprocessing_cannot_improve_identification_resolution
     target_statement_id: sha256:dfd62bf4e9d826a3a208fbb6ef250124925ac92b0f6c854fba3dc0bd6ee4fc56
 receipts:
-  scribe: []
   unresolved_subitems: []
