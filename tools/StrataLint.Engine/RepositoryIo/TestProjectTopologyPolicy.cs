@@ -63,19 +63,18 @@ internal static partial class RepositoryRules
     internal const string OwnedTestToOwnedTestReference =
         "owned-test-to-owned-test-reference";
 
-    // 横跨型 harness:测试仓库自身的结构或执行仓库脚本,横跨多个生产项目、
+    // 横跨型 architecture harness 测试仓库自身结构,横跨多个生产项目、
     // 不拥有其中任何一个,故不参与 `X` ↔ `X.Tests` 的拥有关系。
     //
     // 具名精确路径而非「凡不叫 X.Tests 者皆横跨」的命名规则 —— 后者会让任意
-    // `*ArchitectureTests` / `*ScriptTests` 自动逃逸拥有关系检查,削弱
+    // `*ArchitectureTests` 自动逃逸拥有关系检查,削弱
     // `OnlyExactCanonicalArchitectureHarnessPathIsExcluded` 有意钉住的守卫:
     // 第三个**未具名**的横跨项目仍须判 orphan-owned-project。加一条具名路径是
     // 保守扩展(旧判 admit 者仍 admit),换成命名规则则是放宽。
     internal static readonly ImmutableHashSet<string> CrossCuttingHarnessPaths =
         ImmutableHashSet.Create(
             StringComparer.Ordinal,
-            "tools/tests/StrataLint.ArchitectureTests/StrataLint.ArchitectureTests.csproj",
-            "tools/tests/StrataLint.ScriptTests/StrataLint.ScriptTests.csproj");
+            "tools/tests/StrataLint.ArchitectureTests/StrataLint.ArchitectureTests.csproj");
 
     // 共享测试支持项目:不含 xUnit、不被任何 `X.Tests` 拥有、也不拥有任何生产项目,
     // 故不参与 `X` ↔ `X.Tests` 的拥有关系,亦不计入受管测试项目的 `ProdRefs`。
@@ -405,8 +404,8 @@ internal static partial class RepositoryRules
 
     // 「是不是受管测试项目」与「是不是拥有某个生产项目」是两个正交的问题,此前由同一个
     // 谓词回答,于是 CrossCuttingHarnessPaths 对**拥有关系**的豁免被一并施加到
-    // test→test 依赖上,使 ArchitectureTests / ScriptTests 的四条 test→test 边
-    // 结构上不进债账(#5419)。IsOwnedTestProject 由 IsTestProject **收窄**而来,
+    // test→test 依赖上,使 ArchitectureTests 的 test→test 边结构上不进债账(#5419)。
+    // IsOwnedTestProject 由 IsTestProject **收窄**而来,
     // 而非并列另写一个谓词 —— 这样「旧判 owned 者仍 owned」在结构上成立(保守扩展),
     // 不依赖测试来保证。
     private static bool IsTestProject(string path, bool isXunit) =>

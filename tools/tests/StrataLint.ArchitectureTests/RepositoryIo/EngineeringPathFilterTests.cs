@@ -12,8 +12,6 @@ public sealed class EngineeringPathFilterTests
         "tools/tests/StrataLint.Engine.Tests/StrataLint.Engine.Tests.csproj";
     private const string ArchitectureTestsProject =
         "tools/tests/StrataLint.ArchitectureTests/StrataLint.ArchitectureTests.csproj";
-    private const string ScriptTestsProject =
-        "tools/tests/StrataLint.ScriptTests/StrataLint.ScriptTests.csproj";
     private const string TestSupportProject =
         "tools/TestSupport/StrataLint.TestSupport/StrataLint.TestSupport.csproj";
     private const string CandidateAddedProject =
@@ -112,6 +110,70 @@ public sealed class EngineeringPathFilterTests
     }
 
     [Fact]
+    public void BaseTestProjectAbsentFromCandidateIsExcludedFromThePlan()
+    {
+        var protectedBase = new TestProjectTopologySnapshot(
+        [
+            Project(EngineProject, isTest: false),
+            Project(EngineTestsProject, isTest: true, EngineProject),
+        ]);
+        var candidate = new TestProjectTopologySnapshot(
+        [
+            Project(EngineProject, isTest: false),
+        ]);
+
+        var plan = EngineeringTestPlanPolicy.EvaluateOrdinary(
+            [EngineTestsProject],
+            protectedBase,
+            candidate);
+
+        Assert.Equal(EngineeringTestPlanKind.None, plan.Kind);
+        Assert.Empty(plan.Projects);
+        Assert.Equal([EngineTestsProject], plan.RemovedBaseTestProjects.ToArray());
+    }
+
+    [Fact]
+    public void BaseTestProjectStillPresentInCandidateRemainsSelected()
+    {
+        var topology = new TestProjectTopologySnapshot(
+        [
+            Project(EngineProject, isTest: false),
+            Project(EngineTestsProject, isTest: true, EngineProject),
+        ]);
+
+        var plan = EngineeringTestPlanPolicy.EvaluateOrdinary(
+            ["tools/StrataLint.Engine/Anything.cs"],
+            topology,
+            topology);
+
+        Assert.Equal(EngineeringTestPlanKind.Selected, plan.Kind);
+        Assert.Equal([EngineTestsProject], plan.Projects.ToArray());
+    }
+
+    [Fact]
+    public void CandidateAddedTestProjectRemainsSelectedWhenABaseTestProjectWasRemoved()
+    {
+        var protectedBase = new TestProjectTopologySnapshot(
+        [
+            Project(EngineProject, isTest: false),
+            Project(EngineTestsProject, isTest: true, EngineProject),
+        ]);
+        var candidate = new TestProjectTopologySnapshot(
+        [
+            Project(EngineProject, isTest: false),
+            Project(CandidateAddedProject, isTest: true, EngineProject),
+        ]);
+
+        var plan = EngineeringTestPlanPolicy.EvaluateOrdinary(
+            ["tools/StrataLint.Engine/Anything.cs"],
+            protectedBase,
+            candidate);
+
+        Assert.Equal(EngineeringTestPlanKind.Selected, plan.Kind);
+        Assert.Equal([CandidateAddedProject], plan.Projects.ToArray());
+    }
+
+    [Fact]
     public void TestProjectChangeSelectsItselfAndItsBaseReverseDependents()
     {
         var topology = Topology(scribeTestsReferenceScribe: true);
@@ -137,7 +199,7 @@ public sealed class EngineeringPathFilterTests
 
         Assert.Equal(EngineeringTestPlanKind.Full, plan.Kind);
         Assert.Equal(
-            [ArchitectureTestsProject, EngineTestsProject, ScribeTestsProject, ScriptTestsProject],
+            [ArchitectureTestsProject, EngineTestsProject, ScribeTestsProject],
             plan.Projects.ToArray());
     }
 
@@ -165,6 +227,7 @@ public sealed class EngineeringPathFilterTests
             EngineeringTestPlanKind.Selected,
             [],
             [ScribeTestsProject, ArchitectureTestsProject],
+            [],
             "selected protected-base reverse closure");
         var calls = new HashSet<string>(StringComparer.Ordinal);
 
@@ -196,7 +259,6 @@ public sealed class EngineeringPathFilterTests
             isTest: true,
             scribeTestsReferenceScribe ? [ScribeProject] : []),
         Project(EngineTestsProject, isTest: true, EngineProject),
-        Project(ScriptTestsProject, isTest: true, EngineProject),
         Project(
             ArchitectureTestsProject,
             isTest: true,

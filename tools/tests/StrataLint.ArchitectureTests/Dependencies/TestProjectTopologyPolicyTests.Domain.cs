@@ -3,26 +3,19 @@ using TestProjectTopologyPolicy = StrataLint.Engine.RepositoryRules;
 
 namespace StrataLint.ArchitectureTests;
 
-// 本文件是 TestProjectTopologyPolicyTests 的 partial 分片:主文件加入这九条后达 903 行,
+// 本文件是 TestProjectTopologyPolicyTests 的 partial 分片:主文件加入这八条后达 903 行,
 // 越过 SL-003 的 800 行硬线(判词见 PR #5433 的 admission 日志)。按第 8 条「桶满则裂」拆分,
 // 分片键即议题(test→test 债的定义域,#5419),不是行数切割。
 public sealed partial class TestProjectTopologyPolicyTests
 {
     // ── test→test 债的定义域(#5419) ─────────────────────────────────────────
     //
-    // 立这九条之前先测过:把定义域拆分实施完之后,既有 25 条**全部通过**,
+    // 立这八条之前先测过:把定义域拆分实施完之后,既有 25 条**全部通过**,
     // 而同一棵真实仓库的债务集由 0 变 4。⟹ 既有套件对「主语面是谁」这条轴零覆盖,
     // 下列每一条都不是锦上添花,而是这条轴上唯一的钉子。
 
     private static TestProjectTopologyProject CrossCuttingHarness(params string[] references) =>
         ProjectWithDefaultProperties(CanonicalHarnessPath, "StrataLint.ArchitectureTests", true, references);
-
-    private static TestProjectTopologyProject ScriptHarness(params string[] references) =>
-        ProjectWithDefaultProperties(
-            "tools/tests/StrataLint.ScriptTests/StrataLint.ScriptTests.csproj",
-            "StrataLint.ScriptTests",
-            true,
-            references);
 
     private static TestProjectTopologySnapshot HarnessWorld(
         params TestProjectTopologyProject[] extra) => Snapshot(
@@ -41,23 +34,6 @@ public sealed partial class TestProjectTopologyPolicyTests
 
         Assert.Equal(
             [Debt("owned-test-to-owned-test-reference", "StrataLint.ArchitectureTests", "NewProduct.Tests")],
-            debt.ToArray());
-    }
-
-    [Fact]
-    public void CrossCuttingHarnessReferencingAnotherCrossCuttingHarnessIsAlsoDebt()
-    {
-        // 宾语侧:只扩主语会漏掉这一形。当前仓内无人这么写,故这条守的是空转的缺口 ——
-        // 但它与被扩的那一侧是同一个错误类,分开只会让下一个人重新发现它。
-        var world = HarnessWorld(
-            ScriptHarness(
-                "../StrataLint.ArchitectureTests/StrataLint.ArchitectureTests.csproj"),
-            CrossCuttingHarness());
-
-        var debt = TestProjectTopologyPolicy.CalculateDebt(world);
-
-        Assert.Equal(
-            [Debt("owned-test-to-owned-test-reference", "StrataLint.ScriptTests", "StrataLint.ArchitectureTests")],
             debt.ToArray());
     }
 
