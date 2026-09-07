@@ -175,8 +175,7 @@ private theorem odd_additive_coeff (m k : ℕ) (p q : ℝ[X]) (hk : 2*k+1 ≤ 2*
   intro i hi
   have hi' : i ≤ 2*k+1 := by simpa using hi
   by_cases he : 2 ∣ i
-  · rw [coeff_expand (by norm_num) (expand ℝ 2 p)]
-    rw [coeff_expand (by norm_num) q,
+  · rw [coeff_expand (by norm_num) q,
       if_neg (show ¬2 ∣ 2*m-(2*k+1-i) by omega), mul_zero, zero_div]
   · rw [coeff_expand (by norm_num) p,
       if_neg (show ¬2 ∣ 2*m-i by omega), zero_mul, zero_div]

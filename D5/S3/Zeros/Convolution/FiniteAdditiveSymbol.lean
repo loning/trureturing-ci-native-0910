@@ -84,8 +84,7 @@ private theorem taylor_map_coeff (q : ℝ[X]) (k : ℕ) :
   have hmap : hasseDeriv k (q.map C) = (hasseDeriv k q).map C := by
     ext j
     simp [hasseDeriv_coeff]
-  rw [hmap]
-  simp
+  rw [hmap, eval_map, eval₂_C_X]
 
 /-- The finite algebraic symbol is exactly the translated second input. -/
 theorem finiteSymbol_eq_translation (n : ℕ) (q : ℝ[X]) (hq : q.natDegree ≤ n) :
@@ -159,7 +158,8 @@ theorem operator_eq_additiveConvolution (n : ℕ) (p q : ℝ[X]) (hq : q.natDegr
           (p.coeff (n-i) * ((n-k+i).choose i : ℝ) * q.coeff (n-k+i)) := by
       apply Finset.sum_congr rfl
       intro i hi
-      rw [Nat.sub_sub_self (by simpa using hi)]
+      have hni : n-(n-i) = i := Nat.sub_sub_self (by simpa using hi)
+      simp only [hni]
     rw [hreflect, hsum, Finset.mul_sum]
     apply Finset.sum_congr rfl
     intro i hi
@@ -191,7 +191,8 @@ private theorem stable_translation {q : ℝ[X]} (hq : q.Splits) (hq0 : q ≠ 0)
     simpa only [IsRoot.def, eval_map] using hzero
   obtain ⟨a, ha⟩ := hq.mem_range_of_isRoot hq0 hroot
   have him := congrArg Complex.im ha
-  simp only [Complex.ofRealHom_apply, Complex.ofReal_im, Complex.add_im] at him
+  change (a : ℂ).im = (w+z).im at him
+  simp only [Complex.ofReal_im, Complex.add_im] at him
   linarith
 
 /-- Conditional arbitrary-degree additive preservation; BB is the only external premise. -/
