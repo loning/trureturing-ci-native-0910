@@ -535,8 +535,12 @@ public sealed partial class TestProjectTopologyPolicyTests
     public void CurrentRepositoryTopologyContainsKnownDebtAndOwnedPairs()
     {
         var root = RepositoryLayout.FindRoot();
-        var candidate = Decode(GitRepositorySnapshotReader.ReadCurrent(root));
-        var debt = TestProjectTopologyPolicy.CalculateDebt(TestProjectTopologyPolicy.ReadSnapshotProjects(candidate));
+        var projects = GitIndexRepositoryFiles.EnumerateDeclared(root, "tools")
+            .Where(static entry => entry.RelativePath.EndsWith(".csproj", StringComparison.Ordinal))
+            .Select(entry => new TestProjectTopologyProject(entry.RelativePath, File.ReadAllText(entry.FullPath)))
+            .ToArray();
+        var candidate = new TestProjectTopologySnapshot(projects);
+        var debt = TestProjectTopologyPolicy.CalculateDebt(candidate);
         Assert.All(
             debt,
             static debt => Assert.Contains(
@@ -655,14 +659,11 @@ public sealed partial class TestProjectTopologyPolicyTests
         string subject,
         string related) => new(kind, subject, related);
 
-    private static RepositorySnapshot Decode(RawRepositorySnapshot raw) =>
-        Assert.IsType<SnapshotDecodeOutcome.Decoded>(SnapshotDecoder.Decode(raw)).Snapshot;
-
     private static void AssertHasDebtFreePair(
-        RepositorySnapshot snapshot,
+        TestProjectTopologySnapshot snapshot,
         IReadOnlyList<TestProjectTopologyDebt> debt)
     {
-        var projects = TestProjectTopologyPolicy.ReadSnapshotProjects(snapshot).Projects
+        var projects = snapshot.Projects
             .Select(static project =>
             {
                 var path = project.Path.Replace('\\', '/');

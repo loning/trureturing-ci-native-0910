@@ -46,7 +46,6 @@ internal sealed partial class ProductionCliEnvironment
                     return StageAdmissionFailure(plane);
                 var topology = RepositoryRules.EvaluateSnapshots(baseline, current);
                 if (!topology.IsAccepted) return new(1, "TEST_PROJECT_TOPOLOGY " + topology.Message + "\n", "");
-                ProblemCandidateCatalog.RequireDoiForChangedDossiers(current, baseline);
                 var meta = BootstrapGate.Evaluate(prepared.Changes) switch
                 {
                     BootstrapOutcome.Clear clear => MetaEvaluationProfile.ForClear(clear.Capability),

@@ -1,11 +1,10 @@
 using System.Reflection;
-using System.Reflection.Emit;
 
 namespace StrataLint.Scribe.Tests;
 
 public sealed class MarkdownCurrentCommandTests
 {
-    private static readonly Assembly Documents = CreateAssembly();
+    private static readonly Assembly Documents = new FixtureAssembly();
 
     [Fact]
     public void CurrentChecksEveryDefinitionWithoutGitOrPublishedMarkdown()
@@ -69,18 +68,13 @@ public sealed class MarkdownCurrentCommandTests
         ScribeCli.Run(Documents, ["markdown-check", "--report", "fixture.json", .. options],
             temporary.Path, output, error, LeanReportFixture.ForDocuments([Definition().Document]), TextReader.Null);
 
-    private static Assembly CreateAssembly()
+    private sealed class FixtureAssembly : Assembly
     {
-        var assembly = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("CurrentMarkdownFixture"), AssemblyBuilderAccess.Run);
-        var type = assembly.DefineDynamicModule("Documents").DefineType("CurrentMarkdownDocument", TypeAttributes.Public,
-            typeof(object), [typeof(IScribeDocumentDefinition)]);
-        type.DefineDefaultConstructor(MethodAttributes.Public);
-        var method = type.DefineMethod(nameof(IScribeDocumentDefinition.Create), MethodAttributes.Public | MethodAttributes.Virtual,
-            typeof(DocumentDefinition), Type.EmptyTypes);
-        var il = method.GetILGenerator();
-        il.Emit(OpCodes.Call, typeof(MarkdownCurrentCommandTests).GetMethod(nameof(Definition))!);
-        il.Emit(OpCodes.Ret);
-        _ = type.CreateType();
-        return assembly;
+        public override Type[] GetTypes() => [typeof(CurrentMarkdownDocument)];
+    }
+
+    private sealed class CurrentMarkdownDocument : IScribeDocumentDefinition
+    {
+        public DocumentDefinition Create() => Definition();
     }
 }

@@ -9,6 +9,7 @@ public sealed class EngineeringPathFilterTests
             Project("tools/tests/A/A.csproj", "<IsTestProject>true</IsTestProject>"),
             Project("tools/tests/B/B.csproj", "<IsTestProject>true</IsTestProject>"),
             Project("tools/Support/Support.csproj", "<IsTestProject>false</IsTestProject>", xunit: true),
+            Project("tools/tests/StrataLint.ScriptTests/StrataLint.ScriptTests.csproj", "<IsTestProject>true</IsTestProject>", xunit: true),
         ]);
         Assert.Equal(new[] { "tools/tests/A/A.csproj", "tools/tests/B/B.csproj" }, EngineeringTestPlanPolicy.Evaluate(topology));
     }

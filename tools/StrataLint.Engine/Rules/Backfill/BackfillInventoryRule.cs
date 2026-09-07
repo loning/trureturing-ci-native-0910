@@ -12,7 +12,10 @@ internal sealed record BackfillInventoryValidationContext(
     Func<string, bool>? IsBaseFactAffected = null,
     RawChangeSet? CasChanges = null,
     RawChangeSet? ProjectedStatusChanges = null,
-    Func<string, TheoryAtomizerWithContentKinds>? ContentKindAtomizerResolver = null);
+    Func<string, TheoryAtomizerWithContentKinds>? ContentKindAtomizerResolver = null,
+    BackfillInventoryDocument? BaselineDocument = null,
+    FrozenStatementIndex? FrozenStatementIndex = null,
+    IReadOnlyDictionary<RepoPath, TruthState>? TruthStates = null);
 
 internal sealed class BackfillCandidateDeltaSession
 {
@@ -444,7 +447,7 @@ internal static partial class BackfillInventoryRule
 
         try
         {
-            var baselineDocument = LoadBaselineDocument(context.Baseline);
+            var baselineDocument = context.BaselineDocument ?? LoadBaselineDocument(context.Baseline);
             var evaluation = DigestionStatusEvaluator.Evaluate(
                 context.Changes is null
                     ? DigestionEvaluationScope.FullScan
@@ -459,7 +462,9 @@ internal static partial class BackfillInventoryRule
                 casChanges: context.CasChanges,
                 isBaseFactAffected: context.IsBaseFactAffected,
                 projectedStatusChanges: context.ProjectedStatusChanges ?? context.Changes,
-                contentKindAtomizerResolver: context.ContentKindAtomizerResolver);
+                contentKindAtomizerResolver: context.ContentKindAtomizerResolver,
+                truthStates: context.TruthStates,
+                frozenStatementIndex: context.FrozenStatementIndex);
             foreach (var finding in evaluation.Findings)
             {
                 findings.Add(new RuleFinding(BackfillPath, finding));

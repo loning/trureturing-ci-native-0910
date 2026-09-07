@@ -8,7 +8,7 @@ internal static class GitRepositorySnapshotReader
     private const int MaximumGitOutputBytes = 64 * 1024 * 1024;
     private static readonly UTF8Encoding StrictUtf8 = new(false, true);
 
-    internal static RawRepositorySnapshot ReadCurrent(string repositoryRoot)
+    internal static RawRepositorySnapshot ReadCurrent(string repositoryRoot, Func<string, bool>? include = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(repositoryRoot);
         var root = Path.GetFullPath(repositoryRoot);
@@ -25,6 +25,8 @@ internal static class GitRepositorySnapshotReader
         var entries = ImmutableArray.CreateBuilder<RawRepositoryEntry>();
         foreach (var path in paths)
         {
+            if (include is not null && !include(path)) continue;
+
             if (!RepoPath.TryCreate(path, out _))
             {
                 throw new InvalidOperationException($"git emitted an invalid repository path: {path}");

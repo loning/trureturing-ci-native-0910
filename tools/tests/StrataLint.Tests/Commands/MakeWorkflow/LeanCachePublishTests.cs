@@ -140,7 +140,8 @@ public sealed partial class LeanCachePublishTests
     public void CacheTagsUseANamespaceSeparateFromReleaseTags()
     {
         var script = Script();
-        Assert.Contains("lean-cache-v1-", script, StringComparison.Ordinal);
+        Assert.Contains("TAG_PREFIX=\"lean-cache-v1\"", script, StringComparison.Ordinal);
+        Assert.Contains("tag=\"${TAG_PREFIX}-${slug}-", script, StringComparison.Ordinal);
         Assert.DoesNotContain("tag=\"E", script, StringComparison.Ordinal);
         Assert.DoesNotContain("tag=E", script, StringComparison.Ordinal);
     }
@@ -194,7 +195,7 @@ public sealed partial class LeanCachePublishTests
     {
         var script = Script();
         // 回退的检索键必须绑 toolchain 与 config，且只放宽 sources。
-        Assert.Contains("prefix=\"lean-cache-v1-${slug}-${config_sha256:0:16}-\"",
+        Assert.Contains("prefix=\"${TAG_PREFIX}-${slug}-${config_sha256:0:16}-\"",
             script, StringComparison.Ordinal);
         // 回退必须可辨识:不得安静地用一份旧归档。
         Assert.Contains("\"mode\":\"%s\"", script, StringComparison.Ordinal);
@@ -617,8 +618,9 @@ public sealed partial class LeanCachePublishTests
                     + "    esac\n"
                     + "    shift\n"
                     + "  done\n"
-                    + "  [[ -n \"$destination\" && $saw_repo == 1 && $saw_archive == 1 && $saw_manifest == 1 ]] || exit 1\n"
-                    + $"  cp '{payload}'/* \"$destination\"\n"
+                    + "  [[ -n \"$destination\" && $saw_repo == 1 && ( $saw_archive == 1 || $saw_manifest == 1 ) ]] || exit 1\n"
+                    + $"  if [[ $saw_archive == 1 ]]; then cp '{payload}/lean-build.tgz' \"$destination\"; fi\n"
+                    + $"  if [[ $saw_manifest == 1 ]]; then cp '{payload}/manifest.txt' \"$destination\"; fi\n"
                     + "  exit 0\n"
                     + "fi\n"
                     + "if [[ \"$1\" == 'api' ]]; then\n"

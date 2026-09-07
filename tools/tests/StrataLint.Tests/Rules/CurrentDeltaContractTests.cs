@@ -8,8 +8,10 @@ public sealed class CurrentDeltaContractTests
     [Fact]
     public void CurrentContextHasNoHistoryCapabilities()
     {
-        var properties = typeof(CurrentRuleContext).GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        Assert.DoesNotContain(properties, property => property.Name is "Baseline" or "Changes" or "RuleImplementationChanged");
+        var history = typeof(CurrentRuleContext).FindMembers(MemberTypes.Property,
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+            static (member, _) => member.Name is "Baseline" or "Changes" or "RuleImplementationChanged", null);
+        Assert.Empty(history);
         Assert.False(typeof(CurrentRuleContext).IsAssignableFrom(typeof(DeltaRuleContext)));
     }
 
@@ -30,6 +32,8 @@ public sealed class CurrentDeltaContractTests
     [InlineData(30)]
     [InlineData(31)]
     [InlineData(32)]
+    [InlineData(33)]
+    [InlineData(34)]
     public void HistoricalAdmissionScopesRemainDeltaOnly(int rule)
     {
         var fixture = new RuleFixture();

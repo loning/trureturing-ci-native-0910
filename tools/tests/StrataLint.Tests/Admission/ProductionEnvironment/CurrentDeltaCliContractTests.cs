@@ -75,7 +75,8 @@ public sealed class CurrentDeltaCliContractTests
         fixture.AddBackfillTargets();
         foreach (var pair in fixture.Files) Write(pair.Key, pair.Value);
         Write(".gitignore", ".lake/\nbuild/\n");
-        Write("Meta/FILEMAP.toml", File.ReadAllText(Path.Combine(TestRepositoryLayout.FindRoot(), "Meta/FILEMAP.toml")));
+        Write("Meta/FILEMAP.toml", File.ReadAllText(
+            Path.Combine(TestRepositoryLayout.FindRoot(), "Meta/FILEMAP.toml")));
         const string firstProject = "tools/tests/First/First.csproj";
         Write(firstProject, "<Project><PropertyGroup><IsTestProject>true</IsTestProject></PropertyGroup></Project>\n");
         Write("tools/tests/Second/Second.csproj", "<Project><PropertyGroup><IsTestProject>true</IsTestProject></PropertyGroup></Project>\n");
@@ -115,7 +116,7 @@ public sealed class CurrentDeltaCliContractTests
             case "candidate-mismatch": File.AppendAllText(Path.Combine(root, RuleFixture.BlueprintPath), "new round\n"); break;
             case "failed-trx":
                 var trx = Directory.GetFiles(Path.Combine(root, CommonExecutionEvidence.RootPath), "*.trx", SearchOption.AllDirectories).First();
-                File.WriteAllText(trx, File.ReadAllText(trx).Replace("Passed", "Failed", StringComparison.Ordinal));
+                File.WriteAllText(trx, TemporaryFileSystem.File.ReadAllText(trx).Replace("Passed", "Failed", StringComparison.Ordinal));
                 break;
         }
         var result = environment.CheckDelta(["--protected-base", basis, "--candidate-lean-report", report]);

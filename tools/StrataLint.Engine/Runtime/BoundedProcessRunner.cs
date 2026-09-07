@@ -4,6 +4,8 @@ namespace StrataLint.Engine;
 
 internal sealed record ProcessOutput(int ExitCode, byte[] StandardOutput, byte[] StandardError);
 
+internal sealed record StreamedProcessOutput<T>(int ExitCode, T StandardOutput, byte[] StandardError);
+
 internal static class BoundedProcessRunner
 {
     internal delegate ProcessOutput ProcessRunner(
@@ -26,6 +28,22 @@ internal static class BoundedProcessRunner
         string workingDirectory,
         TimeSpan timeout,
         int maximumOutputBytes,
+        ReadOnlyMemory<byte> standardInput = default,
+        IReadOnlyDictionary<string, string>? environment = null)
+    {
+        var result = RunStreaming(fileName, arguments, workingDirectory, timeout, maximumOutputBytes,
+            (stream, cancellation) => ReadLimitedAsync(stream, maximumOutputBytes, cancellation),
+            standardInput, environment);
+        return new ProcessOutput(result.ExitCode, result.StandardOutput, result.StandardError);
+    }
+
+    internal static StreamedProcessOutput<T> RunStreaming<T>(
+        string fileName,
+        IEnumerable<string> arguments,
+        string workingDirectory,
+        TimeSpan timeout,
+        int maximumErrorBytes,
+        Func<Stream, CancellationToken, Task<T>> readStandardOutput,
         ReadOnlyMemory<byte> standardInput = default,
         IReadOnlyDictionary<string, string>? environment = null)
     {
@@ -61,13 +79,12 @@ internal static class BoundedProcessRunner
         using var cancellation = new CancellationTokenSource(timeout);
         try
         {
-            var stdout = ReadLimitedAsync(
+            var stdout = readStandardOutput(
                 process.StandardOutput.BaseStream,
-                maximumOutputBytes,
                 cancellation.Token);
             var stderr = ReadLimitedAsync(
                 process.StandardError.BaseStream,
-                maximumOutputBytes,
+                maximumErrorBytes,
                 cancellation.Token);
             var stdin = standardInput.IsEmpty
                 ? Task.CompletedTask
@@ -84,7 +101,7 @@ internal static class BoundedProcessRunner
             {
                 // The child owns whether it consumes stdin; preserve its completed verdict.
             }
-            return new ProcessOutput(
+            return new StreamedProcessOutput<T>(
                 process.ExitCode,
                 stdout.GetAwaiter().GetResult(),
                 stderr.GetAwaiter().GetResult());

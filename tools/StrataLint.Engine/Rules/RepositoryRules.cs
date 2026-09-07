@@ -181,6 +181,16 @@ internal static partial class RepositoryRules
                 null,
                 FrozenPairRule.IsAffectedBy,
                 FrozenPairRule.Evaluate)),
+        Register(
+            34,
+            "Closed Lean modules missing frozen state",
+            new RepositoryRule(
+                ModuleStateGateRule.IsApplicable,
+                null,
+                ModuleStateGateRule.IsAffectedBy,
+                ModuleStateGateRule.Evaluate),
+            AdmissionEffect.Observe,
+            recheckOnImplementationChange: false),
     ];
 
     private static RuleRegistration Register(
@@ -189,7 +199,8 @@ internal static partial class RepositoryRules
         IRepositoryRule rule,
         AdmissionEffect effect = AdmissionEffect.Block,
         CaseId? deferredCase = null,
-        string category = "repository") =>
+        string category = "repository",
+        bool recheckOnImplementationChange = true) =>
         new(
             new RuleDescriptor(
                 RuleId.CreateKnown(number),
@@ -199,7 +210,8 @@ internal static partial class RepositoryRules
                 effect,
                 deferredCase is null ? RuleLifecycle.Active : RuleLifecycle.Deferred,
                 deferredCase),
-            rule);
+            rule,
+            recheckOnImplementationChange);
 
     private static ImmutableArray<RuleFinding> DescribeLatex(CurrentRuleContext context) =>
         context.VerifiedScribeEmissions is null

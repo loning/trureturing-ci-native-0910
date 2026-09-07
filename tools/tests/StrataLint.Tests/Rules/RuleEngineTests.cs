@@ -204,12 +204,8 @@ public sealed class RuleEngineTests
         var changes = RawChangeSet.Create(path is null ? [] : [path]);
         var completed = Assert.IsType<RuleExecutionOutcome.Completed>(
             RuleCatalog.Default.ExecuteDelta(fixture.BuildScopeProbe(changes))).Capability;
-        var skippedProperty = typeof(CompletedRuleSet).GetProperty("SkippedRules");
-        Assert.NotNull(skippedProperty);
-        var skipped = Assert.IsType<ImmutableArray<RuleId>>(skippedProperty!.GetValue(completed));
-
         Assert.DoesNotContain(RuleId.CreateKnown(number), completed.ExecutedRules);
-        Assert.Contains(RuleId.CreateKnown(number), skipped);
+        Assert.Contains(RuleId.CreateKnown(number), completed.SkippedRules);
     }
 
     [Fact]

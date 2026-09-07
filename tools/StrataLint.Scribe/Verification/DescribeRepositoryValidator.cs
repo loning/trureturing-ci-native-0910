@@ -420,12 +420,8 @@ internal static class DescribeRepositoryValidator
         }
 
         var expected = candidate.Doi.Value;
-        // Preserve the old form's comparison only until the J2b contract.
-        var comparison = candidate.ArxivId is null
-            ? StringComparison.Ordinal
-            : StringComparison.OrdinalIgnoreCase;
         if (note.Doi is null
-            || !string.Equals(note.Doi.Value, expected, comparison))
+            || !string.Equals(note.Doi.Value, expected, StringComparison.Ordinal))
         {
             findings.Add(new DescribeRedFinding(
                 "problem-source-mismatch",
