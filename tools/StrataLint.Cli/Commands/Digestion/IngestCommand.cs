@@ -339,8 +339,11 @@ internal static partial class IngestCommand
 
     private sealed record ResidueSourceVote(string Residue, string SourceId);
 
-    private static BackfillInventoryDocument LoadDocument(RepositorySnapshot snapshot) =>
-        BackfillInventoryLoader.Load(snapshot);
+    internal static BackfillInventoryDocument LoadDocument(RepositorySnapshot snapshot, bool baseline = false)
+    {
+        LedgerDocumentLoading.Value?.Invoke(snapshot, baseline);
+        return baseline ? BackfillInventoryLoader.LoadBaseline(snapshot) : BackfillInventoryLoader.Load(snapshot);
+    }
 
     internal static RawRepositorySnapshot ReplaceLedger(
         RawRepositorySnapshot snapshot,

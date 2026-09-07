@@ -163,8 +163,11 @@ public sealed partial class CoverBatchCommandTests
     {
         using var sequential = new BatchWorld();
         using var batch = new BatchWorld();
-        sequential.RunSingles();
-        var result = batch.Run(Row(First, Gid) + Row(Second, OtherGid));
+        LedgerLoadCounter sequentialLoads;
+        using (sequentialLoads = new LedgerLoadCounter()) sequential.RunSingles();
+        LedgerLoadCounter batchLoads;
+        CommandResult result;
+        using (batchLoads = new LedgerLoadCounter()) result = batch.Run(Row(First, Gid) + Row(Second, OtherGid));
 
         Assert.True(result.Success, result.Error + result.Output);
         Assert.Equal(sequential.LedgerImage(), batch.LedgerImage());
@@ -174,6 +177,28 @@ public sealed partial class CoverBatchCommandTests
         Assert.Equal(1, batch.Repository.ReadCurrentCount);
         Assert.Single(batch.Repository.ReadRevisionCalls);
         Assert.Equal(1, batch.Report.CallCount);
+        WriteLoadCounts("identical-input-sequential", sequentialLoads);
+        WriteLoadCounts("identical-input-batch", batchLoads);
+        Assert.Equal(2, sequentialLoads.BaselineLoads);
+        Assert.Equal([1, 2, 1], sequentialLoads.CandidateSnapshotLoads);
+        Assert.Equal(1, batchLoads.BaselineLoads);
+        Assert.Equal([1, 1, 1], batchLoads.CandidateSnapshotLoads);
+    }
+
+    [Theory]
+    [InlineData("\n# stored-byte oracle witness\n")]
+    [InlineData("\n \n")]
+    public void NonsemanticStoredBytesAreVisibleToBatchLedgerOracle(string suffix)
+    {
+        using var world = new BatchWorld();
+        var path = world.LedgerPaths().Single(path => path.EndsWith(First + ".yaml", StringComparison.Ordinal));
+        var before = world.LedgerImage();
+        var semanticBefore = DirectoryLedgerTestSupport.Image(BackfillInventoryLoader.LoadRoot(world.Root));
+
+        File.AppendAllText(path, suffix);
+
+        Assert.Equal(semanticBefore, DirectoryLedgerTestSupport.Image(BackfillInventoryLoader.LoadRoot(world.Root)));
+        Assert.NotEqual(before, world.LedgerImage());
     }
 
     [Fact]
@@ -491,7 +516,7 @@ public sealed partial class CoverBatchCommandTests
 
         internal DigestionLedgerEntry Entry(string atomId) => BackfillInventoryLoader.LoadRoot(Root)
             .RequireDigestionEntries().Single(entry => entry.AtomId == atomId);
-        internal string LedgerImage() => DirectoryLedgerTestSupport.Image(BackfillInventoryLoader.LoadRoot(Root));
+        internal string LedgerImage() => DirectoryLedgerTestSupport.Image(Root);
         internal string[] LedgerPaths() => Directory.GetFiles(Path.Combine(Root, BackfillInventoryLoader.RootPath),
             "*.yaml", SearchOption.AllDirectories);
         internal void Rewrite(Func<DigestionLedgerEntry, DigestionLedgerEntry> edit)
