@@ -33,5 +33,5 @@ internal sealed class CircleHerglotzCompletionDocument : IScribeDocumentDefiniti
             Describe.Lean(DescribeId.Create("continuous-iff-circlemoments"),
                 DeclarationHandle.Create(Prefix + "continuous_iff_circleMoments"), H("All moments characterize weak continuity"),
                 StatementSource.FromLean(), AssessedProvenance.FromRepo(),
-                Blocks(Paragraph(Text("Compactness and existing measure uniqueness make the complete moment profile a topological embedding. Finite-mode reconstruction is not asserted."))), DescribeRole.Theorem)));
+                Blocks(Paragraph(Text("Compactness and existing measure uniqueness make the complete moment profile a topological embedding. Finite-mode reconstruction is not asserted."))), DescribeRole.Theorem))));
 }
