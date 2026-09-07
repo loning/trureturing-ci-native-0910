@@ -1,20 +1,49 @@
 ---
 bibkey: pntplus2026mertens
-authors: PrimeNumberTheoremAnd contributors
-year: 2026
-title: Mertens theorems in PrimeNumberTheoremAnd
-doi: null
-claim: The pinned upstream source proves Mertens III with the standard Lean axiom closure.
+authors: Harold G. Diamond and Janos Pintz
+year: 2009
+title: Oscillation of Mertens' product formula
+doi: 10.5802/jtnb.687
+claim: Mertens' third theorem (1874) is stated by Diamond and Pintz (2009), equation (1.1); the pinned PrimeNumberTheoremAnd Lean source formalizes this asymptotic with the standard axiom closure.
 strata_touched:
   - D5/S3/Weil/Mertens/Estimates
   - D5/S3/Weil/Mertens/LogZeta
   - D5/S3/Weil/Mertens/Gamma
   - D5/S3/Weil/Mertens/Third
-license: Apache-2.0
+license: citation-only
 triage: anchor
 ---
 
-# Mertens III Compatibility Measurement
+# Oscillation of Mertens' product formula
+
+Harold G. Diamond and Janos Pintz, *Journal de Theorie des Nombres de Bordeaux*
+21 (2009), no. 3, pp. 523-533. Mertens (1874); literature attestation via
+Diamond and Pintz (2009), equation (1.1), p. 523:
+`(product over primes p <= x of (1 - 1/p)) * log(x) -> exp(-gamma)`.
+This is the classical asymptotic formalized by the pinned upstream Lean port
+recorded below. The citation attests that formula; the port's exact error
+bounds and Lean axiom closures are supported by the recorded code measurements,
+not by this paper's separate oscillation theorem.
+
+## DOI verification and route
+
+On 2026-09-07, <https://doi.org/10.5802/jtnb.687> resolved with HTTP 200 to
+<https://jtnb.centre-mersenne.org/articles/10.5802/jtnb.687/>. The publisher's
+metadata confirms the authors, title, publication year 2009, volume 21, issue 3,
+pages 523-533 and DOI. Its linked PDF was opened and equation (1.1) checked
+on printed page 523. The online publication date is 2010-03-22; the journal
+volume and article are dated 2009.
+
+Route A retains this single note at the address cited by the four frozen
+modules' NOTICE comments. Their `anchors: []` fields and comments cannot be
+edited in this repair. Reusing `apostol1976introduction` by deleting this note,
+or moving the NOTICE out of L, would require changing those frozen links.
+The existing Apostol DOI was independently resolved to its Springer book page;
+it is not duplicated here. This note instead cites the distinct paper above.
+The citation-only license metadata concerns that paper. The upstream port's
+Apache-2.0 notice and complete license remain below with its measurements.
+
+## Mertens III Compatibility Measurement
 
 Provenance: codex-cli implementation seat `mertens3-0907/attempt-1`,
 dispatched by the consensus-rnd runner. No additional skill or review seat was
