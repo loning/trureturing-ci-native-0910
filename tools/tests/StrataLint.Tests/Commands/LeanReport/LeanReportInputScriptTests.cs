@@ -5,7 +5,7 @@ using StrataLint.Engine;
 namespace StrataLint.Tests;
 
 [Collection("Lean report environment")]
-public sealed class LeanReportInputScriptTests
+public sealed partial class LeanReportInputScriptTests
 {
     private const string InputHelperPath = "tools/scripts/report/lean-report-input.sh";
     private const string RawReportPath = "tools/StrataLint.Engine/Snapshot/RawLeanReportArtifact.cs";
@@ -94,6 +94,100 @@ public sealed class LeanReportInputScriptTests
         fixture.Append("Directory.Build.props", "<!-- mutation -->\n");
 
         Assert.NotEqual(before, fixture.Producer());
+    }
+
+    [Fact]
+    public void CompileClosureFailureCannotProduceCollidingValidAddresses()
+    {
+        using var left = new LeanReportInputFixture();
+        using var right = new LeanReportInputFixture();
+        left.BreakProducerClosureEvaluation();
+        right.BreakProducerClosureEvaluation();
+        right.Append(LeanModelsPath, "// the only repository-content difference\n");
+
+        Assert.Equal(2, left.RunCommand("producer-paths").ExitCode);
+        Assert.Equal(2, right.RunCommand("producer-paths").ExitCode);
+        var leftResult = left.RunCommand("address");
+        var rightResult = right.RunCommand("address");
+
+        if (leftResult.ExitCode == 0 || rightResult.ExitCode == 0)
+        {
+            Assert.Equal(0, leftResult.ExitCode);
+            Assert.Equal(0, rightResult.ExitCode);
+            var leftParts = Fields(leftResult);
+            var rightParts = Fields(rightResult);
+            Assert.True(
+                leftParts[0] != rightParts[0] && leftParts[1] != rightParts[1],
+                "C# source drift produced colliding repository and producer addresses.");
+            return;
+        }
+
+        Assert.Equal(2, leftResult.ExitCode);
+        Assert.Equal(2, rightResult.ExitCode);
+        Assert.Empty(leftResult.StandardOutput);
+        Assert.Empty(rightResult.StandardOutput);
+    }
+
+    [Fact]
+    public void VerifyRejectsAttestedProducerThatDiffersFromCurrentProducer()
+    {
+        using var fixture = new LeanReportInputFixture();
+        Assert.Equal(0, fixture.CaptureProductionInput().ExitCode);
+        fixture.RewriteAttestedProducer(new string('0', 64));
+
+        var result = fixture.Verify();
+
+        Assert.Equal(2, result.ExitCode);
+        Assert.Contains(
+            "producer",
+            Encoding.UTF8.GetString(result.StandardError),
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void VerifyRejectsEmptyProducerPreimageWhenCompileClosureFails()
+    {
+        using var fixture = new LeanReportInputFixture();
+        fixture.AttestEmptyProducerPreimage();
+        Assert.Equal(2, fixture.Verify().ExitCode);
+        fixture.BreakProducerClosureEvaluation();
+
+        var result = fixture.Verify();
+
+        Assert.Equal(2, result.ExitCode);
+        Assert.Empty(result.StandardOutput);
+        Assert.Contains("producer closure is unavailable", Encoding.UTF8.GetString(result.StandardError));
+    }
+
+    [Fact]
+    public void VerifyRejectsTheSameReportAcrossCSharpDriftWhenCompileClosureFails()
+    {
+        using var fixture = new LeanReportInputFixture();
+        fixture.AttestEmptyProducerPreimage();
+        fixture.BreakProducerClosureEvaluation();
+        var before = fixture.Verify();
+
+        fixture.Append(LeanModelsPath, "// C#-only drift\n");
+        var after = fixture.Verify();
+
+        Assert.Equal(2, before.ExitCode);
+        Assert.Equal(2, after.ExitCode);
+        Assert.Contains("producer closure is unavailable", Encoding.UTF8.GetString(after.StandardError));
+    }
+
+    [Fact]
+    public void CompleteProducerClosureHasStableAddressAndVerifies()
+    {
+        using var fixture = new LeanReportInputFixture();
+
+        var first = fixture.RunCommand("address");
+        var second = fixture.RunCommand("address");
+
+        Assert.Equal(0, first.ExitCode);
+        Assert.Equal(0, second.ExitCode);
+        Assert.Equal(first.StandardOutput, second.StandardOutput);
+        Assert.Equal(0, fixture.CaptureProductionInput().ExitCode);
+        Assert.Equal(0, fixture.Verify().ExitCode);
     }
 
     [Fact]
@@ -212,6 +306,44 @@ public sealed class LeanReportInputScriptTests
     }
 
     [Fact]
+    public void JudgeLibraryLeanSourceChangesAddressButUnrelatedFileDoesNot()
+    {
+        using var fixture = new LeanReportInputFixture();
+        const string judgeSource =
+            "tools/lean-inspector/LeanInformationAudit/Nested/ProofBuilder.lean";
+        const string unrelated = "tools/lean-inspector/LeanInformationAudit/README.md";
+        fixture.WriteSource(judgeSource, "def judgeFixture : True := by trivial\n");
+        fixture.WriteSource(unrelated, "fixture documentation\n");
+        var before = fixture.Address();
+
+        fixture.Append(unrelated, "x");
+        Assert.Equal(before, fixture.Address());
+
+        fixture.Append(judgeSource, "x");
+        Assert.NotEqual(before, fixture.Address());
+    }
+
+    [Fact]
+    public void AbsentJudgeLibraryContributesNoSourcesAndAddressSucceeds()
+    {
+        using var fixture = new LeanReportInputFixture();
+        fixture.RemoveInspectorDirectory();
+
+        var result = fixture.RunCommand("address");
+
+        Assert.True(
+            result.ExitCode == 0,
+            Encoding.UTF8.GetString(result.StandardError));
+        var parts = Encoding.UTF8.GetString(result.StandardOutput)
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        Assert.Equal(4, parts.Length);
+        Assert.Matches("^[0-9a-f]{64}$", parts[0]);
+        Assert.Equal(
+            fixture.ManifestHash("Trureturing.lean", "D5/Probe.lean"),
+            parts[2]);
+    }
+
+    [Fact]
     public void AddingASecondSourceWithIdenticalContentsChangesTheSourcesHash()
     {
         using var fixture = new LeanReportInputFixture();
@@ -256,7 +388,7 @@ public sealed class LeanReportInputScriptTests
             StringComparison.OrdinalIgnoreCase);
     }
 
-    private sealed class LeanReportInputFixture : IDisposable
+    private sealed partial class LeanReportInputFixture : IDisposable
     {
         private readonly TemporaryDirectory temporary = new();
         private readonly string repository;
@@ -294,29 +426,58 @@ public sealed class LeanReportInputScriptTests
             Write(TestSourcePath, "// fixture\n");
             Write(BlueprintSourcePath, "// fixture\n");
             Write(ScribeSourcePath, "// fixture\n");
-            var root = TestRepositoryLayout.FindRoot();
-            Write(PairScriptPath, File.ReadAllText(Path.Combine(root, PairScriptPath), Encoding.UTF8));
+            Write(
+                PairScriptPath,
+                File.ReadAllText(
+                    Path.Combine(
+                        TestRepositoryLayout.FindRoot(),
+                        "tools", "scripts", "lean-report-pair.sh"),
+                    Encoding.UTF8));
             Write(
                 SupervisorScriptPath,
-                File.ReadAllText(Path.Combine(root, SupervisorScriptPath), Encoding.UTF8));
+                File.ReadAllText(
+                    Path.Combine(
+                        TestRepositoryLayout.FindRoot(),
+                        "tools", "scripts", "report", "report-supervisor.sh"),
+                    Encoding.UTF8));
             Write(
                 CiBaselineScriptPath,
-                File.ReadAllText(Path.Combine(root, CiBaselineScriptPath), Encoding.UTF8));
+                File.ReadAllText(
+                    Path.Combine(
+                        TestRepositoryLayout.FindRoot(),
+                        "tools", "scripts", "report", "lean-report-ci-baseline.sh"),
+                    Encoding.UTF8));
             Write(CacheEnsureScriptPath, "#!/usr/bin/env bash\n");
             Write(
                 CachePublishScriptPath,
-                File.ReadAllText(Path.Combine(root, CachePublishScriptPath), Encoding.UTF8));
+                File.ReadAllText(
+                    Path.Combine(
+                        TestRepositoryLayout.FindRoot(),
+                        "tools", "scripts", "worktree", "lean-cache-publish.sh"),
+                    Encoding.UTF8));
             Write(
                 ResourceObservationLibraryPath,
-                File.ReadAllText(Path.Combine(root, ResourceObservationLibraryPath), Encoding.UTF8));
+                File.ReadAllText(
+                    Path.Combine(
+                        TestRepositoryLayout.FindRoot(),
+                        "tools", "scripts", "lib", "resource-observation-lib.sh"),
+                    Encoding.UTF8));
             Write(ToolchainInstallerPath, "#!/usr/bin/env bash\n");
             Write(
                 JudgeContentAddressPath,
-                File.ReadAllText(Path.Combine(root, JudgeContentAddressPath), Encoding.UTF8));
+                File.ReadAllText(
+                    Path.Combine(
+                        TestRepositoryLayout.FindRoot(),
+                        "tools", "scripts", "workflow", "judge-content-address.sh"),
+                    Encoding.UTF8));
             Write(ScribeContentChecksPath, "#!/usr/bin/env bash\n");
             Write(
                 WorkflowPath,
-                File.ReadAllText(Path.Combine(root, WorkflowPath), Encoding.UTF8));
+                File.ReadAllText(
+                    Path.Combine(
+                        TestRepositoryLayout.FindRoot(),
+                        ".github", "workflows", "ci.yml"),
+                    Encoding.UTF8));
             Write("Directory.Build.props", "<Project />\n");
             Write("Directory.Packages.props", "<Project />\n");
             Write(CliProjectPath, "<Project Sdk=\"Microsoft.NET.Sdk\" />\n");
@@ -373,6 +534,34 @@ public sealed class LeanReportInputScriptTests
         }
 
         internal ProcessOutput Verify() => Run("verify");
+
+        internal void AttestEmptyProducerPreimage()
+        {
+            var sources = ManifestHash("Trureturing.lean", "D5/Probe.lean", inspectorSourcePath);
+            var config = ManifestHash("lean-toolchain", "lake-manifest.json", "lakefile.toml");
+            var preimage = "schema=stratalint-lean-report-repository-input-v1\n"
+                + "repository_inspector_sha256=\n"
+                + $"lean_sources_sha256={sources}\nlean_config_sha256={config}\n";
+            var address = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(preimage)));
+            var reportSha = Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(report)));
+            File.WriteAllText(
+                report + ".input.attestation",
+                "schema=stratalint-lean-report-input-attestation-v1\n"
+                + $"repository_input_sha256={address}\nproducer_sha256={sources}\nreport_sha256={reportSha}\n",
+                new UTF8Encoding(false));
+        }
+
+        internal void BreakProducerClosureEvaluation() =>
+            Append(CliProjectPath, "<");
+
+        internal void RewriteAttestedProducer(string producer)
+        {
+            var path = report + ".input.attestation";
+            var lines = File.ReadAllLines(path, Encoding.UTF8);
+            Assert.Equal(4, lines.Length);
+            lines[2] = $"producer_sha256={producer}";
+            File.WriteAllLines(path, lines, new UTF8Encoding(false));
+        }
 
         internal void Mutate(string mutation)
         {
@@ -474,6 +663,14 @@ public sealed class LeanReportInputScriptTests
                 .Split(' ', StringSplitOptions.RemoveEmptyEntries)[1];
         }
 
+        internal string Address()
+        {
+            var result = Run("address");
+            Assert.Equal(0, result.ExitCode);
+            return Encoding.UTF8.GetString(result.StandardOutput)
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries)[0];
+        }
+
         internal (string Sources, string Config) CacheIdentity()
         {
             var result = Run("address");
@@ -489,7 +686,26 @@ public sealed class LeanReportInputScriptTests
             contents,
             new UTF8Encoding(false));
 
-        private ProcessOutput Run(string command)
+        internal void RemoveInspectorDirectory() => Directory.Delete(
+            Path.Combine(repository, "tools", "lean-inspector"),
+            recursive: true);
+
+        internal string ManifestHash(params string[] relativePaths)
+        {
+            var manifest = new StringBuilder();
+            foreach (var relativePath in relativePaths)
+            {
+                var path = Path.Combine(
+                    repository,
+                    relativePath.Replace('/', Path.DirectorySeparatorChar));
+                var digest = Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(path)));
+                manifest.Append(digest).Append("  ").Append(relativePath).Append('\n');
+            }
+            return Convert.ToHexStringLower(
+                SHA256.HashData(Encoding.UTF8.GetBytes(manifest.ToString())));
+        }
+
+        private ProcessOutput Run(string command, string? workingDirectory = null)
         {
             var arguments = new List<string>
             {
@@ -502,7 +718,7 @@ public sealed class LeanReportInputScriptTests
             return TestProcessRunner.Run(
                 "env",
                 arguments,
-                temporary.Path,
+                workingDirectory ?? temporary.Path,
                 BoundedProcessRunner.HangDetectionBudget,
                 1024 * 1024);
         }
@@ -520,4 +736,7 @@ public sealed class LeanReportInputScriptTests
 
     private static string[] Lines(ProcessOutput output) => Encoding.UTF8.GetString(output.StandardOutput)
         .Split('\n', StringSplitOptions.RemoveEmptyEntries);
+
+    private static string[] Fields(ProcessOutput output) => Encoding.UTF8.GetString(output.StandardOutput)
+        .Split(' ', StringSplitOptions.RemoveEmptyEntries);
 }

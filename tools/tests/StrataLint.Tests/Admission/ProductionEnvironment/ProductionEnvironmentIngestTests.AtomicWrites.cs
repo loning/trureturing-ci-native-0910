@@ -223,7 +223,7 @@ public sealed partial class ProductionEnvironmentTests
     [InlineData("coverage-target-mismatch")]
     [InlineData("scribe-definition-mismatch")]
     [InlineData("scribe-emission-mismatch")]
-    public void AlignRepairsCoverageTargetsButRejectsScribeIntegrityMismatch(string mismatchCode)
+    public void AlignRepairsCoverageTargetsAndAcceptsScribeByteMismatch(string mismatchCode)
     {
         var materialized = CoverWorld.Materialize(new CoverSpec
         {
@@ -241,22 +241,13 @@ public sealed partial class ProductionEnvironmentTests
 
         var result = environment.AlignDigestionStatus(["--base", "baseline"]);
 
-        if (mismatchCode == "coverage-target-mismatch")
-        {
-            Assert.True(result.Success, result.Error);
-            Assert.NotEqual(before, DirectoryLedgerTestSupport.RepositoryImage(temporary));
-        }
-        else
-        {
-            Assert.False(result.Success);
-            Assert.Contains("digest status is invalid", result.Error, StringComparison.Ordinal);
-            Assert.Contains(mismatchCode, result.Error, StringComparison.Ordinal);
-            Assert.Equal(before, DirectoryLedgerTestSupport.RepositoryImage(temporary));
-        }
+        Assert.True(result.Success, result.Error);
+        Assert.DoesNotContain(mismatchCode, result.Error, StringComparison.Ordinal);
+        Assert.NotEqual(before, DirectoryLedgerTestSupport.RepositoryImage(temporary));
     }
 
     [Fact]
-    public void IngestAtomizesNewSourceWhileUnrelatedReceiptIntegrityBacklogExistsAtForkPoint()
+    public void IngestAtomizesNewSourceWhileUnrelatedReceiptIntegrityBacklogExistsAtBaseline()
     {
         const string newSourcePath = "docs/develop/theory/INGEST_SCOPE_NEW_SOURCE.md";
         const string newSourceText = "# New source\n\n## Theorem 1.1\n\nClaim.\n";
@@ -307,7 +298,7 @@ public sealed partial class ProductionEnvironmentTests
     }
 
     [Fact]
-    public void AlignRepairsTouchedCoverageTargetWhoseForkPointIdentityIsUnchanged()
+    public void AlignRepairsTouchedCoverageTargetWhoseBaselineIdentityIsUnchanged()
     {
         const string siblingModuleGid = "D5/S0/Carrier/CoverSibling";
         const string siblingGid = siblingModuleGid + ".sibling";

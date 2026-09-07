@@ -1,136 +1,9 @@
 using System.Collections.Immutable;
-using System.Text;
 
 namespace StrataLint.Engine;
 
-internal sealed record DigestionIngestPlan(
-    BackfillInventoryDocument Document,
-    DigestionLedgerAlignment Alignment,
-    int StaleAcknowledged,
-    int ResidualOpenAdded,
-    ImmutableArray<DigestionCasObject> CasObjects,
-    ImmutableArray<DigestionIngestFallback> Fallbacks);
-
-internal static class DigestionSourceConflictMarkers
+internal static partial class DigestionIngestor
 {
-    internal const string DiagnosticCode = "INGEST-CONFLICT-MARKER-001";
-
-    internal static int? FindFirstLine(ReadOnlySpan<byte> bytes)
-    {
-        var start = bytes.Length >= 3
-            && bytes[0] == 0xef
-            && bytes[1] == 0xbb
-            && bytes[2] == 0xbf
-                ? 3
-                : 0;
-        var lineNumber = 1;
-        while (true)
-        {
-            var end = start;
-            while (end < bytes.Length
-                && bytes[end] != (byte)'\r'
-                && bytes[end] != (byte)'\n')
-            {
-                end++;
-            }
-
-            var line = bytes[start..end];
-            if (line.StartsWith("<<<<<<< "u8)
-                || line.StartsWith("||||||| "u8)
-                || line.SequenceEqual("======="u8)
-                || line.StartsWith(">>>>>>> "u8))
-            {
-                return lineNumber;
-            }
-
-            if (end == bytes.Length)
-            {
-                return null;
-            }
-
-            if (bytes[end] == (byte)'\r'
-                && end + 1 < bytes.Length
-                && bytes[end + 1] == (byte)'\n')
-            {
-                end++;
-            }
-
-            start = end + 1;
-            lineNumber++;
-        }
-    }
-
-    internal static string FormatFinding(string sourcePath, int line) =>
-        $"{DiagnosticCode} {sourcePath}:{line}: unresolved merge conflict marker in digestion source";
-}
-
-internal static class DigestionIngestor
-{
-    /// <summary>
-    /// Every theory document is digested by something. A volume nobody has written a
-    /// dialect for used to sit in the tree with no source declaration at all — not refused,
-    /// not digested, just unaccounted — because the declaration was a hand-written file and
-    /// nothing checked that one existed. It is derivable from the path, so ingest derives
-    /// it: the default atomizer, and a source id slugged from the file name. What remains
-    /// hand-written is only what is genuinely a decision — that this path is a canonical
-    /// volume at all, which stays with <c>governance_documents</c> on the base side.
-    /// </summary>
-    private static BackfillInventoryDocument RegisterDefaultTheorySources(
-        BackfillInventoryDocument document,
-        RepositorySnapshot snapshot)
-    {
-        var sources = document.RequireDigestionSources();
-        var declaredPaths = sources
-            .Select(static source => source.SourcePath)
-            .ToHashSet(StringComparer.Ordinal);
-        var sourceIds = sources.ToDictionary(
-            static source => source.SourceId,
-            static source => source.SourcePath,
-            StringComparer.Ordinal);
-        var registered = ImmutableArray.CreateBuilder<DigestionLedgerSource>();
-        foreach (var path in snapshot.Files.Keys
-                     .Select(static path => path.Value)
-                     .Where(static path => path.StartsWith(
-                         DigestionOpaquePathPolicy.TheoryRootPath,
-                         StringComparison.Ordinal))
-                     .Where(path => !declaredPaths.Contains(path))
-                     .Order(StringComparer.Ordinal))
-        {
-            var sourceId = DeriveSourceId(path);
-            if (sourceIds.TryGetValue(sourceId, out var claimant))
-            {
-                throw new FormatException(
-                    $"theory source id derived from {path} collides with {claimant}: {sourceId}");
-            }
-
-            sourceIds.Add(sourceId, path);
-            registered.Add(new DigestionLedgerSource(
-                sourceId,
-                path,
-                AtomizerRegistry.GenericId,
-                [],
-                GenreRegistryProjection.Available(GenreRegistryCheck.NoGenreRegistry),
-                ImmutableArray<DigestionLedgerEntry>.Empty));
-        }
-
-        return registered.Count == 0
-            ? document
-            : document.WithDigestionSources(sources.AddRange(registered));
-    }
-
-    /// <summary>
-    /// The file name, lowercased, with every run of non-alphanumerics collapsed to a dash —
-    /// the shape <c>BackfillInventoryRule</c> already requires of a source id.
-    /// </summary>
-    private static string DeriveSourceId(string path)
-    {
-        var stem = Path.GetFileNameWithoutExtension(path);
-        var id = new string(stem.Select(static character =>
-            char.IsAsciiLetterOrDigit(character) ? char.ToLowerInvariant(character) : '-').ToArray());
-        id = string.Join('-', id.Split('-', StringSplitOptions.RemoveEmptyEntries));
-        return id.Length > 0 ? id : "source-" + DigestionFingerprint.ShortHash(path);
-    }
-
     internal static RawChangeSet IncludeCasReverseDependencies(
         BackfillInventoryDocument baselineDocument,
         RawChangeSet changes)
@@ -210,9 +83,8 @@ internal static class DigestionIngestor
         var clausePlansBySource = alignment.ClausePlans
             .GroupBy(static item => item.SourceId, StringComparer.Ordinal)
             .ToDictionary(static group => group.Key, static group => group.ToArray(), StringComparer.Ordinal);
-        var atomIds = migrationDocument.RequireDigestionEntries()
-            .Select(static entry => entry.AtomId)
-            .ToHashSet(StringComparer.Ordinal);
+        var globalEntries = migrationDocument.RequireDigestionEntries()
+            .ToDictionary(static entry => entry.AtomId, StringComparer.Ordinal);
         var sources = ImmutableArray.CreateBuilder<DigestionLedgerSource>();
         var casObjects = new Dictionary<string, DigestionCasObject>(StringComparer.Ordinal);
         var staleAcknowledged = 0;
@@ -222,11 +94,11 @@ internal static class DigestionIngestor
             var resolvedSource = alignment.GenreRegistryChecks.TryGetValue(
                 source.SourceId,
                 out var genreRegistryCheck)
-                    ? source with
-                    {
-                        GenreRegistryProjection = GenreRegistryProjection.Available(genreRegistryCheck),
-                    }
-                    : source;
+                ? source with
+                {
+                    GenreRegistryProjection = GenreRegistryProjection.Available(genreRegistryCheck),
+                }
+                : source;
             if (!AtomizerRegistry.IsRegistered(source.Atomizer))
             {
                 if (source.Atomizer != AtomizerRegistry.NoAtomizerId)
@@ -249,11 +121,17 @@ internal static class DigestionIngestor
             {
                 foreach (var item in residual)
                 {
-                    if (!atomIds.Add(item.SuggestedAtomId))
+                    if (globalEntries.TryGetValue(item.SuggestedAtomId, out var existing))
                     {
+                        if (!DigestionLedgerAligner.FingerprintsMatch(
+                                existing.Fingerprints,
+                                item.Atom.Fingerprints))
+                        {
+                            throw new FormatException(
+                                $"ingest atom id collision at {item.SuggestedAtomId}");
+                        }
                         continue;
                     }
-
                     var captured = AddCasObject(item.Atom.RawBytes.AsSpan(), casObjects);
                     var priorGenerations = source.Entries
                         .Where(entry => entry.Fingerprints.RawSha256
@@ -271,7 +149,7 @@ internal static class DigestionIngestor
                         .Distinct(StringComparer.Ordinal)
                         .Order(StringComparer.Ordinal)
                         .ToImmutableArray();
-                    entries.Add(new DigestionLedgerEntry(
+                    var admitted = new DigestionLedgerEntry(
                         source.SourceId,
                         source.SourcePath,
                         source.Atomizer,
@@ -280,7 +158,10 @@ internal static class DigestionIngestor
                         Coverage: inheritedCoverage,
                         new DigestionReceipts([], inheritedUnresolvedSubitems, [], null),
                         item.ProjectedStatus,
-                        CasRef: captured.Reference));
+                        CasRef: captured.Reference);
+                    if (!globalEntries.TryAdd(admitted.AtomId, admitted))
+                        continue;
+                    entries.Add(admitted);
                     residualOpenAdded++;
                 }
             }
@@ -316,38 +197,18 @@ internal static class DigestionIngestor
                         continue;
                     }
 
-                    var childIds = ImmutableArray.CreateBuilder<string>(clausePlan.Plan.Children.Length);
-                    foreach (var child in clausePlan.Plan.Children)
+                    var decomposition = DigestionDecomposition.Materialize(parent, clausePlan.Plan, globalEntries);
+                    foreach (var child in decomposition.NewEntries)
                     {
-                        var childId = ClauseAtomId(child);
-                        if (atomIds.Add(childId))
-                        {
-                            var captured = AddCasObject(child.RawBytes.AsSpan(), casObjects);
-                            entries.Add(new DigestionLedgerEntry(
-                                source.SourceId,
-                                source.SourcePath,
-                                source.Atomizer,
-                                childId,
-                                child.Fingerprints,
-                                Coverage: [],
-                                new DigestionReceipts([], [], [], null),
-                                new DigestionStatus(
-                                    DigestionMigrationState.Residual,
-                                    DigestionTruthState.Open),
-                                CasRef: captured.Reference));
-                            residualOpenAdded++;
-                        }
-                        childIds.Add(childId);
+                        if (!globalEntries.TryAdd(child.AtomId, child))
+                            continue;
+                        entries.Add(child);
+                        residualOpenAdded++;
                     }
-
-                    entries[parentIndex] = parent with
-                    {
-                        Receipts = parent.Receipts with
-                        {
-                            UnresolvedSubitems = [],
-                            ChainAtoms = childIds.MoveToImmutable(),
-                        },
-                    };
+                    foreach (var captured in decomposition.CasObjects)
+                        AddCasObject(captured.Bytes.AsSpan(), casObjects);
+                    entries[parentIndex] = decomposition.Parent;
+                    globalEntries[parent.AtomId] = decomposition.Parent;
                 }
             }
 
@@ -361,7 +222,7 @@ internal static class DigestionIngestor
         }
 
         return new DigestionIngestPlan(
-            NormalizeAtomIdentities(migrationDocument.WithDigestionSources(sources.ToImmutable())),
+            migrationDocument.WithDigestionSources(sources.ToImmutable()),
             alignment,
             staleAcknowledged,
             residualOpenAdded,
@@ -370,9 +231,6 @@ internal static class DigestionIngestor
                 .ToImmutableArray(),
             alignment.Fallbacks);
     }
-
-    private static string ClauseAtomId(DigestionAtom child) =>
-        child.Fingerprints.RawSha256["sha256:".Length..];
 
     private static DigestionCasObject AddCasObject(
         ReadOnlySpan<byte> bytes,
@@ -485,6 +343,12 @@ internal static class DigestionIngestor
             var disposition = SingleCoverDisposition(
                 atomId,
                 members.Select(static item => item.Entry.Receipts.CoverDisposition));
+            var nonpropositional = SingleOptional(atomId, "nonpropositional",
+                members.Select(static item => item.Entry.Receipts.Nonpropositional));
+            if (nonpropositional is not null
+                && (!coverage.IsEmpty || quarantine is not null || disposition is not null
+                    || members.Any(static item => !item.Entry.Receipts.UnresolvedSubitems.IsEmpty)))
+                throw new FormatException($"atom {atomId} merged nonpropositional conflicts with live obligations");
             if (!coverage.IsEmpty && (quarantine is not null || disposition is not null))
             {
                 throw new FormatException(
@@ -507,7 +371,8 @@ internal static class DigestionIngestor
                     chain.IsDefault ? [] : chain,
                     tail,
                     quarantine,
-                    disposition),
+                    disposition,
+                    nonpropositional),
                 statuses[0],
                 expectedReference));
         }

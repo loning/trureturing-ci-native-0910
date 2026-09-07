@@ -10,14 +10,15 @@ namespace StrataLint.Tests;
 public sealed partial class ProductionEnvironmentTests
 {
     [Fact]
-    public void CheckBlocksNewAxiomBadgeScribeMismatchAbsentFromBaselineBytes()
+    public void CheckRetainsStatusValidationWhenAxiomBadgeScribeByteReceiptDrifts()
     {
         var (outcome, verifier) = CheckReportDerivedScribeStock(reportInputsChanged: true);
 
         var rejected = Assert.IsType<AdmissionOutcome.RuleRejected>(outcome);
-        var mismatch = Assert.Single(rejected.Diagnostics, static diagnostic =>
+        Assert.Contains(rejected.Diagnostics, static diagnostic =>
+            diagnostic.Message.Contains("handwritten status", StringComparison.Ordinal));
+        Assert.DoesNotContain(rejected.Diagnostics, static diagnostic =>
             diagnostic.Message.Contains("scribe-emission-mismatch", StringComparison.Ordinal));
-        Assert.Equal(AdmissionEffect.Block, mismatch.AdmissionEffect);
         Assert.Equal(["std3"], verifier.AxiomBadges);
     }
 
@@ -35,9 +36,9 @@ public sealed partial class ProductionEnvironmentTests
     }
 
     [Fact]
-    public void CheckDoesNotReplayForkOnlyProducerPathBaselineDrift()
+    public void CheckDoesNotReplayBaselineOnlyProducerPathDrift()
     {
-        var (outcome, verifier) = CheckForkPointOnlyReportProducerInputStock(
+        var (outcome, verifier) = CheckBaselineOnlyReportProducerInputStock(
             "tools/StrataLint.Engine/Rules/Backfill/BackfillInventoryRule.cs");
 
         var protectedChange = RequireProtectedSurfaceChange(outcome);
@@ -226,10 +227,10 @@ public sealed partial class ProductionEnvironmentTests
             changedLean,
             verifiedScribeEmissions,
             baselineDocument).Entries);
-        Assert.Equal(DigestionMigrationState.Partial, changedStatus.DerivedStatus.Migration);
+        Assert.Equal(DigestionMigrationState.Absorbed, changedStatus.DerivedStatus.Migration);
         Assert.Equal(DigestionTruthState.Closed, changedStatus.DerivedStatus.Truth);
-        Assert.False(changedStatus.Deletable);
-        Assert.Contains(changedStatus.Gaps, gap => gap.Code == "scribe-emission-mismatch");
+        Assert.True(changedStatus.Deletable);
+        Assert.Empty(changedStatus.Gaps);
     }
 
     private static (AdmissionOutcome Outcome, ReportDerivedScribeEmissionVerifier Verifier)
@@ -258,7 +259,7 @@ public sealed partial class ProductionEnvironmentTests
     }
 
     private static (AdmissionOutcome Outcome, ReportDerivedScribeEmissionVerifier Verifier)
-        CheckForkPointOnlyReportProducerInputStock(params string[] additionalChanges) =>
+        CheckBaselineOnlyReportProducerInputStock(params string[] additionalChanges) =>
         CheckReportDerivedScribeStockCore(false, false, true, false, additionalChanges);
 
     private static (AdmissionOutcome Outcome, ReportDerivedScribeEmissionVerifier Verifier)
@@ -269,7 +270,7 @@ public sealed partial class ProductionEnvironmentTests
         CheckReportDerivedScribeStockCore(
             bool reportInputsChanged,
             bool baselineHasScribeGap,
-            bool forkPointOnlyReportProducerInput,
+            bool baselineOnlyReportProducerInput,
             bool producerPathSetDiffers,
             params string[] additionalChanges)
     {
@@ -289,7 +290,6 @@ public sealed partial class ProductionEnvironmentTests
 
         var baselineTarget = fixture.Files[targetPath];
         fixture.Baseline[targetPath] = baselineTarget;
-        fixture.ForkPoint[targetPath] = baselineTarget;
         var baselineDeclaration = new LeanDeclaration(
             "protectedTargetFixture",
             "def",
@@ -313,7 +313,6 @@ public sealed partial class ProductionEnvironmentTests
         if (!reportInputsChanged)
         {
             fixture.Baseline[targetPath] = candidateTarget;
-            fixture.ForkPoint[targetPath] = candidateTarget;
         }
         fixture.BaselineReports[targetPath] = new LeanFileReport(
             [],
@@ -324,20 +323,20 @@ public sealed partial class ProductionEnvironmentTests
 
         var definitionPath = ScribeEmissionAttestation.DefinitionPath(documentGid);
         var emissionPath = ScribeEmissionAttestation.EmissionPath(documentGid);
-        foreach (var files in new[] { fixture.Files, fixture.Baseline, fixture.ForkPoint })
+        foreach (var files in new[] { fixture.Files, fixture.Baseline })
         {
             files[definitionPath] = baselineDefinition;
             files[emissionPath] = baselineEmission;
         }
-        if (forkPointOnlyReportProducerInput)
+        if (baselineOnlyReportProducerInput)
         {
-            fixture.ForkPoint["tools/lean-inspector/fork-only-input.txt"] =
-                "fork-only producer input\n";
+            fixture.Baseline["tools/lean-inspector/baseline-only-input.txt"] =
+                "baseline-only producer input\n";
         }
         if (producerPathSetDiffers)
         {
-            fixture.ForkPoint["notes/fork-producer-set-marker.txt"] =
-                "fork-only producer path-set marker\n";
+            fixture.Baseline["notes/baseline-producer-set-marker.txt"] =
+                "baseline-only producer path-set marker\n";
         }
 
         var definitionSha256 = DigestionFingerprint.Compute(
@@ -345,7 +344,7 @@ public sealed partial class ProductionEnvironmentTests
         var stockEmissionSha256 = baselineHasScribeGap
             ? ReportDerivedScribeEmissionVerifier.EmissionSha256For([])
             : DigestionFingerprint.Compute(Encoding.UTF8.GetBytes(baselineEmission)).RawSha256;
-        foreach (var files in new[] { fixture.Files, fixture.Baseline, fixture.ForkPoint })
+        foreach (var files in new[] { fixture.Files, fixture.Baseline })
         {
             AddFrozenTarget(files, targetPath, moduleStatementId);
             InstallLedger(files);
@@ -371,10 +370,7 @@ public sealed partial class ProductionEnvironmentTests
             new FakeRepositoryGateway(
                 RawChangeSet.Create(changes),
                 currentRaw,
-                baselineRaw,
-                forkPoint: forkPointOnlyReportProducerInput || producerPathSetDiffers
-                    ? Snapshot(fixture.ForkPoint)
-                    : null),
+                baselineRaw),
             new FakeLeanReportSource(null),
             verifier);
 

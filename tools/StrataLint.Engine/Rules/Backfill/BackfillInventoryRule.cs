@@ -12,7 +12,8 @@ internal sealed record BackfillInventoryValidationContext(
     RawChangeSet? Changes = null,
     Func<string, bool>? IsBaseFactAffected = null,
     RawChangeSet? CasChanges = null,
-    RawChangeSet? ProjectedStatusChanges = null);
+    RawChangeSet? ProjectedStatusChanges = null,
+    Func<string, TheoryAtomizerWithContentKinds>? ContentKindAtomizerResolver = null);
 
 internal sealed class BackfillCandidateDeltaSession
 {
@@ -87,7 +88,7 @@ internal sealed class BackfillCandidateDeltaSession
             .ToImmutableArray();
 }
 
-internal static class BackfillInventoryRule
+internal static partial class BackfillInventoryRule
 {
     private const string BackfillPath = BackfillInventoryLoader.RelativePath;
 
@@ -180,7 +181,7 @@ internal static class BackfillInventoryRule
         return EvaluateDocument(
             new BackfillInventoryValidationContext(
                 context.Current,
-                context.ForkPoint,
+                context.Baseline,
                 context.Policy,
                 context.Lean,
                 context.VerifiedScribeEmissions,
@@ -192,34 +193,7 @@ internal static class BackfillInventoryRule
 
     internal static ImmutableArray<RuleFinding> EvaluateDocument(
         BackfillInventoryValidationContext context,
-        BackfillInventoryDocument document) =>
-        EvaluateDocument(context, document, validateTruthAlignment: true);
-
-    internal static ImmutableArray<RuleFinding> EvaluateDocumentWithoutTruthAlignment(
-        RepositorySnapshot current,
-        RepositorySnapshot baseline,
-        ValidatedPolicy policy,
-        BackfillInventoryDocument document,
-        RawChangeSet? changes = null,
-        Func<string, bool>? isBaseFactAffected = null,
-        RawChangeSet? casChanges = null) =>
-        EvaluateDocument(
-            new BackfillInventoryValidationContext(
-                current,
-                baseline,
-                policy,
-                Lean: null,
-                VerifiedScribeEmissions: null,
-                changes,
-                isBaseFactAffected,
-                casChanges),
-            document,
-            validateTruthAlignment: false);
-
-    private static ImmutableArray<RuleFinding> EvaluateDocument(
-        BackfillInventoryValidationContext context,
-        BackfillInventoryDocument document,
-        bool validateTruthAlignment)
+        BackfillInventoryDocument document)
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(document);
@@ -249,8 +223,7 @@ internal static class BackfillInventoryRule
                 document,
                 sources,
                 sources.SelectMany(static source => source.Entries).ToImmutableArray(),
-                findings,
-                validateTruthAlignment);
+                findings);
         }
 
         return findings.ToImmutable();
@@ -296,8 +269,7 @@ internal static class BackfillInventoryRule
         BackfillInventoryDocument document,
         ImmutableArray<DigestionLedgerSource> sources,
         ImmutableArray<DigestionLedgerEntry> entries,
-        ImmutableArray<RuleFinding>.Builder findings,
-        bool validateTruthAlignment)
+        ImmutableArray<RuleFinding>.Builder findings)
     {
         if (sources.Length == 0)
         {
@@ -312,8 +284,7 @@ internal static class BackfillInventoryRule
         var validateAllRecords = context.Changes is null;
         foreach (var source in sources)
         {
-            var sourceMetadataChanged = validateAllRecords
-                || SourceMetadataChanged(source, context.Changes);
+            var sourceMetadataChanged = validateAllRecords || SourceMetadataChanged(source, context.Changes);
             if (sourceMetadataChanged)
             {
                 changedSourceIds.Add(source.SourceId);
@@ -474,11 +445,6 @@ internal static class BackfillInventoryRule
             findings.Add(new RuleFinding(BackfillPath, finding));
         }
 
-        if (!validateTruthAlignment)
-        {
-            return;
-        }
-
         if (hasStructuralFindings)
         {
             return;
@@ -501,11 +467,14 @@ internal static class BackfillInventoryRule
                 changes: context.Changes,
                 casChanges: context.CasChanges,
                 isBaseFactAffected: context.IsBaseFactAffected,
-                projectedStatusChanges: context.ProjectedStatusChanges ?? context.Changes);
+                projectedStatusChanges: context.ProjectedStatusChanges ?? context.Changes,
+                contentKindAtomizerResolver: context.ContentKindAtomizerResolver);
             foreach (var finding in evaluation.Findings)
             {
                 findings.Add(new RuleFinding(BackfillPath, finding));
             }
+
+            findings.AddRange(ClassifyContentDispositionGaps(evaluation));
 
             findings.AddRange(ClassifyReceiptIntegrityGaps(evaluation));
 

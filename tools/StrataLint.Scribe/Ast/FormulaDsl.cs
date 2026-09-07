@@ -26,6 +26,7 @@ public static class FormulaDsl
     public static Formula Beta { get; } = M(FormulaLatexMacro.Beta);
     public static Formula Cdot { get; } = M(FormulaLatexMacro.Cdot);
     public static Formula Circ { get; } = M(FormulaLatexMacro.Circ);
+    public static Formula Cup { get; } = M(FormulaLatexMacro.Cup);
     public static Formula DeltaLower { get; } = M(FormulaLatexMacro.DeltaLower);
     public static Formula Ell { get; } = M(FormulaLatexMacro.Ell);
     public static Formula Emptyset { get; } = M(FormulaLatexMacro.Emptyset);

@@ -102,7 +102,23 @@ information_theorem idTheorem
   primitives idRealization
   : t001Arena.Law idRealization := by trivial
 
-#seal_information_theory output "/tmp/lean-information-audit-seal-success.json"
+expect_information_occurrence fstTheorem
+  in arena
+  from "LeanInformationAudit.Tests.SealSuccess"
+
+expect_information_occurrence sndTheorem
+  in arena
+  from "LeanInformationAudit.Tests.SealSuccess"
+
+expect_information_occurrence notTheorem
+  in notArena
+  from "LeanInformationAudit.Tests.SealSuccess"
+
+expect_information_occurrence idTheorem
+  in t001Arena
+  from "LeanInformationAudit.Tests.SealSuccess"
+
+#seal_information_theory
 
 private def artifactAddress (json : Json) : Except String String := do
   let arenasJson ← Json.getObjVal? json "arenas"
@@ -128,8 +144,8 @@ private def validAddress (address : String) : Bool :=
 /-- info: artifact SHA-256 address fixture passed -/
 #guard_msgs (info) in
 run_cmd do
-  let contents ← Lean.Elab.Command.liftIO <|
-    IO.FS.readFile "/tmp/lean-information-audit-seal-success.json"
+  let env ← getEnv
+  let contents := serializeSealArtifact (SealRecords.forRoot env env.header.mainModule)
   let json ← match Json.parse contents with
     | .ok json => pure json
     | .error message => throwError message

@@ -5,13 +5,14 @@ using StrataLint.Scribe;
 
 namespace StrataLint.Cli;
 
-internal sealed record PreparedRepository(string Revision, string ChangeBase, RawChangeSet Changes);
+internal sealed record PreparedRepository(string Revision, RawChangeSet Changes);
 
 internal sealed record FrozenRevisionIdentity(string Revision, string CommitOid, string TreeOid);
 
 internal sealed record CheckArguments(
     string? ProtectedBase,
-    string? CandidateLeanReport);
+    string? CandidateLeanReport,
+    string? TestMapCacheRoot);
 
 internal sealed class AdmissionCheckTiming(TimeProvider timeProvider, bool enabled = true)
 {
@@ -188,9 +189,9 @@ internal interface IRepositoryGateway
     RawChangeSet ReadCurrentChanges();
 
     /// Reads the working-tree delta against an explicit revision, in the caller-supplied
-    /// changeBase's own words -- no remote-ref resolution happens here (CLAUDE.md 第Ⅵ节 git
+    /// revision's own words -- no remote-ref resolution happens here (CLAUDE.md 第Ⅵ节 git
     /// reference discipline: only the caller may name a revision; this gateway just diffs it).
-    RawChangeSet ReadChanges(string changeBase);
+    RawChangeSet ReadChanges(string revision);
 
 }
 
@@ -212,6 +213,8 @@ internal sealed partial class ProductionCliEnvironment : ICliEnvironment
     private readonly ILeanReportSource leanReportSource;
     private readonly IScribeEmissionVerifier? scribeEmissionVerifier;
     private readonly TimeProvider timeProvider;
+    private readonly IAtomHistorySource atomHistorySource;
+    private readonly ReportFreeIngestDependencies reportFreeIngestDependencies;
 
     internal ProductionCliEnvironment(string repositoryRoot)
         : this(
@@ -238,13 +241,17 @@ internal sealed partial class ProductionCliEnvironment : ICliEnvironment
         string repositoryRoot,
         IRepositoryGateway repository,
         ILeanReportSource leanReportSource,
-        IScribeEmissionVerifier? scribeEmissionVerifier)
+        IScribeEmissionVerifier? scribeEmissionVerifier,
+        IAtomHistorySource? atomHistorySource = null,
+        ReportFreeIngestDependencies? reportFreeIngestDependencies = null)
         : this(
             repositoryRoot,
             repository,
             leanReportSource,
             scribeEmissionVerifier,
-            TimeProvider.System)
+            TimeProvider.System,
+            atomHistorySource,
+            reportFreeIngestDependencies)
     {
     }
 
@@ -253,13 +260,18 @@ internal sealed partial class ProductionCliEnvironment : ICliEnvironment
         IRepositoryGateway repository,
         ILeanReportSource leanReportSource,
         IScribeEmissionVerifier? scribeEmissionVerifier,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        IAtomHistorySource? atomHistorySource = null,
+        ReportFreeIngestDependencies? reportFreeIngestDependencies = null)
     {
         this.repositoryRoot = Path.GetFullPath(repositoryRoot);
         this.repository = repository;
         this.leanReportSource = leanReportSource;
         this.scribeEmissionVerifier = scribeEmissionVerifier;
         this.timeProvider = timeProvider;
+        this.atomHistorySource = atomHistorySource ?? new GitAtomHistorySource(this.repositoryRoot);
+        this.reportFreeIngestDependencies =
+            reportFreeIngestDependencies ?? new ReportFreeIngestDependencies();
     }
 
     public ExplicitCommandResult CapacityAudit(IReadOnlyList<string> arguments) =>
@@ -268,6 +280,8 @@ internal sealed partial class ProductionCliEnvironment : ICliEnvironment
     public AdmissionOutcome Check(IReadOnlyList<string> arguments)
     {
         var timing = new AdmissionCheckTiming(timeProvider);
+        ScribeTestMapStore? testMapStore = null;
+        string? cacheSetupOutcome = null;
         try
         {
             var repositoryPhase = timing.Measure(
@@ -296,6 +310,12 @@ internal sealed partial class ProductionCliEnvironment : ICliEnvironment
                 return new AdmissionOutcome.InfrastructureFailure(
                     "check requires --candidate-lean-report FILE");
             }
+            if (options.TestMapCacheRoot is not null)
+            {
+                testMapStore = TryCreateTestMapStore(
+                    options.TestMapCacheRoot,
+                    out cacheSetupOutcome);
+            }
 
             var rawSnapshots = timing.Measure(
                 "repository-read",
@@ -319,14 +339,7 @@ internal sealed partial class ProductionCliEnvironment : ICliEnvironment
                 {
                     var current = Decode(currentRaw);
                     var baseline = Decode(baselineRaw);
-                    // Fork-point consumers compare repository structure and ledger bytes, not Lean facts.
-                    var forkPoint = string.Equals(
-                        prepared.ChangeBase,
-                        prepared.Revision,
-                        StringComparison.Ordinal)
-                        ? baseline
-                        : Decode(repository.ReadRevision(prepared.ChangeBase));
-                    return (Current: current, Baseline: baseline, ForkPoint: forkPoint);
+                    return (Current: current, Baseline: baseline);
                 });
             var current = snapshots.Current;
             var baseline = snapshots.Baseline;
@@ -349,201 +362,28 @@ internal sealed partial class ProductionCliEnvironment : ICliEnvironment
                 prepared.Changes,
                 bootstrap,
                 verifiedScribeEmissions,
-                snapshots.ForkPoint,
-                timing).Outcome;
+                timing,
+                testMapStore,
+                DeriveTestMap).Outcome;
         }
         catch (Exception exception)
         {
             return new AdmissionOutcome.InfrastructureFailure(exception.Message);
         }
-    }
-
-    public AdmissionTopologyOutcome Topology(IReadOnlyList<string> arguments)
-    {
-        try
+        finally
         {
-            return arguments.Count == 0
-                ? repository.InspectAdmissionTopology()
-                : new AdmissionTopologyOutcome.InfrastructureFailure("USAGE: StrataLint topology");
-        }
-        catch (Exception exception)
-        {
-            return new AdmissionTopologyOutcome.InfrastructureFailure(exception.Message);
-        }
-    }
-
-    public CommandResult Coverage(IReadOnlyList<string> arguments) =>
-        CoverageCommand.Run(repository, leanReportSource, arguments);
-
-    public CommandResult DigestStatus(IReadOnlyList<string> arguments) =>
-        scribeEmissionVerifier is null
-            ? new CommandResult(
-                false,
-                string.Empty,
-                "DIGEST_STATUS_INVALID Scribe emission verifier is unavailable\n")
-            : DigestStatusCommand.Run(
-                repository,
-                leanReportSource,
-                scribeEmissionVerifier,
-                arguments);
-
-    public CommandResult ShowAtom(IReadOnlyList<string> arguments) =>
-        ShowAtomCommand.Run(repository, arguments);
-
-    public ExplicitCommandResult EchoVerify(IReadOnlyList<string> arguments) =>
-        scribeEmissionVerifier is null
-            ? new ExplicitCommandResult(
-                2,
-                string.Empty,
-                "ECHO_VERIFY_INFRASTRUCTURE Scribe emission verifier is unavailable\n")
-            : EchoVerifyCommand.Run(
-                repositoryRoot,
-                repository,
-                leanReportSource,
-                scribeEmissionVerifier,
-                arguments);
-
-    public ExplicitCommandResult GateAuthority(IReadOnlyList<string> arguments) =>
-        GateAuthorityCommand.Run(repositoryRoot, arguments);
-
-    public ExplicitCommandResult FileMapConform(IReadOnlyList<string> arguments) =>
-        FileMapConformCommand.Run(arguments, repositoryRoot);
-
-    public ExplicitCommandResult DepositHeaderCheck(IReadOnlyList<string> arguments) =>
-        DepositHeaderCheckCommand.Run(repository, arguments);
-
-    public ExplicitCommandResult LedgerFrozen(IReadOnlyList<string> arguments) =>
-        LedgerFrozenCommand.Run(repositoryRoot, repository, arguments);
-
-    public CommandResult Ingest(IReadOnlyList<string> arguments) =>
-        IngestCommand.RunReportFree(
-            repositoryRoot,
-            repository,
-            arguments);
-
-    public CommandResult AlignDigestionStatus(IReadOnlyList<string> arguments) =>
-        scribeEmissionVerifier is null
-            ? new CommandResult(
-                false,
-                string.Empty,
-                "ALIGN_DIGESTION_STATUS_INVALID Scribe emission verifier is unavailable\n")
-            : IngestCommand.Run(
-                repositoryRoot,
-                repository,
-                leanReportSource,
-                scribeEmissionVerifier,
-                arguments);
-
-    public CommandResult CoverAtom(IReadOnlyList<string> arguments) =>
-        scribeEmissionVerifier is null
-            ? new CommandResult(
-                false,
-                string.Empty,
-                "COVER_INVALID Scribe emission verifier is unavailable\n")
-            : CoverAtomCommand.Run(
-                repositoryRoot,
-                repository,
-                leanReportSource,
-                scribeEmissionVerifier,
-                timeProvider.GetUtcNow(),
-                arguments);
-
-    public CommandResult AlignScribeReceipt(IReadOnlyList<string> arguments)
-    {
-        if (scribeEmissionVerifier is null)
-        {
-            return new CommandResult(
-                false,
-                string.Empty,
-                "ALIGN_SCRIBE_RECEIPT_INVALID Scribe emission verifier is unavailable\n");
-        }
-
-        try
-        {
-            return CoverAtomCommand.AlignScribeReceipt(
-                repositoryRoot,
-                repository,
-                leanReportSource,
-                scribeEmissionVerifier,
-                arguments);
-        }
-        catch (Exception exception)
-        {
-            return new CommandResult(
-                false,
-                string.Empty,
-                $"ALIGN_SCRIBE_RECEIPT_INVALID {exception.Message}\n");
-        }
-    }
-
-    public CommandResult Route(IReadOnlyList<string> arguments)
-    {
-        try
-        {
-            if (arguments.Count != 1)
+            if (cacheSetupOutcome is not null)
             {
-                return new CommandResult(false, string.Empty, "USAGE: StrataLint route MANIFEST|-\n");
+                WriteTestMapCacheEvent(string.Empty, cacheSetupOutcome);
             }
-
-            var registry = LoadRegistry();
-            var manifestBytes = arguments[0] == "-"
-                ? ReadStandardInput()
-                : ReadRepositoryFile(arguments[0]);
-            var manifestOutcome = ManifestLoader.Load(manifestBytes);
-            if (manifestOutcome is ManifestLoadOutcome.InfrastructureFailure manifestFailure)
+            if (testMapStore is not null)
             {
-                return new CommandResult(false, string.Empty, $"INFRASTRUCTURE_FAILURE {manifestFailure.Message}\n");
-            }
-
-            var manifest = ((ManifestLoadOutcome.Loaded)manifestOutcome).Syntax;
-            return RouteEngine.Route(registry.Policy, manifest) switch
-            {
-                RouteOutcome.Routed routed => RenderRoute(registry.Policy, routed),
-                RouteOutcome.Rejected rejected => new CommandResult(
-                    false,
-                    string.Empty,
-                    $"{rejected.RuleId.Value} route: {rejected.Message}\n"),
-            };
-        }
-        catch (Exception exception)
-        {
-            return new CommandResult(false, string.Empty, $"INFRASTRUCTURE_FAILURE {exception.Message}\n");
-        }
-    }
-
-    private CommandResult RenderRoute(ValidatedPolicy policy, RouteOutcome.Routed routed)
-    {
-        var capacityFailure = routed.Result.Gid.ToTarget() switch
-        {
-            Target.Formal formal => RouteCapacityPreflight.Evaluate(
-                repository.ReadCurrent(),
-                policy,
-                routed.Result.Stratum,
-                formal),
-            Target.Blueprint blueprint => RouteCapacityPreflight.Evaluate(
-                repository.ReadCurrent(),
-                policy,
-                routed.Result.Stratum,
-                blueprint),
-            _ => null,
-        };
-        if (capacityFailure is not null)
-        {
-            return new CommandResult(false, string.Empty, $"SL-003 route: {capacityFailure}\n");
-        }
-
-        return new CommandResult(
-            true,
-            JsonSerializer.Serialize(
-                new
+                foreach (var cacheEvent in testMapStore.Events)
                 {
-                    gid = routed.Result.Gid.Value,
-                    path = routed.Result.Path.Value,
-                    stratum = routed.Result.Stratum?.ToString(),
-                    skeleton = routed.Result.Skeleton,
-                },
-                RouteJsonOptions) + "\n",
-            string.Empty);
+                    WriteTestMapCacheEvent(cacheEvent.InputDigest, cacheEvent.Outcome);
+                }
+            }
+        }
     }
 
     public CommandResult SelfTest(IReadOnlyList<string> arguments)
@@ -561,7 +401,7 @@ internal sealed partial class ProductionCliEnvironment : ICliEnvironment
             if (route is not RouteOutcome.Routed routed
                 || routed.Result.Gid.Value != "D5/S0/Carrier/Probe"
                 || routed.Result.Path.Value != "D5/S0/Carrier/Probe.lean"
-                || RuleCatalog.Default.Descriptors.Length != 25)
+                || RuleCatalog.Default.Descriptors.Length != 27)
             {
                 return new CommandResult(false, string.Empty, "SELFTEST FAIL invariant mismatch\n");
             }
@@ -677,6 +517,7 @@ internal sealed partial class ProductionCliEnvironment : ICliEnvironment
     {
         string? protectedBase = null;
         string? candidateLeanReport = null;
+        string? testMapCacheRoot = null;
         for (var index = 0; index < arguments.Count; index += 2)
         {
             if (index + 1 >= arguments.Count)
@@ -688,6 +529,7 @@ internal sealed partial class ProductionCliEnvironment : ICliEnvironment
             {
                 "--protected-base" when protectedBase is null => 0,
                 "--candidate-lean-report" when candidateLeanReport is null => 1,
+                "--test-map-cache-root" when testMapCacheRoot is null => 2,
                 _ => throw CheckUsage(),
             };
             switch (target)
@@ -698,15 +540,22 @@ internal sealed partial class ProductionCliEnvironment : ICliEnvironment
                 case 1:
                     candidateLeanReport = arguments[index + 1];
                     break;
+                case 2:
+                    if (string.IsNullOrWhiteSpace(arguments[index + 1]))
+                    {
+                        throw CheckUsage();
+                    }
+                    testMapCacheRoot = arguments[index + 1];
+                    break;
             }
         }
 
-        return new CheckArguments(protectedBase, candidateLeanReport);
+        return new CheckArguments(protectedBase, candidateLeanReport, testMapCacheRoot);
     }
 
     private static InvalidOperationException CheckUsage() => new(
         "USAGE: StrataLint check [--protected-base REV] "
-        + "--candidate-lean-report FILE");
+        + "[--test-map-cache-root DIR] --candidate-lean-report FILE");
 
     private static RepositorySnapshot Decode(RawRepositorySnapshot raw) =>
         SnapshotDecoder.Decode(raw) switch
