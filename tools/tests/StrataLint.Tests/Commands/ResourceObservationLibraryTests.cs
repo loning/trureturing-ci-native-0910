@@ -351,7 +351,7 @@ public sealed class ResourceObservationLibraryTests
 
         var result = Run(
             temporary,
-            "source \"$1\"\nresource_observe_sample() { return 0; }\nresource_observation_start_sampler() { return 97; }\nobserved_command() { printf 'COMMAND\\n'; }\nresource_observe_run_periodic observed_command\n");
+            "source \"$1\"\nresource_observe_sample() { return 97; }\nobserved_command() { printf 'COMMAND\\n'; }\nresource_observe_run_periodic observed_command\n");
 
         Assert.Equal(0, result.ExitCode);
         var lines = Encoding.UTF8.GetString(result.StandardOutput)
@@ -372,7 +372,7 @@ public sealed class ResourceObservationLibraryTests
 
         var result = Run(
             temporary,
-            "source \"$1\"\nresource_observation_start_sampler() { return 97; }\nresource_observe_run_periodic bash -c 'exit 0'\n");
+            "source \"$1\"\nresource_observe_sample() { return 97; }\nresource_observe_run_periodic bash -c 'exit 0'\n");
 
         Assert.Equal(0, result.ExitCode);
         Assert.Contains(
@@ -389,11 +389,45 @@ public sealed class ResourceObservationLibraryTests
 
         var result = Run(
             temporary,
-            "source \"$1\"\nresource_observation_start_sampler() { return 97; }\nwrapped_command() { bash -c 'exit 23'; bash -c 'exit 0'; }\nset -e\nresource_observe_run_periodic wrapped_command\n");
+            "source \"$1\"\nresource_observe_sample() { return 97; }\nwrapped_command() { bash -c 'exit 23'; bash -c 'exit 0'; }\nset -e\nresource_observe_run_periodic wrapped_command\n");
 
         Assert.Equal(23, result.ExitCode);
         Assert.Contains(
             "RESOURCE_OBSERVATION_SAMPLER status=UNAVAILABLE exit=97",
+            Encoding.UTF8.GetString(result.StandardOutput),
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void SamplerKilledByWrapperDoesNotEmitUnavailable()
+    {
+        if (OperatingSystem.IsWindows()) return;
+        using var temporary = new TemporaryDirectory();
+
+        var result = Run(
+            temporary,
+            "source \"$1\"\nresource_observe_sample() { return 0; }\nresource_observe_periodically() { while true; do :; done; }\nresource_observe_run_periodic bash -c 'exit 0'\n");
+
+        Assert.Equal(0, result.ExitCode);
+        Assert.DoesNotContain(
+            "RESOURCE_OBSERVATION_SAMPLER",
+            Encoding.UTF8.GetString(result.StandardOutput),
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void SamplerThatExitedOnItsOwnReportsItsExitCode()
+    {
+        if (OperatingSystem.IsWindows()) return;
+        using var temporary = new TemporaryDirectory();
+
+        var result = Run(
+            temporary,
+            "source \"$1\"\nresource_observe_sample() { return 0; }\nresource_observe_periodically() { return 5; }\nobserved_command() { wait \"$sampler_pid\"; local sampler_exit=$?; [[ \"$sampler_exit\" -eq 5 ]]; }\nresource_observe_run_periodic observed_command\n");
+
+        Assert.Equal(0, result.ExitCode);
+        Assert.Contains(
+            "RESOURCE_OBSERVATION_SAMPLER status=UNAVAILABLE exit=5",
             Encoding.UTF8.GetString(result.StandardOutput),
             StringComparison.Ordinal);
     }
