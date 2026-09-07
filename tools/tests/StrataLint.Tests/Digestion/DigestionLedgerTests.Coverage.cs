@@ -169,7 +169,8 @@ public sealed partial class DigestionLedgerTests
     private static DigestionEntryEvaluation EvaluateDeclarationCoverage(
         string declarationGid,
         IEnumerable<string> describedDeclarations,
-        bool includeCommittedEmission = true)
+        bool includeCommittedEmission = true,
+        bool includeScribeReceipt = true)
     {
         var source = Encoding.UTF8.GetBytes("# GICT\n\n**定理 1.1(Test)**。claim。\n");
         var atom = Assert.Single(GictAtomizer.Atomize(source, DigestionTestSupport.Rules).Claims);
@@ -204,14 +205,19 @@ public sealed partial class DigestionLedgerTests
             new DigestionCoverageEdge(
                 declarationGid,
                 declarationStatementId),
-            new DigestionScribeReceipt(declarationGid, definitionHash, emissionHash));
+            includeScribeReceipt
+                ? new DigestionScribeReceipt(declarationGid, definitionHash, emissionHash)
+                : null);
         var snapshotFiles = new List<(string Path, byte[] Bytes)>
         {
             ("docs/source.md", source),
             CasFile(atom),
             (targetPath, target),
-            (ScribeEmissionAttestation.DefinitionPath(moduleGid), definition),
         };
+        if (includeScribeReceipt)
+        {
+            snapshotFiles.Add((record.DefinitionPath, definition));
+        }
         if (includeCommittedEmission)
         {
             snapshotFiles.Add((ScribeEmissionAttestation.EmissionPath(moduleGid), emission));
@@ -226,7 +232,9 @@ public sealed partial class DigestionLedgerTests
             ledger,
             snapshot,
             AcceptedLean((targetPath, report)),
-            VerifiedScribeEmissions.Create([record], describedDeclarations)).Entries);
+            includeScribeReceipt
+                ? VerifiedScribeEmissions.Create([record], describedDeclarations)
+                : null).Entries);
     }
 
     private static DigestionEntryEvaluation EvaluateCompleteTail(

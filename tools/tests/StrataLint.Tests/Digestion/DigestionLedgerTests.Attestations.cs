@@ -108,31 +108,33 @@ public sealed partial class DigestionLedgerTests
     }
 
     [Fact]
-    public void DeclarationCoverageUsesItsProducerCurrentModuleRecord()
+    public void DeclarationCoverageWithoutScribeReceiptsDerivesAbsorbedClosed()
     {
         const string declarationGid = "D5/S0/Carrier/Probe.probe";
-        var status = EvaluateDeclarationCoverage(declarationGid, [declarationGid]);
+        var status = EvaluateDeclarationCoverage(declarationGid, [declarationGid], includeScribeReceipt: false);
 
         Assert.Equal(DigestionMigrationState.Absorbed, status.DerivedStatus.Migration);
         Assert.Equal(DigestionTruthState.Closed, status.DerivedStatus.Truth);
         Assert.True(status.Deletable);
         Assert.Empty(status.Gaps);
+        Assert.Empty(status.Entry.Receipts.Scribe);
     }
 
     [Fact]
-    public void ProducerCurrentEmissionMakesCommittedMarkdownOptional()
+    public void DeclarationCoverageWithoutScribeArtifactsDerivesAbsorbedClosed()
     {
         const string declarationGid = "D5/S0/Carrier/Probe.probe";
         var status = EvaluateDeclarationCoverage(
             declarationGid,
             [declarationGid],
-            includeCommittedEmission: false);
+            includeCommittedEmission: false,
+            includeScribeReceipt: false);
 
         Assert.Equal(DigestionMigrationState.Absorbed, status.DerivedStatus.Migration);
         Assert.Equal(DigestionTruthState.Closed, status.DerivedStatus.Truth);
         Assert.True(status.Deletable);
         Assert.Empty(status.Gaps);
-        Assert.NotEmpty(status.Entry.Receipts.Scribe);
+        Assert.Empty(status.Entry.Receipts.Scribe);
     }
 
     [Fact]
