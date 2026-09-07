@@ -145,8 +145,14 @@ public sealed class RuleCatalogAssociationTests
     public void MeasureRuleObservesTheDefinedExecutionOrder()
     {
         var measured = ImmutableArray.CreateBuilder<RuleId>();
-        var context = new RuleFixture().Build(RawChangeSet.Create(
-            ["tools/StrataLint.Engine/Rules/RepositoryRules.cs"]));
+        var fixture = new RuleFixture();
+        fixture.Baseline.Remove(RuleFixture.RingPath);
+        fixture.BaselineReports.Remove(RuleFixture.RingPath);
+        var context = fixture.Build(RawChangeSet.CreateWithKinds(
+        [
+            ("tools/StrataLint.Engine/Rules/RepositoryRules.cs", RawChangeKind.Modified),
+            (RuleFixture.RingPath, RawChangeKind.Added),
+        ]));
 
         var outcome = RuleCatalog.Default.Execute(
             context,
