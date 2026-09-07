@@ -61,7 +61,7 @@ public sealed partial class CleanLanesCommandTests
 
         Assert.True(result.Success, result.Error);
         Assert.Equal(expectedReason, ReasonFor(result.Output, lane));
-        Assert.Equal(expectedReason != "merged_clean", Directory.Exists(lane));
+        CleanLanesFixture.AssertDirectoryExists(lane, expectedReason != "merged_clean");
         AssertLsofInvocations(runner.Invocations, expectedReason == "merged_clean" ? 2 : 1);
     }
 }

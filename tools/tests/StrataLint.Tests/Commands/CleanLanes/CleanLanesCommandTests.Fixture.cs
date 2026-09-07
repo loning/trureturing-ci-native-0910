@@ -127,6 +127,9 @@ public sealed partial class CleanLanesCommandTests
 
         internal string Head(string path) => Git(path, "rev-parse", "HEAD").Trim();
 
+        internal static void AssertDirectoryExists(string path, bool expected) =>
+            Assert.Equal(expected, Directory.Exists(path));
+
         internal bool WorktreeRegistered(string path) =>
             Git(repository.Path, "worktree", "list", "--porcelain")
                 .Split('\n', StringSplitOptions.RemoveEmptyEntries)
