@@ -140,9 +140,7 @@ private theorem sum_even (f : ℕ → ℝ) : ∀ k : ℕ,
         Finset.sum_range_succ, Finset.sum_range_succ,
         ih (fun i hi => ho i (by omega)), ho k (by omega), add_zero,
         Finset.sum_range_succ]
-      congr 1
-      congr 1
-      omega
+      simp only [show 2*k+1+1 = 2*(k+1) by omega]
 
 private theorem even_additive_coeff (m k : ℕ) (p q : ℝ[X]) (hk : k ≤ m) :
     (additiveConvolution (2*m) (expand ℝ 2 p) (expand ℝ 2 q)).coeff (2*m-2*k) =
@@ -162,7 +160,6 @@ private theorem even_additive_coeff (m k : ℕ) (p q : ℝ[X]) (hk : k ≤ m) :
   have hwi := (weight_pos m i (hi'.trans hk)).ne'
   have hwj := (weight_pos m (k-i) (by omega)).ne'
   field_simp
-  ring
 
 private theorem odd_additive_coeff (m k : ℕ) (p q : ℝ[X]) (hk : 2*k+1 ≤ 2*m) :
     (additiveConvolution (2*m) (expand ℝ 2 p) (expand ℝ 2 q)).coeff (2*m-(2*k+1)) = 0 := by
