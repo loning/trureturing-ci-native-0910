@@ -158,7 +158,7 @@ theorem sequence_eventualKernel_eq_bot (m : ℕ → (U →ₗ[K] Y)) :
     have coordinate := sequenceOutput_pow m n x
     rw [Module.End.pow_apply] at coordinate
     exact coordinate.symm.trans (hx n)
-  exact Submodule.mem_bot.mpr stateZero
+  exact (Submodule.mem_bot K).mpr stateZero
 
 /-- The all-future observation map of an arbitrary competing state model. -/
 def futureOutput {V : Type u} [AddCommGroup V] [Module K V]
@@ -169,7 +169,7 @@ def futureOutput {V : Type u} [AddCommGroup V] [Module K V]
 theorem tailSpace_le_futureOutput_range
     (m : ℕ → (U →ₗ[K] Y)) {V : Type u} [AddCommGroup V] [Module K V]
     (A : V →ₗ[K] V) (B : U →ₗ[K] V) (C : V →ₗ[K] Y)
-    (matches : ∀ n, markovParameter A B C n = m n) :
+    (behaviorMatches : ∀ n, markovParameter A B C n = m n) :
     tailSpace m ≤ LinearMap.range (futureOutput A C) := by
   apply Submodule.span_le.mpr
   rintro _ ⟨⟨j, input⟩, rfl⟩
@@ -178,27 +178,27 @@ theorem tailSpace_le_futureOutput_range
   change C ((A ^ i) ((A ^ j) (B input))) = m (i + j) input
   calc
     _ = C ((A ^ (i + j)) (B input)) := by rw [pow_add, Module.End.mul_apply]
-    _ = m (i + j) input := LinearMap.congr_fun (matches (i + j)) input
+    _ = m (i + j) input := LinearMap.congr_fun (behaviorMatches (i + j)) input
 
 /-- A finite state realization forces finite rank of the infinite data Hankel object. -/
 theorem finite_tailSpace_of_realization
     (m : ℕ → (U →ₗ[K] Y)) (system : FiniteLinearRealization K U Y)
-    (matches : system.behavior = m) : FiniteDimensional K (tailSpace m) := by
+    (behaviorMatches : system.behavior = m) : FiniteDimensional K (tailSpace m) := by
   apply Submodule.finiteDimensional_of_le
     (tailSpace_le_futureOutput_range m system.dynamics system.input system.output
-      (fun n => congrFun matches n))
+      (fun n => congrFun behaviorMatches n))
 
 /-- The data Hankel rank is a lower bound for every finite state realization. -/
 theorem tailSpace_finrank_le_stateDimension
     (m : ℕ → (U →ₗ[K] Y)) (system : FiniteLinearRealization K U Y)
-    (matches : system.behavior = m) :
+    (behaviorMatches : system.behavior = m) :
     finrank K (tailSpace m) ≤ system.stateDimension := by
   calc
     finrank K (tailSpace m) ≤
         finrank K (LinearMap.range (futureOutput system.dynamics system.output)) :=
       Submodule.finrank_mono
         (tailSpace_le_futureOutput_range m system.dynamics system.input system.output
-          (fun n => congrFun matches n))
+          (fun n => congrFun behaviorMatches n))
     _ ≤ system.stateDimension := by
       exact (futureOutput system.dynamics system.output).finrank_range_le
 
@@ -220,8 +220,8 @@ theorem finite_tailSpace_iff_exists_realization (m : ℕ → (U →ₗ[K] Y)) :
     refine ⟨realizationFromSequence m, ?_⟩
     funext n
     exact sequence_markovParameter_eq m n
-  · rintro ⟨system, matches⟩
-    exact finite_tailSpace_of_realization m system matches
+  · rintro ⟨system, behaviorMatches⟩
+    exact finite_tailSpace_of_realization m system behaviorMatches
 
 /-- The constructed model attains the lower bound among all linear realizations. -/
 theorem realizationFromSequence_is_minimal (m : ℕ → (U →ₗ[K] Y))
@@ -231,8 +231,8 @@ theorem realizationFromSequence_is_minimal (m : ℕ → (U →ₗ[K] Y))
     ∀ system : FiniteLinearRealization K U Y, system.behavior = m →
       (realizationFromSequence m).stateDimension ≤ system.stateDimension := by
   refine ⟨funext (sequence_markovParameter_eq m), rfl, ?_⟩
-  intro system matches
-  exact tailSpace_finrank_le_stateDimension m system matches
+  intro system behaviorMatches
+  exact tailSpace_finrank_le_stateDimension m system behaviorMatches
 
 /-- The finite block Hankel map written directly from the data. -/
 def dataHankel (m : ℕ → (U →ₗ[K] Y)) (rows columns : ℕ) :
@@ -259,7 +259,7 @@ theorem dataHankel_rank_eq_tailSpace (m : ℕ → (U →ₗ[K] Y))
   rw [hankel_rank_eq_reachable_dim_sub_inter_unobservable_dim
     (sequenceDynamics m) (sequenceInput m) (sequenceOutput m)
     rows columns rowsLarge columnsLarge]
-  rw [sequence_reachable_eq_top, sequence_eventualKernel_eq_bot]
+  rw [sequence_reachable_eq_top, sequence_eventualKernel_eq_bot, inf_bot_eq]
   simp
 
 /-- A compression below the minimal dimension loses a state direction that a
@@ -284,8 +284,9 @@ theorem smaller_compression_has_future_witness (m : ℕ → (U →ₗ[K] Y))
     have stateZero : x = 0 := by
       apply Subtype.ext
       funext n
+      change x.val n = 0
       simpa only [sequenceOutput_pow] using invisible n
-    exact Submodule.mem_bot.mpr stateZero
+    exact (Submodule.mem_bot K).mpr stateZero
   have dimensions := compress.finrank_range_add_finrank_ker
   rw [kernelZero, finrank_bot, Nat.add_zero] at dimensions
   have rankBound := (LinearMap.range compress).finrank_le
