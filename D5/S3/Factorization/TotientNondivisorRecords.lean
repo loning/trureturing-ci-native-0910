@@ -241,8 +241,11 @@ theorem A095366_1275120_ne_51 : A095366 1275120 ≠ 51 := by
   rw [powerSum_eq_positive_index_sum 1275120 51 (by norm_num)]
   exact hmem.2
 
-/-- `1275120` is not sixty times an odd number. -/
+/-- The mod-120 certificate shows that `1275120` is not sixty times an odd number. -/
 theorem not_exception_form : ¬∃ k : ℕ, 1275120 = 60 * (2 * k + 1) := by
+  intro ⟨k, hk⟩
+  have h := mod_1275120_120
+  rw [hk] at h
   omega
 
 /-- The value `1275120` refutes the claimed exception set for equality with `A095366`. -/

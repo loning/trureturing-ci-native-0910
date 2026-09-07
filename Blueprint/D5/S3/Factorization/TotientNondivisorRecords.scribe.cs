@@ -20,8 +20,9 @@ internal sealed class TotientNondivisorRecordsDocument : IScribeDocumentDefiniti
                     + "is refuted here at N = 1275120; the second is answered affirmatively "
                     + "by a general range characterization derived in this repository.")),
             Paragraph(Text(
-                "The counterexample and range theorem share the functions a and L, so they "
-                    + "are placed in one module. Natural subtraction is truncated. For N >= 1, "
+                "The counterexample and range theorem share the function a and its "
+                    + "BadTotient minimality machinery, so they are placed in one module. "
+                    + "Natural subtraction is truncated. For N >= 1, "
                     + "powerSum_eq_positive_index_sum identifies the Finset.range implementation "
                     + "with the atom's literal sum ∑_{1 ≤ j < k} j^N. The lcm over an empty range is one.")),
             Entry("BadTotient", "bad-totient", "Failure of totient divisibility",
@@ -126,8 +127,8 @@ internal sealed class TotientNondivisorRecordsDocument : IScribeDocumentDefiniti
             Entry("not_exception_form", "witness-not-exception-form",
                 "The witness lies outside the proposed exception family", NotExceptionFormula(),
                 DescribeRole.Theorem,
-                "Natural-number arithmetic proves that 1275120 is not sixty times an odd number; "
-                    + "equivalently, it is zero rather than sixty modulo 120.",
+                "The certified zero remainder modulo 120 contradicts the remainder 60 forced "
+                    + "by any representation of 1275120 as sixty times an odd number.",
                 AssessedProvenance.FromRepo()),
             Entry("exception_set_claim_false", "exception-set-claim-false",
                 "Counterexample to the proposed exception set", ExceptionFormula(),

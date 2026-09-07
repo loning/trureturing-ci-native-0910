@@ -6,7 +6,7 @@ Totient nondivisor values are exactly consecutive-totient lcm jumps, and 1275120
 
 OEIS A378640 (Xausa, 2024-12-05) asks whether its values agree with A095366 outside numbers sixty times an odd number, and whether its distinct values are A076245 after the initial one. The first question is refuted here at N = 1275120; the second is answered affirmatively by a general range characterization derived in this repository.
 
-The counterexample and range theorem share the functions a and L, so they are placed in one module. Natural subtraction is truncated. For N >= 1, powerSum_eq_positive_index_sum identifies the Finset.range implementation with the atom's literal sum ∑_{1 ≤ j < k} j^N. The lcm over an empty range is one.
+The counterexample and range theorem share the function a and its BadTotient minimality machinery, so they are placed in one module. Natural subtraction is truncated. For N >= 1, powerSum_eq_positive_index_sum identifies the Finset.range implementation with the atom's literal sum ∑_{1 ≤ j < k} j^N. The lcm over an empty range is one.
 
 **Definition 1.1 (Failure of totient divisibility).**
 
@@ -258,7 +258,7 @@ $$\neg \left(\exists k \in \mathbb{N},\; 1275120 = 60 \cdot \left(2 \cdot k + 1\
 
 *Commentary.*
 
-Natural-number arithmetic proves that 1275120 is not sixty times an odd number; equivalently, it is zero rather than sixty modulo 120.
+The certified zero remainder modulo 120 contradicts the remainder 60 forced by any representation of 1275120 as sixty times an odd number.
 
 **Theorem 1.22 (Counterexample to the proposed exception set).**
 
