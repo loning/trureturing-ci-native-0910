@@ -85,7 +85,9 @@ private theorem sum_mixed_product (Z : ZeroData) (g : ι → WeilTestFunction)
       apply Finset.sum_le_sum
       intro i _
       exact Finset.sum_le_sum fun j _ => mixed_norm_le Z (g i) (g j) n _ _ (hu i) (hv j)
-    _ = _ := by simp only [Finset.mul_sum, Finset.sum_mul]
+    _ = _ := by
+      simp only [Finset.mul_sum, Finset.sum_mul]
+      rw [Finset.sum_comm]
 
 /-- Every finite head term, including off-diagonal terms, has a finite bound. -/
 theorem finiteMixedMajorant_head_le (Z : ZeroData) (g : ι → WeilTestFunction)
@@ -158,7 +160,7 @@ theorem fourthMomentSummand_le_inverse_fourth (Z : ZeroData) (n : ℕ)
   have ht : 0 < (Z.gamma n).re ^ 2 := sq_pos_of_ne_zero hheight
   have hd : (Z.gamma n).re ^ 4 ≤ (1 + (Z.gamma n).re ^ 2) ^ 2 := by nlinarith
   unfold fourthMomentSummand inverseQuadraticEnvelope
-  rw [← inv_pow, ← div_eq_mul_inv]
+  rw [inv_pow, ← div_eq_mul_inv]
   exact div_le_div_of_nonneg_left (Nat.cast_nonneg _) (by positivity) hd
 
 /-- In a radius-one support window the exponential strip cost is bounded by

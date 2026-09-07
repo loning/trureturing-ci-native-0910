@@ -37,7 +37,7 @@ open D5.S3.Weil.ReflectionLedger
 open D5.S3.Weil.ZeroSum
 open D5.S3.Weil.ZetaBridge.ZeroDataPresentationEquiv
 open D5.S3.Weil.ZetaBridge.UnconditionalCanonicalZeroData
-open scoped ComplexConjugate ENNReal InnerProduct lp
+open scoped ComplexConjugate ENNReal InnerProduct InnerProductSpace lp
 
 private theorem zero_ne_zero (Z : ZeroData) (n : ℕ) : Z.zero n ≠ 0 := by
   intro hzero
@@ -95,8 +95,8 @@ theorem zeroCayleyOperator_preserves_mirrorKreinForm (Z : ZeroData)
   rw [mirrorKreinForm, mirrorKreinForm, lp.inner_eq_tsum, lp.inner_eq_tsum]
   apply tsum_congr
   intro v
-  rw [zeroCayleyOperator_apply, mirrorFundamentalSymmetry_apply,
-    zeroCayleyOperator_apply]
+  simp only [zeroCayleyOperator_apply, mirrorFundamentalSymmetry_apply,
+    mirrorCoordinatePerm_fst]
   exact cayley_mirror_pointwise_inner Z v.1 (psi v)
     (phi (mirrorCoordinatePerm Z v))
 
@@ -110,7 +110,7 @@ theorem zeroCayleyOperator_j_unitary (Z : ZeroData) :
         MirrorZeroHilbertSpace Z →L[Complex] MirrorZeroHilbertSpace Z) := by
   apply ContinuousLinearMap.ext
   intro psi
-  apply ext_inner_left Complex
+  apply ext_inner_left (E := MirrorZeroHilbertSpace Z) Complex
   intro phi
   change ⟪phi,
       star (zeroCayleyOperator Z)

@@ -180,7 +180,7 @@ theorem frameOddSynthesis_readout
   rw [Finset.sum_eq_single j]
   · simp
   · intro i _ hij
-    simp [hij]
+    simp [hij, Ne.symm hij]
   · simp
 
 /-- Full signed values of the finite synthesis. In particular the target
@@ -230,7 +230,6 @@ theorem frameOddBasisTest_gram
   · subst j
     rw [Finset.sum_eq_single i]
     · simp
-      ring
     · intro k _ hki
       simp [hki]
     · simp
@@ -254,7 +253,7 @@ theorem frameOddGram_isHermitian
     (frameOddGram F).IsHermitian := by
   rw [frameOddGram, Matrix.isHermitian_diagonal_iff]
   intro i
-  simp
+  simp [IsSelfAdjoint]
 
 /-- The negative of the reduced odd Gram is positive definite. -/
 theorem neg_frameOddGram_posDef
@@ -263,10 +262,9 @@ theorem neg_frameOddGram_posDef
   rw [show -frameOddGram F =
       Matrix.diagonal (fun i => (4 * Z.multiplicity (F.index i) : ℂ)) by
     ext i j
-    simp [frameOddGram]]
+    by_cases hij : i = j <;> simp [frameOddGram, Matrix.diagonal_apply, hij]]
   apply Matrix.PosDef.diagonal
   intro i
-  simp only [Complex.ofReal_re, Nat.cast_ofNat]
   exact mul_pos (by norm_num)
     (Nat.cast_pos.mpr (Z.multiplicity_pos (F.index i)))
 

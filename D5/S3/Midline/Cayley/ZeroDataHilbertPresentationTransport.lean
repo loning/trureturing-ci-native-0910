@@ -64,9 +64,8 @@ theorem zeroCoordinatePresentationEquiv_mirror (Z Z' : ZeroData)
   rcases v with ⟨n, k⟩
   apply Sigma.ext
   · exact zeroDataPresentationEquiv_mirror Z Z' n
-  · apply heq_of_eq
-    apply Fin.ext
-    rfl
+  · exact (Fin.heq_ext_iff
+      (congrArg Z'.multiplicity (zeroDataPresentationEquiv_mirror Z Z' n))).mpr rfl
 
 private theorem presentationTransport_memℓp
     {I J : Type*} (e : I ≃ J) (psi : ObserverHilbertSpace I) :
@@ -101,11 +100,11 @@ noncomputable def zeroHilbertPresentationUnitary (Z Z' : ZeroData) :
   left_inv psi := by
     apply lp.ext
     funext v
-    rfl
+    simp [presentationTransportVector]
   right_inv psi := by
     apply lp.ext
     funext v
-    rfl
+    simp [presentationTransportVector]
   map_add' psi phi := by
     apply lp.ext
     funext v
@@ -136,7 +135,7 @@ theorem zeroHilbertPresentationUnitary_intertwines_mirror
     mirrorFundamentalSymmetry_apply,
     mirrorFundamentalSymmetry_apply,
     zeroHilbertPresentationUnitary_apply]
-  congr 1
+  apply congrArg (fun coordinate : ZeroCoordinate Z => psi coordinate)
   apply (zeroCoordinatePresentationEquiv Z Z').injective
   rw [zeroCoordinatePresentationEquiv_mirror,
     Equiv.apply_symm_apply, Equiv.apply_symm_apply]

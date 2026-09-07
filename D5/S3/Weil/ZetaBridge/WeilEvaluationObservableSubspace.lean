@@ -32,6 +32,7 @@ noncomputable section
 namespace D5.S3.Weil.ZetaBridge.WeilEvaluationObservableSubspace
 
 open MeasureTheory
+open D5.S3.Weil.Convention
 open D5.S3.Weil.FourierLaplace
 open D5.S3.Weil.TestFunctions
 open D5.S3.Weil.ZeroSum
@@ -68,9 +69,9 @@ noncomputable def finiteWeilLinearCombination
   contDiff' := by
     apply ContDiff.sum
     intro i _
-    fun_prop
+    exact contDiff_const.mul (g i).contDiff
   hasCompactSupport' := by
-    change HasCompactSupport (∑ i : ι, fun x : ℝ => a i * g i x)
+    rw [← Finset.sum_fn]
     apply HasCompactSupport.finset_sum (s := Finset.univ)
     intro i _
     exact (g i).hasCompactSupport.mul_left

@@ -94,7 +94,7 @@ theorem frame_orbits_pairwise_disjoint
     rcases hfreq (F.index j) n hj with hj | hj | hj | hj
   all_goals
     have heq := hi.symm.trans hj
-    simp only [neg_inj, neg_eq_iff_eq_neg] at heq
+    try simp only [neg_inj, neg_eq_iff_eq_neg, neg_neg] at heq
     first
     | exact hpp heq
     | exact hpm heq
@@ -161,7 +161,7 @@ theorem orbitSignedAssignment_on_frame
   · subst j
     have hne := (frame_reflection_representatives_ne F i).symm
     simp [orbitSignedAssignment, frameDelta, hne]
-  · have hdis := frame_orbits_pairwise_disjoint F i j hij.symm
+  · have hdis := frame_orbits_pairwise_disjoint F i j (Ne.symm hij)
     have hnot : F.index j ∉ zeroOrbit Z (F.index i) := by
       intro h
       exact Finset.disjoint_left.mp hdis h (by simp [zeroOrbit])
@@ -256,9 +256,15 @@ theorem exists_orbitBurnolPacket (F : FiniteEvenWeilOrbitFrame Z ι) :
       fourierLaplace g (conj (Z.gamma j)) =
         fourierLaplace g (Z.gamma (Z.conjugation j)) := by
     rw [Z.gamma_conjugation, fourierLaplace_neg]
-  refine ⟨{ peak := b, killer := k, exceptional := E,
-    target_subset := hOE, peak_values := ?_, killer_values := ?_,
-    kills_exception := ?_, peak_tail := htail }⟩
+  refine ⟨{
+    peak := b
+    killer := k
+    exceptional := E
+    target_subset := hOE
+    peak_values := ?_
+    killer_values := ?_
+    kills_exception := ?_
+    peak_tail := htail }⟩
   · intro i
     exact ⟨hb _ (hn i), (hconjEval b _).trans (hb _ (hcn i))⟩
   · intro i j

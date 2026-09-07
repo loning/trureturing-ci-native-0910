@@ -74,7 +74,8 @@ private theorem inverse_cayley_coefficients_memℓp_infty (Z : ZeroData) :
     (memℓp_infty_iff.mp (cayleyCoefficientVector Z).2)
   refine ⟨C, ?_⟩
   rintro _ ⟨v, rfl⟩
-  rw [cayleyCoefficient_inv_eq_conj_mirrorIndex, norm_conj]
+  change ‖(cayleyCoefficient (Z.zero v.1))⁻¹‖ ≤ C
+  rw [cayleyCoefficient_inv_eq_conj_mirrorIndex, Complex.norm_conj]
   simpa only [cayleyCoefficientVector_apply,
     mirrorCoordinatePerm_fst] using
     hC ⟨mirrorCoordinatePerm Z v, rfl⟩
@@ -110,10 +111,11 @@ theorem zeroCayleyInverseOperator_comp_cayley (Z : ZeroData) :
   intro psi
   apply lp.ext
   funext v
-  rw [mul_apply_eq_comp, Function.comp_apply,
+  rw [mul_apply_eq_comp,
     zeroCayleyInverseOperator_apply, zeroCayleyOperator_apply]
   rw [← mul_assoc, inv_mul_cancel₀
     (zero_cayley_coefficient_ne_zero Z v.1), one_mul]
+  rfl
 
 /-- The reciprocal diagonal operator is a right inverse. -/
 theorem cayley_comp_zeroCayleyInverseOperator (Z : ZeroData) :
@@ -122,10 +124,11 @@ theorem cayley_comp_zeroCayleyInverseOperator (Z : ZeroData) :
   intro psi
   apply lp.ext
   funext v
-  rw [mul_apply_eq_comp, Function.comp_apply,
+  rw [mul_apply_eq_comp,
     zeroCayleyOperator_apply, zeroCayleyInverseOperator_apply]
   rw [← mul_assoc, mul_inv_cancel₀
     (zero_cayley_coefficient_ne_zero Z v.1), one_mul]
+  rfl
 
 /-- The zero Cayley operator is invertible for every valid `ZeroData`, even
 when it is not ordinarily unitary. -/

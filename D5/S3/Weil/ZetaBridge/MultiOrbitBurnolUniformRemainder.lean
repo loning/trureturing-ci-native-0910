@@ -222,7 +222,6 @@ theorem burnolSynthesis_orbit_value
   have h := (off_line_orbit_parity_decomposition Z
     (burnolSynthesis F P N a) (F.index i)
     (F.conjugateMove i) (F.offLine i)).1
-  dsimp only at h
   rw [(burnolSynthesis_target_values F P N a i).1,
     (burnolSynthesis_target_values F P N a i).2] at h
   have he : evenSpectralChannel (a i) (-a i) = 0 := by

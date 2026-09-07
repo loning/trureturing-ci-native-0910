@@ -164,8 +164,7 @@ theorem frameOddTargetQuadratic_eq_weighted
       negativeWeightedDiagonalQuadratic
         (fun i => 4 * (Z.multiplicity (F.index i) : ℝ)) a := by
   unfold frameOddTargetQuadratic negativeWeightedDiagonalQuadratic
-  rw [Finset.mul_sum]
-  apply congrArg Neg.neg
+  rw [Finset.mul_sum, ← Finset.sum_neg_distrib]
   apply Finset.sum_congr rfl
   intro i _
   ring
@@ -208,7 +207,7 @@ theorem quantitativeMultiOrbit_strictly_negative
     (epsilon := C.epsilon)
     (full := synthesizedFullWeilQuadratic F)
     (remainder := synthesizedWeilRemainder F)
-  · positivity
+  · exact mul_pos (by norm_num) C.massFloor_pos
   · intro i
     nlinarith [C.massFloor_le i]
   · exact C.strictMargin

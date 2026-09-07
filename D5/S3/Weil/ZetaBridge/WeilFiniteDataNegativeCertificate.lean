@@ -52,7 +52,7 @@ open D5.S3.Weil.ZetaBridge.BurnolRationalDepthBudget
 open D5.S3.Weil.ZetaBridge.QuantitativeMultiOrbitWeilNegativeCertificate
 open D5.S3.Weil.ZetaBridge.QuantitativeFiniteWeilPacket
 open D5.S3.Weil.ZetaBridge.SparseBurnolPacketJets
-open scoped BigOperators Matrix
+open scoped BigOperators ComplexOrder Matrix
 
 variable {Z : ZeroData} {ι : Type*} [Fintype ι] [DecidableEq ι]
 
@@ -76,7 +76,8 @@ theorem computed_packet_full_gram_margin
   have hroundQ : rationalCauchyTailBudget J0 J2 (rationalFourthMomentTail T) ≤
       (c : ℚ) / (den : ℚ) := hround
   have hroundR : (rationalCauchyTailBudget J0 J2 (rationalFourthMomentTail T) : ℝ) ≤
-      (c : ℝ) / (den : ℝ) := by exact_mod_cast hroundQ
+      (c : ℝ) / (den : ℝ) := by
+    simpa only [Rat.cast_div, Rat.cast_natCast] using (Rat.cast_mono (K := ℝ) hroundQ)
   rw [rationalCauchyTailBudget_cast] at hroundR
   exact cauchy_budget_full_gram_margin F P
     (fun i => (J0 i : ℝ)) (fun i => (J2 i : ℝ)) (rationalFourthMomentTail T)

@@ -34,7 +34,7 @@ open D5.S3.Midline.Cayley.ZeroHilbertCayleyUnitarity
 open D5.S3.Weil.ZeroSum
 open D5.S3.Weil.ZetaBridge.ZeroDataPresentationEquiv
 open D5.S3.Weil.ZetaBridge.UnconditionalCanonicalZeroData
-open scoped ENNReal InnerProduct lp
+open scoped ENNReal InnerProduct InnerProductSpace lp
 
 /-- The same-height mirror lifted through the analytic-multiplicity fibers. -/
 noncomputable def mirrorCoordinatePerm (Z : ZeroData) :
@@ -54,9 +54,8 @@ theorem mirrorCoordinatePerm_involutive (Z : ZeroData)
   rcases v with ⟨n, k⟩
   apply Sigma.ext
   · exact mirrorIndex_involutive Z n
-  · apply heq_of_eq
-    apply Fin.ext
-    rfl
+  · exact (Fin.heq_ext_iff
+      (congrArg Z.multiplicity (mirrorIndex_involutive Z n))).mpr rfl
 
 /-- The inverse lifted mirror equals the lifted mirror. -/
 theorem mirrorCoordinatePerm_symm (Z : ZeroData) :
@@ -77,9 +76,7 @@ theorem mirrorCoordinatePerm_fixed_iff (Z : ZeroData)
     rcases v with ⟨n, k⟩
     apply Sigma.ext
     · exact h
-    · apply heq_of_eq
-      apply Fin.ext
-      rfl
+    · exact (Fin.heq_ext_iff (congrArg Z.multiplicity h)).mpr rfl
 
 /-- The multiplicity-expanded zero Hilbert space. -/
 abbrev MirrorZeroHilbertSpace (Z : ZeroData) :=
@@ -158,7 +155,8 @@ theorem mirrorOddVector_krein_eq_neg_norm_sq (Z : ZeroData)
       -‖mirrorOddVector Z v‖ ^ 2 := by
   rw [mirrorKreinForm, mirrorOddVector,
     mirrorOddPart_eigenvalue_neg_one, inner_neg_right,
-    Complex.neg_re, norm_sq_eq_re_inner]
+    Complex.neg_re, norm_sq_eq_re_inner (𝕜 := Complex)]
+  rfl
 
 /-- Every nonfixed mirror coordinate gives an explicit strict negative Krein
 direction. -/

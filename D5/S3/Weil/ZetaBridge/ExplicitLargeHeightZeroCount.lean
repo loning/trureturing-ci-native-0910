@@ -142,6 +142,7 @@ theorem half_count_large_explicit (t : ℝ) (ht : 4 ≤ |t|) :
   have hmemS : ∀ ρ ∈ W,
       φ ρ ∈ (finiteSetOfZeros_mono (by norm_num [r] : r < 1) hfin).toFinset := by
     rintro ρ ⟨⟨hρZ, hρt, hρt1⟩, hρre⟩
+    change (1/2 : ℝ) ≤ ρ.re at hρre
     simp only [Set.Finite.mem_toFinset]
     have hρ : Zeta23.IsNontrivialZero ρ := hρZ
     refine ⟨?_, ?_⟩

@@ -58,7 +58,7 @@ theorem fourthMomentSummand_le_rational_enclosure
   have heq : fourthMomentSummand Z n =
       (Z.multiplicity n : ℝ) / (1 + (Z.gamma n).re ^ 2) ^ 2 := by
     unfold fourthMomentSummand inverseQuadraticEnvelope
-    rw [← inv_pow, div_eq_mul_inv]
+    rw [inv_pow, div_eq_mul_inv]
   rw [heq]
   have hcast : (((M : ℚ) / (1 + lower ^ 2) ^ 2 : ℚ) : ℝ) =
       (M : ℝ) / (1 + (lower : ℝ) ^ 2) ^ 2 := by push_cast; rfl
@@ -96,7 +96,7 @@ theorem rationalJetMajorant_sound
     finiteMixedMajorantTotal Z g ≤ (rationalJetMajorant J0 J2 H Theta : ℝ) := by
   have hb := finiteMixedMajorantTotal_le_unit_support_jets Z g E
     (fun i => (J0 i : ℝ)) (fun i => (J2 i : ℝ)) (Theta : ℝ) hs hJ0 hJ2 hspectral htail
-  have hc := mul_le_mul_of_nonneg_left (add_le_add_right hhead (Theta : ℝ))
+  have hc := mul_le_mul_of_nonneg_left (add_le_add hhead (le_refl (Theta : ℝ)))
     (sq_nonneg (∑ i, 3 * ((J0 i : ℝ) + (J2 i : ℝ))))
   have hcast : (rationalJetMajorant J0 J2 H Theta : ℝ) =
       (∑ i, 3 * ((J0 i : ℝ) + (J2 i : ℝ))) ^ 2 * ((H : ℝ) + (Theta : ℝ)) := by
@@ -128,7 +128,7 @@ theorem rational_unit_packet_support_and_margin
   have hb := rationalJetMajorant_sound Z P.killer E J0 J2 H Theta
     hkSupport hJ0 hJ2 hhead hspectral htail
   have hr : (rationalJetMajorant J0 J2 H Theta : ℝ) ≤ (c : ℝ) / (d : ℝ) := by
-    exact_mod_cast hround
+    simpa only [Rat.cast_div, Rat.cast_natCast] using (Rat.cast_mono (K := ℝ) hround)
   exact ⟨unit_support_burnol_radius F P hpSupport hkSupport N a,
     rationalQuarterDepth_full_gram_margin F P c d p q hd hp hq (hb.trans hr) N hN a⟩
 

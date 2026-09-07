@@ -52,7 +52,7 @@ open D5.S3.Weil.ZetaBridge.SymmetricConvergentOfZetaSummable
 open D5.S3.Weil.ZetaBridge.OffLineNonrealZeroNegativeWeilSquare
 open D5.S3.SpectralTopology.FiniteSpectralLocalizer
 open RHLinalg
-open scoped BigOperators ComplexConjugate ComplexOrder Matrix
+open scoped BigOperators Classical ComplexConjugate ComplexOrder Matrix
 
 variable {ι : Type*} [Fintype ι]
 

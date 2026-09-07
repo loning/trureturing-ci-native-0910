@@ -218,9 +218,11 @@ theorem sparse_packet_computed_support_margin_and_inertia
     have h := hks i hx
     exact ⟨(neg_le_neg hradius).trans h.1, h.2.trans hradius⟩
   have hsp : Summable (fun n : {n : ℕ // n ∉ P.exceptional} => fourthMomentSummand Z n.1) := by
-    simpa only [hPE] using hspectral
+    rw [hPE]
+    exact hspectral
   have htl : (∑' n : {n : ℕ // n ∉ P.exceptional}, fourthMomentSummand Z n.1) ≤ Theta := by
-    simpa only [hPE] using htail
+    rw [hPE]
+    exact htail
   have h0 (i : ι) : (∫ x : ℝ, ‖P.killer i x‖) ≤ J 0 := hkj i 0 (by omega)
   have h2 (i : ι) : (∫ x : ℝ, ‖((deriv^[2]) (P.killer i : ℝ → ℂ)) x‖) ≤ J 2 := hkj i 2 le_rfl
   have hc : (∑ _i : ι, (3 * (J 0 + J 2)) ^ 2) * Theta ≤ (c : ℝ) / (den : ℝ) := by
@@ -264,6 +266,7 @@ theorem rationalSparsePacketCutoff_cast (d : ℕ) (R sigma : ℚ) :
   unfold rationalSparsePacketCutoff quantitativePeakRadius
   push_cast
   rw [rationalInterpolationJetBudget_cast, rationalInterpolationJetBudget_cast]
+  norm_num
 
 #print axioms exists_sparse_burnol_packet_with_jets
 #print axioms rationalSparsePacketCutoff_cast

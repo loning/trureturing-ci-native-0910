@@ -34,6 +34,7 @@ noncomputable section
 namespace D5.S3.Midline.Cayley.FiniteMirrorKreinGramInertia
 
 open Matrix Finset
+open D5.S3.Midline.Cayley.ZeroHilbertCayleyUnitarity
 open D5.S3.Midline.Cayley.CanonicalZetaMirrorFundamentalSymmetry
 open D5.S3.Midline.Cayley.CanonicalZetaMirrorEvenOddDecomposition
 open D5.S3.Midline.Cayley.FiniteMirrorKreinIndex
@@ -43,7 +44,7 @@ open D5.S3.Weil.ZetaBridge.ZeroDataPresentationEquiv
 open D5.S3.Weil.ZetaBridge.UnconditionalCanonicalZeroData
 open D5.S3.SpectralTopology.FiniteSpectralLocalizer
 open RHLinalg
-open scoped BigOperators ComplexOrder ENNReal InnerProduct lp Matrix
+open scoped BigOperators ComplexOrder ENNReal InnerProduct InnerProductSpace lp Matrix
 
 /-- The actual multiplicity-expanded zero coordinate represented by a finite
 mirror-odd coordinate. -/
@@ -137,7 +138,7 @@ theorem mirrorOddVector_source_inner (Z : ZeroData) (T : ℝ)
     have hreverse : mirrorOddSourceCoordinate Z T i ≠
         mirrorCoordinatePerm Z (mirrorOddSourceCoordinate Z T i) :=
       fun h => hmove h.symm
-    simp [hmove, hreverse]
+    norm_num [hmove, hreverse]
   · have hsource : mirrorOddSourceCoordinate Z T i ≠
         mirrorOddSourceCoordinate Z T j := by
       intro h
@@ -197,13 +198,14 @@ theorem finiteMirrorOddKreinGram_eq (Z : ZeroData) (T : ℝ) :
 theorem finiteMirrorOddKreinGram_isHermitian (Z : ZeroData) (T : ℝ) :
     (finiteMirrorOddKreinGram Z T).IsHermitian := by
   rw [finiteMirrorOddKreinGram_eq]
-  exact Matrix.isHermitian_one.smul (by simp)
+  exact Matrix.isHermitian_one.smul (show IsSelfAdjoint (-2 : Complex) by
+    norm_num [IsSelfAdjoint])
 
 /-- The negative of the actual Gram matrix is positive definite. -/
 theorem neg_finiteMirrorOddKreinGram_posDef (Z : ZeroData) (T : ℝ) :
     (-finiteMirrorOddKreinGram Z T).PosDef := by
   rw [finiteMirrorOddKreinGram_eq]
-  simpa using
+  simpa [RCLike.real_smul_eq_coe_smul (K := Complex)] using
     (Matrix.PosDef.one.smul (show (0 : ℝ) < 2 by norm_num) :
       ((2 : ℝ) •
         (1 : Matrix (MirrorOddCoordinate Z T)

@@ -28,8 +28,9 @@ noncomputable section
 namespace D5.S3.Midline.Cayley.CanonicalZetaMirrorEvenOddDecomposition
 
 open D5.S3.Midline.Cayley.CanonicalZetaMirrorFundamentalSymmetry
+open D5.S3.Midline.Cayley.ZeroHilbertCayleyUnitarity
 open D5.S3.Weil.ZeroSum
-open scoped ENNReal InnerProduct lp
+open scoped ComplexConjugate ENNReal InnerProduct InnerProductSpace lp
 
 /-- The normalized projection onto the mirror-even sector. -/
 noncomputable def mirrorEvenPart (Z : ZeroData)
@@ -214,7 +215,8 @@ theorem mirrorKreinForm_re_eq_even_norm_sq_sub_odd_norm_sq (Z : ZeroData)
       ‖mirrorEvenPart Z psi‖ ^ 2 -
         ‖mirrorOddProjectionPart Z psi‖ ^ 2 := by
   rw [mirrorKreinForm_even_odd_decomposition, Complex.sub_re,
-    ← norm_sq_eq_re_inner, ← norm_sq_eq_re_inner]
+    norm_sq_eq_re_inner (𝕜 := Complex), norm_sq_eq_re_inner (𝕜 := Complex)]
+  rfl
 
 /-- The complete normalized parity decomposition package. -/
 theorem canonical_mirror_even_odd_decomposition (Z : ZeroData)

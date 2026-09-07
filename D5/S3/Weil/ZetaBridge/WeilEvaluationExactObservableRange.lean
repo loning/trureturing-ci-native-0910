@@ -6,6 +6,7 @@
    digest: Identify the exact finite range of scalar even Weil evaluation, transport mixed forms, and prove that multiplicity replication creates no readout-kernel escape. -/
 
 import D5.S3.Weil.ZetaBridge.FiniteReflectionCompatibleWeilInterpolation
+import D5.S3.Fourier.ConvolutionPowerAmplification
 import D5.S3.Weil.ZetaBridge.FiniteMirrorReducedWeilFactorization
 
 /-!
@@ -36,6 +37,7 @@ namespace D5.S3.Weil.ZetaBridge.WeilEvaluationExactObservableRange
 open D5.S3.Weil.ZeroSum
 open D5.S3.Weil.TestFunctions
 open D5.S3.Weil.FourierLaplace
+open D5.S3.Fourier.ConvolutionPowerAmplification
 open D5.S3.Weil.ZetaBridge.WeilEvaluationObservableSubspace
 open D5.S3.Weil.ZetaBridge.FiniteMirrorReducedWeilFactorization
 open D5.S3.Weil.ZetaBridge.FiniteReflectionCompatibleWeilInterpolation
@@ -197,7 +199,7 @@ theorem truncatedZeroSum_mixed_eq_reducedMirrorForm
       (finiteWeilReducedEvaluation Z T g).1 n *
       conj ((finiteWeilReducedEvaluation Z T h).1 (windowMirrorIndex Z T n))) =
     ∑ n ∈ Z.symmetricIndices T, zeroSummand Z (convolve g (involution h)) n
-  rw [← Finset.sum_subtype
+  rw [Finset.sum_subtype
     (p := fun n : ℕ => n ∈ Z.symmetricIndices T)
     (Z.symmetricIndices T) (by simp)]
   apply Fintype.sum_congr

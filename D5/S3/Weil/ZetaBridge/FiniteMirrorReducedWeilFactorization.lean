@@ -123,7 +123,7 @@ theorem truncatedZeroSum_convolutionSquare_eq_reducedMirrorForm
           (windowMirrorIndex Z T n))) =
       ∑ n ∈ Z.symmetricIndices T,
         zeroSummand Z (convolutionSquare g) n
-  rw [← Finset.sum_subtype
+  rw [Finset.sum_subtype
     (p := fun n : ℕ => n ∈ Z.symmetricIndices T)
     (Z.symmetricIndices T) (by simp)]
   apply Fintype.sum_congr
@@ -226,7 +226,7 @@ theorem finite_offLine_orbit_block_factorization
         apply Finset.sum_congr rfl
         intro i _
         exact hdecomposition i
-      _ = _ := Finset.sum_sub_distrib
+      _ = _ := Finset.sum_sub_distrib _ _
   · unfold finiteOrbitEvenEnergy
     exact Finset.sum_nonneg fun i _ => hEven i
   · unfold finiteOrbitOddEnergy

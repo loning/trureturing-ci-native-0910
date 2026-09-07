@@ -35,6 +35,7 @@ open D5.S3.Weil.ZeroSum
 open D5.S3.Weil.ZetaBridge.CanonicalZeroDataFromRiemannVonMangoldt
 open D5.S3.Weil.ZetaBridge.CanonicalZeroDataProvider
 open D5.S3.Weil.ZetaBridge.CanonicalZeroDataNonvacuityAssembly
+open scoped ComplexConjugate
 
 /-- The proof-complete, hypothesis-free Riemann--von Mangoldt source for
 Mathlib's Riemann zeta function. -/
@@ -108,7 +109,7 @@ noncomputable def zetaZeroDataCertificate : CanonicalZeroDataCertificate :=
 presentation. -/
 theorem zetaZeroData_representation_iff (rho : ℂ) :
     IsNontrivialZero rho ↔ ∃! n : ℕ, zetaZeroData.zero n = rho := by
-  simpa [zetaZeroData, zetaZeroDataCertificate] using
+  simpa only [zetaZeroData, zetaZeroDataCertificate, certificate] using
     certificate_representation_iff zetaZeroDataCertificate rho
 
 /-- A property holds on the canonical sequence exactly when it holds on every

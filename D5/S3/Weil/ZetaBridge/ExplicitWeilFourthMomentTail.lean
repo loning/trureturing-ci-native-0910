@@ -69,19 +69,21 @@ theorem zeroData_large_window_count (Z : ZeroData) (t : ℝ) (ht : 4 ≤ |t|)
     (s : Finset ℕ) (hs : ∀ n ∈ s, t < (Z.gamma n).re ∧ (Z.gamma n).re ≤ t + 1) :
     (∑ n ∈ s, (Z.multiplicity n : ℝ)) ≤ 128 * Real.log (|t| + 3) := by
   classical
-  have hfin := Zeta23.zetaZeroConfig.finite_window t (t + 1)
+  have hfin := Zeta23.zetaZeroConfig.window_finite t (t + 1)
   have hsub : s.image Z.zero ⊆ hfin.toFinset := by
     intro ρ hρ
     obtain ⟨n, hn, rfl⟩ := Finset.mem_image.mp hρ
     rw [Set.Finite.mem_toFinset]
     have hz : Z.zero n ∈ Zeta23.zetaZeroConfig.carrier := (zeroEquiv Z n).property
-    exact ⟨hz, by simpa only [zeroData_gamma_re] using hs n hn⟩
+    refine ⟨hz, ?_⟩
+    change t < (Z.zero n).im ∧ (Z.zero n).im ≤ t + 1
+    simpa only [zeroData_gamma_re] using hs n hn
   have hn : (∑ n ∈ s, Z.multiplicity n) ≤ Zeta23.zetaZeroConfig.N t (t + 1) := by
     unfold Zeta23.ZeroConfig.N
     rw [finsum_mem_eq_finite_toFinset_sum _ hfin]
     have h := Finset.sum_le_sum_of_subset (f := Zeta23.zetaZeroConfig.mult) hsub
     rw [Finset.sum_image (fun a _ b _ hab => Z.zero_injective hab)] at h
-    simpa only [multiplicity_eq_zeroMult] using h
+    simpa only [multiplicity_eq_zeroMult, Zeta23.zetaZeroConfig_mult] using h
   have hr : (∑ n ∈ s, (Z.multiplicity n : ℝ)) ≤
       (Zeta23.zetaZeroConfig.N t (t + 1) : ℝ) := by exact_mod_cast hn
   exact hr.trans (zetaZeroConfig_large_count_explicit t ht)
@@ -141,7 +143,8 @@ private theorem positive_cubic_tail_le {ι : Type*} (γ : ι → ℝ) (m : ι �
         intro n hn
         exact hex ⟨n, Finset.mem_filter.mp hn⟩
       rw [he, Finset.sum_empty]
-      exact mul_nonneg hA (Real.log_nonneg (by linarith [Nat.cast_nonneg j]))
+      exact mul_nonneg hA (Real.log_nonneg (by
+        linarith [show (0 : ℝ) ≤ j from Nat.cast_nonneg j]))
 
 private theorem negative_cubic_tail_le {ι : Type*} (γ : ι → ℝ) (m : ι → ℕ)
     (A T : ℝ) (hA : 0 ≤ A) (hT : 5 ≤ T)
@@ -171,7 +174,7 @@ private theorem negative_cubic_tail_le {ι : Type*} (γ : ι → ℝ) (m : ι �
       have h := (Nat.floor_eq_iff (show 0 ≤ -γ n by linarith [hs n hns])).mp hnj
       constructor <;> linarith [h.1, h.2]
     have habs : |-(j : ℝ) - 1| = (j : ℝ) + 1 := by
-      rw [abs_of_neg (by linarith [Nat.cast_nonneg j])]
+      rw [abs_of_neg (by linarith [show (0 : ℝ) ≤ j from Nat.cast_nonneg j])]
       ring
     by_cases hex : ∃ n, n ∈ s ∧ key n = j
     · obtain ⟨n, hn, hnj⟩ := hex
@@ -187,7 +190,8 @@ private theorem negative_cubic_tail_le {ι : Type*} (γ : ι → ℝ) (m : ι �
         intro n hn
         exact hex ⟨n, Finset.mem_filter.mp hn⟩
       rw [he, Finset.sum_empty]
-      exact mul_nonneg hA (Real.log_nonneg (by linarith [Nat.cast_nonneg j]))
+      exact mul_nonneg hA (Real.log_nonneg (by
+        linarith [show (0 : ℝ) ≤ j from Nat.cast_nonneg j]))
 
 /-- A two-sided fourth-power tail bound derived from local window counts.
 The statement is finite; summability is a consequence below, never an input. -/
@@ -251,7 +255,7 @@ theorem finite_inverse_fourth_tail_le {ι : Type*} (γ : ι → ℝ) (m : ι →
           (2 * (T ^ 2)⁻¹ + T⁻¹) / (T + 4) ≤
       (2 * (T ^ 3)⁻¹ + (T ^ 2)⁻¹ / 2) * L +
           (2 * (T ^ 2)⁻¹ + T⁻¹) / (T + 4) :=
-    add_le_add_right (mul_le_mul_of_nonneg_left hL (by positivity)) _
+    add_le_add (mul_le_mul_of_nonneg_left hL (by positivity)) le_rfl
   calc
     _ ≤ ∑ n ∈ s, T⁻¹ * ((m n : ℝ) * (|γ n| ^ 3)⁻¹) := Finset.sum_le_sum hpoint
     _ = T⁻¹ * ∑ n ∈ s, (m n : ℝ) * (|γ n| ^ 3)⁻¹ := by rw [Finset.mul_sum]

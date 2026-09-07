@@ -52,7 +52,7 @@ theorem mirrorIndex_mem_symmetricIndices (Z : ZeroData) {T : ℝ} {n : ℕ} :
 @[simp]
 theorem mirrorRepresentative_mirror (Z : ZeroData) (n : ℕ) :
     mirrorRepresentative Z (mirrorIndex Z n) = mirrorRepresentative Z n := by
-  simp [mirrorRepresentative, mirrorIndex_involutive, Nat.min_comm]
+  simp only [mirrorRepresentative, mirrorIndex_involutive, Nat.min_comm]
 
 /-- One representative from every nonfixed mirror pair in the finite window. -/
 noncomputable def mirrorPairRepresentatives (Z : ZeroData) (T : ℝ) : Finset ℕ :=
@@ -65,14 +65,16 @@ theorem mirrorRepresentative_mem_pairRepresentatives (Z : ZeroData)
     mirrorRepresentative Z n ∈ mirrorPairRepresentatives Z T := by
   by_cases hlt : n < mirrorIndex Z n
   · have hle : n ≤ mirrorIndex Z n := hlt.le
-    simp [mirrorRepresentative, mirrorPairRepresentatives,
-      Nat.min_eq_left hle, hn, hlt]
+    simp only [mirrorRepresentative, mirrorPairRepresentatives,
+      Nat.min_eq_left hle, Finset.mem_filter]
+    exact ⟨hn, hlt⟩
   · have hge : mirrorIndex Z n ≤ n := Nat.le_of_not_gt hlt
     have hstrict : mirrorIndex Z n < n := lt_of_le_of_ne hge hmove
     have hmem : mirrorIndex Z n ∈ Z.symmetricIndices T :=
       (mirrorIndex_mem_symmetricIndices Z).2 hn
-    simp [mirrorRepresentative, mirrorPairRepresentatives,
-      Nat.min_eq_right hge, hmem, hstrict, mirrorIndex_involutive]
+    simp only [mirrorRepresentative, mirrorPairRepresentatives,
+      Nat.min_eq_right hge, Finset.mem_filter, mirrorIndex_involutive]
+    exact ⟨hmem, hstrict⟩
 
 /-- A selected representative is the minimum of its own mirror pair. -/
 theorem mirrorRepresentative_eq_self_of_mem (Z : ZeroData) {T : ℝ} {n : ℕ}
@@ -93,7 +95,7 @@ theorem mirrorPairRepresentatives_eq_empty_iff (Z : ZeroData) (T : ℝ) :
     rw [hempty] at hmem
     simp at hmem
   · intro hfixed
-    apply Finset.eq_empty_iff_forall_not_mem.mpr
+    apply Finset.eq_empty_iff_forall_notMem.mpr
     intro n hn
     have hn' := Finset.mem_filter.mp hn
     have hmirror := hfixed n hn'.1
@@ -110,14 +112,14 @@ theorem finiteMirrorKreinIndex_eq_zero_iff_representatives_empty
     finiteMirrorKreinIndex Z T = 0 ↔ mirrorPairRepresentatives Z T = ∅ := by
   constructor
   · intro hzero
-    apply Finset.eq_empty_iff_forall_not_mem.mpr
+    apply Finset.eq_empty_iff_forall_notMem.mpr
     intro n hn
     have hle : Z.multiplicity n ≤ finiteMirrorKreinIndex Z T := by
       unfold finiteMirrorKreinIndex
       exact Finset.single_le_sum
         (fun i _ => Nat.zero_le (Z.multiplicity i)) hn
     rw [hzero] at hle
-    omega
+    exact (not_lt_of_ge hle) (Z.multiplicity_pos n)
   · intro hempty
     simp [finiteMirrorKreinIndex, hempty]
 
