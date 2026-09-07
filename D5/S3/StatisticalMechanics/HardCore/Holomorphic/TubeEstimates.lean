@@ -129,9 +129,11 @@ private theorem product_difference {ι : Type*} [DecidableEq ι]
     (hx : ∀ j ∈ s, ‖x j‖ ≤ 2) (hr : ∀ j ∈ s, ‖r j‖ ≤ 1)
     (he : ∀ j ∈ s, ‖x j-r j‖ ≤ rho) :
     ‖(∏ j ∈ s, x j)-(∏ j ∈ s, r j)‖ ≤ s.card*(2:ℝ)^s.card*rho := by
+  revert hx hr he
   induction s using Finset.induction_on with
-  | empty => simp
+  | empty => intro hx hr he; simp
   | @insert j s hj ih =>
+      intro hx hr he
       have hx' := fun k hk => hx k (Finset.mem_insert_of_mem hk)
       have hr' := fun k hk => hr k (Finset.mem_insert_of_mem hk)
       have he' := fun k hk => he k (Finset.mem_insert_of_mem hk)
