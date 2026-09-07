@@ -146,7 +146,7 @@ theorem sparseEvenPolynomial_coeff_bound
   have hbudget (i : ι) :
       squaredNodeBudget Finset.univ (fun _ : ι => R) (fun _ _ => sigma) 1 i =
         ((1 + R ^ 2) / sigma) ^ (Fintype.card ι - 1) := by
-    simp [squaredNodeBudget]
+    simp [squaredNodeBudget, div_pow]
   have hsum :
       (∑ i : ι, (‖v i‖ / (1 / 2 : ℝ)) *
         squaredNodeBudget Finset.univ (fun _ : ι => R) (fun _ _ => sigma) 1 i) ≤
@@ -178,8 +178,10 @@ theorem sparseEvenPolynomial_natDegree_le
     (sparseEvenPolynomial z values seed w).natDegree ≤ Fintype.card ι + Fintype.card κ := by
   classical
   have hA : (squaredExceptionPolynomial w).natDegree ≤ Fintype.card κ := by
-    simpa [squaredExceptionPolynomial] using
-      Polynomial.natDegree_prod_le Finset.univ (fun n : κ => X - C (w n ^ 2))
+    have hprod := Polynomial.natDegree_prod_le Finset.univ
+      (fun n : κ => X - C (w n ^ 2))
+    simpa only [squaredExceptionPolynomial, Polynomial.natDegree_X_sub_C,
+      Finset.sum_const, Finset.card_univ, smul_eq_mul, mul_one] using hprod
   have hQ := Lagrange.degree_interpolate_lt (s := Finset.univ)
     (fun i => (values i / (squaredExceptionPolynomial w).eval (z i ^ 2)) / seed i)
     hinj.injOn
@@ -188,7 +190,7 @@ theorem sparseEvenPolynomial_natDegree_le
       Fintype.card ι := by
     apply Polynomial.natDegree_le_of_degree_le
     simpa only [Finset.card_univ] using hQ.le
-  exact (Polynomial.natDegree_mul_le _ _).trans (by omega)
+  exact Polynomial.natDegree_mul_le.trans (by omega)
 
 /-- Construct an actual Weil test with all target values, every exceptional
 zero, fixed target-controlled support, and explicit zeroth through second jets.
@@ -228,6 +230,7 @@ theorem exists_sparse_even_interpolant_with_explicit_jets
     finiteBoxSeed_transform_lower R hR q (z i) (hz i)
   have hinj : Function.Injective (fun i => z i ^ 2) := by
     intro i j hij
+    dsimp only at hij
     by_contra hne
     have hg := hgap i j hne
     rw [hij, sub_self, norm_zero] at hg

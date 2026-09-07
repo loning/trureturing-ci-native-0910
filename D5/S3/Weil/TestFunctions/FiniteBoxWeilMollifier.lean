@@ -52,7 +52,8 @@ private theorem boxDensity_compact (a : ℝ) : HasCompactSupport (boxDensity a) 
 
 private theorem boxDensity_integrable (a : ℝ) : Integrable (boxDensity a) := by
   unfold boxDensity
-  exact (integrableOn_const (by simp)).indicator measurableSet_Icc
+  exact (integrableOn_const (μ := volume) (s := Icc (-a) a)
+    (C := ((2 * a : ℝ) : ℂ)⁻¹) (by simp)).integrable_indicator measurableSet_Icc
 
 private theorem boxDensity_integral (a : ℝ) (ha : 0 < a) :
     (∫ x : ℝ, boxDensity a x) = 1 := by
@@ -69,7 +70,7 @@ private theorem boxDensity_norm_integral (a : ℝ) (ha : 0 < a) :
   have hnorm (x : ℝ) : ‖boxDensity a x‖ =
       (Icc (-a) a).indicator (fun _ : ℝ => (2 * a)⁻¹) x := by
     by_cases hx : x ∈ Icc (-a) a
-    · simp [boxDensity, hx, norm_inv, abs_of_pos (by positivity : 0 < 2 * a)]
+    · simp [boxDensity, hx, norm_inv, abs_of_pos ha]
     · simp [boxDensity, hx]
   simp_rw [hnorm]
   rw [integral_indicator measurableSet_Icc, setIntegral_const]
@@ -151,9 +152,10 @@ private theorem box_convolution_deriv (a : ℝ) (ha : 0 < a)
     MeasureTheory.convolution (boxDensity a) (deriv f) complexMul volume x =
       (f (x + a) - f (x - a)) / ((2 * a : ℝ) : ℂ) := by
   have hder (t : ℝ) : HasDerivAt (fun t : ℝ => -f (x - t)) (deriv f (x - t)) t := by
-    have h := ((hf.differentiable (by simp) (x - t)).hasDerivAt.comp t
-      ((hasDerivAt_const t x).sub (hasDerivAt_id t))).neg
-    simpa using h
+    have h := ((hf.differentiable (by simp) (x - t)).hasDerivAt.scomp t
+      ((hasDerivAt_const t x).sub (hasDerivAt_id t))).fun_neg
+    dsimp only [Function.comp_def, Pi.neg_apply, Pi.sub_apply, id] at h
+    simpa only [zero_sub, neg_one_smul, neg_neg] using h
   have hit : IntervalIntegrable (fun t : ℝ => deriv f (x - t)) volume (-a) a := by
     have hc : Continuous (deriv f) := (ContDiff.iterate_deriv 1 hf).continuous
     exact (hc.comp (continuous_const.sub continuous_id)).intervalIntegrable _ _
@@ -165,7 +167,7 @@ private theorem box_convolution_deriv (a : ℝ) (ha : 0 < a)
     by_cases ht : t ∈ Icc (-a) a <;> simp [boxDensity, ht]
   change (∫ t : ℝ, boxDensity a t * deriv f (x - t)) = _
   rw [hfun, integral_indicator measurableSet_Icc, integral_const_mul]
-  rw [← integral_Ioc_eq_integral_Icc,
+  rw [integral_Icc_eq_integral_Ioc,
     ← intervalIntegral.integral_of_le (by linarith : -a ≤ a), hFTC]
   simp only [sub_neg_eq_add, neg_sub_neg]
   ring
@@ -219,7 +221,8 @@ private theorem centered_difference_L1_le
         ((hp.norm.add hm.norm).div_const _) hpoint
     _ = a⁻¹ * (∫ x : ℝ, ‖f x‖) := by
       rw [integral_div, integral_add hp.norm hm.norm,
-        integral_add_right_eq_self, integral_sub_right_eq_self]
+        integral_add_right_eq_self (fun x : ℝ => ‖f x‖) a,
+        integral_sub_right_eq_self (fun x : ℝ => ‖f x‖) a]
       field_simp [ha.ne']
       <;> ring
 
@@ -255,8 +258,9 @@ theorem boxIterate_derivative_L1_budget
       | succ k =>
           have hprev := ih k (Nat.le_of_succ_le_succ hk)
           have hint : Integrable ((deriv^[k]) (boxIterate a q g : ℝ → ℂ)) :=
-            (ContDiff.iterate_deriv k (boxIterate a q g).contDiff).continuous
-              .integrable_of_hasCompactSupport (iterate_deriv_compact _ k)
+            Continuous.integrable_of_hasCompactSupport
+              (ContDiff.iterate_deriv k (boxIterate a q g).contDiff).continuous
+              (iterate_deriv_compact _ k)
           simp_rw [boxIterate, boxMean_iterate_deriv_succ a ha]
           calc
             _ ≤ a⁻¹ * (∫ x : ℝ,
@@ -309,7 +313,8 @@ theorem finiteBoxSeed_budget (h : ℝ) (hh : 0 < h) (q : ℕ) :
   have hnorm : (∫ x : ℝ, ‖finiteBoxSeed h hh q x‖) = 1 := by
     apply le_antisymm
     · simpa using hjet 0 (Nat.zero_le q)
-    · have hb := norm_integral_le_integral_norm (fun x : ℝ => finiteBoxSeed h hh q x)
+    · have hb := norm_integral_le_integral_norm (μ := volume)
+        (fun x : ℝ => finiteBoxSeed h hh q x)
       simpa only [hmass, norm_one] using hb
   refine ⟨?_, hmass, hnorm, hjet⟩
   have hs := boxIterate_tsupport (finiteBoxWidth h q) (h / 2)
@@ -320,7 +325,7 @@ theorem finiteBoxSeed_budget (h : ℝ) (hh : 0 < h) (q : ℕ) :
     have hq : (0 : ℝ) ≤ q := Nat.cast_nonneg q
     have hp : 0 < 2 * ((q : ℝ) + 1) := by positivity
     have hpart : (q : ℝ) * (h / (2 * ((q : ℝ) + 1))) ≤ h / 2 := by
-      rw [mul_div_assoc]
+      rw [← mul_div_assoc]
       apply (div_le_iff₀ hp).2
       nlinarith
     linarith

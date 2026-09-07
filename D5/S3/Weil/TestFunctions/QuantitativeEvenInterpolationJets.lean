@@ -81,9 +81,10 @@ theorem polynomial_coeff_norm_le_of_unit_disk
       have hf : ‖fourier (-(k : ℤ)) t‖ = 1 := Circle.norm_coe _
       rw [hf, one_mul]
     _ ≤ ∫ _t : AddCircle (2 * Real.pi), M ∂haarAddCircle := by
-      apply integral_mono (Polynomial.toAddCircle.integrable P).norm integrable_const
+      apply integral_mono (Polynomial.toAddCircle.integrable P).norm (integrable_const M)
       intro t
-      simpa [Polynomial.toAddCircle] using hP (t.toCircle : ℂ) (by simp)
+      simpa [Polynomial.toAddCircle] using
+        hP (t.toCircle : ℂ) (le_of_eq (Circle.norm_coe t.toCircle))
     _ = M := by simp
 
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
@@ -113,7 +114,7 @@ theorem lagrange_coeff_le_explicit_budget
   have hbudget (i : ι) :
       squaredNodeBudget Finset.univ (fun _ : ι => R) (fun _ _ => sigma) 1 i =
         ((1 + R ^ 2) / sigma) ^ (Fintype.card ι - 1) := by
-    simp [squaredNodeBudget]
+    simp [squaredNodeBudget, div_pow]
   have hsum :
       (∑ i : ι, (‖values i‖ / (1 / 2 : ℝ)) *
         squaredNodeBudget Finset.univ (fun _ : ι => R) (fun _ _ => sigma) 1 i) ≤
@@ -165,10 +166,10 @@ theorem evenPolynomialDifferential_iterate_deriv
       apply HasDerivAt.deriv
       apply HasDerivAt.fun_sum
       intro k _
-      have hd := ((ContDiff.iterate_deriv (2 * k + s) psi.contDiff)
-        .differentiable (by simp) x).hasDerivAt.const_mul
+      have hd := ((ContDiff.iterate_deriv (2 * k + s) psi.contDiff).differentiable
+        (by simp) x).hasDerivAt.const_mul
           (P.coeff k * (-Complex.I) ^ (2 * k))
-      simpa only [Function.iterate_succ_apply', Nat.add_assoc] using hd
+      simpa only [← Nat.add_assoc, Function.iterate_succ_apply'] using hd
 
 /-- Actual L1 seminorm of the existing differential test is controlled by
 its polynomial coefficients and the finite list of seed derivatives it uses. -/
@@ -183,12 +184,12 @@ theorem evenPolynomialDifferential_L1_le
   have ht (k : ℕ) : Integrable (term k) :=
     (iterate_integrable psi (2 * k + s)).const_mul _
   have hsum : Integrable (fun x : ℝ => ∑ k ∈ P.support, ‖term k x‖) := by
-    simpa only [Finset.sum_apply] using
-      integrable_finsetSum' P.support (fun k _ => (ht k).norm)
+    exact integrable_finsetSum P.support (fun k _ => (ht k).norm)
   calc
     _ ≤ ∫ x : ℝ, ∑ k ∈ P.support, ‖term k x‖ := by
       apply integral_mono (iterate_integrable (evenPolynomialDifferential P psi) s).norm hsum
       intro x
+      dsimp only
       rw [evenPolynomialDifferential_iterate_deriv]
       exact norm_sum_le _ _
     _ = _ := by
@@ -260,6 +261,7 @@ theorem exists_even_interpolant_with_explicit_jets
     norm_num at hi
   have hinj : Function.Injective (fun i => z i ^ 2) := by
     intro i j hij
+    dsimp only at hij
     by_contra hnot
     have hi := hgap i j hnot
     rw [hij, sub_self, norm_zero] at hi
@@ -267,9 +269,10 @@ theorem exists_even_interpolant_with_explicit_jets
   have hdegree : ∀ k ∈ P.support, k ≤ d := by
     intro k hk
     have hdeg : P.degree < (d : WithBot ℕ) := by
-      simpa only [P, d, Finset.card_univ] using
-        Lagrange.degree_interpolate_lt
-          (fun i => values i / fourierLaplace psi (z i)) hinj.injOn
+      have hdeg := Lagrange.degree_interpolate_lt (s := Finset.univ)
+        (fun i => values i / fourierLaplace psi (z i)) hinj.injOn
+      rw [Finset.card_univ] at hdeg
+      exact hdeg
     have hkdeg := Polynomial.le_degree_of_ne_zero (Polynomial.mem_support_iff.mp hk)
     have hkd : (k : WithBot ℕ) < (d : WithBot ℕ) := lt_of_le_of_lt hkdeg hdeg
     have hkNat : k < d := by exact_mod_cast hkd
