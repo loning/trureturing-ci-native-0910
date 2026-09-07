@@ -3,6 +3,7 @@
    mirror-B: none(waiver:formal-unit-only)
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: none
    digest: Equate forbidden-residue counts with the direct admissibility contract used by DHL prime tuples. -/
 
 import D5.S3.Analytic.PrimeProducts.FiniteLocalResidueBlockingCriterion
