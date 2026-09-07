@@ -40,7 +40,9 @@ internal static class ScribeNarrativeScanner
             + @"|\b[a-z][a-z0-9-]*-residual-[0-9a-f]{8,}\b"
             + @"|\b(?:theorem|definition|lemma|corollary|remark|proposition|section|appendix)/\d+(?:\.\d+)*\b"),
         Pattern(@"\b(?:source|corollary|deposited|container|anchor|candidate|ingested|host|multi-clause|same|that|this|the)\s+atoms?(?:'s)?\b"),
-        Pattern(@"\b(?:subitem\w*|clause\w*|claim\w*|assert\w*|states?|stated|record\w*|report\w*|require\w*|specif\w*|closes?|closed|closure|covers?|covered|absorb\w*|digest\w*|backfill\w*|receipt\w*|formaliz\w*|register\w*|elsewhere|verbatim|residual|pre-committed|traceab\w*|carries|names|ends\s+at)\b"));
+        Pattern(@"\b(?:subitem\w*|clause\w*|claim\w*|assert\w*|states|stated|statements?|(?:proof\s+)?skeleton|does\s+not\s+(?:specify|assert|claim|cover)|registration\s+statements?|elsewhere\s+in\s+(?:that|the\s+same|this)\s+atoms?|record(?:ed|s)?\s+(?:in|by|as)\s+(?:the\s+)?(?:digestion\s+)?(?:ledger|receipt|backfill)|absorb\w*|digest\w*|backfill\w*|receipt\w*|formaliz\w*|verbatim|pre-committed|traceab\w*)\b"),
+        Pattern(@"\b(?:source|corollary|deposited|container|anchor|candidate|ingested|host|multi-clause)\s+atoms?(?:'s)?\b"),
+        Pattern(@"\b(?:closes?|closure|(?:names?|claims?|clauses?|statements?)\s+(?:are|is)\s+recorded)\b"));
 
     internal static readonly NarrativeClass TheoryVolumeReference = new(
         nameof(TheoryVolumeReference), "theory volume",
@@ -98,7 +100,9 @@ internal static class ScribeNarrativeScanner
         {
             if (end < carrier.Text.Length && carrier.Text[end] is not ('.' or ';' or ':' or '!' or '?')) continue;
             var sentence = carrier.Text[start..end];
-            if (rule.Subject.IsMatch(sentence) && rule.Relation.IsMatch(sentence))
+            if ((rule.Subject.IsMatch(sentence) && rule.Relation.IsMatch(sentence))
+                || (rule.DocumentSubject?.IsMatch(sentence) == true
+                    && rule.DocumentRelation?.IsMatch(sentence) == true))
             {
                 var trimmed = sentence.Trim();
                 Add(trimmed, start + sentence.IndexOf(trimmed, StringComparison.Ordinal));
@@ -177,7 +181,9 @@ internal static class ScribeNarrativeScanner
 
     private static Regex Pattern(string pattern) => new(pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
-    internal sealed record NarrativeClass(string Name, string Layer, Regex Direct, Regex? Subject = null, Regex? Relation = null);
+    internal sealed record NarrativeClass(string Name, string Layer, Regex Direct,
+        Regex? Subject = null, Regex? Relation = null,
+        Regex? DocumentSubject = null, Regex? DocumentRelation = null);
 
     private sealed record TextPart(string Value, int Line, bool PhysicalNewlines);
 

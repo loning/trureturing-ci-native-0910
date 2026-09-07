@@ -37,7 +37,25 @@ public sealed class ScribeNarrativeProvenanceRuleTests
     [InlineData("The source atom has mass one? The claim follows.")]
     [InlineData("Search the spectrum. A duplicate eigenvalue is allowed.")]
     [InlineData("digestions backfilled subitemized myatom_id theory volumeset")]
+    [InlineData("The atom carries positive mass.")]
+    [InlineData("The atom covers the bottom element.")]
+    [InlineData("The atom is a closed singleton.")]
+    [InlineData("The atom lies in a closed set.")]
+    [InlineData("The source atom carries positive mass.")]
+    [InlineData("The same atom is closed under the operation.")]
+    [InlineData("Each atom names a distinct coordinate.")]
+    [InlineData("the atom's state is recorded by the register map")]
+    [InlineData("the source atom's state is recorded by the register map")]
     public void MathematicalProseIsAllowed(string prose) => Assert.Empty(Evaluate(Text(prose)));
+
+    [Theory]
+    [InlineData("The atom carries a proof skeleton.")]
+    [InlineData("The atom does not cover the conditional law.")]
+    [InlineData("The atom contains registration statements.")]
+    [InlineData("The argument appears elsewhere in the same atom.")]
+    [InlineData("This is a closure of the deposited atom.")]
+    public void DocumentaryAtomRelationsAreBlocked(string prose) =>
+        AssertClass(Text(prose), "DigestionLedgerReference", "digestion ledger");
 
     [Theory]
     [InlineData("subitems of the source atom.")]
