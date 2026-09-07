@@ -28,13 +28,5 @@ internal sealed class PositiveGramianBalancingDocument : IScribeDocumentDefiniti
                 DeclarationHandle.Create("D5/S3/Observer/Hankel/PositiveGramianBalancing.coordinates"), H("Chosen constructed coordinates"),
                 StatementSource.WithoutFormula(), AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text("Selects the output of the proved existence construction. This is an exact mathematical construction, not a floating-point eigensolver."))), DescribeRole.Definition),
-            Describe.Lean(DescribeId.Create("controllability-factor"),
-                DeclarationHandle.Create("D5/S3/Observer/Hankel/PositiveGramianBalancing.Coordinates.controllability_factor"), H("Original Gramian reconstruction"),
-                StatementSource.WithoutFormula(), AssessedProvenance.FromRepo(),
-                Blocks(Paragraph(Text("Recovers the original controllability Gramian from the balanced diagonal and inverse coordinate transformation."))), DescribeRole.Theorem),
-            Describe.Lean(DescribeId.Create("gramian-product-charpoly"),
-                DeclarationHandle.Create("D5/S3/Observer/Hankel/PositiveGramianBalancing.Coordinates.gramian_product_charpoly"), H("Gramian-product spectrum with multiplicity"),
-                StatementSource.WithoutFormula(), AssessedProvenance.FromRepo(),
-                Blocks(Paragraph(Text("Proves similarity of the Gramian product to the diagonal of squared balancing weights and derives its full characteristic polynomial. The generally nonsymmetric product is never treated as Hermitian."))), DescribeRole.Theorem)),
         []));
 }
