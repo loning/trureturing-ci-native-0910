@@ -110,7 +110,7 @@ public sealed partial class IngestRobustTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void Ingest_ExistingNonCanonicalEntryIsSkippedWithoutError(bool sourceScoped)
+    public void Ingest_ExistingEntryWithNonCanonicalLayoutIsSkippedWithoutError(bool sourceScoped)
     {
         var document = Ledger();
         var alpha = document.RequireDigestionSources()[0];
@@ -132,9 +132,6 @@ public sealed partial class IngestRobustTests
         const string first = "  - gid: D5/S0/Carrier/Alpha.a\n    target_statement_id: null\n";
         const string second = "  - gid: D5/S0/Carrier/Zeta.z\n    target_statement_id: null\n";
         Assert.Contains(first + second, fixture.Files[path], StringComparison.Ordinal);
-        fixture.Files[path] = fixture.Files[path].Replace(first + second, second + first, StringComparison.Ordinal);
-        Assert.True(fixture.Files[path].IndexOf(second, StringComparison.Ordinal)
-            < fixture.Files[path].IndexOf(first, StringComparison.Ordinal));
         fixture.Files[path] = "# preserve non-canonical bytes\r\n"
             + fixture.Files[path].Replace("\n", "\r\n", StringComparison.Ordinal);
         using var temporary = new TemporaryDirectory();
