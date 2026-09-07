@@ -34,7 +34,7 @@ The real power strictly increases with the exponent. Its positive shifted recipr
 
 **Theorem 1.3 (The unique maximum).**
 
-$$\begin{aligned}p y x \in \mathbb{R}, 1 < p, 2 < y, 0 \le x\\a = max\left(0, \frac{log\left(y\right)}{log\left(p\right)} - 1\right)\\f_{p}(x) - \frac{x log\left(p\right)}{y - 1} \le f_{p}(a) - \frac{a log\left(p\right)}{y - 1}\\(f_{p}(x) - \frac{x log\left(p\right)}{y - 1} = f_{p}(a) - \frac{a log\left(p\right)}{y - 1}) \iff x = a\end{aligned}$$
+$$\begin{aligned}p, y, x \in \mathbb{R}, 1 < p, 2 < y, 0 \le x\\a = max\left(0, \frac{log\left(y\right)}{log\left(p\right)} - 1\right)\\f_{p}(x) - \frac{x log\left(p\right)}{y - 1} \le f_{p}(a) - \frac{a log\left(p\right)}{y - 1}\\(f_{p}(x) - \frac{x log\left(p\right)}{y - 1} = f_{p}(a) - \frac{a log\left(p\right)}{y - 1}) \iff x = a\end{aligned}$$
 
 *Proof.* Machine-checked in Lean as `D5/S3/Arith/GoldenResource/ContinuousPrimeMaximum.continuous_prime_unique_maximum` (`✓ std3`). ∎
 

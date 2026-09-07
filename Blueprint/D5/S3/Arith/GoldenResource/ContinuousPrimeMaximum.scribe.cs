@@ -55,7 +55,7 @@ internal sealed class ContinuousPrimeMaximumDocument : IScribeDocumentDefinition
                 DescribeRole.Theorem))));
 
     private static Formula MaximumFormula() => Disp(new Formula.Aligned([
-        Seq(F.Id("p"), Sp, F.Id("y"), Sp, F.Id("x"), Sp, InMacro, Sp,
+        Seq(F.Id("p"), Comma, Sp, F.Id("y"), Comma, Sp, F.Id("x"), Sp, InMacro, Sp,
             Mathbb, Grp(F.Id("R")), Comma, Sp,
             D(1), Sp, Lt, Sp, F.Id("p"), Comma, Sp,
             D(2), Sp, Lt, Sp, F.Id("y"), Comma, Sp, D(0), Sp, Le, Sp, F.Id("x")),
