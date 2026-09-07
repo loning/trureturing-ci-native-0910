@@ -196,12 +196,13 @@ public sealed class TruthReleaseCommandTests
             ["lean-toolchain"] = Toolchain,
             ["lakefile.toml"] = "[package]\nname = \"fixture\"\n",
             ["lake-manifest.json"] = Manifest,
-            [formalPath] = File.ReadAllText(Path.Combine(repositoryRoot, formalPath), Encoding.UTF8),
+            [formalPath] = File.ReadAllText(
+                Path.Combine(repositoryRoot, BlueprintGid + ".lean"), Encoding.UTF8),
             [dependencyPath] = "theorem dependency : True := by trivial\n",
             [blueprintSourcePath] = File.ReadAllText(
-                Path.Combine(repositoryRoot, blueprintSourcePath), Encoding.UTF8),
+                Path.Combine(repositoryRoot, "Blueprint/" + BlueprintGid + ".scribe.cs"), Encoding.UTF8),
             [blueprintProjectionPath] = File.ReadAllText(
-                Path.Combine(repositoryRoot, blueprintProjectionPath), Encoding.UTF8),
+                Path.Combine(repositoryRoot, "Blueprint/" + BlueprintGid + ".md"), Encoding.UTF8),
             ["Golden/Projection/statement-projection-pilot-v1.json"] = File.ReadAllText(
                 Path.Combine(
                     repositoryRoot,
