@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json;
 using StrataLint.Cli;
 using StrataLint.Engine;
 using StrataLint.EngineeringScope;
@@ -60,6 +61,7 @@ public sealed class CurrentDeltaCliContractTests
 
     [Theory]
     [InlineData("valid", 0, "")]
+    [InlineData("annotation", 3, "SL-022")]
     [InlineData("mixed", 1, "SL-029")]
     [InlineData("first-freeze", 1, "SL-008")]
     [InlineData("ratchet", 1, "SL-003")]
@@ -80,12 +82,14 @@ public sealed class CurrentDeltaCliContractTests
         const string firstProject = "tools/tests/First/First.csproj";
         Write(firstProject, "<Project><PropertyGroup><IsTestProject>true</IsTestProject></PropertyGroup></Project>\n");
         Write("tools/tests/Second/Second.csproj", "<Project><PropertyGroup><IsTestProject>true</IsTestProject></PropertyGroup></Project>\n");
+        const string protectedPath = "tools/scripts/probe.sh";
         Git(root, "init", "-q"); Git(root, "add", ".");
         Git(root, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "base");
         var baseResult = TestProcessRunner.Run("git", ["rev-parse", "HEAD"], root, TestBudgets.ScriptProcessHangGuard, 1024);
         var basis = Encoding.UTF8.GetString(baseResult.StandardOutput).Trim();
         switch (scenario)
         {
+            case "annotation": Write(protectedPath, "#!/bin/sh\nexit 0\n"); break;
             case "mixed": Write("tools/StrataLint.Cli/probe.cs", "// candidate judge\n"); Write(RuleFixture.BlueprintPath, "# changed\n"); break;
             case "first-freeze": Write("Golden/Frozen/accepted/" + new string('a', 64) + ".json", "{}\n"); break;
             case "ratchet": for (var i = 0; i < 25; i++) Write($"docs/reports/ratchet/{i}.json", "{}\n"); break;
@@ -95,8 +99,17 @@ public sealed class CurrentDeltaCliContractTests
         var report = Path.Combine(root, CommonExecutionEvidence.ReportPath);
         RawLeanReportArtifact.WriteFile(report, CommonExecutionEvidence.Snapshot(root), LeanAxiomReport.Create(fixture.Reports));
         var environment = new ProductionCliEnvironment(root, new GitRepositoryGateway(root), new FakeLeanReportSource(null));
-        var current = environment.CheckCurrent(["--candidate-lean-report", report]);
-        Assert.True(current.ExitCode == 0, current.Output + current.Error);
+        var currentConsole = new BufferedConsole();
+        var currentExit = CliApplication.Run(["check-current", "--candidate-lean-report", report], environment, currentConsole);
+        Assert.True(currentExit == 0, currentConsole.Output + currentConsole.Error);
+        if (scenario == "annotation")
+        {
+            using var currentJson = JsonDocument.Parse(currentConsole.Output);
+            Assert.Contains(currentJson.RootElement.GetProperty("skipped").EnumerateArray(),
+                rule => rule.GetString() == "SL-022");
+            Assert.DoesNotContain(currentJson.RootElement.GetProperty("diagnostics").EnumerateArray(),
+                finding => finding.GetProperty("RuleId").GetProperty("Value").GetString() == "SL-022");
+        }
         Assert.Equal(0, StrataLint.EngineeringScope.Program.RunCurrentTests(root, (_, results) =>
         {
             File.WriteAllText(Path.Combine(results, "run.trx"), """
@@ -119,9 +132,22 @@ public sealed class CurrentDeltaCliContractTests
                 File.WriteAllText(trx, TemporaryFileSystem.File.ReadAllText(trx).Replace("Passed", "Failed", StringComparison.Ordinal));
                 break;
         }
-        var result = environment.CheckDelta(["--protected-base", basis, "--candidate-lean-report", report]);
-        Assert.True(result.ExitCode == expectedExit, result.Output + result.Error);
-        Assert.Contains(diagnostic, result.Output + result.Error, StringComparison.Ordinal);
+        var console = new BufferedConsole();
+        var exit = CliApplication.Run(["check-delta", "--protected-base", basis, "--candidate-lean-report", report], environment, console);
+        Assert.True(exit == expectedExit, $"expected exit {expectedExit}, got {exit}: {console.Output}{console.Error}");
+        Assert.Contains(diagnostic, console.Output + console.Error, StringComparison.Ordinal);
+        if (scenario == "annotation")
+        {
+            Assert.Empty(console.Error);
+            using var json = JsonDocument.Parse(console.Output);
+            Assert.Contains(json.RootElement.GetProperty("executed").EnumerateArray(),
+                rule => rule.GetString() == "SL-022");
+            var finding = Assert.Single(json.RootElement.GetProperty("diagnostics").EnumerateArray(),
+                diagnostic => diagnostic.GetProperty("RuleId").GetProperty("Value").GetString() == "SL-022");
+            Assert.Equal(protectedPath, finding.GetProperty("Path").GetString());
+            Assert.Equal((int)AdmissionEffect.HumanGate, finding.GetProperty("AdmissionEffect").GetInt32());
+            Assert.Equal("protected-surface change detected (SL-022)", finding.GetProperty("Message").GetString());
+        }
 
         void Write(string path, string text)
         {
