@@ -18,16 +18,31 @@ public sealed partial class LeanReportCacheTests
         var bash = Path.Combine(bin, "bash");
         var stripped = Path.Combine(temporary.Path, "stripped-fixture.sh");
         var bareShebang = Path.Combine(temporary.Path, "bare-shebang.sh");
+        var executableShebang = Path.Combine(temporary.Path, "executable-shebang.sh");
+        var noShebang = Path.Combine(temporary.Path, "no-shebang.sh");
+        var diskFree = Path.Combine(bin, "df");
+        var unrelatedMountPoint = Path.Combine(temporary.Path, "unrelated-mount-point");
+        Directory.CreateDirectory(unrelatedMountPoint);
         File.WriteAllText(env, "fixture env\n");
         File.WriteAllText(bash, "fixture bash\n");
         File.WriteAllText(stripped, $"#!{env} bash\nprintf 'fixture'\n");
         File.WriteAllText(bareShebang, "#!bash\nprintf 'fixture'\n");
-        foreach (var path in new[] { env, bash, stripped, bareShebang })
+        File.WriteAllText(executableShebang, "#!/bin/sh\nprintf 'fixture'\n");
+        File.WriteAllText(noShebang, "fixture without a shebang\n");
+        File.WriteAllText(
+            diskFree,
+            "#!/bin/sh\nprintf '%s\\n' 'Filesystem 512-blocks Used Available Capacity Mounted on' "
+                + $"'/dev/fixture 10 1 9 10% {temporary.Path}' "
+                + $"'/dev/unrelated 10 1 9 10% {unrelatedMountPoint}'\n");
+        foreach (var path in new[] { env, bash, stripped, bareShebang, executableShebang, noShebang })
         {
             File.SetUnixFileMode(
                 path,
                 UnixFileMode.UserRead | UnixFileMode.UserWrite);
         }
+        File.SetUnixFileMode(
+            diskFree,
+            UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
         var result = new ProcessOutput(
             126,
             Encoding.UTF8.GetBytes("complete stdout\n"),
@@ -41,8 +56,11 @@ public sealed partial class LeanReportCacheTests
             [
                 new ExecutableFixture("synthetic-stripped", stripped),
                 new ExecutableFixture("bare-command", bareShebang),
+                new ExecutableFixture("resolved-command", executableShebang),
+                new ExecutableFixture("no-shebang", noShebang),
             ],
-            bin);
+            bin,
+            diskFreeCommand: diskFree);
 
         Assert.Contains("command_line=env 'FLAG=value with spaces'", diagnostic, StringComparison.Ordinal);
         Assert.Contains($"working_directory={temporary.Path}", diagnostic, StringComparison.Ordinal);
@@ -54,10 +72,13 @@ public sealed partial class LeanReportCacheTests
                 + "  real_gid=[0-9]+\\n  effective_gid=[0-9]+\\n",
             diagnostic);
         Assert.Contains(
-            $"mount_capture_for_temp_root={temporary.Path}\n",
+            $"filesystem_capture_for_temp_root={temporary.Path}\n",
             diagnostic,
             StringComparison.Ordinal);
-        Assert.Contains("mount_exit_code=0\nmount_stdout:\n", diagnostic, StringComparison.Ordinal);
+        Assert.Contains($"df_command={diskFree}\n", diagnostic, StringComparison.Ordinal);
+        Assert.Contains($"df_arguments=-P {temporary.Path}\n", diagnostic, StringComparison.Ordinal);
+        Assert.Contains("df_exit_code=0\ndf_stdout:\n", diagnostic, StringComparison.Ordinal);
+        Assert.DoesNotContain(unrelatedMountPoint, diagnostic, StringComparison.Ordinal);
         Assert.Contains("pre_launch_executable_snapshots:\n", diagnostic, StringComparison.Ordinal);
         Assert.Contains("post_exit_executable_snapshots:\n", diagnostic, StringComparison.Ordinal);
         Assert.Contains("[synthetic-stripped]", diagnostic, StringComparison.Ordinal);
@@ -90,10 +111,10 @@ public sealed partial class LeanReportCacheTests
             "shebang_env_target_effective_user_can_execute=false",
             diagnostic,
             StringComparison.Ordinal);
-        Assert.Contains(
-            "shebang_resolution_outcome=resolved-not-executable",
-            diagnostic,
-            StringComparison.Ordinal);
+        Assert.Matches(
+            "\\[synthetic-stripped\\][\\s\\S]*?"
+                + "shebang_resolution_outcome=resolved-not-executable\\n",
+            diagnostic);
         Assert.Contains(
             "shebang_resolution_alphabet="
                 + "resolved-executable|resolved-not-executable|not-found|no-shebang",
@@ -103,10 +124,19 @@ public sealed partial class LeanReportCacheTests
             $"[bare-command]\n  path={bareShebang}",
             diagnostic,
             StringComparison.Ordinal);
-        Assert.Contains(
-            $"shebang_interpreter=bash\n  shebang_interpreter_path={bash}",
-            diagnostic,
-            StringComparison.Ordinal);
+        Assert.Matches(
+            "\\[bare-command\\][\\s\\S]*?shebang_interpreter=bash\\n"
+                + "  shebang_interpreter_path=<unresolved>\\n[\\s\\S]*?"
+                + "shebang_resolution_outcome=not-found\\n",
+            diagnostic);
+        Assert.Matches(
+            "\\[resolved-command\\][\\s\\S]*?shebang_interpreter=/bin/sh\\n"
+                + "[\\s\\S]*?shebang_resolution_outcome=resolved-executable\\n",
+            diagnostic);
+        Assert.Matches(
+            "\\[no-shebang\\][\\s\\S]*?shebang_interpreter=<none>\\n"
+                + "[\\s\\S]*?shebang_resolution_outcome=no-shebang\\n",
+            diagnostic);
         Assert.DoesNotContain("shebang_interpreter_resolves=", diagnostic, StringComparison.Ordinal);
         Assert.Contains("same_directory_exec_probes:\n", diagnostic, StringComparison.Ordinal);
         Assert.Contains("[synthetic-stripped]\n", diagnostic, StringComparison.Ordinal);
@@ -135,7 +165,8 @@ public sealed partial class LeanReportCacheTests
         IReadOnlyList<ExecutableFixture> executables,
         string searchPath,
         IReadOnlyList<string>? preLaunchSnapshots = null,
-        string? temporaryRoot = null)
+        string? temporaryRoot = null,
+        string? diskFreeCommand = null)
     {
         temporaryRoot ??= workingDirectory;
         preLaunchSnapshots ??= CaptureExecutableSnapshots(
@@ -156,7 +187,7 @@ public sealed partial class LeanReportCacheTests
         AppendCompleteStream(diagnostic, "stdout", result.StandardOutput);
         AppendCompleteStream(diagnostic, "stderr", result.StandardError);
         AppendProcessIdentity(diagnostic);
-        AppendMountCapture(diagnostic, temporaryRoot, workingDirectory);
+        AppendFilesystemCapture(diagnostic, temporaryRoot, workingDirectory, diskFreeCommand);
         diagnostic.AppendLine(
             "shebang_resolution_alphabet="
                 + "resolved-executable|resolved-not-executable|not-found|no-shebang");
@@ -376,11 +407,11 @@ public sealed partial class LeanReportCacheTests
             return;
         }
 
-        var interpreter = ResolveCommand(tokens[0], workingDirectory, searchPath);
+        var interpreter = ResolveShebangInterpreter(tokens[0], workingDirectory, searchPath);
         AppendResolvedCommand(diagnostic, "shebang_interpreter", interpreter);
 
-        if (!string.Equals(
-                Path.GetFileName(interpreter.Path ?? interpreter.Token),
+        if (interpreter.Path is null || !string.Equals(
+                Path.GetFileName(interpreter.Path),
                 "env",
                 StringComparison.Ordinal))
         {
@@ -402,6 +433,22 @@ public sealed partial class LeanReportCacheTests
         AppendResolvedCommand(diagnostic, "shebang_env_target", resolvedEnvTarget);
         diagnostic.Append("  shebang_resolution_outcome=").AppendLine(
             ResolutionOutcome(interpreter, resolvedEnvTarget));
+    }
+
+    private static ResolvedCommand ResolveShebangInterpreter(
+        string command,
+        string workingDirectory,
+        string searchPath)
+    {
+        if (!command.Contains(Path.DirectorySeparatorChar)
+            && !command.Contains(Path.AltDirectorySeparatorChar))
+        {
+            // The kernel opens a shebang interpreter pathname literally; it does not
+            // perform PATH search. Only an invoked env interpreter searches its target.
+            return ResolvedCommand.NotFound(command);
+        }
+
+        return ResolveCommand(command, workingDirectory, searchPath);
     }
 
     private static string? FindEnvTarget(IReadOnlyList<string> tokens)
@@ -563,48 +610,6 @@ public sealed partial class LeanReportCacheTests
         diagnostic.Append("  effective_gid=").AppendLine(GetEffectiveGroupId().ToString());
     }
 
-    private static void AppendMountCapture(
-        StringBuilder diagnostic,
-        string temporaryRoot,
-        string workingDirectory)
-    {
-        diagnostic.Append("mount_capture_for_temp_root=").AppendLine(temporaryRoot);
-        var mountCommand = new[] { "/sbin/mount", "/bin/mount", "/usr/bin/mount" }
-            .FirstOrDefault(File.Exists);
-        diagnostic.Append("mount_command=").AppendLine(mountCommand ?? "<not-found>");
-        if (mountCommand is null)
-        {
-            diagnostic.AppendLine("mount_exit_code=<not-run>");
-            diagnostic.AppendLine("mount_stdout:");
-            diagnostic.AppendLine("<unavailable: mount command not found>");
-            diagnostic.AppendLine("mount_stderr:");
-            diagnostic.AppendLine("<unavailable: mount command not found>");
-            return;
-        }
-
-        try
-        {
-            var result = BoundedProcessRunner.Run(
-                mountCommand,
-                [],
-                workingDirectory,
-                TestBudgets.WorkflowProcessHangGuard,
-                int.MaxValue);
-            diagnostic.Append("mount_exit_code=").AppendLine(result.ExitCode.ToString());
-            AppendCompleteStream(diagnostic, "mount_stdout", result.StandardOutput);
-            AppendCompleteStream(diagnostic, "mount_stderr", result.StandardError);
-        }
-        catch (Exception exception) when (IsDiagnosticProcessException(exception))
-        {
-            diagnostic.Append("mount_exit_code=<error: ")
-                .Append(EscapeLine(exception.Message)).AppendLine(">");
-            diagnostic.AppendLine("mount_stdout:");
-            diagnostic.AppendLine("<unavailable>");
-            diagnostic.AppendLine("mount_stderr:");
-            diagnostic.AppendLine("<unavailable>");
-        }
-    }
-
     private static void AppendSameDirectoryExecProbes(
         StringBuilder diagnostic,
         IReadOnlyList<ExecutableFixture> executables)
@@ -645,7 +650,7 @@ public sealed partial class LeanReportCacheTests
                 probePath,
                 UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
             chmodSucceeded = true;
-            result = BoundedProcessRunner.Run(
+            result = TestProcessRunner.Run(
                 probePath,
                 [],
                 directory,
