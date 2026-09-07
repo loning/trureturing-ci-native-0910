@@ -9,6 +9,7 @@ public sealed class ModuleStateGateRuleTests
     private const string ClosedPath = "D5/S0/Carrier/NewClosed.lean";
     private const string FrontierPath = "D5/X_Frontier/SyntheticOpen.lean";
     private const string TailPath = "D5/X_Assumptions/SyntheticTail.lean";
+    private const string ImplementationPath = "tools/StrataLint.Engine/Rules/ModuleStateGateRule.cs";
 
     [Fact]
     public void AddedClosedModuleWithoutStateBlocksAndNamesModule()
@@ -32,10 +33,13 @@ public sealed class ModuleStateGateRuleTests
         AddModule(fixture, ClosedPath, "def newClosed : Nat := 0", []);
         AddState(fixture, ClosedPath);
 
-        Assert.Empty(Evaluate(
+        var completed = Execute(
             fixture,
             (ClosedPath, RawChangeKind.Added),
-            (StatePath(ClosedPath), RawChangeKind.Added)));
+            (StatePath(ClosedPath), RawChangeKind.Added));
+
+        Assert.Contains(completed.ExecutedRules, id => id.Value == Rule);
+        Assert.Empty(Diagnostics(completed));
     }
 
     [Fact]
@@ -75,6 +79,119 @@ public sealed class ModuleStateGateRuleTests
 
         Assert.DoesNotContain(completed.ExecutedRules, id => id.Value == Rule);
         Assert.Empty(Diagnostics(completed));
+    }
+
+    [Fact]
+    public void TenUnfrozenBaselineModulesAreIgnoredWhileAnotherModuleIsAdded()
+    {
+        var fixture = new RuleFixture();
+        for (var index = 0; index < 10; index++)
+        {
+            AddBaselineModule(fixture, $"D5/S0/Carrier/ExistingClosed{index}.lean");
+        }
+
+        AddModule(fixture, ClosedPath, "def newClosed : Nat := 0", []);
+        AddState(fixture, ClosedPath);
+        var completed = Execute(fixture,
+            (ClosedPath, RawChangeKind.Added),
+            (StatePath(ClosedPath), RawChangeKind.Added));
+
+        Assert.Contains(completed.ExecutedRules, id => id.Value == Rule);
+        Assert.Empty(Diagnostics(completed));
+    }
+
+    [Fact]
+    public void BaselineModuleReportedAsAddedIsIgnored()
+    {
+        var fixture = new RuleFixture();
+        AddBaselineModule(fixture, ClosedPath);
+
+        var completed = Execute(fixture, (ClosedPath, RawChangeKind.Added));
+
+        Assert.DoesNotContain(completed.ExecutedRules, id => id.Value == Rule);
+        Assert.Empty(Diagnostics(completed));
+    }
+
+    [Fact]
+    public void ModifiedUnfrozenBaselineModuleIsIgnored()
+    {
+        var fixture = new RuleFixture();
+        AddBaselineModule(fixture, ClosedPath);
+        fixture.Files[ClosedPath] += "-- changed comment\n";
+
+        var completed = Execute(fixture, (ClosedPath, RawChangeKind.Modified));
+
+        Assert.DoesNotContain(completed.ExecutedRules, id => id.Value == Rule);
+        Assert.Empty(Diagnostics(completed));
+    }
+
+    [Fact]
+    public void RuleImplementationChangeDoesNotRecheckBaselineDebt()
+    {
+        var fixture = new RuleFixture();
+        AddBaselineModule(fixture, ClosedPath);
+        fixture.Files[ImplementationPath] = "// changed judge\n";
+        var context = fixture.Build(RawChangeSet.Create([ImplementationPath]));
+        Assert.True(context.RuleImplementationChanged);
+
+        var completed = Assert.IsType<RuleExecutionOutcome.Completed>(
+            RuleCatalog.Default.Execute(context)).Capability;
+
+        Assert.Empty(Diagnostics(completed));
+    }
+
+    [Fact]
+    public void AddedClosedModuleCannotUseStateRemovedFromCandidate()
+    {
+        var fixture = new RuleFixture();
+        AddModule(fixture, ClosedPath, "def newClosed : Nat := 0", []);
+        AddState(fixture, ClosedPath);
+        var statePath = StatePath(ClosedPath);
+        fixture.Baseline[statePath] = fixture.Files[statePath];
+        fixture.Files.Remove(statePath);
+
+        var diagnostic = Assert.Single(Evaluate(fixture,
+            (ClosedPath, RawChangeKind.Added),
+            (statePath, RawChangeKind.Deleted)));
+
+        Assert.Equal(AdmissionEffect.Block, diagnostic.AdmissionEffect);
+        Assert.Equal(ClosedPath, diagnostic.Path);
+        Assert.Contains(statePath, diagnostic.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AddedOpenModuleOutsideFrontierIsAllowed()
+    {
+        var fixture = new RuleFixture();
+        AddModule(fixture, ClosedPath, "-- TASK D5-T9999\ndef newOpen : Nat := 0", []);
+        var context = fixture.Build(RawChangeSet.CreateWithKinds([(ClosedPath, RawChangeKind.Added)]));
+        Assert.Equal(TruthState.Open,
+            LeanTruthStates.Resolve(context.Current, context.Lean)[RepoPath.CreateKnown(ClosedPath)]);
+
+        var completed = Assert.IsType<RuleExecutionOutcome.Completed>(
+            RuleCatalog.Default.Execute(context)).Capability;
+
+        Assert.Contains(completed.ExecutedRules, id => id.Value == Rule);
+        Assert.Empty(Diagnostics(completed));
+    }
+
+    [Fact]
+    public void MalformedAddedModulePathBlocksWithoutInfrastructureFailure()
+    {
+        const string malformed = "D5/s0/Carrier/Bad.lean";
+        var fixture = new RuleFixture();
+        AddModule(fixture, malformed, "def bad : Nat := 0", []);
+        var context = fixture.BuildForRuleCompatibility(
+            RawChangeSet.CreateWithKinds([(malformed, RawChangeKind.Added)]));
+
+        var completed = Assert.IsType<RuleExecutionOutcome.Completed>(
+            RuleCatalog.Default.Execute(context)).Capability;
+        var diagnostic = Assert.Single(Diagnostics(completed));
+
+        Assert.Equal(AdmissionEffect.Block, diagnostic.AdmissionEffect);
+        Assert.Equal(malformed, diagnostic.Path);
+        Assert.Contains("MODULE_STATE_INPUT_INVALID", diagnostic.Message, StringComparison.Ordinal);
+        Assert.Contains(malformed, diagnostic.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -124,6 +241,13 @@ public sealed class ModuleStateGateRuleTests
         fixture.Files[statePath] = "{\"statement_id\":\"sha256:"
             + new string('0', 64)
             + "\"}\n";
+    }
+
+    private static void AddBaselineModule(RuleFixture fixture, string path)
+    {
+        AddModule(fixture, path, "def existingClosed : Nat := 0", []);
+        fixture.Baseline[path] = fixture.Files[path];
+        fixture.BaselineReports[path] = fixture.Reports[path];
     }
 
     private static string StatePath(string modulePath) =>

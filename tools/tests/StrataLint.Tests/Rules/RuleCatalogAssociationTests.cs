@@ -414,8 +414,8 @@ public sealed class RuleCatalogAssociationTests
     [Fact]
     public void DefaultCatalogRootMatchesCharacterizedRegressionValue()
     {
-        // Recharacterized 2026-09-07 with SL-034; independently computed with Ruby SHA-256.
-        // Previous root: sha256:81c7c69b842771aaf8f1f678c3c4fb466ae2938ae6085c6f0ce0e70cb44bab7e.
+        // Recharacterized 2026-09-07 with SL-034 from the catalog test output.
+        // Previous root: sha256:b276eef4632135feff663e5a4fe2d4d4b073767522cf2defff3f145895602af1.
         Assert.Equal(
             "sha256:9f79c2441debd2e04e5ecebfc99badd23cd4b30bb46f5e191bc09c7d0c77efba",
             RuleCatalog.Default.RootSha256);
