@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Text;
 using StrataLint.Cli;
 using StrataLint.Engine;
+using TemporaryFileSystem = StrataLint.TestSupport.TemporaryFileSystem;
 
 namespace StrataLint.Tests;
 
@@ -91,10 +92,10 @@ public sealed partial class LedgerWriterProductionPathTests
             [TransactionFixture.SecondaryGid, TransactionFixture.Gid],
             fixture.Calls().Where(static call => call.StartsWith("dotnet:cover-atom ", StringComparison.Ordinal))
                 .Select(static call => call.Split(' ')[4]));
-        var atomPath = Assert.Single(Directory.EnumerateFiles(
+        var atomPath = Assert.Single(TemporaryFileSystem.Directory.EnumerateFiles(
             Path.Combine(fixture.Root, BackfillInventoryLoader.RootPath),
             spec.AtomId + ".yaml", SearchOption.AllDirectories));
-        AssertCanonicalGidBytes(File.ReadAllBytes(atomPath), TransactionFixture.Gid, TransactionFixture.SecondaryGid);
+        AssertCanonicalGidBytes(TemporaryFileSystem.File.ReadAllBytes(atomPath), TransactionFixture.Gid, TransactionFixture.SecondaryGid);
     }
 
     private static async Task DepositThroughCli(
@@ -111,9 +112,9 @@ public sealed partial class LedgerWriterProductionPathTests
         {
             var current = world.Files.Where(static pair => !BackfillInventoryLoader.IsCanonicalPath(pair.Key))
                 .ToDictionary(StringComparer.Ordinal);
-            foreach (var path in Directory.EnumerateFiles(
+            foreach (var path in TemporaryFileSystem.Directory.EnumerateFiles(
                 Path.Combine(fixture.Root, BackfillInventoryLoader.RootPath), "*", SearchOption.AllDirectories))
-                current[Path.GetRelativePath(fixture.Root, path).Replace(Path.DirectorySeparatorChar, '/')] = File.ReadAllText(path);
+                current[Path.GetRelativePath(fixture.Root, path).Replace(Path.DirectorySeparatorChar, '/')] = TemporaryFileSystem.File.ReadAllText(path);
             var environment = new ProductionCliEnvironment(
                 fixture.Root,
                 new FakeRepositoryGateway(RawChangeSet.Create([]), CoverWorld.Raw(current), CoverWorld.Raw(world.Baseline)),
@@ -215,7 +216,7 @@ public sealed partial class LedgerWriterProductionPathTests
             ledgerRoot,
             atomId + ".yaml",
             SearchOption.AllDirectories));
-        return File.ReadAllBytes(path);
+        return TemporaryFileSystem.File.ReadAllBytes(path);
     }
 
     private static void AssertCanonicalGidBytes(byte[] bytes, string alpha = AlphaGid, string zeta = ZetaGid)

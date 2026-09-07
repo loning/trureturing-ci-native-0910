@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Text;
 using StrataLint.Engine;
+using TemporaryFileSystem = StrataLint.TestSupport.TemporaryFileSystem;
 
 namespace StrataLint.Tests;
 
@@ -151,7 +152,7 @@ internal static class DirectoryLedgerTestSupport
             .Order(StringComparer.Ordinal)
             .Select(path => Path.GetRelativePath(root, path).Replace(Path.DirectorySeparatorChar, '/')
                 + "\0"
-                + Convert.ToBase64String(File.ReadAllBytes(path))
+                + Convert.ToBase64String(TemporaryFileSystem.File.ReadAllBytes(path))
                 + "\n"));
     }
 
@@ -159,7 +160,7 @@ internal static class DirectoryLedgerTestSupport
         RawRepositorySnapshot.Create(RepositoryFiles(repository)
             .Select(path => new RawRepositoryEntry(
                 Path.GetRelativePath(repository.Path, path).Replace(Path.DirectorySeparatorChar, '/'),
-                ImmutableArray.CreateRange(File.ReadAllBytes(path)))));
+                ImmutableArray.CreateRange(TemporaryFileSystem.File.ReadAllBytes(path)))));
 
     // Forms input for a subsequent fake gateway call, never a disk preservation oracle.
     internal static Dictionary<string, string> OverlayRepositoryFiles(
@@ -172,7 +173,7 @@ internal static class DirectoryLedgerTestSupport
         {
             var relative = Path.GetRelativePath(repositoryRoot, path)
                 .Replace(Path.DirectorySeparatorChar, '/');
-            result[relative] = File.ReadAllText(path);
+            result[relative] = TemporaryFileSystem.File.ReadAllText(path);
         }
 
         return result;
