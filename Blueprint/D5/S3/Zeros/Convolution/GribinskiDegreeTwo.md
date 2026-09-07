@@ -64,7 +64,7 @@ Lean statement: `D5/S3/Zeros/Convolution/GribinskiDegreeTwo.g3_nonnegative_roots
 
 *Commentary.*
 
-For nonnegative input roots and alpha>-1, kappa lies strictly between zero and one half. The sum, product and discriminant have the required signs. Mathlib's quadratic root existence theorem gives a real root; its complementary root and Vieta's identities give the required factorization with both roots nonnegative.
+For nonnegative input roots and alpha>-1, kappa lies strictly between zero and one half. The sum, product and discriminant have the required signs. Mathlib's exists_quadratic_eq_zero gives a real root, and vieta_formula_quadratic supplies the second root and the sum/product identities. The sign argument then gives the required factorization with both roots nonnegative.
 
 **Theorem 1.6 (G4: The Interval Between -2 and -1).**
 
