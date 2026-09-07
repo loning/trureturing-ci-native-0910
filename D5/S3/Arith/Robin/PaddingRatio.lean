@@ -91,7 +91,9 @@ private theorem sigma_pow_mul_normalized {p m : ℕ} (hp : p.Prime)
 theorem padding_eq_prime_power_mul {p A n : ℕ} (ha : n.factorization p ≤ A) :
     padding p A n = p ^ (A + 1) * (ordCompl[p] n) := by
   unfold padding
-  conv_lhs => rw [← Nat.ordProj_mul_ordCompl_eq_self n p]
+  conv_lhs =>
+    arg 2
+    rw [← Nat.ordProj_mul_ordCompl_eq_self n p]
   change p ^ (A + 1 - n.factorization p) *
     (p ^ n.factorization p * (ordCompl[p] n)) = _
   rw [← mul_assoc, ← pow_add, Nat.sub_add_cancel (by omega)]
@@ -114,15 +116,16 @@ theorem padding_abundancy {p A n : ℕ} (hp : p.Prime) (hn : n ≠ 0)
     (Nat.ordProj_mul_ordCompl_eq_self n p).symm
   have hleft : (ArithmeticFunction.sigma 1 n : ℝ) / n =
       reciprocalGeomSum p (n.factorization p) *
-        ((ArithmeticFunction.sigma 1 (ordCompl[p] n) : ℝ) / (ordCompl[p] n)) := by
+        ((ArithmeticFunction.sigma 1 (ordCompl[p] n) : ℝ) / (ordCompl[p] n : ℕ)) := by
     conv_lhs => rw [hn']
     exact sigma_pow_mul_normalized hp hcop _
   rw [hleft, padding_eq_prime_power_mul ha, sigma_pow_mul_normalized hp hcop]
-  have hnonneg : 0 ≤ (ArithmeticFunction.sigma 1 (ordCompl[p] n) : ℝ) / (ordCompl[p] n) :=
+  have hnonneg : 0 ≤ (ArithmeticFunction.sigma 1 (ordCompl[p] n) : ℝ) /
+      (ordCompl[p] n : ℕ) :=
     div_nonneg (Nat.cast_nonneg _) (Nat.cast_nonneg _)
   calc
     _ ≤ reciprocalGeomSum p A *
-        ((ArithmeticFunction.sigma 1 (ordCompl[p] n) : ℝ) / (ordCompl[p] n)) :=
+        ((ArithmeticFunction.sigma 1 (ordCompl[p] n) : ℝ) / (ordCompl[p] n : ℕ)) :=
       mul_le_mul_of_nonneg_right (geom_mono hp ha) hnonneg
     _ = _ := by
       unfold paddingRho
@@ -154,7 +157,7 @@ private theorem tendsto_loglog_scale {c : ℝ} (hc : 0 < c) :
   dsimp only [Function.comp_def]
   rw [Real.log_mul hc.ne' hn0, add_comm (Real.log c) (Real.log (n : ℝ))]
   field_simp [(loglog_pos hn).ne']
-  <;> ring
+  ring
 
 /-- With `q = (1 + rho) / 2`, all sufficiently large bounded-exponent integers
 gain a factor of at least `1 / q` under padding. The Euler constant cancels. -/
