@@ -17,7 +17,7 @@ public sealed partial class ProblemCandidateTests
                 var candidate = Assert.Single(ProblemCandidateCatalog.Load(root).Candidates);
                 Assert.Equal("sample-open-problem", candidate.Slug);
                 Assert.Equal("sos1957threegap", candidate.BibKey.Value);
-                Assert.Equal("2305.08349", candidate.ArxivId);
+                Assert.Equal("10.48550/arXiv.2305.08349", candidate.Doi.Value);
                 Assert.Equal(ProblemTriage.Theorem, candidate.Triage);
                 Assert.Equal(
                     "D5/S1/Phase/Basic",
@@ -44,7 +44,7 @@ public sealed partial class ProblemCandidateTests
     [Theory]
     [InlineData("slug")]
     [InlineData("bibkey")]
-    [InlineData("arxiv_id")]
+    [InlineData("doi")]
     [InlineData("triage")]
     [InlineData("motivation_gids")]
     public void CatalogRejectsAMissingRequiredField(string field)
@@ -99,19 +99,21 @@ public sealed partial class ProblemCandidateTests
             root => Assert.Throws<FormatException>(() => ProblemCandidateCatalog.Load(root)));
     }
 
-    [Theory]
-    [InlineData("arXiv:2305.08349")]
-    [InlineData("2305.08349v1")]
-    [InlineData("2305.083491")]
-    [InlineData("")]
-    public void CatalogRejectsANoncanonicalArxivId(string arxivId)
+    [Fact]
+    public void CatalogRejectsArxivIdInsteadOfDoi()
     {
         WithCatalog(
             new Dictionary<string, string>(StringComparer.Ordinal)
             {
-                ["sample-open-problem.md"] = Candidate("sample-open-problem", arxivId: arxivId),
+                ["sample-open-problem.md"] = Candidate("sample-open-problem")
+                    .Replace("doi: 10.48550/arXiv.2305.08349", "arxiv_id: 2305.08349",
+                        StringComparison.Ordinal),
             },
-            root => Assert.Throws<FormatException>(() => ProblemCandidateCatalog.Load(root)));
+            root =>
+            {
+                var error = Assert.Throws<FormatException>(() => ProblemCandidateCatalog.Load(root));
+                Assert.Contains("missing or unknown metadata fields", error.Message, StringComparison.Ordinal);
+            });
     }
 
     [Fact]
@@ -267,7 +269,7 @@ public sealed partial class ProblemCandidateTests
             new Dictionary<string, string>(StringComparer.Ordinal)
             {
                 ["first-problem.md"] = Candidate("first-problem", triage: "open"),
-                ["second-problem.md"] = Candidate("second-problem", arxivId: "bad"),
+                ["second-problem.md"] = Candidate("second-problem", doi: "bad"),
             },
             root =>
             {
@@ -326,7 +328,7 @@ public sealed partial class ProblemCandidateTests
     }
 
     [Fact]
-    public void ValidatorRejectsAnArxivIdThatDisagreesWithTheNoteDoi()
+    public void ValidatorRejectsADoiThatDisagreesWithTheNoteDoi()
     {
         WithRepository(
             Candidate("sample-open-problem"),
@@ -491,7 +493,7 @@ public sealed partial class ProblemCandidateTests
     private static string Candidate(
         string slug,
         string bibkey = "sos1957threegap",
-        string arxivId = "2305.08349",
+        string doi = "10.48550/arXiv.2305.08349",
         string triage = "theorem",
         IReadOnlyList<string>? motivationGids = null)
     {
@@ -503,7 +505,7 @@ public sealed partial class ProblemCandidateTests
         return "---\n"
             + $"slug: {slug}\n"
             + $"bibkey: {bibkey}\n"
-            + $"arxiv_id: {arxivId}\n"
+            + $"doi: {doi}\n"
             + $"triage: {triage}\n"
             + chain
             + "---\n"
