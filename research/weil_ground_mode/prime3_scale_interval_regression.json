@@ -1,0 +1,23 @@
+{
+  "source_sha256": "5467e6f5b50395ebcfb033e5d4f92949458f8a9ce953c784fca4814c03c19257",
+  "verifier_sha256": "0bbadda0977f11052c7c492d2d44f958f6318b89954587486edc4bc6db796688",
+  "exact_symbolic_identities": 3,
+  "exact_signed_parity_column_equalities": 800,
+  "exact_quantized_Gram_radius_fixtures": 120,
+  "actual_symbol_interval_sample_checks": 36,
+  "actual_diagonal_interval_sample_checks": 45,
+  "actual_prime_phase_checks": 72,
+  "reference_Gamma_correction_tail_upper": "3.2794009686278541508e-248",
+  "physical_odd_prime_edge_checks": 20,
+  "maximum_relative_edge_discrepancy": "0.0",
+  "uniform_low_odd_prime3_energy_budget_interval": "[0.0, 0.000000000000000072066040637905198999452344209443790991545534907978296236549929979243714113282114493522192005397]",
+  "uniform_low_odd_prime3_energy_budget_upper": "1/10000000000000000",
+  "indefinite_or_singular_LDL_rejections": 3,
+  "negative_controls": [
+    "prime3 is exactly inactive below and active above threshold",
+    "interchanging parity columns changes the exact arithmetic expression",
+    "indefinite and singular congruence targets cannot pass strict directed LDL"
+  ],
+  "status": "All exact checks and separately assembled analytic diagnostics passed.",
+  "scope": "Single-author development diagnostics. Sampling and nondirected quadrature are not the uniform proof; the separate interval verifier is. No Lean/Scribe compilation or independent review."
+}
