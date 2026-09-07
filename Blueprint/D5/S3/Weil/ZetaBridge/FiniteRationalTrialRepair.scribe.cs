@@ -1,0 +1,56 @@
+using static StrataLint.Scribe.DefinitionDsl;
+
+namespace StrataLint.Scribe.Blueprint.D5.S3.Weil.ZetaBridge;
+
+internal sealed class FiniteRationalTrialRepairDocument : IScribeDocumentDefinition
+{
+    public DocumentDefinition Create() => DocumentDefinition.Create(ScribeNode.Create(
+        "Exact rational-complex computation refines the standard orthogonal projection, with explicit finite support and zero-candidate rejection.",
+        H("Exact Rational Trial Repair"),
+        Blocks(
+            Describe.Lean(DescribeId.Create("repair-1"),
+                DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/FiniteRationalTrialRepair.rationalGram"), H("Exact squared candidate size"),
+                StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("The denominator is the rational sum of both coordinate squares on the selected support. No unit-norm assumption is built in."))), DescribeRole.Definition),
+            Describe.Lean(DescribeId.Create("repair-2"),
+                DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/FiniteRationalTrialRepair.rationalCorrection"), H("Exact correction coefficient"),
+                StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("Two rational sums represent the real and imaginary parts of the conjugate-linear candidate pairing, divided by the same exact Gram denominator."))), DescribeRole.Definition),
+            Describe.Lean(DescribeId.Create("repair-3"),
+                DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/FiniteRationalTrialRepair.repairTrial"), H("Executable supported repair"),
+                StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("A zero restricted candidate returns none. Otherwise the algorithm returns the exact repaired rational pairs on S and zero outside S. No square root or floating-point test is used."))), DescribeRole.Definition),
+            Describe.Lean(DescribeId.Create("repair-4"),
+                DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/FiniteRationalTrialRepair.decode"), H("Exact pair interpretation"),
+                StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("Interprets a rational pair in the existing complex field. This semantic map introduces no new complex algebra or numerical rounding."))), DescribeRole.Definition),
+            Describe.Lean(DescribeId.Create("repair-5"),
+                DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/FiniteRationalTrialRepair.decodedVector"), H("Standard Euclidean interpretation"),
+                StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("Uses Mathlib EuclideanSpace on the support subtype. The ambient Pi sup norm is not substituted for its Euclidean norm."))), DescribeRole.Definition),
+            Describe.Lean(DescribeId.Create("repair-6"),
+                DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/FiniteRationalTrialRepair.repair_defined_iff"), H("Exact success criterion"),
+                StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("The algorithm returns a value exactly when the candidate has a nonzero coordinate on S. Empty support and a zero restricted candidate are rejected."))), DescribeRole.Theorem),
+            Describe.Lean(DescribeId.Create("repair-7"),
+                DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/FiniteRationalTrialRepair.repair_coordinates"), H("Supported actual output"),
+                StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("Proves both zero extension and the decoded coordinate formula for the same returned function. The correction coefficient is shared across all indices."))), DescribeRole.Theorem),
+            Describe.Lean(DescribeId.Create("existing-trial-refinement"),
+                DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/FiniteRationalTrialRepair.repair_eq_existing_trial"), H("Exact implementation of the existing trial"),
+                StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("Identifies the decoded rational algorithm output with the existing orthogonalTrial on every integer coordinate. The concurrent owner's projection formula and constraints are imported rather than reproved."))), DescribeRole.Theorem),
+            Describe.Lean(DescribeId.Create("repair-8"),
+                DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/FiniteRationalTrialRepair.repair_eq_starProjection"), H("Refinement to the existing projection"),
+                StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("Identifies the executable output with Mathlib starProjection onto the orthogonal complement of the candidate line. No candidate normalization is required."))), DescribeRole.Theorem),
+            Describe.Lean(DescribeId.Create("repair-9"),
+                DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/FiniteRationalTrialRepair.repair_orthogonal_and_norm_le"), H("Exact orthogonality and Euclidean contraction"),
+                StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("Derives the exact complex pairing equation and Euclidean norm contraction from the existing projection API. It does not claim that boundary moments or coefficient l1 mass contract, or that the output is nonzero."))), DescribeRole.Theorem),
+            Describe.Lean(DescribeId.Create("repair-10"),
+                DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/FiniteRationalTrialRepair.repair_isometric_orthogonality"), H("Transport through a known isometric synthesis"),
+                StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("Transports exact orthogonality into any given linear-isometric realization. An arithmetic Fourier basis or operator domain is not constructed by this theorem."))), DescribeRole.Theorem)),
+        [DocumentEdge.Dependency.Create(GidRef.Create("D5/S3/Weil/ZetaBridge/WeilOrthogonalTrialPrecision"))]));
+}
