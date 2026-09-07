@@ -86,25 +86,46 @@ internal static class WorktreeCommand
         }
 
         WorktreeOptions? options = null;
+        var branchCreated = false;
         var worktreeCreated = false;
+        string? branchOid = null;
+        string? creationLock = null;
+        string? creationMetadata = null;
+        WorktreeBranchTracking? branchTracking = null;
         var halfBuiltRecovered = false;
         try
         {
             options = ParseArguments(repositoryRoot, arguments);
             halfBuiltRecovered = ValidatePreflight(options, runner);
             GitWorktreeInventory.FetchRemoteBase(options.Source, options.Base, runner);
-            VerifyBase(options, runner);
-            var pins = LeanPinSet.ReadBase(options.Source, options.Base, runner);
+            branchOid = VerifyBase(options, runner);
+            var pins = LeanPinSet.ReadBase(options.Source, branchOid, runner);
             var donor = ProbeDonor(options, pins, runner);
+            branchTracking = WorktreeBranchTracking.Prepare(options, runner);
 
+            creationLock = $"worktree-init:{Guid.NewGuid():N}";
             RunRequired(
                 runner,
                 "git",
-                ["worktree", "add", "-b", options.Branch, options.Path, options.Base],
+                ["update-ref", "--no-deref", "--create-reflog", "-m", creationLock,
+                    $"refs/heads/{options.Branch}", branchOid, new string('0', branchOid.Length)],
                 options.Source,
-                TimeSpan.FromSeconds(120),
+                BoundedProcessRunner.HangDetectionBudget,
+                "git branch creation failed");
+            branchCreated = true;
+            branchTracking?.Apply(options, runner);
+            RunRequired(
+                runner,
+                "git",
+                ["worktree", "add", "--no-checkout", "--lock",
+                    "--reason", creationLock, options.Path, options.Branch],
+                options.Source,
+                BoundedProcessRunner.HangDetectionBudget,
                 "git worktree add failed");
             worktreeCreated = true;
+            creationMetadata = WorktreeCreationSafety.FindCreationMetadata(options, creationLock, runner);
+            WorktreeCreationSafety.ValidateCreatedWorktree(options, runner);
+            WorktreeCreationSafety.CheckoutCreatedWorktree(options, runner);
             EnsureReviewScaffoldIgnores(options.Path);
             if (!options.SkipRestore)
             {
@@ -117,6 +138,13 @@ internal static class WorktreeCommand
                     "dotnet restore failed");
             }
             WorktreeCreationSafety.ValidateCreatedWorktree(options, runner);
+            RunRequired(
+                runner,
+                "git",
+                ["worktree", "unlock", options.Path],
+                options.Source,
+                BoundedProcessRunner.HangDetectionBudget,
+                "git worktree unlock failed");
 
             var summary = JsonSerializer.Serialize(new
             {
@@ -135,9 +163,26 @@ internal static class WorktreeCommand
         }
         catch (Exception exception)
         {
-            var cleanup = options is not null && worktreeCreated
-                ? Cleanup(options, runner)
-                : string.Empty;
+            var cleanup = string.Empty;
+            try
+            {
+                // Either Git command can finish before acknowledging success.
+                if (options is not null && creationLock is not null && branchOid is not null)
+                {
+                    creationMetadata ??= WorktreeCreationSafety.FindCreationMetadata(options, creationLock, runner);
+                    if (worktreeCreated || creationMetadata is not null)
+                        cleanup = Cleanup(options, creationLock, creationMetadata, runner);
+                    if (cleanup.Length == 0)
+                    {
+                        WorktreeCreationSafety.CleanupCreatedBranch(options, creationLock, branchOid, branchCreated, runner);
+                        branchTracking?.Rollback(options, runner);
+                    }
+                }
+            }
+            catch (Exception cleanupException) when (cleanupException is not OutOfMemoryException)
+            {
+                cleanup = cleanupException.Message;
+            }
             var receipt = JsonSerializer.Serialize(new
             {
                 @event = "worktree_init",
@@ -465,64 +510,48 @@ internal static class WorktreeCommand
         return halfBuiltRecovered;
     }
 
-    private static void VerifyBase(WorktreeOptions options, IWorktreeProcessRunner runner) =>
-        RunRequired(
+    private static string VerifyBase(WorktreeOptions options, IWorktreeProcessRunner runner)
+    {
+        var result = RunProcess(
             runner,
             "git",
             ["rev-parse", "--verify", "--end-of-options", $"{options.Base}^{{commit}}"],
             options.Source,
-            BoundedProcessRunner.HangDetectionBudget,
-            $"base revision does not resolve: {options.Base}");
+            BoundedProcessRunner.HangDetectionBudget);
+        if (result.ExitCode != 0)
+            throw new InvalidOperationException(ProcessError(result, $"base revision does not resolve: {options.Base}"));
+        return Encoding.UTF8.GetString(result.StandardOutput).Trim();
+    }
 
-    private static string Cleanup(WorktreeOptions options, IWorktreeProcessRunner runner)
+    private static string Cleanup(
+        WorktreeOptions options,
+        string creationLock,
+        string? creationMetadata,
+        IWorktreeProcessRunner runner)
     {
-        var errors = new List<string>();
+        WorktreeCreationSafety.ValidateCleanupOwnership(options, creationLock, creationMetadata, runner);
         var removal = RunProcess(
             runner,
             "git",
-            ["worktree", "remove", "--force", options.Path],
-            options.Source,
-            TimeSpan.FromSeconds(120));
-        if (removal.ExitCode != 0 && Directory.Exists(options.Path))
-        {
-            errors.Add(ProcessError(removal, "git worktree remove failed"));
-            try
-            {
-                Directory.Delete(options.Path, recursive: true);
-            }
-            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
-            {
-                errors.Add(exception.Message);
-            }
-        }
-
-        var branchLookup = RunProcess(
-            runner,
-            "git",
-            ["show-ref", "--verify", "--quiet", $"refs/heads/{options.Branch}"],
+            ["worktree", "remove", "--force", "--force", options.Path],
             options.Source,
             BoundedProcessRunner.HangDetectionBudget);
-        if (branchLookup.ExitCode == 0)
+        if (removal.ExitCode != 0)
         {
-            var branchRemoval = RunProcess(
-                runner,
-                "git",
-                ["branch", "-D", options.Branch],
-                options.Source,
-                BoundedProcessRunner.HangDetectionBudget);
-            if (branchRemoval.ExitCode != 0)
+            try
             {
-                errors.Add(ProcessError(branchRemoval, "git branch cleanup failed"));
+                WorktreeCreationSafety.ValidateCleanupOwnership(options, creationLock, creationMetadata, runner);
+                if (Directory.Exists(options.Path)) Directory.Delete(options.Path, recursive: true);
+                if (creationMetadata is not null && Directory.Exists(creationMetadata))
+                    Directory.Delete(creationMetadata, recursive: true);
+            }
+            catch (Exception exception) when (exception is not OutOfMemoryException)
+            {
+                return $"; cleanup failed: {ProcessError(removal, "git worktree remove failed")}; {exception.Message}";
             }
         }
-        else if (branchLookup.ExitCode != 1)
-        {
-            errors.Add(ProcessError(branchLookup, "git branch cleanup inspection failed"));
-        }
 
-        return errors.Count == 0
-            ? string.Empty
-            : $"; cleanup failed: {string.Join("; ", errors)}";
+        return string.Empty;
     }
 
     private static void RunRequired(
