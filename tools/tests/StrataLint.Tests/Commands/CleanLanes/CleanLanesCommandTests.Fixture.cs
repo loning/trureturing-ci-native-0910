@@ -69,7 +69,7 @@ public sealed partial class CleanLanesCommandTests
                     Path.GetRelativePath(sourcePath, directory)));
             }
 
-            foreach (var file in Directory.EnumerateFiles(
+            foreach (var file in StrataLint.TestSupport.TemporaryFileSystem.Directory.EnumerateFiles(
                          sourcePath,
                          "*",
                          SearchOption.AllDirectories))
