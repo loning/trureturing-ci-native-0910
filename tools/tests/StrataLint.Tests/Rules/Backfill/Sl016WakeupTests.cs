@@ -366,7 +366,7 @@ public sealed class Sl016WakeupTests
     }
 
     [Fact]
-    public void UnchangedBaseEntryDuplicateCoverageIsNotRepublishedForUnrelatedDelta()
+    public void UnchangedBaseEntryDuplicateCoverageFailsClosedAtLoad()
     {
         var fixture = new RuleFixture();
         fixture.UseValidDirectoryBackfill();
@@ -382,8 +382,8 @@ public sealed class Sl016WakeupTests
         var findings = BackfillInventoryRule.EvaluateCandidateDelta(
             fixture.Build(RawChangeSet.Create(["D5/S3/Probe/Unrelated.lean"])));
 
-        Assert.DoesNotContain(findings, finding => finding.Message.Contains(
-            "duplicate coverage GIDs",
+        Assert.Contains(findings, finding => finding.Message.Contains(
+            "BACKFILL_COVERAGE_ORDER",
             StringComparison.Ordinal));
     }
 
@@ -402,7 +402,7 @@ public sealed class Sl016WakeupTests
             fixture.Build(RawChangeSet.Create([AtomPath])));
 
         Assert.Contains(findings, finding => finding.Message.Contains(
-            "duplicate coverage GIDs",
+            "BACKFILL_COVERAGE_ORDER",
             StringComparison.Ordinal));
     }
 

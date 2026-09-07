@@ -350,7 +350,6 @@ public sealed partial class DigestionLedgerTests
             chained,
             snapshot,
             AcceptedLean(targetPath),
-            VerifiedScribeEmissions.Create([record]),
             baselineDocument: chained);
 
         Assert.Equal(3, evaluation.Entries.Length);

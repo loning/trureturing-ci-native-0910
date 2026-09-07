@@ -108,7 +108,6 @@ internal static partial class CoverAtomCommand
             planned,
             current,
             lean,
-            verified,
             baselineDocument,
             validateProjectedStatus: false,
             baselineSnapshot: baseline,
@@ -131,7 +130,6 @@ internal static partial class CoverAtomCommand
             finalDocument,
             finalSnapshot,
             lean,
-            verified,
             baselineDocument,
             baselineSnapshot: baseline,
             truthStates: truthStates);

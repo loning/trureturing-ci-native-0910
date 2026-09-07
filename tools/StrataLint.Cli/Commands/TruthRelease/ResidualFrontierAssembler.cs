@@ -19,14 +19,13 @@ internal static class ResidualFrontierAssembler
         ArgumentNullException.ThrowIfNull(scribeEmissionVerifier);
         ArgumentNullException.ThrowIfNull(truthStates);
 
-        var verifiedScribeEmissions = scribeEmissionVerifier.Verify(snapshot, report);
+        scribeEmissionVerifier.Verify(snapshot, report);
         var document = BackfillInventoryLoader.Load(snapshot);
         var evaluation = DigestionStatusEvaluator.Evaluate(
             DigestionEvaluationScope.FullScan,
             document,
             snapshot,
             lean,
-            verifiedScribeEmissions,
             baselineDocument: document,
             truthStates: truthStates);
         if (evaluation.HasReceiptIntegrityFailure)
