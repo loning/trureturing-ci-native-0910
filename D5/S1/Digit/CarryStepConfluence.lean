@@ -6,6 +6,7 @@
    digest: Arbitrary raw Zeckendorf carry paths preserve value and are globally confluent. -/
 
 import D5.S1.Digit.Normalize
+import Mathlib.Logic.Relation
 
 /-!
 # Confluence of raw Zeckendorf carries

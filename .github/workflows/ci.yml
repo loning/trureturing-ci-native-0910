@@ -336,6 +336,9 @@ jobs:
           read -r sources_sha256 config_sha256 <<< "$input_address"
           echo "sources_sha256=$sources_sha256" >> "$GITHUB_OUTPUT"
           echo "config_sha256=$config_sha256" >> "$GITHUB_OUTPUT"
+          dependency_sha256="$("$helper" dependency-address --repository "$GITHUB_WORKSPACE/candidate")"
+          [[ "$dependency_sha256" =~ ^[0-9a-f]{64}$ ]]
+          echo "dependency_sha256=$dependency_sha256" >> "$GITHUB_OUTPUT"
       - name: Probe candidate canonical Lean report address
         id: lean-report-input
         shell: bash
@@ -362,12 +365,34 @@ jobs:
           path: .canonical-lean-report-cache
           key: stratalint-canonical-lean-report-v2-${{ steps.lean-report-input.outputs.address }}
           restore-keys: stratalint-canonical-lean-report-v2-
+      # policy-override PERF-20260907-SINGLEFLIGHT (permanent local case), 2026-09-07,
+      # owner: repository tau=0 owner; domain: report-miss wait. This is not a derived value.
+      # 300s sleep; wait/restore/verify caps 6/2/2 minutes (600s total, excluding runner scheduling).
+      # User's fixed 68-run replay: 6 duplicate full producers; no post-change speed measurement.
+      # Negative: an unpublished/failed leader adds waiting then full fallback; no leader election.
+      # Exit: remove or recalibrate after the first integration window measures reuse and added latency.
+      - name: Wait for an in-flight canonical Lean report
+        id: report-cache-wait
+        if: steps.lean-report-input.outputs.address != '' && steps.report-cache.outcome == 'success' && steps.report-cache.outputs.cache-hit != 'true'
+        continue-on-error: true
+        timeout-minutes: 6
+        run: sleep 300
+      - name: Retry the exact canonical Lean report address
+        id: report-cache-retry
+        if: steps.report-cache-wait.outcome == 'success'
+        continue-on-error: true
+        timeout-minutes: 2
+        uses: actions/cache/restore@v4
+        with:
+          path: .canonical-lean-report-cache
+          key: stratalint-canonical-lean-report-v2-${{ steps.lean-report-input.outputs.address }}
       - name: Serve candidate canonical Lean report from the cached address
         id: report-reuse
-        if: steps.report-cache.outcome == 'success' && steps.report-cache.outputs.cache-hit == 'true'
+        if: (steps.report-cache.outcome == 'success' && steps.report-cache.outputs.cache-hit == 'true') || (steps.report-cache-retry.outcome == 'success' && steps.report-cache-retry.outputs.cache-hit == 'true')
         # 这一步失败必须**回落**到完整生产路径,而不是让整个 job 红:缓存是加速,不是权威。
         # 下面四个重活步骤的守卫是 `outcome != 'success'`,故失败与跳过都会走原路。
         continue-on-error: true
+        timeout-minutes: 2
         shell: bash
         run: |
           set -euo pipefail
@@ -381,6 +406,18 @@ jobs:
           helper="$GITHUB_WORKSPACE/candidate/tools/scripts/report/lean-report-input.sh"
           # 缓存条目对候选树重新验一次地址与报告哈希;不符即整体回落,不静默使用。
           "$helper" verify --repository "$GITHUB_WORKSPACE/candidate" --report "$source"
+          producer="$(awk -F= '$1 == "producer_sha256" {print $2}' "${source}.input.attestation")"
+          sources="${{ steps.lean-input.outputs.sources_sha256 }}"
+          config="${{ steps.lean-input.outputs.config_sha256 }}"
+          input="$(printf 'schema=stratalint-lean-report-input-v1\nproducer_sha256=%s\nrepository_inspector_sha256=%s\nlean_sources_sha256=%s\nlean_config_sha256=%s\n' \
+            "$producer" "$producer" "$sources" "$config" | sha256sum | cut -d ' ' -f 1)"
+          jq -e -s --arg producer "$producer" --arg sources "$sources" --arg config "$config" \
+            --arg input "sha256:$input" --arg report "$(sha256sum "$source" | cut -d ' ' -f 1)" '
+            length == 1 and (.[0] == {schema: "stratalint-lean-report-provenance-v1", side: "candidate",
+              mode: .[0].mode, source_side: "candidate", input_address: $input,
+              producer_sha256: $producer, repository_inspector_sha256: $producer,
+              lean_sources_sha256: $sources, lean_config_sha256: $config, report_sha256: $report}
+            and (.[0].mode == "produced" or .[0].mode == "cached"))' "${source}.provenance.json" > /dev/null
           for suffix in '' .input.attestation .provenance.json .materials.zip; do
             cp "${source}${suffix}" "$reports/candidate-lean-report.json${suffix}"
           done
@@ -406,6 +443,12 @@ jobs:
             exit 1
           fi
           "$GITHUB_WORKSPACE/candidate/tools/scripts/workflow/install-lean-toolchain.sh" candidate/lean-toolchain
+      # Dependency olean compatibility follows lean-toolchain + pinned lake-manifest.json.
+      # The lakefile only shapes the project layer, whose config_sha256 key stays broader.
+      # Prefix restore may cross manifest/toolchain versions; it is a best-effort seed.
+      # Lake traces determine validity; the prefix alone guarantees neither correctness
+      # nor a warm build within 45 minutes. Nonzero download, validation, or build
+      # results remain terminal.
       - name: Restore candidate Lean dependency artifacts
         id: lake-deps-cache
         if: steps.report-reuse.outcome != 'success'
@@ -416,9 +459,9 @@ jobs:
             candidate/.lake/config
             candidate/.lake/.stratalint-lean-cache-stamp.json
             ~/.cache/mathlib
-          key: ${{ runner.os }}-${{ runner.arch }}-lake-deps-v1-${{ steps.lean-input.outputs.config_sha256 }}
+          key: ${{ runner.os }}-${{ runner.arch }}-lake-deps-v2-${{ steps.lean-input.outputs.dependency_sha256 }}
           restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-lake-deps-v1-${{ steps.lean-input.outputs.config_sha256 }}
+            ${{ runner.os }}-${{ runner.arch }}-lake-deps-v2-
       # project 层优先取 Actions cache:它每次 dev push 写一份(约 8 分钟一份),
       # 而 Release 是 `cron: 0 */6 * * *` 且只许 schedule(实测间隔可达 7h05m)。
       # 精确命中结构上不可能(key 含 sources_sha256,每个改 Lean 的候选都不同),
@@ -443,8 +486,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          printf '%s\n' 'Actions project 层缺席;取 release cache,取回失败即失败,不回落编译'
-          PATH="$HOME/.elan/bin:$PATH" candidate/tools/scripts/worktree/lean-cache-publish.sh fetch --repository "$GITHUB_WORKSPACE/candidate"
+          printf '%s\n' 'Actions project layer absent; resolve and validate a release seed (exact -> config prefix -> same-toolchain seed), then run lake build within the unchanged job budget (spec §12.4 budgeted source rebuild; §15 controlled CI recovery). A nonzero download, validation, or build result terminates the job.'
+          PATH="$HOME/.elan/bin:$PATH" candidate/tools/scripts/worktree/lean-cache-publish.sh fetch --allow-seed --repository "$GITHUB_WORKSPACE/candidate"
       - name: Build candidate Lean project
         id: lean-build
         if: steps.report-reuse.outcome != 'success'
@@ -474,7 +517,7 @@ jobs:
             candidate/.lake/config
             candidate/.lake/.stratalint-lean-cache-stamp.json
             ~/.cache/mathlib
-          key: ${{ runner.os }}-${{ runner.arch }}-lake-deps-v1-${{ steps.lean-input.outputs.config_sha256 }}
+          key: ${{ runner.os }}-${{ runner.arch }}-lake-deps-v2-${{ steps.lean-input.outputs.dependency_sha256 }}
       - name: Build Scribe binary on judge cache miss
         if: steps.judge-cache.outputs.cache-hit != 'true'
         shell: bash
