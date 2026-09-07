@@ -1,3 +1,11 @@
+/- GID: D5/S3/Analytic/SeriesInequalities/Profile32Concavity
+   generality: G
+   mirror-B: D5/B/S3/Analytic/SeriesInequalities/Profile32Concavity
+   mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
+   anchors: []
+   utility: none
+   digest: An algebraic sign estimate for the cubic profile curvature. -/
+
 import Mathlib.Analysis.Convex.Deriv
 import Mathlib.Analysis.Convex.SpecificFunctions.Pow
 import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
@@ -10,6 +18,8 @@ import Mathlib.Tactic
    numeric premises, or a certified finite instance. -/
 
 set_option autoImplicit false
+
+noncomputable section
 
 namespace D5.S3.Analytic.SeriesInequalities.Profile32Concavity
 
@@ -82,11 +92,63 @@ theorem sign_kernel_pos (z A B C : ℝ) (hz : 0 < z) (hz1 : z < 1)
 #print axioms radical_margin
 #print axioms sign_kernel_pos
 
+def weight (z : ℝ) : ℝ := 36 * (1 - z^2)^2 / (3 + z^2)
+def weightFirst (z : ℝ) : ℝ :=
+  72 * z * (z - 1) * (z + 1) * (z^2 + 7) / (z^2 + 3)^2
+def weightSecond (z : ℝ) : ℝ :=
+  72 * (z^6 + 9*z^4 + 75*z^2 - 21) / (z^2 + 3)^3
+def chartLogSecond (z : ℝ) : ℝ :=
+  -z * (3*z^2 - 11) / ((z^2 - 1) * (z^2 + 3))
+def sumValue (z A B C : ℝ) : ℝ :=
+  (3 - 2*z - z^2)*A + 4*z*B + (3 + 2*z - z^2)*C
+def sumFirst (z A B C : ℝ) : ℝ :=
+  3 / 2 * ((-2 - 2*z)*A + 4*B + (2 - 2*z)*C)
+def sumSecond (z A B C : ℝ) : ℝ :=
+  3 * (-A - C + (1+z)^2*A/(3 - 2*z - z^2) +
+    4*B/(4*z) + (1-z)^2*C/(3 + 2*z - z^2))
+def curvatureNumerator (z A B C : ℝ) : ℝ :=
+  9 * (weightSecond z - chartLogSecond z * weightFirst z) * (sumValue z A B C)^2 +
+  (-24*weightFirst z + 12*chartLogSecond z*weight z) *
+    sumValue z A B C * sumFirst z A B C -
+  12 * weight z * sumValue z A B C * sumSecond z A B C +
+  28 * weight z * (sumFirst z A B C)^2
+
+set_option maxRecDepth 4096 in
+theorem curvature_numerator_eq (z A B C : ℝ) (hz : 0 < z) (hz1 : z < 1)
+    (hAsq : A^2 = 3 - 2*z - z^2) (hBsq : B^2 = 4*z)
+    (hCsq : C^2 = 3 + 2*z - z^2) :
+    curvatureNumerator z A B C =
+      -1296 * (1-z) * signKernel z A B C / (z * (9-z^2) * (z^2+3)^3) := by
+  have hz2 : z^2 < 1 := by nlinarith [mul_pos hz (sub_pos.mpr hz1)]
+  have ha : 0 < 3 - 2*z - z^2 := by nlinarith only [hz1, hz2]
+  have hc : 0 < 3 + 2*z - z^2 := by nlinarith only [hz, hz2]
+  have hd : 0 < z^2 + 3 := by positivity
+  have he : 0 < 9-z^2 := by linarith only [hz2]
+  have hna : 3 - z*2 - z^2 ≠ 0 := by nlinarith only [ha]
+  have hnc : 3 + z*2 - z^2 ≠ 0 := by nlinarith only [hc]
+  unfold curvatureNumerator weight weightFirst weightSecond chartLogSecond
+    sumValue sumFirst sumSecond signKernel evenPoly oddPoly hPoly rPoly
+  field_simp [ne_of_gt hz, ne_of_gt ha, ne_of_gt hc, ne_of_gt hd,
+    ne_of_gt he, ne_of_lt (sub_neg.mpr hz2)]
+  ring_nf
+  simp only [hAsq, hBsq, hCsq]
+  field_simp [hna, hnc]
+  ring
+
+theorem curvature_numerator_neg (z A B C : ℝ) (hz : 0 < z) (hz1 : z < 1)
+    (hA : 0 < A) (hB : 0 ≤ B) (hC : 0 < C)
+    (hAsq : A^2 = 3 - 2*z - z^2) (hBsq : B^2 = 4*z)
+    (hCsq : C^2 = 3 + 2*z - z^2) :
+    curvatureNumerator z A B C < 0 := by
+  rw [curvature_numerator_eq z A B C hz hz1 hAsq hBsq hCsq]
+  have hk := sign_kernel_pos z A B C hz hz1 hA hB hC hAsq hCsq
+  have hz2 : z^2 < 1 := by nlinarith [mul_pos hz (sub_pos.mpr hz1)]
+  apply div_neg_of_neg_of_pos
+  · exact mul_neg_of_neg_of_pos (mul_neg_of_neg_of_pos (by norm_num)
+      (sub_pos.mpr hz1)) hk
+  · exact mul_pos (mul_pos hz (by linarith only [hz2])) (by positivity)
+
+#print axioms curvature_numerator_eq
+#print axioms curvature_numerator_neg
+
 end D5.S3.Analytic.SeriesInequalities.Profile32Concavity
-/- GID: D5/S3/Analytic/SeriesInequalities/Profile32Concavity
-   generality: G
-   mirror-B: D5/B/S3/Analytic/SeriesInequalities/Profile32Concavity
-   mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
-   anchors: []
-   utility: none
-   digest: An algebraic sign estimate for the cubic profile curvature. -/
