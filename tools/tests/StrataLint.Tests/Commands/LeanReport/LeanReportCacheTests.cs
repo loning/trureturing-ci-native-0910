@@ -304,6 +304,20 @@ public sealed class LeanReportCacheTests
         Assert.Empty(world.CommittedCacheEntries());
     }
 
+    [Fact]
+    public void PairEntrypointIsMadeExecutableAtItsLaunchBoundary()
+    {
+        if (OperatingSystem.IsWindows()) return;
+        using var world = new CacheWorld();
+        File.SetUnixFileMode(
+            world.PairScript,
+            UnixFileMode.UserRead | UnixFileMode.UserWrite);
+
+        var result = world.RunPair(cacheEnabled: false);
+
+        Assert.True(result.ExitCode == 0, Encoding.UTF8.GetString(result.StandardError));
+    }
+
     [Theory]
     [InlineData("producer")]
     [InlineData("supervisor")]
@@ -316,7 +330,7 @@ public sealed class LeanReportCacheTests
         using var world = new CacheWorld();
         var cacheEnabled = stage == "cache-restore";
         var first = world.RunPair(cacheEnabled: cacheEnabled, reportVersion: 1);
-        Assert.Equal(0, first.ExitCode);
+        Assert.True(first.ExitCode == 0, Encoding.UTF8.GetString(first.StandardError));
         var prior = world.SnapshotLiveBundle();
 
         var failed = world.RunPair(
@@ -426,7 +440,6 @@ public sealed class LeanReportCacheTests
                 Directory.CreateDirectory(Path.GetDirectoryName(path)!);
                 File.WriteAllText(path, "fixture\n");
             }
-            MakeExecutable(PairScript);
             MakeExecutable(Path.Combine(reportDir, "lean-report-input.sh"));
         }
 
@@ -500,6 +513,7 @@ public sealed class LeanReportCacheTests
                 "--candidate-output", Output,
             ]);
 
+            MakeExecutable(PairScript);
             return TestProcessRunner.Run(
                 "env",
                 arguments,
