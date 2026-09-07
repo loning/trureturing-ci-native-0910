@@ -29,7 +29,7 @@ internal sealed class FiniteFreeCommutatorDegreeFiveDocument : IScribeDocumentDe
                     + "times the square of their second moment as a polynomial with 22 "
                     + "nonnegative monomials in consecutive root gaps. Newton identities "
                     + "give the coefficient estimate. Roots (2,2,2,-3,-3) attain equality, "
-                    + "with u=-15 and w=60. This is the preregistered escape witness."))),
+                    + "with u=-15 and w=60."))),
                 DescribeRole.Lemma),
             Describe.Lean(
                 DescribeId.Create("quintic-commutator-source-expansion"),

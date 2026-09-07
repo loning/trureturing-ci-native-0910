@@ -16,7 +16,7 @@ Lean statement: `D5/S3/Zeros/Convolution/FiniteFreeCommutatorDegreeFive.centered
 
 *Commentary.*
 
-For X^5+uX^3+vX^2+wX+t with five real roots, w is at most 4u^2/15. Sort the roots and express 30 times their fourth moment minus seven times the square of their second moment as a polynomial with 22 nonnegative monomials in consecutive root gaps. Newton identities give the coefficient estimate. Roots (2,2,2,-3,-3) attain equality, with u=-15 and w=60. This is the preregistered escape witness.
+For X^5+uX^3+vX^2+wX+t with five real roots, w is at most 4u^2/15. Sort the roots and express 30 times their fourth moment minus seven times the square of their second moment as a polynomial with 22 nonnegative monomials in consecutive root gaps. Newton identities give the coefficient estimate. Roots (2,2,2,-3,-3) attain equality, with u=-15 and w=60.
 
 **Lemma 1.2 (Definition-derived coefficients).**
 
