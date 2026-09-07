@@ -914,49 +914,6 @@ q_*K_x=q_*K_y.
 K\text{ 对 }q\text{ 强 lumpable}.
 \]
 
-## 定理 8.2（任何近似下降的误差下界）
-
-定义最佳 Markov 下降误差
-
-\[
-\varepsilon_q^*(K)
-:=
-\inf_{\overline K}
-\sup_x
-\operatorname{TV}
-\bigl(q_*K_x,\overline K_{q(x)}\bigr).
-\]
-
-则
-
-\[
-\boxed{
-\frac12\delta_q(K)
-\le
-\varepsilon_q^*(K).
-}
-\]
-
-若每个 fiber 选定代表元，则还有
-
-\[
-\varepsilon_q^*(K)
-\le
-\delta_q(K).
-\]
-
-### 证明
-
-对同一 fiber 中任意 \(x,y\)，三角不等式给出
-
-\[
-\operatorname{TV}(q_*K_x,q_*K_y)
-\le
-e_x+e_y,
-\]
-
-故至少一个误差不小于该 pair 距离的一半。取上确界与下确界得到下界。上界取每个 fiber 的代表分布作为 \(\overline K\)。\(\square\)
-
 ## 定理 8.3（目标后处理收缩）
 
 对任意可测后处理 \(r:B\to C\)，定义固定 source fiber 上的后处理缺陷：
@@ -2448,3 +2405,87 @@ D=\frac{E_1+BE_0}{p},\qquad Q=\frac43H+\frac{4BNV}{p}.
 本轮九个公开声明有同一 Scribe 中的九个精确句柄。数学检查实际执行了一个混合望远镜恒等式、250 组精确误差包围、1145 组复数乘积恒等式、1920 个双侧残差点检查、各 250 组有理验收等价、有限尾和及精度平衡检查，并拒绝八个指定错误变体。残差点检查使用有界模型符号及分母常数 3，未冒充真实 prime-pole-Gamma 计算。没有运行新的实际 prolate、Weil 或区间函数求值认证。
 
 这些精确有限诊断未调用 Lean。源码仍为数学与接口审查后的候选证明，Lean elaboration、内核公理闭包及 Scribe 发射尚未执行。本节给出有限精度误差传播与严格验收链，未完成规范 Weil 算子的全尺度模态逼近或 Xi 极限。
+
+---
+
+# 2026-09-07 增补：精确正交试探的构造与修正后残差认证
+
+本节继续 PR 6029，补齐上一增补留下的候选正交条件。新增 `WeilOrthogonalTrialPrecision.lean` 及同名 Scribe。实际试探由 Mathlib 原有正交投影构造，其修正后系数半径进入既有 `rounded_residual_certificate_sound`。结论对同一个修正后试探同时给出精确支撑、精确正交和完整双侧算术尾界。
+
+## A. 原有投影与系数域结果的复用
+
+项目钉版 Mathlib `db584cd6d46c92f209a44c0f1c829460d327499d` 的 `Projection/Basic` 已有 `starProjection_singleton`、`starProjection_orthogonal_val` 和投影像的子空间成员定理；`PiL2` 提供有限欧氏系数空间及其内积；`Orthonormal.inner_sum` 提供实际有限正交合成的配对等式。本节直接使用这些对象，没有重新构造一套正交投影。
+
+本轮实际读取了 loning 路线 PR 6013 在 `061a5616f6adc52ac545b6941cf23214fa8f442a` 的 `GramSchmidtCoefficientField.lean`。该源码在明确的 Hankel 内积条件下，通过良基归纳证明未归一化 Gram–Schmidt 坐标属于系数生成子域。本节不复制这一迭代结论；只对一个具体试探使用单向量投影，并证明修正系数的误差传播及算术尾界消费。PR 5602 当前 Gamma/prolate 能量增补与 PR 5895 的横向 Fourier 增补本轮仅核对说明，未重跑其算术验证器。
+
+## B. 固定精确候选，不要求先归一化
+
+令 S 为有限整数支撑，k_n 为固定的精确候选系数，v_n 为待修正系数。记
+\[
+\sigma=\sum_{n\in S}|k_n|^2,\qquad
+\beta=\frac{\sum_{n\in S}\overline{k_n}v_n}{\sum_{n\in S}\overline{k_n}k_n}.
+\]
+在 Mathlib 的 `EuclideanSpace Complex S` 中投影到 k 的正交补，并在 S 外补零，得到 `orthogonalTrial`。原单向量投影公式给出
+\[
+\boxed{v_n^{\perp}=v_n-\beta k_n\quad(n\in S),\qquad v_n^{\perp}=0\quad(n\notin S).}
+\]
+`orthogonal_trial_constraints` 由实际投影的成员关系证明
+\[
+\boxed{\sum_{n\in S}\overline{k_n}v_n^{\perp}=0.}
+\]
+原始试探不需要预先满足任何正交等式。若候选为零，投影和全定义除法公式仍有一致语义；涉及精度分母的后续定理单独要求正下界，因此不会把零候选当作有效精度证书。
+
+该公式只用四则运算与共轭，没有计算单位化因子 sqrt(σ)。`orthogonal_trial_mem_subfield` 证明：当 k、v 的有限系数属于共轭封闭的复数子域时，修正结果仍属于该域。这个结论是系数归属定理，未宣称已执行一个新的有理数求解器。
+
+对任意实际给出的正交单位族 e_n，`orthogonal_trial_synthesis` 使用原有限合成内积定理，将系数正交转换为
+\[
+\left\langle\sum_{n\in S}k_ne_n,\sum_{n\in S}v_n^{\perp}e_n\right\rangle=0.
+\]
+这里不额外构造或假定某个规范 Fourier 族已经完成正交性识别。
+
+## C. 用标量方程残差包围精确修正系数
+
+假设 |v_n−v̂_n|≤e_{v,n}，且给出 0<σ_lo≤σ。令 b 是修正系数的任意精确中心，ε≥0。只需认证
+\[
+\boxed{\left|\sum_{n\in S}\overline{k_n}\widehat v_n-b\sigma\right|
++\sum_{n\in S}|k_n|e_{v,n}\le\varepsilon\sigma_{\rm lo}.}
+\]
+有限配对的误差界与 σ 的正下界推出 |β−b|≤ε。于是以
+\[
+\widehat v_n^{\perp}=\widehat v_n-bk_n,\qquad
+e_{v,n}^{\perp}=e_{v,n}+\varepsilon|k_n|
+\]
+作为更新后的中心和半径，得到
+\[
+\boxed{|v_n^{\perp}-\widehat v_n^{\perp}|\le e_{v,n}^{\perp}.}
+\]
+`orthogonal_trial_enclosures` 同时证明这两个结论。它不把 b 当作精确 β，也不把接近零的候选配对解释成零。k 是固定精确数据；若调用者只有另一个未知候选的近似值，需要另外证明两者的关系，不能悄悄交换候选。
+
+上述标量条件按包含式误差解释。FLINT 官方 *Using ball arithmetic* 文档明确区分输入球的包含保证、实际半径和工作精度：`https://flintlib.org/doc/using.html`。这只提供数值方法的语义参照，Lean 终点仍要求相应的不等式证明，不信任某个外部成功标记。
+
+## D. 两个边界矩必须对修正后向量重新计算
+
+`orthogonal_trial_moment` 对任意权重 a_n 证明
+\[
+\boxed{\sum_{n\in S}a_nv_n^{\perp}
+=\sum_{n\in S}a_nv_n-\beta\sum_{n\in S}a_nk_n.}
+\]
+分别取 a_n=1 与 a_n=s_c(n)，得到更新后的两个算术边界矩。投影一般不保持原先的零矩条件。
+
+一个精确有理数例子是 S={0,1,2,3}、k=(1,1,0,0)、v=(1,−2,1,0)，用权重 s=(0,1,2,3)。原来两个加权和均为零；β=−1/2，修正结果为 (3/2,−3/2,1,0)，其候选配对精确为零，但两个矩分别变成 1 与 1/2。这个例子只说明矩更新的代数必要性，不是实际算术符号实例。
+
+因此最终 `orthogonal_trial_residual_certificate` 把 C 节的新中心及新半径传给上一增补的误差传播定理，重新形成 E0、E1、V，再用同一原 `residualTailCheck` 验收。它同时输出有限支撑、精确候选正交、原 `arithmeticResidualTail` 的平方可和性及对全部双侧外部模态的 τ 上界。原始试探的正交性和修正误差均不是输入假设。
+
+## E. 对真实模态问题的作用与边界
+
+本节消除了能量对偶应用中“数值试探已精确正交”的额外要求，并防止修正前后使用不同试探的预算。精确修正对象可以用中心与半径表示，后续数值代码不需要把它再次舍入后冒充同一个精确对象。若实际使用的向量经过再次舍入，其新误差必须另计。
+
+修正后的试探可以为零，例如原始试探平行于候选。现有能量对偶证书允许零试探；本节没有把精确正交升级成非零、最优性或实际误差改善。即使正交投影在 Hilbert 范数中有良性性质，也不能无证明地控制一个无界算子的作用。只有在候选和试探都位于同一个线性算子域时，减去 βk 才自动留在该域。
+
+Suzuki 的 *Weil’s quadratic form via the screw function*，arXiv:2606.09096v1，Theorem 1.1 给出规范算子的 Friedrichs 扩张描述；Theorem 1.4 的最低模态结论限制在充分小的窗口。本轮读取的是公开 v1 原文，不据此断言当前全部版本的最终研究状态。这个定义域与窗口范围提醒仍适用于本节：有限系数投影不能代替规范 Weil 算子的真实域、基识别、内区残差或增长尺度上的补空间强制性证明。
+
+## F. 实际检查与未执行的验证
+
+九个公开声明均有同名 Scribe 的 `StatementSource.FromLean()` 对应。独立于源码推导的本地精确有理数诊断实际检查了 180 组投影与范数关系、540 个矩恒等式、180 个修正系数包围、813 个修正后坐标包围、35 个有限 Hilbert 合成比较，以及 768 个残差点和 24 组有限尾预算。六个错误变体被拒绝，包括省略共轭、误当单位候选、沿用旧矩与遗漏修正系数误差。
+
+残差诊断使用有界周期模型符号和分母常数 3，未冒充实际 prime-pole-Gamma 求值；有限尾和也不证明无穷级数结论。没有运行新的实际 Weil/prolate 数值证书，没有独立审稿人。Lean elaboration、内核公理闭包和 Scribe 发射尚未执行，本节是完成数学审查的候选证明源码。规范算子的全尺度最低模态逼近及 Xi 极限仍需实际算术分析。
