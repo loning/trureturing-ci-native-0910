@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Analytic/Certified/TrigEnvelopePhaseReduction.abs_cos_sub_partial_le
     target_statement_id: sha256:a883454a1e7235b012abdb6a5529e609cf3353b3b42c5f43d9f2c79e15c9311d
 receipts:
-  scribe:
-    - gid: D5/S3/Analytic/Certified/TrigEnvelopePhaseReduction.abs_cos_sub_partial_le
-      definition_sha256: sha256:ce02bcc504c0b9b2983f9c774d856bf675262d614ebd9b570a8a6f7e4dbae62f
-      emission_sha256: sha256:ff0143ada81e8837514df192da495823b48b8937b53b15ffb81e96470fce2587
   unresolved_subitems: []

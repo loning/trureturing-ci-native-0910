@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Run after make lean-cache-ensure and lake build Trureturing LeanInformationAudit.
+# Run after make lean-cache-ensure. Lake builds the non-default analysis library
+# and its dependencies; the library's own traces are cleared to repeat exports.
+# The recursive LeanInformationAuditAnalysis.+ glob covers this directory dedicated
+# to opt-in full analyses; adding an exporting fixture requires updating this
+# runner's artifact inventory.
 # Exit 64 means bad arguments, 66 missing inputs, 69 missing tools, 73 output
 # unavailable; otherwise preserve the failing command's exit code. Only exit 0
 # and ANALYSIS_FIXTURES_EXIT=0 indicate that all fixtures finished.
@@ -38,22 +42,20 @@ for fixture in "${fixtures[@]}"; do
   [[ -r $input ]] || fail 66 "missing input: $input"
 done
 
-# Lean resolves the import paths; check all three before starting costly work.
-for fixture in "${fixtures[@]}"; do
-  dependencies=$(lake env lean --deps "$script_directory/$fixture.lean")
-  while IFS= read -r dependency; do
-    [[ -r $dependency ]] || fail 66 "missing built input: $dependency"
-  done <<< "$dependencies"
-done
-
 mkdir -p -- "$output_directory" || fail 73 "cannot create output: $output_directory"
 [[ -w $output_directory ]] || fail 73 "output is not writable: $output_directory"
 export IE_PROJECTION_OUTPUT_DIR=$output_directory
 export LC_ALL=C
 
+# The output directory is not a Lake input. Re-elaborate only these modules so a
+# cached successful build cannot leave the caller's directory without artifacts.
 for fixture in "${fixtures[@]}"; do
-  TIMEFORMAT="ANALYSIS_FIXTURE file=$fixture wall_seconds=%R"
-  time lake env lean "tools/lean-inspector/LeanInformationAuditAnalysis/$fixture.lean"
+  rm -f -- ".lake/build/lib/lean/LeanInformationAuditAnalysis/$fixture.trace"
+done
+TIMEFORMAT='ANALYSIS_FIXTURES_BUILD wall_seconds=%R'
+time lake build LeanInformationAuditAnalysis
+
+for fixture in "${fixtures[@]}"; do
   case $fixture in
     CausalProjection) artifacts=(causal-analysis.json causal-analysis.txt) ;;
     FrozenRootAnalysis) artifacts=(frozen-seal.json frozen-analysis.json frozen-analysis.txt) ;;

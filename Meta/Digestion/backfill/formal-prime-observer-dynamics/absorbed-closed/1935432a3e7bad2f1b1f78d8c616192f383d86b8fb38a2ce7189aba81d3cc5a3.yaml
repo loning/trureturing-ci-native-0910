@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/CanonicalImage/GlobalProfileCounterfactualTargetMinimality.global_profile_target_family_factors
     target_statement_id: sha256:6a588e8625e9508f6a16e11096d8c00b28e86145d1d1bc5361933248a50bb9b6
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/CanonicalImage/GlobalProfileCounterfactualTargetMinimality.global_profile_target_family_factors
-      definition_sha256: sha256:c5b9333373cfec0e2108354ab464c8a0128e802dfd67ee4f9fb77ee7d5ae2e5b
-      emission_sha256: sha256:958d823b03c21eca5fc79ec1313026320b2cdab022d84c3abebd2f8188df1e84
   unresolved_subitems: []

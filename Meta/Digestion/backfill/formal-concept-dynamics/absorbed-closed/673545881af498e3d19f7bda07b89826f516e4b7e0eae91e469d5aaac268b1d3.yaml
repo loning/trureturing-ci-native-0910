@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Interventions/RedundantAppealDefectPersistence.redundant_appeal_cannot_repair_structural_defect
     target_statement_id: sha256:05dca09f40cae23df10edafffc9868b6db1a379a3c2613082b2006f90b7be53b
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Interventions/RedundantAppealDefectPersistence.redundant_appeal_cannot_repair_structural_defect
-      definition_sha256: sha256:7da4a4791d06e0e87215ddddcce23929138d6e56cf5d14832095c5f61da6503b
-      emission_sha256: sha256:6ee2defde8435e8224665f2c65da293bc3cd0b6c5684cf4e88840467b3a57b1e
   unresolved_subitems: []

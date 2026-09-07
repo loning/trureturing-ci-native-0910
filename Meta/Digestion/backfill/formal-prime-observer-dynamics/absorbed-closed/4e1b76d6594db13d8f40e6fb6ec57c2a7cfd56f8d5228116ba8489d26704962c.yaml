@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Faithfulness/FiniteQuotientJointKernel.finite_quotient_joint_kernel
     target_statement_id: sha256:487137682a33cfee167c041b3d1e07ef024f5a4055103f074d2c159542ae31ce
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Faithfulness/FiniteQuotientJointKernel.finite_quotient_joint_kernel
-      definition_sha256: sha256:9e62967b5cf2b25d68cac9b97596e77ad53458d283ee1003a320337315191667
-      emission_sha256: sha256:ab46b9c63a14dfaf1ddee751a56de1a61847d1e3f8148f1db9f8a28d758c6b90
   unresolved_subitems: []

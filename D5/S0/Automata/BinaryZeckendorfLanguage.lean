@@ -3,6 +3,7 @@
    mirror-B: D5/B/S0/Automata/BinaryZeckendorfLanguage
    mirror-E: none(waiver:language-characterization)
    anchors: [mathlib/module/Mathlib.Data.List.Chain]
+   utility: none
    digest: Successful binary base execution is equivalent to nonadjacency. -/
 
 import D5.S0.Automata.TypedPartialDFAOOverBase

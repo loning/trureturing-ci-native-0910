@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Observer/DefectModularFirstLaw/EntropyDerivativeEqualsModularGap.entropy_derivative_equals_modular_gap
     target_statement_id: sha256:6f7c0e02e381f245bb131851961eb43eaae208c88f33e388ca2fac9485872401
 receipts:
-  scribe:
-    - gid: D5/S3/Observer/DefectModularFirstLaw/EntropyDerivativeEqualsModularGap.entropy_derivative_equals_modular_gap
-      definition_sha256: sha256:4e4cbc6b2265aee4b37dea63b9cb9e3750a4f9d1cdefd892fe1060397c889028
-      emission_sha256: sha256:6f2103d411eac5b7b79f2304af7305326400f5e4225398283d2b5664d3f43b42
   unresolved_subitems: []

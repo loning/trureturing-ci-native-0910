@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Experiment/OffPolicyResidualIdentifiability.target_policy_identifiable_iff_off_policy_residual_empty
     target_statement_id: sha256:4fd3e9c0b3464ca0e6263d0772eb2888d04806ee34d613901bbe89696e79c439
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Experiment/OffPolicyResidualIdentifiability.target_policy_identifiable_iff_off_policy_residual_empty
-      definition_sha256: sha256:b8fe23a7ed2f0400e7a7551a08323a1d3667b5075010f45f5bf2d70a3e0f1b34
-      emission_sha256: sha256:67bde374c4b14b368112358c4e3219f6ef3922d7baf47d549f810543af2f1fd7
   unresolved_subitems: []

@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Identifiability/BehavioralChannelSeparation.behavioral_identification_requires_channel_difference
     target_statement_id: sha256:12096866ffa62ab6f12be63c341a910ed29bc632b270063c47d2fb3d7f7ba2f5
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Identifiability/BehavioralChannelSeparation.behavioral_identification_requires_channel_difference
-      definition_sha256: sha256:0f097f451b4a35a9921593bb87cd7d659c470b4ce08807fa16c6ede235b15b06
-      emission_sha256: sha256:e71f796d902fc678ab8a70f402cf8ea87b80b66de92c20fbed9c933a9a46b8ea
   unresolved_subitems: []

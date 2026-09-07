@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Arith/Lattices/ProductMinkowskiCovolume
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: none
    digest: Finite product fundamental domains give the Minkowski discriminant covolume. -/
 
 import D5.S3.Arith.Lattices.RestrictedScalarFreeMinkowskiLattice

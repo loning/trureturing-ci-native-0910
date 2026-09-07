@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/InterventionLaws/InterventionImageDefect.image_defect_excludes_joint_model
     target_statement_id: sha256:3993179739a10921a540ea618e746bf70b69e5b69b545f07d0f3c2eb1b6903c0
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/InterventionLaws/InterventionImageDefect.image_defect_excludes_joint_model
-      definition_sha256: sha256:e4868281619cad93a6087c93286d0e89da5999ec3906cf24f2d36531a5fc4883
-      emission_sha256: sha256:ad30a7fa66db0fade04de4c08c66cf5890b3bb62bf7e2c95c1a808a84ecc1fde
   unresolved_subitems: []

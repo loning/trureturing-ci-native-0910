@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/NormativeStructure/DescriptiveNormativeSeparation.descriptive_structure_does_not_uniquely_determine_norms
     target_statement_id: sha256:2bcbacbcd6199ea2f4d768a2d61a63bda1e001fac7d7709a750d61351999dc0a
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/NormativeStructure/DescriptiveNormativeSeparation.descriptive_structure_does_not_uniquely_determine_norms
-      definition_sha256: sha256:825cba335a68fdd4cc18eabcaf615ad609195bc4d836bc0a57b221c101764b75
-      emission_sha256: sha256:61684fc73ff2d8a73f5754429f487ac50589efa4eb7251ad2c121736f7fe76c2
   unresolved_subitems: []
