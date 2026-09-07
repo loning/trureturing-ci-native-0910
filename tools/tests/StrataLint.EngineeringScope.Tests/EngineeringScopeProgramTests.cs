@@ -109,6 +109,24 @@ public sealed class EngineeringScopeProgramTests
     }
 
     [Fact]
+    public void DigestionOnlyContentChangeSelectsNoEngineeringTests()
+    {
+        const string path = "Meta/Digestion/backfill/source/residual-open/atom.yaml";
+        var result = RunBoundary(
+            root =>
+            {
+                WriteProductProjects(root);
+                WriteFile(root, path, "# before\n");
+                WriteAdmissionPlaneFileMap(root, (path, "content"));
+            },
+            root => WriteFile(root, path, "# after\n"));
+
+        Assert.True(result.ExitCode == 0, result.Diagnostic);
+        Assert.Empty(result.SelectedProjects);
+        Assert.Contains("ENGINEERING_TEST_PLAN state=none", result.Output, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void ChangingOnlyTheScriptTestsProjectSelectsNoTestProjectAtAll()
     {
         // owner 2026-09-07:脚本 / make target 测试保留在树上,CI 永不执行它们。

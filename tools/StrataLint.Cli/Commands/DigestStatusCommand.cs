@@ -17,20 +17,26 @@ internal static class DigestStatusCommand
     internal static CommandResult Run(
         IRepositoryGateway repository,
         ILeanReportSource leanReportSource,
-        IScribeEmissionVerifier scribeEmissionVerifier,
+        IScribeEmissionVerifier? scribeEmissionVerifier,
         IReadOnlyList<string> arguments,
         IAtomHistorySource atomHistorySource,
         TimeProvider ageTimeProvider)
     {
         ArgumentNullException.ThrowIfNull(repository);
         ArgumentNullException.ThrowIfNull(leanReportSource);
-        ArgumentNullException.ThrowIfNull(scribeEmissionVerifier);
         ArgumentNullException.ThrowIfNull(arguments);
         ArgumentNullException.ThrowIfNull(atomHistorySource);
         ArgumentNullException.ThrowIfNull(ageTimeProvider);
         try
         {
             var options = ParseArguments(arguments);
+            var requiresScribe = !options.Readiness
+                && (!options.FormalizeCandidates || options.FormalizeAtomId is not null);
+            if (requiresScribe && scribeEmissionVerifier is null)
+            {
+                throw new InvalidOperationException("Scribe emission verifier is unavailable");
+            }
+
             var snapshot = Decode(repository.ReadCurrent());
             var changes = options.BaselineRevision is null
                 ? repository.ReadCurrentChanges()
@@ -39,7 +45,9 @@ internal static class DigestStatusCommand
 
             if (options.FormalizeCandidates)
             {
-                var formalizeLeanReport = leanReportSource.Load(snapshot);
+                var formalizeLeanReport = options.FormalizeAtomId is null
+                    ? null
+                    : leanReportSource.Load(snapshot);
                 var formalizeDocument = BackfillInventoryLoader.Load(snapshot, scope, changes);
                 BackfillInventoryDocument? formalizeBaselineDocument = null;
                 RepositorySnapshot? formalizeBaselineSnapshot = null;
@@ -61,7 +69,7 @@ internal static class DigestStatusCommand
 
                 if (options.FormalizeAtomId is not null)
                 {
-                    scribeEmissionVerifier.Verify(snapshot, formalizeLeanReport, changes);
+                    scribeEmissionVerifier!.Verify(snapshot, formalizeLeanReport!, changes);
                 }
 
                 var formalizeEvaluation = options.FormalizeAtomId is null
@@ -75,7 +83,7 @@ internal static class DigestStatusCommand
                         scope,
                         formalizeDocument,
                         snapshot,
-                        ValidateLean(snapshot, formalizeLeanReport),
+                        ValidateLean(snapshot, formalizeLeanReport!),
                         formalizeBaselineDocument,
                         baselineSnapshot: formalizeBaselineSnapshot,
                         changes: changes,
@@ -107,7 +115,10 @@ internal static class DigestStatusCommand
 
             var leanReport = leanReportSource.Load(snapshot);
             var lean = ValidateLean(snapshot, leanReport);
-            scribeEmissionVerifier.Verify(snapshot, leanReport, changes);
+            if (requiresScribe)
+            {
+                scribeEmissionVerifier!.Verify(snapshot, leanReport, changes);
+            }
             var document = BackfillInventoryLoader.Load(snapshot, scope, changes);
             BackfillInventoryDocument? baselineDocument = null;
             RepositorySnapshot? baselineSnapshot = null;

@@ -19,7 +19,9 @@ internal static class BackfillDeltaImpactResolver
         LeanAxiomReport? report,
         BackfillInventoryDocument document,
         RawChangeSet repositoryChanges,
-        Action<string>? statementResolutionObserved = null)
+        Action<string>? statementResolutionObserved = null,
+        FrozenStateCatalog? frozenState = null,
+        FrozenStatementIndex? frozenStatements = null)
     {
         ArgumentNullException.ThrowIfNull(current);
         ArgumentNullException.ThrowIfNull(baseline);
@@ -44,7 +46,9 @@ internal static class BackfillDeltaImpactResolver
             document,
             repositoryChanges,
             affectedEntryPaths,
-            statementResolutionObserved);
+            statementResolutionObserved,
+            frozenState,
+            frozenStatements);
 
         // Raw frozen and Lean paths have historically widened one dependency change to every
         // edge. Their value changes are represented by the affected entry paths above instead.
@@ -148,7 +152,9 @@ internal static class BackfillDeltaImpactResolver
         BackfillInventoryDocument document,
         RawChangeSet repositoryChanges,
         ISet<string> affectedEntryPaths,
-        Action<string>? statementResolutionObserved)
+        Action<string>? statementResolutionObserved,
+        FrozenStateCatalog? frozenState,
+        FrozenStatementIndex? currentStatements)
     {
         var reverseIndex = BuildCoverageReverseIndex(document);
         var changedModules = ChangedStatementModules(repositoryChanges);
@@ -160,12 +166,10 @@ internal static class BackfillDeltaImpactResolver
             return;
         }
 
-        FrozenStateCatalog frozenState;
-        FrozenStatementIndex? currentStatements;
         try
         {
-            frozenState = FrozenStateCatalog.Load(current);
-            currentStatements = report is null
+            frozenState ??= FrozenStateCatalog.Load(current);
+            currentStatements ??= report is null
                 ? null
                 : FrozenStatementIndex.Create(frozenState, report);
         }

@@ -40,7 +40,8 @@ internal static class EngineeringTestPlanPolicy
         IReadOnlyList<string> changedPaths,
         TestProjectTopologySnapshot protectedBase,
         TestProjectTopologySnapshot candidate,
-        bool full = false)
+        bool full = false,
+        AdmissionPlaneDecision? admissionPlane = null)
     {
         ArgumentNullException.ThrowIfNull(changedPaths);
         ArgumentNullException.ThrowIfNull(protectedBase);
@@ -92,12 +93,19 @@ internal static class EngineeringTestPlanPolicy
                 "FULL=1 selects every protected-base and candidate-added test project");
         }
 
+        var unownedDigestionData = admissionPlane is
+            { IsAdmissible: true, Classification: AdmissionPlaneClassification.ContentOnly }
+            && changed.Length > 0
+            && changed.All(static path => BackfillInventoryLoader.IsCanonicalPath(path)
+                || DigestionCasStore.IsCanonicalPath(path));
         var affected = new HashSet<string>(StringComparer.Ordinal);
         foreach (var path in changed)
         {
             var owner = FindOwner(baseProjects, path);
             if (owner is null)
             {
+                if (unownedDigestionData) continue;
+
                 return new EngineeringTestPlan(
                     EngineeringTestPlanKind.Full,
                     changed,

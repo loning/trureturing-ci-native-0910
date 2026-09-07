@@ -1,6 +1,6 @@
 namespace StrataLint.ArchitectureTests;
 
-public sealed class EngineeringPathFilterTests
+public sealed partial class EngineeringPathFilterTests
 {
     private const string ScribeProject =
         "tools/StrataLint.Scribe/StrataLint.Scribe.csproj";

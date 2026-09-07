@@ -92,7 +92,8 @@ internal static class Program
         var plan = EngineeringTestPlanPolicy.EvaluateOrdinary(
             changedPaths,
             RepositoryRules.ReadSnapshotProjects(protectedBase),
-            RepositoryRules.ReadSnapshotProjects(candidate));
+            RepositoryRules.ReadSnapshotProjects(candidate),
+            admissionPlane: admissionPlane);
         return ExecutePlan(options.RepositoryRoot, plan);
     }
 
