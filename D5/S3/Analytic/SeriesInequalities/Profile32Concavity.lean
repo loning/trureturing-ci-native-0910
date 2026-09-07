@@ -9,6 +9,7 @@
 import Mathlib.Analysis.Convex.Deriv
 import Mathlib.Analysis.Convex.SpecificFunctions.Pow
 import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
+import Mathlib.Analysis.InnerProductSpace.NormPow
 import Mathlib.Algebra.Polynomial.Roots
 import Mathlib.Tactic
 
@@ -150,5 +151,74 @@ theorem curvature_numerator_neg (z A B C : ℝ) (hz : 0 < z) (hz1 : z < 1)
 
 #print axioms curvature_numerator_eq
 #print axioms curvature_numerator_neg
+
+open Polynomial
+open scoped BigOperators
+
+noncomputable def cubic (a b : ℝ) : ℝ[X] := X^3 + C a * X + C b
+
+noncomputable def phi32 (f : ℝ[X]) : ℝ :=
+  ∑ x ∈ f.roots.toFinset,
+    Real.rpow |∑ y ∈ (f.roots.toFinset.erase x), (x - y)⁻¹| (3 / 2 : ℝ)
+
+noncomputable def profile32 (t : ℝ) : ℝ :=
+  Real.rpow (phi32 (cubic (-3) (2*t))) (-(4 / 3 : ℝ))
+
+def chart (z : ℝ) : ℝ := z * (9 - z^2) / (Real.sqrt (3 + z^2))^3
+def leftRoot (z : ℝ) : ℝ := (-z - 3) / Real.sqrt (3 + z^2)
+def middleRoot (z : ℝ) : ℝ := 2*z / Real.sqrt (3 + z^2)
+def rightRoot (z : ℝ) : ℝ := (3-z) / Real.sqrt (3 + z^2)
+
+theorem cubic_chart_factor (z : ℝ) :
+    cubic (-3) (2*chart z) =
+      (X - C (leftRoot z)) * (X - C (middleRoot z)) * (X - C (rightRoot z)) := by
+  have hd : 0 < Real.sqrt (3 + z^2) := Real.sqrt_pos.mpr (by positivity)
+  have hs : (Real.sqrt (3 + z^2))^2 = 3 + z^2 := Real.sq_sqrt (by positivity)
+  apply Polynomial.funext
+  intro x
+  simp only [cubic, chart, leftRoot, middleRoot, rightRoot,
+    Polynomial.eval_add, Polynomial.eval_mul, Polynomial.eval_pow,
+    Polynomial.eval_X, Polynomial.eval_C, Polynomial.eval_sub]
+  field_simp [hd.ne']
+  linear_combination -3*x*Real.sqrt (3 + z^2) * hs
+
+theorem chart_root_order (z : ℝ) (hz : z ∈ Set.Ioo (-1) 1) :
+    leftRoot z < middleRoot z ∧ middleRoot z < rightRoot z := by
+  have hd : 0 < Real.sqrt (3 + z^2) := Real.sqrt_pos.mpr (by positivity)
+  constructor
+  · unfold leftRoot middleRoot
+    exact (div_lt_div_iff_of_pos_right hd).mpr (by linarith only [hz.1])
+  · unfold middleRoot rightRoot
+    exact (div_lt_div_iff_of_pos_right hd).mpr (by linarith only [hz.2])
+
+theorem roots_product (u v w : ℝ) :
+    (((X - C u) * (X - C v) * (X - C w)).roots.toFinset : Finset ℝ) = {u,v,w} := by
+  simp [Polynomial.roots_mul, mul_ne_zero, Polynomial.X_sub_C_ne_zero]
+
+theorem phi32_product (u v w : ℝ) (huv : u ≠ v) (huw : u ≠ w) (hvw : v ≠ w) :
+    phi32 ((X - C u) * (X - C v) * (X - C w)) =
+      Real.rpow |(u-v)⁻¹ + (u-w)⁻¹| (3/2 : ℝ) +
+      Real.rpow |(v-u)⁻¹ + (v-w)⁻¹| (3/2 : ℝ) +
+      Real.rpow |(w-u)⁻¹ + (w-v)⁻¹| (3/2 : ℝ) := by
+  unfold phi32
+  rw [roots_product]
+  simp [huv, huw, hvw, Ne.symm huv, Ne.symm huw, Ne.symm hvw, add_assoc]
+
+theorem middle_term_contDiff :
+    ContDiff ℝ 1 (fun z : ℝ => Real.rpow |4*z| (3/2 : ℝ)) := by
+  have h : ContDiff ℝ 1 (fun z : ℝ => 4*z) := contDiff_const.mul contDiff_id
+  simpa only [Real.norm_eq_abs, Real.rpow_eq_pow] using
+    h.norm_rpow (by norm_num : (1:ℝ) < 3/2)
+
+theorem middle_term_hasDerivAt_zero :
+    HasDerivAt (fun z : ℝ => Real.rpow |4*z| (3/2 : ℝ)) 0 0 := by
+  have h := (hasDerivAt_abs_rpow (4*(0:ℝ)) (by norm_num : (1:ℝ) < 3/2)).comp 0
+    ((hasDerivAt_id (0:ℝ)).const_mul 4)
+  simpa [Function.comp_def, Real.rpow_eq_pow] using h
+
+#print axioms cubic_chart_factor
+#print axioms phi32_product
+#print axioms middle_term_contDiff
+#print axioms middle_term_hasDerivAt_zero
 
 end D5.S3.Analytic.SeriesInequalities.Profile32Concavity
