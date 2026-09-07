@@ -1,0 +1,53 @@
+fingerprints:
+  raw_sha256: sha256:22d4532992abbad0a21605c1622b0d4086266e7e0f1fd6bd35cf36aab73e3f30
+  normalized_sha256: sha256:22d4532992abbad0a21605c1622b0d4086266e7e0f1fd6bd35cf36aab73e3f30
+cas_ref: sha256:22d4532992abbad0a21605c1622b0d4086266e7e0f1fd6bd35cf36aab73e3f30
+coverage_gids:
+  - gid: D5/S1/Words/BitDeletionGrundy.bitDeletionSuccessors_lt
+    target_statement_id: sha256:56b7dc5d5c36b78e8d6065e152e528048f9e5a5ed6a5558841ce1d13c0400655
+  - gid: D5/S1/Words/BitDeletionGrundy.conjectures
+    target_statement_id: sha256:c4d45f6e92867e43b210b8515562ff4967fa13ee7067c61aa23bc9d4983e8e1e
+  - gid: D5/S1/Words/BitDeletionGrundy.g_eq_wordGrundy
+    target_statement_id: sha256:16cfc7e4bc6c9b4cf0f8eb217b7b1efe01315b3e1f0f8fb6c1d713db7a66c8c3
+  - gid: D5/S1/Words/BitDeletionGrundy.g_four_mul
+    target_statement_id: sha256:101480ef53f9c673b4834209982759144c2f5cea6c69f76739e9fc390436f3e8
+  - gid: D5/S1/Words/BitDeletionGrundy.g_le_three
+    target_statement_id: sha256:be51136006d287f6b60e32d312fd460ea56574da21d636289d2f9e6468adaf14
+  - gid: D5/S1/Words/BitDeletionGrundy.g_mex_bitDeletionSuccessors
+    target_statement_id: sha256:3b9981dbd74e38c8d7cdf7abc5d3e7778571b85b925234c6076913fbc996736e
+  - gid: D5/S1/Words/BitDeletionGrundy.g_zero
+    target_statement_id: sha256:993dd9bfeef842c0ccd2830a1632e46dbbcccc592996cada0e57404d648b8855
+  - gid: D5/S1/Words/BitDeletionGrundy.mex_spec
+    target_statement_id: sha256:bec09b2c8e8ebffbab2ccd893b432ecdbfc6f8d594f8a95854858a66fa1a6fd2
+  - gid: D5/S1/Words/BitDeletionGrundy.wordGrundy_eq_formula
+    target_statement_id: sha256:1efda46c9078ff88944032b1f59ab7e4ce5c8f09d855afea2bc54cbf16cde060
+receipts:
+  scribe:
+    - gid: D5/S1/Words/BitDeletionGrundy.bitDeletionSuccessors_lt
+      definition_sha256: sha256:3bddbbbbffb978ca47691ee30820503ea8d189050b716df16c938ff8cb6f562a
+      emission_sha256: sha256:29aab2d2d370e2e79e110223811f8e3b5d51d1485ada1781b993664727133585
+    - gid: D5/S1/Words/BitDeletionGrundy.conjectures
+      definition_sha256: sha256:3bddbbbbffb978ca47691ee30820503ea8d189050b716df16c938ff8cb6f562a
+      emission_sha256: sha256:29aab2d2d370e2e79e110223811f8e3b5d51d1485ada1781b993664727133585
+    - gid: D5/S1/Words/BitDeletionGrundy.g_eq_wordGrundy
+      definition_sha256: sha256:3bddbbbbffb978ca47691ee30820503ea8d189050b716df16c938ff8cb6f562a
+      emission_sha256: sha256:29aab2d2d370e2e79e110223811f8e3b5d51d1485ada1781b993664727133585
+    - gid: D5/S1/Words/BitDeletionGrundy.g_four_mul
+      definition_sha256: sha256:3bddbbbbffb978ca47691ee30820503ea8d189050b716df16c938ff8cb6f562a
+      emission_sha256: sha256:29aab2d2d370e2e79e110223811f8e3b5d51d1485ada1781b993664727133585
+    - gid: D5/S1/Words/BitDeletionGrundy.g_le_three
+      definition_sha256: sha256:3bddbbbbffb978ca47691ee30820503ea8d189050b716df16c938ff8cb6f562a
+      emission_sha256: sha256:29aab2d2d370e2e79e110223811f8e3b5d51d1485ada1781b993664727133585
+    - gid: D5/S1/Words/BitDeletionGrundy.g_mex_bitDeletionSuccessors
+      definition_sha256: sha256:3bddbbbbffb978ca47691ee30820503ea8d189050b716df16c938ff8cb6f562a
+      emission_sha256: sha256:29aab2d2d370e2e79e110223811f8e3b5d51d1485ada1781b993664727133585
+    - gid: D5/S1/Words/BitDeletionGrundy.g_zero
+      definition_sha256: sha256:3bddbbbbffb978ca47691ee30820503ea8d189050b716df16c938ff8cb6f562a
+      emission_sha256: sha256:29aab2d2d370e2e79e110223811f8e3b5d51d1485ada1781b993664727133585
+    - gid: D5/S1/Words/BitDeletionGrundy.mex_spec
+      definition_sha256: sha256:3bddbbbbffb978ca47691ee30820503ea8d189050b716df16c938ff8cb6f562a
+      emission_sha256: sha256:29aab2d2d370e2e79e110223811f8e3b5d51d1485ada1781b993664727133585
+    - gid: D5/S1/Words/BitDeletionGrundy.wordGrundy_eq_formula
+      definition_sha256: sha256:3bddbbbbffb978ca47691ee30820503ea8d189050b716df16c938ff8cb6f562a
+      emission_sha256: sha256:29aab2d2d370e2e79e110223811f8e3b5d51d1485ada1781b993664727133585
+  unresolved_subitems: []
