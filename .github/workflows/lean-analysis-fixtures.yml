@@ -1,6 +1,8 @@
 # Opt-in analysis consumer (#5986). Shared dependency caches and release build
 # layers are read-only; outputs belong only to this workflow run's artifacts.
 # Dispatch is available because this job cannot publish a shared build layer.
+# This separate file gives opt-in analysis its own budget outside the required
+# lean-report job; ci.yml is text-slice-guarded and near its SL-003 line limit.
 name: Lean analysis fixtures
 
 on:
@@ -18,11 +20,15 @@ jobs:
     runs-on: ubuntu-24.04-arm
     # Budget owner: repository owner, 2026-09-07; scope: this analysis job.
     # This is not a derived duration:
-    # publisher measures ≥40 min for a from-seed `lake build` of the default
-    # targets on this runner (its header), the analysis library adds ~25 min of
-    # single-module elaboration on a 28-core Apple Silicon host (docstrings in the
-    # three modules) and the runner has far fewer cores, so the ratio is unmeasured
-    # — 240 is a `policy-override` with case #5986 and exit condition
+    # lean-cache-publish.yml:127 records 40+ minutes from zero for `lake build`
+    # of the default targets on this runner.
+    # The three analysis module docstrings record single-module elaboration:
+    # BoundedClosure 289-367 s; FrozenRootAnalysis 424-528 s;
+    # CausalProjection 1194-1292 s, on a 28-core Apple Silicon host with warm
+    # mathlib/project caches. Lower bounds sum to 1907 s (about 32 min);
+    # upper bounds sum to 2187 s (about 36 min).
+    # runner core count not measured here; ratio ASSUMED-UNVERIFIED
+    # 240 is a `policy-override` with case #5986 and exit condition
     # "replace by the measured first-run duration × 1.5 after run 1"
     timeout-minutes: 240
     steps:
