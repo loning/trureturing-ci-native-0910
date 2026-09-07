@@ -98,8 +98,8 @@ private theorem symmetrize_centered (u v w : ℝ) :
     coeff_X, coeff_X_pow, coeff_C, coeff_sum,
     descPochhammer_succ_eval, descPochhammer_zero, eval_one, Nat.choose,
     map_zero, map_one, zero_add, add_zero, one_mul, mul_one, mul_zero, zero_mul,
-    pow_zero, pow_one]
-  split_ifs <;> first | omega | ring
+    pow_zero, pow_one, ite_true, ite_false]
+  split_ifs <;> first | contradiction | omega | ring
 
 private theorem multiplicative_even (u w U W : ℝ) :
     multiplicativeConvolution 4 (centeredQuartic u 0 w) (centeredQuartic U 0 W) =
@@ -118,7 +118,6 @@ private theorem commutatorKernel_four :
     coeff_sum, coeff_add, coeff_C_mul_X_pow, coeff_C_mul_X, coeff_X_pow,
     coeff_C, coeff_neg, map_zero, zero_add, add_zero, one_mul, mul_one,
     mul_zero, zero_mul, pow_zero, pow_one, coeff_zero]
-  split_ifs <;> first | omega | ring
 
 /-- Normalization companion used by `centered_factorization` on its live path. -/
 theorem centered_expansion (u v w U V W : ℝ) :
@@ -145,6 +144,7 @@ example : square4 (centeredQuartic (-5) 0 4) (centeredQuartic (-5) 0 4) =
     norm_num
   rw [square4, hs, hm, commutatorKernel_four, multiplicative_even]
   norm_num [centeredQuartic]
+  ring
 
 example : square4 (centeredQuartic (-5) 0 4) (centeredQuartic (-5) 0 4) =
     X^4 - C (80/3 : ℝ) * X^2 + C (5329/60 : ℝ) := by
