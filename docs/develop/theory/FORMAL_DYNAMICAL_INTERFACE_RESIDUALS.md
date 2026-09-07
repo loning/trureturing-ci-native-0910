@@ -2532,3 +2532,178 @@ Suzuki 的 *Weil’s quadratic form via the screw function*，arXiv:2606.09096v1
 九个公开声明均有同名 Scribe 的 `StatementSource.FromLean()` 对应。独立于源码推导的本地精确有理数诊断实际检查了 180 组投影与范数关系、540 个矩恒等式、180 个修正系数包围、813 个修正后坐标包围、35 个有限 Hilbert 合成比较，以及 768 个残差点和 24 组有限尾预算。六个错误变体被拒绝，包括省略共轭、误当单位候选、沿用旧矩与遗漏修正系数误差。
 
 残差诊断使用有界周期模型符号和分母常数 3，未冒充实际 prime-pole-Gamma 求值；有限尾和也不证明无穷级数结论。没有运行新的实际 Weil/prolate 数值证书，没有独立审稿人。Lean elaboration、内核公理闭包和 Scribe 发射尚未执行，本节是完成数学审查的候选证明源码。规范算子的全尺度最低模态逼近及 Xi 极限仍需实际算术分析。
+
+---
+
+# 2026-09-07 增补：有限有理复数试探的精确正交修正与同一输出的尾证书
+
+本节补交此前已在本地完成的 PR 6029 精确有理实现。实际写回基线为 `150b85daf8f04a94447bfd2baff1d97203a57a90`，沿用其中已有的 `WeilOrthogonalTrialPrecision`。两个候选 Lean 模块为 `FiniteRationalTrialRepair` 与 `WeilRepairedTrialCertificate`，位于 `D5/S3/Weil/ZetaBridge/`，各有同名 Scribe。本节消除后续尾证书中独立给定的候选正交、两个矩上界和系数质量上界，代之以实际可执行修正及从其同一输出重新计算的有理预算。算术符号的真实包围、算子域和正交基识别仍分别保留。
+
+## A. 复用标准投影，精确实现其有限有理坐标
+
+本轮直接读取 loning 路线的 `GramSchmidtCoefficientField`，其当前源码通过 Mathlib `starProjection_singleton` 追踪未归一化 Gram–Schmidt 坐标的子域归属。它处理迹矩量和系数域，不提供本节的有限复数修正及尾界消费者。最新远端 `WeilOrthogonalTrialPrecision` 已给出标准投影构造、坐标公式、精确正交、加权矩传递以及带舍入包围的残差消费者。本节没有复制这些证明，直接导入该模块，以 `repair_eq_existing_trial` 证明可执行有理输出与原 `orthogonalTrial` 逐坐标相等。正交性消费原 `orthogonal_trial_constraints`，范数收缩继续消费 Mathlib 原结论。本节增量是精确有理实现及从输出实际计算 E0、E1、V 的消费者，超越数包围仍明确保留。
+
+取有限整数支撑 S，候选与试探以两个有理坐标存储：k_n=a_n+ib_n、v_n=x_n+iy_n。只执行有理运算，定义
+\[
+q=\sum_{n\in S}(a_n^2+b_n^2),\quad
+A=\sum_{n\in S}(a_nx_n+b_ny_n),\quad
+B=\sum_{n\in S}(a_ny_n-b_nx_n),\quad
+\beta=A/q+iB/q.
+\]
+`repairTrial` 在 q=0 时返回 `none`，否则输出
+\[
+\boxed{t_n=v_n-\beta k_n\quad(n\in S),\qquad t_n=0\quad(n\notin S).}
+\]
+`repair_defined_iff` 证明成功与 S 中存在非零候选坐标等价。空支撑与零候选明确被拒绝。候选不需要单位归一化，算法不计算平方根；有理输出一般不再是二进有理数，不能无误差地转回固定二进格。
+
+`decode` 仅把有理坐标解释为既有复数，`decodedVector` 使用标准 `EuclideanSpace ℂ S`。成功输出先与已有 `orthogonalTrial` 等同，再由 `repair_eq_starProjection` 得到
+\[
+\operatorname{decodedVector}(t)=P_{\operatorname{span}(k)^\perp}\operatorname{decodedVector}(v).
+\]
+因此精确复配对为零，且欧氏范数不增加。配套的 `repair_isometric_orthogonality` 可通过任何已经建立的线性等距合成映射传递正交性。它不自行构造实际 Fourier 基，也不把 Pi 默认上确界范数当作欧氏范数。若原试探平行于候选，输出可以为零；此处没有非零输出或优于零试探的保证。
+
+## B. 正交修正会改变边界矩，旧预算不能继承
+
+对任意复权重 s_n，已有 `orthogonal_trial_moment` 与本轮输出一致性定理给出同一输出的精确恒等式
+\[
+\boxed{\sum_{n\in S}s_nt_n=\sum_{n\in S}s_nv_n-\beta\sum_{n\in S}s_nk_n.}
+\]
+它同时适用于常权重、实际算术边界符号和候选配对。例取 k=(1,2,0)、v=(1,-2,1)、s=(1,2,3)。原试探的无权矩和 s 加权矩都为零。修正得到 t=(8/5,-4/5,1)，满足 k 与 t 正交，但两矩分别变为 9/5 与 3。欧氏范数收缩不能推出矩上界保持，也不能无证明地推出系数 l1 质量收缩。
+
+因此，先前精确两矩消去得到的立方尾界不能直接用于这个 t。本节改用既有非零矩精度定理，并从 t 的实际有理坐标重算全部输入。
+
+## C. 修正后预算可用有理运算直接计算
+
+令实际算术符号 s_c(n) 具有实有理中心 h_n 与半径 e_n，满足 |s_c(n)-h_n|≤e_n。把 t_n 写成 p_n+iq_n，`rationalMomentBudgets` 计算
+\[
+E_0=\left|\sum p_n\right|+\left|\sum q_n\right|,
+\]
+\[
+E_1=\left|\sum h_np_n\right|+\left|\sum h_nq_n\right|+
+\sum e_n(|p_n|+|q_n|),\qquad V=\sum(|p_n|+|q_n|).
+\]
+各求和均在 S 上。`rational_moment_budgets_sound` 通过 |p+iq|≤|p|+|q| 及上一节已证明的乘积误差传播，推出实际无权矩模不超过 E0、实际算术矩模不超过 E1、系数质量不超过 V。存储的有理输出本身被选作实际试探，所以没有引入未知优化器或虚构的系数舍入误差。符号中心与半径的真实有效性仍是明确输入；它们需要包含原 prime-pole-Gamma 表达式的全部误差。
+
+## D. 同一修正输出进入完整残差验收
+
+`repaired_arithmetic_residual_certificate` 消费一次成功的 `repairTrial`、上述逐项符号包围以及原有 `residualTailCheck` 的成功结果。对于 B_+≥B_c、0<p≤π、H≥|η|、W≥|w|，仍取
+\[
+D=(E_1+B_+E_0)/p,\qquad Q=4H/3+4B_+NV/p,
+\]
+并保留 M>0、M≥2N、M≥2W。其同一终点给出支撑、精确候选正交、两侧残差平方可和，以及
+\[
+\sum_{j\ge0}\bigl(|r_j^+(t)|^2+|r_j^-(t)|^2\bigr)\le\tau.
+\]
+这里 r(t) 正是既有 `arithmeticResidualTail` 作用于修正后的 t。证明中没有输入独立的 horth、E0/E1 的真实性或 V 的真实性；它们由构造和预算定理推出。原有有理验收器继续检查非负性、分离条件和 6D²M²+6DQM+2Q²≤3τM³，没有复制第二个验收器。
+
+候选为精确有限向量时，其非零倍数与单位归一化具有相同正交补。真正接入规范 Weil 算子仍须给出该有限向量的正确等距合成、算子作用和定义域、内区残差及强制性。本节处理完整外部算术系数尾，不宣称仅凭这些系数等式已得到真实算子的完整残差范数。
+
+## E. 实际数据检查、文献边界与验证状态
+
+本轮读取原 `prime3_certificate.json`，固定于提交 `f7ca840051c8183062cb2cfb989e9f5686bd724a`，文件 blob 为 `3b26da5a8db885821969f13862b2761ccfd98a89`。它的 129 个整数分子和公分母 1099511627776 给出精确候选平方范数
+\[
+1208925819614761052253583/1208925819614629174706176.
+\]
+该值不等于一。本次写回重新读取此实际候选，对索引 0、1、62、64、66、128 的六个坐标种子运行 Fraction 精确修正，均得到零复配对与范数收缩，输出坐标的最大分母位长为 81。这个数字仅描述这六个实例，不是算法的统一复杂度界；本轮没有据此认证真实算术符号包围、优化对偶目标或改进谱误差。
+
+本次另重新运行 240 组复有理修正、240 组符号误差预算、240 个加权矩恒等式及 240 个坐标置换一致性检查。每组检查精确正交、范数收缩与幂等性；零候选、空支撑、遗漏共轭、假定单位范数及继承旧矩均有边界或负控。它们是本地精确有限诊断，不是 Lean 或 Scribe 执行结果。
+
+外部目标继续采用 CCM 的 *Zeta Spectral Triples* §8 中真实最低模态与 prolate 候选的逼近。Suzuki `arXiv:2606.09096v1` 的算子域及小窗口结果、Groskin `arXiv:2607.02828v1` 的有限字典和带预算判定规则用于校对对象与适用范围；本轮没有将这些结果直接扩为全尺度结论。此次可访问的 arXiv 主记录和 HTML 为上述版本，不据此断言不存在其他版本。FLINT 包含语义仍要求保留实际半径，固定工作位数不替代误差证书。
+
+本节十四个公开声明均有对应的 FromLean Scribe。源码经过数学及钉版接口审查，未执行 Lean elaboration、内核公理闭包或 Scribe 发射，没有独立证明审稿人。本节不主张新的投影定理、形式化优先权、实际 prolate 优化结果、Xi 极限或 RH 结论。
+
+参考：`WeilOrthogonalTrialPrecision` 于提交 `ea58c3d808f19f82792e3343aec9726ba2dafabe`，Lean blob `3a93d2bfff8b93c614320477ad4907f677f0a0e2`；Mathlib `db584cd6d46c92f209a44c0f1c829460d327499d`，`Analysis/InnerProductSpace/Projection/Basic.lean` 与 `PiL2.lean`；CCM，`https://arxiv.org/html/2511.22755v1`，§8；Suzuki，`https://arxiv.org/html/2606.09096v1`；Groskin，`https://arxiv.org/html/2607.02828v1`；FLINT，`https://flintlib.org/doc/using.html`。
+
+---
+
+# 2026-09-07 增补：实际算术符号的有限求值、立方加速余项与修正试探的直接消费
+
+本节继续 PR 6029。新真源 `WeilBoundarySymbolEnclosure` 直接导入前节的有理试探实现及证书，保持 `WeilArithmeticCouplingJet.arithmeticBoundarySymbol` 为唯一目标符号。它把原先独立给定的无穷符号包围，降为有限表达式的包围，再在 Lean 候选源码中推出所有遗漏 Gamma 项的误差。八个公开声明配套同名 Scribe。
+
+## A. 与 PR 5602 的当前分工
+
+本轮核对 PR 5602 于 `c94c6abb6fcd9ad2d85c50666fa6abcfdbd8c2f5` 的更新说明、改动目录，以及其实际 `WeilArithmeticCouplingJet`、`WeilArithmeticCouplingParityGram` 和 `WeilArchimedeanTailJet` 源码。当前说明报告了同一 c=3 prolate 模型完整算子残差的区间证书，归一化残差介于 9166619/10¹¹ 与 9166620/10¹¹，保留 Gamma、素数、极点、奇部和图范数误差。其简单残差/历史间隙下界估计尚不足以闭合所需模态比较。这个事实只限制该估计，不证明真实模态距离大或真实间隙小。本轮没有重跑那个完整算子验证器。
+
+本节不再求一遍 prolate 的 Gamma 作用；它为方向性对偶试探所需要的有限符号表提供可组合的余项证明。`WeilArithmeticCouplingJet` 已证明绝对收敛和全符号包络，但没有给任意求值截断处的精度；本节复用其收敛结论。`WeilArchimedeanTailJet` 处理连续频率积分的几何展开，`WeilArithmeticCouplingParityGram` 处理正负模态配对，均不同于本节 Gamma 求和索引的尾部。本轮没有重建这些所有者。
+
+物理整数截止 c、残差的外部 Fourier 截断 M，以及符号内部 Gamma 求值截断 K，是三种不同参数。以下 K 的收敛不能直接解释为 c 趋于无穷时的真实最低模态收敛。
+
+## B. 先保留原符号，再截取有限求值部分
+
+记 L=log c、ω=2πn/L、a_j=2j+1/2，其中 c≥2、n∈Z。原符号的 Gamma 项为
+\[
+g_j=\frac{\omega(1-e^{-a_jL})}{a_j^2+\omega^2}.
+\]
+`boundarySymbolPartial c n K` 保留原式全部 pole 项、全部有限 von Mangoldt 项，以及 j=0,...,K 共 K+1 个 Gamma 项。原符号没有被替换成有限模型；这个有限表达式只是它的近似。
+
+从 0≤1−exp(−a_jL)≤1 得 |g_j|≤|ω|/a_j²，再用正望远镜差得到
+\[
+\boxed{|s_c(n)-s_c^{[K]}(n)|\le\frac{|\omega|}{4K+1}.}
+\]
+`boundary_symbol_partial_error` 使用原始绝对收敛证明分割真正的无穷和，没有用某个终止高频代替它。K=0 仍然保留第零项；将 K+1 项误写成 K 项会破坏此界。
+
+## C. 精确求和主尾项，留下立方与指数余项
+
+仅依赖上式时，误差按 K⁻¹ 衰减。取可精确求和的有理尾项
+\[
+q_j=\frac{\omega}{a_j^2-1}
+=\frac{\omega}{2}\left(\frac1{a_j-1}-\frac1{a_j+1}\right),\qquad j>K.
+\]
+因为相邻 a_j 的差为 2，有限和望远镜消去并取极限给出
+\[
+\sum_{j>K}q_j=\frac{\omega}{4K+3}.
+\]
+实际加速表达式为
+\[
+\boxed{s_c^{\mathrm{acc},K}(n)=s_c^{[K]}(n)-\frac{\omega}{4K+3}.}
+\]
+它只增加一次实数除法，没有改变原符号。对于每个 a=a_j>1，有精确恒等式
+\[
+g_j-q_j=-\frac{\omega(\omega^2+1)}{(a^2+\omega^2)(a^2-1)}
+-\frac{\omega e^{-aL}}{a^2+\omega^2}.
+\]
+两个余项都保留。立方望远镜不等式
+\[
+\frac1{a^2(a^2-1)}\le\frac1{6(a-1)^3}-\frac1{6(a+1)^3}
+\]
+由其差的显式正表达式 (7a²−3)/(3a²(a−1)³(a+1)³) 得到。另一方面，对 j>K，exp(−a_jL)≤c^{−(2K+2)}，这个上界使用原来的 log c，最后可由整数有理幂计算。合并两类有限部分和、使用原 Gamma 收敛并令有理末项趋零，`boundary_symbol_accelerated_error` 推出
+\[
+\boxed{
+|s_c(n)-s_c^{\mathrm{acc},K}(n)|\le
+R(c,\omega,K):=
+\frac{4|\omega|(\omega^2+1)}{3(4K+3)^3}
++\frac{|\omega|}{c^{2K+2}(4K+1)}.
+}
+\]
+这对正、负和零频率均成立。K≥0 时所有新有理分母都严格非零。第二项不可在证明中凭数值小而删除。该式改善的是固定 c、n 的符号求值余项；它不是关于未知本征向量的残差大小或新的谱间隙定理。
+
+## D. 有限包围变成实际符号表，并进入同一试探的尾证书
+
+给出精确有理中心 ŝ_n、有限求值误差 ε_n、频率上界 F_n，要求
+\[
+|s_c^{\mathrm{acc},K_n}(n)-\widehat s_n|\le\varepsilon_n,
+\qquad |2\pi n/\log c|\le F_n.
+\]
+`rationalSymbolRadii` 用精确有理运算生成
+\[
+e_n=\varepsilon_n+
+\frac{4F_n(F_n^2+1)}{3(4K_n+3)^3}
++\frac{F_n}{c^{2K_n+2}(4K_n+1)}.
+\]
+`rational_symbol_radii_sound` 证明原来的无穷符号满足 |s_c(n)−ŝ_n|≤e_n。其证明包含 |ω|≤F 对两个余项的单调放大，未要求调用者另行证明无穷 Gamma 尾。
+
+`repaired_trial_from_finite_symbols` 将该表直接传给 `rationalMomentBudgets` 和原 `residualTailCheck`。同一终点仍给出实际返回试探的精确有限支撑、精确候选正交、原双侧算术残差的平方可和性及 τ 上界。它消除了最终消费者的独立无穷符号包围前提；有限 log、exp、sin、cosh 表达式的包围、全局 B_c 包络、参数区间、基与算子域识别并未被消除。
+
+这些有限表达式的中心误差必须覆盖所有基本运算及函数求值舍入。`rationalSymbolRadii` 本身不计算任何超越函数，也不信任某个区间 JSON 的成功标记。它可以消费已经证明的有限区间计算；本轮尚未提供完整的已验证超越函数求值器。对于给定半径预算，分别检查两个有理余项是否足够小即可调整 K；本节没有承诺一种固定工作精度或截断数必然使实际谱证书成功。
+
+## E. 文献比较和验证范围
+
+当前读取的 Suzuki `arXiv:2606.09096` 与 Groskin `arXiv:2607.02828` 主记录均显示 v1，分别发表于 2026 年 6 月 8 日与 7 月 2 日。前者以 screw function 研究有限窗口算子及其极限问题，后者明确区分带截断预算的有限认证和 cutoff-free 方法。本节没有把三种截断参数混同，也不提出首次消除截断或首次形式化的优先权主张。NIST DLMF 5.7.6 的 digamma 部分分式展开仅用于独立数值诊断；新 Lean 源码的证明由上述实数恒等式、非负余项和标准级数极限组成，不调用 digamma。
+
+本轮精确代数诊断验证四个标量恒等式及 160 个有限逆平方尾和。实际算术符号另在 c=3、5、11，n=0、±1、±4、±16，K=0、1、8、32、128 上作 85 位非定向数值比较，共 105 组原尾界、105 组加速尾界，以及各自生成有理半径的检查。比较对象用 digamma 恒等式减去指数收敛修正得到，未采用 zeta 零点数据。这些数值比较不构成有向区间或 Lean 证据。
+
+例 c=3、n=1、K=32，原尾半径约 0.04433489717，加速余项半径约 0.000114343003，缩小约 387.736 倍；数值观察到的加速后误差约 0.000113786009。这个实例说明符号求值预算的改进，并未证明完整对偶目标或实际模态误差改善。对非常小的精度目标，有限求和仍可能昂贵；更高阶或专门函数算法需另行认证。
+
+本轮连同前节共交付三个 Lean 模块、三个 Scribe 和本卷追加内容。已检查公开句柄匹配与源码占位符；没有 Lean/lake 可执行程序，未运行 elaboration、内核公理闭包或 Scribe 发射。候选证明经过数学和接口审查，未经过独立证明审稿。规范 Weil 算子的全尺度最低模态比较、方向性证书的实际优化和 Xi 极限均未在本节闭合。
+
+参考：NIST DLMF `https://dlmf.nist.gov/5.7.E6`；Suzuki `https://arxiv.org/abs/2606.09096`；Groskin `https://arxiv.org/abs/2607.02828`；FLINT `https://flintlib.org/doc/using.html`；PR 5602 `c94c6abb6fcd9ad2d85c50666fa6abcfdbd8c2f5`；原算术真源 blob `2e0d7277d7f92278a4ac9938f0bc342e42cdf94b`。
