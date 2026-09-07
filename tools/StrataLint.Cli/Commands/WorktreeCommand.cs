@@ -88,6 +88,7 @@ internal static class WorktreeCommand
         WorktreeOptions? options = null;
         var worktreeCreated = false;
         string? creationLock = null;
+        string? creationMetadata = null;
         var halfBuiltRecovered = false;
         try
         {
@@ -108,14 +109,9 @@ internal static class WorktreeCommand
                 BoundedProcessRunner.HangDetectionBudget,
                 "git worktree add failed");
             worktreeCreated = true;
+            creationMetadata = WorktreeCreationSafety.FindCreationMetadata(options, creationLock, runner);
             WorktreeCreationSafety.ValidateCreatedWorktree(options, runner);
-            RunRequired(
-                runner,
-                "git",
-                ["checkout", "--force", "--no-recurse-submodules", "HEAD"],
-                options.Path,
-                BoundedProcessRunner.HangDetectionBudget,
-                "git worktree checkout failed");
+            WorktreeCreationSafety.CheckoutCreatedWorktree(options, runner);
             EnsureReviewScaffoldIgnores(options.Path);
             if (!options.SkipRestore)
             {
@@ -157,11 +153,11 @@ internal static class WorktreeCommand
             try
             {
                 // A timed-out add can register the tree before acknowledging success.
-                if (options is not null && (worktreeCreated
-                    || (creationLock is not null
-                        && WorktreeCreationSafety.HasCreationLock(options, creationLock, runner))))
+                if (options is not null && creationLock is not null)
                 {
-                    cleanup = Cleanup(options, runner);
+                    creationMetadata ??= WorktreeCreationSafety.FindCreationMetadata(options, creationLock, runner);
+                    if (worktreeCreated || creationMetadata is not null)
+                        cleanup = Cleanup(options, creationLock, creationMetadata, runner);
                 }
             }
             catch (Exception cleanupException) when (cleanupException is not OutOfMemoryException)
@@ -504,25 +500,32 @@ internal static class WorktreeCommand
             BoundedProcessRunner.HangDetectionBudget,
             $"base revision does not resolve: {options.Base}");
 
-    private static string Cleanup(WorktreeOptions options, IWorktreeProcessRunner runner)
+    private static string Cleanup(
+        WorktreeOptions options,
+        string creationLock,
+        string? creationMetadata,
+        IWorktreeProcessRunner runner)
     {
         var errors = new List<string>();
+        WorktreeCreationSafety.ValidateCleanupOwnership(options, creationLock, creationMetadata, runner);
         var removal = RunProcess(
             runner,
             "git",
             ["worktree", "remove", "--force", "--force", options.Path],
             options.Source,
             BoundedProcessRunner.HangDetectionBudget);
-        if (removal.ExitCode != 0 && Directory.Exists(options.Path))
+        if (removal.ExitCode != 0)
         {
-            errors.Add(ProcessError(removal, "git worktree remove failed"));
             try
             {
-                Directory.Delete(options.Path, recursive: true);
+                WorktreeCreationSafety.ValidateCleanupOwnership(options, creationLock, creationMetadata, runner);
+                if (Directory.Exists(options.Path)) Directory.Delete(options.Path, recursive: true);
+                if (creationMetadata is not null && Directory.Exists(creationMetadata))
+                    Directory.Delete(creationMetadata, recursive: true);
             }
-            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+            catch (Exception exception) when (exception is not OutOfMemoryException)
             {
-                errors.Add(exception.Message);
+                return $"; cleanup failed: {ProcessError(removal, "git worktree remove failed")}; {exception.Message}";
             }
         }
 
