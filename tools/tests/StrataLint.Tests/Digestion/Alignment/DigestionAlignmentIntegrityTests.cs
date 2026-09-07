@@ -543,7 +543,6 @@ public sealed partial class DigestionAlignmentTests
             candidate,
             snapshot,
             DigestionTestSupport.AcceptedLean(targetPath),
-            VerifiedScribeEmissions.Create([record]),
             baselineDocument: baseline);
 
         var evaluatedParent = Assert.Single(

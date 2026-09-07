@@ -13,7 +13,14 @@ public sealed class GitAtomHistorySourceTests
 {
     [Theory]
     [InlineData("GIT_DIR")]
+    [InlineData("GIT_WORK_TREE")]
+    [InlineData("GIT_COMMON_DIR")]
+    [InlineData("GIT_INDEX_FILE")]
     [InlineData("GIT_CONFIG")]
+    [InlineData("GIT_CONFIG_GLOBAL")]
+    [InlineData("GIT_CONFIG_SYSTEM")]
+    [InlineData("GIT_CONFIG_PARAMETERS")]
+    [InlineData("GIT_CONFIG_COUNT")]
     [InlineData("GIT_OBJECT_DIRECTORY")]
     [InlineData("GIT_TEMPLATE_DIR")]
     [InlineData("GIT_ALTERNATE_OBJECT_DIRECTORIES")]
@@ -27,6 +34,28 @@ public sealed class GitAtomHistorySourceTests
             using var fixture = new AtomHistoryRepository(["PATH", variable, "HOME"]);
         });
         Assert.Contains(variable, exception.Message);
+    }
+
+    [Theory]
+    [InlineData("GIT_EDITOR")]
+    [InlineData("GIT_PAGER")]
+    public void FixtureAllowsInheritedInteractiveGitEnvironment(string variable)
+    {
+        using var temporary = new TemporaryDirectory();
+        var result = RunHistoryChild(temporary, [$"{variable}=false"], "default");
+        AssertHistoryChildPassed(temporary, result, "default");
+    }
+
+    [Fact]
+    public void FixtureLocationChecksAcceptDirectoryAliases()
+    {
+        using var fixture = new AtomHistoryRepository();
+        var alias = Path.Combine(fixture.Temporary.Path, "repository-alias");
+        var result = TestProcessRunner.Run("ln", ["-s", fixture.Root, alias],
+            fixture.Temporary.Path, TestBudgets.ScriptProcessHangGuard, 1024 * 1024);
+        Assert.True(result.ExitCode == 0, Encoding.UTF8.GetString(result.StandardError));
+        fixture.AssertRepositoryLocation(alias);
+        fixture.AssertLocationChecksRejectInvalidCheckouts();
     }
 
     [Fact]
@@ -139,27 +168,40 @@ public sealed class GitAtomHistorySourceTests
             + "\temail = outside@example.invalid\n[fixture]\n\tuntouched = true\n");
         foreach (var path in new[] { config, global, system }) File.WriteAllBytes(path, bytes);
 
-        var result = TestProcessRunner.Run("/usr/bin/env",
-            ["-i", $"PATH={Environment.GetEnvironmentVariable("PATH")}",
-                $"HOME={temporary.Path}", $"TMPDIR={temporary.Path}", "LC_ALL=C", "LANG=C",
-                $"GIT_CONFIG={config}", $"GIT_CONFIG_GLOBAL={global}", $"GIT_CONFIG_SYSTEM={system}",
+        var result = RunHistoryChild(temporary,
+            [$"GIT_CONFIG={config}", $"GIT_CONFIG_GLOBAL={global}", $"GIT_CONFIG_SYSTEM={system}",
                 $"GIT_OBJECT_DIRECTORY={objects}", $"GIT_TEMPLATE_DIR={templates}",
-                "GIT_CONFIG_NOSYSTEM=0", "STRATALINT_ATOM_HISTORY_CONFIG_CHILD=1",
-                "dotnet", "vstest", Path.Combine(AppContext.BaseDirectory, "StrataLint.ScriptTests.dll"),
-                "--TestCaseFilter:DisplayName~ReaddedMergeAtomRetainsSideBranchCommitterTimeAcrossGitConfig&DisplayName~inherited-config-redirections",
-                "--Logger:trx;LogFileName=child.trx", $"--ResultsDirectory:{temporary.Path}"],
-            temporary.Path, TestBudgets.ScriptProcessHangGuard, 1024 * 1024);
+                "GIT_CONFIG_NOSYSTEM=0", "STRATALINT_ATOM_HISTORY_CONFIG_CHILD=1"],
+            "inherited-config-redirections");
 
         foreach (var path in new[] { config, global, system }) Assert.Equal(bytes, File.ReadAllBytes(path));
         Assert.Empty(Directory.CreateDirectory(objects).EnumerateFileSystemInfos());
         Assert.Empty(Directory.CreateDirectory(templates).EnumerateFileSystemInfos());
+        AssertHistoryChildPassed(temporary, result, "inherited-config-redirections");
+    }
+
+    private static ProcessOutput RunHistoryChild(
+        TemporaryDirectory temporary, string[] environment, string configuration) =>
+        TestProcessRunner.Run("/usr/bin/env",
+            ["-i", $"PATH={Environment.GetEnvironmentVariable("PATH")}",
+                $"HOME={temporary.Path}", $"TMPDIR={temporary.Path}", "LC_ALL=C", "LANG=C",
+                .. environment,
+                "dotnet", "vstest", Path.Combine(AppContext.BaseDirectory, "StrataLint.ScriptTests.dll"),
+                "--TestCaseFilter:DisplayName~ReaddedMergeAtomRetainsSideBranchCommitterTimeAcrossGitConfig"
+                    + $"&DisplayName~{configuration}",
+                "--Logger:trx;LogFileName=child.trx", $"--ResultsDirectory:{temporary.Path}"],
+            temporary.Path, TestBudgets.ScriptProcessHangGuard, 1024 * 1024);
+
+    private static void AssertHistoryChildPassed(
+        TemporaryDirectory temporary, ProcessOutput result, string configuration)
+    {
         Assert.True(result.ExitCode == 0, Encoding.UTF8.GetString(result.StandardOutput)
             + Encoding.UTF8.GetString(result.StandardError));
         var report = XDocument.Parse(File.ReadAllText(Path.Combine(temporary.Path, "child.trx")));
         XNamespace ns = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010";
         var test = Assert.Single(report.Descendants(ns + "UnitTestResult"));
         Assert.Equal("Passed", test.Attribute("outcome")?.Value);
-        Assert.Contains("inherited-config-redirections", test.Attribute("testName")?.Value);
+        Assert.Contains(configuration, test.Attribute("testName")?.Value);
     }
 
     [Theory]
@@ -184,7 +226,8 @@ public sealed class GitAtomHistorySourceTests
             fixture.GitAt(checkout, "worktree", "add", "--detach", worktree, "HEAD");
             checkout = worktree;
             Assert.True(File.Exists(Path.Combine(checkout, ".git")));
-            var gitDirectory = fixture.GitAt(checkout, "rev-parse", "--absolute-git-dir").Trim();
+            var gitDirectory = Path.GetFullPath(fixture.GitAt(checkout, "rev-parse",
+                "--path-format=relative", "--git-dir").Trim(), checkout);
             Assert.True(File.Exists(Path.Combine(gitDirectory, "commondir")));
         }
         else
@@ -263,7 +306,9 @@ public sealed class GitAtomHistorySourceTests
         internal static void RejectInheritedGitEnvironment(IEnumerable<string> variables)
         {
             var inherited = variables
-                .Where(variable => variable.StartsWith("GIT_", StringComparison.OrdinalIgnoreCase))
+                .Where(variable => variable.StartsWith("GIT_", StringComparison.OrdinalIgnoreCase)
+                    && !string.Equals(variable, "GIT_EDITOR", StringComparison.OrdinalIgnoreCase)
+                    && !string.Equals(variable, "GIT_PAGER", StringComparison.OrdinalIgnoreCase))
                 .Order(StringComparer.Ordinal).ToArray();
             if (inherited.Length != 0)
                 throw new InvalidOperationException("Synthetic git fixture requires unset variables: "
@@ -321,9 +366,14 @@ public sealed class GitAtomHistorySourceTests
             AssertRepositoryLocation(checkout);
         }
 
-        private void AssertRepositoryLocation(string checkout)
+        internal void AssertRepositoryLocation(string checkout)
         {
-            Assert.Equal(checkout, GitAt(checkout, "rev-parse", "--show-toplevel").Trim());
+            // Git reports physical paths, including when TMPDIR contains a directory alias.
+            var physical = TestProcessRunner.Run("/bin/pwd", ["-P"], checkout,
+                TestBudgets.ScriptProcessHangGuard, 1024 * 1024);
+            Assert.True(physical.ExitCode == 0, Encoding.UTF8.GetString(physical.StandardError));
+            Assert.Equal(Encoding.UTF8.GetString(physical.StandardOutput).Trim(),
+                GitAt(checkout, "rev-parse", "--show-toplevel").Trim());
             Assert.Equal(string.Empty,
                 Run(["config", "--get", "core.worktree"], checkout, expectedExitCode: 1));
         }

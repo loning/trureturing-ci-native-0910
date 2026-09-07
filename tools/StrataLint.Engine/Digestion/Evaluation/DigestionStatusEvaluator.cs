@@ -11,7 +11,6 @@ internal static partial class DigestionStatusEvaluator
         BackfillInventoryDocument document,
         RepositorySnapshot snapshot,
         AcceptedLeanClosure lean,
-        VerifiedScribeEmissions? verifiedScribeEmissions = null,
         BackfillInventoryDocument? baselineDocument = null,
         bool validateProjectedStatus = true,
         RepositorySnapshot? baselineSnapshot = null,
@@ -94,7 +93,6 @@ internal static partial class DigestionStatusEvaluator
                 snapshot,
                 lean.Report,
                 states,
-                verifiedScribeEmissions,
                 frozenStatements,
                 genreChecks[entry.SourceId],
                 changes,
@@ -221,7 +219,6 @@ internal static partial class DigestionStatusEvaluator
         RepositorySnapshot snapshot,
         LeanAxiomReport leanReport,
         IReadOnlyDictionary<RepoPath, TruthState> states,
-        VerifiedScribeEmissions? verifiedScribeEmissions,
         Lazy<FrozenStatementIndex> frozenStatements,
         GenreRegistryCheck genreRegistryCheck,
         RawChangeSet? changes,
@@ -282,12 +279,6 @@ internal static partial class DigestionStatusEvaluator
             edgeValidations,
             gaps,
             findings);
-        var scribe = VerifyScribeReceipts(
-            entry,
-            snapshot,
-            verifiedScribeEmissions,
-            gaps,
-            findings);
         if (entry.Receipts.UnresolvedSubitems.Length > 0)
         {
             foreach (var subitem in entry.Receipts.UnresolvedSubitems)
@@ -321,11 +312,9 @@ internal static partial class DigestionStatusEvaluator
                 == entry.CoverageGids.Distinct(StringComparer.Ordinal).Count()
             && entry.CoverageGids.Length > 0
             && coverage
-            && scribe
             && entry.Receipts.UnresolvedSubitems.Length == 0;
         var hasProgress = edgeValidations.Values.Any(static edge => edge.IsResolved)
-            || entry.Coverage.Length > 0
-            || entry.Receipts.Scribe.Length > 0;
+            || entry.Coverage.Length > 0;
         var hasUnresolvedCoverageTarget = edgeValidations.Values.Any(static edge => !edge.IsResolved)
             || entry.Coverage.Any(static edge => edge.TargetStatementId is null);
         return new EntryWork(
