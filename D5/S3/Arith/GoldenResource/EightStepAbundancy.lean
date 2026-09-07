@@ -4,7 +4,7 @@
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
    utility: kind=certified-instance; basis=terminal=atom:4fe323b6326388b3aebf9da0f2910f0388dd51193f4933d1324e9bcb52f37844
-   digest: Among positive integers with eight prime factors counted with multiplicity, 180180 uniquely maximizes sigma(n)/n at 224/55. -/
+   digest: At eight prime factors, 180180 uniquely maximizes sigma(n)/n at 224/55. -/
 
 import D5.S3.Arith.GoldenResourceObjectiveFactorization
 
@@ -94,7 +94,7 @@ private theorem layer_ratio_identity {p k : ℕ} (hp : p.Prime) (hk : 1 ≤ k) :
   rw [hd]
   simp only [inv_pow, pow_succ]
   field_simp
-  <;> ring
+  ring
 
 private noncomputable def lowerPrice : ℝ := Real.log (15 / 14)
 private noncomputable def upperPrice : ℝ := Real.log (14 / 13)
@@ -120,7 +120,7 @@ private theorem exponent_thresholds {p : ℕ} (hp : p.Prime) :
     apply (div_le_div_iff_of_pos_right hl).mpr
     apply Real.log_le_log (by norm_num : (0 : ℝ) < 14 / 13)
     have hi := one_div_le_one_div_of_le hd0 hd
-    norm_num at hi
+    norm_num at hi ⊢
     linarith
   · have hd : (14 : ℝ) ≤ layerDenominator p (optimalExponent p + 1) := by
       exact_mod_cast (show 14 ≤ layerDenominator p (optimalExponent p + 1) from
@@ -132,7 +132,7 @@ private theorem exponent_thresholds {p : ℕ} (hp : p.Prime) :
     apply (div_le_div_iff_of_pos_right hl).mpr
     apply Real.log_le_log (by positivity)
     have hi := one_div_le_one_div_of_le (by norm_num : (0 : ℝ) < 14) hd
-    norm_num at hi
+    norm_num at hi ⊢
     linarith
 
 private noncomputable def countLocal (c : ℝ) (p a : ℕ) : ℝ :=
@@ -143,7 +143,7 @@ private theorem count_local_eq (c : ℝ) {p : ℕ} (hp : p.Prime) (a : ℕ) :
   have hl : Real.log (p : ℝ) ≠ 0 := (Real.log_pos (by exact_mod_cast hp.one_lt)).ne'
   unfold countLocal goldenPrimeLocalObjective
   field_simp
-  <;> ring
+  ring
 
 private theorem count_local_maximal {p : ℕ} (hp : p.Prime) {c : ℝ}
     (hcL : lowerPrice ≤ c) (hcU : c ≤ upperPrice) (b : ℕ) :
@@ -179,6 +179,170 @@ private theorem count_local_unique {p : ℕ} (hp : p.Prime) (b : ℕ) :
     unfold countLocal at hL heq
     nlinarith
 
+private theorem factorization_180180 :
+    (180180 : ℕ).factorization =
+      Finsupp.single 2 2 + Finsupp.single 3 2 + Finsupp.single 5 1 +
+        Finsupp.single 7 1 + Finsupp.single 11 1 + Finsupp.single 13 1 := by
+  rw [show (180180 : ℕ) = 2 ^ 2 * 3 ^ 2 * 5 ^ 1 * 7 ^ 1 * 11 ^ 1 * 13 ^ 1 by norm_num]
+  rw [Nat.factorization_mul (by norm_num) (by norm_num),
+    Nat.factorization_mul (by norm_num) (by norm_num),
+    Nat.factorization_mul (by norm_num) (by norm_num),
+    Nat.factorization_mul (by norm_num) (by norm_num),
+    Nat.factorization_mul (by norm_num) (by norm_num),
+    (by norm_num : Nat.Prime 2).factorization_pow,
+    (by norm_num : Nat.Prime 3).factorization_pow,
+    (by norm_num : Nat.Prime 5).factorization_pow,
+    (by norm_num : Nat.Prime 7).factorization_pow,
+    (by norm_num : Nat.Prime 11).factorization_pow,
+    (by norm_num : Nat.Prime 13).factorization_pow]
+
+private theorem optimal_exponent_eq (p : ℕ) :
+    optimalExponent p = (180180 : ℕ).factorization p := by
+  rw [factorization_180180]
+  simp only [Finsupp.add_apply, Finsupp.single_apply, optimalExponent]
+  split_ifs <;> omega
+
+private noncomputable def benefit (n : ℕ) : ℝ :=
+  (ArithmeticFunction.sigma 1 n : ℝ) / n
+
+private theorem benefit_pos {n : ℕ} (hn : 0 < n) : 0 < benefit n :=
+  div_pos (by exact_mod_cast ArithmeticFunction.sigma_pos 1 n hn.ne')
+    (by exact_mod_cast hn)
+
+private theorem count_sum_on (c : ℝ) {n : ℕ} (hn : 0 < n) (s : Finset ℕ)
+    (hsub : n.primeFactors ⊆ s) :
+    (∑ p ∈ s, countLocal c p (n.factorization p)) =
+      Real.log (benefit n) - c * ArithmeticFunction.cardFactors n := by
+  have hobj := golden_resource_objective_sum_on 0 hn s hsub
+  rw [golden_resource_sigma_identity 0 hn] at hobj
+  simp only [zero_mul, sub_zero] at hobj
+  have hcount : (∑ p ∈ s, n.factorization p) = ArithmeticFunction.cardFactors n := by
+    rw [ArithmeticFunction.cardFactors_eq_sum_factorization, Finsupp.sum,
+      Nat.support_factorization]
+    symm
+    apply sum_subset hsub
+    intro p _ hp
+    simpa [← Nat.support_factorization, Finsupp.mem_support_iff] using hp
+  have hcast := congrArg (fun k : ℕ => (k : ℝ)) hcount
+  push_cast at hcast
+  simp only [countLocal, sum_sub_distrib, ← mul_sum, hcast, ← hobj, benefit]
+
+private theorem global_count_optimum {n : ℕ} (hn : 0 < n) :
+    Real.log (benefit n) - middlePrice * ArithmeticFunction.cardFactors n ≤
+      Real.log (benefit 180180) - middlePrice * ArithmeticFunction.cardFactors 180180 ∧
+    (Real.log (benefit n) - middlePrice * ArithmeticFunction.cardFactors n =
+      Real.log (benefit 180180) - middlePrice * ArithmeticFunction.cardFactors 180180 ↔
+        n = 180180) := by
+  let s := n.primeFactors ∪ (180180 : ℕ).primeFactors
+  have hprime : ∀ p ∈ s, Nat.Prime p := by
+    intro p hp
+    rcases mem_union.mp hp with hp | hp <;> exact Nat.prime_of_mem_primeFactors hp
+  have hsumN := count_sum_on middlePrice hn s subset_union_left
+  have hsumM := count_sum_on middlePrice (by norm_num : 0 < (180180 : ℕ))
+    s subset_union_right
+  have hlocal (p : ℕ) (hp : p ∈ s) :
+      countLocal middlePrice p (n.factorization p) ≤
+        countLocal middlePrice p ((180180 : ℕ).factorization p) ∧
+      (countLocal middlePrice p (n.factorization p) =
+        countLocal middlePrice p ((180180 : ℕ).factorization p) ↔
+          n.factorization p = (180180 : ℕ).factorization p) := by
+    simpa only [optimal_exponent_eq] using count_local_unique (hprime p hp) (n.factorization p)
+  rw [← hsumN, ← hsumM]
+  refine ⟨sum_le_sum (fun p hp => (hlocal p hp).1), ⟨?_, fun h => by rw [h]⟩⟩
+  intro heq
+  have heach := (sum_eq_sum_iff_of_le (fun p hp => (hlocal p hp).1)).mp heq
+  apply Nat.factorization_inj hn.ne' (by norm_num : (180180 : ℕ) ≠ 0)
+  ext p
+  by_cases hp : p ∈ s
+  · exact (hlocal p hp).2.mp (heach p hp)
+  · have hn' : p ∉ n.primeFactors := fun h => hp (mem_union_left _ h)
+    have hm' : p ∉ (180180 : ℕ).primeFactors := fun h => hp (mem_union_right _ h)
+    have hn0 : n.factorization p = 0 := by
+      simpa [← Nat.support_factorization, Finsupp.mem_support_iff] using hn'
+    have hm0 : (180180 : ℕ).factorization p = 0 := by
+      simpa [← Nat.support_factorization, Finsupp.mem_support_iff] using hm'
+    rw [hn0, hm0]
+
+private theorem target_count : ArithmeticFunction.cardFactors 180180 = 8 := by
+  simp [ArithmeticFunction.cardFactors_eq_sum_factorization, factorization_180180,
+    Finsupp.sum_add_index]
+
+private theorem comparison_count : ArithmeticFunction.cardFactors 5040 = 8 := by
+  rw [show (5040 : ℕ) = 2 ^ 4 * 3 ^ 2 * 5 ^ 1 * 7 ^ 1 by norm_num]
+  rw [ArithmeticFunction.cardFactors_mul (by norm_num) (by norm_num),
+    ArithmeticFunction.cardFactors_mul (by norm_num) (by norm_num),
+    ArithmeticFunction.cardFactors_mul (by norm_num) (by norm_num)]
+  norm_num [ArithmeticFunction.cardFactors_apply_prime_pow]
+
+private theorem target_value : benefit 180180 = 224 / 55 := by
+  have hs : ArithmeticFunction.sigma 1 180180 = 733824 := by
+    rw [show (180180 : ℕ) = 2 ^ 2 * 3 ^ 2 * 5 ^ 1 * 7 ^ 1 * 11 ^ 1 * 13 ^ 1 by norm_num,
+      ArithmeticFunction.isMultiplicative_sigma.map_mul_of_coprime
+        (by decide : Nat.Coprime (2 ^ 2 * 3 ^ 2 * 5 ^ 1 * 7 ^ 1 * 11 ^ 1) (13 ^ 1)),
+      ArithmeticFunction.isMultiplicative_sigma.map_mul_of_coprime
+        (by decide : Nat.Coprime (2 ^ 2 * 3 ^ 2 * 5 ^ 1 * 7 ^ 1) (11 ^ 1)),
+      ArithmeticFunction.isMultiplicative_sigma.map_mul_of_coprime
+        (by decide : Nat.Coprime (2 ^ 2 * 3 ^ 2 * 5 ^ 1) (7 ^ 1)),
+      ArithmeticFunction.isMultiplicative_sigma.map_mul_of_coprime
+        (by decide : Nat.Coprime (2 ^ 2 * 3 ^ 2) (5 ^ 1)),
+      ArithmeticFunction.isMultiplicative_sigma.map_mul_of_coprime
+        (by decide : Nat.Coprime (2 ^ 2) (3 ^ 2)),
+      ArithmeticFunction.sigma_one_apply_prime_pow (by decide : Nat.Prime 2),
+      ArithmeticFunction.sigma_one_apply_prime_pow (by decide : Nat.Prime 3),
+      ArithmeticFunction.sigma_one_apply_prime_pow (by decide : Nat.Prime 5),
+      ArithmeticFunction.sigma_one_apply_prime_pow (by decide : Nat.Prime 7),
+      ArithmeticFunction.sigma_one_apply_prime_pow (by decide : Nat.Prime 11),
+      ArithmeticFunction.sigma_one_apply_prime_pow (by decide : Nat.Prime 13)]
+    norm_num [sum_range_succ]
+  norm_num [benefit, hs]
+
+private theorem comparison_value : benefit 5040 = 403 / 105 := by
+  have hs : ArithmeticFunction.sigma 1 5040 = 19344 := by
+    rw [show (5040 : ℕ) = 2 ^ 4 * 3 ^ 2 * 5 ^ 1 * 7 ^ 1 by norm_num,
+      ArithmeticFunction.isMultiplicative_sigma.map_mul_of_coprime
+        (by decide : Nat.Coprime (2 ^ 4 * 3 ^ 2 * 5 ^ 1) (7 ^ 1)),
+      ArithmeticFunction.isMultiplicative_sigma.map_mul_of_coprime
+        (by decide : Nat.Coprime (2 ^ 4 * 3 ^ 2) (5 ^ 1)),
+      ArithmeticFunction.isMultiplicative_sigma.map_mul_of_coprime
+        (by decide : Nat.Coprime (2 ^ 4) (3 ^ 2)),
+      ArithmeticFunction.sigma_one_apply_prime_pow (by decide : Nat.Prime 2),
+      ArithmeticFunction.sigma_one_apply_prime_pow (by decide : Nat.Prime 3),
+      ArithmeticFunction.sigma_one_apply_prime_pow (by decide : Nat.Prime 5),
+      ArithmeticFunction.sigma_one_apply_prime_pow (by decide : Nat.Prime 7)]
+    norm_num [sum_range_succ]
+  norm_num [benefit, hs]
+
+/-- The global eight-step maximum, its unique achiever, and the strict 5040 comparison. -/
+theorem eight_step_abundancy_optimum :
+    let omega : ℕ → ℕ := fun n => n.factorization.sum (fun _ a => a)
+    let Z : ℕ → ℝ := fun n => (ArithmeticFunction.sigma 1 n : ℝ) / (n : ℝ)
+    Z 180180 = 224 / 55 ∧
+    (∀ n : ℕ, 0 < n → omega n = 8 →
+      Z n ≤ 224 / 55 ∧ (Z n = 224 / 55 ↔ n = 180180)) ∧
+    Z 5040 = 403 / 105 ∧ Z 5040 < Z 180180 ∧
+    omega 180180 = 8 ∧ omega 5040 = 8 ∧
+    (180180 : ℕ) = 2 ^ 2 * 3 ^ 2 * 5 * 7 * 11 * 13 := by
+  dsimp only
+  simp only [← ArithmeticFunction.cardFactors_eq_sum_factorization]
+  refine ⟨target_value, ?_, comparison_value, ?_, target_count, comparison_count, by norm_num⟩
+  · intro n hn hcount
+    obtain ⟨hle, heq⟩ := global_count_optimum hn
+    rw [hcount, target_count, target_value] at hle heq
+    refine ⟨?_, ?_⟩
+    · apply (Real.log_le_log_iff (benefit_pos hn) (by norm_num : (0 : ℝ) < 224 / 55)).mp
+      linarith
+    · constructor
+      · intro h
+        apply heq.mp
+        change benefit n = 224 / 55 at h
+        rw [h]
+      · intro h
+        simpa [h] using target_value
+  · change benefit 5040 < benefit 180180
+    rw [comparison_value, target_value]
+    norm_num
+
 #print axioms eight_step_layer_cutoff
+#print axioms eight_step_abundancy_optimum
 
 end D5.S3.Arith.GoldenResource.EightStepAbundancy
