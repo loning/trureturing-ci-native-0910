@@ -5,16 +5,20 @@ namespace StrataLint.Cli;
 
 internal sealed class WorktreeBranchTracking
 {
-    private sealed record Setting(string Key, string[] Before, string[] After);
+    private sealed record Setting(string Key, string[] Before, string[] After, bool AllowsPartialWrite = false);
+
+    private enum WriteStage { NotStarted, Applying, Applied }
 
     private readonly string? upstream;
     private readonly Setting[] settings;
-    private bool attempted;
+    private readonly bool rebasing;
+    private WriteStage stage;
 
-    private WorktreeBranchTracking(string? upstream, Setting[] settings)
+    private WorktreeBranchTracking(string? upstream, Setting[] settings, bool rebasing)
     {
         this.upstream = upstream;
         this.settings = settings;
+        this.rebasing = rebasing;
     }
 
     internal static WorktreeBranchTracking? Prepare(WorktreeOptions options, IWorktreeProcessRunner runner)
@@ -87,29 +91,33 @@ internal sealed class WorktreeBranchTracking
         var settings = new List<Setting>
         {
             new(prefix + "remote", Read(options, runner, prefix + "remote", local: true), [remote]),
-            new(prefix + "merge", Read(options, runner, prefix + "merge", local: true), merges),
+            new(prefix + "merge", Read(options, runner, prefix + "merge", local: true), merges, AllowsPartialWrite: true),
         };
         if (rebasing)
             settings.Add(new(prefix + "rebase", Read(options, runner, prefix + "rebase", local: true), ["true"]));
-        return new WorktreeBranchTracking(mode == "inherit" ? null : reference, settings.ToArray());
+        return new WorktreeBranchTracking(mode == "inherit" ? null : reference, settings.ToArray(), rebasing);
     }
 
     internal void Apply(WorktreeOptions options, IWorktreeProcessRunner runner)
     {
-        attempted = true;
+        stage = WriteStage.Applying;
         if (upstream is not null)
         {
-            _ = Run(options, runner, ["branch", $"--set-upstream-to={upstream}", "--", options.Branch]);
-            return;
+            // Branch-creation hooks can change repository policy after Prepare.
+            _ = Run(options, runner, ["-c", $"branch.autoSetupRebase={(rebasing ? "always" : "never")}",
+                "branch", $"--set-upstream-to={upstream}", "--", options.Branch]);
         }
-
-        // --set-upstream-to always means direct tracking, even with --track=inherit.
-        foreach (var setting in settings) Write(options, runner, setting.Key, setting.After);
+        else
+        {
+            // --set-upstream-to always means direct tracking, even with --track=inherit.
+            foreach (var setting in settings) Write(options, runner, setting.Key, setting.After);
+        }
+        stage = WriteStage.Applied;
     }
 
     internal void Rollback(WorktreeOptions options, IWorktreeProcessRunner runner)
     {
-        if (!attempted) return;
+        if (stage == WriteStage.NotStarted) return;
         var branch = Run(options, runner,
             ["show-ref", "--verify", "--quiet", $"refs/heads/{options.Branch}"], missing: 1);
         if (branch.ExitCode == 0) return;
@@ -117,10 +125,13 @@ internal sealed class WorktreeBranchTracking
         var current = settings.Select(setting => Read(options, runner, setting.Key, local: true)).ToArray();
         for (var index = 0; index < settings.Length; index++)
         {
-            // Git can stop after clearing or partially writing the merge list.
-            if (!current[index].SequenceEqual(settings[index].Before, StringComparer.Ordinal)
-                && (current[index].Length > settings[index].After.Length
-                    || !current[index].SequenceEqual(settings[index].After.Take(current[index].Length), StringComparer.Ordinal)))
+            var setting = settings[index];
+            var interruptedWrite = stage == WriteStage.Applying && setting.AllowsPartialWrite
+                && current[index].Length < setting.After.Length
+                && current[index].SequenceEqual(setting.After.Take(current[index].Length), StringComparer.Ordinal);
+            if (!current[index].SequenceEqual(setting.Before, StringComparer.Ordinal)
+                && !current[index].SequenceEqual(setting.After, StringComparer.Ordinal)
+                && !interruptedWrite)
                 throw new InvalidOperationException("initialization branch tracking changed; refusing configuration cleanup");
         }
         for (var index = 0; index < settings.Length; index++)
