@@ -15,7 +15,9 @@ noncomputable section
 open Set Filter
 open scoped Topology
 
-namespace D5.S3.Analytic.SeriesInequalities.Profile32Concavity
+namespace D5.S3.Analytic.SeriesInequalities.Profile32Calculus
+
+open D5.S3.Analytic.SeriesInequalities.Profile32Concavity
 
 def chartFirst (z : ℝ) : ℝ := 27 * (1 - z^2) / (Real.sqrt (3 + z^2))^5
 def chartProfile (z : ℝ) : ℝ := weight z * (profileSum z) ^ (-(4/3 : ℝ))
@@ -358,4 +360,4 @@ theorem profile32_concave : ConcaveOn ℝ (Ioo (-1) 1) profile32 := by
 #print axioms chart_secant
 #print axioms profile32_concave
 
-end D5.S3.Analytic.SeriesInequalities.Profile32Concavity
+end D5.S3.Analytic.SeriesInequalities.Profile32Calculus
