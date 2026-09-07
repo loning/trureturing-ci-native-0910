@@ -3,6 +3,7 @@
    mirror-B: D5/B/S0/Certificates/CheckedLinearImage
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: kind=checker; basis=consumer=D5/S0/Certificates/CheckedLinearImageExamples.capped_fixture_real_image; instance=D5/S0/Certificates/CheckedLinearImageExamples.capped_payload_accepted
    digest: Rational primal-dual checks certify full query images over ordered fields. -/
 
 import D5.S0.Certificates.RationalFarkas
