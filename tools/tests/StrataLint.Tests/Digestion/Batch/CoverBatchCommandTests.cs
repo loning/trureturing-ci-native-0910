@@ -482,12 +482,12 @@ public sealed partial class CoverBatchCommandTests
             Report = new FakeLeanReportSource(inputs.Report);
         }
 
-        internal CommandResult Run(string input)
+        internal CommandResult Run(string input, IScribeEmissionVerifier? verifier = null)
         {
             var path = Path.Combine(temporary.Path, "atoms.tsv");
             File.WriteAllText(path, input);
             return CoverBatchCommand.Run(Root, Repository, Report,
-                new CallbackVerifier(() => { VerificationCount++; DuringVerification?.Invoke(); }),
+                verifier ?? new CallbackVerifier(() => { VerificationCount++; DuringVerification?.Invoke(); }),
                 CoverWorld.FixtureUtc, ["--atoms", path, "--base", "baseline"],
                 emit: () =>
                 {
@@ -498,12 +498,12 @@ public sealed partial class CoverBatchCommandTests
                 }, readInputs: UseGitReader ? null : ReadFiles);
         }
 
-        internal void RunSingles()
+        internal void RunSingles(IScribeEmissionVerifier? verifier = null)
         {
             foreach (var (atom, gid) in new[] { (First, Gid), (Second, OtherGid) })
             {
                 var result = CoverAtomCommand.Run(Root, Repository, Report,
-                    new CallbackVerifier(() => { }), CoverWorld.FixtureUtc,
+                    verifier ?? new CallbackVerifier(() => { }), CoverWorld.FixtureUtc,
                     ["--cover-atom", atom, "--gid", gid, "--base", "baseline"]);
                 Assert.True(result.Success, result.Error);
             }
@@ -536,7 +536,8 @@ public sealed partial class CoverBatchCommandTests
     private sealed class CallbackVerifier(Action callback) : IScribeEmissionVerifier
     {
         public VerifiedScribeEmissions Verify(RepositorySnapshot snapshot, LeanAxiomReport report,
-            RawChangeSet? changes = null)
+            RawChangeSet? changes = null, FrozenStateCatalog? frozenState = null,
+            FrozenStatementIndex? frozenStatements = null)
         {
             callback();
             return VerifiedScribeEmissions.Empty;

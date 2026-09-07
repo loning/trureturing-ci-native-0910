@@ -134,7 +134,9 @@ public static class ScribeEmitter
         Assembly documentsAssembly,
         string repositoryRoot,
         TextWriter error,
-        LeanAxiomReport leanReport)
+        LeanAxiomReport leanReport,
+        FrozenStateCatalog? frozenState = null,
+        FrozenStatementIndex? frozenStatements = null)
     {
         ArgumentNullException.ThrowIfNull(leanReport);
         return Run(
@@ -145,7 +147,9 @@ public static class ScribeEmitter
             _ => leanReport,
             validateRepository: true,
             tolerateAbsentDocuments: true,
-            documentsAssembly: documentsAssembly).Verification;
+            documentsAssembly: documentsAssembly,
+            frozenState: frozenState,
+            frozenStatements: frozenStatements).Verification;
     }
 
     private static ScribeEmissionRun Run(
@@ -158,7 +162,9 @@ public static class ScribeEmitter
         bool tolerateAbsentDocuments,
         Assembly? documentsAssembly = null,
         IReadOnlyList<DocumentDefinition>? suppliedDefinitions = null,
-        MarkdownFormulaScope? markdownScope = null)
+        MarkdownFormulaScope? markdownScope = null,
+        FrozenStateCatalog? frozenState = null,
+        FrozenStatementIndex? frozenStatements = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(repositoryRoot);
         ArgumentNullException.ThrowIfNull(output);
@@ -236,7 +242,9 @@ public static class ScribeEmitter
                     repositoryRoot,
                     definitions.Select(static definition => definition.Document),
                     leanReport,
-                    declarationCatalog: declarationCatalog);
+                    declarationCatalog: declarationCatalog,
+                    frozenState: frozenState,
+                    frozenStatements: frozenStatements);
                 if (!findings.IsEmpty)
                 {
                     foreach (var finding in findings)
