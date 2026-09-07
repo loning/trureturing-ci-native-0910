@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Factorization/SquarefreeSquareDecomposition.bcs_square_squarefree_unique
     target_statement_id: sha256:e513fcfff1af94d22aa257a893fe6e24f7fc5e562a14b2407842cb481fa9ad65
 receipts:
-  scribe:
-    - gid: D5/S3/Factorization/SquarefreeSquareDecomposition.bcs_square_squarefree_unique
-      definition_sha256: sha256:0585ec7c1274099a3d1b5743ebb25c58fd9ab231c819a833089817f7b44315f5
-      emission_sha256: sha256:85683d9ecd8a209a41099309397e3ea14caafd4a0d335d0302ba4ca3d92a15b9
   unresolved_subitems: []
