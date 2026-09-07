@@ -28,23 +28,7 @@ internal static partial class IngestCommand
         }
 
         var root = Path.GetFullPath(repositoryRoot);
-        var expected = current.Entries
-            .Where(static entry => IsLedgerPath(entry.Path))
-            .ToDictionary(static entry => entry.Path, StringComparer.Ordinal);
-        var actual = ReadLedgerFiles(root);
-        if (expected.Keys.Except(actual.Keys, StringComparer.Ordinal).Any())
-        {
-            throw new InvalidOperationException(
-                "ledger went missing between read and write; aborting to avoid a lost update");
-        }
-
-        if (actual.Keys.Except(expected.Keys, StringComparer.Ordinal).Any()
-            || expected.Any(pair => !pair.Value.Bytes.AsSpan().SequenceEqual(
-                actual[pair.Key].AsSpan())))
-        {
-            throw new InvalidOperationException(
-                "ledger changed under us between read and write; aborting to avoid a lost update");
-        }
+        var actual = RequireLedgerUnchanged(root, current);
 
         var originals = updates.ToDictionary(
             static update => update.Path,
@@ -82,7 +66,29 @@ internal static partial class IngestCommand
         }
     }
 
-    private static bool IsLedgerPath(string path) =>
+    internal static Dictionary<string, ImmutableArray<byte>> RequireLedgerUnchanged(
+        string repositoryRoot, RawRepositorySnapshot current)
+    {
+        var expected = current.Entries
+            .Where(static entry => IsLedgerPath(entry.Path))
+            .ToDictionary(static entry => entry.Path, StringComparer.Ordinal);
+        var actual = ReadLedgerFiles(Path.GetFullPath(repositoryRoot));
+        if (expected.Keys.Except(actual.Keys, StringComparer.Ordinal).Any())
+        {
+            throw new InvalidOperationException(
+                "ledger went missing between read and write; aborting to avoid a lost update");
+        }
+
+        if (actual.Keys.Except(expected.Keys, StringComparer.Ordinal).Any()
+            || expected.Any(pair => !pair.Value.Bytes.AsSpan().SequenceEqual(actual[pair.Key].AsSpan())))
+        {
+            throw new InvalidOperationException(
+                "ledger changed under us between read and write; aborting to avoid a lost update");
+        }
+        return actual;
+    }
+
+    internal static bool IsLedgerPath(string path) =>
         string.Equals(path, BackfillInventoryLoader.RelativePath, StringComparison.Ordinal)
         || BackfillInventoryLoader.IsCanonicalPath(path);
 

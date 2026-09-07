@@ -64,6 +64,9 @@ internal sealed class StubCliEnvironment(
     public CommandResult CoverAtom(IReadOnlyList<string> arguments) =>
         new(false, string.Empty, "cover-atom is not configured in this fixture");
 
+    public CommandResult CoverBatch(IReadOnlyList<string> arguments) =>
+        new(false, string.Empty, "cover-batch is not configured in this fixture");
+
     public CommandResult QuarantineAtom(IReadOnlyList<string> arguments) =>
         new(false, string.Empty, "quarantine-atom is not configured in this fixture");
 
