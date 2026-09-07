@@ -106,7 +106,7 @@ internal static class LeanMissingBuildProvisioner
                 : new OleanWarmthInspection(OleanWarmth.ProbeFailed, donorDirectoryReason);
             if (!donorIsPrivate
                 || verifiedPins is null
-                || !pins.HasSameBytes(verifiedPins)
+                || !pins.SamePartition(verifiedPins)
                 || !LeanCacheStamp.Matches(
                     donorLake,
                     pins,
