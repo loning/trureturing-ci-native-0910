@@ -166,6 +166,119 @@ public sealed partial class ScriptTestGateClosureTests
         Assert.Contains("unrecognised-sink", Flatten(error), StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void ReadonlyConstructorFieldAssignmentResolvesRepositoryInput()
+    {
+        const string script = "tools/scripts/constructor-field-input.sh";
+        var snapshot = AppendTestMethod(
+            CurrentSnapshot(),
+            $$"""
+
+                [Fact]
+                public void ConstructorFieldProbe() => new ConstructorPathFixture().Run();
+
+                private sealed class ConstructorPathFixture
+                {
+                    private const string ScriptPath = "{{script}}";
+                    private readonly string candidateLeaf;
+
+                    internal ConstructorPathFixture()
+                    {
+                        candidateLeaf = Path.Combine({{RepositoryRootCall}}, ScriptPath);
+                    }
+
+                    internal void Run() => TestProcessRunner.Run(
+                        "/bin/bash", [candidateLeaf], TestScratchRoot.Current.Path,
+                        TestBudgets.ScriptProcessHangGuard, 1024);
+                }
+            """,
+            (script, "#!/usr/bin/env bash\nexit 0\n"));
+
+        var closure = Derive(snapshot, []);
+
+        Assert.Contains(script, closure.ExactPaths);
+        Assert.Contains(ScriptTestsProject, Evaluate([script], snapshot, snapshot).Projects);
+    }
+
+    [Fact]
+    public void MutableConstructorFieldAssignmentFailsClosed()
+    {
+        const string script = "tools/scripts/constructor-field-input.sh";
+        var snapshot = AppendTestMethod(
+            CurrentSnapshot(),
+            $$"""
+
+                [Fact]
+                public void ConstructorFieldProbe() => new ConstructorPathFixture().Run();
+
+                private sealed class ConstructorPathFixture
+                {
+                    private const string ScriptPath = "{{script}}";
+                    private string candidateLeaf;
+
+                    internal ConstructorPathFixture()
+                    {
+                        candidateLeaf = Path.Combine({{RepositoryRootCall}}, ScriptPath);
+                    }
+
+                    internal void Run() => TestProcessRunner.Run(
+                        "/bin/bash", [candidateLeaf], TestScratchRoot.Current.Path,
+                        TestBudgets.ScriptProcessHangGuard, 1024);
+                }
+            """,
+            (script, "#!/usr/bin/env bash\nexit 0\n"));
+
+        var error = Assert.ThrowsAny<Exception>(() => Derive(snapshot, []));
+
+        Assert.Contains("ConstructorFieldProbe", Flatten(error), StringComparison.Ordinal);
+        Assert.Contains("unrecognised-sink operation value", Flatten(error), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ReadonlyConstructorRepositoryRootFieldFailsClosed()
+    {
+        const string script = "tools/scripts/constructor-field-input.sh";
+        var snapshot = AppendTestMethod(
+            CurrentSnapshot(),
+            $$"""
+
+                [Fact]
+                public void ConstructorRootFieldProbe() => new ConstructorRootFixture().Run();
+
+                private sealed class ConstructorRootFixture
+                {
+                    private readonly string repositoryRoot;
+
+                    internal ConstructorRootFixture()
+                    {
+                        repositoryRoot = {{RepositoryRootCall}};
+                    }
+
+                    internal void Run() => TestProcessRunner.Run(
+                        "/bin/bash", [Path.Combine(repositoryRoot, "{{script}}")],
+                        TestScratchRoot.Current.Path, TestBudgets.ScriptProcessHangGuard, 1024);
+                }
+            """,
+            (script, "#!/usr/bin/env bash\nexit 0\n"));
+
+        var error = Assert.ThrowsAny<Exception>(() => Derive(snapshot, []));
+
+        Assert.Contains("ConstructorRootFieldProbe", Flatten(error), StringComparison.Ordinal);
+        Assert.Contains("unrecognised-sink operation value", Flatten(error), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ActualStrataLintScriptTestsProjectClosureDerivesSuccessfully()
+    {
+        var snapshot = Decode(GitRepositorySnapshotReader.ReadCurrent(RepositoryLayout.FindRoot()));
+
+        var closure = Derive(snapshot, []);
+
+        Assert.Contains(ScriptTestsProject, closure.ExactPaths);
+        Assert.Contains("tools/scripts/worktree/lean-cache-input.sh", closure.ExactPaths);
+        Assert.Contains("tools/scripts/worktree/lean-cache-publish.sh", closure.ExactPaths);
+    }
+
     [Theory]
     [InlineData(
         "ObjectCreationOperandProbe",
