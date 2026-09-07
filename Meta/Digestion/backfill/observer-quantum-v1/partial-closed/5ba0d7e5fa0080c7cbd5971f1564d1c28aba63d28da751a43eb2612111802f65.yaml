@@ -24,7 +24,6 @@ coverage_gids:
   - gid: D5/S3/Observer/ObserverMetric.updateDefect_eq_zero_iff_invariant
     target_statement_id: sha256:4b8ea362b2298d5fced83b73a2a7f27a5c06448a2c0f39e09fbb4edaa7f9dfb9
 receipts:
-  scribe: []
   unresolved_subitems:
     - LP-eight-pair-certificate
     - rieffel-metric-bundle-over-torus

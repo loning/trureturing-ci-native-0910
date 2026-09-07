@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Quantum/Magic/QuquintFiniteMaximum.finite_sign_maximum_tangent
     target_statement_id: sha256:887364d7b22dc3877b91cd4336b9b4db585464fcb201394df3ebca70a09f59d0
 receipts:
-  scribe: []
   unresolved_subitems: []

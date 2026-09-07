@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Analytic/ReflectedSpectrum/ReflectedGrowthPairTimeGroup.oriented_time_recovery_symmetric_time_loss
     target_statement_id: sha256:fc4b77be0538dfb9e977159b3eeb40e9dc2f83729c5f18e2b418a38dd5d1304f
 receipts:
-  scribe: []
   unresolved_subitems: []

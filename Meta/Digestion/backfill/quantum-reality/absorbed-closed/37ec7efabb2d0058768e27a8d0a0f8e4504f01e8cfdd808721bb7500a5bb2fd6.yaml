@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Quantum/Magic/QuquintStrictDecrease.directional_decrease
     target_statement_id: sha256:c2a26b8b991d2bdc18fad57064be16805ac803d90833454c6eaefd7efd4eaa97
 receipts:
-  scribe: []
   unresolved_subitems: []

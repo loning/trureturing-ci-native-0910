@@ -10,6 +10,5 @@ coverage_gids:
   - gid: D5/S3/Observer/ObserverMetric.perturbationSeminorm_eq_zero_iff
     target_statement_id: sha256:a010683c1ec60b327e57c8295734bbcdd95d5b0644f6fa8e3dd878ead7659f7c
 receipts:
-  scribe: []
   unresolved_subitems:
     - center-equals-continuous-torus-functions-crossed-product-form
