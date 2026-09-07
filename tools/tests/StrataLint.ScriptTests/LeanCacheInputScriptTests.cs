@@ -150,7 +150,8 @@ public sealed class LeanCacheInputScriptTests
         private readonly TemporaryDirectory temporary = new();
         private readonly string repository;
         private readonly string bin;
-        private readonly string candidateLeaf;
+        private readonly string candidateLeaf =
+            Path.Combine(TestRepositoryLayout.FindRoot(), LeafPath);
         private readonly string reportCalls;
         private readonly string lakeCalls;
         private readonly string payload;
@@ -164,7 +165,6 @@ public sealed class LeanCacheInputScriptTests
             reportCalls = Path.Combine(temporary.Path, "report.calls");
             lakeCalls = Path.Combine(temporary.Path, "lake.calls");
             publishedManifest = Path.Combine(temporary.Path, "published.manifest");
-            candidateLeaf = Path.Combine(TestRepositoryLayout.FindRoot(), LeafPath);
             foreach (var directory in new[] { repository, bin, payload, Path.Combine(repository, ".lake/build") })
                 ScriptHarnessScratch.EnsureDirectory(directory);
             Write("Trureturing.lean", "import D5.Zeta\n");
