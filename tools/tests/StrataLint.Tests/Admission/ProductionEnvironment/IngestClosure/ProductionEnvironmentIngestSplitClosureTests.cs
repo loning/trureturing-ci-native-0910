@@ -467,6 +467,69 @@ public sealed partial class ProductionEnvironmentTests
         Assert.Contains(parent.AtomId, changed);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void StatusAuthorityEqualIgnoresCoverageOrder(bool planned)
+    {
+        var entry = StatusAuthorityClosureEntry() with
+        {
+            Coverage =
+            [
+                new DigestionCoverageEdge("D5/S0/Carrier/Probe.Zeta", null),
+                new DigestionCoverageEdge("D5/S0/Carrier/Probe.alpha", "sha256:" + new string('a', 64)),
+            ],
+        };
+        var reordered = entry with { Coverage = entry.Coverage.Reverse().ToImmutableArray() };
+
+        var classification = ClassifyCoverageChange(entry, reordered, planned);
+
+        Assert.True(classification.IsUncoveredOnly, classification.Witness);
+        Assert.Null(classification.Witness);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void StatusAuthorityEqualRejectsChangedCoverageTarget(bool planned)
+    {
+        var entry = StatusAuthorityClosureEntry();
+        var changed = entry with
+        {
+            Coverage = [entry.Coverage[0] with { TargetStatementId = "sha256:" + new string('b', 64) }],
+        };
+
+        var classification = ClassifyCoverageChange(entry, changed, planned);
+
+        Assert.False(classification.IsUncoveredOnly);
+        Assert.Equal(planned
+            ? $"planned rewrite of existing entry {entry.AtomId}"
+            : $"existing entry {entry.AtomId} changed status-authority inputs", classification.Witness);
+    }
+
+    private static IngestTruthAlignmentClassification ClassifyCoverageChange(
+        DigestionLedgerEntry entry,
+        DigestionLedgerEntry changed,
+        bool planned)
+    {
+        var baseline = DigestionTestSupport.Document(
+            entry.Atomizer, [entry], sourceId: entry.SourceId, sourcePath: entry.SourcePath);
+        var current = baseline.WithDigestionSources([
+            Assert.Single(baseline.RequireDigestionSources()) with { Entries = [changed] },
+        ]);
+        var alignment = new DigestionLedgerAlignment(
+            ImmutableDictionary<string, DigestionReceiptAlignment>.Empty,
+            ImmutableDictionary<string, DigestionAtom>.Empty,
+            ImmutableDictionary<string, ImmutableHashSet<string>>.Empty,
+            ImmutableDictionary<string, GenreRegistryCheck>.Empty,
+            [], [], ImmutableHashSet<string>.Empty, ImmutableHashSet<string>.Empty, [], [], []);
+
+        return planned
+            ? IngestTruthAlignmentClassifier.ClassifyPlanned(
+                baseline, baseline, current, alignment, DigestionEvaluationScope.ChangedSet, RawChangeSet.Create([]))
+            : IngestTruthAlignmentClassifier.ClassifyCurrent(LeanReportInputState.Unchanged, current, baseline);
+    }
+
     private static DigestionLedgerEntry StatusAuthorityClosureEntry()
     {
         const string coverageGid = "D5/S0/Carrier/Ring.goldenRing";

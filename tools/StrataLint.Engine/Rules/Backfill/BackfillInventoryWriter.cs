@@ -147,7 +147,7 @@ internal static class BackfillInventoryWriter
         }
 
         Line(builder, "        coverage_gids:");
-        foreach (var edge in edges)
+        foreach (var edge in CanonicalCoverage(edges))
         {
             Line(builder, $"          - gid: {Scalar(edge.Gid)}");
             Line(builder, "            target_statement_id: " + NullableScalar(edge.TargetStatementId));
@@ -184,11 +184,28 @@ internal static class BackfillInventoryWriter
         }
 
         Line(builder, "coverage_gids:");
-        foreach (var edge in edges)
+        foreach (var edge in CanonicalCoverage(edges))
         {
             Line(builder, $"  - gid: {Scalar(edge.Gid)}");
             Line(builder, "    target_statement_id: " + NullableScalar(edge.TargetStatementId));
         }
+    }
+
+    private static ImmutableArray<DigestionCoverageEdge> CanonicalCoverage(
+        ImmutableArray<DigestionCoverageEdge> edges)
+    {
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var edge in edges)
+        {
+            if (!seen.Add(edge.Gid))
+            {
+                throw new InvalidOperationException(
+                    $"BACKFILL_COVERAGE_DUPLICATE_GID: coverage_gids contains duplicate gid {edge.Gid}");
+            }
+        }
+
+        edges = edges.OrderBy(static edge => edge.Gid, StringComparer.Ordinal).ToImmutableArray();
+        return edges;
     }
 
     private static void AtomScribeReceipts(
