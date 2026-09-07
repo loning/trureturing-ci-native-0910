@@ -134,6 +134,7 @@ internal static class FormulaScriptAtom
             or FormulaLatexMacro.Beta
             or FormulaLatexMacro.Cdot
             or FormulaLatexMacro.Circ
+            or FormulaLatexMacro.Cup
             or FormulaLatexMacro.DeltaLower
             or FormulaLatexMacro.Ell
             or FormulaLatexMacro.Emptyset
