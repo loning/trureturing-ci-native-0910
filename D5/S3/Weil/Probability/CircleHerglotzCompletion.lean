@@ -146,29 +146,65 @@ theorem circle_herglotz_iff (c : ℤ → ℂ) (normalized : c 0 = 1) :
     rw [← hseq]
     exact circle_moment_toeplitz_posSemidef _ N
 
+private theorem moment_profile_isEmbedding :
+    IsEmbedding (fun μ : ProbabilityMeasure Circle =>
+      fun n : ℤ => circleMoment (μ : Measure Circle) n) := by
+  have hcontinuous : Continuous (fun μ : ProbabilityMeasure Circle =>
+      fun n : ℤ => circleMoment (μ : Measure Circle) n) :=
+    continuous_pi fun n => circleMoment_continuous n
+  have hinjective : Function.Injective (fun μ : ProbabilityMeasure Circle =>
+      fun n : ℤ => circleMoment (μ : Measure Circle) n) := by
+    intro μ ν h
+    apply ProbabilityMeasure.toMeasure_injective
+    exact circle_moment_ext _ _ (fun n => congrFun h n)
+  exact (hcontinuous.isClosedEmbedding hinjective).isEmbedding
+
 /-- On circle probability measures, continuity of all moments is equivalent
 to weak continuity of the family. Compactness upgrades the existing exact
 uniqueness theorem to a topological embedding. -/
 theorem continuous_iff_circleMoments {X : Type*} [TopologicalSpace X]
     (μ : X → ProbabilityMeasure Circle) :
     Continuous μ ↔ ∀ n : ℤ, Continuous (fun x => circleMoment (μ x : Measure Circle) n) := by
-  let profile : ProbabilityMeasure Circle → (ℤ → ℂ) :=
-    fun ν n => circleMoment (ν : Measure Circle) n
-  have hcontinuous : Continuous profile := continuous_pi fun n => circleMoment_continuous n
-  have hinjective : Function.Injective profile := by
-    intro ν ρ h
-    apply ProbabilityMeasure.toMeasure_injective
-    exact circle_moment_ext _ _ (fun n => congrFun h n)
-  have hembedding : IsEmbedding profile := (hcontinuous.isClosedEmbedding hinjective).isEmbedding
   constructor
   · intro h n
     exact (circleMoment_continuous n).comp h
   · intro h
-    apply hembedding.continuous_iff.mpr
+    apply moment_profile_isEmbedding.continuous_iff.mpr
     exact continuous_pi h
+
+/-- All original moments characterize weak convergence along any filter. -/
+theorem tendsto_iff_circleMoments {ι : Type*} (F : Filter ι)
+    (ν : ι → ProbabilityMeasure Circle) (μ : ProbabilityMeasure Circle) :
+    Tendsto ν F (𝓝 μ) ↔ ∀ n : ℤ,
+      Tendsto (fun i => circleMoment (ν i : Measure Circle) n)
+        F (𝓝 (circleMoment (μ : Measure Circle) n)) := by
+  rw [moment_profile_isEmbedding.tendsto_nhds_iff]
+  exact tendsto_pi_nhds
+
+/-- Any choice of exact finite-order probability witnesses converges as a
+whole sequence to the unique common measure. No consistency between consecutive
+witnesses and no convergence-rate premise is required. -/
+theorem finite_moment_witnesses_tendsto
+    (c : ℤ → ℂ) (normalized : c 0 = 1)
+    (positive : ∀ N : ℕ, (toeplitzMatrix c N).PosSemidef)
+    (ν : ℕ → ProbabilityMeasure Circle)
+    (finiteMoments : ∀ (N : ℕ) (n : ℤ), n.natAbs ≤ N → circleMoment (ν N : Measure Circle) n = c n) :
+    ∃ μ : ProbabilityMeasure Circle,
+      (∀ n : ℤ, circleMoment (μ : Measure Circle) n = c n) ∧
+      Tendsto ν atTop (𝓝 μ) := by
+  obtain ⟨μ, hμ⟩ := circle_herglotz_exists c normalized positive
+  refine ⟨μ, hμ, (tendsto_iff_circleMoments atTop ν μ).mpr ?_⟩
+  intro n
+  rw [hμ n]
+  have eventuallyExact : (fun N => circleMoment (ν N : Measure Circle) n) =ᶠ[atTop]
+      (fun _ : ℕ => c n) := by
+    filter_upwards [eventually_ge_atTop n.natAbs] with N hN
+    exact finiteMoments N n hN
+  exact (tendsto_congr' eventuallyExact).mpr tendsto_const_nhds
 
 #print axioms circle_herglotz_exists
 #print axioms circle_herglotz_iff
 #print axioms continuous_iff_circleMoments
+#print axioms finite_moment_witnesses_tendsto
 
 end D5.S3.Weil.Probability.CircleHerglotzCompletion
