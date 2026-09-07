@@ -369,23 +369,19 @@ resource_observe_run_periodic() {
   if [[ $# -eq 0 ]]; then return 2; fi
 
   resource_observation_emit_criteria
+  resource_observe_sample 0 "$root_pid" "$workspace" "$runner_temp" baseline "" UNAVAILABLE UNAVAILABLE || true
   previous_hup="$(trap -p HUP || true)"
   previous_int="$(trap -p INT || true)"
   previous_term="$(trap -p TERM || true)"
   trap 'resource_observation_handle_signal HUP "$?" "$root_pid" "$workspace" "$runner_temp" "$sampler_pid"' HUP
   trap 'resource_observation_handle_signal INT "$?" "$root_pid" "$workspace" "$runner_temp" "$sampler_pid"' INT
   trap 'resource_observation_handle_signal TERM "$?" "$root_pid" "$workspace" "$runner_temp" "$sampler_pid"' TERM
-  if resource_observe_sample 0 "$root_pid" "$workspace" "$runner_temp" baseline "" UNAVAILABLE UNAVAILABLE; then
-    resource_observe_periodically \
-      "$root_pid" \
-      "$workspace" \
-      "$runner_temp" \
-      "${RESOURCE_OBSERVATION_INTERVAL_SECONDS:-30}" &
-    sampler_pid=$!
-  else
-    sampler_status=$?
-    printf 'RESOURCE_OBSERVATION_SAMPLER status=UNAVAILABLE exit=%s\n' "$sampler_status"
-  fi
+  resource_observe_periodically \
+    "$root_pid" \
+    "$workspace" \
+    "$runner_temp" \
+    "${RESOURCE_OBSERVATION_INTERVAL_SECONDS:-30}" &
+  sampler_pid=$!
   if [[ $- == *e* ]]; then
     had_errexit=1
     set +e
@@ -399,21 +395,19 @@ resource_observe_run_periodic() {
     command_status=$?
   fi
 
-  if [[ -n "$sampler_pid" ]]; then
-    if kill -0 "$sampler_pid" 2>/dev/null; then
-      # Residual race: a real mid-run sampler failure is reported only if it is no longer live here;
-      # a failure racing our kill is treated as kill-induced.
-      kill "$sampler_pid" 2>/dev/null || true
-      wait "$sampler_pid" 2>/dev/null || true
+  if kill -0 "$sampler_pid" 2>/dev/null; then
+    # Residual race: a real mid-run sampler failure is reported only if it is no longer live here;
+    # a failure racing our kill is treated as kill-induced.
+    kill "$sampler_pid" 2>/dev/null || true
+    wait "$sampler_pid" 2>/dev/null || true
+  else
+    if wait "$sampler_pid" 2>/dev/null; then
+      sampler_status=0
     else
-      if wait "$sampler_pid" 2>/dev/null; then
-        sampler_status=0
-      else
-        sampler_status=$?
-      fi
-      if [[ "$sampler_status" -ne 0 ]]; then
-        printf 'RESOURCE_OBSERVATION_SAMPLER status=UNAVAILABLE exit=%s\n' "$sampler_status"
-      fi
+      sampler_status=$?
+    fi
+    if [[ "$sampler_status" -ne 0 ]]; then
+      printf 'RESOURCE_OBSERVATION_SAMPLER status=UNAVAILABLE exit=%s\n' "$sampler_status"
     fi
   fi
   resource_observe_sample 0 "$root_pid" "$workspace" "$runner_temp" final "" "$command_status" "$resource_observation_last_signal" || true
