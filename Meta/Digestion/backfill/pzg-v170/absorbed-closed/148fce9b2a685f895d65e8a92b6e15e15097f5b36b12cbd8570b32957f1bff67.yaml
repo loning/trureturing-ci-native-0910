@@ -1,0 +1,23 @@
+fingerprints:
+  raw_sha256: sha256:148fce9b2a685f895d65e8a92b6e15e15097f5b36b12cbd8570b32957f1bff67
+  normalized_sha256: sha256:148fce9b2a685f895d65e8a92b6e15e15097f5b36b12cbd8570b32957f1bff67
+cas_ref: sha256:148fce9b2a685f895d65e8a92b6e15e15097f5b36b12cbd8570b32957f1bff67
+coverage_gids:
+  - gid: D5/S1/Recurrence/ExponentialImplicitParityPeriodThree.a392208_parity_conjecture
+    target_statement_id: sha256:5eb8076345afe5232eb40718403129ee6d8d7808afaaaf2b9dff59b035ca3b77
+  - gid: D5/S1/Recurrence/ExponentialImplicitParityPeriodThree.initial_residues_mod_two
+    target_statement_id: sha256:843655fab382a30ea6b1a132d00a0708e085671a8de2d4a01644166029ee2f78
+  - gid: D5/S1/Recurrence/ExponentialImplicitParityPeriodThree.recurrence_coefficient_period_three
+    target_statement_id: sha256:a2602df97c5e48f65f428e4432ae9b8b787b874215ae5653bc2059c70b8a9602
+receipts:
+  scribe:
+    - gid: D5/S1/Recurrence/ExponentialImplicitParityPeriodThree.a392208_parity_conjecture
+      definition_sha256: sha256:63d896c30a15f6261ab37d79484b1e91d796f0201f2c98b5bf91a05d2d9be3fb
+      emission_sha256: sha256:5546b2ec6729c2dc7ac8ccfe4dd3dae1f2b1f66247a34faca7e3007aa3a1d411
+    - gid: D5/S1/Recurrence/ExponentialImplicitParityPeriodThree.initial_residues_mod_two
+      definition_sha256: sha256:63d896c30a15f6261ab37d79484b1e91d796f0201f2c98b5bf91a05d2d9be3fb
+      emission_sha256: sha256:5546b2ec6729c2dc7ac8ccfe4dd3dae1f2b1f66247a34faca7e3007aa3a1d411
+    - gid: D5/S1/Recurrence/ExponentialImplicitParityPeriodThree.recurrence_coefficient_period_three
+      definition_sha256: sha256:63d896c30a15f6261ab37d79484b1e91d796f0201f2c98b5bf91a05d2d9be3fb
+      emission_sha256: sha256:5546b2ec6729c2dc7ac8ccfe4dd3dae1f2b1f66247a34faca7e3007aa3a1d411
+  unresolved_subitems: []
