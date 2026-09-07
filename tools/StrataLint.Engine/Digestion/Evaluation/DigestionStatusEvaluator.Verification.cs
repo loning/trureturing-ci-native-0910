@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Text;
 
 namespace StrataLint.Engine;
 
@@ -66,77 +65,6 @@ internal static partial class DigestionStatusEvaluator
                     DigestionGapSeverity.ReceiptIntegrityFailure));
                 complete = false;
             }
-        }
-
-        return complete;
-    }
-
-    private static bool VerifyScribeReceipts(
-        DigestionLedgerEntry entry,
-        RepositorySnapshot snapshot,
-        VerifiedScribeEmissions? verifiedEmissions,
-        ICollection<DigestionGap> gaps,
-        ImmutableArray<string>.Builder findings)
-    {
-        var receipts = UniqueByGid(entry.EntryLabel(), entry.Receipts.Scribe, static item => item.Gid, findings);
-        var complete = true;
-        foreach (var gid in entry.CoverageGids.Distinct(StringComparer.Ordinal))
-        {
-            if (!receipts.ContainsKey(gid))
-            {
-                gaps.Add(new DigestionGap(
-                    "scribe-receipt-missing",
-                    gid,
-                    DigestionGapSeverity.NonFatal));
-                complete = false;
-            }
-
-            var documentGid = ScribeEmissionAttestation.DocumentGid(gid);
-            var definitionPath = ScribeEmissionAttestation.DefinitionPath(documentGid);
-            var selectsDeclaration = Gid.TryParse(gid, out var parsedGid)
-                && parsedGid.ToTarget() is Target.Formal { Declaration: not null };
-            if (verifiedEmissions is null)
-            {
-                gaps.Add(new DigestionGap(
-                    "scribe-emission-unverified",
-                    gid,
-                    DigestionGapSeverity.NonFatal));
-                complete = false;
-            }
-            else if (!verifiedEmissions.TryGet(documentGid, out _))
-            {
-                gaps.Add(new DigestionGap(
-                    "scribe-emission-missing",
-                    gid,
-                    DigestionGapSeverity.NonFatal));
-                complete = false;
-            }
-
-            if (selectsDeclaration
-                && verifiedEmissions is not null
-                && !verifiedEmissions.ReferencesDeclaration(gid))
-            {
-                gaps.Add(new DigestionGap(
-                    "scribe-declaration-reference-missing",
-                    gid,
-                    DigestionGapSeverity.NonFatal));
-                complete = false;
-            }
-
-            if (!snapshot.TryGetFile(definitionPath, out _))
-            {
-                gaps.Add(new DigestionGap(
-                    "scribe-definition-missing",
-                    gid,
-                    DigestionGapSeverity.NonFatal));
-                complete = false;
-            }
-        }
-
-        foreach (var extra in receipts.Keys.Except(entry.CoverageGids, StringComparer.Ordinal))
-        {
-            findings.Add($"entry {entry.AtomId} has an extra Scribe receipt for {extra}");
-            complete = false;
         }
 
         return complete;
