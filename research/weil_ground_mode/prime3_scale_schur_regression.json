@@ -1,5 +1,5 @@
 {
-  "source_sha256": "c72ef6f90f7aaed5bbe2d7a77f480ed17c3887702bc541959aa6478c632b8cdf",
+  "source_sha256": "fd24021b55526ae061f22ecf327030c929836dd343d699aa2a89e2252edc8aff",
   "exact_polynomial_integrals": 3,
   "cosine_edge_overlap_diagnostics": 36,
   "complex_stencil_mass_and_pairing_cases": 12,

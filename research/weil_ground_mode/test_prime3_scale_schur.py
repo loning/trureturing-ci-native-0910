@@ -76,7 +76,10 @@ def run():
     # Exact real-matrix Young/Frobenius majorants on complex rational vectors.
     rng=random.Random(20260907);young_cases=0
     def pair_scale(a,z):return (a*z[0],a*z[1])
-    def pair_sum(zs):return (sum((z[0] for z in zs),F(0)),sum((z[1] for z in zs),F(0)))
+    def pair_sum(zs):
+        values=list(zs)
+        return (sum((z[0] for z in values),F(0)),sum((z[1] for z in values),F(0)))
+    assert pair_sum(z for z in [(F(1),F(2)),(F(3),F(4))])==(F(4),F(6))
     def norm2(zs):return sum((x*x+y*y for x,y in zs),F(0))
     def apply(A,z):return [pair_sum(pair_scale(a,w) for a,w in zip(row,z)) for row in A]
     for _ in range(160):
