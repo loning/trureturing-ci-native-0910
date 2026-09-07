@@ -89,14 +89,10 @@ internal static class Program
             return ExecutePlan(options.RepositoryRoot, fullPlan);
         }
 
-        var protectedBaseEvaluatorPaths = ControllerClosure.Derive(protectedBase);
-        var candidateEvaluatorPaths = ControllerClosure.Derive(candidate);
-        var plan = EngineeringTestPlanPolicy.Evaluate(
+        var plan = EngineeringTestPlanPolicy.EvaluateOrdinary(
             changedPaths,
-            protectedBase,
-            candidate,
-            protectedBaseEvaluatorPaths,
-            candidateEvaluatorPaths);
+            RepositoryRules.ReadSnapshotProjects(protectedBase),
+            RepositoryRules.ReadSnapshotProjects(candidate));
         return ExecutePlan(options.RepositoryRoot, plan);
     }
 
