@@ -24,20 +24,22 @@ internal static class WorktreeCreationSafety
             .SingleOrDefault(fields => string.Equals(fields[0], reference, StringComparison.Ordinal));
         if (branch is null) return;
 
-        if (!branchCreated)
-        {
-            // A successful create-if-absent writes this receipt even if its acknowledgement is lost.
-            var receipt = RunGit(options.Source,
-                ["reflog", "show", "-1", "--format=%H%x09%gs", "--fixed-strings",
-                    $"--grep-reflog={creationLock}", reference, "--"],
-                runner, "could not inspect initialization branch receipt");
-            if (!string.Equals(StrictUtf8.GetString(receipt.StandardOutput).TrimEnd('\r', '\n'),
-                $"{branchOid}\t{creationLock}", StringComparison.Ordinal)) return;
-        }
-
         if (branch.Length != 3 || branch[2].Length != 0
             || !string.Equals(branch[1], branchOid, StringComparison.Ordinal))
             throw new InvalidOperationException("initialization branch changed; refusing cleanup");
+
+        // Creation acknowledgements become stale if the ref is deleted and recreated.
+        var receipt = RunGit(options.Source,
+            ["reflog", "show", "-1", "--format=%H%x09%gs", "--fixed-strings",
+                $"--grep-reflog={creationLock}", reference, "--"],
+            runner, "could not inspect initialization branch receipt");
+        if (!string.Equals(StrictUtf8.GetString(receipt.StandardOutput).TrimEnd('\r', '\n'),
+            $"{branchOid}\t{creationLock}", StringComparison.Ordinal))
+        {
+            if (branchCreated)
+                throw new InvalidOperationException("initialization branch ownership changed; refusing cleanup");
+            return;
+        }
 
         ValidateBranchIsUnused(options, runner);
         _ = RunGit(options.Source, ["update-ref", "--no-deref", "-d", reference, branchOid],
