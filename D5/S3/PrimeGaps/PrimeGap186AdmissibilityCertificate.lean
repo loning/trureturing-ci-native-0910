@@ -38,8 +38,7 @@ theorem omittedResidue186_is_missing
     (p : Nat) (hp : p.Prime) (hle : p ≤ 40) :
     ∀ h ∈ admissibleTuple186Int,
       (h : ZMod p) ≠ (omittedResidue186 p : ZMod p) := by
-  interval_cases p <;>
-    norm_num [omittedResidue186, admissibleTuple186Int, admissibleTuple186] at hp ⊢
+  interval_cases p <;> norm_num at hp <;> decide
 
 /-- The explicit forty-tuple satisfies the exact direct admissibility contract used by
 `DHL[40,2]`. Large primes are discharged generically by cardinality; the small-prime residue

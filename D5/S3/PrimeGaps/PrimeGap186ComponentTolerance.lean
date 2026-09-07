@@ -39,34 +39,34 @@ def relaxedMassBound (r : InnerRowAddress) : ℚ :=
 def relaxedOuterBudget (r : OuterRowAddress) : ℚ := outerBudget r + 2 * componentAllowance
 def relaxedInnerBudget (r : InnerRowAddress) : ℚ := innerBudget r + componentAllowance
 
-/-- Exact checks simultaneously certify strict relaxation and the two-component row budget. -/
 set_option maxRecDepth 8192 in
 set_option maxHeartbeats 2000000 in
+/-- Exact checks simultaneously certify strict relaxation and the two-component row budget. -/
 theorem relaxed_outer_certified : ∀ r : OuterRowAddress,
     outerRootBound r < relaxedRootBound r ∧
     outerFaceBound r < relaxedFaceBound r ∧
     outerScale r * relaxedRootBound r + relaxedFaceBound r / outerScale r ≤
       relaxedOuterBudget r := by
-  decide
+  decide +kernel
 
-/-- Every inner cap is strictly relaxed, with only delta additional weighted loss. -/
 set_option maxRecDepth 8192 in
 set_option maxHeartbeats 2000000 in
+/-- Every inner cap is strictly relaxed, with only delta additional weighted loss. -/
 theorem relaxed_inner_certified : ∀ r : InnerRowAddress,
     0 < innerWeight r ∧ innerMassBound r < relaxedMassBound r ∧
     innerWeight r * relaxedMassBound r ≤ relaxedInnerBudget r := by
-  decide
+  decide +kernel
 
 def totalRelaxedBudget : ℚ :=
   (∑ r : OuterRowAddress, relaxedOuterBudget r) +
     ∑ r : InnerRowAddress, relaxedInnerBudget r
 
-/-- There are 149 weighted components, not 97 inequalities. -/
 set_option maxRecDepth 8192 in
 set_option maxHeartbeats 2000000 in
+/-- There are 149 weighted components, not 97 inequalities. -/
 theorem totalRelaxedBudget_eq :
     totalRelaxedBudget = totalRoundedBudget + 149 / 20000000 := by
-  decide
+  decide +kernel
 
 /-- The explicit allocation fits within the loss allowance preserving the strict margin. -/
 theorem totalRelaxedBudget_le_safe :
@@ -83,7 +83,7 @@ theorem totalLoss_le_relaxedBudget (root face : OuterRowAddress → ℝ)
     totalLoss root face mass ≤ (totalRelaxedBudget : ℝ) := by
   have ho :
       (∑ r : OuterRowAddress,
-        (outerScale r : ℝ) * root r + face r / (outerScale r : ℝ)) ≤
+        ((outerScale r : ℝ) * root r + face r / (outerScale r : ℝ))) ≤
       ∑ r : OuterRowAddress, (relaxedOuterBudget r : ℝ) := by
     apply Finset.sum_le_sum
     intro r _
@@ -126,7 +126,9 @@ theorem strict_score_of_relaxed_component_bounds
     1 + 1 / 50000 < (rhoStar : ℝ) * (J / I - totalLoss root face mass) := by
   apply score_gt_strict_margin_of_aggregate_loss I J _ hIlower hIupper hJlower
   have hbudget : (totalRelaxedBudget : ℝ) ≤ (totalRoundedBudget : ℝ) + 1 / 100000 := by
-    exact_mod_cast totalRelaxedBudget_le_safe
+    have hcast := (Rat.cast_le (K := ℝ)).2 totalRelaxedBudget_le_safe
+    push_cast at hcast
+    exact hcast
   exact (totalLoss_le_relaxedBudget root face mass hroot hface hmass).trans hbudget
 
 #print axioms relaxed_outer_certified

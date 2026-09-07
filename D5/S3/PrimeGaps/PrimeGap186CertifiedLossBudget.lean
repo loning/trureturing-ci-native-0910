@@ -61,14 +61,14 @@ set_option maxHeartbeats 2000000 in
 theorem outer_rounding_certified : ∀ r : OuterRowAddress,
     0 < outerScale r ∧
       outerScale r * outerRootBound r + outerFaceBound r / outerScale r ≤ outerBudget r := by
-  decide
+  decide +kernel
 
 set_option maxRecDepth 8192 in
 set_option maxHeartbeats 2000000 in
 /-- All 45 inner weighted budgets are valid with the source's signed-hybrid coefficients. -/
 theorem inner_rounding_certified : ∀ r : InnerRowAddress,
     0 ≤ innerWeight r ∧ innerWeight r * innerMassBound r ≤ innerBudget r := by
-  decide
+  decide +kernel
 
 def totalRoundedBudget : ℚ :=
   (∑ r : OuterRowAddress, outerBudget r) + ∑ r : InnerRowAddress, innerBudget r
@@ -77,13 +77,13 @@ set_option maxRecDepth 8192 in
 set_option maxHeartbeats 2000000 in
 /-- The complete rounded loss budget, obtained from the actual typed table entries. -/
 theorem totalRoundedBudget_eq : totalRoundedBudget = 696075110 / 10 ^ 12 := by
-  decide
+  decide +kernel
 
 /-- Linear normalized loss assembled from arbitrary real-valued physical components. -/
 noncomputable def totalLoss (root face : OuterRowAddress → ℝ)
     (mass : InnerRowAddress → ℝ) : ℝ :=
   (∑ r : OuterRowAddress,
-    (outerScale r : ℝ) * root r + face r / (outerScale r : ℝ)) +
+    ((outerScale r : ℝ) * root r + face r / (outerScale r : ℝ))) +
   ∑ r : InnerRowAddress, (innerWeight r : ℝ) * mass r
 
 /-- Soundness of row-budget aggregation. Each analytic bound is an explicit hypothesis. -/
@@ -95,7 +95,7 @@ theorem totalLoss_le_recordedBudget (root face : OuterRowAddress → ℝ)
     totalLoss root face mass ≤ (totalRoundedBudget : ℝ) := by
   have ho :
       (∑ r : OuterRowAddress,
-        (outerScale r : ℝ) * root r + face r / (outerScale r : ℝ)) ≤
+        ((outerScale r : ℝ) * root r + face r / (outerScale r : ℝ))) ≤
       ∑ r : OuterRowAddress, (outerBudget r : ℝ) := by
     apply Finset.sum_le_sum
     intro r _
@@ -136,7 +136,7 @@ theorem recorded_score_margin :
     rhoStar * (recordedJLower / recordedIUpper - totalRoundedBudget) - 1 =
       55329972518846778463969 / 2368531789000000000000000000 := by
   rw [totalRoundedBudget_eq]
-  decide
+  decide +kernel
 
 /-- The baseline arithmetic margin is strictly greater than 2 * 10^-5. -/
 theorem recorded_score_margin_gt :
@@ -156,7 +156,7 @@ theorem recorded_strict_margin_is_safe :
     1 + 1 / 50000 < rhoStar *
       (recordedJLower / recordedIUpper - (totalRoundedBudget + 1 / 100000)) := by
   rw [totalRoundedBudget_eq]
-  decide
+  decide +kernel
 
 /-- Transfer an exact rational threshold certificate to arbitrary real data meeting the
 three recorded scalar endpoints and an aggregate loss bound. -/

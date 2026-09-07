@@ -32,22 +32,22 @@ private theorem sum_gt_of_discriminant (x y t : ℝ)
     mul_nonneg (sub_nonneg.mpr hbound) (add_nonneg ht (add_nonneg hx hy))
   nlinarith [sq_nonneg (x - y)]
 
-/-- Every outer row has its optimum strictly above the predecessor of its rounded budget. -/
 set_option maxRecDepth 8192 in
 set_option maxHeartbeats 2000000 in
+/-- Every outer row has its optimum strictly above the predecessor of its rounded budget. -/
 theorem outer_discriminant_certified : ∀ r : OuterRowAddress,
     0 ≤ outerRootBound r ∧ 0 ≤ outerFaceBound r ∧
       0 ≤ outerBudget r - 1 / 10 ^ 12 ∧
       (outerBudget r - 1 / 10 ^ 12) ^ 2 <
         4 * outerRootBound r * outerFaceBound r := by
-  decide
+  decide +kernel
 
-/-- The 45 inner rounded budgets are also minimal for their fixed weighted upper bounds. -/
 set_option maxRecDepth 8192 in
 set_option maxHeartbeats 2000000 in
+/-- The 45 inner rounded budgets are also minimal for their fixed weighted upper bounds. -/
 theorem inner_predecessor_certified : ∀ r : InnerRowAddress,
     innerBudget r - 1 / 10 ^ 12 < innerWeight r * innerMassBound r := by
-  decide
+  decide +kernel
 
 /-- Any positive real Young weight stays above the preceding budget-grid point. -/
 theorem outer_cost_gt_predecessor (r : OuterRowAddress) (q : ℝ) (hq : 0 < q) :
@@ -57,7 +57,11 @@ theorem outer_cost_gt_predecessor (r : OuterRowAddress) (q : ℝ) (hq : 0 < q) :
       0 ≤ (outerBudget r : ℝ) - 1 / 10 ^ 12 ∧
       ((outerBudget r : ℝ) - 1 / 10 ^ 12) ^ 2 <
         4 * (outerRootBound r : ℝ) * (outerFaceBound r : ℝ) := by
-    exact_mod_cast outer_discriminant_certified r
+    have hcert := outer_discriminant_certified r
+    have hbudget := (Rat.cast_nonneg (K := ℝ)).2 hcert.2.2.1
+    have hdisc := (Rat.cast_lt (K := ℝ)).2 hcert.2.2.2
+    push_cast at hbudget hdisc
+    exact ⟨Rat.cast_nonneg.mpr hcert.1, Rat.cast_nonneg.mpr hcert.2.1, hbudget, hdisc⟩
   apply sum_gt_of_discriminant _ _ _
     (mul_nonneg hq.le hc.1) (div_nonneg hc.2.1 hq.le) hc.2.2.1
   calc
@@ -91,7 +95,9 @@ theorem inner_rounded_budget_optimal (r : InnerRowAddress) :
         (innerWeight r : ℝ) * (innerMassBound r : ℝ) ∧
       (innerWeight r : ℝ) * (innerMassBound r : ℝ) ≤ (innerBudget r : ℝ) := by
   constructor
-  · exact_mod_cast inner_predecessor_certified r
+  · have hcast := (Rat.cast_lt (K := ℝ)).2 (inner_predecessor_certified r)
+    push_cast at hcast
+    exact hcast
   · exact_mod_cast (inner_rounding_certified r).2
 
 #print axioms outer_discriminant_certified

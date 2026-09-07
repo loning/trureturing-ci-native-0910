@@ -107,8 +107,8 @@ instance : Fintype PhysicalComponentAddress where
     exact Finset.mem_biUnion.mpr ⟨g, Finset.mem_univ _,
       Finset.mem_image.mpr ⟨p, Finset.mem_univ _, rfl⟩⟩
 
-/-- Six source groups times three schedule phases. -/
 set_option maxRecDepth 4096 in
+/-- Six source groups times three schedule phases. -/
 theorem card_physicalComponentAddress :
     Fintype.card PhysicalComponentAddress = 18 := by
   decide

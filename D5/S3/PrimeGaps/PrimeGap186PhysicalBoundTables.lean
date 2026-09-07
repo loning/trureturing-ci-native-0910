@@ -101,8 +101,8 @@ theorem bound_table_lengths :
     innerEnlargedOrderFiveHalvesBounds.length = 17 := by
   decide
 
-/-- Rounded budget-column sums, in units of `10^-12`, for the six exact tables. -/
 set_option maxRecDepth 4096 in
+/-- Rounded budget-column sums, in units of `10^-12`, for the six exact tables. -/
 theorem rounded_budget_sums :
     (outerOrderTwoBounds.map (fun r => r.2.2.2)).sum = 38927522 ∧
     (outerOrderFiveHalvesBounds.map (fun r => r.2.2.2)).sum = 622829241 ∧
@@ -112,8 +112,8 @@ theorem rounded_budget_sums :
     (innerEnlargedOrderFiveHalvesBounds.map (fun r => r.2)).sum = 32422390 := by
   decide
 
-/-- Total rounded budget mass across all six source tables. -/
 set_option maxRecDepth 4096 in
+/-- Total rounded budget mass across all six source tables. -/
 theorem total_rounded_budget_sum :
     (outerOrderTwoBounds.map (fun r => r.2.2.2)).sum +
     (outerOrderFiveHalvesBounds.map (fun r => r.2.2.2)).sum +

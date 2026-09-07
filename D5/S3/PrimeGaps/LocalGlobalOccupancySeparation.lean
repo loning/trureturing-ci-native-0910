@@ -28,7 +28,7 @@ theorem twinOffsetsInt_direct_admissible : DirectTupleAdmissible twinOffsetsInt 
   have hp2 : 2 ≤ p := hp.two_le
   by_cases h2 : p = 2
   · subst p
-    norm_num [localResidueCount, localResidueSet, twinOffsetsInt]
+    decide
   · have hp3 : 3 ≤ p := by
       omega
     calc
