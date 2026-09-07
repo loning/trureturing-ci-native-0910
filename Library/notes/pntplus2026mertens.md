@@ -102,8 +102,10 @@ Final parsed closure after declaration pruning: 4 new files, 2014 lines
 (Estimates 587, LogZeta 360, Gamma 699, Third 368). The Euler-Maclaurin
 import is no longer required by this smaller declaration set and was removed.
 The original routed whole-source Q1 measurement remains unchanged.
-The four formal-unit modules plus this source/license note total 5 paths,
-below the user-supplied PR p75 of 13; freezing four state records would total 9.
+The four formal-unit modules plus this source/license note total 5 paths.
+Canonical freezing adds four event files and four state files: the complete
+change is 13 paths, equal to the user-supplied PR p75. These four modules form
+one endpoint's proof closure; no unrelated theorem family is included.
 
 `make lean` on the split port: exit 0, 35.4733835 seconds. After removing the
 unused import: exit 0, 78.079721041 seconds. `PortCheck.lean` then independently
@@ -111,6 +113,23 @@ imported Third, rechecked all three exact task signatures and printed all three
 standard axiom closures: make exit 0, 14.9107345 seconds. Its import parser
 produced the final counts above. These are warm local timings including the
 root build; upstream formatting warnings remain nonblocking.
+
+Canonical `make lean-report` exited 0 in 335.633129708 seconds, with both
+cache layers warm and `mode=full-fallback`. The report SHA-256 is
+`c174d6f10e7cfeedd2ee67b1c85302185fc6035ca2f6766acee16833d28ebf99`.
+`ledger-align` then exited 0 with
+`selectors_considered=5 changed=0 added=4 unchanged=1 conflicts=0`.
+The existing Euler-Maclaurin module was the unchanged selector used to limit
+the command's scope; it is not an import of the final port. All eight generated
+ledger paths belong to the four Mertens modules. No Gronwall atom is covered.
+
+Before opening the PR, `origin/dev` at
+`03b70412c96c6c35768a194dfe1f865b93c59596` was searched again using the same
+word-boundary query. It added only a Robin padding comment to the earlier
+nearby hits; no sharp Mertens III declaration was found in that searched scope.
+The matching-feature positive control returned 3617 D5 Lean files.
+`git merge-tree --write-tree origin/dev HEAD` exited 0; the changed-path
+intersection with paths deleted on dev since the initial base was empty.
 
 `proof_shape: bind-only`; `admission_basis: rule-11-upstream-wrapper`.
 The named upstream declarations are `Mertens.E₃.abs_le`,
