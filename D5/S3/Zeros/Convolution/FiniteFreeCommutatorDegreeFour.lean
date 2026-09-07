@@ -92,11 +92,14 @@ private theorem symmetrize_centered (u v w : ℝ) :
     symmetrize 4 (centeredQuartic u v w) = centeredQuartic (2*u) 0 (2*w+u^2/6) := by
   rw [symmetrize, dilate_centered]
   ext j
-  norm_num [additiveConvolution, fromElementary, Finset.sum_range_succ,
+  norm_num only [additiveConvolution, fromElementary, Finset.sum_range_succ,
+    Finset.sum_range_zero, Nat.reduceAdd, Nat.reduceSub, Nat.reduceMul,
     elementaryCoeff, centeredQuartic, coeff_add, coeff_C_mul_X_pow, coeff_C_mul_X,
     coeff_X, coeff_X_pow, coeff_C, coeff_sum,
-    descPochhammer_eval_eq_descFactorial ℝ 4, Nat.descFactorial, Nat.choose]
-  split_ifs <;> ring
+    descPochhammer_succ_eval, descPochhammer_zero, eval_one, Nat.choose,
+    map_zero, map_one, zero_add, add_zero, one_mul, mul_one, mul_zero, zero_mul,
+    pow_zero, pow_one]
+  split_ifs <;> first | omega | ring
 
 private theorem multiplicative_even (u w U W : ℝ) :
     multiplicativeConvolution 4 (centeredQuartic u 0 w) (centeredQuartic U 0 W) =
@@ -109,10 +112,13 @@ private theorem multiplicative_even (u w U W : ℝ) :
 private theorem commutatorKernel_four :
     commutatorKernel 4 = centeredQuartic (-(48/5)) 0 (3/5) := by
   ext j
-  norm_num [commutatorKernel, Finset.sum_range_succ, centeredQuartic,
-    descPochhammer_eval_eq_descFactorial ℝ 4, Nat.descFactorial, Nat.choose,
-    coeff_sum, coeff_add, coeff_C_mul_X_pow, coeff_X_pow, coeff_C, coeff_neg]
-  split_ifs <;> ring
+  norm_num only [commutatorKernel, Finset.sum_range_succ, Finset.sum_range_zero,
+    Nat.reduceAdd, Nat.reduceSub, Nat.reduceMul, Nat.reduceDiv, centeredQuartic,
+    descPochhammer_succ_eval, descPochhammer_zero, eval_one, Nat.choose,
+    coeff_sum, coeff_add, coeff_C_mul_X_pow, coeff_C_mul_X, coeff_X_pow,
+    coeff_C, coeff_neg, map_zero, zero_add, add_zero, one_mul, mul_one,
+    mul_zero, zero_mul, pow_zero, pow_one, coeff_zero]
+  split_ifs <;> first | omega | ring
 
 /-- Normalization companion used by `centered_factorization` on its live path. -/
 theorem centered_expansion (u v w U V W : ℝ) :
@@ -121,21 +127,24 @@ theorem centered_expansion (u v w U V W : ℝ) :
   rw [square4, symmetrize_centered, symmetrize_centered, commutatorKernel_four,
     multiplicative_even, multiplicative_even]
   ext j
-  norm_num [centeredQuartic, coeff_add, coeff_sub, coeff_C_mul_X_pow,
-    coeff_X_pow, coeff_C]
-  split_ifs <;> ring
+  norm_num only [centeredQuartic, coeff_add, coeff_sub, coeff_C_mul_X_pow,
+    coeff_C_mul_X, coeff_X_pow, coeff_C, map_zero, zero_mul, add_zero, coeff_zero]
+  split_ifs <;> first | omega | ring
 
--- Independent specialization of the defining finite sums, without `centered_expansion`.
+-- Definition path: specialize Sym, the first product, and z4 separately.
 example : square4 (centeredQuartic (-5) 0 4) (centeredQuartic (-5) 0 4) =
     X^4 - C (80/3 : ℝ) * X^2 + C (5329/60 : ℝ) := by
-  ext j
-  norm_num [square4, symmetrize, dilate, additiveConvolution,
-    multiplicativeConvolution, commutatorKernel, fromElementary,
-    Finset.sum_range_succ, elementaryCoeff, centeredQuartic, coeff_add,
-    coeff_C_mul_X_pow, coeff_C_mul_X, descPochhammer_eval_eq_descFactorial ℝ 4,
-    Nat.descFactorial, Nat.choose, coeff_X, coeff_X_pow, coeff_C, coeff_sum,
-    coeff_sub]
-  split_ifs <;> ring
+  have hs : symmetrize 4 (centeredQuartic (-5) 0 4) =
+      centeredQuartic (-10) 0 (73/6) := by
+    rw [symmetrize_centered]
+    norm_num
+  have hm : multiplicativeConvolution 4
+      (centeredQuartic (-10) 0 (73/6)) (centeredQuartic (-10) 0 (73/6)) =
+      centeredQuartic (50/3) 0 (5329/36) := by
+    rw [multiplicative_even]
+    norm_num
+  rw [square4, hs, hm, commutatorKernel_four, multiplicative_even]
+  norm_num [centeredQuartic]
 
 example : square4 (centeredQuartic (-5) 0 4) (centeredQuartic (-5) 0 4) =
     X^4 - C (80/3 : ℝ) * X^2 + C (5329/60 : ℝ) := by
