@@ -31,7 +31,8 @@ open scoped BigOperators
 
 private theorem golden_factor_append_letter (n i : ℕ) :
     goldenFactor (n + 1) i = goldenFactor n i ++ [goldenWord (i + n)] := by
-  simp [goldenFactor, List.ofFn_succ', List.concat_eq_append]
+  simp only [goldenFactor, List.ofFn_succ', List.concat_eq_append,
+    Fin.val_castSucc, Fin.val_last]
 
 private theorem golden_count_succ (i n : ℕ) :
     goldenWindowTrueCount i (n + 1) = goldenWindowTrueCount i n +

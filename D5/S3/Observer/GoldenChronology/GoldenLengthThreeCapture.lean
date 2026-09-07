@@ -107,7 +107,7 @@ theorem factor_equiv_readout_transport (i : Fin 4) :
     matrixReadout i = binaryParikhMatrix (factorWordEquiv i).val := by
   exact ⟨rfl, rfl, rfl⟩
 
-private def oneCut (Output : Type) [DecidableEq Output] :
+private abbrev oneCut (Output : Type) [DecidableEq Output] :
     PrimitiveSignature (Fin 4) where
   Index := Fin 1
   indexFintype := inferInstance
@@ -124,14 +124,14 @@ private def oneCut (Output : Type) [DecidableEq Output] :
 def countLawArena : PrimitiveLawArena where
   toArena := goldenLengthThreeArena
   signature := oneCut (ℕ × ℕ)
-  Law := fun r => ∀ x y,
+  Law := fun r => ∀ x y : Fin 4,
     r.readout 0 x = r.readout 0 y ↔ (x = 0 ↔ y = 0)
 
 /-- Native oriented-center law on that same arena. -/
 def centerLawArena : PrimitiveLawArena where
   toArena := goldenLengthThreeArena
   signature := oneCut ℤ
-  Law := fun r => ∀ x y,
+  Law := fun r => ∀ x y : Fin 4,
     r.readout 0 x = r.readout 0 y ↔
       x = y ∨ (x = 0 ∧ y = 2) ∨ (x = 2 ∧ y = 0)
 
@@ -157,13 +157,21 @@ def matrixRealization : PrimitiveRealization matrixLawArena.signature where
   anchor := Fin.elim0
 
 /-- The count kernel has one singleton and one three-state class. -/
-theorem count_partition_law : countLawArena.Law countRealization := by decide
+theorem count_partition_law : countLawArena.Law countRealization := by
+  change ∀ left right : Fin 4,
+    countReadout left = countReadout right ↔ (left = 0 ↔ right = 0)
+  decide
 
 /-- The center kernel has one two-state class and two singleton classes. -/
-theorem center_partition_law : centerLawArena.Law centerRealization := by decide
+theorem center_partition_law : centerLawArena.Law centerRealization := by
+  change ∀ left right : Fin 4, centerReadout left = centerReadout right ↔
+    left = right ∨ (left = 0 ∧ right = 2) ∨ (left = 2 ∧ right = 0)
+  decide
 
 /-- The full matrix readout recovers every state of the complete arena. -/
-theorem matrix_recovery_law : matrixLawArena.Law matrixRealization := by decide
+theorem matrix_recovery_law : matrixLawArena.Law matrixRealization := by
+  change Function.Injective matrixReadout
+  decide
 
 private def countUnit : TheoremUnit goldenLengthThreeArena :=
   NativeTheoremUnit.toTheoremUnit (arena := countLawArena)
@@ -178,11 +186,11 @@ private def matrixUnit : TheoremUnit goldenLengthThreeArena :=
     ⟨matrixRealization, matrix_recovery_law⟩
 
 /-- Analysis view containing only the two complementary coordinates. -/
-def twoCoordinateAnalysisView : Catalog goldenLengthThreeArena :=
+abbrev twoCoordinateAnalysisView : Catalog goldenLengthThreeArena :=
   Catalog.ofVector ![countUnit, centerUnit]
 
 /-- Analysis view retaining the full-matrix peer as well. No peer is hidden. -/
-def fullPresentationAnalysisView : Catalog goldenLengthThreeArena :=
+abbrev fullPresentationAnalysisView : Catalog goldenLengthThreeArena :=
   Catalog.ofVector ![countUnit, centerUnit, matrixUnit]
 
 /-- Counts and center have incomparable kernels, with two explicit pair witnesses. -/
@@ -203,7 +211,9 @@ theorem exact_two_coordinate_capture :
 /-- The exact local analysis-view rates, without weights or thresholds. -/
 theorem exact_two_coordinate_rates :
     twoCoordinateAnalysisView.theoremGainRate 0 = (1 / 6 : ℚ) ∧
-    twoCoordinateAnalysisView.theoremGainRate 1 = (1 / 2 : ℚ) := by decide
+    twoCoordinateAnalysisView.theoremGainRate 1 = (1 / 2 : ℚ) := by
+  obtain ⟨hdenominator, _, _, _, _, hcount, hcenter⟩ := exact_two_coordinate_capture
+  norm_num [Catalog.theoremGainRate, hdenominator, hcount, hcenter]
 
 /-- Keeping all three peers makes every exclusive capture zero. -/
 theorem full_presentation_exclusive_capture_zero :
@@ -212,7 +222,15 @@ theorem full_presentation_exclusive_capture_zero :
 /-- A faithful joint readout does not imply intrinsic irredundance. -/
 theorem full_presentation_faithful_but_not_irredundant :
     fullPresentationAnalysisView.escapeNumerator fullPresentationAnalysisView.fullIndexSet = 0 ∧
-      ¬ (∀ i : Fin 3, fullPresentationAnalysisView.LowersEscape i) := by decide
+      ¬ (∀ i : Fin 3, fullPresentationAnalysisView.LowersEscape i) := by
+  constructor
+  · decide
+  · intro lowersAll
+    have hpositive :=
+      (fullPresentationAnalysisView.lowersEscape_iff_uniqueCaptureCount_pos 0
+        (by decide)).mp (lowersAll 0)
+    rw [full_presentation_exclusive_capture_zero 0] at hpositive
+    omega
 
 #print axioms factor_word_image_complete
 #print axioms factor_equiv_readout_transport
