@@ -234,12 +234,12 @@ public sealed class TruthReleaseCommandTests
             ["lakefile.toml"] = "[package]\nname = \"fixture\"\n",
             ["lake-manifest.json"] = Manifest,
             [formalPath] = File.ReadAllText(
-                Path.Combine(repositoryRoot, BlueprintGid + ".lean"), Encoding.UTF8),
+                Path.Combine(repositoryRoot, "D5/S3/Midline/GoldenSpectralMarker.lean"), Encoding.UTF8),
             [dependencyPath] = "theorem dependency : True := by trivial\n",
             [blueprintSourcePath] = File.ReadAllText(
-                Path.Combine(repositoryRoot, "Blueprint/" + BlueprintGid + ".scribe.cs"), Encoding.UTF8),
+                Path.Combine(repositoryRoot, "Blueprint/D5/S3/Midline/GoldenSpectralMarker.scribe.cs"), Encoding.UTF8),
             [blueprintProjectionPath] = File.ReadAllText(
-                Path.Combine(repositoryRoot, "Blueprint/" + BlueprintGid + ".md"), Encoding.UTF8),
+                Path.Combine(repositoryRoot, "Blueprint/D5/S3/Midline/GoldenSpectralMarker.md"), Encoding.UTF8),
             ["Golden/Projection/statement-projection-pilot-v1.json"] = File.ReadAllText(
                 Path.Combine(
                     repositoryRoot,
