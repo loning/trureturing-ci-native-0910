@@ -24,18 +24,30 @@ internal static class EngineeringTestPlanPolicy
         RepositorySnapshot candidate,
         IReadOnlyCollection<string> protectedBaseControllerInputs,
         IReadOnlyCollection<string> candidateControllerInputs,
-        bool full = false)
+        bool full = false,
+        AdmissionPlaneDecision? admissionPlane = null)
     {
         ArgumentNullException.ThrowIfNull(protectedBase);
         ArgumentNullException.ThrowIfNull(candidate);
         ArgumentNullException.ThrowIfNull(protectedBaseControllerInputs);
         ArgumentNullException.ThrowIfNull(candidateControllerInputs);
 
+        if (!full && admissionPlane is null
+            && candidate.TryGetFile(AdmissionPlanePolicy.FileMapPath, out var fileMap))
+        {
+            admissionPlane = AdmissionPlanePolicy.Evaluate(fileMap.RawBytes.AsSpan(), changedPaths);
+        }
+
         var plan = EvaluateOrdinary(
             changedPaths,
             RepositoryRules.ReadSnapshotProjects(protectedBase),
             RepositoryRules.ReadSnapshotProjects(candidate),
-            full);
+            full,
+            digestionContentOnly: admissionPlane is
+            {
+                IsAdmissible: true,
+                Classification: AdmissionPlaneClassification.ContentOnly,
+            });
         if (full) return plan;
 
         var protectedClosure = ScriptTestGateClosurePolicy.Derive(
@@ -46,7 +58,9 @@ internal static class EngineeringTestPlanPolicy
             candidateControllerInputs);
         return ApplyScriptTestGate(
             plan,
-            plan.ChangedPaths.Any(path => protectedClosure.Covers(path)
+            plan.Kind == EngineeringTestPlanKind.Selected
+                && plan.Projects.Contains(ScriptTestGateClosurePolicy.ProjectPath)
+            || plan.ChangedPaths.Any(path => protectedClosure.Covers(path)
                 || candidateClosure.Covers(path)));
     }
 
@@ -54,7 +68,8 @@ internal static class EngineeringTestPlanPolicy
         IReadOnlyList<string> changedPaths,
         TestProjectTopologySnapshot protectedBase,
         TestProjectTopologySnapshot candidate,
-        bool full = false)
+        bool full = false,
+        bool digestionContentOnly = false)
     {
         ArgumentNullException.ThrowIfNull(changedPaths);
         ArgumentNullException.ThrowIfNull(protectedBase);
@@ -104,12 +119,18 @@ internal static class EngineeringTestPlanPolicy
                 "FULL=1 selects every protected-base and candidate-added test project");
         }
 
+        var unownedDigestionData = digestionContentOnly
+            && changed.Length > 0
+            && changed.All(static path => BackfillInventoryLoader.IsCanonicalPath(path)
+                || DigestionCasStore.IsCanonicalPath(path));
         var affected = new HashSet<string>(StringComparer.Ordinal);
         foreach (var path in changed)
         {
             var owner = FindOwner(baseProjects, path);
             if (owner is null)
             {
+                if (unownedDigestionData) continue;
+
                 return new EngineeringTestPlan(
                     EngineeringTestPlanKind.Full,
                     changed,
