@@ -226,6 +226,88 @@ theorem log_harmonic_term_bounds {x : ℝ} (hx : 0 < x) :
 
 #print axioms log_harmonic_term_bounds
 
+private lemma eulerMascheroni_tail_term_nonneg (N k : ℕ) (hN : 1 ≤ N) :
+    0 ≤ Real.log (1 + 1 / ((k + N : ℕ) : ℝ)) -
+      1 / (((k + N : ℕ) + 1 : ℕ) : ℝ) := by
+  have hx : 0 < ((k + N : ℕ) : ℝ) := by positivity
+  have hterm := log_harmonic_term_bounds hx
+  have hratio :
+      (1 : ℝ) + 1 / ((k + N : ℕ) : ℝ) =
+        (((k + N : ℕ) : ℝ) + 1) / ((k + N : ℕ) : ℝ) := by
+    field_simp
+  rw [hratio]
+  simpa only [Nat.cast_add, Nat.cast_one] using
+    (show 0 ≤ Real.log ((((k + N : ℕ) : ℝ) + 1) / ((k + N : ℕ) : ℝ)) -
+        1 / (((k + N : ℕ) : ℝ) + 1) from
+      (by positivity : 0 ≤ 1 / (2 * (((k + N : ℕ) : ℝ) + 1) ^ 2)).trans hterm.1.le)
+
+private lemma sum_range_eulerMascheroni_tail (N m : ℕ) (hN : 1 ≤ N) :
+    (∑ k ∈ Finset.range m,
+        (Real.log (1 + 1 / ((k + N : ℕ) : ℝ)) -
+          1 / (((k + N : ℕ) + 1 : ℕ) : ℝ))) =
+      (harmonic N : ℝ) - Real.log N -
+        ((harmonic (m + N) : ℝ) - Real.log (m + N)) := by
+  induction m with
+  | zero => simp
+  | succ m ih =>
+      have hx : 0 < ((m + N : ℕ) : ℝ) := by positivity
+      have hharm :
+          (harmonic ((m + N) + 1) : ℝ) =
+            (harmonic (m + N) : ℝ) + 1 / (((m + N : ℕ) + 1 : ℕ) : ℝ) := by
+        rw [harmonic_succ, Rat.cast_add, Rat.cast_inv, Rat.cast_natCast]
+        push_cast
+        simp only [one_div]
+      have hratio :
+          (1 : ℝ) + 1 / ((m + N : ℕ) : ℝ) =
+            (((m + N : ℕ) : ℝ) + 1) / ((m + N : ℕ) : ℝ) := by
+        field_simp
+      have hlog :
+          Real.log (1 + 1 / ((m + N : ℕ) : ℝ)) =
+            Real.log ((m + N) + 1) - Real.log (m + N) := by
+        rw [hratio, Real.log_div (by positivity) hx.ne']
+        congr 2 <;> push_cast <;> ring
+      have hlogIndex :
+          Real.log ((m : ℝ) + (N : ℝ) + 1) =
+            Real.log (((m + 1 : ℕ) : ℝ) + (N : ℝ)) := by
+        congr 1
+        push_cast
+        ring
+      rw [Finset.sum_range_succ, ih,
+        show m + 1 + N = (m + N) + 1 by omega, hlog, hharm]
+      rw [hlogIndex]
+      ring
+
+private lemma hasSum_eulerMascheroni_tail (N : ℕ) (hN : 1 ≤ N) :
+    HasSum
+      (fun k : ℕ ↦ Real.log (1 + 1 / ((k + N : ℕ) : ℝ)) -
+        1 / (((k + N : ℕ) + 1 : ℕ) : ℝ))
+      ((harmonic N : ℝ) - Real.log N - Real.eulerMascheroniConstant) := by
+  rw [hasSum_iff_tendsto_nat_of_nonneg
+    (fun k ↦ eulerMascheroni_tail_term_nonneg N k hN)]
+  have hlimit : Tendsto
+      (fun m : ℕ ↦ (harmonic (m + N) : ℝ) - Real.log (m + N)) atTop
+      (nhds Real.eulerMascheroniConstant) := by
+    simpa only [Function.comp_def, Nat.cast_add] using
+      Real.tendsto_harmonic_sub_log.comp (tendsto_add_atTop_nat N)
+  refine (tendsto_const_nhds.sub hlimit).congr' (Eventually.of_forall (fun m ↦ ?_))
+  exact (sum_range_eulerMascheroni_tail N m hN).symm
+
+/-- The appendix Euler tail is summable from every positive starting index. -/
+theorem eulerMascheroni_tail_summable (N : ℕ) (hN : 1 ≤ N) :
+    Summable (fun k : ℕ ↦ Real.log (1 + 1 / ((k + N : ℕ) : ℝ)) -
+      1 / (((k + N : ℕ) + 1 : ℕ) : ℝ)) :=
+  (hasSum_eulerMascheroni_tail N hN).summable
+
+/-- The infinite Euler-tail identity displayed in the appendix. -/
+theorem eulerMascheroni_tail_identity (N : ℕ) (hN : 1 ≤ N) :
+    (harmonic N : ℝ) - Real.log N - Real.eulerMascheroniConstant =
+      ∑' k : ℕ, (Real.log (1 + 1 / ((k + N : ℕ) : ℝ)) -
+        1 / (((k + N : ℕ) + 1 : ℕ) : ℝ)) :=
+  (hasSum_eulerMascheroni_tail N hN).tsum_eq.symm
+
+#print axioms eulerMascheroni_tail_summable
+#print axioms eulerMascheroni_tail_identity
+
 private noncomputable def lowerEulerSeq (n : ℕ) : ℝ :=
   (harmonic (n + 1) : ℝ) - Real.log (n + 1) - 1 / (2 * (n + 1))
 
@@ -619,6 +701,8 @@ example : ∃ b : RationalBracket, b.Contains (0 : ℝ) :=
 #print axioms logRemainder
 #print axioms log_expansion_remainder_bound
 #print axioms log_harmonic_term_bounds
+#print axioms eulerMascheroni_tail_summable
+#print axioms eulerMascheroni_tail_identity
 #print axioms eulerMascheroni_remainder_bounds
 #print axioms log_two_decimal_bounds
 #print axioms eulerMascheroni_decimal_bounds

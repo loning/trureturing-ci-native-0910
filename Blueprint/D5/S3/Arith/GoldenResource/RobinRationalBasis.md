@@ -76,7 +76,19 @@ $$\forall x \in \mathbb{R},\; 0 < x \Rightarrow \left(\frac{1}{(2 \cdot ((x + 1)
 
 For positive real x, the displayed strict two-sided estimate bounds log((x+1)/x)-1/(x+1). It is the elementary appendix estimate used to prove A.1, stated as in ZECKENDORF_EULER_5040.
 
-**Theorem 1.7 (Euler--Mascheroni remainder bracket A.1).**
+**Theorem 1.7 (Euler--Mascheroni tail identity).**
+
+$$\forall N \in \mathbb{N},\; 1 \le N \Rightarrow castReal\left(harmonic\left(N\right)\right) - log\left(castReal\left(N\right)\right) - eulerMascheroniConstant\left(\right) = \sum_{k \in \mathbb{N}} (log\left((1 + \frac{1}{(castReal\left(k + N\right))})\right) - \frac{1}{(castReal\left(k + N + 1\right))})$$
+
+*Proof.* Machine-checked in Lean as `D5/S3/Arith/GoldenResource/RobinRationalBasis.eulerMascheroni_tail_identity` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+附录展示的尾和恒等式
+
+**Theorem 1.8 (Euler--Mascheroni remainder bracket A.1).**
 
 $$\forall N \in \mathbb{N},\; 1 \le N \Rightarrow \left(\frac{1}{(2 \cdot castReal\left(N + 1\right))} < castReal\left(harmonic\left(N\right)\right) - log\left(castReal\left(N\right)\right) - eulerMascheroniConstant\left(\right) \land castReal\left(harmonic\left(N\right)\right) - log\left(castReal\left(N\right)\right) - eulerMascheroniConstant\left(\right) < \frac{1}{(2 \cdot castReal\left(N\right))}\right)$$
 
@@ -88,7 +100,7 @@ $$\forall N \in \mathbb{N},\; 1 \le N \Rightarrow \left(\frac{1}{(2 \cdot castRe
 
 For every natural N >= 1, this is exactly equation (A.1) of the ZECKENDORF_EULER_5040 appendix. The proof squeezes strictly monotone and antitone corrected harmonic sequences to the Euler--Mascheroni constant; this elementary harmonic-asymptotic estimate is stated as in that appendix.
 
-**Theorem 1.8 (Pinned decimal bounds for log 2).**
+**Theorem 1.9 (Pinned decimal bounds for log 2).**
 
 $$\frac{6931471803}{10000000000} < log\left(2\right) \land log\left(2\right) < \frac{6931471808}{10000000000}$$
 
@@ -100,7 +112,7 @@ $$\frac{6931471803}{10000000000} < log\left(2\right) \land log\left(2\right) < \
 
 This companion records the two certified Mathlib decimal inequalities for log 2. Its consumer is eulerMascheroni_decimal_bounds through the logarithm-of-1000 calculation.
 
-**Theorem 1.9 (Decimal Euler--Mascheroni bracket).**
+**Theorem 1.10 (Decimal Euler--Mascheroni bracket).**
 
 $$\frac{5772155}{10000000} < eulerMascheroniConstant\left(\right) \land eulerMascheroniConstant\left(\right) < \frac{5772161}{10000000}$$
 
@@ -112,7 +124,7 @@ $$\frac{5772155}{10000000} < eulerMascheroniConstant\left(\right) \land eulerMas
 
 The N=1000 specialization of A.1, together with the sharp logarithm expansion, proves 0.5772155 < gamma_EM < 0.5772161 in the Lean kernel.
 
-**Definition 1.10 (Rational interval data).**
+**Definition 1.11 (Rational interval data).**
 
 $$RationalBracket = structure\left(lower\left(\mathbb{Q}\right), upper\left(\mathbb{Q}\right)\right)$$
 
@@ -124,7 +136,7 @@ $$RationalBracket = structure\left(lower\left(\mathbb{Q}\right), upper\left(\mat
 
 RationalBracket is a structure with rational fields lower and upper. It is data; endpoint order and semantic containment are checked separately.
 
-**Definition 1.11 (Semantic bracket containment).**
+**Definition 1.12 (Semantic bracket containment).**
 
 $$\forall b \in RationalBracket, x \in \mathbb{R},\; Contains\left(b, x\right) \Leftrightarrow \left(castReal\left(lower\left(b\right)\right) \le x \land x \le castReal\left(upper\left(b\right)\right)\right)$$
 
@@ -136,7 +148,7 @@ $$\forall b \in RationalBracket, x \in \mathbb{R},\; Contains\left(b, x\right) \
 
 Contains b x means that the rational endpoints b.lower and b.upper, each coerced to the reals, enclose x with non-strict inequalities.
 
-**Definition 1.12 (Truncated rational exponential).**
+**Definition 1.13 (Truncated rational exponential).**
 
 $$\forall q \in \mathbb{Q}, terms \in \mathbb{N},\; expPartial\left(q, terms\right) = partialSum\left(expSeries\left(\mathbb{Q}, \mathbb{Q}\right), terms, q\right)$$
 
@@ -148,7 +160,7 @@ $$\forall q \in \mathbb{Q}, terms \in \mathbb{N},\; expPartial\left(q, terms\rig
 
 For rational q and natural term count, expPartial is Mathlib's exponential formal-series partial sum evaluated at q.
 
-**Theorem 1.13 (Finite-sum form of the exponential partial sum).**
+**Theorem 1.14 (Finite-sum form of the exponential partial sum).**
 
 $$\forall q \in \mathbb{Q}, terms \in \mathbb{N},\; expPartial\left(q, terms\right) = \sum_{i \in range\left(terms\right)} (\frac{(q)^{i}}{(castRat\left(factorial\left(i\right)\right))})$$
 
@@ -160,7 +172,7 @@ $$\forall q \in \mathbb{Q}, terms \in \mathbb{N},\; expPartial\left(q, terms\rig
 
 The Mathlib formal-series wrapper equals the rational indexed sum over natural i in range terms of q^i/i!.
 
-**Definition 1.14 (Additive Robin gap).**
+**Definition 1.15 (Additive Robin gap).**
 
 $$\forall n \in \mathbb{N},\; robinDelta\left(n\right) = exp\left(eulerMascheroniConstant\left(\right)\right) \cdot castReal\left(n\right) \cdot log\left(log\left(castReal\left(n\right)\right)\right) - castReal\left(sigma\left(1, n\right)\right)$$
 
@@ -172,7 +184,7 @@ $$\forall n \in \mathbb{N},\; robinDelta\left(n\right) = exp\left(eulerMascheron
 
 The additive Robin gap exp(gamma_EM) times n times log(log n), minus sigma_1(n), is an auxiliary quantity of this module. The volume's chapter-9 margin Delta(n) = gamma_EM + log(log(log n)) - log(sigma_1(n)/n) is a different (logarithmic) quantity, formalized in the companion module GoldenCell5040Certificate. Only the signs of the two agree, and no identity between them is claimed here. Its exact rational basis follows 「ZECKENDORF_EULER_5040 附录」.
 
-**Definition 1.15 (Rational positivity predicate).**
+**Definition 1.16 (Rational positivity predicate).**
 
 $$\forall n \in \mathbb{N}, terms \in \mathbb{N}, gamma \in RationalBracket, logLog \in RationalBracket,\; RobinPositiveJudge\left(n, terms, gamma, logLog\right) \Leftrightarrow \left(lower\left(gamma\right) \le upper\left(gamma\right) \land \left(lower\left(logLog\right) \le upper\left(logLog\right) \land \left(0 \le lower\left(gamma\right) \land \left(0 \le lower\left(logLog\right) \land castRat\left(sigma\left(1, n\right)\right) < expPartial\left(lower\left(gamma\right), terms\right) \cdot castRat\left(n\right) \cdot lower\left(logLog\right)\right)\right)\right)\right)$$
 
@@ -184,7 +196,7 @@ $$\forall n \in \mathbb{N}, terms \in \mathbb{N}, gamma \in RationalBracket, log
 
 This module's own auxiliary judge for the additive Robin gap checks ordered gamma and log-log brackets, nonnegative lower endpoints, and one strict rational inequality. sigma_1(n) and n are coerced to rationals. Its exact rational basis follows 「ZECKENDORF_EULER_5040 附录」; no floating-point value enters this predicate.
 
-**Definition 1.16 (Decidability of the rational judge).**
+**Definition 1.17 (Decidability of the rational judge).**
 
 $$\forall n \in \mathbb{N}, terms \in \mathbb{N}, gamma \in RationalBracket, logLog \in RationalBracket,\; Decidable\left(RobinPositiveJudge\left(n, terms, gamma, logLog\right)\right)$$
 
@@ -196,7 +208,7 @@ $$\forall n \in \mathbb{N}, terms \in \mathbb{N}, gamma \in RationalBracket, log
 
 For every natural input and rational bracket pair, the checker predicate has the explicitly named Decidable instance robinPositiveJudgeDecidable.
 
-**Theorem 1.17 (Soundness of the rational checker).**
+**Theorem 1.18 (Soundness of the rational checker).**
 
 $$\forall n \in \mathbb{N}, terms \in \mathbb{N}, gamma \in RationalBracket, logLog \in RationalBracket,\; \left(Contains\left(gamma, eulerMascheroniConstant\left(\right)\right) \land \left(Contains\left(logLog, log\left(log\left(castReal\left(n\right)\right)\right)\right) \land RobinPositiveJudge\left(n, terms, gamma, logLog\right)\right)\right) \Rightarrow 0 < robinDelta\left(n\right)$$
 
@@ -208,7 +220,7 @@ $$\forall n \in \mathbb{N}, terms \in \mathbb{N}, gamma \in RationalBracket, log
 
 Valid semantic brackets and this module's own auxiliary judge imply positivity of the additive Robin gap. The proof lower-bounds exp(gamma_EM) by the truncated Taylor sum from the exact rational basis in 「ZECKENDORF_EULER_5040 附录」 and uses monotonicity. This is the general result named by the checker utility record, not an identity with the volume's logarithmic margin.
 
-**Theorem 1.18 (Logarithm bounds after binary scaling).**
+**Theorem 1.19 (Logarithm bounds after binary scaling).**
 
 $$\forall y \in \mathbb{R}, k \in \mathbb{N}, K \in \mathbb{N},\; \left(1 \le k \land \left(1 \le y \land y < 2\right)\right) \Rightarrow \left(castReal\left(k\right) \cdot \frac{6931471803}{10000000000} + atanhPartial\left(\frac{y - 1}{(y + 1)}, K\right) < log\left((2)^{k} \cdot y\right) \land log\left((2)^{k} \cdot y\right) < castReal\left(k\right) \cdot \frac{6931471808}{10000000000} + atanhPartial\left(\frac{y - 1}{(y + 1)}, K\right) + \frac{2 \cdot ((\frac{y - 1}{(y + 1)}))^{2 \cdot K + 1}}{(castReal\left(2 \cdot K + 1\right) \cdot \left(1 - ((\frac{y - 1}{(y + 1)}))^{2}\right))}\right)$$
 
@@ -220,7 +232,7 @@ $$\forall y \in \mathbb{R}, k \in \mathbb{N}, K \in \mathbb{N},\; \left(1 \le k 
 
 For positive natural k and 1 <= y < 2, the appendix log-2 bracket and sharp atanh remainder give the displayed enclosure of log(2^k y).
 
-**Theorem 1.19 (Transfer a checked atanh calculation).**
+**Theorem 1.20 (Transfer a checked atanh calculation).**
 
 $$\forall x \in \mathbb{R}, y \in \mathbb{R}, lo \in \mathbb{R}, hi \in \mathbb{R}, k \in \mathbb{N}, K \in \mathbb{N},\; \left(x = (2)^{k} \cdot y \land \left(1 \le k \land \left(1 \le y \land \left(y < 2 \land \left(lo < castReal\left(k\right) \cdot \frac{6931471803}{10000000000} + atanhPartial\left(\frac{y - 1}{(y + 1)}, K\right) \land castReal\left(k\right) \cdot \frac{6931471808}{10000000000} + atanhPartial\left(\frac{y - 1}{(y + 1)}, K\right) + \frac{2 \cdot ((\frac{y - 1}{(y + 1)}))^{2 \cdot K + 1}}{(castReal\left(2 \cdot K + 1\right) \cdot \left(1 - ((\frac{y - 1}{(y + 1)}))^{2}\right))} < hi\right)\right)\right)\right)\right) \Rightarrow \left(lo < log\left(x\right) \land log\left(x\right) < hi\right)$$
 
@@ -232,7 +244,7 @@ $$\forall x \in \mathbb{R}, y \in \mathbb{R}, lo \in \mathbb{R}, hi \in \mathbb{
 
 An exact identity x=2^k y and a checked pair of rational endpoint inequalities transfer to lo < log x < hi. This public helper is consumed by module 2.
 
-**Theorem 1.20 (Transfer logarithm endpoint bounds).**
+**Theorem 1.21 (Transfer logarithm endpoint bounds).**
 
 $$\forall x \in \mathbb{R}, a \in \mathbb{R}, b \in \mathbb{R}, lo \in \mathbb{R}, hi \in \mathbb{R},\; \left(0 < a \land \left(a < x \land \left(x < b \land \left(lo < log\left(a\right) \land log\left(b\right) < hi\right)\right)\right)\right) \Rightarrow \left(lo < log\left(x\right) \land log\left(x\right) < hi\right)$$
 
@@ -244,7 +256,7 @@ $$\forall x \in \mathbb{R}, a \in \mathbb{R}, b \in \mathbb{R}, lo \in \mathbb{R
 
 For 0<a<x<b, a certified lower bound for log a and upper bound for log b transfer across strict monotonicity of the real logarithm.
 
-**Theorem 1.21 (Rational bounds for log 10080).**
+**Theorem 1.22 (Rational bounds for log 10080).**
 
 $$\frac{921830853}{100000000} < log\left(10080\right) \land log\left(10080\right) < \frac{184366171}{20000000}$$
 
@@ -256,7 +268,7 @@ $$\frac{921830853}{100000000} < log\left(10080\right) \land log\left(10080\right
 
 The public exact-rational calculation encloses log 10080 between the displayed endpoints.
 
-**Theorem 1.22 (Rational bounds for log log 10080).**
+**Theorem 1.23 (Rational bounds for log log 10080).**
 
 $$\frac{55529789}{25000000} < log\left(log\left(10080\right)\right) \land log\left(log\left(10080\right)\right) < \frac{222119157}{100000000}$$
 
@@ -268,7 +280,7 @@ $$\frac{55529789}{25000000} < log\left(log\left(10080\right)\right) \land log\le
 
 The public interval transfer encloses log(log 10080); its endpoints are those stored in logLog10080Bracket.
 
-**Definition 1.23 (Concrete gamma checker input).**
+**Definition 1.24 (Concrete gamma checker input).**
 
 $$gammaBracket = RationalBracket\left(\frac{5772155}{10000000}, \frac{5772161}{10000000}\right)$$
 
@@ -280,7 +292,7 @@ $$gammaBracket = RationalBracket\left(\frac{5772155}{10000000}, \frac{5772161}{1
 
 gammaBracket is exactly the pair 5772155/10000000 and 5772161/10000000.
 
-**Definition 1.24 (Concrete log-log checker input).**
+**Definition 1.25 (Concrete log-log checker input).**
 
 $$logLog10080Bracket = RationalBracket\left(\frac{55529789}{25000000}, \frac{222119157}{100000000}\right)$$
 
@@ -292,7 +304,7 @@ $$logLog10080Bracket = RationalBracket\left(\frac{55529789}{25000000}, \frac{222
 
 logLog10080Bracket is exactly the pair 55529789/25000000 and 222119157/100000000.
 
-**Theorem 1.25 (First exact checker computation).**
+**Theorem 1.26 (First exact checker computation).**
 
 $$RobinPositiveJudge\left(10080, 4, gammaBracket, logLog10080Bracket\right)$$
 
@@ -304,7 +316,7 @@ $$RobinPositiveJudge\left(10080, 4, gammaBracket, logLog10080Bracket\right)$$
 
 Kernel reduction proves that four exponential terms make the rational checker true at n=10080. The exact divisor sum sigma_1(10080)=39312 is proved privately.
 
-**Theorem 1.26 (Positive additive Robin gap at 10080).**
+**Theorem 1.27 (Positive additive Robin gap at 10080).**
 
 $$0 < robinDelta\left(10080\right)$$
 
@@ -326,6 +338,7 @@ Checker soundness, the two semantic brackets, and the decided four-term input fr
 - Truth anchor: `D5/S3/Arith/GoldenResource/RobinRationalBasis.atanhPartial`
 - Truth anchor: `D5/S3/Arith/GoldenResource/RobinRationalBasis.eulerMascheroni_decimal_bounds`
 - Truth anchor: `D5/S3/Arith/GoldenResource/RobinRationalBasis.eulerMascheroni_remainder_bounds`
+- Truth anchor: `D5/S3/Arith/GoldenResource/RobinRationalBasis.eulerMascheroni_tail_identity`
 - Truth anchor: `D5/S3/Arith/GoldenResource/RobinRationalBasis.expPartial`
 - Truth anchor: `D5/S3/Arith/GoldenResource/RobinRationalBasis.expPartial_eq_sum`
 - Truth anchor: `D5/S3/Arith/GoldenResource/RobinRationalBasis.gammaBracket`

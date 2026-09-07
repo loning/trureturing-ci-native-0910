@@ -49,6 +49,11 @@ internal sealed class RobinRationalBasisDocument : IScribeDocumentDefinition
                 "For positive real x, the displayed strict two-sided estimate bounds "
                     + "log((x+1)/x)-1/(x+1). It is the elementary appendix estimate used to "
                     + "prove A.1, stated as in ZECKENDORF_EULER_5040."),
+            Entry("eulerMascheroni_tail_identity", "euler-mascheroni-tail-identity",
+                "Euler--Mascheroni tail identity", EulerTailIdentityFormula(),
+                DescribeRole.Theorem,
+                AssessedProvenance.FromRepo(),
+                "附录展示的尾和恒等式"),
             Entry("eulerMascheroni_remainder_bounds", "euler-mascheroni-remainder-bounds",
                 "Euler--Mascheroni remainder bracket A.1", EulerRemainderFormula(),
                 DescribeRole.Theorem,
@@ -232,6 +237,21 @@ internal sealed class RobinRationalBasisDocument : IScribeDocumentDefinition
         return Disp(ForAll([Bound("N", Naturals())], Implies(Le(Num(1), n),
             And(Lt(Divide(Num(1), Multiply(Num(2), ToReal(Add(n, Num(1))))), center),
                 Lt(center, Divide(Num(1), Multiply(Num(2), ToReal(n))))))));
+    }
+
+    private static Formula EulerTailIdentityFormula()
+    {
+        Formula n = F.Id("N");
+        Formula k = F.Id("k");
+        Formula index = Add(k, n);
+        Formula summand = Parenthesized(Subtract(
+            Log(Parenthesized(Add(Num(1), Divide(Num(1), ToReal(index))))),
+            Divide(Num(1), ToReal(Add(index, Num(1))))));
+        Formula tail = Seq(new Formula.Subscript(Sum,
+            Seq(k, Sp, InMacro, Sp, Naturals())), Sp, summand);
+        Formula center = Subtract(Subtract(ToReal(Call("harmonic", n)), Log(ToReal(n))), Gamma());
+        return Disp(ForAll([Bound("N", Naturals())], Implies(Le(Num(1), n),
+            Equal(center, tail))));
     }
 
     private static Formula LogTwoFormula() => Disp(And(
