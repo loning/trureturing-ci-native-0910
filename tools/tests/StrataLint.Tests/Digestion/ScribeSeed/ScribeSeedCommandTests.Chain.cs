@@ -77,7 +77,7 @@ public sealed partial class ScribeSeedCommandTests
     [Theory]
     [InlineData(1)]
     [InlineData(2)]
-    public void SeedChildProjectsDependentParentInSameTransaction(int ancestorCount)
+    public void SeedChildPreservesChainAlreadyAbsorbedWithoutScribeReceipts(int ancestorCount)
     {
         var fixture = ChainFixture(ancestorCount);
         RequireValidChainBaseline(fixture, ancestorCount);
@@ -90,7 +90,7 @@ public sealed partial class ScribeSeedCommandTests
     [Theory]
     [InlineData(1)]
     [InlineData(2)]
-    public void SeedBatchProjectsDependentChainInSameTransaction(int ancestorCount)
+    public void SeedBatchPreservesChainAlreadyAbsorbedWithoutScribeReceipts(int ancestorCount)
     {
         var fixture = ChainFixture(ancestorCount, batch: true);
         RequireValidChainBaseline(fixture, ancestorCount);
@@ -108,7 +108,7 @@ public sealed partial class ScribeSeedCommandTests
     [InlineData(2, false)]
     [InlineData(1, true)]
     [InlineData(2, true)]
-    public void SeedDryRunReportsDependentChainStatusChangesWithoutWriting(int ancestorCount, bool batch)
+    public void SeedDryRunPreservesChainAlreadyAbsorbedWithoutScribeReceipts(int ancestorCount, bool batch)
     {
         var fixture = ChainFixture(ancestorCount, batch);
         RequireValidChainBaseline(fixture, ancestorCount);
@@ -125,14 +125,7 @@ public sealed partial class ScribeSeedCommandTests
         Assert.True(execution.Result.Success, execution.Result.Error);
         Assert.Equal(0, execution.ApplyCalls);
         Assert.Equal(Image(execution.Before), Image(execution.After));
-        var statusLines = execution.Result.Output.Split('\n')
-            .Where(line => line.StartsWith("SCRIBE_SEED_STATUS ", StringComparison.Ordinal)).ToArray();
-        Assert.Equal(affected.Length, statusLines.Length);
-        foreach (var entry in affected)
-        {
-            Assert.Contains($"SCRIBE_SEED_STATUS atom_id={entry.AtomId} from=partial-closed "
-                + "to=absorbed-closed dry_run=true ledger_changed=false", statusLines);
-        }
+        Assert.DoesNotContain("SCRIBE_SEED_STATUS ", execution.Result.Output, StringComparison.Ordinal);
     }
 
     private static SeedExecution ExecuteChainSeed(ScribeSeedFixture fixture, bool batch, bool dryRun)
@@ -158,6 +151,7 @@ public sealed partial class ScribeSeedCommandTests
             var index = entries.IndexOf(entry);
             if (index == entries.Length - 1)
                 return entry with { ProjectedStatus = new(DigestionMigrationState.Partial, DigestionTruthState.Open) };
+            entry = entry with { ProjectedStatus = new(DigestionMigrationState.Absorbed, DigestionTruthState.Closed) };
             if (index == 0 || index > ancestorCount) return entry;
             return entry with
             {
@@ -182,9 +176,15 @@ public sealed partial class ScribeSeedCommandTests
             ["--base", "baseline"],
             FakeAtomHistorySource.ForPaths(fixture.Files.Keys), new DigestAgeClock());
         Assert.True(baseline.Success, baseline.Error);
-        Assert.Equal(ancestorCount, baseline.Output.Split('\n').Count(line =>
+        var entries = fixture.Document.RequireDigestionEntries();
+        Assert.Equal(ancestorCount, entries.Count(entry => !entry.Receipts.ChainAtoms.IsEmpty));
+        Assert.Contains(entries, entry => entry.Receipts.Scribe.IsEmpty
+            && entry.ProjectedStatus.Migration == DigestionMigrationState.Absorbed);
+        Assert.Equal(entries.Count(entry => entry.ProjectedStatus.Truth == DigestionTruthState.Closed),
+            baseline.Output.Split('\n').Count(line =>
             line.StartsWith("ENTRY ", StringComparison.Ordinal)
-            && line.Contains("gaps=chain-migration-incomplete", StringComparison.Ordinal)));
+            && line.Contains("absorbed-closed", StringComparison.Ordinal)));
+        Assert.DoesNotContain("chain-migration-incomplete", baseline.Output, StringComparison.Ordinal);
     }
 
     private static void RequireProjectedChain(ScribeSeedFixture fixture, SeedExecution execution, int ancestorCount)
@@ -201,6 +201,7 @@ public sealed partial class ScribeSeedCommandTests
                 entry.ProjectedStatus);
             Assert.Single(entry.Receipts.Scribe);
             var before = original.Single(candidate => candidate.AtomId == entry.AtomId);
+            Assert.Equal(before.ProjectedStatus, entry.ProjectedStatus);
             Assert.Equal(before.Coverage.ToArray(), entry.Coverage.ToArray());
             Assert.Equal(before.Receipts.ChainAtoms.ToArray(), entry.Receipts.ChainAtoms.ToArray());
             if (!before.Receipts.Scribe.IsEmpty)
