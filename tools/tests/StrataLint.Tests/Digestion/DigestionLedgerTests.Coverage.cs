@@ -43,7 +43,7 @@ public sealed partial class DigestionLedgerTests
     }
 
     [Fact]
-    public void ReproducibleExtractionWithoutSemanticTargetRemainsResidual()
+    public void ScribeReceiptWithoutSemanticTargetRemainsResidual()
     {
         var source = Encoding.UTF8.GetBytes("# GICT\n\n**定理 1.1(Test)**。claim。\n");
         var atom = Assert.Single(GictAtomizer.Atomize(source, DigestionTestSupport.Rules).Claims);
@@ -51,6 +51,8 @@ public sealed partial class DigestionLedgerTests
             atom,
             DigestionMigrationState.Residual,
             DigestionTruthState.Open,
+            scribeReceipt: new DigestionScribeReceipt(
+                "D5/S0/Carrier/Probe", TestModuleStatementId, TestModuleStatementId),
             includeCoverageGid: false);
 
         var status = Assert.Single(DigestionStatusEvaluator.Evaluate(
@@ -115,7 +117,6 @@ public sealed partial class DigestionLedgerTests
             document,
             snapshot,
             AcceptedLean(targetPath),
-            VerifiedScribeEmissions.Create([record]),
             baselineDocument: document).Entries);
 
         Assert.Equal(DigestionMigrationState.Absorbed, status.DerivedStatus.Migration);
@@ -168,25 +169,14 @@ public sealed partial class DigestionLedgerTests
 
     private static DigestionEntryEvaluation EvaluateDeclarationCoverage(
         string declarationGid,
-        IEnumerable<string> describedDeclarations,
-        bool includeCommittedEmission = true,
-        bool includeScribeReceipt = true)
+        bool includeCommittedEmission = true)
     {
         var source = Encoding.UTF8.GetBytes("# GICT\n\n**定理 1.1(Test)**。claim。\n");
         var atom = Assert.Single(GictAtomizer.Atomize(source, DigestionTestSupport.Rules).Claims);
         const string moduleGid = "D5/S0/Carrier/Probe";
         const string targetPath = "D5/S0/Carrier/Probe.lean";
         var target = Encoding.UTF8.GetBytes(Lean(moduleGid));
-        var definition = Encoding.UTF8.GetBytes("scribe definition\n");
         var emission = Encoding.UTF8.GetBytes("# emitted narrative\n");
-        var definitionHash = DigestionFingerprint.Compute(definition).RawSha256;
-        var emissionHash = DigestionFingerprint.Compute(emission).RawSha256;
-        var record = new ScribeEmissionRecord(
-            moduleGid,
-            ScribeEmissionAttestation.DefinitionPath(moduleGid),
-            definitionHash,
-            ScribeEmissionAttestation.EmissionPath(moduleGid),
-            emissionHash);
         var report = new LeanFileReport(
             ImmutableArray<string>.Empty,
             [new LeanDeclaration("probe", "theorem", "True", ImmutableArray<string>.Empty)
@@ -204,20 +194,13 @@ public sealed partial class DigestionLedgerTests
             declarationGid,
             new DigestionCoverageEdge(
                 declarationGid,
-                declarationStatementId),
-            includeScribeReceipt
-                ? new DigestionScribeReceipt(declarationGid, definitionHash, emissionHash)
-                : null);
+                declarationStatementId));
         var snapshotFiles = new List<(string Path, byte[] Bytes)>
         {
             ("docs/source.md", source),
             CasFile(atom),
             (targetPath, target),
         };
-        if (includeScribeReceipt)
-        {
-            snapshotFiles.Add((record.DefinitionPath, definition));
-        }
         if (includeCommittedEmission)
         {
             snapshotFiles.Add((ScribeEmissionAttestation.EmissionPath(moduleGid), emission));
@@ -231,10 +214,7 @@ public sealed partial class DigestionLedgerTests
             DigestionEvaluationScope.FullScan,
             ledger,
             snapshot,
-            AcceptedLean((targetPath, report)),
-            includeScribeReceipt
-                ? VerifiedScribeEmissions.Create([record], describedDeclarations)
-                : null).Entries);
+            AcceptedLean((targetPath, report))).Entries);
     }
 
     private static DigestionEntryEvaluation EvaluateCompleteTail(
@@ -287,15 +267,6 @@ public sealed partial class DigestionLedgerTests
             .. FrozenLedgerFiles(targetPath, "tailProbe"),
         ]);
 
-        var verifiedEmissions = VerifiedScribeEmissions.Create(
-        [
-            new ScribeEmissionRecord(
-                gid,
-                ScribeEmissionAttestation.DefinitionPath(gid),
-                definitionHash,
-                ScribeEmissionAttestation.EmissionPath(gid),
-                emissionHash),
-        ]);
         return Assert.Single(DigestionStatusEvaluator.Evaluate(
             changes is null
                 ? DigestionEvaluationScope.FullScan
@@ -303,7 +274,6 @@ public sealed partial class DigestionLedgerTests
             ledger,
             snapshot,
             AcceptedLean((targetPath, report)),
-            verifiedEmissions,
             changes: changes).Entries);
     }
 
