@@ -1,0 +1,57 @@
+using static StrataLint.Scribe.DefinitionDsl;
+
+namespace StrataLint.Scribe.Blueprint.D5.S3.Weil.ZetaBridge;
+
+internal sealed class WeilEvenTraceRepairDocument : IScribeDocumentDefinition
+{
+    public DocumentDefinition Create() => DocumentDefinition.Create(ScribeNode.Create(
+        "Exact rational even zero-trace trials satisfy the candidate constraint and feed the existing complete cubic residual-tail theorem.",
+        H("Even Zero-Trace Trial Repair"),
+        Blocks(
+            Describe.Lean(DescribeId.Create("symmetricSupport"),
+                DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/WeilEvenTraceRepair.symmetricSupport"),
+                H("Signed support"), StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("The support contains zero and both signs of every selected parameter index. It is a finite set, so repeated or central generators cause no duplicate counting."))), DescribeRole.Definition),
+            Describe.Lean(DescribeId.Create("evenTraceLift"),
+                DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/WeilEvenTraceRepair.evenTraceLift"),
+                H("Exact zero-trace even synthesis"), StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("The finite additive synthesis uses delta_n plus delta_minus_n minus two delta_zero. The same executable definition accepts rational coordinate pairs or the existing complex carrier; no Fourier transform is introduced."))), DescribeRole.Definition),
+            Describe.Lean(DescribeId.Create("repairedEvenParameters"),
+                DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/WeilEvenTraceRepair.repairedEvenParameters"),
+                H("Repair the candidate contrast"), StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("The existing rational repair acts on k_n minus k_zero. When that contrast vanishes on the selected support, the constraint is redundant and the seed is retained. Zero contrast is not a failed mathematical instance."))), DescribeRole.Definition),
+            Describe.Lean(DescribeId.Create("repairedEvenTrial"),
+                DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/WeilEvenTraceRepair.repairedEvenTrial"),
+                H("The same exact returned trial"), StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("Lift the repaired rational parameters into full signed coefficients. Every subsequent constraint and residual estimate refers to this same returned function."))), DescribeRole.Definition),
+            Describe.Lean(DescribeId.Create("evenTrialMassBudget"),
+                DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/WeilEvenTraceRepair.evenTrialMassBudget"),
+                H("Recomputed full-coefficient mass budget"), StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("Four times the sum of absolute real and imaginary parameter coordinates gives a safe rational upper bound. No contraction of the lifted norm is assumed."))), DescribeRole.Definition),
+            Describe.Lean(DescribeId.Create("even-trace-lift-moment"),
+                DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/WeilEvenTraceRepair.even_trace_lift_moment"),
+                H("Weighted finite-moment identity"), StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("Finite sum interchange retains the central coefficient and both reflected coordinates. A weight a becomes a_n plus a_minus_n minus twice a_zero. Specializations give the two boundary moments and the candidate pairing."))), DescribeRole.Theorem),
+            Describe.Lean(DescribeId.Create("repaired-even-parameters-pairing"),
+                DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/WeilEvenTraceRepair.repaired_even_parameters_pairing"),
+                H("Exact contrast orthogonality"), StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("The contrast pairing is zero for every seed. A successful repair uses its existing proof; the none branch uses the existing exact success criterion to prove the contrast is identically zero on the support."))), DescribeRole.Theorem),
+            Describe.Lean(DescribeId.Create("repaired-even-parameters-fix"),
+                DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/WeilEvenTraceRepair.repaired_even_parameters_fix"),
+                H("Preserve already feasible parameters"), StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("Parameters already satisfying the contrast equation are unchanged on the selected support. This excludes loss of already feasible trials in this family. It does not claim all outputs are nonzero or that a numerical optimum has been certified."))), DescribeRole.Theorem),
+            Describe.Lean(DescribeId.Create("even-repaired-trial-constraints"),
+                DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/WeilEvenTraceRepair.even_repaired_trial_constraints"),
+                H("Simultaneous exact constraints"), StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("The returned rational coefficients are supported, even, zero in total sum, zero in the actual arithmetic-symbol moment, and exactly orthogonal to the fixed even candidate. Symbol cancellation consumes the existing proof of reflection oddness, without numerical symbol values or input moment equations."))), DescribeRole.Theorem),
+            Describe.Lean(DescribeId.Create("even-repaired-trial-mass-bound"),
+                DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/WeilEvenTraceRepair.even_repaired_trial_mass_bound"),
+                H("Soundness of the recomputed mass"), StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("A finite stencil triangle bound gives four times the parameter norm mass; rectangular rational absolute sums then give the executable budget for the full signed coefficients."))), DescribeRole.Theorem),
+            Describe.Lean(DescribeId.Create("even-repaired-residual-certificate"),
+                DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/WeilEvenTraceRepair.even_repaired_residual_certificate"),
+                H("Complete cubic squared-tail certificate"), StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("The existing exact rational tail check is called with D equal to zero. The same repaired trial is candidate-orthogonal and has square-summable complete two-sided exterior residual bounded by tau. There are no symbol-center, symbol-radius, raw-orthogonality or raw-zero-moment premises. The global arithmetic envelope, readout bounds, support separation and accepted scalar budget remain required. Canonical operator-domain and Fourier identifications and the interior residual remain separate."))), DescribeRole.Theorem)),
+        [DocumentEdge.Dependency.Create(GidRef.Create("D5/S3/Weil/ZetaBridge/FiniteRationalTrialRepair")),
+         DocumentEdge.Dependency.Create(GidRef.Create("D5/S3/Weil/ZetaBridge/WeilArithmeticCouplingParityGram"))]));
+}
