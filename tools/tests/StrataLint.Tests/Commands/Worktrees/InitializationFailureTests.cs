@@ -51,6 +51,7 @@ public sealed partial class WorktreeCommandTests
 
         Assert.True(result.Success, result.Error);
         Assert.True(runner.CheckoutSawLock);
+        Assert.False(runner.CheckoutSawTrackedContent);
         WorktreeFixtureFile.AssertContent(Path.Combine(target, "README.md"), "# worktree fixture\n");
         Assert.False(File.Exists(Path.Combine(WorktreeMetadataPath(repository.Path, target), "locked")));
     }
@@ -70,6 +71,9 @@ public sealed partial class WorktreeCommandTests
         Assert.False(result.Success);
         Assert.Contains("simulated concurrent creator", result.Error, StringComparison.Ordinal);
         WorktreeFixtureFile.AssertContent(Path.Combine(target, "keep.txt"), "concurrent work\n");
+        if (foreignLock)
+            WorktreeFixtureFile.AssertContent(Path.Combine(WorktreeMetadataPath(repository.Path, target), "locked"),
+                InitializationFailureRunner.ForeignLock + "\n");
         AssertRegisteredAndUsable(repository.Path, target, $"{WorktreeCommand.CreationNamespace}/math/interrupted-init");
         Assert.DoesNotContain(runner.Inner.Invocations, call =>
             call.FileName == "git" && call.Arguments.Take(2).SequenceEqual(["worktree", "remove"]));
@@ -100,8 +104,10 @@ public sealed partial class WorktreeCommandTests
 
     private sealed class InitializationFailureRunner(string target, string failure) : IWorktreeProcessRunner
     {
+        internal const string ForeignLock = "worktree-init:ffffffffffffffffffffffffffffffff";
         internal RecordingWorktreeProcessRunner Inner { get; } = new();
         internal bool CheckoutSawLock { get; private set; }
+        internal bool CheckoutSawTrackedContent { get; private set; }
 
         public ProcessOutput Run(string fileName, IReadOnlyList<string> arguments, string workingDirectory, TimeSpan timeout)
         {
@@ -111,14 +117,14 @@ public sealed partial class WorktreeCommandTests
             {
                 var foreignArguments = arguments.ToList();
                 var reasonIndex = foreignArguments.IndexOf("--reason");
-                if (reasonIndex >= 0) foreignArguments[reasonIndex + 1] = "another-initializer";
+                if (reasonIndex >= 0) foreignArguments[reasonIndex + 1] = ForeignLock;
                 var foreign = Inner.Run(fileName, foreignArguments, workingDirectory, timeout);
                 Assert.Equal(0, foreign.ExitCode);
                 var metadata = GitWorktreeDirectory.Read(target)!;
                 if (failure == "foreign-unlocked" && File.Exists(Path.Combine(metadata, "locked")))
                     ReviewRegressionTests.RunGit(workingDirectory, "worktree", "unlock", target);
                 if (failure == "foreign-locked" && !File.Exists(Path.Combine(metadata, "locked")))
-                    ReviewRegressionTests.RunGit(workingDirectory, "worktree", "lock", "--reason", "another-initializer", target);
+                    ReviewRegressionTests.RunGit(workingDirectory, "worktree", "lock", "--reason", ForeignLock, target);
                 File.WriteAllText(Path.Combine(target, "keep.txt"), "concurrent work\n");
                 throw new TimeoutException("simulated concurrent creator");
             }
@@ -131,6 +137,7 @@ public sealed partial class WorktreeCommandTests
             {
                 var metadata = GitWorktreeDirectory.Read(target)!;
                 CheckoutSawLock = File.Exists(Path.Combine(metadata, "locked"));
+                CheckoutSawTrackedContent = File.Exists(Path.Combine(target, "README.md"));
                 if (failure.StartsWith("checkout-", StringComparison.Ordinal))
                 {
                     File.WriteAllText(Path.Combine(target, "README.md"), "partial checkout\n");
