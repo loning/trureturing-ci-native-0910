@@ -102,4 +102,139 @@ private theorem sigma_primorial_power (y a : ℕ) :
   simp only [show a + 2 = (a + 1) + 1 by omega, pow_succ]
   field_simp
 
+private theorem normalized_mertens : Tendsto
+    (fun y : ℕ =>
+      (∏ p ∈ Nat.primesLE y, (1 - 1 / (p : ℝ))⁻¹) /
+        (Real.exp Real.eulerMascheroniConstant * Real.log y)) atTop (𝓝 1) := by
+  have hne : ∀ᶠ x : ℝ in atTop,
+      (Real.exp (-Real.eulerMascheroniConstant) / Real.log x)⁻¹ ≠ 0 := by
+    filter_upwards [eventually_gt_atTop (1 : ℝ)] with x hx
+    exact inv_ne_zero (div_ne_zero (Real.exp_ne_zero _) (Real.log_pos hx).ne')
+  have h := (isEquivalent_iff_tendsto_one hne).mp Mertens.E₃.bound''.inv
+  change Tendsto (fun x : ℝ =>
+    (∏ p ∈ Ioc (0 : ℕ) ⌊x⌋₊ with p.Prime, (1 - 1 / (p : ℝ)))⁻¹ /
+      (Real.exp (-Real.eulerMascheroniConstant) / Real.log x)⁻¹) atTop (𝓝 1) at h
+  have hreal : Tendsto
+      (fun x : ℝ =>
+        (∏ p ∈ Ioc (0 : ℕ) ⌊x⌋₊ with p.Prime, (1 - 1 / (p : ℝ))⁻¹) /
+          (Real.exp Real.eulerMascheroniConstant * Real.log x)) atTop (𝓝 1) := by
+    simpa only [Pi.div_apply, Pi.inv_apply, inv_div, Real.exp_neg,
+      div_inv_eq_mul, Finset.prod_inv_distrib, mul_comm] using h
+  simpa only [Function.comp_def, Nat.floor_natCast, ← Nat.primesLE_eq_filter_Ioc_zero]
+    using hreal.comp tendsto_natCast_atTop_atTop
+
+private theorem loglog_primorial_power_le (y a : ℕ) (hy : 0 < y)
+    (hn : 0 < Real.log (primorial y ^ (a + 1) : ℕ)) :
+    Real.log (Real.log (primorial y ^ (a + 1) : ℕ)) ≤
+      Real.log y + Real.log ((a + 1 : ℕ) * Real.log 4) := by
+  have hupper : (primorial y : ℝ) ≤ (4 : ℝ) ^ y := by
+    exact_mod_cast primorial_le_four_pow y
+  have hlog : Real.log (primorial y : ℝ) ≤ (y : ℝ) * Real.log 4 := by
+    simpa only [Real.log_pow] using
+      Real.log_le_log (Nat.cast_pos.mpr (primorial_pos y)) hupper
+  have hpower : Real.log (primorial y ^ (a + 1) : ℕ) ≤
+      (y : ℝ) * ((a + 1 : ℕ) * Real.log 4) := by
+    rw [Nat.cast_pow, Real.log_pow]
+    calc
+      _ ≤ (a + 1 : ℕ) * ((y : ℝ) * Real.log 4) :=
+        mul_le_mul_of_nonneg_left hlog (Nat.cast_nonneg _)
+      _ = _ := by ring
+  have hc : (0 : ℝ) < (a + 1 : ℕ) * Real.log 4 :=
+    mul_pos (Nat.cast_pos.mpr (Nat.succ_pos a)) (Real.log_pos (by norm_num))
+  simpa only [Real.log_mul (Nat.cast_pos.mpr hy).ne' hc.ne'] using
+    Real.log_le_log hn hpower
+
+/-- The normalized divisor-sum ratio is arbitrarily close to one from below
+at arbitrarily large integers. -/
+theorem gronwall_lower_envelope (ε : ℝ) (hε : 0 < ε) :
+    ∀ N : ℕ, ∃ n : ℕ, N ≤ n ∧
+      1 - ε ≤ (ArithmeticFunction.sigma 1 n : ℝ) /
+        (Real.exp Real.eulerMascheroniConstant * n * Real.log (Real.log n)) := by
+  let K : ℝ := ∑' m : ℕ, 1 / (m : ℝ) ^ 2
+  have herror : Tendsto (fun a : ℕ => (1 / 2 : ℝ) ^ a * K) atTop (𝓝 0) := by
+    simpa only [zero_mul] using
+      (tendsto_pow_atTop_nhds_zero_of_lt_one
+        (by norm_num : (0 : ℝ) ≤ 1 / 2) (by norm_num : (1 / 2 : ℝ) < 1)).mul_const K
+  obtain ⟨a, ha⟩ := (herror.eventually_lt_const hε).exists
+  let b : ℝ := 1 - (1 / 2 : ℝ) ^ a * K
+  have hbε : 1 - ε < b := sub_lt_sub_left ha 1
+  let c : ℝ := (a + 1 : ℕ) * Real.log 4
+  have hlog : Tendsto (fun y : ℕ => Real.log (y : ℝ)) atTop atTop :=
+    Real.tendsto_log_atTop.comp tendsto_natCast_atTop_atTop
+  have hcorr : Tendsto (fun y : ℕ => 1 + Real.log c / Real.log y) atTop (𝓝 1) := by
+    simpa only [add_zero] using (hlog.const_div_atTop (Real.log c)).const_add 1
+  have hbound : Tendsto
+      (fun y : ℕ =>
+        (b * ((∏ p ∈ Nat.primesLE y, (1 - 1 / (p : ℝ))⁻¹) /
+          (Real.exp Real.eulerMascheroniConstant * Real.log y))) /
+            (1 + Real.log c / Real.log y)) atTop (𝓝 b) := by
+    have h := (normalized_mertens.const_mul b).div hcorr (by norm_num : (1 : ℝ) ≠ 0)
+    convert h using 1
+    · ext y
+      rfl
+    · simp only [mul_one, div_one]
+  intro N
+  obtain ⟨y, hyN, hy0, hylog, hybound⟩ :=
+    ((eventually_ge_atTop N).and
+      ((eventually_gt_atTop (0 : ℕ)).and
+        ((hlog.eventually (eventually_gt_atTop (1 : ℝ))).and
+          (hbound.eventually_const_lt hbε)))).exists
+  let n : ℕ := primorial y ^ (a + 1)
+  have hyn : y ≤ n :=
+    le_primorial_self.trans
+      (le_self_pow₀ (Nat.succ_le_iff.mpr (primorial_pos y)) (Nat.succ_ne_zero a))
+  have hn0 : 0 < n := lt_of_lt_of_le hy0 hyn
+  have hlogn : 1 < Real.log (n : ℝ) := hylog.trans_le
+    (Real.log_le_log (Nat.cast_pos.mpr hy0) (Nat.cast_le.mpr hyn))
+  have hloglogn : 0 < Real.log (Real.log (n : ℝ)) := Real.log_pos hlogn
+  have hdenbound : Real.log (Real.log (n : ℝ)) ≤ Real.log y + Real.log c :=
+    loglog_primorial_power_le y a hy0 (lt_trans zero_lt_one hlogn)
+  have hdenpos : 0 < Real.log (y : ℝ) + Real.log c := hloglogn.trans_le hdenbound
+  have hlogy0 : Real.log (y : ℝ) ≠ 0 := (lt_trans zero_lt_one hylog).ne'
+  have hMnonneg : 0 ≤ ∏ p ∈ Nat.primesLE y, (1 - 1 / (p : ℝ))⁻¹ := by
+    apply Finset.prod_nonneg
+    intro p hp
+    have hp1 : (1 : ℝ) < p := by exact_mod_cast (Nat.prime_of_mem_primesLE hp).one_lt
+    exact inv_nonneg.mpr (sub_nonneg.mpr
+      (le_of_lt (by simpa only [one_div] using inv_lt_one_of_one_lt₀ hp1)))
+  have habund : b * (∏ p ∈ Nat.primesLE y, (1 - 1 / (p : ℝ))⁻¹) ≤
+      (ArithmeticFunction.sigma 1 n : ℝ) / n := by
+    rw [sigma_primorial_power y a]
+    exact mul_le_mul_of_nonneg_right (prime_power_error a y) hMnonneg
+  have hsigma0 : 0 ≤ (ArithmeticFunction.sigma 1 n : ℝ) / n :=
+    div_nonneg (Nat.cast_nonneg _) (Nat.cast_nonneg _)
+  refine ⟨n, hyN.trans hyn, hybound.le.trans ?_⟩
+  calc
+    (b * ((∏ p ∈ Nat.primesLE y, (1 - 1 / (p : ℝ))⁻¹) /
+        (Real.exp Real.eulerMascheroniConstant * Real.log y))) /
+          (1 + Real.log c / Real.log y) =
+        (b * (∏ p ∈ Nat.primesLE y, (1 - 1 / (p : ℝ))⁻¹)) /
+          (Real.exp Real.eulerMascheroniConstant * (Real.log y + Real.log c)) := by
+      field_simp [hlogy0]
+    _ ≤ ((ArithmeticFunction.sigma 1 n : ℝ) / n) /
+        (Real.exp Real.eulerMascheroniConstant * (Real.log y + Real.log c)) :=
+      div_le_div_of_nonneg_right habund (mul_pos (Real.exp_pos _) hdenpos).le
+    _ ≤ ((ArithmeticFunction.sigma 1 n : ℝ) / n) /
+        (Real.exp Real.eulerMascheroniConstant * Real.log (Real.log n)) :=
+      div_le_div_of_nonneg_left hsigma0 (mul_pos (Real.exp_pos _) hloglogn)
+        (mul_le_mul_of_nonneg_left hdenbound (Real.exp_pos _).le)
+    _ = (ArithmeticFunction.sigma 1 n : ℝ) /
+        (Real.exp Real.eulerMascheroniConstant * n * Real.log (Real.log n)) := by
+      rw [div_div]
+      congr 1
+      ring
+
+/-- The two epsilon envelopes expressing the sharp Gronwall limsup. -/
+theorem gronwall_envelopes (ε : ℝ) (hε : 0 < ε) :
+    (∃ N : ℕ, ∀ n : ℕ, N ≤ n →
+      (ArithmeticFunction.sigma 1 n : ℝ) /
+        (Real.exp Real.eulerMascheroniConstant * n * Real.log (Real.log n)) ≤ 1 + ε) ∧
+    (∀ N : ℕ, ∃ n : ℕ, N ≤ n ∧
+      1 - ε ≤ (ArithmeticFunction.sigma 1 n : ℝ) /
+        (Real.exp Real.eulerMascheroniConstant * n * Real.log (Real.log n))) :=
+  ⟨GronwallUpperEnvelope.gronwall_upper_envelope ε hε, gronwall_lower_envelope ε hε⟩
+
+#print axioms gronwall_lower_envelope
+#print axioms gronwall_envelopes
+
 end D5.S3.Weil.GronwallLowerEnvelope
