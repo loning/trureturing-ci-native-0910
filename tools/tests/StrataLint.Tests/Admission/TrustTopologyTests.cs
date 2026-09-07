@@ -166,10 +166,10 @@ public sealed class TrustTopologyTests
             descriptors.Single(item => item.Id.Value == "SL-022").AdmissionEffect);
         Assert.All(
             descriptors.Where(item => item.Id.Value is not (
-                "SL-007" or "SL-009" or "SL-014" or "SL-022" or "SL-023" or "SL-028")),
+                "SL-007" or "SL-009" or "SL-014" or "SL-022" or "SL-023" or "SL-028" or "SL-034")),
             item => Assert.Equal(AdmissionEffect.Block, item.AdmissionEffect));
         Assert.All(
-            descriptors.Where(item => item.Id.Value is "SL-023" or "SL-028"),
+            descriptors.Where(item => item.Id.Value is "SL-023" or "SL-028" or "SL-034"),
             item => Assert.Equal(AdmissionEffect.Observe, item.AdmissionEffect));
         Assert.All(
             descriptors.Where(item => item.Id.Value is "SL-007" or "SL-009" or "SL-013" or "SL-014"),
