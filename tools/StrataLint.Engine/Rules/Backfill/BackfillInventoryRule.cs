@@ -8,7 +8,6 @@ internal sealed record BackfillInventoryValidationContext(
     RepositorySnapshot Baseline,
     ValidatedPolicy Policy,
     AcceptedLeanClosure? Lean,
-    VerifiedScribeEmissions? VerifiedScribeEmissions,
     RawChangeSet? Changes = null,
     Func<string, bool>? IsBaseFactAffected = null,
     RawChangeSet? CasChanges = null,
@@ -184,7 +183,6 @@ internal static partial class BackfillInventoryRule
                 context.Baseline,
                 context.Policy,
                 context.Lean,
-                context.VerifiedScribeEmissions,
                 receiptVerificationChanges,
                 isBaseFactAffected,
                 ProjectedStatusChanges: evaluationChanges),
@@ -193,34 +191,7 @@ internal static partial class BackfillInventoryRule
 
     internal static ImmutableArray<RuleFinding> EvaluateDocument(
         BackfillInventoryValidationContext context,
-        BackfillInventoryDocument document) =>
-        EvaluateDocument(context, document, validateTruthAlignment: true);
-
-    internal static ImmutableArray<RuleFinding> EvaluateDocumentWithoutTruthAlignment(
-        RepositorySnapshot current,
-        RepositorySnapshot baseline,
-        ValidatedPolicy policy,
-        BackfillInventoryDocument document,
-        RawChangeSet? changes = null,
-        Func<string, bool>? isBaseFactAffected = null,
-        RawChangeSet? casChanges = null) =>
-        EvaluateDocument(
-            new BackfillInventoryValidationContext(
-                current,
-                baseline,
-                policy,
-                Lean: null,
-                VerifiedScribeEmissions: null,
-                changes,
-                isBaseFactAffected,
-                casChanges),
-            document,
-            validateTruthAlignment: false);
-
-    private static ImmutableArray<RuleFinding> EvaluateDocument(
-        BackfillInventoryValidationContext context,
-        BackfillInventoryDocument document,
-        bool validateTruthAlignment)
+        BackfillInventoryDocument document)
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(document);
@@ -250,8 +221,7 @@ internal static partial class BackfillInventoryRule
                 document,
                 sources,
                 sources.SelectMany(static source => source.Entries).ToImmutableArray(),
-                findings,
-                validateTruthAlignment);
+                findings);
         }
 
         return findings.ToImmutable();
@@ -297,8 +267,7 @@ internal static partial class BackfillInventoryRule
         BackfillInventoryDocument document,
         ImmutableArray<DigestionLedgerSource> sources,
         ImmutableArray<DigestionLedgerEntry> entries,
-        ImmutableArray<RuleFinding>.Builder findings,
-        bool validateTruthAlignment)
+        ImmutableArray<RuleFinding>.Builder findings)
     {
         if (sources.Length == 0)
         {
@@ -313,8 +282,7 @@ internal static partial class BackfillInventoryRule
         var validateAllRecords = context.Changes is null;
         foreach (var source in sources)
         {
-            var sourceMetadataChanged = validateAllRecords
-                || SourceMetadataChanged(source, context.Changes);
+            var sourceMetadataChanged = validateAllRecords || SourceMetadataChanged(source, context.Changes);
             if (sourceMetadataChanged)
             {
                 changedSourceIds.Add(source.SourceId);
@@ -475,11 +443,6 @@ internal static partial class BackfillInventoryRule
             findings.Add(new RuleFinding(BackfillPath, finding));
         }
 
-        if (!validateTruthAlignment)
-        {
-            return;
-        }
-
         if (hasStructuralFindings)
         {
             return;
@@ -495,7 +458,6 @@ internal static partial class BackfillInventoryRule
                 document,
                 context.Current,
                 context.Lean!,
-                context.VerifiedScribeEmissions,
                 baselineDocument,
                 baselineSnapshot: context.Baseline,
                 casEvaluation: casEvaluation,

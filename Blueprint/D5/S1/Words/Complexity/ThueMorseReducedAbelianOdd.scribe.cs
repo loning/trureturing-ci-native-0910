@@ -183,7 +183,10 @@ internal sealed class ThueMorseReducedAbelianOddDocument : IScribeDocumentDefini
                         "Reflection is therefore a bijection on the canonical codes. The code "
                             + "equivalence transfers that bijection to reduced Parikh classes, "
                             + "and taking finite cardinalities proves the equality for every n."))),
-                DescribeRole.Theorem),
+                DescribeRole.Theorem,
+                new OpenProblemResolutionClaim(
+                    ProblemSlugRef.Create("thue-morse-reduced-abelian-odd"),
+                    ResolutionKind.Proved)),
             Describe.Lean(
                 DescribeId.Create("length-two-reduced-abelian-complexity"),
                 DeclarationHandle.Create(

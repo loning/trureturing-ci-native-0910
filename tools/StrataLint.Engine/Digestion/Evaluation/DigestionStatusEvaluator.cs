@@ -5,85 +5,12 @@ namespace StrataLint.Engine;
 
 internal static partial class DigestionStatusEvaluator
 {
-    internal static DigestionLedgerEvaluation EvaluateUncovered(
-        DigestionEvaluationScope scope,
-        BackfillInventoryDocument document,
-        RepositorySnapshot snapshot,
-        BackfillInventoryDocument? baselineDocument = null,
-        RawChangeSet? changes = null,
-        RawChangeSet? casChanges = null)
-    {
-        ArgumentNullException.ThrowIfNull(document);
-        ArgumentNullException.ThrowIfNull(snapshot);
-        changes = DigestionEvaluationScopes.ResolveChanges(scope, changes);
-        casChanges ??= changes;
-        var entries = document.RequireDigestionEntries();
-        var findings = ImmutableArray.CreateBuilder<string>();
-        if (FindDuplicateAtomId(entries) is { } duplicateAtomId)
-        {
-            findings.Add($"duplicate atom_id: {duplicateAtomId}");
-            return new DigestionLedgerEvaluation([], findings.ToImmutable());
-        }
-
-        var alignment = DigestionLedgerAligner.Evaluate(
-            document,
-            snapshot,
-            baselineDocument,
-            DigestionAlignmentMode.Projection,
-            casEvaluation: DigestionCasStore.Evaluate(document, snapshot, casChanges),
-            changes: changes,
-            casChanges: casChanges);
-        findings.AddRange(alignment.Findings);
-        var emptyLeanReport = LeanAxiomReport.Create(
-            new Dictionary<string, LeanFileReport>(StringComparer.Ordinal));
-        var emptyTruthStates = new Dictionary<RepoPath, TruthState>();
-        var genreChecks = document.RequireDigestionSources()
-            .ToDictionary(
-                static source => source.SourceId,
-                static source => source.GenreRegistryCheck,
-                StringComparer.Ordinal);
-        var frozenStatements = new Lazy<FrozenStatementIndex>(() => FrozenStatementIndex.Create(
-            FrozenStateCatalog.Load(snapshot),
-            emptyLeanReport));
-        var statusAuthorityChangedAtomIds = ResolveStatusAuthorityChangedAtomIds(
-            entries,
-            baselineAtomIds: ImmutableHashSet<string>.Empty,
-            changes,
-            alignment,
-            isBaseFactAffected: null);
-        var work = entries
-            .Where(static entry => entry.CoverageGids.Length == 0)
-            .Select(entry => Inspect(
-                entry,
-                alignment.AlignmentFor(entry.AtomId),
-                alignment.AtomFor(entry.AtomId),
-                baselineMigration: null,
-                baselineEntryPresent: false,
-                snapshot,
-                emptyLeanReport,
-                emptyTruthStates,
-                verifiedScribeEmissions: null,
-                frozenStatements,
-                genreChecks[entry.SourceId],
-                changes,
-                statusAuthorityChangedAtomIds.Contains(entry.AtomId),
-                findings))
-            .ToArray();
-        DeriveMigration(work);
-        return CompleteEvaluation(
-            work,
-            snapshot,
-            findings,
-            validateProjectedStatus: true,
-            changes);
-    }
 
     internal static DigestionLedgerEvaluation Evaluate(
         DigestionEvaluationScope scope,
         BackfillInventoryDocument document,
         RepositorySnapshot snapshot,
         AcceptedLeanClosure lean,
-        VerifiedScribeEmissions? verifiedScribeEmissions = null,
         BackfillInventoryDocument? baselineDocument = null,
         bool validateProjectedStatus = true,
         RepositorySnapshot? baselineSnapshot = null,
@@ -137,11 +64,6 @@ internal static partial class DigestionStatusEvaluator
             .Where(static group => group.Count() == 1)
             .ToDictionary(static group => group.Key, static group => group.Single(), StringComparer.Ordinal);
 
-        if (baselineDocument is not null)
-        {
-            RequireScribeReceiptsForCoverageDelta(entries, baselineEntries, findings);
-        }
-
         var states = truthStates ?? LeanTruthStates.Resolve(snapshot, lean);
         var genreChecks = document.RequireDigestionSources()
             .ToDictionary(
@@ -171,7 +93,6 @@ internal static partial class DigestionStatusEvaluator
                 snapshot,
                 lean.Report,
                 states,
-                verifiedScribeEmissions,
                 frozenStatements,
                 genreChecks[entry.SourceId],
                 changes,
@@ -298,7 +219,6 @@ internal static partial class DigestionStatusEvaluator
         RepositorySnapshot snapshot,
         LeanAxiomReport leanReport,
         IReadOnlyDictionary<RepoPath, TruthState> states,
-        VerifiedScribeEmissions? verifiedScribeEmissions,
         Lazy<FrozenStatementIndex> frozenStatements,
         GenreRegistryCheck genreRegistryCheck,
         RawChangeSet? changes,
@@ -306,9 +226,6 @@ internal static partial class DigestionStatusEvaluator
         ImmutableArray<string>.Builder findings)
     {
         var gaps = new List<DigestionGap>();
-        // Scribe retains its existing baseline-only full check. Coverage edges are always
-        // judged against the current report and frozen statement index below.
-        var verificationChanges = baselineEntryPresent ? changes : null;
         var structured = VerifyStructuredAlignment(entry, alignment, gaps, findings);
         var nonpropositional = HasNonpropositionalReceipt(entry);
         if (entry.Receipts.Nonpropositional is not null && !nonpropositional)
@@ -362,13 +279,6 @@ internal static partial class DigestionStatusEvaluator
             edgeValidations,
             gaps,
             findings);
-        var scribe = VerifyScribeReceipts(
-            entry,
-            snapshot,
-            verifiedScribeEmissions,
-            verificationChanges,
-            gaps,
-            findings);
         if (entry.Receipts.UnresolvedSubitems.Length > 0)
         {
             foreach (var subitem in entry.Receipts.UnresolvedSubitems)
@@ -402,11 +312,9 @@ internal static partial class DigestionStatusEvaluator
                 == entry.CoverageGids.Distinct(StringComparer.Ordinal).Count()
             && entry.CoverageGids.Length > 0
             && coverage
-            && scribe
             && entry.Receipts.UnresolvedSubitems.Length == 0;
         var hasProgress = edgeValidations.Values.Any(static edge => edge.IsResolved)
-            || entry.Coverage.Length > 0
-            || entry.Receipts.Scribe.Length > 0;
+            || entry.Coverage.Length > 0;
         var hasUnresolvedCoverageTarget = edgeValidations.Values.Any(static edge => !edge.IsResolved)
             || entry.Coverage.Any(static edge => edge.TargetStatementId is null);
         return new EntryWork(
@@ -475,71 +383,6 @@ internal static partial class DigestionStatusEvaluator
         return false;
     }
 
-    internal static ImmutableHashSet<string> StatusAuthorityChangedAtomIds(
-        BackfillInventoryDocument document,
-        BackfillInventoryDocument baselineDocument,
-        RawChangeSet? changes,
-        DigestionLedgerAlignment alignment)
-    {
-        ArgumentNullException.ThrowIfNull(document);
-        ArgumentNullException.ThrowIfNull(baselineDocument);
-        ArgumentNullException.ThrowIfNull(alignment);
-        var entries = document.RequireDigestionEntries();
-        var baselineEntries = baselineDocument.RequireDigestionEntries()
-            .ToDictionary(static entry => entry.AtomId, StringComparer.Ordinal);
-        return ResolveStatusAuthorityChangedAtomIds(
-            entries,
-            baselineEntries.Keys.ToHashSet(StringComparer.Ordinal),
-            changes,
-            alignment,
-            isBaseFactAffected: null);
-    }
-
-    private static ImmutableHashSet<string> ResolveStatusAuthorityChangedAtomIds(
-        IEnumerable<DigestionLedgerEntry> sourceEntries,
-        IReadOnlySet<string> baselineAtomIds,
-        RawChangeSet? changes,
-        DigestionLedgerAlignment alignment,
-        Func<string, bool>? isBaseFactAffected)
-    {
-        var entries = sourceEntries.ToArray();
-        var directlyChanged = entries
-            .Where(entry => StatusAuthorityClosureChanged(
-                entry,
-                alignment.EntryAlignments.GetValueOrDefault(
-                    entry.AtomId,
-                    DigestionReceiptAlignment.Rejected),
-                baselineAtomIds.Contains(entry.AtomId),
-                changes,
-                isBaseFactAffected))
-            .Select(static entry => entry.AtomId);
-        return ExpandStatusAuthorityChanges(entries, directlyChanged);
-    }
-
-    private static ImmutableHashSet<string> ExpandStatusAuthorityChanges(
-        IEnumerable<DigestionLedgerEntry> sourceEntries,
-        IEnumerable<string> initiallyChanged)
-    {
-        var entries = sourceEntries.ToArray();
-        var atomIds = entries.Select(static entry => entry.AtomId).ToHashSet(StringComparer.Ordinal);
-        var changedAtomIds = initiallyChanged.ToHashSet(StringComparer.Ordinal);
-        var changed = true;
-        while (changed)
-        {
-            changed = false;
-            foreach (var entry in entries.Where(entry => !changedAtomIds.Contains(entry.AtomId)))
-            {
-                if (entry.Receipts.ChainAtoms.Any(atomId =>
-                        atomIds.Contains(atomId) && changedAtomIds.Contains(atomId)))
-                {
-                    changedAtomIds.Add(entry.AtomId);
-                    changed = true;
-                }
-            }
-        }
-
-        return changedAtomIds.ToImmutableHashSet(StringComparer.Ordinal);
-    }
 
     private static Dictionary<string, T> UniqueByGid<T>(
         string label,

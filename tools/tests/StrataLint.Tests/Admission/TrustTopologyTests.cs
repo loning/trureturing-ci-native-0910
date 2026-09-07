@@ -148,15 +148,16 @@ public sealed class TrustTopologyTests
     {
         var descriptors = RuleCatalog.Default.Descriptors;
 
-        Assert.Equal(27, descriptors.Length);
-        Assert.Equal(27, descriptors.Select(item => item.Id).Distinct().Count());
+        Assert.Equal(28, descriptors.Length);
+        Assert.Equal(28, descriptors.Select(item => item.Id).Distinct().Count());
         Assert.Equal(
             Enumerable.Range(1, 23).Except([5]).Select(RuleId.CreateKnown)
                 .Append(RuleId.CreateKnown(25))
                 .Append(RuleId.CreateKnown(26))
                 .Append(RuleId.CreateKnown(28))
                 .Append(RuleId.CreateKnown(30))
-                .Append(RuleId.CreateKnown(31)),
+                .Append(RuleId.CreateKnown(31))
+                .Append(RuleId.CreateKnown(32)),
             descriptors.Select(item => item.Id));
         Assert.Equal(
             AdmissionEffect.HumanGate,

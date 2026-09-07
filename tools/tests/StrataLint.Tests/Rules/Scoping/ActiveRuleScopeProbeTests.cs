@@ -259,6 +259,34 @@ public sealed class ActiveRuleScopeProbeTests
             historicalPath);
     }
 
+    [Fact]
+    [BaseFactScopeProbe(32)]
+    public void Sl032ScribeNarrativeProvenanceScopesHistoricalProseToPathDeltaOnly()
+    {
+        const string historicalPath = "Blueprint/Test/Historical.scribe.cs";
+        const string unrelatedPath = "Blueprint/Test/Clean.scribe.cs";
+        const string violation = "// digestion backfill receipt";
+        const string message = "DigestionLedgerReference";
+
+        var unrelated = new RuleFixture();
+        SetHistorical(unrelated, historicalPath, violation);
+        SetHistorical(unrelated, unrelatedPath, "// baseline");
+        unrelated.Files[unrelatedPath] = "// candidate";
+        AssertNoFinding(Execute(unrelated, unrelatedPath), 32, message, historicalPath);
+
+        var changed = new RuleFixture();
+        SetHistorical(changed, historicalPath, violation);
+        AssertFinding(Execute(changed, historicalPath), 32, message, historicalPath);
+
+        // SL-032 is delta-only: changing its judge must not recheck historical prose.
+        var implementation = new RuleFixture();
+        SetHistorical(implementation, historicalPath, violation);
+        AssertNoFinding(
+            Execute(implementation,
+                "tools/StrataLint.Engine/Rules/ScribeNarrative/ScribeNarrativeScanner.cs"),
+            32, message, historicalPath);
+    }
+
     private static void SetHistorical(RuleFixture fixture, string path, string text)
     {
         fixture.Files[path] = text;

@@ -8,154 +8,45 @@ namespace StrataLint.Tests;
 public sealed partial class DigestionLedgerTests
 {
     [Fact]
-    public void SelfAuthoredScribeAttestationCannotProveEmissionPassed()
-    {
-        var source = Encoding.UTF8.GetBytes("# GICT\n\n**定理 1.1(Test)**。claim。\n");
-        var atom = Assert.Single(GictAtomizer.Atomize(source, DigestionTestSupport.Rules).Claims);
-        var target = Encoding.UTF8.GetBytes(Lean("D5/S0/Carrier/Probe"));
-        var definition = Encoding.UTF8.GetBytes("scribe definition\n");
-        var emission = Encoding.UTF8.GetBytes("# emitted narrative\n");
-        var definitionHash = DigestionFingerprint.Compute(definition).RawSha256;
-        var emissionHash = DigestionFingerprint.Compute(emission).RawSha256;
-        var scribeAttestation = ScribeEmissionAttestation.Write(
-        [
-            new ScribeEmissionRecord(
-                "D5/S0/Carrier/Probe",
-                "Blueprint/D5/S0/Carrier/Probe.scribe.cs",
-                definitionHash,
-                "Blueprint/D5/S0/Carrier/Probe.md",
-                emissionHash),
-        ]).ToArray();
-        var ledger = Ledger(
-            atom,
-            DigestionMigrationState.Absorbed,
-            DigestionTruthState.Closed,
-            "D5/S0/Carrier/Probe",
-            new DigestionCoverageEdge(
-                "D5/S0/Carrier/Probe",
-                TestModuleStatementId),
-            new DigestionScribeReceipt(
-                "D5/S0/Carrier/Probe",
-                definitionHash,
-                emissionHash));
-        var snapshot = Snapshot([
-            ("docs/source.md", source),
-            CasFile(atom),
-            ("D5/S0/Carrier/Probe.lean", target),
-            ("Blueprint/D5/S0/Carrier/Probe.scribe.cs", definition),
-            ("Blueprint/D5/S0/Carrier/Probe.md", emission),
-            (ScribeEmissionAttestation.RelativePath, scribeAttestation),
-            .. FrozenLedgerFiles("D5/S0/Carrier/Probe.lean", "probe"),
-        ]);
-        var lean = AcceptedLean("D5/S0/Carrier/Probe.lean");
-
-        var evaluation = DigestionStatusEvaluator.Evaluate(
-            DigestionEvaluationScope.FullScan,
-            ledger,
-            snapshot,
-            lean);
-        var status = Assert.Single(evaluation.Entries);
-
-        Assert.False(status.Deletable);
-        Assert.Equal(DigestionMigrationState.Partial, status.DerivedStatus.Migration);
-        Assert.Contains(status.Gaps, gap => gap.Code == "scribe-emission-unverified");
-        Assert.Contains(evaluation.Findings, finding =>
-            finding.Contains("handwritten status", StringComparison.Ordinal));
-    }
-
-    [Fact]
-    public void MatchingScribeFileHashesWithoutProducerCapabilityFailClosed()
-    {
-        var source = Encoding.UTF8.GetBytes("# GICT\n\n**定理 1.1(Test)**。claim。\n");
-        var atom = Assert.Single(GictAtomizer.Atomize(source, DigestionTestSupport.Rules).Claims);
-        var target = Encoding.UTF8.GetBytes(Lean("D5/S0/Carrier/Probe"));
-        var definition = Encoding.UTF8.GetBytes("arbitrary definition bytes\n");
-        var emission = Encoding.UTF8.GetBytes("arbitrary emission bytes\n");
-        var ledger = Ledger(
-            atom,
-            DigestionMigrationState.Absorbed,
-            DigestionTruthState.Closed,
-            "D5/S0/Carrier/Probe",
-            new DigestionCoverageEdge(
-                "D5/S0/Carrier/Probe",
-                TestModuleStatementId),
-            new DigestionScribeReceipt(
-                "D5/S0/Carrier/Probe",
-                DigestionFingerprint.Compute(definition).RawSha256,
-                DigestionFingerprint.Compute(emission).RawSha256));
-        var snapshot = Snapshot([
-            ("docs/source.md", source),
-            CasFile(atom),
-            ("D5/S0/Carrier/Probe.lean", target),
-            ("Blueprint/D5/S0/Carrier/Probe.scribe.cs", definition),
-            ("Blueprint/D5/S0/Carrier/Probe.md", emission),
-            .. FrozenLedgerFiles("D5/S0/Carrier/Probe.lean", "probe"),
-        ]);
-
-        var status = Assert.Single(DigestionStatusEvaluator.Evaluate(
-            DigestionEvaluationScope.ChangedSet,
-            ledger,
-            snapshot,
-            AcceptedLean("D5/S0/Carrier/Probe.lean"),
-            baselineDocument: ledger,
-            baselineSnapshot: snapshot,
-            changes: RawChangeSet.Create(["notes/unrelated.txt"])).Entries);
-
-        Assert.False(status.Deletable);
-        Assert.Equal(DigestionMigrationState.Partial, status.DerivedStatus.Migration);
-        Assert.NotEqual(DigestionReceiptAlignment.Rejected, status.Alignment);
-        Assert.Contains(status.Gaps, gap => gap.Code == "scribe-emission-unverified");
-    }
-
-    [Fact]
-    public void DeclarationCoverageUsesItsProducerCurrentModuleRecord()
+    public void DeclarationCoverageWithoutScribeReceiptsDerivesAbsorbedClosed()
     {
         const string declarationGid = "D5/S0/Carrier/Probe.probe";
-        var status = EvaluateDeclarationCoverage(declarationGid, [declarationGid]);
+        var status = EvaluateDeclarationCoverage(declarationGid);
 
         Assert.Equal(DigestionMigrationState.Absorbed, status.DerivedStatus.Migration);
         Assert.Equal(DigestionTruthState.Closed, status.DerivedStatus.Truth);
         Assert.True(status.Deletable);
         Assert.Empty(status.Gaps);
+        Assert.Empty(status.Entry.Receipts.Scribe);
     }
 
     [Fact]
-    public void ProducerCurrentEmissionMakesCommittedMarkdownOptional()
+    public void DeclarationCoverageWithoutScribeArtifactsDerivesAbsorbedClosed()
     {
         const string declarationGid = "D5/S0/Carrier/Probe.probe";
         var status = EvaluateDeclarationCoverage(
             declarationGid,
-            [declarationGid],
             includeCommittedEmission: false);
 
         Assert.Equal(DigestionMigrationState.Absorbed, status.DerivedStatus.Migration);
         Assert.Equal(DigestionTruthState.Closed, status.DerivedStatus.Truth);
         Assert.True(status.Deletable);
         Assert.Empty(status.Gaps);
-        Assert.NotEmpty(status.Entry.Receipts.Scribe);
+        Assert.Empty(status.Entry.Receipts.Scribe);
     }
 
     [Fact]
     public void Sl016CallsCurrentEdgeValidatorForSelectorMissingFromLeanReport()
     {
         const string declarationGid = "D5/S0/Carrier/Probe.missing";
-        var status = EvaluateDeclarationCoverage(declarationGid, [declarationGid]);
+        var status = EvaluateDeclarationCoverage(declarationGid);
 
         Assert.False(status.Deletable);
         Assert.Contains(status.Gaps, gap => gap.Code == "target-declaration-missing");
     }
 
     [Fact]
-    public void DeclarationCoverageRejectsRealDeclarationAbsentFromScribeDocument()
-    {
-        var status = EvaluateDeclarationCoverage("D5/S0/Carrier/Probe.probe", []);
-
-        Assert.False(status.Deletable);
-        Assert.Contains(status.Gaps, gap => gap.Code == "scribe-declaration-reference-missing");
-    }
-
-    [Fact]
-    public void CandidateDeltaDoesNotPromoteBaselinePartialWithStaleScribeReceipts()
+    public void StaleScribeByteReceiptsDoNotProduceIntegrityGapsOrDegradeTruth()
     {
         const string gid = "D5/S0/Carrier/Probe";
         const string targetPath = "D5/S0/Carrier/Probe.lean";
@@ -172,7 +63,7 @@ public sealed partial class DigestionLedgerTests
             Encoding.UTF8.GetBytes("# Stale emitted narrative\n")).RawSha256;
         var document = Ledger(
             atom,
-            DigestionMigrationState.Partial,
+            DigestionMigrationState.Absorbed,
             DigestionTruthState.Closed,
             gid,
             new DigestionCoverageEdge(
@@ -199,16 +90,16 @@ public sealed partial class DigestionLedgerTests
             document,
             snapshot,
             AcceptedLean(targetPath),
-            VerifiedScribeEmissions.Create([record]),
             baselineDocument: document,
             baselineSnapshot: snapshot);
         var status = Assert.Single(evaluation.Entries);
 
-        Assert.Equal(DigestionMigrationState.Partial, status.DerivedStatus.Migration);
-        Assert.Contains(status.Gaps, static gap => gap.Code == "scribe-definition-mismatch");
-        Assert.Contains(status.Gaps, static gap => gap.Code == "scribe-emission-mismatch");
-        Assert.DoesNotContain(evaluation.Findings, static finding =>
-            finding.Contains("handwritten status", StringComparison.Ordinal));
+        Assert.DoesNotContain(status.Gaps, static gap => gap.Code == "scribe-definition-mismatch");
+        Assert.DoesNotContain(status.Gaps, static gap => gap.Code == "scribe-emission-mismatch");
+        Assert.Equal(DigestionMigrationState.Absorbed, status.DerivedStatus.Migration);
+        Assert.Equal(DigestionTruthState.Closed, status.DerivedStatus.Truth);
+        Assert.True(status.Deletable);
+        Assert.Empty(evaluation.Findings);
     }
 
     [Fact]

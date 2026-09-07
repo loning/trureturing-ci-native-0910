@@ -173,43 +173,6 @@ public sealed partial class ProductionEnvironmentTests
         return current with { Baseline = baseline };
     }
 
-    private static CoverInputs WithSiblingDuplicateCoverageReceipt(CoverInputs inputs)
-    {
-        var siblingAtomId = CoverWorld.OtherAtomId;
-        var documentGid = inputs.Gid[..inputs.Gid.LastIndexOf('.')];
-        Assert.True(inputs.VerifiedEmissions!.TryGet(documentGid, out var verified));
-        var targetStatementId = FrozenStatementReceiptTestData.Resolve(inputs.Files, inputs.Gid);
-        var document = inputs.Document.WithDigestionSources(
-            inputs.Document.RequireDigestionSources()
-                .Select(source => source with
-                {
-                    Entries = source.Entries.Select(entry => entry.AtomId == siblingAtomId
-                        ? entry with
-                        {
-                            Coverage =
-                            [
-                                new DigestionCoverageEdge(inputs.Gid, targetStatementId),
-                                new DigestionCoverageEdge(inputs.Gid, targetStatementId),
-                            ],
-                            Receipts = entry.Receipts with
-                            {
-                                Scribe =
-                                [
-                                    new DigestionScribeReceipt(
-                                        inputs.Gid,
-                                        verified.DefinitionSha256,
-                                        verified.EmissionSha256),
-                                ],
-                            },
-                        }
-                        : entry).ToImmutableArray(),
-                })
-                .ToImmutableArray());
-        var files = new Dictionary<string, string>(inputs.Files, StringComparer.Ordinal);
-        DirectoryLedgerTestSupport.ReplaceWithProjection(files, document);
-        return inputs with { Files = files, Document = document };
-    }
-
     private static ProductionCliEnvironment BuildCoverEnvironment(
         string repositoryRoot,
         CoverInputs inputs,

@@ -86,6 +86,7 @@ internal static partial class ScriptTestInputDeriver
             testProjects);
         var parsed = ScribeTestSymbolBinder.Bind(
             testSources,
+            ScribeBindingStrategy.Eager,
             context.ProductionAssemblies,
             context);
         return Inspect(parsed);
@@ -112,7 +113,7 @@ internal static partial class ScriptTestInputDeriver
     {
         try
         {
-            using var checkout = MsBuildCompileOracle.Materialize(snapshot);
+            using var checkout = MsBuildCompileOracle.Materialize(snapshot, ScribeTestMapDeriver.IsDerivationInput);
             var entry = MsBuildCompileOracle.Query(
                 checkout.Root,
                 [ScriptTestGateClosurePolicy.ProjectPath]);
@@ -247,6 +248,20 @@ internal static partial class ScriptTestInputDeriver
         }
         if (use.Consumer is ISimpleAssignmentOperation assignment)
         {
+            if (IsReadonlyConstructorFieldAssignment(assignment, callable.SemanticModel))
+            {
+                // Later field reads cannot recover constructor values; a stored root alone
+                // cannot classify paths composed from it. Record only a resolved input here.
+                if (ResolvePath(expression, callable.SemanticModel, callable.SemanticModels,
+                        new HashSet<ISymbol>(SymbolEqualityComparer.Default)).Kind
+                    != PathValueKind.RepositoryPath)
+                {
+                    RejectOperationValue(identity, assignment, callable.SemanticModel);
+                    return;
+                }
+                AddResolved(expression, callable, identity, inputs);
+                return;
+            }
             if (assignment.Target is IPropertyReferenceOperation property
                 && IsProcessStartInfoProperty(property.Property, "FileName", "Arguments"))
             {
@@ -293,7 +308,7 @@ internal static partial class ScriptTestInputDeriver
                 callable.SemanticModel))
         {
             var operands = IsTestProcessRunner(method) && parameterOrdinal == 1
-                ? StringCollectionOperands(expression, callable.SemanticModel)
+                ? StringCollectionOperands(expression, callable.SemanticModel, callable.SemanticModels)
                 : [expression];
             foreach (var operand in operands)
                 AddResolved(operand, callable, identity, inputs);
@@ -321,7 +336,8 @@ internal static partial class ScriptTestInputDeriver
                 $"unresolved repository working directory ({workingDirectoryExpression.GetType().Name})");
         }
 
-        foreach (var operand in TestProcessRunnerCommandOperands(invocation, callable.SemanticModel))
+        foreach (var operand in TestProcessRunnerCommandOperands(
+                     invocation, callable.SemanticModel, callable.SemanticModels))
         {
             if (ScribePathProvenance.IsNonRepository(
                     operand,
@@ -367,7 +383,8 @@ internal static partial class ScriptTestInputDeriver
 
     private static IEnumerable<ExpressionSyntax> TestProcessRunnerCommandOperands(
         IInvocationOperation invocation,
-        SemanticModel model)
+        SemanticModel model,
+        ScribeSemanticModelProvider semanticModels)
     {
         foreach (var argument in invocation.Arguments.Where(static argument =>
                      argument.Parameter?.Ordinal is 0 or 1))
@@ -378,7 +395,7 @@ internal static partial class ScriptTestInputDeriver
                 yield return expression;
                 continue;
             }
-            foreach (var operand in StringCollectionOperands(expression, model))
+            foreach (var operand in StringCollectionOperands(expression, model, semanticModels))
                 yield return operand;
         }
     }
@@ -476,6 +493,29 @@ internal static partial class ScriptTestInputDeriver
         IVariableInitializerOperation or IFieldInitializerOperation or IPropertyInitializerOperation
         || IsTransparentCompilerCarrier(operation);
 
+    private static bool IsReadonlyConstructorFieldAssignment(
+        ISimpleAssignmentOperation assignment,
+        SemanticModel model)
+    {
+        if (assignment.Target is not IFieldReferenceOperation
+            {
+                Field: { IsStatic: false, DeclaredAccessibility: Accessibility.Private,
+                    Type.SpecialType: SpecialType.System_String },
+                Instance: IInstanceReferenceOperation
+                    { ReferenceKind: InstanceReferenceKind.ContainingTypeInstance },
+            } field)
+        {
+            return false;
+        }
+        if (!field.Field.IsReadOnly)
+        {
+            return false;
+        }
+        return model.GetEnclosingSymbol(assignment.Syntax.SpanStart) is IMethodSymbol
+            { MethodKind: MethodKind.Constructor } constructor
+            && SymbolEqualityComparer.Default.Equals(field.Field.ContainingType, constructor.ContainingType);
+    }
+
     private static void RejectOperationValue(
         string identity,
         IOperation operation,
@@ -517,7 +557,8 @@ internal static partial class ScriptTestInputDeriver
                 callable.SemanticModel)
                 && ScribeTestSymbolBinder.IsRepositoryRootExpression(
                     expression,
-                    callable.SemanticModel);
+                    callable.SemanticModel,
+                    callable.SemanticModels);
     }
 
     private static bool CanCarryRepositoryRootEvidence(
