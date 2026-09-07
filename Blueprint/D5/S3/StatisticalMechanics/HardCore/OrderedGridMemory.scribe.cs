@@ -85,5 +85,12 @@ internal sealed class OrderedGridMemoryDocument : IScribeDocumentDefinition
                 StatementSource.FromLean(), AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text("Exact table rejection and geometric-successor identities imply domination of every finite-domain path count at every depth. RadiusThreeCertificates proves these finite obligations for its concrete table."))),
                 DescribeRole.Theorem),
+            Describe.Lean(
+                DescribeId.Create("hard-core-orderedgridmemory-selected-simulation"),
+                DeclarationHandle.Create("D5/S3/StatisticalMechanics/HardCore/OrderedGridMemory.orderedCount_le_pathCount_selected"),
+                H("Only the selected actions need closure"),
+                StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("The existing geometric induction is generalized to the actions actually chosen by the controller. The original all-action theorem applies it with its public statement unchanged. AdaptiveRadiusFourCertificates consumes the selected-action version on its complete controller-reachable table."))),
+                DescribeRole.Theorem),
             Paragraph(Text("The sources were logically reviewed and the concrete certificates independently replayed using exact integers. Lean elaboration, axiom-print execution and Scribe emission were not performed in the authoring runtime. These candidate sources do not assert an improved global zero-free threshold.")))));
 }
