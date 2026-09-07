@@ -1,0 +1,56 @@
+using static StrataLint.Scribe.DefinitionDsl;
+
+namespace StrataLint.Scribe.Blueprint.D5.S3.Weil.ZetaBridge;
+
+internal sealed class WeilResidualHilbertAssemblyDocument : IScribeDocumentDefinition
+{
+    public DocumentDefinition Create() => DocumentDefinition.Create(ScribeNode.Create(
+        "Finite residual balls and complete arithmetic tails yield a unique full coefficient realization and a rigorous squared-norm interval.",
+        H("Finite and Infinite Residual Assembly"),
+        Blocks(
+            Describe.Lean(DescribeId.Create("signedWindowSum"),
+                DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/WeilResidualHilbertAssembly.signedWindowSum"),
+                H("Signed finite window"), StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("Counts the central coefficient once and every positive/negative pair through M once. It uses an existing additive carrier and introduces no spectral object."))), DescribeRole.Definition),
+            Describe.Lean(DescribeId.Create("spliceSignedCoefficients"),
+                DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/WeilResidualHilbertAssembly.spliceSignedCoefficients"),
+                H("Complete spliced coefficient stream"), StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("Retains the exact inside coefficients for natAbs(m) at most M and uses both complete tail streams beyond M. The exterior index is natAbs(m)-M-1; there is no terminal cutoff."))), DescribeRole.Definition),
+            Describe.Lean(DescribeId.Create("retainedMassInterval"),
+                DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/WeilResidualHilbertAssembly.retainedMassInterval"),
+                H("Exact-center rational squared-mass interval"), StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("Computes the exact center mass x squared plus y squared and a perturbation budget 2*(abs(x)+abs(y))*e+e squared. The lower bound is clipped at zero. Unlike squaring a rectangular modulus envelope, this interval has no fixed slack when radii vanish."))), DescribeRole.Definition),
+            Describe.Lean(DescribeId.Create("splice_signed_coordinates"),
+                DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/WeilResidualHilbertAssembly.splice_signed_coordinates"),
+                H("Exact matching on every coordinate"), StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("Proves that the executable splice equals the retained data inside the window and the original indexed tail on both signs outside. This prevents duplication of zero and omitted or misindexed boundary modes."))), DescribeRole.Theorem),
+            Describe.Lean(DescribeId.Create("signed_square_mass_assembly"),
+                DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/WeilResidualHilbertAssembly.signed_square_mass_assembly"),
+                H("Finite-plus-infinite squared mass"), StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("Derives summability of the complete integer sequence from the paired nonnegative tail and its finite prefix. Standard natural/integer summation theorems yield the exact mass split. No full-sequence summability premise or divergent tsum value supplies the result."))), DescribeRole.Theorem),
+            Describe.Lean(DescribeId.Create("hilbert_realization_of_square_tail"),
+                DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/WeilResidualHilbertAssembly.hilbert_realization_of_square_tail"),
+                H("Unique Hilbert realization of the exact stream"), StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("Constructs an lp element from the proved square summability, then applies the existing HilbertBasis.repr inverse. Its isometry gives the exact full squared norm; injectivity gives uniqueness. No new Parseval theorem or coordinate-system completeness theorem is proved."))), DescribeRole.Theorem),
+            Describe.Lean(DescribeId.Create("retained_mass_interval_sound"),
+                DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/WeilResidualHilbertAssembly.retained_mass_interval_sound"),
+                H("Both finite precision bounds are sound"), StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("The reverse triangle inequality and a factored squared-norm difference bound each actual complex coefficient. Finite signed summation preserves both rational inequalities. Every retained evaluation radius remains an explicit justified premise."))), DescribeRole.Theorem),
+            Describe.Lean(DescribeId.Create("retained_mass_interval_exact"),
+                DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/WeilResidualHilbertAssembly.retained_mass_interval_exact"),
+                H("Zero radii give the exact finite mass"), StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("Both computed endpoints coincide with the sum of exact rational squared moduli when radii are zero. This is a precision companion of the same interval constructor, not an independent mathematical priority claim."))), DescribeRole.Theorem),
+            Describe.Lean(DescribeId.Create("hilbert_splice_interval"),
+                DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/WeilResidualHilbertAssembly.hilbert_splice_interval"),
+                H("Complete norm interval with all exterior modes"), StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("The complete exact splice selects a unique Hilbert vector. Its squared norm lies above the certified retained lower mass and below retained upper mass plus the entire tail budget. Finite balls alone do not select a unique vector."))), DescribeRole.Theorem),
+            Describe.Lean(DescribeId.Create("even_repaired_hilbert_certificate"),
+                DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/WeilResidualHilbertAssembly.even_repaired_hilbert_certificate"),
+                H("Actual arithmetic-tail consumer"), StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("Directly consumes the existing even repaired trial certificate, which derives both arithmetic-tail square summability and the D=0 cubic bound from its rational checker. For the same repaired trial, finite interior enclosures and a complete Hilbert basis give a unique full coefficient realization and a norm interval. Canonical Fourier and operator-domain identification remain separate."))), DescribeRole.Theorem),
+            Describe.Lean(DescribeId.Create("identified_residual_interval"),
+                DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/WeilResidualHilbertAssembly.identified_residual_interval"),
+                H("Transport to an identified actual residual"), StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("Once all coefficients of an actual vector R are proved equal to the certified full stream, the existing Hilbert coordinate injectivity transfers the norm interval to R. For R=g-A(v), the actual operator domain and coefficient calculation must be established before this adapter applies."))), DescribeRole.Theorem)),
+        [DocumentEdge.Dependency.Create(GidRef.Create("D5/S3/Weil/ZetaBridge/WeilEvenTraceRepair"))]));
+}
