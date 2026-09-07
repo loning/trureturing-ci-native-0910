@@ -133,3 +133,58 @@ that distinction and is not used as positive evidence.
 No Library note is created or changed. The existing Gronwall note retains its
 verified bibliographic and secondary-source locator scope; the new Scribe
 corollary is attributed to the repository derivation from the classical theorem.
+
+## Prerequisite Freeze
+
+The first canonical deposit returned `EXIT=2` before creating any Freeze:
+`module D5/S3/Weil/GronwallLowerEnvelope.lean dependency
+D5/S3/Weil/GronwallUpperEnvelope.lean has no accepted Freeze`.
+The upper module's missing membership has the same word-boundary positive
+control as the lower module: 0 upper hits against 23 Budget hits.
+
+The necessary prerequisite is the unchanged upper module from merged
+[PR #6204](https://github.com/the-omega-institute/trureturing/pull/6204).
+Its five public theorems retain `proof_shape: bind-only` and
+`admission_basis: rule-11-upstream-wrapper`, as recorded before this task.
+The concrete API obligation is the Gronwall consumer preregistered by the
+Mertens III port in [PR #6171](https://github.com/the-omega-institute/trureturing/pull/6171).
+The upstream declaration `Mertens.E₃.bound''` is used at `hmertens`, then
+`hbound`, then the final upper inequality. Its declaration identity is
+`sha256:d4c36eb2836729fdc7d27b8d61849d723fcc7cce45f668568c6fad517f95b817`;
+its direct frozen owner is `D5/S3/Weil/Mertens/Third` with the module identity
+recorded above. There is no new escape-witness claim for the upper module.
+
+The existing upper companions discharge the named small-prime padding,
+large-prime count/product, and divisor-sum split obligations. Their directed
+edges, all consumer -> prerequisite, are:
+`sigma_split -> small_prime_product_le`,
+`large_prime_product_le -> large_prime_count_le`,
+`sigma_split -> large_prime_product_le`, and
+`gronwall_upper_envelope -> sigma_split`.
+The full endpoints are in `D5.S3.Weil.GronwallUpperEnvelope`.
+The finite companions have no direct D5 theorem dependency.
+
+The upper header also retains `utility: none`. All six declarations in its
+canonical statement set were assessed:
+
+| Declaration | Reason none of the four computational classes applies |
+| --- | --- |
+| `small_prime_product_le` | Uniform symbolic product comparison at arbitrary cutoffs |
+| `largePrimes` | Noncomputable finite-set definition depending on an arbitrary real cutoff |
+| `large_prime_count_le` | General analytic bound, with no evaluated finite instance |
+| `large_prime_product_le` | General logarithmic/exponential estimate |
+| `sigma_split` | General arithmetic factorization bound, with no numeric premise |
+| `gronwall_upper_envelope` | Eventual asymptotic bound over unbounded natural inputs |
+
+The canonical report gives only `[Classical.choice, Quot.sound, propext]`
+for each of these six declarations. Prerequisite freezing uses the same
+canonical `ledger-align --add` writer as deposit, with this task's successful
+`make lean-report` artifact. It does not attach the upper theorem to an atom
+whose full conclusion is stronger than the upper envelope.
+
+The upper header precheck and canonical writer both returned `EXIT=0`.
+Writer receipt: `selectors_considered=3655 changed=0 added=1 unchanged=3654
+conflicts=0`. It added only the upper state shard and accepted event
+`2f5adf076e66565f8231e8f57e0973540395ef4a2817fa550f3acc35129ef596.json`.
+The module pin is
+`sha256:5649f49b7a510331194224220fb89ddf3339817611eac068d46a8679c5424e27`.
