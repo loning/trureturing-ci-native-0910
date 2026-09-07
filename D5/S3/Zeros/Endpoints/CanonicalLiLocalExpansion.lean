@@ -14,11 +14,36 @@ import Mathlib.Analysis.Calculus.Deriv.Star
 import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
 
 /-!
-The coefficients use the Li derivative definition. The planned content is the
-all-order Mobius derivative transformation, followed by Taylor convergence.
+The coefficients use the Li derivative definition. The content is the all-order
+Mobius derivative transformation, followed by Taylor convergence.
 Generality I is required by the xi-specific frozen imports (SL-010).
 The preregistered escape witness is the coefficient identity for every n;
 it is not an assumed Keiper-Li expansion. No atom closure or L2 is claimed.
+
+Proof shape and admission:
+* generator_taylor_coefficient: content. The induction in
+  mobius_iterated_derivative is consumed by generator_derivative_eq, which is
+  consumed by the coefficient theorem. Conjugation supplies the real embedding.
+* canonical_li_local_expansion: content; admission_basis=escape-witness.
+  generator_taylor_coefficient replaces each coefficient in the Taylor HasSum.
+  Without that identity, the imported Taylor theorem gives only derivatives of G,
+  not the source Li derivative definition. The witness remains version 1.
+* canonical_li_zero, canonical_li_one, canonical_li_one_pos: bind-only companions
+  for the initial-value and first-coefficient obligations. The named downstream
+  use is li_caratheodory_identity: its inputs are these zero/positivity facts and
+  canonical_li_local_expansion. The first-value edge is
+  canonical_li_one_pos -> canonical_li_one -> first_li_coefficient_eq_log_deriv_re.
+  This module does not apply the conditional Li-Caratheodory theorem to prove L1.
+* utility none: no enumeration, checker, numerical reduction, or new numerical
+  certification. The positive first value is transported from the prior layer.
+
+Library search (2026-09-07, before proving): D5's LiCaratheodoryIdentity assumes
+keiperLiExpansion. Pinned Mathlib v4.33.0 supplies iteratedDeriv_fun_mul,
+deriv_conj_conj, Complex.deriv_log_comp_eq_logDeriv, and
+Complex.hasSum_taylorSeries_on_ball; all are applied below. No exact all-order
+Mobius-to-Li identity was found in D5, pinned Mathlib, installed Lake packages,
+or the two external Lean/Keiper/Lagrange-inversion searches. This classical
+generating identity is not claimed as new mathematics.
 -/
 
 set_option autoImplicit false
@@ -219,6 +244,8 @@ theorem canonical_li_one_pos : 0 < canonicalLiCoefficient 1 := by
   rw [canonical_li_one]
   exact first_li_coefficient_pos
 
+#print axioms canonicalLiCoefficient
+#print axioms liGenerator
 #print axioms generator_taylor_coefficient
 #print axioms canonical_li_local_expansion
 #print axioms canonical_li_zero
