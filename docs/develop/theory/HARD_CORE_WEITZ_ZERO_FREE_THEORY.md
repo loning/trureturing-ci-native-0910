@@ -1012,3 +1012,297 @@ specific finite-type coordinate argument and numerical certificate above are
 spelled out rather than attributed as an already instantiated theorem.
 https://arxiv.org/abs/1909.04244
 https://doi.org/10.1007/s10955-021-02831-0
+
+
+## 18. Actual independent-set partitions and noncircular elimination
+
+This continuation begins at ceb6e285c889669fd4090da55ae26e38f28a60ef and reads
+dev at 76d7b4a789e9c44f49b4800fc93e569f68a48b51. The previously delivered
+IndependentPartitionDeletion, OrderedPartitionRecursion and RealPartitionMessages
+sources are present on the research branch. Their missing cumulative mathematical
+summary is supplied here, before the new grid correspondence.
+
+For a simple graph G, a finite vertex domain V and activities w in a commutative
+semiring, the existing partition is the actual independent-configuration sum
+
+\[
+ Z_G(V;w)=\sum_{S\subseteq V,\;S\text{ independent}}\prod_{u\in S}w(u).
+\]
+
+The configuration predicate is Mathlib's SimpleGraph.IsIndepSet. The ambient
+graph may be infinite. Splitting configurations by the occupancy of v in V
+and inserting v into configurations on C=(V\{v})\N_G(v) gives
+
+\[
+ Z_G(V;w)=Z_G(V\setminus\{v\};w)+w(v)Z_G(C;w).
+\]
+
+No nonzero assumption is used. The identity holds as a polynomial identity
+and at complex activities where intermediate partitions vanish.
+
+For an ordered list of neighbors, let W0=V\{v}, Wj=W(j-1)\{uj}, and define
+N=prod_j Z_G(Wj;w), D=prod_j Z_G(W(j-1);w). Exact cross multiplication gives
+
+\[
+ Z_G(V;w)D=Z_G(W_0;w)(D+w(v)N).
+\]
+
+If every partition on a subset of W0 is nonzero, this becomes
+
+\[
+ Z_G(V;w)=Z_G(W_0;w)\left(1+w(v)\prod_j
+ \frac{Z_G(W_j;w)}{Z_G(W_{j-1};w)}\right).
+\]
+
+The target Z_G(V;w) is not assumed nonzero. This is the noncircular induction
+step needed for the later complex result.
+
+For nonnegative real activities, the empty configuration contributes one and
+all other terms are nonnegative. Configuration inclusion gives domain
+monotonicity. If the root activity is at most Lambda, then
+
+\[
+ Z_G(W_0;w)\le Z_G(V;w)\le(1+\Lambda)Z_G(W_0;w),
+ \qquad \frac1{1+\Lambda}\le\frac{Z_G(W_0;w)}{Z_G(V;w)}\le1.
+\]
+
+Thus constant activity in [0,51/20] places every actual real vacancy in
+[20/71,1]. These classical facts are now source dependencies rather than
+unproved graph-message interpretations.
+
+## 19. Exact configuration transport for the square-grid frames
+
+PartitionRelabeling constructs the image and inverse-image correspondence
+between complete independent-configuration families. For a vertex equivalence
+e from G to H that preserves and reflects adjacency, it proves
+
+\[
+ \mathcal I_H(e(V))=\{e(S):S\in\mathcal I_G(V)\},\qquad
+ Z_H(e(V);w)=Z_G(V;w\circ e).
+\]
+
+Weights are pulled back explicitly. The result is over every commutative
+semiring; it therefore preserves entire independence polynomials and all their
+complex evaluations. Injectivity also proves e(V\{v})=e(V)\{e(v)}, so the
+marked numerator is transported together with the denominator.
+
+SquareGridCoordinates defines the nearest-neighbor grid on the already-owned
+integer-pair type. It proves directly that translation to an arbitrary root and
+the existing recenter maps preserve and reflect each grid edge. Explicit inverse
+maps witness bijectivity. No graph-isomorphism premise remains in the concrete
+coordinate theorems.
+
+For the existing recenter map T_d, constant activity z and every finite V,
+
+\[
+ Z_{\rm grid}(T_dV;z)=Z_{\rm grid}(V;z),\qquad
+ \alpha(T_dV,T_dv;z)=\alpha(V,v;z).
+\]
+
+Here alpha is the ratio of two actual independent-set sums. Equality of total
+field expressions at zero denominators does not assert holomorphic regularity;
+all recursive cancellation still requires proper-domain nonvanishing.
+
+## 20. Exact child types, actual contraction and the four-child root
+
+Fix one of the six existing orders a. Before child d, let
+B_d=V\K(a,d), using the original deleted definition, and V_d=T_d(B_d), using
+the original advance definition. The new exact correspondence is
+
+\[
+ \boxed{\alpha(V_d,0;z)=\frac{Z(B_d\setminus\{d\};z)}{Z(B_d;z)}.}
+\]
+
+The selected neighbor becomes the origin. The finite order check proves that
+B_d is precisely the successive domain occurring in ordered elimination,
+including earlier absent vertices. The child factors are neither independent
+marginals of the original graph nor an unconditioned computation-tree surrogate.
+Their product is the exact ordered graph product.
+
+For a present origin and an absent parent, proper-domain nonvanishing yields
+
+\[
+ Z(V;z)=Z(V\setminus\{0\};z)
+        \left(1+z\prod_{d\in\{S,R,L\}}\alpha(V_d,0;z)\right).
+\tag{20.1}
+\]
+
+On the real nonnegative interval all denominator conditions follow from the
+empty configuration. If an actual neighbor is absent, its two partitions are
+identical and positive, so its child value is exactly one.
+
+For an actual domain V disjoint from the certified mask F_i, every present
+child d has a successor j in the existing 881-state table. The theorem
+typed_child_context derives simultaneously
+
+\[
+ 0\in V_d,\qquad V_d\cap F_j=\varnothing,\qquad |V_d|<|V|.
+\]
+
+It consumes the existing full geometric closure and blocker-disjointness
+proofs. No separate table-coverage or child-type assumption is supplied by a
+caller. Strict size decrease supplies the well-founded measure for induction.
+
+Let S(V) be the set of actual present nonparent directions. The new endpoint
+actual_grid_affine_contraction applies the existing affine certificate to the
+actual graph parent and child ratios:
+
+\[
+ \boxed{
+ \frac{(1-\alpha(V,0;\lambda))
+       \sum_{d\in S(V)}\Psi_{j_d}(\alpha(V_d,0;\lambda))}
+      {\Psi_i(\alpha(V,0;\lambda))}<\frac{999}{1000},
+ \quad 0\le\lambda\le\frac{51}{20}.
+ }
+\tag{20.2}
+\]
+
+The original childMessage accessor is used, with its zero value for absent
+geometric directions. Actual presence implies a genuine successor, as proved
+above. The proof derives the input interval, recursion identity and neutral
+absent-child values before invoking affine_pruned_row_contraction. No floating
+approximation or graph-message equality hypothesis is used.
+
+The unconditioned root is treated separately. SquareGridRootMessages proves
+that the four existing rootDomain objects are exactly the successive root
+neighbor domains under their actual coordinate equivalences. Consequently,
+
+\[
+ Z(V;z)=Z(V\setminus\{0\};z)
+   \left(1+z\prod_{e=0}^3\alpha(\operatorname{rootDomain}(V,e),0;z)\right).
+\tag{20.3}
+\]
+
+Only proper pre-recentered subsets are required nonzero. Every present first
+child is smaller, contains its new origin, and is disjoint from the existing
+type-zero mask {(-1,0)}. Extra earlier-neighbor deletions stay in the actual
+vertex domain. No three-child contraction is applied to the four-child root.
+An arbitrary marked root is handled by the proved translation equivalence.
+
+## 21. What the 5040 research contributes to this lane
+
+The 5040 research line was read in the current dev source, including
+ZECKENDORF_EULER_5040.md, GoldenResourceObjectiveFactorization,
+GoldenResource5040PriceInterval, and GoldenResource/EightStepAbundancy.
+The recent padding-mass PR 6131 was also read at its discussion level. These
+are cross-line mathematical inputs to the research strategy, not Lean imports
+or a claim that the grid and arithmetic state spaces are the same object.
+
+### A stable optimum depends on the specified resource
+
+The exact objective in the price-interval theorem is
+
+\[
+ F_\theta(n)=\log(\sigma(n)/n)-\theta\log n.
+\]
+
+Prime factorization separates it into local exponent contributions. For
+5040=2^4 3^2 5\,7, the existing theorem establishes unique optimality over all
+positive integers throughout the open price interval
+
+\[
+ \boxed{\frac{\log(12/11)}{\log11}<\theta<
+        \frac{\log(31/30)}{\log2}.}
+\]
+
+The approximate endpoints are 0.03628656 and 0.04730571. Price 1/25 lies
+strictly inside. The prime-layer marginal is
+
+\[
+ m_p(a)=\frac{\log((1-p^{-(a+1)})/(1-p^{-a}))}{\log p}.
+\]
+
+The boundary layers are the last selected (p,a)=(2,4) and first unselected
+(p,a)=(11,1). Strict local margins imply a stable global optimizer through an
+exact sum decomposition. This is the useful certificate pattern here.
+
+The same dev contains an explicit distinction: with the different constraint
+Omega(n)=8, the unique maximum of sigma(n)/n is attained at 180180, with
+
+\[
+ \frac{\sigma(180180)}{180180}=\frac{224}{55}>
+ \frac{403}{105}=\frac{\sigma(5040)}{5040},
+ \qquad \Omega(180180)=\Omega(5040)=8.
+\]
+
+Thus 5040 does not optimize every resource formulation. For the square grid,
+the actual parent-child relation and the complete message box define the
+problem; replacing them by a more convenient scalar cost changes the claim.
+
+### Exact local accounting is the transferable structure
+
+For nonnegative activities, list all vertices and successively delete them.
+The existing ordered telescoping theorem gives
+
+\[
+ \prod_{j=1}^{|V|}\alpha(W_{j-1},v_j;w)=\frac1{Z_G(V;w)},
+ \qquad \log Z_G(V;w)=-\sum_{j=1}^{|V|}\log\alpha(W_{j-1},v_j;w).
+\]
+
+This paper consequence identifies an exact local accounting of the graph's
+target observable. The arithmetic lane obtains its local sum from independent
+prime factors; the graph lane obtains its sum from successive conditional
+deletions, preserving the original correlations. The logarithmic formula is
+not a separate new Lean declaration in this increment.
+
+PR 6131's exponent-tagged padding injection illustrates a second safeguard:
+a many-to-one map must retain a fiber tag or multiplicity bound when comparing
+weighted sums. The grid transport proved here is a bijection, so each
+configuration has multiplicity exactly one and no loss of the existing margin
+is introduced by a coordinate change. PR 6131 explicitly retains its finite-set
+mass-escape hypothesis; it is not read as an RH proof or a source of grid bounds.
+
+Robin's classical criterion has the specific cutoff n>5040. A recent analogue
+[6] uses a different divisor statistic and cutoff 2162160. Together with the
+two distinct repository optimization problems, this reinforces that the number
+5040 is important in specified arithmetic statements. No grid automorphism,
+message dimension, contraction constant or complex-neighborhood width has been
+shown here to equal or be controlled by 5040. There is no numerical 5040 premise
+in the new grid Lean sources.
+
+## 22. Verification and the remaining analytic step
+
+Four new Lean owners have four canonical Scribe companions and 34 explicitly
+named public declarations: PartitionRelabeling, SquareGridCoordinates,
+SquareGridMessages and SquareGridRootMessages. Existing partition, geometric,
+affine-message and root-domain owners are reused without replacement.
+
+The independent exact replay enumerates every independent subset of all 512
+subdomains of the 3-by-3 square. It checks 2048 complete configuration bijections,
+2048 weighted equalities, 17368 marked-ratio equalities, 3328 child matches,
+5120 denominator-cleared recursions, 4134 valid division recursions, 986 cases
+with a zero intermediate factor, and 13056 real input-box checks. A separate
+bounded exploration of 652 radius-four masks supplies 67152 compatible-child
+regressions; it is not a second full check of the 881-state certificate.
+Seven malformed transports are rejected. Their changes include loss of
+adjacency, injectivity, weight transport, marked-root transport, correct ordered
+deletion, the fourth root direction, and the root nonvanishing obligation.
+
+```sh
+python research/hard_core_weitz/verify_grid_correspondence.py
+```
+
+This verifier computes reference values directly from independent subsets,
+not from the deletion identity it tests. It uses exact rational and
+Gaussian-rational arithmetic. The logarithmic endpoint decimals are illustrative
+only. The upstream affine certificate is reused by the Lean source and has not
+been rerun in this continuation. The separate implementation is by the same
+authoring assistant, not an independent researcher.
+
+The new sources have been mathematically reviewed and regression-tested.
+Lean elaboration, kernel checking, executed axiom closure and Scribe emission
+remain unperformed. The finite proof scripts request decide +kernel. No
+kernel-admitted or independent-review status is inferred from that request.
+
+The exact graph/type correspondence in Section 20 removes the semantic
+premises from the current real certificate. The remaining work is to formalize
+the actual holomorphic coordinates and their Jacobian, build one invariant
+complex neighborhood for all types and pruning subsets, and combine it with
+the strict-cardinality induction and the separate four-child root denominator.
+These analytic obligations are not replaced by real positivity or the 5040
+analogy. No new zero-free endpoint or RH conclusion is asserted in this increment.
+
+[6] Steve Fan, Mits Kobayashi and Grant Molnar. *A family of analogues to the
+Robin criterion*. arXiv:2511.02106 (2025). The statistic and the explicit cutoff
+change together in their Robin-type equivalence.
+https://arxiv.org/abs/2511.02106
