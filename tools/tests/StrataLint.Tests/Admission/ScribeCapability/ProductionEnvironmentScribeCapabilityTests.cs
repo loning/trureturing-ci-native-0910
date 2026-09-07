@@ -187,7 +187,6 @@ public sealed partial class ProductionEnvironmentTests
             baselineDocument,
             current,
             currentLean,
-            verifiedScribeEmissions,
             baselineDocument).Entries);
         Assert.Equal(DigestionMigrationState.Absorbed, currentStatus.DerivedStatus.Migration);
         Assert.Equal(DigestionTruthState.Closed, currentStatus.DerivedStatus.Truth);
@@ -225,7 +224,6 @@ public sealed partial class ProductionEnvironmentTests
             BackfillInventoryLoader.Load(changedSnapshot),
             changedSnapshot,
             changedLean,
-            verifiedScribeEmissions,
             baselineDocument).Entries);
         Assert.Equal(DigestionMigrationState.Absorbed, changedStatus.DerivedStatus.Migration);
         Assert.Equal(DigestionTruthState.Closed, changedStatus.DerivedStatus.Truth);

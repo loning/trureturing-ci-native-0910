@@ -59,6 +59,11 @@ internal static class DigestStatusCommand
                         $"formalize atom {options.FormalizeAtomId} is absent from the ledger");
                 }
 
+                if (options.FormalizeAtomId is not null)
+                {
+                    scribeEmissionVerifier.Verify(snapshot, formalizeLeanReport, changes);
+                }
+
                 var formalizeEvaluation = options.FormalizeAtomId is null
                     ? DigestionStatusEvaluator.EvaluateUncovered(
                         scope,
@@ -71,7 +76,6 @@ internal static class DigestStatusCommand
                         formalizeDocument,
                         snapshot,
                         ValidateLean(snapshot, formalizeLeanReport),
-                        scribeEmissionVerifier.Verify(snapshot, formalizeLeanReport, changes),
                         formalizeBaselineDocument,
                         baselineSnapshot: formalizeBaselineSnapshot,
                         changes: changes,
@@ -103,7 +107,7 @@ internal static class DigestStatusCommand
 
             var leanReport = leanReportSource.Load(snapshot);
             var lean = ValidateLean(snapshot, leanReport);
-            var verifiedScribeEmissions = scribeEmissionVerifier.Verify(snapshot, leanReport, changes);
+            scribeEmissionVerifier.Verify(snapshot, leanReport, changes);
             var document = BackfillInventoryLoader.Load(snapshot, scope, changes);
             BackfillInventoryDocument? baselineDocument = null;
             RepositorySnapshot? baselineSnapshot = null;
@@ -126,7 +130,6 @@ internal static class DigestStatusCommand
                 document,
                 snapshot,
                 lean,
-                verifiedScribeEmissions,
                 baselineDocument,
                 baselineSnapshot: baselineSnapshot,
                 casEvaluation: casEvaluation,
@@ -199,12 +202,12 @@ internal static class DigestStatusCommand
             BaseFactImpact.IsAffected(changes, ruleImplementationChanged, path);
         var scope = DigestionEvaluationScopes.ForChanges(changes, ImplementationPath);
         var document = BackfillInventoryLoader.Load(snapshot, scope, changes);
+        scribeEmissionVerifier.Verify(snapshot, leanReport, changes);
         var evaluation = DigestionStatusEvaluator.Evaluate(
             scope,
             document,
             snapshot,
             ValidateLean(snapshot, leanReport),
-            scribeEmissionVerifier.Verify(snapshot, leanReport, changes),
             BackfillInventoryLoader.LoadBaseline(baseline),
             baselineSnapshot: baseline,
             casEvaluation: DigestionCasStore.Evaluate(

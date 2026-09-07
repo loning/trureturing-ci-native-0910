@@ -23,7 +23,6 @@ public sealed class ResidualFrontierAssemblerTests
             fixture.Document,
             fixture.Snapshot,
             fixture.Lean,
-            fixture.VerifiedScribeEmissions,
             baselineDocument: fixture.Document,
             truthStates: fixture.TruthStates);
 
@@ -105,6 +104,7 @@ public sealed class ResidualFrontierAssemblerTests
             DigestionMigrationState.Partial,
             DigestionTruthState.Closed,
             [],
+            receipts: new DigestionReceipts([], ["uncovered-control-clause"], [], null),
             sourceId: SourceId,
             sourcePath: SourcePath) with
         {
