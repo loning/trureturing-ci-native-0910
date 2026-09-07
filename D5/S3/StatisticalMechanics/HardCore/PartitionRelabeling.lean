@@ -38,8 +38,7 @@ theorem independent_image_iff (e : α ≃ β)
 
 private theorem image_inverse (e : α ≃ β) (U : Finset β) :
     (U.image e.symm).image e = U := by
-  ext x
-  simp
+  simp [Finset.image_image]
 
 /-- Relabeling bijects the complete independent-configuration families.
 This is an equality of finite sets, not an assumed equality of their counts. -/
@@ -84,7 +83,7 @@ theorem partition_relabel [CommSemiring R] (e : α ≃ β)
       apply Finset.sum_image
       intro S _ T _ h
       have h' := congrArg (Finset.image e.symm) h
-      simpa using h'
+      simpa [Finset.image_image] using h'
     _ = _ := by
       apply Finset.sum_congr rfl
       intro S _
