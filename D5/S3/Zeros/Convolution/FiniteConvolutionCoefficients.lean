@@ -49,6 +49,7 @@ theorem coeff_reverse_sum_above {R : Type*} [CommRing R] (n : ℕ) (a : ℕ → 
     (k : ℕ) (hk : n < k) :
     (∑ i ∈ Finset.range (n+1), C (a i) * X^(n-i)).coeff k = 0 := by
   classical
+  rw [finsetSum_coeff]
   apply Finset.sum_eq_zero
   intro i hi
   simp only [coeff_C_mul_X_pow, if_neg (show n-i ≠ k by omega)]
@@ -60,7 +61,7 @@ theorem signed_coefficient_product (k i : ℕ) (hi : i ≤ k) (a b : ℝ) :
     rw [← pow_add, Nat.add_sub_of_le hi]
   calc
     _ = ((-1 : ℝ)^k * ((-1)^i * (-1)^(k-i))) * (a*b) := by ring
-    _ = a*b := by rw [hs, neg_one_pow_mul_self]; ring
+    _ = a*b := by rw [hs, ← mul_pow]; norm_num
 
 /-- Unsigned form of the existing additive convolution coefficient formula. -/
 theorem coeff_additiveConvolution (n : ℕ) (p q : ℝ[X]) (k : ℕ) (hk : k ≤ n) :
@@ -74,7 +75,9 @@ theorem coeff_additiveConvolution (n : ℕ) (p q : ℝ[X]) (k : ℕ) (hk : k ≤
           (descPochhammer ℝ (j-i)).eval (n : ℝ)))) * X^(n-j)).coeff (n-k) = _
   rw [coeff_reverse_sum n _ k hk]
   simp only [descPochhammer_eval_eq_descFactorial, elementaryCoeff]
-  rw [mul_left_comm, Finset.mul_sum, Finset.mul_sum]
+  rw [mul_left_comm]
+  congr 1
+  rw [Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro i hi
   rw [← mul_div_assoc, signed_coefficient_product k i (by simpa using hi)]
