@@ -28,7 +28,16 @@ internal static class ModuleStateGateRule
                 continue;
             }
 
-            var statePath = FrozenStatePath.FromModulePath(change.Path);
+            if (!FrozenStatePath.TryFromModulePath(change.Path, out var statePath))
+            {
+                findings.Add(new RuleFinding(
+                    change.Path.Value,
+                    $"MODULE_STATE_INPUT_INVALID module={change.Path.Value}: "
+                    + "path does not encode a canonical repository Lean module",
+                    AdmissionEffect.Block));
+                continue;
+            }
+
             if (!context.Current.Files.ContainsKey(statePath))
             {
                 findings.Add(new RuleFinding(
