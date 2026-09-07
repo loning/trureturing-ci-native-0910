@@ -59,7 +59,7 @@ theorem prime_dvd_of_two_adic_depth (N p k : ℕ) (hN : 1 ≤ N)
   have htwoEq : goldenLayerMarginal 2 k =
       Real.log (1 + 1 / ((2 : ℝ) ^ (k + 1) - 2)) / Real.log 2 := by
     unfold goldenLayerMarginal
-    norm_num only [Nat.cast_ofNat]
+    simp only [Nat.cast_ofNat]
     congr 2
     have hpow0 : (2 : ℝ) ^ k ≠ 0 := pow_ne_zero _ (by norm_num)
     have hpow1 : (2 : ℝ) ^ k - 1 ≠ 0 := (sub_pos.mpr hpow).ne'
