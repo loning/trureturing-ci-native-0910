@@ -14,7 +14,7 @@ internal sealed class ContinuousPrimeMaximumDocument : IScribeDocumentDefinition
         Blocks(
             Paragraph(Text("All parameters and exponents below are real. The base p is greater "
                 + "than one; primality is not required. Write f_p(t) for the following benefit:")),
-            Paragraph(Math(Disp(Seq(Call("f_p", F.Id("t")), Sp, Eq, Sp, Benefit(F.Id("t")))))),
+            Paragraph(Math(Disp(Seq(BenefitAt(F.Id("t")), Sp, Eq, Sp, Benefit(F.Id("t")))))),
             Describe.Lean(
                 DescribeId.Create("continuous-prime-derivative"),
                 DeclarationHandle.Create(Prefix + "continuous_prime_hasDerivAt"),
@@ -22,7 +22,8 @@ internal sealed class ContinuousPrimeMaximumDocument : IScribeDocumentDefinition
                 StatementSource.FromAuthor(Disp(Seq(
                     D(1), Sp, Lt, Sp, F.Id("p"), Sp, Land, Sp,
                     D(0), Sp, Le, Sp, F.Id("x"), Sp, Rightarrow, Sp,
-                    Call("f_p'", F.Id("x")), Sp, Eq, Sp, Slope(F.Id("x"))))),
+                    Seq(F.Id("f"), Underscore, Grp(F.Id("p")), Apos, Open, F.Id("x"), Close),
+                    Sp, Eq, Sp, Slope(F.Id("x"))))),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text("The proof differentiates the real power, the quotient "
                     + "and the logarithm. Positivity of both logarithm arguments is proved "
@@ -73,7 +74,10 @@ internal sealed class ContinuousPrimeMaximumDocument : IScribeDocumentDefinition
     private static Formula Slope(Formula t) => new Formula.Fraction(
         Call("log", F.Id("p")), Seq(Pow(F.Id("p"), Seq(t, Plus, D(1))), Minus, D(1)));
 
-    private static Formula Objective(Formula t) => Seq(Call("f_p", t), Sp, Minus, Sp,
+    private static Formula BenefitAt(Formula t) =>
+        Seq(F.Id("f"), Underscore, Grp(F.Id("p")), Open, t, Close);
+
+    private static Formula Objective(Formula t) => Seq(BenefitAt(t), Sp, Minus, Sp,
         new Formula.Fraction(Seq(t, Sp, Call("log", F.Id("p"))),
             Seq(F.Id("y"), Sp, Minus, Sp, D(1))));
 
