@@ -364,6 +364,178 @@ private theorem signs_in_boxes (i : Fin 31) (x : Real)
       exact_mod_cast hc
     exact (mul_pos_iff_of_pos_left hpow).mp (hp.trans_le h.1)
 
+private theorem predecessor_roots : ∃ r : Fin 31 → Real,
+    StrictMono r ∧ (∀ i, H32.eval (r i) = 0) ∧ (∀ i, r i < 0) ∧
+    (∀ i, (leftEnd : Real) < r i ∧ r i < (rightEnd : Real)) ∧
+    (∀ i, if i.val % 2 = 0 then H33.eval (r i) < 0 else 0 < H33.eval (r i)) := by
+  have hex : ∀ i : Fin 31, ∃ x,
+      (lower i : Real) < x ∧ x < (upper i : Real) ∧ H32.eval x = 0 := by
+    intro i
+    have hd : (0 : Real) < (boxes i).2.2 := by exact_mod_cast (boxes_proper i).1
+    apply root_between_split H32 H32_anchor.1 (hp_monic fcs)
+    · simp only [lower, upper, Rat.cast_div, Rat.cast_intCast]
+      exact (div_lt_div_iff_of_pos_right hd).mpr (by exact_mod_cast (boxes_proper i).2.1)
+    · simpa [H32, lower, upper] using
+        sign_change_from_hv fcs (boxes i).1 (boxes i).2.1 (boxes i).2.2
+          (boxes_proper i).1 (numeric_signs i).1
+  choose r hr using hex
+  refine ⟨r, ?_, fun i => (hr i).2.2, fun i => H32_anchor.2 _ (hr i).2.2, ?_, ?_⟩
+  · intro i j hij
+    exact (hr i).2.1.trans ((Rat.cast_lt.mpr (boxes_ordered i j hij)).trans (hr j).1)
+  · intro i
+    exact ⟨(Rat.cast_lt.mpr (boxes_outer i).1).trans (hr i).1,
+      (hr i).2.1.trans (Rat.cast_lt.mpr (boxes_outer i).2)⟩
+  · intro i
+    exact signs_in_boxes i (r i) (hr i).1 (hr i).2.1
+
+private noncomputable def ends (a b : Real) (r : Fin 31 → Real) : Fin 33 → Real :=
+  Fin.cons a (Fin.snoc r b)
+
+private theorem ends_mono (a b : Real) (r : Fin 31 → Real) (hm : StrictMono r)
+    (hl : ∀ i, a < r i) (hr : ∀ i, r i < b) : StrictMono (ends a b r) := by
+  apply Fin.strictMono_iff_lt_succ.mpr
+  intro i
+  fin_cases i
+  all_goals first | exact hl 0 | exact hr 30 | exact hm (by decide)
+
+private theorem ends_negative (a b : Real) (r : Fin 31 → Real) (ha : a < 0)
+    (hb : b < 0) (hr : ∀ i, r i < 0) : ∀ i, ends a b r i < 0 := by
+  intro i
+  refine Fin.cases ?_ (fun j => ?_) i
+  · exact ha
+  · refine Fin.lastCases ?_ (fun k => ?_) j
+    · exact hb
+    · simpa only [ends, Fin.cons_succ, Fin.snoc_castSucc] using hr k
+
+private theorem end_signs (q : Real[X]) (a b : Real) (r : Fin 31 → Real)
+    (ha : 0 < q.eval a) (hb : 0 < q.eval b)
+    (hr : ∀ i, if i.val % 2 = 0 then q.eval (r i) < 0 else 0 < q.eval (r i)) :
+    ∀ i : Fin 33,
+      if i.val % 2 = 0 then 0 < q.eval (ends a b r i) else q.eval (ends a b r i) < 0 := by
+  intro i
+  fin_cases i
+  · exact ha
+  · exact hr (0 : Fin 31)
+  · exact hr (1 : Fin 31)
+  · exact hr (2 : Fin 31)
+  · exact hr (3 : Fin 31)
+  · exact hr (4 : Fin 31)
+  · exact hr (5 : Fin 31)
+  · exact hr (6 : Fin 31)
+  · exact hr (7 : Fin 31)
+  · exact hr (8 : Fin 31)
+  · exact hr (9 : Fin 31)
+  · exact hr (10 : Fin 31)
+  · exact hr (11 : Fin 31)
+  · exact hr (12 : Fin 31)
+  · exact hr (13 : Fin 31)
+  · exact hr (14 : Fin 31)
+  · exact hr (15 : Fin 31)
+  · exact hr (16 : Fin 31)
+  · exact hr (17 : Fin 31)
+  · exact hr (18 : Fin 31)
+  · exact hr (19 : Fin 31)
+  · exact hr (20 : Fin 31)
+  · exact hr (21 : Fin 31)
+  · exact hr (22 : Fin 31)
+  · exact hr (23 : Fin 31)
+  · exact hr (24 : Fin 31)
+  · exact hr (25 : Fin 31)
+  · exact hr (26 : Fin 31)
+  · exact hr (27 : Fin 31)
+  · exact hr (28 : Fin 31)
+  · exact hr (29 : Fin 31)
+  · exact hr (30 : Fin 31)
+  · exact hb
+
+private theorem end_changes (q : Real[X]) (e : Fin 33 → Real)
+    (hs : ∀ i, if i.val % 2 = 0 then 0 < q.eval (e i) else q.eval (e i) < 0) :
+    ∀ i : Fin 32, q.eval (e i.castSucc) * q.eval (e i.succ) < 0 := by
+  intro i
+  have h0 := hs i.castSucc
+  have h1 := hs i.succ
+  fin_cases i <;> norm_num at h0 h1 ⊢
+  all_goals first | exact mul_neg_of_pos_of_neg h0 h1 | exact mul_neg_of_neg_of_pos h0 h1
+
+private theorem roots_complete (p : Real[X]) (n : Nat) (hp : p ≠ 0) (hd : p.natDegree = n)
+    (r : Fin n → Real) (hm : StrictMono r) (hr : ∀ i, p.eval (r i) = 0) :
+    ∀ x, p.eval x = 0 ↔ ∃ i, r i = x := by
+  classical
+  let S : Finset Real := Finset.univ.image r
+  have hc : S.card = n := by
+    simp [S, Finset.card_image_of_injective _ hm.injective]
+  have hroots : p.roots = S.val :=
+    roots_eq_of_natDegree_le_card_of_ne_zero (by
+      intro x hx
+      obtain ⟨i, _, rfl⟩ := Finset.mem_image.mp hx
+      exact hr i) (by omega) hp
+  intro x
+  change p.IsRoot x ↔ _
+  rw [← mem_roots hp, hroots]
+  simp [S]
+
+private theorem roots_strictMono (e : Fin 33 → Real) (s : Fin 32 → Real) (he : StrictMono e)
+    (hs : ∀ i, e i.castSucc < s i ∧ s i < e i.succ) : StrictMono s := by
+  intro i j hij
+  have hle : i.succ ≤ j.castSucc := by
+    simp only [Fin.le_iff_val_le_val, Fin.val_succ, Fin.val_castSucc]
+    exact hij
+  exact (hs i).2.trans_le ((he.monotone hle).trans (hs j).1.le)
+
+private theorem roots_interlaced (a b : Real) (r : Fin 31 → Real) (s : Fin 32 → Real)
+    (hs : ∀ i, ends a b r i.castSucc < s i ∧ s i < ends a b r i.succ) :
+    ∀ i : Fin 31, s i.castSucc < r i ∧ r i < s i.succ := by
+  intro i
+  constructor
+  · simpa only [ends, Fin.cons_succ, Fin.snoc_castSucc] using (hs i.castSucc).2
+  · simpa only [ends, ← Fin.succ_castSucc, Fin.cons_succ, Fin.snoc_castSucc]
+      using (hs i.succ).1
+
+/-- The complete negative root lists of H32 and H33 strictly interlace. -/
+theorem quotient_interlacing : H33.Splits ∧
+    ∃ r : Fin 31 → Real, ∃ s : Fin 32 → Real,
+      StrictMono r ∧ StrictMono s ∧
+      (∀ x, H32.eval x = 0 ↔ ∃ i, r i = x) ∧
+      (∀ x, H33.eval x = 0 ↔ ∃ i, s i = x) ∧
+      (∀ i, s i.castSucc < r i ∧ r i < s i.succ) ∧ (∀ i, s i < 0) := by
+  obtain ⟨r, hrm, hrr, hrn, hrb, hrs⟩ := predecessor_roots
+  let e := ends (leftEnd : Real) (rightEnd : Real) r
+  have he : StrictMono e := ends_mono _ _ r hrm (fun i => (hrb i).1) (fun i => (hrb i).2)
+  have hen : ∀ i, e i < 0 := ends_negative _ _ r
+    (by norm_num [leftEnd]) (by norm_num [rightEnd]) hrn
+  have hes : ∀ i : Fin 32, H33.eval (e i.castSucc) * H33.eval (e i.succ) < 0 :=
+    end_changes H33 e (end_signs H33 _ _ r left_positive right_positive hrs)
+  have hsp := (split_from_endpoints H33 32 H33_degree.2 H33_degree.1 e he hen hes).1
+  have hex : ∀ i : Fin 32, ∃ x, e i.castSucc < x ∧ x < e i.succ ∧ H33.eval x = 0 := by
+    intro i
+    exact root_between_split H33 hsp (hp_monic gcs) _ _ (he (by simp)) (hes i)
+  choose s hs using hex
+  have hsm : StrictMono s := roots_strictMono e s he (fun i => ⟨(hs i).1, (hs i).2.1⟩)
+  refine ⟨hsp, r, s, hrm, hsm,
+    roots_complete H32 31 H32_degree.2 H32_degree.1 r hrm hrr,
+    roots_complete H33 32 H33_degree.2 H33_degree.1 s hsm (fun i => (hs i).2.2),
+    roots_interlaced _ _ r s (fun i => ⟨(hs i).1, (hs i).2.1⟩), ?_⟩
+  intro i
+  exact (hs i).2.1.trans (hen i.succ)
+
+/-- Conjecture 4.1 for the ordinary matrix square A^2 in row 33 only. -/
+theorem certified_row33 : (B 33).Splits ∧
+    ∀ x : Real, (B 33).eval x = 0 → x ≤ 0 := by
+  obtain ⟨hsp, r, s, _, _, _, hroots, _, hneg⟩ := quotient_interlacing
+  constructor
+  · rw [factor_row33]
+    exact splits_X_mul.mpr hsp
+  · intro x hx
+    rw [factor_row33, eval_mul, eval_X] at hx
+    rcases mul_eq_zero.mp hx with h | h
+    · exact h.le
+    · obtain ⟨i, rfl⟩ := (hroots x).mp h
+      exact (hneg i).le
+
+#print axioms factor_row32
+#print axioms quotient_interlacing
+#print axioms certified_row33
+
 #print axioms numeric_signs
 #print axioms signs_in_boxes
 #print axioms factor_row33
