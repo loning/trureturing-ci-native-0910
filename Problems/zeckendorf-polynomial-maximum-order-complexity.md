@@ -1,7 +1,7 @@
 ---
 slug: zeckendorf-polynomial-maximum-order-complexity
 bibkey: jametpopolistoll2021maximum
-arxiv_id: 2106.09959
+doi: 10.48550/arXiv.2106.09959
 triage: window
 motivation_gids:
   - D5/S0/Conventions/WDigits

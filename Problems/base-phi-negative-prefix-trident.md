@@ -1,7 +1,7 @@
 ---
 slug: base-phi-negative-prefix-trident
 bibkey: dekking2023structure
-arxiv_id: 2305.08349
+doi: 10.48550/arXiv.2305.08349
 triage: theorem
 motivation_gids:
   - D5/S0/Conventions/WDigits
