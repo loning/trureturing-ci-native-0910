@@ -248,6 +248,20 @@ internal static partial class ScriptTestInputDeriver
         }
         if (use.Consumer is ISimpleAssignmentOperation assignment)
         {
+            if (IsReadonlyConstructorFieldAssignment(assignment, callable.SemanticModel))
+            {
+                // Later field reads cannot recover constructor values; a stored root alone
+                // cannot classify paths composed from it. Record only a resolved input here.
+                if (ResolvePath(expression, callable.SemanticModel, callable.SemanticModels,
+                        new HashSet<ISymbol>(SymbolEqualityComparer.Default)).Kind
+                    != PathValueKind.RepositoryPath)
+                {
+                    RejectOperationValue(identity, assignment, callable.SemanticModel);
+                    return;
+                }
+                AddResolved(expression, callable, identity, inputs);
+                return;
+            }
             if (assignment.Target is IPropertyReferenceOperation property
                 && IsProcessStartInfoProperty(property.Property, "FileName", "Arguments"))
             {
@@ -478,6 +492,29 @@ internal static partial class ScriptTestInputDeriver
     private static bool IsNonConsumingCompilerCarrier(IOperation? operation) => operation is
         IVariableInitializerOperation or IFieldInitializerOperation or IPropertyInitializerOperation
         || IsTransparentCompilerCarrier(operation);
+
+    private static bool IsReadonlyConstructorFieldAssignment(
+        ISimpleAssignmentOperation assignment,
+        SemanticModel model)
+    {
+        if (assignment.Target is not IFieldReferenceOperation
+            {
+                Field: { IsStatic: false, DeclaredAccessibility: Accessibility.Private,
+                    Type.SpecialType: SpecialType.System_String },
+                Instance: IInstanceReferenceOperation
+                    { ReferenceKind: InstanceReferenceKind.ContainingTypeInstance },
+            } field)
+        {
+            return false;
+        }
+        if (!field.Field.IsReadOnly)
+        {
+            return false;
+        }
+        return model.GetEnclosingSymbol(assignment.Syntax.SpanStart) is IMethodSymbol
+            { MethodKind: MethodKind.Constructor } constructor
+            && SymbolEqualityComparer.Default.Equals(field.Field.ContainingType, constructor.ContainingType);
+    }
 
     private static void RejectOperationValue(
         string identity,

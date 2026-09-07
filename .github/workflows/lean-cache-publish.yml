@@ -190,8 +190,11 @@ jobs:
           read -r sources_sha256 config_sha256 <<< "$input_address"
           echo "config_sha256=${config_sha256}" >> "$GITHUB_OUTPUT"
           echo "sources_sha256=${sources_sha256}" >> "$GITHUB_OUTPUT"
+          dependency_sha256="$("${helper}" dependency-address --repository "$GITHUB_WORKSPACE/candidate")"
+          [[ "$dependency_sha256" =~ ^[0-9a-f]{64}$ ]]
+          echo "dependency_sha256=${dependency_sha256}" >> "$GITHUB_OUTPUT"
 
-      # 依赖层只按 config 寻址，跨 sources 稳定复用；project build 层不再进入 Actions cache。
+      # Dependency inputs exclude project sources and lakefile changes; the project layer uses Releases.
       - name: Restore the Lean dependency layer
         uses: actions/cache/restore@v4
         with:
@@ -200,9 +203,9 @@ jobs:
             candidate/.lake/config
             candidate/.lake/.stratalint-lean-cache-stamp.json
             ~/.cache/mathlib
-          key: ${{ runner.os }}-${{ runner.arch }}-lake-deps-v1-${{ steps.addr.outputs.config_sha256 }}
+          key: ${{ runner.os }}-${{ runner.arch }}-lake-deps-v2-${{ steps.addr.outputs.dependency_sha256 }}
           restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-lake-deps-v1-${{ steps.addr.outputs.config_sha256 }}
+            ${{ runner.os }}-${{ runner.arch }}-lake-deps-v2-
 
       # Release 是 project build 层唯一的远端来源。取不到时记为 cold；下一步仍会从
       # mathlib cache / 源码构建，因而首份 Release 不依赖预先存在的 Release。
