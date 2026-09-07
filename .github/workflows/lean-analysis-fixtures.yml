@@ -2,7 +2,7 @@
 # layers are read-only; outputs belong only to this workflow run's artifacts.
 # Dispatch is available because this job cannot publish a shared build layer.
 # This separate file gives opt-in analysis its own budget outside the required
-# lean-report job; ci.yml is text-slice-guarded and near its SL-003 line limit.
+# lean-report job.
 name: Lean analysis fixtures
 
 on:
@@ -62,6 +62,14 @@ jobs:
           test -n "$head_sha"
           test -n "$base_sha"
 
+      - name: Set up the pinned .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: candidate/global.json
+
+      - name: Build the candidate cache owner with locked dependencies
+        run: make -C candidate/tools dotnet
+
       - name: Install the pinned Lean toolchain
         shell: bash
         env:
@@ -71,43 +79,28 @@ jobs:
           "$GITHUB_WORKSPACE/candidate/tools/scripts/workflow/install-lean-toolchain.sh" \
             "${TOOLCHAIN_FILE}" --github-path "$GITHUB_PATH"
 
-      - name: Resolve this commit's Lean input addresses
+      - name: Resolve the mathlib dependency cache partition
         id: addr
         shell: bash
         run: |
           set -euo pipefail
           helper="$GITHUB_WORKSPACE/candidate/tools/scripts/worktree/lean-cache-input.sh"
           test -x "${helper}"
-          input_address="$("${helper}" address --repository "$GITHUB_WORKSPACE/candidate")"
-          [[ "$input_address" =~ ^[0-9a-f]{64}\ [0-9a-f]{64}$ ]]
-          read -r sources_sha256 config_sha256 <<< "$input_address"
-          echo "config_sha256=${config_sha256}" >> "$GITHUB_OUTPUT"
-          echo "sources_sha256=${sources_sha256}" >> "$GITHUB_OUTPUT"
-          dependency_sha256="$("${helper}" dependency-address --repository "$GITHUB_WORKSPACE/candidate")"
-          [[ "$dependency_sha256" =~ ^[0-9a-f]{64}$ ]]
-          echo "dependency_sha256=${dependency_sha256}" >> "$GITHUB_OUTPUT"
+          keys="$("${helper}" keys --repository "$GITHUB_WORKSPACE/candidate")"
+          jq -er '.dependency | "dependency_key=\(.key)\ndependency_restore_prefix=\(.restore_prefix)"' \
+            <<< "$keys" >> "$GITHUB_OUTPUT"
 
       - name: Restore the Lean dependency layer
         uses: actions/cache/restore@v4
+        continue-on-error: true
         with:
           path: |
             candidate/.lake/packages
             candidate/.lake/config
             candidate/.lake/.stratalint-lean-cache-stamp.json
             ~/.cache/mathlib
-          key: ${{ runner.os }}-${{ runner.arch }}-lake-deps-v2-${{ steps.addr.outputs.dependency_sha256 }}
-          restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-lake-deps-v2-
-
-      - name: Seed from the prior Lean release build layer
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          publisher="$GITHUB_WORKSPACE/candidate/tools/scripts/worktree/lean-cache-publish.sh"
-          test -x "${publisher}"
-          "${publisher}" fetch --allow-seed --repository "$GITHUB_WORKSPACE/candidate"
+          key: ${{ steps.addr.outputs.dependency_key }}
+          restore-keys: ${{ steps.addr.outputs.dependency_restore_prefix }}
 
       - name: Install the artifact hashing tool
         shell: bash
@@ -123,6 +116,10 @@ jobs:
         shell: bash
         env:
           OUTPUT_ROOT: ${{ runner.temp }}/lean-analysis-fixtures
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Bound optional dependency transfer at the ensure owner's supported
+          # five-minute floor; analysis production retains this job's budget.
+          STRATALINT_LEAN_CACHE_TIMEOUT_SECONDS: 300
         run: |
           set -euo pipefail
           fixture_runner="$GITHUB_WORKSPACE/candidate/tools/lean-inspector/LeanInformationAuditAnalysis/run-analysis-fixtures.sh"
