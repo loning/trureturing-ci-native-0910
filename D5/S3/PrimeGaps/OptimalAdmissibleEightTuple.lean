@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/PrimeGaps/OptimalAdmissibleEightTuple
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: kind=bounded-enumeration; basis=terminal=gid:D5/S3/PrimeGaps/OptimalAdmissibleEightTuple.minimalAdmissibleDiameter_eight_26
    digest: Certify the exact minimal admissible eight-tuple diameter by a complete modular obstruction. -/
 
 import D5.S3.PrimeGaps.AdmissibleWindowFiniteSearch
