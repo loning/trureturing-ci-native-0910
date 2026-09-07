@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Zeros/EdgeTranspositionGeneration.connected_edge_transpositions_generate
     target_statement_id: sha256:175e46900fab7b51ab07e6b6bd2394aa3b6ba451b295f34d8cfe3820d485b316
 receipts:
-  scribe: []
   unresolved_subitems: []

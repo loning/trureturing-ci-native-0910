@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S0/Asymptotics/EscapeProbability/DiploidDominanceSelectionOrder.diploid_dominance_selection_order
     target_statement_id: sha256:8a8c92c90f1aeacac5a840642a73b61f09d4a6edb9b8d784bec827137e7ae740
 receipts:
-  scribe: []
   unresolved_subitems: []

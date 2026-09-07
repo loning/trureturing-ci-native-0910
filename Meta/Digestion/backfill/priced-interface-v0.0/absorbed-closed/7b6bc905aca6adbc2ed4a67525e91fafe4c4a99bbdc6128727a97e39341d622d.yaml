@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Entropy/Relabeling/InjectiveInvariance.shannonEntropy_extend_injective
     target_statement_id: sha256:8205044855aa2f782c1cf2f69550bb1fe272cee1629a2559683853c1b122879c
 receipts:
-  scribe: []
   unresolved_subitems: []

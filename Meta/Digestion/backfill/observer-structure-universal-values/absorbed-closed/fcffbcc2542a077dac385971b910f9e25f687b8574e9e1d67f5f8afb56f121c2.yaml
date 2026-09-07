@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Observer/VisibleDescent/ThreeRuleActorDecidability.three_rule_actor_decidability
     target_statement_id: sha256:fea07eb4193b74e063dedc30402599a1a6e8b7d1c5180bc5a9f50b5f21290eb6
 receipts:
-  scribe: []
   unresolved_subitems: []

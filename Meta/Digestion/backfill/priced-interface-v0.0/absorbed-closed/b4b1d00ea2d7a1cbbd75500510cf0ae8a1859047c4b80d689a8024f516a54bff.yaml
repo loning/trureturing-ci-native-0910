@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Interpretation/JointLawCertificationValueSeparation.joint_law_certification_value_separation
     target_statement_id: sha256:edb84f8b1472b7dd54cc7bd3e9d90eecb722196790a34cc590debd2454c39fdb
 receipts:
-  scribe: []
   unresolved_subitems: []

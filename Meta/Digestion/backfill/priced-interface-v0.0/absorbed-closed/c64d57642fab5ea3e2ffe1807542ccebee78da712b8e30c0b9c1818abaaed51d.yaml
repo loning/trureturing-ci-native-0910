@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S0/Naming/Conservation/GreenClassNamingConservation.green_class_naming_conservation
     target_statement_id: sha256:229f4735e3fc6d93cf53d393d7d1a20b3ce7b36955de4dabfe7c03f288487231
 receipts:
-  scribe: []
   unresolved_subitems: []

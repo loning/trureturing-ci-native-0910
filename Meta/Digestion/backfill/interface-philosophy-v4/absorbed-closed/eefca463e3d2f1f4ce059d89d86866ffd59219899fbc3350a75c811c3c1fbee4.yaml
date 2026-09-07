@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S0/Computability/ConditionalComplexityFloor.conditional_complexity_floor
     target_statement_id: sha256:53eb2a141bfcf5f6cff36dde708f8ae4f339a7d7227d42ef2bce01ac892cf2c0
 receipts:
-  scribe: []
   unresolved_subitems: []

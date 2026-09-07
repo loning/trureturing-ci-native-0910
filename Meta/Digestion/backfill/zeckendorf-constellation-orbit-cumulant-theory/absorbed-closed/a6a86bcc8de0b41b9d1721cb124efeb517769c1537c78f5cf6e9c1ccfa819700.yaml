@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Quantum/Completion/LimitResidualDecomposition.limit_residual_orthogonal_decomposition
     target_statement_id: sha256:93db992a859b6f98c49d2646c4bc66485994fd04ea27d4daf9f952c0976c59e6
 receipts:
-  scribe: []
   unresolved_subitems: []
