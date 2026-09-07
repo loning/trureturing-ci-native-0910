@@ -1,0 +1,14 @@
+{
+  "exact_polynomial_endpoint_cases": 30,
+  "exact_logarithmic_antiderivative_derivatives": 32,
+  "independent_Gamma_atom_kernel_quadratures": 20,
+  "quadrature_decimal_digits": 65,
+  "maximum_relative_kernel_discrepancy": "3.228105960497914e-65",
+  "negative_controls": [
+    "zero exterior Gamma action rejected",
+    "tail ratio 1/100 rejected by exact infinite comparison"
+  ],
+  "source_sha256": "105be445623262b52fa6d7f2d338723f8085404080f152750cbef92b7fedfc6a",
+  "status": "All exact identities and development diagnostics passed.",
+  "scope": "Quadrature is a nonrigorous independent diagnostic. The separate directed full-energy certificate uses only endpoint identities and explicit tails. These checks do not establish Lean parsing or kernel acceptance."
+}
