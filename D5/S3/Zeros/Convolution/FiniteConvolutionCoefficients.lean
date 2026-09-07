@@ -52,7 +52,7 @@ theorem coeff_reverse_sum_above {R : Type*} [CommRing R] (n : ℕ) (a : ℕ → 
   rw [finsetSum_coeff]
   apply Finset.sum_eq_zero
   intro i hi
-  simp only [coeff_C_mul_X_pow, if_neg (show n-i ≠ k by omega)]
+  simp only [coeff_C_mul_X_pow, if_neg (show k ≠ n-i by omega)]
 
 /-- The two signed input coefficients cancel the output's reconstruction sign. -/
 theorem signed_coefficient_product (k i : ℕ) (hi : i ≤ k) (a b : ℝ) :
