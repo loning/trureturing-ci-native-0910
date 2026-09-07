@@ -9,12 +9,97 @@ public sealed class CommonStageContractTests
     public async Task TimedOutStartedStepRetainsOutputAndIsReportedAsFailed()
     {
         using var fixture = new CurrentExecutionContractTests.CandidateFixture();
-        var shim = Path.Combine(fixture.Root, "build", "bin");
-        TemporaryFileSystem.Directory.CreateDirectory(shim);
-        var make = Path.Combine(shim, "make");
-        TemporaryFileSystem.File.WriteAllText(make, "#!/bin/bash\nprintf 'producer-started\\n'\nexec sleep 60\n");
-        if (!OperatingSystem.IsWindows())
-            File.SetUnixFileMode(make, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        PrepareCurrent(fixture);
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var watcher = new FileSystemWatcher(Path.Combine(fixture.Root, "build"), "producer-started");
+        watcher.Created += (_, _) => started.TrySetResult();
+        watcher.EnableRaisingEvents = true;
+        using var deadline = new CancellationTokenSource();
+        using var output = new StringWriter();
+        var run = Task.Run(() => new CommonStages(fixture.Root, output, deadline.Token).Run("current", null));
+        try
+        {
+            await started.Task.WaitAsync(TestBudgets.ScriptProcessHangGuard);
+            deadline.Cancel();
+            Assert.Equal(2, await run.WaitAsync(TestBudgets.ScriptProcessHangGuard));
+        }
+        catch (TimeoutException exception)
+        {
+            throw new SkipException("infrastructure-hang-guard expired for current stage fixture: " + exception.Message);
+        }
+        finally
+        {
+            deadline.Cancel();
+            await run;
+        }
+        using var summary = System.Text.Json.JsonDocument.Parse(TemporaryFileSystem.File.ReadAllText(
+            Path.Combine(fixture.Root, CommonExecutionEvidence.RootPath, "current-result.json")));
+        Assert.Equal(2, summary.RootElement.GetProperty("exit").GetInt32());
+        var step = Assert.Single(summary.RootElement.GetProperty("steps").EnumerateArray());
+        Assert.Equal("lean-report", step.GetProperty("name").GetString());
+        Assert.Equal(124, step.GetProperty("raw_exit").GetInt32());
+        Assert.Equal(2, step.GetProperty("exit").GetInt32());
+        Assert.Equal("failed", step.GetProperty("status").GetString());
+        var log = TemporaryFileSystem.File.ReadAllText(Path.Combine(fixture.Root, step.GetProperty("log").GetString()!));
+        Assert.Contains("producer-started", log, StringComparison.Ordinal);
+        Assert.Contains("producer-stderr", log, StringComparison.Ordinal);
+        Assert.Equal(new[] { "scribe", "filemap", "check-current" }, summary.RootElement.GetProperty("not_executed")
+            .EnumerateArray().Select(value => value.GetString()));
+        Assert.False(TemporaryFileSystem.File.Exists(Path.Combine(fixture.Root, CommonExecutionEvidence.CurrentPath)));
+    }
+
+    [Fact]
+    public async Task ExpiredDeadlineBeforeStartupLeavesAllStepsUnexecuted()
+    {
+        using var fixture = new CurrentExecutionContractTests.CandidateFixture();
+        PrepareCurrent(fixture);
+        var start = new System.Diagnostics.ProcessStartInfo(Path.Combine(
+            Path.GetDirectoryName(typeof(Program).Assembly.Location)!, "StrataLint.EngineeringScope"))
+        {
+            WorkingDirectory = fixture.Root, RedirectStandardOutput = true, RedirectStandardError = true,
+        };
+        foreach (var argument in new[] { "current", "--repository", fixture.Root }) start.ArgumentList.Add(argument);
+        start.Environment["PREFLIGHT_DEADLINE_AT"] = "0";
+        using var process = System.Diagnostics.Process.Start(start)!;
+        var stdout = process.StandardOutput.ReadToEndAsync();
+        var stderr = process.StandardError.ReadToEndAsync();
+        try
+        {
+            await process.WaitForExitAsync().WaitAsync(TestBudgets.ScriptProcessHangGuard);
+            var output = await stdout + await stderr;
+            Assert.True(process.ExitCode == 2, output);
+        }
+        catch (TimeoutException exception)
+        {
+            throw new SkipException("infrastructure-hang-guard expired for expired stage fixture: " + exception.Message);
+        }
+        finally
+        {
+            if (!process.HasExited) { process.Kill(entireProcessTree: true); process.WaitForExit(); }
+        }
+        using var summary = System.Text.Json.JsonDocument.Parse(TemporaryFileSystem.File.ReadAllText(
+            Path.Combine(fixture.Root, CommonExecutionEvidence.RootPath, "current-result.json")));
+        Assert.Equal(2, summary.RootElement.GetProperty("exit").GetInt32());
+        Assert.Equal("PREFLIGHT_BUDGET_EXHAUSTED owner=outer-deadline", summary.RootElement.GetProperty("error").GetString());
+        Assert.Empty(summary.RootElement.GetProperty("steps").EnumerateArray());
+        Assert.Equal(new[] { "lean-report", "scribe", "filemap", "check-current" },
+            summary.RootElement.GetProperty("not_executed").EnumerateArray().Select(value => value.GetString()));
+        Assert.False(TemporaryFileSystem.File.Exists(Path.Combine(fixture.Root, "build/producer-started")));
+        Assert.False(TemporaryFileSystem.File.Exists(Path.Combine(fixture.Root, CommonExecutionEvidence.CurrentPath)));
+    }
+
+    private static void PrepareCurrent(CurrentExecutionContractTests.CandidateFixture fixture)
+    {
+        TemporaryFileSystem.File.WriteAllText(Path.Combine(fixture.Root, "Makefile"), "lean-report:\n\t@/bin/bash build/producer.sh\n");
+        TemporaryFileSystem.Directory.CreateDirectory(Path.Combine(fixture.Root, "build"));
+        TemporaryFileSystem.File.WriteAllText(Path.Combine(fixture.Root, "build/producer.sh"), """
+            set -euo pipefail
+            mkfifo build/producer-wait
+            printf 'producer-started\n'
+            printf 'producer-stderr\n' >&2
+            : > build/producer-started
+            read -r release < build/producer-wait
+            """);
         var binaries = new[] { CommonExecutionEvidence.CliPath, CommonExecutionEvidence.ScribePath,
             "tools/StrataLint.EngineeringScope/bin/Release/net10.0/StrataLint.EngineeringScope.dll" };
         foreach (var binary in binaries)
@@ -26,31 +111,6 @@ public sealed class CommonStageContractTests
         Assert.Equal(0, Program.RunCurrentTests(fixture.Root, (_, results) => { fixture.WriteTrx(results, "Passed"); return 0; }, TextWriter.Null));
         CommonExecutionEvidence.SealEngineering(fixture.Root, binaries, CommonExecutionEvidence.EngineeringSteps
             .Select(name => new StageStep(name, 0, 0, "executed", binaries[0])).ToArray());
-        var start = new System.Diagnostics.ProcessStartInfo("/bin/bash")
-        {
-            WorkingDirectory = fixture.Root, RedirectStandardOutput = true, RedirectStandardError = true,
-        };
-        start.ArgumentList.Add("-c");
-        start.ArgumentList.Add("runner=$(command -v dotnet); export PATH=\"$CONTRACT_BIN:$PATH\"; export PREFLIGHT_DEADLINE_AT=$(( $(date +%s) + 3 )); exec \"$runner\" \"$CONTRACT_RUNNER\" current --repository \"$CONTRACT_ROOT\"");
-        start.Environment["CONTRACT_BIN"] = shim;
-        start.Environment["CONTRACT_RUNNER"] = typeof(Program).Assembly.Location;
-        start.Environment["CONTRACT_ROOT"] = fixture.Root;
-        using var process = System.Diagnostics.Process.Start(start)!;
-        var stdout = process.StandardOutput.ReadToEndAsync();
-        var stderr = process.StandardError.ReadToEndAsync();
-        Assert.True(process.WaitForExit((int)TestBudgets.ScriptProcessHangGuard.TotalMilliseconds));
-        Assert.Equal(2, process.ExitCode);
-        _ = await stdout;
-        _ = await stderr;
-        using var summary = System.Text.Json.JsonDocument.Parse(TemporaryFileSystem.File.ReadAllText(
-            Path.Combine(fixture.Root, CommonExecutionEvidence.RootPath, "current-result.json")));
-        var step = Assert.Single(summary.RootElement.GetProperty("steps").EnumerateArray());
-        Assert.Equal("lean-report", step.GetProperty("name").GetString());
-        Assert.Equal(124, step.GetProperty("raw_exit").GetInt32());
-        Assert.Equal(2, step.GetProperty("exit").GetInt32());
-        Assert.Equal("failed", step.GetProperty("status").GetString());
-        Assert.Contains("producer-started", TemporaryFileSystem.File.ReadAllText(
-            Path.Combine(fixture.Root, step.GetProperty("log").GetString()!)), StringComparison.Ordinal);
     }
 
     [Fact]

@@ -40,7 +40,8 @@ CANDIDATE="$ROOT"
 if [[ "$MODE" == pr ]]; then
   [[ "$BASE_SHA" =~ ^[0-9a-fA-F]{40}$ ]] || fail_input invalid-base-sha
   [[ "$(git cat-file -t "$BASE_SHA" 2>/dev/null)" == commit ]] || fail_input unavailable-base-commit
-  [[ -z "$(git status --porcelain --untracked-files=all)" ]] || fail_input dirty-tree
+  status_output="$(git status --porcelain --untracked-files=all)" || fail_input status-observation-failed
+  [[ -z "$status_output" ]] || fail_input dirty-tree
   HEAD_SHA="$(git rev-parse --verify 'HEAD^{commit}')" || fail_input uncommitted-head
   stage=merge-tree
   merge_rc=0
