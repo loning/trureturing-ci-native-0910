@@ -67,7 +67,7 @@ public sealed class TruthReleaseCommandTests
     [Fact]
     public void ClosedModuleWithoutFreezeIsIncludedInVerifiedRelease()
     {
-        using var fixture = CreateFixture(includeUnfrozenModule: true);
+        using var fixture = CreateFixtureWithUnfrozenModule();
         using var output = new TemporaryDirectory();
 
         var (exitCode, console) = Run(fixture, output.Path, GreenTrustArguments());
@@ -107,7 +107,9 @@ public sealed class TruthReleaseCommandTests
     public void FreezeStatusUsesStateMembershipForAcceptedModule(
         bool includeDependencyState, string expectedStatus)
     {
-        using var fixture = CreateFixture(includeDependencyState: includeDependencyState);
+        using var fixture = includeDependencyState
+            ? CreateFixture()
+            : CreateFixtureWithoutDependencyState();
         using var output = new TemporaryDirectory();
 
         var (exitCode, console) = Run(fixture, output.Path, GreenTrustArguments());
@@ -140,7 +142,7 @@ public sealed class TruthReleaseCommandTests
     [Fact]
     public void ReceiptIntegrityFailureFailsClosedWithoutWritingABundle()
     {
-        using var fixture = Fixture.Create(receiptIntegrityMismatch: true);
+        using var fixture = CreateFixtureWithReceiptIntegrityMismatch();
         using var output = new TemporaryDirectory();
 
         var (exitCode, console) = Run(fixture, output.Path, GreenTrustArguments());
@@ -181,10 +183,45 @@ public sealed class TruthReleaseCommandTests
         "--required-check", "Content-addressed dev baseline admission=success",
     ];
 
-    private static Fixture CreateFixture(
-        bool receiptIntegrityMismatch = false,
-        bool includeUnfrozenModule = false,
-        bool includeDependencyState = true)
+    private static Fixture CreateFixture()
+    {
+        var prepared = PrepareFixture(CreateFixtureInputs());
+        AddFrozenStates(prepared);
+        return CompleteFixture(prepared);
+    }
+
+    private static Fixture CreateFixtureWithUnfrozenModule()
+    {
+        var prepared = PrepareFixture(CreateFixtureInputs());
+        AddFrozenStates(prepared);
+        prepared.Files[PathFor("Unfrozen")] = "theorem unfrozen : True := by trivial\n";
+        prepared.Reports[PathFor("Unfrozen")] = new(
+            ["D5.S0.Carrier.Dependency"], [Declaration("unfrozen")]);
+        return CompleteFixture(prepared);
+    }
+
+    private static Fixture CreateFixtureWithoutDependencyState()
+    {
+        var prepared = PrepareFixture(CreateFixtureInputs());
+        AddFrozenStates(prepared);
+        var dependency = Assert.Single(
+            prepared.RealCatalog.ClosedNodes,
+            node => node.RepoPath.Value == PathFor("Dependency"));
+        Assert.True(prepared.Files.Remove(FrozenStatePath.FromModulePath(dependency.RepoPath).Value));
+        return CompleteFixture(prepared);
+    }
+
+    private static Fixture CreateFixtureWithReceiptIntegrityMismatch()
+    {
+        var inputs = CreateFixtureInputs();
+        AddReceiptIntegrityMismatch(inputs.Files);
+        var prepared = PrepareFixture(inputs);
+        AddFrozenStates(prepared);
+        return CompleteFixture(prepared);
+    }
+
+    private static (Dictionary<string, string> Files, Dictionary<string, LeanFileReport> Reports)
+        CreateFixtureInputs()
     {
         var repositoryRoot = TestRepositoryLayout.FindRoot();
         var blueprintSourcePath = $"Blueprint/{BlueprintGid}.scribe.cs";
@@ -233,10 +270,13 @@ public sealed class TruthReleaseCommandTests
                 ["D5.S0.Carrier.Dependency"],
                 [Declaration("golden_spectral_marker")]),
         };
-        if (receiptIntegrityMismatch)
-        {
-            AddReceiptIntegrityMismatch(files);
-        }
+        return (files, reports);
+    }
+
+    private static PreparedFixture PrepareFixture(
+        (Dictionary<string, string> Files, Dictionary<string, LeanFileReport> Reports) inputs)
+    {
+        var (files, reports) = inputs;
         var snapshotWithoutLedger = Decode(files);
         var report = LeanAxiomReport.Create(reports);
         var lean = Assert.IsType<LeanValidationOutcome.Accepted>(
@@ -261,21 +301,25 @@ public sealed class TruthReleaseCommandTests
                 adjacency)).Capability;
         var ledgerFiles = EventFiles(realCatalog, "git-sha1:" + generatorBlob);
         AddLedgerFiles(files, ledgerFiles);
-        foreach (var node in realCatalog.ClosedNodes)
+        return new PreparedFixture(files, reports, temporary, gitRoot, realCatalog);
+    }
+
+    private static void AddFrozenStates(PreparedFixture prepared)
+    {
+        foreach (var node in prepared.RealCatalog.ClosedNodes)
         {
-            if (includeDependencyState || node.RepoPath.Value != dependencyPath)
-            {
-                files[FrozenStatePath.FromModulePath(node.RepoPath).Value] = Encoding.UTF8.GetString(
-                    FrozenStateRecord.Encode(node.StatementId).AsSpan());
-            }
+            prepared.Files[FrozenStatePath.FromModulePath(node.RepoPath).Value] =
+                Encoding.UTF8.GetString(FrozenStateRecord.Encode(node.StatementId).AsSpan());
         }
-        if (includeUnfrozenModule)
-        {
-            files[PathFor("Unfrozen")] = "theorem unfrozen : True := by trivial\n";
-            reports[PathFor("Unfrozen")] = new(
-                ["D5.S0.Carrier.Dependency"], [Declaration("unfrozen")]);
-            report = LeanAxiomReport.Create(reports);
-        }
+    }
+
+    private static Fixture CompleteFixture(PreparedFixture prepared)
+    {
+        var files = prepared.Files;
+        var reports = prepared.Reports;
+        var temporary = prepared.Temporary;
+        var gitRoot = prepared.GitRoot;
+        var report = LeanAxiomReport.Create(reports);
         WriteFiles(
             gitRoot,
             files);
@@ -295,8 +339,8 @@ public sealed class TruthReleaseCommandTests
         RawLeanReportArtifact.WriteFile(reportPath, revisionSnapshot, report);
         var reportBytes = ImmutableArray.CreateRange(File.ReadAllBytes(reportPath));
         File.WriteAllText(
-            Path.Combine(gitRoot, formalPath),
-            "-- mutable working tree bytes must be ignored\n" + files[formalPath],
+            Path.Combine(gitRoot, BlueprintGid + ".lean"),
+            "-- mutable working tree bytes must be ignored\n" + files[BlueprintGid + ".lean"],
             new UTF8Encoding(false));
         var mutableSource = new FakeLeanReportSource(null);
         var cli = new ProductionCliEnvironment(
@@ -447,9 +491,6 @@ public sealed class TruthReleaseCommandTests
         string frozenLedgerHeadHash,
         int frozenLedgerSequence) : IDisposable
     {
-        internal static Fixture Create(bool receiptIntegrityMismatch = false) =>
-            CreateFixture(receiptIntegrityMismatch);
-
         internal ProductionCliEnvironment Environment { get; } = environment;
 
         internal GitRepositoryGateway Gateway { get; } = gateway;
@@ -470,4 +511,11 @@ public sealed class TruthReleaseCommandTests
 
         public void Dispose() => temporary.Dispose();
     }
+
+    private sealed record PreparedFixture(
+        Dictionary<string, string> Files,
+        Dictionary<string, LeanFileReport> Reports,
+        TemporaryDirectory Temporary,
+        string GitRoot,
+        FrozenMaterialCatalog RealCatalog);
 }
