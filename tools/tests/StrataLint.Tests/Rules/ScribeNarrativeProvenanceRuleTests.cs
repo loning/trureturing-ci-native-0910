@@ -156,6 +156,11 @@ public sealed class ScribeNarrativeProvenanceRuleTests
     [InlineData("The candidate atom states are orthogonal.")]
     [InlineData("The source atom requires positive mass.")]
     [InlineData("The anchor atom reports to no observer.")]
+    [InlineData("For a discrete measure, this definition formalizes the mass of the source atom as the measure of its singleton.")]
+    [InlineData("The lemma closes the support of the candidate atom under limits.")]
+    [InlineData("This step discharges the closure of the anchor atom from the hypothesis.")]
+    [InlineData("The closure of the source atom equals the source atom.")]
+    [InlineData("The source atom lies in the closure of the support.")]
     public void AmbiguousAtomRelationsAreAllowed(string prose) => Assert.Empty(Evaluate(Text(prose)));
 
     [Theory]
@@ -240,11 +245,14 @@ public sealed class ScribeNarrativeProvenanceRuleTests
         AssertClass(Text(prose), "DigestionLedgerReference", "digestion ledger");
 
     [Theory]
-    [InlineData(3, true)]
-    [InlineData(4, false)]
-    public void DocumentaryObjectGapIsBounded(int modifiers, bool blocked)
+    [InlineData(3, "remaining ", true)]
+    [InlineData(4, "remaining ", false)]
+    [InlineData(1, "finite ", false)]
+    public void DocumentaryObjectGapIsBounded(int modifiers, string modifier, bool blocked)
     {
-        var findings = Evaluate(Text("formalizes the " + string.Concat(Enumerable.Repeat("finite ", modifiers)) + "source atom"));
+        // The object slot is a closed alphabet of documentary modifiers, at most three deep; an
+        // ordinary mathematical modifier such as "finite" never fills it.
+        var findings = Evaluate(Text("formalizes the " + string.Concat(Enumerable.Repeat(modifier, modifiers)) + "source atom"));
         Assert.Equal(blocked, findings.Any());
     }
 

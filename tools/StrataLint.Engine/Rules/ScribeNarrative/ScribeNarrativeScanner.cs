@@ -45,10 +45,12 @@ internal static class ScribeNarrativeScanner
         Grammar:
         [
             // This Block rule favors precision: fixed documentary forms, with bounded clause-local relations.
+            // The object slot is a closed alphabet of documentary modifiers (no prepositions): 'formalizes the
+            // mass of the source atom' must not match, because the atom there is a prepositional complement.
             Pattern(@"\b(?:source|corollary|deposited|container|anchor|candidate|ingested|host|multi-clause|same|that|this|the)\s+atoms?\s+"
                 + @"(?:(?:(?:also|only|itself|explicitly|merely|already|still)\s+)?(?:does\s+not\s+|never\s+)?asserts?"
                 + @"|carries\s+(?:a|the|no)\s+(?:pre-committed\s+)?(?:receipt|numerical\s+certificate|clause|claim))\b"),
-            Pattern(@"\b(?:closes|closing|discharges?|discharged|formaliz(?:es|ed|e|ing)|digests?|digested|does\s+not\s+(?:close|formalize|discharge))\s+(?:only\s+)?(?:the|this|that|its|each|every|a|an)\s+(?:[\w-]+\s+){0,3}(?:(?:multi-clause|corollary|source|deposited|container|anchor|candidate|host|ingested|generic|same)\s+)?atoms?\b"
+            Pattern(@"\b(?:closes|closing|discharges?|discharged|formaliz(?:es|ed|e|ing)|digests?|digested|does\s+not\s+(?:close|formalize|discharge))\s+(?:only\s+)?(?:the|this|that|its|each|every|a|an)\s+(?:(?:only|multi-clause|corollary|finite-decision|first|second|third|remaining|other|same|whole|entire|full|partial|stated|listed|named|numbered|quoted|corresponding|underlying|original|deposited|ingested|cited|referenced|unresolved)\s+){0,3}(?:(?:multi-clause|corollary|source|deposited|container|anchor|candidate|host|ingested|generic|same)\s+)?atoms?\b"
                 + @"|\b(?:closes?|covers?)\s+only\s+the\s+[\w-]+\s+(?:clause|subitem|claim|statement)s?\s+of\s+(?:the\s+)?(?:multi-clause|corollary|source|deposited|container|anchor|candidate|host|ingested)\s+atoms?\b"
                 + @"|\bmulti-clause\s+(?:corollary\s+)?atoms?\b"),
             Pattern(@"\batoms?'s\s+(?:proof\s+skeleton|separate\s+claims?|claims?|clauses?|subitems?|statements?|registration|traceability\s+demand|compatibility\s+claim|theorem\s+name|numerical\s+certificates?|explicit\s+diagonal\s+property)\b"
