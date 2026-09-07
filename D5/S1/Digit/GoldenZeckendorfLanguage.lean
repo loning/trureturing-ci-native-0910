@@ -1,5 +1,5 @@
 /- GID: D5/S1/Digit/GoldenZeckendorfLanguage
-   generality: G
+   generality: I
    mirror-B: D5/B/S1/Digit/GoldenZeckendorfLanguage
    mirror-E: none(waiver:arithmetic-language-bridge)
    anchors: [mathlib/module/Mathlib.Data.Nat.Fib.Zeckendorf]
