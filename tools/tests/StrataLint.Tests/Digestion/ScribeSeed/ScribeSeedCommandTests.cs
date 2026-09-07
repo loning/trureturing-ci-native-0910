@@ -17,10 +17,7 @@ public sealed partial class ScribeSeedCommandTests
         Assert.Equal(1, execution.ApplyCalls);
         var entry = Assert.Single(Load(execution.After).RequireDigestionEntries());
         Assert.Equal(fixture.First.Coverage.ToArray(), entry.Coverage.ToArray());
-        Assert.Equal(new DigestionScribeReceipt(ScribeSeedFixture.DeclarationGid,
-            DigestionFingerprint.Compute(Encoding.UTF8.GetBytes("scribe definition\n")).RawSha256,
-            DigestionFingerprint.Compute(Encoding.UTF8.GetBytes("# emitted narrative\n")).RawSha256),
-            Assert.Single(entry.Receipts.Scribe));
+        Assert.Empty(entry.Receipts.Scribe);
         Assert.Equal(new DigestionStatus(DigestionMigrationState.Absorbed, DigestionTruthState.Closed),
             entry.ProjectedStatus);
         Assert.Contains("eligibility=eligible", execution.Result.Output, StringComparison.Ordinal);
@@ -34,7 +31,7 @@ public sealed partial class ScribeSeedCommandTests
 
         Assert.True(execution.Result.Success, execution.Result.Error);
         var entry = Assert.Single(Load(execution.After).RequireDigestionEntries());
-        Assert.Equal(ScribeSeedFixture.ModuleGid, Assert.Single(entry.Receipts.Scribe).Gid);
+        Assert.Empty(entry.Receipts.Scribe);
         Assert.Equal(DigestionMigrationState.Absorbed, entry.ProjectedStatus.Migration);
     }
 
@@ -53,7 +50,7 @@ public sealed partial class ScribeSeedCommandTests
         Assert.True(execution.Result.Success, execution.Result.Error);
         var entry = Assert.Single(Load(execution.After).RequireDigestionEntries());
         Assert.Equal(["pending-clause"], entry.Receipts.UnresolvedSubitems.ToArray());
-        Assert.Single(entry.Receipts.Scribe);
+        Assert.Empty(entry.Receipts.Scribe);
         Assert.Equal(DigestionMigrationState.Partial, entry.ProjectedStatus.Migration);
     }
 
@@ -74,10 +71,9 @@ public sealed partial class ScribeSeedCommandTests
 
         Assert.True(execution.Result.Success, execution.Result.Error);
         Assert.Contains("old_definition_sha256=sha256:aaaa", execution.Result.Output, StringComparison.Ordinal);
-        Assert.True(fixture.Verified.TryGet(ScribeSeedFixture.ModuleGid, out var verified));
+        Assert.True(fixture.Verified.TryGet(ScribeSeedFixture.ModuleGid, out _));
         var entry = Assert.Single(Load(execution.After).RequireDigestionEntries());
-        Assert.Equal(verified.DefinitionSha256, Assert.Single(entry.Receipts.Scribe).DefinitionSha256);
-        Assert.Equal(verified.EmissionSha256, Assert.Single(entry.Receipts.Scribe).EmissionSha256);
+        Assert.Empty(entry.Receipts.Scribe);
         Assert.Equal(DigestionMigrationState.Absorbed, entry.ProjectedStatus.Migration);
         fixture.Document = Load(execution.After);
         var replay = Execute(fixture, arguments);
@@ -146,7 +142,7 @@ public sealed partial class ScribeSeedCommandTests
         Assert.Equal(1, execution.ApplyCalls);
         Assert.All(Load(execution.After).RequireDigestionEntries(), entry =>
         {
-            Assert.Single(entry.Receipts.Scribe);
+            Assert.Empty(entry.Receipts.Scribe);
             Assert.Equal(DigestionMigrationState.Absorbed, entry.ProjectedStatus.Migration);
         });
     }

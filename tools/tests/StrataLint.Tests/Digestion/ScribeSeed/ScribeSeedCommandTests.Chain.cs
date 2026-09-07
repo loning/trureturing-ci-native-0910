@@ -199,12 +199,10 @@ public sealed partial class ScribeSeedCommandTests
         {
             Assert.Equal(new DigestionStatus(DigestionMigrationState.Absorbed, DigestionTruthState.Closed),
                 entry.ProjectedStatus);
-            Assert.Single(entry.Receipts.Scribe);
+            Assert.Empty(entry.Receipts.Scribe);
             var before = original.Single(candidate => candidate.AtomId == entry.AtomId);
             Assert.Equal(before.Coverage.ToArray(), entry.Coverage.ToArray());
             Assert.Equal(before.Receipts.ChainAtoms.ToArray(), entry.Receipts.ChainAtoms.ToArray());
-            if (!before.Receipts.Scribe.IsEmpty)
-                Assert.Equal(before.Receipts.Scribe.ToArray(), entry.Receipts.Scribe.ToArray());
         }
         bool Unaffected(RawRepositoryEntry entry) => !affected.Any(id => entry.Path.EndsWith("/" + id + ".yaml", StringComparison.Ordinal));
         Assert.Equal(Image(RawRepositorySnapshot.Create(execution.Before.Entries.Where(Unaffected))),

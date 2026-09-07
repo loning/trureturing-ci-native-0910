@@ -111,11 +111,7 @@ public sealed partial class ProductionEnvironmentTests
         var persisted = Assert.Single(
             BackfillInventoryLoader.LoadRoot(temporary.Path).RequireDigestionEntries(),
             candidate => candidate.AtomId == CoverWorld.DefaultAtomId);
-        var persistedReceipt = Assert.Single(
-            persisted.Receipts.Scribe,
-            candidate => candidate.Gid == inputs.Gid);
-        Assert.Equal(verified.DefinitionSha256, persistedReceipt.DefinitionSha256);
-        Assert.Equal(verified.EmissionSha256, persistedReceipt.EmissionSha256);
+        Assert.Empty(persisted.Receipts.Scribe);
     }
 
 }

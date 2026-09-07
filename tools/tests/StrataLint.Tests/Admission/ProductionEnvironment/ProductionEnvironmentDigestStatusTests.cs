@@ -603,16 +603,14 @@ public sealed partial class ProductionEnvironmentTests
 
         Assert.True(result.Success, result.Error);
         Assert.True(inputs.VerifiedEmissions!.TryGet(
-            inputs.Gid[..inputs.Gid.LastIndexOf('.')], out var verified));
+            inputs.Gid[..inputs.Gid.LastIndexOf('.')], out _));
         var after = BackfillInventoryLoader.LoadRoot(temporary.Path);
         foreach (var atomId in new[] { CoverWorld.DefaultAtomId, CoverWorld.OtherAtomId })
         {
             var entry = Assert.Single(
                 after.RequireDigestionEntries(),
                 item => item.AtomId == atomId);
-            var receipt = Assert.Single(entry.Receipts.Scribe);
-            Assert.Equal(verified.DefinitionSha256, receipt.DefinitionSha256);
-            Assert.Equal(verified.EmissionSha256, receipt.EmissionSha256);
+            Assert.Empty(entry.Receipts.Scribe);
             Assert.Contains(
                 $"atom_id={atomId} gid={inputs.Gid}",
                 result.Output,

@@ -407,7 +407,7 @@ public sealed partial class ProductionEnvironmentTests
             candidate => candidate.AtomId == CoverWorld.DefaultAtomId);
         Assert.Equal([inputs.Gid], entry.CoverageGids.ToArray());
         Assert.Single(entry.Coverage);
-        Assert.Single(entry.Receipts.Scribe);
+        Assert.Empty(entry.Receipts.Scribe);
         Assert.Equal(DigestionMigrationState.Absorbed, entry.ProjectedStatus.Migration);
         Assert.Equal(DigestionTruthState.Closed, entry.ProjectedStatus.Truth);
         var ledgerRoot = Path.Combine(

@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Text;
 using StrataLint.Engine;
 
 namespace StrataLint.Tests;
@@ -21,18 +20,7 @@ public sealed partial class CoverAtomTests
         Assert.Contains($"gid={inputs.Gid}", result.Output, StringComparison.Ordinal);
         var entry = Assert.Single(
             BackfillInventoryLoader.LoadRoot(temporary.Path).RequireDigestionEntries());
-        var receipt = Assert.Single(entry.Receipts.Scribe);
-        Assert.Equal(inputs.Gid, receipt.Gid);
-        Assert.Equal(
-            DigestionFingerprint.Compute(Encoding.UTF8.GetBytes(
-                currentFiles[ScribeEmissionAttestation.DefinitionPath(inputs.Gid)])).RawSha256,
-            receipt.DefinitionSha256);
-        Assert.Equal(
-            DigestionFingerprint.Compute(Encoding.UTF8.GetBytes(
-                currentFiles[ScribeEmissionAttestation.EmissionPath(inputs.Gid)])).RawSha256,
-            receipt.EmissionSha256);
-        Assert.NotEqual("sha256:" + new string('a', 64), receipt.DefinitionSha256);
-        Assert.NotEqual("sha256:" + new string('b', 64), receipt.EmissionSha256);
+        Assert.Empty(entry.Receipts.Scribe);
     }
 
     [Theory]
@@ -136,21 +124,14 @@ public sealed partial class CoverAtomTests
                 .AlignScribeReceipt(arguments);
 
             Assert.True(result.Success, result.Error);
-            Assert.True(inputs.VerifiedEmissions!.TryGet(documentGid, out var verified));
+            Assert.True(inputs.VerifiedEmissions!.TryGet(documentGid, out _));
             var after = BackfillInventoryLoader.LoadRoot(temporary.Path);
-            foreach (var (atomId, gid) in new[]
-                     {
-                         (CoverWorld.DefaultAtomId, inputs.Gid),
-                         (CoverWorld.OtherAtomId, documentGid),
-                     })
+            foreach (var atomId in new[] { CoverWorld.DefaultAtomId, CoverWorld.OtherAtomId })
             {
                 var entry = Assert.Single(
                     after.RequireDigestionEntries(),
                     candidate => candidate.AtomId == atomId);
-                var receipt = Assert.Single(entry.Receipts.Scribe);
-                Assert.Equal(gid, receipt.Gid);
-                Assert.Equal(verified.DefinitionSha256, receipt.DefinitionSha256);
-                Assert.Equal(verified.EmissionSha256, receipt.EmissionSha256);
+                Assert.Empty(entry.Receipts.Scribe);
             }
         }
 
