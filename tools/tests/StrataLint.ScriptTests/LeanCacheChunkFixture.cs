@@ -100,16 +100,24 @@ internal sealed class LeanCacheChunkFixture : IDisposable
     internal string ReadAsset(string tag, string name) => FixtureFile.ReadAllText(Path.Combine(releases, tag, name));
     internal string[] Assets(string tag) => Directory.GetFiles(Path.Combine(releases, tag))
         .Select(Path.GetFileName).Order(StringComparer.Ordinal).ToArray()!;
+    internal bool HasRelease => Directory.Exists(Path.Combine(releases, Tag));
     internal void ListReleases(params string[] tags) => Write(Path.Combine(temporary.Path, "tags"), string.Join('\n', tags) + "\n");
 
-    internal Attempt Publish(string chunkBytes)
+    internal Attempt Publish(string chunkBytes, string? chunkEnvironment = null)
     {
-        var result = Run("publish", chunkBytes, false);
+        if (chunkBytes != "default")
+        {
+            var scriptText = FixtureFile.ReadAllText(script);
+            var assignment = Assert.Single(scriptText.Split('\n'),
+                line => line.StartsWith("CHUNK_BYTES=", StringComparison.Ordinal));
+            Write(script, scriptText.Replace(assignment, $"CHUNK_BYTES={chunkBytes}", StringComparison.Ordinal));
+        }
+        var result = Run("publish", false, chunkEnvironment);
         if (result.ExitCode == 0) WriteMetadata(Tag, null);
         return result;
     }
 
-    internal Attempt Fetch(bool allowSeed = false) => Run("fetch", "default", allowSeed);
+    internal Attempt Fetch(bool allowSeed = false) => Run("fetch", allowSeed);
 
     internal void AddRelease(string tag, bool chunked = true, bool oldManifest = false, string? deviation = null)
     {
@@ -152,7 +160,7 @@ internal sealed class LeanCacheChunkFixture : IDisposable
             }).ToArray(),
         }));
 
-    private Attempt Run(string verb, string chunkBytes, bool allowSeed)
+    private Attempt Run(string verb, bool allowSeed, string? chunkEnvironment = null)
     {
         var arguments = new List<string>
         {
@@ -161,8 +169,10 @@ internal sealed class LeanCacheChunkFixture : IDisposable
             $"CHUNK_FIXTURE={temporary.Path}",
             "STRATALINT_CACHE_REPO=fixture/cache",
             $"GITHUB_SHA={ProducerSha}", "GITHUB_RUN_ID=4242",
+            "CI=true", "GITHUB_ACTIONS=true", "GITHUB_EVENT_NAME=schedule",
+            "GITHUB_REF=refs/heads/dev", "GITHUB_REF_NAME=dev",
         };
-        if (chunkBytes != "default") arguments.Add($"STRATALINT_CACHE_TEST_CHUNK_BYTES={chunkBytes}");
+        if (chunkEnvironment is not null) arguments.Add($"STRATALINT_CACHE_TEST_CHUNK_BYTES={chunkEnvironment}");
         arguments.AddRange(["/bin/bash", script, verb, "--repository", repository]);
         if (allowSeed) arguments.Add("--allow-seed");
         var result = TestProcessRunner.Run("/usr/bin/env", arguments.ToArray(), repository,

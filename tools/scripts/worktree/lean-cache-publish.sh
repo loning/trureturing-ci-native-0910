@@ -3,7 +3,7 @@
 #
 # 命名空间与 spec A14 的 `E<n>` 发布 tag 严格分开：这些 tag 是构建缓存，不是版本发布。
 # tag 绑定 (toolchain, config_sha256, sources_sha256) 三元组；同一元组只发一次。
-# tag = lean-cache-v1-<toolchain-slug>-<config16>-<sources16>。
+# tag = <TAG_PREFIX>-<toolchain-slug>-<config16>-<sources16>.
 #
 # 这个归档**不是权威**：它是一个加速器，不构成独立的 admission 证据。消费侧 (`fetch`)
 # 对 toolchain、归档完整性与摘要一律 fail-closed;默认只允许 sources 回退到同 config
@@ -46,7 +46,14 @@ export LC_ALL=C
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd -P)"
 REPO="${STRATALINT_CACHE_REPO:-the-omega-institute/trureturing}"
-# GitHub's per-asset limit is 2 GiB; use 1.5 GiB chunks to leave headroom.
+TAG_PREFIX="lean-cache-v1"
+# Issue #6194: publisher run 34119746844 failed at `gh release upload` with
+# "HTTP 422: Validation Failed ... size must be less than 2147483648".
+# The 2 GiB per-asset limit is exclusive. The six preceding successful archive
+# sizes were 1,948,811,751; 2,010,523,084; 2,062,929,966; 2,066,721,511;
+# 2,097,463,138; 2,114,121,660 bytes. That run's archive crossed the limit.
+# Use 1.5 GiB chunks for headroom. Two-digit suffixes allow 100 parts x 1.5 GiB
+# (150 GiB total); split fails closed on exhaustion before release creation.
 CHUNK_BYTES=1610612736
 VERB="${1:-}"
 
@@ -138,7 +145,7 @@ slug="${toolchain//[^A-Za-z0-9]/-}"
 # slug（toolchain）必须保留：不同 Lean 版本的 olean 确实不兼容。
 # 加上平台维度的后果是把主检出（darwin-arm64）挡在 CI 产物（linux-aarch64）之外，
 # 而 owner 的目标恰恰是「主 checkout 不用从 0 开始 build 热缓存」。
-tag="lean-cache-v1-${slug}-${config_sha256:0:16}-${sources_sha256:0:16}"
+tag="${TAG_PREFIX}-${slug}-${config_sha256:0:16}-${sources_sha256:0:16}"
 asset="lean-build.tgz"
 
 emit_address() {
@@ -164,17 +171,12 @@ case "$VERB" in
     fi
     staged="$(mktemp -d)"
     trap 'rm -rf "$staged"' EXIT
-    # Test-only override: exercise splitting with small fixtures, never in CI publishing.
-    chunk_bytes="${STRATALINT_CACHE_TEST_CHUNK_BYTES:-$CHUNK_BYTES}"
-    if [[ ! "$chunk_bytes" =~ ^[1-9][0-9]{0,9}$ ]] || (( chunk_bytes > CHUNK_BYTES )); then
-      die "test chunk size must be a positive integer no larger than CHUNK_BYTES"
-    fi
     ( cd "$repository" && lake pack "$staged/$asset" >/dev/null )
     bytes="$(wc -c < "$staged/$asset" | tr -d ' ')"
     digest="$(sha256_of "$staged/$asset")"
     archives=("$staged/$asset")
-    if (( bytes > chunk_bytes )); then
-      split -b "$chunk_bytes" -d -a 2 "$staged/$asset" "$staged/$asset.part-"
+    if (( bytes > CHUNK_BYTES )); then
+      split -b "$CHUNK_BYTES" -d -a 2 "$staged/$asset" "$staged/$asset.part-"
       archives=("$staged/$asset.part-"*)
     fi
     emit_address > "$staged/manifest.txt"
@@ -229,7 +231,7 @@ case "$VERB" in
     pruned=0
     prune_error=""
     if gh release view "$tag" --repo "$REPO" --json tagName --jq .tagName >/dev/null 2>&1; then
-      prefix="lean-cache-v1-${slug}-${config_sha256:0:16}-"
+      prefix="${TAG_PREFIX}-${slug}-${config_sha256:0:16}-"
       # 保留窗口:同 config 前缀下最近 RETAIN 份(含刚发的这份)不剪。
       # 只留一份时,任何仍在飞、其 sources 尚未换代的消费者会在 prefix 回退上落空;
       # 保留几份让它们仍能取回一份可用的近邻,代价是有界的存量而非无界累积。
@@ -283,7 +285,7 @@ case "$VERB" in
     trap 'rm -rf "$staged"' EXIT
     seed_config=""
     if [[ "$mode" == seed ]]; then
-      seed_config="${resolved#"lean-cache-v1-${slug}-"}"
+      seed_config="${resolved#"${TAG_PREFIX}-${slug}-"}"
       seed_config="${seed_config%%-*}"
       [[ "$seed_config" =~ ^[0-9a-f]{16}$ ]] \
         || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"seed tag has a malformed config address"}\n' "$resolved"; exit 1; }
@@ -462,7 +464,7 @@ fail_provenance() {
     releases="$(gh release list --repo "$REPO" --limit 100 --json tagName,createdAt \
       --jq 'sort_by(.createdAt) | reverse | .[].tagName' 2>/dev/null)" \
       || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"could not list releases"}\n' "$tag"; exit 1; }
-    prefix="lean-cache-v1-${slug}-${config_sha256:0:16}-"
+    prefix="${TAG_PREFIX}-${slug}-${config_sha256:0:16}-"
     # Newest first within each tier; exhaust the config tier before allowing seeds.
     for mode in prefix seed; do
       [[ "$mode" != seed || "$allow_seed" == 1 ]] || continue
@@ -471,7 +473,7 @@ fail_provenance() {
         if [[ "$mode" == prefix ]]; then
           [[ "$release_tag" == "$prefix"* ]] || continue
         else
-          [[ "$release_tag" == "lean-cache-v1-${slug}-"* && "$release_tag" != "$prefix"* ]] || continue
+          [[ "$release_tag" == "${TAG_PREFIX}-${slug}-"* && "$release_tag" != "$prefix"* ]] || continue
         fi
         if try_fetch "$release_tag" "$mode"; then exit 0; fi
       done <<< "$releases"

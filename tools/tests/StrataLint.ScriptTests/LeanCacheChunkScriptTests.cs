@@ -23,6 +23,32 @@ public sealed class LeanCacheChunkScriptTests
         Assert.Equal(new[] { "manifest.txt", "lean-build.tgz" }, fixture.DownloadPatterns);
     }
 
+    [Theory]
+    [InlineData("1")]
+    [InlineData("8")]
+    public void PublishingIgnoresChunkSizeEnvironment(string chunkEnvironment)
+    {
+        if (OperatingSystem.IsWindows()) return;
+        using var fixture = new LeanCacheChunkFixture(new string('a', 102));
+
+        fixture.AssertSuccess(fixture.Publish("default", chunkEnvironment));
+
+        Assert.Equal(new[] { "lean-build.tgz", "manifest.txt" }, fixture.Assets(fixture.Tag));
+        Assert.Contains("parts=1\n", fixture.Manifest(fixture.Tag), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ArchiveExceedingSuffixCapacityFailsBeforePublishing()
+    {
+        if (OperatingSystem.IsWindows()) return;
+        using var fixture = new LeanCacheChunkFixture(new string('a', 101));
+
+        var result = fixture.Publish("1");
+
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.False(fixture.HasRelease);
+    }
+
     [Fact]
     public void ThreePartPublishFetchRoundTripPreservesBytesAndDigests()
     {
