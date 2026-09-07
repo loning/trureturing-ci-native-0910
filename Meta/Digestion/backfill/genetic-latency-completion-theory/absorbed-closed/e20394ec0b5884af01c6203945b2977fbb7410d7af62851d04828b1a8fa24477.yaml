@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Observer/Budget/FiniteFutureSplitBudget.finite_future_split_budget
     target_statement_id: sha256:7b67336887fa862155ff7a24df0db4a4a58ed704ee23b19bbdf455a566a9fc39
 receipts:
-  scribe: []
   unresolved_subitems: []

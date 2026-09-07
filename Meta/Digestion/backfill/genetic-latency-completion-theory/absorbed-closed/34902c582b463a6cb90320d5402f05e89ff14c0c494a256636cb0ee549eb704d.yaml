@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/RefinementAlgebra/DominanceEventAlgebraCharacterization.complete_dominance_event_algebra_characterization
     target_statement_id: sha256:83c34cdd0ee65a7c57398f4c9f9cd5714ebc43817ee3a26014a7f7827ad4e0ae
 receipts:
-  scribe: []
   unresolved_subitems: []

@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/RefinementAlgebra/ObservableEventComplementPersistence.observable_event_complement_persistence
     target_statement_id: sha256:6b7e9dbbae23f5bcd1e312e43d8b52ee7079d82a0b4de1e77ac794520082a16d
 receipts:
-  scribe: []
   unresolved_subitems: []

@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S0/Computability/TerminalGradeDecomposition.terminal_grade_three_way_decomposition
     target_statement_id: sha256:71ca019433234d1760c0c4134abcdbf2113ca28b94ea697e8c6f22eb570cde21
 receipts:
-  scribe: []
   unresolved_subitems: []

@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S0/Naming/DenseGreenClass.dense_inter_green_class_nonempty
     target_statement_id: sha256:e8fd413102486bc84a90e828a425c6212b2430338db1d4246241a5da58d3a7f9
 receipts:
-  scribe: []
   unresolved_subitems: []

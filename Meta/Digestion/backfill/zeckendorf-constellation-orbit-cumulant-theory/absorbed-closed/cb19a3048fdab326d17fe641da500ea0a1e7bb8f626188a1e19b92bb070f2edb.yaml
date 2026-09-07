@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Observer/GoldenCoding/ZeckendorfRealThread.zeckendorf_real_thread_injective
     target_statement_id: sha256:497793397b863e1d016f7b58627745ad0deabb31497435290ddb79db7a5a40ba
 receipts:
-  scribe: []
   unresolved_subitems: []

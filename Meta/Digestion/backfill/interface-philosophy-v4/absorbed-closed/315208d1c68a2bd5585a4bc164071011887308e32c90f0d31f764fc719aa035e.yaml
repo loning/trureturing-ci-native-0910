@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S0/Computability/DescriptionComplexity/LevinUpperBound.levin_upper_bound
     target_statement_id: sha256:615c60facff2af4f16d797d87e448f500c61097ccbf899d222ea28eafbbbc907
 receipts:
-  scribe: []
   unresolved_subitems: []

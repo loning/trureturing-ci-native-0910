@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S0/Computability/KraftInequality.finite_binary_kraft_inequality
     target_statement_id: sha256:2a9e7d599a7c78e3f61f09f7dc4e3a721224ccaac86e7bfe1bdf2779b7f4338f
 receipts:
-  scribe: []
   unresolved_subitems: []

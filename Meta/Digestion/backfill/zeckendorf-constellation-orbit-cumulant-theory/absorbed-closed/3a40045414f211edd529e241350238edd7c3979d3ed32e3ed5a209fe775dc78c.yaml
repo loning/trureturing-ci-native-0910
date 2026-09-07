@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Zeros/SymmetricPolynomial/FullSymmetryNonlocalization.full_symmetry_not_fixed_line_localization
     target_statement_id: sha256:4b9739a34ca897527d7fe37c7e14cfb15f2c9431b9ff159c60cb529bb22f6fe4
 receipts:
-  scribe: []
   unresolved_subitems: []
