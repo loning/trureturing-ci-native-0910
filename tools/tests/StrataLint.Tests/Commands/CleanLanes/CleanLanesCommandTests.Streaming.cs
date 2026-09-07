@@ -11,7 +11,7 @@ public sealed partial class CleanLanesCommandTests
     {
         if (OperatingSystem.IsWindows()) return;
         IWorktreeProcessRunner runner = new ProductionWorktreeProcessRunner();
-        var result = runner.RunStreaming("/usr/bin/head", ["-c", "67108865", "/dev/zero"],
+        var result = TestProcessRunner.Classify(() => runner.RunStreaming("/usr/bin/head", ["-c", "67108865", "/dev/zero"],
             Path.GetTempPath(), BoundedProcessRunner.HangDetectionBudget,
             async (stream, cancellation) =>
             {
@@ -20,7 +20,7 @@ public sealed partial class CleanLanesCommandTests
                 int count;
                 while ((count = await stream.ReadAsync(buffer, cancellation)) != 0) total += count;
                 return total;
-            });
+            }), "/usr/bin/head");
         Assert.Equal(0, result.ExitCode);
         Assert.Equal(67108865L, result.StandardOutput);
         Assert.Empty(result.StandardError);
