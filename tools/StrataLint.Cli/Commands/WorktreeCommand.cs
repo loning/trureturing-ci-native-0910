@@ -86,7 +86,9 @@ internal static class WorktreeCommand
         }
 
         WorktreeOptions? options = null;
+        var branchCreated = false;
         var worktreeCreated = false;
+        string? branchOid = null;
         string? creationLock = null;
         string? creationMetadata = null;
         var halfBuiltRecovered = false;
@@ -95,16 +97,25 @@ internal static class WorktreeCommand
             options = ParseArguments(repositoryRoot, arguments);
             halfBuiltRecovered = ValidatePreflight(options, runner);
             GitWorktreeInventory.FetchRemoteBase(options.Source, options.Base, runner);
-            VerifyBase(options, runner);
-            var pins = LeanPinSet.ReadBase(options.Source, options.Base, runner);
+            branchOid = VerifyBase(options, runner);
+            var pins = LeanPinSet.ReadBase(options.Source, branchOid, runner);
             var donor = ProbeDonor(options, pins, runner);
 
             creationLock = $"worktree-init:{Guid.NewGuid():N}";
             RunRequired(
                 runner,
                 "git",
-                ["worktree", "add", "-b", options.Branch, "--no-checkout", "--lock",
-                    "--reason", creationLock, options.Path, options.Base],
+                ["update-ref", "--no-deref", "--create-reflog", "-m", creationLock,
+                    $"refs/heads/{options.Branch}", branchOid, new string('0', branchOid.Length)],
+                options.Source,
+                BoundedProcessRunner.HangDetectionBudget,
+                "git branch creation failed");
+            branchCreated = true;
+            RunRequired(
+                runner,
+                "git",
+                ["worktree", "add", "--no-checkout", "--lock",
+                    "--reason", creationLock, options.Path, options.Branch],
                 options.Source,
                 BoundedProcessRunner.HangDetectionBudget,
                 "git worktree add failed");
@@ -152,12 +163,14 @@ internal static class WorktreeCommand
             var cleanup = string.Empty;
             try
             {
-                // A timed-out add can register the tree before acknowledging success.
-                if (options is not null && creationLock is not null)
+                // Either Git command can finish before acknowledging success.
+                if (options is not null && creationLock is not null && branchOid is not null)
                 {
                     creationMetadata ??= WorktreeCreationSafety.FindCreationMetadata(options, creationLock, runner);
                     if (worktreeCreated || creationMetadata is not null)
                         cleanup = Cleanup(options, creationLock, creationMetadata, runner);
+                    if (cleanup.Length == 0)
+                        WorktreeCreationSafety.CleanupCreatedBranch(options, creationLock, branchOid, branchCreated, runner);
                 }
             }
             catch (Exception cleanupException) when (cleanupException is not OutOfMemoryException)
@@ -491,14 +504,18 @@ internal static class WorktreeCommand
         return halfBuiltRecovered;
     }
 
-    private static void VerifyBase(WorktreeOptions options, IWorktreeProcessRunner runner) =>
-        RunRequired(
+    private static string VerifyBase(WorktreeOptions options, IWorktreeProcessRunner runner)
+    {
+        var result = RunProcess(
             runner,
             "git",
             ["rev-parse", "--verify", "--end-of-options", $"{options.Base}^{{commit}}"],
             options.Source,
-            BoundedProcessRunner.HangDetectionBudget,
-            $"base revision does not resolve: {options.Base}");
+            BoundedProcessRunner.HangDetectionBudget);
+        if (result.ExitCode != 0)
+            throw new InvalidOperationException(ProcessError(result, $"base revision does not resolve: {options.Base}"));
+        return Encoding.UTF8.GetString(result.StandardOutput).Trim();
+    }
 
     private static string Cleanup(
         WorktreeOptions options,
@@ -506,7 +523,6 @@ internal static class WorktreeCommand
         string? creationMetadata,
         IWorktreeProcessRunner runner)
     {
-        var errors = new List<string>();
         WorktreeCreationSafety.ValidateCleanupOwnership(options, creationLock, creationMetadata, runner);
         var removal = RunProcess(
             runner,
@@ -529,33 +545,7 @@ internal static class WorktreeCommand
             }
         }
 
-        var branchLookup = RunProcess(
-            runner,
-            "git",
-            ["show-ref", "--verify", "--quiet", $"refs/heads/{options.Branch}"],
-            options.Source,
-            BoundedProcessRunner.HangDetectionBudget);
-        if (branchLookup.ExitCode == 0)
-        {
-            var branchRemoval = RunProcess(
-                runner,
-                "git",
-                ["branch", "-D", options.Branch],
-                options.Source,
-                BoundedProcessRunner.HangDetectionBudget);
-            if (branchRemoval.ExitCode != 0)
-            {
-                errors.Add(ProcessError(branchRemoval, "git branch cleanup failed"));
-            }
-        }
-        else if (branchLookup.ExitCode != 1)
-        {
-            errors.Add(ProcessError(branchLookup, "git branch cleanup inspection failed"));
-        }
-
-        return errors.Count == 0
-            ? string.Empty
-            : $"; cleanup failed: {string.Join("; ", errors)}";
+        return string.Empty;
     }
 
     private static void RunRequired(
