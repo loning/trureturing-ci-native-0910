@@ -144,7 +144,7 @@ theorem transverse_integral_square_le {f : ℝ → ℝ} (hf : MemLp f 2 volume)
     (transverseKernel_square_integral_le x y a b ha hb hy)
     (integral_nonneg fun t => sq_nonneg (f t)))
 
-/-- A scalar error radius yields the sharp support-moment norm constant.
+/-- A scalar error radius yields the explicit support-moment norm constant.
 All square roots are justified by the proved nonnegative support moment. -/
 theorem abs_transverse_integral_le {f : ℝ → ℝ} (hf : MemLp f 2 volume)
     (x y a b radius : ℝ) (ha : 0 ≤ a) (hb : 0 ≤ b) (hy : |y| ≤ b)
