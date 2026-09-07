@@ -1,0 +1,138 @@
+{
+  "exact_random_cutoff_cases": 1600,
+  "strict_integer_and_zero_gain_cases": 237,
+  "sharp_to_mass_reductions": 1000,
+  "finite_data_polynomial_caps": 800,
+  "synthetic_degenerating_gap_scales": [
+    {
+      "index": 1,
+      "cutoff_bits": 9,
+      "tolerance": "1/16"
+    },
+    {
+      "index": 2,
+      "cutoff_bits": 23,
+      "tolerance": "1/64"
+    },
+    {
+      "index": 3,
+      "cutoff_bits": 51,
+      "tolerance": "1/256"
+    },
+    {
+      "index": 4,
+      "cutoff_bits": 99,
+      "tolerance": "1/1024"
+    },
+    {
+      "index": 5,
+      "cutoff_bits": 173,
+      "tolerance": "1/4096"
+    },
+    {
+      "index": 6,
+      "cutoff_bits": 279,
+      "tolerance": "1/16384"
+    },
+    {
+      "index": 7,
+      "cutoff_bits": 423,
+      "tolerance": "1/65536"
+    },
+    {
+      "index": 8,
+      "cutoff_bits": 611,
+      "tolerance": "1/262144"
+    },
+    {
+      "index": 9,
+      "cutoff_bits": 849,
+      "tolerance": "1/1048576"
+    },
+    {
+      "index": 10,
+      "cutoff_bits": 1143,
+      "tolerance": "1/4194304"
+    },
+    {
+      "index": 11,
+      "cutoff_bits": 1499,
+      "tolerance": "1/16777216"
+    },
+    {
+      "index": 12,
+      "cutoff_bits": 1923,
+      "tolerance": "1/67108864"
+    },
+    {
+      "index": 13,
+      "cutoff_bits": 2421,
+      "tolerance": "1/268435456"
+    },
+    {
+      "index": 14,
+      "cutoff_bits": 2999,
+      "tolerance": "1/1073741824"
+    },
+    {
+      "index": 15,
+      "cutoff_bits": 3663,
+      "tolerance": "1/4294967296"
+    },
+    {
+      "index": 16,
+      "cutoff_bits": 4419,
+      "tolerance": "1/17179869184"
+    },
+    {
+      "index": 17,
+      "cutoff_bits": 5273,
+      "tolerance": "1/68719476736"
+    },
+    {
+      "index": 18,
+      "cutoff_bits": 6231,
+      "tolerance": "1/274877906944"
+    },
+    {
+      "index": 19,
+      "cutoff_bits": 7299,
+      "tolerance": "1/1099511627776"
+    },
+    {
+      "index": 20,
+      "cutoff_bits": 8483,
+      "tolerance": "1/4398046511104"
+    },
+    {
+      "index": 21,
+      "cutoff_bits": 9789,
+      "tolerance": "1/17592186044416"
+    },
+    {
+      "index": 22,
+      "cutoff_bits": 11223,
+      "tolerance": "1/70368744177664"
+    },
+    {
+      "index": 23,
+      "cutoff_bits": 12791,
+      "tolerance": "1/281474976710656"
+    },
+    {
+      "index": 24,
+      "cutoff_bits": 14499,
+      "tolerance": "1/1125899906842624"
+    }
+  ],
+  "fixed_scale_vs_diagonal_control": "j/M has diagonal value 1 at M=j; scheduled tails meet their budgets",
+  "invalid_inputs_rejected": [
+    "zero-tolerance",
+    "negative-gain",
+    "negative-mass",
+    "negative-bandwidth",
+    "binary-float"
+  ],
+  "scope": "Exact arithmetic and finite algebraic regressions only. Synthetic scale families, no additional actual Weil-window certificates.",
+  "lean_kernel_executed": false
+}
