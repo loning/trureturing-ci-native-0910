@@ -182,6 +182,14 @@ internal static partial class RepositoryRules
                 FrozenPairRule.Evaluate,
                 FrozenPairRule.IsAffectedBy,
                 FrozenPairRule.Evaluate)),
+        Register(
+            34,
+            "Closed Lean modules require frozen state",
+            new RepositoryRule(
+                ModuleStateGateRule.IsApplicable,
+                ModuleStateGateRule.Evaluate,
+                ModuleStateGateRule.IsAffectedBy,
+                ModuleStateGateRule.Evaluate)),
     ];
 
     private static RuleRegistration Register(
