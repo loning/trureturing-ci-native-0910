@@ -133,18 +133,18 @@ theorem truncate_preserves_stein (w : Fin (n + 1) → ℝ)
     have ho := hO (lift z)
     have hd := energy_keep_le w (A.mulVec (lift z)) (le_of_lt (hw (Fin.last n)))
     rw [keep_mul_lift] at hd
-    rw [energy_lift, output_mul_lift] at ho
-    exact (add_le_add_right hd _).trans ho
+    rw [energy_lift, output_mul_lift C] at ho
+    exact (add_le_add hd le_rfl).trans ho
   · intro z
     have hr := hR (lift z)
     have hd := energy_keep_le w (A.transpose.mulVec (lift z)) (le_of_lt (hw (Fin.last n)))
     rw [keep_mul_lift] at hd
-    rw [energy_lift, output_mul_lift] at hr
+    rw [energy_lift, output_mul_lift B.transpose] at hr
     change energy (keep w) ((truncateA A).transpose.mulVec z) ≤
       energy w (A.transpose.mulVec (lift z)) at hd
     change energy w (A.transpose.mulVec (lift z)) +
       squareSum ((truncateB B).transpose.mulVec z) ≤ energy (keep w) z at hr
-    exact (add_le_add_right hd _).trans hr
+    exact (add_le_add hd le_rfl).trans hr
 
 /-- The balanced error storage combines difference and sum states. -/
 def truncationStorage (w : Fin (n + 1) → ℝ) (x : Fin (n + 1) → ℝ)
@@ -255,7 +255,9 @@ theorem finite_horizon_dissipation (w : Fin (n + 1) → ℝ)
         (discardedForcing A B (matrixState (truncateA A) (truncateB B) u k) (u k)) ^ 2) ≤
     4 * (w (Fin.last n)) ^ 2 * ∑ k ∈ Finset.range N, squareSum (u k) := by
   induction N with
-  | zero => simp [truncationStorage, lift]
+  | zero =>
+      have hl : lift (0 : Fin n → ℝ) = 0 := map_zero (liftMap (n := n))
+      simp [truncationStorage, hl]
   | succ N ih =>
       have step := single_step_dissipation w A B C h (matrixState A B u N)
         (matrixState (truncateA A) (truncateB B) u N) (u N)

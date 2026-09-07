@@ -60,7 +60,7 @@ theorem complexEnergy_eq_zero_iff (w : Fin n → ℝ) (hw : ∀ i, 0 < w i) (z :
         mul_nonneg (le_of_lt (hw i)) (Complex.normSq_nonneg (z i)))).mp he
     ext i
     have hz := (mul_eq_zero.mp (hh i (Finset.mem_univ i))).resolve_left (ne_of_gt (hw i))
-    simpa only [Complex.normSq_eq_norm_sq, sq_eq_zero_iff, norm_eq_zero] using hz
+    simpa only [Complex.normSq_eq_norm_sq, sq_eq_zero_iff, norm_eq_zero, Pi.zero_apply] using hz
   · rintro rfl
     simp [complexEnergy]
 
@@ -74,7 +74,7 @@ theorem complexEnergy_pos (w : Fin n → ℝ) (hw : ∀ i, 0 < w i)
 theorem complexEnergy_smul (w : Fin n → ℝ) (a : ℂ) (z : Fin n → ℂ) :
     complexEnergy w (a • z) = ‖a‖ ^ 2 * complexEnergy w z := by
   simp only [complexEnergy, Pi.smul_apply, smul_eq_mul, Complex.normSq_mul,
-    Complex.normSq_eq_norm_sq, Finset.mul_sum]
+    Complex.normSq_eq_norm_sq, norm_mul, Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro i _
   ring
@@ -106,12 +106,16 @@ theorem observable_complexification (A : Matrix (Fin n) (Fin n) ℝ)
     apply hobs
     intro k
     have hh := congrArg (fun y : Fin p → ℂ => fun i => (y i).re) (hz k)
-    simpa only [action_re, Pi.zero_apply, Complex.zero_re] using hh
+    simp only [action_re, Pi.zero_apply, Complex.zero_re] at hh
+    ext i
+    simpa only [Pi.zero_apply] using congrFun hh i
   have him : (fun i => (z i).im) = 0 := by
     apply hobs
     intro k
     have hh := congrArg (fun y : Fin p → ℂ => fun i => (y i).im) (hz k)
-    simpa only [action_im, Pi.zero_apply, Complex.zero_im] using hh
+    simp only [action_im, Pi.zero_apply, Complex.zero_im] at hh
+    ext i
+    simpa only [Pi.zero_apply] using congrFun hh i
   ext i
   apply Complex.ext
   · exact congrFun hre i
@@ -130,7 +134,7 @@ def prefixProjection (r : ℕ) (z : Fin n → ℂ) : Fin n → ℂ :=
     prefixLift hr z (Fin.castLE hr j) = z j := by
   have hinj (k : Fin r) : Fin.castLE hr k = Fin.castLE hr j ↔ k = j := by
     constructor
-    · intro hh; exact Fin.ext (congrArg Fin.val hh)
+    · intro hh; exact Fin.ext (congrArg (fun index : Fin n => index.val) hh)
     · rintro rfl; rfl
   simp [prefixLift, hinj]
 
@@ -232,7 +236,7 @@ theorem principal_truncation_eigenvalue_lt_one (w : Fin n → ℝ) (hw : ∀ i, 
     (fun _ => by norm_num) ((complexMatrix C).mulVec x)
   change complexEnergy w y + _ ≤ complexEnergy w x at ho
   have hsq : ‖a‖ ^ 2 ≤ 1 := by
-    apply (mul_le_mul_iff_right₀ hepos).mp
+    apply (mul_le_mul_iff_left₀ hepos).mp
     calc
       ‖a‖ ^ 2 * complexEnergy w x ≤ complexEnergy w y := hpr
       _ ≤ complexEnergy w x := (le_add_of_nonneg_right hout0).trans ho

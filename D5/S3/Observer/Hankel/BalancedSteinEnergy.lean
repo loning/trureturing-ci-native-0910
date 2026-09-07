@@ -92,7 +92,7 @@ theorem squareSum_smul (a : ℝ) (x : ι → ℝ) :
 
 private theorem weighted_young_scalar (w a b : ℝ) (hw : 0 < w) :
     2 * a * b ≤ w * a ^ 2 + w⁻¹ * b ^ 2 := by
-  apply (mul_le_mul_iff_right₀ hw).mp
+  apply (mul_le_mul_iff_left₀ hw).mp
   calc
     (2 * a * b) * w ≤ (w * a) ^ 2 + b ^ 2 := by
       nlinarith [sq_nonneg (w * a - b)]

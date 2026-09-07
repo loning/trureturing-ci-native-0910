@@ -45,7 +45,7 @@ private theorem transition_from (b : Coordinates P Q) (A : Matrix (Fin n) (Fin n
 
 private theorem input_to (b : Coordinates P Q) (B : Matrix (Fin n) (Fin m) ℝ) :
     b.toOriginal * balancedB b B = B := by
-  simp only [balancedB, ← Matrix.mul_assoc, b.to_from, one_mul]
+  simp only [balancedB, ← Matrix.mul_assoc, b.to_from, Matrix.one_mul]
 
 /-- Exact observability Stein equality is transported by the constructed congruence. -/
 theorem balanced_observability_stein (b : Coordinates P Q)
@@ -89,7 +89,7 @@ private theorem quadratic_add {ι : Type} [Fintype ι]
 private theorem quadratic_star_self {ι κ : Type} [Fintype ι] [DecidableEq ι]
     [Fintype κ] [DecidableEq κ] (M : Matrix ι κ ℝ) (x : κ → ℝ) :
     quadratic (Mᴴ * M) x = squareSum (M.mulVec x) := by
-  simpa only [mul_one, quadratic_one] using
+  simpa only [Matrix.mul_one, quadratic_one] using
     quadratic_congruence (1 : Matrix ι ι ℝ) M x
 
 /-- Exact matrix Stein equalities establish all the hypotheses of the existing

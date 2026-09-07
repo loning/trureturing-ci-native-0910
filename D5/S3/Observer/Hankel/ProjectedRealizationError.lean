@@ -91,7 +91,7 @@ private theorem stateError_step_bound (A : V →L[ℝ] V) (B : U →L[ℝ] V)
         ‖inputResidual B P J‖ * ‖input n‖ := by
   rw [stateError_succ]
   exact (norm_add_le _ _).trans
-    ((add_le_add_right (norm_add_le _ _) _).trans
+    ((add_le_add (norm_add_le _ _) le_rfl).trans
       (add_le_add
         (add_le_add (A.le_opNorm _) ((dynamicsResidual A P J).le_opNorm _))
         ((inputResidual B P J).le_opNorm _)))
@@ -135,7 +135,7 @@ theorem stateError_le_residual_sum (A : V →L[ℝ] V) (B : U →L[ℝ] V)
             ‖A‖ * ‖stateError A B P J input n‖ + r n := by
           simpa only [r, add_assoc] using stateError_step_bound A B P J input n
         _ ≤ ‖A‖ * weightedResidual ‖A‖ r n + r n :=
-          add_le_add_right (mul_le_mul_of_nonneg_left ih (norm_nonneg A)) _
+          add_le_add (mul_le_mul_of_nonneg_left ih (norm_nonneg A)) le_rfl
 
 /-- Convert the residual state certificate into an output-error certificate. -/
 theorem outputError_le_residual_sum (A : V →L[ℝ] V) (B : U →L[ℝ] V)

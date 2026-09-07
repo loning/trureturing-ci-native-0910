@@ -47,7 +47,7 @@ theorem gramianRoot_spec (P : Matrix ι ι ℝ) (hP : P.PosDef) :
     have he := congrArg Matrix.det hs
     rw [Matrix.det_mul, hz, zero_mul] at he
     exact (ne_of_gt hP.det_pos) he.symm
-  have hu : IsUnit L := Matrix.isUnit_iff_isUnit_det.mpr (isUnit_iff_ne_zero.mpr hd)
+  have hu : IsUnit L := (Matrix.isUnit_iff_isUnit_det L).mpr (isUnit_iff_ne_zero.mpr hd)
   exact ⟨hn.posDef_iff_isUnit.mpr hu, hn.isHermitian, hs⟩
 
 private theorem diagonal_scalings (w : ι → ℝ) (hw : ∀ i, 0 < w i) :
@@ -88,7 +88,7 @@ theorem coordinates_nonempty (P Q : Matrix ι ι ℝ) (hP : P.PosDef) (hQ : Q.Po
   change Lᴴ = L at hLs
   change L * L = P at hLL
   have hLi : Function.Injective L.mulVec := Matrix.mulVec_injective_iff_isUnit.mpr hLp.isUnit
-  have hLd : IsUnit L.det := Matrix.isUnit_iff_isUnit_det.mp hLp.isUnit
+  have hLd : IsUnit L.det := (Matrix.isUnit_iff_isUnit_det L).mp hLp.isUnit
   have hLR : L * L⁻¹ = 1 := Matrix.mul_nonsing_inv L hLd
   have hRL : L⁻¹ * L = 1 := Matrix.nonsing_inv_mul L hLd
   let K := L * Q * L
@@ -102,7 +102,7 @@ theorem coordinates_nonempty (P Q : Matrix ι ι ℝ) (hP : P.PosDef) (hQ : Q.Po
     funext i
     exact Real.sq_sqrt (le_of_lt (hK.eigenvalues_pos i))
   have hUU : (U : Matrix ι ι ℝ) * (U : Matrix ι ι ℝ)ᴴ = 1 := by
-    simpa only [Matrix.star_eq_conjTranspose] using Unitary.coe_mul_star_self U
+    simpa only [Unitary.coe_star, Matrix.star_eq_conjTranspose] using Unitary.coe_mul_star_self U
   have hUU' : (U : Matrix ι ι ℝ)ᴴ * (U : Matrix ι ι ℝ) = 1 := by
     simpa only [Matrix.star_eq_conjTranspose] using Unitary.coe_star_mul_self U
   have hKU : (U : Matrix ι ι ℝ)ᴴ * K * (U : Matrix ι ι ℝ) = diagonal lam := by
@@ -176,7 +176,7 @@ theorem gramian_product_charpoly :
     (P * Q).charpoly = ∏ i, (Polynomial.X - Polynomial.C ((b.weight i) ^ 2)) := by
   have hconj : b.fromOriginal * (P * Q) * b.toOriginal =
       diagonal (fun i => (b.weight i) ^ 2) := by
-    rw [b.controllability_factor]
+    conv_lhs => arg 1; arg 2; arg 1; rw [b.controllability_factor]
     calc
       b.fromOriginal * ((b.toOriginal * diagonal b.weight * b.toOriginalᴴ) * Q) *
           b.toOriginal = (b.fromOriginal * b.toOriginal) * diagonal b.weight *

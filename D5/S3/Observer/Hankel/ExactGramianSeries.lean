@@ -95,7 +95,7 @@ private theorem term_quadratic (A : Matrix ι ι ℝ) (C : Matrix κ ι ℝ)
     (x : ι → ℝ) (k : ℕ) :
     quadratic (observationTerm A C k) x = squareSum ((C * A ^ k).mulVec x) := by
   have h := quadratic_congruence (1 : Matrix κ κ ℝ) (C * A ^ k) x
-  simpa only [mul_one, quadratic_one, observationTerm] using h
+  simpa only [Matrix.mul_one, quadratic_one, observationTerm] using h
 
 /-- The full quadratic form is exactly the energy of all actual future readouts. -/
 theorem observationGramian_energy (A : Matrix ι ι ℝ) (C : Matrix κ ι ℝ)
@@ -160,7 +160,7 @@ theorem observationGramian_stein (A : Matrix ι ι ℝ) (C : Matrix κ ι ℝ)
   have hstep (k : ℕ) : observationTerm A C (k + 1) = Aᴴ * observationTerm A C k * A := by
     simp only [observationTerm, pow_succ, conjTranspose_mul, Matrix.mul_assoc]
   have he := hs.tsum_eq_zero_add
-  simp only [observationTerm, pow_zero, mul_one] at he
+  simp only [observationTerm, pow_zero, Matrix.mul_one] at he
   have ht : (∑' k, observationTerm A C (k + 1)) =
       Aᴴ * observationGramian A C * A := by
     simp_rw [hstep]
@@ -199,34 +199,37 @@ private theorem euclidean_mul {η : Type} [Fintype η] [DecidableEq η]
     (M : Matrix ι κ ℝ) (N : Matrix κ η ℝ) :
     (M * N).toEuclideanLin = M.toEuclideanLin.comp N.toEuclideanLin := by
   ext x i
-  exact congrFun (Matrix.mulVec_mulVec M N (WithLp.ofLp x)).symm i
+  exact congrFun (Matrix.mulVec_mulVec (WithLp.ofLp x) M N).symm i
 
 /-- The actual matrix series represents the repository's undiscounted
 observability Gramian on Euclidean state coordinates. This identifies the
 existing owner rather than silently introducing a second operator Gramian. -/
 theorem observationGramian_eq_existing (A : Matrix ι ι ℝ) (C : Matrix κ ι ℝ) :
-    Matrix.toEuclideanCLM (observationGramian A C) =
+    Matrix.toEuclideanCLM (𝕜 := ℝ) (n := ι) (observationGramian A C) =
       D5.S3.Observer.Linear.DiscountedObservabilityGramianPositivity.discountedObservabilityGramian
         A.toEuclideanLin C.toEuclideanLin 1 := by
   let e : Matrix ι ι ℝ ≃L[ℝ] (EuclideanSpace ℝ ι →L[ℝ] EuclideanSpace ℝ ι) :=
-    (Matrix.toEuclideanCLM (𝕜 := ℝ) (n := ι)).toLinearEquiv.toContinuousLinearEquiv
+    (Matrix.toEuclideanCLM (𝕜 := ℝ) (n := ι)).toAlgEquiv.toLinearEquiv.toContinuousLinearEquiv
   change e (∑' k, observationTerm A C k) = _
   rw [e.map_tsum]
   apply tsum_congr
   intro k
   have hp : (A ^ k).toEuclideanLin = A.toEuclideanLin ^ k := by
-    have he := congrArg ContinuousLinearMap.toLinearMap (map_pow Matrix.toEuclideanCLM A k)
-    exact he
+    have he := congrArg ContinuousLinearMap.toLinearMap
+      (map_pow (Matrix.toEuclideanCLM (𝕜 := ℝ) (n := ι)) A k)
+    simpa only [ContinuousLinearMap.toLinearMap_pow,
+      Matrix.coe_toEuclideanCLM_eq_toEuclideanLin] using he
   have hm : (C * A ^ k).toEuclideanLin = C.toEuclideanLin.comp (A.toEuclideanLin ^ k) := by
     rw [euclidean_mul, hp]
   have hl : (observationTerm A C k).toEuclideanLin =
       (C.toEuclideanLin.comp (A.toEuclideanLin ^ k)).adjoint.comp
         (C.toEuclideanLin.comp (A.toEuclideanLin ^ k)) := by
     rw [observationTerm, euclidean_mul, Matrix.toEuclideanLin_conjTranspose_eq_adjoint, hm]
-  have hc := congrArg LinearMap.toContinuousLinearMap hl
+  apply ContinuousLinearMap.coe_injective
   simpa [e, D5.S3.Observer.Linear.DiscountedObservabilityGramianPositivity.discountedGramianTerm,
     D5.S3.Observer.Linear.DiscountedObservabilityGramianPositivity.observedIterate,
-    ← LinearMap.adjoint_toContinuousLinearMap] using hc
+    Matrix.coe_toEuclideanCLM_eq_toEuclideanLin,
+    ← LinearMap.adjoint_toContinuousLinearMap] using hl
 
 /-- The finite observation window and the exact terminal-state remainder
 partition the actual infinite Gramian. -/

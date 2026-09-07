@@ -50,7 +50,7 @@ def normalizedFuture (A : Matrix ι ι ℝ) (C : Matrix κ ι ℝ)
     (hL : Lᴴ * observationGramian A C * L = diagonal w) :
     EuclideanSpace ℝ ι →ₗᵢ[ℝ] Signal κ where
   toLinearMap := ((futureOutput A C hA).comp
-    (Matrix.toEuclideanCLM (L * invRootDiagonal w))).toLinearMap
+    (Matrix.toEuclideanCLM (𝕜 := ℝ) (n := ι) (L * invRootDiagonal w))).toLinearMap
   norm_map' x := by
     have hn : (L * invRootDiagonal w)ᴴ * observationGramian A C *
         (L * invRootDiagonal w) = 1 := by
@@ -61,13 +61,16 @@ def normalizedFuture (A : Matrix ι ι ℝ) (C : Matrix κ ι ℝ)
     have he := quadratic_congruence (observationGramian A C)
       (L * invRootDiagonal w) (WithLp.ofLp x)
     rw [hn, quadratic_one] at he
-    have hs := futureOutput_norm_sq A C hA (Matrix.toEuclideanCLM (L * invRootDiagonal w) x)
+    have hs := futureOutput_norm_sq A C hA
+      (Matrix.toEuclideanCLM (𝕜 := ℝ) (n := ι) (L * invRootDiagonal w) x)
     rw [Matrix.ofLp_toEuclideanCLM, ← he] at hs
     have hx : squareSum (WithLp.ofLp x) = ‖x‖ ^ 2 :=
       (EuclideanSpace.real_norm_sq_eq x).symm
     rw [hx] at hs
+    change ‖futureOutput A C hA
+      (Matrix.toEuclideanCLM (𝕜 := ℝ) (n := ι) (L * invRootDiagonal w) x)‖ = ‖x‖
     nlinarith [norm_nonneg (futureOutput A C hA
-      (Matrix.toEuclideanCLM (L * invRootDiagonal w) x)), norm_nonneg x]
+      (Matrix.toEuclideanCLM (𝕜 := ℝ) (n := ι) (L * invRootDiagonal w) x)), norm_nonneg x]
 
 /-- Left Schmidt-space isometry, made from actual original-system future outputs. -/
 def leftIsometry (A : Matrix ι ι ℝ) (B : Matrix ι κ ℝ) (C : Matrix η ι ℝ)
@@ -90,7 +93,7 @@ theorem hankel_isometric_factorization (A : Matrix ι ι ℝ) (B : Matrix ι κ 
     (C : Matrix η ι ℝ) (hA : Summable (fun k : ℕ => ‖A ^ k‖ ^ 2))
     (b : Coordinates (controlGramian A B) (observationGramian A C)) :
     hankel A B C hA = (leftIsometry A B C hA b).toContinuousLinearMap.comp
-      ((Matrix.toEuclideanCLM (diagonal b.weight)).comp
+      ((Matrix.toEuclideanCLM (𝕜 := ℝ) (n := ι) (diagonal b.weight)).comp
         (rightIsometry A B C hA b).toContinuousLinearMap.adjoint) := by
   let I := invRootDiagonal b.weight
   have hm : (b.toOriginal * I) * (diagonal b.weight * (b.fromOriginalᴴ * I)ᴴ) = 1 := by
@@ -100,25 +103,27 @@ theorem hankel_isometric_factorization (A : Matrix ι ι ℝ) (B : Matrix ι κ 
           conjTranspose_conjTranspose, Matrix.mul_assoc]
       _ = 1 := by rw [invRootDiagonal_normalizes b.weight b.positive, mul_one, b.to_from]
   have ha (M : Matrix ι ι ℝ) :
-      Matrix.toEuclideanCLM Mᴴ = (Matrix.toEuclideanCLM M).adjoint :=
-    map_star Matrix.toEuclideanCLM M
-  have hc := congrArg (Matrix.toEuclideanCLM (𝕜 := ℝ) (n := ι)) hm
-  simp only [map_mul, map_one, ha] at hc
-  change (Matrix.toEuclideanCLM (b.toOriginal * I)).comp
-    ((Matrix.toEuclideanCLM (diagonal b.weight)).comp
-      (Matrix.toEuclideanCLM (b.fromOriginalᴴ * I)).adjoint) = 1 at hc
+      Matrix.toEuclideanCLM (𝕜 := ℝ) (n := ι) Mᴴ =
+        (Matrix.toEuclideanCLM (𝕜 := ℝ) (n := ι) M).adjoint :=
+    map_star (Matrix.toEuclideanCLM (𝕜 := ℝ) (n := ι)) M
+  have hc : (Matrix.toEuclideanCLM (𝕜 := ℝ) (n := ι) (b.toOriginal * I)).comp
+    ((Matrix.toEuclideanCLM (𝕜 := ℝ) (n := ι) (diagonal b.weight)).comp
+      (Matrix.toEuclideanCLM (𝕜 := ℝ) (n := ι) (b.fromOriginalᴴ * I)).adjoint) = 1 := by
+    have hc := congrArg (Matrix.toEuclideanCLM (𝕜 := ℝ) (n := ι)) hm
+    simpa only [map_mul, map_one, ha, ContinuousLinearMap.mul_def] using hc
   let O := futureOutput A C hA
   let Z := futureOutput Aᴴ Bᴴ (adjoint_power_square_summable A hA)
   change O.comp Z.adjoint =
-    (O.comp (Matrix.toEuclideanCLM (b.toOriginal * I))).comp
-      ((Matrix.toEuclideanCLM (diagonal b.weight)).comp
-        (Z.comp (Matrix.toEuclideanCLM (b.fromOriginalᴴ * I))).adjoint)
+    (O.comp (Matrix.toEuclideanCLM (𝕜 := ℝ) (n := ι) (b.toOriginal * I))).comp
+      ((Matrix.toEuclideanCLM (𝕜 := ℝ) (n := ι) (diagonal b.weight)).comp
+        (Z.comp (Matrix.toEuclideanCLM (𝕜 := ℝ) (n := ι) (b.fromOriginalᴴ * I))).adjoint)
   rw [ContinuousLinearMap.adjoint_comp]
   symm
   calc
-    _ = O.comp (((Matrix.toEuclideanCLM (b.toOriginal * I)).comp
-        ((Matrix.toEuclideanCLM (diagonal b.weight)).comp
-          (Matrix.toEuclideanCLM (b.fromOriginalᴴ * I)).adjoint)).comp Z.adjoint) := by
+    _ = O.comp (((Matrix.toEuclideanCLM (𝕜 := ℝ) (n := ι) (b.toOriginal * I)).comp
+        ((Matrix.toEuclideanCLM (𝕜 := ℝ) (n := ι) (diagonal b.weight)).comp
+          (Matrix.toEuclideanCLM (𝕜 := ℝ) (n := ι) (b.fromOriginalᴴ * I)).adjoint)).comp
+            Z.adjoint) := by
       simp only [ContinuousLinearMap.comp_assoc]
     _ = O.comp Z.adjoint := by rw [hc]; rfl
 
@@ -129,7 +134,8 @@ private theorem isometry_adjoint_self {E F : Type} [NormedAddCommGroup E] [Inner
   apply ext_inner_left ℝ
   intro y
   change ⟪y, V.toContinuousLinearMap.adjoint (V x)⟫ = ⟪y, x⟫
-  rw [ContinuousLinearMap.adjoint_inner_right, V.inner_map_map]
+  rw [ContinuousLinearMap.adjoint_inner_right]
+  exact V.inner_map_map y x
 
 /-- The genuine left singular trajectories. -/
 def leftMode (A : Matrix ι ι ℝ) (B : Matrix ι κ ℝ) (C : Matrix η ι ℝ)
@@ -161,10 +167,11 @@ theorem modes_orthonormal (A : Matrix ι ι ℝ) (B : Matrix ι κ ℝ) (C : Mat
   ⟨mapped_basis_orthonormal _, mapped_basis_orthonormal _⟩
 
 private theorem diagonal_basis (w : ι → ℝ) (i : ι) :
-    Matrix.toEuclideanCLM (diagonal w) (EuclideanSpace.basisFun ι ℝ i) =
+    Matrix.toEuclideanCLM (𝕜 := ℝ) (n := ι) (diagonal w) (EuclideanSpace.basisFun ι ℝ i) =
       w i • EuclideanSpace.basisFun ι ℝ i := by
-  simp [EuclideanSpace.basisFun_apply, Matrix.toEuclideanCLM_toLp,
-    Matrix.diagonal_mulVec_single, WithLp.toLp_smul]
+  simp only [EuclideanSpace.basisFun_apply, ← EuclideanSpace.toLp_single,
+    Matrix.toEuclideanCLM_toLp, Matrix.diagonal_mulVec_single,
+    ← WithLp.toLp_smul, ← Pi.single_smul, smul_eq_mul]
 
 /-- Forward and adjoint singular-vector equations for every balancing weight. -/
 theorem hankel_mode_equations (A : Matrix ι ι ℝ) (B : Matrix ι κ ℝ) (C : Matrix η ι ℝ)
@@ -174,12 +181,12 @@ theorem hankel_mode_equations (A : Matrix ι ι ℝ) (B : Matrix ι κ ℝ) (C :
     (hankel A B C hA).adjoint (leftMode A B C hA b i) = b.weight i • rightMode A B C hA b i := by
   let F := (leftIsometry A B C hA b).toContinuousLinearMap
   let G := (rightIsometry A B C hA b).toContinuousLinearMap
-  let D := Matrix.toEuclideanCLM (diagonal b.weight)
+  let D := Matrix.toEuclideanCLM (𝕜 := ℝ) (n := ι) (diagonal b.weight)
   have hF : F.adjoint.comp F = 1 := isometry_adjoint_self _
   have hG : G.adjoint.comp G = 1 := isometry_adjoint_self _
   have hD : D.adjoint = D := by
     have hh := map_star (Matrix.toEuclideanCLM (𝕜 := ℝ) (n := ι)) (diagonal b.weight)
-    simpa [Matrix.star_eq_conjTranspose] using hh.symm
+    simpa [D, Matrix.star_eq_conjTranspose, ContinuousLinearMap.star_eq_adjoint] using hh.symm
   have hf := hankel_isometric_factorization A B C hA b
   change hankel A B C hA = F.comp (D.comp G.adjoint) at hf
   constructor
@@ -207,12 +214,14 @@ theorem hankel_schmidt_expansion (A : Matrix ι ι ℝ) (B : Matrix ι κ ℝ) (
       leftMode A B C hA b i := by
   let F := (leftIsometry A B C hA b).toContinuousLinearMap
   let G := (rightIsometry A B C hA b).toContinuousLinearMap
-  let D := Matrix.toEuclideanCLM (diagonal b.weight)
+  let D := Matrix.toEuclideanCLM (𝕜 := ℝ) (n := ι) (diagonal b.weight)
   let e := EuclideanSpace.basisFun ι ℝ
   have hx : G.adjoint u = ∑ i, ⟪e i, G.adjoint u⟫ • e i := by
     simpa only [OrthonormalBasis.repr_apply_apply] using (e.sum_repr (G.adjoint u)).symm
-  rw [hankel_isometric_factorization]
-  change F (D (G.adjoint u)) = _
+  have hf : hankel A B C hA = F.comp (D.comp G.adjoint) :=
+    hankel_isometric_factorization A B C hA b
+  rw [hf]
+  simp only [ContinuousLinearMap.comp_apply]
   rw [hx, map_sum, map_sum]
   apply Finset.sum_congr rfl
   intro i _
@@ -234,7 +243,7 @@ theorem hankel_kernel_iff (A : Matrix ι ι ℝ) (B : Matrix ι κ ℝ) (C : Mat
       real_inner_smul_left] at he
     exact (mul_eq_zero.mp he).resolve_left (ne_of_gt (b.positive i))
   · intro hu
-    rw [hankel_schmidt_expansion]
+    rw [hankel_schmidt_expansion A B C hA b]
     simp [hu]
 
 /-- No additional nonzero squared singular eigenvalue can occur for the actual

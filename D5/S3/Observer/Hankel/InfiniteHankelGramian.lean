@@ -34,8 +34,8 @@ def futureOutput (A : Matrix ι ι ℝ) (C : Matrix κ ι ℝ)
     { toFun := fun x => ⟨fun k => (C * A ^ k).toEuclideanLin x, by
         apply memℓp_gen
         have hs := observation_energy_summable A C hA (WithLp.ofLp x)
-        simpa [EuclideanSpace.real_norm_sq_eq, squareSum, Matrix.toLpLin_apply,
-          Real.rpow_natCast] using hs⟩
+        simpa only [EuclideanSpace.real_norm_sq_eq, squareSum, Matrix.toLpLin_apply,
+          Real.rpow_two, ENNReal.toReal_ofNat, WithLp.ofLp_toLp] using hs⟩
       map_add' := by
         intro x y
         apply lp.ext
@@ -56,7 +56,7 @@ theorem futureOutput_norm_sq (A : Matrix ι ι ℝ) (C : Matrix κ ι ℝ)
     (hA : Summable (fun k : ℕ => ‖A ^ k‖ ^ 2)) (x : EuclideanSpace ℝ ι) :
     ‖futureOutput A C hA x‖ ^ 2 = quadratic (observationGramian A C) (WithLp.ofLp x) := by
   have he := lp.norm_rpow_eq_tsum (p := 2) (by norm_num) (futureOutput A C hA x)
-  norm_num at he
+  simp only [ENNReal.toReal_ofNat, Real.rpow_two] at he
   rw [he, observationGramian_energy A C hA]
   apply tsum_congr
   intro k
@@ -70,7 +70,7 @@ theorem futureOutput_inner (A : Matrix ι ι ℝ) (C : Matrix κ ι ℝ)
       WithLp.ofLp x ⬝ᵥ (observationGramian A C).mulVec (WithLp.ofLp y) := by
   let Q := observationGramian A C
   have hQt : Qᵀ = Q := by
-    simpa only [conjTranspose_eq_transpose_of_trivial] using
+    simpa only [Matrix.IsHermitian, conjTranspose_eq_transpose_of_trivial] using
       (observationGramian_posSemidef A C hA).isHermitian
   have hs : WithLp.ofLp y ⬝ᵥ Q.mulVec (WithLp.ofLp x) =
       WithLp.ofLp x ⬝ᵥ Q.mulVec (WithLp.ofLp y) := by
@@ -88,8 +88,9 @@ theorem futureOutput_inner (A : Matrix ι ι ℝ) (C : Matrix κ ι ℝ)
 theorem futureOutput_gramian (A : Matrix ι ι ℝ) (C : Matrix κ ι ℝ)
     (hA : Summable (fun k : ℕ => ‖A ^ k‖ ^ 2)) :
     (futureOutput A C hA).adjoint.comp (futureOutput A C hA) =
-      Matrix.toEuclideanCLM (observationGramian A C) := by
-  ext x
+      Matrix.toEuclideanCLM (𝕜 := ℝ) (n := ι) (observationGramian A C) := by
+  apply ContinuousLinearMap.ext
+  intro x
   apply ext_inner_left ℝ
   intro y
   change ⟪y, (futureOutput A C hA).adjoint (futureOutput A C hA x)⟫ = _
@@ -109,7 +110,7 @@ def hankel (A : Matrix ι ι ℝ) (B : Matrix ι κ ℝ) (C : Matrix η ι ℝ)
 theorem pastInput_gramian (A : Matrix ι ι ℝ) (B : Matrix ι κ ℝ)
     (hA : Summable (fun k : ℕ => ‖A ^ k‖ ^ 2)) :
     (pastInput A B hA).comp (pastInput A B hA).adjoint =
-      Matrix.toEuclideanCLM (controlGramian A B) := by
+      Matrix.toEuclideanCLM (𝕜 := ℝ) (n := ι) (controlGramian A B) := by
   simpa only [pastInput, ContinuousLinearMap.adjoint_adjoint, controlGramian] using
     futureOutput_gramian Aᴴ Bᴴ (adjoint_power_square_summable A hA)
 
