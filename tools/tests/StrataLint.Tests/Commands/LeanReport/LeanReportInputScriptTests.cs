@@ -297,12 +297,26 @@ public sealed partial class LeanReportInputScriptTests
         fixture.Append("lean-toolchain", "mutation\n");
         var configChanged = fixture.CacheIdentity();
         Assert.NotEqual(before.Config, configChanged.Config);
+        Assert.NotEqual(before.Dependency, configChanged.Dependency);
         Assert.Equal(before.Sources, configChanged.Sources);
+
+        fixture.Append("lakefile.toml", "# project-only mutation\n");
+        var lakefileChanged = fixture.CacheIdentity();
+        Assert.NotEqual(configChanged.Config, lakefileChanged.Config);
+        Assert.Equal(configChanged.Dependency, lakefileChanged.Dependency);
+        Assert.Equal(configChanged.Sources, lakefileChanged.Sources);
+
+        fixture.Append("lake-manifest.json", "\n");
+        var manifestChanged = fixture.CacheIdentity();
+        Assert.NotEqual(lakefileChanged.Config, manifestChanged.Config);
+        Assert.NotEqual(lakefileChanged.Dependency, manifestChanged.Dependency);
+        Assert.Equal(lakefileChanged.Sources, manifestChanged.Sources);
 
         fixture.Append("D5/Probe.lean", "mutation\n");
         var sourceChanged = fixture.CacheIdentity();
-        Assert.Equal(configChanged.Config, sourceChanged.Config);
-        Assert.NotEqual(configChanged.Sources, sourceChanged.Sources);
+        Assert.Equal(manifestChanged.Config, sourceChanged.Config);
+        Assert.Equal(manifestChanged.Dependency, sourceChanged.Dependency);
+        Assert.NotEqual(manifestChanged.Sources, sourceChanged.Sources);
     }
 
     [Fact]
@@ -336,7 +350,7 @@ public sealed partial class LeanReportInputScriptTests
             Encoding.UTF8.GetString(result.StandardError));
         var parts = Encoding.UTF8.GetString(result.StandardOutput)
             .Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        Assert.Equal(4, parts.Length);
+        Assert.Equal(5, parts.Length);
         Assert.Matches("^[0-9a-f]{64}$", parts[0]);
         Assert.Equal(
             fixture.ManifestHash("Trureturing.lean", "D5/Probe.lean"),
@@ -600,7 +614,7 @@ public sealed partial class LeanReportInputScriptTests
             ReviewRegressionTests.RunGit(repository, "commit", "--quiet", "-m", "lean input fixture");
         }
 
-        internal void AssertMemoBehavior((string Sources, string Config) before)
+        internal void AssertMemoBehavior((string Sources, string Config, string Dependency) before)
         {
             if (OperatingSystem.IsWindows()) return;
 
@@ -674,14 +688,16 @@ public sealed partial class LeanReportInputScriptTests
                 .Split(' ', StringSplitOptions.RemoveEmptyEntries)[0];
         }
 
-        internal (string Sources, string Config) CacheIdentity()
+        internal (string Sources, string Config, string Dependency) CacheIdentity()
         {
             var result = Run("address");
             Assert.Equal(0, result.ExitCode);
             var parts = Encoding.UTF8.GetString(result.StandardOutput)
                 .Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            Assert.Equal(4, parts.Length);
-            return (parts[2], parts[3].Trim());
+            Assert.Equal(5, parts.Length);
+            Assert.Equal(ManifestHash("lean-toolchain", "lake-manifest.json", "lakefile.toml"), parts[3]);
+            Assert.Equal(ManifestHash("lean-toolchain", "lake-manifest.json"), parts[4].Trim());
+            return (parts[2], parts[3], parts[4].Trim());
         }
 
         internal void Append(string relativePath, string contents) => File.AppendAllText(

@@ -296,7 +296,7 @@ case "$VERB" in
     [[ "$declared" == "$actual" ]] \
       || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"digest mismatch"}\n' "$tag"; exit 1; }
     # Seed safety (#5994): mathlib is restored separately, keyed by the candidate's
-    # manifest and toolchain (the CI config key also includes lakefile.toml).
+    # manifest and toolchain; lakefile changes affect only the project cache key.
     # This archive supplies only the project layer. For an honestly produced cache,
     # each module's content-addressed .trace depHash makes lake build rebuild what
     # config/source changes invalidate, so stale oleans are not reused as current.

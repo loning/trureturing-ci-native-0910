@@ -336,13 +336,16 @@ jobs:
           read -r sources_sha256 config_sha256 <<< "$input_address"
           echo "sources_sha256=$sources_sha256" >> "$GITHUB_OUTPUT"
           echo "config_sha256=$config_sha256" >> "$GITHUB_OUTPUT"
+          dependency_sha256="$("$helper" dependency-address --repository "$GITHUB_WORKSPACE/candidate")"
+          [[ "$dependency_sha256" =~ ^[0-9a-f]{64}$ ]]
+          echo "dependency_sha256=$dependency_sha256" >> "$GITHUB_OUTPUT"
       - name: Probe candidate canonical Lean report address
         id: lean-report-input
         shell: bash
         run: |
           set -euo pipefail
           helper="$GITHUB_WORKSPACE/candidate/tools/scripts/report/lean-report-input.sh"
-          address_pattern='^([0-9a-f]{64} ){3}[0-9a-f]{64}$'
+          address_pattern='^([0-9a-f]{64} ){4}[0-9a-f]{64}$'
           if test -x "$helper" \
             && address_output="$("$helper" address --repository "$GITHUB_WORKSPACE/candidate")" \
             && [[ "$address_output" =~ $address_pattern ]]; then
@@ -406,6 +409,8 @@ jobs:
             exit 1
           fi
           "$GITHUB_WORKSPACE/candidate/tools/scripts/workflow/install-lean-toolchain.sh" candidate/lean-toolchain
+      # Dependency olean compatibility follows lean-toolchain + pinned lake-manifest.json.
+      # The lakefile only shapes the project layer, whose config_sha256 key stays broader.
       - name: Restore candidate Lean dependency artifacts
         id: lake-deps-cache
         if: steps.report-reuse.outcome != 'success'
@@ -416,9 +421,9 @@ jobs:
             candidate/.lake/config
             candidate/.lake/.stratalint-lean-cache-stamp.json
             ~/.cache/mathlib
-          key: ${{ runner.os }}-${{ runner.arch }}-lake-deps-v1-${{ steps.lean-input.outputs.config_sha256 }}
+          key: ${{ runner.os }}-${{ runner.arch }}-lake-deps-v2-${{ steps.lean-input.outputs.dependency_sha256 }}
           restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-lake-deps-v1-${{ steps.lean-input.outputs.config_sha256 }}
+            ${{ runner.os }}-${{ runner.arch }}-lake-deps-v2-
       # project 层优先取 Actions cache:它每次 dev push 写一份(约 8 分钟一份),
       # 而 Release 是 `cron: 0 */6 * * *` 且只许 schedule(实测间隔可达 7h05m)。
       # 精确命中结构上不可能(key 含 sources_sha256,每个改 Lean 的候选都不同),
@@ -443,7 +448,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          printf '%s\n' 'Actions project 层缺席;取 release cache:精确 → config 前缀 → 同工具链最近一层做种子,差量由 lake build 在本 job 预算内补齐(工程优化规范 §15 有预算的源码重建);连种子都没有才失败'
+          printf '%s\n' 'Actions project layer absent; resolve and validate a release seed (exact -> config prefix -> same-toolchain seed), then run lake build within the unchanged job budget (spec §12.4 budgeted source rebuild; §15 controlled CI recovery). Download, validation, or build failures remain terminal.'
           PATH="$HOME/.elan/bin:$PATH" candidate/tools/scripts/worktree/lean-cache-publish.sh fetch --allow-seed --repository "$GITHUB_WORKSPACE/candidate"
       - name: Build candidate Lean project
         id: lean-build
@@ -474,7 +479,7 @@ jobs:
             candidate/.lake/config
             candidate/.lake/.stratalint-lean-cache-stamp.json
             ~/.cache/mathlib
-          key: ${{ runner.os }}-${{ runner.arch }}-lake-deps-v1-${{ steps.lean-input.outputs.config_sha256 }}
+          key: ${{ runner.os }}-${{ runner.arch }}-lake-deps-v2-${{ steps.lean-input.outputs.dependency_sha256 }}
       - name: Build Scribe binary on judge cache miss
         if: steps.judge-cache.outputs.cache-hit != 'true'
         shell: bash

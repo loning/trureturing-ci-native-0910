@@ -303,10 +303,11 @@ managed_modules() {
 # Repository address preimage v1 hashes the resident inspector producer,
 # Trureturing.lean + D5/**/*.lean + tools/lean-inspector/**/*.lean sources,
 # and the Lean toolchain/lake configuration as three named SHA-256 fields.
+# The output appends dependency_sha256 without changing that preimage.
 repository_address() {
   local resident_manifest="$TMP_ROOT/resident-inspector.manifest"
   local preimage="$TMP_ROOT/repository-input.preimage"
-  local resident_sha256 sources_sha256 config_sha256 lean_input
+  local resident_sha256 sources_sha256 config_sha256 dependency_sha256 lean_input
 
   prepare_memo
   resident_sha256="$(producer_sha256 "$resident_manifest")" || return 2
@@ -314,6 +315,7 @@ repository_address() {
   [[ "$lean_input" =~ ^[0-9a-f]{64}\ [0-9a-f]{64}$ ]] \
     || { echo "lean-report-input: Lean input address is malformed" >&2; return 2; }
   read -r sources_sha256 config_sha256 <<< "$lean_input"
+  dependency_sha256="$(lean_dependency_sha256)" || return 2
 
   {
     printf '%s\n' "schema=stratalint-lean-report-repository-input-v1"
@@ -324,8 +326,8 @@ repository_address() {
   local address_sha256
   address_sha256="$(hash_file "$preimage")" || return 2
   store_memo_updates
-  printf '%s %s %s %s\n' \
-    "$address_sha256" "$resident_sha256" "$sources_sha256" "$config_sha256"
+  printf '%s %s %s %s %s\n' \
+    "$address_sha256" "$resident_sha256" "$sources_sha256" "$config_sha256" "$dependency_sha256"
 }
 
 verify_report_sha() {
@@ -384,10 +386,10 @@ case "$COMMAND" in
     producer="${producer#producer_sha256=}"
     address_output="$(repository_address)" || exit 2
     # Validate the complete tuple before read can collapse an empty field.
-    address_pattern='^([0-9a-f]{64} ){3}[0-9a-f]{64}$'
+    address_pattern='^([0-9a-f]{64} ){4}[0-9a-f]{64}$'
     [[ "$address_output" =~ $address_pattern ]] \
       || { echo "lean-report-input: repository address is malformed" >&2; exit 2; }
-    IFS=' ' read -r address current_producer current_sources current_config <<< "$address_output"
+    IFS=' ' read -r address current_producer _current_sources _current_config _current_dependency <<< "$address_output"
     [[ "$producer" == "$current_producer" ]] \
       || { echo "lean-report-input: raw Lean report producer is stale for current repository inputs; run make lean-report first" >&2; exit 2; }
     [[ "$declared" == "$address" ]] \
