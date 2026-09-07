@@ -90,7 +90,7 @@ public sealed partial class ScribeSeedCommandTests
     [InlineData("existing-receipt", "SEED_RECEIPT_PRESENT")]
     [InlineData("duplicate-receipts", "SEED_RECEIPT_PRESENT")]
     [InlineData("missing-edge", "SEED_EDGE_AMBIGUOUS")]
-    [InlineData("duplicate-edges", "SEED_EDGE_AMBIGUOUS")]
+    [InlineData("duplicate-edges", "BACKFILL_COVERAGE_ORDER")]
     [InlineData("missing-definition", "missing-definition")]
     [InlineData("missing-emission", "missing-emission")]
     [InlineData("missing-declaration-reference", "missing-declaration-reference")]
@@ -106,7 +106,7 @@ public sealed partial class ScribeSeedCommandTests
             scenario == "absent-atom" ? new string('a', 64) : fixture.First.AtomId,
             "--gid", ScribeSeedFixture.DeclarationGid, "--base", "baseline" };
 
-        var execution = Execute(fixture, arguments);
+        var execution = Execute(fixture, arguments, duplicateCoverage: scenario == "duplicate-edges");
 
         Assert.False(execution.Result.Success);
         Assert.Contains(expected, execution.Result.Error, StringComparison.Ordinal);
@@ -255,10 +255,6 @@ public sealed partial class ScribeSeedCommandTests
             case "missing-edge":
                 fixture.Document = ScribeSeedFixture.Map(fixture.Document, entry => entry with { Coverage = [] });
                 break;
-            case "duplicate-edges":
-                fixture.Document = ScribeSeedFixture.Map(fixture.Document, entry => entry with
-                { Coverage = entry.Coverage.Add(entry.Coverage[0]) });
-                break;
             case "missing-definition":
                 fixture.Files.Remove(ScribeEmissionAttestation.DefinitionPath(ScribeSeedFixture.ModuleGid));
                 break;
@@ -297,9 +293,23 @@ public sealed partial class ScribeSeedCommandTests
     private static SeedExecution Execute(
         ScribeSeedFixture fixture,
         IReadOnlyList<string>? arguments = null,
-        string? pairs = null)
+        string? pairs = null,
+        bool duplicateCoverage = false)
     {
         var before = fixture.Raw(fixture.Document);
+        if (duplicateCoverage)
+        {
+            // Malformed persisted input must enter after the canonical writer has run.
+            var edge = fixture.First.Coverage[0];
+            before = RawRepositorySnapshot.Create(before.Entries.Select(entry =>
+                entry.Path == ScribeSeedFixture.EntryPath(fixture.First)
+                    ? RawRepositoryEntry.FromText(entry.Path, Encoding.UTF8.GetString(entry.Bytes.AsSpan()).Replace(
+                        "coverage_gids:\n",
+                        $"coverage_gids:\n  - gid: {edge.Gid}\n    target_statement_id: {edge.TargetStatementId ?? "null"}\n",
+                        StringComparison.Ordinal))
+                    : entry));
+        }
+
         var after = before;
         var applyCalls = 0;
         var repository = new FakeRepositoryGateway(
