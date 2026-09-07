@@ -74,6 +74,9 @@ internal sealed class StubCliEnvironment(
         new(false, string.Empty, "decompose-atom is not configured in this fixture");
 
 
+    public CommandResult StripScribeReceipts(IReadOnlyList<string> arguments) =>
+        new(false, string.Empty, "strip-scribe-receipts is not configured in this fixture");
+
     public CommandResult Route(IReadOnlyList<string> arguments) =>
         new(false, string.Empty, "route is not configured in this fixture");
 
