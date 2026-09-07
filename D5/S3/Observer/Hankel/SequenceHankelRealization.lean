@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Observer/Hankel/SequenceHankelRealization
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: none
    digest: A finite-dimensional span of data tails yields an attained minimal realization. -/
 
 import D5.S3.Observer.Hankel.HankelMinimalStateDimension
