@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using StrataLint.Cli;
 using StrataLint.Engine;
+using YamlDotNet.RepresentationModel;
 
 namespace StrataLint.Tests;
 
@@ -30,7 +31,7 @@ public sealed class StripScribeReceiptsCommandTests
         var (fixture, document) = TwoSourceDocumentWithReceipts();
         var result = StripScribeReceiptsCommand.Run(
             "synthetic-repository",
-            new FakeRepositoryGateway(RawChangeSet.Create([]), fixture.Raw(document), fixture.Raw(document)),
+            new FakeRepositoryGateway(RawChangeSet.Create([]), RawWithHistoricalReceipts(fixture, document), RawWithHistoricalReceipts(fixture, document)),
             ["--dry-run"]);
 
         Assert.True(result.Success, result.Error);
@@ -48,7 +49,7 @@ public sealed class StripScribeReceiptsCommandTests
         var applyCalls = 0;
         var result = StripScribeReceiptsCommand.Run(
             "synthetic-repository",
-            new FakeRepositoryGateway(RawChangeSet.Create([]), fixture.Raw(document), fixture.Raw(document)),
+            new FakeRepositoryGateway(RawChangeSet.Create([]), RawWithHistoricalReceipts(fixture, document), RawWithHistoricalReceipts(fixture, document)),
             ["--source", "missing-v0.1"],
             (_, _, _) => applyCalls++);
 
@@ -65,7 +66,7 @@ public sealed class StripScribeReceiptsCommandTests
         var applyCalls = 0;
         var result = StripScribeReceiptsCommand.Run(
             "synthetic-repository",
-            new FakeRepositoryGateway(RawChangeSet.Create([]), fixture.Raw(document), fixture.Raw(document)),
+            new FakeRepositoryGateway(RawChangeSet.Create([]), RawWithHistoricalReceipts(fixture, document), RawWithHistoricalReceipts(fixture, document)),
             ["--source", "alpha-v0.1", "--source", "missing-v0.1"],
             (_, _, _) => applyCalls++);
 
@@ -82,7 +83,7 @@ public sealed class StripScribeReceiptsCommandTests
         var applyCalls = 0;
         var result = StripScribeReceiptsCommand.Run(
             "synthetic-repository",
-            new FakeRepositoryGateway(RawChangeSet.Create([]), fixture.Raw(document), fixture.Raw(document)),
+            new FakeRepositoryGateway(RawChangeSet.Create([]), RawWithHistoricalReceipts(fixture, document), RawWithHistoricalReceipts(fixture, document)),
             ["--source", "alpha-v0.1", "--source", "alpha-v0.1"],
             (_, _, _) => applyCalls++);
 
@@ -119,16 +120,16 @@ public sealed class StripScribeReceiptsCommandTests
     {
         var (fixture, document) = TwoSourceDocumentWithReceipts();
         var entry = document.RequireDigestionSources()[0].Entries[0];
-        var valid = fixture.Raw(document);
+        var valid = RawWithHistoricalReceipts(fixture, document);
         var malformed = RawRepositorySnapshot.Create(valid.Entries.Select(rawEntry =>
-            rawEntry.Path == ScribeSeedFixture.EntryPath(entry)
+            rawEntry.Path == CoverageWithoutScribeFixture.EntryPath(entry)
                 ? RawRepositoryEntry.FromText(rawEntry.Path, "schema: [unclosed\n")
                 : rawEntry));
         var applyCalls = 0;
 
         var result = StripScribeReceiptsCommand.Run(
             "synthetic-repository",
-            new FakeRepositoryGateway(RawChangeSet.Create([]), malformed, fixture.Raw(document)),
+            new FakeRepositoryGateway(RawChangeSet.Create([]), malformed, RawWithHistoricalReceipts(fixture, document)),
             [],
             (_, _, _) => applyCalls++);
 
@@ -146,8 +147,8 @@ public sealed class StripScribeReceiptsCommandTests
     {
         var (fixture, document) = TwoSourceDocumentWithReceipts();
         var entries = document.RequireDigestionEntries();
-        var valid = fixture.Raw(document);
-        var malformedPath = ScribeSeedFixture.EntryPath(entries[1]);
+        var valid = RawWithHistoricalReceipts(fixture, document);
+        var malformedPath = CoverageWithoutScribeFixture.EntryPath(entries[1]);
         var malformed = RawRepositorySnapshot.Create(valid.Entries.Select(rawEntry =>
             rawEntry.Path == malformedPath
                 ? RawRepositoryEntry.FromText(rawEntry.Path, "schema: [unclosed\n")
@@ -156,7 +157,7 @@ public sealed class StripScribeReceiptsCommandTests
 
         var result = StripScribeReceiptsCommand.Run(
             "synthetic-repository",
-            new FakeRepositoryGateway(RawChangeSet.Create([]), malformed, fixture.Raw(document)),
+            new FakeRepositoryGateway(RawChangeSet.Create([]), malformed, RawWithHistoricalReceipts(fixture, document)),
             ["--source", "alpha-v0.1"],
             (_, _, _) => applyCalls++);
 
@@ -173,7 +174,7 @@ public sealed class StripScribeReceiptsCommandTests
         var empty = document.WithDigestionSources(document.RequireDigestionSources()
             .Select(static source => source with { Entries = [] })
             .ToImmutableArray());
-        var raw = fixture.Raw(empty);
+        var raw = RawWithHistoricalReceipts(fixture, empty);
         var applyCalls = 0;
 
         var result = StripScribeReceiptsCommand.Run(
@@ -194,8 +195,8 @@ public sealed class StripScribeReceiptsCommandTests
         var (fixture, document) = TwoSourceDocumentWithReceipts();
         var repository = new FakeRepositoryGateway(
             RawChangeSet.Create([]),
-            fixture.Raw(document),
-            fixture.Raw(document));
+            RawWithHistoricalReceipts(fixture, document),
+            RawWithHistoricalReceipts(fixture, document));
         var applyCalls = 0;
 
         var result = StripScribeReceiptsCommand.Run(
@@ -220,10 +221,9 @@ public sealed class StripScribeReceiptsCommandTests
         var sources = document.RequireDigestionSources();
         var alpha = sources[0].Entries[0];
         var beta = sources[1].Entries[0];
-        var files = new Dictionary<string, string>(fixture.Files, StringComparer.Ordinal);
-        DirectoryLedgerTestSupport.ReplaceWithProjection(files, document);
-        var alphaPath = ScribeSeedFixture.EntryPath(alpha);
-        var betaPath = ScribeSeedFixture.EntryPath(beta);
+        var files = FilesWithHistoricalReceipts(fixture, document);
+        var alphaPath = CoverageWithoutScribeFixture.EntryPath(alpha);
+        var betaPath = CoverageWithoutScribeFixture.EntryPath(beta);
         files[betaPath] += "# untouched byte sentinel\n";
         var current = RawRepositorySnapshot.Create(files.Select(static pair =>
             RawRepositoryEntry.FromText(pair.Key, pair.Value)));
@@ -266,8 +266,7 @@ public sealed class StripScribeReceiptsCommandTests
     public void RealWriterIsIdempotentAcrossReloadedOnDiskOutput()
     {
         var (fixture, document) = TwoSourceDocumentWithReceipts();
-        var files = new Dictionary<string, string>(fixture.Files, StringComparer.Ordinal);
-        DirectoryLedgerTestSupport.ReplaceWithProjection(files, document);
+        var files = FilesWithHistoricalReceipts(fixture, document);
         using var temporary = new TemporaryDirectory();
         DirectoryLedgerTestSupport.Write(temporary.Path, files);
 
@@ -325,7 +324,7 @@ public sealed class StripScribeReceiptsCommandTests
         var applyCalls = 0;
         var result = StripScribeReceiptsCommand.Run(
             "synthetic-repository",
-            new FakeRepositoryGateway(RawChangeSet.Create([]), fixture.Raw(document), fixture.Raw(document)),
+            new FakeRepositoryGateway(RawChangeSet.Create([]), RawWithHistoricalReceipts(fixture, document), RawWithHistoricalReceipts(fixture, document)),
             ["--dry-run"],
             (_, _, _) => applyCalls++);
 
@@ -343,7 +342,7 @@ public sealed class StripScribeReceiptsCommandTests
     public void ReportOrderIsCanonicalAcrossSnapshotEnumerationOrder()
     {
         var (fixture, document) = TwoSourceDocumentWithReceipts();
-        var forward = fixture.Raw(document);
+        var forward = RawWithHistoricalReceipts(fixture, document);
         var reverse = RawRepositorySnapshot.Create(forward.Entries.Reverse());
 
         var first = StripScribeReceiptsCommand.Run(
@@ -379,7 +378,7 @@ public sealed class StripScribeReceiptsCommandTests
             }).ToImmutableArray());
         var result = StripScribeReceiptsCommand.Run(
             "synthetic-repository",
-            new FakeRepositoryGateway(RawChangeSet.Create([]), fixture.Raw(document), fixture.Raw(document)),
+            new FakeRepositoryGateway(RawChangeSet.Create([]), RawWithHistoricalReceipts(fixture, document), RawWithHistoricalReceipts(fixture, document)),
             [],
             static (_, _, _) => { });
 
@@ -401,10 +400,10 @@ public sealed class StripScribeReceiptsCommandTests
         Assert.Equal("SCRIBE_STRIP_INVALID first line second line\n", result.Error);
     }
 
-    private static (ScribeSeedFixture Fixture, BackfillInventoryDocument Document)
+    private static (CoverageWithoutScribeFixture Fixture, BackfillInventoryDocument Document)
         TwoSourceDocumentWithReceipts()
     {
-        var fixture = new ScribeSeedFixture(2);
+        var fixture = new CoverageWithoutScribeFixture(2);
         var template = Assert.Single(fixture.Document.RequireDigestionSources());
         var entries = template.Entries.Select((entry, index) => entry with
         {
@@ -435,6 +434,46 @@ public sealed class StripScribeReceiptsCommandTests
             },
         ]);
         return (fixture, document);
+    }
+
+    private static RawRepositorySnapshot RawWithHistoricalReceipts(
+        CoverageWithoutScribeFixture fixture,
+        BackfillInventoryDocument document) =>
+        RawRepositorySnapshot.Create(FilesWithHistoricalReceipts(fixture, document)
+            .Select(static pair => RawRepositoryEntry.FromText(pair.Key, pair.Value)));
+
+    private static Dictionary<string, string> FilesWithHistoricalReceipts(
+        CoverageWithoutScribeFixture fixture,
+        BackfillInventoryDocument document)
+    {
+        var files = new Dictionary<string, string>(fixture.Files, StringComparer.Ordinal);
+        DirectoryLedgerTestSupport.ReplaceWithProjection(files, document);
+        // The current writer omits Scribe receipts; legacy input belongs to the fixture.
+        foreach (var entry in document.RequireDigestionEntries())
+        {
+            if (entry.Receipts.Scribe.IsEmpty)
+            {
+                continue;
+            }
+
+            var path = CoverageWithoutScribeFixture.EntryPath(entry);
+            var yaml = new YamlStream();
+            yaml.Load(new StringReader(files[path]));
+            var root = Assert.IsType<YamlMappingNode>(yaml.Documents[0].RootNode);
+            var receipts = Assert.IsType<YamlMappingNode>(root.Children[new YamlScalarNode("receipts")]);
+            receipts.Add("scribe", new YamlSequenceNode(entry.Receipts.Scribe.Select(receipt =>
+                new YamlMappingNode
+                {
+                    { "gid", receipt.Gid },
+                    { "definition_sha256", receipt.DefinitionSha256 },
+                    { "emission_sha256", receipt.EmissionSha256 },
+                })));
+            using var output = new StringWriter();
+            yaml.Save(output, assignAnchors: false);
+            files[path] = output.ToString();
+        }
+
+        return files;
     }
 
     private sealed class MultilineFailureRepositoryGateway : IRepositoryGateway
