@@ -50,4 +50,6 @@ internal sealed class GoldenDepthForcesPrimeSupportDocument : IScribeDocumentDef
         new Formula.Relation(left, FormulaRelationOperator.LessThanOrEqual, right);
     private static Formula And(Formula left, Formula right) =>
         new Formula.Logic(left, FormulaLogicOperator.And, right);
+    private static Formula Sub(Formula left, Formula right) => Seq(left, Sp, Minus, Sp, right);
+    private static Formula Mul(Formula left, Formula right) => Seq(Open, left, Close, Sp, right);
 }
