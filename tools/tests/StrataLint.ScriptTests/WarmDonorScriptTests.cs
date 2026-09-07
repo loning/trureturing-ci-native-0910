@@ -132,3 +132,6 @@ public sealed class WarmDonorScriptTests
         public void Dispose() => Fixture.Dispose();
     }
 }
+
+// 器律⑦″ ①′ 触发载荷:本行只改 StrataLint.ScriptTests,用于在真实 pull_request_target
+// 事件上观察 engineering 门的计划输出是否为 state=none。验完即关,不合入。
