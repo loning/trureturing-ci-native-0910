@@ -139,9 +139,45 @@ theorem normalized_curvature_probability_evolution
   exact ⟨σ, hσ.1, hσ.2, ρ, moments, continuous, initial, convolution, unique,
     fun t k hk => semigroup_probability_roots ρ initial convolution t k hk⟩
 
+/-- The constructed probability representation also bounds every original
+coefficient quadratically. This controls the radius of the Li generating series;
+it does not assume an arithmetic growth asymptotic. -/
+theorem normalized_curvature_quadratic_bound
+    (c : ℤ → ℂ) (L : ℕ → ℝ) (normalized : c 0 = 1)
+    (positive : ∀ N : ℕ, (toeplitzMatrix c N).PosSemidef)
+    (zeroValue : L 0 = 0) (firstNonnegative : 0 ≤ L 1)
+    (recurrence : ∀ n, 1 ≤ n →
+      L (n + 1) - 2 * L n + L (n - 1) = 2 * L 1 * (c n).re) :
+    ∀ n : ℕ, 0 ≤ L n ∧ L n ≤ L 1 * (n : ℝ) ^ 2 := by
+  obtain ⟨σ, hσ, _⟩ := normalized_curvature_reconstruction c L normalized positive zeroValue recurrence
+  intro n
+  rw [hσ.2 n]
+  refine ⟨reconstructedLi_nonneg _ _ firstNonnegative n, ?_⟩
+  have point (z : Circle) : Complex.normSq (geometricPolynomial n z) ≤ (n : ℝ) ^ 2 := by
+    have hnorm : ‖geometricPolynomial n z‖ ≤ (n : ℝ) := by
+      calc
+        _ ≤ ∑ j ∈ Finset.range n, ‖(z : ℂ) ^ j‖ := norm_sum_le _ _
+        _ = _ := by simp [norm_pow, Circle.norm_coe]
+    rw [Complex.normSq_eq_norm_sq]
+    nlinarith [norm_nonneg (geometricPolynomial n z), Nat.cast_nonneg (α := ℝ) n]
+  have hc : Continuous (fun z : Circle => Complex.normSq (geometricPolynomial n z)) := by
+    unfold geometricPolynomial
+    fun_prop
+  have hint : Integrable (fun z : Circle => Complex.normSq (geometricPolynomial n z))
+      (σ : Measure Circle) := by
+    simpa using hc.continuousOn.integrableOn_compact (μ := (σ : Measure Circle)) isCompact_univ
+  have integralBound : (∫ z : Circle, Complex.normSq (geometricPolynomial n z) ∂(σ : Measure Circle)) ≤
+      (n : ℝ) ^ 2 := by
+    calc
+      _ ≤ ∫ _ : Circle, (n : ℝ) ^ 2 ∂(σ : Measure Circle) :=
+        integral_mono hint (integrable_const _) point
+      _ = _ := by simp
+  exact mul_le_mul_of_nonneg_left integralBound firstNonnegative
+
 #print axioms reconstructed_li_probability_semigroup
 #print axioms semigroup_probability_roots
 #print axioms normalized_curvature_conditionally_negative
 #print axioms normalized_curvature_probability_evolution
+#print axioms normalized_curvature_quadratic_bound
 
 end D5.S3.Weil.Probability.LiCurvatureSchoenbergSemigroup
