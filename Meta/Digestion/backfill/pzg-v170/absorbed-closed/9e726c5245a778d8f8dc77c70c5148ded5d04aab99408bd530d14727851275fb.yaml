@@ -1,0 +1,58 @@
+fingerprints:
+  raw_sha256: sha256:9e726c5245a778d8f8dc77c70c5148ded5d04aab99408bd530d14727851275fb
+  normalized_sha256: sha256:9e726c5245a778d8f8dc77c70c5148ded5d04aab99408bd530d14727851275fb
+cas_ref: sha256:9e726c5245a778d8f8dc77c70c5148ded5d04aab99408bd530d14727851275fb
+coverage_gids:
+  - gid: D5/S3/Factorization/TotientNondivisorRecords.exception_set_claim_false
+    target_statement_id: sha256:40dae1c07aa75cd251e8dc238fb160245141fabec5e95fd08d21a4ddbdafc604
+  - gid: D5/S3/Factorization/TotientNondivisorRecords.a_1275120
+    target_statement_id: sha256:9089dc1a588d9d7e0bb33def8e013c1b5ca1409c76fc3671e4565e1732e76d5e
+  - gid: D5/S3/Factorization/TotientNondivisorRecords.A095366_1275120_ne_51
+    target_statement_id: sha256:ad6eb48a20fb299e7e9329e3925d84c1aa4d3c036872c4ad4a7ed3acba17164e
+  - gid: D5/S3/Factorization/TotientNondivisorRecords.not_exception_form
+    target_statement_id: sha256:2ba9c2e504807c6e221e9bcbca3f2436f92b681dd1c3fe77808d5d03d5f63e1c
+  - gid: D5/S3/Factorization/TotientNondivisorRecords.totients_lt_51_dvd_1275120
+    target_statement_id: sha256:bf3ac41460509ee9051f09c5e9a6688122e68490980ca55a759c1ce5753142ea
+  - gid: D5/S3/Factorization/TotientNondivisorRecords.totient_51_eq_32
+    target_statement_id: sha256:b0272cc1f40f487ada899f615da8c09f97608682f2c9380f23c7fd2ccbf19304
+  - gid: D5/S3/Factorization/TotientNondivisorRecords.mod_1275120_32
+    target_statement_id: sha256:8567b0c64412a374b7c82f13fc64cecab220140d2e8af5151c09f6a3979ca3c6
+  - gid: D5/S3/Factorization/TotientNondivisorRecords.powerSum_1275120_mod_51
+    target_statement_id: sha256:b14d26d38d563808a94bbdfb3081043483a767920d625cb94c0a12c15db59d97
+  - gid: D5/S3/Factorization/TotientNondivisorRecords.powerSum_1275120_mod_53
+    target_statement_id: sha256:89ca7cb9e48d63b5bec57fe29e2e78473afb747f6b12eca0fa348a0e1aa43583
+  - gid: D5/S3/Factorization/TotientNondivisorRecords.mod_1275120_120
+    target_statement_id: sha256:e56b56535a742b1751a1361d3fc644d43d50ec3ecb57f029b8e67438801775b3
+receipts:
+  scribe:
+    - gid: D5/S3/Factorization/TotientNondivisorRecords.exception_set_claim_false
+      definition_sha256: sha256:0ff451ae14a113cf0f0570263dda03a8f019bd65f8d5a9c1d94b8fa04ccf9365
+      emission_sha256: sha256:442510d211f8a55edb7888e9174f8bf6cc9e138b8c7cce5a2eed50a8fde57296
+    - gid: D5/S3/Factorization/TotientNondivisorRecords.a_1275120
+      definition_sha256: sha256:0ff451ae14a113cf0f0570263dda03a8f019bd65f8d5a9c1d94b8fa04ccf9365
+      emission_sha256: sha256:442510d211f8a55edb7888e9174f8bf6cc9e138b8c7cce5a2eed50a8fde57296
+    - gid: D5/S3/Factorization/TotientNondivisorRecords.A095366_1275120_ne_51
+      definition_sha256: sha256:0ff451ae14a113cf0f0570263dda03a8f019bd65f8d5a9c1d94b8fa04ccf9365
+      emission_sha256: sha256:442510d211f8a55edb7888e9174f8bf6cc9e138b8c7cce5a2eed50a8fde57296
+    - gid: D5/S3/Factorization/TotientNondivisorRecords.not_exception_form
+      definition_sha256: sha256:0ff451ae14a113cf0f0570263dda03a8f019bd65f8d5a9c1d94b8fa04ccf9365
+      emission_sha256: sha256:442510d211f8a55edb7888e9174f8bf6cc9e138b8c7cce5a2eed50a8fde57296
+    - gid: D5/S3/Factorization/TotientNondivisorRecords.totients_lt_51_dvd_1275120
+      definition_sha256: sha256:0ff451ae14a113cf0f0570263dda03a8f019bd65f8d5a9c1d94b8fa04ccf9365
+      emission_sha256: sha256:442510d211f8a55edb7888e9174f8bf6cc9e138b8c7cce5a2eed50a8fde57296
+    - gid: D5/S3/Factorization/TotientNondivisorRecords.totient_51_eq_32
+      definition_sha256: sha256:0ff451ae14a113cf0f0570263dda03a8f019bd65f8d5a9c1d94b8fa04ccf9365
+      emission_sha256: sha256:442510d211f8a55edb7888e9174f8bf6cc9e138b8c7cce5a2eed50a8fde57296
+    - gid: D5/S3/Factorization/TotientNondivisorRecords.mod_1275120_32
+      definition_sha256: sha256:0ff451ae14a113cf0f0570263dda03a8f019bd65f8d5a9c1d94b8fa04ccf9365
+      emission_sha256: sha256:442510d211f8a55edb7888e9174f8bf6cc9e138b8c7cce5a2eed50a8fde57296
+    - gid: D5/S3/Factorization/TotientNondivisorRecords.powerSum_1275120_mod_51
+      definition_sha256: sha256:0ff451ae14a113cf0f0570263dda03a8f019bd65f8d5a9c1d94b8fa04ccf9365
+      emission_sha256: sha256:442510d211f8a55edb7888e9174f8bf6cc9e138b8c7cce5a2eed50a8fde57296
+    - gid: D5/S3/Factorization/TotientNondivisorRecords.powerSum_1275120_mod_53
+      definition_sha256: sha256:0ff451ae14a113cf0f0570263dda03a8f019bd65f8d5a9c1d94b8fa04ccf9365
+      emission_sha256: sha256:442510d211f8a55edb7888e9174f8bf6cc9e138b8c7cce5a2eed50a8fde57296
+    - gid: D5/S3/Factorization/TotientNondivisorRecords.mod_1275120_120
+      definition_sha256: sha256:0ff451ae14a113cf0f0570263dda03a8f019bd65f8d5a9c1d94b8fa04ccf9365
+      emission_sha256: sha256:442510d211f8a55edb7888e9174f8bf6cc9e138b8c7cce5a2eed50a8fde57296
+  unresolved_subitems: []
