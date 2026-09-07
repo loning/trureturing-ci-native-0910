@@ -86,7 +86,7 @@ theorem padding_tail_mass {p : ℕ} (hp : p.Prime) (A : ℕ)
   intro r hr
   let S := {n : ℕ | N ≤ n ∧ n.factorization p ≤ A}
   let lift : S → Fin (A + 1) × ℕ := fun n =>
-    (⟨n.val.factorization p, by omega⟩, padding p A n)
+    (⟨n.val.factorization p, Nat.lt_succ_of_le n.property.2⟩, padding p A n)
   have hinj : Function.Injective lift := by
     intro n m h
     have he : n.val.factorization p = m.val.factorization p :=
@@ -99,7 +99,7 @@ theorem padding_tail_mass {p : ℕ} (hp : p.Prime) (A : ℕ)
   let f : Fin (A + 1) × ℕ → ℝ := fun z => waveWeight r z.2
   have hf0 : 0 ≤ f := fun z => weight_nonneg r z.2
   have hf : Summable f := (summable_prod_of_nonneg hf0).mpr
-    ⟨fun _ => hs r hr, summable_fintype _⟩
+    ⟨fun _ => hs r hr, summable_of_finite _⟩
   have hcomp := tsum_comp_le_tsum_of_inj hf hf0 hinj
   have htotal : (∑' z, f z) = (A + 1 : ℝ) * wavePartition r := by
     rw [hf.tsum_prod]
@@ -113,7 +113,7 @@ theorem padding_tail_mass {p : ℕ} (hp : p.Prime) (A : ℕ)
       c * ((A + 1 : ℝ) * wavePartition r) := by
     calc
       _ ≤ ∑' n : S, c * f (lift n) :=
-        tsum_le_tsum hpoint ((hs r hr).subtype S) ((hf.comp_injective hinj).mul_left c)
+        Summable.tsum_le_tsum hpoint ((hs r hr).subtype S) ((hf.comp_injective hinj).mul_left c)
       _ = c * ∑' n : S, f (lift n) := tsum_mul_left
       _ ≤ c * ∑' z, f z := mul_le_mul_of_nonneg_left hcomp hc
       _ = _ := by rw [htotal]
@@ -132,7 +132,7 @@ private theorem mass_split_bound {p A N : ℕ} {r : ℝ}
   rw [← add_div]
   apply div_le_div_of_nonneg_right _ hQ.le
   rw [tsum_subtype, tsum_subtype, tsum_subtype, ← (hs.indicator _).tsum_add (hs.indicator _)]
-  apply tsum_le_tsum _ (hs.indicator _) ((hs.indicator _).add (hs.indicator _))
+  apply Summable.tsum_le_tsum _ (hs.indicator _) ((hs.indicator _).add (hs.indicator _))
   intro n
   by_cases ht : N ≤ n
   · have hn : ¬n < N := by omega
@@ -156,7 +156,7 @@ theorem bounded_exponent_mass_tendsto_zero {p : ℕ} (hp : p.Prime) (A : ℕ)
   have hq := padding_constants hp A
   have hdecay : Tendsto (fun r : ℝ =>
       (A + 1 : ℝ) * (p : ℝ) ^ (2 * (A + 1)) * paddingQ p A ^ r) atTop (𝓝 0) := by
-    simpa using (Real.tendsto_rpow_atTop_of_base_lt_one (paddingQ p A)
+    simpa using (tendsto_rpow_atTop_of_base_lt_one (paddingQ p A)
       (by linarith [hq.2.2.1]) hq.2.2.2).const_mul
         ((A + 1 : ℝ) * (p : ℝ) ^ (2 * (A + 1)))
   have hupper := (hfinite F hF).add hdecay
@@ -166,7 +166,7 @@ theorem bounded_exponent_mass_tendsto_zero {p : ℕ} (hp : p.Prime) (A : ℕ)
     exact div_nonneg (tsum_nonneg fun n => weight_nonneg r n) (hQ r hr).le
   · filter_upwards [eventually_ge_atTop (0 : ℝ)] with r hr
     exact (mass_split_bound (p := p) (A := A) (N := N) (hs r hr) (hQ r hr)).trans
-      (add_le_add_left (htail r hr) _)
+      (add_le_add le_rfl (htail r hr))
 
 #print axioms waveWeight
 #print axioms wavePartition
