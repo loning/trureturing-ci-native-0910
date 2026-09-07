@@ -131,9 +131,8 @@ public sealed class TruthReleaseCommandTests
     private static string[] GreenTrustArguments() =>
     [
         "--commit-on-protected-dev", "true",
-        "--required-check", "Candidate harness engineering checks=success",
-        "--required-check", "Canonical Lean report production=success",
-        "--required-check", "Content-addressed dev baseline admission=success",
+        "--required-check", "engineering=success",
+        "--required-check", "current=success",
     ];
 
     private static Fixture CreateFixture(bool receiptIntegrityMismatch = false)

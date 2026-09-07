@@ -78,7 +78,7 @@ internal sealed partial class RuleFixture
     internal const string ThreeDistancePath = "D5/S1/Phase/ThreeDistance.lean";
     internal const string TowerManifestPath = RepositoryRules.TowerManifestPath;
     internal const string ValuesProjectionPath = RepositoryPathPolicy.ValuesProjectionPath;
-    internal const string WorkflowPath = RepositoryPathPolicy.WorkflowPath;
+    internal const string WorkflowPath = RepositoryPathPolicy.PrWorkflowPath;
     internal const string HarnessGatePath = RepositoryPathPolicy.HarnessGatePath;
     internal const string SyntheticProtectedPath =
         "tools/StrataLint.Engine/SyntheticProtected.cs";
