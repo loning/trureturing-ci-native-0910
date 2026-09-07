@@ -81,12 +81,12 @@ fingerprint() {
   local root="$1"
   local preimage="$TMP_ROOT/input.preimage"
 
-  local repository_address resident_sha256 sources_sha256 config_sha256 _dependency_sha256 address_output
+  local repository_address resident_sha256 sources_sha256 config_sha256 address_output
   address_output="$("$INPUT_HELPER" address --repository "$root" --producer "$PRODUCER" --inspector "$INSPECTOR")" || return 2
-  local address_pattern='^([0-9a-f]{64} ){4}[0-9a-f]{64}$'
+  local address_pattern='^([0-9a-f]{64} ){3}[0-9a-f]{64}$'
   [[ "$address_output" =~ $address_pattern ]] \
     || { echo "lean-report-pair: repository input address is malformed" >&2; return 2; }
-  IFS=' ' read -r repository_address resident_sha256 sources_sha256 config_sha256 _dependency_sha256 <<< "$address_output"
+  IFS=' ' read -r repository_address resident_sha256 sources_sha256 config_sha256 <<< "$address_output"
   local producer_sha256="$resident_sha256"
 
   {
@@ -172,7 +172,7 @@ cache_root_trusted() {
 cache_evict() {
   local address="$1"
   [[ -n "$CACHE_ROOT" && "$address" =~ ^[0-9a-f]{64}$ ]] || return 0
-  rm -rf -- "${CACHE_ROOT:?}/$address" 2>/dev/null || true
+  rm -rf -- "$CACHE_ROOT/$address" 2>/dev/null || true
 }
 
 cache_provenance_matches() {

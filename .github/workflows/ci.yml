@@ -345,7 +345,7 @@ jobs:
         run: |
           set -euo pipefail
           helper="$GITHUB_WORKSPACE/candidate/tools/scripts/report/lean-report-input.sh"
-          address_pattern='^([0-9a-f]{64} ){4}[0-9a-f]{64}$'
+          address_pattern='^([0-9a-f]{64} ){3}[0-9a-f]{64}$'
           if test -x "$helper" \
             && address_output="$("$helper" address --repository "$GITHUB_WORKSPACE/candidate")" \
             && [[ "$address_output" =~ $address_pattern ]]; then

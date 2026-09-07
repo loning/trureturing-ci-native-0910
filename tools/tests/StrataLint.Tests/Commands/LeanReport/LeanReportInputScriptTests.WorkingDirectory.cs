@@ -121,12 +121,11 @@ public sealed partial class LeanReportInputScriptTests
             var producer = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(producerManifest)));
             var sources = ManifestHash("Trureturing.lean", "D5/Probe.lean", inspectorSourcePath);
             var config = ManifestHash("lean-toolchain", "lake-manifest.json", "lakefile.toml");
-            var dependency = ManifestHash("lean-toolchain", "lake-manifest.json");
             var preimage = "schema=stratalint-lean-report-repository-input-v1\n"
                 + $"repository_inspector_sha256={producer}\n"
                 + $"lean_sources_sha256={sources}\nlean_config_sha256={config}\n";
             var address = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(preimage)));
-            return Encoding.UTF8.GetBytes($"{address} {producer} {sources} {config} {dependency}\n");
+            return Encoding.UTF8.GetBytes($"{address} {producer} {sources} {config}\n");
         }
     }
 }
