@@ -11,6 +11,8 @@ import Mathlib.LinearAlgebra.Matrix.ConjTranspose
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.NormNum
 import Mathlib.Tactic.Ring
+import Mathlib.Tactic.FieldSimp
+import Mathlib.Tactic.Positivity
 
 /- Reuse audit (2026-09-06):
    Repository searches for Hadamard residual perturbation returned no owner.
@@ -166,5 +168,178 @@ theorem common_unbiased_residual_transfers_under_column_perturbation
 
 #print axioms common_unbiased_residual_transfers_under_column_perturbation
 
+private theorem phase_replacement (z : ℂ) :
+    ∃ u : ℂ, ‖u‖ = 1 ∧ ‖z - u‖ ≤ |Complex.normSq z - 1| := by
+  by_cases hz : z = 0
+  · subst z
+    exact ⟨1, by simp, by simp⟩
+  · let r : ℝ := ‖z‖
+    have hr : 0 ≤ r := norm_nonneg z
+    have hr0 : r ≠ 0 := norm_ne_zero_iff.mpr hz
+    have hrC : (r : ℂ) ≠ 0 := by exact_mod_cast hr0
+    let u : ℂ := z / (r : ℂ)
+    have hu : ‖u‖ = 1 := by
+      dsimp [u]
+      rw [norm_div, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hr]
+      exact div_self hr0
+    have hsplit : z - u = ((r : ℂ) - 1) * u := by
+      dsimp [u]
+      field_simp [hrC]
+      ring
+    have hnorm : ‖z - u‖ = |r - 1| := by
+      rw [hsplit, norm_mul, hu, mul_one]
+      rw [show (r : ℂ) - 1 = ((r - 1 : ℝ) : ℂ) by simp]
+      rw [Complex.norm_real, Real.norm_eq_abs]
+    have hfactor : |r ^ 2 - 1| = |r - 1| * (r + 1) := by
+      rw [show r ^ 2 - 1 = (r - 1) * (r + 1) by ring, abs_mul,
+        abs_of_nonneg (by linarith : 0 ≤ r + 1)]
+    refine ⟨u, hu, ?_⟩
+    rw [hnorm, Complex.normSq_eq_norm_sq]
+    change |r - 1| ≤ |r ^ 2 - 1|
+    rw [hfactor]
+    nlinarith [abs_nonneg (r - 1)]
+
+private abbrev normalizedPair (u v : Fin 6 → ℂ) : ℂ :=
+  (6 : ℂ)⁻¹ * ∑ i, star (u i) * v i
+
+private theorem normalizedPair_bound (u v : Fin 6 → ℂ) (a b : ℝ)
+    (hu : ∀ i, ‖u i‖ ≤ a) (hv : ∀ i, ‖v i‖ ≤ b)
+    (ha : 0 ≤ a) (_hb : 0 ≤ b) :
+    ‖normalizedPair u v‖ ≤ a * b := by
+  have hsum : ‖∑ i, star (u i) * v i‖ ≤ 6 * (a * b) := by
+    calc
+      ‖∑ i, star (u i) * v i‖ ≤ ∑ i, ‖star (u i) * v i‖ := norm_sum_le _ _
+      _ ≤ ∑ _i : Fin 6, a * b := by
+        apply Finset.sum_le_sum
+        intro i _
+        rw [norm_mul, norm_star]
+        exact mul_le_mul (hu i) (hv i) (norm_nonneg _) ha
+      _ = 6 * (a * b) := by simp
+  change ‖(6 : ℂ)⁻¹ * ∑ i, star (u i) * v i‖ ≤ a * b
+  rw [norm_mul, norm_inv]
+  have hSix : ‖(6 : ℂ)‖ = (6 : ℝ) := by norm_num
+  rw [hSix]
+  nlinarith
+
+/-- Simultaneously replace arbitrary nearly unit-entry vectors by unit-entry
+vectors without losing the actual measurement and overlap error budgets.
+The index type is arbitrary: the same theorem applies to every vector of a
+candidate MU constellation at once. No normalization of the original vectors
+or existence of an exact nearby MUB is assumed.
+
+If coordinate squared-modulus errors and the H-measurement residuals are at
+most rho <= 1/4 and every H-entry has norm at most M, phase replacement gives
+measurement residual rho + 6*M*rho*(5+6*M*rho), normalized inner-product error
+at most 3*rho, and squared normalized-overlap error at most 15*rho.
+This transports a certified flat-torus exclusion to amplitude-imperfect
+candidates; it does not provide the separate flat-torus exclusion premise. -/
+theorem near_unit_entry_families_admit_controlled_phase_replacement
+    {ι : Type*}
+    (H : Matrix (Fin 6) (Fin 6) ℂ) (z : ι → Fin 6 → ℂ)
+    (M ρ : ℝ) (hM : 0 ≤ M) (hρ : 0 ≤ ρ) (hρUpper : ρ ≤ 1 / 4)
+    (hH : ∀ i j, ‖H i j‖ ≤ M)
+    (hCoordinate : ∀ a i, |Complex.normSq (z a i) - 1| ≤ ρ)
+    (hMeasurement : ∀ a j, |Complex.normSq ((Hᴴ *ᵥ z a) j) - 6| ≤ ρ) :
+    ∃ u : ι → Fin 6 → ℂ,
+      (∀ a i, ‖u a i‖ = 1) ∧
+      (∀ a i, ‖z a i - u a i‖ ≤ ρ) ∧
+      (∀ a j, |Complex.normSq ((Hᴴ *ᵥ u a) j) - 6| ≤
+        ρ + (6 * M * ρ) * (5 + 6 * M * ρ)) ∧
+      (∀ a b,
+        ‖(6 : ℂ)⁻¹ * (∑ i, star (u a i) * u b i) -
+          (6 : ℂ)⁻¹ * (∑ i, star (z a i) * z b i)‖ ≤ 3 * ρ) ∧
+      (∀ a b,
+        |Complex.normSq ((6 : ℂ)⁻¹ * ∑ i, star (u a i) * u b i) -
+          Complex.normSq ((6 : ℂ)⁻¹ * ∑ i, star (z a i) * z b i)| ≤ 15 * ρ) := by
+  classical
+  let u : ι → Fin 6 → ℂ := fun a i ↦ Classical.choose (phase_replacement (z a i))
+  have hu (a : ι) (i : Fin 6) : ‖u a i‖ = 1 :=
+    (Classical.choose_spec (phase_replacement (z a i))).1
+  have huError (a : ι) (i : Fin 6) : ‖z a i - u a i‖ ≤ |Complex.normSq (z a i) - 1| :=
+    (Classical.choose_spec (phase_replacement (z a i))).2
+  have hzNorm (a : ι) (i : Fin 6) : ‖z a i‖ ≤ 2 := by
+    have h := (abs_le.mp (hCoordinate a i)).2
+    rw [Complex.normSq_eq_norm_sq] at h
+    nlinarith [norm_nonneg (z a i)]
+  have hnear (a : ι) (i : Fin 6) : ‖z a i - u a i‖ ≤ ρ :=
+    (huError a i).trans (hCoordinate a i)
+  have hReverseNear (a : ι) (i : Fin 6) : ‖u a i - z a i‖ ≤ ρ := by
+    rw [norm_sub_rev]
+    exact hnear a i
+  have hMeasurementRound (a : ι) (j : Fin 6) :
+      |Complex.normSq ((Hᴴ *ᵥ u a) j) - 6| ≤
+        ρ + (6 * M * ρ) * (5 + 6 * M * ρ) := by
+    have hExpand : (Hᴴ *ᵥ u a) j - (Hᴴ *ᵥ z a) j =
+        ∑ i, star (H i j) * (u a i - z a i) := by
+      simp only [Matrix.mulVec, dotProduct, Matrix.conjTranspose_apply,
+        mul_sub, Finset.sum_sub_distrib]
+    have hMove : ‖(Hᴴ *ᵥ u a) j - (Hᴴ *ᵥ z a) j‖ ≤ 6 * M * ρ := by
+      rw [hExpand]
+      calc
+        ‖∑ i, star (H i j) * (u a i - z a i)‖ ≤
+            ∑ i, ‖star (H i j) * (u a i - z a i)‖ := norm_sum_le _ _
+        _ ≤ ∑ _i : Fin 6, M * ρ := by
+          apply Finset.sum_le_sum
+          intro i _
+          rw [norm_mul, norm_star]
+          exact mul_le_mul (hH i j) (hReverseNear a i)
+            (norm_nonneg _) hM
+        _ = 6 * M * ρ := by simp; ring
+    exact squared_modulus_residual_transfer _ _ (6 * M * ρ) ρ
+      (by positivity) hρUpper hMove (hMeasurement a j)
+  have hPairMove (a b : ι) :
+      ‖normalizedPair (u a) (u b) - normalizedPair (z a) (z b)‖ ≤ 3 * ρ := by
+    have hTerm (i : Fin 6) :
+        ‖star (u a i) * u b i - star (z a i) * z b i‖ ≤ 3 * ρ := by
+      have hSplit : star (u a i) * u b i - star (z a i) * z b i =
+          star (u a i - z a i) * z b i + star (u a i) * (u b i - z b i) := by
+        rw [star_sub]
+        ring
+      rw [hSplit]
+      calc
+        ‖star (u a i - z a i) * z b i + star (u a i) * (u b i - z b i)‖ ≤
+            ‖star (u a i - z a i) * z b i‖ +
+              ‖star (u a i) * (u b i - z b i)‖ := norm_add_le _ _
+        _ = ‖u a i - z a i‖ * ‖z b i‖ + ‖u b i - z b i‖ := by
+          rw [norm_mul, norm_mul, norm_star, norm_star, hu a i, one_mul]
+        _ ≤ ρ * 2 + ρ := add_le_add
+          (mul_le_mul (hReverseNear a i) (hzNorm b i) (norm_nonneg _) hρ)
+          (hReverseNear b i)
+        _ = 3 * ρ := by ring
+    have hSum : ‖∑ i, (star (u a i) * u b i - star (z a i) * z b i)‖ ≤ 18 * ρ := by
+      calc
+        ‖∑ i, (star (u a i) * u b i - star (z a i) * z b i)‖ ≤
+            ∑ i, ‖star (u a i) * u b i - star (z a i) * z b i‖ := norm_sum_le _ _
+        _ ≤ ∑ _i : Fin 6, 3 * ρ := Finset.sum_le_sum (fun i _ ↦ hTerm i)
+        _ = 18 * ρ := by simp; ring
+    change ‖(6 : ℂ)⁻¹ * _ - (6 : ℂ)⁻¹ * _‖ ≤ 3 * ρ
+    rw [← mul_sub, ← Finset.sum_sub_distrib, norm_mul, norm_inv]
+    have hSix : ‖(6 : ℂ)‖ = (6 : ℝ) := by norm_num
+    rw [hSix]
+    nlinarith
+  refine ⟨u, hu, hnear, hMeasurementRound, hPairMove, ?_⟩
+  intro a b
+  let p := normalizedPair (u a) (u b)
+  let q := normalizedPair (z a) (z b)
+  have hp : ‖p‖ ≤ 1 := by
+    have h := normalizedPair_bound (u a) (u b) 1 1
+      (fun i ↦ le_of_eq (hu a i)) (fun i ↦ le_of_eq (hu b i)) (by norm_num) (by norm_num)
+    simpa [p] using h
+  have hq : ‖q‖ ≤ 4 := by
+    have h := normalizedPair_bound (z a) (z b) 2 2 (hzNorm a) (hzNorm b)
+      (by norm_num) (by norm_num)
+    simpa [q] using h
+  have hd : |‖p‖ - ‖q‖| ≤ 3 * ρ :=
+    (abs_norm_sub_norm_le p q).trans (hPairMove a b)
+  change |Complex.normSq p - Complex.normSq q| ≤ 15 * ρ
+  rw [Complex.normSq_eq_norm_sq, Complex.normSq_eq_norm_sq]
+  rw [show ‖p‖ ^ 2 - ‖q‖ ^ 2 = (‖p‖ - ‖q‖) * (‖p‖ + ‖q‖) by ring,
+    abs_mul, abs_of_nonneg (add_nonneg (norm_nonneg p) (norm_nonneg q))]
+  have hsum : ‖p‖ + ‖q‖ ≤ 5 := by linarith
+  have h := mul_le_mul hd hsum (add_nonneg (norm_nonneg p) (norm_nonneg q))
+    (by positivity : 0 ≤ 3 * ρ)
+  nlinarith
+
+#print axioms near_unit_entry_families_admit_controlled_phase_replacement
 
 end D5.S3.Quantum.Tomography.HadamardResidualBarrier

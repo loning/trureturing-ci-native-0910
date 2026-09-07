@@ -50,5 +50,42 @@ internal sealed class HadamardResidualBarrierDocument : IScribeDocumentDefinitio
                     + "The complete sublevel cover and tube-overlap inequalities are separate "
                     + "obligations. External interval reports do not discharge them in Lean. "
                     + "The source is logically reviewed but has not been locally elaborated."))),
+            DescribeRole.Theorem),
+            Describe.Lean(
+            DescribeId.Create("near-unit-entry-family-phase-replacement"),
+            DeclarationHandle.Create(
+                "D5/S3/Quantum/Tomography/HadamardResidualBarrier."
+                + "near_unit_entry_families_admit_controlled_phase_replacement"),
+            H("Amplitude-imperfect candidates admit one simultaneous phase replacement"),
+            StatementSource.FromLean(),
+            AssessedProvenance.FromRepo(),
+            Blocks(
+                Paragraph(Text(
+                    "Let z be any indexed family of six-dimensional complex vectors. "
+                    + "No normalization of the original vectors is assumed. Suppose their "
+                    + "coordinate squared-modulus errors from one and their actual H-adjoint "
+                    + "measurement squared-modulus errors from six are at most rho, with "
+                    + "zero <= rho <= one-quarter. If every entry of H has norm at most M, "
+                    + "the theorem constructs a single family of unit-entry phase replacements.")),
+                Paragraph(Text(
+                    "Every coordinate moves by at most rho. Every measurement residual is "
+                    + "at most rho + 6 M rho (5 + 6 M rho). For every pair in the same family, "
+                    + "the inner product scaled by one-sixth changes by at most 3 rho, and "
+                    + "its squared modulus changes by at most 15 rho. All five conclusions "
+                    + "refer to the same constructed family, so the estimates can be combined "
+                    + "for an entire proposed MU constellation without inconsistent choices.")),
+                Paragraph(Text(
+                    "The proof reuses the existing private squared-modulus residual transfer. "
+                    + "A nonzero coordinate is replaced by z divided by its norm, and a zero "
+                    + "coordinate by one. The scalar distance is bounded by the original "
+                    + "squared-modulus error; finite-sum and reverse-triangle estimates then "
+                    + "transport all measurements and pair overlaps. Classical phase normalization "
+                    + "itself is not claimed as a new mathematical discovery.")),
+                Paragraph(Text(
+                    "A separate certified flat-torus exclusion is required before these "
+                    + "estimates imply MUB infeasibility. The numeric seed, complete residual "
+                    + "cover and graph certificate are not assumptions silently discharged by "
+                    + "an external verdict. The source is logically reviewed but has not been "
+                    + "locally elaborated; finite rational diagnostics are separate evidence."))),
             DescribeRole.Theorem))));
 }
