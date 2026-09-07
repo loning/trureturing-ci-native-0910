@@ -416,6 +416,9 @@ public sealed class LeanReportCacheTests
             File.Copy(
                 Path.Combine(repositoryRoot, "tools", "scripts", "report", "lean-report-bundle-lib.sh"),
                 Path.Combine(reportDir, "lean-report-bundle-lib.sh"));
+            File.Copy(
+                Path.Combine(repositoryRoot, "tools", "scripts", "worktree", "lean-cache-input.sh"),
+                Path.Combine(worktreeDir, "lean-cache-input.sh"));
             foreach (var relative in new[]
             {
                 RawReportPath,

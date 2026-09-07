@@ -111,6 +111,7 @@ public sealed partial class LeanReportInputScriptTests
                 BundleValidatorPath,
                 PairScriptPath, SupervisorScriptPath, CiBaselineScriptPath,
                 CacheEnsureScriptPath, CachePublishScriptPath,
+                "tools/scripts/worktree/lean-cache-input.sh",
                 ResourceObservationLibraryPath, ToolchainInstallerPath,
                 JudgeContentAddressPath, ScribeContentChecksPath, WorkflowPath,
                 LeanInspectSegmentPath, SegmentEvidenceLibraryPath,

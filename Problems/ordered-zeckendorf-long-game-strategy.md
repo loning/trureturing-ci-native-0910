@@ -1,7 +1,7 @@
 ---
 slug: ordered-zeckendorf-long-game-strategy
 bibkey: bortnovskyi2025ordered
-arxiv_id: 2508.20222
+doi: 10.48550/arXiv.2508.20222
 triage: theorem
 motivation_gids:
   - D5/S0/Conventions/WDigits
