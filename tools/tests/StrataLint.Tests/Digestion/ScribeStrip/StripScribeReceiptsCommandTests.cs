@@ -1,7 +1,8 @@
 using System.Collections.Immutable;
 using StrataLint.Cli;
 using StrataLint.Engine;
-using YamlDotNet.RepresentationModel;
+using Trureturing.Truth;
+using YamlDotNet.Serialization;
 
 namespace StrataLint.Tests;
 
@@ -457,20 +458,16 @@ public sealed class StripScribeReceiptsCommandTests
             }
 
             var path = CoverageWithoutScribeFixture.EntryPath(entry);
-            var yaml = new YamlStream();
-            yaml.Load(new StringReader(files[path]));
-            var root = Assert.IsType<YamlMappingNode>(yaml.Documents[0].RootNode);
-            var receipts = Assert.IsType<YamlMappingNode>(root.Children[new YamlScalarNode("receipts")]);
-            receipts.Add("scribe", new YamlSequenceNode(entry.Receipts.Scribe.Select(receipt =>
-                new YamlMappingNode
+            var root = Assert.IsType<Dictionary<string, object?>>(YamlSubsetParser.Parse(files[path]));
+            var receipts = Assert.IsType<Dictionary<string, object?>>(root["receipts"]);
+            receipts.Add("scribe", entry.Receipts.Scribe.Select(receipt =>
+                new Dictionary<string, object?>
                 {
                     { "gid", receipt.Gid },
                     { "definition_sha256", receipt.DefinitionSha256 },
                     { "emission_sha256", receipt.EmissionSha256 },
-                })));
-            using var output = new StringWriter();
-            yaml.Save(output, assignAnchors: false);
-            files[path] = output.ToString();
+                }).ToArray());
+            files[path] = new SerializerBuilder().WithIndentedSequences().Build().Serialize(root);
         }
 
         return files;
