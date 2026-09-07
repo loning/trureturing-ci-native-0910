@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Observer/Existence/QubitEmpiricalImageReflexiveGap
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: none
    digest: The qubit density-state readout realizes all predicates but no same-state catalog is exhaustive. -/
 
 import D5.S3.ConceptDynamics.ObservationTopology.LosslessReadoutReflexiveGap

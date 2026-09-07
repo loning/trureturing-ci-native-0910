@@ -3,6 +3,7 @@
    mirror-B: D5/B/S0/Computability/Coding/LengthProfileSeparation
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: none
    digest: Equal codeword lengths can hide an arbitrarily large immutable-extension gap. -/
 
 import D5.S0.Computability.Coding.ImmutableExtension
