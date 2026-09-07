@@ -3,7 +3,6 @@
    mirror-B: D5/B/S3/Weil/TestFunctions/EvenTestFunctionFiniteInterpolation
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
-   utility: none
    digest: Even test functions interpolate finite data at sign-separated nodes. -/
 
 import D5.S3.Weil.TestFunctions.FinitePaleyWienerInterpolation
