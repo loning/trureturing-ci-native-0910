@@ -15,8 +15,9 @@ implication from the Riemann hypothesis to that assumption or to summability. -/
 
 open Filter
 open scoped Topology
+open D5.S3.Arith.Robin.PaddingRatio
 
-namespace D5.S3.Arith.Robin
+namespace D5.S3.Arith.Robin.PaddingTailMass
 
 noncomputable section
 
@@ -179,4 +180,4 @@ theorem bounded_exponent_mass_tendsto_zero {p : ℕ} (hp : p.Prime) (A : ℕ)
 #print axioms bounded_exponent_mass_tendsto_zero
 
 end
-end D5.S3.Arith.Robin
+end D5.S3.Arith.Robin.PaddingTailMass

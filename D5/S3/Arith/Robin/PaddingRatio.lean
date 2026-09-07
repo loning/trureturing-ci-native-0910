@@ -20,7 +20,7 @@ open Filter
 open scoped Topology
 open D5.S3.Arith.RobinExponentSwap
 
-namespace D5.S3.Arith.Robin
+namespace D5.S3.Arith.Robin.PaddingRatio
 
 noncomputable section
 
@@ -236,4 +236,4 @@ theorem padding_ratio {p : ℕ} (hp : p.Prime) (A : ℕ) :
 #print axioms padding_ratio
 
 end
-end D5.S3.Arith.Robin
+end D5.S3.Arith.Robin.PaddingRatio
