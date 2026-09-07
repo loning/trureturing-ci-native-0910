@@ -229,7 +229,7 @@ public sealed partial class ProductionEnvironmentTests(Xunit.Abstractions.ITestO
         Assert.True(before.Success, before.Error);
         output.WriteLine("BEFORE\n" + before.Output);
         Assert.Contains("deletable_now=0", before.Output, StringComparison.Ordinal);
-        Assert.Contains("migration=residual truth=open", before.Output, StringComparison.Ordinal);
+        Assert.Contains("residual-open", before.Output, StringComparison.Ordinal);
         var console = new BufferedConsole();
         var exitCode = CliApplication.Run(["cover-atom", .. CoverArgs(inputs)], environment, console);
         output.WriteLine("COVER exit=" + exitCode + "\n" + console.Output + console.Error);
@@ -265,7 +265,7 @@ public sealed partial class ProductionEnvironmentTests(Xunit.Abstractions.ITestO
         Assert.True(after.Success, after.Error);
         output.WriteLine("AFTER\n" + after.Output);
         Assert.Contains("deletable_now=1", after.Output, StringComparison.Ordinal);
-        Assert.Contains("migration=absorbed truth=closed", after.Output, StringComparison.Ordinal);
+        Assert.Contains("absorbed-closed", after.Output, StringComparison.Ordinal);
         Assert.DoesNotContain("GAP ", after.Output, StringComparison.Ordinal);
     }
 
