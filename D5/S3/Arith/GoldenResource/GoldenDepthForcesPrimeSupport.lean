@@ -67,7 +67,7 @@ theorem prime_dvd_of_two_adic_depth (N p k : ℕ) (hN : 1 ≤ N)
       simpa only [pow_succ] using hscale.ne'
     rw [inv_pow, inv_pow, pow_succ]
     field_simp [hpow0, hpow1, hscale0]
-    <;> ring
+    ring
   have htwoUpper : goldenLayerMarginal 2 k <
       1 / (((2 : ℝ) ^ (k + 1) - 2) * Real.log 2) := by
     rw [htwoEq]
@@ -94,7 +94,7 @@ theorem prime_dvd_of_two_adic_depth (N p k : ℕ) (hN : 1 ≤ N)
   rw [Real.log_inv] at hlogInv
   have hreciprocal : 1 - (1 + (p : ℝ)⁻¹)⁻¹ = 1 / ((p : ℝ) + 1) := by
     field_simp
-    <;> ring
+    ring
   have hprimeLower : 1 / (((p : ℝ) + 1) * Real.log p) <
       goldenLayerMarginal p 1 := by
     rw [hfirstEq, ← div_div]
