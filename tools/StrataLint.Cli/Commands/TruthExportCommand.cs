@@ -39,10 +39,9 @@ internal static class TruthExportCommand
                     $"TRUTH_EXPORT_REJECTED {rejected.Message}\n");
             }
 
-            var accepted = (FrozenLedgerValidationOutcome.Accepted)preparation.Outcome;
             var model = TruthExportProjection.Project(
                 preparation.Catalog.ClosedNodes,
-                accepted.Capability.ActiveFrozenNodes.Select(static node => node.RepoPath).ToImmutableHashSet(),
+                FrozenStateCatalog.Load(snapshot).Selectors.ToImmutableHashSet(),
                 identity.Revision,
                 Bare(identity.TreeOid));
             var finalPath = WriteAtomically(options.OutDirectory, model);

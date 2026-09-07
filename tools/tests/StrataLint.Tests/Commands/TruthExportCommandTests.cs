@@ -65,7 +65,8 @@ public sealed class TruthExportCommandTests
     {
         var genesisCatalog = BuildCatalog(Module("A"));
         var ledgerFiles = EventFiles(genesisCatalog);
-        using var fixture = FixtureFromLedger(ledgerFiles, [Module("A"), Module("B", imports: ["A"])]);
+        using var fixture = FixtureFromLedger(ledgerFiles, [Module("A"), Module("B", imports: ["A"])],
+            stateModules: [Module("A")]);
         using var output = new TemporaryDirectory();
 
         var (exitCode, console) = Run(fixture, output.Path);
@@ -98,6 +99,32 @@ public sealed class TruthExportCommandTests
         Assert.Equal("proven-not-yet-frozen", Assert.Single(
             document.RootElement.GetProperty("nodes").EnumerateArray())
             .GetProperty("freeze_status").GetString());
+    }
+
+    [Theory]
+    [InlineData(true, false, "proven-not-yet-frozen")]
+    [InlineData(false, true, "frozen")]
+    [InlineData(true, true, "frozen")]
+    [InlineData(false, false, "proven-not-yet-frozen")]
+    public void FreezeStatusUsesRevisionStateMembership(
+        bool hasAcceptedEvent, bool hasState, string expectedStatus)
+    {
+        var module = Module("A");
+        var catalog = BuildCatalog(module);
+        var ledgerFiles = hasAcceptedEvent ? EventFiles(catalog) : [];
+        using var fixture = FixtureFromLedger(ledgerFiles, [module],
+            stateModules: hasState ? [module] : []);
+        using var output = new TemporaryDirectory();
+
+        var (exitCode, console) = Run(fixture, output.Path);
+
+        Assert.True(exitCode == 0, console.Error);
+        using var document = JsonDocument.Parse(
+            TemporaryFileSystem.ReadAllBytes(output, "truth-export.v1.json"));
+        var node = Assert.Single(document.RootElement.GetProperty("nodes").EnumerateArray());
+        Assert.Equal(PathFor("A"), node.GetProperty("repo_path").GetString());
+        Assert.Equal(expectedStatus, node.GetProperty("freeze_status").GetString());
+        Assert.Equal(0, fixture.Gateway.ReadCurrentCount);
     }
 
     [Theory]
@@ -271,11 +298,19 @@ public sealed class TruthExportCommandTests
         ImmutableArray<RepositoryFile> ledgerFiles,
         ModuleSpec[] revisionModules,
         FrozenRevisionIdentity? identity = null,
-        ModuleSpec[]? workingModules = null)
+        ModuleSpec[]? workingModules = null,
+        ModuleSpec[]? stateModules = null)
     {
         var temporary = new TemporaryDirectory();
         var revisionFiles = RepositoryFiles(revisionModules);
         AddLedgerFiles(revisionFiles, ledgerFiles);
+        foreach (var module in stateModules ?? [])
+        {
+            var path = RepoPath.CreateKnown(PathFor(module.Name));
+            revisionFiles[FrozenStatePath.FromModulePath(path).Value] = Encoding.UTF8.GetString(
+                FrozenStateRecord.Encode(
+                    FrozenContentAddress.ComputeModuleStatementId(path, ReportFor(module))).AsSpan());
+        }
         var revisionReports = Reports(revisionModules);
         var immutableRevision = RawSnapshot(revisionFiles);
         var revisionSnapshot = Assert.IsType<SnapshotDecodeOutcome.Decoded>(

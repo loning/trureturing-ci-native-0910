@@ -101,6 +101,28 @@ public sealed class TruthReleaseCommandTests
         Assert.Empty(Directory.EnumerateFiles(output.Path));
     }
 
+    [Theory]
+    [InlineData(false, "proven-not-yet-frozen")]
+    [InlineData(true, "frozen")]
+    public void FreezeStatusUsesStateMembershipForAcceptedModule(
+        bool includeDependencyState, string expectedStatus)
+    {
+        using var fixture = CreateFixture(includeDependencyState: includeDependencyState);
+        using var output = new TemporaryDirectory();
+
+        var (exitCode, console) = Run(fixture, output.Path, GreenTrustArguments());
+
+        Assert.True(exitCode == 0, console.Error);
+        var digest = Assert.Single(console.Output.Split(' ', StringSplitOptions.RemoveEmptyEntries),
+            static part => part.StartsWith("release_digest=", StringComparison.Ordinal))
+            ["release_digest=".Length..].TrimEnd();
+        var export = TruthReleaseVerification.Verify(output.Path, digest).ReadTruthExport();
+        var dependency = Assert.Single(export.Nodes, node => node.RepoPath == PathFor("Dependency"));
+        Assert.Equal(expectedStatus, dependency.FreezeStatus);
+        Assert.Equal("frozen", Assert.Single(export.Nodes,
+            node => node.RepoPath == BlueprintGid + ".lean").FreezeStatus);
+    }
+
     [Fact]
     public void MissingTrustInputFailsClosedWithoutWritingABundle()
     {
@@ -159,7 +181,10 @@ public sealed class TruthReleaseCommandTests
         "--required-check", "Content-addressed dev baseline admission=success",
     ];
 
-    private static Fixture CreateFixture(bool receiptIntegrityMismatch = false, bool includeUnfrozenModule = false)
+    private static Fixture CreateFixture(
+        bool receiptIntegrityMismatch = false,
+        bool includeUnfrozenModule = false,
+        bool includeDependencyState = true)
     {
         var repositoryRoot = TestRepositoryLayout.FindRoot();
         var blueprintSourcePath = $"Blueprint/{BlueprintGid}.scribe.cs";
@@ -235,6 +260,14 @@ public sealed class TruthReleaseCommandTests
                 adjacency)).Capability;
         var ledgerFiles = EventFiles(realCatalog, "git-sha1:" + generatorBlob);
         AddLedgerFiles(files, ledgerFiles);
+        foreach (var node in realCatalog.ClosedNodes)
+        {
+            if (includeDependencyState || node.RepoPath.Value != dependencyPath)
+            {
+                files[FrozenStatePath.FromModulePath(node.RepoPath).Value] = Encoding.UTF8.GetString(
+                    FrozenStateRecord.Encode(node.StatementId).AsSpan());
+            }
+        }
         if (includeUnfrozenModule)
         {
             files[PathFor("Unfrozen")] = "theorem unfrozen : True := by trivial\n";
