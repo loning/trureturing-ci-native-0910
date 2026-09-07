@@ -1,5 +1,5 @@
 ---
-bibkey: discrete_balanced_truncation_stability
+bibkey: pontesduffkurschner2021timelimited
 authors: Igor Pontes Duff and Patrick Kürschner
 year: 2021
 title: Numerical computation and new output bounds for time-limited balanced truncation of discrete-time systems

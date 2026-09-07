@@ -2527,7 +2527,7 @@ F=\mathcal OTE,\qquad G=\mathcal ZS^TE.
 
 # 2026-09-06 增补：有序真实截断与严格内部稳定性
 
-本节连接上一增补已构造的真实无限 Hankel 奇异权重与实际降阶系统。新增 `OrderedBalancedCoordinates`、`DiscreteSteinCompressionStability`、`OrderedStableBalancedTruncation` 三个候选 Lean 模块及同名 Scribe；文件位于 `D5/S3/Observer/Hankel/` 与相应 Blueprint 路径。文献定位与签名比较见 `Library/Control/discrete_balanced_truncation_stability.md`。本节候选证明源码尚未经过 Lean 内核或 Scribe 发射验证。
+本节连接上一增补已构造的真实无限 Hankel 奇异权重与实际降阶系统。新增 `OrderedBalancedCoordinates`、`DiscreteSteinCompressionStability`、`OrderedStableBalancedTruncation` 三个候选 Lean 模块及同名 Scribe；文件位于 `D5/S3/Observer/Hankel/` 与相应 Blueprint 路径。文献定位与签名比较见 `Library/Control/pontesduffkurschner2021timelimited.md`。本节候选证明源码尚未经过 Lean 内核或 Scribe 发射验证。
 
 ## A. 排序作用于整个坐标构造
 
