@@ -170,6 +170,18 @@ internal static partial class RepositoryRules
                 UtilityAdmissionRule.Evaluate,
                 UtilityAdmissionRule.IsAffectedBy,
                 UtilityAdmissionRule.Evaluate)),
+        Register(
+            32,
+            "Scribe narrative provenance",
+            new RepositoryRule(ScribeDefinitionScoped, ScribeNarrativeProvenance, ScribeSourceAffected)),
+        Register(
+            33,
+            "Frozen state and accepted Freeze pairing",
+            new RepositoryRule(
+                (artifact, _) => FrozenPairRule.IsPairPath(artifact.Path.Value),
+                FrozenPairRule.Evaluate,
+                FrozenPairRule.IsAffectedBy,
+                FrozenPairRule.Evaluate)),
     ];
 
     private static RuleRegistration Register(

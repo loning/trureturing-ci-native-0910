@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Analytic/Adelic/PrimeObserverCasimirCompleteMonotonicity.prime_observer_casimir_complete_monotonicity
     target_statement_id: sha256:b0c035539b8c27832aa282f413abb83bda454ffff279b324d53f2e88dfabac0c
 receipts:
-  scribe:
-    - gid: D5/S3/Analytic/Adelic/PrimeObserverCasimirCompleteMonotonicity.prime_observer_casimir_complete_monotonicity
-      definition_sha256: sha256:0ce44163fffae3ae7fa139a4d50d1a14ad0b5f9b86c4d9c34098d51fd07e9fb1
-      emission_sha256: sha256:d599b42d0502cd719cc6956312cd749eea7c8b14e39e232e72ca77f57d9775e2
   unresolved_subitems: []

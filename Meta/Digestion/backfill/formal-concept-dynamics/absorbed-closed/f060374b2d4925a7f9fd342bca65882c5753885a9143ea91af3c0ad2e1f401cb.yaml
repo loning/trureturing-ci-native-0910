@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Epistemic/VacuousOmniscience.empty_fiber_knows_everything
     target_statement_id: sha256:3f4babe58c5648bb05737eded201e151fb887cf26e28d206a412746eb942aa9a
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Epistemic/VacuousOmniscience.empty_fiber_knows_everything
-      definition_sha256: sha256:16055e1079322a932a4566aedb49e0ff2011493a296d42e32252d6c6740a7dc9
-      emission_sha256: sha256:523aec71b49354ac18703a4166ef4f1945bdca4466a6a65e8c640add274af368
   unresolved_subitems: []

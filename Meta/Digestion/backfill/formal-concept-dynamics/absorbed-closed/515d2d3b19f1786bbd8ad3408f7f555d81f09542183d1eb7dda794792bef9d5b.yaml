@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ObserverMemory/FiniteCountermodels/MinimalMacroFactorizationCounterexample.deterministic_three_state_process_has_no_macro_factorization
     target_statement_id: sha256:1012f3c6976c7ef7cd761e66d91c1f1623b1d7940d6f1818a3df66c204964c96
 receipts:
-  scribe:
-    - gid: D5/S3/ObserverMemory/FiniteCountermodels/MinimalMacroFactorizationCounterexample.deterministic_three_state_process_has_no_macro_factorization
-      definition_sha256: sha256:29e0d455607d0671e8bfa48cad4b56fe3ffbb0bf126c4efac6c42af1ccb616ef
-      emission_sha256: sha256:31ce782d83864056460836bac0bf8c6d6e4faef51d9bb7885acb240775e89181
   unresolved_subitems: []

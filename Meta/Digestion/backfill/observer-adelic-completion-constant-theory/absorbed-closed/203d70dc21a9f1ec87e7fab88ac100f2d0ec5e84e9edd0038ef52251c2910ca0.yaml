@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S0/Naming/DenseNamingBoundary.dense_iUnion_namingBoundary
     target_statement_id: sha256:5dfb80374f1ec46cb3806b318075bb5247897dccca1ada8cf0d60d36b8f5534b
 receipts:
-  scribe:
-    - gid: D5/S0/Naming/DenseNamingBoundary.dense_iUnion_namingBoundary
-      definition_sha256: sha256:c946016926bdbecd61081cab2672c2fccb931fe3e936626e862dc35bd7ba359b
-      emission_sha256: sha256:372ed0c892a4b3270171d746ee012014312ff1d33e192fbaea8933e91481be4b
   unresolved_subitems: []

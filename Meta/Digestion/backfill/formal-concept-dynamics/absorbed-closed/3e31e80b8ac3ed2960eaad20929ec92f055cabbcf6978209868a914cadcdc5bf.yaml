@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Refinement/StrictRefinementBound.strict_refinement_steps_le_card_sub_initial_image
     target_statement_id: sha256:a52ab6182aa934c7e59ab8c22a2775cc6df584b51727667d7c286c6ddf6bf0ef
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Refinement/StrictRefinementBound.strict_refinement_steps_le_card_sub_initial_image
-      definition_sha256: sha256:b74973a1850ccf0ebc11bc84c62739ed7aff0ba2c5ff6c2ca7870085ef8c52bb
-      emission_sha256: sha256:fe7b2640ae9f3b09fdceb699dba638b1cb6dfc9a28d868f88d4b1b33a2705891
   unresolved_subitems: []

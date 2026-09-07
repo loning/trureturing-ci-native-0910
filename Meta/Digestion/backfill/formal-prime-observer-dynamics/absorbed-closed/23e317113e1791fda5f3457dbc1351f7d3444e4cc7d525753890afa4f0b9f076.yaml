@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Observer/ArithmeticTomography/FinitePrimeInformationBudget.finite_prime_information_budget
     target_statement_id: sha256:56316569476965d645800a201f3bfbdf83b5c3ea1347ce664963d1aaef06d658
 receipts:
-  scribe:
-    - gid: D5/S3/Observer/ArithmeticTomography/FinitePrimeInformationBudget.finite_prime_information_budget
-      definition_sha256: sha256:d0281d11db0654168363107274f1d2f272e3f58f948b88be20b25344f6cc0e93
-      emission_sha256: sha256:94fa478819cff064c64671954b63b68bae037e3b71d254e471ba7c2f2cc19fb6
   unresolved_subitems: []

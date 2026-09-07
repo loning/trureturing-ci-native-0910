@@ -3,6 +3,7 @@
    mirror-B: none(waiver:formal-unit-only)
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: none
    digest: Separate bounded-gap progress into a DHL occupancy axis and an admissible-tuple diameter axis. -/
 
 import D5.S3.PrimeGaps.ShortGapOccupancyBridge

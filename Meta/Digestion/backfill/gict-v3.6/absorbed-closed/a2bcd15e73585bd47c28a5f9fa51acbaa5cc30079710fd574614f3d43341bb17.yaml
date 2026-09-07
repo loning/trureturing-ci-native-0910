@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/PrimeForms/PropagationLegs.propagation_identity
     target_statement_id: sha256:5a1f48d195af493729112cc38d5293dd07c6493910617208b43d01bdf0fab77b
 receipts:
-  scribe:
-    - gid: D5/S3/PrimeForms/PropagationLegs.propagation_identity
-      definition_sha256: sha256:3da4e8957361ec00ba5f041288026a3d1a9f6da8b45a4ad06a0438f4dedf0a59
-      emission_sha256: sha256:c3bfa3446a7b9109438a59898fbb4aa4ad854faa24d67bd50fd61e1d4c3ecf29
   unresolved_subitems: []

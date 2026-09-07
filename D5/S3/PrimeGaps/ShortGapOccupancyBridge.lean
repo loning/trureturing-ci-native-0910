@@ -3,6 +3,7 @@
    mirror-B: none(waiver:formal-unit-only)
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: none
    digest: Quantify local residue survivors and turn two prime hits in a bounded translate into a bounded consecutive-prime gap. -/
 
 import D5.S3.Analytic.PrimeProducts.FiniteLocalResidueBlockingCriterion

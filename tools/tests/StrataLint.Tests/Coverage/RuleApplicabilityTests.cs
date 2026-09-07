@@ -36,7 +36,7 @@ public sealed class RuleApplicabilityTests
     [InlineData(RuleFixture.TowerManifestPath, "SL-003,SL-015,SL-019,SL-022")]
     [InlineData(
         "Blueprint/D5/S1/Digit/LatexFixture.scribe.cs",
-        "SL-003,SL-006,SL-011,SL-015,SL-022,SL-023")]
+        "SL-003,SL-006,SL-011,SL-015,SL-022,SL-023,SL-032")]
     public void DefaultCatalogApplicabilityMatchesTheRulesActualScanSurface(
         string path,
         string expected)

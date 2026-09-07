@@ -3,6 +3,7 @@
    mirror-B: none(waiver:formal-unit-only)
    mirror-E: none(waiver:algebraically-proved)
    anchors: [mathlib/module/Mathlib.Logic.Relation]
+   utility: none
    digest: Arbitrary raw Zeckendorf carry paths preserve value and are globally confluent. -/
 
 import D5.S1.Digit.Normalize
