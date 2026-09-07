@@ -4,16 +4,24 @@
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
    utility: none
-   digest: Construct the lower Gronwall envelope from powers of primorials. -/
+   digest: Lower Gronwall envelope and vanishing logarithmic Robin margin. -/
 
 import D5.S3.Weil.GronwallUpperEnvelope
+import D5.S3.Arith.Robin.PaddingRatio
 import Mathlib.NumberTheory.Primorial
+import Mathlib.Order.LiminfLimsup
 
 /-!
 Powers of primorials give the lower half of Gronwall's theorem.
 The uniform prime-power error is bounded by a geometric factor times the
 summable series of reciprocal squares. The logarithmic denominator uses
 only the Chebyshev upper bound `primorial_le_four_pow`.
+
+The logarithmic Robin margin is a bind-only companion: the upper envelope
+gives eventual lower bounds on the margin, and the lower envelope gives
+arbitrarily late upper bounds. The source obligations, directed companion
+edges, and declaration-by-declaration utility assessment are recorded in
+`docs/reports/gronwall-robin-margin-0908.md`.
 -/
 
 set_option autoImplicit false
@@ -234,7 +242,66 @@ theorem gronwall_envelopes (ε : ℝ) (hε : 0 < ε) :
         (Real.exp Real.eulerMascheroniConstant * n * Real.log (Real.log n))) :=
   ⟨GronwallUpperEnvelope.gronwall_upper_envelope ε hε, gronwall_lower_envelope ε hε⟩
 
+/-- The logarithmic Robin margin, with `Z(n) = sigma(n) / n`. -/
+noncomputable def robinLogMargin (n : ℕ) : ℝ :=
+  Real.eulerMascheroniConstant + Real.log (Real.log (Real.log n)) -
+    Real.log ((ArithmeticFunction.sigma 1 n : ℝ) / n)
+
+/-- On the Robin domain, the margin is the negative logarithm of the normalized ratio. -/
+theorem robin_log_margin_eq_neg_log {n : ℕ} (hn : 5041 ≤ n) :
+    robinLogMargin n = -Real.log (D5.S3.Arith.Robin.PaddingRatio.robinRatio n) := by
+  have hn0 : (n : ℝ) ≠ 0 := (Nat.cast_pos.mpr (by omega : 0 < n)).ne'
+  have hs0 : (ArithmeticFunction.sigma 1 n : ℝ) ≠ 0 :=
+    (Nat.cast_pos.mpr (ArithmeticFunction.sigma_pos 1 n (by omega))).ne'
+  have hl0 := (D5.S3.Arith.Robin.PaddingRatio.loglog_pos hn).ne'
+  simp only [robinLogMargin, D5.S3.Arith.Robin.PaddingRatio.robinRatio,
+    Real.log_div hs0 hn0,
+    Real.log_div hs0 (mul_ne_zero (mul_ne_zero (Real.exp_ne_zero _) hn0) hl0),
+    Real.log_mul (mul_ne_zero (Real.exp_ne_zero _) hn0) hl0,
+    Real.log_mul (Real.exp_ne_zero _) hn0, Real.log_exp]
+  ring
+
+/-- Gronwall's two envelopes imply that the logarithmic Robin margin has liminf zero. -/
+theorem robin_log_margin_liminf : liminf robinLogMargin atTop = 0 := by
+  have hlower (b : ℝ) (hb : b < 0) : ∀ᶠ n : ℕ in atTop, b ≤ robinLogMargin n := by
+    have he : 0 < Real.exp (-b) - 1 :=
+      sub_pos.mpr (Real.one_lt_exp_iff.mpr (neg_pos.mpr hb))
+    obtain ⟨N, hN⟩ := (gronwall_envelopes (Real.exp (-b) - 1) he).1
+    filter_upwards [eventually_ge_atTop N, eventually_ge_atTop 5041] with n hn hn'
+    have hpos : 0 < D5.S3.Arith.Robin.PaddingRatio.robinRatio n :=
+      div_pos (Nat.cast_pos.mpr (ArithmeticFunction.sigma_pos 1 n (by omega)))
+        (mul_pos (mul_pos (Real.exp_pos _) (Nat.cast_pos.mpr (by omega)))
+          (D5.S3.Arith.Robin.PaddingRatio.loglog_pos hn'))
+    have hratio : D5.S3.Arith.Robin.PaddingRatio.robinRatio n ≤ Real.exp (-b) := by
+      simpa only [D5.S3.Arith.Robin.PaddingRatio.robinRatio, add_sub_cancel] using hN n hn
+    rw [robin_log_margin_eq_neg_log hn']
+    have hlog := (Real.log_le_iff_le_exp hpos).mpr hratio
+    linarith only [hlog]
+  have hupper (b : ℝ) (hb : 0 < b) : ∃ᶠ n : ℕ in atTop, robinLogMargin n ≤ b := by
+    have he : 0 < 1 - Real.exp (-b) :=
+      sub_pos.mpr (Real.exp_lt_one_iff.mpr (neg_neg_of_pos hb))
+    rw [frequently_atTop]
+    intro N
+    obtain ⟨n, hn, hratio⟩ := (gronwall_envelopes (1 - Real.exp (-b)) he).2 (max N 5041)
+    have hn' : 5041 ≤ n := (le_max_right _ _).trans hn
+    have hratio' : Real.exp (-b) ≤ D5.S3.Arith.Robin.PaddingRatio.robinRatio n := by
+      simpa only [sub_sub_cancel, D5.S3.Arith.Robin.PaddingRatio.robinRatio] using hratio
+    have hlog := Real.log_le_log (Real.exp_pos (-b)) hratio'
+    rw [Real.log_exp] at hlog
+    refine ⟨n, (le_max_left _ _).trans hn, ?_⟩
+    rw [robin_log_margin_eq_neg_log hn']
+    linarith only [hlog]
+  have hbounded : IsBoundedUnder (· ≥ ·) atTop robinLogMargin :=
+    isBoundedUnder_of_eventually_ge (hlower (-1) (by norm_num))
+  have hcobounded : IsCoboundedUnder (· ≥ ·) atTop robinLogMargin :=
+    IsCoboundedUnder.of_frequently_le (hupper 1 zero_lt_one)
+  exact le_antisymm ((liminf_le_iff' hcobounded hbounded).mpr hupper)
+    ((le_liminf_iff' hcobounded hbounded).mpr hlower)
+
 #print axioms gronwall_lower_envelope
 #print axioms gronwall_envelopes
+#print axioms robinLogMargin
+#print axioms robin_log_margin_eq_neg_log
+#print axioms robin_log_margin_liminf
 
 end D5.S3.Weil.GronwallLowerEnvelope

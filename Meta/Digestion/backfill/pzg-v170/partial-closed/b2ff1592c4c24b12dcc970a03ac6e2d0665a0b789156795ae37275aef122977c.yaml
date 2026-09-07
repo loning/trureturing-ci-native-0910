@@ -11,3 +11,6 @@ coverage_gids:
     target_statement_id: sha256:54a94e8e28f33066044fbbb5154622c0ebf22ba8f797ddee0a464057e900e6a7
 receipts:
   unresolved_subitems: []
+  chain_atoms:
+    - 7e239ae5bba0b4d9d708d81475c3b609c34fb816ee6559420621e2a2f5703070
+    - bf785041c81f4516b231ce67a8d084f4481d70bdb512c46b1fc0bb9ff0fcc7e8

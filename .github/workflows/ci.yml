@@ -91,9 +91,7 @@ jobs:
         run: |
           set -euo pipefail
           source_address="${{ hashFiles('candidate/tools/**', 'candidate/Blueprint/**/*.scribe.cs', 'candidate/Directory.*', 'candidate/.editorconfig', 'candidate/global.json') }}"
-          workflow_ref=HEAD
-          if [[ "$GITHUB_EVENT_NAME" == "pull_request_target" ]]; then workflow_ref=HEAD^1; fi
-          workflow_address="$(git -C candidate rev-parse "${workflow_ref}:.github/workflows/ci.yml")"
+          workflow_address="$(git -C candidate rev-parse HEAD:.github/workflows)"
           source_address="$(printf 'sources=%s\nworkflow=%s\n' "$source_address" "$workflow_address" | sha256sum | cut -d ' ' -f 1)"
           candidate/tools/scripts/workflow/judge-content-address.sh "$source_address" >> "$GITHUB_OUTPUT"
       - name: Restore judge binaries and candidate build outputs
@@ -291,9 +289,7 @@ jobs:
         run: |
           set -euo pipefail
           source_address="${{ hashFiles('candidate/tools/**', 'candidate/Blueprint/**/*.scribe.cs', 'candidate/Directory.*', 'candidate/.editorconfig', 'candidate/global.json') }}"
-          workflow_ref=HEAD
-          if [[ "$GITHUB_EVENT_NAME" == "pull_request_target" ]]; then workflow_ref=HEAD^1; fi
-          workflow_address="$(git -C candidate rev-parse "${workflow_ref}:.github/workflows/ci.yml")"
+          workflow_address="$(git -C candidate rev-parse HEAD:.github/workflows)"
           source_address="$(printf 'sources=%s\nworkflow=%s\n' "$source_address" "$workflow_address" | sha256sum | cut -d ' ' -f 1)"
           candidate/tools/scripts/workflow/judge-content-address.sh "$source_address" >> "$GITHUB_OUTPUT"
       - name: Restore judge binaries and candidate build outputs
@@ -305,6 +301,9 @@ jobs:
             candidate/tools/**/bin
             candidate/tools/**/obj
           key: stratalint-judge-binaries-v2-${{ runner.os }}-${{ steps.judge-address.outputs.runtime }}-${{ steps.judge-address.outputs.address }}
+      - name: Build candidate tools before Lean report production
+        shell: bash
+        run: make -C candidate/tools dotnet
       - name: Resolve checked merge result's dev parent
         id: base
         shell: bash
@@ -420,8 +419,8 @@ jobs:
       # The lakefile only shapes the project layer, whose config_sha256 key stays broader.
       # Prefix restore may cross manifest/toolchain versions; it is a best-effort seed.
       # Lake traces determine validity; the prefix alone guarantees neither correctness
-      # nor a warm build within 45 minutes. Nonzero download, validation, or build
-      # results remain terminal.
+      # nor a warm build within 45 minutes. Normal Lean build, report, and check
+      # failures remain terminal.
       - name: Restore candidate Lean dependency artifacts
         id: lake-deps-cache
         if: steps.report-reuse.outcome != 'success'
@@ -448,23 +447,13 @@ jobs:
           key: ${{ runner.os }}-${{ runner.arch }}-lake-build-v1-${{ steps.lean-input.outputs.config_sha256 }}-${{ steps.lean-input.outputs.sources_sha256 }}
           restore-keys: |
             ${{ runner.os }}-${{ runner.arch }}-lake-build-v1-${{ steps.lean-input.outputs.config_sha256 }}-
-      # Release 只作兜底:仅当 Actions 层**连前缀都没回退到**时才取。
-      # `lake unpack` 是合并语义(Lake 4.33 Lake/Build/Actions.lean:182-191,无预删除),
-      # 无条件执行会让较旧的 Release 按同名路径覆盖较新的 Actions 层,反而增加补编 ——
-      # 这正是 #5640 的方向错误,由 τ=0 owner 2026-09-06 指出并纠正。
-      # 判据用 cache-matched-key 而非 cache-hit:后者仅精确命中为 true,在此恒假。
-      - name: Fetch required Lean release build layer when the Actions layer is absent
-        if: steps.report-reuse.outcome != 'success' && steps.lake-build-cache.outputs.cache-matched-key == ''
-        env: { GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }
-        shell: bash
-        run: |
-          set -euo pipefail
-          printf '%s\n' 'Actions project layer absent; resolve and validate a release seed (exact -> config prefix -> same-toolchain seed), then run lake build within the unchanged job budget (spec §12.4 budgeted source rebuild; §15 controlled CI recovery). A nonzero download, validation, or build result terminates the job.'
-          PATH="$HOME/.elan/bin:$PATH" candidate/tools/scripts/worktree/lean-cache-publish.sh fetch --allow-seed --repository "$GITHUB_WORKSPACE/candidate"
+      # make lean owns optional Release fallback and its transaction budget.
       - name: Build candidate Lean project
         id: lean-build
         if: steps.report-reuse.outcome != 'success'
-        env: { GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STRATALINT_ACCEPT_COLD_BUILD: '1'
         shell: bash
         run: |
           set -euo pipefail
@@ -491,15 +480,6 @@ jobs:
             candidate/.lake/.stratalint-lean-cache-stamp.json
             ~/.cache/mathlib
           key: ${{ runner.os }}-${{ runner.arch }}-lake-deps-v2-${{ steps.lean-input.outputs.dependency_sha256 }}
-      - name: Build Scribe binary on judge cache miss
-        if: steps.judge-cache.outputs.cache-hit != 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p .judge-binaries/scribe
-          dotnet build candidate/tools/StrataLint.Scribe.Documents/StrataLint.Scribe.Documents.csproj \
-            --configuration Release \
-            --output .judge-binaries/scribe
       - name: Produce source-bound canonical Lean reports
         if: steps.report-reuse.outcome != 'success'
         env: { GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }
@@ -553,15 +533,16 @@ jobs:
           key: stratalint-canonical-lean-report-v2-${{ steps.lean-report-input.outputs.address }}
       - name: Run complete mathematical content checks
         shell: bash
+        env:
+          STRATALINT_SCRIBE_BASE: ${{ steps.base.outputs.sha }}
         run: |
           set -euo pipefail
           report="$RUNNER_TEMP/raw-lean-reports/candidate-lean-report.json"
-          scribe="$GITHUB_WORKSPACE/.judge-binaries/scribe/StrataLint.Scribe.Documents.dll"
+          scribe="$GITHUB_WORKSPACE/candidate/tools/StrataLint.Scribe.Documents/bin/Release/net10.0/StrataLint.Scribe.Documents.dll"
           test -s "$report"
           test -s "$scribe"
-          base="${{ steps.base.outputs.sha }}"
           /bin/bash "$GITHUB_WORKSPACE/candidate/tools/scripts/workflow/scribe-content-checks.sh" \
-            "$report" "$scribe" "$base"
+            "$report" "$scribe"
       - name: Upload raw Lean reports and producer logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -635,9 +616,7 @@ jobs:
         run: |
           set -euo pipefail
           source_address="${{ hashFiles('candidate/tools/**', 'candidate/Blueprint/**/*.scribe.cs', 'candidate/Directory.*', 'candidate/.editorconfig', 'candidate/global.json') }}"
-          workflow_ref=HEAD
-          if [[ "$GITHUB_EVENT_NAME" == "pull_request_target" ]]; then workflow_ref=HEAD^1; fi
-          workflow_address="$(git -C candidate rev-parse "${workflow_ref}:.github/workflows/ci.yml")"
+          workflow_address="$(git -C candidate rev-parse HEAD:.github/workflows)"
           source_address="$(printf 'sources=%s\nworkflow=%s\n' "$source_address" "$workflow_address" | sha256sum | cut -d ' ' -f 1)"
           candidate/tools/scripts/workflow/judge-content-address.sh "$source_address" >> "$GITHUB_OUTPUT"
       - name: Restore judge binaries and candidate build outputs
