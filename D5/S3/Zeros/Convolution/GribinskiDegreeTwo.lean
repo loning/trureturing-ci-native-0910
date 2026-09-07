@@ -37,9 +37,15 @@ computational utility kind is none. All eleven have proof_shape: bind-only;
 these uses supply neither an escape witness nor a deposit admission basis.
 
 Companion obligations and actual directed edges (consumer -> prerequisite):
-- definition_consistency is a prerequisite of normalized_coefficient_convolution (Definition 3.10, all k=0,1,2).
-- normalized_coefficient_convolution consumes definition_consistency for Definition 3.10; no theorem here consumes its conclusion, retained for the general coefficient-agreement obligation and Scribe's definition-consistency block (narrative use only).
-- discriminant_eq_output consumes g1_explicit_coefficients (G1/G2); no theorem here consumes its conclusion, retained to identify the discriminant of the actual output coefficients explicitly.
+- definition_consistency: prerequisite of normalized_coefficient_convolution (Definition 3.10).
+- normalized_coefficient_convolution: consumes definition_consistency (Definition 3.10).
+- discriminant_eq_output: consumes g1_explicit_coefficients (G1/G2).
+
+The last two conclusions have no public theorem consumers within this module.
+normalized_coefficient_convolution retains general coefficient agreement at k=0,1,2
+and is exposed by Scribe's definition-consistency block (narrative use only).
+discriminant_eq_output retains explicit identification with the actual output's
+coefficient discriminant. These retention obligations are not claimed escape edges.
 -/
 
 set_option autoImplicit false
