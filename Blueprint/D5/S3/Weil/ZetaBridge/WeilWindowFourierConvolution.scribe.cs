@@ -27,7 +27,7 @@ internal sealed class WeilWindowFourierConvolutionDocument : IScribeDocumentDefi
             Describe.Lean(DescribeId.Create("window_correlation_reflection"),
                 DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/WeilWindowFourierConvolution.window_correlation_reflection"),
                 H("Reflection of the actual convolution"), StatementSource.FromLean(), AssessedProvenance.FromRepo(),
-                Blocks(Paragraph(Text("Haar translation and conjugation of the original integral prove that changing the sign of the displacement exchanges the two modes and conjugates the result. This supplies the negative-frequency-side formula without postulating symmetry."))), DescribeRole.Theorem),
+                Blocks(Paragraph(Text("Haar translation and conjugation of the original integral prove that changing the sign of the displacement exchanges the two modes and conjugates the result. This supplies the negative-displacement formula without postulating symmetry."))), DescribeRole.Theorem),
             Describe.Lean(DescribeId.Create("window_correlation_translate"),
                 DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/WeilWindowFourierConvolution.window_correlation_translate"),
                 H("Common translation preserves the test"), StatementSource.FromLean(), AssessedProvenance.FromRepo(),
