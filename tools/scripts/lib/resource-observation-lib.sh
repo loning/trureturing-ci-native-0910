@@ -360,6 +360,9 @@ resource_observe_run_periodic() {
   local sampler_status_root=""
   local sampler_status_directory=""
   local sampler_status_file=""
+  local sampler_wait_status=0
+  local sampler_is_job=0
+  local job_pid=""
   local command_status=0
   local had_errexit=0
   local previous_hup=""
@@ -390,8 +393,12 @@ resource_observe_run_periodic() {
       "$runner_temp" \
       "${RESOURCE_OBSERVATION_INTERVAL_SECONDS:-30}"
     sampler_status=$?
+    # A wrapper signal either kills the shim before this section begins, or is ignored
+    # until the atomic rename completes; every publication that starts is therefore final.
+    trap '' TERM HUP INT
     printf '%s\n' "$sampler_status" > "$sampler_status_file.tmp"
     mv "$sampler_status_file.tmp" "$sampler_status_file"
+    trap - TERM HUP INT
   ) &
   sampler_pid=$!
   if [[ $- == *e* ]]; then
@@ -410,7 +417,23 @@ resource_observe_run_periodic() {
   if [[ ! -f "$sampler_status_file" ]]; then
     kill "$sampler_pid" 2>/dev/null || true
   fi
-  wait "$sampler_pid" 2>/dev/null || true
+  while true; do
+    wait "$sampler_pid" 2>/dev/null
+    sampler_wait_status=$?
+    if [[ "$sampler_wait_status" -le 128 ]]; then
+      break
+    fi
+    sampler_is_job=0
+    while IFS= read -r job_pid; do
+      if [[ "$job_pid" == "$sampler_pid" ]]; then
+        sampler_is_job=1
+        break
+      fi
+    done <<< "$(jobs -p)"
+    if [[ "$sampler_is_job" -eq 0 ]]; then
+      break
+    fi
+  done
   if [[ -f "$sampler_status_file" ]]; then
     IFS= read -r sampler_status < "$sampler_status_file" || true
     # Only the shim's complete canonical decimal is evidence of self-exit. A partial or

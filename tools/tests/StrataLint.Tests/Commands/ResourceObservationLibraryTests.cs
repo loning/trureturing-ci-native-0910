@@ -253,7 +253,42 @@ public sealed class ResourceObservationLibraryTests
 
         var result = Run(
             temporary,
-            "source \"$1\"\nresource_observe_sample() { printf 'SAMPLE phase=%s observer_pid=%s exit=%s signal=%s\\n' \"$5\" \"$6\" \"$7\" \"$8\"; return 0; }\nresource_observe_periodically() { return 0; }\nengineering() { kill -TERM \"$$\"; return 23; }\nresource_observe_run_periodic engineering\n");
+            """
+            source "$1"
+            barrier_marker="$PWD/wait-barrier-complete"
+            mkfifo sampler-ready sampler-block
+            exec 4<>sampler-ready
+            exec 3<>sampler-block
+            resource_observe_sample() {
+              if [[ "$5" == "final" && ! -f "$barrier_marker" ]]; then
+                builtin kill -KILL "$sampler_pid" 2>/dev/null || true
+                builtin wait "$sampler_pid" 2>/dev/null || true
+                return 0
+              fi
+              printf 'SAMPLE phase=%s observer_pid=%s exit=%s signal=%s\n' "$5" "$6" "$7" "$8"
+            }
+            resource_observe_periodically() {
+              trap '' TERM
+              printf 'ready\n' >&4
+              read -r _ <&3
+            }
+            wait_attempt=0
+            wait() {
+              local wait_status=0
+              wait_attempt=$((wait_attempt + 1))
+              if [[ "$wait_attempt" -eq 1 ]]; then
+                builtin kill -TERM "$$"
+                return 143
+              fi
+              builtin kill -KILL "$sampler_pid" 2>/dev/null || true
+              builtin wait "$@"
+              wait_status=$?
+              : > "$barrier_marker"
+              return "$wait_status"
+            }
+            engineering() { read -r _ <&4; return 23; }
+            resource_observe_run_periodic engineering
+            """);
 
         Assert.Equal(23, result.ExitCode);
         var output = Encoding.UTF8.GetString(result.StandardOutput);
@@ -261,6 +296,7 @@ public sealed class ResourceObservationLibraryTests
         Assert.Contains("SAMPLE phase=signal-TERM", output, StringComparison.Ordinal);
         Assert.Matches("SAMPLE phase=signal-TERM observer_pid=[1-9][0-9]*", output);
         Assert.Contains("SAMPLE phase=final observer_pid= exit=23 signal=TERM", output, StringComparison.Ordinal);
+        Assert.DoesNotContain("RESOURCE_OBSERVATION_SAMPLER", output, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -460,12 +496,23 @@ public sealed class ResourceObservationLibraryTests
             """
             source "$1"
             resource_observe_sample() { return 0; }
-            sampler_fifo="$PWD/sampler-exited"
-            mkfifo "$sampler_fifo"
-            resource_observe_periodically() { exec 9>"$sampler_fifo"; bash -c 'exit 5'; }
+            publish_ready="$PWD/publish-ready"
+            publish_release="$PWD/publish-release"
+            mkfifo "$publish_ready" "$publish_release"
+            exec 7<>"$publish_ready"
+            exec 8<>"$publish_release"
+            resource_observe_periodically() { return 5; }
+            mv() {
+              printf 'ready\n' >&7
+              read -r _ <&8
+              command mv "$@"
+            }
+            kill() {
+              builtin kill "$@"
+              printf 'release\n' >&8
+            }
             observed_command() {
-              # The shim owns write fd 9; EOF proves it exited after atomically recording the status.
-              read -r _ <"$sampler_fifo" || [[ "$?" -eq 1 ]]
+              read -r _ <&7
             }
             resource_observe_run_periodic observed_command
             """);
