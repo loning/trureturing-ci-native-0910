@@ -51,7 +51,7 @@ internal static partial class IngestCommand
                 report,
                 plannedDocument,
                 fixedPointChanges);
-            var verifiedScribeEmissions = scribeEmissionVerifier.Verify(
+            scribeEmissionVerifier.Verify(
                 fixedPointSnapshot,
                 report,
                 deltaImpact.ReceiptVerificationChanges);
@@ -80,7 +80,6 @@ internal static partial class IngestCommand
                     plannedDocument,
                     fixedPointSnapshot,
                     lean,
-                    verifiedScribeEmissions,
                     baselineDocument,
                     validateProjectedStatus: false,
                     baselineSnapshot: baseline,
@@ -138,7 +137,6 @@ internal static partial class IngestCommand
                 finalDocument,
                 finalSnapshot,
                 lean,
-                verifiedScribeEmissions,
                 baselineDocument,
                 baselineSnapshot: baseline,
                 changes: receiptVerificationChanges,
@@ -152,7 +150,6 @@ internal static partial class IngestCommand
                 baseline,
                 LoadPolicy(finalSnapshot),
                 lean,
-                verifiedScribeEmissions,
                 DigestionEvaluationScopes.ResolveChanges(
                     evaluationScope,
                     receiptVerificationChanges),

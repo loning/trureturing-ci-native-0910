@@ -12,8 +12,7 @@ public sealed partial class DigestionLedgerTests
     {
         var evaluation = EvaluateCompleteWitness(
             DigestionMigrationState.Partial,
-            RawChangeSet.Create(["notes/unrelated.txt"]),
-            includeVerifiedScribeWitness: true);
+            RawChangeSet.Create(["notes/unrelated.txt"]));
 
         Assert.Equal(
             DigestionMigrationState.Partial,
@@ -101,22 +100,11 @@ public sealed partial class DigestionLedgerTests
             (ScribeEmissionAttestation.EmissionPath(gid), emission),
             .. FrozenLedgerFiles(targetPath),
         ]);
-        var verifiedEmissions = VerifiedScribeEmissions.Create(
-        [
-            new ScribeEmissionRecord(
-                gid,
-                ScribeEmissionAttestation.DefinitionPath(gid),
-                definitionHash,
-                ScribeEmissionAttestation.EmissionPath(gid),
-                emissionHash),
-        ]);
-
         var evaluation = DigestionStatusEvaluator.Evaluate(
             DigestionEvaluationScope.ChangedSet,
             candidate,
             snapshot,
             AcceptedLean(targetPath),
-            verifiedEmissions,
             baselineDocument: baseline,
             baselineSnapshot: snapshot,
             changes: StatusMoveChanges(childId));
@@ -166,7 +154,7 @@ public sealed partial class DigestionLedgerTests
         var evaluation = EvaluateCompleteWitness(
             DigestionMigrationState.Absorbed,
             StatusMoveChanges(),
-            includeVerifiedScribeWitness: false);
+            coverageStatementId: FrozenStatementReceiptTestData.Id('0'));
         var entry = Assert.Single(evaluation.Entries);
 
         Assert.Equal(DigestionReceiptAlignment.Seen, entry.Alignment);
@@ -177,12 +165,11 @@ public sealed partial class DigestionLedgerTests
     }
 
     [Fact]
-    public void SupportedStatusMoveIsAdmittedFromCurrentWitness()
+    public void SupportedStatusMoveWithoutScribeReceiptsIsAdmittedFromCurrentWitness()
     {
         var evaluation = EvaluateCompleteWitness(
             DigestionMigrationState.Absorbed,
-            StatusMoveChanges(),
-            includeVerifiedScribeWitness: true);
+            StatusMoveChanges());
         var entry = Assert.Single(evaluation.Entries);
 
         Assert.Equal(DigestionReceiptAlignment.Seen, entry.Alignment);
@@ -192,6 +179,7 @@ public sealed partial class DigestionLedgerTests
         Assert.DoesNotContain(evaluation.Findings, finding => finding.Contains(
             "handwritten status",
             StringComparison.Ordinal));
+        Assert.Empty(entry.Entry.Receipts.Scribe);
     }
 
     [Fact]
@@ -200,7 +188,6 @@ public sealed partial class DigestionLedgerTests
         var evaluation = EvaluateCompleteWitness(
             DigestionMigrationState.Partial,
             RawChangeSet.Create(["D5/S0/Carrier/Probe.lean"]),
-            includeVerifiedScribeWitness: true,
             coverageStatementId: FrozenStatementReceiptTestData.Id('0'));
 
         Assert.Contains(
@@ -211,7 +198,6 @@ public sealed partial class DigestionLedgerTests
     private static DigestionLedgerEvaluation EvaluateCompleteWitness(
         DigestionMigrationState candidateMigration,
         RawChangeSet changes,
-        bool includeVerifiedScribeWitness,
         string? coverageStatementId = null)
     {
         var atom = CompleteWitnessAtom();
@@ -219,10 +205,6 @@ public sealed partial class DigestionLedgerTests
         const string gid = "D5/S0/Carrier/Probe";
         const string targetPath = "D5/S0/Carrier/Probe.lean";
         var target = Encoding.UTF8.GetBytes(Lean(gid));
-        var definition = Encoding.UTF8.GetBytes("scribe definition\n");
-        var emission = Encoding.UTF8.GetBytes("# emitted narrative\n");
-        var definitionHash = DigestionFingerprint.Compute(definition).RawSha256;
-        var emissionHash = DigestionFingerprint.Compute(emission).RawSha256;
         var baseline = Ledger(
             atom,
             DigestionMigrationState.Partial,
@@ -231,7 +213,6 @@ public sealed partial class DigestionLedgerTests
             new DigestionCoverageEdge(
                 gid,
                 coverageStatementId ?? TestModuleStatementId),
-            new DigestionScribeReceipt(gid, definitionHash, emissionHash),
             atomizer: AtomizerRegistry.NoAtomizerId);
         var candidate = Ledger(
             atom,
@@ -241,34 +222,19 @@ public sealed partial class DigestionLedgerTests
             new DigestionCoverageEdge(
                 gid,
                 coverageStatementId ?? TestModuleStatementId),
-            new DigestionScribeReceipt(gid, definitionHash, emissionHash),
             atomizer: AtomizerRegistry.NoAtomizerId);
         var snapshot = Snapshot([
             ("docs/source.md", currentSource),
             CasFile(atom),
             (targetPath, target),
-            (ScribeEmissionAttestation.DefinitionPath(gid), definition),
-            (ScribeEmissionAttestation.EmissionPath(gid), emission),
             .. FrozenLedgerFiles(targetPath),
         ]);
-        var verifiedEmissions = includeVerifiedScribeWitness
-            ? VerifiedScribeEmissions.Create(
-            [
-                new ScribeEmissionRecord(
-                    gid,
-                    ScribeEmissionAttestation.DefinitionPath(gid),
-                    definitionHash,
-                    ScribeEmissionAttestation.EmissionPath(gid),
-                    emissionHash),
-            ])
-            : null;
 
         return DigestionStatusEvaluator.Evaluate(
             DigestionEvaluationScope.ChangedSet,
             candidate,
             snapshot,
             AcceptedLean(targetPath),
-            verifiedEmissions,
             baselineDocument: baseline,
             baselineSnapshot: snapshot,
             changes: changes);
