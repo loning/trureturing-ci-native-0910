@@ -2270,3 +2270,97 @@ P_\alpha x\to x
 \]
 
 这条链给出一个统一但不混同层级的答案：所谓观察者缺失的信息，不是一个无类型的“隐藏量”；它是目标、动力学与接口共同决定的余量。只有把 kernel、carry、image、coupling、gauge 与 completion topology 分账，才能精确知道下一步究竟应增加读数、增加记忆、改变实验、约束动力学、补 gluing，还是承认目标在当前接口上根本不可识别。
+
+---
+
+# 2026-09-07 增补：边界矩消去与实际算术残差的完整双侧尾界
+
+本节承接 PR 5882 的能量对偶误差估计，使用 PR 5602 在提交 `f7ca840051c8183062cb2cfb989e9f5686bd724a` 上的实际算术边界符号与 Fourier 尾界。目标是为实际 Weil 最低模态与 prolate 候选的比较提供可检查的全模态残差。新增真源为 `D5/S3/Weil/ZetaBridge/WeilArithmeticResidualTail.lean`；原 `WeilEvenFourierObservationTail` 仅增加两个公开伴随引理，复用其既有分母估计和望远镜求和证明。各公开声明配套 Scribe。
+
+## A. 文献与已存在证明的分工
+
+Connes、Consani、Moscovici 的 *Zeta spectral triples* 已作为 EMS Press 2026 年章节发表，DOI `10.4171/ELM/37/3`。其第 8 节所需的真实最低模态逼近仍是本路线的目标。Suzuki 于 2026 年 6 月 8 日公布的 *Weil’s quadratic form via the screw function*，arXiv:2606.09096v1，给出新的直接关联：Theorem 1.1 将规范算子表为定义域为 H0¹ 的对称算子的 Friedrichs 扩张；Theorem 1.4 在充分小的窗口得到最低特征值正、单且对应偶特征函数。其结论的窗口范围需要保留，不能替代无界增长尺度上的 simple-even 性质。
+
+这一新文献特别说明了算子域的重要性：规范扩张的定义域严格大于原 H0¹ 域，包含常数。因此，在试探向量上设置边界条件可以服务残差认证，不能反过来要求真实最低模态也满足同一试探条件。下文只约束有限对偶试探。
+
+仓库的分工同样明确。loning 路线最新的 `DyadicFourierInversion` 已证明其实际 dyadic 密度的 Fourier 反演与任意阶正则性，本节没有重证反演。PR 5602 的 `WeilMellinPrimeIntertwining` 已保留真实 prolate 算术合成的奇部修正。本节的试探矩消去不会删除该修正。`WeilArithmeticCouplingJet` 已证明实际 prime-pole-Gamma 符号的统一界与逐模态一阶余项；下文直接调用这两个公开定理。
+
+## B. 先保留复矩，再消去首项
+
+记现有实际边界符号和其已证明的包络为 s_c(n) 与 B_c，c≥2，故 |s_c(n)|≤B_c。对有限支撑集合 S⊂Z 和复系数 v_n，沿用原定义
+\[
+A_v(m)=\sum_{n\in S}\frac{s_c(n)-s_c(m)}{\pi(m-n)}v_n,
+\qquad
+J_v(m)=\sum_{n\in S}\frac{s_c(n)-s_c(m)}{\pi m}v_n.
+\]
+所有 pole、Gamma 与 von Mangoldt 项都仍在 s_c 中。首先证明精确代数恒等式
+\[
+\boxed{
+J_v(m)=\frac{\sum_{n\in S}s_c(n)v_n-s_c(m)\sum_{n\in S}v_n}{\pi m}.
+}
+\]
+于是两个复矩约束
+\[
+\sum_{n\in S}v_n=0,\qquad \sum_{n\in S}s_c(n)v_n=0
+\]
+同时消去整个首项。没有逐项取绝对值后再声称抵消，也没有要求每个 v_n 为实数。该代数式在 Lean 的全定义除法下也覆盖 m=0；实际余项定理单独排除零频与内外碰撞。
+
+若 |n|≤N 对 n∈S 成立、N≥0、|m|>0 且 |m|≥2N，现有一阶余项界与 |m|−N≥|m|/2 给出
+\[
+\boxed{
+\|A_v(m)\|\le\frac{4B_cN}{\pi |m|^2}\sum_{n\in S}\|v_n\|.
+}
+\]
+这里的符号包络来自原定理的显式算术表达式，未新加未知算子的界作为前提。
+
+## C. 完整双侧残差平方可和，并具有明确的立方尾界
+
+设读出在外部模态上的系数为 η/(m²−w²)。对整数 M>0，假设 M≥2N、|w|≤M/2，定义 m_j=M+j+1 及实际合成系数
+\[
+r_j^+=\frac{\eta}{m_j^2-w^2}-A_v(m_j),\qquad
+r_j^-=\frac{\eta}{m_j^2-w^2}-A_v(-m_j).
+\]
+先相减再取范数。原 Fourier 模块的分母证明给出 |m_j²−w²|≥3m_j²/4，因此
+\[
+\|r_j^\pm\|\le\frac{Q}{m_j^2},\qquad
+Q=\frac43|\eta|+\frac{4B_cN}{\pi}\sum_{n\in S}|v_n|.
+\]
+复用原模块已经完成的逆四次幂求和证明，得到
+\[
+\sum_{j\ge0}m_j^{-4}\le\frac1{3M^3}.
+\]
+`arithmetic_residual_two_sided_tail_bound` 同时证明两侧残差模平方之和可求和，以及
+\[
+\boxed{
+\sum_{j\ge0}\bigl(|r_j^+|^2+|r_j^-|^2\bigr)
+\le\frac{2Q^2}{3M^3}.
+}
+\]
+该式没有外部终止模态，也没有先假定残差属于 l2。正负两个方向各由一个完整自然数序列参数化，系数 2 保留。结论是平方尾质量的 M⁻³ 界，对应范数的 M⁻³ᐟ² 界；这两个衰减率不能混用。
+
+与实际偶 Fourier 读出的纸面对应也需保留归一化。长度 L 的有符号正交基为 V_n(x)=(-1)^n exp(2πinx/L)/sqrt(L)。偶读出代表为 cos(conj(z)x)，其有符号外部系数对应
+\[
+w=\frac{L\overline z}{2\pi},\qquad
+\eta=-\frac{L\sqrt L}{2\pi^2}\overline z\sin(L\overline z/2).
+\]
+单个有符号系数比原余弦基系数小 sqrt(2) 倍。上面的 Lean 定理对独立的 η、w 成立；这个积分字典、Parseval 及其与规范 Weil 算子作用的识别仍需连接，不能仅凭一致的公式名称宣布已完成。
+
+## D. 两个矩与候选正交可以同时实现
+
+对任意候选系数 k_n，再要求
+\[
+\sum_{n\in S}\overline{k_n}v_n=0.
+\]
+`exists_nonzero_arithmetic_moment_trial` 证明：只要 |S|>3，就存在支撑在 S 中的非零复系数函数 v，同时满足三条方程。证明实际构造从 C^S 到 C³ 的复线性映射；若其核只有零向量，就会产生从维数大于 3 的空间到 C³ 的单射，与标准维数定理矛盾。最后把核向量零延拓为 Z 上的有限支撑函数，并逐条验证三个有限求和等式。
+
+`exists_nonzero_trial_with_cubic_tail` 将这个同一非零见证交给 C 节的全尾定理。约束行不需要线性无关，候选也不需要特殊相位。这个存在性排除了仅靠零试探满足条件的空洞情形，但不保证试探与精确对偶解接近，也不保证其预算优于零试探。算术系数涉及超越数；这里没有宣称已给出可执行、带舍入保证的精确约束求解器。
+
+## E. 对能量对偶路线的用途与尚需完成的连接
+
+PR 5882 已有系数 C_g(v)=2 Re〈g,v〉−q(v)+‖P_(k⊥)(g−Mv)‖²/κ 的完整证明。本节提供了其中一类全外部系数质量的显式上界。调用时还必须认证内区残差、候选投影、正交基识别和 M 对该试探的真实作用。如果候选和试探都在保留区中，投影及标量移位只改变内区系数，但这个支持条件仍须实际验证。
+
+两个矩为精确条件。浮点试探的近零矩不能直接替代它们：非零矩会重新带来 1/m 首项，改变完整平方尾界。非零存在性也不能用来绕过这些数值认证。有限精度的矩缺陷控制、最优或近最优试探选择、真实算子域桥及对同一 prolate 家族的全尺度估计，是后续需要分别结算的任务。
+
+本轮的有限精确代数检查覆盖三个约束、首项恒等式、双侧余项与删去任一矩的负控；实际 c=3、5、11 符号另作数值检查。这里的包络较保守，数值诊断未证明实际最低模态误差更小。新源码属于逻辑审查后的候选证明，尚未执行 Lean 内核和 Scribe 发射。没有据此宣称真实最低模态趋于 Xi、全尺度 simple-even 或 RH。
+
+文献与真源：CCM, *Zeta spectral triples*, EMS Press (2026), DOI `10.4171/ELM/37/3`, §8；M. Suzuki, *Weil’s quadratic form via the screw function*, arXiv:2606.09096v1, Theorems 1.1、1.4 与 §8.5；`WeilArithmeticCouplingJet.arithmetic_coupling_first_jet_error`；`WeilEvenFourierObservationTail.exterior_inverse_fourth_bound`；`CoerciveDualCertificate.dual_energy_readout`。
