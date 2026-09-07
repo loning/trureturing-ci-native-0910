@@ -253,7 +253,42 @@ public sealed class ResourceObservationLibraryTests
 
         var result = Run(
             temporary,
-            "source \"$1\"\nresource_observe_sample() { printf 'SAMPLE phase=%s observer_pid=%s exit=%s signal=%s\\n' \"$5\" \"$6\" \"$7\" \"$8\"; return 0; }\nresource_observe_periodically() { return 0; }\nengineering() { kill -TERM \"$$\"; return 23; }\nresource_observe_run_periodic engineering\n");
+            """
+            source "$1"
+            barrier_marker="$PWD/wait-barrier-complete"
+            mkfifo sampler-ready sampler-block
+            exec 4<>sampler-ready
+            exec 3<>sampler-block
+            resource_observe_sample() {
+              if [[ "$5" == "final" && ! -f "$barrier_marker" ]]; then
+                builtin kill -KILL "$sampler_pid" 2>/dev/null || true
+                builtin wait "$sampler_pid" 2>/dev/null || true
+                return 0
+              fi
+              printf 'SAMPLE phase=%s observer_pid=%s exit=%s signal=%s\n' "$5" "$6" "$7" "$8"
+            }
+            resource_observe_periodically() {
+              trap '' TERM
+              printf 'ready\n' >&4
+              read -r _ <&3
+            }
+            wait_attempt=0
+            wait() {
+              local wait_status=0
+              wait_attempt=$((wait_attempt + 1))
+              if [[ "$wait_attempt" -eq 1 ]]; then
+                builtin kill -TERM "$$"
+                return 143
+              fi
+              builtin kill -KILL "$sampler_pid" 2>/dev/null || true
+              builtin wait "$@"
+              wait_status=$?
+              : > "$barrier_marker"
+              return "$wait_status"
+            }
+            engineering() { read -r _ <&4; return 23; }
+            resource_observe_run_periodic engineering
+            """);
 
         Assert.Equal(23, result.ExitCode);
         var output = Encoding.UTF8.GetString(result.StandardOutput);
@@ -261,6 +296,7 @@ public sealed class ResourceObservationLibraryTests
         Assert.Contains("SAMPLE phase=signal-TERM", output, StringComparison.Ordinal);
         Assert.Matches("SAMPLE phase=signal-TERM observer_pid=[1-9][0-9]*", output);
         Assert.Contains("SAMPLE phase=final observer_pid= exit=23 signal=TERM", output, StringComparison.Ordinal);
+        Assert.DoesNotContain("RESOURCE_OBSERVATION_SAMPLER", output, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -343,11 +379,6 @@ public sealed class ResourceObservationLibraryTests
         Assert.DoesNotContain("pid:201", output, StringComparison.Ordinal);
     }
 
-    // The stub installs a TERM trap so that both interleavings report exit=97 (#5973).
-    // resource_observe_run_periodic kills the sampler unconditionally; a stub that only
-    // "return 97" loses that race under load and is reaped with 143 instead, which made
-    // these two assertions intermittently red on CI while the property they are named for
-    // -- the command's own exit code -- held in both orderings.
     [Fact]
     public void SamplerFailureDoesNotChangeSuccessfulCommandExitCode()
     {
@@ -356,11 +387,30 @@ public sealed class ResourceObservationLibraryTests
 
         var result = Run(
             temporary,
-            "source \"$1\"\nresource_observe_periodically() { trap \"exit 97\" TERM; return 97; }\nresource_observe_run_periodic bash -c 'exit 0'\n");
+            """
+            source "$1"
+            resource_observe_sample() { return 0; }
+            sampler_fifo="$PWD/sampler-exited"
+            mkfifo "$sampler_fifo"
+            resource_observe_periodically() { exec 9>"$sampler_fifo"; bash -c 'exit 97'; }
+            printf() {
+              if [[ "$1" == '%s\n' && "${2:-}" == "97" ]]; then
+                builtin printf '9'
+                return 0
+              fi
+              builtin printf "$@"
+            }
+            observed_command() {
+              # The shim owns write fd 9; EOF proves its truncated publication attempt is complete.
+              read -r _ <"$sampler_fifo" || [[ "$?" -eq 1 ]]
+              bash -c 'exit 0'
+            }
+            resource_observe_run_periodic observed_command
+            """);
 
         Assert.Equal(0, result.ExitCode);
-        Assert.Contains(
-            "RESOURCE_OBSERVATION_SAMPLER status=UNAVAILABLE exit=97",
+        Assert.DoesNotContain(
+            "RESOURCE_OBSERVATION_SAMPLER",
             Encoding.UTF8.GetString(result.StandardOutput),
             StringComparison.Ordinal);
     }
@@ -373,11 +423,124 @@ public sealed class ResourceObservationLibraryTests
 
         var result = Run(
             temporary,
-            "source \"$1\"\nresource_observe_periodically() { trap \"exit 97\" TERM; return 97; }\nwrapped_command() { bash -c 'exit 23'; bash -c 'exit 0'; }\nset -e\nresource_observe_run_periodic wrapped_command\n");
+            """
+            source "$1"
+            resource_observe_sample() { return 0; }
+            sampler_fifo="$PWD/sampler-exited"
+            mkfifo "$sampler_fifo"
+            resource_observe_periodically() { exec 9>"$sampler_fifo"; bash -c 'exit 97'; }
+            wrapped_command() {
+              # The shim owns write fd 9; EOF proves it exited after atomically recording the status.
+              read -r _ <"$sampler_fifo" || [[ "$?" -eq 1 ]]
+              bash -c 'exit 23'
+              bash -c 'exit 0'
+            }
+            set -e
+            resource_observe_run_periodic wrapped_command
+            """);
 
         Assert.Equal(23, result.ExitCode);
         Assert.Contains(
             "RESOURCE_OBSERVATION_SAMPLER status=UNAVAILABLE exit=97",
+            Encoding.UTF8.GetString(result.StandardOutput),
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void PartialBaselineDoesNotPreventPeriodicSampler()
+    {
+        if (OperatingSystem.IsWindows()) return;
+        using var temporary = new TemporaryDirectory();
+
+        var result = Run(
+            temporary,
+            """
+            source "$1"
+            resource_observe_sample() { return 19; }
+            sampler_fifo="$PWD/sampler-exited"
+            mkfifo "$sampler_fifo"
+            resource_observe_periodically() { exec 9>"$sampler_fifo"; bash -c 'exit 97'; }
+            observed_command() {
+              # The shim owns write fd 9; EOF proves it exited after atomically recording the status.
+              read -r _ <"$sampler_fifo" || [[ "$?" -eq 1 ]]
+              bash -c 'exit 0'
+            }
+            resource_observe_run_periodic observed_command
+            """);
+
+        Assert.Equal(0, result.ExitCode);
+        Assert.Contains(
+            "RESOURCE_OBSERVATION_SAMPLER status=UNAVAILABLE exit=97",
+            Encoding.UTF8.GetString(result.StandardOutput),
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void SamplerKilledByWrapperDoesNotEmitUnavailable()
+    {
+        if (OperatingSystem.IsWindows()) return;
+        using var temporary = new TemporaryDirectory();
+
+        var result = Run(
+            temporary,
+            """
+            source "$1"
+            resource_observe_sample() { return 0; }
+            mkfifo sampler-block
+            exec 3<>sampler-block
+            resource_observe_periodically() { read -r _ <&3; }
+            observed_command() {
+              printf 'ran\n' > observed-command-ran
+              return 23
+            }
+            set -e
+            resource_observe_run_periodic observed_command
+            """,
+            $"RUNNER_TEMP={Path.Combine(temporary.Path, "missing-runner-temp")}");
+
+        Assert.Equal(23, result.ExitCode);
+        Assert.True(File.Exists(Path.Combine(temporary.Path, "observed-command-ran")));
+        Assert.DoesNotContain(
+            "RESOURCE_OBSERVATION_SAMPLER",
+            Encoding.UTF8.GetString(result.StandardOutput),
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void SamplerThatExitedOnItsOwnReportsItsExitCode()
+    {
+        if (OperatingSystem.IsWindows()) return;
+        using var temporary = new TemporaryDirectory();
+
+        var result = Run(
+            temporary,
+            """
+            source "$1"
+            resource_observe_sample() { return 0; }
+            publish_ready="$PWD/publish-ready"
+            publish_release="$PWD/publish-release"
+            mkfifo "$publish_ready" "$publish_release"
+            exec 7<>"$publish_ready"
+            exec 8<>"$publish_release"
+            resource_observe_periodically() { return 5; }
+            mv() {
+              printf 'ready\n' >&7
+              read -r _ <&8
+              command mv "$@"
+            }
+            kill() {
+              builtin kill "$@"
+              printf 'release\n' >&8
+            }
+            observed_command() {
+              read -r _ <&7
+            }
+            resource_observe_run_periodic observed_command
+            """);
+
+        Assert.Equal(0, result.ExitCode);
+        Assert.Contains(
+            "RESOURCE_OBSERVATION_SAMPLER status=UNAVAILABLE exit=5",
             Encoding.UTF8.GetString(result.StandardOutput),
             StringComparison.Ordinal);
     }

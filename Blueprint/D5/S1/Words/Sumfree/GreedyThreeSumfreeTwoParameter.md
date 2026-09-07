@@ -98,6 +98,10 @@ $$\begin{aligned}\forall g, d, z: \mathbb{N},\\(2 \le d \land d + 1 \le g) \impl
 
 *Proof.* Machine-checked in Lean as `D5/S1/Words/Sumfree/GreedyThreeSumfreeTwoParameter.conjecture17` (`✓ std3`). ∎
 
+*Resolves.* `Problems/greedy-three-sumfree-two-parameter` (proved) by `D5/S1/Words/Sumfree/GreedyThreeSumfreeTwoParameter.conjecture17`.
+
+<!-- scribe-open-problem-resolution-v1 {"problem_slug":"greedy-three-sumfree-two-parameter","declaration_gid":"D5/S1/Words/Sumfree/GreedyThreeSumfreeTwoParameter.conjecture17","resolution_kind":"proved"} -->
+
 *Source.* Repository-derived.
 
 *Commentary.*

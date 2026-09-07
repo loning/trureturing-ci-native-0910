@@ -144,6 +144,10 @@ $$\forall n\in\mathbb{N}, \operatorname{R}(2 \times n + 1) = \operatorname{R}(n 
 
 *Proof.* Machine-checked in Lean as `D5/S1/Words/Complexity/ThueMorseReducedAbelianOdd.reducedAbelianComplexity_odd` (`✓ std3`). ∎
 
+*Resolves.* `Problems/thue-morse-reduced-abelian-odd` (proved) by `D5/S1/Words/Complexity/ThueMorseReducedAbelianOdd.reducedAbelianComplexity_odd`.
+
+<!-- scribe-open-problem-resolution-v1 {"problem_slug":"thue-morse-reduced-abelian-odd","declaration_gid":"D5/S1/Words/Complexity/ThueMorseReducedAbelianOdd.reducedAbelianComplexity_odd","resolution_kind":"proved"} -->
+
 *Source.* Repository-derived.
 
 *Commentary.*
