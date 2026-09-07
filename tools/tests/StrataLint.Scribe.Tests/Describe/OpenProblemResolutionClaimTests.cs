@@ -721,7 +721,7 @@ public sealed class OpenProblemResolutionClaimTests
         "---\n"
         + $"slug: {ProblemSlug}\n"
         + "bibkey: sos1957threegap\n"
-        + "arxiv_id: 2305.08349\n"
+        + "doi: 10.48550/arXiv.2305.08349\n"
         + "triage: theorem\n"
         + "motivation_gids:\n"
         + $"  - {ModuleGid}\n"
