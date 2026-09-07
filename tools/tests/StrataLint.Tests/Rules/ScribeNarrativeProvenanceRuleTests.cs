@@ -239,6 +239,30 @@ public sealed class ScribeNarrativeProvenanceRuleTests
     [Fact] public void ByteIdenticalMoveIsAllowed() => Assert.Empty(Evaluate(Fixture((PathA, "// digestion", null), (PathB, null, "// digestion"))));
     [Fact] public void MoveWithEditIsBlocked() => Assert.NotEmpty(Evaluate(Fixture((PathA, "// digestion", null), (PathB, null, "// digestion\n"))));
 
+    [Theory]
+    [InlineData("\uFEFF// digestion\n", false)]
+    [InlineData("// digestion\r\n", false)]
+    [InlineData("\uFEFF// digestion\n", true)]
+    [InlineData("// digestion\r\n", true)]
+    public void ByteDistinctMovesAreBlockedEvenWhenTextIsNormalized(string source, bool normalizeText)
+    {
+        const string baseline = "// digestion\n";
+        var fixture = Fixture((PathA, baseline, null), (PathB, null, source));
+        var changes = RawChangeSet.CreateWithKinds(
+            [(PathA, RawChangeKind.Deleted), (PathB, RawChangeKind.Added)]);
+        var context = fixture.BuildForRuleCompatibility(changes);
+        if (normalizeText)
+        {
+            var path = context.Current.Files.Keys.Single(p => p.Value == PathB);
+            var file = context.Current.Files[path];
+            var current = RepositorySnapshot.Create(context.Current.Files.SetItem(path,
+                new RepositoryFile(path, file.RawBytes, baseline)));
+            context = RuleEvaluationContext.Create(current, context.Baseline, context.Policy,
+                context.Lean, context.Changes, context.MetaEvaluation);
+        }
+        Assert.Single(Diagnostics(context));
+    }
+
     [Fact]
     public void OneDeletionCannotExemptTwoAdditions()
     {

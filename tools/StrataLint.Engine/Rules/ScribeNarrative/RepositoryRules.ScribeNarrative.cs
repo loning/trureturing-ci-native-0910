@@ -19,20 +19,34 @@ internal static partial class RepositoryRules
 
     private static ImmutableHashSet<RepoPath> ScribeNarrativeMoves(RuleEvaluationContext context)
     {
+        var comparer = new ScribeNarrativeByteComparer();
         var deleted = context.Changes.Entries
             .Where(entry => entry.Kind is RawChangeKind.Deleted
                 && IsBlueprintPath(entry.Path.Value, ".scribe.cs")
                 && context.Baseline.Files.ContainsKey(entry.Path))
-            .GroupBy(entry => context.Baseline.Files[entry.Path].Text, StringComparer.Ordinal)
-            .ToDictionary(group => group.Key, group => group.Count(), StringComparer.Ordinal);
-        // Ambiguous equal-text groups are judged in full, including one deletion and two adds.
+            .GroupBy(entry => context.Baseline.Files[entry.Path].RawBytes, comparer)
+            .ToDictionary(group => group.Key, group => group.Count(), comparer);
+        // Ambiguous equal-byte groups are judged in full, including one deletion and two adds.
         return context.Changes.Entries
             .Where(entry => entry.Kind is RawChangeKind.Added
                 && IsBlueprintPath(entry.Path.Value, ".scribe.cs")
                 && context.Current.Files.ContainsKey(entry.Path))
-            .GroupBy(entry => context.Current.Files[entry.Path].Text, StringComparer.Ordinal)
+            .GroupBy(entry => context.Current.Files[entry.Path].RawBytes, comparer)
             .Where(group => group.Count() == 1 && deleted.GetValueOrDefault(group.Key) == 1)
             .Select(group => group.Single().Path)
             .ToImmutableHashSet();
+    }
+
+    private sealed class ScribeNarrativeByteComparer : IEqualityComparer<ImmutableArray<byte>>
+    {
+        public bool Equals(ImmutableArray<byte> left, ImmutableArray<byte> right) =>
+            left.AsSpan().SequenceEqual(right.AsSpan());
+
+        public int GetHashCode(ImmutableArray<byte> bytes)
+        {
+            var hash = new HashCode();
+            hash.AddBytes(bytes.AsSpan());
+            return hash.ToHashCode();
+        }
     }
 }
