@@ -99,7 +99,7 @@ public sealed class RuleCatalogAssociationTests
     {
         var uniqueFinding = new RuleFinding("unique/path.txt", "finding from rule seventeen");
         var registrations = Enumerable.Range(1, 23).Except([5])
-            .Append(25).Append(26).Append(28).Append(30).Append(31).Append(32).Append(33)
+            .Append(25).Append(26).Append(28).Append(30).Append(31).Append(32).Append(33).Append(34)
             .Select(number => new RuleRegistration(
                 Descriptor(
                     number,
@@ -145,8 +145,14 @@ public sealed class RuleCatalogAssociationTests
     public void MeasureRuleObservesTheDefinedExecutionOrder()
     {
         var measured = ImmutableArray.CreateBuilder<RuleId>();
-        var context = new RuleFixture().Build(RawChangeSet.Create(
-            ["tools/StrataLint.Engine/Rules/RepositoryRules.cs"]));
+        var fixture = new RuleFixture();
+        fixture.Baseline.Remove(RuleFixture.RingPath);
+        fixture.BaselineReports.Remove(RuleFixture.RingPath);
+        var context = fixture.Build(RawChangeSet.CreateWithKinds(
+        [
+            ("tools/StrataLint.Engine/Rules/RepositoryRules.cs", RawChangeKind.Modified),
+            (RuleFixture.RingPath, RawChangeKind.Added),
+        ]));
 
         var outcome = RuleCatalog.Default.Execute(
             context,
@@ -215,7 +221,7 @@ public sealed class RuleCatalogAssociationTests
         var setterId = RuleId.CreateKnown(1);
         var finderId = RuleId.CreateKnown(2);
         var remainingIds = Enumerable.Range(1, 23).Except([5, 7, 9, 13, 14])
-            .Append(25).Append(26).Append(28).Append(30).Append(31).Append(32).Append(33)
+            .Append(25).Append(26).Append(28).Append(30).Append(31).Append(32).Append(33).Append(34)
             .Select(RuleId.CreateKnown)
             .Where(id => id != setterId && id != finderId)
             .ToImmutableArray();
@@ -259,7 +265,7 @@ public sealed class RuleCatalogAssociationTests
     {
         var rule = new CountingUnaffectedRule();
         var registrations = Enumerable.Range(1, 23).Except([5])
-            .Append(25).Append(26).Append(28).Append(30).Append(31).Append(32).Append(33)
+            .Append(25).Append(26).Append(28).Append(30).Append(31).Append(32).Append(33).Append(34)
             .Select(number => Registration(
                 Descriptor(
                     number,
@@ -292,7 +298,7 @@ public sealed class RuleCatalogAssociationTests
     [InlineData("tools/StrataLint.Engine/Revocation/TrustedRevocationReceipts.cs")]
     [InlineData("tools/StrataLint.Engine/StrataLint.Engine.csproj")]
     [InlineData("Directory.Build.targets")]
-    public void EveryActiveRuleWakesWhenSharedRuleImplementationChanges(string changedPath)
+    public void SharedRuleImplementationChangesRespectDeltaOnlyRuleScoping(string changedPath)
     {
         var context = new RuleFixture().Build(RawChangeSet.Create([changedPath]));
 
@@ -301,9 +307,10 @@ public sealed class RuleCatalogAssociationTests
         var completed = Assert.IsType<RuleExecutionOutcome.Completed>(outcome).Capability;
         var active = RuleCatalog.Default.Descriptors
             .Where(static descriptor => descriptor.Lifecycle == RuleLifecycle.Active)
-            .Select(static descriptor => descriptor.Id);
+            .Select(static descriptor => descriptor.Id)
+            .Where(static id => id != RuleId.CreateKnown(34));
         Assert.Equal(active, completed.ExecutedRules);
-        Assert.Empty(completed.SkippedRules);
+        Assert.Equal(RuleId.CreateKnown(34), Assert.Single(completed.SkippedRules));
     }
 
     [Fact]
@@ -455,7 +462,7 @@ public sealed class RuleCatalogAssociationTests
     {
         var state = new OrderDependentState();
         var registrations = Enumerable.Range(1, 23).Except([5])
-            .Append(25).Append(26).Append(28).Append(30).Append(31).Append(32).Append(33)
+            .Append(25).Append(26).Append(28).Append(30).Append(31).Append(32).Append(33).Append(34)
             .Select(number => new RuleRegistration(
                 Descriptor(number, $"descriptor {number}", DisplaySeverity.Error, AdmissionEffect.Block),
                 number switch
