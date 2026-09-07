@@ -27,6 +27,6 @@ internal sealed class PositiveGramianBalancingDocument : IScribeDocumentDefiniti
             Describe.Lean(DescribeId.Create("coordinates"),
                 DeclarationHandle.Create("D5/S3/Observer/Hankel/PositiveGramianBalancing.coordinates"), H("Chosen constructed coordinates"),
                 StatementSource.WithoutFormula(), AssessedProvenance.FromRepo(),
-                Blocks(Paragraph(Text("Selects the output of the proved existence construction. This is an exact mathematical construction, not a floating-point eigensolver."))), DescribeRole.Definition),
+                Blocks(Paragraph(Text("Selects the output of the proved existence construction. This is an exact mathematical construction, not a floating-point eigensolver."))), DescribeRole.Definition)),
         []));
 }
