@@ -362,12 +362,34 @@ jobs:
           path: .canonical-lean-report-cache
           key: stratalint-canonical-lean-report-v2-${{ steps.lean-report-input.outputs.address }}
           restore-keys: stratalint-canonical-lean-report-v2-
+      # policy-override PERF-20260907-SINGLEFLIGHT (permanent local case), 2026-09-07,
+      # owner: repository tau=0 owner; domain: report-miss wait. This is not a derived value.
+      # 300s sleep; wait/restore/verify caps 6/2/2 minutes (600s total, excluding runner scheduling).
+      # User's fixed 68-run replay: 6 duplicate full producers; no post-change speed measurement.
+      # Negative: an unpublished/failed leader adds waiting then full fallback; no leader election.
+      # Exit: remove or recalibrate after the first integration window measures reuse and added latency.
+      - name: Wait for an in-flight canonical Lean report
+        id: report-cache-wait
+        if: steps.lean-report-input.outputs.address != '' && steps.report-cache.outcome == 'success' && steps.report-cache.outputs.cache-hit != 'true'
+        continue-on-error: true
+        timeout-minutes: 6
+        run: sleep 300
+      - name: Retry the exact canonical Lean report address
+        id: report-cache-retry
+        if: steps.report-cache-wait.outcome == 'success'
+        continue-on-error: true
+        timeout-minutes: 2
+        uses: actions/cache/restore@v4
+        with:
+          path: .canonical-lean-report-cache
+          key: stratalint-canonical-lean-report-v2-${{ steps.lean-report-input.outputs.address }}
       - name: Serve candidate canonical Lean report from the cached address
         id: report-reuse
-        if: steps.report-cache.outcome == 'success' && steps.report-cache.outputs.cache-hit == 'true'
+        if: (steps.report-cache.outcome == 'success' && steps.report-cache.outputs.cache-hit == 'true') || (steps.report-cache-retry.outcome == 'success' && steps.report-cache-retry.outputs.cache-hit == 'true')
         # 这一步失败必须**回落**到完整生产路径,而不是让整个 job 红:缓存是加速,不是权威。
         # 下面四个重活步骤的守卫是 `outcome != 'success'`,故失败与跳过都会走原路。
         continue-on-error: true
+        timeout-minutes: 2
         shell: bash
         run: |
           set -euo pipefail
@@ -381,6 +403,18 @@ jobs:
           helper="$GITHUB_WORKSPACE/candidate/tools/scripts/report/lean-report-input.sh"
           # 缓存条目对候选树重新验一次地址与报告哈希;不符即整体回落,不静默使用。
           "$helper" verify --repository "$GITHUB_WORKSPACE/candidate" --report "$source"
+          producer="$(awk -F= '$1 == "producer_sha256" {print $2}' "${source}.input.attestation")"
+          sources="${{ steps.lean-input.outputs.sources_sha256 }}"
+          config="${{ steps.lean-input.outputs.config_sha256 }}"
+          input="$(printf 'schema=stratalint-lean-report-input-v1\nproducer_sha256=%s\nrepository_inspector_sha256=%s\nlean_sources_sha256=%s\nlean_config_sha256=%s\n' \
+            "$producer" "$producer" "$sources" "$config" | sha256sum | cut -d ' ' -f 1)"
+          jq -e -s --arg producer "$producer" --arg sources "$sources" --arg config "$config" \
+            --arg input "sha256:$input" --arg report "$(sha256sum "$source" | cut -d ' ' -f 1)" '
+            length == 1 and (.[0] == {schema: "stratalint-lean-report-provenance-v1", side: "candidate",
+              mode: .[0].mode, source_side: "candidate", input_address: $input,
+              producer_sha256: $producer, repository_inspector_sha256: $producer,
+              lean_sources_sha256: $sources, lean_config_sha256: $config, report_sha256: $report}
+            and (.[0].mode == "produced" or .[0].mode == "cached"))' "${source}.provenance.json" > /dev/null
           for suffix in '' .input.attestation .provenance.json .materials.zip; do
             cp "${source}${suffix}" "$reports/candidate-lean-report.json${suffix}"
           done
