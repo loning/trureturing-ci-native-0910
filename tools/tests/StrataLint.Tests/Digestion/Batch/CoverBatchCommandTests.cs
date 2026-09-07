@@ -262,13 +262,13 @@ public sealed partial class CoverBatchCommandTests
         using var world = new BatchWorld();
         Assert.False(world.Run(Row(First, Gid) + Row(Second, MissingGid)).Success);
         var appliedPath = world.LedgerPaths().Single(path => path.EndsWith(First + ".yaml", StringComparison.Ordinal));
-        var appliedBytes = File.ReadAllBytes(appliedPath);
+        var appliedBytes = TemporaryFileSystem.File.ReadAllBytes(appliedPath);
 
         var result = world.Run(Row(First, Gid) + Row(Second, OtherGid));
 
         Assert.True(result.Success, result.Error + result.Output);
         Assert.Equal(["already_applied", "applied"], Results(result).Select(item => item.Status).ToArray());
-        Assert.Equal(appliedBytes, File.ReadAllBytes(appliedPath));
+        Assert.Equal(appliedBytes, TemporaryFileSystem.File.ReadAllBytes(appliedPath));
         Assert.Equal(2, world.EmitCount);
     }
 
@@ -338,12 +338,12 @@ public sealed partial class CoverBatchCommandTests
         using var world = new BatchWorld();
         var path = world.LedgerPaths().Single(path => path.EndsWith(Second + ".yaml", StringComparison.Ordinal));
         File.AppendAllText(path, "# preserved unrelated annotation\n");
-        var before = File.ReadAllBytes(path);
+        var before = TemporaryFileSystem.File.ReadAllBytes(path);
 
         var result = world.Run(Row(First, Gid));
 
         Assert.True(result.Success, result.Error + result.Output);
-        Assert.Equal(before, File.ReadAllBytes(path));
+        Assert.Equal(before, TemporaryFileSystem.File.ReadAllBytes(path));
     }
 
     private const string Gid = "D5/S0/Carrier/Probe.probe";
