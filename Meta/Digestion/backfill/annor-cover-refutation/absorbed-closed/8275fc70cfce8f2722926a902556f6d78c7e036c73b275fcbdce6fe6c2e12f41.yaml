@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/GraphColoring/AnnorCoverRefutation.annor_conjecture14_false
     target_statement_id: sha256:019c28d773a51f304fec8222cc225381fcace5f264b198132ca98c349b891d87
 receipts:
-  scribe: []
   unresolved_subitems: []

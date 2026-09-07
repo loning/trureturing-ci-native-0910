@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S0/Diagonal/DistanceProfile.distance_profile_card
     target_statement_id: sha256:9c5cfc4601c7dbd71fb9f17b968cf74fc128d912952862fb40d5dedd1f32876e
 receipts:
-  scribe: []
   unresolved_subitems: []

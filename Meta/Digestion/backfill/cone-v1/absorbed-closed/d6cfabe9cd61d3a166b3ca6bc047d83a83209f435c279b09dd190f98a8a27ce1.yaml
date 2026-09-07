@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/QuantumBounds/LandauIdentity.landau_identity
     target_statement_id: sha256:19aa671c843ccd1e0fe756151871673b9e5f8ff738e8da58dc41008c497cd8ae
 receipts:
-  scribe: []
   unresolved_subitems: []

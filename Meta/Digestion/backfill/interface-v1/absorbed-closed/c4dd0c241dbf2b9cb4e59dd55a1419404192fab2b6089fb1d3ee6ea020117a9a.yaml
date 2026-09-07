@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Constants/Midslope/TwoNewExactValues.two_new_exact_values
     target_statement_id: sha256:32f62bcfea5abeb6e51dc544785ad660662f5cd5aa409144a7102708367ac5ee
 receipts:
-  scribe: []
   unresolved_subitems: []

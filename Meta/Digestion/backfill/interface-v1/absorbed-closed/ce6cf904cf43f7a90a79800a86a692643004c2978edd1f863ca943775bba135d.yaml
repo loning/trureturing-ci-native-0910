@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S0/Tower/ConstantArms.binary_arm
     target_statement_id: sha256:93a9bcc350a47280a2b199798cdaa785257a14834c4d1d70e3f6fe62300b5281
 receipts:
-  scribe: []
   unresolved_subitems: []
