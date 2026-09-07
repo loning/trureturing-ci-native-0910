@@ -1,0 +1,13 @@
+fingerprints:
+  raw_sha256: sha256:0be41084841c7f5b9409c5f496f7187a2f9cb5732b36a0c530364af54852711e
+  normalized_sha256: sha256:0be41084841c7f5b9409c5f496f7187a2f9cb5732b36a0c530364af54852711e
+cas_ref: sha256:0be41084841c7f5b9409c5f496f7187a2f9cb5732b36a0c530364af54852711e
+coverage_gids:
+  - gid: D5/S3/Factorization/RationalCompositionParityPeriodTen.odd_iff_mod_ten
+    target_statement_id: sha256:8526c071c8f10dc51d5f0d21c719463fa38f0295f33c412327dce05b71c234e6
+receipts:
+  scribe:
+    - gid: D5/S3/Factorization/RationalCompositionParityPeriodTen.odd_iff_mod_ten
+      definition_sha256: sha256:aef1481dd7b2d56eef277373d1f2437640f09cc34e573716bcde07f0840b0888
+      emission_sha256: sha256:e57e3552e4e6676d6ab17b4aa6fd4d46a8e6c71c7e5e5495ff6c88104b21afa6
+  unresolved_subitems: []
