@@ -1,0 +1,21 @@
+{
+  "source_sha256": "c72ef6f90f7aaed5bbe2d7a77f480ed17c3887702bc541959aa6478c632b8cdf",
+  "exact_polynomial_integrals": 3,
+  "cosine_edge_overlap_diagnostics": 36,
+  "complex_stencil_mass_and_pairing_cases": 12,
+  "full_Gamma_and_pole_diagonal_comparisons": 24,
+  "full_boundary_symbol_integral_comparisons": 12,
+  "prime3_original_translation_comparisons": 9,
+  "nondirected_working_precision": 65,
+  "maximum_relative_matrix_formula_discrepancy": "1.3717363283344021606e-65",
+  "exact_complex_vector_Young_Gram_cases": 160,
+  "actual_congruence_positive_control": true,
+  "negative_controls": [
+    "positive midpoint with an indefinite interval member rejected",
+    "singular eigensolver-proposed coordinates rejected by exact integer test",
+    "insufficient precision and three unreviewed scale/dimension choices rejected"
+  ],
+  "both_precision_uniform_gap_guards": true,
+  "status": "Exact algebra, original-kernel diagnostics and actual decision negative controls passed.",
+  "scope": "Single-author second-expression diagnostics. Nondirected quadratures and special functions are not certificate premises. This does not compile Lean or establish the infinite operator-domain bridge."
+}
