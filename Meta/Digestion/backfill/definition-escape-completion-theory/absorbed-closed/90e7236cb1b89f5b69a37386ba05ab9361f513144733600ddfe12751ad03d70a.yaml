@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/DefinitionEscapeAdjudication/QuotientParetoWeakOrder.quotient_pareto_weak_finite_decidable_partial_order
     target_statement_id: sha256:cbdf32d2cba6ca22fbfd790b046d7cd25809d65bc47249746f15469ac53111c3
 receipts:
-  scribe: []
   unresolved_subitems: []

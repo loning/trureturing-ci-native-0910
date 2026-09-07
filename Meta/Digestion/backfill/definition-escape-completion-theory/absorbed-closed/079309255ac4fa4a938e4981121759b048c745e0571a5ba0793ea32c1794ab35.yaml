@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/AnalyticClosure/Budget/BudgetedEscapeRateAntitone.budgeted_escape_rate_bounds_and_antitone
     target_statement_id: sha256:c2e59452cd74c1d0989a0e177b917b903da82225e9953f92d95149e6ea93a76f
 receipts:
-  scribe: []
   unresolved_subitems: []

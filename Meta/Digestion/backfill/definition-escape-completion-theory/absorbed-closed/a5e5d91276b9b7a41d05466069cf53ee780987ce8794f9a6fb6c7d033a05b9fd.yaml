@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/TimeProjection/PredictionExpansionEscape.prediction_escape_iff_expansion_escape
     target_statement_id: sha256:bdfee52eb94e36b569b4d859b2ee023a624d7e02510e62f44f6cb91c47ec38c0
 receipts:
-  scribe: []
   unresolved_subitems: []

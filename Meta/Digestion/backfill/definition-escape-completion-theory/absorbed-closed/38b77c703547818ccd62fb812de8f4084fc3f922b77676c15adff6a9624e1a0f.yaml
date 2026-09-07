@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/DefinitionEscapeSemantics/FiniteTransportClauseIndependence.finite_transport_certificate_clause_independence
     target_statement_id: sha256:3e92994ef1355a50310e980ffd34233c1c33ad2819a592125003984dbc4e4118
 receipts:
-  scribe: []
   unresolved_subitems: []

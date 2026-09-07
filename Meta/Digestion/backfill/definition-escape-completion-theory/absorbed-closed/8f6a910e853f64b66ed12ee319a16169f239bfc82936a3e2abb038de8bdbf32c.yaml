@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/DefinitionEscape/MultiTargetBlindResidual.familyBlindResidual_eq_iUnion
     target_statement_id: sha256:9c45c03ba060e4dd4207142d4967b5cb57b5fadd42daedcd159d7b44d17f061d
 receipts:
-  scribe: []
   unresolved_subitems: []
