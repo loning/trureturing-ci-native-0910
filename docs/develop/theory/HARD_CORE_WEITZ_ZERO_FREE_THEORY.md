@@ -639,3 +639,376 @@ has been established.
 
 Additional precise locator for [4]:
 https://arxiv.org/html/1306.0431v2#S5
+
+
+## 14. Adaptive radius four and the change from counting to messages
+
+Continuation dated 7 September 2026. Sections 1-13 are retained as historical
+increments. The fixed-SRL radius-four construction in Section 11 remains a
+separate, unchanged result. The recovered adaptive construction is now stored
+under AdaptiveRadiusFourData and AdaptiveRadiusFourCertificates, so it does not
+overwrite the concurrently developed fixed-order modules.
+
+The adaptive controller has 881 distinct reachable geometric masks and the
+exact integer potential
+
+\[
+ 1\le w_i\le100000,\quad w_0=100000,\qquad
+ 2500\sum_{i\to j}w_j\le6202w_i.
+\]
+
+Its scalar growth upper bound is 2.4808. The all-domain endpoint has prefactor
+100000, and an explicit four-direction root wrapper has prefactor 400000.
+The 41 coordinates here are the full lexicographic Manhattan disk, with the
+origin in its lexicographic position. This differs from the fixed-SRL payload's
+coordinate enumeration. Masks and message assignments must not be exchanged
+between these two presentations.
+
+Storage was losslessly changed to increasing masks. Each increment literal
+stores 1116 times the mask increment plus six times its weight index plus the
+selected order. Geometric successors are recomputed, never taken from a saved
+edge list. The selected-action version of the existing finite-domain simulation
+is factored out of OrderedGridMemory; the original public all-action statement
+is preserved. ControllerShadow also constructs the history-only lift of a
+coarse state policy and certifies the Section 8 projection diagnostic.
+
+The 2.4808 count bound remains above 2.429. The next construction therefore
+retains the actual child types in the nonlinear vacancy recursion instead of
+reducing all of them to one scalar growth constant. This direction was already
+identified in Section 12 from Vera, Vigoda and Yang [4]. Affine messages and LP
+search are established methods; the proposed new increment is the exact
+whole-box certificate at activity 51/20 on this concrete geometric controller.
+
+## 15. An exact affine contraction certificate through activity 51/20
+
+Set
+
+\[
+ \Lambda=51/20,
+ \quad L=(1+\Lambda)^{-1}=20/71,
+ \quad\gamma=999/1000,
+ \quad\eta=3/1000.
+\]
+
+For each actual geometric type i, the data supply nonnegative rational a_i and
+rational b_i, with denominator one million, and
+
+\[
+ \Psi_i(x)=b_i-a_ix,
+ \qquad b_i-a_i\ge10577/1000000>0.
+\]
+
+There are 332 distinct coefficient pairs, shared only for storage. Every one
+of the 881 geometric rows is checked using its own actual successor types.
+No behavioral quotient theorem or sampled state-space restriction is assumed.
+An absent direction has child coefficients a=b=0.
+
+For all lambda in [0,Lambda] and all three child values x_d in [L,1], put
+
+\[
+ y=\frac1{1+\lambda\prod_dx_d}.
+\]
+
+The exact certificate proves
+
+\[
+ \boxed{(1-y)\sum_d\Psi_{j_d}(x_d)<\gamma\Psi_i(y).}
+\tag{15.1}
+\]
+
+Zero coefficients are used for absent geometric children. In addition,
+y belongs to [L,1], and every actual message is bounded below by the same
+positive constant. The statement holds on the full probability box, not only
+at the recursion's fixed point or sampled tuples.
+
+### Exact global separation of the affine product
+
+For a parent pair (a_p,b_p) and its three child pairs, write
+
+\[
+ C=\sum_db_d-\gamma b_p,
+ \qquad s_0=\gamma(b_p-a_p).
+\]
+
+Multiplication by the positive denominator gives the exact identity
+
+\[
+\begin{split}
+ &(1+\lambda\prod_dx_d)
+   \left[\gamma\Psi_p(y)-(1-y)\sum_d\Psi_d(x_d)\right]\\
+ &\hspace{12mm}=s_0-\lambda(\prod_dx_d)(C-\sum_da_dx_d).
+\end{split}
+\tag{15.2}
+\]
+
+Each row has one of two exact certificates. When C<=L*sum(a_d), the product's
+residual is nonpositive throughout the box, so it suffices that s_0>=eta.
+Otherwise the certificate supplies t>0 and reference values r_d in [L,1] with
+
+\[
+ C=t+\sum_da_dr_d,
+\]
+
+and, for every direction, at least one of
+
+\[
+ r_d=L,\ t\le a_dr_d;
+ \qquad r_d=1,\ a_dr_d\le t;
+ \qquad a_dr_d=t.
+\]
+
+These finite rational conditions imply the global inequality
+
+\[
+ (\prod_dx_d)(C-\sum_da_dx_d)\le t\prod_dr_d.
+\tag{15.3}
+\]
+
+Here is a proof that does not trust numerical global optimization. If the
+residual S=C-sum(a_d*x_d) is nonpositive, (15.3) is immediate. Otherwise consider
+the four nonnegative numbers S/t and x_d/r_d. Exact balance gives
+
+\[
+ S/t+\sum_dx_d/r_d
+ =4+\sum_d(x_d-r_d)(1/r_d-a_d/t)\le4.
+\]
+
+Each summand is nonpositive by its clamping condition. Four-term AM-GM bounds
+the product of the four numbers by one. Multiplication by t*prod(r_d) proves
+(15.3). Mathlib's existing AM-GM theorem is reused in AffineProductCertificate;
+no new abstract AM-GM result is claimed.
+
+The final finite check is
+
+\[
+ s_0-\Lambda t\prod_dr_d\ge\eta.
+\]
+
+It implies (15.2)>=eta for every smaller nonnegative lambda as well. The
+reference point and level are reconstructed from three base-three pattern
+digits using the balance equation. All divisions, interval bounds and sign
+conditions are then checked exactly. Among the 881 rows, 704 use a clamped
+certificate and 177 use the nonpositive-residual case.
+
+The minimum exact certified row margin is
+
+\[
+ \frac{15933066155943166674084141574726553949}
+ {4676403243490598502400000000000000000000}
+ >\frac3{1000}.
+\]
+
+Its decimal rendering is approximately 0.003407119815452501. The rational
+fraction, rather than this decimal, is the recorded evidence.
+
+### Deleting children preserves the same inequality
+
+For any subset of actual children, set missing coordinates to one. The parent
+recursion is unchanged. The complete row includes the omitted terms Psi_j(1),
+which are nonnegative; removing them decreases the left side of (15.1), since
+1-y>=0. Thus the same contraction constant holds for every subtree-pruning
+pattern, including a leaf. The formal endpoint affine_pruned_row_contraction
+quantifies over every subset. This check is essential: stability of the full
+branching tree alone would not justify the finite-grid application.
+
+### Discovery and acceptance are distinct
+
+A sampled linear program and successive continuous separation searches proposed
+coefficients. Its sampled optimum, approximate fixed-point derivative and
+optimizer convergence are not evidence for (15.1). Coefficients were rounded
+to denominator one million, then all clamping and margin conditions were
+reconstructed and accepted by exact rational arithmetic. The independent
+verifier uses no optimizer, precomputed edges or saved success verdict.
+
+## 16. Paper transfer to a common complex zero-free neighborhood
+
+The following analytic and graph argument is a candidate computer-assisted
+proof of a uniform zero-free neighborhood of [0,51/20]. Its finite premises
+have been exactly replayed. The analytic continuation and graph induction in
+this section have been mathematically reviewed, but have not been formalized
+or independently reviewed. Consequently this is not an end-to-end Lean theorem,
+a kernel-admitted release or a literature-priority claim.
+
+The real-to-complex contraction principle is established prior art, especially
+Shao and Sun [5]. Their general theorem is not silently instantiated with
+unproved type-dependent hypotheses. The finite-type version needed here is
+spelled out below, including analytic coordinates, pruning and the four-child
+root. The interval endpoint 2.55 exceeds the 2.538 sufficient endpoint in
+[1, Appendix A.6]. The larger conjectural analyticity interval near 3.796
+remains open; the scalar 2.429 connective-constant question is not settled.
+
+### 16.1 Analytic coordinates and the actual Jacobian
+
+For each type, use the real coordinate
+
+\[
+ \phi_i(x)=\frac{\log x-\log(b_i-a_ix)}{b_i},
+ \qquad \phi_i'(x)=\frac1{x\Psi_i(x)}.
+\]
+
+Both x and Psi_i(x) are strictly positive on [L,1], and b_i>0. The inverse is
+explicit:
+
+\[
+ \phi_i^{-1}(m)=\frac{b_i e^{b_i m}}{1+a_i e^{b_i m}}.
+\]
+
+These formulas remain valid when a_i=0. They define holomorphic functions near
+the corresponding compact real intervals, using the logarithm branches that
+agree with the real logarithms. Positive lower bounds and finitely many types
+provide a common sufficiently small neighborhood with no denominator or log
+argument vanishing. Write I_i=phi_i([L,1]); it is a compact real interval.
+
+For a parent type i and an allowed subset S of its actual children, transform
+the vacancy recursion to g_(i,S,lambda) in these coordinates. Direct
+differentiation gives, for every retained child j,
+
+\[
+ \frac{\partial g_{i,S,\lambda}}{\partial m_j}
+ =-\frac{(1-y)\Psi_j(x_j)}{\Psi_i(y)}.
+\]
+
+Thus (15.1) and the pruning result bound the absolute Jacobian row sum by
+gamma throughout every real product of the child intervals and for all
+lambda in [0,Lambda]. This derivative identification is a paper calculation;
+the current Lean endpoint proves the displayed algebraic row inequality.
+
+### 16.2 Uniform complex invariant neighborhoods
+
+Choose gamma' strictly between gamma and one, for example 1999/2000. There
+are finitely many parent types and child subsets. Holomorphy and compactness
+therefore provide positive radii delta_0 and epsilon_0 such that all transformed
+maps are defined and their complex Jacobian row sums are at most gamma' when
+the messages are delta_0-close to their real intervals and the activity is
+epsilon_0-close to [0,Lambda]. Their activity derivatives have a common finite
+bound M on a smaller closed neighborhood.
+
+Choose 0<delta<delta_0 and then 0<epsilon<epsilon_0 with
+M*epsilon<(1-gamma')*delta, with the harmless M=0 case treated separately.
+Let Omega_i be the open delta-neighborhood of I_i. Each Omega_i is convex.
+For z within epsilon of [0,Lambda] and each m_j in Omega_j, choose nearest
+real points m_j^0 in I_j and lambda in [0,Lambda]. Integrating the derivatives
+along the straight segments gives
+
+\[
+ \left|g_{i,S,z}(m)-g_{i,S,\lambda}(m^0)\right|
+ \le\gamma'\max_j|m_j-m_j^0|+M|z-\lambda|<\delta.
+\]
+
+The real output lies in I_i by the vacancy interval theorem. Hence the complex
+output lies in Omega_i. The empty-child case is included in the same argument.
+This provides one invariant collection of neighborhoods and one activity
+neighborhood, independent of the tree's depth or the graph's size.
+
+At the unconditioned root there can be four children. No root contraction
+estimate is required. Its denominator 1+lambda*prod(x_j) is at least one on
+the compact real set. Shrinking delta and epsilon further, while keeping the
+invariance inequality, makes all these root denominators nonzero as well.
+All root branches may be initialized at the parent-only geometric type; the
+extra actual deletions only prune the represented tree.
+
+### 16.3 Exact graph recursion and its geometric typing
+
+For a finite induced grid graph H and vertex v, separate independent sets
+according to whether v is occupied:
+
+\[
+ Z_H(z)=Z_{H-v}(z)+zZ_{H-N[v]}(z).
+\tag{16.1}
+\]
+
+Order the available neighbors u_1,...,u_k as prescribed by the current geometric
+type, and let H_j=H-v-\{u_1,...,u_{j-1}\}. Wherever the smaller partition
+functions are nonzero, telescoping gives
+
+\[
+ \frac{Z_{H-N[v]}(z)}{Z_{H-v}(z)}
+ =\prod_{j=1}^k\frac{Z_{H_j-u_j}(z)}{Z_{H_j}(z)}.
+\tag{16.2}
+\]
+
+These are finite exact identities. No assumption of independence between
+neighbors in the original graph is used. Orders may depend on the entire
+recursion history, since (16.2) holds at each finite subproblem separately.
+The translation and quarter-turns preserve square-grid adjacency. The proved
+blocker disjointness guarantees that every actual available child is represented,
+and the geometric closure assigns its correct successor type. Missing actual
+vertices simply remove children, which Section 15 already covers.
+
+Induct on the finite number of available vertices, simultaneously carrying
+the nonroot typed vacancy values in the invariant message neighborhoods.
+The empty partition function is one. At each step all smaller denominators in
+(16.2) are nonzero by induction, so (16.1) expresses Z_H as the nonzero smaller
+partition function times the certified nonzero local recursion denominator.
+Nonroot outputs remain in their typed neighborhoods by Section 16.2; the full
+root uses its separate four-child nonvanishing bound. Every finite induced
+subgraph, including disconnected graphs and irregular boundaries, is covered.
+
+This yields the paper/computer-assisted conclusion
+
+\[
+ \boxed{\exists\epsilon>0\ \forall H\subseteq_{\mathrm{fin,ind}}\mathbb Z^2\
+ \forall z\in\mathbb C:\
+ \operatorname{dist}(z,[0,51/20])<\epsilon\ \Longrightarrow\ Z_H(z)\ne0.}
+\tag{16.3}
+\]
+
+The argument gives existence, not a numerical value of epsilon. It concerns
+unconditioned finite induced partition functions. An occupied pinned vertex
+can contribute a factor z, so no claim of nonvanishing at zero for arbitrary
+pinned partition functions is made. Infinite-volume free-energy analyticity
+and an implemented approximation algorithm are not separately established here.
+
+## 17. Formal endpoints, replay and the next research step
+
+New formal-source endpoints include clipped_product_bound, checked_row_sound,
+affine_message_certificate, affine_message_positive, affine_polynomial_margin,
+vacancy_mem, affine_full_row_contraction and affine_pruned_row_contraction.
+The finite data, real inequality proofs and geometry all have paired canonical
+Scribe declarations. The historical fixed-order and block-memory modules remain
+unchanged. No artificial finite arena, information score or sealing claim is
+attached to the certificate; the type assignments refer to actual grid masks.
+
+The independent pure-Python verifier reads the current Lean-owned literals,
+reconstructs all successors with integer-coordinate sets, and performs:
+
+- 2643 geometric transition checks and 881 integer growth rows;
+- 881 exact whole-box affine row checks, including 704 clamped cases and
+  177 nonpositive-residual cases;
+- 21144 exact rational recursion/pruning regressions across all child subsets;
+- six corruption tests, all rejected, including message/type misalignment,
+  a wrong clamp pattern, omitted root deletion, loss of message positivity,
+  a missing state and an unsupported increase of the activity to three.
+
+```sh
+python research/hard_core_weitz/verify_adaptive_affine.py
+```
+
+The final replay was executed twice and produced byte-identical output. It is
+a separate implementation by the same authoring assistant, not independent
+researcher review. Finite regressions supplement the universal clamped-product
+proof; they do not replace it. Source transcription errors were detected by
+exact remote/local blob comparison and corrected before final delivery.
+
+The authoring runtime has no Lean/lake executable. No source elaboration,
+executed axiom closure, Scribe emission or kernel admission is asserted.
+The finite scripts request decide +kernel and contain no new axioms or admits.
+Sections 16.1-16.3 remain a paper transfer requiring independent scrutiny and
+future end-to-end formalization, even if the current real certificate compiles.
+
+The next priority is to formalize the actual finite independent-set identities
+(16.1)-(16.2), the typed holomorphic coordinate/Jacobian calculation and the
+uniform complex-neighborhood induction. This turns the proposed 2.55 conclusion
+into a complete machine-checkable graph theorem. A quantitative epsilon would
+also be useful, but is distinct from proving its existence. Larger activity
+certificates or larger geometric memories should be pursued only after the
+current actual-graph transfer is independently checked. Improving a scalar
+connective-constant bound is no longer a prerequisite for this message route.
+
+[5] Shuai Shao and Yuxin Sun. *Contraction: A Unified Perspective of Correlation
+Decay and Zero-Freeness of 2-Spin Systems*. Journal of Statistical Physics 185,
+12 (2021); arXiv:1909.04244v3. The real-to-complex extension is prior art; the
+specific finite-type coordinate argument and numerical certificate above are
+spelled out rather than attributed as an already instantiated theorem.
+https://arxiv.org/abs/1909.04244
+https://doi.org/10.1007/s10955-021-02831-0
