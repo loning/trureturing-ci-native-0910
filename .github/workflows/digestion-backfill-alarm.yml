@@ -1,0 +1,125 @@
+# 理论卷追加后的浮账报警(#6092 的降级形态)。
+#
+# 【它防的是发生过的事,不是设想的威胁(第 20″ 条)】
+# 2026-09-07 同日两次:理论卷合入 dev 而消化账未随之更新,浮账 5 条与 154 条,
+# 两次都靠一次例行体检**偶然**发现 —— 没有任何机器会报告这件事。本 workflow
+# 就是那台缺失的机器。
+#
+# 【它做什么、不做什么】
+# 做:定时在 dev tip 上跑一次全库 `make ingest`,若产出新的 residual-open 条目,
+#     就在 #6092 留一条带条数与源分布的评论。
+# 不做:不写仓库、不提交、不开 PR。补账仍由人或巡检发起,走正常 PR 门(第 19 条)。
+#
+# 【为什么只报警不补账】
+# 自动开 PR 需要一个能触发 workflow 的 token。仓库当前只有 `GITHUB_TOKEN`,
+# 而它开出的 PR 按 GitHub 的防递归规则不触发 workflow ⇒ 三门不跑 ⇒ 无法合入;
+# `make pr-open` 依赖的 `gh-app` 是宿主机本地工具,CI 里没有。这是能力缺口,
+# 记 `open` 等灯亮(第 15 条),详见 #6092。
+#
+# 【为什么是定时而不是 dev push 触发】
+# 照搬 lean-cache-publish.yml 的判例(owner 2026-08-21 定「做成定时的就行」):
+# dev 约 16 提交/小时,push 触发会追不平并堆积并发 run。ingest 侧更轻——
+# 实测 18 秒、幂等、19469 条已在账者零写入——故定时完全够用。
+#
+# 【它不是 required check】失败永不该让 dev 的门变红;它只观察与报告。
+name: Digestion backfill alarm
+
+on:
+  schedule:
+    # 每 4 小时,避开整点(见 CronCreate 的同一理由:整点是全球默认落点)。
+    - cron: '37 */4 * * *'
+  workflow_dispatch:
+  # 【临时】仅存在于 integration-ci-digest-alarm-tests 分支,用于按器律⑦ 让本
+  # workflow 在真实事件上跑一次。PR 到 dev 之前必须移除。
+  pull_request:
+    paths:
+      - '.github/workflows/digestion-backfill-alarm.yml'
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: digestion-backfill-alarm
+  cancel-in-progress: false
+
+jobs:
+  alarm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out dev
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+          fetch-depth: 0
+
+      - name: Install pinned SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Run the full-corpus ingest and read its counters
+        id: ingest
+        shell: bash
+        run: |
+          set -euo pipefail
+          # BASE 只作为 ingest 的 revision 参数;全库摄入对已在账的 atom 零写入。
+          make ingest BASE=origin/dev | tee ingest.log
+          line="$(grep -E '^INGEST ' ingest.log | tail -1)"
+          if [[ -z "$line" ]]; then
+            echo "no INGEST counter line in output" >&2
+            exit 1
+          fi
+          added="$(sed -n 's/.*residual_open_added=\([0-9]*\).*/\1/p' <<<"$line")"
+          if [[ -z "$added" ]]; then
+            echo "could not parse residual_open_added from: $line" >&2
+            exit 1
+          fi
+          echo "added=$added" >> "$GITHUB_OUTPUT"
+          echo "counters=$line" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Digestion backfill alarm"
+            echo
+            echo '```'
+            echo "$line"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Summarise the new entries by source
+        id: sources
+        if: steps.ingest.outputs.added != '0'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git status --porcelain \
+            | grep 'Meta/Digestion/backfill/' \
+            | sed 's|.*backfill/||; s|/.*||' \
+            | sort | uniq -c | sort -rn > by-source.txt
+          {
+            echo 'by_source<<SOURCES_EOF'
+            cat by-source.txt
+            echo 'SOURCES_EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Report the drift on #6092
+        if: steps.ingest.outputs.added != '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COUNTERS: ${{ steps.ingest.outputs.counters }}
+          BY_SOURCE: ${{ steps.sources.outputs.by_source }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            printf '## 浮账报警:dev 上有理论内容尚未进入消化账\n\n'
+            printf '产地:本条由 `digestion-backfill-alarm` workflow 自动产出(定时任务,非人工)。\n\n'
+            printf '在 dev tip `%s` 的干净检出上跑全库 `make ingest`:\n\n' "$(git rev-parse --short HEAD)"
+            printf '```\n%s\n```\n\n' "$COUNTERS"
+            printf '新增条目按 source 分布:\n\n```\n%s\n```\n\n' "$BY_SOURCE"
+            printf '本 workflow **不补账**——补账走正常 PR 门。复现:\n\n'
+            printf '```\ngit checkout --detach origin/dev\nmake ingest BASE=origin/dev\n```\n\n'
+            printf 'run: %s\n' "$RUN_URL"
+          } > comment.md
+          gh issue comment 6092 --body-file comment.md
