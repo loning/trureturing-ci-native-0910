@@ -32,7 +32,7 @@ offset zero and eighth term 180180. The entry was created in 2008 and cites
 Wu's Table 1. This formalization is therefore not a claim of mathematical
 novelty or a newly resolved open problem.
 
-## Verified Locators
+## Verified locator
 
 - https://arxiv.org/html/1906.05796, Theorem 1 and Table 1, read 2026-09-07.
 - https://doi.org/10.48550/arXiv.1906.05796, HTTP 302 to the arXiv abstract,
