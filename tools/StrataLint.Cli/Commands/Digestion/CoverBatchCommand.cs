@@ -1,7 +1,10 @@
 using System.Collections.Immutable;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using StrataLint.Engine;
+using StrataLint.Scribe;
+using StrataLint.Scribe.Documents;
 
 namespace StrataLint.Cli;
 
@@ -15,7 +18,8 @@ internal static partial class CoverBatchCommand
         DateTimeOffset recordedAtUtc,
         IReadOnlyList<string> arguments,
         Func<CommandResult>? emit = null,
-        Func<RawRepositorySnapshot>? readInputs = null)
+        Func<RawRepositorySnapshot>? readInputs = null,
+        Assembly? documentsAssembly = null)
     {
         BatchArguments options;
         try
@@ -27,13 +31,14 @@ internal static partial class CoverBatchCommand
             return new(false, string.Empty, $"COVER_BATCH_INPUT_INVALID {exception.Message}\n", 2);
         }
 
+        using var reportBundle = (leanReportSource as PrecomputedLeanReportSource)?.Capture();
         CoverAtomCommand.Session session;
         BatchPlan plan;
         try
         {
             if (scribeEmissionVerifier is null)
                 throw new InvalidOperationException("Scribe emission verifier is unavailable");
-            session = new CoverAtomCommand.Session(repositoryRoot, repository, leanReportSource,
+            session = new CoverAtomCommand.Session(repositoryRoot, repository, reportBundle is null ? leanReportSource : reportBundle,
                 scribeEmissionVerifier, recordedAtUtc, options.BaseRevision, options.Items[0].Gids[0]);
             plan = Plan(options.Items, session.Document);
             var expected = Inputs(session.CurrentRaw);
@@ -103,7 +108,12 @@ internal static partial class CoverBatchCommand
             return new(false, results.ToString(), $"COVER_BATCH_ABORTED {aborted}\n", 1);
 
         CommandResult emission;
-        try { emission = (emit ?? (() => Emit(repositoryRoot)))(); }
+        try
+        {
+            session.RequireUnchanged();
+            emission = (emit ?? (() => Emit(repositoryRoot, session, reportBundle,
+                documentsAssembly ?? typeof(DocumentAssembly).Assembly)))();
+        }
         catch (Exception exception) when (exception is not OutOfMemoryException)
         {
             emission = new(false, string.Empty, $"COVER_BATCH_EMIT_FAILED {exception.Message}\n");
@@ -136,11 +146,23 @@ internal static partial class CoverBatchCommand
             reason,
         })).Append('\n');
 
-    private static CommandResult Emit(string root)
+    private static CommandResult Emit(string root, CoverAtomCommand.Session session,
+        PrecomputedLeanReportSource.CapturedBundle? reportBundle, Assembly documentsAssembly)
     {
-        var result = BoundedProcessRunner.Run("make", ["emit"], root,
-            BoundedProcessRunner.HangDetectionBudget, 64 * 1024 * 1024);
-        return new(result.ExitCode == 0, Encoding.UTF8.GetString(result.StandardOutput),
-            Encoding.UTF8.GetString(result.StandardError));
+        if (reportBundle is null)
+            throw new InvalidOperationException("final emission requires a precomputed Lean report bundle");
+        reportBundle.ValidateForEmission();
+        session.RequireUnchanged();
+        var output = new StringWriter();
+        var error = new StringWriter();
+        // Match scribe.sh's ordered producers while retaining the validated batch inputs.
+        var exit = ScribeEmitter.Emit(documentsAssembly, root, false, output, error, session.Report,
+            validateRepository: true, session.FrozenState, session.FrozenStatements, session.Document);
+        if (exit == 0) exit = ValuesEmitter.Emit(root, false, output, error);
+        if (exit == 0) exit = FileMapEmitter.Emit(root, false, output, error);
+        if (exit != 0) return new(false, output.ToString(), error.ToString());
+        var dag = DagRenderCommand.Run(root, new(session.Current, session.Lean, session.Report), false,
+            documentsAssembly, session.Document);
+        return new(dag.Success, output + dag.Output, error + dag.Error);
     }
 }

@@ -242,7 +242,8 @@ internal static partial class CoverAtomCommand
                 report,
                 receiptVerificationChanges,
                 session.FrozenState,
-                session.FrozenStatements);
+                session.FrozenStatements,
+                document);
             var beforeEvaluation = DigestionStatusEvaluator.Evaluate(
                 evaluationScope,
                 document,

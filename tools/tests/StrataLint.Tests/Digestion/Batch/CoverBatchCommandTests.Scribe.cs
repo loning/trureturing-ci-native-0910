@@ -20,6 +20,7 @@ public sealed partial class CoverBatchCommandTests
         FrozenLoadCounter sequentialLoads;
         using (sequentialLoads = new FrozenLoadCounter()) sequential.RunSingles(verifier);
         FrozenLoadCounter batchLoads;
+        using var ledgerLoads = new LedgerLoadCounter();
         CommandResult result;
         using (batchLoads = new FrozenLoadCounter())
             result = batch.Run(Row(First, Gid) + Row(Second, OtherGid), verifier);
@@ -34,6 +35,9 @@ public sealed partial class CoverBatchCommandTests
         Assert.Equal(1, batchLoads.Indexes);
         Assert.Equal(2, sequentialLoads.Catalogs);
         Assert.Equal(2, sequentialLoads.Indexes);
+        WriteLoadCounts("production-scribe-parser-owner", ledgerLoads);
+        Assert.Equal(1, ledgerLoads.BaselineLoads);
+        Assert.Equal([1, 1, 1], ledgerLoads.CandidateSnapshotLoads);
     }
 
     [Fact]

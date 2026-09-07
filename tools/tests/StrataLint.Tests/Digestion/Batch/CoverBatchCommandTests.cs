@@ -509,6 +509,32 @@ public sealed partial class CoverBatchCommandTests
             }
         }
 
+        internal string WriteReportBundle()
+        {
+            ReviewRegressionTests.RunGit(Root, "init", "--quiet");
+            ReviewRegressionTests.RunGit(Root, "add", ".");
+            ReviewRegressionTests.RunGit(Root, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.test",
+                "commit", "--quiet", "-m", "synthetic producer inputs");
+            var snapshot = Assert.IsType<SnapshotDecodeOutcome.Decoded>(SnapshotDecoder.Decode(Repository.ReadCurrent())).Snapshot;
+            var reports = inputs.Report.Files.ToDictionary(pair => pair.Key.Value, pair => pair.Value, StringComparer.Ordinal);
+            foreach (var path in snapshot.Files.Keys.Where(path => LeanClosureValidator.IsManagedLean(path.Value)))
+                reports.TryAdd(path.Value, new LeanFileReport([], []));
+            var reportPath = RawLeanReportArtifact.DefaultPath(Root);
+            RawLeanReportArtifact.WriteFile(reportPath, snapshot, LeanAxiomReport.Create(reports));
+            LeanReportInputScriptTests.AttestBatchReport(Root, reportPath);
+            return reportPath;
+        }
+
+        internal CommandResult RunProducers(string input)
+        {
+            var path = Path.Combine(temporary.Path, "atoms.tsv");
+            TemporaryFileSystem.File.WriteAllText(path, input);
+            return CoverBatchCommand.Run(Root, Repository, new PrecomputedLeanReportSource(Root),
+                new ProductionScribeEmissionVerifier(typeof(BatchClaimDefinition).Assembly),
+                CoverWorld.FixtureUtc, ["--atoms", path, "--base", "baseline"],
+                documentsAssembly: typeof(BatchClaimDefinition).Assembly);
+        }
+
         private RawRepositorySnapshot ReadFiles() => RawRepositorySnapshot.Create(
             Directory.EnumerateFiles(Root, "*", SearchOption.AllDirectories)
                 .Select(path => new RawRepositoryEntry(Path.GetRelativePath(Root, path).Replace('\\', '/'),
@@ -537,7 +563,8 @@ public sealed partial class CoverBatchCommandTests
     {
         public VerifiedScribeEmissions Verify(RepositorySnapshot snapshot, LeanAxiomReport report,
             RawChangeSet? changes = null, FrozenStateCatalog? frozenState = null,
-            FrozenStatementIndex? frozenStatements = null)
+            FrozenStatementIndex? frozenStatements = null,
+            BackfillInventoryDocument? inventory = null)
         {
             callback();
             return VerifiedScribeEmissions.Empty;

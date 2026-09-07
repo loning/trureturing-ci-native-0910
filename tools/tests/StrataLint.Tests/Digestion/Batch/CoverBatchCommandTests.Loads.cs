@@ -31,9 +31,10 @@ public sealed partial class CoverBatchCommandTests
         using var world = new BatchWorld(entry => entry.AtomId == First
             ? entry with { Receipts = entry.Receipts with { UnresolvedSubitems = ["remaining clause"] } }
             : entry);
-        using var loads = new LedgerLoadCounter();
-
-        var result = world.Run(Row(First, Gid) + Row(Second, Gid));
+        LedgerLoadCounter loads;
+        CommandResult result;
+        using (loads = new LedgerLoadCounter())
+            result = world.Run(Row(First, Gid) + Row(Second, Gid));
 
         Assert.Equal(["failed", "applied"], Results(result).Select(item => item.Status).ToArray());
         Assert.NotNull(world.Entry(First).Receipts.CoverDisposition);
@@ -52,13 +53,13 @@ public sealed partial class CoverBatchCommandTests
 
     private sealed class LedgerLoadCounter : IDisposable
     {
-        private readonly Action<RepositorySnapshot, bool>? previous = IngestCommand.LedgerDocumentLoading.Value;
+        private readonly Action<RepositorySnapshot, bool>? previous = BackfillInventoryLoader.DocumentLoading.Value;
         private readonly List<string> candidateImages = [];
         internal int BaselineLoads { get; private set; }
         internal int[] CandidateSnapshotLoads => candidateImages.GroupBy(image => image, StringComparer.Ordinal)
             .Select(group => group.Count()).ToArray();
 
-        internal LedgerLoadCounter() => IngestCommand.LedgerDocumentLoading.Value = (snapshot, baseline) =>
+        internal LedgerLoadCounter() => BackfillInventoryLoader.DocumentLoading.Value = (snapshot, baseline) =>
         {
             if (baseline) BaselineLoads++;
             else candidateImages.Add(string.Concat(snapshot.Files
@@ -67,6 +68,6 @@ public sealed partial class CoverBatchCommandTests
                 .Select(pair => pair.Key.Value + "\0" + Convert.ToBase64String(pair.Value.RawBytes.AsSpan()) + "\n")));
         };
 
-        public void Dispose() => IngestCommand.LedgerDocumentLoading.Value = previous;
+        public void Dispose() => BackfillInventoryLoader.DocumentLoading.Value = previous;
     }
 }

@@ -12,7 +12,8 @@ internal static class ReceiptFreeDocumentCatalog
     internal static ReceiptFreeDocumentCensus Load(
         string repositoryRoot,
         IEnumerable<ScribeDocument> documents,
-        bool tolerateAbsentDocuments = false)
+        bool tolerateAbsentDocuments = false,
+        BackfillInventoryDocument? inventory = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(repositoryRoot);
         ArgumentNullException.ThrowIfNull(documents);
@@ -24,7 +25,7 @@ internal static class ReceiptFreeDocumentCatalog
             throw new InvalidOperationException("Scribe document corpus must not be empty.");
         }
 
-        var inventory = BackfillInventoryLoader.LoadRoot(repositoryRoot);
+        inventory ??= BackfillInventoryLoader.LoadRoot(repositoryRoot);
         var receiptBound = inventory.RequireDigestionEntries()
             .SelectMany(static entry => entry.Receipts.Scribe)
             .Select(static receipt => ScribeEmissionAttestation.DocumentGid(receipt.Gid))

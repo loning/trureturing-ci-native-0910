@@ -50,26 +50,27 @@ internal interface IScribeEmissionVerifier
         LeanAxiomReport report,
         RawChangeSet? changes = null,
         FrozenStateCatalog? frozenState = null,
-        FrozenStatementIndex? frozenStatements = null);
+        FrozenStatementIndex? frozenStatements = null,
+        BackfillInventoryDocument? inventory = null);
 }
 
 internal sealed class ProductionScribeEmissionVerifier : IScribeEmissionVerifier
 {
-    private readonly Func<string, LeanAxiomReport, FrozenStateCatalog?, FrozenStatementIndex?, VerifiedScribeEmissions> verifyMaterialized;
+    private readonly Func<string, LeanAxiomReport, FrozenStateCatalog?, FrozenStatementIndex?, BackfillInventoryDocument?, VerifiedScribeEmissions> verifyMaterialized;
 
     internal ProductionScribeEmissionVerifier()
-        : this(DocumentAssembly.Value)
+        : this(typeof(DocumentAssembly).Assembly)
     {
     }
 
     internal ProductionScribeEmissionVerifier(Assembly documentsAssembly)
-        : this((root, report, frozenState, frozenStatements) =>
-            VerifyMaterialized(documentsAssembly, root, report, frozenState, frozenStatements))
+        : this((root, report, frozenState, frozenStatements, inventory) =>
+            VerifyMaterialized(documentsAssembly, root, report, frozenState, frozenStatements, inventory))
     {
     }
 
     internal ProductionScribeEmissionVerifier(
-        Func<string, LeanAxiomReport, FrozenStateCatalog?, FrozenStatementIndex?, VerifiedScribeEmissions> verifyMaterialized) =>
+        Func<string, LeanAxiomReport, FrozenStateCatalog?, FrozenStatementIndex?, BackfillInventoryDocument?, VerifiedScribeEmissions> verifyMaterialized) =>
         this.verifyMaterialized = verifyMaterialized
             ?? throw new ArgumentNullException(nameof(verifyMaterialized));
 
@@ -78,7 +79,8 @@ internal sealed class ProductionScribeEmissionVerifier : IScribeEmissionVerifier
         LeanAxiomReport report,
         RawChangeSet? changes = null,
         FrozenStateCatalog? frozenState = null,
-        FrozenStatementIndex? frozenStatements = null)
+        FrozenStatementIndex? frozenStatements = null,
+        BackfillInventoryDocument? inventory = null)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(report);
@@ -89,7 +91,7 @@ internal sealed class ProductionScribeEmissionVerifier : IScribeEmissionVerifier
                 materialized.Root,
                 DeclarationCatalog.Create(report));
         }
-        return verifyMaterialized(materialized.Root, report, frozenState, frozenStatements);
+        return verifyMaterialized(materialized.Root, report, frozenState, frozenStatements, inventory);
     }
 
     private static VerifiedScribeEmissions VerifyMaterialized(
@@ -97,11 +99,12 @@ internal sealed class ProductionScribeEmissionVerifier : IScribeEmissionVerifier
         string repositoryRoot,
         LeanAxiomReport report,
         FrozenStateCatalog? frozenState,
-        FrozenStatementIndex? frozenStatements)
+        FrozenStatementIndex? frozenStatements,
+        BackfillInventoryDocument? inventory)
     {
         var error = new StringWriter(System.Globalization.CultureInfo.InvariantCulture);
         return ScribeEmitter.Verify(documentsAssembly, repositoryRoot, error, report,
-                frozenState, frozenStatements)
+                frozenState, frozenStatements, inventory)
             ?? throw new InvalidOperationException(
                 "Scribe emission verification failed: " + error.ToString().Trim());
     }

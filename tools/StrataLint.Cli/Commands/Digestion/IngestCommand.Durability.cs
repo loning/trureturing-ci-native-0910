@@ -6,8 +6,6 @@ namespace StrataLint.Cli;
 internal static partial class IngestCommand
 {
     // Observe actual parser calls within one execution context, including ranking reloads.
-    internal static readonly AsyncLocal<Action<RepositorySnapshot, bool>?> LedgerDocumentLoading = new();
-
     internal sealed record LedgerUpdate(
         string Path,
         ImmutableArray<byte>? Bytes,

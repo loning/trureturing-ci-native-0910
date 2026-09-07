@@ -51,7 +51,10 @@ public static class ScribeEmitter
         TextWriter output,
         TextWriter error,
         LeanAxiomReport leanReport,
-        bool validateRepository)
+        bool validateRepository,
+        FrozenStateCatalog? frozenState = null,
+        FrozenStatementIndex? frozenStatements = null,
+        BackfillInventoryDocument? inventory = null)
     {
         ArgumentNullException.ThrowIfNull(leanReport);
         return Run(
@@ -62,7 +65,10 @@ public static class ScribeEmitter
             _ => leanReport,
             validateRepository,
             tolerateAbsentDocuments: false,
-            documentsAssembly: documentsAssembly).ExitCode;
+            documentsAssembly: documentsAssembly,
+            frozenState: frozenState,
+            frozenStatements: frozenStatements,
+            inventory: inventory).ExitCode;
     }
 
     internal static int Emit(
@@ -136,7 +142,8 @@ public static class ScribeEmitter
         TextWriter error,
         LeanAxiomReport leanReport,
         FrozenStateCatalog? frozenState = null,
-        FrozenStatementIndex? frozenStatements = null)
+        FrozenStatementIndex? frozenStatements = null,
+        BackfillInventoryDocument? inventory = null)
     {
         ArgumentNullException.ThrowIfNull(leanReport);
         return Run(
@@ -149,7 +156,8 @@ public static class ScribeEmitter
             tolerateAbsentDocuments: true,
             documentsAssembly: documentsAssembly,
             frozenState: frozenState,
-            frozenStatements: frozenStatements).Verification;
+            frozenStatements: frozenStatements,
+            inventory: inventory).Verification;
     }
 
     private static ScribeEmissionRun Run(
@@ -164,7 +172,8 @@ public static class ScribeEmitter
         IReadOnlyList<DocumentDefinition>? suppliedDefinitions = null,
         MarkdownFormulaScope? markdownScope = null,
         FrozenStateCatalog? frozenState = null,
-        FrozenStatementIndex? frozenStatements = null)
+        FrozenStatementIndex? frozenStatements = null,
+        BackfillInventoryDocument? inventory = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(repositoryRoot);
         ArgumentNullException.ThrowIfNull(output);
@@ -261,7 +270,8 @@ public static class ScribeEmitter
             var census = ReceiptFreeDocumentCatalog.Load(
                 repositoryRoot,
                 documents,
-                tolerateAbsentDocuments);
+                tolerateAbsentDocuments,
+                inventory);
             var graph = DocumentGraphAssembler.Assemble(
                 documents,
                 declarationCatalog);
