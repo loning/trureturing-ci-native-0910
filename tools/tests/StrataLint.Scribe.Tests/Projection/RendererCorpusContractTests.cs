@@ -9,7 +9,7 @@ namespace StrataLint.Scribe.Tests;
 public sealed partial class FormulaCorpusInventoryTests
 {
     private const string CanonicalRendererSha256 =
-        "684ffe9abd8cdb4da31415a09fe2af382f4e2bd95ca90b5289761b35699f443f";
+        "c4adebf5f96205e366557fada211317abd7df4ea33f75364a3854b0ab5c14ee7";
     private const string UpdateCommand = "make -C tools update-renderer-contract";
 
     [Fact]
@@ -214,7 +214,7 @@ public sealed partial class FormulaCorpusInventoryTests
         {
             var constructor = typeof(DocumentBlock.Describe)
                 .GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic)
-                .Single(static candidate => candidate.GetParameters().Length == 9);
+                .Single(static candidate => candidate.GetParameters().Length == 10);
             var declaration = LeanDeclarationRef.Create(
                 $"D5/S0/Synthetic/RendererContract.{id.Replace('-', '_')}");
             return (DocumentBlock.Describe)constructor.Invoke(
@@ -225,6 +225,7 @@ public sealed partial class FormulaCorpusInventoryTests
                 DescribeStatement.FromLean(declaration),
                 provenance ?? AssessedProvenance.FromRepo(),
                 commentary,
+                null,
                 null,
                 null,
                 null,
@@ -417,7 +418,7 @@ public sealed partial class FormulaCorpusInventoryTests
         formulas.Add(mulStartingNeg);
         formulas.Add(new Formula.LatexGroup([mulStartingNeg]));
         formulas.Add(new Formula.FunctionCall(FormulaIdentifier.Create("f"), [mulStartingNeg]));
-         // FunctionCall.Arguments=multiplicative;negation:true
+        // FunctionCall.Arguments=multiplicative;negation:true
         formulas.Add(new Formula.Power(function, one));
         formulas.Add(new Formula.Power(function, script));
         formulas.Add(new Formula.Power(function, subscript));
