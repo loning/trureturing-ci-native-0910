@@ -545,6 +545,7 @@ public sealed class QuarantineAtomCommandTests
         public CommandResult Ingest(IReadOnlyList<string> arguments) => throw Unsupported();
         public CommandResult AlignDigestionStatus(IReadOnlyList<string> arguments) => throw Unsupported();
         public CommandResult CoverAtom(IReadOnlyList<string> arguments) => throw Unsupported();
+        public CommandResult StripScribeReceipts(IReadOnlyList<string> arguments) => throw Unsupported();
         public CommandResult Route(IReadOnlyList<string> arguments) => throw Unsupported();
         public CommandResult SelfTest(IReadOnlyList<string> arguments) => throw Unsupported();
         public CommandResult RenderDag(IReadOnlyList<string> arguments) => throw Unsupported();
