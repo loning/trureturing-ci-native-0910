@@ -28,7 +28,7 @@ internal sealed class DeeplyCompositeNotPrimeExponentRecordDocument : IScribeDoc
                 "prime-exponent-score",
                 "fx",
                 "Prime-exponent score",
-                FxFormula(),
+                StatementSource.FromAuthor(FxFormula()),
                 AssessedProvenance.FromRepo(),
                 "A384669 states f_x(k) for a positive integer factorization k as the sum of "
                     + "the x-th powers of its exponents. The repository extends the formula to "
@@ -39,7 +39,7 @@ internal sealed class DeeplyCompositeNotPrimeExponentRecordDocument : IScribeDoc
                 "div-plus-precedes",
                 "DivPlusPrecedes",
                 "First differing divisor order",
-                DivPlusFormula(),
+                StatementSource.FromAuthor(DivPlusFormula()),
                 AssessedProvenance.FromRepo(),
                 "A095848 states its order through the infinite extended divisor lists Div+(n). "
                     + "DivPlusPrecedes is the repository encoding: for natural n and m, a positive "
@@ -50,7 +50,7 @@ internal sealed class DeeplyCompositeNotPrimeExponentRecordDocument : IScribeDoc
                 "deeply-composite-record",
                 "DC",
                 "Deeply composite record predicate",
-                DcFormula(),
+                StatementSource.FromAuthor(DcFormula()),
                 AssessedProvenance.FromRepo(),
                 "A095848 gives the deeply composite sequence through successive records of its "
                     + "extended divisor-list order. The repository predicate DC(n) quantifies over "
@@ -61,32 +61,31 @@ internal sealed class DeeplyCompositeNotPrimeExponentRecordDocument : IScribeDoc
                 "strict-prime-exponent-record",
                 "StrictRecord",
                 "Strict score record",
-                StrictRecordFormula(),
+                StatementSource.FromAuthor(StrictRecordFormula()),
                 AssessedProvenance.FromRepo(),
                 "A384669 defines A_x by strict score records among positive integers. The "
-                    + "repository predicate quantifies x over all reals and m over all naturals, "
-                    + "with the explicit guards m < n and 1 <= m, and preserves the strict "
+                    + "repository predicate requires the candidate n to be positive, quantifies "
+                    + "x over all reals and m over all naturals, and preserves the guarded strict "
                     + "inequality fx(m,x) < fx(n,x).",
                 DescribeRole.Definition),
             Node(
                 "b-infinity",
                 "Binfty",
                 "The union B-infinity",
-                BinftyFormula(),
+                StatementSource.FromAuthor(BinftyFormula()),
                 AssessedProvenance.FromRepo(),
                 "A385722 defines B-infinity as the union of the A_x values for 0 < x < 1 and "
                     + "asks whether infinitely many, or all, A095848 terms occur. The repository "
                     + "set uses an existential real x in that open interval together with the "
                     + "strict record predicate; A385722 notes the equivalent rational-parameter "
-                    + "form by continuity. StrictRecord x 0 holds vacuously, so 0 ∈ Binfty under "
-                    + "this definition; the source sequence is over positive integers and every "
-                    + "covered clause concerns 25200, unaffected by the convention.",
+                    + "form by continuity. The candidate is required positive, matching the "
+                    + "source's positive-integer sequence.",
                 DescribeRole.Definition),
             Node(
                 "literal-factorizations",
                 "literal_factorizations",
                 "Literal factorizations used by the certificate",
-                LiteralFactorizationsFormula(),
+                StatementSource.FromAuthor(LiteralFactorizationsFormula()),
                 AssessedProvenance.FromRepo(),
                 "The repository verifies all three literal prime factorizations used to evaluate "
                     + "the scores. Consumer-to-prerequisite paths: fx_25200 -> "
@@ -99,7 +98,7 @@ internal sealed class DeeplyCompositeNotPrimeExponentRecordDocument : IScribeDoc
                 "score-25200-normal-form",
                 "fx_25200",
                 "Normalized score of 25200",
-                Fx25200Formula(),
+                StatementSource.FromAuthor(Fx25200Formula()),
                 AssessedProvenance.FromRepo(),
                 "The repository normalizes the score from the certified factorization "
                     + "25200 = 2^4*3^2*5^2*7. Dependency path: fx_25200 -> "
@@ -109,7 +108,7 @@ internal sealed class DeeplyCompositeNotPrimeExponentRecordDocument : IScribeDoc
                 "score-18480-normal-form",
                 "fx_18480",
                 "Normalized score of 18480",
-                Fx18480Formula(),
+                StatementSource.FromAuthor(Fx18480Formula()),
                 AssessedProvenance.FromRepo(),
                 "The repository normalizes the first competitor's score from the certified "
                     + "factorization 18480 = 2^4*3*5*7*11. Dependency path: fx_18480 -> "
@@ -119,7 +118,7 @@ internal sealed class DeeplyCompositeNotPrimeExponentRecordDocument : IScribeDoc
                 "score-20160-normal-form",
                 "fx_20160",
                 "Normalized score of 20160",
-                Fx20160Formula(),
+                StatementSource.FromAuthor(Fx20160Formula()),
                 AssessedProvenance.FromRepo(),
                 "The repository normalizes the second competitor's score from the certified "
                     + "factorization 20160 = 2^6*3^2*5*7. Dependency path: fx_20160 -> "
@@ -129,7 +128,7 @@ internal sealed class DeeplyCompositeNotPrimeExponentRecordDocument : IScribeDoc
                 "score-gap-identity",
                 "score_gap_identity",
                 "Positive score-gap identity",
-                ScoreGapIdentityFormula(),
+                StatementSource.FromAuthor(ScoreGapIdentityFormula()),
                 AssessedProvenance.FromRepo(),
                 "After substituting z = t - 3/2, the repository proves this polynomial identity "
                     + "by ring normalization; nonnegativity of its right side supplies the strict "
@@ -139,7 +138,7 @@ internal sealed class DeeplyCompositeNotPrimeExponentRecordDocument : IScribeDoc
                 "deeply-composite-25200",
                 "dc_25200",
                 "25200 is deeply composite",
-                Disp(Call("DC", Number25200())),
+                StatementSource.FromAuthor(Disp(Call("DC", Number25200()))),
                 AssessedProvenance.FromRepo(),
                 "The finite certificate first treats a challenger divisible by 2520 as "
                     + "2520*j for 1 <= j <= 9; the first difference is 16 for odd j and "
@@ -150,7 +149,7 @@ internal sealed class DeeplyCompositeNotPrimeExponentRecordDocument : IScribeDoc
                 "score-25200-bounded-by-competitors",
                 "score_25200_le_competitors",
                 "Two smaller competitors dominate every parameter",
-                ScoreFormula(),
+                StatementSource.FromAuthor(ScoreFormula()),
                 AssessedProvenance.FromRepo(),
                 "For every real x, the score of 25200 is bounded by the larger score of "
                     + "18480 and 20160. With t=2^x and u=3^x, the three scores normalize "
@@ -164,7 +163,7 @@ internal sealed class DeeplyCompositeNotPrimeExponentRecordDocument : IScribeDoc
                 "not-strict-record-25200",
                 "not_strictRecord_25200",
                 "25200 is never a strict score record",
-                NotStrictFormula(),
+                StatementSource.FromAuthor(NotStrictFormula()),
                 AssessedProvenance.FromRepo(),
                 "Both competitors are positive naturals smaller than 25200. If 25200 were "
                     + "a strict record, both scores would be strictly below its score, "
@@ -175,7 +174,7 @@ internal sealed class DeeplyCompositeNotPrimeExponentRecordDocument : IScribeDoc
                 "deeply-composite-25200-not-in-b-infinity",
                 "deeply_composite_25200_not_in_Binfty",
                 "The complete 25200 counterexample",
-                MainFormula(),
+                StatementSource.FromAuthor(MainFormula()),
                 AssessedProvenance.FromRepo(),
                 "The whole candidate theorem combines the certified deeply-composite fact "
                     + "with exclusion from strict records for every real parameter. Dependency "
@@ -186,7 +185,7 @@ internal sealed class DeeplyCompositeNotPrimeExponentRecordDocument : IScribeDoc
                 "number-25200-not-in-b-infinity",
                 "not_mem_Binfty_25200",
                 "25200 is outside B-infinity",
-                NotMemFormula(),
+                StatementSource.FromAuthor(NotMemFormula()),
                 AssessedProvenance.FromRepo(),
                 "Unfolding membership in Binfty would supply a real parameter and a strict "
                     + "record witness, which not_strictRecord_25200 excludes. Dependency "
@@ -200,11 +199,11 @@ internal sealed class DeeplyCompositeNotPrimeExponentRecordDocument : IScribeDoc
         string id,
         string declaration,
         string title,
-        Formula formula,
+        StatementSource source,
         AssessedProvenance provenance,
         string prose,
         DescribeRole role) => Describe.Lean(
-            Id(id), Handle(declaration), H(title), StatementSource.FromAuthor(formula), provenance,
+            Id(id), Handle(declaration), H(title), source, provenance,
             Blocks(Paragraph(Text(prose))), role);
 
     private static DescribeId Id(string value) => DescribeId.Create(value);
@@ -294,10 +293,12 @@ internal sealed class DeeplyCompositeNotPrimeExponentRecordDocument : IScribeDoc
             Forall, Sp, n, Sp, InMacro, Sp, Nats(), Comma, Sp,
             Call("StrictRecord", x, n), Sp, Iff, Sp,
             Parenthesized(Seq(
-                Forall, Sp, m, Sp, InMacro, Sp, Nats(), Comma, Sp,
-                m, Sp, Lt, Sp, n, Sp, Rightarrow, Sp,
-                D(1), Sp, Leq, Sp, m, Sp, Rightarrow, Sp,
-                Call("fx", m, x), Sp, Lt, Sp, Call("fx", n, x)))));
+                D(0), Sp, Lt, Sp, n, Sp, Land, Sp,
+                Parenthesized(Seq(
+                    Forall, Sp, m, Sp, InMacro, Sp, Nats(), Comma, Sp,
+                    m, Sp, Lt, Sp, n, Sp, Rightarrow, Sp,
+                    D(1), Sp, Leq, Sp, m, Sp, Rightarrow, Sp,
+                    Call("fx", m, x), Sp, Lt, Sp, Call("fx", n, x)))))));
     }
 
     private static Formula BinftyFormula()

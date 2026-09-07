@@ -44,7 +44,7 @@ A095848 gives the deeply composite sequence through successive records of its ex
 
 **Definition 1.4 (Strict score record).**
 
-$$\forall x \in \mathbb{R}, \forall n \in \mathbb{N}, \operatorname{StrictRecord}\left(x, n\right) \iff (\forall m \in \mathbb{N}, m < n \Rightarrow 1 \leq m \Rightarrow \operatorname{fx}\left(m, x\right) < \operatorname{fx}\left(n, x\right))$$
+$$\forall x \in \mathbb{R}, \forall n \in \mathbb{N}, \operatorname{StrictRecord}\left(x, n\right) \iff (0 < n \land (\forall m \in \mathbb{N}, m < n \Rightarrow 1 \leq m \Rightarrow \operatorname{fx}\left(m, x\right) < \operatorname{fx}\left(n, x\right)))$$
 
 *Formalization.* `D5/S3/Factorization/DeeplyCompositeNotPrimeExponentRecord.StrictRecord` (`✓ std3`).
 
@@ -52,7 +52,7 @@ $$\forall x \in \mathbb{R}, \forall n \in \mathbb{N}, \operatorname{StrictRecord
 
 *Commentary.*
 
-A384669 defines A_x by strict score records among positive integers. The repository predicate quantifies x over all reals and m over all naturals, with the explicit guards m < n and 1 <= m, and preserves the strict inequality fx(m,x) < fx(n,x).
+A384669 defines A_x by strict score records among positive integers. The repository predicate requires the candidate n to be positive, quantifies x over all reals and m over all naturals, and preserves the guarded strict inequality fx(m,x) < fx(n,x).
 
 **Definition 1.5 (The union B-infinity).**
 
@@ -64,7 +64,7 @@ $$Binfty = \{n \in \mathbb{N} \mid \exists x \in \mathbb{R}, (0 < x \land x < 1 
 
 *Commentary.*
 
-A385722 defines B-infinity as the union of the A_x values for 0 < x < 1 and asks whether infinitely many, or all, A095848 terms occur. The repository set uses an existential real x in that open interval together with the strict record predicate; A385722 notes the equivalent rational-parameter form by continuity. StrictRecord x 0 holds vacuously, so 0 ∈ Binfty under this definition; the source sequence is over positive integers and every covered clause concerns 25200, unaffected by the convention.
+A385722 defines B-infinity as the union of the A_x values for 0 < x < 1 and asks whether infinitely many, or all, A095848 terms occur. The repository set uses an existential real x in that open interval together with the strict record predicate; A385722 notes the equivalent rational-parameter form by continuity. The candidate is required positive, matching the source's positive-integer sequence.
 
 **Theorem 1.6 (Literal factorizations used by the certificate).**
 

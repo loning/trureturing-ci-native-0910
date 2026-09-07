@@ -3,7 +3,7 @@
    mirror-B: D5/B/S3/Factorization/DeeplyCompositeNotPrimeExponentRecord
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
-   utility: kind=certified-instance; basis=terminal=atom:d106e27218c2ce1eb164bf497db51656ed379cdae65921afa7ff6d0e0605a907; result=D5/S3/Factorization/DeeplyCompositeNotPrimeExponentRecord.deeply_composite_25200_not_in_Binfty
+   utility: kind=certified-instance; basis=terminal=atom:0ef66a6fe5072b821fd4843f35b76768cfeec86b2658ecaeb811b384b665e71e; result=D5/S3/Factorization/DeeplyCompositeNotPrimeExponentRecord.deeply_composite_25200_not_in_Binfty
    digest: The deeply composite number 25200 is never a strict prime-exponent-score record. -/
 
 import Mathlib.Analysis.SpecialFunctions.Pow.Real
@@ -30,11 +30,10 @@ def DC (n : ℕ) : Prop :=
 
 /-- Strict record for the prime-exponent score. -/
 def StrictRecord (x : ℝ) (n : ℕ) : Prop :=
-  ∀ m : ℕ, m < n → 1 ≤ m → fx m x < fx n x
+  0 < n ∧ ∀ m : ℕ, m < n → 1 ≤ m → fx m x < fx n x
 
 /-- The real-parameter form of Switkay's union `B_∞` from the A385722 attachment.
-StrictRecord x 0 holds vacuously, so 0 ∈ Binfty under this definition; the source sequence is over
-positive integers and every covered clause concerns 25200, unaffected by the convention. -/
+The candidate is required positive, matching the source's positive-integer sequence. -/
 def Binfty : Set ℕ :=
   {n | ∃ x : ℝ, 0 < x ∧ x < 1 ∧ StrictRecord x n}
 
@@ -284,7 +283,7 @@ theorem score_25200_le_competitors (x : ℝ) :
     nlinarith
 
 theorem not_strictRecord_25200 (x : ℝ) : ¬ StrictRecord x 25200 := by
-  intro hrecord
+  rintro ⟨_hpositive, hrecord⟩
   have h18480 := hrecord 18480 (by norm_num) (by norm_num)
   have h20160 := hrecord 20160 (by norm_num) (by norm_num)
   exact (not_lt_of_ge (score_25200_le_competitors x)) (max_lt h18480 h20160)
