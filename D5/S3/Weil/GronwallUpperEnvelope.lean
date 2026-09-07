@@ -56,4 +56,71 @@ theorem small_prime_product_le (n : ℕ) (y : ℝ) :
       (hfactor p (Nat.prime_of_mem_primeFactors (Finset.mem_filter.mp hp).1)))
     (fun p hp _ => hfactor p (Finset.mem_filter.mp hp).2)
 
+/-- The distinct prime divisors above a real cutoff. -/
+noncomputable def largePrimes (n : ℕ) (y : ℝ) : Finset ℕ :=
+  n.primeFactors.filter (fun p => y < (p : ℝ))
+
+/-- The logarithmic budget for the large prime divisors. -/
+theorem large_prime_count_le {n : ℕ} (hn : 0 < n) {y : ℝ} (hy : 2 ≤ y) :
+    ((largePrimes n y).card : ℝ) ≤ Real.log n / Real.log y := by
+  have hy0 : 0 < y := by linarith only [hy]
+  have hy1 : 1 < y := by linarith only [hy]
+  have hsub : largePrimes n y ⊆ n.primeFactors := Finset.filter_subset _ _
+  have hp0 : ∀ p ∈ largePrimes n y, (0 : ℝ) < p := fun p hp =>
+    Nat.cast_pos.mpr (Nat.prime_of_mem_primeFactors (hsub hp)).pos
+  have hprod : (∏ p ∈ largePrimes n y, p) ≤ n :=
+    Nat.le_of_dvd hn ((Finset.prod_dvd_prod_of_subset _ _ id hsub).trans
+      (Nat.prod_primeFactors_dvd n))
+  have hprodR : (∏ p ∈ largePrimes n y, (p : ℝ)) ≤ n := by
+    simpa only [Nat.cast_prod] using (Nat.cast_le (α := ℝ)).mpr hprod
+  have hlog := Real.log_le_log (Finset.prod_pos hp0) hprodR
+  rw [Real.log_prod (fun p hp => (hp0 p hp).ne')] at hlog
+  have hsum : ((largePrimes n y).card : ℝ) * Real.log y ≤
+      ∑ p ∈ largePrimes n y, Real.log p := by
+    have h := Finset.sum_le_sum (s := largePrimes n y)
+      (f := fun _ : ℕ => Real.log y) (g := fun p : ℕ => Real.log (p : ℝ))
+      (fun p hp => Real.log_le_log hy0 (Finset.mem_filter.mp hp).2.le)
+    simpa only [Finset.sum_const, nsmul_eq_mul] using h
+  exact (le_div_iff₀ (Real.log_pos hy1)).mpr (hsum.trans hlog)
+
+/-- The large-prime Euler factors contribute a vanishing exponential error. -/
+theorem large_prime_product_le {n : ℕ} (hn : 0 < n) {y : ℝ} (hy : 2 ≤ y) :
+    (∏ p ∈ largePrimes n y, (1 - 1 / (p : ℝ))⁻¹) ≤
+      Real.exp (2 * Real.log n / (y * Real.log y)) := by
+  have hy0 : 0 < y := by linarith only [hy]
+  have hp1 : ∀ p ∈ largePrimes n y, (1 : ℝ) < p := by
+    intro p hp
+    have h := (Finset.mem_filter.mp hp).2
+    linarith only [h, hy]
+  have hfac : ∀ p ∈ largePrimes n y, (0 : ℝ) < (1 - 1 / (p : ℝ))⁻¹ := by
+    intro p hp
+    exact inv_pos.mpr (sub_pos.mpr (by
+      simpa only [one_div] using inv_lt_one_of_one_lt₀ (hp1 p hp)))
+  have hpoint : ∀ p ∈ largePrimes n y,
+      Real.log ((1 - 1 / (p : ℝ))⁻¹) ≤ 2 / y := by
+    intro p hp
+    have hyp := (Finset.mem_filter.mp hp).2
+    have hp0 : (0 : ℝ) < p := lt_trans hy0 hyp
+    have hpm : (0 : ℝ) < (p : ℝ) - 1 := sub_pos.mpr (hp1 p hp)
+    have hp2 : (2 : ℝ) ≤ p := hy.trans hyp.le
+    rw [one_sub_div hp0.ne', inv_div]
+    calc
+      Real.log ((p : ℝ) / (p - 1)) ≤ (p : ℝ) / (p - 1) - 1 :=
+        Real.log_le_sub_one_of_pos (div_pos hp0 hpm)
+      _ = 1 / ((p : ℝ) - 1) := by rw [div_sub_one hpm.ne', sub_sub_cancel]
+      _ ≤ 2 / (p : ℝ) := (div_le_div_iff₀ hpm hp0).mpr (by linarith only [hp2])
+      _ ≤ 2 / y := div_le_div_of_nonneg_left (by norm_num) hy0 hyp.le
+  apply (Real.log_le_iff_le_exp (Finset.prod_pos hfac)).mp
+  rw [Real.log_prod (fun p hp => (hfac p hp).ne')]
+  calc
+    (∑ p ∈ largePrimes n y, Real.log ((1 - 1 / (p : ℝ))⁻¹)) ≤
+        ((largePrimes n y).card : ℝ) * (2 / y) := by
+      simpa only [Finset.sum_const, nsmul_eq_mul] using Finset.sum_le_sum hpoint
+    _ ≤ (Real.log n / Real.log y) * (2 / y) :=
+      mul_le_mul_of_nonneg_right (large_prime_count_le hn hy)
+        (div_nonneg (by norm_num) hy0.le)
+    _ = 2 * Real.log n / (y * Real.log y) := by
+      simp only [div_eq_mul_inv, mul_inv_rev]
+      ring
+
 end D5.S3.Weil.GronwallUpperEnvelope
