@@ -8,7 +8,7 @@ namespace StrataLint.Tests;
 // Contract for the opt-in content-addressed report cache. Hits re-verify against
 // the current tree; anomalies evict and reproduce. Stubs drive the real cache and
 // input scripts without Mathlib, the Lean slot, or the report supervisor.
-public sealed class LeanReportCacheTests
+public sealed partial class LeanReportCacheTests
 {
     private const string RawReportPath = "tools/StrataLint.Engine/Snapshot/RawLeanReportArtifact.cs";
     private const string CanonicalWriterPath = "tools/Trureturing.Truth/StructuredCanonicalWriter.cs";
@@ -19,7 +19,7 @@ public sealed class LeanReportCacheTests
         using var world = new CacheWorld();
 
         var first = world.RunPair();
-        Assert.True(first.ExitCode == 0, Encoding.UTF8.GetString(first.StandardError));
+        world.AssertSuccess(first);
         Assert.Equal(1, world.ProducerRunCount);
         Assert.Equal(1, world.SlotAcquireCount);
         Assert.True(File.Exists(world.Output));
@@ -31,7 +31,7 @@ public sealed class LeanReportCacheTests
             world.CacheRoot, address, "raw-lean-report.json.logs")));
 
         var second = world.RunPair();
-        Assert.Equal(0, second.ExitCode);
+        world.AssertSuccess(second);
         // Cache hit: the stub producer is NOT re-invoked and NO Lean slot is taken.
         Assert.Equal(1, world.ProducerRunCount);
         Assert.Equal(1, world.SlotAcquireCount);
@@ -52,13 +52,13 @@ public sealed class LeanReportCacheTests
         if (OperatingSystem.IsWindows()) return;
         using var world = new CacheWorld();
         var first = world.RunPair();
-        Assert.Equal(0, first.ExitCode);
+        world.AssertSuccess(first);
         var address = world.AddressFrom(first);
         world.AddLegacyLogsToCacheEntry(address);
 
         var second = world.RunPair();
 
-        Assert.Equal(0, second.ExitCode);
+        world.AssertSuccess(second);
         Assert.Equal(2, world.ProducerRunCount);
         Assert.Equal("produced", world.LiveMode());
         Assert.False(world.CacheEntryHasLogs(address));
@@ -70,13 +70,13 @@ public sealed class LeanReportCacheTests
         if (OperatingSystem.IsWindows()) return;
         using var world = new CacheWorld();
         var first = world.RunPair();
-        Assert.Equal(0, first.ExitCode);
+        world.AssertSuccess(first);
         var address = world.AddressFrom(first);
         world.AddDanglingLogsSymlinkToCacheEntry(address);
 
         var second = world.RunPair();
 
-        Assert.Equal(0, second.ExitCode);
+        world.AssertSuccess(second);
         Assert.Equal(2, world.ProducerRunCount);
         Assert.Equal("produced", world.LiveMode());
         Assert.False(world.CacheEntryHasLogs(address));
@@ -90,7 +90,7 @@ public sealed class LeanReportCacheTests
 
         var result = world.RunPair(cacheEnabled: false);
 
-        Assert.Equal(0, result.ExitCode);
+        world.AssertSuccess(result);
         Assert.Equal("produced", world.LiveMode());
         Assert.True(world.LiveLogsExist());
     }
@@ -140,7 +140,7 @@ public sealed class LeanReportCacheTests
         if (OperatingSystem.IsWindows()) return;
         using var world = new CacheWorld();
         var first = world.RunPair();
-        Assert.Equal(0, first.ExitCode);
+        world.AssertSuccess(first);
         var prior = world.SnapshotLiveBundle();
 
         var second = world.RunPair(injectCachedLogs: true);
@@ -161,7 +161,7 @@ public sealed class LeanReportCacheTests
         using var world = new CacheWorld();
 
         var first = world.RunPair();
-        Assert.Equal(0, first.ExitCode);
+        world.AssertSuccess(first);
         Assert.Equal(1, world.ProducerRunCount);
         var address = world.AddressFrom(first);
         var cachedReport = Path.Combine(world.CacheRoot, address, "raw-lean-report.json");
@@ -171,7 +171,7 @@ public sealed class LeanReportCacheTests
         File.AppendAllText(cachedReport, "tampered\n");
 
         var second = world.RunPair();
-        Assert.Equal(0, second.ExitCode);
+        world.AssertSuccess(second);
         // Fail-closed: the corrupted entry is evicted and the report is reproduced.
         Assert.Equal(2, world.ProducerRunCount);
         Assert.True(File.Exists(world.Output));
@@ -192,7 +192,7 @@ public sealed class LeanReportCacheTests
         using var world = new CacheWorld();
 
         var first = world.RunPair();
-        Assert.Equal(0, first.ExitCode);
+        world.AssertSuccess(first);
         Assert.Equal(1, world.ProducerRunCount);
         var address = world.AddressFrom(first);
 
@@ -202,7 +202,7 @@ public sealed class LeanReportCacheTests
             "-- d5 stub (mutated)\n");
 
         var second = world.RunPair();
-        Assert.Equal(0, second.ExitCode);
+        world.AssertSuccess(second);
         var mutatedAddress = world.AddressFrom(second);
         Assert.NotEqual(address, mutatedAddress);
         // A new address cannot hit the prior entry, so the producer runs again.
@@ -215,8 +215,8 @@ public sealed class LeanReportCacheTests
         if (OperatingSystem.IsWindows()) return;
         using var world = new CacheWorld();
 
-        Assert.Equal(0, world.RunPair(cacheEnabled: false).ExitCode);
-        Assert.Equal(0, world.RunPair(cacheEnabled: false).ExitCode);
+        world.AssertSuccess(world.RunPair(cacheEnabled: false));
+        world.AssertSuccess(world.RunPair(cacheEnabled: false));
         // With no cache root (the CI configuration) every call produces from scratch.
         Assert.Equal(2, world.ProducerRunCount);
         Assert.Equal(2, world.SlotAcquireCount);
@@ -230,7 +230,7 @@ public sealed class LeanReportCacheTests
         using var world = new CacheWorld();
 
         var first = world.RunPair();
-        Assert.Equal(0, first.ExitCode);
+        world.AssertSuccess(first);
         Assert.Equal(1, world.ProducerRunCount);
         var address = world.AddressFrom(first);
         var attestation = Path.Combine(
@@ -249,7 +249,7 @@ public sealed class LeanReportCacheTests
         File.WriteAllText(attestation, tampered);
 
         var second = world.RunPair();
-        Assert.Equal(0, second.ExitCode);
+        world.AssertSuccess(second);
         // verify rejects the tampered attestation -> evict -> reproduce.
         Assert.Equal(2, world.ProducerRunCount);
         Assert.Contains(
@@ -265,7 +265,7 @@ public sealed class LeanReportCacheTests
         using var world = new CacheWorld();
 
         var first = world.RunPair();
-        Assert.Equal(0, first.ExitCode);
+        world.AssertSuccess(first);
         Assert.Equal(1, world.ProducerRunCount);
         var address = world.AddressFrom(first);
         Assert.True(Directory.Exists(Path.Combine(world.CacheRoot, address)));
@@ -281,7 +281,7 @@ public sealed class LeanReportCacheTests
                 | UnixFileMode.OtherRead | UnixFileMode.OtherWrite | UnixFileMode.OtherExecute);
 
         var second = world.RunPair();
-        Assert.Equal(0, second.ExitCode);
+        world.AssertSuccess(second);
         // Untrusted root: the existing entry is NOT served; the report is reproduced.
         Assert.Equal(2, world.ProducerRunCount);
     }
@@ -305,17 +305,36 @@ public sealed class LeanReportCacheTests
     }
 
     [Fact]
-    public void PairEntrypointIsMadeExecutableAtItsLaunchBoundary()
+    public void LaunchBoundaryRestoresExecuteBitOnEveryFixtureExecutable()
     {
         if (OperatingSystem.IsWindows()) return;
         using var world = new CacheWorld();
-        File.SetUnixFileMode(
+        var executables = new[]
+        {
             world.PairScript,
-            UnixFileMode.UserRead | UnixFileMode.UserWrite);
+            world.Supervisor,
+            world.Producer,
+            world.CacheEnsureSidecar,
+            world.ReportInput,
+            world.LeanCacheInputLibrary,
+            world.CopyWrapper,
+        };
+        foreach (var executable in executables)
+        {
+            File.SetUnixFileMode(
+                executable,
+                UnixFileMode.UserRead | UnixFileMode.UserWrite);
+        }
 
         var result = world.RunPair(cacheEnabled: false);
 
-        Assert.True(result.ExitCode == 0, Encoding.UTF8.GetString(result.StandardError));
+        world.AssertSuccess(result);
+        foreach (var executable in executables)
+        {
+            Assert.True(
+                File.GetUnixFileMode(executable).HasFlag(UnixFileMode.UserExecute),
+                $"launch boundary did not restore execute mode: {executable}");
+        }
     }
 
     [Theory]
@@ -330,7 +349,7 @@ public sealed class LeanReportCacheTests
         using var world = new CacheWorld();
         var cacheEnabled = stage == "cache-restore";
         var first = world.RunPair(cacheEnabled: cacheEnabled, reportVersion: 1);
-        Assert.True(first.ExitCode == 0, Encoding.UTF8.GetString(first.StandardError));
+        world.AssertSuccess(first);
         var prior = world.SnapshotLiveBundle();
 
         var failed = world.RunPair(
@@ -347,12 +366,12 @@ public sealed class LeanReportCacheTests
     {
         if (OperatingSystem.IsWindows()) return;
         using var world = new CacheWorld();
-        Assert.Equal(0, world.RunPair(cacheEnabled: false, reportVersion: 1).ExitCode);
+        world.AssertSuccess(world.RunPair(cacheEnabled: false, reportVersion: 1));
         var prior = world.SnapshotLiveBundle();
 
         var replaced = world.RunPair(cacheEnabled: false, reportVersion: 2);
 
-        Assert.Equal(0, replaced.ExitCode);
+        world.AssertSuccess(replaced);
         Assert.NotEqual(prior, world.SnapshotLiveBundle());
         Assert.Equal(
             "{\"schema\":\"stub-lean-report\",\"v\":2}\n",
@@ -365,6 +384,8 @@ public sealed class LeanReportCacheTests
     private sealed class CacheWorld : IDisposable
     {
         private readonly TemporaryDirectory _tmp = new();
+        private ProcessOutput? _lastPairResult;
+        private string? _lastPairFailureDiagnostic;
 
         internal CacheWorld()
         {
@@ -410,12 +431,10 @@ public sealed class LeanReportCacheTests
 
             Producer = Path.Combine(inspectorDir, "inspect.sh");
             WriteExecutable(Producer, StubProducer);
-            WriteExecutable(
-                Path.Combine(reportDir, "report-supervisor.sh"),
-                StubSupervisor);
-            File.WriteAllText(
-                Path.Combine(worktreeDir, "lean-cache-ensure.sh"),
-                StubCacheEnsure);
+            Supervisor = Path.Combine(reportDir, "report-supervisor.sh");
+            WriteExecutable(Supervisor, StubSupervisor);
+            CacheEnsureSidecar = Path.Combine(worktreeDir, "lean-cache-ensure.sh");
+            File.WriteAllText(CacheEnsureSidecar, StubCacheEnsure);
             CopyWrapper = Path.Combine(bin, "cp");
             WriteExecutable(CopyWrapper, StubCopy);
 
@@ -424,12 +443,14 @@ public sealed class LeanReportCacheTests
             File.Copy(
                 Path.Combine(repositoryRoot, "tools", "scripts", "lean-report-pair.sh"),
                 PairScript);
+            ReportInput = Path.Combine(reportDir, "lean-report-input.sh");
             File.Copy(
                 Path.Combine(repositoryRoot, "tools", "scripts", "report", "lean-report-input.sh"),
-                Path.Combine(reportDir, "lean-report-input.sh"));
+                ReportInput);
+            LeanCacheInputLibrary = Path.Combine(worktreeDir, "lean-cache-input.sh");
             File.Copy(
                 Path.Combine(repositoryRoot, "tools", "scripts", "worktree", "lean-cache-input.sh"),
-                Path.Combine(worktreeDir, "lean-cache-input.sh"));
+                LeanCacheInputLibrary);
             foreach (var relative in new[]
             {
                 RawReportPath,
@@ -440,7 +461,7 @@ public sealed class LeanReportCacheTests
                 Directory.CreateDirectory(Path.GetDirectoryName(path)!);
                 File.WriteAllText(path, "fixture\n");
             }
-            MakeExecutable(Path.Combine(reportDir, "lean-report-input.sh"));
+            MakeExecutable(ReportInput);
         }
 
         internal string Repo { get; }
@@ -455,6 +476,14 @@ public sealed class LeanReportCacheTests
 
         internal string Producer { get; }
 
+        internal string Supervisor { get; }
+
+        internal string CacheEnsureSidecar { get; }
+
+        internal string ReportInput { get; }
+
+        internal string LeanCacheInputLibrary { get; }
+
         internal string PairScript { get; }
 
         internal string CopyWrapper { get; }
@@ -462,6 +491,12 @@ public sealed class LeanReportCacheTests
         internal int ProducerRunCount => CountLines(ProducerLog);
 
         internal int SlotAcquireCount => CountLines(SlotLog);
+
+        internal void AssertSuccess(ProcessOutput result) => Assert.True(
+            result.ExitCode == 0,
+            ReferenceEquals(result, _lastPairResult)
+                ? _lastPairFailureDiagnostic
+                : $"pair process exited {result.ExitCode} without a matching failure snapshot");
 
         internal IReadOnlyList<string> CommittedCacheEntries() =>
             Directory.Exists(CacheRoot)
@@ -502,8 +537,9 @@ public sealed class LeanReportCacheTests
             if (failureStage == "cache-restore") arguments.Add("STUB_CACHE_COPY_FAIL=1");
             if (cacheEnabled) arguments.Add($"STRATALINT_REPORT_CACHE_ROOT={CacheRoot}");
             arguments.Add($"STUB_CACHE_ROOT={CacheRoot}");
-            arguments.Add(
-                $"PATH={Path.GetDirectoryName(CopyWrapper)}:{Environment.GetEnvironmentVariable("PATH")}");
+            var searchPath =
+                $"{Path.GetDirectoryName(CopyWrapper)}:{Environment.GetEnvironmentVariable("PATH")}";
+            arguments.Add($"PATH={searchPath}");
             arguments.AddRange(
             [
                 PairScript,
@@ -513,13 +549,31 @@ public sealed class LeanReportCacheTests
                 "--candidate-output", Output,
             ]);
 
-            MakeExecutable(PairScript);
-            return TestProcessRunner.Run(
+            var executableFixtures = ExecutableFixtures(this);
+            // Launch-boundary mode restoration is fixture hardening, not a fix for a
+            // demonstrated mutator; the historical exit-126 mechanism remains open.
+            foreach (var executable in executableFixtures)
+            {
+                MakeExecutable(executable.Path);
+            }
+
+            var result = TestProcessRunner.Run(
                 "env",
                 arguments,
                 Repo,
                 TestBudgets.WorkflowProcessHangGuard,
-                1024 * 1024);
+                int.MaxValue);
+            _lastPairResult = result;
+            _lastPairFailureDiagnostic = result.ExitCode == 0
+                ? null
+                : BuildProcessFailureDiagnostic(
+                    "env",
+                    arguments,
+                    Repo,
+                    result,
+                    executableFixtures,
+                    searchPath);
+            return result;
         }
 
         internal void AddLegacyLogsToCacheEntry(string address)
@@ -706,7 +760,12 @@ public sealed class LeanReportCacheTests
             fi
             while [[ $# -gt 0 && "$1" != "--" ]]; do shift; done
             [[ "${1:-}" == "--" ]] && shift
-            exec "$@"
+            exec_target="${1:-<missing>}"
+            exec "$@" || {
+              rc=$?
+              printf 'stub-exec-failed self=%s target=%s rc=%s\n' "$0" "$exec_target" "$rc" >&2
+              exit "$rc"
+            }
             """;
 
         private const string StubCopy = """
@@ -722,7 +781,11 @@ public sealed class LeanReportCacheTests
             fi
             source="${1:-}"
             destination="${@: -1}"
-            /bin/cp "$@"
+            /bin/cp "$@" || {
+              rc=$?
+              printf 'stub-exec-failed self=%s target=%s rc=%s\n' "$0" /bin/cp "$rc" >&2
+              exit "$rc"
+            }
             if [[ -n "${STUB_INJECT_CACHED_LOGS:-}" \
               && "$source" == "$STUB_CACHE_ROOT/"* \
               && "$destination" == */raw-lean-report.json ]]; then
