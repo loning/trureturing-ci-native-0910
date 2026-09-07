@@ -20,16 +20,18 @@ internal sealed class FiniteFreeCommutatorDegreeFourDocument : IScribeDocumentDe
             Describe.Lean(
                 DescribeId.Create("quartic-commutator-source-expansion"),
                 DeclarationHandle.Create(Prefix + "centered_expansion"),
-                H("Coefficient identity"), StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                H("Coefficient identity"), StatementSource.WithoutFormula(), AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
                     "This normalization companion holds for arbitrary real coefficients. Its "
-                    + "consumer is centered_factorization. For the input with coefficients "
+                    + "consumer is centered_factorization. For p=X^4+uX^2+vX+w and "
+                    + "q=X^4+UX^2+VX+W, the output is X^4-(16uU/15)X^2 "
+                    + "+(u^2+12w)(U^2+12W)/60. For the input with coefficients "
                     + "u=-5, v=0, w=4, both definition and formula paths yield constant 5329/60 "
                     + "and quadratic coefficient -80/3."))), DescribeRole.Lemma),
             Describe.Lean(
                 DescribeId.Create("centered-quartic-invariant-bounds"),
                 DeclarationHandle.Create(Prefix + "centered_quartic_invariant_bounds"),
-                H("Invariant bounds from real roots"), StatementSource.FromLean(),
+                H("Invariant bounds from real roots"), StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
                     "Writing the four real roots as a,b,c,d, their sum is zero. Three "
@@ -41,7 +43,7 @@ internal sealed class FiniteFreeCommutatorDegreeFourDocument : IScribeDocumentDe
             Describe.Lean(
                 DescribeId.Create("centered-quartic-commutator-factorization"),
                 DeclarationHandle.Create(Prefix + "centered_factorization"),
-                H("Two nonnegative squared roots"), StatementSource.FromLean(),
+                H("Two nonnegative squared roots"), StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
                     "The two input factorizations are the only hypotheses. The invariant "
@@ -52,7 +54,7 @@ internal sealed class FiniteFreeCommutatorDegreeFourDocument : IScribeDocumentDe
             Describe.Lean(
                 DescribeId.Create("centered-quartic-commutator-real-rooted"),
                 DeclarationHandle.Create(Prefix + "centered_real_rooted"),
-                H("Real-rootedness"), StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                H("Real-rootedness"), StatementSource.WithoutFormula(), AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
                     "The four exhibited roots are sqrt(s), -sqrt(s), sqrt(t), -sqrt(t). "
                     + "RealRooted4 is an equality to a product indexed by Fin(4), so repeated "
