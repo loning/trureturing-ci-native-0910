@@ -60,7 +60,7 @@ theorem padding_constants {p : ℕ} (hp : p.Prime) (A : ℕ) :
   have hpR : 0 < (p : ℝ) := by exact_mod_cast hp.pos
   have hstrict : reciprocalGeomSum p A < reciprocalGeomSum p (A + 1) := by
     unfold reciprocalGeomSum
-    rw [Finset.sum_range_succ]
+    rw [Finset.sum_range_succ _ (A + 1)]
     exact lt_add_of_pos_right _ (pow_pos (inv_pos.mpr hpR) _)
   have hr0 : 0 < paddingRho p A := div_pos (geom_pos hp A) (geom_pos hp (A + 1))
   have hr1 : paddingRho p A < 1 := (div_lt_one (geom_pos hp (A + 1))).mpr hstrict
@@ -78,7 +78,6 @@ private theorem sigma_prime_power_normalized {p : ℕ} (hp : p.Prime) (a : ℕ) 
   rw [geom_sum_eq hp1, geom_sum_inv hp1 hp0]
   simp only [inv_pow, pow_succ]
   field_simp
-  <;> ring
 
 private theorem sigma_pow_mul_normalized {p m : ℕ} (hp : p.Prime)
     (hm : p.Coprime m) (a : ℕ) :
@@ -90,11 +89,11 @@ private theorem sigma_pow_mul_normalized {p m : ℕ} (hp : p.Prime)
 
 /-- Padding changes only the prime-power part of the factorization. -/
 theorem padding_eq_prime_power_mul {p A n : ℕ} (ha : n.factorization p ≤ A) :
-    padding p A n = p ^ (A + 1) * n.ordCompl p := by
+    padding p A n = p ^ (A + 1) * (ordCompl[p] n) := by
   unfold padding
   conv_lhs => rw [← Nat.ordProj_mul_ordCompl_eq_self n p]
   change p ^ (A + 1 - n.factorization p) *
-    (p ^ n.factorization p * n.ordCompl p) = _
+    (p ^ n.factorization p * (ordCompl[p] n)) = _
   rw [← mul_assoc, ← pow_add, Nat.sub_add_cancel (by omega)]
 
 /-- The padding multiplier lies between one and `p ^ (A + 1)`. -/
@@ -111,23 +110,23 @@ theorem padding_abundancy {p A n : ℕ} (hp : p.Prime) (hn : n ≠ 0)
       paddingRho p A * ((ArithmeticFunction.sigma 1 (padding p A n) : ℝ) /
         padding p A n) := by
   have hcop := Nat.coprime_ordCompl hp hn
-  have hn' : n = p ^ n.factorization p * n.ordCompl p :=
+  have hn' : n = p ^ n.factorization p * (ordCompl[p] n) :=
     (Nat.ordProj_mul_ordCompl_eq_self n p).symm
   have hleft : (ArithmeticFunction.sigma 1 n : ℝ) / n =
       reciprocalGeomSum p (n.factorization p) *
-        ((ArithmeticFunction.sigma 1 (n.ordCompl p) : ℝ) / n.ordCompl p) := by
+        ((ArithmeticFunction.sigma 1 (ordCompl[p] n) : ℝ) / (ordCompl[p] n)) := by
     conv_lhs => rw [hn']
     exact sigma_pow_mul_normalized hp hcop _
   rw [hleft, padding_eq_prime_power_mul ha, sigma_pow_mul_normalized hp hcop]
-  have hnonneg : 0 ≤ (ArithmeticFunction.sigma 1 (n.ordCompl p) : ℝ) / n.ordCompl p :=
+  have hnonneg : 0 ≤ (ArithmeticFunction.sigma 1 (ordCompl[p] n) : ℝ) / (ordCompl[p] n) :=
     div_nonneg (Nat.cast_nonneg _) (Nat.cast_nonneg _)
   calc
     _ ≤ reciprocalGeomSum p A *
-        ((ArithmeticFunction.sigma 1 (n.ordCompl p) : ℝ) / n.ordCompl p) :=
+        ((ArithmeticFunction.sigma 1 (ordCompl[p] n) : ℝ) / (ordCompl[p] n)) :=
       mul_le_mul_of_nonneg_right (geom_mono hp ha) hnonneg
     _ = _ := by
       unfold paddingRho
-      rw [div_mul_eq_mul_div, mul_div_cancel_left₀ _ (geom_pos hp (A + 1)).ne']
+      field_simp [(geom_pos hp (A + 1)).ne']
 
 /-- The logarithmic normalization is positive on the full-wave support. -/
 theorem loglog_pos {n : ℕ} (hn : 5041 ≤ n) : 0 < Real.log (Real.log (n : ℝ)) := by
@@ -152,7 +151,8 @@ private theorem tendsto_loglog_scale {c : ℝ} (hc : 0 < c) :
   apply hlim.congr'
   filter_upwards [eventually_ge_atTop 5041] with n hn
   have hn0 : (n : ℝ) ≠ 0 := by exact_mod_cast (show n ≠ 0 by omega)
-  rw [Real.log_mul hc.ne' hn0, add_comm (Real.log c)]
+  dsimp only [Function.comp_def]
+  rw [Real.log_mul hc.ne' hn0, add_comm (Real.log c) (Real.log (n : ℝ))]
   field_simp [(loglog_pos hn).ne']
   <;> ring
 
@@ -185,7 +185,8 @@ theorem padding_ratio {p : ℕ} (hp : p.Prime) (A : ℕ) :
   have hnear := hN n (le_trans (le_max_left _ _) hn)
   have hdist : paddingRho p A * Real.log (Real.log (padding p A n : ℝ)) ≤
       paddingQ p A * Real.log (Real.log (n : ℝ)) := by
-    have h := (div_lt_iff₀ hLn).mp (by simpa only [mul_div_assoc] using hnear)
+    rw [← mul_div_assoc] at hnear
+    have h := (div_lt_iff₀ hLn).mp hnear
     exact (mul_le_mul_of_nonneg_left hlogs hconst.1.le).trans h.le
   have hgamma := Real.exp_pos Real.eulerMascheroniConstant
   have hdiv : paddingRho p A /
