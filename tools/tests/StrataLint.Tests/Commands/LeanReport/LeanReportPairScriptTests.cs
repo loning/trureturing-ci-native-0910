@@ -393,6 +393,7 @@ public sealed class LeanReportPairScriptTests
             WriteProducerInput(root, EngineProjectPath);
             WriteProducerInput(root, TruthProjectPath);
             WriteProducerInput(root, "tools/StrataLint.Cli/FixtureProbe.cs");
+            WriteProducerInput(root, "tools/scripts/worktree/lean-cache-publish.sh");
             WriteProducerInput(root, "Directory.Build.props");
             WriteProducerInput(root, ".github/workflows/ci.yml", MinimalWorkflow);
             Directory.CreateDirectory(Path.Combine(root, "tools", "scripts", "worktree"));

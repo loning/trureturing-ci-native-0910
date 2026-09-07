@@ -6,6 +6,49 @@ namespace StrataLint.Tests;
 
 public sealed partial class LeanReportInputScriptTests
 {
+    [Theory]
+    [InlineData("producer-paths")]
+    [InlineData("scribe-producer-paths")]
+    public void CacheFetcherClosureIncludesTransitiveInputsAndRejectsMissingInputs(string command)
+    {
+        using var fixture = new LeanReportInputFixture();
+        const string dependency = "tools/scripts/worktree/fetch-input.sh";
+        fixture.WriteSource(dependency, "#!/usr/bin/env bash\n");
+        fixture.Append(CachePublishScriptPath, "\nsource \"$SCRIPT_DIR/fetch-input.sh\"\n");
+
+        var complete = fixture.RunCommand(command);
+
+        Assert.Equal(0, complete.ExitCode);
+        Assert.Contains(CachePublishScriptPath, Lines(complete));
+        Assert.Contains(dependency, Lines(complete));
+        fixture.RemoveSource(dependency);
+        var missingDependency = fixture.RunCommand(command);
+        Assert.Equal(2, missingDependency.ExitCode);
+        Assert.Empty(missingDependency.StandardOutput);
+        Assert.Contains(dependency, Encoding.UTF8.GetString(missingDependency.StandardError));
+        fixture.RemoveSource(CachePublishScriptPath);
+        var missingFetcher = fixture.RunCommand(command);
+        Assert.Equal(2, missingFetcher.ExitCode);
+        Assert.Empty(missingFetcher.StandardOutput);
+        Assert.Contains(CachePublishScriptPath, Encoding.UTF8.GetString(missingFetcher.StandardError));
+    }
+
+    [Fact]
+    public void CacheFetcherBytesChangeProducerWithoutChangingLeanInputs()
+    {
+        using var fixture = new LeanReportInputFixture();
+        var before = fixture.RunCommand("address");
+        Assert.Equal(0, before.ExitCode);
+
+        fixture.Append(CachePublishScriptPath, "# fetch acceptance changed\n");
+        var after = fixture.RunCommand("address");
+
+        Assert.Equal(0, after.ExitCode);
+        Assert.NotEqual(Fields(before)[0], Fields(after)[0]);
+        Assert.NotEqual(Fields(before)[1], Fields(after)[1]);
+        Assert.Equal(Fields(before)[2..], Fields(after)[2..]);
+    }
+
     [Fact]
     public void AddressIsIndependentOfCallerWorkingDirectorySdk()
     {
@@ -80,6 +123,8 @@ public sealed partial class LeanReportInputScriptTests
         }
 
         internal ProcessOutput AddressFromRepository() => Run("address", repository);
+
+        internal void RemoveSource(string relativePath) => File.Delete(Path.Combine(repository, relativePath));
 
         internal ProcessOutput AddressFromForeignSdkDirectory()
         {
