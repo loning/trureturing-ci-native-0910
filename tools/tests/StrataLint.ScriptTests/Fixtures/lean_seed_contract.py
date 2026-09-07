@@ -596,6 +596,10 @@ class PairTests(PairFixture, unittest.TestCase):
         self.assertEqual(0, self.pair().returncode)
         write(self.root / "lakefile.toml", 'name = "renamed"\nkeywords = ["metadata"]\n[leanOptions]\nmaxRecDepth = 1000\n')
         self.assertEqual(0, self.report_input("verify").returncode)
+        fetcher = self.root / "tools/scripts/worktree/lean-cache-publish.sh"
+        write(fetcher, fetcher.read_text() + "\n# fetch acceptance changed\n")
+        self.assertEqual(2, self.report_input("verify").returncode)
+        self.assertEqual(0, self.pair().returncode)
         write(self.root / "D5/A.lean", "def a := 4\n")
         self.assertEqual(2, self.report_input("verify").returncode)
         self.assertEqual(0, self.pair().returncode)

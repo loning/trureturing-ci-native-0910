@@ -23,7 +23,7 @@ def project_inputs(root, project):
             "-nodeReuse:false", "-verbosity:quiet", "-property:Configuration=Release", *arguments,
         ], cwd=root, text=True, capture_output=True)
         if result.returncode:
-            raise ValueError(f"MSBuild producer evaluation failed: {result.stdout}{result.stderr}")
+            raise ValueError(f"MSBuild producer evaluation failed: {root / project}\n{result.stdout}{result.stderr}")
         return result.stdout
 
     add_file(root / "global.json")

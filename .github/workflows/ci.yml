@@ -91,9 +91,7 @@ jobs:
         run: |
           set -euo pipefail
           source_address="${{ hashFiles('candidate/tools/**', 'candidate/Blueprint/**/*.scribe.cs', 'candidate/Directory.*', 'candidate/.editorconfig', 'candidate/global.json') }}"
-          workflow_ref=HEAD
-          if [[ "$GITHUB_EVENT_NAME" == "pull_request_target" ]]; then workflow_ref=HEAD^1; fi
-          workflow_address="$(git -C candidate rev-parse "${workflow_ref}:.github/workflows/ci.yml")"
+          workflow_address="$(git -C candidate rev-parse HEAD:.github/workflows)"
           source_address="$(printf 'sources=%s\nworkflow=%s\n' "$source_address" "$workflow_address" | sha256sum | cut -d ' ' -f 1)"
           candidate/tools/scripts/workflow/judge-content-address.sh "$source_address" >> "$GITHUB_OUTPUT"
       - name: Restore judge binaries and candidate build outputs
@@ -291,9 +289,7 @@ jobs:
         run: |
           set -euo pipefail
           source_address="${{ hashFiles('candidate/tools/**', 'candidate/Blueprint/**/*.scribe.cs', 'candidate/Directory.*', 'candidate/.editorconfig', 'candidate/global.json') }}"
-          workflow_ref=HEAD
-          if [[ "$GITHUB_EVENT_NAME" == "pull_request_target" ]]; then workflow_ref=HEAD^1; fi
-          workflow_address="$(git -C candidate rev-parse "${workflow_ref}:.github/workflows/ci.yml")"
+          workflow_address="$(git -C candidate rev-parse HEAD:.github/workflows)"
           source_address="$(printf 'sources=%s\nworkflow=%s\n' "$source_address" "$workflow_address" | sha256sum | cut -d ' ' -f 1)"
           candidate/tools/scripts/workflow/judge-content-address.sh "$source_address" >> "$GITHUB_OUTPUT"
       - name: Restore judge binaries and candidate build outputs
@@ -412,8 +408,8 @@ jobs:
       # The lakefile only shapes the project layer, whose config_sha256 key stays broader.
       # Prefix restore may cross manifest/toolchain versions; it is a best-effort seed.
       # Lake traces determine validity; the prefix alone guarantees neither correctness
-      # nor a warm build within 45 minutes. Nonzero download, validation, or build
-      # results remain terminal.
+      # nor a warm build within 45 minutes. Normal Lean build, report, and check
+      # failures remain terminal.
       - name: Restore candidate Lean dependency artifacts
         id: lake-deps-cache
         if: steps.report-reuse.outcome != 'success'
@@ -440,10 +436,13 @@ jobs:
           key: ${{ runner.os }}-${{ runner.arch }}-lake-build-v1-${{ steps.lean-input.outputs.config_sha256 }}-${{ steps.lean-input.outputs.sources_sha256 }}
           restore-keys: |
             ${{ runner.os }}-${{ runner.arch }}-lake-build-v1-${{ steps.lean-input.outputs.config_sha256 }}-
+      # make lean owns optional Release fallback and its transaction budget.
       - name: Build candidate Lean project
         id: lean-build
         if: steps.report-reuse.outcome != 'success'
-        env: { GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STRATALINT_ACCEPT_COLD_BUILD: '1'
         shell: bash
         run: |
           set -euo pipefail
@@ -523,15 +522,16 @@ jobs:
           key: stratalint-canonical-lean-report-v2-${{ steps.lean-report-input.outputs.address }}
       - name: Run complete mathematical content checks
         shell: bash
+        env:
+          STRATALINT_SCRIBE_BASE: ${{ steps.base.outputs.sha }}
         run: |
           set -euo pipefail
           report="$RUNNER_TEMP/raw-lean-reports/candidate-lean-report.json"
           scribe="$GITHUB_WORKSPACE/.judge-binaries/scribe/StrataLint.Scribe.Documents.dll"
           test -s "$report"
           test -s "$scribe"
-          base="${{ steps.base.outputs.sha }}"
           /bin/bash "$GITHUB_WORKSPACE/candidate/tools/scripts/workflow/scribe-content-checks.sh" \
-            "$report" "$scribe" "$base"
+            "$report" "$scribe"
       - name: Upload raw Lean reports and producer logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -605,9 +605,7 @@ jobs:
         run: |
           set -euo pipefail
           source_address="${{ hashFiles('candidate/tools/**', 'candidate/Blueprint/**/*.scribe.cs', 'candidate/Directory.*', 'candidate/.editorconfig', 'candidate/global.json') }}"
-          workflow_ref=HEAD
-          if [[ "$GITHUB_EVENT_NAME" == "pull_request_target" ]]; then workflow_ref=HEAD^1; fi
-          workflow_address="$(git -C candidate rev-parse "${workflow_ref}:.github/workflows/ci.yml")"
+          workflow_address="$(git -C candidate rev-parse HEAD:.github/workflows)"
           source_address="$(printf 'sources=%s\nworkflow=%s\n' "$source_address" "$workflow_address" | sha256sum | cut -d ' ' -f 1)"
           candidate/tools/scripts/workflow/judge-content-address.sh "$source_address" >> "$GITHUB_OUTPUT"
       - name: Restore judge binaries and candidate build outputs
