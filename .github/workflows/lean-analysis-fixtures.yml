@@ -18,19 +18,15 @@ jobs:
     name: Build and export Lean analysis fixtures
     if: github.ref == 'refs/heads/dev'
     runs-on: ubuntu-24.04-arm
-    # Budget owner: repository owner, 2026-09-07; scope: this analysis job.
-    # This is not a derived duration:
-    # lean-cache-publish.yml:127 records 40+ minutes from zero for `lake build`
-    # of the default targets on this runner.
-    # The three analysis module docstrings record single-module elaboration:
-    # BoundedClosure 289-367 s; FrozenRootAnalysis 424-528 s;
-    # CausalProjection 1194-1292 s, on a 28-core Apple Silicon host with warm
-    # mathlib/project caches. Lower bounds sum to 1907 s (about 32 min);
-    # upper bounds sum to 2187 s (about 36 min).
-    # runner core count not measured here; ratio ASSUMED-UNVERIFIED
-    # 240 is a `policy-override` with case #5986 and exit condition
-    # "replace by the measured first-run duration × 1.5 after run 1"
-    timeout-minutes: 240
+    # Budget: measured, not a policy override any more (#5986).
+    # First real run 34144393161 (workflow_dispatch on dev, 2026-09-07): job
+    # 16:41:10Z -> 17:21:58Z = 2448 s excluding queue delay; the build-and-hash
+    # step took 2299 s (Built 6 / Replayed 44 after a `mode=seed` release fetch);
+    # per-module on ubuntu-24.04-arm from the Built timestamps: BoundedClosure
+    # ~579 s, FrozenRootAnalysis ~306 s, CausalProjection ~1414 s.
+    # Replacement rule recorded at merge of #6209: ceil(2448 * 1.5 / 60) = 62.
+    # Re-derive from the next run if the module set or the runner class changes.
+    timeout-minutes: 62
     steps:
       - name: Check out the analysis commit
         id: checkout-publish
