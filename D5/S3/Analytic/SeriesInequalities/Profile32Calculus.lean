@@ -4,7 +4,7 @@
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
    utility: none
-   digest: Differential interpretation of the cubic profile curvature. -/
+   digest: Concavity of the unnormalized cubic three-halves profile. -/
 
 import D5.S3.Analytic.SeriesInequalities.Profile32Concavity
 import Mathlib.Analysis.SpecialFunctions.Sqrt
@@ -36,22 +36,26 @@ theorem chart_bounds (z : ℝ) (hz : z ∈ Ioo (-1) 1) :
 theorem weight_hasDerivAt (z : ℝ) : HasDerivAt weight (weightFirst z) z := by
   have hd : 3 + z^2 ≠ 0 := ne_of_gt (by positivity)
   convert! ((((hasDerivAt_id z).pow 2).const_sub 1).pow 2 |>.const_mul 36).div
-    (((hasDerivAt_id z).pow 2).const_add 3) hd using 1 <;>
-    first | rfl | (dsimp [weight, weightFirst]; field_simp; ring)
+    (((hasDerivAt_id z).pow 2).const_add 3) hd using 1
+  dsimp [weight, weightFirst]
+  field_simp
+  ring
 
 theorem weightFirst_hasDerivAt (z : ℝ) : HasDerivAt weightFirst (weightSecond z) z := by
   have hd : (z^2 + 3)^2 ≠ 0 := ne_of_gt (by positivity)
   convert! (((((hasDerivAt_id z).const_mul 72).mul ((hasDerivAt_id z).sub_const 1)).mul
     ((hasDerivAt_id z).add_const 1)).mul (((hasDerivAt_id z).pow 2).add_const 7)).div
-    ((((hasDerivAt_id z).pow 2).add_const 3).pow 2) hd using 1 <;>
-    first | rfl | (dsimp [weightFirst, weightSecond]; field_simp; ring)
+    ((((hasDerivAt_id z).pow 2).add_const 3).pow 2) hd using 1
+  dsimp [weightFirst, weightSecond]
+  field_simp
+  ring
 
 theorem chart_hasDerivAt (z : ℝ) : HasDerivAt chart (chartFirst z) z := by
   have hd : 0 < Real.sqrt (3 + z^2) := Real.sqrt_pos.mpr (by positivity)
   have hs := Real.sq_sqrt (show 0 ≤ 3 + z^2 by positivity)
   have hroot := (((hasDerivAt_id z).pow 2).const_add 3).sqrt (by dsimp; positivity)
   convert! ((hasDerivAt_id z).mul (((hasDerivAt_id z).pow 2).const_sub 9)).div
-    (hroot.pow 3) (pow_ne_zero 3 hd.ne') using 1 <;> try rfl
+    (hroot.pow 3) (pow_ne_zero 3 hd.ne') using 1
   dsimp [chartFirst]
   field_simp
   ring_nf
@@ -65,7 +69,7 @@ theorem chartFirst_hasDerivAt (z : ℝ) (hz : z ∈ Ioo (-1) 1) :
   have hz2 := (chart_bounds z hz).1
   have hroot := (((hasDerivAt_id z).pow 2).const_add 3).sqrt (by dsimp; positivity)
   convert! ((((hasDerivAt_id z).pow 2).const_sub 1).const_mul 27).div
-    (hroot.pow 5) (pow_ne_zero 5 hd.ne') using 1 <;> try rfl
+    (hroot.pow 5) (pow_ne_zero 5 hd.ne') using 1
   dsimp [chartFirst, chartLogSecond]
   field_simp [ne_of_lt (sub_neg.mpr hz2)]
   ring_nf
@@ -104,7 +108,8 @@ theorem profileSum_hasDerivAt (z : ℝ) (hz : z ∈ Ioo 0 1) :
   have hb := (hasDerivAt_id z).const_mul 4
   have hc := (((hasDerivAt_id z).const_mul 2).const_add 3).sub ((hasDerivAt_id z).pow 2)
   have hd := ((ha.rpow_const (p := (3/2 : ℝ)) (Or.inl h.2.1.ne')).add
-    (hb.rpow_const (p := (3/2 : ℝ)) (Or.inl (by dsimp; exact (mul_pos (by norm_num) hz.1).ne')))).add
+    (hb.rpow_const (p := (3/2 : ℝ)) (Or.inl (by
+      dsimp; exact (mul_pos (by norm_num) hz.1).ne')))).add
     (hc.rpow_const (p := (3/2 : ℝ)) (Or.inl h.2.2.ne'))
   have he : (3/2 : ℝ) - 1 = 1/2 := by norm_num
   simp only [he, ← Real.sqrt_eq_rpow] at hd
@@ -131,7 +136,7 @@ theorem positiveFirst_hasDerivAt (z : ℝ) (hz : z ∈ Ioo 0 1) :
   ring_nf at hA hB hC
   convert! ((((((hasDerivAt_id z).const_mul 2).const_sub (-2)).mul ha).add
     (hb.const_mul 4)).add ((((hasDerivAt_id z).const_mul 2).const_sub 2).mul hc)).const_mul
-    (3/2 : ℝ) using 1 <;> try rfl
+    (3/2 : ℝ) using 1
   dsimp [positiveSecond, sumSecond]
   field_simp [h.2.1.ne', h.2.2.ne', hbpos.ne',
     (Real.sqrt_pos.mpr h.2.1).ne', (Real.sqrt_pos.mpr h.2.2).ne',
@@ -151,7 +156,8 @@ theorem chartProfile_hasDerivAt (z : ℝ) (hz : z ∈ Ioo 0 1) :
   have hs := profileSum_pos z ⟨by linarith [hz.1], hz.2⟩
   have hpow : (profileSum z) ^ (-(4/3 : ℝ)) =
       (profileSum z) ^ (-(7/3 : ℝ)) * profileSum z := by
-    convert Real.rpow_add_one hs.ne' (-(7/3 : ℝ)) using 1 <;> norm_num
+    convert Real.rpow_add_one hs.ne' (-(7/3 : ℝ)) using 1
+    norm_num
   have hd := (weight_hasDerivAt z).mul
     ((profileSum_hasDerivAt z hz).rpow_const (p := -(4/3 : ℝ)) (Or.inl hs.ne'))
   exact hd.congr_deriv (by norm_num only at *; rw [hpow]; ring)
@@ -177,7 +183,8 @@ theorem profileSlope_hasDerivAt (z : ℝ) (hz : z ∈ Ioo 0 1) :
         (chartFirst_hasDerivAt z hi) ht.ne'
   have hpow : (profileSum z) ^ (-(7/3 : ℝ)) =
       (profileSum z) ^ (-(10/3 : ℝ)) * profileSum z := by
-    convert Real.rpow_add_one hs.ne' (-(10/3 : ℝ)) using 1 <;> norm_num
+    convert Real.rpow_add_one hs.ne' (-(10/3 : ℝ)) using 1
+    norm_num
   apply (hd.congr_of_eventuallyEq heq).congr_deriv
   dsimp only [Pi.mul_apply, Pi.sub_apply]
   norm_num only
@@ -283,6 +290,13 @@ theorem chart_image : chart '' Ioo (-1) 1 = Ioo (-1) 1 := by
   norm_num [chart] at h ⊢
   exact h
 
+theorem profile32_even (t : ℝ) (ht : t ∈ Ioo (-1) 1) : profile32 (-t) = profile32 t := by
+  obtain ⟨z, hz, rfl⟩ := show t ∈ chart '' Ioo (-1) 1 from by rw [chart_image]; exact ht
+  have hn : -z ∈ Ioo (-1) 1 := ⟨by linarith only [hz.2], by linarith only [hz.1]⟩
+  have ho : chart (-z) = -chart z := by simp only [chart, neg_sq, neg_mul, neg_div]
+  rw [← ho, profile32_chart (-z) hn, profile32_chart z hz]
+  exact chartProfile_even z
+
 theorem chart_secant (x y : ℝ) (hx : x ∈ Ioo (-1) 1) (hy : y ∈ Ioo (-1) 1)
     (hxy : x < y) : ∃ c ∈ Ioo x y,
       (chartProfile y - chartProfile x) / (chart y - chart x) = profileSlope c := by
@@ -320,6 +334,10 @@ theorem profile32_concave : ConcaveOn ℝ (Ioo (-1) 1) profile32 := by
   exact profileSlope_antitoneOn ⟨hx.1.trans ha.1, ha.2.trans hy.2⟩
     ⟨hy.1.trans hb.1, hb.2.trans hz.2⟩ (ha.2.trans hb.1).le
 
+#print axioms chart_bounds
+#print axioms chartFirst_pos
+#print axioms profileSum_pos
+#print axioms profileSum_eq
 #print axioms weight_hasDerivAt
 #print axioms weightFirst_hasDerivAt
 #print axioms chart_hasDerivAt
@@ -336,6 +354,7 @@ theorem profile32_concave : ConcaveOn ℝ (Ioo (-1) 1) profile32 := by
 #print axioms profileSlope_antitoneOn
 #print axioms chart_strictMonoOn
 #print axioms chart_image
+#print axioms profile32_even
 #print axioms chart_secant
 #print axioms profile32_concave
 
