@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/DefinitionEscapeRegrade/CoordinateWitnessBundle.has_closed_coordinate_witness_bundle_iff_ne
     target_statement_id: sha256:3c580375ed500e478cfd0537e2db0c8d65af959b181b219cd201a59b3f8a104a
 receipts:
-  scribe: []
   unresolved_subitems: []

@@ -10,5 +10,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Governance/CommitInterfaceSealPreservation.commit_interface_seal_and_artifact_preservation
     target_statement_id: sha256:1c955a74afcebd9cfa9da234233d4b3bc4f522b76aebc0dfaa5b7872fa1ef0e1
 receipts:
-  scribe: []
   unresolved_subitems: []

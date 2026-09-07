@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/GovernanceFixedPoint/TailSpanPrefixExtension.tail_span_prefix_extension
     target_statement_id: sha256:df3004595c02e95ba8273593d617d45b6eb10108a39c0585089ec383572f54df
 receipts:
-  scribe: []
   unresolved_subitems: []
