@@ -205,7 +205,7 @@ public sealed partial class CoverAtomTests
         Assert.Equal([gid], sibling.CoverageGids.ToArray());
         Assert.Equal([gid], target.Coverage.Select(static receipt => receipt.Gid).ToArray());
         Assert.Equal([gid], sibling.Coverage.Select(static receipt => receipt.Gid).ToArray());
-        Assert.Equal([gid], target.Receipts.Scribe.Select(static receipt => receipt.Gid).ToArray());
+        Assert.Empty(target.Receipts.Scribe);
         Assert.Equal([gid], sibling.Receipts.Scribe.Select(static receipt => receipt.Gid).ToArray());
     }
 
@@ -222,8 +222,6 @@ public sealed partial class CoverAtomTests
         var emissionPath = ScribeEmissionAttestation.EmissionPath(documentGid);
         var trackedEmission = "# stale tracked projection\n";
         currentFiles[emissionPath] = trackedEmission;
-        var trackedEmissionSha256 = DigestionFingerprint.Compute(
-            Encoding.UTF8.GetBytes(trackedEmission)).RawSha256;
 
         using var temporary = new TemporaryDirectory();
         DirectoryLedgerTestSupport.Write(temporary.Path, currentFiles);
@@ -244,9 +242,9 @@ public sealed partial class CoverAtomTests
         var entry = Assert.Single(
             BackfillInventoryLoader.LoadRoot(temporary.Path).RequireDigestionEntries(),
             candidate => candidate.AtomId == spec.AtomId);
-        var receipt = Assert.Single(entry.Receipts.Scribe);
-        Assert.Equal(verifiedRecord.EmissionSha256, receipt.EmissionSha256);
-        Assert.NotEqual(trackedEmissionSha256, receipt.EmissionSha256);
+        Assert.Empty(entry.Receipts.Scribe);
+        Assert.Equal([inputs.Gid], entry.CoverageGids.ToArray());
+        Assert.Equal(DigestionTruthState.Closed, entry.ProjectedStatus.Truth);
     }
 
     private static void Replace(

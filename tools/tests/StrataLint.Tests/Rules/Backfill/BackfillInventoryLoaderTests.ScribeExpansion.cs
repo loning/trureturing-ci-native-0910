@@ -1,9 +1,70 @@
+using System.Text;
 using StrataLint.Engine;
 
 namespace StrataLint.Tests;
 
 public sealed partial class BackfillInventoryLoaderTests
 {
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void CanonicalWritersOmitScribeAndPreserveLiveReceipts(bool atomWriter, bool populated)
+    {
+        var snapshot = ScribeOptionalSnapshot();
+        var entry = Assert.Single(BackfillInventoryLoader.Load(snapshot).RequireDigestionEntries());
+        entry = entry with { Receipts = entry.Receipts with
+        {
+            Scribe = populated ? [new("D5/S0/Carrier/Probe", "sha256:" + new string('a', 64),
+                "sha256:" + new string('b', 64))] : [],
+            UnresolvedSubitems = ["pending"],
+            ChainAtoms = ["child"],
+            TailAuthorization = new("Evidence/tail.txt", "sha256:" + new string('c', 64)),
+        } };
+
+        var written = Encoding.UTF8.GetString((atomWriter
+            ? BackfillInventoryWriter.WriteAtom(entry) : BackfillInventoryWriter.WriteEntry(entry)).AsSpan());
+
+        Assert.DoesNotContain("scribe:", written, StringComparison.Ordinal);
+        Assert.DoesNotContain("definition_sha256:", written, StringComparison.Ordinal);
+        Assert.DoesNotContain("emission_sha256:", written, StringComparison.Ordinal);
+        Assert.Contains("unresolved_subitems:\n", written, StringComparison.Ordinal);
+        if (!atomWriter) return;
+        var path = snapshot.Files.Keys.Single(path => path.Value.EndsWith(".yaml", StringComparison.Ordinal)).Value;
+        var roundTrip = BackfillInventoryLoader.Load(Snapshot(
+            Source(entry.SourceId, entry.SourcePath, entry.Atomizer), (path, written)));
+        var receipts = Assert.Single(roundTrip.RequireDigestionEntries()).Receipts;
+        Assert.Empty(receipts.Scribe);
+        Assert.Equal(["pending"], receipts.UnresolvedSubitems.ToArray());
+        Assert.Equal(["child"], receipts.ChainAtoms.ToArray());
+        Assert.Equal(entry.Receipts.TailAuthorization, receipts.TailAuthorization);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void NormalizeAtomIdentitiesDropsScribeWithoutRejectingOldFingerprintConflicts(bool conflicting)
+    {
+        var document = BackfillInventoryLoader.Load(ScribeOptionalSnapshot());
+        var source = Assert.Single(document.RequireDigestionSources());
+        var entry = Assert.Single(source.Entries);
+        var receipt = new DigestionScribeReceipt("D5/S0/Carrier/Probe", "sha256:" + new string('a', 64),
+            "sha256:" + new string('b', 64));
+        document = document.WithDigestionSources([source with { Entries =
+        [
+            entry with { AtomId = "old-a", Receipts = entry.Receipts with { Scribe = [receipt] } },
+            entry with { AtomId = "old-b", Receipts = entry.Receipts with { Scribe =
+                [receipt with { EmissionSha256 = conflicting ? "sha256:" + new string('c', 64) : receipt.EmissionSha256 }] } },
+        ] }]);
+
+        var normalized = Assert.Single(DigestionIngestor.NormalizeAtomIdentities(document).RequireDigestionEntries());
+
+        Assert.Empty(normalized.Receipts.Scribe);
+        Assert.Equal(entry.AtomId, normalized.AtomId);
+        Assert.Equal(entry.CasRef, normalized.CasRef);
+    }
+
     [Fact]
     public void DirectoryAtomWithoutScribeKeyLoadsAndEvaluates()
     {
