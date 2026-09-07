@@ -139,6 +139,30 @@ public sealed class ScribeNarrativeProvenanceRuleTests
     [InlineData("The same atom's state is recorded by the register map.")]
     public void AdversarialMathematicalAtomProseIsAllowed(string prose) => Assert.Empty(Evaluate(Text(prose)));
 
+    [Theory]
+    [InlineData("Points close to the source atom accumulate.")]
+    [InlineData("The absorbing set absorbs the candidate atom.")]
+    [InlineData("The candidate atom states that are orthogonal span the space.")]
+    [InlineData("The anchor atom states which survive the projection are counted.")]
+    [InlineData("The source atom ends at one half.")]
+    [InlineData("Families of closed sets in that atom have the finite intersection property.")]
+    [InlineData("The bottom element is absorbed by the candidate atom under union.")]
+    [InlineData("Under union, the whole space absorbs the source atom.")]
+    [InlineData("The top element absorbs the anchor atom under the join operation.")]
+    [InlineData("Among the source atom states the ground state has minimal energy.")]
+    [InlineData("For the candidate atom states the Gram matrix is positive semidefinite.")]
+    [InlineData("The source atom contains the support; probability measures in this atom form convex families.")]
+    [InlineData("The atom's mass is recorded in the table.")]
+    [InlineData("The candidate atom states are orthogonal.")]
+    [InlineData("The source atom requires positive mass.")]
+    [InlineData("The anchor atom reports to no observer.")]
+    public void AmbiguousAtomRelationsAreAllowed(string prose) => Assert.Empty(Evaluate(Text(prose)));
+
+    [Theory]
+    [InlineData("The boundary closes around the source atom.")]
+    [InlineData("The path closes near the candidate atom.")]
+    public void DocumentaryObjectRequiresAdjacentDeterminer(string prose) => Assert.Empty(Evaluate(Text(prose)));
+
     public static IEnumerable<object[]> MathematicalAtomRelationMatrix()
     {
         string[] subjects = ["The source atom", "The candidate atom", "The anchor atom", "The atom",
@@ -162,7 +186,6 @@ public sealed class ScribeNarrativeProvenanceRuleTests
 
     [Theory]
     [InlineData("The atom's proof skeleton establishes injectivity from coprimality and then obtains surjectivity by counting the two finite carriers.")]
-    [InlineData("The atom does not specify the conditional probability law needed to derive the claimed exact expectation.")]
     [InlineData("It does not claim the later numerical extrapolation, decimal values, method assessment, or the registration statements in that atom.")]
     [InlineData("It does not claim that an odd word square is primitive, the balance formula, the trace divisibility statement, the census, or the zero-layer dimension bound stated elsewhere in the same atom.")]
     [InlineData("This theorem closes only the finite-decision clause of the source atom.")]
@@ -172,9 +195,7 @@ public sealed class ScribeNarrativeProvenanceRuleTests
     [Theory]
     [InlineData("subitems of the source atom.")]
     [InlineData("itself close the multi-clause corollary atom.")]
-    [InlineData("The source atom states an infinite product.")]
     [InlineData("stated elsewhere in that atom.")]
-    [InlineData("The atom does not specify the conditional law.")]
     [InlineData("atom generic-residual-0123456789abcdef0123456789abcdef01234567")]
     [InlineData("atom_id: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")]
     [InlineData("coverage_gids: []; status: residual-open")]
@@ -192,30 +213,43 @@ public sealed class ScribeNarrativeProvenanceRuleTests
         AssertClass(Text(prose), "DigestionLedgerReference", "digestion ledger");
 
     [Theory]
-    [InlineData("The atom ends at the threshold table header.")]
     [InlineData("The container atom carries a pre-committed receipt naming one carrier.")]
-    [InlineData("The source atom explicitly reports an omitted hypothesis.")]
-    [InlineData("The candidate atom cannot specify the conditional law.")]
     [InlineData("This discharges the corollary atom.")]
     [InlineData("The proof covers only the finite-decision clause of the source atom.")]
     [InlineData("The source atom's numerical certificate is absent.")]
     [InlineData("The source atom's explicit diagonal property is preserved.")]
-    [InlineData("The theorem excludes families in that atom.")]
-    [InlineData("The postmortem in the same atom is omitted.")]
     public void StructuredDocumentaryAtomGrammarIsBlocked(string prose) =>
         AssertClass(Text(prose), "DigestionLedgerReference", "digestion ledger");
 
     [Theory]
-    [InlineData(40, true)]
-    [InlineData(41, false)]
-    public void DocumentaryObjectGapIsBounded(int gap, bool blocked)
+    [InlineData("The source atom asserts.")]
+    [InlineData("The source atoms never assert.")]
+    [InlineData("The anchor atom explicitly does not assert anything.")]
+    [InlineData("The candidate atom carries the numerical certificate.")]
+    [InlineData("The source atom carries no clause.")]
+    [InlineData("multi-clause atom")]
+    [InlineData("multi-clause corollary atoms")]
+    [InlineData("The proof closes only the finite-decision clause of the source atom.")]
+    [InlineData("The proof does not close the source atom.")]
+    [InlineData("The proof formalizes each source atom.")]
+    [InlineData("asserted elsewhere in the same atom")]
+    [InlineData("registration statements in this atom")]
+    [InlineData("clauses in that atom")]
+    [InlineData("clauses of the source atom")]
+    public void FixedDocumentaryAtomIdiomsAreBlocked(string prose) =>
+        AssertClass(Text(prose), "DigestionLedgerReference", "digestion ledger");
+
+    [Theory]
+    [InlineData(3, true)]
+    [InlineData(4, false)]
+    public void DocumentaryObjectGapIsBounded(int modifiers, bool blocked)
     {
-        var findings = Evaluate(Text("formalizes" + new string(' ', gap) + "source atom"));
+        var findings = Evaluate(Text("formalizes the " + string.Concat(Enumerable.Repeat("finite ", modifiers)) + "source atom"));
         Assert.Equal(blocked, findings.Any());
     }
 
     [Theory]
-    [InlineData(40, true)]
+    [InlineData(40, false)]
     [InlineData(41, false)]
     public void DocumentaryLocativeGapIsBounded(int gap, bool blocked)
     {
@@ -223,6 +257,30 @@ public sealed class ScribeNarrativeProvenanceRuleTests
         Assert.Equal(blocked, Evaluate(Text("in that atom" + spacing + "statements")).Any());
         Assert.Equal(blocked, Evaluate(Text("statements" + spacing + "in that atom")).Any());
     }
+
+    public static IEnumerable<object[]> DeclaredResidualGovernanceProse()
+    {
+        // These documentary readings are deliberately outside the narrowed Digestion grammar.
+        yield return ["The atom does not specify the conditional probability law needed to derive the claimed exact expectation."];
+        yield return ["The source atom states an infinite product."];
+        yield return ["The atom does not specify the conditional law."];
+        yield return ["The atom ends at the threshold table header."];
+        yield return ["The source atom explicitly reports an omitted hypothesis."];
+        yield return ["The candidate atom cannot specify the conditional law."];
+        yield return ["The theorem excludes families in that atom."];
+        yield return ["The postmortem in the same atom is omitted."];
+        yield return ["The source atoms never claim the result."];
+        yield return ["In that atom, further families remain unresolved."];
+        yield return ["source atom states a claim"];
+        yield return ["source atom states the {x}"];
+        yield return ["source atom states the result"];
+    }
+
+    [Theory]
+    [MemberData(nameof(DeclaredResidualGovernanceProse))]
+    public void DeclaredResidualGovernanceProseHasNoDigestionFinding(string prose) =>
+        Assert.DoesNotContain(Evaluate(Text(prose)), f =>
+            f.Message.StartsWith("DigestionLedgerReference ", StringComparison.Ordinal));
 
     [Theory]
     [InlineData(".")]
@@ -305,17 +363,17 @@ public sealed class ScribeNarrativeProvenanceRuleTests
     }
 
     [Theory]
-    [InlineData("// source atom states a claim")]
-    [InlineData("/* source atom states a claim */")]
-    [InlineData("/// source atom states a claim\nclass C {}")]
-    [InlineData("Text(@\"source atom states a claim\");")]
-    [InlineData("Text(\"\"\"source atom states a claim\"\"\");")]
-    [InlineData("Text($\"source atom states the {x}\");")]
-    [InlineData("Text($@\"source atom states the {x}\");")]
-    [InlineData("Text($\"\"\"source atom states the {x}\"\"\");")]
-    [InlineData("Text(\"source \" + \"atom states the result\");")]
-    [InlineData("Text((\"source \" + (\"atom \" + \"states the result\")));")]
-    [InlineData("Text(\"source \\u0061tom states the result\");")]
+    [InlineData("// source atom asserts a claim")]
+    [InlineData("/* source atom asserts a claim */")]
+    [InlineData("/// source atom asserts a claim\nclass C {}")]
+    [InlineData("Text(@\"source atom asserts a claim\");")]
+    [InlineData("Text(\"\"\"source atom asserts a claim\"\"\");")]
+    [InlineData("Text($\"source atom asserts the {x}\");")]
+    [InlineData("Text($@\"source atom asserts the {x}\");")]
+    [InlineData("Text($\"\"\"source atom asserts the {x}\"\"\");")]
+    [InlineData("Text(\"source \" + \"atom asserts the result\");")]
+    [InlineData("Text((\"source \" + (\"atom \" + \"asserts the result\")));")]
+    [InlineData("Text(\"source \\u0061tom asserts the result\");")]
     [InlineData("Text(\"This closes atom generic-residual-1798510a7ffd337203122c\" + \"e61979bcb8bf790bba93f6b013f118ed868eb5a7c0\");")]
     public void TextCarriersAreDecodedAndConcatenated(string source) =>
         AssertClass(source, "DigestionLedgerReference", "digestion ledger");

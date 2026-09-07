@@ -45,14 +45,16 @@ internal static class ScribeNarrativeScanner
         Grammar:
         [
             // This Block rule favors precision: fixed documentary forms, with bounded clause-local relations.
-            Pattern(@"\b(?:source|corollary|deposited|container|anchor|candidate|ingested|host|multi-clause|same|that|this|the)\s+atoms?\s+(?:(?:also|only|itself|explicitly|merely|already|still)\s+)?(?:does\s+not\s+|do\s+not\s+|never\s+|cannot\s+)?"
-                + @"(?:(?:states|stated|asserts|asserted|claims|claimed|reports|reported|specif(?:y|ies|ied)|requires|required|records|recorded)\s+(?:that|the|an?|its|no|only|nothing|exactly|which|what|whether|how|this|these|those|such|every|each|all|both|neither|two|three|one|more|less|at\s+most|at\s+least)"
-                + @"|ends\s+(?:at|after|immediately)|carries\s+(?:a|the|no)\s+(?:pre-committed\s+)?(?:receipt|(?:numerical\s+)?certificate|clause|claim))\b"),
-            Pattern(@"\b(?:closes?|closing|discharges?|discharged|absorbs?|absorbed|formaliz(?:es|ed|e|ing)|digests?|digested|does\s+not\s+(?:close|formalize|discharge))\b[^.;:!?,]{0,40}?\b(?:multi-clause|corollary|source|deposited|container|anchor|candidate|host|ingested|generic|the|this|that|same|its)\s+atoms?\b"
-                + @"|\bcovers?\s+only\s+the\s+[\w-]+\s+(?:clause|subitem|claim|statement)s?\s+of\s+(?:the\s+)?(?:multi-clause|corollary|source|deposited|container|anchor|candidate|host|ingested)\s+atoms?\b"),
+            Pattern(@"\b(?:source|corollary|deposited|container|anchor|candidate|ingested|host|multi-clause|same|that|this|the)\s+atoms?\s+"
+                + @"(?:(?:(?:also|only|itself|explicitly|merely|already|still)\s+)?(?:does\s+not\s+|never\s+)?asserts?"
+                + @"|carries\s+(?:a|the|no)\s+(?:pre-committed\s+)?(?:receipt|numerical\s+certificate|clause|claim))\b"),
+            Pattern(@"\b(?:closes|closing|discharges?|discharged|formaliz(?:es|ed|e|ing)|digests?|digested|does\s+not\s+(?:close|formalize|discharge))\s+(?:only\s+)?(?:the|this|that|its|each|every|a|an)\s+(?:[\w-]+\s+){0,3}(?:(?:multi-clause|corollary|source|deposited|container|anchor|candidate|host|ingested|generic|same)\s+)?atoms?\b"
+                + @"|\b(?:closes?|covers?)\s+only\s+the\s+[\w-]+\s+(?:clause|subitem|claim|statement)s?\s+of\s+(?:the\s+)?(?:multi-clause|corollary|source|deposited|container|anchor|candidate|host|ingested)\s+atoms?\b"
+                + @"|\bmulti-clause\s+(?:corollary\s+)?atoms?\b"),
             Pattern(@"\batoms?'s\s+(?:proof\s+skeleton|separate\s+claims?|claims?|clauses?|subitems?|statements?|registration|traceability\s+demand|compatibility\s+claim|theorem\s+name|numerical\s+certificates?|explicit\s+diagonal\s+property)\b"
-                + @"|\bin\s+(?:that|the\s+same|this)\s+atoms?\b[^.;:!?,]{0,40}?\b(?:stated|asserted|claims?|statements?|families|clauses?|subitems?|certificates?|remarks?|interpretations?|postmortem|registration)\b"
-                + @"|\b(?:stated|asserted|claims?|statements?|families|clauses?|subitems?|certificates?|remarks?|interpretations?|postmortem|registration)\b[^.;:!?,]{0,40}?\bin\s+(?:that|the\s+same|this)\s+atoms?\b")
+                + @"|\b(?:stated|asserted)\s+(?:elsewhere\s+)?in\s+(?:that|the\s+same|this)\s+atoms?\b"
+                + @"|\bregistration\s+statements?\s+in\s+(?:that|the\s+same|this)\s+atoms?\b"
+                + @"|\b(?:clauses?|subitems?)\s+(?:in|of)\s+(?:that|the\s+same|this|the\s+source|the\s+corollary)\s+atoms?\b")
         ]);
 
     internal static readonly NarrativeClass TheoryVolumeReference = new(
