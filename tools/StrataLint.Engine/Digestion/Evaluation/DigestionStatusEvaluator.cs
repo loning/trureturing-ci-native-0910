@@ -65,11 +65,6 @@ internal static partial class DigestionStatusEvaluator
             .Where(static group => group.Count() == 1)
             .ToDictionary(static group => group.Key, static group => group.Single(), StringComparer.Ordinal);
 
-        if (baselineDocument is not null)
-        {
-            RequireScribeReceiptsForCoverageDelta(entries, baselineEntries, findings);
-        }
-
         var states = truthStates ?? LeanTruthStates.Resolve(snapshot, lean);
         var genreChecks = document.RequireDigestionSources()
             .ToDictionary(

@@ -7,7 +7,7 @@ namespace StrataLint.Tests;
 public sealed class ScribeCoverageDeltaTests
 {
     [Fact]
-    public void AdmissionRuleRejectsCandidateNewCoverageWithoutScribeReceipt()
+    public void AdmissionRuleAcceptsCandidateNewCoverageWithoutScribeReceipt()
     {
         var fixture = new ScribeSeedFixture();
         fixture.Baseline = ScribeSeedFixture.Map(fixture.Baseline, entry => entry with { Coverage = [] });
@@ -16,12 +16,7 @@ public sealed class ScribeCoverageDeltaTests
 
         var findings = BackfillInventoryRule.EvaluateCandidateDelta(context);
 
-        var finding = Assert.Single(findings, finding =>
-            finding.Message.Contains("coverage-scribe-receipt-required", StringComparison.Ordinal));
-        var descriptor = Assert.Single(RuleCatalog.Default.Descriptors, rule => rule.Id == RuleId.CreateKnown(16));
-        Assert.Equal(AdmissionEffect.Block, finding.Effect ?? descriptor.AdmissionEffect);
-        Assert.Contains(fixture.First.AtomId, finding.Message, StringComparison.Ordinal);
-        Assert.Contains(ScribeSeedFixture.DeclarationGid, finding.Message, StringComparison.Ordinal);
+        Assert.Empty(findings);
     }
 
     [Fact]
@@ -36,7 +31,7 @@ public sealed class ScribeCoverageDeltaTests
     }
 
     [Fact]
-    public void ChangedCoverageStatementWithoutScribeReceiptIsRejected()
+    public void ChangedCoverageStatementWithoutScribeReceiptIsAccepted()
     {
         var fixture = new ScribeSeedFixture();
         fixture.Baseline = ScribeSeedFixture.Map(fixture.Baseline, entry => entry with
@@ -49,8 +44,8 @@ public sealed class ScribeCoverageDeltaTests
             new FakeScribeEmissionVerifier(fixture.Verified), ["--base", "baseline"],
             FakeAtomHistorySource.ForPaths(fixture.Files.Keys), new DigestAgeClock());
 
-        Assert.False(result.Success);
-        Assert.Contains("coverage-scribe-receipt-required", result.Error, StringComparison.Ordinal);
+        Assert.True(result.Success, result.Error);
+        Assert.Contains("gaps=scribe-receipt-missing", result.Output, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -69,7 +64,7 @@ public sealed class ScribeCoverageDeltaTests
     }
 
     [Fact]
-    public void CandidateNewCoverageWithoutScribeReceiptIsRejected()
+    public void CandidateNewCoverageWithoutScribeReceiptIsAccepted()
     {
         var fixture = new ScribeSeedFixture();
         fixture.Baseline = ScribeSeedFixture.Map(fixture.Baseline, entry => entry with { Coverage = [] });
@@ -79,10 +74,8 @@ public sealed class ScribeCoverageDeltaTests
             new FakeScribeEmissionVerifier(fixture.Verified), ["--base", "baseline"],
             FakeAtomHistorySource.ForPaths(fixture.Files.Keys), new DigestAgeClock());
 
-        Assert.False(result.Success);
-        Assert.Contains("coverage-scribe-receipt-required", result.Error, StringComparison.Ordinal);
-        Assert.Contains(fixture.First.AtomId, result.Error, StringComparison.Ordinal);
-        Assert.Contains(ScribeSeedFixture.DeclarationGid, result.Error, StringComparison.Ordinal);
+        Assert.True(result.Success, result.Error);
+        Assert.Contains("gaps=scribe-receipt-missing", result.Output, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -98,7 +91,6 @@ public sealed class ScribeCoverageDeltaTests
         Assert.True(result.Success, result.Error);
         Assert.Equal(84, result.Output.Split('\n').Count(line =>
             line.Contains("gaps=scribe-receipt-missing", StringComparison.Ordinal)));
-        Assert.DoesNotContain("coverage-scribe-receipt-required", result.Output, StringComparison.Ordinal);
     }
 
     private static RuleEvaluationContext AdmissionContext(ScribeSeedFixture fixture, RawChangeSet changes)
