@@ -448,21 +448,6 @@ jobs:
           key: ${{ runner.os }}-${{ runner.arch }}-lake-build-v1-${{ steps.lean-input.outputs.config_sha256 }}-${{ steps.lean-input.outputs.sources_sha256 }}
           restore-keys: |
             ${{ runner.os }}-${{ runner.arch }}-lake-build-v1-${{ steps.lean-input.outputs.config_sha256 }}-
-      # Release 只作兜底:仅当 Actions 层**连前缀都没回退到**时才取。
-      # `lake unpack` 是合并语义(Lake 4.33 Lake/Build/Actions.lean:182-191,无预删除),
-      # 无条件执行会让较旧的 Release 按同名路径覆盖较新的 Actions 层,反而增加补编 ——
-      # 这正是 #5640 的方向错误,由 τ=0 owner 2026-09-06 指出并纠正。
-      # 判据用 cache-matched-key 而非 cache-hit:后者仅精确命中为 true,在此恒假。
-      - name: Fetch optional Lean release build layer when the Actions layer is absent
-        if: steps.report-reuse.outcome != 'success' && steps.lake-build-cache.outputs.cache-matched-key == ''
-        env: { GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }
-        shell: bash
-        run: |
-          set -euo pipefail
-          printf '%s\n' 'Actions project layer absent; try a validated Release seed in the same mathlib/platform partition.'
-          if ! PATH="$HOME/.elan/bin:$PATH" candidate/tools/scripts/worktree/lean-cache-publish.sh fetch --allow-seed --repository "$GITHUB_WORKSPACE/candidate"; then
-            printf '%s\n' 'Release seed unavailable; continuing with the normal Lean build.'
-          fi
       - name: Build candidate Lean project
         id: lean-build
         if: steps.report-reuse.outcome != 'success'

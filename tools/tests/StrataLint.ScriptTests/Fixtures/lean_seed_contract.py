@@ -321,22 +321,26 @@ make -C "$2" lean
                          (self.root / "build-runs").read_text().splitlines())
 
     def test_unavailable_lock_is_an_explicit_fetch_miss(self):
-        write(self.bin / "fcntl.py", 'raise ImportError("fixture: fcntl unavailable")\n')
+        # Built-in fcntl takes precedence over PYTHONPATH on some Python builds.
+        write(self.bin / "sitecustomize.py", 'import sys\nsys.modules["fcntl"] = None\n')
         result = self.transport("fetch", PYTHONPATH=str(self.bin))
         self.assertEqual(1, result.returncode, result.stdout + result.stderr)
         self.assertIn('"status":"miss"', result.stdout)
+        self.assertIn("fcntl", result.stdout)
         self.assertNotIn("Traceback", result.stderr)
 
     def test_unavailable_lock_skips_publication_after_build_success(self):
-        write(self.bin / "fcntl.py", 'raise ImportError("fixture: fcntl unavailable")\n')
+        write(self.bin / "sitecustomize.py", 'import sys\nsys.modules["fcntl"] = None\n')
         result = self.transport("publish", PYTHONPATH=str(self.bin))
         self.assertEqual(0, result.returncode, result.stdout + result.stderr)
         self.assertIn('"status":"skipped"', result.stdout)
+        self.assertIn("POSIX cache locking unavailable", result.stdout)
         self.assertNotIn("Traceback", result.stderr)
         self.assertEqual([], list(self.remote.iterdir()))
         failed = self.transport("publish", PYTHONPATH=str(self.bin), FAKE_BUILD_EXIT="19")
         self.assertEqual(19, failed.returncode, failed.stdout + failed.stderr)
         self.assertEqual([], list(self.remote.iterdir()))
+        self.assertEqual(["lean", "lean"], (self.root / "build-runs").read_text().splitlines())
 
     def test_legacy_fetch_flag_cannot_enable_cross_partition_selection(self):
         self.assertEqual(0, self.transport("publish").returncode)

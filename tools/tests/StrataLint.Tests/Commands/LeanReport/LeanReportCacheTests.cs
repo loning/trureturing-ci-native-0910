@@ -14,13 +14,13 @@ public sealed class LeanReportCacheTests
 
 internal static class LeanSeedProcessContract
 {
-    internal static void Run(string behavior)
+    internal static void Run(string behavior, TimeSpan? hangGuard = null)
     {
         if (OperatingSystem.IsWindows()) return;
         var root = TestRepositoryLayout.FindRoot();
         var result = TestProcessRunner.Run("python3",
             [Path.Combine(root, "tools/tests/StrataLint.ScriptTests/Fixtures/lean_seed_contract.py"), behavior],
-            root, TestBudgets.WorkflowProcessHangGuard, 1024 * 1024);
+            root, hangGuard ?? TestBudgets.WorkflowProcessHangGuard, 1024 * 1024);
         Assert.True(result.ExitCode == 0,
             Encoding.UTF8.GetString(result.StandardOutput) + Encoding.UTF8.GetString(result.StandardError));
     }
