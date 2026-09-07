@@ -74,7 +74,6 @@ public sealed class Sl016ContentDispositionTests
                 fixture.Baseline,
                 policy,
                 lean,
-                null,
                 fixture.Changes,
                 CasChanges: fixture.Changes,
                 ProjectedStatusChanges: fixture.Changes,

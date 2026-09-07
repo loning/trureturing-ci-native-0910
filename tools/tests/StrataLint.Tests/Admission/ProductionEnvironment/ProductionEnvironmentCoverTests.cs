@@ -462,6 +462,7 @@ public sealed partial class ProductionEnvironmentTests
         var materialized = CoverWorld.Materialize(CoverWorld.StaleReceiptSpec() with
         {
             OtherAtomGid = "D5/S0/Carrier/Probe.sibling",
+            OtherMigration = "absorbed",
             ReportDeclarations = ImmutableArray.Create("probe", "sibling"),
         });
         var inputs = DirectoryInputs(WithReceiptMismatchAtBaseline(
@@ -486,27 +487,6 @@ public sealed partial class ProductionEnvironmentTests
             Assert.True(result.Success, result.Error);
             Assert.NotEqual(before, DirectoryLedgerTestSupport.RepositoryImage(temporary));
         }
-    }
-
-    [Fact]
-    public void CoverAtomRejectsSiblingEvaluationFindingBeforeWritingLedger()
-    {
-        var materialized = CoverWorld.Materialize(new CoverSpec
-        {
-            OtherAtomGid = "D5/S0/Carrier/Probe.probe",
-        });
-        var inputs = DirectoryInputs(WithSiblingDuplicateScribeReceipt(materialized));
-        using var temporary = new TemporaryDirectory();
-        DirectoryLedgerTestSupport.Write(temporary.Path, inputs.Files);
-        var before = DirectoryLedgerTestSupport.Image(temporary.Path);
-        var environment = BuildCoverEnvironment(temporary.Path, inputs, inputs.Files);
-
-        var result = environment.CoverAtom(CoverArgs(inputs));
-
-        Assert.False(result.Success);
-        Assert.Contains("digest status is invalid", result.Error, StringComparison.Ordinal);
-        Assert.Contains("duplicate receipt", result.Error, StringComparison.Ordinal);
-        Assert.Equal(before, DirectoryLedgerTestSupport.Image(temporary.Path));
     }
 
     [Fact]

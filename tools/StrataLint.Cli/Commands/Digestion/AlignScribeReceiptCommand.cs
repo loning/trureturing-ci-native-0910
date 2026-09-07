@@ -115,7 +115,7 @@ internal static class AlignScribeReceiptCommand
         DigestionLedgerEvaluation Evaluate(BackfillInventoryDocument candidate, RepositorySnapshot snapshot,
             RawChangeSet receiptChanges, bool validateStatus) =>
             DigestionStatusEvaluator.Evaluate(DigestionEvaluationScope.ChangedSet, candidate, snapshot, lean,
-                verified, baselineDocument, validateProjectedStatus: validateStatus, baselineSnapshot: baseline,
+                baselineDocument, validateProjectedStatus: validateStatus, baselineSnapshot: baseline,
                 changes: receiptChanges, truthStates: states);
     }
 
