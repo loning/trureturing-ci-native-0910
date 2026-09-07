@@ -7,6 +7,7 @@
    digest: The source-defined finite free commutator of centered real-rooted quartics is real-rooted. -/
 
 import Mathlib.Algebra.QuadraticDiscriminant
+import Mathlib.Algebra.Polynomial.BigOperators
 import Mathlib.Analysis.Real.Sqrt
 import Mathlib.RingTheory.Polynomial.Pochhammer
 import Mathlib.Data.Fin.VecNotation
@@ -171,9 +172,42 @@ private theorem centered_product_sos (a b c d : ℝ) (h : a + b + c + d = 0) :
   rw [hd]
   ring
 
+/-- The preregistered escape witness: coefficient bounds from four real roots.
+All three squared-sum identities contribute to the later discriminant proof. -/
+theorem centered_quartic_invariant_bounds (u v w : ℝ)
+    (hp : RealRooted4 (centeredQuartic u v w)) :
+    u ≤ 0 ∧ 0 ≤ u^2+12*w ∧ u^2+12*w ≤ 4*u^2 := by
+  obtain ⟨r, hr⟩ := hp
+  have hc := prod_X_sub_C_coeff_card_pred (Finset.univ : Finset (Fin 4)) r (by decide)
+  norm_num only [Finset.card_univ, Fintype.card_fin, Nat.reduceSub] at hc
+  rw [← hr] at hc
+  norm_num [centeredQuartic, coeff_add, coeff_C_mul_X_pow, coeff_C_mul_X,
+    coeff_X_pow, coeff_X, coeff_C, Fin.sum_univ_succ] at hc
+  have hcenter : r 0 + r 1 + r 2 + r 3 = 0 := by linarith
+  have hu0 := congrArg (fun p : ℝ[X] => p.coeff 2) hr
+  have hw0 := congrArg (fun p : ℝ[X] => p.coeff 0) hr
+  norm_num [centeredQuartic, Fin.prod_univ_succ, coeff_mul,
+    Finset.sum_antidiagonal_eq_sum_range_succ, Finset.sum_range_succ,
+    coeff_add, coeff_sub, coeff_X_pow, coeff_X, coeff_C] at hu0 hw0
+  have hu : u = r 0*r 1 + r 0*r 2 + r 0*r 3 + r 1*r 2 + r 1*r 3 + r 2*r 3 := by
+    nlinarith [hu0]
+  have hw : w = r 0*r 1*r 2*r 3 := by nlinarith [hw0]
+  have hs := centered_sum_squares (r 0) (r 1) (r 2) (r 3) hcenter
+  have hi := centered_invariant_sos (r 0) (r 1) (r 2) (r 3) hcenter
+  have hb := centered_product_sos (r 0) (r 1) (r 2) (r 3) hcenter
+  rw [← hu] at hs
+  rw [← hu, ← hw] at hi hb
+  refine ⟨?_, ?_, ?_⟩
+  · nlinarith [sq_nonneg (r 0), sq_nonneg (r 1), sq_nonneg (r 2), sq_nonneg (r 3)]
+  · rw [hi]
+    positivity
+  · have hbound : 0 ≤ u^2-4*w := by rw [hb]; positivity
+    linarith
+
 #print axioms centered_sum_squares
 #print axioms centered_invariant_sos
 #print axioms centered_product_sos
 #print axioms centered_expansion
+#print axioms centered_quartic_invariant_bounds
 
 end D5.S3.Zeros.Convolution.FiniteFreeCommutatorDegreeFour
