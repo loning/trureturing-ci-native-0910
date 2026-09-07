@@ -3,7 +3,7 @@
    mirror-B: D5/B/S3/Zeros/Convolution/GribinskiDegreeTwo
    mirror-E: none(waiver:symbolic-real-parameter-proof)
    anchors: []
-   utility: kind=certified-instance; basis=refutes=gid:D5/S3/Zeros/Convolution/GribinskiDegreeTwo.preservesNonnegativeRoots; result=D5/S3/Zeros/Convolution/GribinskiDegreeTwo.g4_parameter_range_sharp
+   utility: none
    digest: Degree-two rectangular convolution has the sharp range alpha > -1. -/
 
 import Mathlib.Algebra.QuadraticDiscriminant
@@ -19,8 +19,10 @@ definition of the operation. The normalized-coefficient identity below
 checks all three coefficients, including the leading coefficient.
 
 Library search (2026-09-07, Mathlib v4.33.0): the global declarations
-exists_quadratic_eq_zero and quadratic_ne_zero_of_discrim_ne_sq are used
-directly. Polynomial.roots and the Vieta coefficient/esymm bridges were
+exists_quadratic_eq_zero, vieta_formula_quadratic and
+quadratic_ne_zero_of_discrim_ne_sq are used directly. The scalar Vieta theorem
+supplies the complementary root and its sum/product identities.
+Polynomial.roots and the Vieta coefficient/esymm bridges were
 checked; signed coefficients also apply when the output has no real roots.
 descPochhammer supplies the falling factorials. D5 and Mathlib searches for
 Gribinski, boxplus, and rectangular convolution found no matching result;
@@ -29,7 +31,15 @@ GitHub Lean code searches for Gribinski and rectangular boxplus returned [].
 The symbolic results address Conjecture 3.13 at m=2, including -1<alpha<0.
 The source paper also proves the special parameter alpha=-1/2. No worldwide
 priority claim is made. G4 refutes preservation at every admissible alpha<-1
-using both prescribed input families, which supplies its refutes utility.
+using both prescribed input families. All eleven public statements are symbolic
+general theorems, including the real-parameter counterexample families, so the
+computational utility kind is none. All eleven have proof_shape: bind-only;
+these uses supply neither an escape witness nor a deposit admission basis.
+
+Companion obligations and actual directed edges (consumer -> prerequisite):
+- definition_consistency is a prerequisite of normalized_coefficient_convolution (Definition 3.10, all k=0,1,2).
+- normalized_coefficient_convolution consumes definition_consistency for Definition 3.10; no theorem here consumes its conclusion, retained for the general coefficient-agreement obligation and Scribe's definition-consistency block (narrative use only).
+- discriminant_eq_output consumes g1_explicit_coefficients (G1/G2); no theorem here consumes its conclusion, retained to identify the discriminant of the actual output coefficients explicitly.
 -/
 
 set_option autoImplicit false
@@ -170,9 +180,9 @@ private theorem nonnegative_factorization (S T : Real)
       X ^ 2 - C S * X + C T = rootPair r s := by
   obtain ⟨r, hr⟩ := exists_quadratic_eq_zero (a := (1 : Real)) (b := -S) (c := T)
     one_ne_zero ⟨Real.sqrt (discrim 1 (-S) T), (Real.mul_self_sqrt hd).symm⟩
-  let s := S - r
-  have hsum : r + s = S := by dsimp [s]; ring
-  have hprod : r * s = T := by dsimp [s]; nlinarith [hr]
+  obtain ⟨s, _, hsum, hprod⟩ := vieta_formula_quadratic
+    (b := S) (c := T) (x := r)
+    (by simpa only [one_mul, neg_mul, sub_eq_add_neg] using hr)
   have hnonneg : 0 <= r /\ 0 <= s := by
     rcases mul_nonneg_iff.mp (hprod.symm ▸ ht) with h | h
     · exact h
@@ -280,6 +290,7 @@ theorem preservation_iff (alpha : Real) (h1 : alpha ≠ -1) (h2 : alpha ≠ -2) 
 
 #print axioms definition_consistency
 #print axioms normalized_coefficient_convolution
+#print axioms convolution_coefficients
 #print axioms discriminant_eq_output
 #print axioms g1_explicit_coefficients
 #print axioms g2_discriminant_bound
