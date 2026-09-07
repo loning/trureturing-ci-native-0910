@@ -217,3 +217,41 @@ the raw report SHA-256 is
 `80a722a8eeac2169f844a4bf3be55a760e44a8ed147a53297e70e9ebaf2c2183`.
 The initial failed deposit and the successful retry are both retained in the
 attempt directory as `deposit.log` and `deposit-retry.log`.
+
+## Coverage and Scope
+
+`make cover-batch ATOMS=<attempt-2>/cover.tsv
+BASE=809b94047831081e39cb208190827842c473aec7` returned `EXIT=0`.
+The TSV contains one row for `38e6c042...`, using the same liminf declaration
+and statement identity as the deposit anchor. The final states are:
+
+| Full atom basename | Action | Final state |
+| --- | --- | --- |
+| `ddb4f6fb76c318def9a52083b7e6ec453a0a2d09275271d1f568671179949b74` | Covered by deposit | `absorbed-closed` |
+| `38e6c042a4cdad4b5619f7ca7267edd44e5ef10090edfd71aeef5d221c98b9ec` | Covered by cover-batch | `absorbed-closed` |
+| `323b49574bd9fe6f6b3f82fadaae9d41d51e0993810992f09b4e9e06da2d9b2a` | Skipped: unproved chain child `4d06ca9f...` | `residual-open`, unchanged |
+
+The parent's ledger bytes and empty direct coverage list remain unchanged;
+it was not relabeled as closed or partial-closed. The excluded compound
+Robin/RH atom was not touched.
+
+The inherited implementation's `gronwall-lower-0907/attempt-1/proof-dependencies.log`
+was also read. Its elaborated `PROOF_VALUE_CONSTANTS` lists `prime_power_error`
+directly under `gronwall_lower_envelope`, and `one_sub_sum_le_product` under
+that witness. This task's source diff leaves those existing proofs unchanged.
+The live-path assessment above is a proof/source assessment supported by that
+compiled dependency audit; no new automatic liveness decision or independent
+review is claimed.
+
+Before opening, fetched dev was
+`34f741cf3707f25a5b4875167f874e664a82171b`.
+`git grep -n -P '\b(robinLogMargin|robin_log_margin_liminf)\b' origin/dev -- D5`
+returned `EXIT=1`, zero hits. The same command with
+`\b(gronwall_lower_envelope|gronwall_envelopes)\b` returned `EXIT=0`, five hits.
+This is a scoped collision check. The dev deletion set since the recorded
+base is empty.
+
+The complete change is 12 paths when both sides of each ledger migration are
+counted separately (`git diff --name-status --no-renames <base>`), or 10 files
+with rename detection. This is within the 13-path budget; no rule 16-double-prime
+exception is invoked. The four Frozen paths are all additions.
