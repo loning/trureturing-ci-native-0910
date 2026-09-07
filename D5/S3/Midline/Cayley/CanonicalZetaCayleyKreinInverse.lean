@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Midline/Cayley/CanonicalZetaCayleyKreinInverse
    mirror-E: none(waiver:canonical-zeta-krein-interface)
    anchors: []
+   utility: none
    digest: Construct the unconditional bounded inverse of the zero Cayley operator and identify it with J U-star J. -/
 
 import D5.S3.Midline.Cayley.CanonicalZetaMirrorEvenOddDecomposition
@@ -35,8 +36,8 @@ open D5.S3.Midline.Cayley.CanonicalZetaMirrorFundamentalSymmetry
 open D5.S3.Midline.Cayley.CanonicalZetaMirrorEvenOddDecomposition
 open D5.S3.Midline.Cayley.CanonicalZetaCayleyJUnitary
 open D5.S3.Weil.ZeroSum
-open D5.S3.Weil.ZetaBridge.ZeroDataPresentationEquiv
-open D5.S3.Weil.ZetaBridge.UnconditionalCanonicalZeroData
+open D5.S3.Weil.ZeroData.ZeroDataPresentationEquiv
+open D5.S3.Weil.ZeroData.UnconditionalCanonicalZeroData
 open scoped ComplexConjugate ENNReal InnerProduct lp
 
 private theorem zero_ne_zero (Z : ZeroData) (n : ℕ) : Z.zero n ≠ 0 := by

@@ -1,7 +1,23 @@
 # Backlund Horizontal Bound
 
-**Declaration:** `Zeta23.RvM.backlund_horizontal`
+## Abstract
 
 The horizontal argument variation and vertical line are logarithmically controlled.
 
-This node belongs to the proof-complete upstream Riemann-von Mangoldt closure used to construct the parameter-free `zetaZeroData`. Lean remains the truth source.
+**Theorem 1.1 (Backlund Horizontal Bound).**
+
+Lean statement: `D5/S3/Weil/ZetaRvm/Backlund.backlund_horizontal`
+
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaRvm/Backlund.backlund_horizontal` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+The horizontal argument variation and vertical line are logarithmically controlled.
+
+## References
+
+- Truth anchor: `D5/S3/Weil/ZetaRvm/Backlund.backlund_horizontal`
+- Dependency: [D5/S3/Weil/ZetaRvm/BacklundDefs](BacklundDefs.md)
+- Dependency: [D5/S3/Weil/ZetaRvm/ReZeroCount](ReZeroCount.md)

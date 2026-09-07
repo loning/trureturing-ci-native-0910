@@ -1,7 +1,21 @@
 # Zero-Count Window Arithmetic
 
-**Declaration:** `Zeta23.Ncount_add`
+## Abstract
 
 Multiplicity-weighted zero counts are additive across adjacent windows.
 
-This node belongs to the proof-complete upstream Riemann-von Mangoldt closure used to construct the parameter-free `zetaZeroData`. Lean remains the truth source.
+**Theorem 1.1 (Zero-Count Window Arithmetic).**
+
+Lean statement: `D5/S3/Weil/ZetaRvm/NcountWindow.Ncount_add`
+
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaRvm/NcountWindow.Ncount_add` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+Multiplicity-weighted zero counts are additive across adjacent windows.
+
+## References
+
+- Truth anchor: `D5/S3/Weil/ZetaRvm/NcountWindow.Ncount_add`

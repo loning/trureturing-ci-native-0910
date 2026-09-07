@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Midline/Cayley/ZeroDataHilbertPresentationTransport
    mirror-E: none(waiver:canonical-zeta-krein-interface)
    anchors: []
+   utility: none
    digest: Lift the unique ZeroData reindexing to a unitary Hilbert transport intertwining mirror symmetry, Cayley dynamics, and the Krein form. -/
 
 import D5.S3.Midline.Cayley.CanonicalZetaCayleyJUnitary
@@ -32,7 +33,7 @@ open D5.S3.Midline.Cayley.CanonicalZetaMirrorFundamentalSymmetry
 open D5.S3.Midline.Cayley.CanonicalZetaCayleyJUnitary
 open D5.S3.Midline.Cayley.CayleyUnitarityDefect
 open D5.S3.Weil.ZeroSum
-open D5.S3.Weil.ZetaBridge.ZeroDataPresentationEquiv
+open D5.S3.Weil.ZeroData.ZeroDataPresentationEquiv
 open scoped ENNReal InnerProduct lp
 
 /-- The unique zero-preserving presentation equivalence, lifted through each

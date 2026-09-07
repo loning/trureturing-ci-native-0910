@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Weil/ZetaBridge/OffLineNonrealZeroNegativeWeilSquare
    mirror-E: none(waiver:kernel-verified-full-off-line-nonreal-separator)
    anchors: []
+   utility: none
    digest: An off-line nonreal zero yields a Weil square with strictly negative full zero sum. -/
 
 import D5.S3.Fourier.ConvolutionPowerAmplification

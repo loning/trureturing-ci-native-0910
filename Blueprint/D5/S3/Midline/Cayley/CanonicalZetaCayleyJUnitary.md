@@ -1,65 +1,36 @@
-# Canonical zeta Cayley `J`-unitarity
+# Canonical zeta Cayley J-unitarity
 
-## Scope
+## Abstract
 
-For a represented zero `rho`, the canonical Cayley coefficient is
+The diagonal zero Cayley operator preserves the indefinite inner product induced by same-height reflection.
 
-\[
-c(\rho)=\frac{\rho-1}{\rho}.
-\]
+**Theorem 1.1 (Mirror Cayley coefficients are inverse conjugates).**
 
-The same-height mirror satisfies
+Lean statement: `D5/S3/Midline/Cayley/CanonicalZetaCayleyJUnitary.cayleyCoefficient_mirrorIndex`
 
-\[
-c(1-\overline\rho)=\overline{c(\rho)}^{-1}.
-\]
+*Proof.* Machine-checked in Lean as `D5/S3/Midline/Cayley/CanonicalZetaCayleyJUnitary.cayleyCoefficient_mirrorIndex` (`✓ std3`). ∎
 
-This identity is transported to the multiplicity-expanded zero Hilbert space.
+*Source.* Repository-derived.
 
-## Main result
+*Commentary.*
 
-Let `U_Z` be the diagonal Cayley operator and `J_Z` the mirror fundamental symmetry. Then
+This is the coefficient-level consequence of the existing Cayley mirror-coordinate theorem.
 
-\[
-U_Z^*J_ZU_Z=J_Z.
-\]
+**Theorem 1.2 (The zero Cayley operator is J-unitary).**
 
-Equivalently, the mirror Krein form is preserved:
+Lean statement: `D5/S3/Midline/Cayley/CanonicalZetaCayleyJUnitary.zeroCayleyOperator_j_unitary`
 
-\[
-[U_Z\psi,U_Z\phi]_{J_Z}
-=
-[\psi,\phi]_{J_Z}.
-\]
+*Proof.* Machine-checked in Lean as `D5/S3/Midline/Cayley/CanonicalZetaCayleyJUnitary.zeroCayleyOperator_j_unitary` (`✓ std3`). ∎
 
-The proof is coordinatewise. The coefficient relation gives
+*Source.* Repository-derived.
 
-\[
-\overline{c(\rho_n)}\,c(\rho_{M(n)})=1,
-\]
+*Commentary.*
 
-and summing the pointwise inner-product identities yields the global operator law.
+Coordinatewise inverse-conjugate coefficients preserve the mirror Krein form, and summation yields the operator identity.
 
-## Canonical instance
+## References
 
-Specializing to `zetaZeroData` gives the parameter-free theorem
-
-\[
-U_\zeta^*J_\zeta U_\zeta=J_\zeta.
-\]
-
-## Interpretation
-
-Functional-equation symmetry already guarantees conservation in the indefinite mirror metric. Ordinary Hilbert-space unitarity is the stronger critical-line condition handled by the existing Cayley criterion.
-
-## Boundary
-
-`J`-unitarity alone permits nontrivial negative sectors. The theorem does not imply ordinary unitarity or RH.
-
-## Truth anchors
-
-- `cayleyCoefficient_mirrorIndex`
-- `cayleyCoefficient_conj_mul_mirror`
-- `zeroCayleyOperator_preserves_mirrorKreinForm`
-- `zeroCayleyOperator_j_unitary`
-- `zetaZeroCayleyOperator_j_unitary`
+- Truth anchor: `D5/S3/Midline/Cayley/CanonicalZetaCayleyJUnitary.cayleyCoefficient_mirrorIndex`
+- Truth anchor: `D5/S3/Midline/Cayley/CanonicalZetaCayleyJUnitary.zeroCayleyOperator_j_unitary`
+- Dependency: [D5/S3/Midline/Cayley/CanonicalZetaMirrorFundamentalSymmetry](CanonicalZetaMirrorFundamentalSymmetry.md)
+- Dependency: [D5/S3/Midline/Cayley/CayleyMirrorCoordinates](CayleyMirrorCoordinates.md)

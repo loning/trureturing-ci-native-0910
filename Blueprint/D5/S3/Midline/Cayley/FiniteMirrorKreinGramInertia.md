@@ -1,40 +1,37 @@
-# Finite Mirror Krein Gram Inertia
+# Finite mirror Krein Gram inertia
 
 ## Abstract
 
-This node embeds one odd vector for every selected nonfixed mirror pair and every analytic-multiplicity copy into the actual multiplicity-expanded zero Hilbert space. It then forms the Gram matrix using the genuine mirror Krein form.
+The actual mirror-Krein Gram matrix of the finite odd basis is minus two times identity and has exact negative index kappa_T.
 
-## Exact Gram computation
+**Theorem 1.1 (The actual odd Gram matrix is -2 I).**
 
-For the selected odd basis vectors `v_i^-`,
+Lean statement: `D5/S3/Midline/Cayley/FiniteMirrorKreinGramInertia.finiteMirrorOddKreinGram_eq`
 
-\[
-[v_i^-,v_j^-]_J=-2\delta_{ij}.
-\]
+*Proof.* Machine-checked in Lean as `D5/S3/Midline/Cayley/FiniteMirrorKreinGramInertia.finiteMirrorOddKreinGram_eq` (`✓ std3`). ∎
 
-Hence the actual Gram matrix is
+*Source.* Repository-derived.
 
-\[
-G_T^-=-2I.
-\]
+*Commentary.*
 
-Using the repository's Hermitian inertia owner `RHLinalg.negIndex`, the node proves
+The matrix entries are computed from genuine odd vectors inside the multiplicity-expanded zero Hilbert space and the actual mirror Krein form.
 
-\[
-n_-(G_T^-)
-=
-\sum_{n\in\mathcal R_T}m_n
-=
-\kappa_T.
-\]
+**Theorem 1.2 (The actual Gram negative index equals the mirror-orbit multiplicity count).**
 
-Therefore the spectral negative index of a concrete Gram matrix is positive exactly when the finite window contains an off-line mirror orbit. This upgrades the earlier coordinate-cardinality certificate to an actual matrix-inertia theorem.
+Lean statement: `D5/S3/Midline/Cayley/FiniteMirrorKreinGramInertia.finiteMirrorOddKreinGram_negIndex`
 
-## Truth anchors
+*Proof.* Machine-checked in Lean as `D5/S3/Midline/Cayley/FiniteMirrorKreinGramInertia.finiteMirrorOddKreinGram_negIndex` (`✓ std3`). ∎
 
-- `mirrorOddVector_source_inner`
-- `mirrorOddVector_source_krein`
-- `finiteMirrorOddKreinGram_eq`
-- `finiteMirrorOddKreinGram_negIndex`
-- `finiteMirrorOddKreinGram_negIndex_pos_iff_exists_offLine`
-- `canonical_zeta_finite_mirror_gram_inertia`
+*Source.* Repository-derived.
+
+*Commentary.*
+
+This is a spectral inertia theorem for a concrete Hermitian Gram matrix, not a definition of an abstract negative dimension.
+
+## References
+
+- Truth anchor: `D5/S3/Midline/Cayley/FiniteMirrorKreinGramInertia.finiteMirrorOddKreinGram_eq`
+- Truth anchor: `D5/S3/Midline/Cayley/FiniteMirrorKreinGramInertia.finiteMirrorOddKreinGram_negIndex`
+- Dependency: [D5/S3/Midline/Cayley/CanonicalZetaMirrorEvenOddDecomposition](CanonicalZetaMirrorEvenOddDecomposition.md)
+- Dependency: [D5/S3/Midline/Cayley/FiniteMirrorKreinIndex](FiniteMirrorKreinIndex.md)
+- Dependency: [D5/S3/SpectralTopology/FiniteSpectralLocalizer](../../SpectralTopology/FiniteSpectralLocalizer.md)

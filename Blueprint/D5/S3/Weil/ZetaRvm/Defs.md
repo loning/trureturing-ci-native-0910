@@ -1,7 +1,21 @@
 # Riemann-von Mangoldt Definitions
 
-**Declaration:** `Zeta23.RvM.halfContour_add`
+## Abstract
 
 The right-half contour and its additive law are fixed.
 
-This node belongs to the proof-complete upstream Riemann-von Mangoldt closure used to construct the parameter-free `zetaZeroData`. Lean remains the truth source.
+**Theorem 1.1 (Riemann-von Mangoldt Definitions).**
+
+Lean statement: `D5/S3/Weil/ZetaRvm/Defs.halfContour_add`
+
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaRvm/Defs.halfContour_add` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+The right-half contour and its additive law are fixed.
+
+## References
+
+- Truth anchor: `D5/S3/Weil/ZetaRvm/Defs.halfContour_add`

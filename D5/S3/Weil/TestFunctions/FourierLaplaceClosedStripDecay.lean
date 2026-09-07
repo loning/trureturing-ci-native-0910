@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Weil/TestFunctions/FourierLaplaceClosedStripDecay
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: none
    digest: Fourier-Laplace transforms of Weil test functions decay uniformly on closed strips. -/
 
 import D5.S3.Weil.TestFunctions

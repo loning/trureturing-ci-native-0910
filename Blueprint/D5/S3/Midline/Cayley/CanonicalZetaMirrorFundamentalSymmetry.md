@@ -1,67 +1,37 @@
 # Canonical zeta mirror fundamental symmetry
 
-## Scope
+## Abstract
 
-The same-height mirror on zero indices preserves analytic multiplicity. It therefore lifts to the multiplicity-expanded coordinate type
+The same-height zeta-zero mirror lifts to an involutive self-adjoint isometry with explicit negative odd directions.
 
-\[
-\mathcal I_Z=\sum_{n:\mathbb N}\operatorname{Fin}(m_n)
-\]
+**Theorem 1.1 (The mirror is self-adjoint in inner-product form).**
 
-and to a surjective linear isometry
+Lean statement: `D5/S3/Midline/Cayley/CanonicalZetaMirrorFundamentalSymmetry.mirrorFundamentalSymmetry_inner_left`
 
-\[
-J_Z:\ell^2(\mathcal I_Z)\to\ell^2(\mathcal I_Z).
-\]
+*Proof.* Machine-checked in Lean as `D5/S3/Midline/Cayley/CanonicalZetaMirrorFundamentalSymmetry.mirrorFundamentalSymmetry_inner_left` (`✓ std3`). ∎
 
-## Fundamental-symmetry laws
+*Source.* Repository-derived.
 
-The lifted mirror is involutive:
+*Commentary.*
 
-\[
-J_Z^2=I.
-\]
+The multiplicity-preserving mirror permutation is represented by the repository's ell-two reindexing linear isometry.
 
-It is self-adjoint in inner-product form:
+**Theorem 1.2 (Every moved mirror coordinate gives a strict negative direction).**
 
-\[
-\langle J_Z\psi,\phi\rangle
-=
-\langle\psi,J_Z\phi\rangle.
-\]
+Lean statement: `D5/S3/Midline/Cayley/CanonicalZetaMirrorFundamentalSymmetry.mirror_odd_vector_strictly_negative`
 
-Together with the linear-isometry structure, these identities make `J_Z` a fundamental symmetry.
+*Proof.* Machine-checked in Lean as `D5/S3/Midline/Cayley/CanonicalZetaMirrorFundamentalSymmetry.mirror_odd_vector_strictly_negative` (`✓ std3`). ∎
 
-## Krein form and odd directions
+*Source.* Repository-derived.
 
-Define
+*Commentary.*
 
-\[
-[\psi,\phi]_{J_Z}=\langle\psi,J_Z\phi\rangle.
-\]
+Antisymmetrizing a coordinate basis vector produces a nonzero minus-one eigenvector of the mirror.
 
-For a coordinate moved by the mirror, antisymmetrizing its basis vector gives a nonzero vector `v_-` with
+## References
 
-\[
-J_Zv_-=-v_-,
-\qquad
-[v_-,v_-]_{J_Z}=-\lVert v_-\rVert^2<0.
-\]
-
-Thus every nonfixed mirror coordinate supplies an explicit strict negative direction.
-
-## Canonical instance
-
-The parameter-free `zetaZeroData` from PR #5065 produces `zetaMirrorFundamentalSymmetry` without an additional zero-data hypothesis.
-
-## Boundary
-
-This node constructs the indefinite geometry forced by zero reflection. It does not prove that a moved coordinate exists and does not prove RH.
-
-## Truth anchors
-
-- `mirrorCoordinatePerm_involutive`
-- `mirrorCoordinatePerm_fixed_iff`
-- `mirrorFundamentalSymmetry_inner_left`
-- `mirrorOddPart_eigenvalue_neg_one`
-- `mirror_odd_vector_strictly_negative`
+- Truth anchor: `D5/S3/Midline/Cayley/CanonicalZetaMirrorFundamentalSymmetry.mirrorFundamentalSymmetry_inner_left`
+- Truth anchor: `D5/S3/Midline/Cayley/CanonicalZetaMirrorFundamentalSymmetry.mirror_odd_vector_strictly_negative`
+- Dependency: [D5/S3/Midline/Cayley/ZeroHilbertCayleyUnitarity](ZeroHilbertCayleyUnitarity.md)
+- Dependency: [D5/S3/Weil/ZetaBridge/UnconditionalCanonicalZeroData](../../Weil/ZetaBridge/UnconditionalCanonicalZeroData.md)
+- Dependency: [D5/S3/Weil/ZetaBridge/ZeroDataPresentationEquiv](../../Weil/ZetaBridge/ZeroDataPresentationEquiv.md)

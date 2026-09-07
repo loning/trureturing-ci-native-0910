@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Midline/Cayley/CanonicalZetaCayleyJUnitary
    mirror-E: none(waiver:canonical-zeta-krein-interface)
    anchors: []
+   utility: none
    digest: Prove the zero Cayley operator unconditionally preserves the indefinite inner product induced by same-height reflection. -/
 
 import D5.S3.Midline.Cayley.CanonicalZetaMirrorFundamentalSymmetry
@@ -35,8 +36,8 @@ open D5.S3.Midline.Cayley.ZeroHilbertCayleyUnitarity
 open D5.S3.Midline.Cayley.CanonicalZetaMirrorFundamentalSymmetry
 open D5.S3.Weil.ReflectionLedger
 open D5.S3.Weil.ZeroSum
-open D5.S3.Weil.ZetaBridge.ZeroDataPresentationEquiv
-open D5.S3.Weil.ZetaBridge.UnconditionalCanonicalZeroData
+open D5.S3.Weil.ZeroData.ZeroDataPresentationEquiv
+open D5.S3.Weil.ZeroData.UnconditionalCanonicalZeroData
 open scoped ComplexConjugate ENNReal InnerProduct InnerProductSpace lp
 
 private theorem zero_ne_zero (Z : ZeroData) (n : ℕ) : Z.zero n ≠ 0 := by

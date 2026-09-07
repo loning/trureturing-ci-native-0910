@@ -1,7 +1,22 @@
 # Riemann-von Mangoldt Statement
 
-**Declaration:** `Zeta23.RvM.riemannVonMangoldt`
+## Abstract
 
 The main term and local count assemble the canonical Riemann-von Mangoldt certificate.
 
-This node belongs to the proof-complete upstream Riemann-von Mangoldt closure used to construct the parameter-free `zetaZeroData`. Lean remains the truth source.
+**Theorem 1.1 (Riemann-von Mangoldt Statement).**
+
+Lean statement: `D5/S3/Weil/ZetaRvm/Statement.riemannVonMangoldt`
+
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaRvm/Statement.riemannVonMangoldt` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+The main term and local count assemble the canonical Riemann-von Mangoldt certificate.
+
+## References
+
+- Truth anchor: `D5/S3/Weil/ZetaRvm/Statement.riemannVonMangoldt`
+- Dependency: [D5/S3/Weil/ZetaRvm/MainTerm](MainTerm.md)

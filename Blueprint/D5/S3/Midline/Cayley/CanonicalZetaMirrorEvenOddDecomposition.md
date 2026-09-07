@@ -1,43 +1,35 @@
-# Canonical Zeta Mirror Even-Odd Decomposition
+# Canonical mirror even-odd decomposition
 
 ## Abstract
 
-The same-height mirror is an involutive self-adjoint isometry on the multiplicity-expanded zero Hilbert space. This node constructs its normalized even and odd projections and proves their full spectral-projection algebra.
+Normalized mirror spectral projections split the Krein form into even positive energy minus odd positive energy.
 
-## Main identities
+**Theorem 1.1 (Mirror parity sectors are Hilbert orthogonal).**
 
-\[
-P_+=\frac{I+J}{2},
-\qquad
-P_-=\frac{I-J}{2}.
-\]
+Lean statement: `D5/S3/Midline/Cayley/CanonicalZetaMirrorEvenOddDecomposition.mirror_even_odd_inner_eq_zero`
 
-The node proves
+*Proof.* Machine-checked in Lean as `D5/S3/Midline/Cayley/CanonicalZetaMirrorEvenOddDecomposition.mirror_even_odd_inner_eq_zero` (`✓ std3`). ∎
 
-\[
-P_+^2=P_+,
-\quad
-P_-^2=P_-,
-\quad
-P_+P_-=P_-P_+=0,
-\quad
-P_++P_-=I,
-\]
+*Source.* Repository-derived.
 
-as vector identities, together with Hilbert orthogonality of the two ranges. The mirror Krein form then has the exact energy decomposition
+*Commentary.*
 
-\[
-[\psi,\psi]_J
-=\|P_+\psi\|^2-\|P_-\psi\|^2.
-\]
+The proof uses the self-adjoint involution laws rather than introducing an abstract orthogonal decomposition axiom.
 
-Thus the negative sector is the actual mirror-odd spectral subspace rather than an auxiliary sign convention.
+**Theorem 1.2 (The Krein form is even energy minus odd energy).**
 
-## Truth anchors
+Lean statement: `D5/S3/Midline/Cayley/CanonicalZetaMirrorEvenOddDecomposition.mirrorKreinForm_re_eq_even_norm_sq_sub_odd_norm_sq`
 
-- `mirrorEvenPart_idempotent`
-- `mirrorOddProjectionPart_idempotent`
-- `mirrorOddProjectionPart_eq_zero_iff`
-- `mirror_even_odd_inner_eq_zero`
-- `mirrorKreinForm_even_odd_decomposition`
-- `canonical_mirror_even_odd_decomposition`
+*Proof.* Machine-checked in Lean as `D5/S3/Midline/Cayley/CanonicalZetaMirrorEvenOddDecomposition.mirrorKreinForm_re_eq_even_norm_sq_sub_odd_norm_sq` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+The normalized projections are idempotent, mutually annihilating, and reconstruct every vector.
+
+## References
+
+- Truth anchor: `D5/S3/Midline/Cayley/CanonicalZetaMirrorEvenOddDecomposition.mirrorKreinForm_re_eq_even_norm_sq_sub_odd_norm_sq`
+- Truth anchor: `D5/S3/Midline/Cayley/CanonicalZetaMirrorEvenOddDecomposition.mirror_even_odd_inner_eq_zero`
+- Dependency: [D5/S3/Midline/Cayley/CanonicalZetaMirrorFundamentalSymmetry](CanonicalZetaMirrorFundamentalSymmetry.md)

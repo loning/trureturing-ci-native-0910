@@ -3,10 +3,11 @@
    mirror-B: D5/B/S3/Midline/Cayley/CanonicalZetaMirrorFundamentalSymmetry
    mirror-E: none(waiver:canonical-zeta-krein-interface)
    anchors: []
+   utility: none
    digest: Lift the same-height zero mirror to a self-adjoint involutive isometry on the multiplicity-expanded zero Hilbert space. -/
 
-import D5.S3.Weil.ZetaBridge.ZeroDataPresentationEquiv
-import D5.S3.Weil.ZetaBridge.UnconditionalCanonicalZeroData
+import D5.S3.Weil.ZeroData.ZeroDataPresentationEquiv
+import D5.S3.Weil.ZeroData.UnconditionalCanonicalZeroData
 import D5.S3.Midline.Cayley.ZeroHilbertCayleyUnitarity
 
 /-!
@@ -32,8 +33,8 @@ namespace D5.S3.Midline.Cayley.CanonicalZetaMirrorFundamentalSymmetry
 open D5.S3.Observer.Approximation.ReadoutUpdateCommutatorFactorization
 open D5.S3.Midline.Cayley.ZeroHilbertCayleyUnitarity
 open D5.S3.Weil.ZeroSum
-open D5.S3.Weil.ZetaBridge.ZeroDataPresentationEquiv
-open D5.S3.Weil.ZetaBridge.UnconditionalCanonicalZeroData
+open D5.S3.Weil.ZeroData.ZeroDataPresentationEquiv
+open D5.S3.Weil.ZeroData.UnconditionalCanonicalZeroData
 open scoped ENNReal InnerProduct InnerProductSpace lp
 
 /-- The same-height mirror lifted through the analytic-multiplicity fibers. -/

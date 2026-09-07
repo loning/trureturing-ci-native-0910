@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Midline/Cayley/CanonicalZetaMirrorEvenOddDecomposition
    mirror-E: none(waiver:canonical-zeta-krein-interface)
    anchors: []
+   utility: none
    digest: Construct normalized mirror-even and mirror-odd projections, prove orthogonality, and decompose the Krein form as positive energy minus negative energy. -/
 
 import D5.S3.Midline.Cayley.CanonicalZetaMirrorFundamentalSymmetry

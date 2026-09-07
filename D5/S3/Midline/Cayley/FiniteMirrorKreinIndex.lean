@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Midline/Cayley/FiniteMirrorKreinIndex
    mirror-E: none(waiver:canonical-zeta-krein-interface)
    anchors: []
+   utility: none
    digest: Count one strictly negative odd coordinate per nonfixed mirror pair and analytic multiplicity in every finite zero window. -/
 
 import D5.S3.Midline.Cayley.CanonicalZetaMirrorFundamentalSymmetry
@@ -32,8 +33,8 @@ namespace D5.S3.Midline.Cayley.FiniteMirrorKreinIndex
 open D5.S3.Midline.Cayley.CanonicalZetaMirrorFundamentalSymmetry
 open D5.S3.Weil.Convention
 open D5.S3.Weil.ZeroSum
-open D5.S3.Weil.ZetaBridge.ZeroDataPresentationEquiv
-open D5.S3.Weil.ZetaBridge.UnconditionalCanonicalZeroData
+open D5.S3.Weil.ZeroData.ZeroDataPresentationEquiv
+open D5.S3.Weil.ZeroData.UnconditionalCanonicalZeroData
 open scoped BigOperators
 
 /-- The canonical representative of a two-point mirror orbit. -/

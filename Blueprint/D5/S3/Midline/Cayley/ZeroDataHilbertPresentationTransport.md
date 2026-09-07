@@ -1,31 +1,35 @@
-# `ZeroData` Hilbert Presentation Transport
+# ZeroData Hilbert presentation transport
 
 ## Abstract
 
-Every valid `ZeroData` is a duplicate-free exhaustive presentation of the same multiplicity-aware nontrivial zeta-zero spectrum. This node lifts the unique zero-preserving reindexing through the analytic-multiplicity fibers and then to a unitary map between the corresponding `ell^2` spaces.
+The unique zero-preserving reindexing lifts to a unitary transport of mirror Krein and Cayley geometry.
 
-## Main result
+**Theorem 1.1 (The Hilbert transport intertwines mirror symmetry).**
 
-For presentations `Z` and `Z'`, the unitary `T_{Z,Z'}` satisfies
+Lean statement: `D5/S3/Midline/Cayley/ZeroDataHilbertPresentationTransport.zeroHilbertPresentationUnitary_intertwines_mirror`
 
-\[
-T_{Z,Z'}J_Z=J_{Z'}T_{Z,Z'},
-\qquad
-T_{Z,Z'}U_Z=U_{Z'}T_{Z,Z'},
-\]
+*Proof.* Machine-checked in Lean as `D5/S3/Midline/Cayley/ZeroDataHilbertPresentationTransport.zeroHilbertPresentationUnitary_intertwines_mirror` (`✓ std3`). ∎
 
-and
+*Source.* Repository-derived.
 
-\[
-[T\psi,T\phi]_{J_{Z'}}=[\psi,\phi]_{J_Z}.
-\]
+*Commentary.*
 
-Thus mirror symmetry, Cayley dynamics, and the Krein form are independent of the choice-based natural-number presentation.
+The coordinate equivalence is the unique zero-preserving reindexing lifted through analytic multiplicity fibers.
 
-## Truth anchors
+**Theorem 1.2 (The Hilbert transport preserves the Krein form).**
 
-- `zeroCoordinatePresentationEquiv_mirror`
-- `zeroHilbertPresentationUnitary_intertwines_mirror`
-- `zeroHilbertPresentationUnitary_intertwines_cayley`
-- `zeroHilbertPresentationUnitary_preserves_krein`
-- `zeroData_hilbert_presentation_transport_spec`
+Lean statement: `D5/S3/Midline/Cayley/ZeroDataHilbertPresentationTransport.zeroHilbertPresentationUnitary_preserves_krein`
+
+*Proof.* Machine-checked in Lean as `D5/S3/Midline/Cayley/ZeroDataHilbertPresentationTransport.zeroHilbertPresentationUnitary_preserves_krein` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+The same unitary also intertwines the zero Cayley operators, so the operator geometry is presentation independent.
+
+## References
+
+- Truth anchor: `D5/S3/Midline/Cayley/ZeroDataHilbertPresentationTransport.zeroHilbertPresentationUnitary_intertwines_mirror`
+- Truth anchor: `D5/S3/Midline/Cayley/ZeroDataHilbertPresentationTransport.zeroHilbertPresentationUnitary_preserves_krein`
+- Dependency: [D5/S3/Midline/Cayley/CanonicalZetaCayleyJUnitary](CanonicalZetaCayleyJUnitary.md)

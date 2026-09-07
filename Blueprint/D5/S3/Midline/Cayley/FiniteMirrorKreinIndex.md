@@ -1,87 +1,35 @@
 # Finite mirror Krein index
 
-## Scope
+## Abstract
 
-Every symmetric spectral-radius window is finite and stable under the same-height mirror. For each nonfixed two-point mirror orbit, this node selects the smaller natural-number index as its presentation representative and allocates one odd coordinate for every analytic-multiplicity copy.
+A finite symmetric zero window has one strictly negative odd coordinate per nonfixed mirror pair and analytic multiplicity.
 
-## Finite index
+**Theorem 1.1 (The finite mirror index vanishes exactly on critical windows).**
 
-Let
+Lean statement: `D5/S3/Midline/Cayley/FiniteMirrorKreinIndex.finite_mirror_krein_index_zero_iff_critical`
 
-\[
-\mathcal R_T
-=
-\{n\in S_T:n<M(n)\}.
-\]
+*Proof.* Machine-checked in Lean as `D5/S3/Midline/Cayley/FiniteMirrorKreinIndex.finite_mirror_krein_index_zero_iff_critical` (`✓ std3`). ∎
 
-Define
+*Source.* Repository-derived.
 
-\[
-\kappa_T
-=
-\sum_{n\in\mathcal R_T}m_n.
-\]
+*Commentary.*
 
-This counts each nonfixed mirror pair once, weighted by analytic multiplicity.
+The smaller index in each two-point mirror orbit selects one representative, while multiplicity supplies the odd-coordinate fiber.
 
-## Exact negative sector
+**Theorem 1.2 (The finite odd-sector form is strictly negative).**
 
-The odd-coordinate type is
+Lean statement: `D5/S3/Midline/Cayley/FiniteMirrorKreinIndex.finiteMirrorOddQuadratic_strictly_negative`
 
-\[
-\mathcal I_T^-
-=
-\sum_{n\in\mathcal R_T}\operatorname{Fin}(m_n).
-\]
+*Proof.* Machine-checked in Lean as `D5/S3/Midline/Cayley/FiniteMirrorKreinIndex.finiteMirrorOddQuadratic_strictly_negative` (`✓ std3`). ∎
 
-The node proves
+*Source.* Repository-derived.
 
-\[
-\#\mathcal I_T^- = \kappa_T.
-\]
+*Commentary.*
 
-On functions `v : I_T^- -> C`, define
+The odd-coordinate type has cardinality kappa_T and carries the standard negative norm-square form.
 
-\[
-Q_T^-(v)=-\sum_i|v_i|^2.
-\]
+## References
 
-Then
-
-\[
-v\ne0\Longrightarrow Q_T^-(v)<0.
-\]
-
-Thus `kappa_T` is the exact dimension of an explicitly constructed strictly negative finite sector.
-
-## Critical-line criterion
-
-The following conditions are equivalent:
-
-\[
-\kappa_T=0,
-\]
-
-\[
-M(n)=n\quad\text{for every }n\in S_T,
-\]
-
-\[
-\operatorname{Re}\rho_n=\frac12
-\quad\text{for every }n\in S_T.
-\]
-
-Moreover, `kappa_T > 0` exactly when the window contains an off-line zero.
-
-## Boundary
-
-The integer `kappa_T` counts the explicitly constructed mirror-odd sector. Identifying it with the negative eigenvalue count of another sampled Gram or Weil matrix requires a separate full-rank transport theorem.
-
-## Truth anchors
-
-- `mirrorPairRepresentatives_eq_empty_iff`
-- `finite_mirror_krein_index_zero_iff_critical`
-- `finiteMirrorKreinIndex_pos_iff_exists_offLine`
-- `mirrorOddCoordinate_card`
-- `finiteMirrorOddQuadratic_strictly_negative`
-- `finite_mirror_krein_index_spec`
+- Truth anchor: `D5/S3/Midline/Cayley/FiniteMirrorKreinIndex.finiteMirrorOddQuadratic_strictly_negative`
+- Truth anchor: `D5/S3/Midline/Cayley/FiniteMirrorKreinIndex.finite_mirror_krein_index_zero_iff_critical`
+- Dependency: [D5/S3/Midline/Cayley/CanonicalZetaMirrorFundamentalSymmetry](CanonicalZetaMirrorFundamentalSymmetry.md)

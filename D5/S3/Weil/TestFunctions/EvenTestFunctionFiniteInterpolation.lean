@@ -3,10 +3,11 @@
    mirror-B: D5/B/S3/Weil/TestFunctions/EvenTestFunctionFiniteInterpolation
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: none
    digest: Even test functions interpolate finite data at sign-separated nodes. -/
 
 import D5.S3.Weil.TestFunctions.FinitePaleyWienerInterpolation
-import D5.S3.Weil.TestFunctions.QuantitativeEvenSeed
+import D5.S3.Weil.InterpolationJets.QuantitativeEvenSeed
 
 /- Library-search audit trail (2026-09-02):
    * Searches for the theorem name, the sign-separation hypothesis, and the

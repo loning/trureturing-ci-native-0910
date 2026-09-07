@@ -3,6 +3,7 @@
    mirror-B: none(waiver:formal-unit-only)
    mirror-E: none(waiver:upstream-proof-complete-port)
    anchors: []
+   utility: none
    digest: Assemble the unconditional GammaFacts certificate. -/
 
 /- Ported from anthropics/formal-math commit 2bafb8c88f177284a2123b5fefa2ff84e2365eb6.

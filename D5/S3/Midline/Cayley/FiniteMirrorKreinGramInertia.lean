@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Midline/Cayley/FiniteMirrorKreinGramInertia
    mirror-E: none(waiver:canonical-zeta-krein-interface)
    anchors: []
+   utility: none
    digest: Compute the actual mirror-Krein Gram matrix of the finite odd basis and prove its RHLinalg negative index equals the multiplicity-weighted off-line mirror count. -/
 
 import D5.S3.Midline.Cayley.CanonicalZetaMirrorEvenOddDecomposition
@@ -40,8 +41,8 @@ open D5.S3.Midline.Cayley.CanonicalZetaMirrorEvenOddDecomposition
 open D5.S3.Midline.Cayley.FiniteMirrorKreinIndex
 open D5.S3.Weil.Convention
 open D5.S3.Weil.ZeroSum
-open D5.S3.Weil.ZetaBridge.ZeroDataPresentationEquiv
-open D5.S3.Weil.ZetaBridge.UnconditionalCanonicalZeroData
+open D5.S3.Weil.ZeroData.ZeroDataPresentationEquiv
+open D5.S3.Weil.ZeroData.UnconditionalCanonicalZeroData
 open D5.S3.SpectralTopology.FiniteSpectralLocalizer
 open RHLinalg
 open scoped BigOperators ComplexOrder ENNReal InnerProduct InnerProductSpace lp Matrix

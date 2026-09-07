@@ -1,32 +1,36 @@
-# Canonical Zeta Cayley Krein Inverse
+# Canonical zeta Cayley Krein inverse
 
 ## Abstract
 
-The zero Cayley coefficient at a same-height mirror point is the reciprocal of the conjugate original coefficient. This node uses that symmetry to construct a bounded reciprocal diagonal operator and prove it is the two-sided inverse of the zero Cayley operator for every valid `ZeroData`.
+Mirror symmetry constructs the bounded two-sided inverse of the zero Cayley operator and identifies it with J U-star J.
 
-## Main identities
+**Theorem 1.1 (The zero Cayley operator is unconditionally invertible).**
 
-Writing `U` for the zero Cayley operator and `J` for the mirror fundamental symmetry, the node proves
+Lean statement: `D5/S3/Midline/Cayley/CanonicalZetaCayleyKreinInverse.zeroCayleyOperator_isUnit_unconditional`
 
-\[
-U^{-1}=J U^* J,
-\]
+*Proof.* Machine-checked in Lean as `D5/S3/Midline/Cayley/CanonicalZetaCayleyKreinInverse.zeroCayleyOperator_isUnit_unconditional` (`✓ std3`). ∎
 
-and both conservation laws
+*Source.* Repository-derived.
 
-\[
-U^*JU=J,
-\qquad
-UJU^*=J.
-\]
+*Commentary.*
 
-The boundedness of the reciprocal multiplier is transported from the already bounded Cayley coefficient vector through mirror permutation and complex conjugation. No ordinary-unitarity or RH assumption is used.
+The reciprocal multiplier is bounded by transporting the original bounded coefficients through mirror permutation and conjugation.
 
-## Truth anchors
+**Theorem 1.2 (The explicit inverse equals J U-star J).**
 
-- `zeroCayleyOperator_isUnit_unconditional`
-- `zeroCayleyKreinInverse_comp_cayley`
-- `zeroCayleyKreinInverse_eq_explicit`
-- `cayley_comp_zeroCayleyKreinInverse`
-- `zeroCayleyOperator_companion_j_unitary`
-- `zero_cayley_krein_inverse_spec`
+Lean statement: `D5/S3/Midline/Cayley/CanonicalZetaCayleyKreinInverse.zeroCayleyKreinInverse_eq_explicit`
+
+*Proof.* Machine-checked in Lean as `D5/S3/Midline/Cayley/CanonicalZetaCayleyKreinInverse.zeroCayleyKreinInverse_eq_explicit` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+The same proof yields the companion conservation identity U J U-star = J without ordinary unitarity.
+
+## References
+
+- Truth anchor: `D5/S3/Midline/Cayley/CanonicalZetaCayleyKreinInverse.zeroCayleyKreinInverse_eq_explicit`
+- Truth anchor: `D5/S3/Midline/Cayley/CanonicalZetaCayleyKreinInverse.zeroCayleyOperator_isUnit_unconditional`
+- Dependency: [D5/S3/Midline/Cayley/CanonicalZetaCayleyJUnitary](CanonicalZetaCayleyJUnitary.md)
+- Dependency: [D5/S3/Midline/Cayley/CanonicalZetaMirrorEvenOddDecomposition](CanonicalZetaMirrorEvenOddDecomposition.md)

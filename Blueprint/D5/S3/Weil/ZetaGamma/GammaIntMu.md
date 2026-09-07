@@ -1,7 +1,21 @@
 # Gamma Integral Estimates
 
-**Declaration:** `Zeta23.MuInts.int_mu_of_stirling`
+## Abstract
 
 The Stirling estimate yields the first and second dyadic mu-integral asymptotics.
 
-This node belongs to the proof-complete upstream Riemann-von Mangoldt closure used to construct the parameter-free `zetaZeroData`. Lean remains the truth source.
+**Theorem 1.1 (Gamma Integral Estimates).**
+
+Lean statement: `D5/S3/Weil/ZetaGamma/GammaIntMu.int_mu_of_stirling`
+
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaGamma/GammaIntMu.int_mu_of_stirling` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+The Stirling estimate yields the first and second dyadic mu-integral asymptotics.
+
+## References
+
+- Truth anchor: `D5/S3/Weil/ZetaGamma/GammaIntMu.int_mu_of_stirling`
