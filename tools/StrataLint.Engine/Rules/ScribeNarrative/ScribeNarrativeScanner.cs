@@ -181,7 +181,8 @@ internal static class ScribeNarrativeScanner
         return new TextPart(token.ValueText, line, token.Text.Contains('\n'));
     }
 
-    private static Regex Pattern(string pattern) => new(pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+    private static Regex Pattern(string pattern) => new(pattern,
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.NonBacktracking);
 
     internal sealed record NarrativeClass(string Name, string Layer, Regex Direct,
         Regex? Subject = null, Regex? Relation = null,

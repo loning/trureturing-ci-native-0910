@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Text.RegularExpressions;
 using StrataLint.Engine;
 
 namespace StrataLint.Tests;
@@ -187,6 +188,24 @@ public sealed class ScribeNarrativeProvenanceRuleTests
     {
         var finding = Assert.Single(Evaluate("Text(\"clean \" +\n \"diges\" + \"tion\");"));
         Assert.Contains("'digestion' (line 2)", finding.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void LongAsciiCommentStillFindsExactlyOneTrailingViolation()
+    {
+        var source = "// " + string.Concat(Enumerable.Repeat("a-", 32768)) + " digestion";
+        var finding = Assert.Single(Evaluate(source));
+        Assert.StartsWith("DigestionLedgerReference 'digestion'", finding.Message);
+    }
+
+    [Fact]
+    public void NarrativePatternsUseTheNonBacktrackingEngine()
+    {
+        var classes = new[] { ScribeNarrativeScanner.DigestionLedgerReference,
+            ScribeNarrativeScanner.TheoryVolumeReference, ScribeNarrativeScanner.GovernanceProcessReference };
+        foreach (var rule in classes)
+        foreach (var pattern in new[] { rule.Direct, rule.Subject, rule.Relation, rule.DocumentSubject, rule.DocumentRelation })
+            if (pattern is not null) Assert.True(pattern.Options.HasFlag(RegexOptions.NonBacktracking));
     }
 
     [Fact]
