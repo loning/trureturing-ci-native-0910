@@ -87,7 +87,7 @@ def semantic_config(root: pathlib.Path) -> dict:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("command", choices=["partition", "partition-path", "keys", "config"])
+    parser.add_argument("command", choices=["partition", "partition-path", "keys", "config", "dependency-address"])
     parser.add_argument("--repository", required=True, type=pathlib.Path)
     args = parser.parse_args()
     try:
@@ -95,6 +95,10 @@ def main() -> int:
             print(resolved_mathlib(args.repository))
         elif args.command == "partition-path":
             print(partition_path(args.repository))
+        elif args.command == "dependency-address":
+            # Default dev ci.yml transition only: a 64-hex rendering of the same
+            # partition. Remove after ci-push/ci-pr success and required-set migration.
+            print(hashlib.sha256(partition_path(args.repository).encode("utf-8")).hexdigest())
         elif args.command == "keys":
             print(json.dumps(actions_keys(args.repository), sort_keys=True))
         else:

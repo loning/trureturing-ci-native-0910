@@ -13,7 +13,7 @@ if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
       *) echo "lean-cache-input: unknown argument '$1'" >&2; exit 2 ;;
     esac
   done
-  [[ "$COMMAND" == "address" \
+  [[ "$COMMAND" == "address" || "$COMMAND" == "dependency-address" \
     || "$COMMAND" == "partition" || "$COMMAND" == "partition-path" || "$COMMAND" == "keys" ]] \
     || { echo "usage: lean-cache-input.sh address|partition|partition-path|keys --repository DIR" >&2; exit 2; }
   [[ -n "$REPOSITORY" && "$REPOSITORY" == /* && -d "$REPOSITORY" ]] \

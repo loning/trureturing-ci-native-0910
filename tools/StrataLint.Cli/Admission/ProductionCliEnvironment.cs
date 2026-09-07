@@ -401,7 +401,7 @@ internal sealed partial class ProductionCliEnvironment : ICliEnvironment
             if (route is not RouteOutcome.Routed routed
                 || routed.Result.Gid.Value != "D5/S0/Carrier/Probe"
                 || routed.Result.Path.Value != "D5/S0/Carrier/Probe.lean"
-                || RuleCatalog.Default.Descriptors.Length != 28)
+                || RuleCatalog.Default.Descriptors.Length != 30)
             {
                 return new CommandResult(false, string.Empty, "SELFTEST FAIL invariant mismatch\n");
             }

@@ -310,6 +310,8 @@ public sealed partial class ProductionEnvironmentTests
         Assert.Equal(first.Output, second.Output);
         Assert.Contains("SELFTEST PASS", first.Output, StringComparison.Ordinal);
         Assert.Contains("SL-032", first.Output, StringComparison.Ordinal);
+        Assert.Contains("SL-033", first.Output, StringComparison.Ordinal);
+        Assert.Contains("SL-034", first.Output, StringComparison.Ordinal);
     }
 
     private static RepositorySnapshot Decode(RawRepositorySnapshot raw) =>

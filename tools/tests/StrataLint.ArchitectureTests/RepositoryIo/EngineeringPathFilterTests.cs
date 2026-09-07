@@ -1,7 +1,18 @@
 namespace StrataLint.ArchitectureTests;
 
-public sealed class EngineeringPathFilterTests
+public sealed partial class EngineeringPathFilterTests
 {
+    [Fact]
+    public void CurrentPlanPreservesTheRetiredScriptTestCiSurface()
+    {
+        const string scripts = "tools/tests/StrataLint.ScriptTests/StrataLint.ScriptTests.csproj";
+        var topology = new TestProjectTopologySnapshot([
+            Project(scripts, "<IsTestProject>true</IsTestProject>"),
+            Project("tools/tests/A/A.csproj", "<IsTestProject>true</IsTestProject>"),
+        ]);
+        Assert.Equal(new[] { "tools/tests/A/A.csproj" }, EngineeringTestPlanPolicy.Evaluate(topology));
+    }
+
     [Fact]
     public void EveryCurrentTestProjectIsSelectedRegardlessOfReferences()
     {

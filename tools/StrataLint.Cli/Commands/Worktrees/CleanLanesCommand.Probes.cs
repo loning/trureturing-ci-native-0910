@@ -191,93 +191,24 @@ internal static partial class CleanLanesCommand
     {
         try
         {
-            var result = runner.Run(
+            var result = runner.RunStreaming(
                 "lsof",
-                ["-nP", "-F0pfn"],
+                ["-nP", "-F0pftn"],
                 Path.GetTempPath(),
-                BoundedProcessRunner.HangDetectionBudget);
+                BoundedProcessRunner.HangDetectionBudget,
+                (stream, cancellation) => ReadLsofSnapshot(stream, canonicalLanePath, cancellation));
             if (result.ExitCode != 0
-                || result.StandardOutput.Length == 0
-                || result.StandardError.Length != 0
-                || !TryParseLsofSnapshot(
-                    result.StandardOutput,
-                    canonicalLanePath,
-                    out var inUse))
+                || result.StandardError.Length != 0)
             {
                 return new LaneProcessProbeOutcome(false, false);
             }
 
-            return new LaneProcessProbeOutcome(true, inUse);
+            return result.StandardOutput;
         }
         catch (Exception exception) when (exception is not OutOfMemoryException)
         {
             return new LaneProcessProbeOutcome(false, false);
         }
-    }
-
-    private static bool TryParseLsofSnapshot(
-        byte[] bytes,
-        string canonicalLanePath,
-        out bool inUse)
-    {
-        inUse = false;
-        var processSeen = false;
-        var fileSeen = false;
-        var nameSeen = true;
-        var index = 0;
-        while (index < bytes.Length)
-        {
-            if (bytes[index] == (byte)'\n') index++;
-            if (index >= bytes.Length) break;
-            var end = Array.IndexOf(bytes, (byte)0, index);
-            if (end <= index) return false;
-            var field = StrictUtf8.GetString(bytes, index, end - index);
-            index = end + 1;
-            switch (field[0])
-            {
-                case 'p':
-                    if (field.Length == 1
-                        || field.AsSpan(1).ContainsAnyExceptInRange('0', '9')
-                        || !nameSeen
-                        || (processSeen && !fileSeen))
-                    {
-                        return false;
-                    }
-
-                    processSeen = true;
-                    fileSeen = false;
-                    break;
-                case 'f':
-                    if (!processSeen || field.Length == 1 || !nameSeen) return false;
-                    fileSeen = true;
-                    nameSeen = false;
-                    break;
-                case 'n':
-                    if (!processSeen || !fileSeen || nameSeen || field.Length == 1) return false;
-                    nameSeen = true;
-                    var observedPath = field[1..];
-                    if (Path.IsPathRooted(observedPath))
-                    {
-                        observedPath = CanonicalPath(observedPath);
-                        if (string.Equals(
-                                observedPath,
-                                canonicalLanePath,
-                                StringComparison.Ordinal)
-                            || observedPath.StartsWith(
-                                canonicalLanePath + Path.DirectorySeparatorChar,
-                                StringComparison.Ordinal))
-                        {
-                            inUse = true;
-                        }
-                    }
-
-                    break;
-                default:
-                    return false;
-            }
-        }
-
-        return processSeen && fileSeen && nameSeen;
     }
 
     private static bool PullRequestIsWellFormed(PullRequestInfo pullRequest) =>

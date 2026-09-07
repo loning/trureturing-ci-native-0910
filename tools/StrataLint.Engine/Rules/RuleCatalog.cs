@@ -16,7 +16,8 @@ public sealed record RuleDescriptor(
 
 internal sealed record RuleRegistration(
     RuleDescriptor Descriptor,
-    IRepositoryRule Rule);
+    IRepositoryRule Rule,
+    bool RecheckOnImplementationChange = true);
 
 public sealed class RuleCatalog
 {
@@ -57,6 +58,10 @@ public sealed class RuleCatalog
         RuleId.CreateKnown(30),
         // SL-032 has no timing measurement: scan Scribe text in the delta last.
         RuleId.CreateKnown(32),
+        // SL-033 checks only selectors reached by the frozen pair delta.
+        RuleId.CreateKnown(33),
+        // SL-034 checks only newly added D5 Lean modules.
+        RuleId.CreateKnown(34),
     ];
 
     private readonly ImmutableArray<RuleRegistration> registrations;
@@ -186,6 +191,8 @@ public sealed class RuleCatalog
                 .Append(30)
                 .Append(31)
                 .Append(32)
+                .Append(33)
+                .Append(34)
                 .Select(RuleId.CreateKnown)
                 .ToImmutableArray();
             var registeredIds = Descriptors.Select(static item => item.Id).ToImmutableArray();
@@ -245,7 +252,7 @@ public sealed class RuleCatalog
                 var descriptor = registration.Descriptor;
                 var runCurrent = includeCurrent && registration.Rule.HasCurrentPredicate;
                 var runDelta = delta is not null && registration.Rule.HasDeltaPredicate
-                    && (delta.RuleImplementationChanged || (measureApplicability is null
+                    && (registration.RecheckOnImplementationChange && delta.RuleImplementationChanged || (measureApplicability is null
                         ? registration.Rule.IsAffectedBy(delta)
                         : measureApplicability(() => registration.Rule.IsAffectedBy(delta))));
                 if (!runCurrent && !runDelta)

@@ -3,6 +3,7 @@
    mirror-B: D5/B/S0/Automata/FinitePartialSignatureCompletion
    mirror-E: none(waiver:finite-signature-completion)
    anchors: []
+   utility: none
    digest: Deduplicated full signatures together with fresh output-only and return-only requirements admit a completion with exactly the number of full pairs plus the maximum of the two residual projection counts, and every injective completion has at least that many states. -/
 
 import Mathlib

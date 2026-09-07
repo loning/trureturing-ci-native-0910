@@ -13,6 +13,8 @@ if scope == "lean-report":
         inspector_entrypoint,
         pathlib.PurePosixPath("tools/scripts/lean-report-pair.sh"),
         pathlib.PurePosixPath("tools/scripts/report/lean-report-input.sh"),
+        # LeanArchiveFetch crosses the compiled CLI boundary at this entrypoint.
+        pathlib.PurePosixPath("tools/scripts/worktree/lean-cache-publish.sh"),
     )
 elif scope == "scribe-content":
     entrypoints = (

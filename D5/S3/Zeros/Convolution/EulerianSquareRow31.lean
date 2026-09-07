@@ -58,15 +58,15 @@ def bc (n k : ℕ) : ℤ :=
 noncomputable def B (n : ℕ) : ℝ[X] :=
   ∑ k ∈ Finset.range (n + 1), C (bc n k : ℝ) * X ^ k
 
-private noncomputable def hp : List ℤ → ℝ[X]
+noncomputable def hp : List ℤ → ℝ[X]
   | [] => 1
   | c :: cs => C (c : ℝ) + X * hp cs
 
-private def hv (a b : ℤ) : List ℤ → ℤ
+def hv (a b : ℤ) : List ℤ → ℤ
   | [] => 1
   | c :: cs => c * b ^ (cs.length + 1) + a * hv a b cs
 
-private theorem hp_degree (cs : List ℤ) :
+theorem hp_degree (cs : List ℤ) :
     (hp cs).natDegree = cs.length ∧ hp cs ≠ 0 := by
   induction cs with
   | nil => simp [hp]
@@ -78,7 +78,7 @@ private theorem hp_degree (cs : List ℤ) :
     rw [hz, natDegree_zero] at hd
     simp at hd
 
-private theorem hp_monic (cs : List ℤ) : (hp cs).Monic := by
+theorem hp_monic (cs : List ℤ) : (hp cs).Monic := by
   rw [Monic.def, leadingCoeff, (hp_degree cs).1]
   induction cs with
   | nil => simp [hp]
@@ -97,7 +97,7 @@ private theorem hv_spec (cs : List ℤ) (a b : ℤ) (x : ℝ)
     rw [ih, hx]
     ring
 
-private theorem eval_pos (cs : List ℤ) (a b : ℤ) (hb : 0 < b)
+theorem eval_pos (cs : List ℤ) (a b : ℤ) (hb : 0 < b)
     (hs : 0 < hv a b cs) : 0 < (hp cs).eval ((a : ℝ) / (b : ℝ)) := by
   have hbR : (0 : ℝ) < b := by exact_mod_cast hb
   have hx : (a : ℝ) = (b : ℝ) * ((a : ℝ) / (b : ℝ)) := by field_simp
@@ -106,7 +106,7 @@ private theorem eval_pos (cs : List ℤ) (a b : ℤ) (hb : 0 < b)
   rw [he] at hi
   exact (mul_pos_iff_of_pos_left (pow_pos hbR _)).mp hi
 
-private theorem eval_neg (cs : List ℤ) (a b : ℤ) (hb : 0 < b)
+theorem eval_neg (cs : List ℤ) (a b : ℤ) (hb : 0 < b)
     (hs : hv a b cs < 0) : (hp cs).eval ((a : ℝ) / (b : ℝ)) < 0 := by
   have hbR : (0 : ℝ) < b := by exact_mod_cast hb
   have hx : (a : ℝ) = (b : ℝ) * ((a : ℝ) / (b : ℝ)) := by field_simp
@@ -126,7 +126,7 @@ private theorem root_between (p : ℝ[X]) (a b : ℝ) (hab : a < b)
       (show (0 : ℝ) ∈ Ioo (p.eval a) (p.eval b) from h)
     exact ⟨x, hx.1, hx.2, hz⟩
 
-private theorem split_from_endpoints (p : ℝ[X]) (d : ℕ) (hp0 : p ≠ 0)
+theorem split_from_endpoints (p : ℝ[X]) (d : ℕ) (hp0 : p ≠ 0)
     (hd : p.natDegree = d) (e : Fin (d + 1) → ℝ)
     (he : StrictMono e) (hne : ∀ i, e i < 0)
     (hs : ∀ i : Fin d, p.eval (e i.castSucc) * p.eval (e i.succ) < 0) :

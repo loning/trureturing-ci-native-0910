@@ -132,11 +132,10 @@ jobs:
           PROJECT_KEY: ${{ steps.project.outputs.cache-matched-key }}
           REPORT_KEY: ${{ steps.report.outputs.cache-matched-key }}
         run: python3 tools/scripts/worktree/lean_actions.py restore --repository "$GITHUB_WORKSPACE" --dependency-key "$DEPENDENCY_KEY" --project-key "$PROJECT_KEY" --report-key "$REPORT_KEY"
-      - name: Try the same-partition Release fallback
+      - name: Produce and check current with bounded cache preparation
         env:
           GH_TOKEN: ${{ github.token }}
-        run: make lean-cache-from-github-without-mathlib || printf '%s\n' 'Optional Release seed unavailable; production continues'
-      - run: make current
+        run: make current
       - id: pack
         run: python3 tools/scripts/workflow/ci.py pack --repository "$GITHUB_WORKSPACE" --stage current --commit "$CANDIDATE_SHA" --archive "$RUNNER_TEMP/ci-current.tar.gz"
       - id: upload

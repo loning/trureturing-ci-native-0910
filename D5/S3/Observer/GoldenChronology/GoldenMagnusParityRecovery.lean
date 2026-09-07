@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Observer/GoldenChronology/GoldenMagnusParityRecovery
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: none
    digest: The Magnus center recovers fixed-length golden factors exactly at even lengths. -/
 
 import D5.S3.Observer.GoldenChronology.GoldenFactorParikhMagnusBridge

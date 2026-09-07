@@ -19,6 +19,9 @@ from lean_cache import partition_path
 ASSET = "lean-build.tgz"
 MANIFEST = "manifest.json"
 REPO = os.environ.get("STRATALINT_CACHE_REPO", "the-omega-institute/trureturing")
+# Issue #6194, run 34119746844: Release assets must be strictly below 2 GiB.
+# Keep dev's 1.5 GiB headroom and two-digit, at-most-100-part inventory.
+CHUNK_BYTES = 1610612736
 
 
 def sha(path):
@@ -39,6 +42,47 @@ def receipt(verb, status, **fields):
 
 def prefix(partition):
     return "lean-cache-v2-" + partition.replace("/", "-") + "-"
+
+
+def archive_parts(stage):
+    archive = stage / ASSET
+    size = archive.stat().st_size
+    count = (size + CHUNK_BYTES - 1) // CHUNK_BYTES
+    if not 1 <= count <= 100:
+        raise ValueError("archive must fit in 1 to 100 parts")
+    paths = [archive]
+    if count > 1:
+        paths = []
+        with archive.open("rb") as source:
+            for index in range(count):
+                path = stage / f"{ASSET}.part-{index:02d}"
+                remaining = min(CHUNK_BYTES, size - index * CHUNK_BYTES)
+                with path.open("wb") as target:
+                    while remaining:
+                        block = source.read(min(remaining, 1024 * 1024))
+                        if not block:
+                            raise ValueError("archive ended before its declared size")
+                        target.write(block)
+                        remaining -= len(block)
+                paths.append(path)
+    return [{"name": path.name, "sha256": sha(path), "bytes": path.stat().st_size} for path in paths]
+
+
+def declared_parts(manifest):
+    parts = manifest.get("parts")
+    if not isinstance(parts, list) or not 1 <= len(parts) <= 100:
+        raise ValueError("invalid archive parts inventory")
+    for index, part in enumerate(parts):
+        name = ASSET if len(parts) == 1 else f"{ASSET}.part-{index:02d}"
+        if (not isinstance(part, dict) or set(part) != {"name", "sha256", "bytes"}
+                or part["name"] != name or not isinstance(part["sha256"], str)
+                or not re.fullmatch(r"[0-9a-f]{64}", part["sha256"])
+                or type(part["bytes"]) is not int or not 0 < part["bytes"] <= CHUNK_BYTES):
+            raise ValueError("invalid archive parts inventory")
+    if (type(manifest.get("archive_bytes")) is not int
+            or sum(part["bytes"] for part in parts) != manifest["archive_bytes"]):
+        raise ValueError("archive byte count does not match its parts")
+    return parts
 
 
 def prune(partition, tag):
@@ -107,18 +151,22 @@ def publish(root, partition):
                     reports = root / ".lake/report-cache" / partition
                     if reports.is_dir():
                         archive.add(reports, arcname="report-cache/" + partition)
-            metadata = {"schema": "lean-release-seed-v2", "partition": partition,
+            metadata = {"schema": "lean-release-seed-v3", "partition": partition,
                 "producer_commit_sha": commit, "workflow_run_id": run, "workflow_run_attempt": attempt,
-                "archive_sha256": sha(stage / ASSET), "archive_bytes": (stage / ASSET).stat().st_size}
+                "archive_sha256": sha(stage / ASSET), "archive_bytes": (stage / ASSET).stat().st_size,
+                "parts": archive_parts(stage)}
             (stage / MANIFEST).write_text(json.dumps(metadata, sort_keys=True) + "\n")
             # Never clobber an existing snapshot. Failed/racing publishers leave
             # at most a draft, which fetch never considers an applicable seed.
             gh("release", "create", tag, "--repo", REPO, "--draft", "--target", commit,
                "--title", "Lean cache " + partition, "--notes", "Successful Lean build; incremental seed only.")
-            gh("release", "upload", tag, str(stage / ASSET), str(stage / MANIFEST), "--repo", REPO)
+            gh("release", "upload", tag, *(str(stage / part["name"]) for part in metadata["parts"]),
+               str(stage / MANIFEST), "--repo", REPO)
             gh("release", "edit", tag, "--repo", REPO, "--draft=false")
             pruned, prune_error = prune(partition, tag)
             receipt("publish", "published", tag=tag, pruned=pruned, prune_error=prune_error, **metadata)
+    except ImportError as error:
+        receipt("publish", "skipped", reason="POSIX cache locking unavailable: " + str(error))
     except (OSError, ValueError, subprocess.SubprocessError, tarfile.TarError) as error:
         receipt("publish", "failed", reason=str(error))
     return 0
@@ -129,22 +177,40 @@ def restore_snapshot(root, partition, tag, stage):
     if metadata.get("draft") is not False or metadata.get("tag_name") != tag:
         raise ValueError("snapshot is not published")
     gh("release", "download", tag, "--repo", REPO, "--dir", str(stage),
-       "--pattern", ASSET, "--pattern", MANIFEST)
+       "--pattern", MANIFEST)
     manifest = json.loads((stage / MANIFEST).read_text())
+    if not isinstance(manifest, dict):
+        raise ValueError("snapshot manifest must be an object")
     commit, run, attempt = (manifest.get(field, "") for field in
         ("producer_commit_sha", "workflow_run_id", "workflow_run_attempt"))
-    if (manifest.get("schema") != "lean-release-seed-v2" or manifest.get("partition") != partition
+    if (manifest.get("schema") != "lean-release-seed-v3" or manifest.get("partition") != partition
             or not isinstance(commit, str) or not re.fullmatch(r"[0-9a-f]{40}", commit)
             or not all(isinstance(value, str) and re.fullmatch(r"[0-9]+", value) for value in (run, attempt))
             or tag != prefix(partition) + run + "-" + attempt
             or metadata.get("target_commitish") != commit):
         raise ValueError("snapshot partition or source attribution mismatch")
+    parts = declared_parts(manifest)
     assets = metadata.get("assets", [])
-    if sorted(asset.get("name", "") for asset in assets) != sorted([ASSET, MANIFEST]):
+    if (not isinstance(assets, list) or any(not isinstance(asset, dict) for asset in assets)
+            or sorted(asset.get("name", "") for asset in assets) != sorted([MANIFEST, *[part["name"] for part in parts]])):
         raise ValueError("snapshot asset set is incomplete")
+    recorded = {asset["name"]: asset.get("digest") for asset in assets}
+    if recorded[MANIFEST] != "sha256:" + sha(stage / MANIFEST):
+        raise ValueError("transferred asset digest mismatch")
+    gh("release", "download", tag, "--repo", REPO, "--dir", str(stage),
+       *(argument for part in parts for argument in ("--pattern", part["name"])))
+    for part in parts:
+        path = stage / part["name"]
+        if part["sha256"] != sha(path) or part["bytes"] != path.stat().st_size:
+            raise ValueError("part checksum or size mismatch: " + part["name"])
     for asset in assets:
         if asset.get("digest") != "sha256:" + sha(stage / asset["name"]):
             raise ValueError("transferred asset digest mismatch")
+    if len(parts) > 1:
+        with (stage / ASSET).open("wb") as archive:
+            for part in parts:
+                with (stage / part["name"]).open("rb") as source:
+                    shutil.copyfileobj(source, archive, length=1024 * 1024)
     if (manifest.get("archive_sha256") != sha(stage / ASSET)
             or manifest.get("archive_bytes") != (stage / ASSET).stat().st_size):
         raise ValueError("archive checksum or size mismatch")
@@ -194,7 +260,7 @@ def fetch(root, partition, writer_owned=False):
     try:
         with contextlib.nullcontext() if writer_owned else cache_guard(root):
             return fetch_locked(root, partition)
-    except OSError as error:
+    except (OSError, ImportError) as error:
         receipt("fetch", "miss", reason=str(error), partition=partition)
         return 1
 
@@ -214,6 +280,7 @@ def fetch_locked(root, partition):
                 return 0
             except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError, tarfile.TarError) as error:
                 reason = str(error)
+                receipt("fetch", "miss", reason=reason, resolved=tag, partition=partition)
     except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as error:
         reason = str(error)
     receipt("fetch", "miss", reason=reason, partition=partition)
@@ -224,6 +291,9 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("command", choices=("address", "publish", "fetch"))
     parser.add_argument("--repository", type=pathlib.Path, default=pathlib.Path(__file__).resolve().parents[3])
+    # Transition for the default dev ci.yml fetch caller; compatibility stays v3.
+    # Remove after ci-push/ci-pr success and required-set migration, with its caller.
+    parser.add_argument("--allow-seed", action="store_true", help=argparse.SUPPRESS)
     # Internal handoff from LeanArchiveFetch after its typed guard assertion.
     parser.add_argument("--writer-owned", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()

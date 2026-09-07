@@ -77,7 +77,7 @@ internal static class DescribeContentGovernance
         return Order(findings);
     }
 
-    private static void ValidateCensus(
+    internal static void ValidateCensus(
         string repositoryRoot,
         ImmutableArray<ScribeDocument> documents,
         ImmutableArray<DescribeRedFinding>.Builder findings)
@@ -95,6 +95,23 @@ internal static class DescribeContentGovernance
             .ToImmutableHashSet(StringComparer.Ordinal);
         var expectedFree = documentGids.Except(receiptBound, StringComparer.Ordinal)
             .ToImmutableHashSet(StringComparer.Ordinal);
+        ValidateCensusClassification(
+            documentGids,
+            census,
+            expectedBound,
+            expectedFree,
+            documents.Length,
+            findings);
+    }
+
+    internal static void ValidateCensusClassification(
+        ImmutableHashSet<string> documentGids,
+        ReceiptFreeDocumentCensus census,
+        ImmutableHashSet<string> expectedBound,
+        ImmutableHashSet<string> expectedFree,
+        int documentCount,
+        ImmutableArray<DescribeRedFinding>.Builder findings)
+    {
         var overlap = census.ReceiptFreeDocumentGids
             .Intersect(census.ReceiptBoundDocumentGids, StringComparer.Ordinal)
             .Order(StringComparer.Ordinal)
@@ -102,14 +119,16 @@ internal static class DescribeContentGovernance
         var classified = census.ReceiptFreeDocumentGids
             .Union(census.ReceiptBoundDocumentGids, StringComparer.Ordinal)
             .ToImmutableHashSet(StringComparer.Ordinal);
+        // Owner ruling #5942 retired Scribe receipts, and #6214 removed the final batch.
+        // An empty receipt-bound set is the expected terminal state, not an anomaly.
+        // Keep expectedFree non-empty: an all-bound corpus would mean receipts returned.
         if (overlap.Length != 0
             || !classified.SetEquals(documentGids)
             || !census.ReceiptBoundDocumentGids.SetEquals(expectedBound)
             || !census.ReceiptFreeDocumentGids.SetEquals(expectedFree)
-            || expectedBound.IsEmpty
             || expectedFree.IsEmpty
             || census.ReceiptFreeDocumentGids.Count + census.ReceiptBoundDocumentGids.Count
-                != documents.Length)
+                != documentCount)
         {
             findings.Add(new DescribeRedFinding(
                 "receipt-census",

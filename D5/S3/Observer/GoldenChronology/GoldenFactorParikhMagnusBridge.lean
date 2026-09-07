@@ -3,6 +3,7 @@
    mirror-B: none(waiver:new-cross-library-adapter)
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: none
    digest: A fixed Parikh matrix and its Chen coordinates recover legal golden factors. -/
 
 import D5.S1.Words.GoldenRecovery.GoldenFactorSecondOrderBinomialRigidity

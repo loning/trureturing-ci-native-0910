@@ -1,0 +1,135 @@
+# Opt-in analysis consumer (#5986). Shared dependency caches and release build
+# layers are read-only; outputs belong only to this workflow run's artifacts.
+# Dispatch is available because this job cannot publish a shared build layer.
+# This separate file gives opt-in analysis its own budget outside the required
+# lean-report job.
+name: Lean analysis fixtures
+
+on:
+  schedule:
+    - cron: '17 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analysis-fixtures:
+    name: Build and export Lean analysis fixtures
+    if: github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-24.04-arm
+    # Budget: measured, not a policy override any more (#5986).
+    # First real run 34144393161 (workflow_dispatch on dev, 2026-09-07): job
+    # startedAt 16:41:10Z -> completedAt 17:22:00Z = 2450 s excluding queue delay;
+    # the build-and-hash step took 2299 s (Built 6 / Replayed 44 after a
+    # `mode=seed` release fetch). Per-module durations from Lake's Built lines,
+    # which overlap because the modules build concurrently: BoundedClosure 574 s,
+    # FrozenRootAnalysis 850 s, CausalProjection 2294 s (ubuntu-24.04-arm).
+    # Replacement rule recorded at merge of #6209: ceil(2450 * 1.5 / 60) = 62.
+    # One seeded run gives no runtime distribution and no cold-seed bound: if a
+    # later run approaches this budget (colder or incomplete seed, dependency
+    # rebuilds, more modules, runner-class change), re-measure that run and
+    # re-derive with the same rule; do not pad the number.
+    timeout-minutes: 62
+    steps:
+      - name: Check out the analysis commit
+        id: checkout-publish
+        uses: actions/checkout@v4
+        with:
+          path: candidate
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Strip checkout remote state
+        if: steps.checkout-publish.outcome == 'success'
+        shell: bash
+        run: python3 candidate/tools/scripts/workflow/ci.py checkout --repository "$GITHUB_WORKSPACE/candidate" --commit "$GITHUB_SHA"
+
+      - name: Set up the pinned .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: candidate/global.json
+
+      - name: Build the candidate cache owner with locked dependencies
+        run: make -C candidate/tools dotnet
+
+      - name: Resolve optional cache partitions
+        id: keys
+        run: python3 candidate/tools/scripts/worktree/lean_actions.py keys --repository "$GITHUB_WORKSPACE/candidate"
+
+      - name: Restore the pinned Lean toolchain
+        if: steps.keys.outputs.elan_key != ''
+        continue-on-error: true
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.elan
+          key: ${{ steps.keys.outputs.elan_key }}
+
+      - name: Install the pinned Lean toolchain
+        shell: bash
+        env:
+          TOOLCHAIN_FILE: ${{ github.workspace }}/candidate/lean-toolchain
+        run: |
+          set -euo pipefail
+          "$GITHUB_WORKSPACE/candidate/tools/scripts/workflow/install-lean-toolchain.sh" \
+            "${TOOLCHAIN_FILE}" --github-path "$GITHUB_PATH"
+
+      - name: Restore the Lean dependency layer
+        id: dependency
+        if: steps.keys.outputs.dependency_key != ''
+        uses: actions/cache/restore@v4
+        continue-on-error: true
+        with:
+          path: candidate/${{ steps.keys.outputs.dependency_path }}
+          key: ${{ steps.keys.outputs.dependency_key }}
+          restore-keys: ${{ steps.keys.outputs.dependency_restore_prefix }}
+
+      - name: Restore the Lean project layer
+        id: project
+        if: steps.keys.outputs.project_key != ''
+        uses: actions/cache/restore@v4
+        continue-on-error: true
+        with:
+          path: candidate/${{ steps.keys.outputs.project_path }}
+          key: ${{ steps.keys.outputs.project_key }}
+          restore-keys: ${{ steps.keys.outputs.project_restore_prefix }}
+
+      - name: Restore optional validated seeds
+        env:
+          DEPENDENCY_KEY: ${{ steps.dependency.outputs.cache-matched-key }}
+          PROJECT_KEY: ${{ steps.project.outputs.cache-matched-key }}
+        run: python3 candidate/tools/scripts/worktree/lean_actions.py restore --repository "$GITHUB_WORKSPACE/candidate" --dependency-key "$DEPENDENCY_KEY" --project-key "$PROJECT_KEY"
+
+      - name: Install the artifact hashing tool
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v shasum >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install --yes libdigest-sha-perl
+          fi
+
+      - name: Build and hash the analysis fixtures
+        id: fixtures
+        shell: bash
+        env:
+          OUTPUT_ROOT: ${{ runner.temp }}/lean-analysis-fixtures
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Bound optional dependency transfer at the ensure owner's supported
+          # five-minute floor; analysis production retains this job's budget.
+          STRATALINT_LEAN_CACHE_TIMEOUT_SECONDS: 300
+        run: |
+          set -euo pipefail
+          fixture_runner="$GITHUB_WORKSPACE/candidate/tools/lean-inspector/LeanInformationAuditAnalysis/run-analysis-fixtures.sh"
+          test -x "${fixture_runner}"
+          mkdir -p "${OUTPUT_ROOT}"
+          "${fixture_runner}" "${OUTPUT_ROOT}/artifacts" 2>&1 | tee "${OUTPUT_ROOT}/run.log"
+
+      - name: Upload the analysis artifacts and hash log
+        if: always() && steps.fixtures.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: lean-analysis-fixtures
+          path: ${{ runner.temp }}/lean-analysis-fixtures/
+          if-no-files-found: error
