@@ -6,9 +6,9 @@ Finite node radius, positive squared-node gap and target amplitude give actual c
 
 **Definition 1.1 (The coefficient budget).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/QuantitativeEvenInterpolationJets.interpolationCoefficientBudget`
+Lean statement: `D5/S3/Weil/InterpolationJets/QuantitativeEvenInterpolationJets.interpolationCoefficientBudget`
 
-*Formalization.* `D5/S3/Weil/TestFunctions/QuantitativeEvenInterpolationJets.interpolationCoefficientBudget` (`✓ std3`).
+*Formalization.* `D5/S3/Weil/InterpolationJets/QuantitativeEvenInterpolationJets.interpolationCoefficientBudget` (`✓ std3`).
 
 *Source.* Repository-derived.
 
@@ -18,9 +18,9 @@ The count d is the number of distinct squared interpolation nodes. Positive sigm
 
 **Definition 1.2 (Finite-box derivative scale).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/QuantitativeEvenInterpolationJets.interpolationJetScale`
+Lean statement: `D5/S3/Weil/InterpolationJets/QuantitativeEvenInterpolationJets.interpolationJetScale`
 
-*Formalization.* `D5/S3/Weil/TestFunctions/QuantitativeEvenInterpolationJets.interpolationJetScale` (`✓ std3`).
+*Formalization.* `D5/S3/Weil/InterpolationJets/QuantitativeEvenInterpolationJets.interpolationJetScale` (`✓ std3`).
 
 *Source.* Repository-derived.
 
@@ -30,9 +30,9 @@ Use q=2d+2 boxes and radius h=1/(4(R+1)). The finite-box scale 2(q+1)/h is exact
 
 **Definition 1.3 (An arithmetic seminorm budget).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/QuantitativeEvenInterpolationJets.interpolationJetBudget`
+Lean statement: `D5/S3/Weil/InterpolationJets/QuantitativeEvenInterpolationJets.interpolationJetBudget`
 
-*Formalization.* `D5/S3/Weil/TestFunctions/QuantitativeEvenInterpolationJets.interpolationJetBudget` (`✓ std3`).
+*Formalization.* `D5/S3/Weil/InterpolationJets/QuantitativeEvenInterpolationJets.interpolationJetBudget` (`✓ std3`).
 
 *Source.* Repository-derived.
 
@@ -42,9 +42,9 @@ This is a deliberately coarse bound. The construction below proves it for s=0,1,
 
 **Theorem 1.4 (Coefficients from a disk bound).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/QuantitativeEvenInterpolationJets.polynomial_coeff_norm_le_of_unit_disk`
+Lean statement: `D5/S3/Weil/InterpolationJets/QuantitativeEvenInterpolationJets.polynomial_coeff_norm_le_of_unit_disk`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/QuantitativeEvenInterpolationJets.polynomial_coeff_norm_le_of_unit_disk` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/InterpolationJets/QuantitativeEvenInterpolationJets.polynomial_coeff_norm_le_of_unit_disk` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -54,9 +54,9 @@ Reuse Mathlib Polynomial.fourierCoeff_toAddCircle_natCast. The Haar measure is n
 
 **Theorem 1.5 (Actual Lagrange coefficients are controlled).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/QuantitativeEvenInterpolationJets.lagrange_coeff_le_explicit_budget`
+Lean statement: `D5/S3/Weil/InterpolationJets/QuantitativeEvenInterpolationJets.lagrange_coeff_le_explicit_budget`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/QuantitativeEvenInterpolationJets.lagrange_coeff_le_explicit_budget` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/InterpolationJets/QuantitativeEvenInterpolationJets.lagrange_coeff_le_explicit_budget` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -66,9 +66,9 @@ The existing GautschiEvenInterpolationBounds owner controls the interpolant on a
 
 **Theorem 1.6 (Exact derivatives of the existing realization).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/QuantitativeEvenInterpolationJets.evenPolynomialDifferential_iterate_deriv`
+Lean statement: `D5/S3/Weil/InterpolationJets/QuantitativeEvenInterpolationJets.evenPolynomialDifferential_iterate_deriv`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/QuantitativeEvenInterpolationJets.evenPolynomialDifferential_iterate_deriv` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/InterpolationJets/QuantitativeEvenInterpolationJets.evenPolynomialDifferential_iterate_deriv` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -78,9 +78,9 @@ Induct on s and use HasDerivAt.fun_sum. This is the existing interpolation const
 
 **Theorem 1.7 (Every derivative term is included in the L1 budget).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/QuantitativeEvenInterpolationJets.evenPolynomialDifferential_L1_le`
+Lean statement: `D5/S3/Weil/InterpolationJets/QuantitativeEvenInterpolationJets.evenPolynomialDifferential_L1_le`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/QuantitativeEvenInterpolationJets.evenPolynomialDifferential_L1_le` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/InterpolationJets/QuantitativeEvenInterpolationJets.evenPolynomialDifferential_L1_le` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -90,9 +90,9 @@ All derivatives are compactly supported and integrable. Apply the finite-sum tri
 
 **Theorem 1.8 (An actual test with no assumed jet certificate).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/QuantitativeEvenInterpolationJets.exists_even_interpolant_with_explicit_jets`
+Lean statement: `D5/S3/Weil/InterpolationJets/QuantitativeEvenInterpolationJets.exists_even_interpolant_with_explicit_jets`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/QuantitativeEvenInterpolationJets.exists_even_interpolant_with_explicit_jets` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/InterpolationJets/QuantitativeEvenInterpolationJets.exists_even_interpolant_with_explicit_jets` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -104,9 +104,9 @@ The finite-box identity is the one-dimensional scaled version of the derivative/
 
 **Definition 1.9 (Executable rational constants).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/QuantitativeEvenInterpolationJets.rationalInterpolationJetBudget`
+Lean statement: `D5/S3/Weil/InterpolationJets/QuantitativeEvenInterpolationJets.rationalInterpolationJetBudget`
 
-*Formalization.* `D5/S3/Weil/TestFunctions/QuantitativeEvenInterpolationJets.rationalInterpolationJetBudget` (`✓ std3`).
+*Formalization.* `D5/S3/Weil/InterpolationJets/QuantitativeEvenInterpolationJets.rationalInterpolationJetBudget` (`✓ std3`).
 
 *Source.* Repository-derived.
 
@@ -116,9 +116,9 @@ The rational function computes a budget, not the transcendental interpolating fu
 
 **Theorem 1.10 (Exact rational-to-real semantics).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/QuantitativeEvenInterpolationJets.rationalInterpolationJetBudget_cast`
+Lean statement: `D5/S3/Weil/InterpolationJets/QuantitativeEvenInterpolationJets.rationalInterpolationJetBudget_cast`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/QuantitativeEvenInterpolationJets.rationalInterpolationJetBudget_cast` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/InterpolationJets/QuantitativeEvenInterpolationJets.rationalInterpolationJetBudget_cast` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -128,16 +128,16 @@ The equality is proved by the field-cast identities. Thus rational arithmetic ca
 
 ## References
 
-- Truth anchor: `D5/S3/Weil/TestFunctions/QuantitativeEvenInterpolationJets.evenPolynomialDifferential_L1_le`
-- Truth anchor: `D5/S3/Weil/TestFunctions/QuantitativeEvenInterpolationJets.evenPolynomialDifferential_iterate_deriv`
-- Truth anchor: `D5/S3/Weil/TestFunctions/QuantitativeEvenInterpolationJets.exists_even_interpolant_with_explicit_jets`
-- Truth anchor: `D5/S3/Weil/TestFunctions/QuantitativeEvenInterpolationJets.interpolationCoefficientBudget`
-- Truth anchor: `D5/S3/Weil/TestFunctions/QuantitativeEvenInterpolationJets.interpolationJetBudget`
-- Truth anchor: `D5/S3/Weil/TestFunctions/QuantitativeEvenInterpolationJets.interpolationJetScale`
-- Truth anchor: `D5/S3/Weil/TestFunctions/QuantitativeEvenInterpolationJets.lagrange_coeff_le_explicit_budget`
-- Truth anchor: `D5/S3/Weil/TestFunctions/QuantitativeEvenInterpolationJets.polynomial_coeff_norm_le_of_unit_disk`
-- Truth anchor: `D5/S3/Weil/TestFunctions/QuantitativeEvenInterpolationJets.rationalInterpolationJetBudget`
-- Truth anchor: `D5/S3/Weil/TestFunctions/QuantitativeEvenInterpolationJets.rationalInterpolationJetBudget_cast`
-- Dependency: [D5/S3/Weil/TestFunctions/EvenTestFunctionFiniteInterpolation](EvenTestFunctionFiniteInterpolation.md)
-- Dependency: [D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier](FiniteBoxWeilMollifier.md)
-- Dependency: [D5/S3/Weil/TestFunctions/GautschiEvenInterpolationBounds](GautschiEvenInterpolationBounds.md)
+- Truth anchor: `D5/S3/Weil/InterpolationJets/QuantitativeEvenInterpolationJets.evenPolynomialDifferential_L1_le`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/QuantitativeEvenInterpolationJets.evenPolynomialDifferential_iterate_deriv`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/QuantitativeEvenInterpolationJets.exists_even_interpolant_with_explicit_jets`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/QuantitativeEvenInterpolationJets.interpolationCoefficientBudget`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/QuantitativeEvenInterpolationJets.interpolationJetBudget`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/QuantitativeEvenInterpolationJets.interpolationJetScale`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/QuantitativeEvenInterpolationJets.lagrange_coeff_le_explicit_budget`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/QuantitativeEvenInterpolationJets.polynomial_coeff_norm_le_of_unit_disk`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/QuantitativeEvenInterpolationJets.rationalInterpolationJetBudget`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/QuantitativeEvenInterpolationJets.rationalInterpolationJetBudget_cast`
+- Dependency: [D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier](../BurnolGram/FiniteBoxWeilMollifier.md)
+- Dependency: [D5/S3/Weil/InterpolationJets/GautschiEvenInterpolationBounds](GautschiEvenInterpolationBounds.md)
+- Dependency: [D5/S3/Weil/TestFunctions/EvenTestFunctionFiniteInterpolation](../TestFunctions/EvenTestFunctionFiniteInterpolation.md)

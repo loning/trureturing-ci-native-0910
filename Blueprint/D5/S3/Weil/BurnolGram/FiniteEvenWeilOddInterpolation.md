@@ -6,9 +6,9 @@ Finite sign-separated conjugate spectral pairs admit an explicit linear synthesi
 
 **Theorem 1.1 (Reduced odd evaluation has an explicit finite right inverse).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/FiniteEvenWeilOddInterpolation.finite_even_weil_odd_interpolation_spec`
+Lean statement: `D5/S3/Weil/BurnolGram/FiniteEvenWeilOddInterpolation.finite_even_weil_odd_interpolation_spec`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/FiniteEvenWeilOddInterpolation.finite_even_weil_odd_interpolation_spec` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/FiniteEvenWeilOddInterpolation.finite_even_weil_odd_interpolation_spec` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -20,9 +20,9 @@ Chosen coordinate interpolants are combined by an explicit bundled finite linear
 
 **Theorem 1.2 (The observable odd Gram index equals the number of independent orbit channels).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/FiniteEvenWeilOddInterpolation.frameOddGram_negIndex`
+Lean statement: `D5/S3/Weil/BurnolGram/FiniteEvenWeilOddInterpolation.frameOddGram_negIndex`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/FiniteEvenWeilOddInterpolation.frameOddGram_negIndex` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/FiniteEvenWeilOddInterpolation.frameOddGram_negIndex` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -32,8 +32,8 @@ The basis Gram is exactly minus four times the positive analytic-multiplicity di
 
 ## References
 
-- Truth anchor: `D5/S3/Weil/ZetaBridge/FiniteEvenWeilOddInterpolation.finite_even_weil_odd_interpolation_spec`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/FiniteEvenWeilOddInterpolation.frameOddGram_negIndex`
+- Truth anchor: `D5/S3/Weil/BurnolGram/FiniteEvenWeilOddInterpolation.finite_even_weil_odd_interpolation_spec`
+- Truth anchor: `D5/S3/Weil/BurnolGram/FiniteEvenWeilOddInterpolation.frameOddGram_negIndex`
 - Dependency: [D5/S3/SpectralTopology/FiniteSpectralLocalizer](../../SpectralTopology/FiniteSpectralLocalizer.md)
+- Dependency: [D5/S3/Weil/BurnolGram/FiniteMirrorReducedWeilFactorization](FiniteMirrorReducedWeilFactorization.md)
 - Dependency: [D5/S3/Weil/TestFunctions/EvenTestFunctionFiniteInterpolation](../TestFunctions/EvenTestFunctionFiniteInterpolation.md)
-- Dependency: [D5/S3/Weil/ZetaBridge/FiniteMirrorReducedWeilFactorization](FiniteMirrorReducedWeilFactorization.md)

@@ -6,9 +6,9 @@ A numerical large-height window bound for actual zeta zeros, derived from the ex
 
 **Theorem 1.1 (Retain the actual constants in the Jensen disk proof).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/ExplicitLargeHeightZeroCount.half_count_large_explicit`
+Lean statement: `D5/S3/Weil/ZeroData/ExplicitLargeHeightZeroCount.half_count_large_explicit`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/ExplicitLargeHeightZeroCount.half_count_large_explicit` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZeroData/ExplicitLargeHeightZeroCount.half_count_large_explicit` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -18,9 +18,9 @@ Adapt the existing LocalCount disk argument with its actual growth bound C=20/3 
 
 **Theorem 1.2 (Count the actual full critical-strip window).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/ExplicitLargeHeightZeroCount.zetaZeroConfig_large_count_explicit`
+Lean statement: `D5/S3/Weil/ZeroData/ExplicitLargeHeightZeroCount.zetaZeroConfig_large_count_explicit`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/ExplicitLargeHeightZeroCount.zetaZeroConfig_large_count_explicit` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZeroData/ExplicitLargeHeightZeroCount.zetaZeroConfig_large_count_explicit` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -30,5 +30,5 @@ Reuse the existing same-height reflection halving bound. Zeros on the critical l
 
 ## References
 
-- Truth anchor: `D5/S3/Weil/ZetaBridge/ExplicitLargeHeightZeroCount.half_count_large_explicit`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/ExplicitLargeHeightZeroCount.zetaZeroConfig_large_count_explicit`
+- Truth anchor: `D5/S3/Weil/ZeroData/ExplicitLargeHeightZeroCount.half_count_large_explicit`
+- Truth anchor: `D5/S3/Weil/ZeroData/ExplicitLargeHeightZeroCount.zetaZeroConfig_large_count_explicit`

@@ -6,9 +6,9 @@ Riemann-von Mangoldt growth forces the multiplicity-weighted dyadic zero count t
 
 **Theorem 1.1 (Dyadic zero counts tend to infinity).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/RiemannVonMangoldtCountGrowth.dyadic_zero_count_tendsto_atTop`
+Lean statement: `D5/S3/Weil/ZeroData/RiemannVonMangoldtCountGrowth.dyadic_zero_count_tendsto_atTop`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/RiemannVonMangoldtCountGrowth.dyadic_zero_count_tendsto_atTop` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZeroData/RiemannVonMangoldtCountGrowth.dyadic_zero_count_tendsto_atTop` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -20,4 +20,4 @@ This is the quantitative source used to force infinitude of the canonical nontri
 
 ## References
 
-- Truth anchor: `D5/S3/Weil/ZetaBridge/RiemannVonMangoldtCountGrowth.dyadic_zero_count_tendsto_atTop`
+- Truth anchor: `D5/S3/Weil/ZeroData/RiemannVonMangoldtCountGrowth.dyadic_zero_count_tendsto_atTop`

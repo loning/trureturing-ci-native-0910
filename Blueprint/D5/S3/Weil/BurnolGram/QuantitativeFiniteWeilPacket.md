@@ -6,9 +6,9 @@ Actual multi-orbit Burnol packets are reconstructed with unit support, finite ar
 
 **Definition 1.1 (The existing sign quotient as a finite catalog).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/QuantitativeFiniteWeilPacket.reflectionNodeSet`
+Lean statement: `D5/S3/Weil/BurnolGram/QuantitativeFiniteWeilPacket.reflectionNodeSet`
 
-*Formalization.* `D5/S3/Weil/ZetaBridge/QuantitativeFiniteWeilPacket.reflectionNodeSet` (`✓ std3`).
+*Formalization.* `D5/S3/Weil/BurnolGram/QuantitativeFiniteWeilPacket.reflectionNodeSet` (`✓ std3`).
 
 *Source.* Repository-derived.
 
@@ -18,9 +18,9 @@ This is exactly the finite image used inside the existing reflection-compatible 
 
 **Theorem 1.2 (Finite zero data with explicit jets).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/QuantitativeFiniteWeilPacket.quantitative_interpolation_on_finite_indices`
+Lean statement: `D5/S3/Weil/BurnolGram/QuantitativeFiniteWeilPacket.quantitative_interpolation_on_finite_indices`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/QuantitativeFiniteWeilPacket.quantitative_interpolation_on_finite_indices` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/QuantitativeFiniteWeilPacket.quantitative_interpolation_on_finite_indices` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -30,9 +30,9 @@ Descend values through the existing reflection representative, apply the constru
 
 **Definition 1.3 (An explicit exceptional cutoff).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/QuantitativeFiniteWeilPacket.quantitativePeakRadius`
+Lean statement: `D5/S3/Weil/BurnolGram/QuantitativeFiniteWeilPacket.quantitativePeakRadius`
 
-*Formalization.* `D5/S3/Weil/ZetaBridge/QuantitativeFiniteWeilPacket.quantitativePeakRadius` (`✓ std3`).
+*Formalization.* `D5/S3/Weil/BurnolGram/QuantitativeFiniteWeilPacket.quantitativePeakRadius` (`✓ std3`).
 
 *Source.* Repository-derived.
 
@@ -42,9 +42,9 @@ R is a bound for the selected target node norms. The remaining terms are finite 
 
 **Theorem 1.4 (Construct the peak and prove the tail bound).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/QuantitativeFiniteWeilPacket.exists_quantitative_finite_unit_peak`
+Lean statement: `D5/S3/Weil/BurnolGram/QuantitativeFiniteWeilPacket.exists_quantitative_finite_unit_peak`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/QuantitativeFiniteWeilPacket.exists_quantitative_finite_unit_peak` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/QuantitativeFiniteWeilPacket.exists_quantitative_finite_unit_peak` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -54,9 +54,9 @@ Use unit-valued finite interpolation. The already proved half-strip jet bound th
 
 **Theorem 1.5 (A complete actual finite packet from two finite catalogs).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/QuantitativeFiniteWeilPacket.exists_quantitative_orbitBurnolPacket`
+Lean statement: `D5/S3/Weil/BurnolGram/QuantitativeFiniteWeilPacket.exists_quantitative_orbitBurnolPacket`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/QuantitativeFiniteWeilPacket.exists_quantitative_orbitBurnolPacket` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/QuantitativeFiniteWeilPacket.exists_quantitative_orbitBurnolPacket` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -68,9 +68,9 @@ The gap tau is a finite zero-isolation certificate for the second catalog; it is
 
 **Theorem 1.6 (The exact remaining scalar arithmetic input).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/QuantitativeFiniteWeilPacket.packet_majorant_of_uniform_jets`
+Lean statement: `D5/S3/Weil/BurnolGram/QuantitativeFiniteWeilPacket.packet_majorant_of_uniform_jets`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/QuantitativeFiniteWeilPacket.packet_majorant_of_uniform_jets` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/QuantitativeFiniteWeilPacket.packet_majorant_of_uniform_jets` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -82,11 +82,11 @@ The relevant external theorem is Brent, Platt and Trudgian, Accurate estimation 
 
 ## References
 
-- Truth anchor: `D5/S3/Weil/ZetaBridge/QuantitativeFiniteWeilPacket.exists_quantitative_finite_unit_peak`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/QuantitativeFiniteWeilPacket.exists_quantitative_orbitBurnolPacket`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/QuantitativeFiniteWeilPacket.packet_majorant_of_uniform_jets`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/QuantitativeFiniteWeilPacket.quantitativePeakRadius`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/QuantitativeFiniteWeilPacket.quantitative_interpolation_on_finite_indices`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/QuantitativeFiniteWeilPacket.reflectionNodeSet`
-- Dependency: [D5/S3/Weil/TestFunctions/QuantitativeEvenInterpolationJets](../TestFunctions/QuantitativeEvenInterpolationJets.md)
-- Dependency: [D5/S3/Weil/ZetaBridge/UnitSupportBurnolPacket](UnitSupportBurnolPacket.md)
+- Truth anchor: `D5/S3/Weil/BurnolGram/QuantitativeFiniteWeilPacket.exists_quantitative_finite_unit_peak`
+- Truth anchor: `D5/S3/Weil/BurnolGram/QuantitativeFiniteWeilPacket.exists_quantitative_orbitBurnolPacket`
+- Truth anchor: `D5/S3/Weil/BurnolGram/QuantitativeFiniteWeilPacket.packet_majorant_of_uniform_jets`
+- Truth anchor: `D5/S3/Weil/BurnolGram/QuantitativeFiniteWeilPacket.quantitativePeakRadius`
+- Truth anchor: `D5/S3/Weil/BurnolGram/QuantitativeFiniteWeilPacket.quantitative_interpolation_on_finite_indices`
+- Truth anchor: `D5/S3/Weil/BurnolGram/QuantitativeFiniteWeilPacket.reflectionNodeSet`
+- Dependency: [D5/S3/Weil/BurnolGram/UnitSupportBurnolPacket](UnitSupportBurnolPacket.md)
+- Dependency: [D5/S3/Weil/InterpolationJets/QuantitativeEvenInterpolationJets](../InterpolationJets/QuantitativeEvenInterpolationJets.md)

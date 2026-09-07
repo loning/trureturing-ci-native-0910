@@ -6,9 +6,9 @@ The actual full mixed Weil Gram is Hermitian and represents synthesized full zer
 
 **Theorem 1.1 (Full form as the limit of exact finite observable forms).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilFullGramInertia.reducedMirrorForm_tendsto_fullMixedWeilForm`
+Lean statement: `D5/S3/Weil/BurnolGram/WeilFullGramInertia.reducedMirrorForm_tendsto_fullMixedWeilForm`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilFullGramInertia.reducedMirrorForm_tendsto_fullMixedWeilForm` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/WeilFullGramInertia.reducedMirrorForm_tendsto_fullMixedWeilForm` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -18,9 +18,9 @@ The mixed finite factorization transports the existing symmetric-cutoff converge
 
 **Theorem 1.2 (Hermitian symmetry by actual zero reindexing).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilFullGramInertia.fullWeilGram_isHermitian`
+Lean statement: `D5/S3/Weil/BurnolGram/WeilFullGramInertia.fullWeilGram_isHermitian`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilFullGramInertia.fullWeilGram_isHermitian` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/WeilFullGramInertia.fullWeilGram_isHermitian` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -30,9 +30,9 @@ The entries are absolutely convergent mixed zero sums. Conjugation swaps the tes
 
 **Theorem 1.3 (Exact full form, including every cross term).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilFullGramInertia.fullWeilGram_quadratic`
+Lean statement: `D5/S3/Weil/BurnolGram/WeilFullGramInertia.fullWeilGram_quadratic`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilFullGramInertia.fullWeilGram_quadratic` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/WeilFullGramInertia.fullWeilGram_quadratic` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -42,9 +42,9 @@ Mixed summability justifies moving finite coefficient sums through the complete 
 
 **Theorem 1.4 (Full spectral inertia of the realized observable family).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilFullGramInertia.exists_actual_full_weil_gram_with_exact_negative_index`
+Lean statement: `D5/S3/Weil/BurnolGram/WeilFullGramInertia.exists_actual_full_weil_gram_with_exact_negative_index`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilFullGramInertia.exists_actual_full_weil_gram_with_exact_negative_index` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/WeilFullGramInertia.exists_actual_full_weil_gram_with_exact_negative_index` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -56,10 +56,10 @@ A valid finite separated nonreal off-line orbit frame remains an input. No exist
 
 ## References
 
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilFullGramInertia.exists_actual_full_weil_gram_with_exact_negative_index`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilFullGramInertia.fullWeilGram_isHermitian`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilFullGramInertia.fullWeilGram_quadratic`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilFullGramInertia.reducedMirrorForm_tendsto_fullMixedWeilForm`
+- Truth anchor: `D5/S3/Weil/BurnolGram/WeilFullGramInertia.exists_actual_full_weil_gram_with_exact_negative_index`
+- Truth anchor: `D5/S3/Weil/BurnolGram/WeilFullGramInertia.fullWeilGram_isHermitian`
+- Truth anchor: `D5/S3/Weil/BurnolGram/WeilFullGramInertia.fullWeilGram_quadratic`
+- Truth anchor: `D5/S3/Weil/BurnolGram/WeilFullGramInertia.reducedMirrorForm_tendsto_fullMixedWeilForm`
 - Dependency: [D5/S3/SpectralTopology/FiniteSpectralLocalizer](../../SpectralTopology/FiniteSpectralLocalizer.md)
-- Dependency: [D5/S3/Weil/ZetaBridge/MultiOrbitBurnolUniformRemainder](MultiOrbitBurnolUniformRemainder.md)
-- Dependency: [D5/S3/Weil/ZetaBridge/WeilEvaluationExactObservableRange](WeilEvaluationExactObservableRange.md)
+- Dependency: [D5/S3/Weil/BurnolGram/MultiOrbitBurnolUniformRemainder](MultiOrbitBurnolUniformRemainder.md)
+- Dependency: [D5/S3/Weil/WeilObservables/WeilEvaluationExactObservableRange](../WeilObservables/WeilEvaluationExactObservableRange.md)

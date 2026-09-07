@@ -6,9 +6,9 @@ Finite transform enclosures and a scalar fourth-moment tail control the actual f
 
 **Theorem 1.1 (Rational two-jet decay coefficient).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilMixedHeadTailBudget.closedStripJetBudget_le_three_jets`
+Lean statement: `D5/S3/Weil/BurnolGram/WeilMixedHeadTailBudget.closedStripJetBudget_le_three_jets`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilMixedHeadTailBudget.closedStripJetBudget_le_three_jets` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/WeilMixedHeadTailBudget.closedStripJetBudget_le_three_jets` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -18,9 +18,9 @@ The weighted integrals are bounded using support and exp(1/2)<3. Both L1 bounds 
 
 **Theorem 1.2 (Two conjugate readings from finite jets).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilMixedHeadTailBudget.zero_transform_pair_le_three_jets`
+Lean statement: `D5/S3/Weil/BurnolGram/WeilMixedHeadTailBudget.zero_transform_pair_le_three_jets`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilMixedHeadTailBudget.zero_transform_pair_le_three_jets` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/WeilMixedHeadTailBudget.zero_transform_pair_le_three_jets` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -30,9 +30,9 @@ The critical strip bound is unconditional. Apply the named closed-strip budget a
 
 **Theorem 1.3 (No assumed transform-decay constant remains).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilMixedHeadTailBudget.finiteMixedMajorantTotal_le_unit_support_jets`
+Lean statement: `D5/S3/Weil/BurnolGram/WeilMixedHeadTailBudget.finiteMixedMajorantTotal_le_unit_support_jets`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilMixedHeadTailBudget.finiteMixedMajorantTotal_le_unit_support_jets` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/WeilMixedHeadTailBudget.finiteMixedMajorantTotal_le_unit_support_jets` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -42,9 +42,9 @@ Combine the derived two-sided transform estimate with the full mixed head-tail t
 
 **Definition 1.4 (Ordinate decay envelope).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilMixedHeadTailBudget.inverseQuadraticEnvelope`
+Lean statement: `D5/S3/Weil/BurnolGram/WeilMixedHeadTailBudget.inverseQuadraticEnvelope`
 
-*Formalization.* `D5/S3/Weil/ZetaBridge/WeilMixedHeadTailBudget.inverseQuadraticEnvelope` (`✓ std3`).
+*Formalization.* `D5/S3/Weil/BurnolGram/WeilMixedHeadTailBudget.inverseQuadraticEnvelope` (`✓ std3`).
 
 *Source.* Repository-derived.
 
@@ -54,9 +54,9 @@ The real part of gamma is the actual zero ordinate. The strip displacement is no
 
 **Definition 1.5 (Multiplicity-weighted scalar tail).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilMixedHeadTailBudget.fourthMomentSummand`
+Lean statement: `D5/S3/Weil/BurnolGram/WeilMixedHeadTailBudget.fourthMomentSummand`
 
-*Formalization.* `D5/S3/Weil/ZetaBridge/WeilMixedHeadTailBudget.fourthMomentSummand` (`✓ std3`).
+*Formalization.* `D5/S3/Weil/BurnolGram/WeilMixedHeadTailBudget.fourthMomentSummand` (`✓ std3`).
 
 *Source.* Repository-derived.
 
@@ -66,9 +66,9 @@ Exactly one analytic multiplicity factor is present per zero index.
 
 **Definition 1.6 (A finite enclosure expression).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilMixedHeadTailBudget.finiteMixedHeadBound`
+Lean statement: `D5/S3/Weil/BurnolGram/WeilMixedHeadTailBudget.finiteMixedHeadBound`
 
-*Formalization.* `D5/S3/Weil/ZetaBridge/WeilMixedHeadTailBudget.finiteMixedHeadBound` (`✓ std3`).
+*Formalization.* `D5/S3/Weil/BurnolGram/WeilMixedHeadTailBudget.finiteMixedHeadBound` (`✓ std3`).
 
 *Source.* Repository-derived.
 
@@ -78,9 +78,9 @@ The data bound both conjugate evaluations of each actual test. The expression in
 
 **Theorem 1.7 (Finite mixed head enclosure).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilMixedHeadTailBudget.finiteMixedMajorant_head_le`
+Lean statement: `D5/S3/Weil/BurnolGram/WeilMixedHeadTailBudget.finiteMixedMajorant_head_le`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilMixedHeadTailBudget.finiteMixedMajorant_head_le` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/WeilMixedHeadTailBudget.finiteMixedMajorant_head_le` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -90,9 +90,9 @@ Expand the actual mixed summand, multiply nonnegative norm bounds, and factor th
 
 **Theorem 1.8 (All tail cross terms at once).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilMixedHeadTailBudget.finiteMixedMajorant_pointwise_decay`
+Lean statement: `D5/S3/Weil/BurnolGram/WeilMixedHeadTailBudget.finiteMixedMajorant_pointwise_decay`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilMixedHeadTailBudget.finiteMixedMajorant_pointwise_decay` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/WeilMixedHeadTailBudget.finiteMixedMajorant_pointwise_decay` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -102,9 +102,9 @@ Use the existing exact polarized Fourier-Laplace factorization. Multiplicity is 
 
 **Theorem 1.9 (Derived complete majorant bound).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilMixedHeadTailBudget.finiteMixedMajorantTotal_le_head_tail`
+Lean statement: `D5/S3/Weil/BurnolGram/WeilMixedHeadTailBudget.finiteMixedMajorantTotal_le_head_tail`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilMixedHeadTailBudget.finiteMixedMajorantTotal_le_head_tail` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/WeilMixedHeadTailBudget.finiteMixedMajorantTotal_le_head_tail` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -114,9 +114,9 @@ Split the actual absolutely convergent mixed sum into E and its complement, comp
 
 **Theorem 1.10 (Interface to the published inverse-power sum).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilMixedHeadTailBudget.fourthMomentSummand_le_inverse_fourth`
+Lean statement: `D5/S3/Weil/BurnolGram/WeilMixedHeadTailBudget.fourthMomentSummand_le_inverse_fourth`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilMixedHeadTailBudget.fourthMomentSummand_le_inverse_fourth` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/WeilMixedHeadTailBudget.fourthMomentSummand_le_inverse_fourth` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -126,15 +126,15 @@ This supplies the envelope comparison for an inverse-fourth tail. Positive-heigh
 
 ## References
 
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilMixedHeadTailBudget.closedStripJetBudget_le_three_jets`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilMixedHeadTailBudget.finiteMixedHeadBound`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilMixedHeadTailBudget.finiteMixedMajorantTotal_le_head_tail`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilMixedHeadTailBudget.finiteMixedMajorantTotal_le_unit_support_jets`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilMixedHeadTailBudget.finiteMixedMajorant_head_le`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilMixedHeadTailBudget.finiteMixedMajorant_pointwise_decay`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilMixedHeadTailBudget.fourthMomentSummand`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilMixedHeadTailBudget.fourthMomentSummand_le_inverse_fourth`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilMixedHeadTailBudget.inverseQuadraticEnvelope`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilMixedHeadTailBudget.zero_transform_pair_le_three_jets`
+- Truth anchor: `D5/S3/Weil/BurnolGram/WeilMixedHeadTailBudget.closedStripJetBudget_le_three_jets`
+- Truth anchor: `D5/S3/Weil/BurnolGram/WeilMixedHeadTailBudget.finiteMixedHeadBound`
+- Truth anchor: `D5/S3/Weil/BurnolGram/WeilMixedHeadTailBudget.finiteMixedMajorantTotal_le_head_tail`
+- Truth anchor: `D5/S3/Weil/BurnolGram/WeilMixedHeadTailBudget.finiteMixedMajorantTotal_le_unit_support_jets`
+- Truth anchor: `D5/S3/Weil/BurnolGram/WeilMixedHeadTailBudget.finiteMixedMajorant_head_le`
+- Truth anchor: `D5/S3/Weil/BurnolGram/WeilMixedHeadTailBudget.finiteMixedMajorant_pointwise_decay`
+- Truth anchor: `D5/S3/Weil/BurnolGram/WeilMixedHeadTailBudget.fourthMomentSummand`
+- Truth anchor: `D5/S3/Weil/BurnolGram/WeilMixedHeadTailBudget.fourthMomentSummand_le_inverse_fourth`
+- Truth anchor: `D5/S3/Weil/BurnolGram/WeilMixedHeadTailBudget.inverseQuadraticEnvelope`
+- Truth anchor: `D5/S3/Weil/BurnolGram/WeilMixedHeadTailBudget.zero_transform_pair_le_three_jets`
+- Dependency: [D5/S3/Weil/BurnolGram/BurnolRationalDepthBudget](BurnolRationalDepthBudget.md)
 - Dependency: [D5/S3/Weil/TestFunctions/FourierLaplaceClosedStripDecay](../TestFunctions/FourierLaplaceClosedStripDecay.md)
-- Dependency: [D5/S3/Weil/ZetaBridge/BurnolRationalDepthBudget](BurnolRationalDepthBudget.md)

@@ -33,5 +33,5 @@ Antisymmetrizing a coordinate basis vector produces a nonzero minus-one eigenvec
 - Truth anchor: `D5/S3/Midline/Cayley/CanonicalZetaMirrorFundamentalSymmetry.mirrorFundamentalSymmetry_inner_left`
 - Truth anchor: `D5/S3/Midline/Cayley/CanonicalZetaMirrorFundamentalSymmetry.mirror_odd_vector_strictly_negative`
 - Dependency: [D5/S3/Midline/Cayley/ZeroHilbertCayleyUnitarity](ZeroHilbertCayleyUnitarity.md)
-- Dependency: [D5/S3/Weil/ZetaBridge/UnconditionalCanonicalZeroData](../../Weil/ZetaBridge/UnconditionalCanonicalZeroData.md)
-- Dependency: [D5/S3/Weil/ZetaBridge/ZeroDataPresentationEquiv](../../Weil/ZetaBridge/ZeroDataPresentationEquiv.md)
+- Dependency: [D5/S3/Weil/ZeroData/UnconditionalCanonicalZeroData](../../Weil/ZeroData/UnconditionalCanonicalZeroData.md)
+- Dependency: [D5/S3/Weil/ZeroData/ZeroDataPresentationEquiv](../../Weil/ZeroData/ZeroDataPresentationEquiv.md)

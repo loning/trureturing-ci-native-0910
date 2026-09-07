@@ -6,9 +6,9 @@ Actual multi-orbit negative Weil certificates with the infinite scalar tail disc
 
 **Definition 1.1 (Fully specified rational error coefficient).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilFiniteDataNegativeCertificate.rationalComputedWeilBudget`
+Lean statement: `D5/S3/Weil/BurnolGram/WeilFiniteDataNegativeCertificate.rationalComputedWeilBudget`
 
-*Formalization.* `D5/S3/Weil/ZetaBridge/WeilFiniteDataNegativeCertificate.rationalComputedWeilBudget` (`✓ std3`).
+*Formalization.* `D5/S3/Weil/BurnolGram/WeilFiniteDataNegativeCertificate.rationalComputedWeilBudget` (`✓ std3`).
 
 *Source.* Repository-derived.
 
@@ -18,9 +18,9 @@ Reuse the existing Cauchy coefficient and the newly proved rational tail. T>=5 a
 
 **Theorem 1.2 (Actual Gram certificate without a supplied infinite tail).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilFiniteDataNegativeCertificate.computed_packet_full_gram_margin`
+Lean statement: `D5/S3/Weil/BurnolGram/WeilFiniteDataNegativeCertificate.computed_packet_full_gram_margin`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilFiniteDataNegativeCertificate.computed_packet_full_gram_margin` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/WeilFiniteDataNegativeCertificate.computed_packet_full_gram_margin` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -30,9 +30,9 @@ The new analytic theorem proves both summability and the scalar tail bound. The 
 
 **Theorem 1.3 (Construct the whole negative family from finite geometry).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilFiniteDataNegativeCertificate.finite_data_sparse_negative_certificate`
+Lean statement: `D5/S3/Weil/BurnolGram/WeilFiniteDataNegativeCertificate.finite_data_sparse_negative_certificate`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilFiniteDataNegativeCertificate.finite_data_sparse_negative_certificate` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/WeilFiniteDataNegativeCertificate.finite_data_sparse_negative_certificate` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -42,8 +42,8 @@ Reuse sparse_packet_computed_support_margin_and_inertia, but discharge both of i
 
 ## References
 
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilFiniteDataNegativeCertificate.computed_packet_full_gram_margin`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilFiniteDataNegativeCertificate.finite_data_sparse_negative_certificate`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilFiniteDataNegativeCertificate.rationalComputedWeilBudget`
-- Dependency: [D5/S3/Weil/ZetaBridge/ExplicitWeilFourthMomentTail](ExplicitWeilFourthMomentTail.md)
-- Dependency: [D5/S3/Weil/ZetaBridge/SparseBurnolPacketJets](SparseBurnolPacketJets.md)
+- Truth anchor: `D5/S3/Weil/BurnolGram/WeilFiniteDataNegativeCertificate.computed_packet_full_gram_margin`
+- Truth anchor: `D5/S3/Weil/BurnolGram/WeilFiniteDataNegativeCertificate.finite_data_sparse_negative_certificate`
+- Truth anchor: `D5/S3/Weil/BurnolGram/WeilFiniteDataNegativeCertificate.rationalComputedWeilBudget`
+- Dependency: [D5/S3/Weil/BurnolGram/ExplicitWeilFourthMomentTail](ExplicitWeilFourthMomentTail.md)
+- Dependency: [D5/S3/Weil/BurnolGram/SparseBurnolPacketJets](SparseBurnolPacketJets.md)

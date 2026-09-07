@@ -6,9 +6,9 @@ Actual smooth sparse interpolation with explicit finite jet budgets and repeated
 
 **Definition 1.1 (Indexed exceptional annihilator).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.squaredExceptionPolynomial`
+Lean statement: `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.squaredExceptionPolynomial`
 
-*Formalization.* `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.squaredExceptionPolynomial` (`✓ std3`).
+*Formalization.* `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.squaredExceptionPolynomial` (`✓ std3`).
 
 *Source.* Repository-derived.
 
@@ -18,9 +18,9 @@ The indexing type is finite. The node map may repeat values; no injectivity assu
 
 **Definition 1.2 (Target-only normalized solve).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.sparseEvenPolynomial`
+Lean statement: `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.sparseEvenPolynomial`
 
-*Formalization.* `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.sparseEvenPolynomial` (`✓ std3`).
+*Formalization.* `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.sparseEvenPolynomial` (`✓ std3`).
 
 *Source.* Repository-derived.
 
@@ -30,9 +30,9 @@ The denominator is evaluated only at targets. Exceptional-to-exceptional distanc
 
 **Definition 1.3 (Finite coefficient budget).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.sparseCoefficientBudget`
+Lean statement: `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.sparseCoefficientBudget`
 
-*Formalization.* `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.sparseCoefficientBudget` (`✓ std3`).
+*Formalization.* `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.sparseCoefficientBudget` (`✓ std3`).
 
 *Source.* Repository-derived.
 
@@ -42,9 +42,9 @@ R bounds targets, Y bounds exceptions, sigma separates distinct squared targets,
 
 **Definition 1.4 (Explicit derivative budget).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.sparseJetBudget`
+Lean statement: `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.sparseJetBudget`
 
-*Formalization.* `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.sparseJetBudget` (`✓ std3`).
+*Formalization.* `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.sparseJetBudget` (`✓ std3`).
 
 *Source.* Repository-derived.
 
@@ -54,9 +54,9 @@ The derivative order includes the annihilator degree. Removing unnecessary gap a
 
 **Theorem 1.5 (Repeated exceptions are annihilated).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.squaredExceptionPolynomial_zero`
+Lean statement: `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.squaredExceptionPolynomial_zero`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.squaredExceptionPolynomial_zero` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.squaredExceptionPolynomial_zero` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -66,9 +66,9 @@ One factor in the finite product vanishes. Repeated exception values are permitt
 
 **Theorem 1.6 (Target denominator lower bound).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.squaredExceptionPolynomial_lower`
+Lean statement: `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.squaredExceptionPolynomial_lower`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.squaredExceptionPolynomial_lower` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.squaredExceptionPolynomial_lower` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -78,9 +78,9 @@ Multiply the certified nonnegative factor lower bounds. No separation between tw
 
 **Theorem 1.7 (Annihilator disk bound).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.squaredExceptionPolynomial_unit_disk`
+Lean statement: `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.squaredExceptionPolynomial_unit_disk`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.squaredExceptionPolynomial_unit_disk` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.squaredExceptionPolynomial_unit_disk` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -90,9 +90,9 @@ Apply the triangle inequality to each factor and multiply. This is an estimate f
 
 **Theorem 1.8 (Exact target interpolation).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.sparseEvenPolynomial_target_value`
+Lean statement: `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.sparseEvenPolynomial_target_value`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.sparseEvenPolynomial_target_value` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.sparseEvenPolynomial_target_value` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -102,9 +102,9 @@ The existing Mathlib Lagrange theorem returns the normalized target value; cance
 
 **Theorem 1.9 (Exact exceptional zeros).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.sparseEvenPolynomial_exception_value`
+Lean statement: `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.sparseEvenPolynomial_exception_value`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.sparseEvenPolynomial_exception_value` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.sparseEvenPolynomial_exception_value` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -114,9 +114,9 @@ The annihilator remains a factor of the final polynomial.
 
 **Theorem 1.10 (Gautschi-type sparse coefficient control).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.sparseEvenPolynomial_coeff_bound`
+Lean statement: `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.sparseEvenPolynomial_coeff_bound`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.sparseEvenPolynomial_coeff_bound` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.sparseEvenPolynomial_coeff_bound` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -126,9 +126,9 @@ Use the existing Lagrange disk product bound, the exception denominator lower bo
 
 **Theorem 1.11 (Count the exceptional derivative cost).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.sparseEvenPolynomial_natDegree_le`
+Lean statement: `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.sparseEvenPolynomial_natDegree_le`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.sparseEvenPolynomial_natDegree_le` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.sparseEvenPolynomial_natDegree_le` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -138,9 +138,9 @@ The product degree is bounded by the sum of the exception count and the target i
 
 **Theorem 1.12 (Actual smooth sparse interpolation).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.exists_sparse_even_interpolant_with_explicit_jets`
+Lean statement: `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.exists_sparse_even_interpolant_with_explicit_jets`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.exists_sparse_even_interpolant_with_explicit_jets` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.exists_sparse_even_interpolant_with_explicit_jets` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -150,9 +150,9 @@ Construct the actual finite-box seed using q=2(d+e)+2 averages and apply the exi
 
 **Definition 1.13 (Rational execution).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.rationalSparseJetBudget`
+Lean statement: `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.rationalSparseJetBudget`
 
-*Formalization.* `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.rationalSparseJetBudget` (`✓ std3`).
+*Formalization.* `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.rationalSparseJetBudget` (`✓ std3`).
 
 *Source.* Repository-derived.
 
@@ -162,9 +162,9 @@ The arithmetic is total. Its use as a bound requires the signs and actual geomet
 
 **Theorem 1.14 (Exact real semantics of rational arithmetic).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.rationalSparseJetBudget_cast`
+Lean statement: `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.rationalSparseJetBudget_cast`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.rationalSparseJetBudget_cast` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.rationalSparseJetBudget_cast` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -174,18 +174,18 @@ The proof uses only rational cast homomorphisms. No floating-point rounding or e
 
 ## References
 
-- Truth anchor: `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.exists_sparse_even_interpolant_with_explicit_jets`
-- Truth anchor: `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.rationalSparseJetBudget`
-- Truth anchor: `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.rationalSparseJetBudget_cast`
-- Truth anchor: `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.sparseCoefficientBudget`
-- Truth anchor: `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.sparseEvenPolynomial`
-- Truth anchor: `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.sparseEvenPolynomial_coeff_bound`
-- Truth anchor: `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.sparseEvenPolynomial_exception_value`
-- Truth anchor: `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.sparseEvenPolynomial_natDegree_le`
-- Truth anchor: `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.sparseEvenPolynomial_target_value`
-- Truth anchor: `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.sparseJetBudget`
-- Truth anchor: `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.squaredExceptionPolynomial`
-- Truth anchor: `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.squaredExceptionPolynomial_lower`
-- Truth anchor: `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.squaredExceptionPolynomial_unit_disk`
-- Truth anchor: `D5/S3/Weil/TestFunctions/SparseEvenInterpolationJets.squaredExceptionPolynomial_zero`
-- Dependency: [D5/S3/Weil/TestFunctions/QuantitativeEvenInterpolationJets](QuantitativeEvenInterpolationJets.md)
+- Truth anchor: `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.exists_sparse_even_interpolant_with_explicit_jets`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.rationalSparseJetBudget`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.rationalSparseJetBudget_cast`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.sparseCoefficientBudget`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.sparseEvenPolynomial`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.sparseEvenPolynomial_coeff_bound`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.sparseEvenPolynomial_exception_value`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.sparseEvenPolynomial_natDegree_le`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.sparseEvenPolynomial_target_value`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.sparseJetBudget`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.squaredExceptionPolynomial`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.squaredExceptionPolynomial_lower`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.squaredExceptionPolynomial_unit_disk`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/SparseEvenInterpolationJets.squaredExceptionPolynomial_zero`
+- Dependency: [D5/S3/Weil/InterpolationJets/QuantitativeEvenInterpolationJets](QuantitativeEvenInterpolationJets.md)

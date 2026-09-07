@@ -6,9 +6,9 @@ Riemann-von Mangoldt count growth supplies an actual exhaustive ZeroData enumera
 
 **Theorem 1.1 (Canonical nonvacuity source).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/CanonicalZeroDataFromRiemannVonMangoldt.nonempty_zeroData_of_riemannVonMangoldt`
+Lean statement: `D5/S3/Weil/ZeroData/CanonicalZeroDataFromRiemannVonMangoldt.nonempty_zeroData_of_riemannVonMangoldt`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/CanonicalZeroDataFromRiemannVonMangoldt.nonempty_zeroData_of_riemannVonMangoldt` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZeroData/CanonicalZeroDataFromRiemannVonMangoldt.nonempty_zeroData_of_riemannVonMangoldt` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -20,6 +20,6 @@ Enumeration, analytic multiplicity, symmetry permutations, and local finiteness 
 
 ## References
 
-- Truth anchor: `D5/S3/Weil/ZetaBridge/CanonicalZeroDataFromRiemannVonMangoldt.nonempty_zeroData_of_riemannVonMangoldt`
-- Dependency: [D5/S3/Weil/ZetaBridge/RiemannVonMangoldtCountGrowth](RiemannVonMangoldtCountGrowth.md)
-- Dependency: [D5/S3/Weil/ZetaBridge/ZeroDataNonemptyIffInfinite](ZeroDataNonemptyIffInfinite.md)
+- Truth anchor: `D5/S3/Weil/ZeroData/CanonicalZeroDataFromRiemannVonMangoldt.nonempty_zeroData_of_riemannVonMangoldt`
+- Dependency: [D5/S3/Weil/ZeroData/RiemannVonMangoldtCountGrowth](RiemannVonMangoldtCountGrowth.md)
+- Dependency: [D5/S3/Weil/ZetaBridge/ZeroDataNonemptyIffInfinite](../ZetaBridge/ZeroDataNonemptyIffInfinite.md)

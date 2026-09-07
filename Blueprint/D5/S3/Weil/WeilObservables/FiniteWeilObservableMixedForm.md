@@ -6,9 +6,9 @@ Every reduced mixed pairing has actual Weil-test representatives and is independ
 
 **Theorem 1.1 (Realization of arbitrary reduced pairings).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/FiniteWeilObservableMixedForm.every_reduced_mixed_pairing_is_realized`
+Lean statement: `D5/S3/Weil/WeilObservables/FiniteWeilObservableMixedForm.every_reduced_mixed_pairing_is_realized`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/FiniteWeilObservableMixedForm.every_reduced_mixed_pairing_is_realized` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/WeilObservables/FiniteWeilObservableMixedForm.every_reduced_mixed_pairing_is_realized` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -18,9 +18,9 @@ Apply the existing finite interpolation surjection separately to both vectors, t
 
 **Theorem 1.2 (Independence of representatives).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/FiniteWeilObservableMixedForm.truncated_mixed_pairing_independent_of_representatives`
+Lean statement: `D5/S3/Weil/WeilObservables/FiniteWeilObservableMixedForm.truncated_mixed_pairing_independent_of_representatives`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/FiniteWeilObservableMixedForm.truncated_mixed_pairing_independent_of_representatives` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/WeilObservables/FiniteWeilObservableMixedForm.truncated_mixed_pairing_independent_of_representatives` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -30,6 +30,6 @@ Factor both mixed sums through their observable vectors. The first slot remains 
 
 ## References
 
-- Truth anchor: `D5/S3/Weil/ZetaBridge/FiniteWeilObservableMixedForm.every_reduced_mixed_pairing_is_realized`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/FiniteWeilObservableMixedForm.truncated_mixed_pairing_independent_of_representatives`
-- Dependency: [D5/S3/Weil/ZetaBridge/WeilEvaluationExactObservableRange](WeilEvaluationExactObservableRange.md)
+- Truth anchor: `D5/S3/Weil/WeilObservables/FiniteWeilObservableMixedForm.every_reduced_mixed_pairing_is_realized`
+- Truth anchor: `D5/S3/Weil/WeilObservables/FiniteWeilObservableMixedForm.truncated_mixed_pairing_independent_of_representatives`
+- Dependency: [D5/S3/Weil/WeilObservables/WeilEvaluationExactObservableRange](WeilEvaluationExactObservableRange.md)

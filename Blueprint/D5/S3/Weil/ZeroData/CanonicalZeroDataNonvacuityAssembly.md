@@ -6,9 +6,9 @@ Assemble Riemann-von Mangoldt growth into a faithful, exhaustive, nonvacuous Zer
 
 **Theorem 1.1 (Count growth to semantic realization).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/CanonicalZeroDataNonvacuityAssembly.canonical_zeroData_closed_chain`
+Lean statement: `D5/S3/Weil/ZeroData/CanonicalZeroDataNonvacuityAssembly.canonical_zeroData_closed_chain`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/CanonicalZeroDataNonvacuityAssembly.canonical_zeroData_closed_chain` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZeroData/CanonicalZeroDataNonvacuityAssembly.canonical_zeroData_closed_chain` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -20,6 +20,6 @@ The chain is logically closed downstream of the explicit canonical Riemann-von M
 
 ## References
 
-- Truth anchor: `D5/S3/Weil/ZetaBridge/CanonicalZeroDataNonvacuityAssembly.canonical_zeroData_closed_chain`
-- Dependency: [D5/S3/Weil/ZetaBridge/CanonicalZeroDataProvider](CanonicalZeroDataProvider.md)
-- Dependency: [D5/S3/Weil/ZetaBridge/ZeroDataSemanticNonvacuity](ZeroDataSemanticNonvacuity.md)
+- Truth anchor: `D5/S3/Weil/ZeroData/CanonicalZeroDataNonvacuityAssembly.canonical_zeroData_closed_chain`
+- Dependency: [D5/S3/Weil/ZeroData/CanonicalZeroDataProvider](CanonicalZeroDataProvider.md)
+- Dependency: [D5/S3/Weil/ZeroData/ZeroDataSemanticNonvacuity](ZeroDataSemanticNonvacuity.md)

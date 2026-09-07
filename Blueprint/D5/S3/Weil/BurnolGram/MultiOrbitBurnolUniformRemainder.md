@@ -6,9 +6,9 @@ A constructed common Burnol packet has a coefficient-uniform geometric remainder
 
 **Theorem 1.1 (Uniform remainder derived from actual zeta summability).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/MultiOrbitBurnolUniformRemainder.multiOrbitBurnol_uniform_remainder`
+Lean statement: `D5/S3/Weil/BurnolGram/MultiOrbitBurnolUniformRemainder.multiOrbitBurnol_uniform_remainder`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/MultiOrbitBurnolUniformRemainder.multiOrbitBurnol_uniform_remainder` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/MultiOrbitBurnolUniformRemainder.multiOrbitBurnol_uniform_remainder` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -18,9 +18,9 @@ The target union has the exact value minus four times the multiplicity-weighted 
 
 **Theorem 1.2 (A genuine injective negative family for the complete zero sum).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/MultiOrbitBurnolUniformRemainder.finite_multiOrbit_full_weil_negative_family`
+Lean statement: `D5/S3/Weil/BurnolGram/MultiOrbitBurnolUniformRemainder.finite_multiOrbit_full_weil_negative_family`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/MultiOrbitBurnolUniformRemainder.finite_multiOrbit_full_weil_negative_family` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/MultiOrbitBurnolUniformRemainder.finite_multiOrbit_full_weil_negative_family` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -32,7 +32,7 @@ The result assumes a finite separated family of nonreal off-line orbits; it does
 
 ## References
 
-- Truth anchor: `D5/S3/Weil/ZetaBridge/MultiOrbitBurnolUniformRemainder.finite_multiOrbit_full_weil_negative_family`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/MultiOrbitBurnolUniformRemainder.multiOrbitBurnol_uniform_remainder`
-- Dependency: [D5/S3/Weil/ZetaBridge/FiniteMixedWeilMajorant](FiniteMixedWeilMajorant.md)
-- Dependency: [D5/S3/Weil/ZetaBridge/FiniteOrbitBurnolPacket](FiniteOrbitBurnolPacket.md)
+- Truth anchor: `D5/S3/Weil/BurnolGram/MultiOrbitBurnolUniformRemainder.finite_multiOrbit_full_weil_negative_family`
+- Truth anchor: `D5/S3/Weil/BurnolGram/MultiOrbitBurnolUniformRemainder.multiOrbitBurnol_uniform_remainder`
+- Dependency: [D5/S3/Weil/BurnolGram/FiniteMixedWeilMajorant](FiniteMixedWeilMajorant.md)
+- Dependency: [D5/S3/Weil/BurnolGram/FiniteOrbitBurnolPacket](FiniteOrbitBurnolPacket.md)

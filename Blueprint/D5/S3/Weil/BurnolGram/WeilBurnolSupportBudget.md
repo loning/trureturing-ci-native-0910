@@ -6,9 +6,9 @@ Actual Burnol tests have a linear support-radius budget common to every coeffici
 
 **Theorem 1.1 (Convolution adds support radii).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilBurnolSupportBudget.convolve_tsupport_subset_Icc`
+Lean statement: `D5/S3/Weil/BurnolGram/WeilBurnolSupportBudget.convolve_tsupport_subset_Icc`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilBurnolSupportBudget.convolve_tsupport_subset_Icc` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/WeilBurnolSupportBudget.convolve_tsupport_subset_Icc` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -18,9 +18,9 @@ Use Mathlib support_convolution_subset and closedness of the sum of two compact 
 
 **Theorem 1.2 (The successor power budget).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilBurnolSupportBudget.convolutionSuccPower_tsupport_subset_Icc`
+Lean statement: `D5/S3/Weil/BurnolGram/WeilBurnolSupportBudget.convolutionSuccPower_tsupport_subset_Icc`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilBurnolSupportBudget.convolutionSuccPower_tsupport_subset_Icc` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/WeilBurnolSupportBudget.convolutionSuccPower_tsupport_subset_Icc` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -30,9 +30,9 @@ Induct using the existing successor-power constructor. The zero index means one 
 
 **Theorem 1.3 (All coefficients share the basis window).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilBurnolSupportBudget.finiteWeilLinearCombination_tsupport_subset_Icc`
+Lean statement: `D5/S3/Weil/BurnolGram/WeilBurnolSupportBudget.finiteWeilLinearCombination_tsupport_subset_Icc`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilBurnolSupportBudget.finiteWeilLinearCombination_tsupport_subset_Icc` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/WeilBurnolSupportBudget.finiteWeilLinearCombination_tsupport_subset_Icc` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -42,9 +42,9 @@ Outside the interval every summand vanishes. Closedness passes this support cont
 
 **Theorem 1.4 (A positive common radius exists).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilBurnolSupportBudget.finiteWeilFamily_common_support_radius`
+Lean statement: `D5/S3/Weil/BurnolGram/WeilBurnolSupportBudget.finiteWeilFamily_common_support_radius`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilBurnolSupportBudget.finiteWeilFamily_common_support_radius` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/WeilBurnolSupportBudget.finiteWeilFamily_common_support_radius` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -54,9 +54,9 @@ Compact supports are bounded. Choose positive individual radii and use one plus 
 
 **Theorem 1.5 (Linear support cost of localization).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilBurnolSupportBudget.burnolSynthesis_tsupport_subset`
+Lean statement: `D5/S3/Weil/BurnolGram/WeilBurnolSupportBudget.burnolSynthesis_tsupport_subset`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilBurnolSupportBudget.burnolSynthesis_tsupport_subset` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/WeilBurnolSupportBudget.burnolSynthesis_tsupport_subset` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -66,9 +66,9 @@ Apply the power bound to the common peak, add the killer radius, and then apply 
 
 **Theorem 1.6 (The budget constants come from the actual packet).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilBurnolSupportBudget.exists_burnol_linear_support_budget`
+Lean statement: `D5/S3/Weil/BurnolGram/WeilBurnolSupportBudget.exists_burnol_linear_support_budget`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilBurnolSupportBudget.exists_burnol_linear_support_budget` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/WeilBurnolSupportBudget.exists_burnol_linear_support_budget` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -78,10 +78,10 @@ Apply finite-family compactness to the singleton peak family and the actual kill
 
 ## References
 
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilBurnolSupportBudget.burnolSynthesis_tsupport_subset`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilBurnolSupportBudget.convolutionSuccPower_tsupport_subset_Icc`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilBurnolSupportBudget.convolve_tsupport_subset_Icc`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilBurnolSupportBudget.exists_burnol_linear_support_budget`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilBurnolSupportBudget.finiteWeilFamily_common_support_radius`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilBurnolSupportBudget.finiteWeilLinearCombination_tsupport_subset_Icc`
-- Dependency: [D5/S3/Weil/ZetaBridge/MultiOrbitBurnolUniformRemainder](MultiOrbitBurnolUniformRemainder.md)
+- Truth anchor: `D5/S3/Weil/BurnolGram/WeilBurnolSupportBudget.burnolSynthesis_tsupport_subset`
+- Truth anchor: `D5/S3/Weil/BurnolGram/WeilBurnolSupportBudget.convolutionSuccPower_tsupport_subset_Icc`
+- Truth anchor: `D5/S3/Weil/BurnolGram/WeilBurnolSupportBudget.convolve_tsupport_subset_Icc`
+- Truth anchor: `D5/S3/Weil/BurnolGram/WeilBurnolSupportBudget.exists_burnol_linear_support_budget`
+- Truth anchor: `D5/S3/Weil/BurnolGram/WeilBurnolSupportBudget.finiteWeilFamily_common_support_radius`
+- Truth anchor: `D5/S3/Weil/BurnolGram/WeilBurnolSupportBudget.finiteWeilLinearCombination_tsupport_subset_Icc`
+- Dependency: [D5/S3/Weil/BurnolGram/MultiOrbitBurnolUniformRemainder](MultiOrbitBurnolUniformRemainder.md)

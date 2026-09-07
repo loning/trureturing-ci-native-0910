@@ -6,9 +6,9 @@ Scalar even Weil evaluation is constant on analytic-multiplicity fibers and inva
 
 **Theorem 1.1 (Finite scalar Weil evaluations obey both observable-range constraints).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilEvaluationObservableSubspace.finite_weil_evaluation_observable_subspace_spec`
+Lean statement: `D5/S3/Weil/WeilObservables/WeilEvaluationObservableSubspace.finite_weil_evaluation_observable_subspace_spec`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilEvaluationObservableSubspace.finite_weil_evaluation_observable_subspace_spec` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/WeilObservables/WeilEvaluationObservableSubspace.finite_weil_evaluation_observable_subspace_spec` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -20,9 +20,9 @@ The module constructs explicit target vectors proving non-surjectivity whenever 
 
 **Theorem 1.2 (Multiplicity copies obstruct ambient surjectivity).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilEvaluationObservableSubspace.finiteWeilCoordinateEvaluation_not_surjective_of_two_copies`
+Lean statement: `D5/S3/Weil/WeilObservables/WeilEvaluationObservableSubspace.finiteWeilCoordinateEvaluation_not_surjective_of_two_copies`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilEvaluationObservableSubspace.finiteWeilCoordinateEvaluation_not_surjective_of_two_copies` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/WeilObservables/WeilEvaluationObservableSubspace.finiteWeilCoordinateEvaluation_not_surjective_of_two_copies` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -32,7 +32,7 @@ A scalar test cannot assign different values to two copies of the same analytic 
 
 ## References
 
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilEvaluationObservableSubspace.finiteWeilCoordinateEvaluation_not_surjective_of_two_copies`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilEvaluationObservableSubspace.finite_weil_evaluation_observable_subspace_spec`
+- Truth anchor: `D5/S3/Weil/WeilObservables/WeilEvaluationObservableSubspace.finiteWeilCoordinateEvaluation_not_surjective_of_two_copies`
+- Truth anchor: `D5/S3/Weil/WeilObservables/WeilEvaluationObservableSubspace.finite_weil_evaluation_observable_subspace_spec`
 - Dependency: [D5/S3/Midline/Cayley/CanonicalZetaMirrorFundamentalSymmetry](../../Midline/Cayley/CanonicalZetaMirrorFundamentalSymmetry.md)
-- Dependency: [D5/S3/Weil/ZetaBridge/ConvolutionSquareOrbitBounds](ConvolutionSquareOrbitBounds.md)
+- Dependency: [D5/S3/Weil/ZetaBridge/ConvolutionSquareOrbitBounds](../ZetaBridge/ConvolutionSquareOrbitBounds.md)

@@ -6,9 +6,9 @@ A finite separated nonreal off-line orbit frame admits one common unit peak and 
 
 **Theorem 1.1 (Frame node separation forbids orbit overlap).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/FiniteOrbitBurnolPacket.frame_orbits_pairwise_disjoint`
+Lean statement: `D5/S3/Weil/BurnolGram/FiniteOrbitBurnolPacket.frame_orbits_pairwise_disjoint`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/FiniteOrbitBurnolPacket.frame_orbits_pairwise_disjoint` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/FiniteOrbitBurnolPacket.frame_orbits_pairwise_disjoint` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -18,9 +18,9 @@ Injectivity of the node equivalence excludes coincident selected frequencies, wh
 
 **Theorem 1.2 (The localization packet is constructed).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/FiniteOrbitBurnolPacket.exists_orbitBurnolPacket`
+Lean statement: `D5/S3/Weil/BurnolGram/FiniteOrbitBurnolPacket.exists_orbitBurnolPacket`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/FiniteOrbitBurnolPacket.exists_orbitBurnolPacket` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/FiniteOrbitBurnolPacket.exists_orbitBurnolPacket` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -30,7 +30,7 @@ A common peak is interpolated to one on the actual target union. Closed-strip de
 
 ## References
 
-- Truth anchor: `D5/S3/Weil/ZetaBridge/FiniteOrbitBurnolPacket.exists_orbitBurnolPacket`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/FiniteOrbitBurnolPacket.frame_orbits_pairwise_disjoint`
-- Dependency: [D5/S3/Weil/ZetaBridge/FiniteEvenWeilOddInterpolation](FiniteEvenWeilOddInterpolation.md)
-- Dependency: [D5/S3/Weil/ZetaBridge/FiniteReflectionCompatibleWeilInterpolation](FiniteReflectionCompatibleWeilInterpolation.md)
+- Truth anchor: `D5/S3/Weil/BurnolGram/FiniteOrbitBurnolPacket.exists_orbitBurnolPacket`
+- Truth anchor: `D5/S3/Weil/BurnolGram/FiniteOrbitBurnolPacket.frame_orbits_pairwise_disjoint`
+- Dependency: [D5/S3/Weil/BurnolGram/FiniteEvenWeilOddInterpolation](FiniteEvenWeilOddInterpolation.md)
+- Dependency: [D5/S3/Weil/BurnolGram/FiniteReflectionCompatibleWeilInterpolation](FiniteReflectionCompatibleWeilInterpolation.md)

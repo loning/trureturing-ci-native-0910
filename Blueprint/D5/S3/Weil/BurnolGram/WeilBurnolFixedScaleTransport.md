@@ -6,9 +6,9 @@ A constructed finite negative family fits in one common support window, and its 
 
 **Theorem 1.1 (Isolate the completed multiplier).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilBurnolFixedScaleTransport.fixedScale_multiplier_re_eq_full_minus_pole`
+Lean statement: `D5/S3/Weil/BurnolGram/WeilBurnolFixedScaleTransport.fixedScale_multiplier_re_eq_full_minus_pole`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilBurnolFixedScaleTransport.fixedScale_multiplier_re_eq_full_minus_pole` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/WeilBurnolFixedScaleTransport.fixedScale_multiplier_re_eq_full_minus_pole` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -18,9 +18,9 @@ Take real parts of fixed_scale_weil_quadratic_form. The multiplier is exactly fi
 
 **Theorem 1.2 (One support window for the entire negative family).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilBurnolFixedScaleTransport.exists_support_controlled_full_negative_family`
+Lean statement: `D5/S3/Weil/BurnolGram/WeilBurnolFixedScaleTransport.exists_support_controlled_full_negative_family`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilBurnolFixedScaleTransport.exists_support_controlled_full_negative_family` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/WeilBurnolFixedScaleTransport.exists_support_controlled_full_negative_family` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -30,9 +30,9 @@ Construct the common Burnol packet, derive its support constants, and choose a c
 
 **Theorem 1.3 (Transport the negative margin with its support cost).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilBurnolFixedScaleTransport.eventually_burnol_fixedScale_multiplier_margin`
+Lean statement: `D5/S3/Weil/BurnolGram/WeilBurnolFixedScaleTransport.eventually_burnol_fixedScale_multiplier_margin`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilBurnolFixedScaleTransport.eventually_burnol_fixedScale_multiplier_margin` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/WeilBurnolFixedScaleTransport.eventually_burnol_fixedScale_multiplier_margin` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -42,9 +42,9 @@ The exact pole-subtraction identity transports the actual full-Gram bound. Both 
 
 ## References
 
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilBurnolFixedScaleTransport.eventually_burnol_fixedScale_multiplier_margin`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilBurnolFixedScaleTransport.exists_support_controlled_full_negative_family`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilBurnolFixedScaleTransport.fixedScale_multiplier_re_eq_full_minus_pole`
-- Dependency: [D5/S3/Weil/ZetaBridge/FixedScaleWeilQuadraticForm](FixedScaleWeilQuadraticForm.md)
-- Dependency: [D5/S3/Weil/ZetaBridge/WeilBurnolSupportBudget](WeilBurnolSupportBudget.md)
-- Dependency: [D5/S3/Weil/ZetaBridge/WeilFullGramUniformRemainder](WeilFullGramUniformRemainder.md)
+- Truth anchor: `D5/S3/Weil/BurnolGram/WeilBurnolFixedScaleTransport.eventually_burnol_fixedScale_multiplier_margin`
+- Truth anchor: `D5/S3/Weil/BurnolGram/WeilBurnolFixedScaleTransport.exists_support_controlled_full_negative_family`
+- Truth anchor: `D5/S3/Weil/BurnolGram/WeilBurnolFixedScaleTransport.fixedScale_multiplier_re_eq_full_minus_pole`
+- Dependency: [D5/S3/Weil/BurnolGram/WeilBurnolSupportBudget](WeilBurnolSupportBudget.md)
+- Dependency: [D5/S3/Weil/BurnolGram/WeilFullGramUniformRemainder](WeilFullGramUniformRemainder.md)
+- Dependency: [D5/S3/Weil/ZetaBridge/FixedScaleWeilQuadraticForm](../ZetaBridge/FixedScaleWeilQuadraticForm.md)

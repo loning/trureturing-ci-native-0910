@@ -6,9 +6,9 @@ Package an actual exhaustive zeta-zero enumeration and prove canonicality for pe
 
 **Theorem 1.1 (Canonicality at the observable level).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/CanonicalZeroDataProvider.canonical_zeroSum_eq`
+Lean statement: `D5/S3/Weil/ZeroData/CanonicalZeroDataProvider.canonical_zeroSum_eq`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/CanonicalZeroDataProvider.canonical_zeroSum_eq` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZeroData/CanonicalZeroDataProvider.canonical_zeroSum_eq` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -20,6 +20,6 @@ The ordering is not asserted to be intrinsic. Existing enumeration-invariance th
 
 ## References
 
-- Truth anchor: `D5/S3/Weil/ZetaBridge/CanonicalZeroDataProvider.canonical_zeroSum_eq`
-- Dependency: [D5/S3/Weil/ZetaBridge/CanonicalZeroDataFromRiemannVonMangoldt](CanonicalZeroDataFromRiemannVonMangoldt.md)
-- Dependency: [D5/S3/Weil/ZetaBridge/ZeroSumEnumerationInvariance](ZeroSumEnumerationInvariance.md)
+- Truth anchor: `D5/S3/Weil/ZeroData/CanonicalZeroDataProvider.canonical_zeroSum_eq`
+- Dependency: [D5/S3/Weil/ZeroData/CanonicalZeroDataFromRiemannVonMangoldt](CanonicalZeroDataFromRiemannVonMangoldt.md)
+- Dependency: [D5/S3/Weil/ZetaBridge/ZeroSumEnumerationInvariance](../ZetaBridge/ZeroSumEnumerationInvariance.md)

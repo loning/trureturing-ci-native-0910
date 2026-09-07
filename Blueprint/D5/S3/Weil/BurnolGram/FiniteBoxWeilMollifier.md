@@ -6,9 +6,9 @@ Finite box convolution constructs actual even smooth compact seeds with unit mas
 
 **Definition 1.1 (The normalized box density).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.boxDensity`
+Lean statement: `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.boxDensity`
 
-*Formalization.* `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.boxDensity` (`✓ std3`).
+*Formalization.* `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.boxDensity` (`✓ std3`).
 
 *Source.* Repository-derived.
 
@@ -18,9 +18,9 @@ The density is an integrable raw function, not itself a smooth Weil test. Unit m
 
 **Definition 1.2 (Actual smooth box averaging).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.boxMean`
+Lean statement: `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.boxMean`
 
-*Formalization.* `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.boxMean` (`✓ std3`).
+*Formalization.* `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.boxMean` (`✓ std3`).
 
 *Source.* Repository-derived.
 
@@ -30,9 +30,9 @@ Mathlib convolution regularity gives smoothness from the compact smooth right in
 
 **Theorem 1.3 (The integral is preserved).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.boxMean_integral`
+Lean statement: `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.boxMean_integral`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.boxMean_integral` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.boxMean_integral` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -42,9 +42,9 @@ Apply the actual convolution integral identity and the computed unit box mass.
 
 **Theorem 1.4 (L1 contraction).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.boxMean_norm_integral_le`
+Lean statement: `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.boxMean_norm_integral_le`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.boxMean_norm_integral_le` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.boxMean_norm_integral_le` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -54,9 +54,9 @@ The integral triangle inequality and the integral of the scalar convolution give
 
 **Theorem 1.5 (Additive support cost).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.boxMean_tsupport`
+Lean statement: `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.boxMean_tsupport`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.boxMean_tsupport` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.boxMean_tsupport` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -66,9 +66,9 @@ Use the existing convolution-support containment and closedness of the enclosing
 
 **Theorem 1.6 (One derivative consumes one box).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.boxMean_iterate_deriv_succ`
+Lean statement: `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.boxMean_iterate_deriv_succ`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.boxMean_iterate_deriv_succ` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.boxMean_iterate_deriv_succ` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -78,9 +78,9 @@ Convolution differentiation moves derivatives to the smooth input. The ordinary 
 
 **Definition 1.7 (Finite iteration).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.boxIterate`
+Lean statement: `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.boxIterate`
 
-*Formalization.* `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.boxIterate` (`✓ std3`).
+*Formalization.* `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.boxIterate` (`✓ std3`).
 
 *Source.* Repository-derived.
 
@@ -90,9 +90,9 @@ The zero iteration retains the existing smooth seed. No distributional identity 
 
 **Theorem 1.8 (Unit mass at every finite depth).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.boxIterate_integral`
+Lean statement: `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.boxIterate_integral`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.boxIterate_integral` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.boxIterate_integral` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -102,9 +102,9 @@ Induct on q using mass preservation of one box average.
 
 **Theorem 1.9 (Finite jets without initial jet assumptions).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.boxIterate_derivative_L1_budget`
+Lean statement: `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.boxIterate_derivative_L1_budget`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.boxIterate_derivative_L1_budget` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.boxIterate_derivative_L1_budget` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -114,9 +114,9 @@ Induction charges each derivative to a different box. Translation invariance bou
 
 **Theorem 1.10 (Finite support accumulation).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.boxIterate_tsupport`
+Lean statement: `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.boxIterate_tsupport`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.boxIterate_tsupport` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.boxIterate_tsupport` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -126,9 +126,9 @@ Induct on the existing support containment.
 
 **Definition 1.11 (Explicit box width).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.finiteBoxWidth`
+Lean statement: `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.finiteBoxWidth`
 
-*Formalization.* `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.finiteBoxWidth` (`✓ std3`).
+*Formalization.* `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.finiteBoxWidth` (`✓ std3`).
 
 *Source.* Repository-derived.
 
@@ -138,9 +138,9 @@ The denominator is positive for h>0, including q=0.
 
 **Definition 1.12 (The actual derivative-controlled seed).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.finiteBoxSeed`
+Lean statement: `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.finiteBoxSeed`
 
-*Formalization.* `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.finiteBoxSeed` (`✓ std3`).
+*Formalization.* `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.finiteBoxSeed` (`✓ std3`).
 
 *Source.* Repository-derived.
 
@@ -150,9 +150,9 @@ The canonical smooth bump contributes unit mass. Its uncomputed high derivatives
 
 **Theorem 1.13 (Constructed simultaneous quantitative budget).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.finiteBoxSeed_budget`
+Lean statement: `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.finiteBoxSeed_budget`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.finiteBoxSeed_budget` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.finiteBoxSeed_budget` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -162,9 +162,9 @@ The support is bounded by h/2+qh/(2(q+1))<=h. L1 contraction and the unit integr
 
 **Theorem 1.14 (A common explicit transform denominator floor).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.finiteBoxSeed_transform_lower`
+Lean statement: `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.finiteBoxSeed_transform_lower`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.finiteBoxSeed_transform_lower` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.finiteBoxSeed_transform_lower` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -174,18 +174,18 @@ Reuse the proved compact-support transform perturbation bound and unit mass/L1. 
 
 ## References
 
-- Truth anchor: `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.boxDensity`
-- Truth anchor: `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.boxIterate`
-- Truth anchor: `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.boxIterate_derivative_L1_budget`
-- Truth anchor: `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.boxIterate_integral`
-- Truth anchor: `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.boxIterate_tsupport`
-- Truth anchor: `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.boxMean`
-- Truth anchor: `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.boxMean_integral`
-- Truth anchor: `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.boxMean_iterate_deriv_succ`
-- Truth anchor: `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.boxMean_norm_integral_le`
-- Truth anchor: `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.boxMean_tsupport`
-- Truth anchor: `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.finiteBoxSeed`
-- Truth anchor: `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.finiteBoxSeed_budget`
-- Truth anchor: `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.finiteBoxSeed_transform_lower`
-- Truth anchor: `D5/S3/Weil/TestFunctions/FiniteBoxWeilMollifier.finiteBoxWidth`
-- Dependency: [D5/S3/Weil/TestFunctions/QuantitativeEvenSeed](QuantitativeEvenSeed.md)
+- Truth anchor: `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.boxDensity`
+- Truth anchor: `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.boxIterate`
+- Truth anchor: `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.boxIterate_derivative_L1_budget`
+- Truth anchor: `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.boxIterate_integral`
+- Truth anchor: `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.boxIterate_tsupport`
+- Truth anchor: `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.boxMean`
+- Truth anchor: `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.boxMean_integral`
+- Truth anchor: `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.boxMean_iterate_deriv_succ`
+- Truth anchor: `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.boxMean_norm_integral_le`
+- Truth anchor: `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.boxMean_tsupport`
+- Truth anchor: `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.finiteBoxSeed`
+- Truth anchor: `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.finiteBoxSeed_budget`
+- Truth anchor: `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.finiteBoxSeed_transform_lower`
+- Truth anchor: `D5/S3/Weil/BurnolGram/FiniteBoxWeilMollifier.finiteBoxWidth`
+- Dependency: [D5/S3/Weil/InterpolationJets/QuantitativeEvenSeed](../InterpolationJets/QuantitativeEvenSeed.md)

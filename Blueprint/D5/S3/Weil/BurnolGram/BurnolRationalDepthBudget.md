@@ -6,9 +6,9 @@ Exact integer depth selection and rational support budgets for the existing full
 
 **Definition 1.1 (Exact integer depth).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/BurnolRationalDepthBudget.rationalQuarterDepth`
+Lean statement: `D5/S3/Weil/BurnolGram/BurnolRationalDepthBudget.rationalQuarterDepth`
 
-*Formalization.* `D5/S3/Weil/ZetaBridge/BurnolRationalDepthBudget.rationalQuarterDepth` (`✓ std3`).
+*Formalization.* `D5/S3/Weil/BurnolGram/BurnolRationalDepthBudget.rationalQuarterDepth` (`✓ std3`).
 
 *Source.* Repository-derived.
 
@@ -18,9 +18,9 @@ This total function uses only natural arithmetic. Soundness requires d,p,q>0; no
 
 **Definition 1.2 (Rational support ledger).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/BurnolRationalDepthBudget.rationalBurnolRadius`
+Lean statement: `D5/S3/Weil/BurnolGram/BurnolRationalDepthBudget.rationalBurnolRadius`
 
-*Formalization.* `D5/S3/Weil/ZetaBridge/BurnolRationalDepthBudget.rationalBurnolRadius` (`✓ std3`).
+*Formalization.* `D5/S3/Weil/BurnolGram/BurnolRationalDepthBudget.rationalBurnolRadius` (`✓ std3`).
 
 *Source.* Repository-derived.
 
@@ -30,9 +30,9 @@ This computes the existing additive convolution support budget without selecting
 
 **Theorem 1.3 (Strict integer certificate).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/BurnolRationalDepthBudget.rationalQuarterDepth_integer_sound`
+Lean statement: `D5/S3/Weil/BurnolGram/BurnolRationalDepthBudget.rationalQuarterDepth_integer_sound`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/BurnolRationalDepthBudget.rationalQuarterDepth_integer_sound` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/BurnolRationalDepthBudget.rationalQuarterDepth_integer_sound` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -42,9 +42,9 @@ Use the strict next-power bound for the floor logarithm, and natural division wi
 
 **Theorem 1.4 (Certified geometric decay).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/BurnolRationalDepthBudget.rationalQuarterDepth_real_sound`
+Lean statement: `D5/S3/Weil/BurnolGram/BurnolRationalDepthBudget.rationalQuarterDepth_real_sound`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/BurnolRationalDepthBudget.rationalQuarterDepth_real_sound` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/BurnolRationalDepthBudget.rationalQuarterDepth_real_sound` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -54,9 +54,9 @@ Cross multiplication is performed only after denominator positivity. This replac
 
 **Theorem 1.5 (The actual full Gram at the computed depth).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/BurnolRationalDepthBudget.rationalQuarterDepth_full_gram_margin`
+Lean statement: `D5/S3/Weil/BurnolGram/BurnolRationalDepthBudget.rationalQuarterDepth_full_gram_margin`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/BurnolRationalDepthBudget.rationalQuarterDepth_full_gram_margin` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/BurnolRationalDepthBudget.rationalQuarterDepth_full_gram_margin` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -66,9 +66,9 @@ Apply the existing coefficient-uniform remainder, retaining all cross terms, and
 
 **Theorem 1.6 (One computable support and error budget).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/BurnolRationalDepthBudget.rationalBurnol_support_and_margin`
+Lean statement: `D5/S3/Weil/BurnolGram/BurnolRationalDepthBudget.rationalBurnol_support_and_margin`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/BurnolRationalDepthBudget.rationalBurnol_support_and_margin` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/BurnolRationalDepthBudget.rationalBurnol_support_and_margin` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -78,11 +78,11 @@ The support certificates refer to the actual peak and killer functions. The anal
 
 ## References
 
-- Truth anchor: `D5/S3/Weil/ZetaBridge/BurnolRationalDepthBudget.rationalBurnolRadius`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/BurnolRationalDepthBudget.rationalBurnol_support_and_margin`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/BurnolRationalDepthBudget.rationalQuarterDepth`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/BurnolRationalDepthBudget.rationalQuarterDepth_full_gram_margin`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/BurnolRationalDepthBudget.rationalQuarterDepth_integer_sound`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/BurnolRationalDepthBudget.rationalQuarterDepth_real_sound`
-- Dependency: [D5/S3/Weil/ZetaBridge/WeilBurnolSupportBudget](WeilBurnolSupportBudget.md)
-- Dependency: [D5/S3/Weil/ZetaBridge/WeilFullGramUniformRemainder](WeilFullGramUniformRemainder.md)
+- Truth anchor: `D5/S3/Weil/BurnolGram/BurnolRationalDepthBudget.rationalBurnolRadius`
+- Truth anchor: `D5/S3/Weil/BurnolGram/BurnolRationalDepthBudget.rationalBurnol_support_and_margin`
+- Truth anchor: `D5/S3/Weil/BurnolGram/BurnolRationalDepthBudget.rationalQuarterDepth`
+- Truth anchor: `D5/S3/Weil/BurnolGram/BurnolRationalDepthBudget.rationalQuarterDepth_full_gram_margin`
+- Truth anchor: `D5/S3/Weil/BurnolGram/BurnolRationalDepthBudget.rationalQuarterDepth_integer_sound`
+- Truth anchor: `D5/S3/Weil/BurnolGram/BurnolRationalDepthBudget.rationalQuarterDepth_real_sound`
+- Dependency: [D5/S3/Weil/BurnolGram/WeilBurnolSupportBudget](WeilBurnolSupportBudget.md)
+- Dependency: [D5/S3/Weil/BurnolGram/WeilFullGramUniformRemainder](WeilFullGramUniformRemainder.md)

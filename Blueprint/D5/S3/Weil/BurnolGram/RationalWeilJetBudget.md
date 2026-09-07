@@ -6,9 +6,9 @@ A finite rational expression bounds the actual mixed majorant and certifies the 
 
 **Definition 1.1 (Finite spectral-head calculator).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/RationalWeilJetBudget.rationalSpectralHead`
+Lean statement: `D5/S3/Weil/BurnolGram/RationalWeilJetBudget.rationalSpectralHead`
 
-*Formalization.* `D5/S3/Weil/ZetaBridge/RationalWeilJetBudget.rationalSpectralHead` (`✓ std3`).
+*Formalization.* `D5/S3/Weil/BurnolGram/RationalWeilJetBudget.rationalSpectralHead` (`✓ std3`).
 
 *Source.* Repository-derived.
 
@@ -18,9 +18,9 @@ M bounds the analytic multiplicity and lower is a nonnegative lower enclosure of
 
 **Theorem 1.2 (One certified rational head bound).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/RationalWeilJetBudget.fourthMomentSummand_le_rational_enclosure`
+Lean statement: `D5/S3/Weil/BurnolGram/RationalWeilJetBudget.fourthMomentSummand_le_rational_enclosure`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/RationalWeilJetBudget.fourthMomentSummand_le_rational_enclosure` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/RationalWeilJetBudget.fourthMomentSummand_le_rational_enclosure` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -30,9 +30,9 @@ Compare positive denominators after squaring the nonnegative height bound, then 
 
 **Theorem 1.3 (Finite head soundness).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/RationalWeilJetBudget.rationalSpectralHead_sound`
+Lean statement: `D5/S3/Weil/BurnolGram/RationalWeilJetBudget.rationalSpectralHead_sound`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/RationalWeilJetBudget.rationalSpectralHead_sound` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/RationalWeilJetBudget.rationalSpectralHead_sound` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -42,9 +42,9 @@ Sum the pointwise inequalities and transport the rational arithmetic through the
 
 **Definition 1.4 (Executable rational majorant).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/RationalWeilJetBudget.rationalJetMajorant`
+Lean statement: `D5/S3/Weil/BurnolGram/RationalWeilJetBudget.rationalJetMajorant`
 
-*Formalization.* `D5/S3/Weil/ZetaBridge/RationalWeilJetBudget.rationalJetMajorant` (`✓ std3`).
+*Formalization.* `D5/S3/Weil/BurnolGram/RationalWeilJetBudget.rationalJetMajorant` (`✓ std3`).
 
 *Source.* Repository-derived.
 
@@ -54,9 +54,9 @@ All operations are finite rational sums, products and powers. The data acquire a
 
 **Theorem 1.5 (Actual infinite family bound).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/RationalWeilJetBudget.rationalJetMajorant_sound`
+Lean statement: `D5/S3/Weil/BurnolGram/RationalWeilJetBudget.rationalJetMajorant_sound`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/RationalWeilJetBudget.rationalJetMajorant_sound` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/RationalWeilJetBudget.rationalJetMajorant_sound` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -66,9 +66,9 @@ Derive both transform bounds by integration by parts. Apply the all-cross-term h
 
 **Theorem 1.6 (Computed depth on the actual full Gram).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/RationalWeilJetBudget.rational_unit_packet_support_and_margin`
+Lean statement: `D5/S3/Weil/BurnolGram/RationalWeilJetBudget.rational_unit_packet_support_and_margin`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/RationalWeilJetBudget.rational_unit_packet_support_and_margin` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/RationalWeilJetBudget.rational_unit_packet_support_and_margin` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -78,10 +78,10 @@ The scalar spectral-tail estimate remains the independent number-theoretic oblig
 
 ## References
 
-- Truth anchor: `D5/S3/Weil/ZetaBridge/RationalWeilJetBudget.fourthMomentSummand_le_rational_enclosure`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/RationalWeilJetBudget.rationalJetMajorant`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/RationalWeilJetBudget.rationalJetMajorant_sound`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/RationalWeilJetBudget.rationalSpectralHead`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/RationalWeilJetBudget.rationalSpectralHead_sound`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/RationalWeilJetBudget.rational_unit_packet_support_and_margin`
-- Dependency: [D5/S3/Weil/ZetaBridge/UnitSupportBurnolPacket](UnitSupportBurnolPacket.md)
+- Truth anchor: `D5/S3/Weil/BurnolGram/RationalWeilJetBudget.fourthMomentSummand_le_rational_enclosure`
+- Truth anchor: `D5/S3/Weil/BurnolGram/RationalWeilJetBudget.rationalJetMajorant`
+- Truth anchor: `D5/S3/Weil/BurnolGram/RationalWeilJetBudget.rationalJetMajorant_sound`
+- Truth anchor: `D5/S3/Weil/BurnolGram/RationalWeilJetBudget.rationalSpectralHead`
+- Truth anchor: `D5/S3/Weil/BurnolGram/RationalWeilJetBudget.rationalSpectralHead_sound`
+- Truth anchor: `D5/S3/Weil/BurnolGram/RationalWeilJetBudget.rational_unit_packet_support_and_margin`
+- Dependency: [D5/S3/Weil/BurnolGram/UnitSupportBurnolPacket](UnitSupportBurnolPacket.md)

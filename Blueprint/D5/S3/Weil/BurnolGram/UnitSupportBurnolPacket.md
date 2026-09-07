@@ -6,9 +6,9 @@ The actual packet can be reconstructed with B=K=1; localization support is N+2 a
 
 **Theorem 1.1 (Construct both unit-support components).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/UnitSupportBurnolPacket.exists_unit_support_orbitBurnolPacket`
+Lean statement: `D5/S3/Weil/BurnolGram/UnitSupportBurnolPacket.exists_unit_support_orbitBurnolPacket`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/UnitSupportBurnolPacket.exists_unit_support_orbitBurnolPacket` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/UnitSupportBurnolPacket.exists_unit_support_orbitBurnolPacket` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -18,9 +18,9 @@ Retain support from the stronger finite reflection-compatible interpolation theo
 
 **Theorem 1.2 (Specified final support radius).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/UnitSupportBurnolPacket.unit_support_burnol_radius`
+Lean statement: `D5/S3/Weil/BurnolGram/UnitSupportBurnolPacket.unit_support_burnol_radius`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/UnitSupportBurnolPacket.unit_support_burnol_radius` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/UnitSupportBurnolPacket.unit_support_burnol_radius` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -30,9 +30,9 @@ Specialize the existing additive convolution support theorem to B=K=1. The radiu
 
 **Theorem 1.3 (Explicit exceptional spectral radius).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/UnitSupportBurnolPacket.peak_tail_of_two_jet_budget`
+Lean statement: `D5/S3/Weil/BurnolGram/UnitSupportBurnolPacket.peak_tail_of_two_jet_budget`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/UnitSupportBurnolPacket.peak_tail_of_two_jet_budget` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/UnitSupportBurnolPacket.peak_tail_of_two_jet_budget` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -42,7 +42,7 @@ Use the derived two-jet closed-strip decay and the unconditional half-strip boun
 
 ## References
 
-- Truth anchor: `D5/S3/Weil/ZetaBridge/UnitSupportBurnolPacket.exists_unit_support_orbitBurnolPacket`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/UnitSupportBurnolPacket.peak_tail_of_two_jet_budget`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/UnitSupportBurnolPacket.unit_support_burnol_radius`
-- Dependency: [D5/S3/Weil/ZetaBridge/WeilMixedHeadTailBudget](WeilMixedHeadTailBudget.md)
+- Truth anchor: `D5/S3/Weil/BurnolGram/UnitSupportBurnolPacket.exists_unit_support_orbitBurnolPacket`
+- Truth anchor: `D5/S3/Weil/BurnolGram/UnitSupportBurnolPacket.peak_tail_of_two_jet_budget`
+- Truth anchor: `D5/S3/Weil/BurnolGram/UnitSupportBurnolPacket.unit_support_burnol_radius`
+- Dependency: [D5/S3/Weil/BurnolGram/WeilMixedHeadTailBudget](WeilMixedHeadTailBudget.md)

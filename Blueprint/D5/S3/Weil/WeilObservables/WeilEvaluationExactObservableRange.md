@@ -6,9 +6,9 @@ The actual finite scalar even Weil observer reaches exactly the reflection-even,
 
 **Theorem 1.1 (Reflection-evenness is sufficient and necessary).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilEvaluationExactObservableRange.finiteWeilIndexEvaluation_range_iff`
+Lean statement: `D5/S3/Weil/WeilObservables/WeilEvaluationExactObservableRange.finiteWeilIndexEvaluation_range_iff`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilEvaluationExactObservableRange.finiteWeilIndexEvaluation_range_iff` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/WeilObservables/WeilEvaluationExactObservableRange.finiteWeilIndexEvaluation_range_iff` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -18,9 +18,9 @@ Extend the finite window assignment by zero. Reflection closure preserves compat
 
 **Theorem 1.2 (Exact image in multiplicity-expanded coordinates).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilEvaluationExactObservableRange.finiteWeilCoordinateEvaluation_range_iff`
+Lean statement: `D5/S3/Weil/WeilObservables/WeilEvaluationExactObservableRange.finiteWeilCoordinateEvaluation_range_iff`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilEvaluationExactObservableRange.finiteWeilCoordinateEvaluation_range_iff` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/WeilObservables/WeilEvaluationExactObservableRange.finiteWeilCoordinateEvaluation_range_iff` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -30,9 +30,9 @@ Actual positive analytic multiplicities provide one copy for collapse. Expansion
 
 **Theorem 1.3 (Redundant copies create no semantic information gain).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilEvaluationExactObservableRange.no_intrinsic_kernel_escape_from_multiplicity_replication`
+Lean statement: `D5/S3/Weil/WeilObservables/WeilEvaluationExactObservableRange.no_intrinsic_kernel_escape_from_multiplicity_replication`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilEvaluationExactObservableRange.no_intrinsic_kernel_escape_from_multiplicity_replication` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/WeilObservables/WeilEvaluationExactObservableRange.no_intrinsic_kernel_escape_from_multiplicity_replication` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -42,9 +42,9 @@ The state arena remains all WeilTestFunction values. These are kernel-equality s
 
 **Theorem 1.4 (Mixed Weil form factors through the exact range).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilEvaluationExactObservableRange.truncatedZeroSum_mixed_eq_reducedMirrorForm`
+Lean statement: `D5/S3/Weil/WeilObservables/WeilEvaluationExactObservableRange.truncatedZeroSum_mixed_eq_reducedMirrorForm`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilEvaluationExactObservableRange.truncatedZeroSum_mixed_eq_reducedMirrorForm` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/WeilObservables/WeilEvaluationExactObservableRange.truncatedZeroSum_mixed_eq_reducedMirrorForm` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -54,10 +54,10 @@ The off-diagonal identity uses the existing mirror and convolution owners. Analy
 
 ## References
 
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilEvaluationExactObservableRange.finiteWeilCoordinateEvaluation_range_iff`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilEvaluationExactObservableRange.finiteWeilIndexEvaluation_range_iff`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilEvaluationExactObservableRange.no_intrinsic_kernel_escape_from_multiplicity_replication`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilEvaluationExactObservableRange.truncatedZeroSum_mixed_eq_reducedMirrorForm`
+- Truth anchor: `D5/S3/Weil/WeilObservables/WeilEvaluationExactObservableRange.finiteWeilCoordinateEvaluation_range_iff`
+- Truth anchor: `D5/S3/Weil/WeilObservables/WeilEvaluationExactObservableRange.finiteWeilIndexEvaluation_range_iff`
+- Truth anchor: `D5/S3/Weil/WeilObservables/WeilEvaluationExactObservableRange.no_intrinsic_kernel_escape_from_multiplicity_replication`
+- Truth anchor: `D5/S3/Weil/WeilObservables/WeilEvaluationExactObservableRange.truncatedZeroSum_mixed_eq_reducedMirrorForm`
 - Dependency: [D5/S3/Fourier/ConvolutionPowerAmplification](../../Fourier/ConvolutionPowerAmplification.md)
-- Dependency: [D5/S3/Weil/ZetaBridge/FiniteMirrorReducedWeilFactorization](FiniteMirrorReducedWeilFactorization.md)
-- Dependency: [D5/S3/Weil/ZetaBridge/FiniteReflectionCompatibleWeilInterpolation](FiniteReflectionCompatibleWeilInterpolation.md)
+- Dependency: [D5/S3/Weil/BurnolGram/FiniteMirrorReducedWeilFactorization](../BurnolGram/FiniteMirrorReducedWeilFactorization.md)
+- Dependency: [D5/S3/Weil/BurnolGram/FiniteReflectionCompatibleWeilInterpolation](../BurnolGram/FiniteReflectionCompatibleWeilInterpolation.md)

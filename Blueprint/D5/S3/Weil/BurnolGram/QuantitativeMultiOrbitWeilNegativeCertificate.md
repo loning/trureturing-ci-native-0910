@@ -6,9 +6,9 @@ A uniform quadratic remainder below the least multiplicity-weighted odd margin p
 
 **Theorem 1.1 (A strict diagonal margin dominates a uniform quadratic remainder).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/QuantitativeMultiOrbitWeilNegativeCertificate.strictNegative_of_uniformQuadraticRemainder`
+Lean statement: `D5/S3/Weil/BurnolGram/QuantitativeMultiOrbitWeilNegativeCertificate.strictNegative_of_uniformQuadraticRemainder`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/QuantitativeMultiOrbitWeilNegativeCertificate.strictNegative_of_uniformQuadraticRemainder` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/QuantitativeMultiOrbitWeilNegativeCertificate.strictNegative_of_uniformQuadraticRemainder` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -18,9 +18,9 @@ The theorem is a reusable finite-dimensional perturbation result. The negative t
 
 **Theorem 1.2 (A certified reduced frame yields an injective family of negative full Weil tests).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/QuantitativeMultiOrbitWeilNegativeCertificate.quantitative_multiOrbit_weil_negative_certificate`
+Lean statement: `D5/S3/Weil/BurnolGram/QuantitativeMultiOrbitWeilNegativeCertificate.quantitative_multiOrbit_weil_negative_certificate`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/QuantitativeMultiOrbitWeilNegativeCertificate.quantitative_multiOrbit_weil_negative_certificate` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/BurnolGram/QuantitativeMultiOrbitWeilNegativeCertificate.quantitative_multiOrbit_weil_negative_certificate` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -32,7 +32,7 @@ The theorem does not assume a bound on each basis vector separately. It requires
 
 ## References
 
-- Truth anchor: `D5/S3/Weil/ZetaBridge/QuantitativeMultiOrbitWeilNegativeCertificate.quantitative_multiOrbit_weil_negative_certificate`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/QuantitativeMultiOrbitWeilNegativeCertificate.strictNegative_of_uniformQuadraticRemainder`
-- Dependency: [D5/S3/Weil/ZetaBridge/FiniteEvenWeilOddInterpolation](FiniteEvenWeilOddInterpolation.md)
-- Dependency: [D5/S3/Weil/ZetaBridge/SymmetricConvergentOfZetaSummable](SymmetricConvergentOfZetaSummable.md)
+- Truth anchor: `D5/S3/Weil/BurnolGram/QuantitativeMultiOrbitWeilNegativeCertificate.quantitative_multiOrbit_weil_negative_certificate`
+- Truth anchor: `D5/S3/Weil/BurnolGram/QuantitativeMultiOrbitWeilNegativeCertificate.strictNegative_of_uniformQuadraticRemainder`
+- Dependency: [D5/S3/Weil/BurnolGram/FiniteEvenWeilOddInterpolation](FiniteEvenWeilOddInterpolation.md)
+- Dependency: [D5/S3/Weil/ZetaBridge/SymmetricConvergentOfZetaSummable](../ZetaBridge/SymmetricConvergentOfZetaSummable.md)

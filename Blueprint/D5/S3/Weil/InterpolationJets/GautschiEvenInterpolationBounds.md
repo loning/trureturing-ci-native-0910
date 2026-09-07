@@ -6,9 +6,9 @@ Gautschi-type finite products bound the actual Mathlib Lagrange basis on squared
 
 **Definition 1.1 (Finite conditioning product).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/GautschiEvenInterpolationBounds.squaredNodeBudget`
+Lean statement: `D5/S3/Weil/InterpolationJets/GautschiEvenInterpolationBounds.squaredNodeBudget`
 
-*Formalization.* `D5/S3/Weil/TestFunctions/GautschiEvenInterpolationBounds.squaredNodeBudget` (`✓ std3`).
+*Formalization.* `D5/S3/Weil/InterpolationJets/GautschiEvenInterpolationBounds.squaredNodeBudget` (`✓ std3`).
 
 *Source.* Repository-derived.
 
@@ -18,9 +18,9 @@ The radius and gap data can be rational. Positive gap hypotheses appear on every
 
 **Theorem 1.2 (Actual Lagrange basis on a disk).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/GautschiEvenInterpolationBounds.lagrange_squared_basis_norm_le`
+Lean statement: `D5/S3/Weil/InterpolationJets/GautschiEvenInterpolationBounds.lagrange_squared_basis_norm_le`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/GautschiEvenInterpolationBounds.lagrange_squared_basis_norm_le` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/InterpolationJets/GautschiEvenInterpolationBounds.lagrange_squared_basis_norm_le` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -30,9 +30,9 @@ Expand Mathlib Lagrange.basis into basisDivisor factors. Apply the triangle ineq
 
 **Theorem 1.3 (Explicit polynomial growth).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/GautschiEvenInterpolationBounds.squaredNodeBudget_le_growth`
+Lean statement: `D5/S3/Weil/InterpolationJets/GautschiEvenInterpolationBounds.squaredNodeBudget_le_growth`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/GautschiEvenInterpolationBounds.squaredNodeBudget_le_growth` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/InterpolationJets/GautschiEvenInterpolationBounds.squaredNodeBudget_le_growth` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -42,9 +42,9 @@ Each numerator R^2+A_j^2 is at most R^2*(1+A_j^2). Multiply the finite nonnegati
 
 **Theorem 1.4 (Seed-normalized interpolation bound).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/GautschiEvenInterpolationBounds.lagrange_squared_interpolate_norm_le`
+Lean statement: `D5/S3/Weil/InterpolationJets/GautschiEvenInterpolationBounds.lagrange_squared_interpolate_norm_le`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/GautschiEvenInterpolationBounds.lagrange_squared_interpolate_norm_le` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/InterpolationJets/GautschiEvenInterpolationBounds.lagrange_squared_interpolate_norm_le` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -54,9 +54,9 @@ Use the actual existing interpolate linear map and the basis estimate. The sourc
 
 **Theorem 1.5 (Both types of collision matter).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/GautschiEvenInterpolationBounds.squared_gap_factorization`
+Lean statement: `D5/S3/Weil/InterpolationJets/GautschiEvenInterpolationBounds.squared_gap_factorization`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/GautschiEvenInterpolationBounds.squared_gap_factorization` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/InterpolationJets/GautschiEvenInterpolationBounds.squared_gap_factorization` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -66,9 +66,9 @@ The polynomial difference-of-squares factorization and multiplicativity of the c
 
 **Theorem 1.6 (Transport certified node separations).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/GautschiEvenInterpolationBounds.squared_gap_lower_bound`
+Lean statement: `D5/S3/Weil/InterpolationJets/GautschiEvenInterpolationBounds.squared_gap_lower_bound`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/GautschiEvenInterpolationBounds.squared_gap_lower_bound` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/InterpolationJets/GautschiEvenInterpolationBounds.squared_gap_lower_bound` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -78,9 +78,9 @@ This is the arithmetic interface for rigorous node enclosures. The lower bounds 
 
 ## References
 
-- Truth anchor: `D5/S3/Weil/TestFunctions/GautschiEvenInterpolationBounds.lagrange_squared_basis_norm_le`
-- Truth anchor: `D5/S3/Weil/TestFunctions/GautschiEvenInterpolationBounds.lagrange_squared_interpolate_norm_le`
-- Truth anchor: `D5/S3/Weil/TestFunctions/GautschiEvenInterpolationBounds.squaredNodeBudget`
-- Truth anchor: `D5/S3/Weil/TestFunctions/GautschiEvenInterpolationBounds.squaredNodeBudget_le_growth`
-- Truth anchor: `D5/S3/Weil/TestFunctions/GautschiEvenInterpolationBounds.squared_gap_factorization`
-- Truth anchor: `D5/S3/Weil/TestFunctions/GautschiEvenInterpolationBounds.squared_gap_lower_bound`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/GautschiEvenInterpolationBounds.lagrange_squared_basis_norm_le`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/GautschiEvenInterpolationBounds.lagrange_squared_interpolate_norm_le`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/GautschiEvenInterpolationBounds.squaredNodeBudget`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/GautschiEvenInterpolationBounds.squaredNodeBudget_le_growth`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/GautschiEvenInterpolationBounds.squared_gap_factorization`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/GautschiEvenInterpolationBounds.squared_gap_lower_bound`

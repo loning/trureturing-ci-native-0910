@@ -6,9 +6,9 @@ Separate outer universal vacuity from claims realized on an actual zeta-zero enu
 
 **Theorem 1.1 (Universal claims acquire a real witness).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/ZeroDataSemanticNonvacuity.realized_claim_with_nontrivial_zero`
+Lean statement: `D5/S3/Weil/ZeroData/ZeroDataSemanticNonvacuity.realized_claim_with_nontrivial_zero`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/ZeroDataSemanticNonvacuity.realized_claim_with_nontrivial_zero` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZeroData/ZeroDataSemanticNonvacuity.realized_claim_with_nontrivial_zero` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -20,5 +20,5 @@ Riemann-von Mangoldt growth supplies Nonempty ZeroData through the existing infi
 
 ## References
 
-- Truth anchor: `D5/S3/Weil/ZetaBridge/ZeroDataSemanticNonvacuity.realized_claim_with_nontrivial_zero`
-- Dependency: [D5/S3/Weil/ZetaBridge/CanonicalZeroDataFromRiemannVonMangoldt](CanonicalZeroDataFromRiemannVonMangoldt.md)
+- Truth anchor: `D5/S3/Weil/ZeroData/ZeroDataSemanticNonvacuity.realized_claim_with_nontrivial_zero`
+- Dependency: [D5/S3/Weil/ZeroData/CanonicalZeroDataFromRiemannVonMangoldt](CanonicalZeroDataFromRiemannVonMangoldt.md)

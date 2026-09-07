@@ -6,9 +6,9 @@ A normalized positive bump with radius h=1/(4(R+1)) has Fourier-Laplace norm at 
 
 **Definition 1.1 (Specified support radius).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/QuantitativeEvenSeed.radiusBump`
+Lean statement: `D5/S3/Weil/InterpolationJets/QuantitativeEvenSeed.radiusBump`
 
-*Formalization.* `D5/S3/Weil/TestFunctions/QuantitativeEvenSeed.radiusBump` (`✓ std3`).
+*Formalization.* `D5/S3/Weil/InterpolationJets/QuantitativeEvenSeed.radiusBump` (`✓ std3`).
 
 *Source.* Repository-derived.
 
@@ -18,9 +18,9 @@ The support radius is specified explicitly rather than selected from continuity 
 
 **Definition 1.2 (An actual admissible even seed).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/QuantitativeEvenSeed.normalizedEvenSeed`
+Lean statement: `D5/S3/Weil/InterpolationJets/QuantitativeEvenSeed.normalizedEvenSeed`
 
-*Formalization.* `D5/S3/Weil/TestFunctions/QuantitativeEvenSeed.normalizedEvenSeed` (`✓ std3`).
+*Formalization.* `D5/S3/Weil/InterpolationJets/QuantitativeEvenSeed.normalizedEvenSeed` (`✓ std3`).
 
 *Source.* Repository-derived.
 
@@ -30,9 +30,9 @@ Reuse the Mathlib normalized bump and the existing WeilTestFunction bundle. Smoo
 
 **Theorem 1.3 (Unit complex mass).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/QuantitativeEvenSeed.normalizedEvenSeed_integral`
+Lean statement: `D5/S3/Weil/InterpolationJets/QuantitativeEvenSeed.normalizedEvenSeed_integral`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/QuantitativeEvenSeed.normalizedEvenSeed_integral` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/InterpolationJets/QuantitativeEvenSeed.normalizedEvenSeed_integral` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -42,9 +42,9 @@ Transport the existing normed-bump integral theorem through the real-to-complex 
 
 **Theorem 1.4 (Unit absolute mass).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/QuantitativeEvenSeed.normalizedEvenSeed_norm_integral`
+Lean statement: `D5/S3/Weil/InterpolationJets/QuantitativeEvenSeed.normalizedEvenSeed_norm_integral`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/QuantitativeEvenSeed.normalizedEvenSeed_norm_integral` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/InterpolationJets/QuantitativeEvenSeed.normalizedEvenSeed_norm_integral` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -54,9 +54,9 @@ The underlying bump is nonnegative, so its absolute integral equals its mass.
 
 **Theorem 1.5 (Topological support is controlled).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/QuantitativeEvenSeed.normalizedEvenSeed_tsupport`
+Lean statement: `D5/S3/Weil/InterpolationJets/QuantitativeEvenSeed.normalizedEvenSeed_tsupport`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/QuantitativeEvenSeed.normalizedEvenSeed_tsupport` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/InterpolationJets/QuantitativeEvenSeed.normalizedEvenSeed_tsupport` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -66,9 +66,9 @@ Use the exact bump support and take closure in the closed interval. Boundary poi
 
 **Theorem 1.6 (A quantitative nonvanishing neighborhood).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/QuantitativeEvenSeed.fourierLaplace_sub_one_norm_le`
+Lean statement: `D5/S3/Weil/InterpolationJets/QuantitativeEvenSeed.fourierLaplace_sub_one_norm_le`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/QuantitativeEvenSeed.fourierLaplace_sub_one_norm_le` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/InterpolationJets/QuantitativeEvenSeed.fourierLaplace_sub_one_norm_le` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -78,9 +78,9 @@ Integrate the pointwise bound |exp(w)-1|<=2|w| for |w|<=1. The support certifica
 
 **Definition 1.7 (An explicit arithmetic radius).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/QuantitativeEvenSeed.quantitativeSeedRadius`
+Lean statement: `D5/S3/Weil/InterpolationJets/QuantitativeEvenSeed.quantitativeSeedRadius`
 
-*Formalization.* `D5/S3/Weil/TestFunctions/QuantitativeEvenSeed.quantitativeSeedRadius` (`✓ std3`).
+*Formalization.* `D5/S3/Weil/InterpolationJets/QuantitativeEvenSeed.quantitativeSeedRadius` (`✓ std3`).
 
 *Source.* Repository-derived.
 
@@ -90,9 +90,9 @@ A rational bound R produces a rational radius.
 
 **Theorem 1.8 (Radius positivity).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/QuantitativeEvenSeed.quantitativeSeedRadius_pos`
+Lean statement: `D5/S3/Weil/InterpolationJets/QuantitativeEvenSeed.quantitativeSeedRadius_pos`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/QuantitativeEvenSeed.quantitativeSeedRadius_pos` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/InterpolationJets/QuantitativeEvenSeed.quantitativeSeedRadius_pos` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -102,9 +102,9 @@ All denominator signs are proved.
 
 **Theorem 1.9 (Uniform normalization denominator).**
 
-Lean statement: `D5/S3/Weil/TestFunctions/QuantitativeEvenSeed.quantitativeEvenSeed_transform_lower`
+Lean statement: `D5/S3/Weil/InterpolationJets/QuantitativeEvenSeed.quantitativeEvenSeed_transform_lower`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/QuantitativeEvenSeed.quantitativeEvenSeed_transform_lower` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/InterpolationJets/QuantitativeEvenSeed.quantitativeEvenSeed_transform_lower` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -114,13 +114,13 @@ The transform differs from one by at most one half, and the reverse triangle ine
 
 ## References
 
-- Truth anchor: `D5/S3/Weil/TestFunctions/QuantitativeEvenSeed.fourierLaplace_sub_one_norm_le`
-- Truth anchor: `D5/S3/Weil/TestFunctions/QuantitativeEvenSeed.normalizedEvenSeed`
-- Truth anchor: `D5/S3/Weil/TestFunctions/QuantitativeEvenSeed.normalizedEvenSeed_integral`
-- Truth anchor: `D5/S3/Weil/TestFunctions/QuantitativeEvenSeed.normalizedEvenSeed_norm_integral`
-- Truth anchor: `D5/S3/Weil/TestFunctions/QuantitativeEvenSeed.normalizedEvenSeed_tsupport`
-- Truth anchor: `D5/S3/Weil/TestFunctions/QuantitativeEvenSeed.quantitativeEvenSeed_transform_lower`
-- Truth anchor: `D5/S3/Weil/TestFunctions/QuantitativeEvenSeed.quantitativeSeedRadius`
-- Truth anchor: `D5/S3/Weil/TestFunctions/QuantitativeEvenSeed.quantitativeSeedRadius_pos`
-- Truth anchor: `D5/S3/Weil/TestFunctions/QuantitativeEvenSeed.radiusBump`
-- Dependency: [D5/S3/Weil/TestFunctions/FinitePaleyWienerInterpolation](FinitePaleyWienerInterpolation.md)
+- Truth anchor: `D5/S3/Weil/InterpolationJets/QuantitativeEvenSeed.fourierLaplace_sub_one_norm_le`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/QuantitativeEvenSeed.normalizedEvenSeed`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/QuantitativeEvenSeed.normalizedEvenSeed_integral`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/QuantitativeEvenSeed.normalizedEvenSeed_norm_integral`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/QuantitativeEvenSeed.normalizedEvenSeed_tsupport`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/QuantitativeEvenSeed.quantitativeEvenSeed_transform_lower`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/QuantitativeEvenSeed.quantitativeSeedRadius`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/QuantitativeEvenSeed.quantitativeSeedRadius_pos`
+- Truth anchor: `D5/S3/Weil/InterpolationJets/QuantitativeEvenSeed.radiusBump`
+- Dependency: [D5/S3/Weil/TestFunctions/FinitePaleyWienerInterpolation](../TestFunctions/FinitePaleyWienerInterpolation.md)

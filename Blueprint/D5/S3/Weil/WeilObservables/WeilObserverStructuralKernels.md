@@ -6,9 +6,9 @@ Selected odd channels give faithful inclusion-reversing equality kernels on actu
 
 **Definition 1.1 (The equality relation of selected channels).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilObserverStructuralKernels.frameObserverKernel`
+Lean statement: `D5/S3/Weil/WeilObservables/WeilObserverStructuralKernels.frameObserverKernel`
 
-*Formalization.* `D5/S3/Weil/ZetaBridge/WeilObserverStructuralKernels.frameObserverKernel` (`✓ std3`).
+*Formalization.* `D5/S3/Weil/WeilObservables/WeilObserverStructuralKernels.frameObserverKernel` (`✓ std3`).
 
 *Source.* Repository-derived.
 
@@ -18,9 +18,9 @@ The state space is the original infinite WeilTestFunction type. Only a finite se
 
 **Theorem 1.2 (Equivalence relation).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilObserverStructuralKernels.frameObserverKernel_equivalence`
+Lean statement: `D5/S3/Weil/WeilObservables/WeilObserverStructuralKernels.frameObserverKernel_equivalence`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilObserverStructuralKernels.frameObserverKernel_equivalence` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/WeilObservables/WeilObserverStructuralKernels.frameObserverKernel_equivalence` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -30,9 +30,9 @@ Each property follows pointwise from equality of the selected readouts.
 
 **Theorem 1.3 (Exact pullback under interpolation).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilObserverStructuralKernels.frameObserverKernel_synthesis_iff`
+Lean statement: `D5/S3/Weil/WeilObservables/WeilObserverStructuralKernels.frameObserverKernel_synthesis_iff`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilObserverStructuralKernels.frameObserverKernel_synthesis_iff` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/WeilObservables/WeilObserverStructuralKernels.frameObserverKernel_synthesis_iff` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -42,9 +42,9 @@ Apply the existing interpolation right-inverse theorem at each channel.
 
 **Theorem 1.4 (Exclusive test pair for each channel).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilObserverStructuralKernels.frameObserver_leave_one_out_witness`
+Lean statement: `D5/S3/Weil/WeilObservables/WeilObserverStructuralKernels.frameObserver_leave_one_out_witness`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilObserverStructuralKernels.frameObserver_leave_one_out_witness` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/WeilObservables/WeilObserverStructuralKernels.frameObserver_leave_one_out_witness` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -54,9 +54,9 @@ Synthesize the Kronecker coefficient vector and the zero coefficient vector. The
 
 **Theorem 1.5 (Exact reversal of channel inclusion).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilObserverStructuralKernels.frameObserverKernel_refines_iff`
+Lean statement: `D5/S3/Weil/WeilObservables/WeilObserverStructuralKernels.frameObserverKernel_refines_iff`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilObserverStructuralKernels.frameObserverKernel_refines_iff` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/WeilObservables/WeilObserverStructuralKernels.frameObserverKernel_refines_iff` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -66,9 +66,9 @@ The forward implication uses the exclusive pair of any purported missing channel
 
 **Theorem 1.6 (Faithfulness of channel subsets).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilObserverStructuralKernels.frameObserverKernel_eq_iff`
+Lean statement: `D5/S3/Weil/WeilObservables/WeilObserverStructuralKernels.frameObserverKernel_eq_iff`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilObserverStructuralKernels.frameObserverKernel_eq_iff` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/WeilObservables/WeilObserverStructuralKernels.frameObserverKernel_eq_iff` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -78,9 +78,9 @@ Apply the inclusion theorem in both directions and finite-set antisymmetry.
 
 **Theorem 1.7 (Joint observations).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilObserverStructuralKernels.frameObserverKernel_union`
+Lean statement: `D5/S3/Weil/WeilObservables/WeilObserverStructuralKernels.frameObserverKernel_union`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilObserverStructuralKernels.frameObserverKernel_union` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/WeilObservables/WeilObserverStructuralKernels.frameObserverKernel_union` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -90,9 +90,9 @@ Membership in the union separates the universal readout constraint into its two 
 
 **Theorem 1.8 (Strict enlargement after channel removal).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilObserverStructuralKernels.frameObserverKernel_strict_leave_one_out`
+Lean statement: `D5/S3/Weil/WeilObservables/WeilObserverStructuralKernels.frameObserverKernel_strict_leave_one_out`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilObserverStructuralKernels.frameObserverKernel_strict_leave_one_out` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/WeilObservables/WeilObserverStructuralKernels.frameObserverKernel_strict_leave_one_out` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -102,9 +102,9 @@ The exclusive test pair witnesses strictness. This assertion concerns the specif
 
 **Theorem 1.9 (Localized pullback).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilObserverStructuralKernels.frameObserverKernel_burnol_iff`
+Lean statement: `D5/S3/Weil/WeilObservables/WeilObserverStructuralKernels.frameObserverKernel_burnol_iff`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilObserverStructuralKernels.frameObserverKernel_burnol_iff` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/WeilObservables/WeilObserverStructuralKernels.frameObserverKernel_burnol_iff` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -114,9 +114,9 @@ The actual Burnol readout remains a right inverse at every depth.
 
 **Theorem 1.10 (Comparisons across distinct localization depths).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilObserverStructuralKernels.frameObserverKernel_burnol_depth_invariant`
+Lean statement: `D5/S3/Weil/WeilObservables/WeilObserverStructuralKernels.frameObserverKernel_burnol_depth_invariant`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilObserverStructuralKernels.frameObserverKernel_burnol_depth_invariant` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/WeilObservables/WeilObserverStructuralKernels.frameObserverKernel_burnol_depth_invariant` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -126,9 +126,9 @@ The two tests may have different support radii and different analytic errors. Th
 
 **Theorem 1.11 (Localization preserves the interpolation kernel).**
 
-Lean statement: `D5/S3/Weil/ZetaBridge/WeilObserverStructuralKernels.frameObserverKernel_burnol_eq_interpolation`
+Lean statement: `D5/S3/Weil/WeilObservables/WeilObserverStructuralKernels.frameObserverKernel_burnol_eq_interpolation`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaBridge/WeilObserverStructuralKernels.frameObserverKernel_burnol_eq_interpolation` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/WeilObservables/WeilObserverStructuralKernels.frameObserverKernel_burnol_eq_interpolation` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -138,15 +138,15 @@ Both kernels are exactly coordinate equality on S. No equality of observations o
 
 ## References
 
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilObserverStructuralKernels.frameObserverKernel`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilObserverStructuralKernels.frameObserverKernel_burnol_depth_invariant`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilObserverStructuralKernels.frameObserverKernel_burnol_eq_interpolation`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilObserverStructuralKernels.frameObserverKernel_burnol_iff`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilObserverStructuralKernels.frameObserverKernel_eq_iff`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilObserverStructuralKernels.frameObserverKernel_equivalence`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilObserverStructuralKernels.frameObserverKernel_refines_iff`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilObserverStructuralKernels.frameObserverKernel_strict_leave_one_out`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilObserverStructuralKernels.frameObserverKernel_synthesis_iff`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilObserverStructuralKernels.frameObserverKernel_union`
-- Truth anchor: `D5/S3/Weil/ZetaBridge/WeilObserverStructuralKernels.frameObserver_leave_one_out_witness`
-- Dependency: [D5/S3/Weil/ZetaBridge/MultiOrbitBurnolUniformRemainder](MultiOrbitBurnolUniformRemainder.md)
+- Truth anchor: `D5/S3/Weil/WeilObservables/WeilObserverStructuralKernels.frameObserverKernel`
+- Truth anchor: `D5/S3/Weil/WeilObservables/WeilObserverStructuralKernels.frameObserverKernel_burnol_depth_invariant`
+- Truth anchor: `D5/S3/Weil/WeilObservables/WeilObserverStructuralKernels.frameObserverKernel_burnol_eq_interpolation`
+- Truth anchor: `D5/S3/Weil/WeilObservables/WeilObserverStructuralKernels.frameObserverKernel_burnol_iff`
+- Truth anchor: `D5/S3/Weil/WeilObservables/WeilObserverStructuralKernels.frameObserverKernel_eq_iff`
+- Truth anchor: `D5/S3/Weil/WeilObservables/WeilObserverStructuralKernels.frameObserverKernel_equivalence`
+- Truth anchor: `D5/S3/Weil/WeilObservables/WeilObserverStructuralKernels.frameObserverKernel_refines_iff`
+- Truth anchor: `D5/S3/Weil/WeilObservables/WeilObserverStructuralKernels.frameObserverKernel_strict_leave_one_out`
+- Truth anchor: `D5/S3/Weil/WeilObservables/WeilObserverStructuralKernels.frameObserverKernel_synthesis_iff`
+- Truth anchor: `D5/S3/Weil/WeilObservables/WeilObserverStructuralKernels.frameObserverKernel_union`
+- Truth anchor: `D5/S3/Weil/WeilObservables/WeilObserverStructuralKernels.frameObserver_leave_one_out_witness`
+- Dependency: [D5/S3/Weil/BurnolGram/MultiOrbitBurnolUniformRemainder](../BurnolGram/MultiOrbitBurnolUniformRemainder.md)
