@@ -4,7 +4,7 @@ using StrataLint.Engine;
 
 namespace StrataLint.EngineeringScope;
 
-internal sealed class CommonStages(string root, TextWriter output)
+internal sealed class CommonStages(string root, TextWriter output, CancellationToken deadlineCancellation = default)
 {
     private readonly List<StageStep> steps = [];
     private string stage = "input";
@@ -131,8 +131,10 @@ internal sealed class CommonStages(string root, TextWriter output)
 
     private (int Exit, string Text) Capture(string executable, string[] arguments)
     {
-        var timeout = TimeSpan.FromHours(2);
-        var deadline = Environment.GetEnvironmentVariable("PREFLIGHT_DEADLINE_AT");
+        if (deadlineCancellation.IsCancellationRequested) throw new TimeoutException("PREFLIGHT_BUDGET_EXHAUSTED owner=outer-deadline");
+        // Injected deadlines are advanced by their owner, independent of the ambient clock.
+        var timeout = deadlineCancellation.CanBeCanceled ? Timeout.InfiniteTimeSpan : TimeSpan.FromHours(2);
+        var deadline = deadlineCancellation.CanBeCanceled ? null : Environment.GetEnvironmentVariable("PREFLIGHT_DEADLINE_AT");
         if (deadline is not null)
         {
             if (!long.TryParse(deadline, out var seconds)) throw new ArgumentException("invalid PREFLIGHT_DEADLINE_AT");
@@ -145,7 +147,8 @@ internal sealed class CommonStages(string root, TextWriter output)
         using var process = Process.Start(start) ?? throw new IOException("cannot start " + executable);
         var stdout = process.StandardOutput.ReadToEndAsync();
         var stderr = process.StandardError.ReadToEndAsync();
-        using var cancellation = new CancellationTokenSource(timeout);
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(deadlineCancellation);
+        cancellation.CancelAfter(timeout);
         try { process.WaitForExitAsync(cancellation.Token).GetAwaiter().GetResult(); }
         catch (OperationCanceledException)
         {
