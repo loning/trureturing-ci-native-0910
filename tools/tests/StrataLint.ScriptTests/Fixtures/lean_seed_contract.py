@@ -603,6 +603,81 @@ class PairTests(PairFixture, unittest.TestCase):
         self.assertEqual(2, self.report_input("verify").returncode)
 
 
+class ProducerClosureTests(PairFixture, unittest.TestCase):
+    def setUp(self):
+        super().setUp()
+        shutil.copyfile(ROOT / "tools/lean-inspector/inspect.sh", self.producer)
+        # Copy source inputs, never retained binaries or another worktree.
+        for directory, children, files in os.walk(ROOT / "tools"):
+            children[:] = [name for name in children if name not in
+                           ("bin", "obj", "tests", "TestSupport", "scripts", "lean-inspector")]
+            for name in files:
+                source = pathlib.Path(directory) / name
+                target = self.root / source.relative_to(ROOT)
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(source, target)
+        for name in ("Directory.Build.props", "Directory.Packages.props", "global.json"):
+            shutil.copyfile(ROOT / name, self.root / name)
+
+    def address(self):
+        result = self.report_input()
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        fields = result.stdout.split()
+        self.assertEqual(4, len(fields))
+        return fields
+
+    def assert_invalidates(self, before):
+        after = self.address()
+        self.assertNotEqual(before[:2], after[:2])
+        self.assertEqual(before[2:], after[2:])
+        self.assertEqual(REV, self.partition())
+        # Feed the real address into the existing incremental planner contract.
+        delta = DeltaTests()
+        delta.setUp()
+        self.addCleanup(delta.doCleanups)
+        delta.producer = before[1]
+        delta.store()
+        self.assertEqual("reuse", delta.plan()["status"])
+        plan = delta.plan(producer=after[1])
+        self.assertEqual("delta", plan["status"])
+        self.assertEqual(["A", "B", "C", "D"], plan["recheck"])
+        self.assertTrue(plan["semantic_changed"])
+
+    def test_actual_cache_writer_source_invalidates_address_and_reuse(self):
+        before = self.address()
+        owner = self.root / "tools/StrataLint.Cli/Commands/Worktrees/LeanCacheEnsureCommand.cs"
+        original = owner.read_bytes()
+        write(owner, owner.read_text().replace('var receipt = ensured.Output;',
+                                             'var receipt = ensured.Output + "producer-change";'))
+        self.assertNotEqual(digest(original), digest(owner.read_bytes()))
+        self.assert_invalidates(before)
+        paths = self.report_input("producer-paths")
+        self.assertEqual(0, paths.returncode, paths.stderr)
+        self.assertIn(str(owner.relative_to(self.root)), paths.stdout.splitlines())
+        self.assertIn("tools/StrataLint.Engine/Runtime/BoundedProcessRunner.cs", paths.stdout.splitlines())
+        self.assertIn("tools/scripts/worktree/lean-cache-publish.sh", paths.stdout.splitlines())
+
+    def test_semantic_build_inputs_and_required_members(self):
+        before = self.address()
+        write(self.root / "lakefile.toml", 'name = "renamed"\nkeywords = ["metadata"]\n[leanOptions]\nmaxRecDepth = 1000\n')
+        self.manifest["packages"][0]["inputRev"] = "metadata-tag"
+        self.save_manifest()
+        write(self.root / "README.md", "irrelevant metadata\n")
+        self.assertEqual(before, self.address())
+        imported = self.root / "tools/report-options.props"
+        write(imported, '<Project><PropertyGroup><DefineConstants>REPORT_OPTION</DefineConstants></PropertyGroup></Project>')
+        props = self.root / "Directory.Build.props"
+        write(props, props.read_text().replace('</Project>', '<Import Project="tools/report-options.props" /></Project>'))
+        self.assert_invalidates(before)
+        before = self.address()
+        write(imported, imported.read_text().replace("REPORT_OPTION", "REPORT_OPTION_CHANGED"))
+        self.assert_invalidates(before)
+        imported.unlink()
+        self.assertNotEqual(0, self.report_input().returncode)
+        write(imported, '<Project><ItemGroup><Compile Include="RequiredProducer.cs" /></ItemGroup></Project>')
+        self.assertNotEqual(0, self.report_input().returncode)
+
+
 class InspectorTests(PairFixture, unittest.TestCase):
     def setUp(self):
         super().setUp()

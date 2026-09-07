@@ -76,7 +76,7 @@ producer_declared_paths() {
 }
 
 producer_reachable_script_paths() {
-  python3 "$SCRIPT_DIRECTORY/producer_paths.py" "$REPOSITORY" "${1:-lean-report}"
+  python3 "$SCRIPT_DIRECTORY/producer_paths.py" "$REPOSITORY" "${1:-lean-report}" "$TMP_ROOT/producer-semantics"
 }
 producer_compile_paths() {
   local scope="${1:-lean-report}"
@@ -171,6 +171,7 @@ producer_sha256() {
     append_producer_manifest_entry "${manifest}.unsorted" "$relative" || return 2
   done < "$producer_paths"
   materialize_manifest "${manifest}.unsorted" || return 2
+  cat "$TMP_ROOT/producer-semantics" >> "${manifest}.unsorted" || return 2
   sort "${manifest}.unsorted" > "$manifest" || return 2
   rm -f -- "${manifest}.unsorted"
   hash_file "$manifest"
