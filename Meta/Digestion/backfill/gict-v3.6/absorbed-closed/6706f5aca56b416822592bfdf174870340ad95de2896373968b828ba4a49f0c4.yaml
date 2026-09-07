@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S1/Eigenstructure/GoldenPowerLog.golden_power_logb_nat
     target_statement_id: sha256:a0b41dff1fb3d1c2459ca5b08b4fc4a42843d4c7a6a9f46ac55b81afbb28dbb0
 receipts:
-  scribe:
-    - gid: D5/S1/Eigenstructure/GoldenPowerLog.golden_power_logb_nat
-      definition_sha256: sha256:3deda35db59ec71ebc23a13b2e543cbd3055b59c764774f11de3c81ed1258d9e
-      emission_sha256: sha256:8b27d781591ebe7f5dd0b854b09a38f38dc2bed8f0b66c7df13c4bd31737457e
   unresolved_subitems: []
