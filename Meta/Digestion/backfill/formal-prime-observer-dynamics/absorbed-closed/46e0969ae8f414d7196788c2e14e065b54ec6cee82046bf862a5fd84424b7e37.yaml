@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Factorization/Embeddings/FractionalIdealPrimeValuationFaithfulness.prime_valuation_observers_faithful
     target_statement_id: sha256:d9dd0515e96a60df184bec2ae32c4d63c788e5c6e7b8c4ee420a175d42c945d0
 receipts:
-  scribe:
-    - gid: D5/S3/Factorization/Embeddings/FractionalIdealPrimeValuationFaithfulness.prime_valuation_observers_faithful
-      definition_sha256: sha256:52d2cb7b0e4eae4e235f2d91e9b8883c783b8b7ee5fb3451e834192cdaf1f7fc
-      emission_sha256: sha256:ee6a33c4903fd6509b07e518b66865b02d09a5c6a3f0c7efcad338afcb6d76e8
   unresolved_subitems: []

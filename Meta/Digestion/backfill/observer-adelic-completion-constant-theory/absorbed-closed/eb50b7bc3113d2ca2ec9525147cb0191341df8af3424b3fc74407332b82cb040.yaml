@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Analytic/Adelic/JetResolventSemisimplification.jet_resolvent_semisimplification
     target_statement_id: sha256:3a78041d7d3ea1f37c78da7c1746dcf3b21ea78b551614507fab1b594fac3d89
 receipts:
-  scribe:
-    - gid: D5/S3/Analytic/Adelic/JetResolventSemisimplification.jet_resolvent_semisimplification
-      definition_sha256: sha256:6355bf80eee799bc330acd05d300602a37399e35452703ba7e4a9cdede3269d3
-      emission_sha256: sha256:fdc293c178fa942798cf7f0df2191488a44fac05feda2f9a3ffe1dda06e949f3
   unresolved_subitems: []

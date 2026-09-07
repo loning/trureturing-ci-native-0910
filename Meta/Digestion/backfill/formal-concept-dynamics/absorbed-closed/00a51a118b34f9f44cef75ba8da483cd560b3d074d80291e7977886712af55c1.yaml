@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S1/FixedPoints/FiniteContractingStability.finite_contracting_updates_stabilize
     target_statement_id: sha256:5b20f5ded515e22520d0cddbf6861d3ccf6d89c70a471c7dcb878d79b531a06b
 receipts:
-  scribe:
-    - gid: D5/S1/FixedPoints/FiniteContractingStability.finite_contracting_updates_stabilize
-      definition_sha256: sha256:1f792a851f0515d2177d2a587d6d4b15ed1c26af46274edf01c3fa40e4530c20
-      emission_sha256: sha256:af0e5d7ea8cd13ff08d23d45000adff22a2054e9282e33cf119db6c687668f74
   unresolved_subitems: []

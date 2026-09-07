@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Weil/ZetaAnalytic/ContactZeroLocalization.contact_zero_localization
     target_statement_id: sha256:3ba5ca6c527a19651203908492bcedf09d4e5f4b45ff3f9219b40392a3d53149
 receipts:
-  scribe:
-    - gid: D5/S3/Weil/ZetaAnalytic/ContactZeroLocalization.contact_zero_localization
-      definition_sha256: sha256:2782f3bad6435f63c6d22460a81f052529dc2a6cb8ce7521caf268a93c4ead6a
-      emission_sha256: sha256:5a4522143c3f539b261c5b275dba886046366c65d326f703b0591521a5224c2d
   unresolved_subitems: []

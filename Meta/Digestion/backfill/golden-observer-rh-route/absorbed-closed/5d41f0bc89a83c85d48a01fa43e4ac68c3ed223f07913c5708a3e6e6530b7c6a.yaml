@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Analytic/EulerGerm/LocalFactorZeroDivisor.germLocalFactor_analyticOnNhd_pos
     target_statement_id: sha256:dabebd5f9d6d532a76ce919aba355e02b1f4af7703c33f039954dee12c9ca82b
 receipts:
-  scribe:
-    - gid: D5/S3/Analytic/EulerGerm/LocalFactorZeroDivisor.germLocalFactor_analyticOnNhd_pos
-      definition_sha256: sha256:eccaac56234999fac41f01276bbd61207dd84047198f17f67bb15c090510045c
-      emission_sha256: sha256:c0dc9f9338b1a2813dc2a30b15b640fd56b7b1261ee6fd835c261c163bde4464
   unresolved_subitems: []

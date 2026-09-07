@@ -57,6 +57,8 @@ public sealed class RuleCatalog
         RuleId.CreateKnown(30),
         // SL-032 has no timing measurement: scan Scribe text in the delta last.
         RuleId.CreateKnown(32),
+        // SL-033 checks only selectors reached by the frozen pair delta.
+        RuleId.CreateKnown(33),
     ];
 
     private readonly ImmutableArray<RuleRegistration> registrations;
@@ -186,6 +188,7 @@ public sealed class RuleCatalog
                 .Append(30)
                 .Append(31)
                 .Append(32)
+                .Append(33)
                 .Select(RuleId.CreateKnown)
                 .ToImmutableArray();
             var registeredIds = Descriptors.Select(static item => item.Id).ToImmutableArray();

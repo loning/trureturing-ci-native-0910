@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Analytic/ZetaObservation/ChristoffelAtomFloor.christoffel_atom_floor
     target_statement_id: sha256:057bf900dc1b46ed4248bc821dc2f7ca058f4c2f03e2af0a7457bf487453f6a3
 receipts:
-  scribe:
-    - gid: D5/S3/Analytic/ZetaObservation/ChristoffelAtomFloor.christoffel_atom_floor
-      definition_sha256: sha256:353e9711cf02ac318b6838277bbaf24911f7a1d464c0553c87cfe7193ec085c7
-      emission_sha256: sha256:42c39b3cf3266dbaceacfef1275ddf8e12b4cbf1d01cb9d775f1cb7108d7ac70
   unresolved_subitems: []

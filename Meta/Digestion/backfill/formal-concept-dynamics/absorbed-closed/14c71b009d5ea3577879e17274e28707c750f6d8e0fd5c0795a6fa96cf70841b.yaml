@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/RefinementFactorization/RefinementShrinksIndistinguishability.refinement_shrinks_indistinguishability
     target_statement_id: sha256:7256946c5f1c6d7aa269fa074f8f8c74b4a85e992e7974917242372df49f7520
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/RefinementFactorization/RefinementShrinksIndistinguishability.refinement_shrinks_indistinguishability
-      definition_sha256: sha256:f3b6f5d4c584b7b4b4f1ce6a6d8f2aa061ee51b8b1794925937bc71106d9d3b4
-      emission_sha256: sha256:0dd889dff71937af4e24caff084149dc0923e7088cd121a49b9a081f931db7aa
   unresolved_subitems: []

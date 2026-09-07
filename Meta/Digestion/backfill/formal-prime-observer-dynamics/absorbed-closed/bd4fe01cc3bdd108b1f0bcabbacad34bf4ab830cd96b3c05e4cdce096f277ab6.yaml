@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Gluing/HasseDefectCompletenessCriterion.hasse_complete_iff_positive_negative_defects_empty
     target_statement_id: sha256:44c2b00b681b863cffc6c1a3138ae5406435057bd772f090de403c0b2c7c2dd2
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Gluing/HasseDefectCompletenessCriterion.hasse_complete_iff_positive_negative_defects_empty
-      definition_sha256: sha256:7821305e36757e1d6583bd33c140c6a01583c54d092ed0e69edfdb678776d933
-      emission_sha256: sha256:7b49a3c0117cd9868d2da63bdf0ffa979c0d73acbec5981dbd98f2d702b4ce65
   unresolved_subitems: []

@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ArithUnits/NegativePellSquare.negative_pell_square_unit
     target_statement_id: sha256:4f67f9ae60c957c4a977d0ccb605d4507d647c9a9b5735c15ed4230404cd2c1b
 receipts:
-  scribe:
-    - gid: D5/S3/ArithUnits/NegativePellSquare.negative_pell_square_unit
-      definition_sha256: sha256:187dbb47d238c9674758a65cdf12b2083af6caa60cddfff64ec1edefb6e894e4
-      emission_sha256: sha256:d2a742f7b1e7249dfe42eb1ea7407884b2031cee2b3ae41fa07f47ac34630c5c
   unresolved_subitems: []

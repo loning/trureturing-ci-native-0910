@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Quantum/Tomography/RestrictedContextMinimality
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: none
    digest: Complete complementary-context tomography is minimal among its context subfamilies. -/
 
 import D5.S3.Quantum.Tomography.ObserverDiagonalSeparation

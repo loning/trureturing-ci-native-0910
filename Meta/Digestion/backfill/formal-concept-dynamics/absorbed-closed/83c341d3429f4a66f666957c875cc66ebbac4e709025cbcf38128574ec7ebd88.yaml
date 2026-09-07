@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/PrecedentTargetCompletion.target_completion_formal_distinction_not_noncircular
     target_statement_id: sha256:0db9d9bf8a56ec50b632fca638c0bfcb4c17de5434375dc7180af2fa0e05732a
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/PrecedentTargetCompletion.target_completion_formal_distinction_not_noncircular
-      definition_sha256: sha256:45288cc8d4f674f91379c1935a6029889e6cffc4378ee7c18e9c9860fe03a145
-      emission_sha256: sha256:59a95b9c137ae8ef4ea1ef5796b35b5ec434b909049304731190fc2a05057c0f
   unresolved_subitems: []

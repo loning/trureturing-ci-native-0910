@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/LinearSufficiency/BinaryRoleMinimumCardinality.binary_role_minimum_cardinality
     target_statement_id: sha256:eebee30d2114af9e724426d7cb8d88e067482559936025914c8aaf3ca012690e
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/LinearSufficiency/BinaryRoleMinimumCardinality.binary_role_minimum_cardinality
-      definition_sha256: sha256:c934acfe0b38a421d1a0c42a89ff24ea19bf77e0f29de996476d12162f4e9082
-      emission_sha256: sha256:62b858433199bd292152e73b48706848f3d6d553979d2bec53b48328be423cbd
   unresolved_subitems: []

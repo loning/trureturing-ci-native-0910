@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Weil/ZetaGamma/PoleContinuumCompletion.pole_continuum_completion
     target_statement_id: sha256:599a2bb0ee8a44109539a63f3244304b6fe025acb6479e8a4cfa429c954a73e1
 receipts:
-  scribe:
-    - gid: D5/S3/Weil/ZetaGamma/PoleContinuumCompletion.pole_continuum_completion
-      definition_sha256: sha256:5fc57e43fe192548d7bccef466a8e8154af7db23e11435707c0feae5be92365e
-      emission_sha256: sha256:bade462e0a417181850785d7443c67f00fd4006631cf00aca25383f499162737
   unresolved_subitems: []

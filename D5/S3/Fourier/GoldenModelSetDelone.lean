@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Fourier/GoldenModelSetDelone
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: kind=certified-instance; basis=terminal=gid:D5/S3/Fourier/GoldenModelSetDelone.exists_golden_modelSet_delone
    digest: Integral norms and floor witnesses certify the complete golden model set as Delone. -/
 
 import D5.S0.Carrier.Euclidean

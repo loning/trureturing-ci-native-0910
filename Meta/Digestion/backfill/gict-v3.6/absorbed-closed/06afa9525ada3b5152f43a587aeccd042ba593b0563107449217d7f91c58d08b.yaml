@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Constants/DeltaMeanArtifact.abs_delta_mean_zero
     target_statement_id: sha256:2aa04b4d2d2e8a019bbd8057e117d698d4d43a6bc546184dd50031b878a057c6
 receipts:
-  scribe:
-    - gid: D5/S3/Constants/DeltaMeanArtifact.abs_delta_mean_zero
-      definition_sha256: sha256:6e3f256d804cc6a28cf58afd36c0c1dbaf638779d3882a39eca632f213d736e7
-      emission_sha256: sha256:533daec56c8696d62b9d1939404d1971ac251dd720b7d091e55275cefdef2e7f
   unresolved_subitems: []
