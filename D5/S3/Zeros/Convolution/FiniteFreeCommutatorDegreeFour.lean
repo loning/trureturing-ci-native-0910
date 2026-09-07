@@ -276,7 +276,7 @@ theorem centered_real_rooted (u v w U V W : ℝ)
 
 example : RealRooted4 (centeredQuartic (-5) 0 4) := by
   refine ⟨![-2, -1, 1, 2], ?_⟩
-  norm_num [centeredQuartic, Fin.prod_univ_succ]
+  norm_num [centeredQuartic, Fin.prod_univ_succ, map_ofNat]
   ring
 
 example : ¬ ((-5 : ℝ)^2 ≥ 12*4) := by norm_num
