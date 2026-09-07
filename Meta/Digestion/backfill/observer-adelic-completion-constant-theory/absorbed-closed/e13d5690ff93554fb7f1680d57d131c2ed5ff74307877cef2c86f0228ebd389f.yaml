@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Weil/CayleyLaguerre/CayleyMomentTransport.chebyshev_stieltjes_jet
     target_statement_id: sha256:a2792ca04c7eb3c8f0a0bcca90e45c87e8df5438837f10ed2fd679ea18096488
 receipts:
-  scribe:
-    - gid: D5/S3/Weil/CayleyLaguerre/CayleyMomentTransport.chebyshev_stieltjes_jet
-      definition_sha256: sha256:6ae096e1200c92564cb468c60821aeb0637ceb44b7856803a8f88fbe92b0e2e2
-      emission_sha256: sha256:f2c8c3605357b1d48c6329cdfccb474194661fa813c22050bdc8ba3b1a4f5d6a
   unresolved_subitems: []

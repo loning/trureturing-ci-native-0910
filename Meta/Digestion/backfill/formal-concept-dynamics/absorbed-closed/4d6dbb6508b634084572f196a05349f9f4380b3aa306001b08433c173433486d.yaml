@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Completion/CompletionInformationCost.completion_information_cost
     target_statement_id: sha256:da90589319d87473778e89f0c384f541e43909ab4ebc134ee7bfec7f508508e9
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Completion/CompletionInformationCost.completion_information_cost
-      definition_sha256: sha256:42029fda8a1b66006e0197498d86665a1c13456e9f1f35f95a34bcadc974b859
-      emission_sha256: sha256:b68666b484f6b3a15f8a4d2841837520c6cd96bbc001f1b00bdac23cf6dc624b
   unresolved_subitems: []

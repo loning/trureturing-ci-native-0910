@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ObserverMemory/Knowledge/RelationalWeakestPreconditionComposition.universal_weakest_precondition_composition
     target_statement_id: sha256:3f836bd42f8b7218386f074912ff5a034655b580f0a37c3134a6368c82c72c33
 receipts:
-  scribe:
-    - gid: D5/S3/ObserverMemory/Knowledge/RelationalWeakestPreconditionComposition.universal_weakest_precondition_composition
-      definition_sha256: sha256:7a079ccb5fe3b0978e40aacba61d19e923cfa5719f5b33e68fdf32642e02c6a4
-      emission_sha256: sha256:ce48cc7d2fa4905775e1fd0865e1ad7ad779a7c8578287deddbfc6d99fdf5614
   unresolved_subitems: []

@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Weil/Budget/FiniteWeylBudgetBounds.finite_weyl_budget_bounds
     target_statement_id: sha256:a8d8c3a8597fa0a552863881e0bff709d0874e6b6ae209f3674be78fbfa3ab2d
 receipts:
-  scribe:
-    - gid: D5/S3/Weil/Budget/FiniteWeylBudgetBounds.finite_weyl_budget_bounds
-      definition_sha256: sha256:f65fdf725ef085ef3e745e97124fb6c3420af3d78f06bd7842a634e340d94ce3
-      emission_sha256: sha256:55251e2ac2442a6326d5faeee1db1a58807219127e45c81062765320c521ca3b
   unresolved_subitems: []

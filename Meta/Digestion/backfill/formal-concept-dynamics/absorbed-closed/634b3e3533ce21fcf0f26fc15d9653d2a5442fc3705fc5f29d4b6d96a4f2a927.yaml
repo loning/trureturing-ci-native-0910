@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Identity/EntityStrengthThreeConditions.three_conditions_are_independent
     target_statement_id: sha256:251e9039f50c8f0f108ba6201636fb38eeaba703b1a35e45827a5918555592c4
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Identity/EntityStrengthThreeConditions.three_conditions_are_independent
-      definition_sha256: sha256:ce410c3b8ad8288cb4cbd5366ff648642ecd269efaaa054db05e7b39195438f5
-      emission_sha256: sha256:c724ea97ab29b5501ea6a91ffd2029a4e0eefdc6dedcbd800b3afc07d6d534d0
   unresolved_subitems: []

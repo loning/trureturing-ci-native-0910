@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Audits/TargetConditionedAdmissionAudit.target_conditioned_admission_audit
     target_statement_id: sha256:dfd36ba2c099742c4fbaf2b6401bfafe8bbafe2a3163e02f29175244d8f267ec
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Audits/TargetConditionedAdmissionAudit.target_conditioned_admission_audit
-      definition_sha256: sha256:963292cbba30170c655dab85d935ba2390d81ab33d2f05de6be237bfdde51d7f
-      emission_sha256: sha256:ade2df3226cc05dc0c8e5a434ce0b4f7c7f2dcd8e1bf031e8812020d5f1955ec
   unresolved_subitems: []

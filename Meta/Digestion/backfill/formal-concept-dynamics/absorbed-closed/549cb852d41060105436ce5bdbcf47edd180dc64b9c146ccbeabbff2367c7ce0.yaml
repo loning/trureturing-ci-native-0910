@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/ConceptFiberDecomposition.concept_fiber_decomposition
     target_statement_id: sha256:b8534ddb3e579498590945f0a4759a351107711de8c2637082a3741e765b9cd7
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/ConceptFiberDecomposition.concept_fiber_decomposition
-      definition_sha256: sha256:fa94036a9e472b71fa45346a26bcf081f7017065b5285cd3740ab1a7f6c37962
-      emission_sha256: sha256:790b041f9962f133d74b9bcb25374db52e7f205afecfce4f782eedcf93392d48
   unresolved_subitems: []

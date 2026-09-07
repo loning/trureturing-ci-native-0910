@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Factorization/Embeddings/RationalFiniteValuationKernel.rational_finite_valuation_kernel_and_sign_recovery
     target_statement_id: sha256:ee952b51c0297cde9da66732fcd5aa49e928fecbaf94dbd7378516f5e2edd77f
 receipts:
-  scribe:
-    - gid: D5/S3/Factorization/Embeddings/RationalFiniteValuationKernel.rational_finite_valuation_kernel_and_sign_recovery
-      definition_sha256: sha256:9bd78283eb3cdbaf81799f408851886754ff3b8e48ded9e1b276eb1cb85bbad4
-      emission_sha256: sha256:96fd253253ce9c28db767cc131a516636ec4c59654b5f0f3699e4d85c8312809
   unresolved_subitems: []

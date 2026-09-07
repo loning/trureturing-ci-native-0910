@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Weil/Budget/ProjectivePrimalConvergence.projective_primal_convergence
     target_statement_id: sha256:4057799de88541a7c36301fd6336dff735c33386b52398ae10c0435b85d58719
 receipts:
-  scribe:
-    - gid: D5/S3/Weil/Budget/ProjectivePrimalConvergence.projective_primal_convergence
-      definition_sha256: sha256:7c4149d9b934171ba0b77c1df9f7318e4019ee20bf132d97971e6817be2a1498
-      emission_sha256: sha256:7da141894d80228ab9e01fd113971c189e3fa4a84618112cbab2397fb31d966c
   unresolved_subitems: []

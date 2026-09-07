@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Weil/Scattering/VerticalAttenuation.vertical_attenuation_tomography
     target_statement_id: sha256:95ffaf946a24c87c7e814036afa1d4b621f62e2cd4240b5b8e8c93a258196c4c
 receipts:
-  scribe:
-    - gid: D5/S3/Weil/Scattering/VerticalAttenuation.vertical_attenuation_tomography
-      definition_sha256: sha256:aee7bb6f1b44af8d3ec5460989bf301500a94863d206940e24de657a8ef27c08
-      emission_sha256: sha256:c7853eb29f40b94bea007d7232569fc39c0a554cd9badf2c2ec8d87dbfc1c38d
   unresolved_subitems: []

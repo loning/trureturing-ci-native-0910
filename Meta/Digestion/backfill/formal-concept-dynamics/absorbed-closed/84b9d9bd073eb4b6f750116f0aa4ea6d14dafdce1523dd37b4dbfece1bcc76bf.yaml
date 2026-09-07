@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/ProvenanceAdmissionCountermodel.equal_content_does_not_determine_admission
     target_statement_id: sha256:9bbf9813dd3da4a2a2f9b10ef96d89f46f412b0486539cede16b5c3dd722e9fa
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/ProvenanceAdmissionCountermodel.equal_content_does_not_determine_admission
-      definition_sha256: sha256:c2a4b8e654d8e1b8fc1ee8b324175ec726e7714d779115ddcad1908e39674ac3
-      emission_sha256: sha256:23a12bae4e2636f9c70b443e9839e163d83c1d977660698135f3bf927f530737
   unresolved_subitems: []

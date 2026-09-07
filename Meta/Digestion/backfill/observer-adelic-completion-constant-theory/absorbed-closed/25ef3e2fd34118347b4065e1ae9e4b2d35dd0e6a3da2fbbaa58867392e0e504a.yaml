@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Observer/Completion/CompletionPointCovariance.completion_point_covariance
     target_statement_id: sha256:f60f138c736ff54100eb4e92f1caaa65b68fe08a7c5774e9fc4b87880070b278
 receipts:
-  scribe:
-    - gid: D5/S3/Observer/Completion/CompletionPointCovariance.completion_point_covariance
-      definition_sha256: sha256:2c1d3373a2f3e6e73d6f57feb0c97be613062523ddfe13fb952798497ad07f05
-      emission_sha256: sha256:0492bd2988bd105dfb7b936d1302551a3025b34135f9dca20fcccb07ef58a7e9
   unresolved_subitems: []

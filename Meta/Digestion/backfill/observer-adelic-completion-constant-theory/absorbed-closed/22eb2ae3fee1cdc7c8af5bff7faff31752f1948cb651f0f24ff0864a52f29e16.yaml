@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Analytic/Adelic/ObserverScaleDivisorNonidentifiability.observer_scale_not_recoverable_from_spectral_divisor
     target_statement_id: sha256:44a6e21d8727b32479b61489a69a261bd52da28db049e2bd876393365e386ce0
 receipts:
-  scribe:
-    - gid: D5/S3/Analytic/Adelic/ObserverScaleDivisorNonidentifiability.observer_scale_not_recoverable_from_spectral_divisor
-      definition_sha256: sha256:eda60b624e8e326dacafcc9135fd552f9deb02a7ad5e622f3d38b0289f1325ac
-      emission_sha256: sha256:a54c7a37b0d5caa48cec2e863392accb439a079db61401dae038e54f782e1a90
   unresolved_subitems: []

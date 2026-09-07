@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Prediction/CoarseGrainingCannotAddInformation.coarse_graining_cannot_add_information
     target_statement_id: sha256:047dcd681db65491e04f17ddd9819ff6995ef91579521cd62d4e3cefe8bc6fda
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Prediction/CoarseGrainingCannotAddInformation.coarse_graining_cannot_add_information
-      definition_sha256: sha256:0170fd486ee9b69aa9d9912a17a99ece34f39f61222050a28d743e8613a8c94e
-      emission_sha256: sha256:387d289ea7019bce773d240e1f40754f450469e25867a20a9d8fca8d645bd855
   unresolved_subitems: []

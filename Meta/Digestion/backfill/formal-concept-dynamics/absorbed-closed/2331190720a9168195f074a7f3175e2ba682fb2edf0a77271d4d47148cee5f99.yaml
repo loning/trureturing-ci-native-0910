@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/RefinementAlgebra/TargetFamilyEssenceMonotonicity.multi_target_essence_sufficiency_and_monotonicity
     target_statement_id: sha256:b8d70b53d3f71b980702457c56a6649413919d89c9f256ca9790c929f99ad329
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/RefinementAlgebra/TargetFamilyEssenceMonotonicity.multi_target_essence_sufficiency_and_monotonicity
-      definition_sha256: sha256:59ada7f699fd577f44e7e3c4c38d3318d6fe5206ecea700e242b4af0d9ad8d22
-      emission_sha256: sha256:6ee80fcf1ddb3fac5dcbd988a2c32e0fbb9ca9bd3413c896f621526cea53748b
   unresolved_subitems: []
