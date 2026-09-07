@@ -1766,7 +1766,7 @@ catalog 中分别为正。
 
 ### 15.3 最终编译命令不是数学 theorem
 
-`#seal_information_theory` 是 elaborator command。它执行枚举、构造证明项和发射产物，但不作为被分析 concept 加入 catalog。
+`#seal_information_theory` 是不接收目标路径的 elaborator command。它执行枚举、构造证明项并发布封印结果，但不作为被分析 concept 加入 catalog。
 
 其数学正确性由普通 Lean theorem 证明，而这些 soundness theorem 本身可以进入 catalog 接受自应用。
 
@@ -4926,13 +4926,16 @@ InformationEscape finite engine
 
 ## CIRPT-41　新增 artifact 字段
 
-v4.2 新共享分析 artifact 使用 additive schema
-`lean-intrinsic-information-escape-v3`。已落地 v2 文件、字段与语义保持有效且不原位升级。
-v3 的规范形状为：
+共享分析 artifact 使用 schema `lean-intrinsic-information-escape-analysis`，catalog 与
+escape-count 的 seal artifact 使用 schema `lean-intrinsic-information-escape-seal`。
+两种 schema 按职责并存；seal artifact 的字段与语义保持有效，analysis 字段单独写入 analysis artifact。
+analysis artifact 的规范形状为：
+
+〔勘注 2026-09-07：上述职责命名遵循 owner 2026-09-06「源码不带版本号」裁决及已落地源码 #6032；census report schema 为 `lean-information-disposition-census`，serializer tag 为 `primitive-kernel-ordinal-partition`。〕
 
 ```json
 {
-  "schema": "lean-intrinsic-information-escape-v3",
+  "schema": "lean-intrinsic-information-escape-analysis",
   "root_id": "D5.S3.ConceptDynamics.InformationEscape.SharedInformationRoot",
   "seal_scope": "import-closure",
   "registration_modules": [],
@@ -4942,7 +4945,7 @@ v3 的规范形状为：
 }
 ```
 
-下表是 v3 的 exhaustive inventory；未列字段不得写入。certification level 的封闭词表为：
+下表是 analysis artifact 的 exhaustive inventory；未列字段不得写入。certification level 的封闭词表为：
 `S` = schema/canonical-encoding check，`E` = elaborated environment/registry identity check，
 `K` = Lean proposition proof，`R` = reflected numeral/finite equality tied to a Lean theorem，
 `D` = verdict 后生成、不得回流的 diagnostic-only projection，`P` = report-only presentation，
@@ -4951,7 +4954,7 @@ v3 的规范形状为：
 
 | scope | field | normative value | certification level |
 |---|---|---|---|
-| root | `schema` | 固定为 `lean-intrinsic-information-escape-v3` | S |
+| root | `schema` | 固定为 `lean-intrinsic-information-escape-analysis` | S |
 | root | `root_id` | canonical sealing-root `Name` | E |
 | root | `seal_scope` | 固定为 `import-closure` | S+E |
 | root | `registration_modules` | import closure 中贡献 registry entries 的 module `Name` canonical-sorted array | E |
@@ -6862,16 +6865,18 @@ elaborated environment，且不得复用旧快照 certificate。
 #seal_information_theory
 ```
 
-可选只读输出路径：
+封印命令不接收输出路径；在已封印的 root 上先暂存 analysis records 与 certificates，再只读导出：
 
 ```lean
-#seal_information_theory
-  output "build/information-theory"
+#stage_information_analysis root D5.S3.ConceptDynamics.InformationEscape.SharedInformationRoot
+#export_information_analysis root D5.S3.ConceptDynamics.InformationEscape.SharedInformationRoot
+  analysis_output "build/information-theory.analysis.json"
 ```
 
-路径只控制 artifact 写出位置，不影响任何数学判词。
+导出命令只读取已暂存的 records 与 certificates；可选 `output "..."` 位于 `analysis_output "..."` 前，可选 `ascii_output "..."` 位于其后。
+命令文法中三个输出子句均可省略，按上述顺序选择要写出的产物；路径只控制 artifact 写出位置，不影响任何数学判词。
 
-命令的 root identity 是当前 module `Name`，scope 固定为 `import-closure`。仓库 build
+封印命令的 root identity 是当前 module `Name`，scope 固定为 `import-closure`。仓库 build
 manifest 必须 designation 恰好一个 v4.2 canonical system root；其 import closure 包含固定
 仓库快照的完整 registration closure，因此 catalogs 在仓库尺度 maximal。辅助 roots 也可
 seal，但 artifact 必须标为 scoped analysis，写 `seal_scope: import-closure` 与 imported
@@ -7105,21 +7110,21 @@ read-only JSON / CSV / DOT artifacts
 
 ### 30.1 JSON 根结构
 
-以下 v2 根结构是已经落地的 singleton baseline，保持有效且不改写：
+以下 seal artifact 根结构承载已经落地的 singleton baseline，其计数、字段与语义保持有效且不改写：
 
 ```json
 {
-  "schema": "lean-intrinsic-information-escape-v2",
+  "schema": "lean-intrinsic-information-escape-seal",
   "catalog_mode": "single-compilation-leave-one-out",
   "arenas": []
 }
 ```
 
-所有 v4.2 shared-arena 新结果另写 additive schema v3：
+所有 v4.2 shared-arena 新结果另写 analysis artifact schema：
 
 ```json
 {
-  "schema": "lean-intrinsic-information-escape-v3",
+  "schema": "lean-intrinsic-information-escape-analysis",
   "root_id": "D5.S3.ConceptDynamics.InformationEscape.SharedInformationRoot",
   "seal_scope": "import-closure",
   "registration_modules": [],
@@ -7413,8 +7418,8 @@ SINGLETON[11] engine_census_self_application K_empty --[capture=<v2-certified-co
 }
 ```
 
-该 block 仅属于 `lean-intrinsic-information-escape-v3`。v3 fields 不迁回、不覆盖也不改变
-冻结 v2 artifact 的字段集合或名字语义。
+该 block 仅属于 `lean-intrinsic-information-escape-analysis`。analysis 字段不迁回、不覆盖也不改变
+冻结 singleton baseline 的 seal artifact 字段集合或名字语义。
 
 ### 30.4 禁止字段
 
