@@ -132,6 +132,90 @@ public sealed class CensusDerivationTests
         }
     }
 
+    [Fact]
+    public void CensusRejectsOverlappingReceiptSets()
+    {
+        const string firstGid = "D5/S0/Test/OverlapOne";
+        const string secondGid = "D5/S0/Test/OverlapTwo";
+
+        var findings = ValidateClassification(
+            documentGids: [firstGid, secondGid],
+            receiptFreeGids: [firstGid, secondGid],
+            receiptBoundGids: [secondGid],
+            ledgerReceiptBoundGids: [secondGid]);
+
+        Assert.Contains(findings, finding => finding.Code == "receipt-census");
+    }
+
+    [Fact]
+    public void CensusAcceptsDisjointReceiptSetsThatMatchTheLedger()
+    {
+        const string receiptFreeGid = "D5/S0/Test/DisjointFree";
+        const string receiptBoundGid = "D5/S0/Test/DisjointBound";
+
+        var findings = ValidateClassification(
+            documentGids: [receiptFreeGid, receiptBoundGid],
+            receiptFreeGids: [receiptFreeGid],
+            receiptBoundGids: [receiptBoundGid],
+            ledgerReceiptBoundGids: [receiptBoundGid]);
+
+        Assert.DoesNotContain(findings, finding => finding.Code == "receipt-census");
+    }
+
+    [Fact]
+    public void CensusRejectsADocumentClassifiedInNeitherSet()
+    {
+        const string classifiedGid = "D5/S0/Test/Classified";
+        const string omittedGid = "D5/S0/Test/Omitted";
+
+        var findings = ValidateClassification(
+            documentGids: [classifiedGid, omittedGid],
+            receiptFreeGids: [classifiedGid],
+            receiptBoundGids: [],
+            ledgerReceiptBoundGids: []);
+
+        Assert.Contains(findings, finding => finding.Code == "receipt-census");
+    }
+
+    [Fact]
+    public void CensusRejectsAReceiptBoundSetThatDisagreesWithTheLedger()
+    {
+        const string ledgerBoundGid = "D5/S0/Test/LedgerBound";
+        const string ledgerFreeGid = "D5/S0/Test/LedgerFree";
+
+        var findings = ValidateClassification(
+            documentGids: [ledgerBoundGid, ledgerFreeGid],
+            receiptFreeGids: [ledgerBoundGid],
+            receiptBoundGids: [ledgerFreeGid],
+            ledgerReceiptBoundGids: [ledgerBoundGid]);
+
+        Assert.Contains(findings, finding => finding.Code == "receipt-census");
+    }
+
+    private static ImmutableArray<DescribeRedFinding> ValidateClassification(
+        string[] documentGids,
+        string[] receiptFreeGids,
+        string[] receiptBoundGids,
+        string[] ledgerReceiptBoundGids)
+    {
+        var documents = Gids(documentGids);
+        var ledgerBound = Gids(ledgerReceiptBoundGids);
+        var findings = ImmutableArray.CreateBuilder<DescribeRedFinding>();
+        DescribeContentGovernance.ValidateCensusClassification(
+            documents,
+            new ReceiptFreeDocumentCensus(Gids(receiptFreeGids), Gids(receiptBoundGids)),
+            ledgerBound.Intersect(documents, StringComparer.Ordinal)
+                .ToImmutableHashSet(StringComparer.Ordinal),
+            documents.Except(ledgerBound, StringComparer.Ordinal)
+                .ToImmutableHashSet(StringComparer.Ordinal),
+            documentGids.Length,
+            findings);
+        return findings.ToImmutable();
+    }
+
+    private static ImmutableHashSet<string> Gids(params string[] gids) =>
+        gids.ToImmutableHashSet(StringComparer.Ordinal);
+
     private static ScribeDocument Document(string gid) =>
         ScribeDocument.Create(
             DefinitionDsl.Header(gid, "Receipt census fixture."),
