@@ -416,3 +416,100 @@ compatibility exclusion.
 - The current Hadamard witness is a normalized algebraic carrier. Its full
   equivalence to the orthonormal-basis and rank-one-context formulations
   remains an explicit next theorem.
+
+## 2026-09-07 audited local result and remaining obligations
+
+This dated addition qualifies earlier uses of the word "proved" in this
+cumulative dossier. Source-level proof scripts, successfully replayed external
+certificates, and Lean-kernel acceptance are different evidence levels. This
+continuation did not run Lean/lake, Scribe emission or CI, and does not report
+the entire lane as kernel-accepted.
+
+### The substantive progress on the original existence problem
+
+A full directed-interval computation now excludes an explicit nonempty
+neighborhood of an exact order-six seed, with the stronger local conclusion
+that a complete third MUB cannot be accompanied by even one further vector
+unbiased to the three bases. This is a literal `(6,6,6,1)` exclusion, and hence
+a local four-basis exclusion, not just a failure to find numerical roots.
+
+Let `b=(-3+4i)/5`, `e=(-2+i sqrt(21))/5`, and
+
+```math
+H_0=\begin{pmatrix}
+J_3+(b-1)I_3&J_3+(e-1)I_3\\
+J_3+(\bar e-1)I_3&-J_3-(\bar b-1)I_3
+\end{pmatrix}.
+```
+
+For actual order-six complex Hadamard H, the certified scope is
+
+```math
+\max_a\sum_j|H_{ja}-(H_0)_{ja}|\le9/4096.
+```
+
+It contains the entire entrywise ball of radius `3/8192`. The proof uses an
+exhaustive cover of the ALL-SIX residual sublevel at `1/64`, actual matrix
+residual transfer at tolerance `1/256`, and a complete two-relation finite
+certificate with no possible extra-vector partner. It permits unknown root
+multiplicity and does not need every tube to contain a unique root.
+
+The final local code and mathematical proof are documented in
+`docs/develop/certificates/real_x_balanced_sublevel/README.md`. The driver is
+`scripts/research/check_real_x_balanced_cover.py`; it recomputes the seed,
+local refinement, graph and all charts instead of reading a previous PASS.
+
+The delivery turn actually repeated the full computation: 32 charts,
+4,900,318 boxes, zero pending and unresolved boxes, 2,403 candidate first
+six-cliques and no common partner after residual-preserving refinement.
+These are algorithmic diagnostics, not counts of actual completion bases.
+The repeated result object equals the preceding result object. Rational
+LP-vertex and malformed-certificate tests were rerun as well.
+
+### The additional formalized analysis
+
+`HadamardResidualConservation.lean` and its canonical Scribe add two public
+proof scripts. `hadamard_residual_box_dual` derives the exact residual identity
+`sum_j (normSq((H* u)_j)-6)=0` from the actual scaled Gram equation and unit
+input moduli, then bounds the real residual readout using arbitrary dual
+shifts. `balanced_hadamard_sublevel_row_enclosure` consumes the existing
+mean-value owner and retains the complete derivative remainder. These scripts
+supply actual matrix-to-analysis connections, not an assumed desired bound.
+
+The finite graph owner `RealXFinitePartnerCertificate.lean` is retained from
+another agent. Its literal tables and coloring proof remove an abstract finite
+no-partner hypothesis. They do not remove the analytic tube-cover hypotheses.
+No duplicate graph, context or Hadamard carrier is introduced here.
+
+### Three distinct gaps remain
+
+1. **Local kernel closure.** Prove the concrete rational interval operations and
+   expressions contain the actual residual and derivative, verify the entire
+   split/contract/exclude certificate tree, and connect actual rank-one
+   projectors to the covered signed-Cayley domain. A generic theorem with
+   these facts as premises does not discharge them. Compiling the new two
+   proof scripts alone is also insufficient.
+2. **Parameter coverage.** The explicit ball is small. No complete X-family
+   cover, universal strict-X affinity bound, or all-parameter strong-
+   unextendibility theorem has been obtained. Larger incomplete traversals
+   are recorded as INCOMPLETE and excluded from the result.
+3. **Global MUB reduction.** Even a full X-family exclusion would still need
+   a justified reduction from every possible quartet to the covered matrix
+   families, or a complete lifted-atlas compatibility argument. A classification
+   of individual Hadamard matrices does not by itself solve this joint problem.
+
+The current publication target remains a verified local strong-unextendibility
+result and its proof-producing method. Classical residual conservation, support
+functions, interval methods and coloring bounds are not claimed as new
+principles. First-priority and publication significance require a separate
+comparison with prior exclusions and independent expert review.
+
+Matolcsi, Matszangosz, Varga and Weiner, *Triplets of mutually unbiased bases*,
+J. Algebraic Combinatorics 63, 26 (published 4 March 2026), Conjecture 3, still
+states the whole Szollosi-family quartet exclusion as a conjecture. The
+publisher text was checked again in the delivery turn. Jaming et al.,
+arXiv:0902.0882, already proves a whole Fourier-family quartet exclusion; the
+present local ball is not advertised as superseding that full-family result.
+
+No global upper bound on the number of six-dimensional MUBs is improved by this
+local computation. No numerical percentage of the open problem is assigned.
