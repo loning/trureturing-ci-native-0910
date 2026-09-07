@@ -1,0 +1,48 @@
+{
+  "status": "All whole-interval, full-exterior even-sector congruence guards passed",
+  "a_center": "log(3)/2",
+  "a_radius": "1/100000000",
+  "even_candidate_complement_threshold": "1/1000",
+  "N": 128,
+  "M": 8192,
+  "digits": 90,
+  "numpy": "2.3.5",
+  "full_high_complement_floor": {
+    "lower": "1009070267917372763/1000000000000000000",
+    "upper": "1009070354105394299/1000000000000000000"
+  },
+  "candidate_rayleigh_interval": {
+    "lower": "-15450864303/31250000000000000",
+    "upper": "583515258643/1000000000000000000"
+  },
+  "two_sided_Gram_Frobenius_error_sq": "33302223079810890625633/1267650600228229401496703205376",
+  "far_second_jet_remainder": {
+    "lower": "3128400669/62500000000000000",
+    "upper": "10010882141/200000000000000000"
+  },
+  "even_congruence": {
+    "margin": "322613388022726078131097863949363/324518553658426726783156020576256",
+    "dimension": 129,
+    "matrix_quantization_bits": 44,
+    "congruence_bits": 32,
+    "congruence_sha256": "5340e48fef5d816c42401558a80463b30039649d27f30fa4e4fd649babd06f43"
+  },
+  "arithmetic_primitive_AST_sha256": "e1e24029a943c47a946cab463e5af5462a00f7b0dbfbb30761dc985f84debfa5",
+  "prior_loader_sha256": "35c4376cf0638a9aa1dff5b69d042f0191e103d6c9fb941efc5d83f2a1302eea",
+  "complete_local_arithmetic_input_sha256": "01742064ae378b0a723224d251a54be4f89b8a2b3c14ac4f49e53d7dec9253ee",
+  "checker_sha256": "3f394eb22f43063586b81afdc31c25c7c8558beed8c5a4656e46190d8f813779",
+  "input_scope": "Only the inspected arithmetic primitive projection is executed. The complete local input hash is not attestation of the full upstream owner file.",
+  "conclusion": "For every |a-log(3)/2|<=1/100000000 and every even candidate-orthogonal form-domain vector, q_a(f)>=||f||^2/1000, under the stated analytic Fourier/core/high-complement identifications.",
+  "analytic_premises": [
+    "Original real arithmetic Fourier matrix, complete coupling and high-complement Gamma lower bound",
+    "Fourier core density and associated closed-form realization on the actual physical window",
+    "Spatial reflection is an invariant form/domain involution; complex vectors follow from real symmetric congruence"
+  ],
+  "not_claimed": [
+    "The full or odd candidate complement has threshold 1/1000",
+    "A global shifted lower bound uniformly on this interval",
+    "Additional physical scales beyond this stated interval",
+    "Unbounded-scale genuine-mode/prolate convergence",
+    "Lean or Scribe compilation"
+  ]
+}

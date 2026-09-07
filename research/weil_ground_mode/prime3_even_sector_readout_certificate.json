@@ -1,0 +1,67 @@
+{
+  "status": "Replayed complete centered residual and all new even-sector disk guards passed",
+  "digits": 100,
+  "arithmetic_window": "a=log(3)/2",
+  "disk_center": [
+    "20",
+    "1/4"
+  ],
+  "closed_disk_radius": "1/1000",
+  "sector_certificate_sha256": "f1d109490ed2a27d839948bebff4c1db1a7bbd1084f254d990398676d38cb3e6",
+  "sector_producer_sha256": "3f394eb22f43063586b81afdc31c25c7c8558beed8c5a4656e46190d8f813779",
+  "checker_sha256": "9c5cc4f9c6979b7f02892c1d02a334b1f7513a4f12936b3ecd89f2b9e5962ddc",
+  "prior_checker_sha256": "35c4376cf0638a9aa1dff5b69d042f0191e103d6c9fb941efc5d83f2a1302eea",
+  "genuine_checker_sha256": "69d1e5f8bc872618c3de8ea80921affd561df3b06bab22ba49f16490a4faf352",
+  "model_input_projection": {
+    "selected_fields": {
+      "proposal_sha256": "242c9897bbd247ef0485039e6dcde819a351c5900ceac52fecc420934c1896db",
+      "model_distance": "113/100000",
+      "true_polynomial_error": "[0.000000000000000000000003375094012530229259045410607296258173721575046655266260839287525362079140381574988098620274521337373855657829134005, 0.000000000000000000000003375094012530229259045410607296258173721575046655266260839287525362079140381574988098620274521337376879382625379405]",
+      "polynomial_overlap": "[-0.9999993777935479474012864518698854191232773510727684875665040370665191869376514117178368227286418915121494615150742, -0.9999993777935479474012864518698854191232773510727684875665040370665191869376514117178368227286418906162475645560626]",
+      "rayleigh": [
+        "594911359/10000000000000000",
+        "929549/15625000000000"
+      ],
+      "full_residual": [
+        "9166619/100000000000",
+        "458331/5000000000"
+      ]
+    },
+    "semantic_projection_sha256": "0ae6b79a562cc98a6303d396c7b3dce630982d0c83a3ba4b90a8c350a3cc577b",
+    "scope": "Selected mathematical fields from the immutable #5602 model, energy and full residual records. These analytic premises are not reverified here; no full input-file attestation is claimed."
+  },
+  "arithmetic_primitive_AST_sha256": "e1e24029a943c47a946cab463e5af5462a00f7b0dbfbb30761dc985f84debfa5",
+  "complete_centered_residual_replayed": true,
+  "sector_spectrum_replayed_inside_this_program": false,
+  "shifted_even_complement_threshold": "40957747186193/40960000000000000",
+  "complete_centered_residual_sq_upper": "1273652293764969/1000000000000000000",
+  "signed_objective_upper": "1173667110482754901/1000000000000000000",
+  "new_centered_coefficient_bound": "100239558744515453640283630281893/40957747186193000000000000000000",
+  "new_centered_coefficient_cap": "49/20",
+  "previous_centered_coefficient": {
+    "lower": "21524512035949740753/200000000000000000",
+    "upper": "1078000655790572853/10000000000000000"
+  },
+  "centered_kernel_lipschitz_interval": "[1.52135094471141556079255176895036601231312831332542847982161790038634733756233170691707565669033832579347, 1.52135094471141556079255176895036601231312831332542847982161790038634733756233170691707565669033832593634]",
+  "centered_kernel_lipschitz_cap": "8/5",
+  "disk_coefficient_bound": "521699/199800",
+  "disk_coefficient_cap": "21/8",
+  "global_model_recentering_factor": "16272575335431825520142385065229069/16271858424895277658576188953450000",
+  "actual_projective_origin_lower": "39/50",
+  "normalized_error_squared_bound": "174604986241276775777128200282714209094961329/9011016741051766945544195057690378240000000000000000",
+  "normalized_error_upper": "7/50000",
+  "normalization": "FT(u)(z)/FT(u)(0) compared with the same aligned genuine prolate FT(e)(z)/FT(e)(0)",
+  "analytic_scope": [
+    "The new even-sector Schur certificate supplies its stronger threshold only on even k-perp",
+    "Opposite-sector shifted positivity and the original global spectral lower bound remain inherited at a=log(3)/2",
+    "Existing actual mode evenness, Fourier/core/Parseval identification and genuine model bounds retain their original analytic scope",
+    "The full-support exponential derivative bound and centered Riesz variation give the entire closed frequency disk"
+  ],
+  "not_claimed": [
+    "New full-space gap of 1/1000",
+    "Global shifted positivity on the neighboring scale interval",
+    "Reexecution of upstream prolate/global-spectrum verifiers",
+    "Lean kernel verification",
+    "Unbounded-scale decay of the genuine Weil/prolate normalized error"
+  ]
+}
