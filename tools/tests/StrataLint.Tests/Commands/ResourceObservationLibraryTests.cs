@@ -393,8 +393,15 @@ public sealed class ResourceObservationLibraryTests
             sampler_fifo="$PWD/sampler-exited"
             mkfifo "$sampler_fifo"
             resource_observe_periodically() { exec 9>"$sampler_fifo"; bash -c 'exit 97'; }
+            printf() {
+              if [[ "$1" == '%s\n' && "${2:-}" == "97" ]]; then
+                builtin printf '9'
+                return 0
+              fi
+              builtin printf "$@"
+            }
             observed_command() {
-              # The shim owns write fd 9; EOF proves it exited after atomically recording the status.
+              # The shim owns write fd 9; EOF proves its truncated publication attempt is complete.
               read -r _ <"$sampler_fifo" || [[ "$?" -eq 1 ]]
               bash -c 'exit 0'
             }
@@ -402,8 +409,8 @@ public sealed class ResourceObservationLibraryTests
             """);
 
         Assert.Equal(0, result.ExitCode);
-        Assert.Contains(
-            "RESOURCE_OBSERVATION_SAMPLER status=UNAVAILABLE exit=97",
+        Assert.DoesNotContain(
+            "RESOURCE_OBSERVATION_SAMPLER",
             Encoding.UTF8.GetString(result.StandardOutput),
             StringComparison.Ordinal);
     }
@@ -476,9 +483,23 @@ public sealed class ResourceObservationLibraryTests
 
         var result = Run(
             temporary,
-            "source \"$1\"\nresource_observe_sample() { return 0; }\nmkfifo sampler-block\nexec 3<>sampler-block\nresource_observe_periodically() { read -r _ <&3; }\nresource_observe_run_periodic bash -c 'exit 0'\n");
+            """
+            source "$1"
+            resource_observe_sample() { return 0; }
+            mkfifo sampler-block
+            exec 3<>sampler-block
+            resource_observe_periodically() { read -r _ <&3; }
+            observed_command() {
+              printf 'ran\n' > observed-command-ran
+              return 23
+            }
+            set -e
+            resource_observe_run_periodic observed_command
+            """,
+            $"RUNNER_TEMP={Path.Combine(temporary.Path, "missing-runner-temp")}");
 
-        Assert.Equal(0, result.ExitCode);
+        Assert.Equal(23, result.ExitCode);
+        Assert.True(File.Exists(Path.Combine(temporary.Path, "observed-command-ran")));
         Assert.DoesNotContain(
             "RESOURCE_OBSERVATION_SAMPLER",
             Encoding.UTF8.GetString(result.StandardOutput),
