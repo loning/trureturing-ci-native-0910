@@ -20,12 +20,16 @@ jobs:
     runs-on: ubuntu-24.04-arm
     # Budget: measured, not a policy override any more (#5986).
     # First real run 34144393161 (workflow_dispatch on dev, 2026-09-07): job
-    # 16:41:10Z -> 17:21:58Z = 2448 s excluding queue delay; the build-and-hash
-    # step took 2299 s (Built 6 / Replayed 44 after a `mode=seed` release fetch);
-    # per-module on ubuntu-24.04-arm from the Built timestamps: BoundedClosure
-    # ~579 s, FrozenRootAnalysis ~306 s, CausalProjection ~1414 s.
-    # Replacement rule recorded at merge of #6209: ceil(2448 * 1.5 / 60) = 62.
-    # Re-derive from the next run if the module set or the runner class changes.
+    # startedAt 16:41:10Z -> completedAt 17:22:00Z = 2450 s excluding queue delay;
+    # the build-and-hash step took 2299 s (Built 6 / Replayed 44 after a
+    # `mode=seed` release fetch). Per-module durations from Lake's Built lines,
+    # which overlap because the modules build concurrently: BoundedClosure 574 s,
+    # FrozenRootAnalysis 850 s, CausalProjection 2294 s (ubuntu-24.04-arm).
+    # Replacement rule recorded at merge of #6209: ceil(2450 * 1.5 / 60) = 62.
+    # One seeded run gives no runtime distribution and no cold-seed bound: if a
+    # later run approaches this budget (colder or incomplete seed, dependency
+    # rebuilds, more modules, runner-class change), re-measure that run and
+    # re-derive with the same rule; do not pad the number.
     timeout-minutes: 62
     steps:
       - name: Check out the analysis commit
