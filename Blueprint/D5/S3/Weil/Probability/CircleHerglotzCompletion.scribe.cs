@@ -33,5 +33,13 @@ internal sealed class CircleHerglotzCompletionDocument : IScribeDocumentDefiniti
             Describe.Lean(DescribeId.Create("continuous-iff-circlemoments"),
                 DeclarationHandle.Create(Prefix + "continuous_iff_circleMoments"), H("All moments characterize weak continuity"),
                 StatementSource.FromLean(), AssessedProvenance.FromRepo(),
-                Blocks(Paragraph(Text("Compactness and existing measure uniqueness make the complete moment profile a topological embedding. Finite-mode reconstruction is not asserted."))), DescribeRole.Theorem))));
+                Blocks(Paragraph(Text("Compactness and existing measure uniqueness make the complete moment profile a topological embedding. Finite-mode reconstruction is not asserted."))), DescribeRole.Theorem),
+            Describe.Lean(DescribeId.Create("tendsto-iff-circlemoments"),
+                DeclarationHandle.Create(Prefix + "tendsto_iff_circleMoments"), H("All moments characterize weak convergence"),
+                StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("The original complete moment profile identifies weak convergence along arbitrary filters, reusing the same compact embedding."))), DescribeRole.Theorem),
+            Describe.Lean(DescribeId.Create("finite-moment-witnesses-tendsto"),
+                DeclarationHandle.Create(Prefix + "finite_moment_witnesses_tendsto"), H("Every finite-order witness sequence has the same weak limit"),
+                StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("Any probability witnesses matching all modes up to their respective orders converge as a whole sequence. No compatibility of consecutive choices is assumed; no quantitative rate is asserted."))), DescribeRole.Theorem))));
 }
