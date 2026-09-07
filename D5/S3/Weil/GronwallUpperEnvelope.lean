@@ -200,13 +200,16 @@ theorem gronwall_upper_envelope (ε : ℝ) (hε : 0 < ε) :
       exact inv_ne_zero (div_ne_zero (Real.exp_ne_zero _) (Real.log_pos hx).ne')
     -- The frozen Mertens III declaration is the input to the normalized limit.
     have h := (isEquivalent_iff_tendsto_one hne).mp Mertens.E₃.bound''.inv
+    change Tendsto (fun x : ℝ =>
+      (∏ p ∈ Ioc (0 : ℕ) ⌊x⌋₊ with p.Prime, (1 - 1 / (p : ℝ)))⁻¹ /
+        (Real.exp (-Real.eulerMascheroniConstant) / Real.log x)⁻¹) atTop (𝓝 1) at h
     simpa only [Pi.div_apply, Pi.inv_apply, inv_div, Real.exp_neg,
       div_inv_eq_mul, Finset.prod_inv_distrib, mul_comm] using h
   have hlog : Tendsto (fun n : ℕ => Real.log (n : ℝ)) atTop atTop :=
     Real.tendsto_log_atTop.comp tendsto_natCast_atTop_atTop
   have hexp : Tendsto (fun n : ℕ => Real.exp (2 / Real.log (Real.log (n : ℝ))))
       atTop (𝓝 1) := by
-    simpa only [Real.exp_zero] using
+    simpa only [Real.exp_zero, Function.comp_apply] using
       ((Real.tendsto_log_atTop.comp hlog).const_div_atTop (2 : ℝ)).rexp
   have hbound : Tendsto
       (fun n : ℕ =>
@@ -227,7 +230,7 @@ theorem gronwall_upper_envelope (ε : ℝ) (hε : 0 < ε) :
   have hsplit := div_le_div_of_nonneg_right (sigma_split hn hcut) hden.le
   have hcancel : 2 * Real.log (n : ℝ) /
       (Real.log n * Real.log (Real.log n)) = 2 / Real.log (Real.log (n : ℝ)) := by
-    rw [mul_comm (Real.log (n : ℝ)), ← div_div, mul_div_cancel_right₀ _ hlogpos.ne']
+    rw [← div_div, mul_div_cancel_right₀ _ hlogpos.ne']
   rw [hcancel] at hsplit
   have hnormalize : (ArithmeticFunction.sigma 1 n : ℝ) /
       (Real.exp Real.eulerMascheroniConstant * n * Real.log (Real.log n)) =
@@ -237,9 +240,7 @@ theorem gronwall_upper_envelope (ε : ℝ) (hε : 0 < ε) :
     congr 1
     ring
   rw [hnormalize]
-  exact hsplit.trans (by
-    rw [div_right_comm] at hupper
-    exact hupper.le)
+  exact hsplit.trans (by simpa only [mul_div_right_comm] using hupper.le)
 
 #print axioms small_prime_product_le
 #print axioms large_prime_count_le
