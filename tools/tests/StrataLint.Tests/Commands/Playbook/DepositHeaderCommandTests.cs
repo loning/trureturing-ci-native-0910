@@ -13,7 +13,7 @@ public sealed class DepositHeaderCommandTests
     public void DepositHeaderCommandEvaluatesRegisteredSl012ForFrozenTargetWithoutLoadingLeanReport()
     {
         var fixture = new RuleFixture();
-        fixture.Files[RuleFixture.RingPath] = TransactionFixture.ExactSixLineLean(
+        fixture.Files[RuleFixture.RingPath] = ExactSixLineLean(
             RuleFixture.RingPath,
             "def goldenRing : Nat := 0\n");
         var statePath = FrozenStatePath.FromModulePath(
@@ -47,7 +47,7 @@ public sealed class DepositHeaderCommandTests
     public void DepositHeaderCommandUsesRegisteredSl012ForSevenLineWrappedDigest()
     {
         var fixture = new RuleFixture();
-        fixture.Files[RuleFixture.RingPath] = TransactionFixture.SevenLineWrappedDigest(
+        fixture.Files[RuleFixture.RingPath] = SevenLineWrappedDigest(
             "D5/S0/Carrier/Ring",
             "def goldenRing : Nat := 0\n");
         var current = RawRepositorySnapshot.Create(
@@ -73,6 +73,28 @@ public sealed class DepositHeaderCommandTests
             console.Output);
         Assert.Empty(console.Error);
     }
+
+    private static string ExactSixLineLean(string gid, string declaration)
+    {
+        var documentGid = gid[..gid.LastIndexOf('.')];
+        return $"/- GID: {documentGid}\n"
+            + "   generality: G\n"
+            + $"   mirror-B: D5/B/{documentGid[3..]}\n"
+            + "   mirror-E: none(waiver:pure-definition)\n"
+            + "   anchors: []\n"
+            + "   digest: Synthetic deposit workflow fixture. -/\n"
+            + declaration;
+    }
+
+    private static string SevenLineWrappedDigest(string documentGid, string declaration) =>
+        $"/- GID: {documentGid}\n"
+        + "   generality: G\n"
+        + $"   mirror-B: D5/B/{documentGid[3..]}\n"
+        + "   mirror-E: none(waiver:pure-definition)\n"
+        + "   anchors: []\n"
+        + "   digest: Synthetic deposit workflow digest\n"
+        + "   wraps onto physical line seven. -/\n"
+        + declaration;
 
 }
 

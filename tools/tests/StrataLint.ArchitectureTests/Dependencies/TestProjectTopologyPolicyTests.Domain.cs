@@ -3,14 +3,14 @@ using TestProjectTopologyPolicy = StrataLint.Engine.RepositoryRules;
 
 namespace StrataLint.ArchitectureTests;
 
-// 本文件是 TestProjectTopologyPolicyTests 的 partial 分片:主文件加入这九条后达 903 行,
+// 本文件是 TestProjectTopologyPolicyTests 的 partial 分片:主文件加入这八条后达 903 行,
 // 越过 SL-003 的 800 行硬线(判词见 PR #5433 的 admission 日志)。按第 8 条「桶满则裂」拆分,
 // 分片键即议题(test→test 债的定义域,#5419),不是行数切割。
 public sealed partial class TestProjectTopologyPolicyTests
 {
     // ── test→test 债的定义域(#5419) ─────────────────────────────────────────
     //
-    // 立这九条之前先测过:把定义域拆分实施完之后,既有 25 条**全部通过**,
+    // 立这八条之前先测过:把定义域拆分实施完之后,既有 25 条**全部通过**,
     // 而同一棵真实仓库的债务集由 0 变 4。⟹ 既有套件对「主语面是谁」这条轴零覆盖,
     // 下列每一条都不是锦上添花,而是这条轴上唯一的钉子。
 

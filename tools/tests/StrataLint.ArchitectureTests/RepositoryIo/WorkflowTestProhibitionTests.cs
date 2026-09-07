@@ -21,8 +21,9 @@ namespace StrataLint.ArchitectureTests;
 /// (`ResourceObservationLibraryTests`)、#5249 (`LeanReportCacheTests`)及 #5060/#5672
 /// (`EngineeringScopeProgramTests`)。#5249 的测试面随本次删除消失,底层归因仍为 open。
 ///
-/// **作用面**:`tools/tests/**` 下的 C# 源码不得读取真实 `.github/workflows` 路径,
-/// 也不得执行 `tools/scripts/**` 下的仓库 shell 脚本、仓库 `Makefile` 的副本或 make target。
+/// **作用面**:`tools/tests/**` 下的 C# 源码不得读取真实 `.github/workflows` 路径;
+/// 测试经 `tools/TestSupport/**` helper 可达的调用图也不得执行 `tools/scripts/**` 下的仓库
+/// shell 脚本、仓库 `Makefile` 的副本或 make target。
 ///
 /// **诚实边界(这是形状扫描,不是完备保证)**——反例集合两维:
 /// ① 绕过检查:字符串拼接、变量路径、从文件或环境变量读路径、非 C# 载体(shell/python
@@ -32,10 +33,8 @@ namespace StrataLint.ArchitectureTests;
 /// </summary>
 public sealed class WorkflowTestProhibitionTests
 {
-    // 扫描面是 "tools/tests";**每处都直接写字面量,不抽成常量**——
-    // ScribeTestMapDeriver 只静态折叠字面量实参,传标识符会 fail-closed 记 VariablePath,
-    // 于是这些 [Fact] 变成 "conservative unknown test method introduced after protected baseline"
-    // 而被 SL-003 拒绝(2026-08-29 实测,PR #4021 首轮 admission rc=1,三条全中)。
+    // workflow 扫描面仍是 "tools/tests"。脚本/make 扫描面集中在
+    // RepositoryScriptAndMakeSources,让执行门与枚举正控共用同一来源。
 
     /// <summary>
     /// 具名豁免,**removal-only**:新增一项必须先自行论证,不得靠扩充本集合让新的 workflow
@@ -92,7 +91,9 @@ public sealed class WorkflowTestProhibitionTests
     [Fact]
     public void EveryExemptionIsStillPresentAndStillNeedsIt()
     {
-        var tracked = TrackedTestSources();
+        var tracked = RepositoryScriptAndMakeSources()
+            .Select(static source => source.Path)
+            .ToArray();
         var referencing = ScanAll().Select(static hit => hit.Path).ToHashSet(StringComparer.Ordinal);
 
         Assert.All(
@@ -113,12 +114,17 @@ public sealed class WorkflowTestProhibitionTests
     public void ScriptAndMakeExemptionSetCannotGrow() =>
         Assert.Empty(ScriptAndMakeConsumerExemptions);
 
-    private static IReadOnlyList<string> TrackedTestSources() =>
-        GitIndexRepositoryFiles
-            .EnumerateDeclared(RepositoryLayout.FindRoot(), "tools/tests")
+    private static IReadOnlyList<ScriptAndMakeSource> RepositoryScriptAndMakeSources()
+    {
+        var root = RepositoryLayout.FindRoot();
+        return new[] { "tools/tests", "tools/TestSupport" }
+            .SelectMany(prefix => GitIndexRepositoryFiles.EnumerateDeclared(root, prefix))
             .Where(static file => file.RelativePath.EndsWith(".cs", StringComparison.Ordinal))
-            .Select(static file => file.RelativePath)
+            .Select(file => new ScriptAndMakeSource(
+                file.RelativePath,
+                File.ReadAllText(file.FullPath)))
             .ToArray();
+    }
 
     /// <summary>
     /// 主禁令(器律⑦′「永久禁止对 workflow 写测试」)。**这条此前不存在**:ScanAll() 的唯一
@@ -140,11 +146,12 @@ public sealed class WorkflowTestProhibitionTests
 
     /// <summary>
     /// Owner 2026-09-07:测试不得启动仓库 shell 脚本或 make target。扫描以 Roslyn 绑定
-    /// Process/TestProcessRunner 的真实符号,避免把同名 fake 当成执行;它仍只作早反馈,
-    /// 跨程序集 helper 间接、运行时路径与非 C# 测试载体属已声明的 fail-open 边界。
+    /// Process/TestProcessRunner 的真实符号,从测试方法遍历 `tools/tests/**` 与
+    /// `tools/TestSupport/**` 的方法/构造器调用图,把不同类型里的脚本路径引用与
+    /// bash/sh/env 启动合并判定;运行时路径、反射调用与非 C# 测试载体仍是 fail-open 边界。
     /// </summary>
     [Fact]
-    public void NoTestSourceExecutesRepositoryShellScriptOrMakeTarget()
+    public void NoTestReachesRepositoryShellScriptThroughTestSupportHelperOrExecutesMakeTarget()
     {
         var hits = ScanRepositoryScriptAndMakeExecutions();
 
@@ -203,9 +210,6 @@ public sealed class WorkflowTestProhibitionTests
             "tools/tests/StrataLint.Tests/Commands/CliVerbLinkageTests.cs",
             flagged);
         Assert.DoesNotContain(
-            "tools/tests/StrataLint.Tests/Digestion/Ledger/LedgerWriterProductionPathTests.cs",
-            flagged);
-        Assert.DoesNotContain(
             "tools/tests/StrataLint.Tests/Commands/Worktrees/ColdBuildGuardTests.cs",
             flagged);
         Assert.DoesNotContain(
@@ -213,18 +217,69 @@ public sealed class WorkflowTestProhibitionTests
             flagged);
     }
 
+    [Fact]
+    public void SyntheticTestSupportHelperIndirectionIsDetected()
+    {
+        var hits = ScanRepositoryScriptAndMakeExecutions(
+        [
+            new ScriptAndMakeSource(
+                "tools/TestSupport/Synthetic/SyntheticScriptFixture.cs",
+                "namespace Synthetic;\n\n" + """
+                internal sealed class SyntheticScriptFixture
+                {
+                    private const string ScriptPath = "tools/scripts/workflow/synthetic.sh";
+
+                    internal SyntheticScriptFixture()
+                    {
+                        System.IO.File.Copy(ScriptPath, "synthetic.sh");
+                    }
+
+                    internal void Run() => SyntheticLauncher.Run();
+                }
+
+                internal static class SyntheticLauncher
+                {
+                    internal static void Run() =>
+                        System.Diagnostics.Process.Start("/usr/bin/env", "/bin/bash synthetic.sh");
+                }
+                """),
+            new ScriptAndMakeSource(
+                "tools/tests/Synthetic.Tests/SyntheticScriptTests.cs",
+                "namespace Synthetic;\n\n" + """
+                public sealed class SyntheticScriptTests
+                {
+                    [Xunit.Fact]
+                    public void ExecutesRepositoryScriptThroughTestSupportFixture()
+                    {
+                        var fixture = new SyntheticScriptFixture();
+                        fixture.Run();
+                    }
+                }
+                """),
+        ]);
+
+        Assert.Contains(
+            hits,
+            static hit => hit.Path == "tools/tests/Synthetic.Tests/SyntheticScriptTests.cs");
+    }
+
     /// <summary>
-    /// 防「扫描前缀写错而恒绿」:枚举面必须真的选中测试树。没有这一条,把 "tools/tests"
-    /// 打成任何不存在的前缀都会让上面两条永远绿。
+    /// 防「扫描前缀写错而恒绿」:本正控与执行门调用同一个枚举成员,并证明它同时选中测试树
+    /// 与 TestSupport 树。任一前缀漂移都会在这里直接判红。
     /// </summary>
     [Fact]
     public void TheScanSurfaceActuallyEnumeratesTheTestTree()
     {
-        var tracked = TrackedTestSources();
+        var tracked = RepositoryScriptAndMakeSources()
+            .Select(static source => source.Path)
+            .ToArray();
 
         Assert.NotEmpty(tracked);
         Assert.Contains(
             "tools/tests/StrataLint.ArchitectureTests/RepositoryIo/WorkflowTestProhibitionTests.cs",
+            tracked);
+        Assert.Contains(
+            "tools/TestSupport/StrataLint.TestSupport/TestScratchRoot.cs",
             tracked);
     }
 
@@ -292,76 +347,185 @@ public sealed class WorkflowTestProhibitionTests
     }
 
     private static IReadOnlyList<(string Path, int Line)> ScanRepositoryScriptAndMakeExecutions()
+        => ScanRepositoryScriptAndMakeExecutions(RepositoryScriptAndMakeSources());
+
+    private static IReadOnlyList<(string Path, int Line)> ScanRepositoryScriptAndMakeExecutions(
+        IReadOnlyList<ScriptAndMakeSource> scanSources)
     {
-        var root = RepositoryLayout.FindRoot();
         var hits = new List<(string, int)>();
-        var sources = GitIndexRepositoryFiles.EnumerateDeclared(root, "tools/tests")
-            .Where(static file => file.RelativePath.EndsWith(".cs", StringComparison.Ordinal))
-            .Where(file => !ScriptAndMakeConsumerExemptions.Contains(file.RelativePath))
-            .Select(file => (
-                File: file,
+        var sources = scanSources
+            .Where(source => !ScriptAndMakeConsumerExemptions.Contains(source.Path))
+            .Select(source => (
+                Source: source,
                 Tree: CSharpSyntaxTree.ParseText(
-                    File.ReadAllText(file.FullPath),
+                    source.Text,
                     CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Preview),
-                    file.RelativePath)))
+                    source.Path)))
             .ToArray();
         var compilation = CSharpCompilation.Create(
             "ScriptAndMakeTestProhibitionAnalysis",
             sources.Select(static source => source.Tree),
             SemanticReferences(),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true));
+        var methods = new Dictionary<string, ScriptAndMakeMethod>(StringComparer.Ordinal);
 
         foreach (var source in sources)
         {
             var model = compilation.GetSemanticModel(source.Tree, ignoreAccessibility: true);
             var syntaxRoot = source.Tree.GetRoot();
-            foreach (var invocation in syntaxRoot.DescendantNodes().OfType<InvocationExpressionSyntax>())
+            foreach (var declaration in syntaxRoot.DescendantNodes().OfType<BaseMethodDeclarationSyntax>())
             {
-                if (!IsProcessLaunch(model.GetSymbolInfo(invocation))
-                    || invocation.FirstAncestorOrSelf<BaseMethodDeclarationSyntax>() is not { } method)
+                if (model.GetDeclaredSymbol(declaration) is not IMethodSymbol symbol)
                 {
                     continue;
                 }
 
-                var constants = method.DescendantNodes()
+                var invocations = declaration.DescendantNodes()
+                    .OfType<InvocationExpressionSyntax>()
+                    .ToArray();
+                var constants = declaration.DescendantNodes()
                     .OfType<ExpressionSyntax>()
                     .Select(expression => model.GetConstantValue(expression))
                     .Where(static value => value.HasValue && value.Value is string)
                     .Select(static value => (string)value.Value!)
                     .ToArray();
-                var launchesMake = constants.Any(value => IsExecutable(value, "make"));
-                var launchesShell = constants.Any(value =>
-                    IsExecutable(value, "bash") || IsExecutable(value, "sh"));
                 var namesRepositoryScript = constants.Any(static value =>
                         value.Replace('\\', '/').Contains("tools/scripts/", StringComparison.Ordinal))
-                    || method.DescendantNodes().OfType<InvocationExpressionSyntax>()
+                    || invocations
                         .Any(candidate => IsToolsScriptsPathCombine(candidate, model));
-                if (launchesMake || launchesShell && namesRepositoryScript)
-                {
-                    hits.Add((
-                        source.File.RelativePath,
-                        invocation.GetLocation().GetLineSpan().StartLinePosition.Line + 1));
-                    break;
-                }
+                var processLaunches = invocations
+                    .Where(invocation => IsProcessLaunch(model.GetSymbolInfo(invocation)))
+                    .ToArray();
+                var launchesMake = processLaunches.Any(invocation =>
+                    InvocationStringConstants(invocation, model)
+                        .Any(value => IsExecutable(value, "make")));
+                var launchesShellOrEnv = processLaunches.Any(invocation =>
+                    InvocationStringConstants(invocation, model).Any(value =>
+                        IsExecutable(value, "bash")
+                        || IsExecutable(value, "sh")
+                        || IsExecutable(value, "env")));
+                var calls = invocations
+                    .SelectMany(invocation => MethodSymbols(model.GetSymbolInfo(invocation)))
+                    .Concat(declaration.DescendantNodes()
+                        .OfType<ObjectCreationExpressionSyntax>()
+                        .SelectMany(creation => MethodSymbols(model.GetSymbolInfo(creation))))
+                    .Select(MethodKey)
+                    .Distinct(StringComparer.Ordinal)
+                    .ToArray();
+                var methodKey = MethodKey(symbol);
+                methods[methodKey] = new ScriptAndMakeMethod(
+                    methodKey,
+                    source.Source.Path,
+                    declaration.GetLocation().GetLineSpan().StartLinePosition.Line + 1,
+                    IsTestMethod(declaration),
+                    namesRepositoryScript,
+                    launchesMake,
+                    launchesShellOrEnv,
+                    calls);
+            }
+        }
+
+        foreach (var test in methods.Values.Where(static method => method.IsTest))
+        {
+            var reachable = ReachableMethods(test.Symbol, methods);
+            var launchesMake = reachable.Any(static method => method.LaunchesMake);
+            var launchesShellOrEnv = reachable.Any(static method => method.LaunchesShellOrEnv);
+            var namesRepositoryScript = reachable.Any(static method => method.NamesRepositoryScript);
+            if (launchesMake || launchesShellOrEnv && namesRepositoryScript)
+            {
+                hits.Add((test.Path, test.Line));
             }
         }
 
         return hits;
     }
 
-    private static bool IsProcessLaunch(SymbolInfo info) =>
-        info.Symbol is IMethodSymbol method && method.Name is "Run" or "Start"
+    private static IReadOnlyList<ScriptAndMakeMethod> ReachableMethods(
+        string root,
+        IReadOnlyDictionary<string, ScriptAndMakeMethod> methods)
+    {
+        var reachable = new List<ScriptAndMakeMethod>();
+        var pending = new Stack<string>();
+        var visited = new HashSet<string>(StringComparer.Ordinal);
+        pending.Push(root);
+        while (pending.TryPop(out var symbol))
+        {
+            if (!visited.Add(symbol) || !methods.TryGetValue(symbol, out var method))
+            {
+                continue;
+            }
+
+            reachable.Add(method);
+            foreach (var called in method.Calls)
+            {
+                pending.Push(called);
+            }
+        }
+
+        return reachable;
+    }
+
+    private static string MethodKey(IMethodSymbol method) =>
+        method.OriginalDefinition.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
+
+    private static IEnumerable<string> InvocationStringConstants(
+        InvocationExpressionSyntax invocation,
+        SemanticModel model) =>
+        invocation.DescendantNodesAndSelf()
+            .OfType<ExpressionSyntax>()
+            .Select(expression => model.GetConstantValue(expression))
+            .Where(static value => value.HasValue && value.Value is string)
+            .Select(static value => (string)value.Value!);
+
+    private static bool IsTestMethod(BaseMethodDeclarationSyntax declaration) =>
+        declaration is MethodDeclarationSyntax
+        && declaration.AttributeLists.SelectMany(static list => list.Attributes).Any(static attribute =>
+        {
+            var name = attribute.Name.ToString();
+            return name.EndsWith("Fact", StringComparison.Ordinal)
+                || name.EndsWith("FactAttribute", StringComparison.Ordinal)
+                || name.EndsWith("Theory", StringComparison.Ordinal)
+                || name.EndsWith("TheoryAttribute", StringComparison.Ordinal);
+        });
+
+    private sealed record ScriptAndMakeSource(string Path, string Text);
+
+    private sealed record ScriptAndMakeMethod(
+        string Symbol,
+        string Path,
+        int Line,
+        bool IsTest,
+        bool NamesRepositoryScript,
+        bool LaunchesMake,
+        bool LaunchesShellOrEnv,
+        IReadOnlyList<string> Calls);
+
+    private static bool IsProcessLaunch(SymbolInfo info) => MethodSymbols(info).Any(static method =>
+        method.Name is "Run" or "Start"
         && method.ContainingType.ToDisplayString() is
             "StrataLint.TestSupport.TestProcessRunner"
             or "StrataLint.Engine.BoundedProcessRunner"
-            or "System.Diagnostics.Process";
+            or "System.Diagnostics.Process");
+
+    private static IEnumerable<IMethodSymbol> MethodSymbols(SymbolInfo info)
+    {
+        if (info.Symbol is IMethodSymbol method)
+        {
+            yield return method;
+        }
+
+        foreach (var candidate in info.CandidateSymbols.OfType<IMethodSymbol>())
+        {
+            yield return candidate;
+        }
+    }
 
     private static bool IsToolsScriptsPathCombine(
         InvocationExpressionSyntax invocation,
         SemanticModel model)
     {
-        if (model.GetSymbolInfo(invocation).Symbol is not IMethodSymbol { Name: "Combine" } method
-            || method.ContainingType.ToDisplayString() != "System.IO.Path")
+        if (!MethodSymbols(model.GetSymbolInfo(invocation)).Any(static method =>
+            method.Name == "Combine" && method.ContainingType.ToDisplayString() == "System.IO.Path"))
         {
             return false;
         }
