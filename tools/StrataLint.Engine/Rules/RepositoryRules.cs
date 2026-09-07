@@ -189,7 +189,8 @@ internal static partial class RepositoryRules
                 ModuleStateGateRule.IsApplicable,
                 ModuleStateGateRule.Evaluate,
                 ModuleStateGateRule.IsAffectedBy,
-                ModuleStateGateRule.Evaluate)),
+                ModuleStateGateRule.Evaluate),
+            recheckOnImplementationChange: false),
     ];
 
     private static RuleRegistration Register(
@@ -198,7 +199,8 @@ internal static partial class RepositoryRules
         IRepositoryRule rule,
         AdmissionEffect effect = AdmissionEffect.Block,
         CaseId? deferredCase = null,
-        string category = "repository") =>
+        string category = "repository",
+        bool recheckOnImplementationChange = true) =>
         new(
             new RuleDescriptor(
                 RuleId.CreateKnown(number),
@@ -208,7 +210,8 @@ internal static partial class RepositoryRules
                 effect,
                 deferredCase is null ? RuleLifecycle.Active : RuleLifecycle.Deferred,
                 deferredCase),
-            rule);
+            rule,
+            recheckOnImplementationChange);
 
     private static ImmutableArray<RuleFinding> DescribeLatex(RuleEvaluationContext context) =>
         context.VerifiedScribeEmissions is null

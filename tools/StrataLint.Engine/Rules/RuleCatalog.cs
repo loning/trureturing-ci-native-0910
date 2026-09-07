@@ -16,7 +16,8 @@ public sealed record RuleDescriptor(
 
 internal sealed record RuleRegistration(
     RuleDescriptor Descriptor,
-    IRepositoryRule Rule);
+    IRepositoryRule Rule,
+    bool RecheckOnImplementationChange = true);
 
 public sealed class RuleCatalog
 {
@@ -224,7 +225,7 @@ public sealed class RuleCatalog
             {
                 var registration = RegistrationFor(ruleId);
                 var descriptor = registration.Descriptor;
-                var isAffected = context.RuleImplementationChanged
+                var isAffected = registration.RecheckOnImplementationChange && context.RuleImplementationChanged
                     || (measureApplicability is null
                         ? registration.Rule.IsAffectedBy(context)
                         : measureApplicability(() => registration.Rule.IsAffectedBy(context)));
