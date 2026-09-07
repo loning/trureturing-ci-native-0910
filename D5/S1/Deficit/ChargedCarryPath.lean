@@ -8,6 +8,7 @@
 import D5.S1.Digit.CarryStepConfluence
 import D5.S1.Deficit.Beatty.BetaBeattyClosedForms
 import D5.S1.Deficit.FixedModulusNoncongruence
+import Mathlib.Logic.Relation
 import Mathlib.Tactic.LinearCombination
 
 /-!
