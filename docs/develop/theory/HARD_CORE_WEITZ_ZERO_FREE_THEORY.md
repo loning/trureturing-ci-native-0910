@@ -1651,3 +1651,218 @@ logarithm of the actual partition and its activity derivative through exact
 vertex elimination. A sharper epsilon should use actual type-dependent margins
 and coefficient ratios; arbitrary phase compression or inserting a golden
 constant does not preserve those estimates without a separate theorem.
+
+
+## 28. Closing the simultaneous induction on actual finite grid domains
+
+This continuation reads dev at 22c63f8d3ae9d1f057506c860e89294f115711ea and
+extends research head 144fbe648f9343da83c78b003e1ec3c09485eec2. The new endpoint
+consumes the actual geometric typing, partition identities and common analytic
+neighborhoods of the preceding sections. None is replaced by a new hypothesis.
+
+For every finite induced square-grid domain V, the candidate source now proves
+
+\[
+ \boxed{
+ z\in U_\epsilon\quad\Longrightarrow\quad
+ |Z_{\rm grid}(V;z)|\ge 2^{-|V|}>0,
+ \qquad\epsilon=10^{-30}.
+ }
+\tag{28.1}
+\]
+
+The explicit Lean statement for nonvanishing uses the equivalent witness form
+
+\[
+ \exists\lambda\in[0,51/20],\quad |z-\lambda|<10^{-30}.
+\]
+
+No bound on |V|, specified root, connectivity, rectangular boundary, preassigned
+message, supplied nonzero partition or caller-provided contraction constant is
+required in the final theorem. The ambient square grid remains infinite; the
+actual vertex domain is finite. The ordinary integer-coefficient independence
+polynomial is handled by its previously proved evaluation identity.
+
+### Why two conclusions must be maintained together
+
+For every cardinality n, carry the following pair of assertions:
+
+1. Every finite domain V of size n has |Z(V;z)|>=2^(-n).
+2. Every such V whose origin is present and whose vertices avoid an actual
+   geometric mask F_i has a message m in Omega_i with
+   f_i(m)=Z(V\{0};z)/Z(V;z).
+
+The second assertion is needed only for compatible internal nodes. The first
+must quantify over all finite domains, because the proper domains occurring
+in telescoping need not be supplied with any geometric type. The induction is
+strong induction on n, with both assertions for every k<n available together.
+
+At size zero the partition is one, and no internal node with a present origin
+exists. At a nonempty untyped domain, choose any vertex and use the proved grid
+translation to move it to the origin. Translation preserves both cardinality
+and the actual partition. Each present first child in the four-direction root
+formula is strictly smaller and compatible with the existing type-zero mask.
+The induction hypothesis supplies its actual inverse message in Omega_0.
+
+A missing first child contributes exactly one. This conclusion uses
+nonvanishing of its actual proper pre-recentered partition, obtained from the
+first induction hypothesis. No argument from real positivity is used at a
+complex activity. The neutral coordinate c_0(1) lies in Omega_0 and has inverse
+one, so all four factors enter the already proved root denominator bound.
+We obtain a genuine complex D with
+
+\[
+ \operatorname{Re}D\ge\tfrac12,\qquad
+ Z(V;z)=Z(V\{0};z)D.
+\]
+
+The proper-domain modulus bound and |D|>=1/2 prove the first assertion at size n.
+No same-size typed assertion is used in this root argument.
+
+For the second assertion at size n, the geometric theorem gives every present
+child's exact successor type, compatible remaining domain, new origin, and
+strict cardinality decrease. The second induction hypothesis represents these
+child ratios in their corresponding Omega sets. The first induction hypothesis
+again makes every denominator in the ordered elimination legitimate. Missing
+actual children have ratio one and are removed from the product by exact
+finite-set algebra, yielding precisely the valid pruning consumed by the
+analytic map. Invariance gives m_parent in Omega_i, and inverse recovery gives
+
+\[
+ f_i(m_{\rm parent})=(1+z\prod_d\alpha(V_d,0;z))^{-1}.
+\]
+
+The local denominator has real part at least one half. The actual partition
+recursion first proves Z(V;z) nonzero, and only then identifies the displayed
+inverse with the actual parent vacancy. Thus neither target nonvanishing nor
+target representation is smuggled into its own premises.
+
+This completes both induction components at every finite size. It is the
+previously missing source-level connection between the typed analytic theorem
+and an actual finite-grid zero-free endpoint.
+
+### Complex absent-child handling is a substantive obligation
+
+On a positive real activity, identical numerator and denominator are automatically
+positive. On a complex activity, an absent marked vertex only gives Z/Z. Without
+Z!=0 this need not equal one under total field division, and under ordinary
+partial division it is undefined. The new complex_child_absent and
+complex_root_child_absent lemmas retain precisely the smaller-domain nonzero
+premises. Their callers discharge those premises by cardinality induction.
+A singleton partition at activity -1 supplies a regression detecting omission
+of this guard; that activity is outside the claimed tube.
+
+## 29. Quantitative consequences for actual partition increments and vacancies
+
+The induction preserves more than a Boolean nonzero conclusion. The explicit
+root half-plane margin gives (28.1) by multiplying one factor of at least one
+half per deleted vertex. This lower bound concerns the actual independent-set
+sum, not the relaxed geometric tree's number of paths.
+
+After the global induction, every present origin satisfies the source theorem
+
+\[
+ \boxed{\operatorname{Re}\frac{Z(V;z)}{Z(V\setminus\{0\};z)}
+ \ge\tfrac12.}
+\tag{29.1}
+\]
+
+The proved translation equivalence transfers the same statement to any present
+marked vertex. Taking the inverse ratio yields the further public conclusion
+
+\[
+ \boxed{|\alpha(V,v;z)|\le2}
+\tag{29.2}
+\]
+
+for every finite domain and every marked vertex. An absent vertex is included:
+its ratio is one, now justified by the established global nonvanishing.
+
+These bounds provide a direct next route to an actual analytic free energy.
+Choose a complete vertex deletion order and write W_j for its successive
+remaining domains. Set
+
+\[
+ F_V(z)=\sum_j\operatorname{Log}\left(
+       Z(W_{j-1};z)/Z(W_j;z)\right).
+\]
+
+Every argument lies in the right half-plane by (29.1), so its principal
+logarithm has a consistent analytic branch. Polynomiality and the established
+nonzero denominators make every summand holomorphic. Exact telescoping gives
+exp(F_V)=Z(V), and at zero activity every summand is zero. Different deletion
+orders therefore give the same normalized analytic logarithm on the connected
+activity tube. This follows by continuity of their difference in 2*pi*i*Z and
+its value zero at z=0.
+
+For this proposed normalized logarithm the elementary estimates give
+
+\[
+ -|V|\log2\le\operatorname{Re}F_V(z)\le|V|\log4,
+ \qquad |\operatorname{Im}F_V(z)|\le |V|\pi/2.
+\]
+
+The upper real bound uses |z|<3 on U_epsilon and the independent-set sum bounded
+by the sum over all subsets, |Z(V;z)|<=(1+|z|)^|V|. The imaginary bound follows
+from each right-half-plane increment having argument between -pi/2 and pi/2.
+These logarithm construction and bounds are the next paper deductions, not
+additional public Lean declarations in this increment. Establishing an
+infinite-volume limit still requires convergence and boundary control;
+finite-volume boundedness alone is not claimed as a thermodynamic-limit theorem.
+
+## 30. Delivered source endpoint and verification status
+
+ActualGraphLift and FiniteGridZeroFree are the two new Lean owners. Each has
+a canonical Scribe companion; all sixteen explicitly named public declarations
+are covered. ActualGraphLift constructs the neutral message, handles absent
+complex children, transfers the actual pruning/product, and proves the typed
+and four-direction graph steps. FiniteGridZeroFree performs the simultaneous
+strong induction and exposes the quantitative lower bound, nonvanishing,
+explicit interval-width theorem, integer-polynomial version, root increment
+half-plane and arbitrary marked-vacancy bound.
+
+The final nonvanishing theorem is no longer a conditional graph-transfer
+interface. Its only activity premise is membership in the specified common
+neighborhood. The geometry, coefficient rows, holomorphic estimates, and graph
+identities are concrete proof dependencies. This description is about the
+logical shape of the source; it does not upgrade unexecuted dependencies to
+kernel-checked truth.
+
+The supplementary exact replay reuses the previous direct independent-subset
+enumerator. It does not use the deletion recursion to manufacture reference
+partition values, and it does not read any stored result JSON. Across all 512
+subdomains of a 3-by-3 square and 21 exact Gaussian-rational activities in the
+claimed tube, the executed checks include:
+
+- 10752 quantitative partition lower bounds;
+- 59136 marked-vacancy modulus bounds;
+- 48384 root increment half-plane and four-child reconstruction checks;
+- 64512 present first-child and 129024 missing first-child checks;
+- 2304 internal geometric contexts and 5376 internal reconstruction checks;
+- 1536 complete vertex-elimination products.
+
+Five negative controls detect omission of the fourth root direction, assuming
+target nonvanishing from proper-domain nonvanishing alone, dropping the absent
+child's denominator guard, failing to delete the current root, and discarding
+the ordered sibling context. These finite tests supplement logical proof review;
+they do not prove any universal result or validate a Lean proof term.
+
+```sh
+python research/hard_core_weitz/verify_finite_grid_zero_free.py
+```
+
+The existing holomorphic and 881-type affine proof scripts are dependencies,
+not re-executed verdicts in this replay. Lean/lake is unavailable in the authoring
+runtime, so the new and inherited proof scripts still lack an executed
+elaboration, kernel/axiom report and Scribe emission in this session. This is an
+end-to-end candidate formalization with exact finite regressions, not an
+end-to-end kernel-verified theorem or independent-author review.
+
+The public literature versions were rechecked: [1] remains arXiv:2604.02746v1
+of 3 April 2026, and [5] remains arXiv:1909.04244v3 with its 2021 journal reference.
+Real-to-complex contraction and the finite-graph deletion argument are prior
+art. The current work instantiates them through a concrete typed certificate
+and now supplies its missing all-domain consumer. The endpoint 2.55 is the
+specific proposed extension under investigation; no priority claim, optimal
+critical threshold, RH consequence, or solution of the full square-lattice
+phase-transition problem is asserted.
