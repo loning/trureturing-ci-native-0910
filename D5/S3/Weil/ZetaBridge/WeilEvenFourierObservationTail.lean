@@ -208,3 +208,37 @@ theorem even_exterior_fourier_observation_bound
 #print axioms even_exterior_fourier_observation_bound
 
 end D5.S3.Weil.ZetaBridge.WeilEvenFourierObservationTail
+
+namespace D5.S3.Weil.ZetaBridge.WeilEvenFourierObservationTail
+
+/-- Public reuse of the inverse-fourth majorant already proved above. The
+sum covers the entire half-tail. This companion is used by the arithmetic
+residual certificate without duplicating the telescoping proof. -/
+theorem exterior_inverse_fourth_bound {N : ℕ} (hN : 0 < N) :
+    Summable (fun j : ℕ => 1 / ((N : ℝ) + (j : ℝ) + 1) ^ 4) ∧
+      (∑' j : ℕ, 1 / ((N : ℝ) + (j : ℝ) + 1) ^ 4) ≤
+        1 / (3 * (N : ℝ) ^ 3) := by
+  have hp (K : ℕ) : (∑ j ∈ Finset.range K, inverseFourth N j) ≤
+      1 / (3 * (N : ℝ) ^ 3) := by
+    have ht := fourth_partial hN K
+    have hn : 0 ≤ 1 / (3 * ((N : ℝ) + (K : ℝ)) ^ 3) := by positivity
+    linarith
+  have hnonneg (j : ℕ) : 0 ≤ inverseFourth N j := by
+    unfold inverseFourth
+    positivity
+  have hs := summable_of_sum_range_le hnonneg hp
+  have hb := Real.tsum_le_of_sum_range_le hnonneg hp
+  simpa only [inverseFourth, exteriorIndex] using And.intro hs hb
+
+/-- Public reuse of the pole-free Cauchy coefficient estimate. No removable
+pole value is asserted. The existing private denominator proof is reused. -/
+theorem exterior_cauchy_term_bound {N : ℕ} (hN : 0 < N) {w : ℂ}
+    (hw : ‖w‖ ≤ (N : ℝ) / 2) (eta : ℂ) (j : ℕ) :
+    ‖eta / ((((N : ℝ) + (j : ℝ) + 1 : ℝ) : ℂ) ^ 2 - w ^ 2)‖ ≤
+      ‖eta‖ * (4 / (3 * ((N : ℝ) + (j : ℝ) + 1) ^ 2)) := by
+  exact term_norm_le hN hw (fun _ => eta) j
+
+#print axioms exterior_inverse_fourth_bound
+#print axioms exterior_cauchy_term_bound
+
+end D5.S3.Weil.ZetaBridge.WeilEvenFourierObservationTail

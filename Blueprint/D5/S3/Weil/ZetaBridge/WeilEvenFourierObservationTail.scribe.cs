@@ -32,6 +32,22 @@ internal sealed class WeilEvenFourierObservationTailDocument : IScribeDocumentDe
                 + "observable needed by the Weil-to-Xi route.",
             H("Even Fourier Observation Tail"),
             Blocks(
+                Describe.Lean(
+                    DescribeId.Create("exterior-inverse-fourth-bound"),
+                    DeclarationHandle.Create(Owner + "exterior_inverse_fourth_bound"),
+                    H("Complete inverse-fourth majorant"),
+                    StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                    Blocks(Paragraph(Text(
+                        "Exposes the existing telescoping estimate as a summable full half-tail with bound 1/(3*N^3). The arithmetic residual consumer reuses this proof."))),
+                    DescribeRole.Theorem),
+                Describe.Lean(
+                    DescribeId.Create("exterior-cauchy-term-bound"),
+                    DeclarationHandle.Create(Owner + "exterior_cauchy_term_bound"),
+                    H("Pole-free coefficient bound"),
+                    StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                    Blocks(Paragraph(Text(
+                        "Exposes the previously proved denominator estimate for any complex numerator. The frequency restriction is retained, and no removable-pole value is asserted."))),
+                    DescribeRole.Theorem),
                 Paragraph(Text(
                     "The actual window is [-L/2,L/2]. For n>0 use the existing "
                     + "phase-adjusted cosine basis (-1)^n*sqrt(2/L)*cos(2*pi*n*x/L), "
