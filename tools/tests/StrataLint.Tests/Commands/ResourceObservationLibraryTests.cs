@@ -356,9 +356,9 @@ public sealed class ResourceObservationLibraryTests
             resource_observe_sample() { return 0; }
             sampler_fifo="$PWD/sampler-exited"
             mkfifo "$sampler_fifo"
-            resource_observe_periodically() { exec 9>"$sampler_fifo"; exec bash -c 'exit 97'; }
+            resource_observe_periodically() { exec 9>"$sampler_fifo"; bash -c 'exit 97'; }
             observed_command() {
-              # Only the sampler PID owns write fd 9 after exec; EOF proves that PID exited and closed it.
+              # The shim owns write fd 9; EOF proves it exited after atomically recording the status.
               read -r _ <"$sampler_fifo" || [[ "$?" -eq 1 ]]
               bash -c 'exit 0'
             }
@@ -385,9 +385,9 @@ public sealed class ResourceObservationLibraryTests
             resource_observe_sample() { return 0; }
             sampler_fifo="$PWD/sampler-exited"
             mkfifo "$sampler_fifo"
-            resource_observe_periodically() { exec 9>"$sampler_fifo"; exec bash -c 'exit 97'; }
+            resource_observe_periodically() { exec 9>"$sampler_fifo"; bash -c 'exit 97'; }
             wrapped_command() {
-              # Only the sampler PID owns write fd 9 after exec; EOF proves that PID exited and closed it.
+              # The shim owns write fd 9; EOF proves it exited after atomically recording the status.
               read -r _ <"$sampler_fifo" || [[ "$?" -eq 1 ]]
               bash -c 'exit 23'
               bash -c 'exit 0'
@@ -416,9 +416,9 @@ public sealed class ResourceObservationLibraryTests
             resource_observe_sample() { return 19; }
             sampler_fifo="$PWD/sampler-exited"
             mkfifo "$sampler_fifo"
-            resource_observe_periodically() { exec 9>"$sampler_fifo"; exec bash -c 'exit 97'; }
+            resource_observe_periodically() { exec 9>"$sampler_fifo"; bash -c 'exit 97'; }
             observed_command() {
-              # Only the sampler PID owns write fd 9 after exec; EOF proves that PID exited and closed it.
+              # The shim owns write fd 9; EOF proves it exited after atomically recording the status.
               read -r _ <"$sampler_fifo" || [[ "$?" -eq 1 ]]
               bash -c 'exit 0'
             }
@@ -462,9 +462,9 @@ public sealed class ResourceObservationLibraryTests
             resource_observe_sample() { return 0; }
             sampler_fifo="$PWD/sampler-exited"
             mkfifo "$sampler_fifo"
-            resource_observe_periodically() { exec 9>"$sampler_fifo"; exec bash -c 'exit 5'; }
+            resource_observe_periodically() { exec 9>"$sampler_fifo"; bash -c 'exit 5'; }
             observed_command() {
-              # Only the sampler PID owns write fd 9 after exec; EOF proves that PID exited and closed it.
+              # The shim owns write fd 9; EOF proves it exited after atomically recording the status.
               read -r _ <"$sampler_fifo" || [[ "$?" -eq 1 ]]
             }
             resource_observe_run_periodic observed_command

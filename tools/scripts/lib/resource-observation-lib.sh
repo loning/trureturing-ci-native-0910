@@ -356,7 +356,10 @@ resource_observation_handle_signal() {
 
 resource_observe_run_periodic() {
   local sampler_pid=""
-  local sampler_status=0
+  local sampler_status=""
+  local sampler_status_root=""
+  local sampler_status_directory=""
+  local sampler_status_file=""
   local command_status=0
   local had_errexit=0
   local previous_hup=""
@@ -376,11 +379,20 @@ resource_observe_run_periodic() {
   trap 'resource_observation_handle_signal HUP "$?" "$root_pid" "$workspace" "$runner_temp" "$sampler_pid"' HUP
   trap 'resource_observation_handle_signal INT "$?" "$root_pid" "$workspace" "$runner_temp" "$sampler_pid"' INT
   trap 'resource_observation_handle_signal TERM "$?" "$root_pid" "$workspace" "$runner_temp" "$sampler_pid"' TERM
-  resource_observe_periodically \
-    "$root_pid" \
-    "$workspace" \
-    "$runner_temp" \
-    "${RESOURCE_OBSERVATION_INTERVAL_SECONDS:-30}" &
+  sampler_status_root="${runner_temp:-${workspace:-$PWD}}"
+  sampler_status_directory="$(mktemp -d "$sampler_status_root/.resource-observation.XXXXXXXX")"
+  sampler_status_file="$sampler_status_directory/sampler.status"
+  (
+    set +e
+    resource_observe_periodically \
+      "$root_pid" \
+      "$workspace" \
+      "$runner_temp" \
+      "${RESOURCE_OBSERVATION_INTERVAL_SECONDS:-30}"
+    sampler_status=$?
+    printf '%s\n' "$sampler_status" > "$sampler_status_file.tmp"
+    mv "$sampler_status_file.tmp" "$sampler_status_file"
+  ) &
   sampler_pid=$!
   if [[ $- == *e* ]]; then
     had_errexit=1
@@ -395,21 +407,20 @@ resource_observe_run_periodic() {
     command_status=$?
   fi
 
-  if kill -0 "$sampler_pid" 2>/dev/null; then
-    # Residual race: a real mid-run sampler failure is reported only if it is no longer live here;
-    # a failure racing our kill is treated as kill-induced.
+  if [[ ! -f "$sampler_status_file" ]]; then
     kill "$sampler_pid" 2>/dev/null || true
-    wait "$sampler_pid" 2>/dev/null || true
-  else
-    if wait "$sampler_pid" 2>/dev/null; then
-      sampler_status=0
-    else
-      sampler_status=$?
-    fi
-    if [[ "$sampler_status" -ne 0 ]]; then
+  fi
+  wait "$sampler_pid" 2>/dev/null || true
+  if [[ -f "$sampler_status_file" ]]; then
+    IFS= read -r sampler_status < "$sampler_status_file" || true
+    # Only the shim's complete canonical decimal is evidence of self-exit. A partial or
+    # unparsable file is treated like a killed shim and emits no receipt.
+    if [[ "$sampler_status" =~ ^[1-9][0-9]*$ ]]; then
       printf 'RESOURCE_OBSERVATION_SAMPLER status=UNAVAILABLE exit=%s\n' "$sampler_status"
     fi
   fi
+  rm -f "$sampler_status_file" "$sampler_status_file.tmp"
+  rmdir "$sampler_status_directory" 2>/dev/null || true
   resource_observe_sample 0 "$root_pid" "$workspace" "$runner_temp" final "" "$command_status" "$resource_observation_last_signal" || true
   trap - HUP INT TERM
   if [[ -n "$previous_hup" ]]; then eval "$previous_hup"; fi
