@@ -93,15 +93,16 @@ def orderedCount {State : Type*}
           ((step i (choose i) d).getD fallback)
       else 0
 
-/-- Full finite-domain simulation. The only table obligations are rejection
-exactly at recorded blockers and equality with the actual geometric update. -/
-theorem orderedCount_le_pathCount {State : Type*}
+/-- Only the actions selected by this controller need geometric closure.
+This permits a certified controller-reachable state table instead of the much
+larger union of states reachable under all six actions. -/
+theorem orderedCount_le_pathCount_selected {State : Type*}
     (step : State → Fin 6 → Fin 3 → Option State)
     (choose : State → Fin 6) (fallback : State) (mask : State → Finset Point)
     (radius : ℕ)
-    (hblocked : ∀ i a d, step i a d = none ↔ direction d ∈ mask i)
-    (hnext : ∀ i a d j, step i a d = some j →
-      mask j = memoryStep radius (mask i) a d)
+    (hblocked : ∀ i d, step i (choose i) d = none ↔ direction d ∈ mask i)
+    (hnext : ∀ i d j, step i (choose i) d = some j →
+      mask j = memoryStep radius (mask i) (choose i) d)
     (n : ℕ) (V : Finset Point) (i : State) (history : List (Fin 3))
     (hdis : Disjoint V (mask i)) :
     orderedCount step choose fallback n V i ≤
@@ -116,17 +117,35 @@ theorem orderedCount_le_pathCount {State : Type*}
       · rw [if_pos hv]
         cases hs : step i (choose i) d with
         | none =>
-            have hm := (hblocked i (choose i) d).mp hs
+            have hm := (hblocked i d).mp hs
             exact False.elim ((Finset.disjoint_left.mp hdis) hv hm)
         | some j =>
             have hj : Disjoint (advance V (choose i) d) (mask j) := by
-              rw [hnext i (choose i) d j hs]
+              rw [hnext i d j hs]
               exact advance_disjoint_memoryStep radius V (mask i) (choose i) d hdis
             simpa using ih (advance V (choose i) d) j (d :: history) hj
       · simp [hv]
 
+/-- Full finite-domain simulation. The only table obligations are rejection
+exactly at recorded blockers and equality with the actual geometric update. -/
+theorem orderedCount_le_pathCount {State : Type*}
+    (step : State → Fin 6 → Fin 3 → Option State)
+    (choose : State → Fin 6) (fallback : State) (mask : State → Finset Point)
+    (radius : ℕ)
+    (hblocked : ∀ i a d, step i a d = none ↔ direction d ∈ mask i)
+    (hnext : ∀ i a d j, step i a d = some j →
+      mask j = memoryStep radius (mask i) a d)
+    (n : ℕ) (V : Finset Point) (i : State) (history : List (Fin 3))
+    (hdis : Disjoint V (mask i)) :
+    orderedCount step choose fallback n V i ≤
+      pathCount step (fun _ j => choose j) n history i := by
+  exact orderedCount_le_pathCount_selected step choose fallback mask radius
+    (fun i d => hblocked i (choose i) d)
+    (fun i d j => hnext i (choose i) d j) n V i history hdis
+
 #print axioms recenter_injective
 #print axioms advance_disjoint_memoryStep
+#print axioms orderedCount_le_pathCount_selected
 #print axioms orderedCount_le_pathCount
 
 end D5.S3.StatisticalMechanics.HardCore.OrderedGridMemory
