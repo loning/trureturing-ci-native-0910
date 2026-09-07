@@ -24,11 +24,11 @@ internal static partial class RepositoryRules
     private static bool JudgeSurfaceScoped(RepositoryFile artifact, RuleApplicabilityContext context) =>
         JudgeSurfaceRevisionScanner.IsJudgeSurfacePath(artifact.Path.Value);
 
-    private static bool JudgeSurfaceAffected(RuleEvaluationContext context) =>
+    private static bool JudgeSurfaceAffected(DeltaRuleContext context) =>
         Changed(context, JudgeSurfaceRevisionScanner.IsJudgeSurfacePath);
 
     private static ImmutableArray<RuleFinding> JudgeSurfaceRevisionMaterialization(
-        RuleEvaluationContext context)
+        DeltaRuleContext context)
     {
         var findings = ImmutableArray.CreateBuilder<RuleFinding>();
         foreach (var (path, file) in context.Current.Files

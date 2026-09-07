@@ -66,7 +66,7 @@ public sealed partial class ScribeSeedCommandTests
         var lean = Assert.IsType<LeanValidationOutcome.Accepted>(
             LeanClosureValidator.Validate(current, fixture.Inputs.Report)).Capability;
         var bootstrap = Assert.IsType<BootstrapOutcome.Clear>(BootstrapGate.Evaluate(changes));
-        var context = RuleEvaluationContext.Create(current, baseline, policy, lean, changes,
+        var context = DeltaRuleContext.Create(current, baseline, policy, lean, changes,
             MetaEvaluationProfile.ForClear(bootstrap.Capability), fixture.Verified);
 
         var findings = BackfillInventoryRule.EvaluateCandidateDelta(context);

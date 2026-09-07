@@ -559,9 +559,8 @@ jobs:
           scribe="$GITHUB_WORKSPACE/.judge-binaries/scribe/StrataLint.Scribe.Documents.dll"
           test -s "$report"
           test -s "$scribe"
-          base="${{ steps.base.outputs.sha }}"
           /bin/bash "$GITHUB_WORKSPACE/candidate/tools/scripts/workflow/scribe-content-checks.sh" \
-            "$report" "$scribe" "$base"
+            "$report" "$scribe"
       - name: Upload raw Lean reports and producer logs
         if: always()
         uses: actions/upload-artifact@v4

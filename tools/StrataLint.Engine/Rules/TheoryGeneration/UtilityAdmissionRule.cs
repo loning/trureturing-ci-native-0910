@@ -5,7 +5,7 @@ namespace StrataLint.Engine;
 // SL-031. First-freeze utility admission for computational content.
 internal static class UtilityAdmissionRule
 {
-    internal static bool IsAffectedBy(RuleEvaluationContext context) =>
+    internal static bool IsAffectedBy(DeltaRuleContext context) =>
         context.RuleImplementationChanged
         || context.Changes.Paths.Any(path =>
             FrozenStatePath.IsUnderRoot(path.Value)
@@ -13,7 +13,7 @@ internal static class UtilityAdmissionRule
             || string.Equals(path.Value, BackfillInventoryLoader.RelativePath, StringComparison.Ordinal)
             || IsChangedUtilityHeader(context, path));
 
-    internal static ImmutableArray<RuleFinding> Evaluate(RuleEvaluationContext context)
+    internal static ImmutableArray<RuleFinding> Evaluate(DeltaRuleContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
         var findings = ImmutableArray.CreateBuilder<RuleFinding>();
@@ -82,7 +82,7 @@ internal static class UtilityAdmissionRule
     }
 
     private static void AddRatchetFindings(
-        RuleEvaluationContext context,
+        DeltaRuleContext context,
         ImmutableArray<RuleFinding>.Builder findings)
     {
         foreach (var path in context.Changes.Paths
@@ -102,7 +102,7 @@ internal static class UtilityAdmissionRule
         }
     }
 
-    private static bool IsChangedUtilityHeader(RuleEvaluationContext context, RepoPath path)
+    private static bool IsChangedUtilityHeader(DeltaRuleContext context, RepoPath path)
     {
         if (!IsD5Lean(path.Value))
         {

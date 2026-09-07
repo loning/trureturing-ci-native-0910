@@ -20,6 +20,10 @@ internal sealed class StubCliEnvironment(
 {
     internal IReadOnlyList<string> CleanLanesArguments { get; private set; } = [];
 
+    public ExplicitCommandResult CheckCurrent(IReadOnlyList<string> arguments) => throw new NotSupportedException();
+
+    public ExplicitCommandResult CheckDelta(IReadOnlyList<string> arguments) => throw new NotSupportedException();
+
     public AdmissionOutcome Check(IReadOnlyList<string> arguments) => outcome;
 
     public ExplicitCommandResult CapacityAudit(IReadOnlyList<string> arguments) =>
