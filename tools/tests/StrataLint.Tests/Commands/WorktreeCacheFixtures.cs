@@ -63,6 +63,29 @@ internal sealed record WorktreeProcessInvocation(
     string WorkingDirectory,
     TimeSpan Timeout);
 
+internal static class WorktreeHookFixture
+{
+    internal static string Install(string repository, string name, string body)
+    {
+        var hooks = Path.Combine(repository, ".git", "creation-hooks");
+        Directory.CreateDirectory(hooks);
+        RunGit(repository, "config", "core.hooksPath", hooks);
+        var path = Path.Combine(hooks, name);
+        File.WriteAllText(path, "#!/bin/sh\nset -eu\n" + body, new UTF8Encoding(false));
+        if (!OperatingSystem.IsWindows())
+            File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        return path;
+    }
+
+    internal static string RunGit(string repository, params string[] arguments)
+    {
+        var result = TestProcessRunner.Run("git", arguments, repository,
+            BoundedProcessRunner.HangDetectionBudget, 64 * 1024 * 1024);
+        Assert.True(result.ExitCode == 0, Encoding.UTF8.GetString(result.StandardError));
+        return Encoding.UTF8.GetString(result.StandardOutput);
+    }
+}
+
 internal sealed class RecordingWorktreeProcessRunner : IWorktreeProcessRunner
 {
     private bool copyCompleted;
