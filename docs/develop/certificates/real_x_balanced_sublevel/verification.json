@@ -1,0 +1,64 @@
+{
+  "status": "COMPUTATIONAL_BALANCED_STRONG_UNEXTENDIBILITY_VERIFIED",
+  "symbolic_seed": {
+    "field": "Q(i,sqrt(21))",
+    "unit_entries": true,
+    "both_grams_six_I": true,
+    "conservation_used_only_for_this_exact_seed": true
+  },
+  "first_six_cliques": 2403,
+  "orthogonality_edges": 372,
+  "unbiased_edges": 859,
+  "remaining_partner_sets": 0,
+  "whole_tube_pair_checks": 1890,
+  "same_tube_lower": "1097376288098835905/1152921504606846976",
+  "seed_sublevel_all_six": "1/64",
+  "candidate_tolerance": "1/256",
+  "outer_tube_radius": "1/16",
+  "refined_tube_radius": "1/32",
+  "column_l1_radius": "9/4096",
+  "entrywise_radius": "3/8192",
+  "residual_transfer_upper": "249937/16777216",
+  "energy_gap": "1/65536",
+  "literal_constellation_sizes": [6, 6, 6, 1],
+  "local_refinement": {
+    "status": "BALANCED_REFINEMENT_COVERED",
+    "label": 5,
+    "epsilon_bits": 6,
+    "outer_bits": 4,
+    "inner_bits": 5,
+    "nodes": 945,
+    "pending": 0,
+    "unresolved": 0,
+    "inside": 32,
+    "excluded": 263,
+    "dual_improvements": 3137,
+    "lean_kernel_verified": false
+  },
+  "global_cover_replayed": true,
+  "lean_kernel_verified": false,
+  "comparison_warning": "all-six sublevel, not the older first-five sublevel; node counts are not a same-domain speed comparison",
+  "global_cover": {
+    "charts": 32,
+    "nodes": 4900318,
+    "pending": 0,
+    "unresolved": 0,
+    "balanced_readout_improvements": 10782511,
+    "domain": "all six seed residuals have absolute value <=1/64",
+    "tube_radius": "1/16",
+    "tube_uniqueness_used": false
+  },
+  "source_sha256": {
+    "check_real_x_balanced_cover.py": "9c90d8a2eb424aec7ec3bb4c874922491e7304d0abe80557219dbe37f37cd737",
+    "check_real_x_balanced_sublevel.cpp": "e77d0222c4986c8fe6e54358bdfd0f4f22e65f53eca1eff5fa3a7023f01d35a9",
+    "centers.txt": "86543588ac1be4032fc4a16231bb0cbae77b0d5078a114b8397050bc24fb7155",
+    "check_real_x_global_cover.cpp": "dc71bf13400feffc555040172682ad40d6ab378f2466b80da19237ea1f01b531",
+    "check_real_x_arc_constellation.py": "6d17124fe78206147d7fdf0005f40e13c7828576af014e527d1a353e876daca9",
+    "check_real_x_strong_unextendibility.py": "5f302771a5058070c76195338a011571f8fff6ce5626c827ce0efd510111713f",
+    "check_strict_x_counterexample.py": "3a23425baf48f1fe78c3932b1dd0b11593686c494ea53372d653f9a929c26c85"
+  },
+  "source_scope": {
+    "strong_overlap_owner": "two unchanged mathematical functions from remote blob 90c3d6a82cd970e3fec7dee3850caf69fe59919b",
+    "standalone_bundle": "may contain a read-only excerpt of the strong owner; that excerpt is not a repository overlay file"
+  }
+}
