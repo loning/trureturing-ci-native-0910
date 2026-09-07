@@ -22,7 +22,7 @@ Original source copyrights and proof bodies are retained. Changes:
 
 `invPhiN_poly` is unchanged: its dependent if tests monicity, exact degree,
 squarefreeness and reality of complex roots; the false branch explicitly
-returns zero. Upstream's private coordinate implementation is retained for
+returns zero. Upstream's original coordinate implementation is retained for
 its proofs; the public repository API uses the existing additiveConvolution.
 
 No separate upstream NOTICE file exists at the cited revision. This file
