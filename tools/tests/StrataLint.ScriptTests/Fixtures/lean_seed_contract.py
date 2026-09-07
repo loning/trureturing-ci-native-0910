@@ -138,6 +138,7 @@ class DeltaTests(unittest.TestCase):
         self.entry = self.cache / self.address
         self.report = self.entry / "raw-lean-report.json"
         self.modules = []
+        self.materials = {}
         for name, imports in [("A", []), ("B", ["A"]), ("C", ["B"]), ("D", [])]:
             write(self.root / (name + ".lean"), "def value := 1\n")
             self.modules.append({"module": name, "source_path": name + ".lean",
@@ -155,8 +156,25 @@ class DeltaTests(unittest.TestCase):
             "source_side": "candidate", "input_address": "sha256:" + self.address,
             "producer_sha256": self.producer, "repository_inspector_sha256": self.producer,
             "lean_sources_sha256": "e"*64, "lean_config_sha256": self.config, "report_sha256": report_sha}))
-        with zipfile.ZipFile(str(self.report) + ".materials.zip", "w"):
-            pass
+        with zipfile.ZipFile(str(self.report) + ".materials.zip", "w") as archive:
+            for name, material in sorted(self.materials.items()):
+                archive.writestr(name, material)
+
+    def add_declaration_material(self):
+        spec = importlib.util.spec_from_file_location("materials", DELTA.with_name("materials.py"))
+        materials = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(materials)
+        material = b"statement-v1(uparams=[],type=ec(ns(n0,3:Nat),[]),value=ei(ln(1)))"
+        declaration = {"axioms": [], "include_in_statement": True, "kind": "def",
+            "name": "value", "name_key": "ns(n0,5:value)",
+            "type_sha256": materials.statement_address(material),
+            "statement_id": materials.statement_address(materials.canonical_json({
+                "declaration_name_key": "ns(n0,5:value)", "kind": "def", "module_path": "A.lean",
+                "schema": "declaration-statement-v1", "statement_material": material.decode("utf-8")}))}
+        self.modules[0]["declarations"] = [declaration]
+        self.materials["sha256/" + declaration["type_sha256"][7:]] = material
+        self.store()
+        return declaration
 
     def plan(self, producer=None, config=None, extra=()):
         names = sorted(path.stem for path in self.root.glob("*.lean"))
@@ -196,6 +214,24 @@ class DeltaTests(unittest.TestCase):
         write(pathlib.Path(str(self.report) + ".materials.zip"), "broken")
         self.assertEqual("fallback", self.plan()["status"])
 
+    def test_nonempty_declaration_material_is_reused(self):
+        self.add_declaration_material()
+        result = self.plan()
+        self.assertEqual("reuse", result["status"])
+        self.assertEqual([], result["recheck"])
+
+    def test_damaged_declaration_material_is_not_a_reuse_seed(self):
+        declaration = self.add_declaration_material()
+        self.materials["sha256/" + declaration["type_sha256"][7:]] += b"damaged"
+        self.store()
+        self.assertEqual("fallback", self.plan()["status"])
+
+    def test_wrong_declaration_identity_is_not_a_reuse_seed(self):
+        declaration = self.add_declaration_material()
+        declaration["statement_id"] = "sha256:" + "f" * 64
+        self.store()
+        self.assertEqual("fallback", self.plan()["status"])
+
     def test_runtime_invalidation_is_internal_and_partition_mismatch_is_a_miss(self):
         seed = {"schema": "lean-report-seed-v1", "partition": REV + "/linux-x64",
             "runtime_sha256": "1"*64, "report_sha256": digest(self.report.read_bytes()),
@@ -224,18 +260,83 @@ class TransportTests(PartitionFixture, unittest.TestCase):
         self.bin.mkdir()
         self.remote.mkdir()
         write(self.root / ".lake/build/lib/lean/D5/A.olean", "locally-produced-olean")
-        write(self.bin / "make", '#!/bin/sh\nexit "${FAKE_BUILD_EXIT:-0}"\n')
+        write(self.bin / "make", '#!/bin/sh\nprintf "%s\\n" "$*" >> "$FAKE_BUILD_LOG"\nexit "${FAKE_BUILD_EXIT:-0}"\n')
         write(self.bin / "gh", FAKE_GH)
         for path in self.bin.iterdir():
             path.chmod(0o755)
 
-    def transport(self, verb, run="123", arguments=(), **extra):
-        environment = {**os.environ, "PATH": str(self.bin) + os.pathsep + os.environ["PATH"],
+    def transport_environment(self, run="123", **extra):
+        return {**os.environ, "PATH": str(self.bin) + os.pathsep + os.environ["PATH"],
+            "HOME": str(self.root), "FAKE_BUILD_LOG": str(self.root / "build-runs"),
             "FAKE_REMOTE": str(self.remote), "GITHUB_SHA": "d" * 40, "GITHUB_RUN_ID": run,
             "GITHUB_RUN_ATTEMPT": "1", "GITHUB_EVENT_NAME": "schedule", "GITHUB_REF": "refs/heads/dev",
-            "STRATALINT_CHECK_SUCCEEDED": "true", **extra}
+            "STRATALINT_CHECK_SUCCEEDED": "true", "STRATALINT_ACTIONS_CACHE_SEEDED": "", **extra}
+
+    def transport(self, verb, run="123", arguments=(), **extra):
         return subprocess.run(["bash", str(PUBLISH), verb, "--repository", str(self.root), *arguments],
-                              text=True, capture_output=True, env=environment)
+                              text=True, capture_output=True, env=self.transport_environment(run, **extra))
+
+    def fetch_then_build(self, **extra):
+        # Exercise the optional-fetch caller protocol under errexit. Workflow
+        # execution itself is verified by a real integration run, not YAML tests.
+        return subprocess.run(["bash", "-euo", "pipefail", "-c", '''
+if ! "$1" fetch --allow-seed --repository "$2"; then
+    printf '%s\\n' 'Release seed unavailable; continuing with the normal Lean build.'
+fi
+make -C "$2" lean
+''', "optional-fetch", str(PUBLISH), str(self.root)], text=True, capture_output=True,
+            env=self.transport_environment(**extra))
+
+    def test_optional_fetch_miss_reaches_build_and_preserves_build_failure(self):
+        for build_exit in (0, 19):
+            with self.subTest(build_exit=build_exit):
+                result = self.fetch_then_build(FAKE_BUILD_EXIT=str(build_exit))
+                self.assertEqual(build_exit, result.returncode, result.stdout + result.stderr)
+                self.assertIn('"status":"miss"', result.stdout)
+        self.assertEqual(["-C " + str(self.root) + " lean"] * 2,
+                         (self.root / "build-runs").read_text().splitlines())
+
+    def test_optional_fetch_corruption_and_download_failure_reach_build(self):
+        self.assertEqual(0, self.transport("publish").returncode)
+        shutil.rmtree(self.root / ".lake/build")
+        for archive in self.remote.glob("*/lean-build.tgz"):
+            write(archive, "corrupt transfer")
+        for failure in ("", "download"):
+            for build_exit in (0, 19):
+                with self.subTest(failure=failure, build_exit=build_exit):
+                    result = self.fetch_then_build(FAKE_FAIL=failure, FAKE_BUILD_EXIT=str(build_exit))
+                    self.assertEqual(build_exit, result.returncode, result.stdout + result.stderr)
+                    self.assertIn('"status":"miss"', result.stdout)
+                    self.assertFalse((self.root / ".lake/build").exists())
+        self.assertEqual(["lean"] + ["-C " + str(self.root) + " lean"] * 4,
+                         (self.root / "build-runs").read_text().splitlines())
+
+    def test_optional_fetch_valid_seed_still_reaches_build(self):
+        self.assertEqual(0, self.transport("publish").returncode)
+        shutil.rmtree(self.root / ".lake/build")
+        result = self.fetch_then_build()
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertIn('"status":"unpacked"', result.stdout)
+        self.assertEqual(["lean", "-C " + str(self.root) + " lean"],
+                         (self.root / "build-runs").read_text().splitlines())
+
+    def test_unavailable_lock_is_an_explicit_fetch_miss(self):
+        write(self.bin / "fcntl.py", 'raise ImportError("fixture: fcntl unavailable")\n')
+        result = self.transport("fetch", PYTHONPATH=str(self.bin))
+        self.assertEqual(1, result.returncode, result.stdout + result.stderr)
+        self.assertIn('"status":"miss"', result.stdout)
+        self.assertNotIn("Traceback", result.stderr)
+
+    def test_unavailable_lock_skips_publication_after_build_success(self):
+        write(self.bin / "fcntl.py", 'raise ImportError("fixture: fcntl unavailable")\n')
+        result = self.transport("publish", PYTHONPATH=str(self.bin))
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertIn('"status":"skipped"', result.stdout)
+        self.assertNotIn("Traceback", result.stderr)
+        self.assertEqual([], list(self.remote.iterdir()))
+        failed = self.transport("publish", PYTHONPATH=str(self.bin), FAKE_BUILD_EXIT="19")
+        self.assertEqual(19, failed.returncode, failed.stdout + failed.stderr)
+        self.assertEqual([], list(self.remote.iterdir()))
 
     def test_legacy_fetch_flag_cannot_enable_cross_partition_selection(self):
         self.assertEqual(0, self.transport("publish").returncode)
@@ -298,7 +399,7 @@ class TransportTests(PartitionFixture, unittest.TestCase):
         self.assertEqual(0, self.transport("publish").returncode)
         shutil.rmtree(self.root / ".lake/build")
         address = digest(str((self.root / ".lake").resolve()).encode())
-        directory = pathlib.Path.home() / ".cache/stratalint-lean-cache-guards"
+        directory = self.root / ".cache/stratalint-lean-cache-guards"
         directory.mkdir(parents=True, exist_ok=True)
         with (directory / (address + ".lock")).open("a+b") as lock:
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)

@@ -115,6 +115,8 @@ def publish(root, partition):
             gh("release", "edit", tag, "--repo", REPO, "--draft=false")
             pruned, prune_error = prune(partition, tag)
             receipt("publish", "published", tag=tag, pruned=pruned, prune_error=prune_error, **metadata)
+    except ImportError as error:
+        receipt("publish", "skipped", reason="POSIX cache locking unavailable: " + str(error))
     except (OSError, ValueError, subprocess.SubprocessError, tarfile.TarError) as error:
         receipt("publish", "failed", reason=str(error))
     return 0
@@ -190,7 +192,7 @@ def fetch(root, partition, writer_owned=False):
     try:
         with contextlib.nullcontext() if writer_owned else cache_guard(root):
             return fetch_locked(root, partition)
-    except OSError as error:
+    except (OSError, ImportError) as error:
         receipt("fetch", "miss", reason=str(error), partition=partition)
         return 1
 
