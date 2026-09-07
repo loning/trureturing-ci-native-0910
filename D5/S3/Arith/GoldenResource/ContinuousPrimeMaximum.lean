@@ -91,8 +91,8 @@ theorem continuous_prime_unique_maximum {p y x : ℝ}
   have ha : 0 ≤ a := le_max_left _ _
   have hd (t : ℝ) (ht : 0 ≤ t) : HasDerivAt F (q t - log p / (y - 1)) t := by
     convert! (continuous_prime_hasDerivAt hp ht).sub
-      (((hasDerivAt_id t).mul_const (log p)).div_const (y - 1)) using 1 <;>
-      simp only [F, q, one_mul, Pi.sub_apply, id_eq]
+      (((hasDerivAt_id t).mul_const (log p)).div_const (y - 1)) using 1
+    simp only [q, one_mul]
   have hc : ContinuousOn F (Ici 0) :=
     fun t ht => (hd t ht).continuousAt.continuousWithinAt
   have hq : StrictAntiOn q (Ici 0) := continuous_prime_slope_strictAntiOn hp
