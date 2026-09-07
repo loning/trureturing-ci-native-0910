@@ -64,7 +64,7 @@ private theorem root_is_real_square {p : ℝ[X]} (hp0 : p ≠ 0)
   have hwroot : ((expand ℝ 2 p).map Complex.ofRealHom).IsRoot w := by
     simpa only [IsRoot.def, map_expand, expand_eval, hw] using hz
   obtain ⟨a, ha⟩ := hp.mem_range_of_isRoot ((expand_ne_zero (by norm_num)).mpr hp0) hwroot
-  exact ⟨a, ha ▸ hw⟩
+  exact ⟨a, by rw [show (a : ℂ) = w from ha]; exact hw⟩
 
 /-- A real-split nonzero evenization forces the original roots to be real and nonnegative. -/
 theorem nonnegative_roots_of_splits_expand_two {p : ℝ[X]} (hp0 : p ≠ 0)
@@ -77,9 +77,7 @@ theorem nonnegative_roots_of_splits_expand_two {p : ℝ[X]} (hp0 : p ≠ 0)
       ((mem_roots (map_ne_zero hp0)).mp hz)
     exact ⟨a^2, by simpa using ha⟩
   · intro x hx
-    have hx' : (p.map Complex.ofRealHom).IsRoot (x : ℂ) := by
-      simpa only [IsRoot.def, eval_map, eval₂_at_apply, map_zero] using
-        congrArg Complex.ofRealHom hx
+    have hx' : (p.map Complex.ofRealHom).IsRoot (x : ℂ) := hx.map
     obtain ⟨a, ha⟩ := root_is_real_square hp0 hp hx'
     have heq : a^2 = x := Complex.ofReal_injective (by simpa using ha)
     exact heq ▸ sq_nonneg a
