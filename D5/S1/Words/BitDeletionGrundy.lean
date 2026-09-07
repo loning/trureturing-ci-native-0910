@@ -23,9 +23,65 @@ def normalize : Word -> Word
   | true :: w => true :: w
 
 /-- All positional one-symbol deletions, retaining duplicates at list level. -/
-def erasures : Word -> List Word
+def erasures {α : Type} : List α -> List (List α)
   | [] => []
   | b :: w => w :: (erasures w).map (b :: ·)
+
+private theorem toFinset_map_eq_image {α : Type} {β : Type} [DecidableEq α] [DecidableEq β]
+    (l : List α) (f : α -> β) : (l.map f).toFinset = l.toFinset.image f := by induction l <;> simp [*]
+
+private theorem mem_erasures_append_singleton {α : Type} (w : List α) (a : α) (x : List α) :
+    x ∈ erasures (w ++ [a]) ↔ x = w ∨ ∃ v, v ∈ erasures w ∧ x = v ++ [a] := by
+  induction w generalizing x with
+  | nil => simp [erasures]
+  | cons b w ih =>
+    simp [erasures, ih, eq_comm, or_assoc, and_assoc, exists_or]
+    tauto
+
+private theorem erasures_append_singleton {α : Type} [DecidableEq α] (w : List α) (a : α) :
+    (erasures (w ++ [a])).toFinset = insert w ((erasures w).toFinset.image (fun v => v ++ [a])) := by
+  ext x
+  simp only [List.mem_toFinset, Finset.mem_insert, Finset.mem_image]
+  simpa [eq_comm] using mem_erasures_append_singleton w a x
+
+private theorem erasures_reverse_map {α : Type} {β : Type} [DecidableEq α] [DecidableEq β]
+    (L : List α) (f : α -> β) : (erasures (L.reverse.map f)).toFinset =
+      (erasures L).toFinset.image (fun v => v.reverse.map f) := by
+  induction L with
+  | nil => simp [erasures]
+  | cons a L ih =>
+    rw [List.reverse_cons, List.map_append]
+    simp only [List.map_singleton]
+    rw [erasures_append_singleton, ih]
+    simp only [erasures, List.toFinset_cons]
+    rw [toFinset_map_eq_image]
+    simp [Finset.image_image, Function.comp_def, List.reverse_cons, List.map_append]
+
+private theorem erasures_subset {α : Type} {v L : List α} (hv : v ∈ erasures L) : v ⊆ L := by
+  induction L generalizing v with
+  | nil => simp [erasures] at hv
+  | cons b L ih =>
+    simp only [erasures, List.mem_cons, List.mem_map] at hv
+    rcases hv with rfl | ⟨u, hu, rfl⟩
+    · intro x hx
+      exact List.mem_cons_of_mem b hx
+    · intro x hx
+      simp only [List.mem_cons] at hx ⊢
+      rcases hx with rfl | hx
+      · exact Or.inl rfl
+      · exact Or.inr (ih hu hx)
+
+private theorem length_add_one_of_mem_erasures {α : Type} {v w : List α}
+    (hv : v ∈ erasures w) : v.length + 1 = w.length := by
+  induction w generalizing v with
+  | nil => simp [erasures] at hv
+  | cons b w ih =>
+    simp only [erasures, List.mem_cons, List.mem_map] at hv
+    rcases hv with rfl | ⟨u, hu, rfl⟩
+    · simp
+    · have h := ih hu
+      simp only [List.length_cons]
+      omega
 
 private theorem normalize_length_le (w : Word) : (normalize w).length <= w.length := by
   induction w with
@@ -573,23 +629,155 @@ theorem wordGrundy_eq_formula (w : Word) : wordGrundy w = (formula w).val := by
             have hcert := reachable_step1_mex (state t) (state_mem_reachable t)
             rw [← state_one_cons] at hcert
             simpa [natMoves, state] using hcert
-
 /-- Mathlib digits are little-endian; reverse them for the entry's binary word. -/
 private def binaryWord (n : Nat) : Word :=
   (Nat.digits 2 n).reverse.map (fun d => d = 1)
-
+private def digitToBool (d : Nat) : Bool := d = 1
+private def boolToDigit (b : Bool) : Nat := if b then 1 else 0
+private def decodeWord (w : Word) : Nat :=
+  Nat.ofDigits 2 (w.reverse.map boolToDigit)
+private theorem boolToDigit_digitToBool {d : Nat} (hd : d < 2) :
+    boolToDigit (digitToBool d) = d := by
+  by_cases h : d = 1
+  · simp [boolToDigit, digitToBool, h]
+  · simp [boolToDigit, digitToBool, h]
+    omega
+private theorem decodeWord_of_digits (L : List Nat) (hL : ∀ d ∈ L, d < 2) :
+    decodeWord (L.reverse.map digitToBool) = Nat.ofDigits 2 L := by
+  unfold decodeWord
+  simp only [List.map_reverse, List.reverse_reverse]
+  induction L with
+  | nil => rfl
+  | cons d L ih =>
+    simp only [List.map_cons, List.reverse_cons, List.map_append, List.map_singleton, List.reverse_reverse]
+    rw [boolToDigit_digitToBool (hL d List.mem_cons_self)]
+    simp only [Nat.ofDigits_cons]
+    congr 1
+    rw [ih]
+    exact fun e he => hL e (List.mem_cons_of_mem d he)
+private theorem decodeWord_binaryWord (n : Nat) : decodeWord (binaryWord n) = n := by
+  change decodeWord ((Nat.digits 2 n).reverse.map digitToBool) = n
+  rw [decodeWord_of_digits]
+  · exact Nat.ofDigits_digits 2 n
+  · intro d hd
+    exact Nat.digits_lt_base (by decide) hd
+private theorem binaryWord_decodeWord (w : Word) : binaryWord (decodeWord w) = normalize w := by
+  induction w with
+  | nil => simp [binaryWord, decodeWord, normalize]
+  | cons b w ih =>
+    cases b with
+    | false =>
+      have hdec : decodeWord (false :: w) = decodeWord w := by simp [decodeWord, boolToDigit, List.reverse_cons, List.map_append]
+      rw [hdec, ih]
+      simp [normalize]
+    | true =>
+      clear ih
+      simp only [binaryWord, decodeWord, List.map_cons, List.reverse_cons, List.map_append, List.map_singleton]
+      rw [Nat.digits_ofDigits 2 (by decide)]
+      · simp [normalize, digitToBool, boolToDigit]
+        induction w with
+        | nil => rfl
+        | cons b w ih => simp [digitToBool, boolToDigit, ih]
+      · intro d hd
+        simp [boolToDigit] at hd ⊢
+        omega
+      · simp [boolToDigit]
+private theorem erasures_reverse_map_decode {n : Nat} :
+    ((erasures ((Nat.digits 2 n).reverse.map digitToBool)).toFinset.image decodeWord) =
+      (erasures (Nat.digits 2 n)).toFinset.image (Nat.ofDigits 2) := by
+  rw [erasures_reverse_map, Finset.image_image]
+  apply Finset.image_congr
+  intro v hv
+  apply decodeWord_of_digits
+  exact fun d hd => Nat.digits_lt_base (by decide)
+    (erasures_subset (List.mem_toFinset.mp hv) hd)
+/-- All natural numbers obtained by deleting one binary digit of n. -/
+def bitDeletionSuccessors (n : Nat) : Finset Nat :=
+  (erasures (Nat.digits 2 n)).toFinset.image (Nat.ofDigits 2)
+theorem bitDeletionSuccessors_lt (n : Nat) (m : Nat) (hm : m ∈ bitDeletionSuccessors n) : m < n := by
+  change m ∈ (erasures (Nat.digits 2 n)).toFinset.image (Nat.ofDigits 2) at hm
+  by_cases hn : n = 0
+  · rcases Finset.mem_image.mp hm with ⟨v, hv, hvm⟩
+    subst m
+    have : False := by simpa [bitDeletionSuccessors, hn, erasures] using (List.mem_toFinset.mp hv)
+    contradiction
+  rcases Finset.mem_image.mp hm with ⟨v, hv, rfl⟩
+  have hvlen := length_add_one_of_mem_erasures (List.mem_toFinset.mp hv)
+  have hlen : v.length = (Nat.digits 2 n).length - 1 := by omega
+  have hdigits : ∀ d ∈ v, d < 2 := fun d hd => Nat.digits_lt_base (by decide)
+    (erasures_subset (List.mem_toFinset.mp hv) hd)
+  have hval : Nat.ofDigits 2 v < 2 ^ v.length := Nat.ofDigits_lt_base_pow_length (by decide) hdigits
+  have hpow : 2 ^ ((Nat.digits 2 n).length - 1) ≤ n := by
+    apply (Nat.lt_digits_length_iff (b := 2) (k := (Nat.digits 2 n).length - 1) (n := n) (by decide)).mp
+    omega
+  rw [hlen] at hval
+  exact hval.trans_le hpow
+private theorem deletionWords_decode_eq_successors (n : Nat) :
+    (deletionWords (binaryWord n)).image decodeWord = bitDeletionSuccessors n := by
+  change (erasures ((Nat.digits 2 n).reverse.map digitToBool)).toFinset.image decodeWord =
+    bitDeletionSuccessors n
+  simpa [bitDeletionSuccessors] using erasures_reverse_map_decode (n := n)
 /-- OEIS A398916, defined by normalized one-bit deletion and mex. -/
 def g (n : Nat) : Nat :=
   wordGrundy ((Nat.digits 2 n).reverse.map (fun d => d = 1))
-
 /-- The natural-number game is the word game on the canonical MSB-first binary expansion. -/
 theorem g_eq_wordGrundy (n : Nat) :
     g n = wordGrundy ((Nat.digits 2 n).reverse.map (fun d => d = 1)) := rfl
-
+private theorem binaryWord_nonempty_head_true {n : Nat} (hn : n ≠ 0) :
+    ∃ t, binaryWord n = true :: t := by
+  have hne : Nat.digits 2 n ≠ [] := Nat.digits_ne_nil_iff_ne_zero.mpr hn
+  have hrev : (Nat.digits 2 n).reverse ≠ [] := by intro h; apply hne; simpa using h
+  obtain ⟨d, t, ht⟩ := List.exists_cons_of_ne_nil hrev
+  have hdigits : Nat.digits 2 n = t.reverse ++ [d] := by
+    apply List.reverse_injective; simpa [ht]
+  have hlast := Nat.getLast_digit_ne_zero 2 hn
+  have hlast' : (t.reverse ++ [d]).getLast (by simp) ≠ 0 := by simpa [hdigits] using hlast
+  have hdne : d ≠ 0 := by simpa using hlast'
+  have hmem : d ∈ Nat.digits 2 n := by rw [hdigits]; simp
+  have hlt := Nat.digits_lt_base (by decide) hmem
+  have hd : d = 1 := by omega
+  refine ⟨t.map digitToBool, ?_⟩
+  rw [binaryWord, ht]; simp [digitToBool, hd]
+private theorem wordValue_eq_g_decode (v : Word) :
+    wordGrundy (normalize v) = g (decodeWord v) := by
+  change wordGrundy (normalize v) = wordGrundy (binaryWord (decodeWord v))
+  rw [binaryWord_decodeWord]
+/-- The atom's natural-number bit-deletion mex recurrence. -/
+theorem g_mex_bitDeletionSuccessors (n : Nat) :
+    g n = mex (bitDeletionSuccessors n |>.image g) := by
+  by_cases hn : n = 0
+  · subst n
+    simp [g, binaryWord, wordGrundy, bitDeletionSuccessors, mex, mexScan, erasures]
+  · obtain ⟨t, ht⟩ := binaryWord_nonempty_head_true hn
+    change wordGrundy (binaryWord n) = mex (bitDeletionSuccessors n |>.image g)
+    rw [ht, wordGrundy_one_cons]
+    have hattach : (deletionWords (true :: t)).attach.image (fun v => wordGrundy (normalize v.1)) =
+        (deletionWords (true :: t)).image (fun v => wordGrundy (normalize v)) := by ext y <;> simp
+    rw [hattach]
+    have hvalues :
+        (deletionWords (true :: t)).image (fun v => wordGrundy (normalize v)) =
+          (deletionWords (true :: t)).image (fun v => g (decodeWord v)) := by
+      apply Finset.image_congr
+      intro v hv
+      exact wordValue_eq_g_decode v
+    rw [hvalues]
+    have hcompose :
+        (deletionWords (true :: t)).image (fun v => g (decodeWord v)) =
+          Finset.image g ((deletionWords (true :: t)).image decodeWord) := by
+      symm
+      rw [Finset.image_image]
+      rfl
+    rw [hcompose]
+    have hdel : (deletionWords (true :: t)).image decodeWord = bitDeletionSuccessors n := by
+      simpa [ht] using deletionWords_decode_eq_successors n
+    rw [hdel]
+theorem g_zero : g 0 = 0 := by
+  simp [g, binaryWord, wordGrundy]
+example : bitDeletionSuccessors 5 = {1, 3, 2} := by native_decide
+example : g 5 = 3 := by native_decide
 theorem g_le_three (n : Nat) : g n <= 3 := by
   rw [g, wordGrundy_eq_formula]
   exact Nat.le_of_lt_succ (formula (binaryWord n)).isLt
-
 private theorem binaryWord_four_mul (n : Nat) (hn : n ≠ 0) :
     binaryWord (4 * n) = binaryWord n ++ [false, false] := by
   rw [show 4 * n = 2 ^ 2 * n by norm_num]
@@ -604,12 +792,9 @@ theorem g_four_mul (n : Nat) : g (4 * n) = g n := by
   · change wordGrundy (binaryWord (4 * n)) = wordGrundy (binaryWord n)
     rw [binaryWord_four_mul n hn, wordGrundy_eq_formula, wordGrundy_eq_formula,
       formula_append_zero_zero]
-
 /-- Both conjectures recorded for OEIS A398916. -/
 theorem conjectures :
     (∀ n : Nat, g n ≤ 3) ∧
       (∀ n : Nat, g (4 * n) = g n) := by
   exact ⟨g_le_three, g_four_mul⟩
-
-
 end D5.S1.Words.BitDeletionGrundy

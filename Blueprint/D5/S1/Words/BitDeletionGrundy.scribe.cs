@@ -108,6 +108,26 @@ internal sealed class BitDeletionGrundyDocument : IScribeDocumentDefinition
                     + "four-bit code for M is only an implementation device for kernel "
                     + "reduction, not a change to the preregistered witness."),
             Definition(
+                "bitDeletionSuccessors", "natural-bit-deletion-successors",
+                "Natural successors by one binary-digit deletion",
+                BitDeletionSuccessorsDefinition(),
+                AssessedProvenance.FromRepo(),
+                "For n in N, remove each positional digit from Mathlib's little-endian "
+                    + "Nat.digits 2 n and re-encode the remaining list with Nat.ofDigits 2. "
+                    + "The result is a Finset, so duplicate numerical outcomes are identified. "
+                    + "Nat.ofDigits drops any high zero digits automatically; this is exactly "
+                    + "the atom's leading-zero normalization. The provenance is atom 的自然数递推;"
+                    + "本模块的词模型经数字解码对应."),
+            Theorem(
+                "bitDeletionSuccessors_lt", "natural-successors-are-smaller",
+                "Every natural successor is smaller",
+                BitDeletionSuccessorsLt(),
+                AssessedProvenance.FromRepo(),
+                "Deleting one digit shortens the canonical digit list by one. The "
+                    + "ofDigits bound below two to the shortened binary length, together with "
+                    + "the lower bound for the original canonical length, proves m<n. "
+                    + "This is the well-foundedness side of atom 的自然数递推;本模块的词模型经数字解码对应."),
+            Definition(
                 "g", "natural-bit-deletion-grundy", "The OEIS sequence function",
                 GDefinition(),
                 AssessedProvenance.FromRepo(),
@@ -121,6 +141,21 @@ internal sealed class BitDeletionGrundyDocument : IScribeDocumentDefinition
                 AssessedProvenance.FromRepo(),
                 "This public bridge exposes the exact Nat.digits and list-reversal convention "
                     + "used by the natural-number definition."),
+            Theorem(
+                "g_mex_bitDeletionSuccessors", "natural-bit-deletion-mex-recurrence",
+                "The natural-number mex recurrence",
+                GMexBitDeletionSuccessors(),
+                AssessedProvenance.FromRepo(),
+                "The digit-decoding correspondence identifies every normalized word deletion "
+                    + "with exactly one Nat.ofDigits successor, and identifies its wordGrundy "
+                    + "value with g. Rewriting the existing word mex equation therefore gives "
+                    + "the atom's public natural-number recurrence: atom 的自然数递推;本模块的词模型经数字解码对应."),
+            Theorem(
+                "g_zero", "natural-bit-deletion-zero", "The zero boundary value",
+                GZero(),
+                AssessedProvenance.FromRepo(),
+                "The zero digit list is empty, so its word is empty and the mex of the empty "
+                    + "successor set is zero. This records the atom's g(0)=0 boundary."),
             Theorem(
                 "g_le_three", "grundy-values-at-most-three",
                 "No Grundy value exceeds three",
@@ -367,6 +402,42 @@ internal sealed class BitDeletionGrundyDocument : IScribeDocumentDefinition
     }
 
     private static Formula GEqualsWordGrundy() => GDefinition();
+
+    private static Formula BitDeletionSuccessorsDefinition()
+    {
+        Formula n = F.Id("n");
+        Formula digits = Call("digits", D(2), n);
+        Formula erased = Call("erasures", digits);
+        Formula carrier = Call("toFinset", erased);
+        Formula image = Call("image", Call("ofDigits", D(2)), carrier);
+        return Disp(Seq(
+            Bound("n", Naturals()),
+            Call("bitDeletionSuccessors", n), Sp, Eq, Sp, image));
+    }
+
+    private static Formula BitDeletionSuccessorsLt()
+    {
+        Formula n = F.Id("n"), m = F.Id("m");
+        Formula membership = Seq(
+            m, Sp, InMacro, Sp, Call("bitDeletionSuccessors", n));
+        return Disp(Seq(
+            Bound("n", Naturals()),
+            Bound("m", Naturals()),
+            Parenthesized(membership), Sp, Rightarrow, Sp, m, Sp, Lt, Sp, n));
+    }
+
+    private static Formula GMexBitDeletionSuccessors()
+    {
+        Formula n = F.Id("n");
+        Formula successors = Call("bitDeletionSuccessors", n);
+        return Disp(Seq(
+            Bound("n", Naturals()),
+            Call("g", n), Sp, Eq, Sp,
+            Call("mex", Call("image", F.Id("g"), successors))));
+    }
+
+    private static Formula GZero() =>
+        Disp(Seq(Call("g", D(0)), Sp, Eq, Sp, D(0)));
 
     private static Formula GBound()
     {

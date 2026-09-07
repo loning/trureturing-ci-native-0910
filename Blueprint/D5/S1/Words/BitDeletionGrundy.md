@@ -162,7 +162,31 @@ $$\forall w: List Bool, \operatorname{wordGrundy}(w) = \operatorname{val}(\opera
 
 The (p,h,M) automaton records suffix parity p, candidate value h, and the finite set M of deletion values. A table of 30 reachable states is closed under cons-0 and cons-1; kernel decide proves closure, state realization, and the cons-1 mex certificate. Strong induction on word length then identifies wordGrundy with val(formula). The injective four-bit code for M is only an implementation device for kernel reduction, not a change to the preregistered witness.
 
-**Definition 1.14 (The OEIS sequence function).**
+**Definition 1.14 (Natural successors by one binary-digit deletion).**
+
+$$\forall n: \mathbb{N}, \operatorname{bitDeletionSuccessors}(n) = \operatorname{image}(\operatorname{ofDigits}(2), \operatorname{toFinset}(\operatorname{erasures}(\operatorname{digits}(2, n))))$$
+
+*Formalization.* `D5/S1/Words/BitDeletionGrundy.bitDeletionSuccessors` (`✓ std3`).
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+For n in N, remove each positional digit from Mathlib's little-endian Nat.digits 2 n and re-encode the remaining list with Nat.ofDigits 2. The result is a Finset, so duplicate numerical outcomes are identified. Nat.ofDigits drops any high zero digits automatically; this is exactly the atom's leading-zero normalization. The provenance is atom 的自然数递推;本模块的词模型经数字解码对应.
+
+**Theorem 1.15 (Every natural successor is smaller).**
+
+$$\forall n: \mathbb{N}, \forall m: \mathbb{N}, (m \in \operatorname{bitDeletionSuccessors}(n)) \Rightarrow m < n$$
+
+*Proof.* Machine-checked in Lean as `D5/S1/Words/BitDeletionGrundy.bitDeletionSuccessors_lt` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+Deleting one digit shortens the canonical digit list by one. The ofDigits bound below two to the shortened binary length, together with the lower bound for the original canonical length, proves m<n. This is the well-foundedness side of atom 的自然数递推;本模块的词模型经数字解码对应.
+
+**Definition 1.16 (The OEIS sequence function).**
 
 $$\forall n: \mathbb{N}, \operatorname{g}(n) = \operatorname{wordGrundy}(\operatorname{map}((d \mapsto (d = 1)), \operatorname{reverse}(\operatorname{digits}(2, n))))$$
 
@@ -174,7 +198,7 @@ $$\forall n: \mathbb{N}, \operatorname{g}(n) = \operatorname{wordGrundy}(\operat
 
 Mathlib Nat.digits is little-endian. Reversal gives the canonical MSB-first binary expansion, and mapping a digit to the proposition d=1 gives its Boolean word. At n=0 this word is empty, hence g(0)=0.
 
-**Theorem 1.15 (The natural game is the canonical word game).**
+**Theorem 1.17 (The natural game is the canonical word game).**
 
 $$\forall n: \mathbb{N}, \operatorname{g}(n) = \operatorname{wordGrundy}(\operatorname{map}((d \mapsto (d = 1)), \operatorname{reverse}(\operatorname{digits}(2, n))))$$
 
@@ -186,7 +210,31 @@ $$\forall n: \mathbb{N}, \operatorname{g}(n) = \operatorname{wordGrundy}(\operat
 
 This public bridge exposes the exact Nat.digits and list-reversal convention used by the natural-number definition.
 
-**Theorem 1.16 (No Grundy value exceeds three).**
+**Theorem 1.18 (The natural-number mex recurrence).**
+
+$$\forall n: \mathbb{N}, \operatorname{g}(n) = \operatorname{mex}(\operatorname{image}(g, \operatorname{bitDeletionSuccessors}(n)))$$
+
+*Proof.* Machine-checked in Lean as `D5/S1/Words/BitDeletionGrundy.g_mex_bitDeletionSuccessors` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+The digit-decoding correspondence identifies every normalized word deletion with exactly one Nat.ofDigits successor, and identifies its wordGrundy value with g. Rewriting the existing word mex equation therefore gives the atom's public natural-number recurrence: atom 的自然数递推;本模块的词模型经数字解码对应.
+
+**Theorem 1.19 (The zero boundary value).**
+
+$$\operatorname{g}(0) = 0$$
+
+*Proof.* Machine-checked in Lean as `D5/S1/Words/BitDeletionGrundy.g_zero` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+The zero digit list is empty, so its word is empty and the mex of the empty successor set is zero. This records the atom's g(0)=0 boundary.
+
+**Theorem 1.20 (No Grundy value exceeds three).**
 
 $$\forall n: \mathbb{N}, \operatorname{g}(n) \leq 3$$
 
@@ -198,7 +246,7 @@ $$\forall n: \mathbb{N}, \operatorname{g}(n) \leq 3$$
 
 The automaton formula lies in Fin 4, so the word-game identification bounds every natural-number Grundy value by three.
 
-**Theorem 1.17 (Multiplication by four preserves the value).**
+**Theorem 1.21 (Multiplication by four preserves the value).**
 
 $$\forall n: \mathbb{N}, \operatorname{g}(4 \cdot n) = \operatorname{g}(n)$$
 
@@ -210,7 +258,7 @@ $$\forall n: \mathbb{N}, \operatorname{g}(4 \cdot n) = \operatorname{g}(n)$$
 
 For nonzero n, Nat.digits_base_pow_mul identifies multiplication by four with appending the two bits 00 to the MSB-first word. The formula's two-zero invariance proves the claim; n=0 is immediate.
 
-**Theorem 1.18 (Both OEIS A398916 conjectures).**
+**Theorem 1.22 (Both OEIS A398916 conjectures).**
 
 $$(\forall n: \mathbb{N}, \operatorname{g}(n) \leq 3) \land (\forall n: \mathbb{N}, \operatorname{g}(4 \cdot n) = \operatorname{g}(n))$$
 
@@ -224,6 +272,8 @@ This is the whole preregistered candidate theorem: all values are at most three,
 
 ## References
 
+- Truth anchor: `D5/S1/Words/BitDeletionGrundy.bitDeletionSuccessors`
+- Truth anchor: `D5/S1/Words/BitDeletionGrundy.bitDeletionSuccessors_lt`
 - Truth anchor: `D5/S1/Words/BitDeletionGrundy.conjectures`
 - Truth anchor: `D5/S1/Words/BitDeletionGrundy.erasures`
 - Truth anchor: `D5/S1/Words/BitDeletionGrundy.formula`
@@ -232,6 +282,8 @@ This is the whole preregistered candidate theorem: all values are at most three,
 - Truth anchor: `D5/S1/Words/BitDeletionGrundy.g_eq_wordGrundy`
 - Truth anchor: `D5/S1/Words/BitDeletionGrundy.g_four_mul`
 - Truth anchor: `D5/S1/Words/BitDeletionGrundy.g_le_three`
+- Truth anchor: `D5/S1/Words/BitDeletionGrundy.g_mex_bitDeletionSuccessors`
+- Truth anchor: `D5/S1/Words/BitDeletionGrundy.g_zero`
 - Truth anchor: `D5/S1/Words/BitDeletionGrundy.mex`
 - Truth anchor: `D5/S1/Words/BitDeletionGrundy.mexScan`
 - Truth anchor: `D5/S1/Words/BitDeletionGrundy.mex_spec`
