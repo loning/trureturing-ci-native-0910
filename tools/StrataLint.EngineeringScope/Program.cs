@@ -265,6 +265,11 @@ internal static class Program
             $"ENGINEERING_TEST_PLAN state={plan.Kind.ToString().ToLowerInvariant()} "
             + $"changed={plan.ChangedPaths.Length} selected={plan.Projects.Length} "
             + $"reason={JsonSerializer.Serialize(plan.Reason)}");
+        foreach (var project in plan.RemovedBaseTestProjects)
+        {
+            Console.WriteLine(
+                $"ENGINEERING_TEST_PROJECT_REMOVED project={JsonSerializer.Serialize(project)}");
+        }
         foreach (var project in plan.Projects)
         {
             Console.WriteLine(
