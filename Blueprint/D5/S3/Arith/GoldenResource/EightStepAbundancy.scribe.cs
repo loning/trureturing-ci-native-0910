@@ -80,31 +80,33 @@ internal sealed class EightStepAbundancyDocument : IScribeDocumentDefinition
         Formula k = F.Id("k");
         Formula first = And(Equal(k, D(1)), Any(
             Equal(p, D(2)), Equal(p, D(3)), Equal(p, D(5)), Equal(p, D(7)),
-            Equal(p, D(11)), Equal(p, D(13))));
+            Equal(p, D(1, 1)), Equal(p, D(1, 3))));
         Formula second = And(Equal(k, D(2)), Any(Equal(p, D(2)), Equal(p, D(3))));
         return Disp(ForAll([Bound("p"), Bound("k")],
             Implies(And(Call("Prime", p), Le(D(1), k)),
-                Iff(Lt(Call("D", p, k), D(14)), Any(first, second)))));
+                Iff(Lt(Call("D", p, k), D(1, 4)), Any(first, second)))));
     }
 
     private static Formula OptimumFormula()
     {
         Formula n = F.Id("n");
-        Formula value = new Formula.Fraction(D(224), D(55));
-        Formula comparison = new Formula.Fraction(D(403), D(105));
+        Formula target = D(1, 8, 0, 1, 8, 0);
+        Formula smaller = D(5, 0, 4, 0);
+        Formula value = new Formula.Fraction(D(2, 2, 4), D(5, 5));
+        Formula comparison = new Formula.Fraction(D(4, 0, 3), D(1, 0, 5));
         return Disp(new Formula.Aligned([
-            Equal(Call("Z", D(180180)), value),
+            Equal(Call("Z", target), value),
             ForAll([Bound("n")], Implies(
                 And(Lt(D(0), n), Equal(Call("omega", n), D(8))),
                 And(Le(Call("Z", n), value),
-                    Iff(Equal(Call("Z", n), value), Equal(n, D(180180)))))),
-            And(Equal(Call("Z", D(5040)), comparison),
-                Lt(Call("Z", D(5040)), Call("Z", D(180180)))),
-            And(Equal(Call("omega", D(180180)), D(8)),
-                Equal(Call("omega", D(5040)), D(8))),
-            Equal(D(180180), Product(Product(Product(Product(Product(
+                    Iff(Equal(Call("Z", n), value), Equal(n, target))))),
+            And(Equal(Call("Z", smaller), comparison),
+                Lt(Call("Z", smaller), Call("Z", target))),
+            And(Equal(Call("omega", target), D(8)),
+                Equal(Call("omega", smaller), D(8))),
+            Equal(target, Product(Product(Product(Product(Product(
                 new Formula.Power(D(2), D(2)), new Formula.Power(D(3), D(2))),
-                D(5)), D(7)), D(11)), D(13)))
+                D(5)), D(7)), D(1, 1)), D(1, 3)))
         ]));
     }
 
