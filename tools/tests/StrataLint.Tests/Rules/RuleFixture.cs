@@ -39,7 +39,6 @@ internal sealed partial class RuleFixture
                   - gid: D5/S0/Carrier/BackfillTarget
                     target_statement_id: null
                 receipts:
-                  scribe: []
                   unresolved_subitems: []
                   chain_atoms: []
                   tail_authorization: null
@@ -63,7 +62,6 @@ internal sealed partial class RuleFixture
           - gid: D5/S0/Carrier/BackfillTarget
             target_statement_id: null
         receipts:
-          scribe: []
           unresolved_subitems: []
           chain_atoms: []
           tail_authorization: null
@@ -192,7 +190,6 @@ internal sealed partial class RuleFixture
             cas_ref: sha256:0000000000000000000000000000000000000000000000000000000000000000
             coverage_gids: []
             receipts:
-              scribe: []
               unresolved_subitems: []
               chain_atoms: []
               tail_authorization: null
@@ -215,7 +212,6 @@ internal sealed partial class RuleFixture
               - gid: D5/S0/Carrier/BackfillTarget
                 target_statement_id: null
             receipts:
-              scribe: []
               unresolved_subitems: []
               chain_atoms: []
               tail_authorization: null

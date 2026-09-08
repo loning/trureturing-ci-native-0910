@@ -491,7 +491,6 @@ public sealed class QuarantineAtomCommandTests
         DigestionCoverDisposition? disposition = null,
         ImmutableArray<string> unresolvedSubitems = default) =>
         new(
-            [],
             unresolvedSubitems.IsDefault ? [] : unresolvedSubitems,
             [],
             null,
@@ -551,7 +550,6 @@ public sealed class QuarantineAtomCommandTests
         public CommandResult AlignDigestionStatus(IReadOnlyList<string> arguments) => throw Unsupported();
         public CommandResult CoverAtom(IReadOnlyList<string> arguments) => throw Unsupported();
         public CommandResult CoverBatch(IReadOnlyList<string> arguments) => throw Unsupported();
-        public CommandResult StripScribeReceipts(IReadOnlyList<string> arguments) => throw Unsupported();
         public CommandResult Route(IReadOnlyList<string> arguments) => throw Unsupported();
         public CommandResult SelfTest(IReadOnlyList<string> arguments) => throw Unsupported();
         public CommandResult RenderDag(IReadOnlyList<string> arguments) => throw Unsupported();

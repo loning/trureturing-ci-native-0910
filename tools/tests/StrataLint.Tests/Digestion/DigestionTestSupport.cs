@@ -67,7 +67,7 @@ internal static class DigestionTestSupport
                 ? []
                 : coverageGids.Select(static gid => new DigestionCoverageEdge(gid, null))
                     .ToImmutableArray(),
-            receipts ?? new DigestionReceipts([], [], [], null),
+            receipts ?? new DigestionReceipts([], [], null),
             new DigestionStatus(migration, truth),
             casRef ?? atom.Fingerprints.RawSha256);
 
