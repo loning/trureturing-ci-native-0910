@@ -265,10 +265,7 @@ __verdict_of_payload() {  # 判**取回的文本**,不判文件 —— 活判决
   [ -n "$r" ] || { echo UNKNOWN; return; }
   last=$(printf '%s' "$r" | awk 'NF{l=$0} END{print l}')
   case "$last" in *"Message delivery timed out"*) echo DELIVERY; return;; esac
-  # 2026-09-08 16:5x 实测(company 池,task 912474a6):终态 `Error: Task failed (prompt_delivery_uncertain).`
-  # —— worker 不能确认 prompt 已投递,任务失败;与 delivery timeout 同类(载体侧、未消费、可重投),
-  # 此前落到 UNKNOWN(我方 bug 类)于是遍历停在第一个池、调用方也不重试。只认末行,理由同上。
-  case "$last" in *"Task failed (prompt_delivery_uncertain)"*) echo DELIVERY; return;; esac
+  case "$last" in *"Task failed (prompt_delivery_uncertain)"*) echo DELIVERY; return;; esac  # 2026-09-08 task 912474a6:worker 未确认投递,同 timeout 类,曾落 UNKNOWN 而不换池
   first=${r%%$'\n'*}
   case "$first" in "Error:"*) echo UNKNOWN; return;; esac
   echo OK
@@ -388,8 +385,7 @@ __selftest() {  # 分类器的阳性/阴性对照。**立条依据(2026-09-06)**
   # 载体投递失败:失败文本是 payload 的**末行**
   chk DELIVERY   carrier-delivery-timeout   "$(printf '%s\n' 'Attempts: 1 (infrastructure retries 0/3)' \
     'Message delivery timed out. Please try again.Retry')"
-  chk DELIVERY   carrier-prompt-uncertain   "$(printf '%s\n' 'Attempts: 1 (infrastructure retries 0/3)' \
-    'Error: Task failed (prompt_delivery_uncertain).')"
+  chk DELIVERY   carrier-prompt-uncertain   "$(printf '%s\n' 'Attempts: 1 (infrastructure retries 0/3)' 'Error: Task failed (prompt_delivery_uncertain).')"
   chk OK         answer-quotes-prompt-uncertain "$(printf '%s\n' 'The seat hit Error: Task failed (prompt_delivery_uncertain). earlier' '{"verdict":"approve"}')"
   # 阴性对照:**真答案里引用了同一句失败文本**,但末行是答案 —— 必须仍判 OK。
   # 这条钉的正是「不做全文子串匹配」;改成全文匹配它立刻变红。
@@ -724,7 +720,7 @@ __selftest() {  # 分类器的阳性/阴性对照。**立条依据(2026-09-06)**
     rows="${rows_one/answer/$response}"; expected="125|first,first|"
     case "$response" in
       busy) rows="${rows_one/|0|1|/|1|1|}"; expected='125||';;
-      delivery) expected="125|first,first|$id1,$id1";;   # nyx 只有一个池可投 → DELIVERY → await 重试至耗尽(预登记预测,2026-09-08)
+      delivery) expected="125|first,first|$id1,$id1";;   # 单池 DELIVERY → await 重试至耗尽(预登记预测)
       unknown) expected='7|first|';;
     esac
     run_case "await-vote-$response" "$rows"
