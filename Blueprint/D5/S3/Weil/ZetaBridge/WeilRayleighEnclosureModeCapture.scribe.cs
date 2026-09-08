@@ -28,9 +28,9 @@ internal sealed class WeilRayleighEnclosureModeCaptureDocument : IScribeDocument
         Formula alpha = Call("inner", k, u);
         Formula residual = Seq(u, Minus, alpha, Sp, k);
         Formula conclusion = Seq(
-            D(0), Lt, threshold, Minus, upper, Land,
+            D(0), Lt, Sp, threshold, Minus, upper, Land, Sp,
             Grp(threshold, Minus, upper), Sp, Call("normSq", residual),
-            Leq, upper, Minus, lower);
+            Leq, Sp, upper, Minus, lower);
 
         return DocumentDefinition.Create(ScribeNode.Create(
             "Two-sided Rayleigh enclosure and codimension-one coercivity capture the "
@@ -49,13 +49,13 @@ internal sealed class WeilRayleighEnclosureModeCaptureDocument : IScribeDocument
                     DeclarationHandle.Create(Owner + "rayleigh_enclosure_mode_capture"),
                     H("A certified Rayleigh interval captures the ground line"),
                     StatementSource.FromAuthor(Disp(Seq(
-                        Call("SymmetricOnDomain", A), Land,
-                        Call("Normalized", k), Land, Call("Normalized", u), Land,
-                        Call("GroundEigenpair", A, u), Land,
-                        lower, Leq, Call("GroundEigenvalue", A, u), Leq,
-                        Call("Rayleigh", A, k), Leq, upper, Land,
-                        Call("ComplementEnergyAtLeast", A, k, threshold), Land,
-                        upper, Lt, threshold, Rightarrow, conclusion))),
+                        Call("SymmetricOnDomain", A), Land, Sp,
+                        Call("Normalized", k), Land, Sp, Call("Normalized", u), Land, Sp,
+                        Call("GroundEigenpair", A, u), Land, Sp,
+                        lower, Leq, Sp, Call("GroundEigenvalue", A, u), Leq, Sp,
+                        Call("Rayleigh", A, k), Leq, Sp, upper, Land, Sp,
+                        Call("ComplementEnergyAtLeast", A, k, threshold), Land, Sp,
+                        upper, Lt, Sp, threshold, Rightarrow, Sp, conclusion))),
                     AssessedProvenance.FromRepo(),
                     Blocks(Paragraph(Text(
                         "Write alpha=<k,u> and v=u-alpha*k. Symmetry and the eigenvalue "

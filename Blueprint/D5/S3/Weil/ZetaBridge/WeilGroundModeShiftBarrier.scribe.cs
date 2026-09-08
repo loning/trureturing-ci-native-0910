@@ -106,7 +106,7 @@ internal sealed class WeilGroundModeShiftBarrierDocument : IScribeDocumentDefini
                     H("A complement gap requires a definite arithmetic residual"),
                     StatementSource.FromAuthor(Disp(Seq(
                         Call("ContDiff", D(2), f), Land, Sp, cc, Land, Sp,
-                        D(0), Leq, delta, Land, Sp, Grp(gap), Land, Sp,
+                        D(0), Leq, Sp, delta, Land, Sp, Grp(gap), Land, Sp,
                         Grp(residualBound), Sp, Rightarrow, Sp, conclusion))),
                     AssessedProvenance.FromRepo(),
                     Blocks(Paragraph(Text(

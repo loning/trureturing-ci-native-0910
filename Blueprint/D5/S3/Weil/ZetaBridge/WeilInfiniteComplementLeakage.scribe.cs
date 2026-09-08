@@ -29,11 +29,11 @@ internal sealed class WeilInfiniteComplementLeakageDocument : IScribeDocumentDef
         Formula mass = Seq(Call("SquareMass", u), Plus, Call("SquareMass", v));
         Formula right = Seq(Call("div", D(4), Seq(D(3), Sp, Sq(pi))), Sp, mass);
         Formula statement = Seq(
-            Call("Positive", N), Land, Call("Positive", L), Land,
-            Call("SquareSummable", u), Land, Call("SquareSummable", v),
-            Rightarrow,
-            Call("IntervalIntegrableOnQuarterBand", L, N, u, v), Land,
-            Call("NormalizedQuarterBandIntegral", L, N, u, v), Leq, right);
+            Call("Positive", N), Land, Sp, Call("Positive", L), Land, Sp,
+            Call("SquareSummable", u), Land, Sp, Call("SquareSummable", v),
+            Rightarrow, Sp,
+            Call("IntervalIntegrableOnQuarterBand", L, N, u, v), Land, Sp,
+            Call("NormalizedQuarterBandIntegral", L, N, u, v), Leq, Sp, right);
         return DocumentDefinition.Create(ScribeNode.Create(
             "A convergent infinite exterior Fourier tail has quantitatively little "
                 + "mass in the low-frequency quarter band, without an upper mode cutoff.",

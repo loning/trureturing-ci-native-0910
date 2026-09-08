@@ -88,7 +88,7 @@ internal sealed class WeilPolynomialMellinWindowDocument : IScribeDocumentDefini
                     DeclarationHandle.Create(Owner + "polynomial_mellin_window_paperFT"), H("Quadrature-free Fourier evaluation"),
                     StatementSource.FromAuthor(Disp(Seq(
                         Call("And", Call("ForAllIcc", D(1), M, Call("LessEqual", Call("log", m), Call("mul", D(2), a))),
-                            Call("Less", Call("Im", z), Call("div", D(1), D(2)))), Rightarrow,
+                            Call("Less", Call("Im", z), Call("div", D(1), D(2)))), Rightarrow, Sp,
                         Call("paperFT", window, z), Eq,
                         Call("mul", D(4), Call("SumIcc", D(1), M, Call("SumRange", d,
                             Call("mul", Call("apply", A, r), Call("pow", m, Call("mul", D(2), r)), endpoint))))))),

@@ -60,7 +60,7 @@ internal sealed class WeilArithmeticCouplingParityGramDocument : IScribeDocument
                     DeclarationHandle.Create(Owner + "arithmetic_second_jet_pair_energy"),
                     H("Exact paired second-jet energy"),
                     StatementSource.FromAuthor(Disp(Seq(
-                        Call("Nonzero", m), Rightarrow,
+                        Call("Nonzero", m), Rightarrow, Sp,
                         Call("normSq", jp), Plus, Call("normSq", jm), Eq, rhs))),
                     AssessedProvenance.FromRepo(),
                     Blocks(Paragraph(Text(

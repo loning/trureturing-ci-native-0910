@@ -49,7 +49,7 @@ internal sealed class WeilArchimedeanHighModeBoundsDocument : IScribeDocumentDef
                     H("Frequency-sensitive arithmetic Gamma bounds"),
                     StatementSource.FromAuthor(Disp(Seq(
                         Call("And", Call("AtLeast", c, D(2)), Call("Nonzero", n)),
-                        Rightarrow,
+                        Rightarrow, Sp,
                         Call("And",
                             Call("LessEqual", Call("abs", Call("GammaPart", c, n)), symbolBound),
                             Call("SummableNorm", R),

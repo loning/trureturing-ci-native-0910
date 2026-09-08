@@ -62,7 +62,7 @@ internal sealed class WeilEvenFourierObservationTailDocument : IScribeDocumentDe
                             Call("SquareSummable", v),
                             Call("LessEqual", Call("mul", L, Call("norm", z)),
                                 Call("mul", F.Id("pi"), N))),
-                        Rightarrow,
+                        Rightarrow, Sp,
                         Call("And", Call("AbsolutelySummable", Call("CauchyTerms", L, N, v, z)),
                             Call("LessEqual", Call("normSq", response),
                                 Call("mul", coefficient,
