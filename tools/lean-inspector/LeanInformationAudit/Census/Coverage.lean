@@ -22,12 +22,12 @@ private theorem increasing_chain (xs : List String) (h : increasing xs = true) :
 theorem of_sorted_ids (inventory : DispositionInventory) (head : String)
     (keys : List StatementKey) (head_eq : inventory.headSha = head)
     (keys_eq : inventory.keys = keys)
-    (ordered : increasing (inventory.keys.map StatementKey.statementId) = true) :
+    (ordered : increasing (keys.map StatementKey.statementId) = true) :
     inventory.ExactlyCovers head keys.toFinset := by
   have chain := increasing_chain _ ordered
   have pairs := List.isChain_iff_pairwise.mp chain
   have ids : (inventory.keys.map StatementKey.statementId).Nodup :=
-    pairs.imp (fun {a b} h eq => by subst b; exact String.lt_irrefl a h)
+    keys_eq.symm ▸ pairs.imp (fun {a b} h eq => by subst b; exact String.lt_irrefl a h)
   exact And.intro head_eq (And.intro (List.Nodup.of_map StatementKey.statementId ids)
     (And.intro ids (congrArg List.toFinset keys_eq)))
 

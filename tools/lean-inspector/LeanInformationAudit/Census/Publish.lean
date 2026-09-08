@@ -29,18 +29,19 @@ private def keyExpr (key : StatementKey) : Expr :=
 
 /-- Kernel proof from adjacent sorted identity comparisons and exact list equality.
 Native evaluation is used only for diagnostics, never as a proof. -/
-def coverage (report : FrozenReport) (inventory : Expr) : MetaM Expr := do
+def coverage (report : FrozenReport) (inventory : Expr) (progress : String) : MetaM Expr := do
   let keys := report.theorems.qsort (fun a b => a.statementId < b.statementId)
   let keys <- mkListLit (mkConst ``StatementKey) (keys.toList.map keyExpr)
-  let head <- mkAppM ``DispositionInventory.headSha #[inventory]
-  let actual <- mkAppM ``DispositionInventory.keys #[inventory]
-  let headProof <- mkDecideProof (<- mkEq head (toExpr report.headSha))
-  let keysProof <- mkDecideProof (<- mkEq actual keys)
-  let ids <- mkAppM ``List.map #[mkConst ``StatementKey.statementId, actual]
+  let headProof <- mkEqRefl (toExpr report.headSha)
+  let keysProof <- mkEqRefl keys
+  let ids <- mkAppM ``List.map #[mkConst ``StatementKey.statementId, keys]
   let ordered <- mkAppM ``CensusCoverage.increasing #[ids]
+  phase progress "coverage-order-proof"
   let orderProof <- mkDecideProof (<- mkEq ordered (toExpr true))
+  phase progress "coverage-compose"
   let proof <- mkAppM ``CensusCoverage.of_sorted_ids
     #[inventory, toExpr report.headSha, keys, headProof, keysProof, orderProof]
+  phase progress "coverage-kernel"
   checkWithKernel proof
   return proof
 
@@ -135,7 +136,7 @@ elab "#disposition_census" &"projection" &"root" root:ident &"report" reportPath
     IO.println "CENSUS_COVERAGE_BEGIN"
     (<- IO.getStdout).flush
     let started <- IO.monoMsNow
-    let proof <- coverage report (mkConst inventoryName)
+    let proof <- coverage report (mkConst inventoryName) progress
     let elapsed := (<- IO.monoMsNow) - started
     phase s!"coverage-proof-complete milliseconds={elapsed}"
     IO.println s!"CENSUS_COVERAGE_COMPLETE milliseconds={elapsed}"
