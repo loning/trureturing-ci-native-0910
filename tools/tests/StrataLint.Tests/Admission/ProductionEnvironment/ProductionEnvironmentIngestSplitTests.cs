@@ -345,7 +345,6 @@ public sealed partial class ProductionEnvironmentTests
     }
 
     [Theory]
-    [InlineData("scribe")]
     [InlineData("unresolved")]
     [InlineData("tail")]
     [InlineData("quarantine")]
@@ -374,13 +373,6 @@ public sealed partial class ProductionEnvironmentTests
         {
             Receipts = receiptKind switch
             {
-                "scribe" => entry.Receipts with
-                {
-                    Scribe = [new DigestionScribeReceipt(
-                        gid,
-                        "sha256:" + new string('b', 64),
-                        "sha256:" + new string('c', 64))],
-                },
                 "unresolved" => entry.Receipts with { UnresolvedSubitems = ["open clause"] },
                 "tail" => entry.Receipts with
                 {

@@ -315,7 +315,6 @@ public sealed partial class BackfillInventoryLoaderTests
             cas_ref: {{fingerprint}}
             {{coverage}}
             receipts:
-              scribe: []
               unresolved_subitems: []
             """ + "\n");
     }

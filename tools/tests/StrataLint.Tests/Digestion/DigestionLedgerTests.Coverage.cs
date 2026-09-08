@@ -51,8 +51,6 @@ public sealed partial class DigestionLedgerTests
             atom,
             DigestionMigrationState.Residual,
             DigestionTruthState.Open,
-            scribeReceipt: new DigestionScribeReceipt(
-                "D5/S0/Carrier/Probe", TestModuleStatementId, TestModuleStatementId),
             includeCoverageGid: false);
 
         var status = Assert.Single(DigestionStatusEvaluator.Evaluate(
@@ -93,7 +91,6 @@ public sealed partial class DigestionLedgerTests
             new DigestionCoverageEdge(
                 gid,
                 TestModuleStatementId),
-            new DigestionScribeReceipt(gid, definitionHash, emissionHash),
             atomizer: AtomizerRegistry.ObserverId);
         var document = loaded.WithDigestionSources(
         [
@@ -240,7 +237,6 @@ public sealed partial class DigestionLedgerTests
             new DigestionCoverageEdge(
                 gid,
                 TestModuleStatementId),
-            new DigestionScribeReceipt(gid, definitionHash, emissionHash),
             tailAuthorization: new DigestionExternalReceipt(
                 authorizationPath,
                 recordedSha256 ?? DigestionFingerprint.Compute(authorization).RawSha256));
@@ -289,13 +285,11 @@ public sealed partial class DigestionLedgerTests
         DigestionTruthState truth,
         string coverageGid = "D5/X_Frontier/Probe",
         DigestionCoverageEdge? coverageReceipt = null,
-        DigestionScribeReceipt? scribeReceipt = null,
         string atomizer = AtomizerRegistry.GictId,
         bool includeCoverageGid = true,
         DigestionExternalReceipt? tailAuthorization = null)
     {
         var receipts = new DigestionReceipts(
-            scribeReceipt is null ? [] : [scribeReceipt],
             [],
             [],
             tailAuthorization);

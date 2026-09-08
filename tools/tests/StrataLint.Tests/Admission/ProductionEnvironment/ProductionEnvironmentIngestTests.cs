@@ -113,7 +113,6 @@ public sealed partial class ProductionEnvironmentTests
             .RequireDigestionEntries());
         Assert.Equal(DigestionMigrationState.Absorbed, entry.ProjectedStatus.Migration);
         Assert.Equal(DigestionTruthState.Closed, entry.ProjectedStatus.Truth);
-        Assert.Empty(entry.Receipts.Scribe);
         Assert.Equal([coverageGid], entry.CoverageGids.ToArray());
         Assert.Equal(
             FrozenStatementReceiptTestData.Resolve(fixture.Files, coverageGid),
@@ -176,10 +175,6 @@ public sealed partial class ProductionEnvironmentTests
         var atomIds = atoms.Select(AtomId).ToArray();
         DigestionLedgerEntry Entry(int index, DigestionMigrationState migration, string? childId = null)
         {
-            var receipt = new DigestionScribeReceipt(
-                coverageGid,
-                definitionHash,
-                emissionHash);
             return DigestionTestSupport.Entry(
                 atoms[index],
                 atomIds[index],
@@ -188,7 +183,6 @@ public sealed partial class ProductionEnvironmentTests
                 DigestionTruthState.Closed,
                 [coverageGid],
                 new DigestionReceipts(
-                    [receipt],
                     [],
                     childId is null ? [] : [childId],
                     null),

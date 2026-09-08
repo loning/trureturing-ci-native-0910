@@ -41,11 +41,12 @@ def report : FrozenReport := ⟨"fixture-head", "fixture-report-sha256", frozenR
 
 def reportBytes : String := (Json.mkObj [
   ("schema", toJson "stratalint.truth-export"),
-  ("schema_version", toJson (1 : Nat)),
-  ("dialect", toJson "stratalint.truth-export.v1"),
+  ("schema_version", toJson (2 : Nat)),
+  ("dialect", toJson "stratalint.truth-export.v2"),
   ("producer", toJson "TruthExportCommand"),
   ("source_commit", toJson "fixture-head"),
-  ("nodes", Json.arr #[Json.mkObj [("declarations", Json.arr <|
+  ("nodes", Json.arr #[Json.mkObj [("freeze_status", toJson "frozen"),
+    ("declarations", Json.arr <|
     (frozenRows.map fun key => Json.mkObj [
       ("kind", toJson "theorem"), ("declaration_name_key", toJson (encodeNameKey key.theoremName)),
       ("statement_id", toJson key.statementId)]).push

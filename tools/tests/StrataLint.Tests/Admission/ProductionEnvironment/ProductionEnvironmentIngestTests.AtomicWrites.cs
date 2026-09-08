@@ -166,7 +166,7 @@ public sealed partial class ProductionEnvironmentTests
             AtomId = childIds[index],
             Fingerprints = children[index].Fingerprints,
             CasRef = children[index].Fingerprints.RawSha256,
-            Receipts = new DigestionReceipts([], [], [], null),
+            Receipts = new DigestionReceipts([], [], null),
         };
         var finalDocument = currentDocument.WithDigestionSources(
         [

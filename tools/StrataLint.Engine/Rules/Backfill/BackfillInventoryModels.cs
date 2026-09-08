@@ -6,11 +6,6 @@ internal sealed record BackfillTicketReference(string CaseId, string Gid);
 
 internal sealed record DigestionCoverageEdge(string Gid, string? TargetStatementId);
 
-internal sealed record DigestionScribeReceipt(
-    string Gid,
-    string DefinitionSha256,
-    string EmissionSha256);
-
 internal sealed record DigestionExternalReceipt(string Path, string Sha256);
 
 internal sealed record DigestionNonpropositional(
@@ -46,7 +41,6 @@ internal sealed record DigestionCoverDisposition(
     ImmutableArray<DigestionDispositionGap> Gaps);
 
 internal sealed record DigestionReceipts(
-    ImmutableArray<DigestionScribeReceipt> Scribe,
     ImmutableArray<string> UnresolvedSubitems,
     ImmutableArray<string> ChainAtoms,
     DigestionExternalReceipt? TailAuthorization,
@@ -55,8 +49,7 @@ internal sealed record DigestionReceipts(
     DigestionNonpropositional? Nonpropositional = null)
 {
     internal bool IsEmptyForSourceRevision =>
-        Scribe.IsEmpty
-        && UnresolvedSubitems.IsEmpty
+        UnresolvedSubitems.IsEmpty
         && ChainAtoms.IsEmpty
         && TailAuthorization is null
         && Quarantine is null

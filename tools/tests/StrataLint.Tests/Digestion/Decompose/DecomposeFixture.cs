@@ -94,7 +94,7 @@ internal sealed class DecomposeFixture
         var bytes = Encoding.UTF8.GetBytes(text);
         var fingerprint = DigestionFingerprint.Compute(bytes);
         return new DigestionLedgerEntry("probe", "docs/probe.md", atomizer,
-            fingerprint.RawSha256[7..], fingerprint, [], new DigestionReceipts([], [], [], null),
+            fingerprint.RawSha256[7..], fingerprint, [], new DigestionReceipts([], [], null),
             new DigestionStatus(DigestionMigrationState.Residual, DigestionTruthState.Open),
             fingerprint.RawSha256);
     }

@@ -86,11 +86,9 @@ internal static class DescribeContentGovernance
             .Select(static document => document.Header.Gid.Value)
             .ToImmutableHashSet(StringComparer.Ordinal);
         var census = ReceiptFreeDocumentCatalog.Load(repositoryRoot, documents);
-        var receiptBound = BackfillInventoryLoader.LoadRoot(repositoryRoot)
-            .RequireDigestionEntries()
-            .SelectMany(static entry => entry.Receipts.Scribe)
-            .Select(static receipt => ScribeEmissionAttestation.DocumentGid(receipt.Gid))
-            .ToImmutableHashSet(StringComparer.Ordinal);
+        // The ledger no longer has a receipt field to read, so nothing can be receipt-bound.
+        // The census machinery this feeds is now tautological and is retired in the next layer.
+        var receiptBound = ImmutableHashSet<string>.Empty;
         var expectedBound = receiptBound.Intersect(documentGids, StringComparer.Ordinal)
             .ToImmutableHashSet(StringComparer.Ordinal);
         var expectedFree = documentGids.Except(receiptBound, StringComparer.Ordinal)
