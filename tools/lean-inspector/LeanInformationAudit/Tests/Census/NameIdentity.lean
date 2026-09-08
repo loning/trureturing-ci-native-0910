@@ -47,7 +47,8 @@ run_cmd liftTermElabM do
 #guard_msgs in
 #eval [Name.mkSimple "#a.b", Name.str (Name.mkSimple "#a") "b",
     Name.num `A 3, Name.str `A "3", Name.anonymous].all fun name =>
-  let key : StatementKey := ⟨`T, "sha256:0000000000000000000000000000000000000000000000000000000000000019"⟩
+  let key : StatementKey :=
+    ⟨`T, "sha256:0000000000000000000000000000000000000000000000000000000000000019"⟩
   let rows : Array (Sigma fun key : StatementKey => CensusAssessment key) := #[
     ⟨key, .certified <| .finiteOccurrence ⟨name, name, name, name, name⟩⟩,
     ⟨key, .certified <| .structuralOccurrence ⟨name, name, name, name, name⟩⟩,

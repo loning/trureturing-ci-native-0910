@@ -76,7 +76,8 @@ private def check (inventory : DispositionInventory) : Except String Unit :=
 /-- info: Except.error "IE-C035 DuplicateAnalysisDisposition theorem=Fixture.finite statement_id=sha256:000000000000000000000000000000000000000000000000000000000000001e records=[0,4]" -/
 #guard_msgs in
 #eval check { fourRows with entries :=
-  (fourRows.entries.push (⟨⟨`Fixture.alias, "sha256:000000000000000000000000000000000000000000000000000000000000001e"⟩,
+  (fourRows.entries.push (⟨⟨`Fixture.alias,
+    "sha256:000000000000000000000000000000000000000000000000000000000000001e"⟩,
     .certified <| .unreachable ⟨.noCanonicalObjectCarrier, `Evidence⟩⟩)) }
 
 /-- info: Except.error "IE-C036 DispositionIdentityMismatch theorem=Fixture.finite component=statement_id expected=sha256:000000000000000000000000000000000000000000000000000000000000001e actual=sha256:00000000000000000000000000000000000000000000000000000000000000ff" -/
