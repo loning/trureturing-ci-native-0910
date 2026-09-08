@@ -242,6 +242,145 @@ An attempted source path `D5/S3/Constants/CoefficientNewtonSums.lean` was wrong
 (rg exit 2); discovery located `D5/S3/Constants/Moments/CoefficientNewtonSums.lean`.
 The invalid-path query is not used as a no-hit receipt.
 
+## Q1 answer: no bind-only success in the attempted scope
+
+Corrected command: `/usr/bin/time -l make lean`, log
+`attempt-1/q1-bind-only-fixed.log`, exit 2, 22.67 real seconds, maximum RSS
+4,307,386,368 bytes, job denominator 12,696; probe job 14 seconds. Both caches
+were warm. The only failing target was `D5.GribinskiM4Probe`.
+
+Actual target and tactics are archived in
+`gribinski-m4-probe-0909.lean.txt`. The exact m=3 application and `exact?` each
+failed under `fail_if_success`; execution reached the final `linarith only`
+with alpha>-1, all eight root signs and their `sq_nonneg` instances. It failed
+with `linarith failed to find a contradiction`. The error context retained all
+nine hypotheses and goal `False`; it supplied no factorization witnesses.
+This is a failed concrete attempt, not a proof that every bind-only route is
+impossible. No Q1 success is claimed, and stopping rule 1 has not fired.
+
+The successful conditional Hankel fragment is bind-only, escape_witness=null,
+admission_basis=none(probe-only). Its direct frozen dependency is
+`D5/S3/Constants/NewtonHankelRealRootCriterion.newtonHankel_posSemidef_iff_roots_real`
+under the module state identity recorded above. Five candidate Mathlib API
+types were also checked by Lean. The failed existential is not a theorem.
+
+Additional frozen source reads:
+`D5/S3/Constants/Moments/CoefficientNewtonSums` has module statement_id
+`sha256:2eaa9526bade862a1a821b87daf78426f82845dc681d9a7dc8f637cb255c66c6`;
+it supplies `exists_root_enumeration`, Vieta and recursion uniqueness, but its
+source explicitly leaves full recursion/root-sum identification open.
+`D5/S3/Constants/Moments/CoefficientMultiplicationTraceMoments` has module
+statement_id `sha256:387a1805ef12dd72827ef874d8590eacfb09080f13f450aa55ff7946e6b5a47a`;
+its header and initial construction concern coefficient-matrix traces with a
+complex split factorization, not positivity. These identities do not discharge
+the missing output-PSD premise. Their state files were read, not newly written.
+
+## Q2 answer: a finite criterion, including repeated and zero roots
+
+For `f(X)=X^4+aX^3+bX^2+cX+d`, define its coefficient Newton sums:
+
+```text
+s0 = 4
+s1 = -a
+s2 = a^2 - 2b
+s3 = -a^3 + 3ab - 3c
+s4 = a^4 - 4a^2 b + 2b^2 + 4ac - 4d
+s5 = -a^5 + 5a^3 b - 5ab^2 - 5a^2 c + 5bc + 5ad
+s6 = a^6 - 6a^4 b + 9a^2 b^2 - 2b^3 + 6a^3 c
+     -12abc + 3c^2 - 6a^2 d + 6bd
+H = [[4,s1,s2,s3], [s1,s2,s3,s4],
+     [s2,s3,s4,s5], [s3,s4,s5,s6]].
+```
+
+**Iff:** all four roots, with multiplicity, are real and nonnegative exactly
+when all 19 conditions below hold. There are 18 nonconstant conditions after
+deleting H0. This deliberately redundant principal-minor criterion is not
+claimed to minimize the number or expansion cost of conditions.
+
+| ID | Polynomial required to be >= 0 |
+| --- | --- |
+| C1 | -a |
+| C2 | b |
+| C3 | -c |
+| C4 | d |
+| H0 | 4 |
+| H1 | s2 |
+| H2 | s4 |
+| H3 | s6 |
+| H01 | 4s2-s1^2 |
+| H02 | 4s4-s2^2 |
+| H03 | 4s6-s3^2 |
+| H12 | s2*s4-s3^2 |
+| H13 | s2*s6-s4^2 |
+| H23 | s4*s6-s5^2 |
+| H012 | 4s2*s4-4s3^2-s1^2*s4+2s1*s2*s3-s2^3 |
+| H013 | 4s2*s6-4s4^2-s1^2*s6+2s1*s3*s4-s2*s3^2 |
+| H023 | 4s4*s6-4s5^2-s2^2*s6+2s2*s3*s5-s4*s3^2 |
+| H123 | s2*s4*s6-s2*s5^2-s3^2*s6+2s3*s4*s5-s4^3 |
+| H0123 | det(H) |
+
+`det(H)` is the monic quartic discriminant, explicitly
+
+```text
+256d^3-192acd^2-128b^2d^2+144bc^2d-27c^4+144a^2bd^2
+-6a^2c^2d-80ab^2cd+18abc^3+16b^4d-4b^3c^2-27a^4d^2
++18a^3bcd-4a^3c^3-4a^2b^3d+a^2b^2c^2.
+```
+
+Sources: the opened Sylvester criterion supplies `H PSD iff all principal
+minors >=0`; the frozen Hermite--Sylvester iff supplies `H PSD iff all roots
+real`, after the Newton identities and scaling are identified. Newton sums
+retain algebraic multiplicity, so singular H and repeated roots are included.
+For the final sign step, if x<0 write x=-u with u>0. Then
+`f(-u)=u^4+(-a)u^3+b*u^2+(-c)u+d>0` under C1-C4. Thus a real root cannot be
+negative. Conversely Vieta gives C1-C4 from nonnegative roots. This elementary
+sign argument is provided explicitly; no unopened reference is needed for it.
+
+Exactly what the frozen iff covers: it covers the equivalence of the 15
+principal-minor conditions AS A GROUP to real-rootedness, once the coefficient
+H is connected to its root list. The repository uses `H/4`; a k-by-k minor is
+therefore divided by `4^k`, preserving signs. It does not supply any of those
+15 inequalities from the convolution inputs and it does not supply C1-C4.
+The checked Mathlib submatrix/determinant APIs give the necessity of minors
+from PSD, not their sufficiency from the input roots.
+
+Noncircular proposed route: generate H from output coefficients alone; prove
+its principal-minor inequalities independently on the eight INPUT roots and
+t=alpha+1>0 (for example by an exact weighted-square identity); only THEN
+apply the frozen forward direction. Never assume output real-rootedness to
+obtain PSD, and never obtain a PSD square root before proving PSD. No such m=4
+positivity certificate has been obtained here. The remaining mathematical
+gap is the independent positivity implication, not a claimed lack of time.
+Rule 2 has not fired.
+
+## Q3 measurement protocol (fixed before running)
+
+Count collected nonzero monomials of the reduced numerator in the polynomial
+ring over Q, treating t as a variable; record numerator t-degree and the
+positive denominator separately. All counts are exact symbolic counts, not
+numerical samples or Lean proof costs. Cancel only denominator factors; do
+not discard a factor involving input roots or divide by an expression that
+may vanish on the domain.
+
+Primary coordinates match the m=3 certificate's representation:
+input roots `(x,x+u,x+u+v,x+u+v+w)` and `(y,y+r,y+r+s,y+r+s+z)`, with all eight
+gap/base variables nonnegative and t>0. Every nonnegative quadruple can be
+sorted into this form; symmetry of the defining coefficient sums makes this
+a legitimate coordinate choice. Also measure the five output coefficients
+in unsorted independent root variables, to expose coordinate dependence.
+
+Order: first the m=3 raw discriminant calibration and all m=4 output
+coefficients, then C1-C4 and H0,H1,H2,H3,H01,H02,H03,H12,H13,H23,H012,H013,H023,
+H123,H0123 in exactly that order. After EACH inequality's complete reduced
+expansion, test `monomials > 50000`; on the first hit, record it and exit before
+expanding the next inequality. All unreached measurements remain null. The
+chosen redundancy means a stop assesses this specified route/representation,
+not every possible quartic criterion or compressed certificate.
+
+Installed SymPy 1.14.0 and gmpy2 2.3.1 in a runner-local virtual environment
+before calculation. Calculation itself uses offline rational polynomial
+arithmetic. No Lean budget or repository budget constant is changed.
+
 ## Nonclaims
 
 This probe has not proved m=4, does not claim m=4 is provable by the proposed

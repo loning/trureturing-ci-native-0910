@@ -1,0 +1,59 @@
+import D5.S3.Zeros.Convolution.GribinskiDegreeThree
+import D5.S3.Constants.NewtonHankelRealRootCriterion
+import Mathlib.Analysis.Matrix.PosDef
+import Mathlib.Analysis.Complex.Polynomial.Basic
+import Mathlib.RingTheory.MvPolynomial.Symmetric.NewtonIdentities
+
+set_option autoImplicit false
+noncomputable section
+open Polynomial
+open scoped ComplexConjugate
+namespace GribinskiM4Probe
+
+def elementaryCoeff (p : Real[X]) (k : Nat) : Real :=
+  (-1)^k * p.coeff (4-k)
+def weight (alpha : Real) (k : Nat) : Real :=
+  (descPochhammer Real k).eval 4 * (descPochhammer Real k).eval (4+alpha)
+def normalizedCoeff (alpha : Real) (p : Real[X]) (k : Nat) : Real :=
+  elementaryCoeff p k / weight alpha k
+def convolutionCoeff (alpha : Real) (p q : Real[X]) (k : Nat) : Real :=
+  weight alpha k * ((Finset.range (k+1)).sum fun i =>
+    normalizedCoeff alpha p i * normalizedCoeff alpha q (k-i))
+def boxplus4 (alpha : Real) (p q : Real[X]) : Real[X] :=
+  C (convolutionCoeff alpha p q 0) * X^4 -
+    C (convolutionCoeff alpha p q 1) * X^3 +
+    C (convolutionCoeff alpha p q 2) * X^2 -
+    C (convolutionCoeff alpha p q 3) * X + C (convolutionCoeff alpha p q 4)
+def rootFour (a b c d : Real) : Real[X] :=
+  (X-C a)*(X-C b)*(X-C c)*(X-C d)
+
+#check Polynomial.prod_multiset_X_sub_C_of_monic_of_roots_card_eq
+#check Matrix.PosSemidef.submatrix
+#check Matrix.PosSemidef.det_nonneg
+#check Matrix.IsHermitian.posSemidef_iff_eigenvalues_nonneg
+#check MvPolynomial.psum_eq_mul_esymm_sub_sum
+
+open D5.S3.Constants.NewtonHankelRealRootCriterion in
+theorem conditional_hankel_projection (roots : Fin 4 -> Complex)
+    (hc : forall z, z ∈ Finset.univ.image roots ↔ conj z ∈ Finset.univ.image roots)
+    (hpsd : Matrix.PosSemidef (newtonHankel roots)) :
+    forall j, ∃ r : Real, roots j = (r : Complex) := by
+  exact (newtonHankel_posSemidef_iff_roots_real roots hc).mp hpsd
+
+#print axioms conditional_hankel_projection
+
+-- Intentionally failing probe, archived as text after the make lean attempt.
+example (alpha a b c d e f g h : Real) (halpha : -1 < alpha)
+    (ha : 0 <= a) (hb : 0 <= b) (hc : 0 <= c) (hd : 0 <= d)
+    (he : 0 <= e) (hf : 0 <= f) (hg : 0 <= g) (hh : 0 <= h) :
+    ∃ r s t u : Real, 0 <= r ∧ 0 <= s ∧ 0 <= t ∧ 0 <= u ∧
+      boxplus4 alpha (rootFour a b c d) (rootFour e f g h) = rootFour r s t u := by
+  fail_if_success
+    exact D5.S3.Zeros.Convolution.GribinskiDegreeThree.m3_nonnegative_roots
+      alpha a b c e f g halpha ha hb hc he hf hg
+  fail_if_success exact?
+  linarith only [halpha, ha, hb, hc, hd, he, hf, hg, hh,
+    sq_nonneg a, sq_nonneg b, sq_nonneg c, sq_nonneg d,
+    sq_nonneg e, sq_nonneg f, sq_nonneg g, sq_nonneg h]
+
+end GribinskiM4Probe
