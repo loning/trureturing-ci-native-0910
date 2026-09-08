@@ -6,7 +6,7 @@
    utility: none
    digest: Coefficient inequalities for arbitrary centered real-rooted septics. -/
 
-import D5.S3.Zeros.CoefficientBounds.SepticEnvelopeUpper
+import D5.S3.Zeros.CoefficientBounds.SepticEnvelopeUpperHigh
 import Mathlib.Algebra.Polynomial.BigOperators
 import Mathlib.Data.Fin.Tuple.Sort
 
@@ -24,7 +24,7 @@ noncomputable section
 
 namespace D5.S3.Zeros.CoefficientBounds.SepticEnvelope
 
-open Polynomial SepticEnvelopeGaps SepticEnvelopeUpper
+open Polynomial SepticEnvelopeGaps SepticEnvelopeUpperHigh
 
 set_option maxRecDepth 4096 in
 set_option maxHeartbeats 4000000 in
