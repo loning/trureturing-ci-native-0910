@@ -9019,25 +9019,42 @@ report-only／transfer theorem，真正不可达者使用 closed reason。finite
 
 ### AC-023　Disposition census completeness
 
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕必须分别给出两个命题，不得互相冒充：
+必须分别给出两个命题，不得互相冒充；`DispositionInventory.ExactlyCovers` 与 artifact 的
+`certified_complete` 分别见 `tools/lean-inspector/LeanInformationAudit/AnalysisDisposition.lean`、
+`tools/lean-inspector/LeanInformationAudit/DispositionCensus.lean`：
 
-1. 〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕**记账完备（accounting completeness）**：从 frozen elaborated truth export 中
+1. **记账完备（accounting completeness）**：从 frozen elaborated truth export 中
    先选择 `freeze_status=frozen` 的 nodes（模块），再选择其 `declarations` 中 `kind=theorem`
    的声明，以 declaration 的 `declaration_name_key` 与 `statement_id` 取得全部
    `(structured Name, statement_id)` keys，与 `CensusAssessment` inventory keys 完全相等，
-   每 key 恰一次，并保持第 23.6 节的 HEAD／report inputs／root 绑定与唯一性约束；
-2. 〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕**认证完备（certified completeness）**：记账完备，且每个 key 的 row 都是语义证据已验证的
+   每 key 恰一次，并保持第 23.6 节的 HEAD／report inputs／root 绑定与唯一性约束。
+   `ExactlyCovers` 证明 HEAD 相等、keys 与 statement IDs 唯一以及 key 集合精确覆盖，report bytes 与 root
+   分别由命令及 evidence validator 核查，见
+   `tools/lean-inspector/LeanInformationAudit/DispositionCensus.lean`、
+   `tools/lean-inspector/LeanInformationAudit/DispositionEvidence.lean`；
+2. **认证完备（certified completeness）**：记账完备，且每个 key 的 row 都是语义证据已验证的
    `certified (AnalysisDisposition key)`，即 finite／structural／bounded truncation／带专属
    closed-reason proof 的 unreachable 之一。**本 AC 只由认证完备满足**；记账完备是报告中的
-   前提，不是履行。
+   前提，不是履行。assessment 分支与认证边界见
+   `tools/lean-inspector/LeanInformationAudit/AnalysisDisposition.lean`。
 
-〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕observed 必须是第 23.6 节规定的 exact key／module／root／import-closure completed query
+observed 必须是第 23.6 节规定的 exact key／module／root／import-closure completed query
 observation，永不计作 classified、永不计入本 AC、永不算 closed reason。registry absence
-不能产生 unreachable；后者的证书必须绑定 statement、key、semantic contract 与 candidate
-domain。arena 仍来自显式 realization，不从 carrier／statement syntax 推断（第 8.7 节）。
-artifact 报告 `accounted`、`certified`（四类与 unreachable reason 分项）、`observed`
-（status 分项）及 exact rows，并按第 23.6 节输出两种 completeness flags；`observed > 0`
-时 `certified_complete=false`。census 只作报告，永不作为 seal input 或 required gate。
+不能产生 unreachable；后者的 `UnreachableDisposition.evidence` 指向当前 statement 上的
+`UnreachableElaborationEvidence`，并由 `failedObligation` 命名 reason 专属的 typed obligation，
+完整 key 由 coverage 绑定。semantic contract 与 candidate domain 的证明义务按第 8.7 节由
+该 obligation 的实际量化范围承担；超出该范围的 closed reason 仍须另证。证据类型与核验见
+`tools/lean-inspector/LeanInformationAudit/StructuralRealization.lean`、
+`tools/lean-inspector/LeanInformationAudit/DispositionEvidence.lean`。
+arena 仍来自显式 realization，不从 carrier／statement syntax 推断（第 8.7 节）。
+artifact 的 `counts` 报告 `accounted`、`certified`、四类与 unreachable reason 的 flat 分项、
+`observed`、`observed_query_completed` 与 `observed_query_incomplete`，另有 exact `rows`；
+记账完备由命令和 kernel coverage proof 确认，认证完备使用 `certified_complete`，
+`observed > 0` 时必为 `false`。计数、rows 与 flag 见
+`tools/lean-inspector/LeanInformationAudit/CensusSchema.lean`、
+`tools/lean-inspector/LeanInformationAudit/DispositionCensus.lean`。
+census 只作报告，永不作为 seal input 或 required gate。
+（J2 落地形态,2026-09-08:S0 的 generic semantic-contract／candidate-domain 字段改为具名 typed obligation；absence-status 分项未采用，现役输出 query-completion 分项与单一 `certified_complete`，没有 `accounting_complete` flag。）
 
 ### AC-024　Bounded kernel projection
 
