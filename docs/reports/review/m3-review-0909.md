@@ -16,7 +16,7 @@ delivery. No fetch, rebase, or implementation branch switch is performed.
 Worker artifact directory (`$ATTEMPT` in commands below):
 `/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/gribinski-m3-review-0909/attempt-1`.
 
-## Q1: Restricted Proof Attempt (In Progress)
+## Q1: Restricted Proof Attempt
 
 Predeclared criterion: a checked proof using only pinned Mathlib, frozen public
 theorem instantiation/projection, and normalization overturns the content claim.
@@ -86,9 +86,44 @@ The log reports the discriminant module built in 74s and the main module in
 This is an independent local build, not CI or admission approval. Canonical
 axiom-report verification remains pending Q5.
 
+### Q1 Run 1: Actual Restricted Proof Results
+
+Command: `/usr/bin/time -l make -f Makefile -f "$ATTEMPT/review.mk"
+review-stdin PROBE="$ATTEMPT/q1-direct.txt" > "$ATTEMPT/q1-direct-1.log" 2>&1`.
+**EXIT=2, 50.55 real seconds, RSS=2953363456 bytes.**
+
+The independent `frozen_assembly` theorem CHECKED, with axiom closure exactly
+`[propext, Classical.choice, Quot.sound]`. It rewrites by
+`m3_explicit_coefficients` (a definition/field/ring normalization proved at
+main source:86-120), proves the three signs by positivity, and directly applies
+the frozen `cubic_nonnegative_factorization`. Its only extra hypothesis is
+the exact output discriminant inequality. No candidate content theorem is used.
+The subsequent three attempts have the actual `m3_nonnegative_roots` statement
+and use this assembly with that one remaining premise to prove.
+
+| Attempt | Own Lean result |
+| --- | --- |
+| `nlinarith` plus six pair-difference squares and the two input Vandermonde squares | stdin:29:0: `(deterministic) timeout at whnf, maximum number of heartbeats (200000) has been reached` |
+| `linarith only [halpha, ha, hb, hc, hd, he, hf, ...same eight sq_nonneg facts...]` | stdin:49:2: `linarith failed to find a contradiction`; target is `False` under exactly `Delta < 0` |
+| `polyrith` | stdin:62:2: `` `polyrith` is no longer available, as the external service it relied on has been shut down. `` |
+
+Here `S=A1+B1`, `T=A2+B2+kappa alpha*A1*B1`,
+`U=A3+B3+rho alpha*(A1*B2+A2*B1)`, and the remaining assumption printed by Lean is
+`S^2*T^2-4*T^3-4*S^3*U-27*U^2+18*S*T*U < 0` with all six roots expanded.
+The log retains that full expression and the probe retains the exact commands.
+No heartbeat/recursion increase, admitted lemma, or source edit was used.
+
+**Q1 reading:** no successful bind-only proof found. The demanded direct frozen
+API plus `nlinarith`/`polyrith` attempt really ran and did not close. The
+`linarith only` failure is an unresolved inequality; the nlinarith result is a
+resource limit, not a mathematical non-derivability certificate; polyrith is
+an unavailable capability, not evidence against the theorem. This finite
+search does not prove that no other bind-only proof exists. Q2 must still
+assess the claimed new certificate and its live use independently.
+
 ## Q2-Q6
 
-Pending Q1 completion. No verdict is claimed at this checkpoint.
+Q1 complete; Q2-Q6 pending. No final verdict is claimed at this checkpoint.
 
 ## Publication
 
