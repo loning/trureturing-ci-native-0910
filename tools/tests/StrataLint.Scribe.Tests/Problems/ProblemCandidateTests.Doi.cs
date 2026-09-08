@@ -3,6 +3,39 @@ namespace StrataLint.Scribe.Tests;
 public sealed partial class ProblemCandidateTests
 {
     [Theory]
+    [InlineData("null", "http://example.org/source")]
+    [InlineData("null", "/source")]
+    [InlineData("10.1000/sample", "https://example.org/source")]
+    public void LoaderRejectsInvalidOrAmbiguousUrlSources(string doi, string url) => WithCatalog(
+        new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["sample-open-problem.md"] = DoiCandidate(doi).Replace(
+                $"doi: {doi}\n", $"doi: {doi}\nurl: {url}\n", StringComparison.Ordinal),
+        },
+        root => Assert.Throws<FormatException>(() => ProblemCandidateCatalog.Load(root)));
+
+    [Fact]
+    public void ValidatorAcceptsMatchingStableUrlsWithoutDois() => WithRepository(
+        DoiCandidate("null").Replace("doi: null\n",
+            "doi: null\nurl: https://example.org/source\n", StringComparison.Ordinal),
+        Note("sos1957threegap", "null").Replace("doi: null\n",
+            "doi: null\nurl: https://example.org/source\n", StringComparison.Ordinal),
+        ["D5/S1/Phase/Basic"],
+        root => Assert.Empty(DescribeRepositoryValidator.Validate(root, [])),
+        ["D5/S1/Phase/Basic"]);
+
+    [Fact]
+    public void ValidatorRejectsMismatchedStableUrls() => WithRepository(
+        DoiCandidate("null").Replace("doi: null\n",
+            "doi: null\nurl: https://example.org/source\n", StringComparison.Ordinal),
+        Note("sos1957threegap", "null").Replace("doi: null\n",
+            "doi: null\nurl: https://example.org/different\n", StringComparison.Ordinal),
+        ["D5/S1/Phase/Basic"],
+        root => Assert.Equal("problem-source-mismatch",
+            Assert.Single(DescribeRepositoryValidator.Validate(root, [])).Code),
+        ["D5/S1/Phase/Basic"]);
+
+    [Theory]
     [InlineData("null")]
     [InlineData("2305.08349")]
     [InlineData("arXiv:2305.08349")]
@@ -77,7 +110,7 @@ public sealed partial class ProblemCandidateTests
         {
             var candidate = Assert.Single(ProblemCandidateCatalog.Load(root).Candidates);
             Assert.Equal("sample-open-problem", candidate.Slug);
-            Assert.Equal(doi, candidate.Doi.Value);
+            Assert.Equal(doi, candidate.Doi!.Value);
         });
 
     [Theory]
@@ -87,7 +120,7 @@ public sealed partial class ProblemCandidateTests
     public void ValidatorAcceptsExactDoiBinding(string doi) => WithDoiRepository(
         doi, doi, root =>
         {
-            Assert.Equal(doi, Assert.Single(ProblemCandidateCatalog.Load(root).Candidates).Doi.Value);
+            Assert.Equal(doi, Assert.Single(ProblemCandidateCatalog.Load(root).Candidates).Doi!.Value);
             Assert.Empty(DescribeRepositoryValidator.Validate(root, []));
         });
 
