@@ -116,6 +116,81 @@ theorem Gobs_product_not_associative_on_fixed_points :
     (isGolden_iff_Gobs_fixed _).mpr h16, hleft, hright, ?_⟩
   omega
 
+/-- Golden observation is not multiplicative, and the fixed points `2`, `4`,
+and `16` carry the explicit nonassociative observed-product witness. -/
+theorem Gobs_not_multiplicative_and_not_associative_on_fixed_points :
+    (¬ ∀ m n : PNat, Gobs (m * n) = Gobs m * Gobs n) ∧
+    IsGolden (2 : ℕ+) ∧
+    IsGolden (4 : ℕ+) ∧
+    IsGolden (16 : ℕ+) ∧
+    Gobs (Nat.toPNat (Gobs (2 * 2) * 4) (Nat.mul_pos (Gobs_pos _) (by decide))) = 16 ∧
+    Gobs (Nat.toPNat (2 * Gobs (2 * 4)) (Nat.mul_pos (by decide) (Gobs_pos _))) = 4 ∧
+    Gobs (Nat.toPNat (Gobs (2 * 2) * 4) (Nat.mul_pos (Gobs_pos _) (by decide))) ≠
+      Gobs (Nat.toPNat (2 * Gobs (2 * 4))
+        (Nat.mul_pos (by decide) (Gobs_pos _))) := by
+  exact ⟨Gobs_not_multiplicative, Gobs_product_not_associative_on_fixed_points⟩
+
+private def goldenFixedProduct
+    (x y : {g : PNat // IsGolden g}) : {g : PNat // IsGolden g} :=
+  ⟨⟨Gobs (Nat.toPNat (x.1.val * y.1.val) (Nat.mul_pos x.1.pos y.1.pos)), Gobs_pos _⟩,
+    Gobs_isGolden _⟩
+
+/-- The observed product is not associative on the subtype of golden fixed points. -/
+theorem Gobs_product_not_associative_on_golden_subtype :
+    ¬ ∀ x y z : {g : PNat // IsGolden g},
+      goldenFixedProduct (goldenFixedProduct x y) z =
+        goldenFixedProduct x (goldenFixedProduct y z) := by
+  intro hassociative
+  have hWitness := Gobs_product_not_associative_on_fixed_points
+  let two : {g : PNat // IsGolden g} := ⟨(2 : ℕ+), hWitness.1⟩
+  let four : {g : PNat // IsGolden g} := ⟨(4 : ℕ+), hWitness.2.1⟩
+  let sixteen : {g : PNat // IsGolden g} := ⟨(16 : ℕ+), hWitness.2.2.1⟩
+  have hTwoTimesTwo :
+      Nat.toPNat 4 (by decide) = (2 : PNat) * 2 := by
+    apply PNat.eq
+    rfl
+  have hTwoTimesFour :
+      Nat.toPNat 8 (by decide) = (2 : PNat) * 4 := by
+    apply PNat.eq
+    rfl
+  have hleft : goldenFixedProduct (goldenFixedProduct two two) four = sixteen := by
+    apply Subtype.ext
+    apply PNat.eq
+    change Gobs (Nat.toPNat (Gobs (Nat.toPNat 4 (by decide)) * 4)
+      (Nat.mul_pos (Gobs_pos _) (by decide))) = 16
+    rw [hTwoTimesTwo]
+    exact hWitness.2.2.2.1
+  have hright : goldenFixedProduct two (goldenFixedProduct two four) = four := by
+    apply Subtype.ext
+    apply PNat.eq
+    change Gobs (Nat.toPNat (2 * Gobs (Nat.toPNat 8 (by decide)))
+      (Nat.mul_pos (by decide) (Gobs_pos _))) = 4
+    rw [hTwoTimesFour]
+    exact hWitness.2.2.2.2.1
+  have h := hassociative two two four
+  rw [hleft, hright] at h
+  have hval := congrArg (fun g : {g : PNat // IsGolden g} => g.1.val) h
+  norm_num [sixteen, four] at hval
+
+/-- Equality after golden observation is not compatible with multiplication. -/
+theorem Gobs_equivalence_not_compatible_with_multiplication :
+    Gobs (4 : ℕ+) = Gobs (8 : ℕ+) ∧
+    Gobs ((2 : ℕ+) * 4) ≠ Gobs ((2 : ℕ+) * 8) := by
+  have h4 : Gobs (4 : ℕ+) = 4 := by
+    simpa only [show (2 : ℕ+) ^ 2 = 4 by decide, show b 2 = 2 by decide,
+      show 2 ^ 2 = 4 by decide] using Gobs_two_pow 2
+  have h8 : Gobs (8 : ℕ+) = 4 := by
+    simpa only [show (2 : ℕ+) ^ 3 = 8 by decide, show b 3 = 2 by decide,
+      show 2 ^ 2 = 4 by decide] using Gobs_two_pow 3
+  have h16 : Gobs (16 : ℕ+) = 16 := by
+    simpa only [show (2 : ℕ+) ^ 4 = 16 by decide, show b 4 = 4 by decide,
+      show 2 ^ 4 = 16 by decide] using Gobs_two_pow 4
+  constructor
+  · rw [h4, h8]
+  · rw [show (2 : ℕ+) * 4 = 8 by decide, show (2 : ℕ+) * 8 = 16 by decide,
+      h8, h16]
+    norm_num
+
 /-- Golden observation is neither multiplicative nor associative at the stated
 fixed-point witness. -/
 theorem Gobs_lattice_boundary_refutation :
@@ -130,6 +205,9 @@ theorem Gobs_lattice_boundary_refutation :
 #print axioms goldenObservationMultiplicativeOrAssociativeAtWitness
 #print axioms Gobs_not_multiplicative
 #print axioms Gobs_product_not_associative_on_fixed_points
+#print axioms Gobs_not_multiplicative_and_not_associative_on_fixed_points
+#print axioms Gobs_product_not_associative_on_golden_subtype
+#print axioms Gobs_equivalence_not_compatible_with_multiplication
 #print axioms Gobs_lattice_boundary_refutation
 
 end D5.S3.Arith.GoldenResource.GoldenObservationLattice

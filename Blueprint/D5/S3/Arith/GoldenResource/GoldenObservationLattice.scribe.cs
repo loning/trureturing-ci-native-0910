@@ -68,6 +68,43 @@ internal sealed class GoldenObservationLatticeDocument : IScribeDocumentDefiniti
                     + "G(8)=4. The two values are unequal."))),
                 DescribeRole.Theorem),
             Describe.Lean(
+                DescribeId.Create("complete-observed-product-boundary"),
+                DeclarationHandle.Create(Prefix
+                    + "Gobs_not_multiplicative_and_not_associative_on_fixed_points"),
+                H("The full multiplicative boundary at the fixed-point witness"),
+                StatementSource.FromAuthor(CompleteBoundaryFormula()),
+                AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("Golden observation is not multiplicative. The golden "
+                    + "integers 2, 4, and 16 simultaneously give the explicit failure of "
+                    + "associativity for x star y = G(x times y): the left-associated value is "
+                    + "16, the right-associated value is 4, and they are unequal."))),
+                DescribeRole.Theorem),
+            Describe.Lean(
+                DescribeId.Create("golden-subtype-product-is-not-associative"),
+                DeclarationHandle.Create(Prefix
+                    + "Gobs_product_not_associative_on_golden_subtype"),
+                H("The observed product is not associative on golden integers"),
+                StatementSource.FromAuthor(GoldenSubtypeNonassociativeFormula()),
+                AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("The operation x star y = G(x times y) is closed on golden "
+                    + "integers because every observed value is golden. On this subtype, the "
+                    + "triple 2, 2, and 4 violates associativity, so this operation cannot be the "
+                    + "multiplication of a monoid."))),
+                DescribeRole.Theorem),
+            Describe.Lean(
+                DescribeId.Create("observation-equivalence-is-not-multiplicative"),
+                DeclarationHandle.Create(Prefix
+                    + "Gobs_equivalence_not_compatible_with_multiplication"),
+                H("Observation equivalence is not compatible with multiplication"),
+                StatementSource.FromAuthor(MultiplicationIncompatibilityFormula()),
+                AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("Define two positive integers to be equivalent when their "
+                    + "golden observations agree. Although 4 and 8 are equivalent, multiplying "
+                    + "both by 2 separates them: the resulting observations are 4 and 16. Thus "
+                    + "the equivalence preserved by gcd and lcm is not a multiplication "
+                    + "congruence."))),
+                DescribeRole.Theorem),
+            Describe.Lean(
                 DescribeId.Create("lattice-boundary-refutation"),
                 DeclarationHandle.Create(Prefix + "Gobs_lattice_boundary_refutation"),
                 H("The multiplicative extension is refuted"),
@@ -108,6 +145,39 @@ internal sealed class GoldenObservationLatticeDocument : IScribeDocumentDefiniti
             NotEqual(left, right)));
     }
 
+    private static Formula CompleteBoundaryFormula()
+    {
+        Formula left = LeftAssociatedWitness();
+        Formula right = RightAssociatedWitness();
+        return Disp(And(
+            new Formula.Not(Parenthesized(MultiplicativeFormula())),
+            Call("Golden", D(2)),
+            Call("Golden", D(4)),
+            Call("Golden", D(1, 6)),
+            Equal(left, D(1, 6)),
+            Equal(right, D(4)),
+            NotEqual(left, right)));
+    }
+
+    private static Formula GoldenSubtypeNonassociativeFormula()
+    {
+        Formula x = F.Id("x");
+        Formula y = F.Id("y");
+        Formula z = F.Id("z");
+        Formula equality = Equal(
+            GoldenProduct(GoldenProduct(x, y), z),
+            GoldenProduct(x, GoldenProduct(y, z)));
+        return Disp(new Formula.Not(Parenthesized(All(
+            [Bound("x", GoldenPositives()), Bound("y", GoldenPositives()),
+                Bound("z", GoldenPositives())],
+            equality))));
+    }
+
+    private static Formula MultiplicationIncompatibilityFormula() => Disp(And(
+        Equal(Observation(D(4)), Observation(D(8))),
+        NotEqual(Observation(Multiply(D(2), D(4))),
+            Observation(Multiply(D(2), D(8))))));
+
     private static Formula BoundaryRefutationFormula() =>
         Disp(new Formula.Not(Parenthesized(Or(
             Parenthesized(MultiplicativeFormula()),
@@ -126,6 +196,9 @@ internal sealed class GoldenObservationLatticeDocument : IScribeDocumentDefiniti
 
     private static Formula RightAssociatedWitness() =>
         Observation(Multiply(D(2), Observation(Multiply(D(2), D(4)))));
+
+    private static Formula GoldenProduct(Formula left, Formula right) =>
+        Observation(Multiply(left, right));
 
     private static Formula Observation(Formula argument) => Call("G", argument);
 
@@ -164,4 +237,11 @@ internal sealed class GoldenObservationLatticeDocument : IScribeDocumentDefiniti
 
     private static Formula Positives() =>
         Seq(Mathbb, Grp(F.Id("N")), Underscore, Grp(Gt, D(0)));
+
+    private static Formula GoldenPositives()
+    {
+        Formula g = F.Id("g");
+        return Seq(OpenBrace, g, Colon, Sp, Positives(), Sp, Mid, Sp,
+            Call("Golden", g), CloseBrace);
+    }
 }
