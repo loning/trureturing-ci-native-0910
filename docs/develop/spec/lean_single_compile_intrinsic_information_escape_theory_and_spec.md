@@ -9974,11 +9974,14 @@ v4.3 不修改第 48、49 节的任何字节；它在 v4.2 shared-arena／analys
 6. finite State 使用 exact reflected counts/rates；任意 State 使用
    `StructuralArena`／`StructuralCatalog` 与 strict-inclusion pair witness。已落地
    `StructuralNovelty` 仍是 finite-only bridge，不称 universal；
-7. 〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕frozen elaborated truth export 中每个 theorem `(structured Name, statement_id)` 恰有一个
+7. frozen elaborated truth export 中每个 theorem `(structured Name, statement_id)` 恰有一个
    `CensusAssessment`；记账完备与认证完备按第 8.7、23.6 节分开。只有 certified 分支的
    finite occurrence、structural occurrence、bounded finite truncation、unreachable closed
    reason 算已分类；observed 永不履行 AC-023。object arena 必须显式声明，不能从 closed Prop
-   真值推断，census artifact 永不作为 seal input 或 required gate；
+   真值推断，census artifact 永不作为 seal input 或 required gate。assessment 与 coverage 见
+   `tools/lean-inspector/LeanInformationAudit/AnalysisDisposition.lean`、
+   `tools/lean-inspector/LeanInformationAudit/DispositionCensus.lean`，显式 realization 核验见
+   `tools/lean-inspector/LeanInformationAudit/DispositionEvidence.lean`；
 8. `TrivialInCatalog` 是 $U_i=\varnothing$／structural non-strictness，catalog-relative 且对
    membership 非单调。finite maximal catalog 的 zero members 继续由 IE-C007 全量收集后拒绝；
 9. schema v3 additive `kernel_projection` 采用 `boundary-and-certified-chains`，其中
@@ -10008,5 +10011,7 @@ v4.3 不修改第 48、49 节的任何字节；它在 v4.2 shared-arena／analys
 full strict generator DAG；只有该 lattice 的 Hasse diagram 在 nested chain 特例才是 path／tree，
 full strict DAG 仍不因此成为 tree。
 
-〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕“适用于所有定理”改写为分别报告完整记账与认证
-完备的 census，而不是对不可有限计数对象作虚假统一数值主张。
+“适用于所有定理”指分别报告完整记账与认证完备的 census，而不是对不可有限计数对象作虚假
+统一数值主张；两者的实际判据与计数投影见
+`tools/lean-inspector/LeanInformationAudit/AnalysisDisposition.lean`、
+`tools/lean-inspector/LeanInformationAudit/DispositionCensus.lean`。
