@@ -246,21 +246,13 @@ theorem reduced_recurrence (n : Nat) :
       (a n : ZMod 2) + a (n + 2) + a (n + 4) + a (n + 6) := by
   have h := congrArg (fun z : Int => (z : ZMod 2)) (a_recurrence n)
   push_cast at h
-  have hdouble (z : ZMod 2) : z + z = 0 := by
-    calc
-      z + z = (2 : ZMod 2) * z := by ring
-      _ = 0 := by rw [show (2 : ZMod 2) = 0 by decide]; simp
-  have hneg (z : ZMod 2) : -z = z := by
-    calc
-      -z = -z + (z + z) := by rw [hdouble]; simp
-      _ = z := by abel
   have h' : (a (n + 8) : ZMod 2) =
       (a (n + 6) : ZMod 2) + a (n + 4) + a (n + 2) + a n := by
     simpa [show (14 : ZMod 2) = 0 by decide,
       show (75 : ZMod 2) = 1 by decide,
       show (196 : ZMod 2) = 0 by decide,
       show (269 : ZMod 2) = 1 by decide,
-      sub_eq_add_neg, hneg, Nat.add_assoc] using h
+      sub_eq_add_neg, CharTwo.neg_eq, Nat.add_assoc] using h
   calc
     (a (n + 8) : ZMod 2) =
         (a (n + 6) : ZMod 2) + a (n + 4) + a (n + 2) + a n := h'
@@ -277,12 +269,9 @@ theorem parity_period_ten : Function.Periodic (fun n => (a n : ZMod 2)) 10 := by
         (a (n + 2) : ZMod 2) + a (n + 4) + a (n + 6) + a (n + 8) := h2
     _ = (a n : ZMod 2) := by
       rw [h0]
-      have hdouble (z : ZMod 2) : z + z = 0 := by
-        calc
-          z + z = (2 : ZMod 2) * z := by ring
-          _ = 0 := by rw [show (2 : ZMod 2) = 0 by decide]; simp
-      linear_combination hdouble (a (n + 2)) + hdouble (a (n + 4)) +
-        hdouble (a (n + 6))
+      linear_combination CharTwo.add_self_eq_zero (a (n + 2) : ZMod 2) +
+        CharTwo.add_self_eq_zero (a (n + 4) : ZMod 2) +
+        CharTwo.add_self_eq_zero (a (n + 6) : ZMod 2)
 
 private theorem initial_parities (i : Fin 10) :
     (a i : ZMod 2) = (![0, 1, 0, 1, 0, 0, 0, 1, 0, 1] : Fin 10 -> ZMod 2) i := by

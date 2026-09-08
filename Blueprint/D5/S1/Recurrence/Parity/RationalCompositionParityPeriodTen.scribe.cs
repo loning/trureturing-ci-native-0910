@@ -20,7 +20,8 @@ internal sealed class RationalCompositionParityPeriodTenDocument : IScribeDocume
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
                     "Proof: (definition). N is formula (2)'s literal factored "
-                        + "numerator in Q[[x]]. It has no in-module prerequisite."))),
+                        + "numerator in Q[[x]]. Its factors are x, (1-x)^2, and "
+                        + "(1-3x+x^2)^2."))),
                 DescribeRole.Definition),
             Describe.Lean(
                 DescribeId.Create("a396093-denominator"),
@@ -30,7 +31,8 @@ internal sealed class RationalCompositionParityPeriodTenDocument : IScribeDocume
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
                     "Proof: (definition). D is formula (2)'s literal squared "
-                        + "quartic denominator in Q[[x]]. It has no in-module prerequisite."))),
+                        + "quartic denominator in Q[[x]]. Squaring the quartic produces a "
+                        + "degree-eight denominator with constant coefficient one."))),
                 DescribeRole.Definition),
             Describe.Lean(
                 DescribeId.Create("a396093-denominator-expansion"),
@@ -40,10 +42,8 @@ internal sealed class RationalCompositionParityPeriodTenDocument : IScribeDocume
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
                     "Normalization: simp unfolds D and ring gives the "
-                        + "nine coefficients. Directed edge (consumer -> prerequisite): "
-                        + "denominator_expansion -> D. This companion remains public because "
-                        + "generating_function_identity consumes it through the private "
-                        + "coefficient kernel."))),
+                        + "nine coefficients. These coefficients determine the convolution "
+                        + "formula for multiplying a power series by D."))),
                 DescribeRole.Theorem),
             Describe.Lean(
                 DescribeId.Create("a396093-numerator-expansion"),
@@ -53,10 +53,8 @@ internal sealed class RationalCompositionParityPeriodTenDocument : IScribeDocume
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
                     "Normalization: simp unfolds N and ring gives the "
-                        + "eight initial coefficients. Directed edge (consumer -> prerequisite): "
-                        + "numerator_expansion -> N. This companion remains public because "
-                        + "generating_function_identity consumes it through the private "
-                        + "coefficient kernel."))),
+                        + "eight initial coefficients. They supply the right-hand sides of the "
+                        + "coefficient equations in degrees zero through seven."))),
                 DescribeRole.Theorem),
             Describe.Lean(
                 DescribeId.Create("a396093-sequence"),
@@ -67,8 +65,8 @@ internal sealed class RationalCompositionParityPeriodTenDocument : IScribeDocume
                 Blocks(Paragraph(Text(
                     "Proof: (definition). The sequence a is defined by the "
                         + "order-eight recurrence with its eight initial values; it is not "
-                        + "stipulated by parity or by a finite table. It has no in-module "
-                        + "prerequisite."))),
+                        + "stipulated by parity or by a finite table. Its later values are "
+                        + "therefore determined uniquely from the preceding eight values."))),
                 DescribeRole.Definition),
             Describe.Lean(
                 DescribeId.Create("a396093-rational-tail-equation"),
@@ -77,9 +75,9 @@ internal sealed class RationalCompositionParityPeriodTenDocument : IScribeDocume
                 StatementSource.FromAuthor(RationalTailFormula()),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
-                    "Proof: linear normalization of the private recurrence "
-                        + "kernel gives the coefficient equations above degree seven. There is "
-                        + "no public prerequisite edge; the named proof prerequisite is private."))),
+                    "Proof: linear normalization of the order-eight recurrence gives the "
+                        + "coefficient equations above degree seven. Rearranging the recurrence "
+                        + "places every term on the left and yields zero."))),
                 DescribeRole.Theorem),
             Describe.Lean(
                 DescribeId.Create("a396093-initial-coefficient-equations"),
@@ -88,10 +86,9 @@ internal sealed class RationalCompositionParityPeriodTenDocument : IScribeDocume
                 StatementSource.FromAuthor(InitialEquationsFormula()),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
-                    "Proof: norm_num substitutes the eight private base-value "
-                        + "kernels into the coefficient equations in degrees zero through seven. "
-                        + "There is no public prerequisite edge; the named proof prerequisites "
-                        + "are private."))),
+                    "Proof: norm_num substitutes the eight initial values into the convolution "
+                        + "equations for multiplication by D. This gives the inhomogeneous "
+                        + "coefficient equations in degrees zero through seven."))),
                 DescribeRole.Theorem),
             Describe.Lean(
                 DescribeId.Create("a396093-generating-function-identity"),
@@ -100,12 +97,10 @@ internal sealed class RationalCompositionParityPeriodTenDocument : IScribeDocume
                 StatementSource.FromAuthor(GeneratingFunctionIdentityFormula()),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
-                    "Proof: coefficient extensionality and the private coefficient "
-                        + "kernel connect the recurrence to the power-series product. Directed "
-                        + "edges (consumer -> prerequisites): generating_function_identity -> "
-                        + "rational_tail_equation, initial_coefficient_equations, "
-                        + "denominator_expansion, and numerator_expansion. The two expansion "
-                        + "edges pass through the private coefficient kernel."))),
+                    "Proof: coefficient extensionality reduces the power-series identity to "
+                        + "equality in each degree. The recurrence supplies the homogeneous tail "
+                        + "equations above degree seven, while the eight initial equations and "
+                        + "the expansions of D and N settle degrees zero through seven."))),
                 DescribeRole.Theorem),
             Describe.Lean(
                 DescribeId.Create("a396093-generating-function"),
@@ -116,8 +111,8 @@ internal sealed class RationalCompositionParityPeriodTenDocument : IScribeDocume
                 Blocks(Paragraph(Text(
                     "Proof: power-series inversion rewrites the product identity, "
                         + "and the expanded denominator proves its constant coefficient is one. "
-                        + "Directed edges (consumer -> prerequisites): generating_function -> "
-                        + "generating_function_identity and denominator_expansion."))),
+                        + "Consequently D is invertible and A(x)D(x)=N(x) becomes "
+                        + "A(x)=N(x)D(x)^-1."))),
                 DescribeRole.Theorem),
             Describe.Lean(
                 DescribeId.Create("a396093-coefficients-unique"),
@@ -126,11 +121,10 @@ internal sealed class RationalCompositionParityPeriodTenDocument : IScribeDocume
                 StatementSource.FromAuthor(CoefficientsUniqueFormula()),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
-                    "Proof: the private coefficient kernel and strong induction "
-                        + "show that b(x)D(x)=N(x) forces b(n)=a(n) for every n. Directed edge "
-                        + "(consumer -> prerequisite): coefficients_unique -> "
-                        + "generating_function_identity. The other named proof prerequisite is "
-                        + "the private coefficient kernel."))),
+                    "Proof: comparing coefficients in b(x)D(x)=N(x) and a(x)D(x)=N(x) gives "
+                        + "the same convolution equation for b and a. Strong induction, using "
+                        + "equality of earlier coefficients and the constant coefficient one of "
+                        + "D, gives b(n)=a(n) for every n."))),
                 DescribeRole.Theorem),
             Describe.Lean(
                 DescribeId.Create("a396093-reduced-recurrence"),
@@ -139,10 +133,10 @@ internal sealed class RationalCompositionParityPeriodTenDocument : IScribeDocume
                 StatementSource.FromAuthor(ReducedRecurrenceFormula()),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
-                    "Proof: casting the private integer recurrence kernel to "
-                        + "characteristic two removes the even coefficients and identifies minus "
-                        + "with plus. There is no public prerequisite edge; the named recurrence "
-                        + "kernel is private."))),
+                    "Proof: casting the integer recurrence to characteristic two makes the "
+                        + "coefficients 14 and 196 vanish and makes 75 and 269 equal one. Since "
+                        + "negation is the identity, the surviving terms are exactly the four "
+                        + "even lags."))),
                 DescribeRole.Theorem),
             Describe.Lean(
                 DescribeId.Create("a396093-parity-period-ten"),
@@ -152,8 +146,9 @@ internal sealed class RationalCompositionParityPeriodTenDocument : IScribeDocume
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
                     "Proof: two shifted reduced recurrences cancel in "
-                        + "characteristic two. Directed edge (consumer -> prerequisite): "
-                        + "parity_period_ten -> reduced_recurrence."))),
+                        + "characteristic two. Substituting the recurrence at n into the one at "
+                        + "n+2 makes every intermediate term occur twice, leaving "
+                        + "a(n+10)=a(n)."))),
                 DescribeRole.Theorem),
             Describe.Lean(
                 DescribeId.Create("a396093-odd-residue-characterization"),
@@ -162,10 +157,9 @@ internal sealed class RationalCompositionParityPeriodTenDocument : IScribeDocume
                 StatementSource.FromAuthor(OddIffFormula("a")),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
-                    "Proof: period ten reduces every n to the private initial-parity "
-                        + "kernel, whose ten cases give residues 1, 3, 7, and 9. Directed edge "
-                        + "(consumer -> prerequisite): odd_iff_mod_ten -> parity_period_ten. The "
-                        + "other named proof prerequisite is the private initial-parity kernel."))),
+                    "Proof: period ten reduces every index to one of the first ten residues. "
+                        + "Direct evaluation of those ten values gives odd terms precisely at "
+                        + "residues 1, 3, 7, and 9."))),
                 DescribeRole.Theorem),
             Describe.Lean(
                 DescribeId.Create("a396093-odd-gf-characterization"),
@@ -175,9 +169,9 @@ internal sealed class RationalCompositionParityPeriodTenDocument : IScribeDocume
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
                     "Proof: coefficients_unique rewrites the sequence and the "
-                        + "period-ten residue theorem closes the result. Directed edges (consumer "
-                        + "-> prerequisites): odd_iff_mod_ten_of_generating_function -> "
-                        + "coefficients_unique and odd_iff_mod_ten."))),
+                        + "period-ten residue theorem closes the result. Thus every integer "
+                        + "coefficient sequence satisfying formula (2) has the same parity "
+                        + "pattern."))),
                 DescribeRole.Theorem),
             Describe.Lean(
                 DescribeId.Create("a396093-even-even-index"),
@@ -187,8 +181,9 @@ internal sealed class RationalCompositionParityPeriodTenDocument : IScribeDocume
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
                     "Proof: modular arithmetic projects the first OEIS "
-                        + "conjecture from the residue characterization. Directed edge (consumer "
-                        + "-> prerequisite): even_at_even_index -> odd_iff_mod_ten."))),
+                        + "conjecture from the residue characterization. An even index has an "
+                        + "even residue modulo ten, so it never lies in the four odd residue "
+                        + "classes."))),
                 DescribeRole.Theorem),
             Describe.Lean(
                 DescribeId.Create("a396093-even-odd-index-iff"),
@@ -199,8 +194,9 @@ internal sealed class RationalCompositionParityPeriodTenDocument : IScribeDocume
                 Blocks(Paragraph(Text(
                     "Proof: modular arithmetic projects the second OEIS "
                         + "conjecture from the residue characterization. Natural subtraction is "
-                        + "truncated at zero. Directed edge (consumer -> prerequisite): "
-                        + "even_at_odd_index_iff -> odd_iff_mod_ten."))),
+                        + "truncated at zero. For n at least one, a(2n-1) is even exactly when "
+                        + "n is congruent to 3 modulo 5, equivalently n=5k-2 for some k at least "
+                        + "one."))),
                 DescribeRole.Theorem),
             Describe.Lean(
                 DescribeId.Create("a396093-even-even-index-gf"),
@@ -209,10 +205,8 @@ internal sealed class RationalCompositionParityPeriodTenDocument : IScribeDocume
                 StatementSource.FromAuthor(EvenIndexGeneratingFunctionFormula()),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
-                    "Proof: coefficients_unique rewrites b to a, then the first "
-                        + "non-generating-function evenness companion applies. Directed edges "
-                        + "(consumer -> prerequisites): even_at_even_index_of_generating_function "
-                        + "-> coefficients_unique and even_at_even_index."))),
+                    "Proof: coefficient uniqueness gives b(2n)=a(2n), and the even-index "
+                        + "result for a then proves that b(2n) is even."))),
                 DescribeRole.Theorem),
             Describe.Lean(
                 DescribeId.Create("a396093-even-odd-index-gf"),
@@ -221,11 +215,8 @@ internal sealed class RationalCompositionParityPeriodTenDocument : IScribeDocume
                 StatementSource.FromAuthor(EvenOddIndexGeneratingFunctionFormula()),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
-                    "Proof: coefficients_unique rewrites b to a, then the second "
-                        + "non-generating-function evenness companion applies. Directed edges "
-                        + "(consumer -> prerequisites): "
-                        + "even_at_odd_index_iff_of_generating_function -> coefficients_unique "
-                        + "and even_at_odd_index_iff."))),
+                    "Proof: coefficient uniqueness gives b(2n-1)=a(2n-1), so the odd-index "
+                        + "characterization for a transfers the stated equivalence to b."))),
                 DescribeRole.Theorem),
             Describe.Lean(
                 DescribeId.Create("a396093-basic-rational-map"),
@@ -235,8 +226,8 @@ internal sealed class RationalCompositionParityPeriodTenDocument : IScribeDocume
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
                     "Proof: (definition). OEIS A396093 states B(x)=x/(1-x)^2. "
-                        + "Here Bf is that total field operation on Q(x). It has no in-module "
-                        + "prerequisite."))),
+                        + "Here Bf is that total field operation on Q(x). Thus Bf(y) is defined "
+                        + "for every rational function y, including when 1-y is zero."))),
                 DescribeRole.Definition),
             Describe.Lean(
                 DescribeId.Create("a396093-triple-composition"),
@@ -247,9 +238,9 @@ internal sealed class RationalCompositionParityPeriodTenDocument : IScribeDocume
                 Blocks(Paragraph(Text(
                     "Proof: the proof establishes the required nonzero denominator "
                         + "facts before field normalization. This unconditional identity is in "
-                        + "Q(x), so no pointwise non-pole hypotheses occur. Directed edge "
-                        + "(consumer -> prerequisite): triple_B_eq_formula_two -> Bf. Neither N "
-                        + "nor D occurs in this proof term."))),
+                        + "Q(x), so no pointwise non-pole hypotheses occur. Substituting "
+                        + "Bf(y)=y/(1-y)^2 through three iterations yields the factored numerator "
+                        + "and squared quartic denominator of formula (2)."))),
                 DescribeRole.Theorem),
             Paragraph(Text(
                 "The sequence a is defined by the order-eight recurrence with its eight initial "
