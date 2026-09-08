@@ -11,6 +11,6 @@ This file contains imports only. Building this root checks its mathematical depe
 ## References
 
 - Dependency: [D5/S3/PrimeGaps/FragmentMeshTruncation](FragmentMeshTruncation.md)
+- Dependency: [D5/S3/Weil/ProjectiveRayleigh/QuadraticObserverPolarization](../Weil/ProjectiveRayleigh/QuadraticObserverPolarization.md)
+- Dependency: [D5/S3/Weil/ProjectiveRayleigh/ScaledComplexQuadraticRowBound](../Weil/ProjectiveRayleigh/ScaledComplexQuadraticRowBound.md)
 - Dependency: [D5/S3/Weil/ZetaAnalytic/ProjectiveRayleighRouche](../Weil/ZetaAnalytic/ProjectiveRayleighRouche.md)
-- Dependency: [D5/S3/Weil/ZetaLinear/QuadraticObserverPolarization](../Weil/ZetaLinear/QuadraticObserverPolarization.md)
-- Dependency: [D5/S3/Weil/ZetaLinear/ScaledComplexQuadraticRowBound](../Weil/ZetaLinear/ScaledComplexQuadraticRowBound.md)

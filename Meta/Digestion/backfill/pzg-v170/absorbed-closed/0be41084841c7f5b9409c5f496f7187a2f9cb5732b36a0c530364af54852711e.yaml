@@ -2,6 +2,8 @@ fingerprints:
   raw_sha256: sha256:0be41084841c7f5b9409c5f496f7187a2f9cb5732b36a0c530364af54852711e
   normalized_sha256: sha256:0be41084841c7f5b9409c5f496f7187a2f9cb5732b36a0c530364af54852711e
 cas_ref: sha256:0be41084841c7f5b9409c5f496f7187a2f9cb5732b36a0c530364af54852711e
-coverage_gids: []
+coverage_gids:
+  - gid: D5/S1/Recurrence/Parity/RationalCompositionParityPeriodTen.odd_iff_mod_ten
+    target_statement_id: sha256:5ca1070cb4ef8d058d83fb83c26bade0ecdfd9ab53eb9f933a70ad932849a1e0
 receipts:
   unresolved_subitems: []
