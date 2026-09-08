@@ -225,6 +225,24 @@ module pin:
 `sha256:58abac734b6a8969c6215223633e21fea7d3901df1967f9531622190c058d12c`.
 These identities are read from the merged predecessor report, not recomputed.
 
+The frozen definition references are also recorded explicitly. The prefix of
+each short name below is
+`D5/S3/Zeros/Convolution/FiniteFreeCommutatorDegreeFour`:
+
+| Frozen Definition | statement_id |
+| --- | --- |
+| dilate | sha256:cfeef8d70acd59c3974ef7fce414e3607d72c81cb6d6f9e6d41be3b66c990cee |
+| symmetrize | sha256:e9db27e70bca5288a1bc78fb5b5f63f1dbfc300b6b176a87a46b3231ebae4bab |
+| elementaryCoeff | sha256:6edacf40fa3575becc3b3548435bf99326ea1e208a06ab9255b2ff81051fe2c9 |
+| additiveConvolution | sha256:25a49b95cd06b2a42797145a0f0d8ea2f69fd2aad30577f099a73d629d88b267 |
+
+`coeff_reflection` references `dilate`; `symmetrize_coefficient` references
+the other three definitions, the coefficient theorem, and the local
+reflection lemma. The remaining public theorem proofs have no frozen
+repository premise. Imported but unused frozen modules are not counted as
+mathematical premises. All five frozen declaration identities above were
+cross-checked against the final worker-produced canonical report and agree.
+
 `utility: none`, assessed separately for every declaration:
 
 | Declaration | Reason It Misses All Four Computational Classes |
@@ -284,6 +302,8 @@ These identities are read from the merged predecessor report, not recomputed.
 | squareChoiceEquiv | A bijection for arbitrary n,k,S,T, without bounded parameter enumeration, certified instance, checker, or numerical reduction. |
 | squarePartnerEmbedding | A constructed embedding for arbitrary fibers; none of the four computational classes. |
 | card_partner_embeddings | A symbolic cardinality identity at arbitrary n,S,T; none of the four computational classes. |
+| edgeChoiceExponent.match_1 (compiler-generated) | Generic pattern-match eliminator for symbolic choices; none of the four computational classes. |
+| edgeChoiceExponent.match_1.splitter (compiler-generated, private) | Generic case-split support for the same definition; none of the four computational classes. |
 
 Other utility fields are `not-applicable(kind=none)`.
 
@@ -331,3 +351,89 @@ The cache was prepared by `make lean-cache-ensure`: seeded by clonefile from
 `/Users/auricstudio/trureturing`, clonefile_attempts=1, both Mathlib and project
 olean states warm. Every subsequent Lean build uses the canonical make entry.
 No bare lake invocation, resource-limit increase, or constant change is used.
+
+## Final Verification
+
+The square-partner implementation was pushed as `30932eaa98`.
+An exact comparison against the predecessor's Lean fences returned:
+`alternatingFactorialSum_byte_equal=true` (4935 bytes) and
+`matching_skeleton_byte_equal=true` (2788-byte declaration/axiom-print segment).
+
+`make -C tools selftest`: EXIT 0, `SELFTEST PASS`, 4.98 seconds, RSS 258244608
+bytes. The deterministic two-run comparison passed. Reported rule set:
+SL-001, SL-002, SL-003, SL-004, SL-006, SL-007, SL-008, SL-009, SL-010,
+SL-011, SL-012, SL-013, SL-014, SL-015, SL-016, SL-017, SL-018, SL-019,
+SL-020, SL-021, SL-022, SL-023, SL-025, SL-026, SL-028, SL-030, SL-031,
+SL-032, SL-033, SL-034. Explicit deferred rules: SL-007:D5-T0011,
+SL-009:D5-T0012, SL-013:D5-T0013, SL-014:D5-T0010.
+Log: `final-selftest.log`.
+
+`/usr/bin/time -l make lean-report`: EXIT 0; 436.58 seconds; maximum resident
+set size 15978823680 bytes. The inspector's internal build reports 12586 jobs.
+The supervisor separately samples a process-tree RSS maximum of 16644592 KB;
+this differs in scope from `/usr/bin/time`'s single-process maximum, and is
+not silently substituted for it. Log: `final-lean-report.log`.
+Canonical report SHA-256:
+`8f93267c69191825e2f17ad928c2dc8451cab8ade978ad875eaf873248bd84ee`.
+That report contains 20 public theorem declarations, 14 private theorem
+declarations, 21 authored definitions/abbreviations/instances, and two
+compiler-generated match declarations for these modules. All theorem axiom
+closures equal `[Classical.choice, Quot.sound, propext]`; all other declaration
+closures are subsets of those three. No `sorryAx` or private axiom is present.
+Per-declaration utility accounting covers all 57 declarations; the two
+compiler-generated declarations inherit the symbolic, unbounded scope of
+`edgeChoiceExponent`.
+
+The first admission check used the immutable base
+`45e7b20dd95dd8b2d7b8784392c1814193b80515`:
+
+```sh
+dotnet run --project tools/StrataLint.Cli/StrataLint.Cli.csproj --configuration Release -- check --candidate-lean-report .lake/build/stratalint/raw-lean-report.json --protected-base 45e7b20dd95dd8b2d7b8784392c1814193b80515
+```
+
+EXIT 1, 54.48 seconds, RSS 2056552448 bytes, four rejections:
+SL-004 missing Blueprint mirrors for both new Lean modules; SL-010 because
+the initial `G` header of MatchingFiber imports the two frozen `I` modules.
+Log: `final-admission.log`. SL-031 utility admission passed in this run.
+The repair re-routed MatchingFiber as `I` and added typed Scribe definitions
+for both Blueprint mirrors. This changes no theorem statement or proof body,
+and generality metadata is separate from the per-declaration utility class.
+Neither full MatchingIdentity nor the unevaluated matching-fiber count is
+presented as a theorem in the mirrors.
+
+After the metadata repair, `/usr/bin/time -l make lean`: EXIT 0; 12586 jobs;
+22.71 seconds; maximum resident set size 3054501888 bytes.
+Log: `admission-fix-make-lean.log`. Every printed axiom closure remains the
+standard three.
+
+The fresh `/usr/bin/time -l make lean-report` passed: EXIT 0, 64.87 seconds,
+RSS 3969466368 bytes, canonical delta mode with two modules rechecked.
+Log: `admission-fix-lean-report.log`. Report SHA-256:
+`241cedb75f18cac07606fb10ce782cf9b079873d491935e2fc1343cd102906d8`.
+All 57 declaration statement IDs and axiom closures equal those in the
+preceding report; both current source hashes match the current Lean files.
+
+`/usr/bin/time -l make emit`: EXIT 0, 56.55 seconds, RSS 1262993408 bytes.
+Log: `final-emit.log`. Exactly two Blueprint documents changed. They were
+emitted from the typed Scribe definitions; no Blueprint Markdown was authored
+by hand. Other generated projections are ignored run-local output, and no
+unrelated tracked path changed.
+
+Admission recheck with the same command and immutable base: EXIT 3,
+84.29 seconds, RSS 6600245248 bytes. Log: `admission-recheck.log`.
+Every content-rule stage, Scribe verification, Lean closure, and canonicalization
+passed; `rule-passes` reports `status=passed`. The only final classification is
+`PROTECTED_SURFACE_CHANGE count=2`, naming the two new `.scribe.cs` files.
+Per `CLAUDE.md:543` and spec A16, this is the SL-022 annotation with content
+checks passed; it is not reported here as raw EXIT 0. No rule or gate was changed.
+SL-031 reports `UTILITY-OBSERVED kind=none semantics=unverified-by-machine`
+for both modules. SL-034 observes missing frozen state pins, consistent with
+this delivery's explicit no-deposit status. The deferred rule list is the same
+four cases printed by selftest.
+
+Worker artifacts include `declaration-audit.json` (57 declarations with utility
+reasoning, exact statement IDs, and axiom closures), `build-audit.json`, and
+the strict `result.json` envelope. The implementation conclusion is partial:
+steps 1-3 complete, step 4's weighted reduction and square-partner leg verified,
+full step 4 count and steps 5-6 still open. The result envelope records all pushed
+commit IDs and the complete changed-path list. No independent review is claimed.
