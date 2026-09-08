@@ -70,8 +70,7 @@ internal sealed class ProjectiveRayleighCaptureDocument : IScribeDocumentDefinit
                     StatementSource.WithoutFormula(), AssessedProvenance.FromRepo(),
                     Blocks(Paragraph(Text(
                         "The endpoints are ell=103/2000000000, U=560909/10000000000000 and "
-                        + "T=1/200000, taken from the actual prime3_refined_certificate.json in "
-                        + "PR #5602 at b02e0787252c1239cf18c6f39652048a45793f39. Their ratio is "
+                        + "T=1/200000, taken from the actual prime3_refined_certificate.json. Their ratio is "
                         + "15303/16495000 and is strictly below (61/2000)^2. This arithmetic "
                         + "does not validate the upstream interval program or its operator bridge."))),
                     DescribeRole.Theorem),
