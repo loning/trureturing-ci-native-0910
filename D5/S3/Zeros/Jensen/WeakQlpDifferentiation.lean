@@ -43,5 +43,20 @@ example : qBorel (1 / 2) halfCounterexample = (X + 1) ^ 3 := by
   norm_num [← C_mul_X_pow_eq_monomial, smul_eq_C_mul, map_ofNat]
   ring
 
+/-- The polynomial restriction of Question 6.2, p. 12, of
+arXiv:2606.17864v1. Definition 1.1, p. 3, makes the weak class the inverse
+image of the classical Laguerre--Polya class under `qBorel`.
+
+For real polynomials, membership in the classical class is equivalent to
+splitting over the reals: one direction uses a constant approximating
+sequence, and the other follows from Hurwitz's theorem. `Polynomial.Splits`
+also includes zero. Thus closure for the paper's entire-function class
+(defined using locally uniform limits) would imply this polynomial claim.
+The analytic equivalence is the interpretation of this restriction; it is
+not an additional Lean theorem asserted by this module. -/
+def Question62Claim : Prop :=
+  ∀ q : ℝ, 0 < q → q < 1 → ∀ f : ℝ[X],
+    (qBorel q f).Splits → (qBorel q f.derivative).Splits
+
 end
 end D5.S3.Zeros.Jensen.WeakQlpDifferentiation
