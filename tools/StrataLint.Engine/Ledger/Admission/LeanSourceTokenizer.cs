@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Globalization;
 
 namespace StrataLint.Engine;
 
@@ -7,167 +6,342 @@ internal sealed record LeanSourceToken(string Text, int Line, int Column);
 
 internal static class LeanSourceTokenizer
 {
-    internal static ImmutableArray<LeanSourceToken> Tokenize(string source)
+    internal static ImmutableArray<LeanSourceToken> Tokenize(string source) =>
+        new Scanner(source, includeInterpolationTerms: false).ReadCode();
+
+    // Proposition extraction retains literal spelling; source policies also inspect embedded terms.
+    internal static ImmutableArray<LeanSourceToken> TokenizeIncludingInterpolationTerms(string source) =>
+        new Scanner(source, includeInterpolationTerms: true).ReadCode();
+
+    private sealed class Scanner(string source, bool includeInterpolationTerms)
     {
-        var result = ImmutableArray.CreateBuilder<LeanSourceToken>();
-        var brackets = new Stack<char>();
-        var index = 0;
-        var line = 1;
-        var column = 0;
-        while (index < source.Length)
+        private int index;
+        private int line = 1;
+        private int column;
+
+        internal ImmutableArray<LeanSourceToken> ReadCode(int? interpolationLine = null)
         {
-            if (char.IsWhiteSpace(source[index]))
+            var result = ImmutableArray.CreateBuilder<LeanSourceToken>();
+            var brackets = new Stack<(char Symbol, int Line)>();
+            while (index < source.Length)
             {
-                Advance(source[index]);
-                index++;
-                continue;
-            }
-
-            if (index + 1 < source.Length && source[index] == '-' && source[index + 1] == '-')
-            {
-                while (index < source.Length && source[index] != '\n')
+                if (char.IsWhiteSpace(source[index]))
                 {
-                    Advance(source[index++]);
+                    Advance();
+                    continue;
                 }
 
-                continue;
-            }
+                if (At("--"))
+                {
+                    while (index < source.Length && source[index] != '\n')
+                    {
+                        Advance();
+                    }
 
-            if (index + 1 < source.Length && source[index] == '/' && source[index + 1] == '-')
-            {
-                var depth = 0;
-                do
-                {
-                    if (index + 1 < source.Length && source[index] == '/' && source[index + 1] == '-')
-                    {
-                        depth++;
-                        Advance(source[index++]);
-                        Advance(source[index++]);
-                    }
-                    else if (index + 1 < source.Length && source[index] == '-' && source[index + 1] == '/')
-                    {
-                        depth--;
-                        Advance(source[index++]);
-                        Advance(source[index++]);
-                    }
-                    else
-                    {
-                        Advance(source[index++]);
-                    }
-                }
-                while (index < source.Length && depth > 0);
-                if (depth != 0)
-                {
-                    throw new LeanSourceExtractionException("Lean block comment is unterminated.");
+                    continue;
                 }
 
-                continue;
-            }
+                if (At("/-"))
+                {
+                    ReadComment();
+                    continue;
+                }
 
-            var tokenLine = line;
-            var tokenColumn = column;
-            if (source[index] == '"')
-            {
+                if (interpolationLine is not null && source[index] == '}' && brackets.Count == 0)
+                {
+                    Advance();
+                    return result.ToImmutable();
+                }
+
                 var start = index;
-                Advance(source[index++]);
-                var closed = false;
-                while (index < source.Length)
+                var tokenLine = line;
+                var tokenColumn = column;
+                var rawQuote = RawStringQuote();
+                if (rawQuote >= 0)
                 {
-                    if (source[index] == '\\' && index + 1 < source.Length)
-                    {
-                        Advance(source[index++]);
-                        Advance(source[index++]);
-                        continue;
-                    }
-
-                    var value = source[index];
-                    Advance(source[index++]);
-                    if (value == '"')
-                    {
-                        closed = true;
-                        break;
-                    }
+                    ReadRawString(rawQuote);
                 }
-
-                if (!closed)
+                else if (source[index] == '"')
                 {
-                    throw new LeanSourceExtractionException("Lean string literal is unterminated.");
+                    var interpolated = result.Count > 0 && result[^1].Text is "s!" or "m!" or "f!";
+                    ReadString(interpolated, result);
+                }
+                else if (source[index] == '\'')
+                {
+                    ReadCharacter();
+                }
+                else if (NameLiteralPrefixLength() is var prefix && prefix > 0)
+                {
+                    Advance(prefix);
+                    ReadIdentifier();
+                }
+                else if (IsIdentifierStart(CodePointAt(index)))
+                {
+                    ReadIdentifier();
+                }
+                else
+                {
+                    var symbol = index + 1 < source.Length && source.Substring(index, 2) is
+                        ":=" or "=>" or "->" or "<-" or "::" or "<=" or ">=" or "==" or "!="
+                            ? source.Substring(index, 2)
+                            : source.Substring(index, char.IsSurrogatePair(source, index) ? 2 : 1);
+                    Advance(symbol.Length);
+                    if (symbol.Length == 1 && symbol[0] is '(' or '[' or '{')
+                    {
+                        brackets.Push((symbol[0], tokenLine));
+                    }
+                    else if (symbol.Length == 1 && symbol[0] is ')' or ']' or '}')
+                    {
+                        var expected = symbol[0] switch { ')' => '(', ']' => '[', _ => '{' };
+                        if (!brackets.TryPop(out var actual) || actual.Symbol != expected)
+                        {
+                            throw Error("Lean delimiters are unbalanced.", tokenLine);
+                        }
+                    }
                 }
 
                 result.Add(new LeanSourceToken(source[start..index], tokenLine, tokenColumn));
-                continue;
             }
 
-            if (IsIdentifierStart(source[index]))
+            if (brackets.TryPeek(out var opening))
             {
-                var start = index;
-                while (index < source.Length && IsIdentifierPart(source[index]))
-                {
-                    Advance(source[index++]);
-                }
-
-                result.Add(new LeanSourceToken(source[start..index], tokenLine, tokenColumn));
-                continue;
+                throw Error("Lean delimiters are unbalanced.", opening.Line);
             }
 
-            var symbol = index + 1 < source.Length && source.Substring(index, 2) is
-                ":=" or "=>" or "->" or "<-" or "::" or "<=" or ">=" or "==" or "!="
-                    ? source.Substring(index, 2)
-                    : source[index].ToString(CultureInfo.InvariantCulture);
-            foreach (var value in symbol)
+            if (interpolationLine is not null)
             {
-                Advance(value);
+                throw Error("Lean string interpolation is unterminated.", interpolationLine.Value);
             }
 
-            index += symbol.Length;
-            if (symbol.Length == 1 && symbol[0] is '(' or '[' or '{')
-            {
-                brackets.Push(symbol[0]);
-            }
-            else if (symbol.Length == 1 && symbol[0] is ')' or ']' or '}')
-            {
-                var expected = symbol[0] switch { ')' => '(', ']' => '[', _ => '{' };
-                if (!brackets.TryPop(out var actual) || actual != expected)
-                {
-                    throw new LeanSourceExtractionException("Lean delimiters are unbalanced.");
-                }
-            }
-
-            result.Add(new LeanSourceToken(symbol, tokenLine, tokenColumn));
+            return result.ToImmutable();
         }
 
-        if (brackets.Count != 0)
+        private void ReadComment()
         {
-            throw new LeanSourceExtractionException("Lean delimiters are unbalanced.");
+            var startLine = line;
+            var depth = 0;
+            do
+            {
+                if (At("/-"))
+                {
+                    depth++;
+                    Advance(2);
+                }
+                else if (At("-/"))
+                {
+                    depth--;
+                    Advance(2);
+                }
+                else
+                {
+                    Advance();
+                }
+            }
+            while (index < source.Length && depth > 0);
+            if (depth != 0)
+            {
+                throw Error("Lean block comment is unterminated.", startLine);
+            }
         }
 
-        return result.ToImmutable();
-
-        void Advance(char value)
+        private void ReadString(bool interpolated, ImmutableArray<LeanSourceToken>.Builder result)
         {
-            if (value == '\n')
+            var startLine = line;
+            Advance();
+            while (index < source.Length)
             {
-                line++;
-                column = 0;
+                var value = source[index];
+                if (value == '\\')
+                {
+                    Advance();
+                    if (index < source.Length)
+                    {
+                        Advance();
+                    }
+                }
+                else if (value == '"')
+                {
+                    Advance();
+                    return;
+                }
+                else if (interpolated && value == '{')
+                {
+                    var interpolationLine = line;
+                    Advance();
+                    var terms = ReadCode(interpolationLine);
+                    if (includeInterpolationTerms)
+                    {
+                        result.AddRange(terms);
+                    }
+                }
+                else
+                {
+                    Advance();
+                }
             }
-            else
+
+            throw Error("Lean string literal is unterminated.", startLine);
+        }
+
+        private int RawStringQuote()
+        {
+            if (source[index] != 'r')
             {
-                column++;
+                return -1;
+            }
+
+            var cursor = index + 1;
+            while (cursor < source.Length && source[cursor] == '#')
+            {
+                cursor++;
+            }
+
+            return cursor < source.Length && source[cursor] == '"' ? cursor : -1;
+        }
+
+        private void ReadRawString(int quote)
+        {
+            var startLine = line;
+            var terminator = "\"" + new string('#', quote - index - 1);
+            Advance(quote - index + 1);
+            while (index < source.Length)
+            {
+                if (At(terminator))
+                {
+                    Advance(terminator.Length);
+                    return;
+                }
+
+                Advance();
+            }
+
+            throw Error("Lean raw string literal is unterminated.", startLine);
+        }
+
+        private void ReadCharacter()
+        {
+            var startLine = line;
+            Advance();
+            if (index < source.Length && source[index] == '\\')
+            {
+                Advance();
+                if (index < source.Length)
+                {
+                    var escape = source[index];
+                    Advance();
+                    var digits = escape switch { 'x' => 2, 'u' => 4, _ => 0 };
+                    for (var count = 0; count < digits; count++)
+                    {
+                        if (index >= source.Length || !char.IsAsciiHexDigit(source[index]))
+                        {
+                            throw Error("Lean character escape is malformed.", startLine);
+                        }
+
+                        Advance();
+                    }
+                }
+            }
+            else if (index < source.Length)
+            {
+                Advance(char.IsSurrogatePair(source, index) ? 2 : 1);
+            }
+
+            if (index >= source.Length || source[index] != '\'')
+            {
+                throw Error("Lean character literal is unterminated or malformed.", startLine);
+            }
+
+            Advance();
+        }
+
+        private int NameLiteralPrefixLength()
+        {
+            var length = At("``") ? 2 : At("`") ? 1 : 0;
+            return length > 0 && index + length < source.Length && IsIdentifierStart(CodePointAt(index + length))
+                ? length
+                : 0;
+        }
+
+        private void ReadIdentifier()
+        {
+            while (index < source.Length)
+            {
+                if (source[index] == '\u00ab')
+                {
+                    var startLine = line;
+                    Advance();
+                    while (index < source.Length && source[index] != '\u00bb')
+                    {
+                        Advance();
+                    }
+
+                    if (index == source.Length)
+                    {
+                        throw Error("Lean escaped identifier is unterminated.", startLine);
+                    }
+
+                    Advance();
+                }
+                else
+                {
+                    while (index < source.Length && IsIdentifierPart(CodePointAt(index)))
+                    {
+                        Advance(char.IsSurrogatePair(source, index) ? 2 : 1);
+                    }
+                }
+
+                if (index + 1 >= source.Length || source[index] != '.' || !IsIdentifierStart(CodePointAt(index + 1)))
+                {
+                    return;
+                }
+
+                Advance();
+            }
+        }
+
+        private bool At(string text) => source.AsSpan(index).StartsWith(text, StringComparison.Ordinal);
+
+        private int CodePointAt(int offset) => char.ConvertToUtf32(source, offset);
+
+        private static LeanSourceExtractionException Error(string message, int atLine) => new(message, atLine);
+
+        private void Advance(int count = 1)
+        {
+            for (var offset = 0; offset < count; offset++)
+            {
+                if (source[index++] == '\n')
+                {
+                    line++;
+                    column = 0;
+                }
+                else
+                {
+                    column++;
+                }
             }
         }
     }
 
-    private static bool IsIdentifierStart(char value) =>
-        value == '_'
-        || char.IsLetter(value)
-        || char.GetUnicodeCategory(value) is UnicodeCategory.LetterNumber;
+    // Lean v4.33.0 Init/Meta/Defs.lean defines explicit isIdFirst/isIdRest ranges.
+    private static bool IsIdentifierStart(int value) =>
+        value is '_' or '\u00ab' or >= 'a' and <= 'z' or >= 'A' and <= 'Z'
+        || IsLetterLike(value);
 
-    private static bool IsIdentifierPart(char value) =>
-        IsIdentifierStart(value)
-        || char.IsDigit(value)
-        || value is '\'' or '.'
-        || char.GetUnicodeCategory(value) is
-            UnicodeCategory.NonSpacingMark
-            or UnicodeCategory.SpacingCombiningMark
-            or UnicodeCategory.OtherNumber;
+    private static bool IsIdentifierPart(int value) =>
+        value != '\u00ab' && IsIdentifierStart(value)
+        || value is '\'' or '!' or '?' or >= '0' and <= '9'
+            or >= 0x2080 and <= 0x2089
+            or >= 0x2090 and <= 0x209c
+            or >= 0x1d62 and <= 0x1d6a
+            or 0x2c7c;
+
+    private static bool IsLetterLike(int value) => value is
+        >= 0x03b1 and <= 0x03c9 and not 0x03bb
+        or >= 0x0391 and <= 0x03a9 and not 0x03a0 and not 0x03a3
+        or >= 0x03ca and <= 0x03fb
+        or >= 0x1f00 and <= 0x1ffe
+        or >= 0x2100 and <= 0x214f
+        or >= 0x1d49c and <= 0x1d59f
+        or >= 0x00c0 and <= 0x00ff and not 0x00d7 and not 0x00f7
+        or >= 0x0100 and <= 0x017f;
 }

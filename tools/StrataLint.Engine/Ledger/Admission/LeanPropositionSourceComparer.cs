@@ -51,4 +51,7 @@ internal static class LeanPropositionSourceComparer
     }
 }
 
-internal sealed class LeanSourceExtractionException(string message) : FormatException(message);
+internal sealed class LeanSourceExtractionException(string message, int? line = null) : FormatException(message)
+{
+    internal int? Line { get; } = line;
+}
