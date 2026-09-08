@@ -13,7 +13,7 @@ motivation_gids:
 ## Problem
 
 OEIS A363560, Paul D. Hanna, Aug 12 2023, records the following NAME and
-COMMENT, quoted verbatim from `Library/Arith/hanna2023a363560.md`:
+COMMENT, quoted verbatim from `Library/Recurrence/hanna2023a363560.md`:
 
 > Expansion of g.f. A(x) satisfying A(x)^3 = 1 + x*(A(x) + A(x)^2 + A(x)^9).
 

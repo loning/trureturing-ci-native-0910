@@ -8,7 +8,7 @@ internal sealed class CubicNinthPowerSubstitutionModThreeDocument : IScribeDocum
 {
     private const string Prefix = "D5/S1/Recurrence/Invariants/CubicNinthPowerSubstitutionModThree.";
     private static readonly LibraryNoteRef Source =
-        LibraryNoteRef.Create("D5/L/Arith/hanna2023a363560");
+        LibraryNoteRef.Create("D5/L/Recurrence/hanna2023a363560");
 
     public DocumentDefinition Create() => DocumentDefinition.Create(ScribeNode.Create(
         "Every positive coefficient index outside the class one modulo seven in OEIS A363560 has coefficient divisible by three.",
