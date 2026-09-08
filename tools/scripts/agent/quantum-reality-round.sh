@@ -4,13 +4,13 @@
 # open questions live in the lane so a round survives across sessions and hosts.
 #
 # Usage: quantum-reality-round.sh [lane-dir] [pool]
-# Writes: <lane>/Research/QuantumReality/round-<N>-<utc>.md
+# Writes: <lane>/docs/reports/quantum-reality/round-<N>-<utc>.md
 # Sentinel: QR_ROUND round=<N> status=dispatched|failed file=<path>
 set -u
 
 LANE="${1:-/Users/chronoai/trureturing-quantum-reality}"
 POOL="${2:-chrono-chatgpt-pro-pool}"
-DIR="$LANE/Research/QuantumReality"
+DIR="$LANE/docs/reports/quantum-reality"
 CHARTER="$DIR/CHARTER.md"
 OPEN="$DIR/OPEN-QUESTIONS.md"
 
