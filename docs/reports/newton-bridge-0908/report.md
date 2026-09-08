@@ -318,4 +318,3 @@ theorem real_monic_newton_bridge (p : Real[X]) (hp : p.Monic) :
 
 end NewtonBridgeBindProbe
 ```
-
