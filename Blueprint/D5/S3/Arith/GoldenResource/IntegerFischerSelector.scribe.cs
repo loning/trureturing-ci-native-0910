@@ -46,6 +46,18 @@ internal sealed class IntegerFischerSelectorDocument : IScribeDocumentDefinition
                     + "diagonal entries yields the integer form of the bound."))),
                 DescribeRole.Theorem),
             Describe.Lean(
+                DescribeId.Create("fischer-selector-gap-two-margins"),
+                DeclarationHandle.Create(Prefix + "selectorGap_eq_min"),
+                H("Only the endpoint margins determine the gap"),
+                StatementSource.FromAuthor(GapMinimumFormula()),
+                AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("The two endpoint margins add to log(k squared) "
+                    + "minus log(k squared minus one), since (k-1)(k+1) equals k squared "
+                    + "minus one. Both margins are positive on the price interval, so their "
+                    + "minimum does not exceed their sum. Thus delta(k, p) equals the "
+                    + "minimum of the two endpoint margins."))),
+                DescribeRole.Theorem),
+            Describe.Lean(
                 DescribeId.Create("fischer-selector-gap-positive"),
                 DeclarationHandle.Create(Prefix + "selectorGap_pos"),
                 H("A positive margin depending on k and p"),
@@ -99,6 +111,13 @@ internal sealed class IntegerFischerSelectorDocument : IScribeDocumentDefinition
         Disp(new Formula.BindMany(FormulaQuantifier.ForAll,
             [Bound("k", Naturals()), Bound("p", Reals())],
             Implies(PriceWindow(), Lt(D(0), MarginBody()))));
+
+    private static Formula GapMinimumFormula() =>
+        Disp(new Formula.BindMany(FormulaQuantifier.ForAll,
+            [Bound("k", Naturals()), Bound("p", Reals())],
+            Implies(PriceWindow(),
+                new Formula.Relation(Margin(), FormulaRelationOperator.Equal,
+                    Call("min", Sub(RatioPrev(), F.Id("p")), Sub(F.Id("p"), RatioNext()))))));
 
     private static Formula SelectorFormula()
     {

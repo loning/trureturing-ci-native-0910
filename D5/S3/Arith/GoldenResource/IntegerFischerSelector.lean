@@ -103,6 +103,36 @@ def selectorGap (k : ℕ) (p : ℝ) : ℝ :=
     (p - Real.log (((k + 1 : ℕ) : ℝ) / k)))
     (Real.log ((k : ℝ) ^ 2) - Real.log ((k : ℝ) ^ 2 - 1))
 
+/-- On the strict price window, the two-coordinate loss is redundant. -/
+theorem selectorGap_eq_min {k : ℕ} (hk : 2 ≤ k) {p : ℝ}
+    (hlo : Real.log (((k + 1 : ℕ) : ℝ) / k) < p)
+    (hhi : p < Real.log ((k : ℝ) / (k - 1 : ℕ))) :
+    selectorGap k p =
+      min (Real.log ((k : ℝ) / (k - 1 : ℕ)) - p)
+          (p - Real.log (((k + 1 : ℕ) : ℝ) / k)) := by
+  have hkpos : 0 < (k : ℝ) := by exact_mod_cast (show 0 < k by omega)
+  have hmpos : 0 < ((k - 1 : ℕ) : ℝ) := by
+    exact_mod_cast (show 0 < k - 1 by omega)
+  have hppos : 0 < ((k + 1 : ℕ) : ℝ) := by positivity
+  have hfactor : (k : ℝ) ^ 2 - 1 =
+      ((k - 1 : ℕ) : ℝ) * ((k + 1 : ℕ) : ℝ) := by
+    rw [Nat.cast_sub (show 1 ≤ k by omega), Nat.cast_add, Nat.cast_one]
+    ring
+  have hsum : (Real.log ((k : ℝ) / (k - 1 : ℕ)) - p) +
+      (p - Real.log (((k + 1 : ℕ) : ℝ) / k)) =
+      Real.log ((k : ℝ) ^ 2) - Real.log ((k : ℝ) ^ 2 - 1) := by
+    rw [hfactor, Real.log_mul hmpos.ne' hppos.ne',
+      Real.log_div hkpos.ne' hmpos.ne', Real.log_div hppos.ne' hkpos.ne', Real.log_pow]
+    ring
+  unfold selectorGap
+  rw [← hsum]
+  apply min_eq_left
+  have ha := sub_pos.mpr hhi
+  have hb := sub_pos.mpr hlo
+  have hmin := min_le_left (Real.log ((k : ℝ) / (k - 1 : ℕ)) - p)
+    (p - Real.log (((k + 1 : ℕ) : ℝ) / k))
+  linarith
+
 /-- The selector gap is positive throughout the strict price window. -/
 theorem selectorGap_pos {k : ℕ} (hk : 2 ≤ k) {p : ℝ}
     (hlo : Real.log (((k + 1 : ℕ) : ℝ) / k) < p)
@@ -210,6 +240,7 @@ theorem integer_log_unique_maximum {k : ℕ} (hk : 2 ≤ k) {p : ℝ}
 
 #print axioms fischer_two_block
 #print axioms integer_fischer_gap
+#print axioms selectorGap_eq_min
 #print axioms selectorGap_pos
 #print axioms integer_log_unique_maximum
 
