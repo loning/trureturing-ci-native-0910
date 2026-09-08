@@ -5,6 +5,8 @@ cas_ref: sha256:9352f754b7437592817050548dd3e5f8f386307ff69d73c934573232e17dd260
 coverage_gids:
   - gid: D5/S3/Arith/GoldenResource/GoldenObservationLattice.Gobs_equivalence_not_compatible_with_multiplication
     target_statement_id: sha256:621b636ebd70a57a0197552c05a19db8036d9556870c78b4177e112d05eafcef
+  - gid: D5/S3/Arith/GoldenResource/GoldenObservationLattice.Gobs_lattice_boundary_refutation
+    target_statement_id: sha256:c5e148f44ac26978c0c00e8ee3af8e62e2014a4c5320e5ad560d3f607c4839fc
   - gid: D5/S3/Arith/GoldenResource/GoldenObservationLattice.Gobs_not_multiplicative_and_not_associative_on_fixed_points
     target_statement_id: sha256:766db4a5d73c2bac4598cb8f2e9628919652615736483efa5e8ed27a95c3ad84
   - gid: D5/S3/Arith/GoldenResource/GoldenObservationLattice.Gobs_product_not_associative_on_golden_subtype
