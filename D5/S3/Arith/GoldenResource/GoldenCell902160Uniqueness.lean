@@ -28,33 +28,29 @@ theorem three_pow_modEq_179_iff (n : Nat) :
   simpa only [Nat.cast_pow, Nat.cast_ofNat, ← hres, three_order_179] using
     (hfin.pow_eq_pow_iff_modEq (n := n) (m := 23))
 
-private theorem modEq_2241_at_1804320 : Nat.ModEq 1804320 (3 ^ 1804320) 2241 := by
+private theorem modEq_2241_at_multiple (t : Nat) (ht : t ≠ 0) :
+    Nat.ModEq 10080 (3 ^ (10080 * t)) 2241 := by
   have hbase := GoldenCell5040Congruence.goldenCell5040_modEq_2241 10080 (by simp)
   -- Lift the frozen small-modulus residues, keeping the large power symbolic.
   have hone (m : Nat) (hm : m ∣ 10080) (hr : Nat.ModEq m 2241 1) :
-      Nat.ModEq m (3 ^ 1804320) 2241 := by
-    have hp (t : Nat) : Nat.ModEq m (3 ^ (10080 * t)) 1 := by
+      Nat.ModEq m (3 ^ (10080 * t)) 2241 := by
+    have hp : Nat.ModEq m (3 ^ (10080 * t)) 1 := by
       simpa only [pow_mul, one_pow] using ((hbase.of_dvd hm).trans hr).pow t
-    exact (hp 179).trans hr.symm
-  have h9 : Nat.ModEq 9 (3 ^ 1804320) 2241 := by
+    exact hp.trans hr.symm
+  have h9 : Nat.ModEq 9 (3 ^ (10080 * t)) 2241 := by
     have hz : Nat.ModEq 9 (3 ^ 10080) 0 :=
       (hbase.of_dvd (by decide : 9 ∣ 10080)).trans (by decide)
-    have hp (t : Nat) (ht : t ≠ 0) : Nat.ModEq 9 (3 ^ (10080 * t)) 0 := by
+    have hp : Nat.ModEq 9 (3 ^ (10080 * t)) 0 := by
       simpa only [pow_mul, zero_pow ht] using hz.pow t
-    exact (hp 179 (by decide)).trans (by decide)
-  have h35 : Nat.ModEq (5 * 7) (3 ^ 1804320) 2241 :=
+    exact hp.trans (by decide)
+  have h35 : Nat.ModEq (5 * 7) (3 ^ (10080 * t)) 2241 :=
     (Nat.modEq_and_modEq_iff_modEq_mul (by decide : Nat.Coprime 5 7)).mp
       ⟨hone 5 (by decide) (by decide), hone 7 (by decide) (by decide)⟩
-  have h1120 : Nat.ModEq (32 * 35) (3 ^ 1804320) 2241 :=
+  have h1120 : Nat.ModEq (32 * 35) (3 ^ (10080 * t)) 2241 :=
     (Nat.modEq_and_modEq_iff_modEq_mul (by decide : Nat.Coprime 32 35)).mp
       ⟨hone 32 (by decide) (by decide), h35⟩
-  have h10080 : Nat.ModEq (9 * 1120) (3 ^ 1804320) 2241 :=
-    (Nat.modEq_and_modEq_iff_modEq_mul (by decide : Nat.Coprime 9 1120)).mp
-      ⟨h9, h1120⟩
-  have h179 : Nat.ModEq 179 (3 ^ 1804320) 2241 :=
-    (three_pow_modEq_179_iff 1804320).mpr (by decide)
-  exact (Nat.modEq_and_modEq_iff_modEq_mul
-    (by decide : Nat.Coprime 10080 179)).mp ⟨h10080, h179⟩
+  exact (Nat.modEq_and_modEq_iff_modEq_mul (by decide : Nat.Coprime 9 1120)).mp
+    ⟨h9, h1120⟩
 
 /-- Exactly one member of the scaled six-element cell has power residue 2241 modulo itself. -/
 theorem goldenCell902160_modEq_2241_iff (n : Nat)
@@ -70,7 +66,11 @@ theorem goldenCell902160_modEq_2241_iff (n : Nat)
     rcases hn with rfl | rfl | rfl | rfl | rfl | rfl
     all_goals first | rfl | norm_num [Nat.ModEq] at hexp
   · rintro rfl
-    exact modEq_2241_at_1804320
+    have hcrt : Nat.ModEq (10080 * 179) (3 ^ (10080 * 179)) 2241 :=
+      (Nat.modEq_and_modEq_iff_modEq_mul (by decide : Nat.Coprime 10080 179)).mp
+        ⟨modEq_2241_at_multiple 179 (by decide),
+          (three_pow_modEq_179_iff (10080 * 179)).mpr (by decide)⟩
+    simpa only [show 10080 * 179 = 1804320 by decide] using hcrt
 
 #print axioms three_pow_modEq_179_iff
 #print axioms goldenCell902160_modEq_2241_iff
