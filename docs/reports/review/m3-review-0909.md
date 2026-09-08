@@ -215,9 +215,114 @@ after the first (`0ed2c563eb`) succeeded. A sequential ordinary
 `git push origin review/m3-0909` returned EXIT=0 and published the descendant.
 No force, fetch, rebase, or source change was used.
 
-## Q3-Q6
+## Q3: Utility Classification
 
-Q1-Q2 complete; Q3-Q6 pending. No final verdict at this checkpoint.
+**Verdict: both `utility: none` classifications are valid.** The test is the
+semantic deliverable, not the number of terms, finite proof length, filename,
+presence of numerals, or tactic. Bounded enumeration would settle a problem by
+exhausting a bounded set of input objects. Certified-instance would establish
+the property of a specified concrete input. A checker would export a reusable
+certificate-validation/soundness mechanism. Numeric-reduction would leave or
+discharge specific numerical bounds as the substantive route to a conclusion.
+
+Here the deliverable is preservation for **every** cubic in the domain and
+every alpha > -1, and a universal ordered-gap polynomial inequality supporting
+it. All input coefficients/roots remain real variables. The 4 t-coefficients
+are the algebraic components of one universal identity; the 787 monomial
+support and 20-square decomposition are finite syntax of that proof. There is
+no enumeration of input polynomials, roots, alpha values, or bounded search
+states, no acceptance predicate/checker API, and no unresolved numerical
+threshold. In particular, checking four coefficients by `ring` is not a
+coverage argument by sampling four parameter values. Fixed m=3 alone is not
+`certified-instance`: G/I/E and computational utility are explicitly orthogonal
+in clause 3.3 and spec A5.1:115. No ordinary positive finite instance is being
+given a consumer/terminal exemption; no `refutes` claim is needed for `none`.
+
+Per-source-declaration audit (M = `GribinskiDegreeThree`, D = its Discriminant
+module; `p` denotes private). Each listed declaration is classified `none`:
+
+| Declaration | Line | Reason |
+| --- | ---: | --- |
+| M.elementaryCoeff | 36 | coefficient convention for arbitrary polynomial |
+| M.weight | 40 | symbolic falling-factorial weight |
+| M.normalizedCoeff | 43 | symbolic coefficient ratio |
+| M.convolutionCoeff | 47 | algebraic definition for arbitrary input polynomials |
+| M.boxplus3 | 52 | polynomial operation, not a concrete output instance |
+| M.rootTriple | 57 | three arbitrary real linear factors |
+| M.definition_consistency | 60 | arbitrary-input coefficient identity; k=0..3 are coordinates, not enumerated inputs |
+| M.kappa | 65 | rational function of arbitrary alpha |
+| M.rho | 68 | rational function of arbitrary alpha |
+| M.weight_values (p) | 70 | four symbolic product identities |
+| M.rootTriple_coefficients (p) | 76 | universal Vieta identity |
+| M.convolution_coefficients | 86 | universal rational coefficient formulas |
+| M.m3_explicit_coefficients | 110 | symbolic polynomial equality |
+| M.weight_pos | 123 | universal domain positivity |
+| M.m3_nonnegative_coefficients | 130 | universal sign propagation |
+| M.discriminant | 149 | symbolic discriminant definition |
+| M.nonnegative_rootTriple_coordinates | 157 | order/coordinate theorem for arbitrary triples; six order cases do not enumerate root values |
+| M.discriminant_numerator (p) | 189 | exact rational identity; no numerical premise |
+| M.ordered_output_discriminant (p) | 201 | universal ordered-root discriminant inequality |
+| M.m3_discriminant_nonneg | 226 | universal discriminant inequality |
+| M.m3_nonnegative_roots | 237 | preservation over the whole cubic domain |
+| D.numerator | 26 | symbolic polynomial in six variables |
+| D.coeff0 (p) | 31 | symbolic parameter coefficient |
+| D.coeff1 (p) | 35 | symbolic parameter coefficient |
+| D.coeff2 (p) | 40 | symbolic parameter coefficient |
+| D.coeff3 (p) | 45 | symbolic parameter coefficient |
+| D.numerator_expansion (p) | 49 | universal identity in t and coefficients |
+| D.sumRoots (p) | 55 | elementary symmetric expression |
+| D.pairRoots (p) | 56 | elementary symmetric expression |
+| D.prodRoots (p) | 58 | elementary symmetric expression |
+| D.sos0 (p) | 60 | polynomial expression supporting universal inequality |
+| D.sos0_nonneg (p) | 128 | sign closure for arbitrary nonnegative gaps |
+| D.coeff0_identity (p) | 135 | exact universal polynomial identity |
+| D.ordered_coeff0_nonneg (p) | 145 | universal parameter-coefficient inequality |
+| D.sos1 (p) | 157 | polynomial expression supporting universal inequality |
+| D.sos1_nonneg (p) | 214 | sign closure for arbitrary nonnegative gaps |
+| D.coeff1_identity (p) | 221 | exact universal polynomial identity |
+| D.ordered_coeff1_nonneg (p) | 231 | universal parameter-coefficient inequality |
+| D.sos2 (p) | 243 | symbolic weighted-square construction |
+| D.sos2_nonneg (p) | 285 | universal sign of weighted squares and remainder |
+| D.coeff2_identity (p) | 292 | exact universal polynomial identity |
+| D.ordered_coeff2_nonneg (p) | 302 | universal parameter-coefficient inequality |
+| D.sos3 (p) | 314 | symbolic weighted-square construction |
+| D.sos3_nonneg (p) | 330 | universal sign of weighted squares and remainder |
+| D.coeff3_identity (p) | 337 | exact universal polynomial identity |
+| D.ordered_coeff3_nonneg (p) | 347 | universal parameter-coefficient inequality |
+| D.ordered_numerator_nonneg | 360 | universal polynomial inequality, not a verifier implementation |
+
+Inventory command: `rg -n '^(private )?(def|theorem) ' <M.lean> <D.lean>`:
+47 source declarations (21 definitions, 26 theorems), EXIT=0. This source
+inventory is not assumed equal to the canonical inspector's included catalog;
+the brief's count of 27 will be checked with the actual report in Q5.
+
+Header check, EXIT=0 (Node reads only the initial Lean comment):
+
+```javascript
+const fs = require('fs');
+for (const p of process.argv.slice(1)) {
+  const lines = fs.readFileSync(p, 'utf8').split('\n');
+  const header = lines.slice(0, lines.findIndex(l => l.includes('-/')) + 1);
+  const a = header.findIndex(l => /^\s*anchors:/.test(l));
+  const d = header.findIndex(l => /^\s*digest:/.test(l));
+  const u = header.filter(l => /^\s*utility:/.test(l));
+  const ok = d === a + 2 && u.length === 1 &&
+    /^\s*utility: none\s*$/.test(header[a + 1]);
+  console.log({path: p, anchors_line: a+1, utility_line: a+2,
+    digest_line: d+1, utility_lines: u.length, valid: ok});
+  if (!ok) process.exitCode = 1;
+}
+```
+
+Command was `node -e '<above code>' <M.lean> <D.lean>`. Both results:
+anchors_line=5, utility_line=6, digest_line=7, utility_lines=1, valid=true.
+Spec was read at `docs/develop/spec/golden-ledger-repo-spec.md:111-121`.
+This verifies the requested header grammar; it does not claim a full SL-031
+or admission run. All extra utility fields are not-applicable(kind=none).
+
+## Q4-Q6
+
+Q1-Q3 complete; Q4-Q6 pending. No final verdict at this checkpoint.
 
 ## Publication
 
