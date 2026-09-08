@@ -257,7 +257,7 @@ def execute(options):
         source = "".join(f"import {module}\n" for module in imports)
         source += "open LeanInformationAudit\n"
         source += f"def CensusRun.inventory : DispositionInventory :=\n  {{ headSha := {string(head)}, entries := "
-        source += " ++ ".join(module + ".rows" for module in inventories) + " }\n"
+        source += "CensusProjection.assemble " + array(module + ".rows" for module in inventories) + " }\n"
         source += f"def CensusRun.scopes : Array CensusProjection.Scope := {array(scope + '.record' for scope in scope_modules)}\n"
         digest = "sha256:" + hashlib.sha256(report_path.read_bytes()).hexdigest()
         source += (f"#disposition_census projection root CensusRun.Root report {string(str(report_path))}\n"

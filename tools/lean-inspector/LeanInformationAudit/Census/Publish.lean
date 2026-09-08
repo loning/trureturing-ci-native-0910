@@ -18,6 +18,10 @@ structure Scope where
   importScope : ImportClosureScope
   deriving Inhabited
 
+/-- Keep the compiler from expanding all row chunks while assembling the inventory. -/
+@[noinline] def assemble (parts : Array (Array (Sigma fun key : StatementKey => CensusAssessment key))) :
+    Array (Sigma fun key : StatementKey => CensusAssessment key) := parts.flatten
+
 private def keyExpr (key : StatementKey) : Expr :=
   mkApp2 (mkConst ``StatementKey.mk) (toExpr key.theoremName) (toExpr key.statementId)
 
