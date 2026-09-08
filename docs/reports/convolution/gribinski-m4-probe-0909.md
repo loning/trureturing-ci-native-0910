@@ -6,6 +6,23 @@ Lane: #6160. arXiv standing issue: #6494. Stage: thinking, probe only.
 Branch: `lane/math/gribinski-m4-probe-0909`.
 Initial HEAD and observed origin/dev: `1a39ed9516aa510fbf8bf377e26c08c7146b3707`.
 
+## Final disposition
+
+**blocked-on-cost; stopped_by=3; runner verdict=revise.** The preregistered
+H23 inequality `s4*s6-s5^2 >= 0` has **152,635** collected numerator monomials
+after the m=4 substitution and allowed cancellation, exceeding 50,000. Its
+numerator has t-degree 7, 53 negative coefficients and 152,582 positive
+coefficients. The script emitted the stop record and exited successfully
+without input-root expansion of the five remaining inequalities. No subsequent mathematical
+investigation or Q4 admission assessment was performed.
+
+Q1's concrete bind-only attempt failed; this is not a universal impossibility
+claim. Q2 supplied a 19-condition iff criterion (18 nonconstant), including
+repeated and zero roots. Q3 blocks this chosen criterion/coordinate expansion
+under the fixed budget envelope. `revise` refers to changing the proposed
+route or representation in a separately authorized attempt; it is neither a
+refutation of m=4 nor a claim that every criterion has this cost.
+
 Provenance: no skill invoked; one Codex worker performed this probe. No
 independent reviewer or multi-model consensus is claimed. The user's report of
 the orchestrator's earlier checks is input, not this worker's measurement.
@@ -443,12 +460,12 @@ Inequality readings in the preregistered ordered-gap coordinates:
 | H03 | 8,460 | 4 | 0 | 16(t+2)(t+3)^3 |
 | H12 | 8,211 | 4 | 17 | 48(t+2)(t+3)^3 |
 | H13 | 38,169 | 5 | 0 | 144(t+2)^2(t+3)^3 |
-| H23 | pending at this receipt | pending | pending | pending |
-| H012 | not yet reached | null | null | null |
-| H013 | not yet reached | null | null | null |
-| H023 | not yet reached | null | null | null |
-| H123 | not yet reached | null | null | null |
-| H0123 | not yet reached | null | null | null |
+| H23 | **152,635: STOP 3** | 7 | 53 | 2304(t+2)^2(t+3)^5 |
+| H012 | unmeasured: stop 3 | null | null | null |
+| H013 | unmeasured: stop 3 | null | null | null |
+| H023 | unmeasured: stop 3 | null | null | null |
+| H123 | unmeasured: stop 3 | null | null | null |
+| H0123 | unmeasured: stop 3 | null | null | null |
 
 The same script independently reproduced the m=3 raw discriminant numerator:
 787 monomials, 20 negative and 767 positive coefficients, t-degree 3, with
@@ -456,6 +473,81 @@ t-degree counts `(310,257,168,52)` and denominator `27(t+2)^3`.
 The frozen m=3 certificate is **20 weighted squares + 767 positive monomials**.
 Raw expanded monomials and certificate blocks are different measurements;
 no m=4 certificate is measured here.
+
+| Object | Raw numerator monomials (measured) | Negative coefficients (measured) | Actual certificate blocks |
+| --- | ---: | ---: | --- |
+| m=3 discriminant | 787 | 20 | Frozen: 20 weighted squares + 767 positive monomials |
+| m=4 H12 | 8,211 | 17 | Not constructed |
+| m=4 H13 | 38,169 | 0 | Not constructed |
+| m=4 H23 | 152,635 | 53 | Not constructed; stop 3 |
+
+H23's counts by t-degree 0 through 7 are
+`(19135,19136,19136,19136,19136,19136,19136,18684)`; its root-variable total
+degree is 10. This single substitution/reduction took 479.365910709 seconds
+on the running machine. The script returned exit 0, and `costs.stderr.log`
+remained empty. The 152,635 count is about 194 times the measured m=3 raw
+787, or about 199 times its 767 positive certificate monomials; the latter
+comparison deliberately compares different representations, not Lean costs.
+
+**Conditional bounded extrapolation, NOT a measurement or existence claim:**
+suppose the same repair pattern as m=3 were available, with one weighted
+binomial square per negative numerator monomial, whose cross term cancels
+that negative monomial and whose subtraction leaves only nonnegative
+coefficients without introducing new support. For a numerator with M terms
+and N negative coefficients, that specific model has N squares and at most
+M-N remaining positive monomials: at most M certificate blocks, or M+2N
+summands if every square is expanded into three summands before collection.
+For H12 this is 17 squares plus at most 8,194 positive monomials (at most
+8,211 blocks / 8,245 expanded summands). For H23 it is 53 squares plus at most
+152,582 positive monomials (at most 152,635 blocks / 152,741 expanded
+summands). The necessary repair identities have not been found or searched
+for. The assumptions could fail; smaller factored certificates could also
+exist. No bound on the entire m=4 proof, the unmeasured inequalities, runtime,
+heartbeats, or memory follows from this conditional model.
+
+## Stop receipt and Q4 status
+
+Q4 was **not reached**, as required by the ordered stop rule. No new
+`proof_shape` or admission ruling is assigned to the target or the 19
+inequalities. Their classification and direct frozen proof dependencies are
+`null` (unassessed, not an assertion of no possible dependencies), their
+`escape_witness` is `null`, and their `admission_basis` is
+`none: probe only; stopped before Q4`. The module GID/statement_id table above
+records interfaces checked, not a dependency closure for an unproved target.
+
+The one already checked conditional fragment retains its Q1 classification:
+`proof_shape=bind-only`, direct frozen dependency
+`D5/S3/Constants/NewtonHankelRealRootCriterion.newtonHankel_posSemidef_iff_roots_real`,
+module `statement_id=sha256:18b030426106ba093ef4ec58fbba090c162f365f32ed6b291aaa0eeba9a358a9`,
+`escape_witness=null`, `admission_basis=none: probe-only`. The assumed hpsd is
+explicit and is not discharged by that fragment.
+
+The required six-column field is populated with the already established
+route receipt below; this is **not** a post-stop Q4 assessment or an admission
+application.
+
+| from | steps | gap (mathematical) | escapes | payoff | cost_shape |
+| --- | --- | --- | --- | --- | --- |
+| Input nonnegative roots, t>0, the coefficient definition, and checked frozen NH iff | Q1 attempted; Q2 states coefficient signs + all principal minors; Q3 measures through H23, then stops | An independent input-root positivity implication for the necessary output minors is missing; the coefficient-H/root-H connection and converse principal-minor-to-PSD step have not been elaborated for this target. A negative expanded coefficient alone is not a counterexample. | null: no elaborated witness; conditional NH projection is bind-only | Would give uniform m=4 preservation if the missing implications were supplied; not achieved | H23=152,635 monomials, exceeding 50,000; five inequalities unmeasured; no full-proof cost bound |
+
+## Publication and provenance limits
+
+Worker-owned final artifacts are published under
+`/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/gribinski-m4-probe-0909/attempt-1`:
+`result.json`, `completion.sentinel`, `costs.jsonl`, `costs.stderr.log`, and
+the three Q1 make logs. The result envelope has exactly `conclusion` and
+`log_ref` at its top level. `result.json.tmp` is atomically renamed before
+the equivalent sentinel publication. The final envelope records every
+pushed commit's full SHA and the remotely verified branch tip; no PR is
+created. The tracked changes are confined to this report and its two text
+archives in `docs/reports/convolution/`.
+
+`ASSUMED-UNVERIFIED`, not used as supporting evidence: other files in the
+third-party tree, the book cited by the opened Sylvester page, search results
+hidden by truncated output, unopened issue comments, and the unread remainder
+of CoefficientMultiplicationTraceMoments. The opened sources and exact scope
+of each search are identified above. No inherited orchestrator assertion is
+reported as an independent measurement unless rechecked in this probe.
 
 ## Nonclaims
 
