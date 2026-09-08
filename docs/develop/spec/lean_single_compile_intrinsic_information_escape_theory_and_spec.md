@@ -7835,9 +7835,9 @@ table，也不得由现有 compiler 发出。
 
 | code | name | exact fail-closed trigger |
 |---|---|---|
-| IE-C034 | `MissingAnalysisDisposition` | frozen theorem key 没有 disposition row |
-| IE-C035 | `DuplicateAnalysisDisposition` | 同一 `statement_id` 有多于一个 disposition row，即使 theorem `Name` 不同 |
-| IE-C036 | `DispositionIdentityMismatch` | HEAD/name/statement_id/arena 与 elaborated input 不同 |
+| IE-C034 | `MissingAnalysisDisposition` | frozen theorem key 没有 assessment row，有效 observed row 算已入账 |
+| IE-C035 | `DuplicateAnalysisDisposition` | 同一 `statement_id` 有多于一个 assessment row，即使 theorem `Name` 不同或 certified／observed 混合 |
+| IE-C036 | `DispositionIdentityMismatch` | HEAD/report digest/name/statement_id/arena 与 elaborated input 不同，含 selector 排除的额外 row |
 | IE-C037 | `DispositionClassMismatch` | class 缺 constructor 所需 payload，或 payload 语义与 class 冲突 |
 | IE-C038 | `MissingStructuralWitness` | structural strictness inclusion/witness 缺失或不成立 |
 | IE-C039 | `InvalidGeneratedKernelNode` | node 非 generated relation，或 extensional equal nodes 未 quotient |
@@ -7845,7 +7845,7 @@ table，也不得由现有 compiler 发出。
 | IE-C041 | `IncompleteKernelProjectionBoundary` | 必需 boundary/leave-one-out/schedule/requested node 缺失，或 node reference 无法解析 |
 | IE-C042 | `KernelProjectionCertificateMismatch` | hierarchy component 与 certificate/reflected value 不同 |
 | IE-C043 | `KernelProjectionUsedForAdmission` | admission consumer 读取任何 hierarchy presentation 字段 |
-| IE-C044 | `DispositionCensusMismatch` | inventory frozen keys/totals 不精确相等，或 mapped `statement_id` 不唯一 |
+| IE-C044 | `DispositionCensusMismatch` | frozen report 的 `statement_id` 不唯一、coverage/totals/flag 不精确，或 observation root/owner/scope/completion/candidates 不符 |
 
 | code | exact deterministic message shape |
 |---|---|
@@ -7879,22 +7879,31 @@ table，也不得由现有 compiler 发出。
 也使用 canonical compact JSON，不退化为不确定的人类散文。reserved IE-C045--IE-C047 只有在
 owner $\tau$ ruling 与 mutation suite 落地后，才可另一个 policy PR 把它们加入这三表。
 
-当前 dev `1a71fc8751` 仍按上述 disposition-only active 三表工作。额外 inventory row 若指向
+当前 census 按上述 assessment active 三表工作。额外 inventory row 若指向
 被 selector 排除的未冻结 theorem 或 frozen definition，在 keys equality 检查前由 identity
-检查发出 IE-C036；不得把下列 J2 的 IE-C044 映射当作当前行为。
+检查发出 IE-C036；覆盖检查见 `tools/lean-inspector/LeanInformationAudit/DispositionCensus.lean`。
 
-**J2 assessment triggers**
+**Assessment triggers**
 
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕下表单独列出 J2 待生效的 trigger 语义，关联第 23.6 节、CIRPT-38.2 与 CIRPT-40 第 27、29 项。
+下表列出当前 census assessment 的 trigger 语义，关联第 23.6 节、CIRPT-38.2 与 CIRPT-40 第 27、29 项。
 它们复用上述诊断 identifiers、deterministic message shape 与 required payload keys，不新增码或改名 payload key。
+IE-C034／IE-C035 发出点见 `tools/lean-inspector/LeanInformationAudit/DispositionCensus.lean`；
+IE-C036／IE-C037／IE-C044 的 message 定义见
+`tools/lean-inspector/LeanInformationAudit/AnalysisDisposition.lean`，IE-C038 及 observation／evidence
+检查见 `tools/lean-inspector/LeanInformationAudit/DispositionEvidence.lean`；payload／计数与容器
+检查见 `tools/lean-inspector/LeanInformationAudit/CensusSchema.lean`、
+`tools/lean-inspector/LeanInformationAudit/Projection/AnalysisInventory.lean`。
 
 | code | name | fail-closed trigger |
 |---|---|---|
 | IE-C034 | `MissingAnalysisDisposition` | census 的 frozen theorem key 没有 assessment row；有效 observed row 不是 missing，独立认证义务仍要求 disposition |
 | IE-C035 | `DuplicateAnalysisDisposition` | 同一 key 有多个 assessment rows，含 certified／observed 混合重复，或同一 `statement_id` 被多行复用，即使 theorem `Name` 不同 |
-| IE-C036 | `DispositionIdentityMismatch` | assessment 的 HEAD/report input identity/name/statement_id/arena 与 elaborated input 不同 |
+| IE-C036 | `DispositionIdentityMismatch` | assessment 的 HEAD/report input identity/name/statement_id/arena 与 elaborated input 不同；额外未冻结 theorem／frozen definition row 仍用本码 |
 | IE-C037 | `DispositionClassMismatch` | class 缺 constructor 所需 payload，或 payload 语义与 class 冲突，含 observed／registry absence 冒充带 closed-reason certificate 的 unreachable |
-| IE-C044 | `DispositionCensusMismatch` | inventory frozen keys/totals/flags 不精确，mapped `statement_id` 不唯一，或 observation scope/status 未核实、query 不完整／未完成；额外未冻结 theorem／frozen definition row 在 J2 改用本码，当前仍为 IE-C036 |
+| IE-C038 | `MissingStructuralWitness` | structural strictness 或 witness declaration 缺失，或其类型不符合当前 catalog／index 的证书义务 |
+| IE-C044 | `DispositionCensusMismatch` | frozen report 的 `statement_id` 不唯一、coverage/totals/`certified_complete` 不精确、容器字段不符，或 observation root/owner/scope/completion/candidates 不符；inventory 重复先用 IE-C035，额外 excluded row 先用 IE-C036 |
+
+（J2 落地形态,2026-09-08:S0 拟议的 excluded-row IE-C044 映射未采用；observation 使用 completion／candidate 检查而非 absence-status enum，本 contract 的诊断为 IE-C034／035／036／037／038／044。）
 
 ---
 
