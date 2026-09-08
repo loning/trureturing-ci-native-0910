@@ -174,3 +174,70 @@ Two earlier diagnostic-count runs failed on SymPy Boolean conversion;
 they supplied no completed diagnostic result. The exact polynomial equality
 assertion passed in the successful run. This proposes a split certificate
 for the already preregistered discriminant witness, not a new target.
+
+## Attempt 2: Resumption and Certificate
+
+Continuation producer: one codex-cli implementation worker, no additional
+skill invoked by this worker and no review seats. The enclosing runner context
+remains `consensus-rnd:sshx`; independent_review: ASSUMED-UNVERIFIED.
+The requested branch was clean and synchronized at `d625f554ae`; Steps 1--3
+are retained without redoing their proofs. The three earlier pushed commits
+are `60254ff432`, `e6f61716af`, and `d625f554ae`.
+
+Current textual controls, before adding the certificate module:
+
+| Command | Matching lines | Exit |
+| --- | ---: | ---: |
+| `rg -n '\bGribinskiDegreeThree\b' D5 Blueprint Golden` | 4 | 0 |
+| `rg -n '\bcubic_nonnegative_factorization\b' D5/S3/Zeros/Convolution/FiniteFreeCommutatorDegreeSix.lean` | 3 | 0 |
+| `rg -n '\b(rootTriple\|sorted.*triple\|triple.*sorted)\b' D5 --glob '*.lean'` (unescaped alternation pipes) | 14 | 0 |
+
+The former negative control now names our existing module; it is not reported
+as an absence. Both controls use the same `rg` word-boundary feature.
+The retained exact probe and successful stdout in attempt-1 were read.
+For actual Lean consumption, `attempt-2/emit-certificate.py` emits the same
+20-square/767-positive-monomial certificate in multivariate Horner form.
+The generator is untrusted: all four equalities and all signs are proved in
+Lean. No change to `maxHeartbeats`, `maxRecDepth`, mathematical constants,
+or the toolchain was made.
+
+`GribinskiDegreeThreeDiscriminant.numerator` is the cleared discriminant with
+denominator `6+3*t`, T numerator `a+b*t`, and U numerator `c+d*t`.
+The four coefficient identities are checked separately, then assembled by
+`numerator_expansion`. Each `sosN` is the positive remainder plus the retained
+weighted squares of that t-degree. The highest coefficient is independent of
+the two least roots, so the corresponding unused-variable warnings are benign.
+
+| Command/log (attempt-2) | EXIT | Jobs | Real seconds | Maximum RSS bytes |
+| --- | ---: | ---: | ---: | ---: |
+| `/usr/bin/time -l make lean`, `certificate-1.log` | 2 | 12681 | 53.33 | 7384252416 |
+| `/usr/bin/time -l make lean`, `certificate-2.log` | 0 | 12681 | 64.18 | 7801700352 |
+
+Both cache receipts are `present`, `method=none`, project/mathlib `warm`.
+These are full incremental make-process measurements, not isolated theorem
+benchmarks. In the first build all four ring identities passed; the subsequent
+`positivity` calls for coefficients 0 and 1 exhausted the default 200000
+heartbeats (lines 147 and 225 of that candidate). Splitting identities and
+signs into separate declarations resolved this without increasing budgets.
+The failed build's `sorryAx` diagnostic is not an accepted proof; the second
+build prints only `[propext, Classical.choice, Quot.sound]` for every theorem.
+
+| Public declaration | proof_shape | escape_witness | admission_basis | utility |
+| --- | --- | --- | --- | --- |
+| `GribinskiDegreeThreeDiscriminant.numerator` | not-applicable(definition) | none | companion to certificate | symbolic discriminant expression; kind=none |
+| `GribinskiDegreeThreeDiscriminant.ordered_numerator_nonneg` | content | four `coeffN_identity` equalities with `sosN_nonneg`, assembled by `numerator_expansion` | escape-witness | universal real-parameter inequality for Step 4; kind=none |
+
+The certificate is a symbolic inequality for every nonnegative real tuple,
+not a bounded enumeration, checker, certified input instance, or numerical
+reduction. Its new decomposition lies on the live proof path: all four
+coefficient signs are multiplied by powers of t and added. Removing those
+signs leaves the discriminant sign unproved; no frozen premise supplies it.
+It is not a restatement of the final root factorization. Direct frozen
+dependencies of this certificate: none; only pinned Mathlib is imported.
+`#print axioms` includes the public theorem and all thirteen private theorems
+(four identities, four SOS signs, four coefficient signs, parameter expansion).
+
+At this checkpoint Step 4 is still incomplete: this theorem covers ordered-gap
+coordinates. The next obligation is to express any nonnegative root triple in
+these coordinates up to equality of its polynomial, then clear denominators
+and connect the result to the original coefficient convolution.
