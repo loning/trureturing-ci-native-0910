@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "r": 9,
+  "begin": 0,
+  "end": 43046721,
+  "total_labelled_maps": 43046721,
+  "representatives": 2598,
+  "verified_conjugacies": 43046721,
+  "seconds": 106.622,
+  "date": "2026-09-07",
+  "map_file_sha256": "ac5ddf4a36f4909c5ab29aebab94434c94a1a9bd13f20cfd742354d79fb3b1d3",
+  "audit_source_sha256": "2edfd60e546d49244ed379e4241cd1422f318ddfd8e6377a33890f2070f51fa5",
+  "canonicalizer_source_sha256": "1ef8e55985667af5949f88b1ca47df1135ebd313dcc11c2956098157213142e6",
+  "lean_executed": false,
+  "numerical_candidate_exclusion": false
+}

@@ -377,7 +377,7 @@ internal static class RouteCapacityPreflight
 
         var currentPaths = repository.Entries
             .Select(static entry => entry.Path)
-            .Where(static path => !RepositoryRules.IsDirectoryCapacityExcluded(path))
+            .Where(static path => !RepositoryRules.IsCapacityExcluded(path))
             .Distinct(StringComparer.Ordinal)
             .ToHashSet(StringComparer.Ordinal);
         var stratumDomains = stratum is { } routeStratum
@@ -387,7 +387,7 @@ internal static class RouteCapacityPreflight
                 .ToArray()
             : [];
         var failures = projectedOutputs
-            .Where(static path => !RepositoryRules.IsDirectoryCapacityExcluded(path))
+            .Where(static path => !RepositoryRules.IsCapacityExcluded(path))
             .GroupBy(DirectoryOf, StringComparer.Ordinal)
             .Select(group => CapacityFailure(currentPaths, stratumDomains, group.Key, group))
             .Where(static failure => failure is not null)
@@ -425,13 +425,13 @@ internal static class RouteCapacityPreflight
         IEnumerable<string> projectedOutputs)
     {
         // This preflight exists to predict SL-003, so it must count exactly what SL-003
-        // counts. Reusing IsDirectoryCapacityExcluded keeps the two in one source: a preflight that
+        // counts. Reusing IsCapacityExcluded keeps the two in one source: a preflight that
         // bounded artifacts the rule itself exempts would refuse addresses the gate would
         // have admitted, which is a stricter policy invented in the wrong place.
         var currentOccupancy = currentPaths.Count(path =>
-            DirectoryOf(path) == targetDirectory && !RepositoryRules.IsDirectoryCapacityExcluded(path));
+            DirectoryOf(path) == targetDirectory && !RepositoryRules.IsCapacityExcluded(path));
         var additions = projectedOutputs.Count(path =>
-            !currentPaths.Contains(path) && !RepositoryRules.IsDirectoryCapacityExcluded(path));
+            !currentPaths.Contains(path) && !RepositoryRules.IsCapacityExcluded(path));
         var projectedOccupancy = currentOccupancy + additions;
         if (projectedOccupancy <= RepositoryRules.DirectoryFileLimit)
         {
@@ -454,7 +454,7 @@ internal static class RouteCapacityPreflight
             .OrderBy(static domain => domain, StringComparer.Ordinal)
             .Select(domain => $"{domain}={currentPaths.Count(path =>
                 DirectoryOf(path) == bucketPrefix + domain
-                && !RepositoryRules.IsDirectoryCapacityExcluded(path))}");
+                && !RepositoryRules.IsCapacityExcluded(path))}");
         var coordinateDirectory = targetDirectory.StartsWith("Blueprint/", StringComparison.Ordinal)
             ? targetDirectory["Blueprint/".Length..]
             : targetDirectory;

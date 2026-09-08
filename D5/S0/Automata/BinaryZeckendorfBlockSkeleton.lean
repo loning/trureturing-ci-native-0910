@@ -19,6 +19,12 @@ open D5.S0.Automata.TypedPartialDFAOOverBase
 
 universe u v
 
+noncomputable instance zeroFiberFintype {Output : Type u} {State : Type v}
+    (machine : TypedPartialDFAO binaryZeckendorfBase Output State) [Fintype State] :
+    Fintype (ZeroFiber machine) := by
+  classical
+  exact Fintype.ofFinite _
+
 /-- A first-return skeleton retains only recurrent states. A one transition is
 represented by its transient output and optional zero-return target. -/
 structure Skeleton (Output : Type u) (ZeroState : Type v) where
