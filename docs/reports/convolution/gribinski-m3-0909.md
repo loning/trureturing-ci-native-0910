@@ -117,3 +117,28 @@ Direct frozen dependencies of Step 1: none. No declaration is finite
 enumeration, a certified numerical instance, a checker, or a numerical
 reduction; all are symbolic definitions or identities. The module is unfrozen
 and no deposit admission basis is claimed for this stage.
+
+## Step 2
+
+The four explicit coefficient formulas and the resulting cubic are checked.
+The cross weights are `kappa = 2*(alpha+2)/(3*(alpha+3))` and
+`rho = (alpha+1)/(3*(alpha+3))`. This identity holds whenever alpha avoids
+-1, -2, and -3, before any nonnegative-root assumptions.
+
+`/usr/bin/time -l make lean`: EXIT=0, 12680 jobs, 19.08 seconds,
+maximum resident set size=3026436096 bytes (`step2.log`).
+Step 1 commit: `60254ff432`, pushed to the requested branch.
+
+| Declaration | proof_shape | escape_witness | admission_basis | utility |
+| --- | --- | --- | --- | --- |
+| kappa | not-applicable(definition) | none | none | Second-coefficient cross weight; kind=none |
+| rho | not-applicable(definition) | none | none | Third-coefficient cross weight; kind=none |
+| convolution_coefficients | bind-only | none | none | Definition 3.10 specialized to two arbitrary root triples; kind=none |
+| m3_explicit_coefficients | bind-only | none | none | Polynomial identity consumed by the root/discriminant obligations; kind=none |
+
+Private helpers `weight_values` and `rootTriple_coefficients` are bind-only
+normalization. The latter uses `Cubic.prod_X_sub_C_eq` directly.
+Direct frozen dependencies: none. The actual companion edge is
+`m3_explicit_coefficients -> convolution_coefficients`.
+Each of the three public theorems prints exactly
+`[propext, Classical.choice, Quot.sound]` in `step2.log`.

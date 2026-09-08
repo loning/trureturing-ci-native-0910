@@ -59,6 +59,66 @@ theorem definition_consistency (alpha : Real) (p q : Real[X]) (k : Nat) (hk : k 
     elementaryCoeff (boxplus3 alpha p q) k = convolutionCoeff alpha p q k := by
   interval_cases k <;> norm_num [elementaryCoeff, boxplus3]
 
+/-- The cross weight for the second elementary coefficient. -/
+def kappa (alpha : Real) : Real := 2 * (alpha + 2) / (3 * (alpha + 3))
+
+/-- The cross weight for the third elementary coefficient. -/
+def rho (alpha : Real) : Real := (alpha + 1) / (3 * (alpha + 3))
+
+private theorem weight_values (alpha : Real) :
+    weight alpha 0 = 1 /\ weight alpha 1 = 3 * (alpha + 3) /\
+      weight alpha 2 = 6 * (alpha + 3) * (alpha + 2) /\
+      weight alpha 3 = 6 * (alpha + 3) * (alpha + 2) * (alpha + 1) := by
+  refine ⟨?_, ?_, ?_, ?_⟩ <;> norm_num [weight, descPochhammer_succ_eval] <;> ring
+
+private theorem rootTriple_coefficients (a b c : Real) :
+    elementaryCoeff (rootTriple a b c) 0 = 1 /\
+      elementaryCoeff (rootTriple a b c) 1 = a + b + c /\
+      elementaryCoeff (rootTriple a b c) 2 = a * b + a * c + b * c /\
+      elementaryCoeff (rootTriple a b c) 3 = a * b * c := by
+  unfold rootTriple
+  rw [Cubic.prod_X_sub_C_eq]
+  norm_num [elementaryCoeff]
+
+/-- Substitution of the two root triples into all four defining coefficient sums. -/
+theorem convolution_coefficients (alpha a b c d e f : Real)
+    (h1 : alpha ≠ -1) (h2 : alpha ≠ -2) (h3 : alpha ≠ -3) :
+    convolutionCoeff alpha (rootTriple a b c) (rootTriple d e f) 0 = 1 /\
+      convolutionCoeff alpha (rootTriple a b c) (rootTriple d e f) 1 =
+        a + b + c + (d + e + f) /\
+      convolutionCoeff alpha (rootTriple a b c) (rootTriple d e f) 2 =
+        a * b + a * c + b * c + (d * e + d * f + e * f) +
+          kappa alpha * (a + b + c) * (d + e + f) /\
+      convolutionCoeff alpha (rootTriple a b c) (rootTriple d e f) 3 =
+        a * b * c + d * e * f + rho alpha *
+          ((a + b + c) * (d * e + d * f + e * f) +
+            (a * b + a * c + b * c) * (d + e + f)) := by
+  have ha1 : alpha + 1 ≠ 0 := by intro h; apply h1; linarith only [h]
+  have ha2 : alpha + 2 ≠ 0 := by intro h; apply h2; linarith only [h]
+  have ha3 : alpha + 3 ≠ 0 := by intro h; apply h3; linarith only [h]
+  rcases weight_values alpha with ⟨w0, w1, w2, w3⟩
+  rcases rootTriple_coefficients a b c with ⟨p0, p1, p2, p3⟩
+  rcases rootTriple_coefficients d e f with ⟨q0, q1, q2, q3⟩
+  refine ⟨?_, ?_, ?_, ?_⟩ <;>
+    simp only [convolutionCoeff, Finset.sum_range_succ, Finset.sum_range_zero,
+      normalizedCoeff, p0, p1, p2, p3, q0, q1, q2, q3, w0, w1, w2, w3] <;>
+    norm_num [kappa, rho] <;> field_simp <;> ring
+
+/-- The explicit cubic follows from the general Definition 3.10 coefficient operation. -/
+theorem m3_explicit_coefficients (alpha a b c d e f : Real)
+    (h1 : alpha ≠ -1) (h2 : alpha ≠ -2) (h3 : alpha ≠ -3) :
+    boxplus3 alpha (rootTriple a b c) (rootTriple d e f) =
+      X ^ 3 - C (a + b + c + (d + e + f)) * X ^ 2 +
+        C (a * b + a * c + b * c + (d * e + d * f + e * f) +
+          kappa alpha * (a + b + c) * (d + e + f)) * X -
+        C (a * b * c + d * e * f + rho alpha *
+          ((a + b + c) * (d * e + d * f + e * f) +
+            (a * b + a * c + b * c) * (d + e + f))) := by
+  rcases convolution_coefficients alpha a b c d e f h1 h2 h3 with ⟨h0, he1, he2, he3⟩
+  simp [boxplus3, h0, he1, he2, he3]
+
 #print axioms definition_consistency
+#print axioms convolution_coefficients
+#print axioms m3_explicit_coefficients
 
 end D5.S3.Zeros.Convolution.GribinskiDegreeThree
