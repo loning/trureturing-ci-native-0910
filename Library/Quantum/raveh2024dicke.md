@@ -7,6 +7,8 @@ doi: 10.1103/PhysRevA.110.052438
 claim: Fixed-occupation uniform qudit words have orthonormal occupation sectors across each cut, positive multinomial-ratio Schmidt weights, rank equal to the feasible-sector count, and exact sequential occupation-isometry preparation.
 strata_touched:
   - D5/S3/Quantum/Entanglement/OccupancyWordSectors
+  - D5/S3/Quantum/Entanglement/CoherentHistorySchmidt
+  - D5/S3/Quantum/Entanglement/SequentialOccupationHistory
 license: citation-only
 triage: anchor
 ---
@@ -35,12 +37,16 @@ existing Sym.equivNatSumOfFintype identifies these actual Boundary carriers
 with the existing bounded TimeSlice coordinates and transports their counts.
 This W layer supplies a reusable foundation, with no whole-atom coverage claim.
 
-## Downstream C/S mapping (unlanded)
+## C/S decomposition and sequential-chain mapping
 
-All formal results in this section belong to the prepared CoherentHistorySchmidt
-(C) and SequentialOccupationHistory (S) work. They are unlanded downstream
-work, outside this W-only delivery. The article's broader literature claim
-is retained above; it does not describe the extent of the delivered W layer.
+CoherentHistorySchmidt (C) and SequentialOccupationHistory (S) extend the frozen
+OccupancyWordSectors foundation. C proves the arbitrary-cut normalized
+coefficient decomposition, positive binomial weights, and rank of the actual
+word coefficient matrix. S constructs occupation transitions and contractions,
+derives cut factorization for arbitrary finite algebraic chains, and proves
+that the least achievable maximum bond is attained. The complete coherent-history
+atom remains open because a pure-state circuit on one fixed physical register
+has not been constructed.
 
 C's cut coefficient matrix has the constant inverse-square-root amplitude
 on legal concatenations and zero elsewhere. The actual sector cardinality is
@@ -54,7 +60,15 @@ Mathlib's `Nat.choose_mul_factorial_mul_factorial` on every coordinate and cut.
 `schmidt_coefficient_eq_sqrt_binomial` uses the positive coefficient to select
 the nonnegative root. These algebraic consequences introduce no new model premise.
 
-### Sequential construction mapping (unlanded)
+On the frozen W base, C's counting and two Gram formulas are companions of the
+coefficient construction; they do not supply a new W-count/W-gram first-freeze
+witness. Its support factorization remains live, and representative-word rows
+and columns produce the lower-bound diagonal minor. S's Gram, word contraction
+and arbitrary-chain cut induction are separate live constructions. The channel
+consumes Gram but is not a premise of the exact occupation preparation or of
+the attained-minimum theorem.
+
+### Sequential construction mapping
 
 Section 4 equations 4.7-4.10 were inspected in the retained HTML on 8 September
 2026. Set paper l=t+1, total occupation k=a, prefix occupation a=b, and
