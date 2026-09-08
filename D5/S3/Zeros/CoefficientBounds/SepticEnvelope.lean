@@ -78,7 +78,8 @@ theorem centered_real_septic_envelope (r : Fin 7 → ℝ) (hcenter : ∑ i, r i 
     let A := -u
     let B := u^2 + 21*w/5
     let Z := -(2*s + 2*u*w/7 - 4*v^2/35)
-    0 ≤ A ∧ 0 ≤ B ∧ B ≤ 49*A^2/20 ∧ 0 ≤ Z := by
+    0 ≤ A ∧ 0 ≤ B ∧ B ≤ 49*A^2/20 ∧ 0 ≤ Z ∧
+      120*A*B - 245*A^3 ≤ 270*Z := by
   classical
   dsimp only
   by_cases hzero : -(∏ i, (X - C (r i)) : ℝ[X]).coeff 5 = 0
@@ -135,7 +136,8 @@ theorem centered_real_septic_envelope (r : Fin 7 → ℝ) (hcenter : ∑ i, r i 
   exact ⟨gap_a_nonneg a b c d e f ha hb hc hd he hf,
     gap_b_nonneg a b c d e f ha hb hc hd he hf,
     gap_b_upper a b c d e f ha hb hc hd he hf,
-    gap_z_nonneg a b c d e f ha hb hc hd he hf⟩
+    gap_z_nonneg a b c d e f ha hb hc hd he hf,
+    gap_z_lower a b c d e f ha hb hc hd he hf⟩
 
 #print axioms centered_real_septic_envelope
 
