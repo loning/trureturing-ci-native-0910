@@ -3,12 +3,49 @@
 import argparse
 import hashlib
 import json
+import os
 import pathlib
 import tempfile
 import unittest
 
 from pipeline import execute
 from resources import run
+
+
+def prepare_fixtures(repository, directory):
+    """Compile the fixture closure in dependency order, one bounded process at a time."""
+    env = dict(os.environ, LEAN_NUM_THREADS="1")
+    run(["make", "lean-cache-ensure"], directory / "cache", "process", cwd=repository, env=env)
+    source_root = repository / "tools/lean-inspector"
+    build_root = repository / ".lake/build/lib/lean"
+    prepared = set()
+
+    def prepare(module):
+        if module in prepared:
+            return
+        prepared.add(module)
+        source = source_root / (module.replace(".", "/") + ".lean")
+        target = build_root / (module.replace(".", "/") + ".olean")
+        logs = directory / "prepare" / module
+        run(["lake", "env", "lean", "--deps", str(source)], logs, "deps", cwd=repository, env=env)
+        dependencies = [pathlib.Path(line) for line in (logs / "deps.log").read_text().splitlines()]
+        for dependency in dependencies:
+            if dependency.is_relative_to(build_root):
+                relative = dependency.relative_to(build_root).with_suffix(".lean")
+                if (source_root / relative).exists():
+                    prepare(".".join(relative.with_suffix("").parts))
+        if (target.exists() and target.stat().st_mtime_ns >= source.stat().st_mtime_ns
+                and all(path.exists() and path.stat().st_mtime_ns <= target.stat().st_mtime_ns
+                        for path in dependencies)):
+            return
+        target.parent.mkdir(parents=True, exist_ok=True)
+        run(["lake", "env", "lean", "-R", str(source_root), "-o", str(target), str(source)],
+            logs, "compile", cwd=repository, env=env)
+
+    for module in ("Query.Observed", "Query.DuplicateLeft", "Query.DuplicateRight", "Query.Contract",
+                   "Query.Coverage", "AssessmentCommand", "Command", "CommandRejection",
+                   "InvalidEvidence", "LandedFinite"):
+        prepare("LeanInformationAudit.Tests.Census." + module)
 
 
 def name_key(text):
@@ -28,16 +65,12 @@ def main():
     directory = pathlib.Path(options.output or tempfile.mkdtemp(prefix="census-fixtures-")).resolve()
     directory.mkdir(parents=True, exist_ok=True)
     repository = pathlib.Path(__file__).resolve().parents[3]
+    prepare_fixtures(repository, directory)
     report = {"schema": "stratalint.truth-export", "schema_version": 2,
               "dialect": "stratalint.truth-export.v2", "producer": "TruthExportCommand",
               "source_commit": "fixture-head", "nodes": []}
     source = "LeanInformationAudit.Tests.Census.Query.Observed"
     finite = "LeanInformationAudit.Tests.SealSuccess"
-    for module in ("Observed", "DuplicateLeft", "DuplicateRight"):
-        run(["lake", "env", "lean", "-R", str(repository / "tools/lean-inspector"), "-o",
-             str(repository / f".lake/build/lib/lean/LeanInformationAudit/Tests/Census/Query/{module}.olean"),
-             str(repository / f"tools/lean-inspector/LeanInformationAudit/Tests/Census/Query/{module}.lean")],
-            directory / (module + "-fixture"), "process", cwd=repository)
     for module, declaration, identity in [
             (source, source + ".independent", "b-observed"),
             (finite, finite + ".idTheorem", "a-certified"),
