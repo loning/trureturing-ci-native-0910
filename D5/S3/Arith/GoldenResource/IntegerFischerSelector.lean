@@ -19,24 +19,9 @@ noncomputable section
 
 variable {n : Type*} [Fintype n] [DecidableEq n]
 
--- Reuse the existing private proofs without modifying their frozen source module.
-local macro "inheritedComplexPosDef" : term =>
-  pure (Lean.mkIdent (Lean.mkPrivateNameCore
-    `D5.S3.Arith.GoldenResource.IntegerHadamard
-    `D5.S3.Arith.GoldenResource.IntegerHadamard.complex_posDef))
-
-local macro "inheritedComplexHadamard" : term =>
-  pure (Lean.mkIdent (Lean.mkPrivateNameCore
-    `D5.S3.Arith.GoldenResource.IntegerHadamard
-    `D5.S3.Arith.GoldenResource.IntegerHadamard.complex_hadamard))
-
 private theorem real_hadamard {A : Matrix n n ℝ} (hA : A.PosDef) :
-    A.det ≤ ∏ i, A i i := by
-  have hc := inheritedComplexPosDef hA
-  have h := (inheritedComplexHadamard hc).1
-  have hd : (A.map Complex.ofReal).det = (A.det : ℂ) := by
-    simpa [Complex.ofRealHom] using (Complex.ofRealHom.map_det A).symm
-  simpa [hd] using h
+    A.det ≤ ∏ i, A i i :=
+  (D5.S3.Arith.GoldenResource.IntegerHadamard.real_posDef_hadamard hA).1
 
 private theorem prod_pair_complement (d : n → ℝ) {i j : n} (hij : i ≠ j) :
     ∏ l, d l = (d i * d j) * ∏ l ∈ Finset.univ \ {i, j}, d l := by
