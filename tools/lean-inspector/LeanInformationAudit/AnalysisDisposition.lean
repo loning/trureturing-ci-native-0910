@@ -57,6 +57,12 @@ structure ImportClosureScope where
   completed : Bool
   deriving DecidableEq, Repr
 
+/-- A completed query record for census accounting. Admission requires both
+`queryCompleted` and `importScope.completed`, with the root, owning module,
+full import closure, and candidate provenance checked against the environment.
+Query completion does not certify a disposition: an observed row never counts
+as classified, never contributes to certified counts or AC-023, and is never a
+closed reason. Registry absence alone is only an observation. -/
 structure AnalysisObservation (key : StatementKey) where
   owningModule : Name
   root : Name
@@ -66,6 +72,14 @@ structure AnalysisObservation (key : StatementKey) where
   note : String -- Presentation only; never consumed as evidence.
   deriving DecidableEq, Repr
 
+/-- A certified disposition or a completed observation for one frozen theorem key.
+The observed case never counts as classified, contributes nothing to certified
+counts or AC-023, and is never a closed reason.
+
+A census is accounted when every frozen theorem key has exactly one assessment.
+`DispositionInventory.ExactlyCovers` ranges over all keys, including observed
+ones; the artifact's `accounted` count includes both cases. For a validated
+census, `certified_complete` holds iff `observed = 0`. -/
 inductive CensusAssessment (key : StatementKey) where
   | certified (value : AnalysisDisposition key)
   | observed (value : AnalysisObservation key)

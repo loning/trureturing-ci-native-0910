@@ -38,6 +38,11 @@ def mixedCounts : Except String Bool := do
     (← counts.getObjValAs? Nat "observed_query_incomplete") == 0 &&
     (← counts.getObjValAs? Nat "finite_occurrence") == 1 &&
     (← counts.getObjValAs? Nat "structural_occurrence") == 1 &&
+    (← counts.getObjValAs? Nat "bounded_finite_truncation") == 0 &&
+    (← counts.getObjValAs? Nat "unreachable") == 0 &&
+    (← counts.getObjValAs? Nat "no_canonical_object_carrier") == 0 &&
+    (← counts.getObjValAs? Nat "no_finite_primitive_bundle") == 0 &&
+    (← counts.getObjValAs? Nat "no_faithful_primitive_realization") == 0 &&
     !(← result.getObjValAs? Bool "certified_complete")
 
 run_cmd unless mixedCounts == .ok true do throwError "mixedCounts"

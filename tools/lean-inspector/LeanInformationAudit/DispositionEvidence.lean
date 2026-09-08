@@ -27,9 +27,15 @@ structure BoundedTruncationFamily (statement : Prop) where
   approximation : Nat → Prop
   restrict : ∀ bound, statement → approximation bound
 
-/-- A named elaboration observation, not a mathematical impossibility claim.
-The census verifies absence of registered realizations in its import closure.
-Reasons about a known carrier must name that carrier explicitly. -/
+/-- Named evidence for a certified closed unreachable reason, not an
+`AnalysisObservation` or a general mathematical impossibility claim. Admission
+requires a matching reason, a nonempty explanation, and `failedObligation = some
+name` naming a kernel-checked, reason-specific obligation tied to the same theorem
+and statement: `ClosedNumericalObligation`, `InfinitePrimitiveObligation`, or
+`UnfaithfulPrimitiveObligation`, respectively. Reasons about a known carrier must
+name it in `candidateArena`; the no-carrier reason requires `none`.
+The census also checks absence of registered realizations in its import closure,
+but registry absence alone cannot produce this evidence. -/
 structure UnreachableElaborationEvidence (statement : Prop) where
   reason : UnreachableReason
   candidateArena : Option Name
