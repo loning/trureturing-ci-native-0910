@@ -99,6 +99,38 @@ pinned API requires `card_sdiff_of_subset`, and the curried double sum
 requires `sum_product'`. These API errors were corrected. The failed
 elaboration's `sorryAx` prints are not verification evidence.
 
+Step 3 was pushed as `b8932a62c2`.
+
+Step 4 is partially verified. The local three-term edge expansion and the
+exact decorated-matching sum now compile. Pairwise edge disjointness makes
+each incident vertex exponent local. An explicit bijection between the
+square choices and S proves there are exactly `S.card` square choices, so
+every term in this fiber has weight `(-2 : Q) ^ (k - S.card)`. Consequently:
+
+```lean
+coeff (fiberExponent S T) (matchingSum (X : Fin n -> MvPolynomial (Fin n) Q) k)
+  = (-2 : Q) ^ (k - S.card) * Fintype.card (MatchingMonomialFiber k S T)
+```
+
+The displayed formula uses ASCII abbreviations; the elaborated source is
+`coeff_matchingSum_eq_card_fiber`. It is not the full factorial formula (C):
+the cardinality on the right remains to be counted.
+Build: `/usr/bin/time -l make lean`, EXIT 0; 12586 jobs; 22.28 seconds;
+maximum resident set size 3047145472 bytes. Log: `step-4e-make-lean.log`.
+All nine new public theorem axiom prints are the standard three axioms.
+No resource limits were changed. The product distributivity step calls
+Mathlib `Fintype.prod_sum`, whose proof inducts over the edge finset; the
+only `ring` invocation added here concerns a single edge and three terms.
+
+Failed step-4 builds, each at 12586 jobs:
+
+| Log | EXIT | Seconds | Maximum RSS Bytes | Diagnosis |
+| --- | --- | --- | --- | --- |
+| step-4a-make-lean.log | 2 | 29.93 | 2998583296 | Subtype-sum rewrite failed; unsplit dependent product normalization reached the default 200000 heartbeats. |
+| step-4b-make-lean.log | 2 | 20.26 | 2977087488 | Product split resolved the timeout; subtype-sum rewrite still required an explicit function argument. |
+| step-4c-make-lean.log | 2 | 21.98 | 2986115072 | Constant polynomial cast required explicit map_neg/map_ofNat rewrites. |
+| step-4d-make-lean.log | 2 | 20.89 | 2992832512 | Destructing a choice under dependent Option.get was ill-typed; moved the local exponent argument to a separately quantified option. |
+
 ## Declaration Accounting
 
 For the currently proved public theorems:
@@ -113,6 +145,15 @@ For the currently proved public theorems:
 | coeff_esymm_mul_eq_card | bind-only | none (Mathlib only) | none | companion reduction for the fiber bijection; not independently deposited |
 | card_elementaryFiber | content | none | explicit inverse subset-pair bijection, with injectivity and surjectivity proofs | constructive fiber counting; independent review unverified; not deposited |
 | coeff_esymm_mul_fiber | content | none | subset-pair bijection plus impossibility of fibers outside the degree/cardinality guard | arbitrary-degree coefficient formula (B); independent review unverified; not deposited |
+| edgeSquare_eq_choice_sum | bind-only | none | none | companion: matching_product_eq_decoration_sum -> edgeSquare_eq_choice_sum |
+| matching_product_eq_decoration_sum | bind-only | none | none | companion: coeff_matchingSum_eq_decoration_fiber -> matching_product_eq_decoration_sum |
+| coeff_matchingSum_eq_decoration_fiber | bind-only | none | none | companion: coeff_matchingSum_eq_card_fiber -> coeff_matchingSum_eq_decoration_fiber |
+| decorationExponent_apply_of_mem | bind-only | none | none | companion: card_squareChoices_of_fiber -> decorationExponent_apply_of_mem |
+| chosenSquareVertex_injective | bind-only | none | none | companion: card_squareChoices_of_fiber -> chosenSquareVertex_injective |
+| card_squareChoices_of_fiber | content | none | explicit square-choice/vertex bijection; surjectivity uses nonzero exponent and the unique incident edge | escape-witness; not deposited; independent review unverified |
+| decorationWeight_eq_pow | bind-only | none | none | companion: decorationWeight_of_fiber -> decorationWeight_eq_pow |
+| decorationWeight_of_fiber | content | none | card_squareChoices_of_fiber is used to replace the number of square choices in the exponent | escape-witness through live square-choice bijection; not deposited |
+| coeff_matchingSum_eq_card_fiber | content | none | square-choice bijection makes the weight constant on the actual coefficient fiber | escape-witness; partial (C), not full factorial count; not deposited |
 
 The frozen theorem's GID is
 `D5/S3/Zeros/Convolution/FiniteConvolutionCoefficients.coeff_additiveConvolution`.
@@ -149,6 +190,29 @@ These identities are read from the merged predecessor report, not recomputed.
 | coeff_esymm_mul_eq_card | A universally quantified coefficient identity; no certified instance, bounded parameter enumeration, checker, or numerical reduction. |
 | card_elementaryFiber | A universally quantified fiber cardinality theorem; none of the four computational classes. |
 | coeff_esymm_mul_fiber | A universally quantified coefficient formula, including impossible cases; none of the four computational classes. |
+| EdgeChoice | Symbolic local monomial indexing for arbitrary n,e; no bounded parameter enumeration, certified instance, checker, or numerical reduction. |
+| edgeChoiceExponent | A symbolic exponent definition; none of the four computational classes. |
+| edgeChoiceWeight | A symbolic weight definition; none of the four computational classes. |
+| edgeSquare_eq_choice_sum | A generic polynomial expansion at every edge; none of the four computational classes. |
+| MatchingDecoration | Symbolic indexing at every matching size; no bounded enumeration of theorem parameters, certified instance, checker, or numerical reduction. |
+| decorationExponent | A symbolic exponent sum; none of the four computational classes. |
+| decorationWeight | A symbolic rational weight product; none of the four computational classes. |
+| matching_product_eq_decoration_sum | General finite-product identity; none of the four computational classes. |
+| coeff_matchingSum_eq_decoration_fiber | Arbitrary-degree coefficient identity; none of the four computational classes. |
+| edgeChoiceExponent_zero_of_not_mem (private) | General support fact; none of the four computational classes. |
+| decorationExponent_apply_of_mem | General locality theorem for disjoint supports; none of the four computational classes. |
+| exists_edge_of_decorationExponent_ne_zero (private) | General incidence existence from a nonzero exponent; none of the four computational classes. |
+| fiberExponent_eq_two_iff (private) | General exponent membership characterization; none of the four computational classes. |
+| SquareChoices | Parameterized subset of choices, not bounded enumeration of theorem parameters; no certified instance, checker, or numerical reduction. |
+| chosenSquareVertex | A symbolic map to an index; none of the four computational classes. |
+| chosenSquareVertex_mem (private) | General membership projection; none of the four computational classes. |
+| chosenSquareVertex_exponent (private) | General local exponent identity; none of the four computational classes. |
+| chosenSquareVertex_injective | General injectivity proof; none of the four computational classes. |
+| card_squareChoices_of_fiber | General symbolic cardinality from a bijection; none of the four computational classes. |
+| decorationWeight_eq_pow | General symbolic weight formula; none of the four computational classes. |
+| decorationWeight_of_fiber | General fiber-weight identity; none of the four computational classes. |
+| MatchingMonomialFiber | A finite type parameterized by arbitrary n,k,S,T; not bounded parameter enumeration, certified instance, checker, or numerical reduction. |
+| coeff_matchingSum_eq_card_fiber | General symbolic coefficient identity; none of the four computational classes. |
 
 Other utility fields are `not-applicable(kind=none)`.
 

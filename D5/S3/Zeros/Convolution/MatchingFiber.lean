@@ -232,4 +232,247 @@ theorem coeff_esymm_mul_fiber (n i j : ℕ) (S T : Finset (Fin n))
 #print axioms card_elementaryFiber
 #print axioms coeff_esymm_mul_fiber
 
+/-- None selects the cross term; a vertex selects its square term. -/
+abbrev EdgeChoice {n : ℕ} (e : Sym2 (Fin n)) := Option {x : Fin n // x ∈ e.toFinset}
+
+def edgeChoiceExponent {n : ℕ} (e : Sym2 (Fin n)) : EdgeChoice e → Fin n →₀ ℕ
+  | none => squarefreeExponent e.toFinset
+  | some x => Finsupp.single x.val 2
+
+def edgeChoiceWeight {n : ℕ} (e : Sym2 (Fin n)) : EdgeChoice e → ℚ
+  | none => -2
+  | some _ => 1
+
+/-- The local expansion has just three terms, independently of matching size. -/
+theorem edgeSquare_eq_choice_sum {n : ℕ} (e : Sym2 (Fin n)) (he : ¬ e.IsDiag) :
+    edgeSquare (MvPolynomial.X : Fin n → MvPolynomial (Fin n) ℚ) e =
+      ∑ c : EdgeChoice e,
+        MvPolynomial.monomial (edgeChoiceExponent e c) (edgeChoiceWeight e c) := by
+  classical
+  change _ = ∑ c : Option {x : Fin n // x ∈ e.toFinset}, _
+  rw [Fintype.sum_option]
+  simp only [edgeChoiceExponent, edgeChoiceWeight]
+  change _ = MvPolynomial.monomial (squarefreeExponent e.toFinset) (-2) +
+    ∑ x : e.toFinset, MvPolynomial.monomial (Finsupp.single (x : Fin n) 2) (1 : ℚ)
+  rw [Finset.sum_coe_sort e.toFinset
+    (fun x : Fin n => MvPolynomial.monomial (Finsupp.single x 2) (1 : ℚ))]
+  induction e using Sym2.ind with
+  | _ x y =>
+    have hxy : x ≠ y := by simpa using he
+    simp only [edgeSquare, Sym2.lift_mk, Sym2.toFinset_mk_eq, squarefreeExponent,
+      Finset.sum_pair hxy]
+    rw [← MvPolynomial.X_pow_eq_monomial, ← MvPolynomial.X_pow_eq_monomial]
+    have hm : (MvPolynomial.monomial (Finsupp.single x 1 + Finsupp.single y 1) (-2) :
+        MvPolynomial (Fin n) ℚ) = -2 * MvPolynomial.X x * MvPolynomial.X y := by
+      rw [show (-2 : MvPolynomial (Fin n) ℚ) = MvPolynomial.C (-2) by
+        rw [map_neg, map_ofNat]]
+      simp only [MvPolynomial.X, MvPolynomial.C_mul_monomial, MvPolynomial.monomial_mul]
+      norm_num
+    rw [hm]
+    ring
+
+/-- One local monomial choice on each edge of a matching. -/
+abbrev MatchingDecoration {n k : ℕ} (M : Matching n k) := ∀ e : M.val, EdgeChoice e.val
+
+def decorationExponent {n k : ℕ} (M : Matching n k) (c : MatchingDecoration M) : Fin n →₀ ℕ :=
+  ∑ e : M.val, edgeChoiceExponent e.val (c e)
+
+def decorationWeight {n k : ℕ} (M : Matching n k) (c : MatchingDecoration M) : ℚ :=
+  ∏ e : M.val, edgeChoiceWeight e.val (c e)
+
+/-- Mathlib's inductive distributivity theorem expands the finite product symbolically. -/
+theorem matching_product_eq_decoration_sum {n k : ℕ} (M : Matching n k) :
+    (∏ e ∈ M.val, edgeSquare (MvPolynomial.X : Fin n → MvPolynomial (Fin n) ℚ) e) =
+      ∑ c : MatchingDecoration M,
+        MvPolynomial.monomial (decorationExponent M c) (decorationWeight M c) := by
+  classical
+  calc
+    _ = ∏ e : M.val, edgeSquare (MvPolynomial.X : Fin n → MvPolynomial (Fin n) ℚ)
+        e.val := (Finset.prod_coe_sort _ _).symm
+    _ = ∏ e : M.val, ∑ c : EdgeChoice e.val,
+        MvPolynomial.monomial (edgeChoiceExponent e.val c) (edgeChoiceWeight e.val c) := by
+      apply Finset.prod_congr rfl
+      intro e _
+      exact edgeSquare_eq_choice_sum e.val (M.prop.2.1 e.val e.prop)
+    _ = ∑ c : MatchingDecoration M, ∏ e : M.val,
+        MvPolynomial.monomial (edgeChoiceExponent e.val (c e))
+          (edgeChoiceWeight e.val (c e)) := Fintype.prod_sum _
+    _ = _ := by
+      apply Finset.sum_congr rfl
+      intro c _
+      exact (MvPolynomial.monomial_sum_prod Finset.univ
+        (fun e : M.val => edgeChoiceExponent e.val (c e))
+        (fun e : M.val => edgeChoiceWeight e.val (c e))).symm
+
+/-- The matching coefficient is the exact weighted sum over its monomial fiber. -/
+theorem coeff_matchingSum_eq_decoration_fiber (n k : ℕ) (d : Fin n →₀ ℕ) :
+    MvPolynomial.coeff d
+      (matchingSum (MvPolynomial.X : Fin n → MvPolynomial (Fin n) ℚ) k) =
+      ∑ M : Matching n k, ∑ c : MatchingDecoration M,
+        if decorationExponent M c = d then decorationWeight M c else 0 := by
+  classical
+  simp only [matchingSum, matching_product_eq_decoration_sum, MvPolynomial.coeff_sum,
+    MvPolynomial.coeff_monomial]
+
+#print axioms edgeSquare_eq_choice_sum
+#print axioms matching_product_eq_decoration_sum
+#print axioms coeff_matchingSum_eq_decoration_fiber
+
+private theorem edgeChoiceExponent_zero_of_not_mem {n : ℕ} (e : Sym2 (Fin n))
+    (c : EdgeChoice e) (x : Fin n) (hx : x ∉ e.toFinset) :
+    edgeChoiceExponent e c x = 0 := by
+  cases c with
+  | none => simp [edgeChoiceExponent, squarefreeExponent_apply, hx]
+  | some y =>
+    have hy : y.val ≠ x := fun h => hx (h ▸ y.prop)
+    simp [edgeChoiceExponent, Finsupp.single_apply, hy]
+
+/-- Disjoint edges make the global exponent local at each incident vertex. -/
+theorem decorationExponent_apply_of_mem {n k : ℕ} (M : Matching n k)
+    (c : MatchingDecoration M) (e : M.val) (x : Fin n) (hx : x ∈ e.val.toFinset) :
+    decorationExponent M c x = edgeChoiceExponent e.val (c e) x := by
+  classical
+  simp only [decorationExponent, Finsupp.finsetSum_apply]
+  apply Finset.sum_eq_single e
+  · intro f _ hfe
+    apply edgeChoiceExponent_zero_of_not_mem
+    have hval : f.val ≠ e.val := fun h => hfe (Subtype.ext h)
+    exact fun hf => Finset.disjoint_left.mp
+      (M.prop.2.2 f.prop e.prop hval) hf hx
+  · simp
+
+private theorem exists_edge_of_decorationExponent_ne_zero {n k : ℕ} (M : Matching n k)
+    (c : MatchingDecoration M) (x : Fin n) (hx : decorationExponent M c x ≠ 0) :
+    ∃ e : M.val, x ∈ e.val.toFinset := by
+  classical
+  by_contra h
+  apply hx
+  simp only [decorationExponent, Finsupp.finsetSum_apply]
+  apply Finset.sum_eq_zero
+  intro e _
+  exact edgeChoiceExponent_zero_of_not_mem e.val (c e) x (fun he => h ⟨e, he⟩)
+
+private theorem fiberExponent_eq_two_iff {n : ℕ} (S T : Finset (Fin n))
+    (hST : Disjoint S T) (x : Fin n) : fiberExponent S T x = 2 ↔ x ∈ S := by
+  have hd : ¬ (x ∈ S ∧ x ∈ T) := fun h => Finset.disjoint_left.mp hST h.1 h.2
+  simp only [fiberExponent, Finsupp.add_apply, squarefreeExponent_apply]
+  by_cases hs : x ∈ S <;> by_cases ht : x ∈ T <;> simp_all
+
+/-- Edges on which the square, rather than cross, monomial was selected. -/
+abbrev SquareChoices {n k : ℕ} (M : Matching n k) (c : MatchingDecoration M) :=
+  {e : M.val // (c e).isSome}
+
+def chosenSquareVertex {n k : ℕ} (M : Matching n k) (c : MatchingDecoration M)
+    (q : SquareChoices M c) : Fin n := ((c q.val).get q.prop).val
+
+private theorem chosenSquareVertex_mem {n k : ℕ} (M : Matching n k)
+    (c : MatchingDecoration M) (q : SquareChoices M c) :
+    chosenSquareVertex M c q ∈ q.val.val.toFinset := ((c q.val).get q.prop).prop
+
+private theorem chosenSquareVertex_exponent {n k : ℕ} (M : Matching n k)
+    (c : MatchingDecoration M) (q : SquareChoices M c) :
+    decorationExponent M c (chosenSquareVertex M c q) = 2 := by
+  rw [decorationExponent_apply_of_mem M c q.val _ (chosenSquareVertex_mem M c q)]
+  unfold chosenSquareVertex
+  have hs (o : EdgeChoice q.val.val) (ho : o.isSome) :
+      edgeChoiceExponent q.val.val o (o.get ho).val = 2 := by
+    cases o with
+    | none => simp at ho
+    | some x => simp [edgeChoiceExponent]
+  exact hs (c q.val) q.prop
+
+/-- Each squared variable determines exactly one square choice in its matching. -/
+theorem chosenSquareVertex_injective {n k : ℕ} (M : Matching n k)
+    (c : MatchingDecoration M) : Function.Injective (chosenSquareVertex M c) := by
+  intro q r h
+  apply Subtype.ext
+  apply Subtype.ext
+  by_contra hne
+  have hd := M.prop.2.2 q.val.prop r.val.prop hne
+  exact Finset.disjoint_left.mp hd (chosenSquareVertex_mem M c q)
+    (h ▸ chosenSquareVertex_mem M c r)
+
+/-- The square choices in a prescribed fiber are in bijection with S. -/
+theorem card_squareChoices_of_fiber {n k : ℕ} (M : Matching n k)
+    (c : MatchingDecoration M) (S T : Finset (Fin n)) (hST : Disjoint S T)
+    (hc : decorationExponent M c = fiberExponent S T) :
+    Fintype.card (SquareChoices M c) = S.card := by
+  classical
+  let f : SquareChoices M c → S := fun q => ⟨chosenSquareVertex M c q,
+    (fiberExponent_eq_two_iff S T hST _).mp
+      (hc ▸ chosenSquareVertex_exponent M c q)⟩
+  rw [← Fintype.card_coe S]
+  apply Fintype.card_of_bijective (f := f)
+  constructor
+  · intro q r h
+    exact chosenSquareVertex_injective M c (congrArg Subtype.val h)
+  · intro x
+    have hx : decorationExponent M c x.val = 2 := by
+      rw [hc]
+      exact (fiberExponent_eq_two_iff S T hST _).mpr x.prop
+    obtain ⟨e, he⟩ := exists_edge_of_decorationExponent_ne_zero M c x.val (by omega)
+    rw [decorationExponent_apply_of_mem M c e x.val he] at hx
+    cases hce : c e with
+    | none =>
+      simp [hce, edgeChoiceExponent, squarefreeExponent_apply, he] at hx
+    | some y =>
+      have hy : y.val = x.val := by
+        simpa [hce, edgeChoiceExponent, Finsupp.single_apply] using hx
+      refine ⟨⟨e, by simp [hce]⟩, Subtype.ext ?_⟩
+      change chosenSquareVertex M c _ = x.val
+      simpa [chosenSquareVertex, hce] using hy
+
+#print axioms decorationExponent_apply_of_mem
+#print axioms chosenSquareVertex_injective
+#print axioms card_squareChoices_of_fiber
+
+/-- Only cross choices contribute a non-unit weight. -/
+theorem decorationWeight_eq_pow {n k : ℕ} (M : Matching n k)
+    (c : MatchingDecoration M) :
+    decorationWeight M c = (-2 : ℚ) ^ (k - Fintype.card (SquareChoices M c)) := by
+  classical
+  have hw (e : M.val) : edgeChoiceWeight e.val (c e) =
+      if (c e).isSome then 1 else -2 := by
+    cases c e <;> rfl
+  simp only [decorationWeight, hw, Finset.prod_ite, Finset.prod_const_one, one_mul,
+    Finset.prod_const]
+  rw [← Fintype.card_subtype, Fintype.card_subtype_compl, Fintype.card_coe, M.prop.1]
+
+/-- All decorated matchings in a fiber carry the same signed weight. -/
+theorem decorationWeight_of_fiber {n k : ℕ} (M : Matching n k)
+    (c : MatchingDecoration M) (S T : Finset (Fin n)) (hST : Disjoint S T)
+    (hc : decorationExponent M c = fiberExponent S T) :
+    decorationWeight M c = (-2 : ℚ) ^ (k - S.card) := by
+  rw [decorationWeight_eq_pow, card_squareChoices_of_fiber M c S T hST hc]
+
+/-- Decorated matchings whose selected monomials have the prescribed exponent. -/
+abbrev MatchingMonomialFiber {n : ℕ} (k : ℕ) (S T : Finset (Fin n)) :=
+  {p : (Σ M : Matching n k, MatchingDecoration M) //
+    decorationExponent p.1 p.2 = fiberExponent S T}
+
+/-- The remaining counting problem is an unweighted fiber cardinality. -/
+theorem coeff_matchingSum_eq_card_fiber (n k : ℕ) (S T : Finset (Fin n))
+    (hST : Disjoint S T) :
+    MvPolynomial.coeff (fiberExponent S T)
+      (matchingSum (MvPolynomial.X : Fin n → MvPolynomial (Fin n) ℚ) k) =
+      (-2 : ℚ) ^ (k - S.card) * Fintype.card (MatchingMonomialFiber k S T) := by
+  classical
+  have hcard : (Fintype.card (MatchingMonomialFiber k S T) : ℚ) =
+      ∑ M : Matching n k, ∑ c : MatchingDecoration M,
+        if decorationExponent M c = fiberExponent S T then 1 else 0 := by
+    rw [Fintype.card_subtype, ← Finset.sum_boole, Fintype.sum_sigma]
+  rw [coeff_matchingSum_eq_decoration_fiber, hcard, Finset.mul_sum]
+  apply Finset.sum_congr rfl
+  intro M _
+  rw [Finset.mul_sum]
+  apply Finset.sum_congr rfl
+  intro c _
+  split_ifs with hc
+  · simpa only [mul_one] using decorationWeight_of_fiber M c S T hST hc
+  · simp
+
+#print axioms decorationWeight_eq_pow
+#print axioms decorationWeight_of_fiber
+#print axioms coeff_matchingSum_eq_card_fiber
+
 end D5.S3.Zeros.Convolution.MatchingFiber
