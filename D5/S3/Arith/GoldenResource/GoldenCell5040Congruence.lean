@@ -120,4 +120,6 @@ theorem goldenCell5040_modEq_2241 (n : Nat)
     goldenCell5040_crt_data n hn
   exact three_pow_modEq_2241_crt n a b k hshape han ha3 horder hk h4 h6 hb hcop hm
 
+#print axioms goldenCell5040_modEq_2241
+
 end D5.S3.Arith.GoldenResource.GoldenCell5040Congruence
