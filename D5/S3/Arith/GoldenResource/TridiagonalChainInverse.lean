@@ -73,7 +73,8 @@ theorem chain_apply (m : ℕ) (i j : Fin m) :
   · subst j
     simp
   · have hne : i.val ≠ j.val := fun h => he (Fin.ext h)
-    split_ifs <;> simp_all <;> omega
+    split_ifs <;> simp_all
+    all_goals omega
 
 private theorem upper_mulVec {m : ℕ} (x : Fin m → ℝ) (i : Fin m) :
     (upper m *ᵥ x) i = if h : i.val + 1 < m then x ⟨i.val + 1, h⟩ else 0 := by
@@ -171,6 +172,73 @@ theorem chain_posDef (m : ℕ) : (H m).PosDef := by
       have h := chain_coercive n x
       simpa only [star_trivial] using (show 0 < x ⬝ᵥ (H (n + 1) *ᵥ x) by linarith)
 
+private theorem chainDet_real_rec (n : ℕ) :
+    (chainDet (n + 2) : ℝ) = 4 * (chainDet (n + 1) : ℝ) - (chainDet n : ℝ) := by
+  exact_mod_cast (show chainDet (n + 2) = 4 * chainDet (n + 1) - chainDet n from rfl)
+
+/-- Multiplying the reversed recurrence vector leaves only its first coordinate. -/
+theorem chain_inv_column (n : ℕ) :
+    H (n + 1) *ᵥ (fun i : Fin (n + 1) => (chainDet (n - i.val) : ℝ)) =
+      (chainDet (n + 1) : ℝ) • Pi.single 0 1 := by
+  classical
+  ext i
+  rw [chain_mulVec]
+  simp only [Pi.smul_apply, smul_eq_mul]
+  by_cases hi : i = 0
+  · subst i
+    cases n with
+    | zero => norm_num [chainDet]
+    | succ n =>
+      have hrec := chainDet_real_rec n
+      simpa using hrec.symm
+  · have hv : 0 < i.val := by
+      have hne : i.val ≠ 0 := fun h => hi (Fin.ext h)
+      omega
+    rw [Pi.single_eq_of_ne hi, mul_zero, dif_pos hv]
+    by_cases hr : i.val + 1 < n + 1
+    · rw [dif_pos hr]
+      have hc : (n - i.val - 1) + 1 = n - i.val := by omega
+      have hl : (n - i.val - 1) + 2 = n - (i.val - 1) := by omega
+      have hu : n - (i.val + 1) = n - i.val - 1 := by omega
+      have hrec := chainDet_real_rec (n - i.val - 1)
+      rw [hc, hl, ← hu] at hrec
+      linarith
+    · rw [dif_neg hr]
+      have hc : n - i.val = 0 := by omega
+      have hl : n - (i.val - 1) = 1 := by omega
+      norm_num [hc, hl, chainDet]
+
+/-- The first inverse column is the reversed recurrence divided by its next term. -/
+theorem chain_inverse_column (n : ℕ) :
+    (H (n + 1))⁻¹ *ᵥ Pi.single 0 1 =
+      fun i : Fin (n + 1) => (chainDet (n - i.val) : ℝ) / (chainDet (n + 1) : ℝ) := by
+  let : Invertible (H (n + 1)) := (chain_posDef (n + 1)).isUnit.invertible
+  have hd : (chainDet (n + 1) : ℝ) ≠ 0 := by
+    exact_mod_cast ne_of_gt (chainDet_pos (n + 1))
+  apply Matrix.inv_mulVec_eq_vec
+  have he : (fun i : Fin (n + 1) =>
+      (chainDet (n - i.val) : ℝ) / (chainDet (n + 1) : ℝ)) =
+      (chainDet (n + 1) : ℝ)⁻¹ •
+        (fun i : Fin (n + 1) => (chainDet (n - i.val) : ℝ)) := by
+    ext i
+    simp [div_eq_mul_inv, mul_comm]
+  rw [he, mulVec_smul, chain_inv_column, smul_smul, inv_mul_cancel₀ hd, one_smul]
+
+/-- The transfer from the first coordinate to the last is the reciprocal denominator. -/
+theorem chain_endpoint_transfer (n : ℕ) :
+    ((H (n + 1))⁻¹ *ᵥ Pi.single 0 1) (Fin.last n) =
+      1 / (chainDet (n + 1) : ℝ) := by
+  rw [chain_inverse_column]
+  simp [chainDet]
+
+/-- The squared endpoint transfer decays at least geometrically with ratio one ninth. -/
+theorem chain_endpoint_sq_le (n : ℕ) :
+    (((H (n + 1))⁻¹ *ᵥ Pi.single 0 1) (Fin.last n)) ^ 2 ≤
+      1 / (9 : ℝ) ^ (n + 1) := by
+  rw [chain_endpoint_transfer, div_pow, one_pow]
+  apply one_div_le_one_div_of_le (by positivity)
+  exact_mod_cast chainDet_sq_ge_nine_pow (n + 1)
+
 #print axioms chainDet_pos
 #print axioms chainDet_ge_three_pow
 #print axioms chainDet_sq_ge_nine_pow
@@ -178,6 +246,10 @@ theorem chain_posDef (m : ℕ) : (H m).PosDef := by
 #print axioms chain_energy
 #print axioms chain_coercive
 #print axioms chain_posDef
+#print axioms chain_inv_column
+#print axioms chain_inverse_column
+#print axioms chain_endpoint_transfer
+#print axioms chain_endpoint_sq_le
 
 end
 
