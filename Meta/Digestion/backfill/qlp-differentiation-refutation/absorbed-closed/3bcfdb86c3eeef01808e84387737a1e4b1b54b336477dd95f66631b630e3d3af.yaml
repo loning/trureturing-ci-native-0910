@@ -1,9 +1,0 @@
-fingerprints:
-  raw_sha256: sha256:3bcfdb86c3eeef01808e84387737a1e4b1b54b336477dd95f66631b630e3d3af
-  normalized_sha256: sha256:3bcfdb86c3eeef01808e84387737a1e4b1b54b336477dd95f66631b630e3d3af
-cas_ref: sha256:3bcfdb86c3eeef01808e84387737a1e4b1b54b336477dd95f66631b630e3d3af
-coverage_gids:
-  - gid: D5/S3/Zeros/Jensen/WeakQlpDifferentiation.question62_refuted
-    target_statement_id: sha256:ae34af3106d0863c34125bdb133954ccf07fee3d32173a19fdcfa6ce152d5152
-receipts:
-  unresolved_subitems: []
