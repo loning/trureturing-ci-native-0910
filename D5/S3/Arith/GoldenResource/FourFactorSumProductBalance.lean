@@ -70,8 +70,57 @@ theorem sorted_positive_sum_product_classification (a b c d : ℕ)
   subst b
   exact ⟨by omega, rfl, hc, hd1⟩
 
+/-- All positive solutions, without an ordering assumption, are permutations of (4, 2, 1, 1). -/
+theorem positive_sum_product_iff_perm (a b c d : ℕ)
+    (ha : 0 < a) (hb : 0 < b) (hc : 0 < c) (hd : 0 < d) :
+    a + b + c + d = a * b * c * d ↔ [a, b, c, d].Perm [4, 2, 1, 1] := by
+  constructor
+  · intro h
+    let l := [a, b, c, d].mergeSort (· ≥ ·)
+    have hp : l.Perm [a, b, c, d] := List.mergeSort_perm _ _
+    have hl : l.length = 4 := hp.length_eq
+    obtain ⟨w, x, y, z, he⟩ := List.length_eq_four.mp hl
+    have hs : l.Pairwise (· ≥ ·) := List.pairwise_mergeSort' _ _
+    rw [he] at hp hs
+    simp only [List.pairwise_cons] at hs
+    have hz : 0 < z := by
+      have hzmem := hp.mem_iff.mp (show z ∈ [w, x, y, z] by simp)
+      simp only [List.mem_cons, List.not_mem_nil, or_false] at hzmem
+      rcases hzmem with rfl | rfl | rfl | rfl <;> assumption
+    have hsum : w + x + y + z = a + b + c + d := by
+      simpa [add_assoc] using hp.sum_eq
+    have hprod : w * x * y * z = a * b * c * d := by
+      simpa [mul_assoc] using hp.prod_eq
+    obtain ⟨rfl, rfl, rfl, rfl⟩ := sorted_positive_sum_product_classification w x y z
+      hz (hs.2.2.1 z (by simp)) (hs.2.1 y (by simp)) (hs.1 x (by simp))
+      (by omega)
+    exact hp.symm
+  · intro hp
+    have hsum : a + b + c + d = 8 := by simpa [add_assoc] using hp.sum_eq
+    have hprod : a * b * c * d = 8 := by simpa [mul_assoc] using hp.prod_eq
+    exact hsum.trans hprod.symm
+
+/-- Every positive solution has sum eight and product eight. -/
+theorem positive_sum_product_common_value (a b c d : ℕ)
+    (ha : 0 < a) (hb : 0 < b) (hc : 0 < c) (hd : 0 < d)
+    (h : a + b + c + d = a * b * c * d) :
+    a + b + c + d = 8 ∧ a * b * c * d = 8 := by
+  have hp := (positive_sum_product_iff_perm a b c d ha hb hc hd).mp h
+  exact ⟨by simpa [add_assoc] using hp.sum_eq, by simpa [mul_assoc] using hp.prod_eq⟩
+
+-- The canonical tuple inhabits the positive domain and satisfies the equation.
+example : ∃ a b c d : ℕ, 0 < d ∧ d ≤ c ∧ c ≤ b ∧ b ≤ a ∧
+    a + b + c + d = a * b * c * d :=
+  ⟨4, 2, 1, 1, by decide⟩
+
+example : (4 + 2 + 1 + 1 : ℕ) = 8 ∧ (4 * 2 * 1 * 1 : ℕ) = 8 :=
+  positive_sum_product_common_value 4 2 1 1 (by decide) (by decide)
+    (by decide) (by decide) (by decide)
+
 #print axioms sorted_positive_sum_product_lower_pair_eq_one
 #print axioms sorted_positive_sum_product_reduction
 #print axioms sorted_positive_sum_product_classification
+#print axioms positive_sum_product_iff_perm
+#print axioms positive_sum_product_common_value
 
 end D5.S3.Arith.GoldenResource.FourFactorSumProductBalance
