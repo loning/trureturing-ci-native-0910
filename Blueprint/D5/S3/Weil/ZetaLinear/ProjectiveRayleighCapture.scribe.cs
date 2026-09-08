@@ -28,10 +28,10 @@ internal sealed class ProjectiveRayleighCaptureDocument : IScribeDocumentDefinit
         Formula k = F.Id("k"), u = F.Id("u"), A = F.Id("A"), iota = F.Id("iota");
         Formula E = Call("normSq", Call("alignedError", iota, k, u));
         Formula enclosure = Seq(
-            Call("SymmetricOnDomain", iota, A), Land,
-            Call("NormalizedCandidate", iota, k), Land,
-            Call("NonzeroEigenvector", iota, A, u, lambda), Land,
-            ell, Leq, lambda, Lt, T, Land, mu, Leq, U, Lt, T, Land,
+            Call("SymmetricOnDomain", iota, A), Land, Sp,
+            Call("NormalizedCandidate", iota, k), Land, Sp,
+            Call("NonzeroEigenvector", iota, A, u, lambda), Land, Sp,
+            ell, Leq, Sp, lambda, Lt, Sp, T, Land, Sp, mu, Leq, Sp, U, Lt, Sp, T, Land, Sp,
             Call("ComplementCoercive", iota, A, k, T));
         return DocumentDefinition.Create(ScribeNode.Create(
             "An actual symmetric operator-domain equation yields a sharp complex projective "
@@ -49,11 +49,11 @@ internal sealed class ProjectiveRayleighCaptureDocument : IScribeDocumentDefinit
                     DeclarationHandle.Create(Owner + "projective_rayleigh_enclosure"),
                     H("The sharp aligned eigenline estimate"),
                     StatementSource.FromAuthor(Disp(Seq(
-                        enclosure, Rightarrow,
-                        Call("Nonzero", alpha), Land,
-                        E, Leq, Call("ratio", Seq(mu, Minus, lambda), Seq(T, Minus, lambda)), Land,
-                        E, Leq, Call("ratio", Seq(U, Minus, ell), Seq(T, Minus, ell)), Land,
-                        E, Lt, D(1)))),
+                        enclosure, Rightarrow, Sp,
+                        Call("Nonzero", alpha), Land, Sp,
+                        E, Leq, Sp, Call("ratio", Seq(mu, Minus, lambda), Seq(T, Minus, lambda)), Land, Sp,
+                        E, Leq, Sp, Call("ratio", Seq(U, Minus, ell), Seq(T, Minus, ell)), Land, Sp,
+                        E, Lt, Sp, D(1)))),
                     AssessedProvenance.FromRepo(), Blocks(Paragraph(Text(
                         "Shift the action to B=A-lambda*iota. It is symmetric on the same domain "
                         + "and annihilates u. Complement coercivity first proves alpha is nonzero. "
