@@ -275,4 +275,37 @@ Canonical artifacts retained as **frozen, uncovered** (#4996):
 - event_hash: `sha256:d1a1b810284a94bff6f773404f15c33ab1e380e438529ac99b94879b2841d6a5`.
 
 Only these two further canonical paths appeared. No retry was performed on
-either deposit. Steps 5-7 pending.
+either deposit.
+
+## Step 5: Canonical Artifact Audit
+
+Main freeze commit `c156d6afd2` was pushed successfully.
+JSON parsing and state/event pairing check exited **0**; receipt:
+`05-freeze-receipt.json` in the attempt directory. Each state object has exactly
+the `statement_id` key and matches its event payload. Both events are schema 5
+`Freeze`; A includes 21 declarations and B includes 26. Event hashes were read
+from canonical artifacts, not regenerated.
+
+The A event directly names these prerequisite event hashes:
+
+- `sha256:07b22eef3e97f44d5239919946fe29c4fd7c178181c8c8931583f91c704c1d77` (FiniteFreeCommutatorDegreeSix, already frozen at base).
+- `sha256:3b9fcb14bd41d3e63ec26849c419e12890e7f76ffa6b4d973a8c4bb0710f556f` (B, first frozen in this delivery).
+
+B has an empty frozen prerequisite list. The newly frozen direct declaration
+used by A's ordered discriminant bridge is
+`D5/S3/Zeros/Convolution/GribinskiDegreeThreeDiscriminant.ordered_numerator_nonneg`,
+statement_id `sha256:07b164a52c7dd72c0c5fd9ecbbf41304d9a841710d5166e612a4c5968bb012a5`.
+This additional candidate dependency is distinguished from the protected-base
+dependency column of the inherited admission table.
+
+Post-deposit direct file count is **14**, arithmetic headroom **34** against
+the source limit 48; capacity-counted state occupancy remains 0 (excluded).
+`git diff --check b9ad72010f6473b22e7616958a7e78db6fe0d2e2 HEAD` exited **0**.
+`git merge-tree --write-tree origin/dev HEAD` exited **0**, tree
+`df7303f1c9dc1ed67daa9c4f11cf874bf4613d59`, at HEAD `c156d6afd2` and the original
+unchanged `origin/dev`. The five added paths are exactly two state pins,
+two accepted events and this report. All Lean, Blueprint, Digestion,
+domain and budget paths have zero diff from baseline.
+
+Steps 6-7 pending. Preflight will run once, retaining any host/engineering
+diagnostic without treating it as a new mathematical admission verdict.
