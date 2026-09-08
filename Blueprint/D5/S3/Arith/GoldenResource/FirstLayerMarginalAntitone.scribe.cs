@@ -55,6 +55,17 @@ internal sealed class FirstLayerMarginalAntitoneDocument : IScribeDocumentDefini
                         + "layer price equals the maximum of the next-layer marginals over q "
                         + "together with the prime factors of n. Every other prime has first "
                         + "layer marginal at most that of q, so no further prime changes the maximum."))),
+                DescribeRole.Theorem),
+            Describe.Lean(
+                DescribeId.Create("upper-price-finite-maximum-unconditional"),
+                DeclarationHandle.Create(Prefix + "golden_upper_price_eq_finite_max"),
+                H("The finite maximum without a supplied least prime"),
+                StatementSource.FromAuthor(UnconditionalFiniteMaximumFormula()),
+                AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text(
+                    "The least prime not dividing n exists for every positive n, so the finite "
+                        + "maximum needs no such prime as an input. Producing it here states the "
+                        + "reduction of the upper price outright rather than relative to a caller."))),
                 DescribeRole.Theorem))));
 
     private static Formula SplittingFormula()
@@ -98,6 +109,24 @@ internal sealed class FirstLayerMarginalAntitoneDocument : IScribeDocumentDefini
                 Equal(Call("goldenUpperPrice", n), finiteMaximum))));
     }
 
+    private static Formula UnconditionalFiniteMaximumFormula()
+    {
+        Formula n = F.Id("n");
+        Formula q = F.Id("q");
+        Formula p = F.Id("p");
+        Formula missingPrimes = Seq(OpenBrace, p, Colon, Sp, Naturals(), Sp, Mid, Sp,
+            And(Prime(p), new Formula.Not(Divides(p, n))), CloseBrace);
+        Formula leastMissing = Call("IsLeast", missingPrimes, q);
+        Formula finiteSupport = Call("insert", q, Call("primeFactors", n));
+        Formula finiteMaximum = Seq(Max, Underscore,
+            Grp(Seq(p, Sp, InMacro, Sp, finiteSupport)), Sp,
+            Call("goldenLayerMarginal", p,
+                Add(Call("factorization", n, p), D(1))));
+        return Disp(ForAll([Bound("n", Naturals())], Implies(Le(D(1), n),
+            Exists([Bound("q", Naturals())],
+                And(leastMissing, Equal(Call("goldenUpperPrice", n), finiteMaximum))))));
+    }
+
     private static Formula LogRatio(Formula x) => new Formula.Fraction(
         Call("log", Add(D(1), new Formula.Fraction(D(1), x))), Call("log", x));
 
@@ -127,4 +156,6 @@ internal sealed class FirstLayerMarginalAntitoneDocument : IScribeDocumentDefini
         new(FormulaIdentifier.Create(name), domain);
     private static Formula ForAll(Formula.BoundVariable[] variables, Formula body) =>
         new Formula.BindMany(FormulaQuantifier.ForAll, [.. variables], body);
+    private static Formula Exists(Formula.BoundVariable[] variables, Formula body) =>
+        new Formula.BindMany(FormulaQuantifier.Exists, [.. variables], body);
 }

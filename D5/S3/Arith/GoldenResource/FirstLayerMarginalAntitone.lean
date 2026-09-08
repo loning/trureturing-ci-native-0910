@@ -100,9 +100,19 @@ theorem golden_upper_price_eq_finite_max_of_isLeast_missing_prime {n q : ℕ} (h
     · simpa [hpq] using hupper q hq.1.1
     · exact hupper p (Nat.prime_of_mem_primeFactors hp)
 
+/-- The upper layer price is a finite maximum, with the least missing prime produced here. -/
+theorem golden_upper_price_eq_finite_max {n : ℕ} (hn : 1 ≤ n) :
+    ∃ q : ℕ, IsLeast {p : ℕ | p.Prime ∧ ¬p ∣ n} q ∧
+      goldenUpperPrice n =
+        ((insert q n.primeFactors).image fun p =>
+          goldenLayerMarginal p (n.factorization p + 1)).max' (by simp) := by
+  obtain ⟨q, hq, -⟩ := GoldenSmallestMissingPrime.exists_smallest_missing_prime_threshold hn
+  exact ⟨q, hq, golden_upper_price_eq_finite_max_of_isLeast_missing_prime hn hq⟩
+
 #print axioms log_add_one_div_log_eq_one_add
 #print axioms golden_layer_marginal_one_eq_log_one_add_inv
 #print axioms log_add_one_div_log_strictAnti_of_prime
 #print axioms golden_upper_price_eq_finite_max_of_isLeast_missing_prime
+#print axioms golden_upper_price_eq_finite_max
 
 end D5.S3.Arith.GoldenResource.FirstLayerMarginalAntitone
