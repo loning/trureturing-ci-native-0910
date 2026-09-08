@@ -464,12 +464,40 @@ as a control. `rg --files D5 -g '*Hearts.lean'` located the correct path above.
 `docs/reports/review/m3-review-0909.md`. Thus the final-source checks address
 the pinned audited files, not an intermediate source state.
 
-## Q6
+## Q6: Reporting and Provenance Honesty
 
-Q1-Q5 complete; Q6 pending. No final verdict at this checkpoint.
+**Verdict: pass; no blocking misrepresentation found in the pinned report.**
+The reviewed implementation report is
+`docs/reports/convolution/gribinski-m3-0909.md` (484 lines). It was read in
+full; the concluding evidence was checked with
+`sed -n '320,484p' docs/reports/convolution/gribinski-m3-0909.md`, with the
+producer and failed-build disclosures reread using `sed -n '1,28p'` and
+`sed -n '174,225p'` on that same path (all EXIT=0).
+
+| Honesty question | Own reading |
+| --- | --- |
+| Conditional result promoted to unconditional | No. Main source:237-246 has only the conjecture's alpha/root-domain hypotheses and obtains both coefficient signs and the discriminant inequality in the proof. The report:331-338 correctly describes this live discharge of the frozen theorem's premises. |
+| m=3 promoted to the whole conjecture | No. Report:7-11 and 366-385 explicitly restrict the result to fixed m=3 and every alpha > -1; general m, a full solution, and priority are unclaimed. |
+| Untested assertion promoted to measured result | No such promotion found. Report:213-223 distinguishes the failed certificate build and its temporary sorryAx diagnostic from the successful build; report:479-484 expressly says make gate was not run. This review independently checked the final source and closures in Q5. |
+| Seat self-report promoted to independent observation | No. Report:3-11 and 180-185 name the producer, mark independent_review ASSUMED-UNVERIFIED, and disclose inherited Steps 1-3. Report:378-385 and 483-484 preserve that boundary. |
+| Explicit nonclaims present | Yes, the dedicated section at report:366-385 is a positive finding. In particular, it says "It does not prove general m, solve Conjecture 3.13 in full, or claim priority." The narrower scope is substantive and accurately stated. |
+| Declaration-count honesty | Report:394-395 explicitly labels added=27 as an inspector delta relative to the retained cache. It does not claim that the final two modules contain 27 declarations. Its 26 explicit theorem printouts at report:420-457 agree with Q5. The brief's count is corrected to 47 included declarations. |
+
+Report:339-349 also distinguishes live prerequisites from the preregistered
+coefficient/weight companion obligations; it does not label those unused
+companions as live escape witnesses. The public theorem classifications
+remain consistent with this review's Q2 findings.
+
+The implementation's historical timings, earlier Loogle hit counts,
+Campbell--Jalowy quotation, and issue-comment receipts were not independently
+rerun or opened by this reviewer. Their attribution/reuse is disclosed in
+the report; their exact historical accuracy remains ASSUMED-UNVERIFIED here.
+They are not used as this review's build, axiom, or fidelity readings.
+CMP v2 itself was opened and checked in Q4. The other worktree's Blueprint
+updates and any later implementation changes are outside this pinned review.
 
 ## Publication
 
 Each completed question and validation is recorded and pushed immediately.
-This initial checkpoint preserves the baseline, criteria, and search receipts.
-The final result envelope will list the pushed commit SHAs.
+Q1-Q6 are complete. The final result envelope will list the pushed commit SHAs;
+the structured conclusion and artifact publication follow this Q6 checkpoint.
