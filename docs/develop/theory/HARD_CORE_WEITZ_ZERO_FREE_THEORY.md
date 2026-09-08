@@ -2073,3 +2073,258 @@ executed axiom closure and Scribe emission remain unperformed. The current resul
 is a candidate formalization of the normalized finite-volume log and its bounds.
 It does not claim a new numerical zero-free threshold, mathematical priority or
 an established thermodynamic limit.
+
+
+## 35. Actual occupation double counting and the Euler moment hierarchy
+
+This continuation starts at `155387b141f83fa5db47966f5906643be5d4830f` and
+reads dev at `389f79227a4640dcbcb83ad1bc5a12a5160aaa68`. The new generic
+configuration and Gibbs modules depend only on the existing actual independent
+sets and standard Mathlib calculus/probability. The later square-grid consumer
+also uses the preceding normalized-log and zero-free chain. No coefficient,
+geometric transition, activity width, or existing partition definition changes.
+
+For a finite domain V of any simple graph, define unnormalized occupation moments
+on the existing configuration family by
+
+\[
+ M_k(V;z)=\sum_{S\in\mathcal I_G(V)}|S|^k z^{|S|},\qquad M_0(V;z)=Z_G(V;z).
+\]
+
+The new source proves the exact configuration equality
+
+\[
+ \mathcal I_G(V\setminus\{v\})
+ =\{S\in\mathcal I_G(V):v\notin S\}.
+\]
+
+Consequently the total weight of configurations containing v is the partition
+on V minus the partition on V without v. The corresponding addition identity
+holds in every commutative semiring, with no subtraction or nonzero premise.
+Counting each configuration once for each of its occupied vertices then gives,
+for arbitrary vertex weights in a commutative ring,
+
+\[
+ \sum_{S\in\mathcal I_G(V)}|S|\prod_{u\in S}w_u
+ =\sum_{v\in V}\left(Z_G(V;w)-Z_G(V\setminus\{v\};w)\right).
+\tag{35.1}
+\]
+
+This preserves all correlations between vertex indicators. No independence of
+neighbors, graph-size hypothesis, or probability interpretation is used.
+
+Termwise differentiation gives the source-level all-order identity
+
+\[
+ \boxed{zM_k'(V;z)=M_{k+1}(V;z)\quad(k\ge0).}
+\tag{35.2}
+\]
+
+For the empty configuration, the derivative term has coefficient zero. Every
+other term satisfies z*z^(n-1)=z^n. This explicit split preserves the endpoint
+z=0 and does not divide by z. Combining k=0 with (35.1) completes the target
+
+\[
+ \boxed{zZ'_G(V;z)=\sum_{v\in V}
+ \left(Z_G(V;z)-Z_G(V\setminus\{v\};z)\right).}
+\tag{35.3}
+\]
+
+The identity holds at partition zeros as well. Only subsequent normalization
+requires Z!=0. Wherever that condition holds, quotient differentiation and
+(35.2) give a normalized response hierarchy:
+
+\[
+ \boxed{z\frac{d}{dz}\frac{M_k}{Z}
+ =\frac{M_{k+1}}{Z}-\frac{M_k}{Z}\frac{M_1}{Z}.}
+\tag{35.4}
+\]
+
+This general lemma is the common algebraic owner of both the mean and the
+fluctuation calculation below. Real and complex specializations reuse it.
+
+## 36. A standard Gibbs PMF, its actual mean and its fluctuation response
+
+For lambda>=0, the empty independent configuration contributes one and all
+weights are nonnegative, so the existing theorem gives Z_G(V;lambda)>=1.
+Define the actual mass on all finite subsets of the ambient vertex type by
+
+\[
+ p_{V,\lambda}(S)=
+ \begin{cases}\lambda^{|S|}/Z_G(V;\lambda),&S\in\mathcal I_G(V),\\
+ 0,&\text{otherwise}.\end{cases}
+\]
+
+The new source proves nonnegativity and that the finite support sums to one,
+then constructs Mathlib's `PMF (Finset alpha)` using `PMF.ofFinset`. Its
+real-valued point masses are proved equal to the displayed weights. The
+ambient graph need not be finite; only V is finite. This is a probability law
+on actual configurations, with no newly assumed distribution or normalizer.
+
+Finite PMF summation yields, for every k,
+
+\[
+ \mathbb E_{p_{V,\lambda}}|S|^k=M_k(V;\lambda)/Z_G(V;\lambda).
+\]
+
+The actual one-vertex event and the expected cardinality satisfy
+
+\[
+ \boxed{\Pr(v\in S)=1-\frac{Z_G(V\setminus\{v\};\lambda)}{Z_G(V;\lambda)},
+ \qquad \mu_V(\lambda)=\mathbb E|S|=\sum_{v\in V}\Pr(v\in S).}
+\tag{36.1}
+\]
+
+A vertex outside V has occupancy zero. The source also proves
+0<=mu_V<=|V|. For the centered variance, it first uses the actual weighted
+squared deviations, then derives its raw-moment expression:
+
+\[
+ \operatorname{Var}_{V,\lambda}(|S|)
+ =\sum_Sp_{V,\lambda}(S)(|S|-\mu_V)^2
+ =\frac{M_2}{Z}-\left(\frac{M_1}{Z}\right)^2\ge0.
+\]
+
+Specializing (35.4) to k=1 gives the further completed source theorem
+
+\[
+ \boxed{\lambda\,\mu'_V(\lambda)=\operatorname{Var}_{V,\lambda}(|S|).}
+\tag{36.2}
+\]
+
+For positive lambda this proves mu'_V>=0. At lambda=0 the mean and variance
+are both zero; the PMF is still normalized, with only the empty configuration
+having nonzero mass. The scaled identity includes that endpoint directly.
+No second-moment expression is mislabeled as a centered variance, and no sum
+of individual Bernoulli variances is substituted for the full correlated one.
+
+These facts hold for every finite domain of every simple graph and every
+nonnegative real activity. They do not depend on the square-grid zero-free
+certificate or on the cap 51/20. They are classical hard-core/exponential-family
+identities, not new extremal inequalities. Their formal role is to connect the
+previous analytic objects with the precise Gibbs observable.
+
+## 37. The normalized grid logarithm now measures actual occupation
+
+The square-grid consumer applies the previous normalization F'_V=Z'_V/Z_V,
+actual nonvanishing, and (35.3), obtaining throughout the same ActivityTube
+
+\[
+ \boxed{zF'_V(z)=\frac{M_1(V;z)}{Z_V(z)}
+ =\sum_{v\in V}(1-\alpha(V,v;z)).}
+\tag{37.1}
+\]
+
+At real 0<=lambda<=51/20 this is exactly the finite-PMF expected cardinality,
+with the real mean cast into the complex numbers. The proof transports the
+actual finite sums and weights, rather than postulating an expectation identity.
+At general complex activities, (37.1) remains an analytic quantity; it is not
+assigned probability values.
+
+The already-owned bound |alpha(V,v;z)|<=2 now gives a volume-uniform analytic
+response estimate, also formalized in this increment:
+
+\[
+ \boxed{|zF'_V(z)|\le3|V|.}
+\tag{37.2}
+\]
+
+For nonempty V, this bounds the scaled derivative of F_V/|V| by three on the
+common complex neighborhood. It does not assert that dividing by z is safe at
+zero, or that differentiating a thermodynamic limit is already justified.
+
+### Next finite-volume target: linear-volume fluctuation control
+
+There is now a direct paper route from (37.2) to a graph-size-uniform variance
+bound. The function H_V(z)=M_1(V;z)/Z_V(z) is holomorphic on ActivityTube.
+For every real lambda in [0,51/20], the closed disk of radius epsilon/2 around
+lambda lies inside that tube. Cauchy's derivative estimate applied to (37.2)
+gives
+
+\[
+ |H'_V(\lambda)|\le6|V|/\epsilon.
+\]
+
+The normalized moment identity (35.4), together with the real coefficient
+transport, identifies lambda*H'_V(lambda) with the actual real Gibbs variance.
+Thus the candidate chain yields the paper consequence
+
+\[
+ 0\le\operatorname{Var}_{V,\lambda}(|S|)
+ \le\frac{153}{10\epsilon}|V|<16\cdot10^{30}|V|.
+\]
+
+The final strict inequality is intended for nonempty V; the empty variance is
+zero, and a non-strict bound with 16*10^30 covers all finite domains. This is an
+extremely conservative sufficient constant. Its point is the linear volume
+scaling, not numerical sharpness. The Cauchy-domain inclusion, derivative bound
+and full real/complex variance transport have not been assembled as new public
+Lean declarations here. They are the next concrete proof target. No infinite-
+volume susceptibility, central limit theorem or phase-transition theorem is
+asserted by this finite-volume deduction.
+
+## 38. Literature interface and executed verification
+
+Davies, Sandhu and Tan [7] study occupancy and variance fractions through the
+operator lambda*d/dlambda, explicitly relating them to expected configuration
+size and its variance. Zhang and Xu [8] continue that study in 2026 with
+extremal bounds. Their work confirms that the observable and response in
+(36.1)-(36.2) are standard active research quantities. This increment does not
+claim their formulas as new discoveries or claim to settle their extremal
+conjectures. Chen, Shao and Shi [1] remains the external guide for connecting
+uniform complex zero-freeness to analytic free energy.
+
+The current dev owner `D5/S3/Analytic/ZetaGibbs.lean` was also read. It already
+uses standard PMF normalization for an infinite logarithmic-integer ensemble.
+That source requires a summability condition on its inverse temperature. The
+present finite hard-core law instead normalizes the existing independent-set
+configuration family; the infinite zeta ensemble and its convergence condition
+are not silently imported or identified with the graph model. Mathlib's
+finite-support PMF constructor is reused directly.
+
+Three new Lean owners have three canonical Scribe companions and 36 public
+declarations: OccupationMoments (12), GibbsOccupation (18), and
+Holomorphic/OccupationResponse (6). Every declaration has a source-bound
+StatementSource.FromLean handle. The existing partition, normalized logarithm,
+geometric and analytic owners are unchanged.
+
+The independent verifier directly enumerates independent subsets of all 76
+labeled simple graphs on at most four vertices and all 512 domains of a 3-by-3
+square. It computes reference polynomial derivatives coefficientwise and uses
+exact rational and Gaussian-rational arithmetic. It checks 20580 Euler moment
+identities, 17800 normalized responses, 4116 partition occupation identities,
+3528 Gibbs normalizations, 21168 raw-moment identities, 15534 vertex marginals,
+and 3528 fluctuation-response identities. There are 556 partition-zero cases
+where only the denominator-free identities are tested. All 588 domain instances
+include a zero-activity probability test.
+
+Seven negative controls detect a missing activity factor, division by zero
+activity, false independence of vertices, dropped indicator covariances,
+uncentered second moments, normalization at a partition zero, and omission of
+the empty configuration. Exact tests were rerun after final source assembly
+and the emitted JSON was byte-identical.
+
+```sh
+python research/hard_core_weitz/verify_occupation_response.py
+```
+
+The verifier reuses only the earlier exact Gaussian-rational arithmetic class;
+its configuration and probability checks are explicitly performed from finite
+subsets. It does not read a stored success verdict or execute Lean proof terms.
+The implementation is by the same assistant, not independent-author review.
+Lean/lake is absent from the authoring runtime; no source elaboration, kernel
+acceptance, executed axiom closure or Scribe emission is claimed. The generic
+moment/Gibbs modules have no dependency on the candidate zero-free theorem;
+the normalized-log consumer and the next Cauchy deduction do inherit it.
+No additional zero-free endpoint, accepted numerical record or mathematical
+priority claim is made in this increment.
+
+[7] Ewan Davies, Juspreet Singh Sandhu and Brian Tan. *On expectations and
+variances in the hard-core model on bounded degree graphs*. arXiv:2505.13396v2,
+especially the definitions of free energy, occupancy fraction and variance
+fraction in Section 1.
+https://arxiv.org/html/2505.13396v2
+
+[8] Weiyuan Zhang and Kexiang Xu. *On expectations and variances in the hard-core
+model*. arXiv:2604.01717v1 (2 April 2026).
+https://arxiv.org/abs/2604.01717
