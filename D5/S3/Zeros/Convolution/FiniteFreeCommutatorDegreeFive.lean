@@ -3,7 +3,7 @@
    mirror-B: D5/B/S3/Zeros/Convolution/FiniteFreeCommutatorDegreeFive
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
-   utility: kind=certified-instance; basis=terminal=gid:D5/S3/Zeros/Convolution/FiniteFreeCommutatorDegreeFive.real_rooted
+   utility: none
    digest: The source-defined finite free commutator preserves real roots in degree five. -/
 
 import D5.S3.Zeros.Convolution.FiniteFreeCommutatorDegreeFour
