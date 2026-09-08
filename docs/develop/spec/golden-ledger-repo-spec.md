@@ -108,6 +108,20 @@ golden-ledger/
    digest: 谱隙处 IDS 取值于 Z+Zphi(隙标定;衍射-谱同迹像之谱侧) -/
 ```
 
+**A5.1 用途准入(SL-031;政策原文 CLAUDE.md 第 5⁗ 条)** 受保护 immutable baseline 未冻结且本次 present byte-changed 的 D5 Lean 模块,与本次首次取得 `Golden/Frozen/state/<module>.lean.json` 的模块,取去重并集。修改正文、缺头、无 state、Modified change record、rename/copy 目的路径均参与;同时首冻按 FirstFreeze 判。未变历史不因 judge-only 变化被重审,baseline-frozen 的 utility 棘轮和 SL-008 保留。
+
+选中模块须在 `anchors` 与 `digest` 间有一行 `utility: ...`。值为 `none`,或按顺序 `kind=<kind>; basis=<basis>` 后接可选的 `instance=<declaration-gid>`、`premises=<gid>,<gid>...`、`result=<declaration-gid>`、`claim=<declaration-gid>`;分隔恰为 `; `,可选键顺序固定,不接受重复/未知键。kind 闭集为 `bounded-enumeration|checker|numeric-reduction|certified-instance`;basis 为 `consumer=<declaration-gid>` 或 `refutes=<target>` 或 `terminal=<target>`,target 为 `gid:<declaration-gid>`、`atom:<64-lower-hex>`、`task:D5-Tnnnn`。C# `UtilitySyntax` 只判文法,`UtilityDeclarationValidator` 判用途。
+
+普通正向有限实例不得准入:`certified-instance` / `bounded-enumeration` 仅可走有效 `refutes`,否则 `UTILITY-ORDINARY-INSTANCE-BANNED`;consumer、terminal、自指及附加 result 无豁免。checker / numeric-reduction 仍可承载一般基础设施;非 refutes 的 checker 须有 instance,归约须有 premises 且 basis=consumer。G/I/E 与用途正交,不以命名、数值语法或 tactic 判分类。缺失/坏 utility 或当前 report(含 `none`)阻断;所有 GID 必须唯一解析到当前 report 的 included 声明,atom/TASK 必须解析。已知普通类别换成其他 label 而头后正文逐字节不变时 `UTILITY-CLASSIFICATION-DOWNGRADE` 阻断;分类改变(包括缺失/坏 label)产生 `UTILITY-CLASSIFICATION-CHANGED`。每个选中模块有 `UTILITY-OBSERVED ... semantics=unverified-by-machine`。
+
+所有 refutes 必须同时给 claim 与 result。claim 是唯一 included、无自由项/宇宙参数的闭合 Prop definition;result 是当前准入模块唯一 included、闭合 theorem。既有 Lean inspector 通过类型推断与定义相等检验 result 是 `Not claim` 的 kernel proof,claim/result 公理闭包只能含既有许可公理。自我反驳、额外未证假设、非 theorem/外模块 result、正向结果伪标 refutes 均失败。`basis=refutes=gid` 的目标必须等于 claim。存在式/合取式反例可给出导出该否定的 companion theorem,无需消费者。
+
+`lean-utility-input` 使用唯一 C# utility parser 发出结构化义务,由既有 inspector 消费。报告 optional module 字段 `utility_refutation` 闭集为 `{claim_gid,claim_source_path,claim_source_sha256,result_gid,is_closed_negation}`;strict source-bound loader 校验当前头部与 claim 源码路径/哈希绑定。claim 可不在 result 的 Lean import 闭包内(定义相等仍能成立),故报告 delta planner 将该 claim 作为实际 producer 依赖,其变更、删除或传递输入变化使相关反驳重新检查,不只跟踪 imports。缺 optional 字段的 legacy 报告可读,但新 refutes 不得以缺证据为成功。证据不进入 canonical statement material、declaration statement ID 或 frozen identity。ChangedContent 与 PreDeposit 共用解析、禁令、当前报告和 typed refutation 检查;FirstFreeze 另要求 consumer import 可达,以及 refutes=atom 的 coverage 精确指向指定 result 的当前 statement ID。前两阶段不要求 freeze 后才有的 coverage。
+
+`make deposit` 把 BASE 解析为 commit SHA,传入 `deposit-header-check --target <path> --protected-base <sha>`;预检从 repository gateway 读取该 immutable protected baseline,仅其 frozen membership 获历史豁免,candidate 自带 pin 不获豁免,baseline 不可读即错误。预检 utility 失败使用相应 `DEPOSIT_HEADER_UTILITY_*` 诊断。该门不替代 SL-008 或最终 admission,不独立重构 ledger writer。
+
+硬保证止于以上输入域、所报分类的禁令和指定 claim/result 关系。fresh `none`、正文变化后的重分类是否真实,atom/TASK 或独立源断言是否忠实映射到 claim,每个普通实例是否确为反例的一部分,consumer 是否实际使用结论与数值前提是否正确,仍由独立评审逐声明判。无关反例不得掩护普通实例;机器通过不构成一般性或全部用途语义的证明。
+
 **A6 Lean 声明命名**(承 mathlib)定理 `snake_case`(主语_性质);类型 `CamelCase`;命名空间=路径;上游通用层居 `Metallic.*` 且以参数 D 陈述(H10)。
 
 **A7 任务码** `THEORY"-T"<四位>`(D5-T0042,永久不复用);工单块只要求包含 `TASK D5-T0042`,块内为自由散文:
