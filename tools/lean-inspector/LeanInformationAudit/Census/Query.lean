@@ -52,10 +52,17 @@ def buildIndex (root : Name) : MetaM Index := do
   let members : Std.HashSet Name := Std.HashSet.ofArray modules
   let mut named : Std.HashMap Name (Array Name) := {}
   for (name, info) in env.constants.toList do
+    unless members.contains (owningModule env name) do continue
     let head := info.type.getAppFn.constName?.getD .anonymous
-    if evidenceTypes.contains head && members.contains (owningModule env name) then
+    if evidenceTypes.contains head then
       named := named.insert head ((named.getD head #[]).push name)
-  for head in evidenceTypes do
+    if info.isTheorem then
+      if let .forallE _ _ conclusion _ := info.type then
+        if conclusion.isAppOfArity ``BoundedTruncationFamily.approximation 3 &&
+            !conclusion.hasLooseBVars then
+          let head := ``BoundedTruncationFamily.approximation
+          named := named.insert head ((named.getD head #[]).push name)
+  for head in evidenceTypes.push ``BoundedTruncationFamily.approximation do
     named := named.insert head ((named.getD head #[]).qsort Name.quickLt)
   return {
     root, modules, named
@@ -129,9 +136,41 @@ def assess (index : Index) (head : String) (key : StatementKey) : MetaM (CensusA
         strictnessCertificate := proof, witnessCertificate := witness }
   for evidenceHead in [``BoundedTruncationFamily, ``UnreachableElaborationEvidence] do
     for name in index.named.getD evidenceHead #[] do
-      let type ← inferType (← mkConstWithFreshMVarLevels name)
-      if ← withNewMCtxDepth (isDefEq type.getAppArgs[0]! statement) then
+      let value ← mkConstWithFreshMVarLevels name
+      let type ← inferType value
+      unless ← withNewMCtxDepth (isDefEq type.getAppArgs[0]! statement) do continue
+      if evidenceHead == ``UnreachableElaborationEvidence then
+        let evidence ← whnf value
+        if evidence.isAppOfArity ``UnreachableElaborationEvidence.mk 5 then
+          let obligation ← whnf evidence.getAppArgs[4]!
+          if obligation.isAppOfArity ``Option.some 2 then
+            let obligationName : Name ← reduceEval obligation.getAppArgs[1]!
+            if env.contains obligationName then
+              let obligationType := (← getConstInfo obligationName).type
+              if [``ClosedNumericalObligation, ``InfinitePrimitiveObligation,
+                  ``UnfaithfulPrimitiveObligation].contains
+                    (obligationType.getAppFn.constName?.getD .anonymous) then
+                let recorded : Name ← reduceEval obligationType.getAppArgs[0]!
+                if recorded != key.theoremName then continue
         candidates := candidates.push name
+        let reasonExpr ← whnf (← mkAppM ``UnreachableElaborationEvidence.reason #[value])
+        let reason ← match reasonExpr.constName? with
+          | some ``UnreachableReason.noCanonicalObjectCarrier => pure UnreachableReason.noCanonicalObjectCarrier
+          | some ``UnreachableReason.noFinitePrimitiveBundle => pure UnreachableReason.noFinitePrimitiveBundle
+          | some ``UnreachableReason.noFaithfulPrimitiveRealization => pure UnreachableReason.noFaithfulPrimitiveRealization
+          | _ => throwError "census query: invalid unreachable reason"
+        dispositions := dispositions.push (.unreachable ⟨reason, name⟩)
+      else
+        candidates := candidates.push name
+        for comparison in index.named.getD ``BoundedTruncationFamily.approximation #[] do
+          let comparisonType ← inferType (← mkConstWithFreshMVarLevels comparison)
+          let .forallE _ _ conclusion _ := comparisonType | continue
+          unless conclusion.getAppArgs[1]!.isConstOf name do continue
+          let some bound := (← whnf conclusion.getAppArgs[2]!).rawNatLit? | continue
+          let approximation ← mkAppM ``BoundedTruncationFamily.approximation #[value, mkNatLit bound]
+          unless ← withNewMCtxDepth (isDefEq comparisonType (← mkArrow statement approximation)) do continue
+          dispositions := dispositions.push <| .boundedFiniteTruncation {
+            truncationFamily := name, bound, comparisonStatement := comparison, certification := .reportOnly }
   for evidenceHead in [``AnalysisDisposition, ``CensusAssessment] do
     for name in index.named.getD evidenceHead #[] do
       let value ← mkConstWithFreshMVarLevels name
