@@ -174,6 +174,37 @@ curl -fsS --max-time 25 --get 'https://loogle.lean-lang.org/json' --data-urlenco
 
 以上是 **在线索引读数,不是本仓 pin 的声明保证**;任何用于探针的命中仍须在钉版源码中核对,再经 `make lean`。未主张第三方生态检索穷尽,也未登记新的 AxiomDebt。
 
+### 批次 5: 钉版库命中与构建供给
+
+`git -C .lake/packages/mathlib rev-parse HEAD` 实得 `db584cd6d46c92f209a44c0f1c829460d327499d`,与本仓 pin 一致。首次 `make lean` **exit 0**,末行 `Build completed successfully (12685 jobs).`;`LEAN_CACHE` 为 `status=seeded, method=clonefile, clonefile_attempts=1, project_olean_state=warm, mathlib_olean_state=warm, mathlib_missing_olean_files=0`,donor 为 `/Users/auricstudio/trureturing`。该次用于取得本树编译环境;没有新探针定理,输出含既有模块 warning,不称零警告。长输出被工具截断,不统计未完整取得的 Built/Replay 行数。
+
+本批已打开以下**钉版源码类型**,将优先直接实例化:
+
+| 部件 | Mathlib 命中 | 所给事实与尚需输入 |
+| --- | --- | --- |
+| ② | `Polynomial.monic_prod_X_sub_C` (`Algebra/Polynomial/Roots.lean:784`),`Polynomial.Monic.mul/pow`,`Polynomial.natDegree_prod_of_monic` (`BigOperators.lean:217`),`Polynomial.eval_prod` (`Eval/Defs.lean:675`) | 给定有限根集即可得到首一根积、次数与逐点评值;不是本仓新构造原语 |
+| ② | `Finset.norm_prod_le` (`Analysis/Normed/Ring/Basic.lean:383`),`norm_prod` (L769),`Finset.prod_le_prod`,`pow_le_pow_left₀` | 距离界、有限乘积界与幂单调性;注意不要误用乘法范数群的同名“和界” |
+| ③ | `Submodule.starProjection_minimal` (`Analysis/InnerProductSpace/Projection/Basic.lean:220`),`IsLeast` 的下界投影 | 最小残差不超过任意试验残差;实际 h_n 的识别仍来自 Q1 前置 |
+| ④ | `Filter.Tendsto.rpow` (`Analysis/SpecialFunctions/Pow/Continuity.lean:237`),`tendsto_one_div_atTop_nhds_zero_nat` (`Analysis/SpecificLimits/Basic.lean:56`) | 正常数的 n 次根趋于 1;配合幂代数处理固定 K 的估计 |
+| ④ | `Filter.tendsto_of_le_liminf_of_limsup_le` (`Topology/Order/LiminfLimsup.lean:306`),`tendsto_order` | 下/上极限夹逼;实数 limsup 需最终有界前件,不可省略 |
+| ⑤ | `Polynomial.finite_setOfPred_isRoot` (`Algebra/Polynomial/Roots.lean:140`),`eq_zero_of_infinite_isRoot` | 非零多项式根集有限;不提供实际非平凡零点的无限性 |
+| ⑤ | `MeasureTheory.integral_eq_zero_iff_of_nonneg`,`integral_pos_iff_support_of_nonneg` (`Integral/Bochner/Basic.lean:735,753`) | 非负可积函数的零积分/正积分判据;需要正质量或 a.e. 非零,不是单个支撑点的随意代入 |
+| ⑤ | `IsClosed.notMem_iff_infDist_pos` (`Topology/MetricSpace/HausdorffDistance.lean:701`),`Matrix.posDef_gram_iff_linearIndependent` (`Analysis/InnerProductSpace/GramMatrix.lean`) | 闭子空间外距离严格正、Gram 严格正定与线性无关等价;有限维闭性和实际独立性仍需识别 |
+
+检索命令与原始匹配行数(路径前缀 `M=.lake/packages/mathlib/Mathlib`,这里只是书面缩写):
+
+| rg 模式 / 范围 | 匹配行数 |
+| --- | ---: |
+| `rg -n 'monic_prod_X_sub_C\|natDegree_prod_X_sub_C\|eval_prod_X_sub_C\|monic_X_sub_C\|natDegree_mul_monic\|natDegree_pow' M/Algebra/Polynomial` | 55 |
+| `rg -n 'tendsto.*rpow.*(one\|zero)\|tendsto.*(root\|nth)\|rpow.*(limsup\|tendsto)\|tendsto_zero.*eventually' M/Analysis/SpecialFunctions/Pow M/Topology/Order` | 31 |
+| `rg -n 'infinite.*(zero\|root)\|finite.*(zero\|root)\|tendsto.*(zero\|one)\|summable' M/NumberTheory/LSeries/RiemannZeta*` | 3,均非“非平凡零点无限”声明 |
+| `rg --files M \| rg -i '(Orthogonal\|Gram\|Moment\|Liminf\|Limsup)'` | 35 路径,含 grammar/diagram 噪声 |
+| `rg -n 'theorem (natDegree_prod\|eval_prod)\|lemma (natDegree_prod\|eval_prod)' M/Algebra/Polynomial` | 5 |
+| `rg -n 'theorem tendsto_one_div_atTop_nhds_zero_nat\|lemma tendsto_one_div_atTop_nhds_zero_nat\|theorem inv_tendsto_atTop\|theorem pow_le_pow_left₀\|theorem sq_le_sq₀' M` | 2 |
+| `rg -n 'finite.*(eq\|zero)\|finite_zeros\|zero.*finite\|finite_preimage' M/Analysis/Analytic/IsolatedZeros.lean M/Analysis/Analytic/Order.lean` | 3,仅定位解析阶数候选 |
+
+`LiCurvatureFourierRepresentation.lean:38` 的公开类型也已打开:输入是**任意已给的实概率测度** rho,定义 Cayley 推前混合与积分形式的 `normalizedLi`,不输入或输出实际 zeta 零点族。不能把其名中的 Li 当作实际系数识别证据。本席暂不将它新增为 Q2 承重冻结依赖。
+
 ## 明确未主张
 
 未证该定理;未主张可证;未主张检索穷尽;未主张与 RH 有任何蕴含关系。尚无 Lean 片段或构建结果。
