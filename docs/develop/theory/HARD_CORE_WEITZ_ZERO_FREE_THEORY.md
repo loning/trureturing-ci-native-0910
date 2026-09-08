@@ -329,7 +329,7 @@ Bounded Connective Constant*. arXiv:2604.02746v1 (2026), especially Definition 1
 Theorem 1.2 and Appendix A.6.
 https://arxiv.org/html/2604.02746v1
 
-[2] Alistair Sinclair, Piyush Srivastava, Daniel Stefankovic and Yitong Yin.
+[2] Alistair Sinclair, Piyush Srivastava, Stefankovic and Yitong Yin.
 *Spatial mixing and the connective constant: Optimal bounds*.
 arXiv:1410.2595, Appendix A, printed pages 27-28.
 https://arxiv.org/abs/1410.2595
@@ -2328,3 +2328,175 @@ https://arxiv.org/html/2505.13396v2
 [8] Weiyuan Zhang and Kexiang Xu. *On expectations and variances in the hard-core
 model*. arXiv:2604.01717v1 (2 April 2026).
 https://arxiv.org/abs/2604.01717
+
+
+## 39. Uniform finite-volume variance from the common complex neighborhood
+
+This continuation reads dev at `5e5d5e07c56044176abd8b16b1414f1368889ff3`
+and extends research head `9ea79d4b1aca3a56636e8c29c8585d585d2be8ae`.
+The final target proposed in Section 37 is now supplied as candidate Lean
+source. The existing geometric types, real certificate, complex neighborhood,
+partition definition and Gibbs PMF are unchanged.
+
+Let H_V(z)=M_1(V;z)/M_0(V;z), where the existing zeroth-moment theorem identifies
+M_0 with the actual independent-set partition. The prior response identity gives
+H_V(z)=z F'_V(z), and the prior marked-vacancy bound gives |H_V(z)|<=3|V| on the
+same ActivityTube. Since both moments are polynomials and the denominator is
+nonzero there, H_V is holomorphic throughout this common open set.
+
+For each real lambda in [0,51/20], including both endpoints, the entire closed
+disk of radius epsilon/2 centered at lambda lies strictly inside ActivityTube.
+The proof uses the same real center as the tube witness. In particular,
+continuity on the closed disk and holomorphy in its interior are derived, not
+postulated as an external Cauchy-bound premise.
+
+The source applies Mathlib's existing first-derivative Cauchy estimate:
+
+\[
+ |H'_V(\lambda)|\le\frac{3|V|}{\epsilon/2}
+ =\frac{6|V|}{\epsilon},\qquad \epsilon=10^{-30}.
+\]
+
+The real variance is transported exactly to the complex derivative using the
+same finite moment sums in both fields and the earlier normalized-moment
+response theorem. This avoids assuming any unproved interchange of real and
+complex differentiation. The resulting equality is
+
+\[
+ (\operatorname{Var}_{V,\lambda}N:\mathbb C)=\lambda H'_V(\lambda),
+ \qquad N(S)=|S|.
+\]
+
+Consequently the new source proves
+
+\[
+ \boxed{
+ 0\le\operatorname{Var}_{V,\lambda}N
+ \le\frac{6\lambda}{\epsilon}|V|
+ \le C|V|,\qquad C=16\cdot10^{30},\quad 0\le\lambda\le51/20.
+ }
+\tag{39.1}
+\]
+
+The empty domain and zero activity are included. No division by lambda occurs.
+The sharp intermediate coefficient from the interval cap is 153/(10 epsilon);
+C is a convenient larger integer. The adjective sharp here refers only to
+multiplying these chosen coarse constants, not to a sharp variance theorem.
+
+The large constant is a cost of the deliberately tiny sufficient tube, not a
+numerical estimate of physical fluctuations. The bound need not be useful for
+ordinary finite simulation sizes. Its useful mathematical feature is that one
+coefficient works for every finite induced grid domain, with arbitrary holes
+and boundaries. This is a standard analytic consequence of the project's
+candidate zero-free chain, not an independently reviewed new extremal record.
+
+## 40. Discrete particle counts, continuous response, and density concentration
+
+The microscopic sample space is discrete: each vertex is occupied or vacant,
+and only independent vertex subsets are allowed. The activity varies
+continuously, and a finite sum over those discrete states produces a polynomial
+in that activity. For example, on two adjacent vertices the three configurations
+are empty, left occupied and right occupied. Direct calculation gives
+
+\[
+ Z(\lambda)=1+2\lambda,\qquad
+ \mathbb E N=\frac{2\lambda}{1+2\lambda},\qquad
+ \operatorname{Var}N=\frac{2\lambda}{(1+2\lambda)^2}.
+\]
+
+Thus integer-valued occupation and smooth response functions coexist in the
+same model. The complex neighborhood is an analytic tool for controlling
+these responses uniformly. It does not assert that physical space is discrete,
+introduce dynamical time, or establish a spatial continuum limit.
+
+For a nonempty domain of size n, the new source uses the actual finite PMF to
+form the centered density moment. Exact algebra gives
+
+\[
+ \mathbb E_{V,\lambda}\left[
+   \left(\frac{N}{n}-\frac{\mathbb E N}{n}\right)^2\right]
+ =\frac{\operatorname{Var}_{V,\lambda}N}{n^2}\le\frac{C}{n}.
+\tag{40.1}
+\]
+
+Every sum is over the existing independent configurations and uses the
+existing PMF point masses. There is no independence assumption between sites.
+A finite second-moment event estimate then gives, for t>0,
+
+\[
+ \boxed{
+ \Pr_{V,\lambda}\left(
+ \left|\frac{N}{n}-\frac{\mathbb E N}{n}\right|\ge t\right)
+ \le\frac{C}{t^2 n}.
+ }
+\tag{40.2}
+\]
+
+The source also checks that its explicit event sum is between zero and one.
+The event bound is useful only when its right side is below one; (40.2) may
+always be combined with the elementary upper bound one. These formulas imply
+vanishing fluctuations about the finite-volume mean along any sequence of
+nonempty domains with size tending to infinity. This is a paper asymptotic
+consequence of the explicit finite inequalities, not a separately declared
+Lean limit theorem in this increment.
+
+Concentration about each domain's own mean is weaker than convergence to a
+common thermodynamic density. Establishing such a mean limit still requires
+boundary/tiling or other convergence control. Neither a central limit theorem
+nor a continuum field equation follows from (40.1)-(40.2) alone. The present
+research dependency remains one chain: actual configurations, partition,
+uniform complex control, occupation response, and finite-volume fluctuations.
+
+## 41. Source, literature and verification of this continuation
+
+Two Lean owners, Holomorphic/LinearVolumeVariance and
+Holomorphic/OccupationConcentration, have two canonical Scribe companions and
+17 explicitly named public declarations. The first imports the existing
+OccupationResponse owner and Mathlib.Analysis.Complex.Liouville; the second
+consumes the first and the already-owned actual Gibbs PMF. No finite geometric
+payload is changed. The endpoint variance and concentration statements have
+only the finite-domain, real-activity-interval and positive-threshold premises
+appropriate to their assertions, with nonemptiness required for density bounds.
+The analytic and probability ingredients are concrete proof dependencies.
+
+The Cauchy derivative API was read at the existing Mathlib pin
+`db584cd6d46c92f209a44c0f1c829460d327499d`. In particular, the proof checks the
+closed-disk inclusion before applying DifferentiableOn.diffContOnCl_ball and
+Complex.norm_deriv_le_of_forall_mem_sphere_norm_le. Cauchy's theorem and the
+second-moment event inequality are established mathematics; no novelty in
+those general tools is asserted.
+
+The literature versions read include Davies, Sandhu and Tan [7], v2, and
+Zhang and Xu [8], v2 revised 5 June 2026. They study occupancy and variance as
+actual hard-core observables. Their extremal graph results are distinct from
+this sufficient upper bound on finite induced square-grid domains in a
+specified activity interval. No claim to solve those separate extremal
+problems or improve their constants is made.
+
+The supplementary verifier enumerates actual independent configurations of
+all 512 subdomains of a 3-by-3 grid. It evaluates polynomial derivatives
+coefficientwise and uses exact rational/Gaussian-rational arithmetic. It checks
+16384 rational points on the chosen Cauchy boundary circles, 2048 actual
+variance-response and linear-bound instances, 2044 nonempty density second
+moments and 10220 actual Gibbs tail probabilities. The boundary samples
+supplement the universal closed-disk proof; finite sampling does not establish
+holomorphy, Cauchy's theorem, or the all-domain variance assertion.
+
+Five elementary diagnostics exercise mistakes involving a size-dependent
+radius, discrete support alone, incorrect density normalization, a boundary
+pole, or using only the value at the disk center. They are fixed diagnostic
+examples, not a claim of exhaustive mutation coverage. Two complete executions
+of the final verifier produced byte-identical JSON.
+
+```sh
+python research/hard_core_weitz/verify_linear_volume_variance.py
+```
+
+The verifier reuses the earlier actual configuration enumerator and exact
+Gaussian-rational arithmetic. It never reads a saved success verdict as an
+input. It is another implementation by the same assistant, not independent
+researcher review. The local environment has no Lean/lake executable; new and
+inherited Lean proof terms have not been elaborated or kernel-checked here.
+No executed axiom-closure report or Scribe emission is claimed. The delivered
+result is a logically reviewed candidate formalization with supplementary
+finite regressions, inheriting the existing zero-free chain's validation status.
