@@ -121,6 +121,18 @@ run_cmd do
     "unsupported-dialect" (fun report => report.setObjVal! "dialect" (toJson "unsupported-dialect"))
 
 /--
+info: IE-C044 DispositionCensusMismatch head=fixture-head component=dialect expected=stratalint.truth-export.v2 actual=stratalint.truth-export.v1
+---
+info: rejected=true output-absent=true certificate-absent=true
+-/
+#guard_msgs in
+run_cmd do
+  expectRejectedReport `legacyDialect "dialect" "stratalint.truth-export.v2"
+    "stratalint.truth-export.v1" (fun report =>
+      (report.setObjVal! "dialect" (toJson "stratalint.truth-export.v1")).setObjVal!
+        "schema_version" (toJson (1 : Nat)))
+
+/--
 info: IE-C044 DispositionCensusMismatch head=fixture-head component=schema_version expected=2 actual=0
 ---
 info: rejected=true output-absent=true certificate-absent=true
