@@ -465,6 +465,7 @@ class InspectorTests(PairFixture, unittest.TestCase):
     def setUp(self):
         super().setUp()
         shutil.copyfile(ROOT / "tools/lean-inspector/inspect.sh", self.producer)
+        shutil.copyfile(ROOT / "Makefile", self.root / "Makefile")
         runner = self.root / "tools/scripts/worktree/lean-cache-run.sh"
         write(runner, '#!/bin/sh\nexec "$@"\n')
         runner.chmod(0o755)
@@ -482,10 +483,20 @@ class InspectorTests(PairFixture, unittest.TestCase):
             text=True, capture_output=True, env={**os.environ,
                 "STRATALINT_REPORT_CACHE_ROOT": str(self.cache), **extra})
 
+    def current_report(self):
+        self.output = self.root / ".lake/build/stratalint/raw-lean-report.json"
+        environment = {**os.environ, "LAKE_BIN": str(self.lake)}
+        environment.pop("STRATALINT_REPORT_CACHE_ROOT", None)
+        return subprocess.run(["make", "lean-report"], cwd=self.root,
+            text=True, capture_output=True, env=environment)
+
     def test_inspector_runs_lake_on_exact_seed_with_zero_reinspection(self):
         self.output = self.root / "out/candidate-lean-report.json"
         first = self.pair()
         self.assertEqual(0, first.returncode, first.stdout + first.stderr)
+        current = self.current_report()
+        self.assertEqual(0, current.returncode, current.stdout + current.stderr)
+        self.assertIn("LEAN_REPORT_DELTA mode=reuse changed=0 added=0 removed=0 recheck=0", current.stdout)
         staged = self.root / "staged/raw-lean-report.json"
         stage = self.stage_report(staged)
         self.assertEqual(0, stage.returncode, stage.stdout + stage.stderr)
@@ -505,7 +516,7 @@ class InspectorTests(PairFixture, unittest.TestCase):
         self.assertIn("LEAN_REPORT_DELTA_PLAN mode=delta changed=1 added=0 removed=0 recheck=1", third.stdout)
         self.assertIn("LEAN_REPORT_DELTA mode=delta changed=1 added=0 removed=0 recheck=1", third.stdout)
         commands = (self.root / "lake-runs").read_text().splitlines()
-        self.assertEqual(3, commands.count("build"))
+        self.assertEqual(4, commands.count("build"))
         self.assertEqual(2, sum("--run" in command for command in commands))
 
     def test_report_staging_does_not_preempt_cold_cache_provisioning(self):

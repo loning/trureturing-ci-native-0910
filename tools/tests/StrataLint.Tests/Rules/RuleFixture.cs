@@ -294,7 +294,7 @@ internal sealed partial class RuleFixture
         _ => throw new ArgumentOutOfRangeException(nameof(mutation)),
     };
 
-    internal RuleEvaluationContext Build(
+    internal DeltaRuleContext Build(
         ValidatedPolicy? suppliedPolicy = null,
         VerifiedScribeEmissions? verifiedScribeEmissions = null) =>
         Build(
@@ -302,19 +302,19 @@ internal sealed partial class RuleFixture
             suppliedPolicy,
             verifiedScribeEmissions);
 
-    internal RuleEvaluationContext Build(
+    internal DeltaRuleContext Build(
         RawChangeSet changes,
         ValidatedPolicy? suppliedPolicy = null,
         VerifiedScribeEmissions? verifiedScribeEmissions = null) =>
         Build(changes, suppliedPolicy, verifiedScribeEmissions, includeProjectFiles: true);
 
-    internal RuleEvaluationContext BuildScopeProbe(
+    internal DeltaRuleContext BuildScopeProbe(
         RawChangeSet changes,
         ValidatedPolicy? suppliedPolicy = null,
         VerifiedScribeEmissions? verifiedScribeEmissions = null) =>
         Build(changes, suppliedPolicy, verifiedScribeEmissions, includeProjectFiles: false);
 
-    private RuleEvaluationContext Build(
+    private DeltaRuleContext Build(
         RawChangeSet changes,
         ValidatedPolicy? suppliedPolicy,
         VerifiedScribeEmissions? verifiedScribeEmissions,
@@ -341,7 +341,7 @@ internal sealed partial class RuleFixture
                 throw new InvalidOperationException(failure.Message),
             _ => throw new InvalidOperationException("unknown bootstrap outcome"),
         };
-        return RuleEvaluationContext.Create(
+        return DeltaRuleContext.Create(
             current,
             baseline,
             policy,
@@ -351,7 +351,7 @@ internal sealed partial class RuleFixture
             verifiedScribeEmissions);
     }
 
-    internal RuleEvaluationContext BuildForRuleCompatibility()
+    internal DeltaRuleContext BuildForRuleCompatibility()
     {
         var current = Decode(Files);
         var baseline = Decode(Baseline);
@@ -361,7 +361,7 @@ internal sealed partial class RuleFixture
         var policy = RegistryLoadAssert.Accepted(policyOutcome).Policy;
         var bootstrap = BootstrapGate.Evaluate(RawChangeSet.Create(Changes));
         var meta = Assert.IsType<BootstrapOutcome.Clear>(bootstrap).Capability;
-        return RuleEvaluationContext.Create(
+        return DeltaRuleContext.Create(
             current,
             baseline,
             policy,
@@ -371,7 +371,7 @@ internal sealed partial class RuleFixture
             null);
     }
 
-    internal RuleEvaluationContext BuildForRuleCompatibility(RawChangeSet changes)
+    internal DeltaRuleContext BuildForRuleCompatibility(RawChangeSet changes)
     {
         var current = Decode(Files);
         var baseline = Decode(Baseline);
@@ -387,7 +387,7 @@ internal sealed partial class RuleFixture
                 MetaEvaluationProfile.ForProtectedSurface(protectedSurface.ChangeSet),
             _ => throw new InvalidOperationException("unexpected bootstrap outcome"),
         };
-        return RuleEvaluationContext.Create(
+        return DeltaRuleContext.Create(
             current,
             baseline,
             policy,
@@ -397,7 +397,7 @@ internal sealed partial class RuleFixture
             null);
     }
 
-    internal RuleEvaluationContext BuildForProtectedRuleCompatibility()
+    internal DeltaRuleContext BuildForProtectedRuleCompatibility()
     {
         var current = Decode(Files);
         var baseline = Decode(Baseline);
@@ -407,7 +407,7 @@ internal sealed partial class RuleFixture
         var policy = RegistryLoadAssert.Accepted(policyOutcome).Policy;
         var bootstrap = BootstrapGate.Evaluate(RawChangeSet.Create(Changes));
         var meta = Assert.IsType<BootstrapOutcome.ProtectedSurfaceVerificationRequired>(bootstrap).ChangeSet;
-        return RuleEvaluationContext.Create(
+        return DeltaRuleContext.Create(
             current,
             baseline,
             policy,
