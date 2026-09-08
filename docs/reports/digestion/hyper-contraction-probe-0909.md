@@ -19,7 +19,7 @@
 
 - 规则读取完成: `CLAUDE.md` 全 764 行已分段读完(首次整文件输出截断,随后补读),`agents/CONTEXT.md` 已读。
 - Q1: 已答,三个前置在源卷中均找到;散文论证不冒充 Lean 证明。
-- Q2: 接口候选已从 #6503 的库内报告定位,待状态片与源码实查。
+- Q2: 已答,3 个候选模块均有冻结状态片;均为有作用域限制的抽象端,实际测度识别未因此完成。
 - Q3: 未进入。
 - Q4: 未进入。
 
@@ -45,8 +45,14 @@
 | 2 | 同上,区间 `'50410,50490p'` 与 `'51088,51129p'` | 2 段 | `c0>0`、`r_n`、`T_N` 与前置逐字出处 |
 | 2 | `cat Meta/Digestion/atoms/sha256/bf0eaca15d701e4f6b37eb3490e3c36857ce5415da5101830c0bc36b3c8aa12d` | 1 atom 全文 | 与源卷紧邻目标的第八节前置段一致 |
 | 2 | `rg -n 'bb2f8121\|Gram\|矩积分\|statement_id' docs/reports/digestion/qrh-deposit-screen-0909.md` | 命中目标行 113 及 F7/F10/F11 的导航 | 此时只作定位,不把报告转述当新冻结证据 |
-| 2 | `rg -n -P '\b(?:Monic\|HyperContraction\|supergeometric\|hypercontraction)\b' D5` | 阳性: 返回 Monic 候选 | 同特性阴性见下一行;精确计数在后续碰撞批次补记 |
+| 2/3 | `rg -n -P '\b(?:Monic\|HyperContraction\|supergeometric\|hypercontraction)\b' D5` | 32 匹配行,均为 Monic;另三词 0 | 同特性阴性见下一行;批次 3 由工具输出逐行计数 |
 | 2 | `rg -n -P '\b(?:MonicProbeNegative0909\|HyperContractionProbeNegative0909)\b' D5` | 0 匹配行,rg exit 1 | 同用 PCRE `\b` 与非捕获分组;阳性对照有命中 |
+| 3 | `rg --files Golden/Frozen/state \| rg -P '(?:LiCurvatureCriterion\|ToeplitzContactSupport\|FiniteSynthesisGramDistance)\.lean\.json$'` | 3 路径 | 3 份 state 与对应 Lean 源码均以 `cat` 全文读取 |
+| 3 | `rg --files Golden/Frozen/state \| rg -P '(?:WeakQlpDifferentiation)\.lean\.json$'` | 0 路径,exit 1 | 未冻结阴性 |
+| 3 | `rg --files Golden/Frozen/state \| rg -P '(?:MatchingPolynomial)\.lean\.json$'` | 1 路径 | 同 PCRE 特性的已冻结阳性 |
+| 3 | `rg --files D5 \| rg -P '(?:WeakQlpDifferentiation)\.lean$'` | 1 路径 | 本树继承 dev 的代码存在,但没有冻结片;不是本靶前置 |
+| 3 | `rg -n '^theorem (toeplitz_quadratic_eq_integral\|li_curvature_criterion\|toeplitz_contact_support\|finite_synthesis_gram_distance\|finite_synthesis_gram_projection)' D5/S3/Weil/TestFunctions/LiCurvatureCriterion.lean D5/S3/Weil/TestFunctions/ToeplitzContactSupport.lean D5/S3/Observer/Hilbert/FiniteSynthesisGramDistance.lean` | 6 声明行 | 定位后据完整类型分析,未用名字代替类型 |
+| 3 | `ls -ld .lake .lake/packages/mathlib .lake/lean-cache-stamp.json` | 三路径皆不存在,exit 1 | 本树冷,后续如需编译只走 `make lean` |
 
 持久化: 初始化提交 `7db305209a` 已推送,远端本探针分支已建立。后续各批同样提交并推送,最终完整 SHA 清单写入 runner `result.json`。
 
@@ -126,6 +132,20 @@ $$
 源卷对于 **一般递推阶段** 先假设 `T_n` 严格正定;对于 **实际 RH 测度** 则给上述散文论证,不是额外假设 `h_n>0`。配合严格正的原子权重、Schur 余量定义或达到的变分最小值,得到每阶 h_n 正。源卷援引零点无限性等经典事实,未在该段重证;本席只确认论证存在,不把这句话冒充 kernel 证明。前置齐全使 Q2 可继续。
 
 外部出处状态: 源卷 `[DLMF][2]`、`[arXiv][4]` 等只是已读取的源文引注;本席尚未打开这些外链,一律 `ASSUMED-UNVERIFIED`。
+
+## Q2: 具名冻结端的实查
+
+下列 `statement_id` 是 **模块 state pin**,不是本席重算的单声明 ID。声明全名为相应 Lean namespace 加表中短名;声明 GID 为模块 GID 加 `.<声明短名>`。状态身份直接读取 `Golden/Frozen/state/<模块 GID>.lean.json`,不重放冻结验证。
+
+| 模块 GID / 声明 | state 中的 statement_id | 可用作用域与限制 |
+| --- | --- | --- |
+| `D5/S3/Weil/TestFunctions/LiCurvatureCriterion` / `toeplitz_quadratic_eq_integral` ([源码 L97](../../../D5/S3/Weil/TestFunctions/LiCurvatureCriterion.lean#L97)) | `sha256:6a1e756aa2727dd386a310293dc7ad58dab820b7fe82f2db9dd6f30ab6105a39` ([state](../../../Golden/Frozen/state/D5/S3/Weil/TestFunctions/LiCurvatureCriterion.lean.json)) | 对任意 `mu : Measure Circle`、`[IsFiniteMeasure mu]`、有限系数 `Fin (N+1) -> Complex`,给 Toeplitz 二次型等于多项式模方的复积分。**不构造实际零点测度,不证明其总质量,不识别实际 Li 系数,不提供变分最小值或严格正性。** `circleMoment mu n` 用 `z^(-n)`,源文用 `z^n`;需显式统一指标/共轭对称。 |
+| `D5/S3/Observer/Hilbert/FiniteSynthesisGramDistance` / `finite_synthesis_gram_distance`, `finite_synthesis_gram_distance_inverse` ([源码 L69](../../../D5/S3/Observer/Hilbert/FiniteSynthesisGramDistance.lean#L69),[L118](../../../D5/S3/Observer/Hilbert/FiniteSynthesisGramDistance.lean#L118)) | `sha256:f253af735663b2bdb2434a2f716c7e707723d8f658a3acbc1adc9cd442b8ecda` ([state](../../../Golden/Frozen/state/D5/S3/Observer/Hilbert/FiniteSynthesisGramDistance.lean.json)) | `RCLike` 实/复域,有限维内积系数空间 E、完备 Hilbert 空间 H、`V : E ->L H`,给 `infDist x range(V)^2` 的 Moore-Penrose Gram 公式。普通逆版另给 `G : E ≃ₗ E` 与 `hG : G.toLinearMap = gram V`。**不要求 H 有限维;一般版不要求 Gram 可逆。** 要识别源 h_n,仍须把 H、V、x 实例化成实际 `L2(mu)`、低次幂合成与 z^n,核对 Gram/内积/范数及普通逆。**不提供实际测度、谱无限性、超几何极限。** |
+| `D5/S3/Weil/TestFunctions/ToeplitzContactSupport` / `toeplitz_contact_support` ([源码 L80](../../../D5/S3/Weil/TestFunctions/ToeplitzContactSupport.lean#L80)) | `sha256:a4bba9f0782f9ada25b3fecf19631a21a6c7f13d714795d777647659296953b7` ([state](../../../Golden/Frozen/state/D5/S3/Weil/TestFunctions/ToeplitzContactSupport.lean.json)) | 假设 `completion = alpha • normalizedCircleHaar + residual`、系数向量单位化、Toeplitz 特征方程,才给 residual 支撑在 contactPolynomial 零点及有限原子展开,原子数不超过次数。**不是无前件的“任意零残差就严格正”;不证明实际谱无限。** 若用于严格正性反证,尚须提供 alpha=0 的实例、归一化与核向量。 |
+
+补充边界: 第一模块的 `li_curvature_criterion` ([L359](../../../D5/S3/Weil/TestFunctions/LiCurvatureCriterion.lean#L359)) 把 `liCriterion`、曲率递推、`rhFourierRepresentation` 和全阶 `circleHerglotzRepresentation` 均列为**显式假设**。不能凭该模块已冻结,就移除它们或宣称已有实际 RH 测度。
+
+因此 #6503 所称“端可接”的可核实含义是上述 **抽象矩积分/距离接口存在且冻结**。本轮已核出的“只给 RH 就输出式 (27)-(28) 的实际对象与识别”端为 `none`。已有端的实例化/投影自身均 `bind-only`;作用域限制是数学前件,不按代码行数命名为缺陷。
 
 ## 明确未主张
 
