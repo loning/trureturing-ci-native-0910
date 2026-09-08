@@ -248,25 +248,23 @@ __pools_table() {  # `pools` 动词:人读表 + 排名;判据与 ask 用的完�
 __verdict_of_payload() {  # 判**取回的文本**,不判文件 —— 活判决唯一合法的分类器。
   # 分界:载体是否把答案交回来了,与 worker 判词是 approve 还是 reject **无关**;
   # 故只认 nyxid CLI 自己的错误形态,不因答案里出现 "Error:" 字样而误判(见 --selftest 阴性对照)。
-  local r="$1" first last
+  local r="$1" cli_rc="${2:-0}" first last
   case "$r" in
     *oracle_quota_exceeded*|*"HTTP 429"*) echo QUOTA;      return;;
     *"Failed to read prompt"*)            echo NOFILE;     return;;
     *extraction_failure*)                 echo EXTRACTION; return;;
   esac
-  # 2026-09-08 实测:chrono pool 的任务 `e72e6521…` 终态返回
-  #   Attempts: 1 (infrastructure retries 0/3)
-  #   Message delivery timed out. Please try again.Retry
-  # 那是载体 UI 自己的失败文本,不是答案。它不含 `Error:` 前缀、也不匹配上面任何一形,
-  # 于是**被判 OK 且退出码 0** —— 调用方按退出码判就把一次失败的派席当成了成功
-  # DELIVERY has no upstream safe-retry promise; stop and retain recovery references.
-  # NyxID 0d7afdaa docs/ORACLE_RELAY.md:395-410 forbids uncertain post-send replay.
-  # **只认末行**,不做全文子串匹配:本仓的 brief 与评审答案会**引用**这句失败文本
-  # (本条注释自己就是一例),全文匹配会把一个真答案误判成载体失败。
+  # Delivery tokens need CLI failure evidence; successful answers can quote them.
+  # NyxID 0d7afdaa docs/ORACLE_RELAY.md:395-410 forbids uncertain post-send replay;
+  # "Message delivery timed out" has no upstream safe-retry promise either.
   [ -n "$r" ] || { echo UNKNOWN; return; }
   last=$(printf '%s' "$r" | awk 'NF{l=$0} END{print l}')
-  case "$last" in *"Message delivery timed out"*) echo DELIVERY; return;; esac
-  case "$last" in *"Task failed (prompt_delivery_uncertain)"*) echo UNCERTAIN; return;; esac
+  if [ "$cli_rc" -ne 0 ] || [[ "$last" == "Error: Task failed ("* ]]; then
+    case "$last" in
+      *"Task failed (prompt_delivery_uncertain)"*) echo UNCERTAIN; return;;
+      *"Message delivery timed out"*) echo DELIVERY; return;;
+    esac
+  fi
   first=${r%%$'\n'*}
   case "$first" in "Error:"*) echo UNKNOWN; return;; esac
   echo OK
@@ -290,7 +288,7 @@ __poll_task() {  # <task-id> <outfile>; ask/fetch share polling, __finish owns t
     echo "NYX_TIMEOUT $tid 仍未落定;可随时 nyx.sh fetch $tid <out> 续等,或 nyxid oracle result $tid 取回"
     rc=3; verdict=TIMEOUT
   else
-    verdict=$(__verdict_of_payload "$r")
+    verdict=$(__verdict_of_payload "$r" "$rc")
     [ "$rc" -eq 0 ] || { [ "$verdict" != OK ] || verdict=UNKNOWN; }
     case "$verdict" in OK) rc=0;; *) rc=1;; esac
   fi
@@ -354,7 +352,7 @@ __submit_and_poll() {  # <brief> <out> —— 对当前 $POOL 投一票并取回
   fi
   __release_lock || { LAST_VERDICT=IO; return 2; }
   if [ -z "$tid" ]; then
-    LAST_VERDICT=$(__verdict_of_payload "$response")
+    LAST_VERDICT=$(__verdict_of_payload "$response" "$rc")
     [ "$LAST_VERDICT" != OK ] || LAST_VERDICT=UNKNOWN
     [ "$rc" -ne 0 ] || rc=1
     echo "NYX_$LAST_VERDICT $(basename "$out" .out)"; return "$rc"

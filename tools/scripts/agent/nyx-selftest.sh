@@ -8,9 +8,9 @@ __selftest() {  # 分类器的阳性/阴性对照。**立条依据(2026-09-06)**
   local fail=0 cases=0 got
   # shellcheck disable=SC2034 # Dynamically scoped input to nyx.sh's __rank_pools.
   local BAD_SCRIPTS=cdp-1.3
-  chk() {  # chk <期望> <名字> <payload>
+  chk() {  # chk <expected> <name> <payload> [CLI exit status]
     cases=$((cases+1))
-    got=$(__verdict_of_payload "$3" 2>/dev/null)
+    got=$(__verdict_of_payload "$3" "${4:-0}" 2>/dev/null)
     if [ "$got" = "$1" ]; then printf '  ok   %-30s %s\n' "$2" "$got"
     else printf '  FAIL %-30s expected=%s got=%s\n' "$2" "$1" "${got:-<none>}"; fail=1; fi
   }
@@ -25,9 +25,17 @@ __selftest() {  # 分类器的阳性/阴性对照。**立条依据(2026-09-06)**
   chk NOFILE     carrier-prompt-missing     'Error: Failed to read prompt'
   # 载体投递失败:失败文本是 payload 的**末行**
   chk DELIVERY   carrier-delivery-timeout   "$(printf '%s\n' 'Attempts: 1 (infrastructure retries 0/3)' \
-    'Message delivery timed out. Please try again.Retry')"
-  chk UNCERTAIN  carrier-prompt-uncertain   "$(printf '%s\n' 'Attempts: 1 (infrastructure retries 0/3)' 'Error: Task failed (prompt_delivery_uncertain).')"
+    'Message delivery timed out. Please try again.Retry')" 1
+  chk UNCERTAIN  carrier-prompt-uncertain   "$(printf '%s\n' 'Attempts: 1 (infrastructure retries 0/3)' 'Error: Task failed (prompt_delivery_uncertain).')" 1
   chk OK         answer-quotes-prompt-uncertain "$(printf '%s\n' 'The seat hit Error: Task failed (prompt_delivery_uncertain). earlier' '{"verdict":"approve"}')"
+  chk UNCERTAIN carrier-prompt-uncertain-prefix-zero-exit 'Error: Task failed (prompt_delivery_uncertain).' 0
+  chk UNCERTAIN carrier-prompt-uncertain-nonzero 'Task failed (prompt_delivery_uncertain).' 1
+  chk OK answer-quotes-prompt-uncertain-last-line "$(printf '%s\n' 'Attempts: 1 (infrastructure retries 0/3)' \
+    '{"verdict":"approve","note":"Error: Task failed (prompt_delivery_uncertain)."}')" 0
+  chk OK answer-prompt-uncertain-text-zero-exit 'Task failed (prompt_delivery_uncertain).' 0
+  chk DELIVERY carrier-delivery-prefix-zero-exit 'Error: Task failed (Message delivery timed out).' 0
+  chk OK answer-quotes-delivery-last-line '{"verdict":"approve","note":"Message delivery timed out. Please try again.Retry"}' 0
+  chk OK answer-delivery-text-zero-exit "$(printf '%s\n' 'Attempts: 1 (infrastructure retries 0/3)' 'Message delivery timed out. Please try again.Retry')" 0
   # 阴性对照:**真答案里引用了同一句失败文本**,但末行是答案 —— 必须仍判 OK。
   # 这条钉的正是「不做全文子串匹配」;改成全文匹配它立刻变红。
   chk OK         answer-quotes-delivery-text "$(printf '%s\n' \
@@ -156,8 +164,12 @@ __selftest() {  # 分类器的阳性/阴性对照。**立条依据(2026-09-06)**
         result)
           case "$response" in
             extraction) echo 'Error: Task failed (extraction_failure).'; return 1;;
-            delivery) printf '%s\n' 'Attempts: 1 (infrastructure retries 0/3)' 'Message delivery timed out. Please try again.Retry';;
+            delivery|delivery-zero-exit)
+              printf '%s\n' 'Attempts: 1 (infrastructure retries 0/3)' 'Message delivery timed out. Please try again.Retry'
+              if [ "$response" = delivery ]; then return 1; fi;;
             prompt-uncertain) printf '%s\n' "Conversation: https://chatgpt.com/c/$id" 'Attempts: 1 (infrastructure retries 0/3)' 'Error: Task failed (prompt_delivery_uncertain).'; return 1;;
+            quote-prompt-uncertain) printf '%s\n' 'Attempts: 1 (infrastructure retries 0/3)' '{"verdict":"approve","note":"Error: Task failed (prompt_delivery_uncertain)."}';;
+            quote-delivery-last-line) printf '%s\n' 'Attempts: 1 (infrastructure retries 0/3)' '{"verdict":"approve","note":"Message delivery timed out. Please try again.Retry"}';;
             quote) printf '%s\n' 'Quoted: Message delivery timed out. Please try again.' '{"verdict":"reject"}';;
             timeout) echo 'Phase: waiting_response';;
             resume) if [ "$(wc -l < "$NYX_TEST_DIR/polls")" -le 2 ]; then echo 'Phase: waiting_response'; else echo '{"ok":true}'; fi;;
@@ -271,7 +283,7 @@ __selftest() {  # 分类器的阳性/阴性对照。**立条依据(2026-09-06)**
       chke absent "lock-released-first-$signal-$cancel" "$(if [ -d "$run_dir/nyx-ask-first.lock" ]; then echo leaked; else echo absent; fi)"
     done
   done
-  for response in delivery prompt-uncertain quote timeout noid result-error; do
+  for response in delivery prompt-uncertain quote quote-prompt-uncertain quote-delivery-last-line delivery-zero-exit timeout noid result-error; do
     run_case "ask-$response" "${rows_one/answer/$response}"$'\n'"$third"
     case "$response" in
       delivery) check_run "1|EXIT=1|first|$id1|$id1||NYX_DELIVERY";;
@@ -281,10 +293,14 @@ __selftest() {  # 分类器的阳性/阴性对照。**立条依据(2026-09-06)**
           grep -qF "NYX_UNCERTAIN task=$id1 pool=first" "$run_dir/stdout" &&
           grep -qF "nyxid oracle result $id1" "$run_dir/stdout" &&
           grep -qF "nyx.sh fetch $id1" "$run_dir/stdout"; then echo yes; fi)";;
-      quote) check_run "0|EXIT=0|first|$id1|$id1||NYX_OK";;
+      quote|quote-prompt-uncertain|quote-delivery-last-line|delivery-zero-exit) check_run "0|EXIT=0|first|$id1|$id1||NYX_OK";;
       timeout) check_run "3|EXIT=3|first|$id1|$id1,$id1||NYX_TIMEOUT";;
       noid) check_run '1|EXIT=1|first||||NYX_UNKNOWN';;
       result-error) check_run "1|EXIT=1|first|$id1|$id1||NYX_UNKNOWN";;
+    esac
+    case "$response" in
+      quote-prompt-uncertain) chke '{"verdict":"approve","note":"Error: Task failed (prompt_delivery_uncertain)."}' "$run_name-content" "$(sed -n '/^{/p' "$run_out")";;
+      quote-delivery-last-line) chke '{"verdict":"approve","note":"Message delivery timed out. Please try again.Retry"}' "$run_name-content" "$(sed -n '/^{/p' "$run_out")";;
     esac
   done
   local setting
@@ -378,6 +394,9 @@ __selftest() {  # 分类器的阳性/阴性对照。**立条依据(2026-09-06)**
   run_case await-vote-prompt-uncertain "${rows_one/answer/prompt-uncertain}"$'\n'"$third"
   chke "6|first|$id3,$id1|$id1|no|yes|no" await-vote-prompt-uncertain \
     "$run_rc|$(joined "$run_dir/submits")|$(joined "$run_out.taskid")|$(joined "$run_dir/polls")|$(if [ -f "$run_out.settled" ]; then echo yes; else echo no; fi)|$(if grep -q "task=$id1 state=stopped verdict=NYX_UNCERTAIN" "$run_dir/stdout"; then echo yes; else echo no; fi)|$(if grep -q 'state=retry' "$run_dir/stdout" || grep -q '^NYX_NEXT_POOL ' "$run_out.log"; then echo yes; else echo no; fi)"
+  run_case await-vote-quote-prompt-uncertain "${rows_one/answer/quote-prompt-uncertain}"$'\n'"$third"
+  chke "0|first|$id1|yes" await-vote-quote-prompt-uncertain \
+    "$run_rc|$(joined "$run_dir/submits")|$(joined "$run_dir/polls")|$(if cmp -s "$run_out" "$run_out.settled" && grep -qF '{"verdict":"approve","note":"Error: Task failed (prompt_delivery_uncertain)."}' "$run_out.settled"; then echo yes; else echo no; fi)"
   rm -rf "$testroot"
   [ $fail -eq 0 ] && echo "SELFTEST_OK cases=$cases" || echo "SELFTEST_FAIL cases=$cases"
   return $fail
