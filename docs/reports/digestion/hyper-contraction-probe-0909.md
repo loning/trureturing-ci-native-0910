@@ -19,8 +19,8 @@
 
 - 规则读取完成: `CLAUDE.md` 全 764 行已分段读完(首次整文件输出截断,随后补读),`agents/CONTEXT.md` 已读。
 - Q1: 已答,三个前置在源卷中均找到;散文论证不冒充 Lean 证明。
-- Q2: 已答,3 个候选模块均有冻结状态片;均为有作用域限制的抽象端,实际测度识别未因此完成。
-- Q3: 先库后证检索中,尚无 content 判定。
+- Q2: 已答,3 个矩/距离候选模块均有冻结状态片;批次 8 另核 3 个实际零点前置模块。实际测度识别未因此完成。
+- Q3: 已答,②与以式 (28) 为前件的③为 `bind-only`;①④⑤完整部件为 `likely-bind-only`,其中若干绑定片段已通过。无 content 见证,停止证明扩展。
 - Q4: 未进入。
 
 ## 检索留痕
@@ -135,7 +135,7 @@ $$
 
 ## Q2: 具名冻结端的实查
 
-下列 `statement_id` 是 **模块 state pin**,不是本席重算的单声明 ID。声明全名为相应 Lean namespace 加表中短名;声明 GID 为模块 GID 加 `.<声明短名>`。状态身份直接读取 `Golden/Frozen/state/<模块 GID>.lean.json`,不重放冻结验证。
+下列 GID 与 `statement_id` 均为 **模块 state pin**,不是本席重算的单声明 ID。声明全名为相应 Lean namespace 加表中短名,不另造声明级 pin。状态身份直接读取 `Golden/Frozen/state/<模块 GID>.lean.json`,不重放冻结验证。
 
 | 模块 GID / 声明 | state 中的 statement_id | 可用作用域与限制 |
 | --- | --- | --- |
@@ -147,7 +147,7 @@ $$
 
 因此 #6503 所称“端可接”的可核实含义是上述 **抽象矩积分/距离接口存在且冻结**。本轮已核出的“只给 RH 就输出式 (27)-(28) 的实际对象与识别”端为 `none`。已有端的实例化/投影自身均 `bind-only`;作用域限制是数学前件,不按代码行数命名为缺陷。
 
-## Q3 检索进行记录
+## Q3 检索与构建记录
 
 批次 4: `cat tools/scripts/worktree/lean-cache-run.sh lakefile.toml` 确认根 `make lean` 会 ensure 私有缓存,默认 glob 包含 `D5.+`。既有 `docs/reports/convolution/image-cone-probe-0909.md:414` 记录可先临时放 D5 编译、再将片段移至报告目录的探针形态。未改构建参数或常数。本树首次 `make lean` 已启动,尚未以退出码结算。
 
@@ -257,6 +257,78 @@ curl -fsS --max-time 25 --get 'https://loogle.lean-lang.org/json' --data-urlenco
 | `rg -n -P '\b(?:inter_riemannZetaZeros_finite\|tendsto_riemannZeta_cofinite_cocompact)\b' M/NumberTheory/LSeries/ZetaZeros.lean` | 3 / 0 | 1 文档行 + 2 声明行,不是 3 个定理 |
 | `rg -n -P '\b(?:inter_riemannZetaZeros_probeNegative0909\|tendsto_riemannZeta_probeNegative0909)\b' M/NumberTheory/LSeries/ZetaZeros.lean` | 0 / 1 | 同 PCRE 词界与分组的阴性对照 |
 | `rg -n -F 'h_0=1' docs/develop/theory/QUANTUM-RH.md` | 2 / 0 | L8993 属别处;本段准确出处 L50735,已修正 Q1 的近似行号 |
+
+## Q3: 五部件判形
+
+**整体 `proof_shape: likely-bind-only`, `escape_witness: null`。** 以下区分“已编译的抽象绑定”与“未编译的实际对象连接”;后者没有因此取得 content 身份。所有结论仍在 Q1 的 **RH 条件式**内。片段成功后即停,未继续实现全目标。
+
+### ① 谱点趋于 1 与外点有限
+
+第一尝试是改写 `norm ((1-rho^(-1))-1) = (norm rho)^(-1)`。`spectral_distance_tendsto` 已经 `make lean` 通过:从范数趋于无穷直接复合 `tendsto_inv_atTop_zero`;得到距离趋零,复数点趋于 1 的距离刻画属标准改写。原文的高度趋无穷应理解为绝对高度,或选定向上的零点族;不对任意随意重复的枚举假定趋无穷。
+
+外点有限的直接绑定路径是: `r>0` 且 `norm(w_rho-1)>r` 给 `norm rho<1/r`;钉版 `IsCompact.inter_riemannZetaZeros_finite` 实例化到 `closedBall 0 (1/r)`,再取有限子集与 `rho -> 1-rho^(-1)` 的像。此步不需要新零点计数估计。也可从冻结的 `Nonempty ZeroData` 取 Z 后投影 `locallyFinite`,但没有必要重证该字段。这里只用不同谱点作为有限集,重数留在测度权重。
+
+- `judgment`: **likely-bind-only**(距离极限片段 `bind-only`;实际外集的完整 Lean 语句未编译)。
+- `why_not_bind_only`: **未能给出**。已经找到紧集零点有限的一般定理;取逆、有限子集和有限像未提供非绑定中间事实。
+- `gap`: 不能只从一条序列的极限推所有谱点外集有限;必须使用全部实际零点的局部有限性。现有 Mathlib 类型已供给该事实,未发现此处源文数学缺陷。
+
+### ② 首一消失多项式与显式界
+
+以有限异常点集 `s`、`K=s.card` 定义 `trial s n = (prod a in s, X-C a)*(X-C 1)^(n-K)`。首一性、`n>=K` 时次数为 n、异常点处为零,分别直接用 `monic_prod_X_sub_C`、首一乘积/幂次数、`eval_prod` 与 `Finset.prod_eq_zero`。对其余谱点,单位圆条件给每因子范数不超过 2,再用 `Finset.prod_le_prod`、幂单调性及幂规范化得到原式 **`4^K*r^(2*(n-K))`**。K=0 与 n=K 未排除,常数和指数未放宽。
+
+- `judgment`: **bind-only**,`trial_monic`、`trial_degree`、`trial_zero`、`trial_bound` 全部通过。异常点零值与其余点上界分别成立;把它们组合成实际测度 a.e. 界还须测度集中于这些谱点。
+- `why_not_bind_only`: **无,已被绑定消去**。显式写出 P 只选定库多项式乘积的参数,其全部所需性质由现有通用定理实例化及规范化取得。未观察到第 3.2 条形态 (2) 所需的非绑定构造事实。
+- `gap`: 点态界不自动成为任意测度的 a.e. 界。式 (27) 的原子测度提供支撑条件;该实际测度尚未在本席定义。估计链本身未发现数学缺陷。
+
+### ③ h_n 不超过试验积分
+
+对 Q1 的式 (28),把首一 n 次多项式改写为 `X^n-q`,以 `IsLeast (Set.range F) h` 表示达到的最小值,`minimum_le_trial` 只是 `hmin.2` 的投影,已通过。概率积分的下一步也单独通过:`probability_integral_bound` 直接实例化 `integral_mono_ae`,保留 Integrable 与 a.e. 上界前件,由概率质量把常数积分化为常数。
+
+- `judgment`: **bind-only,以变分识别为前件**。没有把 Q1 的散文式 (28) 伪装成已冻结 Lean 等式。
+- `why_not_bind_only`: **无,已被最小值下界投影消去**。另行证明此比较不产生数学新事实。
+- `gap`: 单有抽象矩积分公式尚不识别原来的 Schur 余量。必须识别实际 L2(mu)、低次幂合成 V、x=z^n、Gram 与普通逆;Q2 的距离定理可提供抽象等式,但这些实际对象等式未在本席完成。若只有下确界表述,应用 `csInf_le` 还须非空与下有界;源文的 min 和非负积分能提供这些前件。
+
+### ④ n 次方根、固定 r 极限、r 趋于 0
+
+`constant_nth_root` 与 `normalized_bound_limit` 已通过,直接复合 `Filter.Tendsto.rpow`、`1/n -> 0` 与常数除 n 的极限。固定 `0<r<1` 和 K 时,上界的归一化形式趋于 `r^2`:
+
+```text
+(4^K)^(1/n) * r^(2 - 2K/n) -> r^2.
+```
+
+从原不等式到此式须在最终 `n>=max K 1` 下用非负实幂单调性、`Real.mul_rpow` 和实/自然指数改写;这段完整等式未编译。最后对每个固定 r 得最终上界,再给任意 epsilon 选 `0<r<1` 且 `r^2<epsilon`,用序拓扑夹逼即可。若沿原文走 limsup,须先用一个固定 r 的估计提供最终有界,再调用库的 limsup 比较和夹逼。**K 可以依赖 r;既不需要 K 对 r 一致,也不交换 n 与 r 两个极限。** n=0 不参与最终根极限。
+
+- `judgment`: **likely-bind-only**(固定 r 的归一化极限核心为已编译 `bind-only`)。
+- `why_not_bind_only`: **未能给出**。幂连续性、序极限与任意小上界均有库接口;“对任意 r”自身不是非绑定的“一致估计”见证。本席没有建立新的渐近定理。
+- `gap`: 漏掉非负底数、n>0 或 limsup 的最终有界前件会使调用失效;本靶可由前述残差非负和固定 r 上界供给。未发现须新增数学假设的源文缺陷,也未以未编译的极限收束主张全定理已证。
+
+### ⑤ h_n 严格正
+
+先用冻结 `isNontrivialZero_infinite` 消去实际零点无限性前件,再用 `rho -> 1-rho^(-1)` 的单射性得到不同谱点无限。正重数与 `c0>0` 给每个谱点正质量。对非零多项式,`Polynomial.finite_setOfPred_isRoot` 给有限根集,因而可取有正质量且不为根的谱点,再用非负积分正性接口。源文的最小值达到后,`minimum_pos_of_attained` 直接取达到点并投影正性,已通过。另一端 `positive_distance` 直接实例化闭集外 `infDist>0`,已通过;用于有限维低次幂空间时仍须实际线性无关性识别。n=0 单独取 `h_0=1`。
+
+- `judgment`: **likely-bind-only**(达到的正最小值、闭集外正距离两个抽象片段为 `bind-only`)。
+- `why_not_bind_only`: **未能给出**。实际零点无限性已冻结,有限根集和正积分判据已在库中;本席未发现非绑定正性见证。
+- `gap`: “每个试验积分正”本身不蕴含“下确界正”,例如正数列 `1/(k+1)` 的下确界为 0。必须保留 min 的达到性或有限维闭性,且非根点必须有正质量。源卷式 (27)-(28) 及严格正定论证包含所需数学结构;实际 L2 识别和完整正性证明未编译。
+
+### 片段的逐声明账
+
+本席共 11 个公开探针 theorem,均只依赖 Mathlib,**直接冻结依赖为空 `[]`**。下表每个声明的 `proof_shape` 均为 `bind-only`,`escape_witness=null`,`admission_basis=none(probe-only)`;Q2 的冻结件是已读候选,不是这份片段的虚构 import/依赖边。
+
+| 声明短名(namespace `HyperContractionProbe0909`) | 对应义务及实际绑定 |
+| --- | --- |
+| `trial_monic` | ②:首一根积与首一幂的乘积 |
+| `trial_degree` | ②:首一乘积次数、有限和、`n-K+K=n` |
+| `trial_zero` | ②:求值乘积中有零因子 |
+| `trial_bound` | ②:三角不等式、有限乘积序、幂单调及规范化 |
+| `minimum_le_trial` | ③:最小值的下界投影 |
+| `minimum_pos_of_attained` | ⑤:取达到点后代入正性 |
+| `probability_integral_bound` | ③/②:积分单调与概率常数积分 |
+| `constant_nth_root` | ④:实幂连续性与 `1/n -> 0` |
+| `normalized_bound_limit` | ④:乘积/差极限与实幂连续性 |
+| `positive_distance` | ⑤:闭集外距离严格正的 iff 投影 |
+| `spectral_distance_tendsto` | ①:取逆范数与倒数趋零的复合 |
+
+`sq_nonneg` 加 `linarith only` 也是本席允许的绑定尝试;此处所需非负性已有 `norm_nonneg`/`pow_nonneg`,无须为使用某个 tactic 再造声明。没有因 tactic 名、行数或构造语法把任一片段判为 content。
 
 ## 明确未主张
 
