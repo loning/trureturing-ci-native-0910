@@ -1,5 +1,5 @@
 /- GID: D5/S3/Zeros/Convolution/FiniteFreeCommutatorDegreeSix
-   generality: G
+   generality: I
    mirror-B: D5/B/S3/Zeros/Convolution/FiniteFreeCommutatorDegreeSix
    mirror-E: none(waiver:symbolic-polynomial-factorization)
    anchors: []

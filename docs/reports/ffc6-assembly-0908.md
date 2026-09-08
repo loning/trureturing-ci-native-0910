@@ -187,6 +187,10 @@ not an independently admitted computed instance.
 The other computational-utility fields are `not-applicable(kind=none)`.
 SL-031 checks the structural declaration and its source-bound report;
 the classification's mathematical justification remains a review judgment.
+The module's `generality` is `I`, as required by SL-010 when importing
+the existing degree-four operation module, which has that classification.
+This metadata classification is orthogonal to `utility: none` and leaves
+the universal quantification over all input sextics unchanged.
 
 ## Bounded literature and API recheck
 
@@ -253,6 +257,16 @@ code, the canonical-report declaration IDs, and delivery check outcomes.
 - `deposit-header-check` against the recorded base: EXIT=0, `deposit-header-check.log`.
 - Canonical `ledger-align --add` with the current Lean report: EXIT=0, `freeze.log`; 3672 modules considered, 1 added, 0 changed, 0 conflicts.
 - `make -C tools selftest`: EXIT=0, `selftest.log`; all active and case-backed deferred rule IDs listed.
+- Initial `make test`: EXIT=2, `math-gate.log`; SL-010 rejected a `G` module importing the `I` operation module. The header was corrected to `I`; no theorem statement or proof was changed. SL-022 also observed the new Scribe source as a protected-surface change, its ordinary review path.
+- Corrected `make lean-report`: EXIT=0, `lean-report-final.log`; all 21 authored statement IDs are unchanged by the metadata correction.
+- Corrected `make emit`: EXIT=0, `emit-final.log`.
+- Final `make test`: EXIT=0, `math-gate-final.log`; SL-008 and SL-010 pass, and Scribe consistency passes. SL-031 records `kind=none` with `semantics=unverified-by-machine`. The expected sole SL-022 protected-surface observation follows the mathematical gate's ordinary accepted path.
+
+The final Lean source SHA-256 is
+`08f40d090cdf3bc5a892469b8ea7afc5ffeacffe1f851011f2aa607470842217`.
+The branch changes six repository files. Git's merge-tree check against
+dev `efee9668a9aec0adeba68b62890e89c232b77f46` returned EXIT=0, without
+modifying the working tree or running a different revision's judge.
 
 The new freeze records 21 authored declarations. Its module state ID is
 `sha256:c432340052440ba09b56af8739b2dee5b23e520877aa3593410b92b1dbad9daf`;
