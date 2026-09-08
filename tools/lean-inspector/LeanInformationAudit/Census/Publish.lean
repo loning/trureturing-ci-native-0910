@@ -5,6 +5,10 @@ namespace LeanInformationAudit.CensusProjection
 
 open Lean Meta Elab Command DispositionCensus
 
+private def phase (label : String) : IO Unit := do
+  IO.println ("CENSUS_PUBLICATION " ++ label)
+  (<- IO.getStdout).flush
+
 /-- Run-local data emitted by the completed partition query. The query process
 checks the elaborated closure; publication consumes its projection, and does not
 re-import observed targets. Editing generated query outputs is outside this
@@ -98,28 +102,36 @@ elab "#disposition_census" &"projection" &"root" root:ident &"report" reportPath
     &"head" head:str &"report_sha256" reportSha:str &"inventory" inventoryName:ident
     &"scopes" scopesName:ident &"certificate" certificate:ident " output " outputPath:str :
     command => do
+  phase "parse-report"
   let bytes <- IO.FS.readFile reportPath.getString
   let report <- ofExcept <| parseReport head.getString reportSha.getString bytes
   let owners <- ofExcept <| reportOwners bytes
   let inventoryName <- liftCoreM <| realizeGlobalConstNoOverloadWithInfo inventoryName
   let scopesName <- liftCoreM <| realizeGlobalConstNoOverloadWithInfo scopesName
+  phase "evaluate-inventory"
   let inventory <- liftTermElabM do
     unsafe evalExpr DispositionInventory (mkConst ``DispositionInventory) (mkConst inventoryName)
+  phase "evaluate-scopes"
   let scopes <- liftTermElabM do
     unsafe evalExpr (Array Scope) (mkApp (mkConst ``Array [.zero]) (mkConst ``Scope))
       (mkConst scopesName)
+  phase "check-coverage"
   ofExcept <| checkCoverage report.headSha report.theorems inventory
+  phase "validate-evidence"
   let (proof, sources) <- liftTermElabM do
     validate inventory scopes owners
     let certified := { inventory with entries := inventory.entries.filter fun entry =>
       match entry.2 with | .certified _ => true | .observed _ => false }
     let sources <- validateEvidenceSources root.getId certified
     IO.println "CENSUS_COVERAGE_BEGIN"
+    (<- IO.getStdout).flush
     let started <- IO.monoMsNow
     let proof <- coverage report (mkConst inventoryName)
     let elapsed := (<- IO.monoMsNow) - started
     IO.println s!"CENSUS_COVERAGE_COMPLETE milliseconds={elapsed}"
+    (<- IO.getStdout).flush
     return (proof, sources)
+  phase "declare-certificate"
   let certificateName := (<- getCurrNamespace) ++ certificate.getId.eraseMacroScopes
   let declaration := Declaration.thmDecl {
     name := certificateName, levelParams := [], type := <- liftTermElabM <| inferType proof,
@@ -134,6 +146,7 @@ elab "#disposition_census" &"projection" &"root" root:ident &"report" reportPath
   if <- (System.FilePath.mk destination).pathExists then
     if (<- IO.FS.realPath reportPath.getString) == (<- IO.FS.realPath destination) then
       throwError "census projection: output aliases report"
+  phase "write-artifact"
   streamArtifact temporary report inventory sources
   IO.FS.rename temporary destination
   IO.FS.rename (temporary ++ ".summary.json") (destination ++ ".summary.json")

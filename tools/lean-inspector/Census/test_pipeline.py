@@ -72,6 +72,20 @@ class PipelineTests(unittest.TestCase):
             with self.subTest(result=result), self.assertRaises(ValueError):
                 self.program.validate_result(result, "head", [("D5.A", "key", "id")])
 
+    def test_scope_name_pool_deduplicates_across_partitions(self):
+        import emission
+        first = ["str", ["anonymous"], "First"]
+        second = ["str", ["anonymous"], "Second"]
+        inputs = [{"scope": {"modules": [first, second]}}, {"scope": {"modules": [first]}}]
+        with tempfile.TemporaryDirectory() as left, tempfile.TemporaryDirectory() as right:
+            modules, indexes = emission.module_pool(pathlib.Path(left), "Pool", inputs)
+            other_modules, other_indexes = emission.module_pool(pathlib.Path(right), "Pool", inputs[::-1])
+            self.assertEqual(indexes, other_indexes)
+            self.assertEqual(sorted(indexes.values()), [0, 1])
+            self.assertEqual([name for name, _ in modules], [name for name, _ in other_modules])
+            self.assertEqual([path.read_bytes() for _, path in modules],
+                             [path.read_bytes() for _, path in other_modules])
+
     def test_budget_failures_are_rejections(self):
         spec = importlib.util.spec_from_file_location("census_resources", PROGRAM.with_name("resources.py"))
         resources = importlib.util.module_from_spec(spec)

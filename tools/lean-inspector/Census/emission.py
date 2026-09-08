@@ -76,11 +76,32 @@ def write_module(directory, module, contents):
     return path
 
 
-def scope_module(directory, module, result):
-    contents = ("import LeanInformationAudit.Census.Publish\n"
+def module_pool(directory, module, results):
+    names = {json.dumps(value): value for result in results for value in result["scope"]["modules"]}
+    ordered = sorted(names)
+    indexes = {key: index for index, key in enumerate(ordered)}
+    parts = []
+    for start in range(0, len(ordered), 100):
+        number = start // 100
+        part = f"{module}.Group{number // 20:04d}.Names{number:05d}"
+        source = ("import Lean\n" + f"def {part}.names : Array Lean.Name :=\n  "
+                  + array(name(names[key]) for key in ordered[start:start + 100]) + "\n")
+        parts.append((part, write_module(directory, part, source)))
+    source = "".join(f"import {part}\n" for part, _ in parts)
+    source += f"def {module}.names : Array Lean.Name :=\n  "
+    source += " ++ ".join(part + ".names" for part, _ in parts) + "\n"
+    source += f"@[noinline] def {module}.get (index : Nat) : Lean.Name := {module}.names[index]!\n"
+    return parts + [(module, write_module(directory, module, source))], indexes
+
+
+def scope_module(directory, module, result, pool, indexes):
+    modules = string(json.dumps([indexes[json.dumps(value)] for value in result["scope"]["modules"]]))
+    contents = ("import LeanInformationAudit.Census.Publish\n" + f"import {pool}\n"
                 "open LeanInformationAudit\n"
+                f"private def {module}.indices : Array Nat :=\n"
+                f"  ((Lean.Json.parse {modules} >>= Lean.fromJson?).toOption.getD #[])\n"
                 f"def {module}.scope : ImportClosureScope :=\n"
-                f"  ImportClosureScope.mk {array(map(name, result['scope']['modules']))} true\n"
+                f"  ImportClosureScope.mk ({module}.indices.map {pool}.get) true\n"
                 f"def {module}.record : CensusProjection.Scope :=\n"
                 f"  CensusProjection.Scope.mk {name(result['root'])} {module}.scope\n")
     return write_module(directory, module, contents)

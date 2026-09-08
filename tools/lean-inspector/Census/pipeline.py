@@ -99,7 +99,7 @@ def write_requests(directory: pathlib.Path, keys):
 
 
 def execute(options):
-    from emission import array, display, rows_module, scope_module, string, write_module
+    from emission import array, module_pool, rows_module, scope_module, string, write_module
     from resources import run
 
     repository = pathlib.Path(__file__).resolve().parents[3]
@@ -191,6 +191,7 @@ def execute(options):
             save()
         state["evidence_modules"] = sorted(evidence_modules)
         completed = []
+        query_outputs = []
         scope_modules = []
         certified_imports = set()
         for number, (label, members) in enumerate(query_partitions):
@@ -219,14 +220,20 @@ def execute(options):
             state["partitions"][label]["keys"] = len(selected)
             certified_imports.update(output["certified_imports"])
             scope = "CensusRun.Scopes." + relative
-            scope_path = scope_module(directory, scope, output)
-            lean(scope_path, "scope-" + label, True)
+            query_outputs.append((label, scope, output))
             scope_modules.append(scope)
             completed.extend((row, scope) for row in output["entries"])
             state["completed_keys"] = len(completed)
             save()
         if not completed:
             raise RuntimeError("no completed query partitions; no census artifact published")
+        pool = "CensusRun.ModuleNames"
+        pool_modules, indexes = module_pool(directory, pool, [output for _, _, output in query_outputs])
+        for module, path in pool_modules:
+            lean(path, "names-" + module, True)
+        for label, scope, output in query_outputs:
+            path = scope_module(directory, scope, output, pool, indexes)
+            lean(path, "scope-" + label, True)
         completed.sort(key=lambda item: item[0]["statement_id"])
         completed_ids = {row["statement_id"] for row, _ in completed}
         if len(completed) != len(all_keys):
