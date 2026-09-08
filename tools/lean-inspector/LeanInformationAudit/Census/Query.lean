@@ -52,9 +52,8 @@ def buildIndex (root : Name) : MetaM Index := do
   let members : Std.HashSet Name := Std.HashSet.ofArray modules
   let mut named : Std.HashMap Name (Array Name) := {}
   for (name, info) in env.constants.toList do
-    if !members.contains (owningModule env name) then continue
     let head := info.type.getAppFn.constName?.getD .anonymous
-    if evidenceTypes.contains head then
+    if evidenceTypes.contains head && members.contains (owningModule env name) then
       named := named.insert head ((named.getD head #[]).push name)
   for head in evidenceTypes do
     named := named.insert head ((named.getD head #[]).qsort Name.quickLt)
