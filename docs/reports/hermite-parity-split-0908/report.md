@@ -242,7 +242,19 @@ Its recorded frozen prerequisites are `[]`.
 
 `pushed`: implementation commits `877ff6375d` and `c42193988f` were pushed;
 the final push SHA and PR/check status are recorded in the completion envelope.
-`pr`: the final URL and check receipt are external to this pre-PR report.
+`pr`: https://github.com/the-omega-institute/trureturing/pull/6406, opened with
+`make pr-open`, without auto-merge. The first run passed engineering and Lean
+checks but failed SL-003: the merge candidate had 25 files in `docs/reports`,
+above the admission limit 24. This report was moved into its own subdirectory;
+the frozen Lean source, state pin, and event were not changed. SL-022's Scribe
+protected-surface message is informational; its rule passed locally and in CI.
+The final required-check receipt is in the completion envelope.
+
+The full local `make preflight` at `ef50aedbad` passed before that path move:
+EXIT 0, 796.04 s, maximum RSS 6,653,181,952 bytes. All seven test projects
+passed, totaling 4,878 tests. The candidate's admission gate also passed.
+This local pass used the starting baseline; it did not detect the additional
+report in CI's newer baseline `6e81408402e2a5fdbb980129770f149ad07ea00d`.
 `assumed_unverified`: the unproved root-sum correspondence, frozen normalization
 bridge, parity identity, general Lean factorial simplification, and independent
 semantic review are `ASSUMED-UNVERIFIED`.
