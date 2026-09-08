@@ -5309,39 +5309,39 @@ canonical admission failure 后仍写出 artifact。
 
 ### IE-C034　MissingAnalysisDisposition
 
-当前：frozen theorem `statement_id` 没有 disposition。
-
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕census 的 frozen theorem key 没有 `CensusAssessment` row；有效 observed row 不是 missing。
+census 的 frozen theorem key 没有 `CensusAssessment` row；有效 observed row 不是 missing。
+诊断由 `tools/lean-inspector/LeanInformationAudit/DispositionCensus.lean` 的 `checkCoverage` 发出。
 独立的 disposition obligation 若要求认证，仍必须有 `AnalysisDisposition`，不能以 observed 履行。
 
 ### IE-C035　DuplicateAnalysisDisposition
 
-当前：同一 `statement_id` 产生多个 disposition records；即使 records 使用不同 theorem `Name` 也失败。
-
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕同一 key 产生多个 assessment records（包括 certified／observed 混合重复），或多个 records
-复用同一 `statement_id`；即使 records 使用不同 theorem `Name` 也失败。
+同一 key 产生多个 assessment records（包括 certified／observed 混合重复），或多个 records
+复用同一 `statement_id`；即使 records 使用不同 theorem `Name` 也失败。诊断由
+`tools/lean-inspector/LeanInformationAudit/DispositionCensus.lean` 的 `checkCoverage` 发出。
 
 ### IE-C036　DispositionIdentityMismatch
 
-当前：record 绑定的 HEAD、theorem `Name`、`statement_id` 或 canonical arena identity 与 elaborated
-report 不一致；report bytes 与钉住的 `report_sha256` 不同也用本码。向 inventory 加入被 frozen
-theorem selector 排除的未冻结 theorem 或 frozen definition，当前在 identity 检查处报本码。
-
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕assessment record 绑定的 HEAD、report input identity、theorem `Name`、`statement_id` 或 canonical arena
-identity 与 elaborated report 不一致。
+assessment record 绑定的 HEAD、report input identity、theorem `Name`、`statement_id` 或 canonical arena
+identity 与 elaborated inputs 不一致；report bytes 与钉住的 `report_sha256` 不同也用本码。
+向 inventory 加入被 frozen theorem selector 排除的未冻结 theorem 或 frozen definition，
+在 identity 检查处报本码。message 定义见 `tools/lean-inspector/LeanInformationAudit/AnalysisDisposition.lean`，
+report／key 检查见 `tools/lean-inspector/LeanInformationAudit/DispositionCensus.lean`，
+arena 检查见 `tools/lean-inspector/LeanInformationAudit/DispositionEvidence.lean`。
 
 ### IE-C037　DispositionClassMismatch
 
 所报 class 与 payload 不符，例如 finite class 无 state enumeration、truncation 无 bound，或
 把 closed-truth constant readout 伪标为 object realization。
 
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕把 observed／registry absence
-冒充带 closed-reason certificate 的 unreachable 同样使用本码失败。
+把 observed／registry absence 冒充带 closed-reason certificate 的 unreachable 同样使用本码失败。
+message、payload 与语义检查分别见 `tools/lean-inspector/LeanInformationAudit/AnalysisDisposition.lean`、
+`tools/lean-inspector/LeanInformationAudit/CensusSchema.lean`、
+`tools/lean-inspector/LeanInformationAudit/DispositionEvidence.lean`。
 
 ### IE-C038　MissingStructuralWitness
 
 structural occurrence 没有 inclusion proof、pair witness，或 witness 不满足 without/full
-kernel 两侧。
+kernel 两侧；诊断见 `tools/lean-inspector/LeanInformationAudit/DispositionEvidence.lean`。
 
 ### IE-C039　InvalidGeneratedKernelNode
 
@@ -5371,15 +5371,19 @@ order。projection 只能由已完成的 seal truth 单向生成。
 
 ### IE-C044　DispositionCensusMismatch
 
-当前：census keys 与 frozen theorem keys 不完全相等，或分类／reason totals 与 rows 不一致；
-若额外 inventory row 是未冻结 theorem 或 frozen definition，先报 IE-C036，尚不报本码。
-
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕census keys 与 frozen theorem keys 不完全相等，或 `accounted`／`certified`／`observed`、
-class／reason／observation-status totals 或 completeness flags 与 rows 不一致。observation 的
-query 未完成、import closure 不完整、owning module／root／scope 未由 census 核实也使用本码；
-generator 空列表不能代替该查询。J2 将把上述额外未冻结 theorem／frozen definition row 的拒绝
-归到 IE-C044；此映射尚未生效。具体 component 使用第 23.6 节字段名，诊断 message／payload
-shape 仍按第 31 节，不新增诊断码或 payload key。
+census keys 与 frozen theorem keys 不完全相等，或 `accounted`／`certified`／`observed`、
+class／reason／query-completion totals 或 `certified_complete` 与 rows 不一致。observation 的
+query 未完成、import closure 不完整或重复、owning module／root 不符、candidate 不属于该
+theorem 的 registration／realization 也使用本码。generator 空列表不能代替完整查询；
+现役 consumer 核查 scope 与所列 candidates，不证明候选列表穷尽性，完整查询属 Phase 11 的 J3 义务。
+frozen report 自身重复的 `statement_id` 以本码的 `frozen_keys` component 拒绝；inventory
+重复则用 IE-C035。额外未冻结 theorem／frozen definition row 先由 identity 检查发出 IE-C036。
+具体 component 使用第 23.6 节字段名，诊断 message／payload shape 仍按第 31 节，不新增诊断码或 payload key。
+覆盖与 artifact 检查见 `tools/lean-inspector/LeanInformationAudit/DispositionCensus.lean`，
+observation 检查见 `tools/lean-inspector/LeanInformationAudit/DispositionEvidence.lean`，
+计数与容器检查见 `tools/lean-inspector/LeanInformationAudit/CensusSchema.lean`、
+`tools/lean-inspector/LeanInformationAudit/Projection/AnalysisInventory.lean`。
+（J2 落地形态,2026-09-08:S0 拟把 excluded rows 改为 IE-C044 的映射未采用，仍为 IE-C036；状态分项是 query completion，且只发射 `certified_complete`。）
 
 ### IE-C045…IE-C047　DualNoveltyGate（RESERVED / OPEN）
 
