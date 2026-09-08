@@ -211,6 +211,37 @@ Definition 3.10 exactly. On monic root products c_0=1. The target quantifies
 alpha>-1, eight nonnegative input roots, and four nonnegative output roots,
 with equality to the product of the four corresponding linear factors.
 
+## Q1 Lean attempt 1: parsing failure, not a mathematical verdict
+
+Temporary probe: `D5/GribinskiM4Probe.lean`, removed before handoff; no production
+module or freeze is intended. Command: `/usr/bin/time -l make lean`, output
+`attempt-1/q1-bind-only.log`. Exit 2, 16.55 real seconds, maximum RSS
+3,185,885,184 bytes, job denominator 12,696. Both caches warm. These are full
+make invocation measurements, not isolated Lean theorem costs.
+
+The five `#check` commands above succeeded. The conditional theorem
+`conditional_hankel_projection` also elaborated, with axioms exactly
+`[propext, Classical.choice, Quot.sound]`. Its proof is just
+`(newtonHankel_posSemidef_iff_roots_real roots hc).mp hpsd`: this confirms the
+interface works at d=4 WHEN hpsd is supplied; it does not settle Q1.
+
+The existential attempt stopped with `unexpected identifier; expected command`
+on the continuation line of `fail_if_success exact ...`. Therefore its intended
+`exact?` and `linarith only` attempts had not run. Correct that indentation and
+rerun; do not count this parse error as bind-only failure.
+
+Additional criterion source opened: Wikipedia, Sylvester's criterion,
+https://en.wikipedia.org/wiki/Sylvester%27s_criterion . The downloaded page says:
+"A Hermitian matrix M is positive-semidefinite if and only if all principal
+minors of M are nonnegative." It explicitly warns that leading minors alone
+are insufficient for semidefiniteness. The first piped read ended early with
+curl 56; a subsequent complete download and local read reached this statement
+(HTML line 768). Its cited book was not opened.
+
+An attempted source path `D5/S3/Constants/CoefficientNewtonSums.lean` was wrong
+(rg exit 2); discovery located `D5/S3/Constants/Moments/CoefficientNewtonSums.lean`.
+The invalid-path query is not used as a no-hit receipt.
+
 ## Nonclaims
 
 This probe has not proved m=4, does not claim m=4 is provable by the proposed
