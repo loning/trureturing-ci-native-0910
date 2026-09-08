@@ -71,38 +71,9 @@ internal static class DescribeContentGovernance
         LibraryNoteCatalogInspection libraryInspection)
     {
         var findings = ValidateSources(repositoryRoot).ToBuilder();
-        ValidateDocumentGidUniqueness(documents, findings);
         ValidateIndependentInventory(documents, reportStats, findings);
         ValidateReferencedNoteLocators(repositoryRoot, documents, libraryInspection, findings);
         return Order(findings);
-    }
-
-    /// The receipt census retired with the field it classified: nothing can be receipt-bound
-    /// once `receipts.scribe` no longer exists (#6349). Five of its six clauses simplified to
-    /// tautologies, but the sixth compared a *set* of document GIDs against the document
-    /// *count*, so it was the only thing in the repository judging document GID uniqueness.
-    /// Keep that judgement, name it for what it is, and report which GIDs collided — the old
-    /// finding blamed "receipt-free and receipt-bound sets" for a cause that has nothing to do
-    /// with receipts.
-    internal static void ValidateDocumentGidUniqueness(
-        ImmutableArray<ScribeDocument> documents,
-        ImmutableArray<DescribeRedFinding>.Builder findings)
-    {
-        var duplicates = documents
-            .GroupBy(static document => document.Header.Gid.Value, StringComparer.Ordinal)
-            .Where(static group => group.Count() > 1)
-            .Select(static group => group.Key)
-            .Order(StringComparer.Ordinal)
-            .ToArray();
-        if (duplicates.Length == 0)
-        {
-            return;
-        }
-
-        findings.Add(new DescribeRedFinding(
-            "duplicate-document-gid",
-            "Blueprint",
-            "document GIDs must be unique; repeated: " + string.Join(", ", duplicates)));
     }
 
     internal static ImmutableArray<DescribeRedFinding> ValidateIndependentInventory(
