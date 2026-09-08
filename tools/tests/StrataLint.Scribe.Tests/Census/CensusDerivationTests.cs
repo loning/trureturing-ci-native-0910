@@ -13,56 +13,39 @@ public sealed class CensusDerivationTests
         Assert.Contains("document corpus must not be empty", exception.Message, StringComparison.Ordinal);
     }
 
-    // The receipt census retired with `receipts.scribe` (#6349). Five of its six clauses were
-    // tautologies once nothing could be receipt-bound; the sixth compared a set of document
-    // GIDs against the document count, which is a uniqueness judgement and the only one in the
-    // repository. It survives as `duplicate-document-gid`, and now names the collisions.
+    // The receipt census is gone with the field it classified (#6349). Its one non-constant
+    // clause compared a set of document GIDs against the document count, which reads as a
+    // uniqueness judgement — but a trigger PR showed that state is unreachable here: document
+    // discovery throws first, and with a better message. This pins the judge that actually
+    // fires, so the census can be deleted without losing the judgement.
     [Fact]
-    public void DistinctDocumentGidsProduceNoFinding()
+    public void DistinctEmissionTargetsAreAccepted()
     {
-        var findings = ImmutableArray.CreateBuilder<DescribeRedFinding>();
+        var first = DocumentDefinition.Create(
+            Document("D5/S0/Test/DistinctOne"), "Blueprint/D5/S0/Test/DistinctOne.scribe.cs");
+        var second = DocumentDefinition.Create(
+            Document("D5/S0/Test/DistinctTwo"), "Blueprint/D5/S0/Test/DistinctTwo.scribe.cs");
 
-        DescribeContentGovernance.ValidateDocumentGidUniqueness(
-            [Document("D5/S0/Test/DistinctOne"), Document("D5/S0/Test/DistinctTwo")],
-            findings);
-
-        Assert.Empty(findings);
+        Assert.Equal(2, DocumentDefinitions.RequireDistinctEmissionTargets([first, second]).Length);
     }
 
     [Fact]
-    public void RepeatedDocumentGidIsRejectedAndNamed()
+    public void DocumentDiscoveryRejectsTwoDefinitionsTargetingOneEmission()
     {
-        const string repeated = "D5/S0/Test/Repeated";
-        var findings = ImmutableArray.CreateBuilder<DescribeRedFinding>();
+        var definition = DocumentDefinition.Create(
+            Document("D5/S0/Test/DiscoveryDuplicate"),
+            "Blueprint/D5/S0/Test/DiscoveryDuplicate.scribe.cs");
 
-        DescribeContentGovernance.ValidateDocumentGidUniqueness(
-            [Document(repeated), Document("D5/S0/Test/Other"), Document(repeated)],
-            findings);
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            DocumentDefinitions.RequireDistinctEmissionTargets([definition, definition]));
 
-        var finding = Assert.Single(findings);
-        Assert.Equal("duplicate-document-gid", finding.Code);
-        Assert.Contains(repeated, finding.Message, StringComparison.Ordinal);
-        Assert.DoesNotContain("D5/S0/Test/Other", finding.Message, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public void EveryRepeatedGidIsNamedOnceInOrdinalOrder()
-    {
-        const string alpha = "D5/S0/Test/AlphaRepeat";
-        const string zeta = "D5/S0/Test/ZetaRepeat";
-        var findings = ImmutableArray.CreateBuilder<DescribeRedFinding>();
-
-        DescribeContentGovernance.ValidateDocumentGidUniqueness(
-            [Document(zeta), Document(alpha), Document(zeta), Document(alpha)],
-            findings);
-
-        var finding = Assert.Single(findings);
-        Assert.EndsWith($"{alpha}, {zeta}", finding.Message, StringComparison.Ordinal);
+        Assert.Contains("Multiple Scribe definitions target", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("D5/S0/Test/DiscoveryDuplicate", exception.Message, StringComparison.Ordinal);
     }
 
     private static ScribeDocument Document(string gid) =>
         ScribeDocument.Create(
-            DefinitionDsl.Header(gid, "Document GID uniqueness fixture."),
+            DefinitionDsl.Header(gid, "Document discovery fixture."),
             DefinitionDsl.H(gid),
             DefinitionDsl.Blocks(DefinitionDsl.Paragraph(DefinitionDsl.Text("fixture"))));
 }
