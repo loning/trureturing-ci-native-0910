@@ -625,3 +625,53 @@ measurement, not a fresh proof benchmark. The four already recorded unused
 variable warnings in the discriminant module remain. No Lean source was edited.
 Before this verification checkpoint's push, fetch EXIT=0 at dev `fe073d5730`;
 index and dev/index path-union counts remain raw **18/36**, capacity **18/18**.
+
+### Semantic Report and Final Conclusion
+
+Lean-build checkpoint `4347266f60` was pushed. `make lean-report`: EXIT=0,
+10.53 real seconds (`lean-report.log`), mode=cached. Its input address remains
+`sha256:a20ab3bd7c3261e58c6f85f9c399e3b5a3f61e6b30d117bbc35fa45374ae880d`;
+report SHA-256 remains `20b925ef0ef86b656f60079b914364b66292344a31b3ab47ea941c67d6735b09`.
+The public included sets contain 17/2 declarations, including 8/1 theorems,
+with no axioms outside `Classical.choice`, `Quot.sound`, `propext`.
+`public-declarations.json` and `emit-targets.json` retain the producer records
+in the mirror attempt directory; no fresh proof reconstruction is claimed.
+
+`gate_found`: SL-004 / Mirror completeness,
+`tools/StrataLint.Engine/Rules/RepositoryRules.cs:62`, missing-file finding at
+`tools/StrataLint.Engine/Rules/RepositoryRules.Helpers.cs:131` (details above).
+`exit_codes`: make lean=0; make lean-report=0; make emit=0 after the recorded
+initial emit=2. The successful emit did not need any Lean or budget edit.
+
+`directory_counts`, after the final pre-push `git fetch origin dev` (EXIT=0)
+at `83e5ffe53fcaeb3770f3d50658aa38cc8b011bda`: dev raw **16/32**, capacity
+**16/16**; candidate index and dev/index path union raw **18/36**, capacity
+**18/18**. Capacity headroom is 30 counted files in each directory (limit 48).
+`directory-counts.json` retains the direct-child counting receipt. At checkpoint
+`4347266f60`, `git merge-tree --write-tree origin/dev HEAD` returned EXIT=0,
+tree `cb135032ef013987f331a01ce79c420ea98085e9`, with no conflicts.
+
+`changed_paths` relative to this worker's inherited `edcaa0364b`:
+
+- `Blueprint/D5/S3/Zeros/Convolution/GribinskiDegreeThree.scribe.cs`
+- `Blueprint/D5/S3/Zeros/Convolution/GribinskiDegreeThreeDiscriminant.scribe.cs`
+- `Blueprint/D5/S3/Zeros/Convolution/GribinskiDegreeThree.md`
+- `Blueprint/D5/S3/Zeros/Convolution/GribinskiDegreeThreeDiscriminant.md`
+- `docs/reports/convolution/gribinski-m3-0909.md`
+
+`pushed.commits` completed before this final report commit: `54d8ef5541` (gate
+readings), `5a60cb2429` (mirror A), `90c69725bc` (mirror B), `48bf865713`
+(formula token boundaries), `f3204fbd04` (emit), `4347266f60` (Lean reading).
+The worker-owned result envelope records full SHAs including this report's
+commit after its push succeeds. `echo_table` is the complete 19-row table above.
+
+`assumed_unverified`: no independent review seats or remote required-CI checks
+were run in this stage. Formula fidelity was checked by this worker against
+committed Lean statements; typed emission is not an independent semantic proof
+of the narrative. No admission/CI-green claim, general-m result, or priority
+claim is made. The inherited `.lean` files, all budget constants, and
+`Meta/Digestion/**` are unchanged by this worker.
+
+Explicitly not performed: **make deposit; make cover; freezing; opening a PR;
+make gate**. The requested mirror preparation and local verification are
+complete; the branch is ready to present for PR review under these limits.
