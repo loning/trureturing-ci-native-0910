@@ -338,12 +338,12 @@ public sealed partial class ProductionEnvironmentTests
         {
             AtomId = "closure-child",
             Coverage = [],
-            Receipts = new DigestionReceipts([], [], [], null),
+            Receipts = new DigestionReceipts([], [], null),
         };
         var parent = StatusAuthorityClosureEntry() with
         {
             AtomId = "closure-parent",
-            Receipts = new DigestionReceipts([], [], [child.AtomId], null),
+            Receipts = new DigestionReceipts([], [child.AtomId], null),
         };
         var document = DigestionTestSupport.Document(
             parent.Atomizer,
@@ -390,9 +390,7 @@ public sealed partial class ProductionEnvironmentTests
             "closure-entry",
             SyntheticNumberedAtomizer.Id,
             coverageGids: [coverageGid],
-            receipts: new DigestionReceipts(
-                [],
-                [],
+            receipts: new DigestionReceipts([],
                 [],
                 new DigestionExternalReceipt(
                     "Evidence/tail.txt",

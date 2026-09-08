@@ -491,7 +491,6 @@ public sealed class QuarantineAtomCommandTests
         DigestionCoverDisposition? disposition = null,
         ImmutableArray<string> unresolvedSubitems = default) =>
         new(
-            [],
             unresolvedSubitems.IsDefault ? [] : unresolvedSubitems,
             [],
             null,

@@ -378,9 +378,7 @@ public sealed class DigestionReadinessQueryTests
                 ? []
                 : coverageGids.Select(static gid => new DigestionCoverageEdge(gid, null))
                     .ToImmutableArray(),
-            new DigestionReceipts(
-                [],
-                [],
+            new DigestionReceipts([],
                 chainAtoms.IsDefault ? [] : chainAtoms,
                 null,
                 quarantine,

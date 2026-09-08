@@ -274,8 +274,7 @@ public sealed class TruthReleaseCommandTests
             [new DigestionCoverageEdge(
                 BlueprintGid + ".golden_spectral_marker",
                 "sha256:" + new string('0', 64))],
-            new DigestionReceipts(
-                [], [], [], null),
+            new DigestionReceipts([], [], null),
             status,
             captured.Reference);
         var document = DigestionTestSupport.Document(

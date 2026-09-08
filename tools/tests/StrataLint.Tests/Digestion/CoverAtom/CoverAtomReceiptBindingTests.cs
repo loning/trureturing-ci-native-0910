@@ -205,8 +205,6 @@ public sealed partial class CoverAtomTests
         Assert.Equal([gid], sibling.CoverageGids.ToArray());
         Assert.Equal([gid], target.Coverage.Select(static receipt => receipt.Gid).ToArray());
         Assert.Equal([gid], sibling.Coverage.Select(static receipt => receipt.Gid).ToArray());
-        Assert.Empty(target.Receipts.Scribe);
-        Assert.Empty(sibling.Receipts.Scribe);
     }
 
     [Fact]
@@ -241,7 +239,6 @@ public sealed partial class CoverAtomTests
         var entry = Assert.Single(
             BackfillInventoryLoader.LoadRoot(temporary.Path).RequireDigestionEntries(),
             candidate => candidate.AtomId == spec.AtomId);
-        Assert.Empty(entry.Receipts.Scribe);
         var written = File.ReadAllText(Path.Combine(
             temporary.Path,
             BackfillInventoryLoader.RootPath,

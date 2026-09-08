@@ -87,7 +87,7 @@ internal static partial class DigestionLedgerAligner
         {
             ProjectedStatus = StructuralIdentityStatus,
             Coverage = [],
-            Receipts = entry.Receipts with { Scribe = [], CoverDisposition = null },
+            Receipts = entry.Receipts with { CoverDisposition = null },
         };
         return Convert.ToBase64String(BackfillInventoryWriter.WriteEntry(admissionEntry).AsSpan());
     }

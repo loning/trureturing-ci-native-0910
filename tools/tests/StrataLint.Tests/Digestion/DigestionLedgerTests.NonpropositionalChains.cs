@@ -22,12 +22,12 @@ public sealed partial class DigestionLedgerTests
             DigestionFingerprint.Compute(definition).RawSha256, ScribeEmissionAttestation.EmissionPath(gid),
             DigestionFingerprint.Compute(emission).RawSha256);
         var complete = Assert.Single(Ledger(atom, DigestionMigrationState.Absorbed, DigestionTruthState.Closed,
-            gid, new(gid, TestModuleStatementId), new(gid, record.DefinitionSha256, record.EmissionSha256),
+            gid, new(gid, TestModuleStatementId),
             atomizer: AtomizerRegistry.NoAtomizerId).RequireDigestionEntries()) with { SourceId = "source" };
         var childIds = Enumerable.Range(1, 5).Select(index => new string((char)('a' + index), 64)).ToImmutableArray();
         var children = childIds.Select((id, index) => (index < 2 ? complete : settled) with { AtomId = id }).ToArray();
         var parent = complete with { AtomId = new string('a', 64), Coverage = [],
-            Receipts = complete.Receipts with { Scribe = [], ChainAtoms = childIds },
+            Receipts = complete.Receipts with { ChainAtoms = childIds },
             ProjectedStatus = new(DigestionMigrationState.Residual, DigestionTruthState.Open) };
         var files = new List<(string Path, byte[] Bytes)>
         {
@@ -53,7 +53,7 @@ public sealed partial class DigestionLedgerTests
         {
             var changed = mode == "missing" ? children.Skip(1) : children.Select((child, index) =>
                 index != 0 ? child : child with { Coverage = mode == "residual" ? [] : child.Coverage,
-                    Receipts = new([], mode == "partial" ? ["live"] : [], [], null) });
+                    Receipts = new(mode == "partial" ? ["live"] : [], [], null) });
             var outcome = EvaluateParent(parent, changed);
             Assert.Contains(outcome.Gaps, gap => gap.Code == "chain-migration-incomplete" && gap.Detail == childIds[0]);
         }
