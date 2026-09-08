@@ -83,7 +83,7 @@ private theorem inverse_square_partial {d : ℝ} (hd : 0 < d) (M : ℕ) :
       rw [Finset.sum_range_succ]
       have hstep := inverse_step (show 0 < d + (M : ℝ) by positivity)
       simp only [Nat.cast_succ, add_assoc]
-      simp only [add_assoc] at hstep
+      simp only [add_assoc] at hstep ih
       linarith
 
 private theorem inverse_square_partial_le {d : ℝ} (hd : 0 < d) (M : ℕ) :
@@ -150,7 +150,7 @@ private theorem cauchyHalf_continuousOn {d : ℝ} (hd : 0 < d)
       ((continuousOn_id.add continuousOn_const).add continuousOn_const).inv₀
         (fun x hx => by
           have hx0 : 0 < x := lt_of_lt_of_le hd hx
-          exact ne_of_gt (by positivity))
+          exact ne_of_gt (by positivity : 0 < x + (j : ℝ) + 1))
     exact continuousOn_const.mul (Complex.continuous_ofReal.comp_continuousOn hc)
   · exact cauchyHalf_norm_summable hd u hu
   · intro j x hx
@@ -160,7 +160,8 @@ private theorem cauchyHalf_continuousOn {d : ℝ} (hd : 0 < d)
       abs_of_pos (by positivity : 0 < (x + (j : ℝ) + 1)⁻¹),
       abs_of_pos (by positivity : 0 < (d + (j : ℝ) + 1)⁻¹)]
     apply mul_le_mul_of_nonneg_left _ (norm_nonneg _)
-    exact (inv_le_inv₀ (by positivity) (by positivity)).2 (by linarith [hx])
+    exact (inv_le_inv₀ (by positivity) (by positivity)).2
+      (add_le_add_left (add_le_add_left hx (j : ℝ)) 1)
 
 private theorem norm_sub_sq (z w : ℂ) :
     ‖z - w‖ ^ 2 ≤ 2 * (‖z‖ ^ 2 + ‖w‖ ^ 2) := by
@@ -200,6 +201,7 @@ private theorem response_bound {N : ℕ} (hN : 0 < N)
   have hsub := norm_sub_sq (cauchyHalf ((N : ℝ) + s) u)
     (cauchyHalf ((N : ℝ) - s) v)
   dsimp [coefficientMass]
+  simp only [div_eq_mul_inv] at hu'' hv'' ⊢
   nlinarith
 
 private theorem density_bound {N : ℕ} (hN : 0 < N) {L : ℝ} (hL : 0 < L)
@@ -233,12 +235,16 @@ private theorem density_continuousOn {N : ℕ} (hN : 0 < N) (L : ℝ)
       (Icc (-(N : ℝ) / 4) ((N : ℝ) / 4)) := by
   have hNr : 0 < (N : ℝ) := by exact_mod_cast hN
   have hd : 0 < 3 * (N : ℝ) / 4 := by positivity
-  have hpu := (cauchyHalf_continuousOn hd u hu).comp
+  have hpu : ContinuousOn (fun s : ℝ => cauchyHalf ((N : ℝ) + s) u)
+      (Icc (-(N : ℝ) / 4) ((N : ℝ) / 4)) :=
+    (cauchyHalf_continuousOn hd u hu).comp
     (continuousOn_const.add continuousOn_id) (by
       intro s hs
       change 3 * (N : ℝ) / 4 ≤ (N : ℝ) + s
       linarith [hs.1])
-  have hpv := (cauchyHalf_continuousOn hd v hv).comp
+  have hpv : ContinuousOn (fun s : ℝ => cauchyHalf ((N : ℝ) - s) v)
+      (Icc (-(N : ℝ) / 4) ((N : ℝ) / 4)) :=
+    (cauchyHalf_continuousOn hd v hv).comp
     (continuousOn_const.sub continuousOn_id) (by
       intro s hs
       change 3 * (N : ℝ) / 4 ≤ (N : ℝ) - s

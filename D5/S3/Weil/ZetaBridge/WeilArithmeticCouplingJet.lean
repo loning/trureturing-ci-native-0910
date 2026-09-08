@@ -196,7 +196,7 @@ private theorem pole_abs_le (L w : ℝ) :
   rw [abs_div, abs_mul, abs_mul, abs_of_pos (by norm_num : (0 : ℝ) < 2),
     abs_of_nonneg hc, abs_of_pos hd]
   apply (div_le_iff₀ hd).mpr
-  have h := mul_le_mul_of_nonneg_left hw (mul_nonneg (by norm_num) hc)
+  have h := mul_le_mul_of_nonneg_left hw (mul_nonneg (by norm_num : (0 : ℝ) ≤ 2) hc)
   nlinarith
 
 private theorem prime_abs_le (c : ℕ) (w : ℝ) :
@@ -307,7 +307,7 @@ theorem arithmetic_coupling_first_jet_error {c : ℕ} (hc : 2 ≤ c)
     _ ≤ ∑ n ∈ S, K * ‖v n‖ := Finset.sum_le_sum (fun n hn => by
       rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
       exact mul_le_mul_of_nonneg_right (hab n hn) (norm_nonneg _))
-    _ = _ := by rw [Finset.mul_sum]; rfl
+    _ = _ := by rw [Finset.mul_sum]
 
 #print axioms arithmetic_boundary_symbol_bound
 #print axioms arithmetic_coupling_first_jet_error

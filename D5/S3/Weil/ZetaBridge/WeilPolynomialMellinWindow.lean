@@ -68,7 +68,7 @@ theorem mellin_monomial_polynomial_value (a x : ℝ) (m r : ℕ) :
         ((2 * r : ℕ) : ℂ) * (x : ℂ) + (x : ℂ) / 2 := by ring
     rw [hid, Complex.exp_add]
     ring
-  · simp only [mellinMonomial, indicator_of_not_mem hx]
+  · simp only [mellinMonomial, indicator_of_notMem hx]
 
 private theorem kernel_identity (a x : ℝ) (m r : ℕ) (z : ℂ) :
     mellinMonomial a m r x * Complex.exp (Complex.I * z * (x : ℂ)) =
@@ -90,7 +90,8 @@ private theorem monomial_kernel_integrable (a : ℝ) (m r : ℕ) (z : ℂ) :
   simp_rw [kernel_identity]
   have h : Continuous (fun x : ℝ => (m : ℂ) ^ (2 * r) *
       Complex.exp (mellinRate r z * (x : ℂ))) := by fun_prop
-  exact (h.intervalIntegrable (-a) (a - Real.log (m : ℝ))).1.indicator measurableSet_Ioc
+  exact (integrable_indicator_iff measurableSet_Ioc).mpr
+    (h.intervalIntegrable (μ := volume) (-a) (a - Real.log (m : ℝ))).1
 
 private theorem finite_sum_integrable {ι : Type*} (S : Finset ι)
     (F : ι → ℝ → ℂ) (hF : ∀ i ∈ S, Integrable (F i)) :
@@ -102,7 +103,7 @@ private theorem finite_sum_integrable {ι : Type*} (S : Finset ι)
       have hs : ∀ j ∈ S, Integrable (F j) :=
         fun j hj => hF j (Finset.mem_insert_of_mem hj)
       simpa only [Finset.sum_insert hi] using
-        (hF i (Finset.mem_insert_self i S)).add (ih hs)
+        (hF i (Finset.mem_insert_self i S)).fun_add (ih hs)
 
 private theorem integral_finite_sum {ι : Type*} (S : Finset ι)
     (F : ι → ℝ → ℂ) (hF : ∀ i ∈ S, Integrable (F i)) :
@@ -121,7 +122,7 @@ private theorem rate_ne_zero (r : ℕ) {z : ℂ} (hz : z.im < 1 / 2) :
     mellinRate r z ≠ 0 := by
   have hr : 0 ≤ ((2 * r : ℕ) : ℝ) := Nat.cast_nonneg _
   have he : (mellinRate r z).re = ((2 * r : ℕ) : ℝ) + 1 / 2 - z.im := by
-    norm_num [mellinRate, Complex.mul_re]
+    norm_num [mellinRate, Complex.mul_re, sub_eq_add_neg]
   intro h
   have hh := congrArg Complex.re h
   rw [he, Complex.zero_re] at hh

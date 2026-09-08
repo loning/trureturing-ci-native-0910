@@ -6,6 +6,7 @@
    utility: none
    digest: Bound actual cosine-translation changes by the finite positive Gamma resolvent sum with an explicit harmonic cutoff. -/
 
+import Mathlib.Algebra.BigOperators.Field
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Bounds
 import Mathlib.NumberTheory.Harmonic.Defs
 import Mathlib.Tactic.FieldSimp
@@ -65,7 +66,7 @@ private theorem harmonic_half (J : ℕ) :
     (harmonic J : ℝ) / 2 =
       ∑ j ∈ Finset.range J, 1 / (2 * ((j : ℝ) + 1)) := by
   simp only [harmonic, Rat.cast_sum, Rat.cast_inv, Rat.cast_natCast,
-    Nat.cast_add, Nat.cast_one]
+    Rat.cast_add, Rat.cast_one, Nat.cast_add, Nat.cast_one]
   rw [Finset.sum_div]
   apply Finset.sum_congr rfl
   intro j _
@@ -73,7 +74,7 @@ private theorem harmonic_half (J : ℕ) :
   ring
 
 private theorem harmonic_nonneg (J : ℕ) : 0 ≤ (harmonic J : ℝ) := by
-  simp only [harmonic, Rat.cast_sum, Rat.cast_inv, Rat.cast_natCast,
+  simp only [harmonic, Rat.cast_sum, Rat.cast_inv,
     Nat.cast_add, Nat.cast_one]
   positivity
 
@@ -84,7 +85,7 @@ theorem gamma_shift_partial_high_frequency (J : ℕ) (xi : ℝ)
     (hcut : 2 * (J : ℝ) ≤ |xi|) :
     1 + (harmonic J : ℝ) / 2 ≤ gammaShiftPartial J xi := by
   unfold gammaShiftPartial
-  apply add_le_add_left
+  apply add_le_add_right
   rw [harmonic_half]
   apply Finset.sum_le_sum
   intro j hj
@@ -159,11 +160,11 @@ theorem gamma_log_scale_derivative_term (j : ℕ) (t u : ℝ)
       (5 / 3 : ℝ) * (4 * u * t ^ 2 / ((u ^ 2 + t ^ 2) ^ 2)) := by
   let b : ℝ := 2 * (j : ℝ) + 5 / 2
   have hb : 0 < b := by dsimp [b]; positivity
-  have hu : 0 < u := by linarith [Nat.cast_nonneg (R := ℝ) j]
+  have hu : 0 < u := by linarith [Nat.cast_nonneg (α := ℝ) j]
   have hub : u ≤ b := hhi
   have hratio : 4 * b ≤ (5 / 3 : ℝ) * 4 * u := by
     dsimp [b]
-    linarith [Nat.cast_nonneg (R := ℝ) j]
+    linarith [Nat.cast_nonneg (α := ℝ) j]
   have hs : u ^ 2 ≤ b ^ 2 := (sq_le_sq₀ hu.le hb.le).mpr hub
   have hdu : 0 < (u ^ 2 + t ^ 2) ^ 2 := by positivity
   have hdb : 0 ≤ (b ^ 2 + t ^ 2) ^ 2 := sq_nonneg _

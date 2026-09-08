@@ -40,6 +40,8 @@ noncomputable section
 
 namespace D5.S3.Weil.ZetaBridge.WeilRayleighEnclosureModeCapture
 
+open scoped InnerProductSpace
+
 /-- A two-sided Rayleigh enclosure plus codimension-one coercivity bounds the
 orthogonal mass of a normalized ground eigenvector.  The operator is allowed
 to be unbounded: only its linear domain `D`, its embedding `ι`, and its action
@@ -83,8 +85,9 @@ theorem rayleigh_enclosure_mode_capture
     dsimp [α]
     ring
   have residualInnerGround : ⟪ι v, ι u⟫_ℝ = ‖ι v‖ ^ 2 := by
+    have orthogonal' : ⟪ι v, ι k⟫_ℝ = 0 := inner_eq_zero_symm.mp orthogonal
     rw [imageDecomposition, inner_add_right, real_inner_smul_right,
-      real_inner_comm (ι v) (ι k), orthogonal, mul_zero, zero_add,
+      orthogonal', mul_zero, zero_add,
       real_inner_self_eq_norm_sq]
   have symmetricCross : ⟪ι k, A v⟫_ℝ = ⟪ι v, A k⟫_ℝ := by
     calc

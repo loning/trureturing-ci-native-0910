@@ -152,8 +152,8 @@ private theorem window_eq_raw_of_lower (a : ℝ) (M : ℕ) (h : ℝ → ℂ)
       ∑ m ∈ Finset.Icc 1 M, h ((m : ℝ) * Real.exp x) := by
   classical
   by_cases hu : x ≤ a
-  · exact Set.indicator_of_mem ⟨hx, hu⟩ _
-  · rw [windowMellinSum, Set.indicator_of_not_mem (fun hh => hu hh.2),
+  · exact Set.indicator_of_mem (show x ∈ Set.Icc (-a) a from ⟨hx, hu⟩) _
+  · rw [windowMellinSum, Set.indicator_of_notMem (fun hh => hu hh.2),
       raw_above_window a M h hs (lt_of_not_ge hu)]
     simp
 
@@ -190,7 +190,7 @@ private theorem polynomial_seed_summand (a x : ℝ) (d : ℕ) (A : ℕ → ℂ)
     symm
     apply Finset.sum_eq_zero
     intro r hr
-    rw [mellinMonomial, Set.indicator_of_not_mem hmem, mul_zero]
+    rw [mellinMonomial, Set.indicator_of_notMem hmem, mul_zero]
 
 /-- Agreement with the previously defined polynomial arithmetic model.
 The sole excluded endpoint is the earlier Ioc convention's lower endpoint;
@@ -213,8 +213,9 @@ theorem polynomial_window_agreement (a : ℝ) (M d : ℕ) (A : ℕ → ℂ)
       · exact False.elim (hx h)
     have hn : x ∉ Set.Icc (-a) a := fun h => (not_le.mpr hlt) h.1
     have hz (m r : ℕ) : mellinMonomial a m r x = 0 := by
-      exact Set.indicator_of_not_mem (fun h => (not_lt.mpr (le_of_lt hlt)) h.1) _
-    simp only [windowMellinSum, Set.indicator_of_not_mem hn,
+      apply Set.indicator_of_notMem
+      exact fun h => (not_lt.mpr (le_of_lt hlt)) h.1
+    simp only [windowMellinSum, Set.indicator_of_notMem hn,
       polynomialMellinWindow, hz, mul_zero, Finset.sum_const_zero]
 
 private theorem shifted_half_density (x : ℝ) {n : ℕ} (hn : 0 < n) :
@@ -262,7 +263,7 @@ theorem prime_forward_mellin_identity (a : ℝ) (M : ℕ) (h : ℝ → ℂ)
       have hnR : (0 : ℝ) < (n : ℝ) := by exact_mod_cast (Finset.mem_Icc.mp hn).1
       have hn1 : (1 : ℝ) ≤ (n : ℝ) := by exact_mod_cast (Finset.mem_Icc.mp hn).1
       have hlog := Real.log_nonneg hn1
-      rw [window_eq_raw_of_lower a M h hs (by linarith : -a ≤ x + Real.log (n : ℝ)),
+      rw [window_eq_raw_of_lower a M h hs (by linarith [hx.1] : -a ≤ x + Real.log (n : ℝ)),
         ← mul_assoc, shifted_half_density x (Finset.mem_Icc.mp hn).1,
         mul_assoc, Finset.mul_sum]
       apply congrArg (fun s : ℂ => 4 * (Real.exp (x / 2) : ℂ) * s)

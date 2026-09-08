@@ -76,7 +76,8 @@ private theorem scalar_green_completion
   have hd : E ^ 2 - (E⁻¹) ^ 2 ≠ 0 := by
     rw [hdid]
     exact ne_of_gt (div_pos (mul_pos hs hp) (pow_pos hEp 2))
-  field_simp [hE0, hu, hv, hd, ne_of_gt hs, ne_of_gt hp]
+  rw [hdid]
+  field_simp [hE0, hu, hv, ne_of_gt hs, ne_of_gt hp]
   <;> ring
 
 /-- The independently specified two Green kernels differ by an explicit
@@ -130,7 +131,7 @@ private theorem finite_rank_one_energy
     _ = (∑ i ∈ S, (v i * h i) * (∑ j ∈ S, v j * h j)) * D⁻¹ := by
       simp only [Finset.sum_mul, Finset.mul_sum]
     _ = ((∑ i ∈ S, v i * h i) * (∑ j ∈ S, v j * h j)) * D⁻¹ := by
-      rw [Finset.sum_mul]
+      simp only [Finset.sum_mul]
     _ = _ := by ring
 
 /-- Full finite quadratic identity. Both boundary directions remain present;

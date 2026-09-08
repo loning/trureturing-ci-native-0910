@@ -150,7 +150,6 @@ theorem arithmetic_coupling_second_jet_error
         exact mul_le_mul_of_nonneg_right (hab n hn) (norm_nonneg _))
     _ = _ := by
       rw [Finset.mul_sum]
-      rfl
 
 #print axioms arithmetic_coupling_second_jet_error
 

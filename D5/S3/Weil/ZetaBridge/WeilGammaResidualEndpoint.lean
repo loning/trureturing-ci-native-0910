@@ -70,7 +70,9 @@ private theorem primitive_derivative (A B x : ℝ) :
   have he := (((hasDerivAt_id x).neg).exp).neg
   have hl := ((hasDerivAt_id x).const_mul B).const_add A
   have hp := ((hl.pow 2).add (hl.const_mul (2 * B))).add_const (2 * B ^ 2)
-  convert he.mul hp using 1 <;> dsimp [primitive] <;> ring
+  convert! he.mul hp using 1
+  simp
+  ring
 
 private theorem primitive_limit (A B : ℝ) :
     Tendsto (primitive A B) atTop (𝓝 0) := by

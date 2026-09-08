@@ -123,7 +123,7 @@ private theorem term_norm_le {N : ℕ} (hN : 0 < N)
     calc
       _ = 1 / ‖(n : ℂ) ^ 2 - w ^ 2‖ := by rw [norm_inv, one_div]
       _ ≤ 1 / ((3 / 4 : ℝ) * n ^ 2) := one_div_le_one_div_of_le hsmall hden
-      _ = _ := by field_simp [hn.ne']; ring
+      _ = _ := by field_simp [hn.ne']
   change ‖v j / ((n : ℂ) ^ 2 - w ^ 2)‖ ≤ ‖v j‖ * (4 / (3 * n ^ 2))
   rw [div_eq_mul_inv, norm_mul]
   exact mul_le_mul_of_nonneg_left hinv (norm_nonneg _)
