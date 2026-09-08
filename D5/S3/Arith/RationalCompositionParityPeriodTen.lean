@@ -341,7 +341,7 @@ theorem even_at_odd_index_iff_of_generating_function (b : ℕ → ℤ)
 def Bf (y : RatFunc ℚ) : RatFunc ℚ := y / (1 - y) ^ 2
 
 /-- Formula (2) is unconditionally the third iterate of `Bf` in `ℚ(x)`. -/
-theorem triple_B_eq_formula_two :
+private theorem triple_B_eq_formula_two :
     Bf (Bf (Bf RatFunc.X)) =
       (RatFunc.X * (1 - RatFunc.X) ^ 2 *
           (1 - 3 * RatFunc.X + RatFunc.X ^ 2) ^ 2) /

@@ -229,24 +229,11 @@ internal sealed class RationalCompositionParityPeriodTenDocument : IScribeDocume
                         + "Here Bf is that total field operation on Q(x). Thus Bf(y) is defined "
                         + "for every rational function y, including when 1-y is zero."))),
                 DescribeRole.Definition),
-            Describe.Lean(
-                DescribeId.Create("a396093-triple-composition"),
-                DeclarationHandle.Create(Prefix + "triple_B_eq_formula_two"),
-                H("Formula (2) is the third iterate of B"),
-                StatementSource.FromAuthor(TripleCompositionFormula()),
-                AssessedProvenance.FromRepo(),
-                Blocks(Paragraph(Text(
-                    "Proof: the proof establishes the required nonzero denominator "
-                        + "facts before field normalization. This unconditional identity is in "
-                        + "Q(x), so no pointwise non-pole hypotheses occur. Substituting "
-                        + "Bf(y)=y/(1-y)^2 through three iterations yields the factored numerator "
-                        + "and squared quartic denominator of formula (2)."))),
-                DescribeRole.Theorem),
             Paragraph(Text(
                 "The sequence a is defined by the order-eight recurrence with its eight initial "
                     + "values; Theorem generating_function identifies it with the coefficient "
                     + "sequence of formula (2), Theorem coefficients_unique shows formula (2) "
-                    + "determines it, and Theorem triple_B_eq_formula_two identifies formula (2) "
+                    + "determines it, and direct rational-function normalization identifies formula (2) "
                     + "with B(B(B(x))) in Q(x). The three together tie a to the OEIS definition.")))));
 
     private static Formula NDefinitionFormula()
@@ -495,13 +482,6 @@ internal sealed class RationalCompositionParityPeriodTenDocument : IScribeDocume
         Formula y = F.Id("y");
         return Disp(ForAll("y", RationalFunctions(), Equal(Call("Bf", y),
             new Formula.Fraction(y, Power(Parenthesized(Subtract(D(1), y)), 2)))));
-    }
-
-    private static Formula TripleCompositionFormula()
-    {
-        Formula x = F.Id("x");
-        return Disp(Equal(Call("Bf", Call("Bf", Call("Bf", x))),
-            new Formula.Fraction(NumeratorFactored(x), DenominatorSquared(x))));
     }
 
     private static Formula SeriesOf(string sequence)
