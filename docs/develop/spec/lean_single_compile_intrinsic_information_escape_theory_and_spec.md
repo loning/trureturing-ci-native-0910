@@ -4894,17 +4894,21 @@ DAG path。
 `escapeAt`／`edgeCapture` 的 executable bodies 还必须分别安装
 `letI := arena.stateFintype; letI := arena.stateDecidableEq`；上面的 signatures 已显式保留该要求。
 
-当前 dev `1a71fc8751` 的 census consumer 以真实 `StatementKey` 构造 `AnalysisDisposition`，
-由 `DispositionInventory` 承载；现役形态见第 23.6 节。
+当前 census consumer 以真实 `StatementKey` 构造 `CensusAssessment`，由
+`DispositionInventory` 承载；声明见 `tools/lean-inspector/LeanInformationAudit/AnalysisDisposition.lean`，
+现役形态见第 23.6 节。
 
 `UnreachableReason`、`StatementKey`、`FiniteOccurrenceDisposition`、
 `StructuralOccurrenceDisposition`、`TruncationCertification` 与
 `BoundedFiniteTruncationDisposition` 是现役声明，只采用第 23.6 节的 current API 定义；
 不另立 enum、String-indexed sketch 或第二组 payload 类型。
 
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕`ClosedReasonEvidence`、携带该证据的 `UnreachableDisposition` 与相应的 `AnalysisDisposition`、
-`CensusAssessment` 与 `AnalysisObservation` 只采用第 23.6 节的 J2 API 定义。census consumer 必须以 frozen
-elaborated truth export 的真实 `StatementKey` 构造 assessment。
+`UnreachableDisposition.evidence : Name` 指向 `UnreachableElaborationEvidence` 与其具名
+failed obligation；证据语义见 `tools/lean-inspector/LeanInformationAudit/DispositionEvidence.lean`。
+`UnreachableDisposition`、`AnalysisDisposition`、`CensusAssessment` 与 `AnalysisObservation`
+只采用 `tools/lean-inspector/LeanInformationAudit/AnalysisDisposition.lean` 的声明，第 23.6 节列出
+其 API。census consumer 必须以 frozen elaborated truth export 的真实 `StatementKey` 构造 assessment。
+（J2 落地形态,2026-09-08:保留 `evidence : Name`，没有 S0 sketch 的 dependent `ClosedReasonEvidence key reason` 类型。）
 
 ---
 
