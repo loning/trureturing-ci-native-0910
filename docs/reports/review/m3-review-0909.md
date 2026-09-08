@@ -121,9 +121,23 @@ an unavailable capability, not evidence against the theorem. This finite
 search does not prove that no other bind-only proof exists. Q2 must still
 assess the claimed new certificate and its live use independently.
 
-## Q2-Q6
+## Q2: Escape Witness Four Tests (In Progress)
 
-Q1 complete; Q2-Q6 pending. No final verdict is claimed at this checkpoint.
+Run 0 command: `/usr/bin/time -l make -f Makefile -f "$ATTEMPT/review.mk"
+review-stdin PROBE="$ATTEMPT/q2-dependencies.txt" > "$ATTEMPT/q2-dependencies.log" 2>&1`.
+EXIT=2, 52.59 real seconds. The compiler-semantic traversal completed and emitted
+`REVIEW_DEPENDENCIES` from `ConstantInfo.value? (allowOpaque := true)` and
+`Expr.getUsedConstants`, before/after `Meta.zetaReduce`, head beta reduction,
+constructor projection, and `And.left`/`And.right` on `And.intro`.
+The actual certificate and frozen-factorization references survived.
+The subsequent synthetic dead-conjunct control failed with `missing control
+value`: the review probe omitted `allowOpaque := true` in that control's
+theorem-value lookup. This is a reviewer tooling error, not a source failure.
+The control must be corrected and rerun before claiming the completed test.
+
+## Q3-Q6
+
+Q1 complete; Q2 in progress; Q3-Q6 pending. No final verdict at this checkpoint.
 
 ## Publication
 
