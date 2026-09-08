@@ -6,9 +6,9 @@ Positive scaled row certificates retain individual energy weights and explicit p
 
 **Theorem 1.1 (A positive scaling controls every mixed coefficient).**
 
-Lean statement: `D5/S3/Weil/ZetaLinear/ScaledComplexQuadraticRowBound.norm_complex_quadratic_le_scaled_rows`
+Lean statement: `D5/S3/Weil/ProjectiveRayleigh/ScaledComplexQuadraticRowBound.norm_complex_quadratic_le_scaled_rows`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaLinear/ScaledComplexQuadraticRowBound.norm_complex_quadratic_le_scaled_rows` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/ProjectiveRayleigh/ScaledComplexQuadraticRowBound.norm_complex_quadratic_le_scaled_rows` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -18,9 +18,9 @@ Let p be positive and let the complex matrix have symmetric entry norms. A row b
 
 **Theorem 1.2 (Absolutely convergent matrix coefficients).**
 
-Lean statement: `D5/S3/Weil/ZetaLinear/ScaledComplexQuadraticRowBound.norm_series_quadratic_le_scaled_rows`
+Lean statement: `D5/S3/Weil/ProjectiveRayleigh/ScaledComplexQuadraticRowBound.norm_series_quadratic_le_scaled_rows`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaLinear/ScaledComplexQuadraticRowBound.norm_series_quadratic_le_scaled_rows` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/ProjectiveRayleigh/ScaledComplexQuadraticRowBound.norm_series_quadratic_le_scaled_rows` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -30,9 +30,9 @@ Each coefficient series is absolutely summable. Its norm is bounded by the sum o
 
 **Theorem 1.3 (A fixed envelope gives geometric coefficient-uniform decay).**
 
-Lean statement: `D5/S3/Weil/ZetaLinear/ScaledComplexQuadraticRowBound.geometric_matrix_envelope_bound`
+Lean statement: `D5/S3/Weil/ProjectiveRayleigh/ScaledComplexQuadraticRowBound.geometric_matrix_envelope_bound`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaLinear/ScaledComplexQuadraticRowBound.geometric_matrix_envelope_bound` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/ProjectiveRayleigh/ScaledComplexQuadraticRowBound.geometric_matrix_envelope_bound` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -42,9 +42,9 @@ A fixed real envelope and a positive scaled row witness give a geometric error c
 
 **Theorem 1.4 (Retain the remaining coercive margin).**
 
-Lean statement: `D5/S3/Weil/ZetaLinear/ScaledComplexQuadraticRowBound.scaled_rows_robust_coercive_bound`
+Lean statement: `D5/S3/Weil/ProjectiveRayleigh/ScaledComplexQuadraticRowBound.scaled_rows_robust_coercive_bound`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaLinear/ScaledComplexQuadraticRowBound.scaled_rows_robust_coercive_bound` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/ProjectiveRayleigh/ScaledComplexQuadraticRowBound.scaled_rows_robust_coercive_bound` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -54,9 +54,9 @@ The matrix error consumes eta units of weighted energy. An independently bounded
 
 **Theorem 1.5 (Strict negativity with independent perturbations).**
 
-Lean statement: `D5/S3/Weil/ZetaLinear/ScaledComplexQuadraticRowBound.scaled_rows_robust_strict_negativity`
+Lean statement: `D5/S3/Weil/ProjectiveRayleigh/ScaledComplexQuadraticRowBound.scaled_rows_robust_strict_negativity`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaLinear/ScaledComplexQuadraticRowBound.scaled_rows_robust_strict_negativity` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/ProjectiveRayleigh/ScaledComplexQuadraticRowBound.scaled_rows_robust_strict_negativity` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -66,9 +66,9 @@ Positive energy weights and a nonzero coefficient vector make the weighted energ
 
 **Theorem 1.6 (The exact two-channel threshold).**
 
-Lean statement: `D5/S3/Weil/ZetaLinear/ScaledComplexQuadraticRowBound.two_channel_scaling_iff`
+Lean statement: `D5/S3/Weil/ProjectiveRayleigh/ScaledComplexQuadraticRowBound.two_channel_scaling_iff`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaLinear/ScaledComplexQuadraticRowBound.two_channel_scaling_iff` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/ProjectiveRayleigh/ScaledComplexQuadraticRowBound.two_channel_scaling_iff` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -78,9 +78,9 @@ For positive coupling r and positive second diagonal budget d1, a positive ratio
 
 **Theorem 1.7 (An exact case where scaling enlarges the certificate domain).**
 
-Lean statement: `D5/S3/Weil/ZetaLinear/ScaledComplexQuadraticRowBound.two_channel_scaled_regression`
+Lean statement: `D5/S3/Weil/ProjectiveRayleigh/ScaledComplexQuadraticRowBound.two_channel_scaled_regression`
 
-*Proof.* Machine-checked in Lean as `D5/S3/Weil/ZetaLinear/ScaledComplexQuadraticRowBound.two_channel_scaled_regression` (`✓ std3`). ∎
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/ProjectiveRayleigh/ScaledComplexQuadraticRowBound.two_channel_scaled_regression` (`✓ std3`). ∎
 
 *Source.* Repository-derived.
 
@@ -92,11 +92,11 @@ These are classical Schur-test techniques adapted to the repository's mixed-form
 
 ## References
 
-- Truth anchor: `D5/S3/Weil/ZetaLinear/ScaledComplexQuadraticRowBound.geometric_matrix_envelope_bound`
-- Truth anchor: `D5/S3/Weil/ZetaLinear/ScaledComplexQuadraticRowBound.norm_complex_quadratic_le_scaled_rows`
-- Truth anchor: `D5/S3/Weil/ZetaLinear/ScaledComplexQuadraticRowBound.norm_series_quadratic_le_scaled_rows`
-- Truth anchor: `D5/S3/Weil/ZetaLinear/ScaledComplexQuadraticRowBound.scaled_rows_robust_coercive_bound`
-- Truth anchor: `D5/S3/Weil/ZetaLinear/ScaledComplexQuadraticRowBound.scaled_rows_robust_strict_negativity`
-- Truth anchor: `D5/S3/Weil/ZetaLinear/ScaledComplexQuadraticRowBound.two_channel_scaled_regression`
-- Truth anchor: `D5/S3/Weil/ZetaLinear/ScaledComplexQuadraticRowBound.two_channel_scaling_iff`
-- Dependency: [D5/S3/Weil/ZetaLinear/ComplexQuadraticRowBound](ComplexQuadraticRowBound.md)
+- Truth anchor: `D5/S3/Weil/ProjectiveRayleigh/ScaledComplexQuadraticRowBound.geometric_matrix_envelope_bound`
+- Truth anchor: `D5/S3/Weil/ProjectiveRayleigh/ScaledComplexQuadraticRowBound.norm_complex_quadratic_le_scaled_rows`
+- Truth anchor: `D5/S3/Weil/ProjectiveRayleigh/ScaledComplexQuadraticRowBound.norm_series_quadratic_le_scaled_rows`
+- Truth anchor: `D5/S3/Weil/ProjectiveRayleigh/ScaledComplexQuadraticRowBound.scaled_rows_robust_coercive_bound`
+- Truth anchor: `D5/S3/Weil/ProjectiveRayleigh/ScaledComplexQuadraticRowBound.scaled_rows_robust_strict_negativity`
+- Truth anchor: `D5/S3/Weil/ProjectiveRayleigh/ScaledComplexQuadraticRowBound.two_channel_scaled_regression`
+- Truth anchor: `D5/S3/Weil/ProjectiveRayleigh/ScaledComplexQuadraticRowBound.two_channel_scaling_iff`
+- Dependency: [D5/S3/Weil/ProjectiveRayleigh/ComplexQuadraticRowBound](ComplexQuadraticRowBound.md)
