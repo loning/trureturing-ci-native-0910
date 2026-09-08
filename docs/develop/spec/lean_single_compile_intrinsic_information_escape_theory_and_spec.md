@@ -4988,17 +4988,20 @@ InformationEscape finite engine
 24. 对每个 maximal catalog 构造 generated-kernel extensional quotient，并认证所有输出 nodes 的 relation equality；
 25. 只把 endpoints 均已 materialize 的 certified strict generator transitions 写作 edges，包含全部 schedule／requested transitions；complete lattice 时才要求 full-DAG array；每边的 `is_cover` 相对 full lattice 认证；equal-kernel additions 完整写入 `collapsed_additions`；
 26. `kernel_projection` 至少覆盖 $K_\varnothing$、$K_I$、全部 $K_{I\setminus\{i\}}$、全部 certified-schedule nodes 与显式请求 nodes，但永不因投影要求枚举完整 $2^m$ subsets；
-27. 〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕report-only census 中每个 frozen theorem key 恰有一个 `CensusAssessment`；只有 certified 分支的 finite、structural、truncation、unreachable payload 按其 constructor 验证后算已分类；记账与认证完备按第 8.7、23.6 节分开；
+27. report-only census 中每个 frozen theorem key 恰有一个 `CensusAssessment`；只有 certified 分支的 finite、structural、truncation、unreachable payload 按其 constructor 验证后算已分类；记账与认证完备按第 8.7、23.6 节分开；声明与语义检查见 `tools/lean-inspector/LeanInformationAudit/AnalysisDisposition.lean`、`tools/lean-inspector/LeanInformationAudit/DispositionEvidence.lean`；
 28. structural occurrence 必须有 strict inclusion proof 与 pair witness；bounded truncation 无 transfer theorem 时只能写 `report-only`；
-29. 〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕report-only census keys 与完整 frozen theorem keys 完全相等，重复、缺失、stale identity、未完成的 query scope 与伪造 class 均 fail closed；observed 永不计入 AC-023，也不能充作 unreachable；
+29. report-only census keys 与完整 frozen theorem keys 完全相等，重复、缺失、stale identity、未完成的 query scope 与伪造 class 均 fail closed；observed 永不计入 AC-023，也不能充作 unreachable；检查见 `tools/lean-inspector/LeanInformationAudit/DispositionCensus.lean`、`tools/lean-inspector/LeanInformationAudit/DispositionEvidence.lean`、`tools/lean-inspector/LeanInformationAudit/CensusSchema.lean`；
 30. `kernel_projection`、ASCII layout、node ID、hash、timing 与 heuristic schedule order 均为单向 projection，任何 admission consumer 读取它们都失败；
 31. catalog `proof_method` 必须报告实际执行的 direct／fused／partition／reflected route，不能以目标路线或 display label 代替真实 proof construction（工程优化规范 v1 §8）。
 
-当前 census 对 `DispositionInventory` 检查 exactly-one disposition、完整 frozen keys、重复、
-缺失、stale identity 与 constructor payload；这些检查由 census 命令执行。
+当前 census 对 `DispositionInventory` 检查 exactly-one assessment、完整 frozen keys、重复、
+缺失、stale identity 与 constructor payload；命令见
+`tools/lean-inspector/LeanInformationAudit/DispositionCensus.lean`。
 
-〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕第 27、29 项是 census 自身的报告校验义务，不是 `#seal_information_theory` 的输入或成功前提；
+第 27、29 项是 census 自身的报告校验义务，不是 `#seal_information_theory` 的输入或成功前提；
 记账完备、认证完备及 census artifact 均不得接为 required gate。其余 seal 证书义务保持有效。
+census 与 seal 命令分别见 `tools/lean-inspector/LeanInformationAudit/DispositionCensus.lean`、
+`tools/lean-inspector/LeanInformationAudit/SealCommand.lean`。
 
 ---
 
