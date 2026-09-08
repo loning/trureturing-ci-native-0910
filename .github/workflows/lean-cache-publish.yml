@@ -77,10 +77,17 @@ jobs:
       - run: sudo apt-get install --yes strace
       - run: strace --version
       - run: ps -eo pid,ppid,pgid,sid,comm
+      - name: Verify signal tracing and timeout failure
+        run: |
+          set +e
+          timeout --kill-after=5s 1s strace -qq -I 3 --seccomp-bpf -f -ttt -e trace=kill,tgkill,tkill,pidfd_send_signal -e signal=SIGTERM,SIGINT,SIGHUP sleep 30
+          trace_status=$?
+          set -e
+          test "$trace_status" -eq 124
       - name: Trace signal senders during current
         env:
           GH_TOKEN: ${{ github.token }}
-        run: strace --seccomp-bpf -f -ttt -e trace=kill,tgkill,tkill,pidfd_send_signal -e signal=SIGTERM,SIGINT,SIGHUP make current
+        run: strace -qq -I 3 --seccomp-bpf -f -ttt -e trace=kill,tgkill,tkill,pidfd_send_signal -e signal=SIGTERM,SIGINT,SIGHUP make current
       - if: always()
         run: python3 tools/scripts/workflow/ci.py summary --repository "$GITHUB_WORKSPACE" --stage current
       - if: always()
