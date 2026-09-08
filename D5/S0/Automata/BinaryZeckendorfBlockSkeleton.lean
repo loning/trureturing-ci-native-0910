@@ -22,14 +22,22 @@ Zeckendorf validity automaton. -/
 inductive ReturnBlock
   | zero
   | oneZero
-  deriving DecidableEq, Fintype, Repr
+  deriving DecidableEq, Repr
+
+instance : Fintype ReturnBlock where
+  elems := {ReturnBlock.zero, ReturnBlock.oneZero}
+  complete := by intro block; cases block <;> simp
 
 /-- A legal word either returns to the recurrent base state or ends with one
 final `1` in the transient base state. -/
 inductive TerminalChannel
   | recurrent
   | transient
-  deriving DecidableEq, Fintype, Repr
+  deriving DecidableEq, Repr
+
+instance : Fintype TerminalChannel where
+  elems := {TerminalChannel.recurrent, TerminalChannel.transient}
+  complete := by intro terminal; cases terminal <;> simp
 
 /-- A word over the return-block alphabet together with its terminal channel. -/
 structure BlockCode where
@@ -74,8 +82,16 @@ def decode : List (Fin 2) → Option BlockCode
   | nil =>
       cases terminal <;> simp [expandCode, expand, decode]
   | cons block blocks inductionHypothesis =>
-      cases block <;>
-        simp [expandCode, expand, decode, inductionHypothesis]
+      change decode (expand blocks terminal) = some ⟨blocks, terminal⟩ at inductionHypothesis
+      have mapped := congrArg
+        (Option.map fun code => { code with blocks := block :: code.blocks })
+        inductionHypothesis
+      cases block with
+      | zero =>
+          cases hrest : expand blocks terminal <;>
+            simpa [expandCode, expand, hrest, decode] using mapped
+      | oneZero =>
+          simpa [expandCode, expand, decode] using mapped
 
 /-- The first-return expansion is injective. -/
 theorem expandCode_injective : Function.Injective expandCode := by
@@ -135,7 +151,7 @@ theorem binaryBase_evalFrom_expand
 theorem binaryBase_eval_expandCode (code : BlockCode) :
     binaryZeckendorfBase.eval (expandCode code) =
       some (terminalBaseState code.terminal) := by
-  simpa [PartialDFA.eval, expandCode] using
+  simpa [PartialDFA.eval, expandCode, binaryZeckendorfBase] using
     binaryBase_evalFrom_expand code.blocks code.terminal
 
 section Machine
@@ -163,7 +179,7 @@ def zeroSuccessor (state : ZeroFiber machine) : Option (ZeroFiber machine) :=
   | some next =>
       some ⟨next, by
         have typed := machine.step_type hstep
-        simpa [binaryZeckendorfBase, state.2] using typed⟩
+        simpa [binaryZeckendorfBase, state.2] using typed.symm⟩
 
 /-- A one transition from the recurrent fiber, bundled with its forced target
 type. -/
@@ -173,7 +189,7 @@ def oneSuccessor (state : ZeroFiber machine) : Option (OneFiber machine) :=
   | some next =>
       some ⟨next, by
         have typed := machine.step_type hstep
-        simpa [binaryZeckendorfBase, state.2] using typed⟩
+        simpa [binaryZeckendorfBase, state.2] using typed.symm⟩
 
 /-- The only legal nonempty transition from the transient fiber returns on
 zero to the recurrent fiber. -/
@@ -183,28 +199,25 @@ def returnSuccessor (state : OneFiber machine) : Option (ZeroFiber machine) :=
   | some next =>
       some ⟨next, by
         have typed := machine.step_type hstep
-        simpa [binaryZeckendorfBase, state.2] using typed⟩
+        simpa [binaryZeckendorfBase, state.2] using typed.symm⟩
 
 @[simp] theorem zeroSuccessor_map_val (state : ZeroFiber machine) :
     (zeroSuccessor machine state).map Subtype.val =
       machine.step state.1 0 := by
-  cases hstep : machine.step state.1 0 with
-  | none => simp [zeroSuccessor, hstep]
-  | some next => simp [zeroSuccessor, hstep]
+  unfold zeroSuccessor
+  split <;> simp_all
 
 @[simp] theorem oneSuccessor_map_val (state : ZeroFiber machine) :
     (oneSuccessor machine state).map Subtype.val =
       machine.step state.1 1 := by
-  cases hstep : machine.step state.1 1 with
-  | none => simp [oneSuccessor, hstep]
-  | some next => simp [oneSuccessor, hstep]
+  unfold oneSuccessor
+  split <;> simp_all
 
 @[simp] theorem returnSuccessor_map_val (state : OneFiber machine) :
     (returnSuccessor machine state).map Subtype.val =
       machine.step state.1 0 := by
-  cases hstep : machine.step state.1 0 with
-  | none => simp [returnSuccessor, hstep]
-  | some next => simp [returnSuccessor, hstep]
+  unfold returnSuccessor
+  split <;> simp_all
 
 /-- Input one is illegal from every state of the transient fiber. -/
 theorem oneFiber_step_one_none (state : OneFiber machine) :
@@ -256,9 +269,8 @@ theorem same_oneSignature_evalFromState
               returnSuccessor_map_val machine right
         simp [evalFromState, TypedPartialDFAO.runFrom, runTransition,
           stepEqual]
-      · rw [oneFiber_step_one_none machine left,
-          oneFiber_step_one_none machine right]
-        rfl
+      · simp [evalFromState, TypedPartialDFAO.runFrom, runTransition,
+          oneFiber_step_one_none machine left, oneFiber_step_one_none machine right]
 
 /-- A missing requested signature is equivalent to a missing one transition. -/
 theorem zeroOneSignature_eq_none_iff (state : ZeroFiber machine) :
@@ -274,7 +286,8 @@ theorem zeroOneSignature_eq_none_iff (state : ZeroFiber machine) :
     | some successor =>
         simp [hsuccessor] at signatureNone
   · intro stepNone
-    simp [zeroOneSignature, oneSuccessor, stepNone]
+    unfold zeroOneSignature oneSuccessor
+    split <;> simp_all
 
 /-- A requested signature is witnessed by an actual transient successor. -/
 theorem zeroOneSignature_eq_some_iff
@@ -299,7 +312,8 @@ theorem zeroOneSignature_eq_some_iff
           simpa [hsuccessor] using signatureEqual
         exact ⟨successor, stepEqual, valueEqual⟩
   · rintro ⟨successor, stepEqual, valueEqual⟩
-    simpa [zeroOneSignature, oneSuccessor, stepEqual, valueEqual]
+    unfold zeroOneSignature oneSuccessor
+    split <;> simp_all
 
 end Machine
 
@@ -501,15 +515,20 @@ theorem canonicalStep_type
   rcases state with state | signature
   · fin_cases digit
     · cases hstep : skeleton.zeroStep state <;>
-        simp [canonicalStep, canonicalStateType, binaryZeckendorfBase,
-          hstep] at defined ⊢
-    · cases hsignature : skeleton.oneSignature state <;>
-        simp [canonicalStep, canonicalStateType, binaryZeckendorfBase,
-          hsignature] at defined ⊢
+        simp_all [canonicalStep, canonicalStateType, binaryZeckendorfBase]
+      subst next
+      rfl
+    · dsimp only [canonicalStep] at defined
+      split at defined
+      · contradiction
+      · split at defined <;> simp_all [canonicalStateType, binaryZeckendorfBase]
+        subst next
+        rfl
   · fin_cases digit
     · cases hreturn : signature.1.2 <;>
-        simp [canonicalStep, canonicalStateType, binaryZeckendorfBase,
-          hreturn] at defined ⊢
+        simp_all [canonicalStep, canonicalStateType, binaryZeckendorfBase]
+      subst next
+      rfl
     · simp [canonicalStep] at defined
 
 /-- Canonical typed partial DFAO reconstructed from a skeleton. -/
@@ -520,7 +539,7 @@ def canonicalMachine :
   step := canonicalStep skeleton
   output := canonicalOutput skeleton
   start_type := rfl
-  step_type := canonicalStep_type skeleton
+  step_type := fun {_ _ _} defined => canonicalStep_type skeleton defined
 
 /-- Canonical-machine evaluation agrees with skeleton evaluation from every
 recurrent state. -/
@@ -530,25 +549,50 @@ theorem eval_canonicalMachine_expand
     evalFromState (canonicalMachine skeleton) (.inl state)
         (expand blocks terminal) =
       skeleton.evalFrom state blocks terminal := by
+  have stepOneNone (source : ZeroState)
+      (missing : skeleton.oneSignature source = none) :
+      canonicalStep skeleton (.inl source) 1 = none := by
+    dsimp only [canonicalStep]
+    split
+    · contradiction
+    · split <;> simp_all
+  have stepOneSome (source : ZeroState) (signature : Output × Option ZeroState)
+      (present : skeleton.oneSignature source = some signature) :
+      canonicalStep skeleton (.inl source) 1 =
+        some (.inr ⟨signature, ⟨source, present⟩⟩) := by
+    dsimp only [canonicalStep]
+    split
+    · contradiction
+    · split
+      · simp_all
+      · rename_i chosen hchosen
+        have chosenEqual := Option.some.inj (hchosen.symm.trans present)
+        subst chosen
+        rfl
   induction blocks generalizing state with
   | nil =>
       cases terminal with
       | recurrent =>
           simp [evalFromState, Skeleton.evalFrom, expand, canonicalMachine,
-            canonicalStep, canonicalOutput, TypedPartialDFAO.runFrom,
+            canonicalOutput, TypedPartialDFAO.runFrom,
             runTransition]
       | transient =>
-          cases hsignature : skeleton.oneSignature state <;>
-            simp [evalFromState, Skeleton.evalFrom, expand, canonicalMachine,
-              canonicalStep, canonicalOutput, TypedPartialDFAO.runFrom,
-              runTransition, hsignature]
+          cases hsignature : skeleton.oneSignature state with
+          | none =>
+              simp [evalFromState, Skeleton.evalFrom, expand, canonicalMachine,
+                TypedPartialDFAO.runFrom, runTransition,
+                hsignature, stepOneNone state hsignature]
+          | some signature =>
+              simp [evalFromState, Skeleton.evalFrom, expand, canonicalMachine,
+                canonicalOutput, TypedPartialDFAO.runFrom, runTransition,
+                hsignature, stepOneSome state signature hsignature]
   | cons block blocks inductionHypothesis =>
       cases block with
       | zero =>
           cases hnext : skeleton.zeroStep state with
           | none =>
               simp [evalFromState, Skeleton.evalFrom, expand,
-                canonicalMachine, canonicalStep, canonicalOutput,
+                canonicalMachine, canonicalStep,
                 TypedPartialDFAO.runFrom, runTransition, hnext]
           | some next =>
               simpa [evalFromState, Skeleton.evalFrom, expand,
@@ -559,20 +603,25 @@ theorem eval_canonicalMachine_expand
           cases hsignature : skeleton.oneSignature state with
           | none =>
               simp [evalFromState, Skeleton.evalFrom, expand,
-                canonicalMachine, canonicalStep, canonicalOutput,
-                TypedPartialDFAO.runFrom, runTransition, hsignature]
+                canonicalMachine,
+                TypedPartialDFAO.runFrom, runTransition, hsignature,
+                stepOneNone state hsignature]
           | some signature =>
               cases hreturn : signature.2 with
               | none =>
-                  simp [evalFromState, Skeleton.evalFrom, expand,
-                    canonicalMachine, canonicalStep, canonicalOutput,
-                    TypedPartialDFAO.runFrom, runTransition, hsignature,
-                    hreturn]
+                  simp only [evalFromState, expand, canonicalMachine,
+                    TypedPartialDFAO.runFrom, runTransition,
+                    stepOneSome state signature hsignature]
+                  simp [Skeleton.evalFrom, canonicalStep, hsignature, hreturn]
               | some next =>
+                  simp only [evalFromState, expand, canonicalMachine,
+                    TypedPartialDFAO.runFrom, runTransition,
+                    stepOneSome state signature hsignature]
                   simpa [evalFromState, Skeleton.evalFrom, expand,
                     canonicalMachine, canonicalStep, canonicalOutput,
                     TypedPartialDFAO.runFrom, runTransition, hsignature,
-                    hreturn] using inductionHypothesis next
+                    hreturn, stepOneSome state signature hsignature]
+                    using inductionHypothesis next
 
 /-- Start-state form of canonical reconstruction. -/
 theorem eval_canonicalMachine (code : BlockCode) :
@@ -599,8 +648,10 @@ theorem canonicalMachine_start_zero_loop
 
 noncomputable instance signatureFiberFintype
     [Fintype Output] [Fintype ZeroState] :
-    Fintype (SignatureFiber skeleton) :=
-  Fintype.ofFinite _
+    Fintype (SignatureFiber skeleton) := by
+  classical
+  unfold SignatureFiber
+  infer_instance
 
 /-- The canonical machine has one state per recurrent state and one state per
 distinct used transient signature. -/
@@ -623,8 +674,16 @@ def canonicalSignatureEmbedding
 theorem canonicalSignatureEmbedding_injective :
     Function.Injective (canonicalSignatureEmbedding skeleton) := by
   rintro ⟨leftOutput, leftReturn⟩ ⟨rightOutput, rightReturn⟩ equal
-  cases leftReturn <;> cases rightReturn <;>
-    simp [canonicalSignatureEmbedding] at equal ⊢
+  have outputs := congrArg Prod.fst equal
+  have returns := congrArg Prod.snd equal
+  apply Prod.ext
+  · exact outputs
+  · cases leftReturn <;> cases rightReturn <;>
+      simp only [canonicalSignatureEmbedding, Option.map_none, Option.map_some] at returns
+    · rfl
+    · cases returns
+    · cases returns
+    · exact congrArg some (Sum.inl.inj (congrArg Subtype.val (Option.some.inj returns)))
 
 /-- Canonical transient state corresponding to a used signature. -/
 def canonicalOneState (signature : SignatureFiber skeleton) :
@@ -651,6 +710,7 @@ theorem canonical_transient_signatures_injective :
       oneSignature (canonicalMachine skeleton)
         (canonicalOneState skeleton signature) := by
   intro left right equal
+  dsimp only at equal
   rw [oneSignature_canonicalOneState,
     oneSignature_canonicalOneState] at equal
   apply Subtype.ext
@@ -718,11 +778,13 @@ theorem canonicalToOriginal_injective :
       apply Subtype.ext
       exact equal
     · have typeEqual := congrArg machine.stateType equal
+      dsimp only [canonicalToOriginal] at typeEqual
       rw [leftZero.2,
         (signatureRepresentative machine rightSignature).2] at typeEqual
       cases typeEqual
   · rcases right with rightZero | rightSignature
     · have typeEqual := congrArg machine.stateType equal
+      dsimp only [canonicalToOriginal] at typeEqual
       rw [(signatureRepresentative machine leftSignature).2,
         rightZero.2] at typeEqual
       cases typeEqual
@@ -772,7 +834,9 @@ theorem canonical_extract_start_zero_loop
         (canonicalMachine (extractSkeleton machine)).start 0 =
       some (canonicalMachine (extractSkeleton machine)).start := by
   apply canonicalMachine_start_zero_loop
-  simp [extractSkeleton, zeroSuccessor, zeroLoop]
+  dsimp only [extractSkeleton]
+  unfold zeroSuccessor
+  split <;> simp_all
 
 /-- The extracted canonical machine retains the original start output. -/
 @[simp] theorem canonical_extract_start_output :

@@ -49,14 +49,118 @@ canonical power words is accepted by the first-return decoder. -/
 theorem decoded_power_code_eq_some :
     forall i : Fin publishedPowerExtent,
       decodedPowerCode i = some (powerBlockCode i) := by
-  native_decide
+  intro index
+  let number := 4 ^ index.val
+  have : IsTrans Nat (fun first second => second + 2 ≤ first) :=
+    ⟨by intro first middle last firstBound secondBound; omega⟩
+  have : Std.Symm (fun first second : Nat => second + 2 ≤ first ∨ first + 2 ≤ second) :=
+    ⟨fun first second bound => bound.symm⟩
+  have separated : (D5.S0.Conventions.wdigits number ++ [0]).Pairwise
+      (fun first second => second + 2 ≤ first) :=
+    List.isChain_iff_pairwise.mp (D5.S0.Conventions.wdigits_isCanonical number)
+  have unordered := separated.imp
+    (fun {first second} bound =>
+      (Or.inl bound : second + 2 ≤ first ∨ first + 2 ≤ second))
+  have nonadjacent (rawIndex : Nat)
+      (upper : rawIndex + 3 ∈ D5.S0.Conventions.wdigits number) :
+      rawIndex + 2 ∉ D5.S0.Conventions.wdigits number := by
+    intro lower
+    have gap := unordered.forall (a := rawIndex + 2) (b := rawIndex + 3)
+      (by simp [lower]) (by simp [upper]) (by omega)
+    omega
+  have wordSucc (length : Nat) :
+      (List.range (length + 1)).reverse.map (zeckendorfBit number) =
+        zeckendorfBit number length ::
+          (List.range length).reverse.map (zeckendorfBit number) := by
+    simp [List.range_succ]
+  have legal : ∀ length : Nat, ∃ code : BlockCode,
+      expandCode code = (List.range length).reverse.map (zeckendorfBit number) := by
+    intro length
+    induction length using Nat.strong_induction_on with
+    | h length inductionHypothesis =>
+        cases length with
+        | zero => exact ⟨⟨[], .recurrent⟩, rfl⟩
+        | succ length =>
+            rw [wordSucc]
+            by_cases zero : zeckendorfBit number length = 0
+            · obtain ⟨code, expanded⟩ := inductionHypothesis length (by omega)
+              refine ⟨⟨.zero :: code.blocks, code.terminal⟩, ?_⟩
+              change 0 :: expandCode code = _
+              rw [expanded, zero]
+            · have one : zeckendorfBit number length = 1 := by
+                have bound := (zeckendorfBit number length).isLt
+                apply Fin.ext
+                have nonzero : (zeckendorfBit number length).val ≠ 0 := by
+                  intro equal
+                  exact zero (Fin.ext equal)
+                simp only [Fin.val_one]
+                omega
+              cases length with
+              | zero =>
+                  refine ⟨⟨[], .transient⟩, ?_⟩
+                  simp [expandCode, expand, one]
+              | succ length =>
+                  have upper : length + 3 ∈ D5.S0.Conventions.wdigits number := by
+                    simpa [zeckendorfBit, Nat.add_assoc] using one
+                  have nextZero : zeckendorfBit number length = 0 := by
+                    simp [zeckendorfBit, nonadjacent length upper]
+                  obtain ⟨code, expanded⟩ := inductionHypothesis length (by omega)
+                  refine ⟨⟨.oneZero :: code.blocks, code.terminal⟩, ?_⟩
+                  change 1 :: 0 :: expandCode code = _
+                  rw [expanded, one, wordSucc, nextZero]
+  obtain ⟨code, expanded⟩ := legal (zeckendorfWordLength number)
+  have decoded : decodedPowerCode index = some code := by
+    change decode ((List.range (zeckendorfWordLength number)).reverse.map
+      (zeckendorfBit number)) = some code
+    rw [← expanded]
+    exact decode_expand code
+  simp [powerBlockCode, decoded]
 
 /-- Kernel-checked finite computation verifies lossless expansion of every
 published power block code. -/
 theorem expand_power_block_code :
     forall i : Fin publishedPowerExtent,
       expandCode (powerBlockCode i) = base4PowerWord i.val := by
-  native_decide
+  have sound : ∀ length : Nat, ∀ word : List (Fin 2), word.length = length →
+      ∀ code : BlockCode, decode word = some code → expandCode code = word := by
+    intro length
+    induction length using Nat.strong_induction_on with
+    | h length inductionHypothesis =>
+        intro word wordLength code decoded
+        cases word with
+        | nil =>
+            simp only [decode, Option.some.injEq] at decoded
+            subst code
+            rfl
+        | cons digit rest =>
+            cases rest with
+            | nil =>
+                fin_cases digit <;> simp [decode] at decoded <;>
+                  subst code <;> rfl
+            | cons next tail =>
+                by_cases zero : digit = 0
+                · subst digit
+                  simp only [decode, ↓reduceIte, Option.map_eq_some_iff] at decoded
+                  obtain ⟨restCode, restDecoded, rfl⟩ := decoded
+                  have expanded := inductionHypothesis (next :: tail).length
+                    (by simp only [List.length_cons] at wordLength ⊢; omega)
+                    (next :: tail) rfl restCode restDecoded
+                  exact congrArg (fun rest => (0 : Fin 2) :: rest) expanded
+                · have one : digit = 1 := by fin_cases digit <;> simp_all
+                  subst digit
+                  by_cases nextZero : next = 0
+                  · subst next
+                    simp only [decode, show (1 : Fin 2) ≠ 0 by decide, ↓reduceIte,
+                      Option.map_eq_some_iff] at decoded
+                    obtain ⟨tailCode, tailDecoded, rfl⟩ := decoded
+                    have expanded := inductionHypothesis tail.length
+                      (by simp only [List.length_cons] at wordLength; omega)
+                      tail rfl tailCode tailDecoded
+                    exact congrArg (fun rest => (1 : Fin 2) :: 0 :: rest) expanded
+                  · simp [decode, nextZero] at decoded
+  intro index
+  exact sound _ (base4PowerWord index.val) rfl (powerBlockCode index)
+    (decoded_power_code_eq_some index)
 
 /-- The exact 79-record power sample in first-return coordinates. Its labels
 reuse the repository's real-floor golden-ratio digit oracle. -/
