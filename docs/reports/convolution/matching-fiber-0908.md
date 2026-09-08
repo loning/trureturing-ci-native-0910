@@ -71,6 +71,14 @@ maximum resident set size 2987180032 bytes. Log: `step-1-make-lean.log`.
 Both public theorem `#print axioms` outputs are exactly
 `[propext, Classical.choice, Quot.sound]`.
 
+Step 1 was pushed as `01f3ada6a9`.
+
+Step 2 is verified: `AlternatingFactorialSum.lean` is byte-for-byte identical
+to the archived source fence. `/usr/bin/time -l make lean`: EXIT 0; 12586 jobs;
+20.70 seconds; maximum resident set size 3015442432 bytes.
+Log: `step-2-make-lean.log`. The three `#print axioms` outputs are each exactly
+`[propext, Classical.choice, Quot.sound]`.
+
 ## Declaration Accounting
 
 For the two currently proved public theorems:
@@ -79,6 +87,9 @@ For the two currently proved public theorems:
 | --- | --- | --- | --- | --- |
 | coeff_reflection | bind-only | none; unfolds frozen dilate | none | none for independent deposit; companion prerequisite of symmetrize_coefficient |
 | symmetrize_coefficient | bind-only | FiniteConvolutionCoefficients.coeff_additiveConvolution | none | none for independent deposit; intended prerequisite of MatchingIdentity |
+| opposite_inv_series_mul | bind-only | none (Mathlib only) | none | none for independent deposit; prerequisite of alternating_choose_convolution |
+| alternating_choose_convolution | bind-only | none (Mathlib only) | none | none for independent deposit; prerequisite of alternating_factorial_sum |
+| alternating_factorial_sum | bind-only | none (Mathlib only) | none | none for independent deposit; preregistered consumer is the full matching identity |
 
 The frozen theorem's GID is
 `D5/S3/Zeros/Convolution/FiniteConvolutionCoefficients.coeff_additiveConvolution`.
@@ -100,6 +111,9 @@ These identities are read from the merged predecessor report, not recomputed.
 | MatchingIdentity | The unbounded target Prop, without a proof assertion; none of the four computational classes. |
 | coeff_reflection | Arbitrary-degree coefficient normalization; no finite certified instance, bounded enumeration, checker, or numerical reduction. |
 | symmetrize_coefficient | Arbitrary-degree symbolic identity; no finite certified instance, bounded enumeration, checker, or numerical reduction. |
+| opposite_inv_series_mul | An arbitrary-power identity over every commutative ring; no parameter enumeration, checker, numerical reduction, or certified instance. |
+| alternating_choose_convolution | A symbolic coefficient identity for arbitrary d,h; none of the four computational classes. |
+| alternating_factorial_sum | A symbolic identity for every d,h with exact rational casts; none of the four computational classes. |
 
 Other utility fields are `not-applicable(kind=none)`.
 
