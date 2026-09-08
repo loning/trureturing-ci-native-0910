@@ -117,8 +117,36 @@ theorem m3_explicit_coefficients (alpha a b c d e f : Real)
   rcases convolution_coefficients alpha a b c d e f h1 h2 h3 with ⟨h0, he1, he2, he3⟩
   simp [boxplus3, h0, he1, he2, he3]
 
+/-- Every defining weight is positive on the entire requested parameter range. -/
+theorem weight_pos (alpha : Real) (halpha : -1 < alpha) (k : Nat) (hk : k <= 3) :
+    0 < weight alpha k := by
+  have hk' : (k : Real) <= 3 := by exact_mod_cast hk
+  exact mul_pos (descPochhammer_pos (by linarith only [hk']))
+    (descPochhammer_pos (by linarith only [hk', halpha]))
+
+/-- The three output elementary coefficients are nonnegative for nonnegative input roots. -/
+theorem m3_nonnegative_coefficients (alpha a b c d e f : Real) (halpha : -1 < alpha)
+    (ha : 0 <= a) (hb : 0 <= b) (hc : 0 <= c)
+    (hd : 0 <= d) (he : 0 <= e) (hf : 0 <= f) :
+    0 <= elementaryCoeff (boxplus3 alpha (rootTriple a b c) (rootTriple d e f)) 1 /\
+      0 <= elementaryCoeff (boxplus3 alpha (rootTriple a b c) (rootTriple d e f)) 2 /\
+      0 <= elementaryCoeff (boxplus3 alpha (rootTriple a b c) (rootTriple d e f)) 3 := by
+  rw [definition_consistency _ _ _ 1 (by norm_num),
+    definition_consistency _ _ _ 2 (by norm_num),
+    definition_consistency _ _ _ 3 (by norm_num)]
+  rcases convolution_coefficients alpha a b c d e f
+    (by linarith only [halpha]) (by linarith only [halpha])
+    (by linarith only [halpha]) with ⟨_, h1, h2, h3⟩
+  rw [h1, h2, h3]
+  have hden : 0 < 3 * (alpha + 3) := by linarith only [halpha]
+  have hk : 0 < kappa alpha := div_pos (by linarith only [halpha]) hden
+  have hr : 0 < rho alpha := div_pos (by linarith only [halpha]) hden
+  exact ⟨by positivity, by positivity, by positivity⟩
+
 #print axioms definition_consistency
 #print axioms convolution_coefficients
 #print axioms m3_explicit_coefficients
+#print axioms weight_pos
+#print axioms m3_nonnegative_coefficients
 
 end D5.S3.Zeros.Convolution.GribinskiDegreeThree

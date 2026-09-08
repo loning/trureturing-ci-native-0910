@@ -142,3 +142,35 @@ Direct frozen dependencies: none. The actual companion edge is
 `m3_explicit_coefficients -> convolution_coefficients`.
 Each of the three public theorems prints exactly
 `[propext, Classical.choice, Quot.sound]` in `step2.log`.
+
+## Step 3
+
+`weight_pos` and `m3_nonnegative_coefficients` are checked on the entire
+alpha > -1 and nonnegative-root domain. They are bind-only, with no escape
+witness or admission basis. The weight proof directly instantiates pinned
+Mathlib `descPochhammer_pos`; the three signs use the explicit formulas.
+Both have utility kind=none (symbolic parameter inequalities).
+Actual edge: `m3_nonnegative_coefficients -> convolution_coefficients` and
+`m3_nonnegative_coefficients -> definition_consistency`.
+`weight_pos` records positivity of the original Definition 3.10 prefactors;
+it is not claimed as an escape-path prerequisite.
+
+`/usr/bin/time -l make lean`: EXIT=0, 12680 jobs, 18.97 seconds,
+maximum resident set size=3034939392 bytes (`step3.log`).
+All five public theorems print `[propext, Classical.choice, Quot.sound]`.
+Step 2 commit: `e6f61716af`, pushed.
+
+## Discriminant Exploration
+
+Exact SymPy 1.14.0 probe, not a kernel proof: write the ordered roots as
+`x,x+u,x+u+v` and `y,y+w,y+w+z`, and set `t=alpha+1`.
+Then `27*(alpha+3)^3*Delta` has 787 monomials, by t-degree
+`310,257,168,52`. Exactly 20 coefficients are negative.
+A subtraction of 20 weighted squares leaves 767 positive monomials and
+no negative coefficients; the reconstruction equality was checked by exact
+rational polynomial arithmetic. Source: runner `discriminant-probe.py`;
+successful output: `discriminant-probe-complete.log`.
+Two earlier diagnostic-count runs failed on SymPy Boolean conversion;
+they supplied no completed diagnostic result. The exact polynomial equality
+assertion passed in the successful run. This proposes a split certificate
+for the already preregistered discriminant witness, not a new target.
