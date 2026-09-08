@@ -1,5 +1,40 @@
                 H("Exact arithmetic on independent fixed-window inputs"),
                 StatementSource.FromLean(), AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text("Check the old Rayleigh radius, origin margin, transported full dual-residual cap, and new signed-pairing cap. The resulting corrected-output radius is below 885/1000000 and the uncorrected model-ratio error below 891/1000000. This rational implication does not prove the inherited spectral/domain data or the newly evaluated scalar pairing."))),
+                DescribeRole.Theorem),
+            Describe.Lean(
+                DescribeId.Create("genuine-model-signed-goal-residual-neighborhood"),
+                DeclarationHandle.Create(Owner + "signed_goal_residual_neighborhood"),
+                H("Full projected dual residual on a frequency neighborhood"),
+                StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("One trial and one spectral center are fixed. The exact difference of the two complete residuals is the centered-Riesz-vector difference after a contractive projection. A certified variation bound yields S+radius for every point in the set; finite sampling alone supplies no such result."))),
+                DescribeRole.Theorem),
+            Describe.Lean(
+                DescribeId.Create("genuine-model-sector-projective-signed-ratio-bound"),
+                DeclarationHandle.Create(Owner + "sector_projective_signed_ratio_bound"),
+                H("Restrict the actual domain before using the stronger gap"),
+                StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("The candidate, genuine model, actual eigenvector and repaired trial all belong to the specified complex submodule. Restrict both domain maps, derive the new model-complement coercivity with the existing positive-form theorem, and apply the existing signed actual-eigenvector ratio theorem. The sector gap is never substituted for a whole-space lower bound. Full Hilbert residual and denominator conditions remain explicit."))),
+                DescribeRole.Theorem),
+            Describe.Lean(
+                DescribeId.Create("genuine-model-finite-pairing-corrected-ratio-bound"),
+                DeclarationHandle.Create(Owner + "finite_pairing_corrected_ratio_bound"),
+                H("Pay a finite complex pairing radius"),
+                StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("Translate the corrected-output disk from the exact signed pairing to a computed complex approximation. Its complete error radius is divided by the independently certified model-origin floor. This does not determine the sign of the actual output."))),
+                DescribeRole.Theorem),
+            Describe.Lean(
+                DescribeId.Create("genuine-model-signed-goal-original-model-uniform-limit"),
+                DeclarationHandle.Create(Owner + "signed_goal_original_model_uniform_limit"),
+                H("Close the actual eigenmode to the original model limit"),
+                StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("For varying spaces and operator domains, the theorem consumes actual eigenpairs, model energies, complement coercivity, complete dual residuals, signed-pairing budgets and origin margins. The preceding projective theorem derives the output estimate. Vanishing normalized signed defect and full product remainder, plus convergence of the SAME original model, imply uniform convergence of the actual normalized eigenmode. No desired output-error hypothesis is inserted; the physical arithmetic rates and actual model limit are still independent inputs."))),
+                DescribeRole.Theorem),
+            Describe.Lean(
+                DescribeId.Create("genuine-model-prime-three-sector-signed-budget"),
+                DeclarationHandle.Create(Owner + "prime_three_sector_signed_budget"),
+                H("Exact signed-sector certificate synthesis"),
+                StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("The recorded even threshold 1/1000 and positive-form model transport give radius 212/100000 on the restricted even domain. Complete centered-kernel variation extends the same trial to the disk of radius 1/1000. A finite signed-pairing error 6/10^9 is paid. Rational arithmetic gives corrected-output error below 99/10^6 and original-model error below 53/500000. This is a conditional synthesis of previously computed full-sector and model data, not a new spectral computation or an all-scale theorem."))),
                 DescribeRole.Theorem))));
 }
