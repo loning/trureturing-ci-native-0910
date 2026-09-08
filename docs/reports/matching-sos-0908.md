@@ -217,9 +217,9 @@ with complete output retained in the worker artifact `full-repo-audit.json`.
 The base was fixed before candidate source was created.
 
 ```sh
-git grep -n -P '\\b(symmetrize_matching_sos|matching_sos|matchingSum)\\b' aee1eaff34f997e44f04147cee1010bb482c4c1b
+git grep -n -P '\b(symmetrize_matching_sos|matching_sos|matchingSum)\b' aee1eaff34f997e44f04147cee1010bb482c4c1b
 git grep -n -P '(?i)matching.{0,60}(sos|convolution|symmetri)|(?:convolution|symmetri).{0,60}matching|alternating.{0,30}factorial' aee1eaff34f997e44f04147cee1010bb482c4c1b
-git grep -n -P '\\b(IsMatching|Sym2\\.lift|esymm|coeff_prod_X_sub_C|symmetrize|invOneSubPow)\\b' aee1eaff34f997e44f04147cee1010bb482c4c1b -- '*.lean'
+git grep -n -P '\b(IsMatching|Sym2\.lift|esymm|coeff_prod_X_sub_C|symmetrize|invOneSubPow)\b' aee1eaff34f997e44f04147cee1010bb482c4c1b -- '*.lean'
 git -C .lake/packages/mathlib grep -n -P '(?i)matching.{0,60}(polynomial|sum.of.squares|convolution|symmetri)|(?:symmetri|convolution).{0,60}matching|alternating.{0,30}factorial' -- Mathlib
 ```
 
@@ -235,8 +235,8 @@ matching-SOS bridge.
 Positive controls using the same PCRE word boundaries:
 
 ```sh
-git grep -n -P '\\b(coeff_additiveConvolution|splits_expand_two|nonnegative_roots_of_splits_expand_two)\\b' aee1eaff34f997e44f04147cee1010bb482c4c1b -- '*.lean'
-git -C .lake/packages/mathlib grep -n -P '\\b(IsMatching|coeff_mul|choose_mul_factorial_mul_factorial)\\b' -- Mathlib/Combinatorics/SimpleGraph/Matching.lean Mathlib/RingTheory/PowerSeries/Basic.lean Mathlib/Data/Nat/Choose/Basic.lean
+git grep -n -P '\b(coeff_additiveConvolution|splits_expand_two|nonnegative_roots_of_splits_expand_two)\b' aee1eaff34f997e44f04147cee1010bb482c4c1b -- '*.lean'
+git -C .lake/packages/mathlib grep -n -P '\b(IsMatching|coeff_mul|choose_mul_factorial_mul_factorial)\b' -- Mathlib/Combinatorics/SimpleGraph/Matching.lean Mathlib/RingTheory/PowerSeries/Basic.lean Mathlib/Data/Nat/Choose/Basic.lean
 ```
 
 Controls returned 12 and 63 lines respectively. The relevant root-geometry
@@ -460,4 +460,3 @@ syntax and candidates; the unproved equation (2); the monomial-fiber counting
 bijection and step (4); all-degree H_1 removal and equivalence (7); independent
 review and peak RSS. No positive-semidefiniteness claim for H_0(R) is made.
 The machine-verifiable statements above are limited to the two archived sources.
-
