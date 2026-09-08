@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S0/Naming/CoordinateDependence.dependencySet
     target_statement_id: sha256:da1f2f0856de0c7e3f620d4ed7b214867d9daafc3b424a43216aec99982bb471
 receipts:
-  scribe: []
   unresolved_subitems: []

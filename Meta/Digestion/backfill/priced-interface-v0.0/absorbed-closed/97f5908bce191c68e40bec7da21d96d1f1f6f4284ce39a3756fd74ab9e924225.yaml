@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S0/Diagonal/Probability/DifferentialTestingEscape.directory_escape_probability_exact
     target_statement_id: sha256:84958b90f57bb2be08301cb570f7e9c95376c611377b4470122bb126e62f3416
 receipts:
-  scribe: []
   unresolved_subitems: []

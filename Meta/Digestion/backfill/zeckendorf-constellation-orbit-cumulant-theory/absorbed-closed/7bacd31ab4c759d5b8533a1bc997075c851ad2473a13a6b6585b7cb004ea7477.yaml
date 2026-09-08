@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Zeros/Symmetry/SignedZeckendorfOrbitCode.klein_actions_two_sign_bits
     target_statement_id: sha256:e61e45103a72bb0faa673a4a787a9ec202282bae8d3341d8564b37b46cf2ade9
 receipts:
-  scribe: []
   unresolved_subitems: []

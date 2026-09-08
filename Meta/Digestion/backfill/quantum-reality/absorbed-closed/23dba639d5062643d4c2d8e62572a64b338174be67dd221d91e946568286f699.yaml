@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Quantum/Measurements/MinimalSymmetricRealizationUniqueness.minimal_symmetric_realization_uniqueness
     target_statement_id: sha256:9b08698a12875d1ab641520af8b0e36924b513ddb04d4f56fcb4d328160a1551
 receipts:
-  scribe: []
   unresolved_subitems: []

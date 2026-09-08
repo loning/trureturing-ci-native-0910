@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/RefinementGeometry/PrecisionSeparationPersistence.precision_separation_persists
     target_statement_id: sha256:ab26a1f47dfad166f920f96934cd6313a1e0219f7fb85dfc35d685605cea3d41
 receipts:
-  scribe: []
   unresolved_subitems: []

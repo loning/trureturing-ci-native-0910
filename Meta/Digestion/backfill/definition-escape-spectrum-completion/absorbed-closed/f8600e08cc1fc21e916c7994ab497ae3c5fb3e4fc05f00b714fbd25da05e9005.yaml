@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/EscapeSpectrum/CompactResidualFiniteCompletion.compact_residual_finite_completion
     target_statement_id: sha256:1c8b03c1b66e4ad7bfb6d6dc3c70544977ac07f3988ea639610593caf48f2d5a
 receipts:
-  scribe: []
   unresolved_subitems: []

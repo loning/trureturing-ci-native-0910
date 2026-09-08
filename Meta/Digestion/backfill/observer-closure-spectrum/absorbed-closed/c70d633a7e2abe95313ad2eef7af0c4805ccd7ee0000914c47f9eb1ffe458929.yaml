@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Dialectics/OneStepClosureFivefoldEquivalence.one_step_closure_fivefold_equivalence
     target_statement_id: sha256:35d73cc3fd462604a89c2c856f0b6ef635fe682ef5ebb049f23cdac6bc8906f3
 receipts:
-  scribe: []
   unresolved_subitems: []

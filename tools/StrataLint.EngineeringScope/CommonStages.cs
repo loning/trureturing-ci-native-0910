@@ -69,7 +69,7 @@ internal sealed class CommonStages(string root, TextWriter output, CancellationT
         foreach (var project in new[] { "tools/StrataLint.sln", "tools/tests/CompileFailProof/CompileFailProof.csproj", "tools/tests/BannedApiCompileFailProof/BannedApiCompileFailProof.csproj" })
             Step("restore-" + Path.GetFileNameWithoutExtension(project), "dotnet", ["restore", project, "--locked-mode"]);
         Step("build", "dotnet", ["build", "tools/StrataLint.sln", "--configuration", "Release", "--no-restore", "--warnaserror"]);
-        Step("tests", "dotnet", ["tools/StrataLint.EngineeringScope/bin/Release/net10.0/StrataLint.EngineeringScope.dll", "--repository", root]);
+        Step("tests", "dotnet", ["tools/StrataLint.EngineeringScope/bin/Release/net10.0/StrataLint.EngineeringScope.dll", "--repository", root, "--all"]);
         var first = Step("selftest-first", "dotnet", [CommonExecutionEvidence.CliPath, "selftest"]);
         var second = Step("selftest-second", "dotnet", [CommonExecutionEvidence.CliPath, "selftest"]);
         if (first != second) throw new StageFailure(1, "selftest outputs differ");

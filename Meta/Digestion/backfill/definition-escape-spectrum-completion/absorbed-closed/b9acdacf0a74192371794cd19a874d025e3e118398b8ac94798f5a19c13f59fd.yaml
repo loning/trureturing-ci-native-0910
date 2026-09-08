@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/EscapeSpectrum/BlindResidualChargeDecomposition.blind_residual_charge_decomposition
     target_statement_id: sha256:01ec7cdaad6675b113c612a6c1d09f60e0d5bb400f9850b9dc3bbfcb3fba0cca
 receipts:
-  scribe: []
   unresolved_subitems: []

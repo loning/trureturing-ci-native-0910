@@ -13,7 +13,7 @@ if "--deps" in args: print(pathlib.Path(__file__).parent.parent/"lib/lean/Init.o
 if os.environ.get("LAKE_INSPECT_FAIL"): sys.exit(int(os.environ["LAKE_INSPECT_FAIL"]))
 output = pathlib.Path(args[args.index("--output")+1])
 modules = []
-values = args[args.index("--material-spool")+2:]
+values = args[args.index("--utility-input")+2:]
 for index in range(0, len(values), 3):
     module, source, sha = values[index:index+3]
     modules.append({"module": module, "source_path": source, "source_sha256": sha, "imports": [], "declarations": []})

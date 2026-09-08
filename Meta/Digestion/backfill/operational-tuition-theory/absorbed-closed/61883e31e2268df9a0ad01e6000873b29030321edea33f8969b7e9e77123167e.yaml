@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/OperationalTuition/ResponseUpgradeWellFounded.t2_response_upgrade_well_founded
     target_statement_id: sha256:82c285bbd958a8438f27f6760ba26cf0455a35f8d26d73be910dcf5e644077a6
 receipts:
-  scribe: []
   unresolved_subitems: []

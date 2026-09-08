@@ -71,7 +71,10 @@ def parse_json_modules(report: pathlib.Path) -> tuple[dict[str, dict], str]:
     for item in root["modules"]:
         if not isinstance(item, dict):
             raise ValueError("module record is not an object")
-        require_keys(item, {"module", "source_path", "source_sha256", "imports", "declarations"}, "cached module")
+        module_keys = {"module", "source_path", "source_sha256", "imports", "declarations"}
+        if "utility_refutation" in item:
+            module_keys.add("utility_refutation")
+        require_keys(item, module_keys, "cached module")
         name = item.get("module")
         source_path = item.get("source_path")
         source_sha = item.get("source_sha256")
@@ -93,6 +96,7 @@ def parse_json_modules(report: pathlib.Path) -> tuple[dict[str, dict], str]:
             "path": source_path,
             "source_sha256": source_sha,
             "imports": imports,
+            "refutation_claim_path": None,
         }
         require_sorted_strings(imports, "cached imports")
         previous = None
@@ -107,6 +111,16 @@ def parse_json_modules(report: pathlib.Path) -> tuple[dict[str, dict], str]:
                 raise ValueError("cached declaration binding is malformed or unordered")
             require_sorted_strings(declaration["axioms"], "cached axioms")
             previous = key
+        refutation = item.get("utility_refutation")
+        if refutation is not None:
+            require_keys(refutation, {"claim_gid", "claim_source_path", "claim_source_sha256",
+                "result_gid", "is_closed_negation"}, "cached refutation")
+            if (not all(isinstance(refutation[field], str) and refutation[field]
+                        for field in ("claim_gid", "result_gid", "claim_source_path", "claim_source_sha256"))
+                    or not SHA_FIELD.fullmatch(refutation["claim_source_sha256"])
+                    or not isinstance(refutation["is_closed_negation"], bool)):
+                raise ValueError("refutation source binding is malformed")
+            modules[name]["refutation_claim_path"] = refutation["claim_source_path"]
     return modules, digest
 
 
@@ -244,16 +258,23 @@ def plan(args: argparse.Namespace) -> int:
 
         # The report edge points importer -> imported module.  For every
         # source-identical surviving importer, the attested old import list is
-        # identical to the current one.  It is therefore the complete inbound
-        # graph needed to close changed/added roots and surviving importers of
+        # identical to the current one. Together with declared refutation inputs,
+        # these edges close changed/added roots and surviving dependents of
         # removed modules without inspecting first.
         reverse = {name: set() for name in set(current) | set(old)}
+        names_by_path = {record["path"]: name for name, record in old.items()}
         for importer, record in old.items():
             if importer not in current:
                 continue
             for dependency in record.get("imports", []):
                 if dependency in reverse:
                     reverse[dependency].add(importer)
+            # A header-designated claim can affect definitional equality without a Lean import.
+            claim_path = record.get("refutation_claim_path")
+            if claim_path is not None:
+                if claim_path not in names_by_path:
+                    raise ValueError("refutation claim is absent from the baseline report")
+                reverse[names_by_path[claim_path]].add(importer)
 
         # Deleted modules are not Inspector inputs, but their surviving importers
         # must be rechecked to avoid retaining records with unloadable environments.

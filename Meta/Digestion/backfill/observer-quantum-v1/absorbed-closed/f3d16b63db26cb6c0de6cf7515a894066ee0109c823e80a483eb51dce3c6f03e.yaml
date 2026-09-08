@@ -8,5 +8,4 @@ coverage_gids:
   - gid: D5/S3/ObserverMemory/RecordCorrelationMonogamy.three_quarter_address_record_certificate
     target_statement_id: sha256:d775642e1643d54308d4d8402957febb75964c6bc7eff2e391e95c0d0de1c539
 receipts:
-  scribe: []
   unresolved_subitems: []

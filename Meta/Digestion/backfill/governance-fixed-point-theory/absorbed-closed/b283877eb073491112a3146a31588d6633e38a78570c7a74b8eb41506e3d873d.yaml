@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/GovernanceFixedPoint/ConservativeChannelAddition.conservative_channel_exists
     target_statement_id: sha256:9e84be0379f8979780baf874fac7517e0da49e465781473e8a966c301bc48d61
 receipts:
-  scribe: []
   unresolved_subitems: []

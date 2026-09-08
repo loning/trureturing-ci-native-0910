@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Analytic/Boundary/CarrierDecayThreshold.carrier_decay_threshold
     target_statement_id: sha256:f7c41aae5a9d8588febf08d21e1943ae0854bdb38e618ec31f006747fe2de5af
 receipts:
-  scribe: []
   unresolved_subitems: []

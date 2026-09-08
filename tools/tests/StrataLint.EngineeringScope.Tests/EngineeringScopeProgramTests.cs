@@ -8,10 +8,11 @@ namespace StrataLint.EngineeringScope.Tests;
 public sealed class EngineeringScopeProgramTests
 {
     [Theory]
-    [InlineData(true, true, 0)]
-    [InlineData(true, false, 1)]
-    [InlineData(false, true, 1)]
-    public void CurrentRunnerExecutesPrebuiltTestsAndNeverRetries(bool prebuild, bool passes, int expected)
+    [InlineData(true, true, 0, false)]
+    [InlineData(true, true, 0, true)]
+    [InlineData(true, false, 1, false)]
+    [InlineData(false, true, 1, false)]
+    public void CurrentRunnerExecutesPrebuiltTestsAndNeverRetries(bool prebuild, bool passes, int expected, bool all)
     {
         var root = TemporaryFileSystem.Directory.CreateTempSubdirectory("engineering-process-").FullName;
         try
@@ -42,7 +43,7 @@ public sealed class EngineeringScopeProgramTests
             if (prebuild) Run(root, "dotnet", ["build", project, "--configuration", "Release", "--nologo"]);
             using var output = new StringWriter();
             using var error = new StringWriter();
-            var exit = Program.Run(["--repository", root], TestResultEvidence.Load, output, error);
+            var exit = Program.Run(["--repository", root, .. all ? new[] { "--all" } : []], TestResultEvidence.Load, output, error);
             Assert.True(exit == expected, output + "\n" + error);
             Assert.Single(output.ToString().Split('\n'), line => line.StartsWith("ENGINEERING_TEST_PROJECT ", StringComparison.Ordinal));
             Assert.DoesNotContain("ENGINEERING_TEST_RETRY", output.ToString(), StringComparison.Ordinal);
@@ -59,6 +60,21 @@ public sealed class EngineeringScopeProgramTests
         Assert.Contains("--no-build", arguments);
         Assert.Contains("--no-restore", arguments);
         Assert.Equal("minimal", arguments[Array.IndexOf(arguments.ToArray(), "--verbosity") + 1]);
+    }
+
+    [Theory]
+    [InlineData("--base")]
+    [InlineData("--head")]
+    [InlineData("--full")]
+    public void ExplicitAllRejectsHistoricalSelectionOptions(string option)
+    {
+        using var output = new StringWriter();
+        using var error = new StringWriter();
+        var exit = Program.Run(["--repository", "/missing-repository", "--all", option, "value"],
+            TestResultEvidence.Load, output, error);
+        Assert.Equal(2, exit);
+        Assert.Contains("options must be", error.ToString(), StringComparison.Ordinal);
+        Assert.Empty(output.ToString());
     }
 
     private static void Run(string root, string command, string[] arguments)

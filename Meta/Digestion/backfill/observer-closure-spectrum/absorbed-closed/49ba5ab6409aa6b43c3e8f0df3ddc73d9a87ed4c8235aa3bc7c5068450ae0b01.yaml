@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S1/FixedPoints/MaximalForwardInvariantSubkernel.maximal_forward_invariant_subkernel
     target_statement_id: sha256:08dff305410eb216d929b79d36080474bd29590edae8fba22f9aaffb9770daff
 receipts:
-  scribe: []
   unresolved_subitems: []

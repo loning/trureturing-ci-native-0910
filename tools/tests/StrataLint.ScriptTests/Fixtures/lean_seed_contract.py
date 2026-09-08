@@ -493,6 +493,11 @@ class InspectorTests(PairFixture, unittest.TestCase):
         super().setUp()
         shutil.copyfile(ROOT / "tools/lean-inspector/inspect.sh", self.producer)
         shutil.copyfile(ROOT / "Makefile", self.root / "Makefile")
+        write(self.root / "global.json", "{}\n")
+        write(self.root / "tools/StrataLint.Cli/StrataLint.Cli.csproj",
+            '<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><OutputType>Exe</OutputType>'
+            '<TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>\n')
+        write(self.root / "tools/StrataLint.Cli/Program.cs", 'System.Console.WriteLine("[]");\n')
         runner = self.root / "tools/scripts/worktree/lean-cache-run.sh"
         write(runner, '#!/bin/sh\nexec "$@"\n')
         runner.chmod(0o755)

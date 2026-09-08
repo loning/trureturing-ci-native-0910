@@ -13,6 +13,7 @@ internal sealed partial class ProductionCliEnvironment
 
     private ExplicitCommandResult CheckStage(IReadOnlyList<string> arguments, bool delta)
     {
+        var removedProjectOutput = string.Empty;
         try
         {
             var options = ParseCheckArguments(arguments);
@@ -38,8 +39,10 @@ internal sealed partial class ProductionCliEnvironment
             {
                 var prepared = repository.Prepare(options.ProtectedBase);
                 var baseline = Decode(repository.ReadRevision(prepared.Revision));
-                var common = CommonExecutionEvidence.ValidateCurrent(repositoryRoot,
-                    EngineeringTestPlanPolicy.Evaluate(RepositoryRules.ReadSnapshotProjects(baseline)));
+                var baseProjects = EngineeringTestPlanPolicy.Evaluate(RepositoryRules.ReadSnapshotProjects(baseline));
+                removedProjectOutput = string.Concat(baseProjects.Where(path => !current.TryGetFile(path, out _))
+                    .Select(path => $"ENGINEERING_TEST_PROJECT_REMOVED project={JsonSerializer.Serialize(path)}\n"));
+                var common = CommonExecutionEvidence.ValidateCurrent(repositoryRoot, baseProjects);
                 if (!string.Equals(Path.GetFullPath(options.CandidateLeanReport), Path.Combine(repositoryRoot, CommonExecutionEvidence.ReportPath), StringComparison.Ordinal))
                     throw new InvalidDataException("check-delta requires this round's canonical report");
                 if (EvaluateAdmissionPlane(raw, prepared.Changes) is { } plane)
@@ -72,7 +75,7 @@ internal sealed partial class ProductionCliEnvironment
         }
         catch (Exception exception)
         {
-            return new(2, "", "INFRASTRUCTURE_FAILURE " + exception.Message + "\n");
+            return new(2, removedProjectOutput, "INFRASTRUCTURE_FAILURE " + exception.Message + "\n");
         }
     }
 

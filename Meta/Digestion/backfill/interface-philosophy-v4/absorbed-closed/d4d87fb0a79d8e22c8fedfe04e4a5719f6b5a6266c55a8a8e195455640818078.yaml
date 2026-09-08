@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S0/Naming/ToleranceNonGroup.tolerance_non_group
     target_statement_id: sha256:c3f6047edf5b3d4c999801a1f50145860f6f1cf007b1f03febc34df4f3d6cd24
 receipts:
-  scribe: []
   unresolved_subitems: []

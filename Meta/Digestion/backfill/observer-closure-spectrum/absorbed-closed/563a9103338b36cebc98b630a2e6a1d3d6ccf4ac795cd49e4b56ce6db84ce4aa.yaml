@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Observer/MetricGeometryLaws/CanonicalDiscountedFutureGeometry.canonical_discounted_future_geometry
     target_statement_id: sha256:ceb3ded471bd861c154b7a6fc53cfc88e906da873a954cd5557138e585e8a748
 receipts:
-  scribe: []
   unresolved_subitems: []

@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Quantum/Measurements/CompleteContextCollisionConservation.complete_context_collision_conservation
     target_statement_id: sha256:b86486225a123ae8e610ec8f526b0050d940b2e7a6bc203ffeae30c75cbbd904
 receipts:
-  scribe: []
   unresolved_subitems: []

@@ -29,7 +29,7 @@ public sealed class CurrentPrebuiltCliContractTests
                 esac
                 """);
             WriteExecutable("build/bin/make", """
-                [[ "$*" == lean-report ]] || exit 91
+                [[ "$*" == '--no-print-directory lean-report' ]] || exit 91
                 [[ "${STRATALINT_LEAN_CLI_DLL:-}" -ef "$PWD/tools/StrataLint.Cli/bin/Release/net10.0/StrataLint.dll" ]] || exit 92
                 [[ -f "$STRATALINT_LEAN_CLI_DLL" ]] || exit 93
                 printf 'validated-cli\n' > build/producer.log

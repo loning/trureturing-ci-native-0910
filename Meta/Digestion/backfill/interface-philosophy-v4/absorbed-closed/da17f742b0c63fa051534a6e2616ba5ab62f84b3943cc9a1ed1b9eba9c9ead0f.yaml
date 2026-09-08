@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S0/History/LedgerLimit.ledger_limit_exists_unique
     target_statement_id: sha256:7f5d40fab42d4dee720bbbd1fd09a32e1af313b4f51ccf4ac6e60be029e8251e
 receipts:
-  scribe: []
   unresolved_subitems: []

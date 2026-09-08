@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Analytic/Isolation/RationalSpanIsolation.rational_span_level_set_codiscrete
     target_statement_id: sha256:039a8d3a75d2a195e604461bf6a9fd9b828ec74bcaaf18c1da69598ab8b841c2
 receipts:
-  scribe: []
   unresolved_subitems: []

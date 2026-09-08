@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/TimeProjection/FiniteTimeEscapeDecidability.finite_time_escape_decidability
     target_statement_id: sha256:973d2ad084e64bebf74fa0ac0206902206f9c85985918db9f7f0986a9509b437
 receipts:
-  scribe: []
   unresolved_subitems: []

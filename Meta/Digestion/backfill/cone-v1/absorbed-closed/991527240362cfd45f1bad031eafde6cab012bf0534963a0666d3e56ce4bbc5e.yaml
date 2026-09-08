@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Constants/MidslopeDoubleDual.arithmetic_geometric_double_dual
     target_statement_id: sha256:ff505c89ec062e77026818f043cdaafafa087977b19013872c39fca04827dedf
 receipts:
-  scribe: []
   unresolved_subitems: []

@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/DefinitionEscapeAdjudication/AdjudicationStopTargetCorrectness.adjudication_stop_target_correctness
     target_statement_id: sha256:5227ee17f2093280589f0856c7e31343bba40b3554ab1fb9aafcb9707e1e23e2
 receipts:
-  scribe: []
   unresolved_subitems: []

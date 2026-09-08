@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/EscapeSpectrum/SpectrumCommitmentSettlement.spectrum_commitment_local_settlement
     target_statement_id: sha256:f3fe6d01461511a5d6d83c82065dfd3051e113433a79121392c545f6d0bbb0be
 receipts:
-  scribe: []
   unresolved_subitems: []

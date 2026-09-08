@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Analytic/SeriesInequalities/KarpQuadraticTruncations.r2_coeff_nonneg
     target_statement_id: sha256:de6ba3660c8255d3ab4dbdf360d777fb1274bb1b66606a6e7163f67d9ed1e063
 receipts:
-  scribe: []
   unresolved_subitems: []

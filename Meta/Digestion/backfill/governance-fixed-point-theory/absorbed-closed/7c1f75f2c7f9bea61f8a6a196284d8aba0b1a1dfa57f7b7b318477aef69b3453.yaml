@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/GovernanceFixedPoint/DualRuleDeadlockCriterion.deadlocked_iff_empty_joint_allowance
     target_statement_id: sha256:84af505569e32d76c8bf6e823db0d61c3b80249eec88231a6b596b52b4217e11
 receipts:
-  scribe: []
   unresolved_subitems: []

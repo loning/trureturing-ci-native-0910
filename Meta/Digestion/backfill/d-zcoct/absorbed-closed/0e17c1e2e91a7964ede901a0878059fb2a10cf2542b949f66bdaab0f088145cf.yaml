@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Midline/Cayley/CayleyMirrorCoordinates.cayley_mirror_coordinates
     target_statement_id: sha256:36a2e32e7c8ada604ec9a0c0ba1da5e9655b2e32674cc7b32b2d90130225366f
 receipts:
-  scribe: []
   unresolved_subitems: []

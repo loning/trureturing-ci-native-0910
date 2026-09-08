@@ -22,5 +22,4 @@ coverage_gids:
   - gid: D5/S3/ObserverMemory/TwoTimeKnowledge.knows_of_later_readout_factors_through_earlier
     target_statement_id: sha256:df34080426470bcb7c2f65c6bc5503494e7440e1a981ff778ded65b4cc11c06e
 receipts:
-  scribe: []
   unresolved_subitems: []
