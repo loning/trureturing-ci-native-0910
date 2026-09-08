@@ -12,6 +12,7 @@ import Mathlib.Data.ZMod.Basic
 import Mathlib.GroupTheory.OrderOfElement
 import Mathlib.Tactic.IntervalCases
 import Mathlib.Tactic.NormNum
+import Mathlib.Tactic.Positivity
 
 set_option autoImplicit false
 set_option relaxedAutoImplicit false
@@ -114,6 +115,54 @@ theorem modEq_2241_factorization {n : Nat}
   exact ⟨hn, h2lo, by omega, h3lo, by omega, by omega, by omega,
     Nat.factorization_eq_zero_of_not_dvd h83⟩
 
+/-- Every solution has the stated exponent windows and a coprime residual factor. -/
+theorem modEq_2241_shape {n : Nat}
+    (h5040 : 5040 ∣ n) (hmod : Nat.ModEq n (3 ^ n) 2241) :
+    ∃ a b r : Nat, n = 2 ^ a * 3 ^ b * 5 * 7 * r ∧
+      4 ≤ a ∧ a ≤ 6 ∧ 2 ≤ b ∧ b ≤ 3 ∧ Nat.Coprime r (2 * 3 * 5 * 7 * 83) := by
+  obtain ⟨hn, h2lo, h2hi, h3lo, h3hi, h5, h7, h83⟩ :=
+    modEq_2241_factorization h5040 hmod
+  let m := 2 ^ n.factorization 2 * 3 ^ n.factorization 3 * 5 * 7
+  have hm : m ≠ 0 := by dsimp [m]; positivity
+  have hmfac : m.factorization =
+      Finsupp.single 2 (n.factorization 2) + Finsupp.single 3 (n.factorization 3) +
+        Finsupp.single 5 1 + Finsupp.single 7 1 := by
+    simp [m, Nat.factorization_mul, Nat.prime_two.factorization_pow,
+      Nat.prime_three.factorization_pow, (by decide : Nat.Prime 5).factorization,
+      (by decide : Nat.Prime 7).factorization]
+  have hmd : m ∣ n := by
+    apply (Nat.factorization_le_iff_dvd hm hn).mp
+    intro p
+    by_cases hp2 : p = 2
+    · subst p; simp [hmfac]
+    by_cases hp3 : p = 3
+    · subst p; simp [hmfac]
+    by_cases hp5 : p = 5
+    · subst p; simp [hmfac, h5]
+    by_cases hp7 : p = 7
+    · subst p; simp [hmfac, h7]
+    simp [hmfac, Ne.symm hp2, Ne.symm hp3, Ne.symm hp5, Ne.symm hp7]
+  -- Removing the complete old-prime part leaves zero valuations at all five primes.
+  let r := n / m
+  have hr : r ≠ 0 :=
+    (Nat.div_pos (Nat.le_of_dvd hn.bot_lt hmd) hm.bot_lt).ne'
+  have hrfac : r.factorization = n.factorization - m.factorization :=
+    Nat.factorization_div hmd
+  have hcop (p : Nat) (hp : Nat.Prime p) (hz : r.factorization p = 0) :
+      Nat.Coprime r p := by
+    apply (hp.coprime_iff_not_dvd.mpr ?_).symm
+    intro hd
+    have := (hp.dvd_iff_one_le_factorization hr).mp hd
+    omega
+  refine ⟨n.factorization 2, n.factorization 3, r,
+    (Nat.mul_div_cancel' hmd).symm, h2lo, h2hi, h3lo, h3hi, ?_⟩
+  exact ((((hcop 2 Nat.prime_two (by simp [hrfac, hmfac])).mul_right
+    (hcop 3 Nat.prime_three (by simp [hrfac, hmfac]))).mul_right
+    (hcop 5 (by decide) (by simp [hrfac, hmfac, h5]))).mul_right
+    (hcop 7 (by decide) (by simp [hrfac, hmfac, h7]))).mul_right
+    (hcop 83 (by decide) (by simp [hrfac, hmfac, h83]))
+
 #print axioms modEq_2241_factorization
+#print axioms modEq_2241_shape
 
 end D5.S3.Arith.GoldenResource.GoldenCell5040Shape
