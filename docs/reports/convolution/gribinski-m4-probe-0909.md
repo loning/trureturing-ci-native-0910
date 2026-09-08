@@ -129,7 +129,7 @@ over Mathlib/Algebra, Mathlib/LinearAlgebra, and Mathlib/RingTheory/Polynomial,
 and `rg -n '\b(roots|splits|Splits|of_roots|eq_prod_roots)\b'` on
 Algebra/Polynomial/Roots.lean, Analysis/Complex/Polynomial/Basic.lean and
 LinearAlgebra/Matrix/PosDef.lean. Hits include quadratic `discrim`,
-`Polynomial.Monic.prod_multiset_X_sub_C`, `Polynomial.card_roots'`,
+`Polynomial.prod_multiset_X_sub_C_of_monic_of_roots_card_eq`, `Polynomial.card_roots'`,
 `Polynomial.roots_multiset_prod_X_sub_C`, and complex splitting infrastructure.
 These do not supply four real roots: the factorization API requires the real
 root count already equal the degree. Substring searches remain to be done.
@@ -142,6 +142,74 @@ quoted query will be used. The CMP v2 PDF has been downloaded, but not yet read.
 The exact m=3 raw expansion recorded in its existing report is 787 monomials,
 split by t-degree as 310, 257, 168, 52, in sorted-gap variables. This is distinct
 from its repaired certificate (20 squares plus 767 positive monomials).
+
+## Q1 search receipt, batch 3
+
+Full pinned Mathlib substring search:
+`rg -n -i 'quartic|hankel|newton.*sum|principal.?minor|minor.*possemidef|possemidef.*minor|discrim.*nonneg|nonneg.*discrim' .lake/packages/mathlib/Mathlib -g '*.lean'`.
+No quartic/Hankel package was found. The useful hits are Newton identities in
+`RingTheory/MvPolynomial/Symmetric/NewtonIdentities.lean`, and characteristic
+polynomial coefficients as sums of principal minors in
+`LinearAlgebra/Matrix/Charpoly/Coeff.lean`. Subsequent source reads identify
+`Matrix.PosSemidef.submatrix`, `Matrix.PosSemidef.det_nonneg`,
+`Matrix.IsHermitian.posSemidef_iff_eigenvalues_nonneg`, and
+`MvPolynomial.psum_eq_mul_esymm_sub_sum`. These supply identities and
+conditional positivity APIs, not positivity of this convolution output.
+
+Online Loogle calls used `curl -L --max-time 30 -sS --get --data-urlencode
+'q=QUERY' https://loogle.lean-lang.org/json`. Results: quoted `"quartic"`: 0;
+quoted `"Hankel"`: 0; quoted `"Newton"`: 8 (Newton iteration);
+quoted `"discrim"`: 40; `Polynomial.roots`: 193. The latter two outputs were
+truncated by the tool; only returned visible candidates are claimed as read.
+Online indexes are not claimed to use the repository pin.
+
+LeanSearch endpoint was discovered by reading `https://leansearch.net/main.js`.
+`POST https://leansearch.net/search` with JSON `num_results: 5` and queries
+`quartic polynomial has four nonnegative real roots criterion`,
+`Newton Hankel positive semidefinite if and only if polynomial real roots`,
+`Sylvester criterion positive semidefinite all principal minors nonnegative`
+returned 5 results each. They include cubic root membership, root-count bounds,
+Descartes' rule of signs, the definition of PSD and PSD projections. No result
+in these 15 supplies the requested quartic or convolution theorem.
+
+Repository substring search `rg -n -i 'gribinski|boxplus|rectangular' D5` also
+found `RectangularHalfConvolution.preserves_nonnegative_roots`. Its source
+requires `hBB : FiniteSymbolCriterion` and fixes alpha=-1/2. It does not
+instantiate the all-real-alpha target.
+
+Third-party search: GitHub tree of `PerAlexandersson/RealRooted`, observed SHA
+`cfa0179b010d18d17b0d2eb04483170d96b9495c`, filtered for
+Quartic/Hankel/Newton/Gribinski/Convolution/Sylvester. Opened the complete
+`RealRooted/RectangularConvolution.lean` at that SHA. Its parameters m,n are
+natural numbers; it proves coefficient symmetry/extraction and a degree
+bound, not the requested preservation theorem. Other files in the returned
+tree were not inspected and are `ASSUMED-UNVERIFIED`.
+
+Opened CMP `https://arxiv.org/pdf/2502.00254v2` (33 pages); `pdftotext` was
+unavailable (exit 127), so used installed `pypdf.PdfReader` to extract pages
+12 and 13. Definition 3.10, Conjecture 3.13 and Corollary 3.14 were read.
+The source at publication only lists nonnegative integer alpha and alpha=-1/2
+as proved parameter cases. This is not a current literature-exhaustiveness
+claim. Also read #6377 round 3 in full at
+https://github.com/the-omega-institute/trureturing/issues/6377#issuecomment-5586693571 .
+
+## Adopted degree-four definition (before symbolic measurements)
+
+For arbitrary p,q in R[X], set
+
+```text
+e_k(p) = (-1)^k * coeff(p,4-k), 0 <= k <= 4
+w_k(alpha) = (4)_k * (4+alpha)_k
+c_k = w_k * sum_{i=0}^k [ e_i(p)/w_i * e_{k-i}(q)/w_{k-i} ]
+boxplus4(alpha,p,q) = c_0 X^4 - c_1 X^3 + c_2 X^2 - c_3 X + c_4
+(z)_k = product_{j=0}^{k-1}(z-j).
+```
+
+This replaces 3 by 4 in each of `elementaryCoeff`, `weight`,
+`normalizedCoeff`, `convolutionCoeff`, and `boxplus3`, following the opened
+Definition 3.10 exactly. On monic root products c_0=1. The target quantifies
+alpha>-1, eight nonnegative input roots, and four nonnegative output roots,
+with equality to the product of the four corresponding linear factors.
 
 ## Nonclaims
 
