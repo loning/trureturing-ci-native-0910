@@ -56,7 +56,7 @@ theorem strictness : firstCatalog.StructurallyLowersEscape 0 :=
 #guard_msgs in
 run_cmd liftTermElabM do
   validateEvidence (← getEnv).header.mainModule ⟨"split", #[
-    ⟨⟨``parity, "parity"⟩, .structuralOccurrence {
+    ⟨⟨``parity, "parity"⟩, .certified <| .structuralOccurrence {
       canonicalArena := ``arena
       registration := ``firstRegistration
       «realization» := ``parity.__structural_realization
