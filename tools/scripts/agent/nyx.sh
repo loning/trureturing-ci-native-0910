@@ -85,7 +85,18 @@ __verdict_of_payload() {  # 判**取回的文本**,不判文件 —— 活判决
     *"Failed to read prompt"*)            echo NOFILE;     return;;
     *extraction_failure*)                 echo EXTRACTION; return;;
   esac
+  # 2026-09-08 实测:chrono pool 的任务 `e72e6521…` 终态返回
+  #   Attempts: 1 (infrastructure retries 0/3)
+  #   Message delivery timed out. Please try again.Retry
+  # 那是载体 UI 自己的失败文本,不是答案。它不含 `Error:` 前缀、也不匹配上面任何一形,
+  # 于是**被判 OK 且退出码 0** —— 调用方按退出码判就把一次失败的派席当成了成功
+  # (第 8.4 条:坏原材料让下游误判)。与 EXTRACTION 分开记,因为处置不同:
+  # extraction 是 pool 的 worker 脚本版本问题(换 pool);delivery 是同 pool 重投。
+  # **只认末行**,不做全文子串匹配:本仓的 brief 与评审答案会**引用**这句失败文本
+  # (本条注释自己就是一例),全文匹配会把一个真答案误判成载体失败。
   [ -n "$r" ] || { echo UNKNOWN; return; }
+  last=$(printf '%s' "$r" | awk 'NF{l=$0} END{print l}')
+  case "$last" in *"Message delivery timed out"*) echo DELIVERY; return;; esac
   first=${r%%$'\n'*}
   case "$first" in "Error:"*) echo UNKNOWN; return;; esac
   echo OK
@@ -131,6 +142,14 @@ __selftest() {  # 分类器的阳性/阴性对照。**立条依据(2026-09-06)**
   chk EXTRACTION carrier-extraction         'Error: Task failed (extraction_failure).'
   chk QUOTA      carrier-quota-429          'Error: HTTP 429 {"error":"oracle_quota_exceeded"}'
   chk NOFILE     carrier-prompt-missing     'Error: Failed to read prompt'
+  # 载体投递失败:失败文本是 payload 的**末行**
+  chk DELIVERY   carrier-delivery-timeout   "$(printf '%s\n' 'Attempts: 1 (infrastructure retries 0/3)' \
+    'Message delivery timed out. Please try again.Retry')"
+  # 阴性对照:**真答案里引用了同一句失败文本**,但末行是答案 —— 必须仍判 OK。
+  # 这条钉的正是「不做全文子串匹配」;改成全文匹配它立刻变红。
+  chk OK         answer-quotes-delivery-text "$(printf '%s\n' \
+    'The seat reported: Message delivery timed out. Please try again.' \
+    '{"verdict":"reject","conclusion":{"blocking":1}}')"
   chk UNKNOWN    carrier-bare-error         'Error: forbidden'
   chk UNKNOWN    empty-payload              ''
   # Script 列解析的阳性/阴性对照:缺省 pool 的选择依赖它,解析错了就诊断错了。
