@@ -43,7 +43,7 @@ theorem strictness : testCatalog.{u}.StructurallyLowersEscape () :=
   testCatalog.structurallyLowersEscape_of_certificate () witness
 
 def inventory : DispositionInventory := ⟨"universe-head", #[
-  ⟨⟨``generated, "universe-id"⟩, .structuralOccurrence {
+  ⟨⟨``generated, "universe-id"⟩, .certified <| .structuralOccurrence {
     canonicalArena := ``arena
     registration := ``registration
     «realization» := ``generated.__structural_realization

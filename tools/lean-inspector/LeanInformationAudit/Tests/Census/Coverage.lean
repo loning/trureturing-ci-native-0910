@@ -12,13 +12,13 @@ def unreachableKey : StatementKey := ⟨`Fixture.unreachable, "id-unreachable"�
 def fourRows : DispositionInventory := {
   headSha := "fixture-head"
   entries := #[
-    ⟨finiteKey, .finiteOccurrence ⟨`Finite.arena, `Finite.unit, `Finite.realization,
+    ⟨finiteKey, .certified <| .finiteOccurrence ⟨`Finite.arena, `Finite.unit, `Finite.realization,
       `Finite.nondegenerate, `Finite.enumeration⟩⟩,
-    ⟨structuralKey, .structuralOccurrence ⟨`Structural.arena, `Structural.unit,
+    ⟨structuralKey, .certified <| .structuralOccurrence ⟨`Structural.arena, `Structural.unit,
       `Structural.realization, `Structural.strictness, `Structural.witness⟩⟩,
-    ⟨boundedKey, .boundedFiniteTruncation ⟨`Truncation.family, 12,
+    ⟨boundedKey, .certified <| .boundedFiniteTruncation ⟨`Truncation.family, 12,
       `Truncation.comparison, .reportOnly⟩⟩,
-    ⟨unreachableKey, .unreachable ⟨.noCanonicalObjectCarrier, `Unreachable.evidence⟩⟩]
+    ⟨unreachableKey, .certified <| .unreachable ⟨.noCanonicalObjectCarrier, `Unreachable.evidence⟩⟩]
 }
 
 def frozenRows : Array StatementKey :=
@@ -60,17 +60,18 @@ private def check (inventory : DispositionInventory) : Except String Unit :=
 
 /-- info: Except.error "IE-C035 DuplicateAnalysisDisposition theorem=Fixture.finite statement_id=id-finite records=[0,4]" -/
 #guard_msgs in
-#eval check { fourRows with entries := fourRows.entries.push fourRows.entries[0]! }
+#eval check { fourRows with entries := (fourRows.entries.push fourRows.entries[0]!) }
 
 /-- info: Except.error "IE-C035 DuplicateAnalysisDisposition theorem=Fixture.finite statement_id=id-finite records=[0,4]" -/
 #guard_msgs in
-#eval check { fourRows with entries := fourRows.entries.push (
-  ⟨⟨`Fixture.alias, "id-finite"⟩, .unreachable ⟨.noCanonicalObjectCarrier, `Evidence⟩⟩) }
+#eval check { fourRows with entries :=
+  (fourRows.entries.push (⟨⟨`Fixture.alias, "id-finite"⟩,
+    .certified <| .unreachable ⟨.noCanonicalObjectCarrier, `Evidence⟩⟩)) }
 
 /-- info: Except.error "IE-C036 DispositionIdentityMismatch theorem=Fixture.finite component=statement_id expected=id-finite actual=stale" -/
 #guard_msgs in
 #eval check { fourRows with entries := fourRows.entries.set! 0 (
-  ⟨⟨`Fixture.finite, "stale"⟩, .unreachable ⟨.noCanonicalObjectCarrier, `Evidence⟩⟩) }
+  ⟨⟨`Fixture.finite, "stale"⟩, .certified <| .unreachable ⟨.noCanonicalObjectCarrier, `Evidence⟩⟩) }
 
 /-- info: Except.error "IE-C036 DispositionIdentityMismatch theorem=Fixture.bounded component=head expected=fixture-head actual=stale-head" -/
 #guard_msgs in
@@ -79,9 +80,9 @@ private def check (inventory : DispositionInventory) : Except String Unit :=
 def counts := DispositionCensus.count fourRows
 
 def everyReason : DispositionInventory := ⟨"reasons", #[
-  ⟨⟨`NoCarrier, "1"⟩, .unreachable ⟨.noCanonicalObjectCarrier, `Evidence⟩⟩,
-  ⟨⟨`NoBundle, "2"⟩, .unreachable ⟨.noFinitePrimitiveBundle, `Evidence⟩⟩,
-  ⟨⟨`NoRealization, "3"⟩, .unreachable ⟨.noFaithfulPrimitiveRealization, `Evidence⟩⟩]⟩
+  ⟨⟨`NoCarrier, "1"⟩, .certified <| .unreachable ⟨.noCanonicalObjectCarrier, `Evidence⟩⟩,
+  ⟨⟨`NoBundle, "2"⟩, .certified <| .unreachable ⟨.noFinitePrimitiveBundle, `Evidence⟩⟩,
+  ⟨⟨`NoRealization, "3"⟩, .certified <| .unreachable ⟨.noFaithfulPrimitiveRealization, `Evidence⟩⟩]⟩
 
 -- CT-002: literal expected totals, independently of the counting function.
 /-- info: (3, 1, 1, 1, 3) -/

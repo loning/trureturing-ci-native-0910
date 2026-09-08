@@ -22,7 +22,7 @@ def noRealization : UnreachableElaborationEvidence (∀ n : Nat, n % 2 < 2) wher
 
 def inventory : DispositionInventory := ⟨"fixture-head", #[
   ⟨⟨``Evidence.structuralTheorem, "structural-id"⟩,
-    .unreachable ⟨.noFaithfulPrimitiveRealization, ``noRealization⟩⟩]⟩
+    .certified <| .unreachable ⟨.noFaithfulPrimitiveRealization, ``noRealization⟩⟩]⟩
 
 /--
 info: IE-C037 DispositionClassMismatch theorem=LeanInformationAudit.Tests.Census.Evidence.structuralTheorem class=unreachable invalid=registered_structural_realization
@@ -66,7 +66,7 @@ def noCarrier : UnreachableElaborationEvidence (2 + 3 = 5) where
 
 def withoutMembership : DispositionInventory := ⟨"fixture-head", #[
   ⟨⟨``generatedWithoutMembership, "without-membership-id"⟩,
-    .unreachable ⟨.noCanonicalObjectCarrier, ``noCarrier⟩⟩]⟩
+    .certified <| .unreachable ⟨.noCanonicalObjectCarrier, ``noCarrier⟩⟩]⟩
 
 /--
 info: IE-C037 DispositionClassMismatch theorem=LeanInformationAudit.Tests.Census.UnreachableRoot.generatedWithoutMembership class=unreachable invalid=registered_structural_realization
