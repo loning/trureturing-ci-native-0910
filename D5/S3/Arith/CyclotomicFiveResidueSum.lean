@@ -352,6 +352,31 @@ theorem residueCount_not_dvd_five (m : ℕ) (hm : ¬5 ∣ m) : ¬5 ∣ residueCo
         (iha fun h => hnot (dvd_mul_of_dvd_left h b))
         (ihb fun h => hnot (dvd_mul_of_dvd_right h a))
 
+/-- Robert Israel's A290322 conjecture: a multiple of five has nonzero residue sum. -/
+theorem residue_sum_ne_zero (n : ℕ) (hn : 2 ≤ n) (h5 : 5 ∣ n) :
+    (∑ u ∈ goodUnits n, u) % n ≠ 0 := by
+  obtain ⟨e, m, hm, he⟩ :=
+    Nat.exists_eq_pow_mul_and_not_dvd (by omega : n ≠ 0) 5 (by decide)
+  cases e with
+  | zero => simp only [pow_zero, one_mul] at he; exact (hm (he ▸ h5)).elim
+  | succ a =>
+      subst n
+      have : NeZero m := ⟨by intro hz; exact hm (hz ▸ dvd_zero 5)⟩
+      have hcop : Nat.Coprime (5 ^ (a + 1)) m :=
+        ((show Nat.Prime 5 by decide).coprime_iff_not_dvd.mpr hm).pow_left _
+      have hc := sum_goodUnits_mul_cast (5 ^ (a + 1)) m hcop
+      intro hz
+      have hd : 5 ^ (a + 1) ∣ ∑ u ∈ goodUnits (5 ^ (a + 1) * m), u :=
+        dvd_trans (dvd_mul_right _ _) (Nat.dvd_of_mod_eq_zero hz)
+      have hzero := (ZMod.natCast_eq_zero_iff _ (5 ^ (a + 1))).mpr hd
+      rw [hzero] at hc
+      have hbad : 5 ^ (a + 1) ∣
+          residueCount m * ∑ u ∈ goodUnits (5 ^ (a + 1)), u := by
+        apply (ZMod.natCast_eq_zero_iff _ _).mp
+        simpa only [Nat.cast_mul] using hc.symm
+      exact scaled_sum_five_pow_not_dvd a (residueCount m)
+        (residueCount_not_dvd_five m hm) hbad
+
 #print axioms phi5_mod_five_eq_zero_iff
 #print axioms sum_goodUnits_five_pow
 #print axioms residue_sum_five_pow_ne_zero
@@ -360,5 +385,6 @@ theorem residueCount_not_dvd_five (m : ℕ) (hm : ¬5 ∣ m) : ¬5 ∣ residueCo
 #print axioms residueCount_pow
 #print axioms residueCount_prime
 #print axioms residueCount_not_dvd_five
+#print axioms residue_sum_ne_zero
 
 end D5.S3.Arith.CyclotomicFiveResidueSum
