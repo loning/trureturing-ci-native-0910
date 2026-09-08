@@ -149,3 +149,34 @@ admission_basis escape-witness; direct frozen GID/statement_id none.
 utility none: this is an unbounded symbolic coefficient formula, missing
 all four computational classes. Consumer edge: (star) ->
 coeff_matchingSum_fiber -> card_matchingMonomialFiber_mul.
+
+Step 3 was pushed as `cf625f5a04`.
+
+## Step 4
+
+`matchingSum_esymm_mul` and `matchingSum_esymm` prove (star) in the
+multivariate polynomial ring over Q. The first uses a constant-polynomial
+denominator on the left; the second multiplies the explicit
+`matchingNumerator` by the constant polynomial of its rational reciprocal.
+
+The arbitrary-exponent obligation is also discharged. Every decorated
+matching exponent is at most two at each vertex and has sum 2k. The same
+holds for every subset pair contributing to e_i e_(2k-i). Every such
+exponent is reconstructed as a disjoint square/linear fiber; coefficients
+outside this class vanish on both sides. The surviving sum is reindexed by
+i = |S| + ell, and uses alternating_factorial_sum with
+d = n-2k+|S| and h = k-|S|. No finite parameter testing is a premise.
+
+`/usr/bin/time -l make lean`: EXIT 0; 12594 jobs; 19.58 seconds;
+maximum RSS 3110420480 bytes (`step-4b-make-lean.log`). The preliminary
+support proof build `step-4a-make-lean.log` also passed, 18.13 seconds,
+RSS 2986377216 bytes, 12594 jobs. All 12 theorem axiom prints in the new
+module are [propext, Classical.choice, Quot.sound].
+
+Both public theorems have proof_shape content after live helper inlining,
+escape_witness matchingMonomialFiberEquiv together with the exponent
+classification and shifted sum assembly; admission_basis escape-witness.
+Direct frozen GID/statement_id: none. utility none for each of the 14
+declarations: each is a symbolic definition or an unbounded theorem,
+outside the four computational classes. No freeze or independent review
+is claimed.
