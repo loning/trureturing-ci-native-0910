@@ -574,6 +574,39 @@ private def validateUnreachable (modules : Array Name) (registrations : Array (N
     unless type.isConstOf ``Arena || type.isConstOf ``StructuralArena ||
         type.isConstOf ``PrimitiveLawArena do failClass key className "candidate_arena"
 
+private def validateObserved (head : String) (root : Name) (modules : Array Name)
+    (registrations : Array (Name × Expr)) (key : StatementKey)
+    (payload : AnalysisObservation key) : MetaM Unit := do
+  unless payload.root == root do
+    throwError (censusError head "root" root.toString payload.root.toString)
+  ofExcept <| checkObservationStatus head payload
+  let expectedModules := modules.qsort Name.quickLt
+  let actualModules := payload.importScope.modules.qsort Name.quickLt
+  unless actualModules == expectedModules do
+    throwError (censusError head "import_scope" "root-import-closure" "module-set-mismatch")
+  let env ← getEnv
+  let actualOwner := env.getModuleIdxFor? key.theoremName |>.map
+      (env.header.moduleNames[·.toNat]!) |>.getD env.header.mainModule
+  unless payload.owningModule == actualOwner do
+    throwError (censusError head "owning_module" actualOwner.toString payload.owningModule.toString)
+  unless inRoot env modules key.theoremName do
+    throwError (censusError head "root" s!"import-closure-containing:{key.theoremName}" root.toString)
+  for candidate in payload.candidates do
+    let finite := (InformationRegistry.entries env).any fun entry =>
+      entry.theoremName == key.theoremName && modules.contains entry.registrationModuleName &&
+        (entry.realizationName == candidate || entry.unitName == candidate)
+    let structural := (structuralRegistry.getState env).any fun entry =>
+      entry.theoremName == key.theoremName && modules.contains entry.registrationModule &&
+        (entry.realizationConst == candidate || entry.unitConst == candidate)
+    let mut registered := false
+    for (name, type) in registrations do
+      if name == candidate then
+        let registeredName : Name ← reduceEval type.getAppArgs[0]!
+        registered := registeredName == key.theoremName
+    unless inRoot env modules candidate && (finite || structural || registered) do
+      throwError (censusError head "candidates" "matching-registration-or-realization"
+        candidate.toString)
+
 /-- Checks declaration records and certificates in the environment, then requires
 structural_theorem source syntax as creation authority. It reads no seal artifact
 and manufactures no carrier from statement syntax. Returns the source input closure. -/
@@ -592,17 +625,21 @@ def validateEvidenceSources (root : Name) (inventory : DispositionInventory) :
       failClass key entry.2.className "theorem"
     let statement ← inferType theoremExpr
     match entry.2 with
-    | .finiteOccurrence payload => validateFinite root key payload
-    | .structuralOccurrence payload =>
-      let source ← validateStructural root inventory.headSha modules registrations
-        key theoremExpr statement payload
-      unless sources.contains source do sources := sources.push source
-    | .boundedFiniteTruncation payload => validateBounded key statement payload
-    | .unreachable payload =>
-      unless inRoot env modules key.theoremName do
-        throwError (censusError inventory.headSha "root"
-          s!"import-closure-containing:{key.theoremName}" root.toString)
-      validateUnreachable modules registrations key statement payload
+    | .certified disposition =>
+      match disposition with
+      | .finiteOccurrence payload => validateFinite root key payload
+      | .structuralOccurrence payload =>
+        let source ← validateStructural root inventory.headSha modules registrations
+          key theoremExpr statement payload
+        unless sources.contains source do sources := sources.push source
+      | .boundedFiniteTruncation payload => validateBounded key statement payload
+      | .unreachable payload =>
+        unless inRoot env modules key.theoremName do
+          throwError (censusError inventory.headSha "root"
+            s!"import-closure-containing:{key.theoremName}" root.toString)
+        validateUnreachable modules registrations key statement payload
+    | .observed payload =>
+      validateObserved inventory.headSha root modules registrations key payload
   return sources.qsort fun left right => left.moduleName.toString < right.moduleName.toString
 
 /-- Validation-only interface; census publication also records the source hashes. -/

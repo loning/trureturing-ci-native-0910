@@ -51,13 +51,39 @@ inductive AnalysisDisposition (key : StatementKey) where
       (value : BoundedFiniteTruncationDisposition key)
   | unreachable (value : UnreachableDisposition key)
 
+/-- Every module in the root's transitive import closure, including the root. -/
+structure ImportClosureScope where
+  modules : Array Name
+  completed : Bool
+  deriving DecidableEq, Repr
+
+structure AnalysisObservation (key : StatementKey) where
+  owningModule : Name
+  root : Name
+  importScope : ImportClosureScope
+  queryCompleted : Bool
+  candidates : Array Name
+  note : String -- Presentation only; never consumed as evidence.
+  deriving DecidableEq, Repr
+
+inductive CensusAssessment (key : StatementKey) where
+  | certified (value : AnalysisDisposition key)
+  | observed (value : AnalysisObservation key)
+
 structure DispositionInventory where
   headSha : String
-  entries : Array (Sigma fun key : StatementKey => AnalysisDisposition key)
+  entries : Array (Sigma fun key : StatementKey => CensusAssessment key)
 
 def DispositionInventory.keys
     (inventory : DispositionInventory) : List StatementKey :=
   inventory.entries.toList.map fun entry => entry.1
+
+def DispositionInventory.certifiedKeys
+    (inventory : DispositionInventory) : List StatementKey :=
+  inventory.entries.toList.filterMap fun entry =>
+    match entry.2 with
+    | .certified _ => some entry.1
+    | .observed _ => none
 
 def DispositionInventory.ExactlyCovers
     (inventory : DispositionInventory)
@@ -75,11 +101,15 @@ deriving instance DecidableEq, Repr for TruncationCertification
 deriving instance DecidableEq, Repr for BoundedFiniteTruncationDisposition
 deriving instance DecidableEq, Repr for UnreachableDisposition
 deriving instance DecidableEq, Repr for AnalysisDisposition
+deriving instance DecidableEq, Repr for CensusAssessment
 deriving instance DecidableEq, Repr for DispositionInventory
 
 deriving instance Inhabited for StatementKey
 deriving instance Inhabited for FiniteOccurrenceDisposition
+deriving instance Inhabited for ImportClosureScope
+deriving instance Inhabited for AnalysisObservation
 deriving instance Inhabited for AnalysisDisposition
+deriving instance Inhabited for CensusAssessment
 
 instance (inventory : DispositionInventory) (head : String) (keys : Finset StatementKey) :
     Decidable (inventory.ExactlyCovers head keys) :=
@@ -152,6 +182,19 @@ instance {key : StatementKey} : ToJson (UnreachableDisposition key) :=
   ⟨fun value => Json.mkObj [
     ("reason", toJson value.reason), ("evidence", nameJson value.evidence)]⟩
 
+instance : ToJson ImportClosureScope := ⟨fun scope => Json.mkObj [
+  ("modules", Json.arr (scope.modules.map nameJson)),
+  ("completed", toJson scope.completed)]⟩
+
+instance {key : StatementKey} : ToJson (AnalysisObservation key) :=
+  ⟨fun value => Json.mkObj [
+    ("owning_module", nameJson value.owningModule),
+    ("root", nameJson value.root),
+    ("import_scope", toJson value.importScope),
+    ("query_completed", toJson value.queryCompleted),
+    ("candidates", Json.arr (value.candidates.map nameJson)),
+    ("note", toJson value.note)]⟩
+
 def AnalysisDisposition.className {key : StatementKey} : AnalysisDisposition key → String
   | .finiteOccurrence _ => "finite_occurrence"
   | .structuralOccurrence _ => "structural_occurrence"
@@ -164,11 +207,19 @@ def AnalysisDisposition.payloadJson {key : StatementKey} : AnalysisDisposition k
   | .boundedFiniteTruncation value => toJson value
   | .unreachable value => toJson value
 
+def CensusAssessment.className {key : StatementKey} : CensusAssessment key → String
+  | .certified value => value.className
+  | .observed _ => "observed"
+
+def CensusAssessment.payloadJson {key : StatementKey} : CensusAssessment key → Json
+  | .certified value => value.payloadJson
+  | .observed value => toJson value
+
 instance {key : StatementKey} : ToJson (AnalysisDisposition key) :=
   ⟨fun disposition => Json.mkObj [
     ("class", toJson disposition.className), ("payload", disposition.payloadJson)]⟩
 
-def dispositionRowJson (entry : Sigma fun key : StatementKey => AnalysisDisposition key) : Json :=
+def dispositionRowJson (entry : Sigma fun key : StatementKey => CensusAssessment key) : Json :=
   Json.mkObj [
     ("theorem_name", nameJson entry.1.theoremName),
     ("statement_id", toJson entry.1.statementId),
@@ -197,6 +248,14 @@ def classError (name : Name) (className invalid : String) : String :=
 def censusError (head component expected actual : String) : String :=
   s!"IE-C044 DispositionCensusMismatch head={head} component={component} \
 expected={expected} actual={actual}"
+
+/-- An unfinished query cannot be admitted even as an observation. -/
+def checkObservationStatus (head : String) {key : StatementKey}
+    (value : AnalysisObservation key) : Except String Unit := do
+  unless value.queryCompleted do
+    throw <| censusError head "query_completed" "true" "false"
+  unless value.importScope.completed do
+    throw <| censusError head "import_scope" "completed" "false"
 
 end DispositionCensus
 

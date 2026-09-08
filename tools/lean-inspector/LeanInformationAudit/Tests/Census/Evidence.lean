@@ -87,25 +87,25 @@ def noCarrier : UnreachableElaborationEvidence (2 + 3 = 5) where
 def inventory : DispositionInventory := {
   headSha := "fixture-head"
   entries := #[
-    ⟨⟨``SealSuccess.idTheorem, "finite-id"⟩, .finiteOccurrence {
+    ⟨⟨``SealSuccess.idTheorem, "finite-id"⟩, .certified <| .finiteOccurrence {
       canonicalArena := ``SealSuccess.t001Arena
       registration := ``SealSuccess.idTheorem.__information_unit
       «realization» := ``SealSuccess.idTheorem.__primitive_realization
       nondegeneracyCertificate := ``finiteNondegenerate
       stateEnumerationCertificate := ``finiteStates }⟩,
-    ⟨⟨``structuralTheorem, "structural-id"⟩, .structuralOccurrence {
+    ⟨⟨``structuralTheorem, "structural-id"⟩, .certified <| .structuralOccurrence {
       canonicalArena := ``infiniteArena
       registration := ``structuralRegistration
       «realization» := ``structuralTheorem.__structural_realization
       strictnessCertificate := ``structuralStrictness
       witnessCertificate := ``structuralWitness }⟩,
-    ⟨⟨``boundedTheorem, "bounded-id"⟩, .boundedFiniteTruncation {
+    ⟨⟨``boundedTheorem, "bounded-id"⟩, .certified <| .boundedFiniteTruncation {
       truncationFamily := ``truncation
       bound := 12
       comparisonStatement := ``comparison
       certification := .reportOnly }⟩,
     ⟨⟨``closedNumerical, "unreachable-id"⟩,
-      .unreachable ⟨.noCanonicalObjectCarrier, ``noCarrier⟩⟩]
+      .certified <| .unreachable ⟨.noCanonicalObjectCarrier, ``noCarrier⟩⟩]
 }
 
 expect_information_occurrence SealSuccess.fstTheorem
