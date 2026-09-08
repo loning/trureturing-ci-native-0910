@@ -30,7 +30,19 @@ $$\begin{gathered}\forall n: Type, [Fintype\left(n\right)] [DecidableEq\left(n\r
 
 The square of a nonzero integer is at least one. Symmetry therefore lowers the two-coordinate determinant by at least one relative to its diagonal product. Multiplication by the positive diagonal entries yields the integer form of the bound.
 
-**Theorem 1.3 (A positive margin depending on k and p).**
+**Theorem 1.3 (Only the endpoint margins determine the gap).**
+
+$$\forall k \in \mathbb{N}, p \in \mathbb{R},\; \left(2 \le k \land \left(log\left(\frac{k + 1}{k}\right) < p \land p < log\left(\frac{k}{k - 1}\right)\right)\right) \Rightarrow \delta(k, p) = min\left(log\left(\frac{k}{k - 1}\right) - p, p - log\left(\frac{k + 1}{k}\right)\right)$$
+
+*Proof.* Machine-checked in Lean as `D5/S3/Arith/GoldenResource/IntegerFischerSelector.selectorGap_eq_min` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+The two endpoint margins add to log(k squared) minus log(k squared minus one), since (k-1)(k+1) equals k squared minus one. Both margins are positive on the price interval, so their minimum does not exceed their sum. Thus delta(k, p) equals the minimum of the two endpoint margins.
+
+**Theorem 1.4 (A positive margin depending on k and p).**
 
 $$\forall k \in \mathbb{N}, p \in \mathbb{R},\; \left(2 \le k \land \left(log\left(\frac{k + 1}{k}\right) < p \land p < log\left(\frac{k}{k - 1}\right)\right)\right) \Rightarrow 0 < min\left(min\left(log\left(\frac{k}{k - 1}\right) - p, p - log\left(\frac{k + 1}{k}\right)\right), log\left(k^2\right) - log\left(k^2 - 1\right)\right)$$
 
@@ -42,7 +54,7 @@ $$\forall k \in \mathbb{N}, p \in \mathbb{R},\; \left(2 \le k \land \left(log\le
 
 Each of the three terms is positive on the strict price interval: the first two because the interval endpoints are strict, the third because the logarithm is strictly increasing and k squared exceeds k squared minus one. The margin contains no matrix dimension.
 
-**Theorem 1.4 (The scalar matrix is uniformly isolated).**
+**Theorem 1.5 (The scalar matrix is uniformly isolated).**
 
 $$\begin{gathered}\forall n: Type, [Fintype\left(n\right)] [DecidableEq\left(n\right)],\\\forall T: Matrix\left(n, n, \mathbb{Z}\right),\\\forall k \in \mathbb{N}, p \in \mathbb{R},\; \left(\left(2 \le k \land \left(log\left(\frac{k + 1}{k}\right) < p \land p < log\left(\frac{k}{k - 1}\right)\right)\right) \land PosDef\left(R\left(T\right)\right)\right) \Rightarrow \left(0 < \delta(k, p) \land \left(log\left(det\left(T\right)\right) - p \cdot tr\left(T\right) \le (card\left(n\right)) \cdot (log\left(k\right) - p \cdot k) \land \left(T \ne k \cdot I\left(n\right) \Rightarrow log\left(det\left(T\right)\right) - p \cdot tr\left(T\right) \le (card\left(n\right)) \cdot (log\left(k\right) - p \cdot k) - \delta(k, p)\right)\right)\right)\end{gathered}$$
 
@@ -54,11 +66,25 @@ $$\begin{gathered}\forall n: Type, [Fintype\left(n\right)] [DecidableEq\left(n\r
 
 The objective log(det(T))-p tr(T) is bounded above by the number of indices times log(k)-p k. Every matrix distinct from k times the identity loses at least the margin. If a diagonal entry differs from k, sum the scalar selector inequalities and retain that entry's loss. If every diagonal entry equals k, a nonzero off-diagonal entry gives the two-coordinate loss. Taking logarithms cancels the remaining diagonal product, so this loss is independent of dimension.
 
+**Theorem 1.6 (The gap is attained in every nonempty dimension).**
+
+$$\forall n: Type, [Fintype\left(n\right)] [DecidableEq\left(n\right)] [Nonempty\left(n\right)], \forall k \in \mathbb{N}, p \in \mathbb{R},\; \left(2 \le k \land \left(log\left(\frac{k + 1}{k}\right) < p \land p < log\left(\frac{k}{k - 1}\right)\right)\right) \Rightarrow \left(\exists T \in Matrix\left(n, n, \mathbb{Z}\right),\; PosDef\left(R\left(T\right)\right) \land \left(T \ne k \cdot I\left(n\right) \land log\left(k^{card\left(n\right)}\right) - p \cdot (card\left(n\right) \cdot k) - (log\left(det\left(T\right)\right) - p \cdot tr\left(T\right)) = \delta(k, p)\right)\right)$$
+
+*Proof.* Machine-checked in Lean as `D5/S3/Arith/GoldenResource/IntegerFischerSelector.selectorGap_sharp` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+Choose an index and replace its diagonal entry in k times the identity by k-1 or k+1. Both resulting integer matrices are positive definite and distinct from k times the identity. The logarithm of a diagonal determinant is the sum of the logarithms of its entries. All unchanged coordinates cancel from the objective difference, leaving exactly log(k/(k-1))-p or p-log((k+1)/k). Choose the smaller margin; equality with delta(k, p) shows that the uniform gap cannot be increased.
+
 ## References
 
 - Truth anchor: `D5/S3/Arith/GoldenResource/IntegerFischerSelector.fischer_two_block`
 - Truth anchor: `D5/S3/Arith/GoldenResource/IntegerFischerSelector.integer_fischer_gap`
 - Truth anchor: `D5/S3/Arith/GoldenResource/IntegerFischerSelector.integer_log_unique_maximum`
+- Truth anchor: `D5/S3/Arith/GoldenResource/IntegerFischerSelector.selectorGap_eq_min`
 - Truth anchor: `D5/S3/Arith/GoldenResource/IntegerFischerSelector.selectorGap_pos`
+- Truth anchor: `D5/S3/Arith/GoldenResource/IntegerFischerSelector.selectorGap_sharp`
 - Dependency: [D5/S3/Arith/GoldenResource/DiscreteLogSelector](DiscreteLogSelector.md)
 - Dependency: [D5/S3/Arith/GoldenResource/IntegerHadamard](IntegerHadamard.md)
