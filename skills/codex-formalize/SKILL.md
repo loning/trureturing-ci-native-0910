@@ -182,6 +182,19 @@ git add -A
 git commit -F <commit-message-file>
 ```
 
+**The theorem you cover with must own the clause unconditionally.** Before `make cover`, list the
+atom's clauses and the chosen theorem's explicit hypotheses side by side, and for each hypothesis name
+the sentence of the atom that supplies it. A hypothesis the atom neither states nor implies makes the
+cover weaker than the source claim — the digestion-side precedents below say the same thing, but a
+deposit lane reaches `make cover` without ever reading them, which is how this class landed twice.
+The specific trap both times: the discharging fact was **already frozen in the same directory**, so
+the unconditional statement cost no new mathematics and was simply not written. Landed cases: a
+parity atom bound to `..._of_generating_function` while the module already proved the unconditional
+form, and a price atom bound to `..._of_isLeast_missing_prime` while `exists_smallest_missing_prime_threshold`
+was frozen two files away. In both, the fix was one composed public theorem and a re-aimed edge, and in
+both the module was already frozen, so the fix cost a full redo. If the difference is a hypothesis some
+frozen theorem discharges, expose the composed unconditional theorem and cover that.
+
 Postcondition: deposit and cover exited 0; preflight exit code and diagnostics reported; the complete intended delta is in one explicit builder commit; and the worktree is clean. A failure is captured as an `open` outcome with diagnostics and no push.
 
 ### 8. Push and open the pull request, or report `open`
