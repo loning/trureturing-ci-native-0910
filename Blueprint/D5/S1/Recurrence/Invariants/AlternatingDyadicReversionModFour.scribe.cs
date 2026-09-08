@@ -25,8 +25,8 @@ internal sealed class AlternatingDyadicReversionModFourDocument : IScribeDocumen
                 + "mk constructs a series from its coefficient function; coeff(n,B) "
                 + "extracts a coefficient; subst(B,C) substitutes C into B. The notation "
                 + "inv(R) is Mathlib's substInvOfIsUnit applied to the proved unit linear "
-                + "coefficient of R. The operator div is integer Euclidean division, "
-                + "and mod is the integer Euclidean remainder.")),
+                + "coefficient of R. The operator div is natural-number division on the index, "
+                + "and mod is the natural-number remainder.")),
             Node("inverseSeries", "The alternating dyadic inverse", InverseFormula(),
                 "The recursion sets r(0)=0 and r(1)=1. At every other even index it "
                 + "negates the coefficient at half the index; at every other odd index "

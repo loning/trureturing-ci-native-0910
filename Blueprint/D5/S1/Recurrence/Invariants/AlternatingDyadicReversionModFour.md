@@ -6,7 +6,7 @@ The coefficients of OEIS A389537 satisfy Hanna's mod-four classification.
 
 The entry cited in hanna2025a389537 defines A by A(A(x)-x)=A(x)^2. Its conjecture says that for n greater than two, a(n) is congruent to two modulo four exactly at indices 3 times a power of two, and is divisible by four at every other such index.
 
-All indices are natural numbers. The coefficient functions r and a take integer values. R denotes inverseSeries and A denotes generatingSeries in PowerSeries(Z), with indeterminate X. The local coefficient function r is specified together with R below. The operator mk constructs a series from its coefficient function; coeff(n,B) extracts a coefficient; subst(B,C) substitutes C into B. The notation inv(R) is Mathlib's substInvOfIsUnit applied to the proved unit linear coefficient of R. The operator div is integer Euclidean division, and mod is the integer Euclidean remainder.
+All indices are natural numbers. The coefficient functions r and a take integer values. R denotes inverseSeries and A denotes generatingSeries in PowerSeries(Z), with indeterminate X. The local coefficient function r is specified together with R below. The operator mk constructs a series from its coefficient function; coeff(n,B) extracts a coefficient; subst(B,C) substitutes C into B. The notation inv(R) is Mathlib's substInvOfIsUnit applied to the proved unit linear coefficient of R. The operator div is natural-number division on the index, and mod is the natural-number remainder.
 
 **Definition 1.1 (The alternating dyadic inverse).**
 
