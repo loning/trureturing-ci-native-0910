@@ -1,8 +1,14 @@
 using System.Collections.Immutable;
+using System.Text;
 
 namespace StrataLint.Engine;
 
-internal sealed record LeanSourceToken(string Text, int Line, int Column);
+internal sealed record LeanSourceToken(
+    string Text, int Line, int Column, ImmutableArray<string> IdentifierParts = default)
+{
+    internal bool IsIdentifier => !IdentifierParts.IsDefaultOrEmpty;
+    internal string Identifier => LeanSourceTokenizer.IdentifierText(IdentifierParts);
+}
 
 internal static class LeanSourceTokenizer
 {
@@ -12,6 +18,19 @@ internal static class LeanSourceTokenizer
     // Proposition extraction retains literal spelling; source policies also inspect embedded terms.
     internal static ImmutableArray<LeanSourceToken> TokenizeIncludingInterpolationTerms(string source) =>
         new Scanner(source, includeInterpolationTerms: true).ReadCode();
+
+    internal static ImmutableArray<string> IdentifierParts(string text)
+    {
+        var tokens = Tokenize(text);
+        return tokens.Length == 1 && tokens[0].IsIdentifier ? tokens[0].IdentifierParts : [];
+    }
+
+    internal static string IdentifierText(IEnumerable<string> parts) =>
+        string.Join('.', parts.Select(static part =>
+            part.Length > 0 && part[0] != '\u00ab' && IsIdentifierStart(char.ConvertToUtf32(part, 0))
+                && part.EnumerateRunes().Skip(1).All(static rune => IsIdentifierPart(rune.Value))
+                    ? part
+                    : "\u00ab" + part + "\u00bb"));
 
     private sealed class Scanner(string source, bool includeInterpolationTerms)
     {
@@ -56,6 +75,7 @@ internal static class LeanSourceTokenizer
                 var start = index;
                 var tokenLine = line;
                 var tokenColumn = column;
+                var identifierParts = ImmutableArray<string>.Empty;
                 var rawQuote = RawStringQuote();
                 if (rawQuote >= 0)
                 {
@@ -77,7 +97,7 @@ internal static class LeanSourceTokenizer
                 }
                 else if (IsIdentifierStart(CodePointAt(index)))
                 {
-                    ReadIdentifier();
+                    identifierParts = ReadIdentifier();
                 }
                 else
                 {
@@ -86,6 +106,16 @@ internal static class LeanSourceTokenizer
                             ? source.Substring(index, 2)
                             : source.Substring(index, char.IsSurrogatePair(source, index) ? 2 : 1);
                     Advance(symbol.Length);
+                    // Unicode symbolic notation can carry primes (for example mathlib's tsum/tprod).
+                    // ASCII operators still allow an adjacent character literal, as in :=')'.
+                    if (symbol[0] > 127 && Rune.IsSymbol(Rune.GetRuneAt(symbol, 0)))
+                    {
+                        while (index < source.Length && source[index] == '\'' && !AtCharacterLiteral())
+                        {
+                            Advance();
+                        }
+                    }
+
                     if (symbol.Length == 1 && symbol[0] is '(' or '[' or '{')
                     {
                         brackets.Push((symbol[0], tokenLine));
@@ -100,7 +130,7 @@ internal static class LeanSourceTokenizer
                     }
                 }
 
-                result.Add(new LeanSourceToken(source[start..index], tokenLine, tokenColumn));
+                result.Add(new LeanSourceToken(source[start..index], tokenLine, tokenColumn, identifierParts));
             }
 
             if (brackets.TryPeek(out var opening))
@@ -218,6 +248,24 @@ internal static class LeanSourceTokenizer
             throw Error("Lean raw string literal is unterminated.", startLine);
         }
 
+        private bool AtCharacterLiteral()
+        {
+            var start = (index, line, column);
+            try
+            {
+                ReadCharacter();
+                return true;
+            }
+            catch (LeanSourceExtractionException)
+            {
+                return false;
+            }
+            finally
+            {
+                (index, line, column) = start;
+            }
+        }
+
         private void ReadCharacter()
         {
             var startLine = line;
@@ -262,14 +310,16 @@ internal static class LeanSourceTokenizer
                 : 0;
         }
 
-        private void ReadIdentifier()
+        private ImmutableArray<string> ReadIdentifier()
         {
+            var parts = ImmutableArray.CreateBuilder<string>();
             while (index < source.Length)
             {
                 if (source[index] == '\u00ab')
                 {
                     var startLine = line;
                     Advance();
+                    var start = index;
                     while (index < source.Length && source[index] != '\u00bb')
                     {
                         Advance();
@@ -280,23 +330,29 @@ internal static class LeanSourceTokenizer
                         throw Error("Lean escaped identifier is unterminated.", startLine);
                     }
 
+                    parts.Add(source[start..index]);
                     Advance();
                 }
                 else
                 {
+                    var start = index;
                     while (index < source.Length && IsIdentifierPart(CodePointAt(index)))
                     {
                         Advance(char.IsSurrogatePair(source, index) ? 2 : 1);
                     }
+
+                    parts.Add(source[start..index]);
                 }
 
                 if (index + 1 >= source.Length || source[index] != '.' || !IsIdentifierStart(CodePointAt(index + 1)))
                 {
-                    return;
+                    return parts.ToImmutable();
                 }
 
                 Advance();
             }
+
+            return parts.ToImmutable();
         }
 
         private bool At(string text) => source.AsSpan(index).StartsWith(text, StringComparison.Ordinal);

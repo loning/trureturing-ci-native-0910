@@ -32,6 +32,24 @@ public sealed class LeanSourceTokenizerTests
             LeanSourceTokenizer.Tokenize("native_decide" + symbol).Select(static token => token.Text));
     }
 
+    [Theory]
+    [InlineData("\u2211'")]
+    [InlineData("\u220f'")]
+    [InlineData("\u2297'")]
+    public void SymbolicPrimesDoNotConsumeFollowingCode(string symbol)
+    {
+        var tokens = LeanSourceTokenizer.Tokenize(symbol + " n, n\nnative_decide");
+        Assert.Equal("native_decide", tokens[^1].Text);
+        Assert.Equal(2, tokens[^1].Line);
+    }
+
+    [Fact]
+    public void CharacterLiteralAfterUnicodeOperatorRetainsItsSpelling()
+    {
+        var tokens = LeanSourceTokenizer.Tokenize("')' \u2260'}'");
+        Assert.Equal(new[] { "')'", "\u2260", "'}'" }, tokens.Select(static token => token.Text));
+    }
+
     [Fact]
     public void ExistingPropositionTokensAndLocationsRemainStable()
     {
@@ -46,6 +64,10 @@ public sealed class LeanSourceTokenizerTests
     [InlineData("\"unterminated")]
     [InlineData("(]")]
     [InlineData("(")]
+    [InlineData("'(")]
+    [InlineData("'ab'")]
+    [InlineData(":='a")]
+    [InlineData("'\\u00xz'")]
     public void ExistingMalformedSourceValidationRemainsFailClosed(string source)
     {
         Assert.Throws<LeanSourceExtractionException>(() => LeanSourceTokenizer.Tokenize(source));

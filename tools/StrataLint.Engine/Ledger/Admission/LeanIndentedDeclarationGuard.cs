@@ -14,11 +14,6 @@ internal sealed partial class LeanSourceCatalog
     private static readonly ImmutableHashSet<string> BigBinderTokens =
         ImmutableHashSet.Create(StringComparer.Ordinal, "∑", "∏", "⋃", "⋂");
 
-    // Lean 标识符可含字母、数字、`_`、`'`、`?`、`!`、`.`(限定名)与 Unicode 字母;
-    // 运算符与标点(`-`、`(`、`:`、`,` …)一律不是。判首字符即可区分本例。
-    private static bool IsIdentifierToken(string text) =>
-        text.Length > 0 && (char.IsLetter(text[0]) || text[0] == '_');
-
     private static void RejectIndentedDeclarations(
         ImmutableArray<LeanSourceToken> tokens,
         ImmutableArray<int> commandStarts,
@@ -52,7 +47,7 @@ internal sealed partial class LeanSourceCatalog
                 || token.Text == "constant"
                     && index + 1 < tokens.Length
                     && tokens[index + 1].Line == token.Line
-                    && IsIdentifierToken(tokens[index + 1].Text)
+                    && tokens[index + 1].IsIdentifier
                     && tokens[index..Math.Min(tokens.Length, index + 32)].Any(candidate =>
                         candidate.Line == token.Line && candidate.Text == ":")
                 || token.Text is "private" or "protected" or "noncomputable" or "partial" or "unsafe"
@@ -69,9 +64,8 @@ internal sealed partial class LeanSourceCatalog
         string name,
         ImmutableHashSet<string> bound)
     {
-        var separator = name.IndexOf('.');
         return bound.Contains(name)
-            || separator > 0 && bound.Contains(name[..separator]);
+            || bound.Contains(LeanSourceTokenizer.IdentifierText(FullNameSegments(name).Take(1)));
     }
 
     private static ImmutableHashSet<string> BoundIdentifiers(
@@ -97,7 +91,7 @@ internal sealed partial class LeanSourceCatalog
             {
                 AddFirstIdentifier(tokens, index + 1, ":=", result);
             }
-            else if (BigBinderTokens.Contains(tokens[index].Text))
+            else if (BigBinderTokens.Contains(tokens[index].Text.TrimEnd('\'')))
             {
                 AddFirstIdentifier(tokens, index + 1, ",", result);
             }
@@ -156,13 +150,13 @@ internal sealed partial class LeanSourceCatalog
 
             if (tokens[separator].Text == ":")
             {
-                AddIdentifier(tokens[start].Text, result);
+                AddIdentifier(tokens[start], result);
                 continue;
             }
 
             for (var index = start + 1; index < separator; index++)
             {
-                AddIdentifier(tokens[index].Text, result);
+                AddIdentifier(tokens[index], result);
             }
         }
     }
@@ -187,7 +181,7 @@ internal sealed partial class LeanSourceCatalog
             var end = FirstTokenAfterLine(tokens, start);
             for (var index = start + 1; index < end; index++)
             {
-                AddIdentifier(tokens[index].Text, result);
+                AddIdentifier(tokens[index], result);
             }
         }
     }
@@ -236,7 +230,7 @@ internal sealed partial class LeanSourceCatalog
                 return;
             }
 
-            AddIdentifier(tokens[index].Text, result);
+            AddIdentifier(tokens[index], result);
         }
     }
 
@@ -264,7 +258,7 @@ internal sealed partial class LeanSourceCatalog
         {
             for (var index = start + 1; index < colon; index++)
             {
-                AddIdentifier(tokens[index].Text, result);
+                AddIdentifier(tokens[index], result);
             }
         }
 
@@ -288,7 +282,7 @@ internal sealed partial class LeanSourceCatalog
                 .FirstOrDefault(index => tokens[index].Text == ":", pipe);
             for (var index = start + 1; index < colon; index++)
             {
-                AddIdentifier(tokens[index].Text, result);
+                AddIdentifier(tokens[index], result);
             }
         }
     }
@@ -301,21 +295,21 @@ internal sealed partial class LeanSourceCatalog
     {
         for (var index = start; index < tokens.Length && tokens[index].Text != terminator; index++)
         {
-            if (IsIdentifier(tokens[index].Text))
+            if (tokens[index].IsIdentifier)
             {
-                result.Add(tokens[index].Text);
+                result.Add(tokens[index].Identifier);
                 return;
             }
         }
     }
 
     private static void AddIdentifier(
-        string token,
+        LeanSourceToken token,
         ImmutableHashSet<string>.Builder result)
     {
-        if (IsIdentifier(token) && !ReservedIdentifiers.Contains(token))
+        if (token.IsIdentifier && !ReservedIdentifiers.Contains(token.Identifier))
         {
-            result.Add(token);
+            result.Add(token.Identifier);
         }
     }
 

@@ -22,6 +22,9 @@ public sealed class NativeDecideSourceRuleTests
     [InlineData("def text := s!\"native_decide\n{(Fin.mk 1 (by\n  native_decide) : Fin 2)}\"", 3)]
     [InlineData("def c := ')'\nexample : True := by native_decide", 2)]
     [InlineData("def c := '\\''\nexample : True := by native_decide", 2)]
+    [InlineData("example : ')' \u2260'}' := by decide\nexample : True := by native_decide", 2)]
+    [InlineData("example (f : Nat -> Nat) : (\u2211' n, f n) = (\u2211' n, f n) := rfl\nexample : True := by native_decide", 2)]
+    [InlineData("example (f : Nat -> Nat) : (\u220f' n, f n) = (\u220f' n, f n) := rfl\nexample : True := by native_decide", 2)]
     [InlineData("def text := r##\"quotes \" native_decide\"##\nexample : True := by native_decide", 2)]
     [InlineData("/- outer /- native_decide -/ -/\r\nexample : True := by native_decide", 2)]
     public void RejectsBareCodeTokensWithSourceLine(string source, int line)
@@ -38,6 +41,8 @@ public sealed class NativeDecideSourceRuleTests
 
     [Theory]
     [InlineData("example : True := by decide")]
+    [InlineData("example (f : Nat -> Nat) : (\u2211' n, f n) = (\u2211' n, f n) := rfl")]
+    [InlineData("example (f : Nat -> Nat) : (\u220f' n, f n) = (\u220f' n, f n) := rfl")]
     [InlineData("-- native_decide\nexample : True := by decide")]
     [InlineData("/- native_decide /- nested native_decide -/ still inert -/\nexample : True := by decide")]
     [InlineData("def text := \"native_decide -- /- \\\" native_decide\"")]
@@ -45,6 +50,8 @@ public sealed class NativeDecideSourceRuleTests
     [InlineData("def text := r##\"quotes \"# native_decide -- )\"##")]
     [InlineData("def c := ')'")]
     [InlineData("def c := '\\''")]
+    [InlineData("example : ')' =')' := by decide")]
+    [InlineData("example : ')' \u2260'}' := by decide")]
     [InlineData("def name := `native_decide")]
     [InlineData("def name := ``native_decide")]
     [InlineData("def \u00abnative_decide\u00bb : Nat := 0")]

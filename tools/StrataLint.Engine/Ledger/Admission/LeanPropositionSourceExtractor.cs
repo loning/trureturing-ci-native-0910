@@ -476,8 +476,8 @@ internal sealed partial class LeanSourceCatalog
                 continue;
             }
 
-            var name = tokens[nameIndex].Text;
-            var fullName = name.Contains('.', StringComparison.Ordinal)
+            var name = tokens[nameIndex].Identifier;
+            var fullName = tokens[nameIndex].IdentifierParts.Length > 1
                 ? name
                 : string.Join('.', scopeStack
                     .Select(static scope => scope.NamespaceName)
@@ -579,9 +579,9 @@ internal sealed partial class LeanSourceCatalog
             var end = index + 1 < commandStarts.Length ? commandStarts[index + 1] : tokens.Length;
             for (var token = start + 1; token < end; token++)
             {
-                if (IsIdentifier(tokens[token].Text))
+                if (tokens[token].IsIdentifier)
                 {
-                    result.Add(tokens[token].Text);
+                    result.Add(tokens[token].Identifier);
                 }
             }
         }
@@ -625,7 +625,7 @@ internal sealed partial class LeanSourceCatalog
     {
         for (var index = start; index < end; index++)
         {
-            if (IsIdentifier(tokens[index].Text))
+            if (tokens[index].IsIdentifier)
             {
                 return index;
             }
@@ -684,19 +684,19 @@ internal sealed partial class LeanSourceCatalog
         ImmutableArray<LeanSourceToken> tokens,
         int start,
         int end) =>
-        start < end && IsIdentifier(tokens[start].Text) ? tokens[start].Text : string.Empty;
+        start < end && tokens[start].IsIdentifier ? tokens[start].Identifier : string.Empty;
 
     private static IEnumerable<string> QualifiedIdentifiers(
         ImmutableArray<LeanSourceToken> tokens)
     {
         for (var index = 0; index < tokens.Length; index++)
         {
-            if (!IsIdentifier(tokens[index].Text))
+            if (!tokens[index].IsIdentifier)
             {
                 continue;
             }
 
-            yield return tokens[index].Text;
+            yield return tokens[index].Identifier;
         }
     }
 
@@ -718,31 +718,20 @@ internal sealed partial class LeanSourceCatalog
     }
 
     private static ImmutableArray<string> FullNameSegments(string fullName) =>
-        fullName.Split('.', StringSplitOptions.RemoveEmptyEntries).ToImmutableArray();
+        LeanSourceTokenizer.IdentifierParts(fullName);
 
     private static string ModuleName(RepoPath path) =>
         path.Value[..^".lean".Length].Replace('/', '.');
 
-    private static bool IsIdentifier(string text) =>
-        text.Length > 0 && IsIdentifierStart(text[0])
-        && text.All(IsIdentifierPart);
-
-    private static bool IsIdentifierStart(char value) =>
-        value == '_' || char.IsLetter(value) || value > 127 && !char.IsWhiteSpace(value);
-
-    private static bool IsIdentifierPart(char value) =>
-        IsIdentifierStart(value) || char.IsDigit(value) || value == '\'' || value == '.';
-
     private static string NamespaceName(string fullName)
     {
-        var separator = fullName.LastIndexOf('.');
-        return separator < 0 ? string.Empty : fullName[..separator];
+        var parts = FullNameSegments(fullName);
+        return LeanSourceTokenizer.IdentifierText(parts.Take(Math.Max(0, parts.Length - 1)));
     }
 
     private static string LeafName(string fullName)
     {
-        var separator = fullName.LastIndexOf('.');
-        return separator < 0 ? fullName : fullName[(separator + 1)..];
+        return LeanSourceTokenizer.IdentifierText(FullNameSegments(fullName).TakeLast(1));
     }
 
     private static void AppendTokens(

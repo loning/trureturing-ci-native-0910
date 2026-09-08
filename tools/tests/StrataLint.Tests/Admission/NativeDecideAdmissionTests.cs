@@ -30,7 +30,25 @@ public sealed class NativeDecideAdmissionTests
         Assert.IsType<AdmissionOutcome.Admitted>(Admit(context));
     }
 
-    private static RuleEvaluationContext Candidate(string tactic)
+    [Theory]
+    [InlineData("\u2211'", false)]
+    [InlineData("\u220f'", false)]
+    [InlineData("\u2211'", true)]
+    [InlineData("\u220f'", true)]
+    public void ProductionAdmissionAcceptsPrimeNotationInSelectedOrUnchangedSource(string notation, bool historical)
+    {
+        var source = "import Mathlib.Topology.Algebra.InfiniteSum.Defs\n"
+            + $"example (f : Nat -> Nat) : ({notation} n, f n) = ({notation} n, f n) := rfl\n";
+        var context = Candidate("decide", historical ? string.Empty : source, historical ? source : null);
+        var completed = Assert.IsType<RuleExecutionOutcome.Completed>(RuleCatalog.Default.Execute(context)).Capability;
+
+        Assert.Contains(completed.ExecutedRules, id => id.Value == "SL-008");
+        Assert.Contains(completed.ExecutedRules, id => id.Value == "SL-035");
+        Assert.DoesNotContain(completed.Diagnostics, item => item.AdmissionEffect == AdmissionEffect.Block);
+        Assert.IsType<AdmissionOutcome.Admitted>(Admit(context));
+    }
+
+    private static RuleEvaluationContext Candidate(string tactic, string prefix = "", string? historicalSource = null)
     {
         var fixture = new RuleFixture();
         fixture.AddBackfillTargets();
@@ -41,8 +59,20 @@ public sealed class NativeDecideAdmissionTests
             + "   anchors: []\n"
             + "   utility: none\n"
             + "   digest: Anonymous source admission fixture. -/\n"
+            + prefix
             + $"example : True := by {tactic}\n";
-        fixture.Reports[Path] = new LeanFileReport([], []);
+        fixture.Reports[Path] = new LeanFileReport(
+            prefix.Length == 0 ? [] : ["Mathlib.Topology.Algebra.InfiniteSum.Defs"], []);
+        if (historicalSource is not null)
+        {
+            fixture.Files[RuleFixture.RingPath] = historicalSource + fixture.Files[RuleFixture.RingPath];
+            fixture.Baseline[RuleFixture.RingPath] = fixture.Files[RuleFixture.RingPath];
+            fixture.Reports[RuleFixture.RingPath] = fixture.Reports[RuleFixture.RingPath] with
+            {
+                Imports = ["Mathlib.Topology.Algebra.InfiniteSum.Defs"],
+            };
+            fixture.BaselineReports[RuleFixture.RingPath] = fixture.Reports[RuleFixture.RingPath];
+        }
         Assert.Empty(fixture.Reports[Path].Declarations);
         return fixture.Build(RawChangeSet.CreateWithKinds([(Path, RawChangeKind.Added)]));
     }
