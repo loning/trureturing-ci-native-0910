@@ -39,6 +39,28 @@ Its Lean header has `anchors: []` and `utility: none`. Both m=3 modules also hav
 
 ## Execution Record
 
-Steps 2-7 are pending. Expected cover-leg result, registered before execution: placeholder `ATOM_ID` has no ledger entry, so `COVER_INVALID` and nonzero exit are expected after canonical freezing. No retry or anchor fabrication will be used to disguise that result.
+Expected cover-leg result, registered before execution: placeholder `ATOM_ID` has no ledger entry, so `COVER_INVALID` and nonzero exit are expected after canonical freezing. No retry or anchor fabrication will be used to disguise that result.
 
 Raw command logs and final runner artifacts reside in `/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/gribinski-m3-deposit-0909/attempt-1`.
+
+## Step 2: Directory Capacity
+
+Step 1 commit `373dbf00bf` was pushed successfully.
+Source read: `tools/StrataLint.Engine/Rules/RepositoryRules.Structure.cs:68`
+sets `DirectoryFileLimit = 48`; line 87 sets repository tolerance 96.
+`IsCapacityExcluded` at lines 100-110 excludes both accepted events and
+`FrozenStatePath.IsUnderRoot(path)`. `CapacityPathsByDirectory` groups
+nonexcluded files by immediate parent, not recursively.
+
+Direct regular-file enumeration of
+`Golden/Frozen/state/D5/S3/Zeros/Convolution/` gives **12 before + 2 = 14 after**,
+with arithmetic headroom **34** against 48. Its actual SL-003 counted occupancy
+is **0 before and after**, because state pins are excluded. Thus the arithmetic
+comparison is not misrepresented as a binding state-directory cap.
+The report directory has 10 direct files including this new report, below 48.
+Collection: Ruby `Dir.children`, filtered with `File.file?` at the immediate
+parent; no directory or budget change was made.
+
+Steps 3-7 remain pending. Both modules already contain their `#print axioms`
+commands (12 main-module theorems and 14 discriminant-module theorems), so the
+make build can expose these readings without editing a Lean file.
