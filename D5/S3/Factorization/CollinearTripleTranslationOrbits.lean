@@ -98,5 +98,6 @@ theorem square_dvd_card_collinear_triples (n : ℕ) (hn : 0 < n) (hthree : ¬3 �
   exact dvd_mul_left _ _
 
 #print axioms square_dvd_card_collinear_triples
+#print axioms instFiniteTripleOfNeZeroNat
 
 end D5.S3.Factorization.CollinearTripleTranslationOrbits
