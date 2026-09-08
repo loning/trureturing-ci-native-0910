@@ -131,6 +131,57 @@ Failed step-4 builds, each at 12586 jobs:
 | step-4c-make-lean.log | 2 | 21.98 | 2986115072 | Constant polynomial cast required explicit map_neg/map_ofNat rewrites. |
 | step-4d-make-lean.log | 2 | 20.89 | 2992832512 | Destructing a choice under dependent Option.get was ill-typed; moved the local exponent argument to a separately quantified option. |
 
+The partial step-4 reduction was pushed as `fb494ce39a`.
+
+The square-partner leg is now also verified. `squarePartnerEmbedding` sends
+each squared vertex in S to its wasted partner in the complement of S union T;
+the partner has exponent zero, and pairwise edge disjointness proves these
+partners are distinct. `card_partner_embeddings` directly instantiates
+Mathlib `Fintype.card_embedding_eq`, without re-proving injection counting.
+Build: `/usr/bin/time -l make lean`, EXIT 0; 12586 jobs; 19.79 seconds;
+maximum resident set size 3053617152 bytes. Log: `step-4g-make-lean.log`.
+The three new public theorems, the two constructed equivalence/embedding
+definitions, and all 14 private theorem prints have exactly the standard
+three axioms. The preceding `step-4f-make-lean.log` has EXIT 2, 12586 jobs,
+20.74 seconds, RSS 2994470912 bytes: `Sym2.Mem.other` required a direct call,
+the complement required an explicit finset-to-sort coercion, and the
+Option.get inequality required local reduction. All were corrected.
+
+## Exact Remaining Obligation
+
+Completed steps: 1, 2, 3. Step 4 is incomplete; steps 5 and 6 are unproved.
+The missing construction is the following equivalence, under the hypotheses
+shown. This is a remaining goal, not a declaration proved by this delivery:
+
+```lean
+(n k : ℕ) (hk : 2 * k ≤ n) (S T : Finset (Fin n))
+(hST : Disjoint S T) (hS : S.card ≤ k) (hT : T.card = 2 * (k - S.card))
+⊢ MatchingMonomialFiber k S T ≃
+    ((S ↪ ↥((S ∪ T)ᶜ : Finset (Fin n))) ×
+      {p : Equiv.Perm T // Function.Involutive p ∧ ∀ t, p t ≠ t})
+```
+
+The first component is `squarePartnerEmbedding`. The delivered code does not
+construct the second component or a jointly inverse map. To close this goal,
+one must reconstruct a loop-free, pairwise-disjoint k-edge finset from the
+partner injection and cross-vertex involution, reconstruct its edge choices,
+and prove both inverse laws and the prescribed exponent equality. Merely
+knowing the cardinalities of the two factors does not prove this equivalence.
+No marked-edge deletion/relabeling equivalence was used or attempted here.
+
+After that equivalence, the remaining cardinality would be
+`(n - S.card - T.card).descFactorial S.card * (T.card - 1).doubleFactorial`.
+The first factor is locally verified; the searched TauCeti theorem supplies
+the second factor only after a licensed, locally checked port. That port has
+not been performed. The complete matching-fiber count (C) is therefore still
+open in this attempt. This reports an implementation gap, not a mathematical
+impossibility or a claim that the proposed route is invalid.
+
+No deposit, freeze pin, coverage edge, or PR was created. The all-degree target
+remains the unproved Prop `MatchingIdentity`. In particular, (A) for arbitrary
+exponents outside the represented fibers, the Vieta/evaluation bridge, and
+the assembly with (5) are not claimed by the partial coefficient formulas.
+
 ## Declaration Accounting
 
 For the currently proved public theorems:
@@ -154,6 +205,17 @@ For the currently proved public theorems:
 | decorationWeight_eq_pow | bind-only | none | none | companion: decorationWeight_of_fiber -> decorationWeight_eq_pow |
 | decorationWeight_of_fiber | content | none | card_squareChoices_of_fiber is used to replace the number of square choices in the exponent | escape-witness through live square-choice bijection; not deposited |
 | coeff_matchingSum_eq_card_fiber | content | none | square-choice bijection makes the weight constant on the actual coefficient fiber | escape-witness; partial (C), not full factorial count; not deposited |
+| chosenSquarePartner_not_mem | content | none | locality gives exponent zero at the unused endpoint of each square choice | escape-witness on the square-partner construction path; not deposited |
+| chosenSquarePartner_injective | bind-only | none | none | companion: squarePartnerEmbedding -> chosenSquarePartner_injective |
+| card_partner_embeddings | bind-only | none | none | companion for the preregistered, still unproved card_matchingMonomialFiber count; not independently deposited |
+
+The intended final consumer is `matching_identity : MatchingIdentity`; it is
+not present yet. Its preregistered dependency edges are
+`matching_identity -> symmetrize_coefficient -> coeff_reflection` and
+`matching_identity -> alternating_factorial_sum`. The factorial module has
+no independent deposit basis in this partial delivery. All `content`
+classification and `escape-witness` assessments above are the implementation
+worker's assessments, with independent review ASSUMED-UNVERIFIED.
 
 The frozen theorem's GID is
 `D5/S3/Zeros/Convolution/FiniteConvolutionCoefficients.coeff_additiveConvolution`.
@@ -213,6 +275,15 @@ These identities are read from the merged predecessor report, not recomputed.
 | decorationWeight_of_fiber | General fiber-weight identity; none of the four computational classes. |
 | MatchingMonomialFiber | A finite type parameterized by arbitrary n,k,S,T; not bounded parameter enumeration, certified instance, checker, or numerical reduction. |
 | coeff_matchingSum_eq_card_fiber | General symbolic coefficient identity; none of the four computational classes. |
+| chosenSquarePartner | A general endpoint map; none of the four computational classes. |
+| chosenSquarePartner_mem (private) | General endpoint membership; none of the four computational classes. |
+| chosenSquarePartner_ne (private) | General no-loop consequence; none of the four computational classes. |
+| chosenSquarePartner_exponent (private) | General zero-exponent statement; none of the four computational classes. |
+| chosenSquarePartner_not_mem | General exclusion from symbolic monomial support; none of the four computational classes. |
+| chosenSquarePartner_injective | General injectivity of a map on arbitrary matchings; none of the four computational classes. |
+| squareChoiceEquiv | A bijection for arbitrary n,k,S,T, without bounded parameter enumeration, certified instance, checker, or numerical reduction. |
+| squarePartnerEmbedding | A constructed embedding for arbitrary fibers; none of the four computational classes. |
+| card_partner_embeddings | A symbolic cardinality identity at arbitrary n,S,T; none of the four computational classes. |
 
 Other utility fields are `not-applicable(kind=none)`.
 

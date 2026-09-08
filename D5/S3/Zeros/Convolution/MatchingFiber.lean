@@ -9,6 +9,8 @@
 import D5.S3.Zeros.Convolution.FiniteConvolutionCoefficients
 import Mathlib.Data.Sym.Sym2
 import Mathlib.Data.Fintype.Powerset
+import Mathlib.Data.Fintype.CardEmbedding
+import Mathlib.Data.Fintype.Perm
 import Mathlib.Algebra.Polynomial.Eval.Degree
 import Mathlib.RingTheory.MvPolynomial.Symmetric.Defs
 
@@ -325,7 +327,7 @@ private theorem edgeChoiceExponent_zero_of_not_mem {n : ℕ} (e : Sym2 (Fin n))
   | none => simp [edgeChoiceExponent, squarefreeExponent_apply, hx]
   | some y =>
     have hy : y.val ≠ x := fun h => hx (h ▸ y.prop)
-    simp [edgeChoiceExponent, Finsupp.single_apply, hy]
+    simp [edgeChoiceExponent, hy]
 
 /-- Disjoint edges make the global exponent local at each incident vertex. -/
 theorem decorationExponent_apply_of_mem {n k : ℕ} (M : Matching n k)
@@ -474,5 +476,110 @@ theorem coeff_matchingSum_eq_card_fiber (n k : ℕ) (S T : Finset (Fin n))
 #print axioms decorationWeight_eq_pow
 #print axioms decorationWeight_of_fiber
 #print axioms coeff_matchingSum_eq_card_fiber
+
+/-- The unused endpoint of a square choice. -/
+def chosenSquarePartner {n k : ℕ} (M : Matching n k) (c : MatchingDecoration M)
+    (q : SquareChoices M c) : Fin n :=
+  Sym2.Mem.other (Sym2.mem_toFinset.mp (chosenSquareVertex_mem M c q))
+
+private theorem chosenSquarePartner_mem {n k : ℕ} (M : Matching n k)
+    (c : MatchingDecoration M) (q : SquareChoices M c) :
+    chosenSquarePartner M c q ∈ q.val.val.toFinset :=
+  Sym2.mem_toFinset.mpr (Sym2.other_mem _)
+
+private theorem chosenSquarePartner_ne {n k : ℕ} (M : Matching n k)
+    (c : MatchingDecoration M) (q : SquareChoices M c) :
+    chosenSquarePartner M c q ≠ chosenSquareVertex M c q :=
+  Sym2.other_ne (M.prop.2.1 q.val.val q.val.prop) _
+
+private theorem chosenSquarePartner_exponent {n k : ℕ} (M : Matching n k)
+    (c : MatchingDecoration M) (q : SquareChoices M c) :
+    decorationExponent M c (chosenSquarePartner M c q) = 0 := by
+  rw [decorationExponent_apply_of_mem M c q.val _ (chosenSquarePartner_mem M c q)]
+  have hs (o : EdgeChoice q.val.val) (ho : o.isSome) (y : Fin n)
+      (hy : y ≠ (o.get ho).val) : edgeChoiceExponent q.val.val o y = 0 := by
+    cases o with
+    | none => simp at ho
+    | some x =>
+      change y ≠ x.val at hy
+      simp [edgeChoiceExponent, hy.symm]
+  exact hs (c q.val) q.prop _ (chosenSquarePartner_ne M c q)
+
+/-- Wasted partners are outside the monomial support. -/
+theorem chosenSquarePartner_not_mem {n k : ℕ} (M : Matching n k)
+    (c : MatchingDecoration M) (S T : Finset (Fin n))
+    (hc : decorationExponent M c = fiberExponent S T) (q : SquareChoices M c) :
+    chosenSquarePartner M c q ∉ S ∪ T := by
+  have hz := chosenSquarePartner_exponent M c q
+  rw [hc] at hz
+  simp only [fiberExponent, Finsupp.add_apply, squarefreeExponent_apply] at hz
+  by_cases hs : chosenSquarePartner M c q ∈ S <;>
+    by_cases ht : chosenSquarePartner M c q ∈ T <;> simp_all
+
+/-- Disjointness of the original matching makes all wasted partners distinct. -/
+theorem chosenSquarePartner_injective {n k : ℕ} (M : Matching n k)
+    (c : MatchingDecoration M) : Function.Injective (chosenSquarePartner M c) := by
+  intro q r h
+  apply Subtype.ext
+  apply Subtype.ext
+  by_contra hne
+  have hd := M.prop.2.2 q.val.prop r.val.prop hne
+  exact Finset.disjoint_left.mp hd (chosenSquarePartner_mem M c q)
+    (h ▸ chosenSquarePartner_mem M c r)
+
+/-- Reuse the proved bijection to index square choices by their squared vertices. -/
+def squareChoiceEquiv {n k : ℕ} (M : Matching n k) (c : MatchingDecoration M)
+    (S T : Finset (Fin n)) (hST : Disjoint S T)
+    (hc : decorationExponent M c = fiberExponent S T) : SquareChoices M c ≃ S := by
+  classical
+  let f : SquareChoices M c → S := fun q => ⟨chosenSquareVertex M c q,
+    (fiberExponent_eq_two_iff S T hST _).mp
+      (hc ▸ chosenSquareVertex_exponent M c q)⟩
+  apply Equiv.ofBijective f
+  apply (Fintype.bijective_iff_injective_and_card f).mpr
+  refine ⟨fun q r h => chosenSquareVertex_injective M c (congrArg Subtype.val h), ?_⟩
+  rw [card_squareChoices_of_fiber M c S T hST hc, Fintype.card_coe]
+
+/-- The square-edge leg of the proposed fiber decomposition. -/
+def squarePartnerEmbedding {n k : ℕ} (M : Matching n k) (c : MatchingDecoration M)
+    (S T : Finset (Fin n)) (hST : Disjoint S T)
+    (hc : decorationExponent M c = fiberExponent S T) :
+    S ↪ ↥((S ∪ T)ᶜ : Finset (Fin n)) := by
+  classical
+  let g : SquareChoices M c ↪ ↥((S ∪ T)ᶜ : Finset (Fin n)) :=
+    ⟨fun q => ⟨chosenSquarePartner M c q,
+      Finset.mem_compl.mpr (chosenSquarePartner_not_mem M c S T hc q)⟩,
+      fun q r h => chosenSquarePartner_injective M c (congrArg Subtype.val h)⟩
+  exact (squareChoiceEquiv M c S T hST hc).symm.toEmbedding.trans g
+
+/-- Mathlib counts ordered partner assignments as a descending factorial. -/
+theorem card_partner_embeddings (n : ℕ) (S T : Finset (Fin n)) (hST : Disjoint S T) :
+    Fintype.card (S ↪ ↥((S ∪ T)ᶜ : Finset (Fin n))) =
+      (n - S.card - T.card).descFactorial S.card := by
+  classical
+  rw [Fintype.card_embedding_eq, Fintype.card_coe, Fintype.card_coe,
+    Finset.card_compl, Finset.card_union_of_disjoint hST, Fintype.card_fin]
+  congr 1
+  omega
+
+#print axioms chosenSquarePartner_not_mem
+#print axioms chosenSquarePartner_injective
+#print axioms card_partner_embeddings
+#print axioms squareChoiceEquiv
+#print axioms squarePartnerEmbedding
+#print axioms squarefreeExponent_apply
+#print axioms fiber_pair_decomposition
+#print axioms split_pair_exponent
+#print axioms split_pair_inter
+#print axioms fiber_pair_cards
+#print axioms mem_elementaryFiber
+#print axioms edgeChoiceExponent_zero_of_not_mem
+#print axioms exists_edge_of_decorationExponent_ne_zero
+#print axioms fiberExponent_eq_two_iff
+#print axioms chosenSquareVertex_mem
+#print axioms chosenSquareVertex_exponent
+#print axioms chosenSquarePartner_mem
+#print axioms chosenSquarePartner_ne
+#print axioms chosenSquarePartner_exponent
 
 end D5.S3.Zeros.Convolution.MatchingFiber
