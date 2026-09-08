@@ -58,7 +58,7 @@ series, reusing the frozen `binary_catalan` theorem of
 with residue zero at every other such index.
 
 The sole freeze prerequisite is the frozen module
-`D5/S1/Recurrence/Invariants/CatalanCompositionSquareParity`, generality I,
+`D5/S1/Recurrence/Invariants/CatalanCompositionSquareParity`, generality G (the target module is I because it imports it),
 statement_id `sha256:0033f4a50a501546a5f332ce1203c8cf1a936428e7a155a06a0443bb0f0f6232`.
 
 ## Falsifier
