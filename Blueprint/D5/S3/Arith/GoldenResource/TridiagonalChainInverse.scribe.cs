@@ -9,11 +9,15 @@ internal sealed class TridiagonalChainInverseDocument : IScribeDocumentDefinitio
     private const string Prefix = "D5/S3/Arith/GoldenResource/TridiagonalChainInverse.";
 
     public DocumentDefinition Create() => DocumentDefinition.Create(ScribeNode.Create(
-        "The diagonal-four chain has integral denominators with geometric growth.",
+        "The diagonal-four chain has a uniform positive quadratic bound and geometric denominators.",
         H("Tridiagonal Chain Inverse"),
         Blocks(
             Paragraph(Text("Let d(0)=1, d(1)=4, and d(n+2)=4d(n+1)-d(n). "
-                + "The index n ranges over all natural numbers.")),
+                + "The index n ranges over all natural numbers. H(m) is the real m by m matrix "
+                + "with diagonal entries four, adjacent entries minus one, and all other entries zero. "
+                + "Write E(n,x) for x transpose H(n+1)x, V(n,x) for the sum of all coordinate "
+                + "squares, and A(n,x) for the sum of squared differences of adjacent coordinates. "
+                + "The coordinates of x are indexed from zero through n.")),
             Describe.Lean(
                 DescribeId.Create("chain-denominator-positive"),
                 DeclarationHandle.Create(Prefix + "chainDet_pos"),
@@ -41,6 +45,40 @@ internal sealed class TridiagonalChainInverseDocument : IScribeDocumentDefinitio
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text("Both sides of the factor-three estimate are nonnegative. "
                     + "Squaring gives the factor-nine estimate."))),
+                DescribeRole.Theorem),
+            Describe.Lean(
+                DescribeId.Create("chain-energy-decomposition"),
+                DeclarationHandle.Create(Prefix + "chain_energy"),
+                H("The energy identity"),
+                StatementSource.FromAuthor(Disp(Eq(Call("E", F.Id("n"), F.Id("x")),
+                    Seq(D(2), Cdot, Call("V", F.Id("n"), F.Id("x")), Plus,
+                        Pow(Call("x", D(0)), D(2)), Plus, Pow(Call("x", F.Id("n")), D(2)),
+                        Plus, Call("A", F.Id("n"), F.Id("x")))))),
+                AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("Expand each adjacent difference and sum. Each interior "
+                    + "coordinate occurs twice among the edges, and each endpoint once. "
+                    + "When n is zero, the two endpoint terms coincide and the edge sum is empty."))),
+                DescribeRole.Theorem),
+            Describe.Lean(
+                DescribeId.Create("chain-uniform-quadratic-bound"),
+                DeclarationHandle.Create(Prefix + "chain_coercive"),
+                H("A uniform lower bound"),
+                StatementSource.FromAuthor(Disp(Le(
+                    Seq(D(2), Cdot, Call("V", F.Id("n"), F.Id("x"))),
+                    Call("E", F.Id("n"), F.Id("x"))))),
+                AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("All boundary and edge squares are nonnegative."))),
+                DescribeRole.Theorem),
+            Describe.Lean(
+                DescribeId.Create("chain-positive-definite"),
+                DeclarationHandle.Create(Prefix + "chain_posDef"),
+                H("Positive definiteness"),
+                StatementSource.FromAuthor(Disp(Call("PosDef", Call("H", F.Id("m"))))),
+                AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("The matrix is symmetric. For a nonzero vector, "
+                    + "the sum of coordinate squares is strictly positive, so the uniform "
+                    + "lower bound proves positive definiteness. The empty matrix also satisfies "
+                    + "the definition."))),
                 DescribeRole.Theorem))));
 
     private static Formula Call(string name, params Formula[] arguments) =>
@@ -53,4 +91,7 @@ internal sealed class TridiagonalChainInverseDocument : IScribeDocumentDefinitio
 
     private static Formula Lt(Formula left, Formula right) =>
         new Formula.Relation(left, FormulaRelationOperator.LessThan, right);
+
+    private static Formula Eq(Formula left, Formula right) =>
+        new Formula.Relation(left, FormulaRelationOperator.Equal, right);
 }
