@@ -339,6 +339,7 @@ backfill 条目由 residual-open 迁入 absorbed-closed        消化闭合
 〔守护:**软**·SL-013 是 deferred `NoFindings`,不守工单散文;「留失败战史」「先翻卷宗后立新案」与「不复活、重开」靠实际审计工件 + 自觉 + 对手官评审。先翻是为了**不重走死路**,重开是为了**不继承死状态**——查旧案,开新单〕
 ### 5.11 sshx 载体、公开证据与运行契约
 - **多模型对抗共识**:`/sshx` skill(`consensus-rnd:sshx`)——派 codex-cli / nyxid-oracle 隔离工作席做设计/实施/评审(第 5.7 条 / 第 5.8 条的落地机制)。
+  - **`/sshx` 目标迭代轮次无上限。** 本仓覆盖 skill 的有限 `pass_budget` 及耗尽停机规则:设计、修复、复审和适用的独立终止审计不设总轮数上限,不得因已用轮数或 `pass_budget` 耗尽而停止尚可推进的目标。按当前证据继续修复真实目标缺口,无进展须核对根因并换法,不得原样空转。独立实施与评审、无未解 `reject`、适用的完成审计及 PR `MERGED` 的完成要求仍须满足;真实能力/授权/资源缺口按第 5.9 条处理。载体单次调用、有限重试与失败回退保持各自契约,不构成目标迭代轮次上限。
   - **本仓默认不用 `isolated-token-subagent` 席位;一切席位为 codex-cli + nyxid-oracle。** skill 自带的派发布局是「每个多席阶段恰好一个 subagent + 一个 nyxid + 其余 codex-cli」;本仓**覆盖该默认**,把那个 subagent 名额也给 codex-cli。这是仓库政策,不是协议违例——记在此处,免得后来者把它当成编排错误去"修正"。skill 的 `WorkerMode` 优先序仍是**载体失败后的回退**规则,不因本条改变:codex-cli 与 nyxid-oracle 皆不可用时,该阶段照常 `abstain`,不得退回 subagent 顶替。
   - **推论(必须一并遵守)**:`tests` 评审席须由**能在 `work_target` 里真跑仓库验证命令**的载体承担,故只能是 codex-cli——nyxid-oracle 不能在工作树里执行命令,其结论中凡涉及"跑过什么"一律须标 `ASSUMED-UNVERIFIED`。
   - **每个 nyxid / ChatGPT Pro 席的 brief 必须写上本仓地址。** 无论派的是搜题席、评审席还是研究席,brief 里**一定要带 `https://github.com/the-omega-institute/trureturing`**(需要时再加 `/blob/<head-sha>/<path>`、`/pull/<n>`、`/issues/<n>` 的具体链接)。理由与下一条同源:该席没有文件系统,只能靠公开 URL 独立核实;不给仓库地址,它就只能信我的转述,判词强度立刻降一档,且无法自查我是否把状态说错。**缺仓库地址的 brief 视为不合格**,与第 5.2 条产地缺失同罪。
@@ -403,7 +404,7 @@ backfill 条目由 residual-open 迁入 absorbed-closed        消化闭合
 ## 7. 治理、准入、成本与因果恢复
 ### 7.1 无外部特权与机器保证的 open
 - **无外部特权(一切皆 harness,绕过即违规)**:agent 也是作用于图的一次变换(见第 1.1 条),**没有 harness 之上的位置**。harness 判红=不行,**不能绕**(连 admin)。**「不绕」是纪律义务,不是机器锁;不得声称机器锁死。**
-  **证据范围(既有记录)**:分支保护实测与独立评审实测均记录 `enforce_admins=false`;独立评审还记录 `rulesets=0`、`loning` 账户 `permission=admin`。
+  **证据范围**:2026-08-13 分支保护实测记录 `enforce_admins=false`;2026-08-20 独立评审实测记录 `enforce_admins=false`、`rulesets=0`、`loning` 账户 `permission=admin`。
   **反例边界**:「不该打开 `enforce_admins`,因为它是门自锁时的逃生舱、而替代品未建成」的**前提为假**:打开 `enforce_admins` **并不堵死管理员**——他仍可先改分支保护或 required-check 名再合并。开关的任一取值均不构成锁、有效保护或「唯一恢复路径」,记录中的关闭状态**只是一个未经论证的现状**。
   **保证边界**:「**当前无任何机器层保证,`enforce_admins` 的取值不改变这一事实**」,机器保证仍记 `open`。真正的机器保证需要**独立治理的组织级 ruleset/角色 + 审计**,开关的任一取值都不能替代;「等替代品建成再打开」不构成本项规则。
   **改 harness 的成本**:harness 自身有错时,改动须**按 τ 付成本论证**——越核心越贵(多模型独立验证 W + 保守扩展证明 D + 可审计论证 E,第 7.12 条),且改图的 PR 也走门。**一切皆 harness,无免费绕过;改 harness 只能更贵地论证,不能更廉地特权。**
