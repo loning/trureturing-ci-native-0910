@@ -109,7 +109,7 @@ $$
 **定义 5（有守卫的时间复合）。** $X\triangleright Y$ 使用同一带标签并集，但增加全部关系 $\iota_0(e)\prec\iota_1(f)$，其中 $e\in E_X,f\in E_Y$。它的定义域恰为
 
 $$
-\forall e\in E_X\ \forall f\in E_Y,quad t_X(e)<t_Y(f).
+\forall e\in E_X\ \forall f\in E_Y,\quad t_X(e)<t_Y(f).
 \tag{T}
 $$
 
@@ -385,7 +385,7 @@ $$
 
 这里 $w,z:B\to\mathbb Z$ 是电荷而不是布尔占据；bin 可承载 $2,-3,0$ 等整数，不必是一个符号为 $\pm1$ 的新事件。粗观察本身也没有自动携带新的合法因果偏序。
 
-**命题 9（粗观察公式）。** 有 $q(X)=\sum_bz(b)$、$u(C)=\sum_bw(b)$，且补集的粗观察为 $(B,w,w-z)$。对 $g:B\to D$ 定义 $(g_*z)(d)=\sum_{b:g(b)=d}z(b)$，则 $O_{g\circ f}=(D,g_*w,g_*z)$，连续粗化满足 $(h\circ g)_*=h_*g_*$。并行和可取带标签 bin 并集，分别复制两个 $w,z$；若两侧本来映到同一 bin 集合，再去掉 bin 标签，结果为 $(w_X+w_Y,z_X+z_Y)$。乘积的 bin 映射在**新当前事件**上定义为 $p_{ab}\mapsto(f_X(a),f_Y(b))$，满足
+**命题 9（粗观察公式）。** 有 $q(X)=\sum_bz(b)$、$u(C)=\sum_bw(b)$，且补集的粗观察为 $(B,w,w-z)$。对有限集合 $D$ 和映射 $g:B\to D$ 定义 $(g_*z)(d)=\sum_{b:g(b)=d}z(b)$，则 $O_{g\circ f}=(D,g_*w,g_*z)$，连续粗化满足 $(h\circ g)_*=h_*g_*$。并行和可取带标签 bin 并集，分别复制两个 $w,z$；若两侧本来映到同一 bin 集合，再去掉 bin 标签，结果为 $(w_X+w_Y,z_X+z_Y)$。乘积的 bin 映射在**新当前事件**上定义为 $p_{ab}\mapsto(f_X(a),f_Y(b))$，满足
 
 $$
 w_P(b,c)=w_X(b)w_Y(c),\qquad z_P(b,c)=z_X(b)z_Y(c).
