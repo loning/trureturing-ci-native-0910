@@ -90,3 +90,42 @@ RSS 1729609728; step-1c EXIT 2 / 13.12 s / RSS 1728692224. All report 12592
 jobs. Errors concerned the explicit finite instance, cancellation of two,
 Finset.eq_univ_of_card's explicit finset, the argument order of exact
 division, and a List-only lemma name. No resource limit was raised.
+
+Step 1 was pushed as `5b2086e96f`.
+
+## Step 2
+
+The exact requested `card_matchingMonomialFiber` is proved, together with
+`card_matchingMonomialFiber_mul`. The explicit equivalence reconstructs the
+square and cross edges, proves they are loop-free and pairwise disjoint,
+counts their union, and assigns the unique local choice selected by S.
+Disjoint edge supports give the required exponent sum and injectivity of
+the decoration exponent. Both extracted partner maps are recovered by
+uniqueness of the edge incident to a given vertex.
+
+The equivalence needs hST, hS and hT; the requested hk hypothesis is retained
+in the quotient theorem's signature, although it is unnecessary for counting
+the possibly empty embedding type. No parameter restriction was weakened in
+the requested theorem. The product form is the coefficient-field consumer's
+interface, avoiding any cast of natural-number division.
+
+`/usr/bin/time -l make lean`: EXIT 0; 12593 jobs; 22.04 seconds;
+maximum RSS 3019046912 bytes (`step-2h-make-lean.log`). Every added theorem's
+`#print axioms` has [propext, Classical.choice, Quot.sound]. The earlier
+step-2c through step-2g failures concern dependent choice normalization,
+explicit incidence vertices, and local API arguments; no bound was raised.
+
+The added public theorems in MatchingFiber and MatchingEquiv have
+proof_shape content after inlining their live local construction; no direct
+frozen repository theorem is used (GID/statement_id: none). Their proposed
+and observed escape is the brief's square-partner/cross-involution
+decomposition, with the edge-incidence and exponent-locality lemmas as its
+live intermediate obligations. admission_basis is escape-witness; each
+auxiliary declaration is consumed by matchingMonomialFiberEquiv, which is
+consumed by both cardinality theorems. Detailed per-declaration accounting
+will accompany the final canonical report.
+
+Every added definition, instance, private helper and public theorem has
+utility none: it describes or proves a symbolic construction for arbitrary
+n,k,S,T; it neither enumerates bounded parameters, certifies a numerical
+instance, implements a checker, nor leaves a numerical reduction obligation.
