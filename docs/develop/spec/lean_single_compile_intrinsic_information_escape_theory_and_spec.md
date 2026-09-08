@@ -5505,16 +5505,19 @@ census 读取 `TruthExportCommand` 当前发射的 truth export dialect，只从
 `freeze_status=frozen` 的 elaborated nodes（模块）的 `declarations` 中选择 `kind=theorem`，
 以 declaration 的 `declaration_name_key` 与 `statement_id` 取得
 `(structured Name, statement_id)` keys；未冻结节点的声明与 frozen 节点的非 theorem 声明不计入分母。
-当前四类 disposition fixture 检查 exact cover、class／reason totals 与 IE-C034--IE-C037；
-额外加入未冻结 theorem 或 frozen definition 的 inventory row 当前得 IE-C036。
-
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕fixture 同时含四类 certified dispositions 与 observed rows，assessment inventory 与 frozen
-theorem keys bijective。分别验证记账完备、认证完备及第 23.6 节全部 counters／flags；混合
+四类 certified dispositions 与 mixed observed rows 分由
+`tools/lean-inspector/LeanInformationAudit/Tests/Census/Coverage.lean`、
+`tools/lean-inspector/LeanInformationAudit/Tests/Census/Evidence.lean`、
+`tools/lean-inspector/LeanInformationAudit/Tests/Census/Assessment.lean`、
+`tools/lean-inspector/LeanInformationAudit/Tests/Census/AssessmentCommand.lean` 覆盖，assessment
+inventory 与各 fixture 的 frozen theorem keys bijective。分别验证记账完备、认证完备及第 23.6 节全部 counters／flag；混合
 inventory 只能记账完备，不能满足 AC-023。删除、复制、令两个不同 theorem `Name` 复用同一
 `statement_id`，或改旧 `statement_id`，分别得 IE-C034、IE-C035、IE-C035、IE-C036。
 不完整／未完成的 query scope 得 IE-C044；observed 冒充 unreachable 得 IE-C037。
-额外未冻结 theorem／frozen definition row 在 J2 契约中改用 IE-C044，尚未生效。
+额外未冻结 theorem／frozen definition row 由 identity 检查发出 IE-C036，检查见
+`tools/lean-inspector/LeanInformationAudit/DispositionCensus.lean`。
 第 35 节同号 fixture 固定正反例，report 不进入 seal 或 required gate。
+（J2 落地形态,2026-09-08:四类正例与 `5/2/3` mixed 正例是不同 fixtures，S0 的单个四类加 observed fixture 未采用；excluded-row 诊断仍为 IE-C036。）
 
 ### T-037　generated-node extensional quotient
 
