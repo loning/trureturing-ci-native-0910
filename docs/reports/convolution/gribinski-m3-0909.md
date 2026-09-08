@@ -526,3 +526,21 @@ The m=2 source was read from `origin/dev`. Its theorem nodes use
 not exist in this checkout (the file has 67 lines). Those are not copied as
 current requirements: all new theorem nodes will use `FromAuthor` as explicitly
 required by this task. No mathematical, budget, or Digestion edit is authorized.
+
+### Mirror A
+
+Step 0 checkpoint `54d8ef5541` was pushed. The new main-module Scribe source
+follows `GribinskiDegreeTwo.scribe.cs` for namespace, Prefix and Describe shape;
+typed formulas use the existing FormulaDsl pattern from WeakQlpDifferentiation.
+Its 17 nodes cover all 9 public definitions and 8 public theorems from the
+committed Lean source at `edcaa0364b`. Every theorem has `FromAuthor`; every
+body states all parameter types, assumptions and top-level conjuncts. The
+coefficient theorem retains all four equalities, and each existential theorem
+retains three nonnegativity conditions plus the polynomial equality.
+The retained raw Lean report confirms these 17 declarations are included.
+Private names are excluded separately: `include_in_statement=true` alone does
+not imply public visibility in that report. Compilation/emit remains pending
+until both mirrors have been committed, as required by the task sequence.
+Before the A push, fetch EXIT=0 at dev `fe073d57308689f0d309d54d7d6fa7dbb8298484`;
+index and dev/index path-union counts are raw **18/33**, capacity **18/17**.
+`git diff --cached --check`: EXIT=0.
