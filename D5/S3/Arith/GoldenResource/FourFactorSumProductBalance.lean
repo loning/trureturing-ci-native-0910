@@ -4,7 +4,7 @@
    mirror-E: none(waiver:unbounded-diophantine-classification)
    anchors: []
    utility: none
-   digest: Positive integer quadruples have equal sum and product exactly when they permute 4, 2, 1, 1; the common value is eight. -/
+   digest: Positive quadruples have equal sum and product exactly on permutations of 4,2,1,1. -/
 
 import Mathlib.Data.List.Sort
 import Mathlib.Algebra.BigOperators.Group.List.Basic
