@@ -1,32 +1,38 @@
-name: Lean build cache publication
+name: Current signal sender diagnostic
 
 on:
-  schedule:
-    - cron: '0 */6 * * *'
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+  actions: read
 
 jobs:
-  publish:
-    name: Publish the Lean build cache
-    if: github.ref == 'refs/heads/dev'
+  trace-current:
     runs-on: ubuntu-24.04-arm
-    timeout-minutes: 120
+    timeout-minutes: 360
     env:
+      CANDIDATE_SHA: 9254e88a2c9305f9cf80bf63f2439f96da60124a
+      CI_WORKFLOW_INPUTS: '{"candidate_sha":"9254e88a2c9305f9cf80bf63f2439f96da60124a"}'
       STRATALINT_CACHE_WRITES: 'false'
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ env.CANDIDATE_SHA }}
           persist-credentials: false
-      - env:
-          CANDIDATE_SHA: ${{ github.sha }}
-        run: python3 tools/scripts/workflow/ci.py checkout --repository "$GITHUB_WORKSPACE" --commit "$CANDIDATE_SHA"
+      - run: python3 tools/scripts/workflow/ci.py checkout --repository "$GITHUB_WORKSPACE" --commit "$CANDIDATE_SHA"
       - uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
-      - run: make -C tools dotnet
+      - uses: actions/download-artifact@v4
+        with:
+          artifact-ids: '10049001201'
+          run-id: '34208053994'
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/engineering
+          merge-multiple: true
+      - name: Validate original candidate engineering evidence
+        run: python3 tools/scripts/workflow/ci.py restore --repository "$GITHUB_WORKSPACE" --stage engineering --commit "$CANDIDATE_SHA" --run-id 34208053994 --run-attempt 1 --archive "$RUNNER_TEMP/engineering/ci-engineering.tar.gz"
       - id: keys
         run: python3 tools/scripts/worktree/lean_actions.py keys --repository "$GITHUB_WORKSPACE"
       - id: elan
@@ -67,11 +73,22 @@ jobs:
           PROJECT_KEY: ${{ steps.project.outputs.cache-matched-key }}
           REPORT_KEY: ${{ steps.report.outputs.cache-matched-key }}
         run: python3 tools/scripts/worktree/lean_actions.py restore --repository "$GITHUB_WORKSPACE" --dependency-key "$DEPENDENCY_KEY" --project-key "$PROJECT_KEY" --report-key "$REPORT_KEY"
-      - name: Try the same-partition Release fallback
+      - run: sudo apt-get update
+      - run: sudo apt-get install --yes strace
+      - run: strace --version
+      - run: ps -eo pid,ppid,pgid,sid,comm
+      - name: Trace signal senders during current
         env:
           GH_TOKEN: ${{ github.token }}
-        run: make lean-cache-from-github-without-mathlib || printf '%s\n' 'Optional Release seed unavailable; production continues'
-      - name: Build once and publish the successful snapshot
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: make lean-cache-to-github-without-mathlib
+        run: strace --seccomp-bpf -f -ttt -e trace=kill,tgkill,tkill,pidfd_send_signal -e signal=SIGTERM,SIGINT,SIGHUP make current
+      - if: always()
+        run: python3 tools/scripts/workflow/ci.py summary --repository "$GITHUB_WORKSPACE" --stage current
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: current-signal-phase-logs
+          path: |
+            build/ci/current-result.json
+            build/ci/logs/current
+          if-no-files-found: warn
+          retention-days: 7
