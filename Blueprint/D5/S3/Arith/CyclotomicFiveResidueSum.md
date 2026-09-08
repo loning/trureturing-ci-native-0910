@@ -96,10 +96,6 @@ $$\forall n \in \mathbb{N}, 2 \leq n \land 5 \mid n \Rightarrow \sum_{u \in \ope
 
 *Proof.* Machine-checked in Lean as `D5/S3/Arith/CyclotomicFiveResidueSum.residue_sum_ne_zero` (`✓ std3`). ∎
 
-*Resolves.* `Problems/oeis-a290322-cyclotomic-five-residue-sum` (proved) by `D5/S3/Arith/CyclotomicFiveResidueSum.residue_sum_ne_zero`.
-
-<!-- scribe-open-problem-resolution-v1 {"problem_slug":"oeis-a290322-cyclotomic-five-residue-sum","declaration_gid":"D5/S3/Arith/CyclotomicFiveResidueSum.residue_sum_ne_zero","resolution_kind":"proved"} -->
-
 *Source.* Repository-derived.
 
 *Acknowledgement.* OEIS Foundation Inc. (2024). *OEIS A290322*. URL: <https://oeis.org/A290322>.
