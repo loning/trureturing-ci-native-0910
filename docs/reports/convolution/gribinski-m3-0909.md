@@ -544,3 +544,16 @@ until both mirrors have been committed, as required by the task sequence.
 Before the A push, fetch EXIT=0 at dev `fe073d57308689f0d309d54d7d6fa7dbb8298484`;
 index and dev/index path-union counts are raw **18/33**, capacity **18/17**.
 `git diff --cached --check`: EXIT=0.
+
+### Mirror B
+
+Mirror A commit `5a60cb2429` was pushed. The discriminant mirror has exactly
+two nodes: public `numerator` (definition, WithoutFormula) and public
+`ordered_numerator_nonneg` (theorem, FromAuthor). The latter retains all seven
+real binders, seven nonnegativity hypotheses, six local coefficient definitions,
+and the complete numerator inequality from the committed Lean statement.
+The formula expands the six local definitions. Private SOS and coefficient
+declarations have no Describe nodes, even when included in the raw report.
+Before the B push, fetch EXIT=0 at dev `fe073d57308689f0d309d54d7d6fa7dbb8298484`;
+index and dev/index path-union counts are raw **18/34**, capacity **18/18**.
+`git diff --cached --check`: EXIT=0; no `.lean` or Digestion path changed.
