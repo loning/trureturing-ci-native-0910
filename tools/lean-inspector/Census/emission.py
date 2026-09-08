@@ -100,7 +100,7 @@ def scope_module(directory, module, result, pool, indexes):
                 "open LeanInformationAudit\n"
                 f"private def {module}.indices : Array Nat :=\n"
                 f"  ((Lean.Json.parse {modules} >>= Lean.fromJson?).toOption.getD #[])\n"
-                f"def {module}.scope : ImportClosureScope :=\n"
+                f"opaque {module}.scope : ImportClosureScope :=\n"
                 f"  ImportClosureScope.mk ({module}.indices.map {pool}.get) true\n"
                 f"def {module}.record : CensusProjection.Scope :=\n"
                 f"  CensusProjection.Scope.mk {name(result['root'])} {module}.scope\n")
