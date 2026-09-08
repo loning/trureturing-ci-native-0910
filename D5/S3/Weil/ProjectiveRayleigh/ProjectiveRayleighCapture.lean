@@ -1,8 +1,9 @@
-/- GID: D5/S3/Weil/ZetaLinear/ProjectiveRayleighCapture
+/- GID: D5/S3/Weil/ProjectiveRayleigh/ProjectiveRayleighCapture
    generality: G
-   mirror-B: D5/B/S3/Weil/ZetaLinear/ProjectiveRayleighCapture
+   mirror-B: D5/B/S3/Weil/ProjectiveRayleigh/ProjectiveRayleighCapture
    mirror-E: none(waiver:operator-domain-variational-estimate)
    anchors: []
+   utility: none
    digest: A Rayleigh enclosure and codimension-one coercivity control the aligned complex eigenline with denominator threshold minus lower. -/
 
 import Mathlib.Analysis.InnerProductSpace.Basic
@@ -31,7 +32,7 @@ set_option relaxedAutoImplicit false
 
 noncomputable section
 
-namespace D5.S3.Weil.ZetaLinear.ProjectiveRayleighCapture
+namespace D5.S3.Weil.ProjectiveRayleigh.ProjectiveRayleighCapture
 
 open scoped ComplexConjugate InnerProductSpace
 
@@ -180,4 +181,4 @@ theorem prime_three_projective_mode_capture
 #print axioms prime_three_projective_ratio
 #print axioms prime_three_projective_mode_capture
 
-end D5.S3.Weil.ZetaLinear.ProjectiveRayleighCapture
+end D5.S3.Weil.ProjectiveRayleigh.ProjectiveRayleighCapture

@@ -1,11 +1,12 @@
-/- GID: D5/S3/Weil/ZetaLinear/ScaledComplexQuadraticRowBound
+/- GID: D5/S3/Weil/ProjectiveRayleigh/ScaledComplexQuadraticRowBound
    generality: G
    mirror-B: none(waiver:formal-unit-only)
    mirror-E: none(waiver:analytic-inequality)
    anchors: []
+   utility: none
    digest: Certify full complex mixed forms by positive scaled rows and retain weighted margins. -/
 
-import D5.S3.Weil.ZetaLinear.ComplexQuadraticRowBound
+import D5.S3.Weil.ProjectiveRayleigh.ComplexQuadraticRowBound
 
 /-!
 # Positive diagonal scaling for complex mixed-form certificates
@@ -27,9 +28,9 @@ set_option relaxedAutoImplicit false
 
 open scoped BigOperators ComplexConjugate
 
-namespace D5.S3.Weil.ZetaLinear.ScaledComplexQuadraticRowBound
+namespace D5.S3.Weil.ProjectiveRayleigh.ScaledComplexQuadraticRowBound
 
-open D5.S3.Weil.ZetaLinear.ComplexQuadraticRowBound
+open D5.S3.Weil.ProjectiveRayleigh.ComplexQuadraticRowBound
 
 variable {ι : Type*} [Fintype ι]
 
@@ -225,4 +226,4 @@ theorem two_channel_scaled_regression :
 #print axioms two_channel_scaling_iff
 #print axioms two_channel_scaled_regression
 
-end D5.S3.Weil.ZetaLinear.ScaledComplexQuadraticRowBound
+end D5.S3.Weil.ProjectiveRayleigh.ScaledComplexQuadraticRowBound

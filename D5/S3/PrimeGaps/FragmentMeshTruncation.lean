@@ -3,6 +3,7 @@
    mirror-B: none(waiver:formal-unit-only)
    mirror-E: none(waiver:analytic-inequality)
    anchors: []
+   utility: none
    digest: Bound fragment cell changes by small-mass tails and boundary strips. -/
 
 import D5.S3.PrimeGaps.FragmentLaw

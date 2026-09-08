@@ -2,11 +2,11 @@ using static StrataLint.Scribe.DefinitionDsl;
 using static StrataLint.Scribe.FormulaDsl;
 using F = StrataLint.Scribe.FormulaDsl;
 
-namespace StrataLint.Scribe.Blueprint.D5.S3.Weil.ZetaLinear;
+namespace StrataLint.Scribe.Blueprint.D5.S3.Weil.ProjectiveRayleigh;
 
 internal sealed class ProjectiveRayleighCaptureDocument : IScribeDocumentDefinition
 {
-    private const string Owner = "D5/S3/Weil/ZetaLinear/ProjectiveRayleighCapture.";
+    private const string Owner = "D5/S3/Weil/ProjectiveRayleigh/ProjectiveRayleighCapture.";
 
     private static Formula Call(string name, params Formula[] args)
     {

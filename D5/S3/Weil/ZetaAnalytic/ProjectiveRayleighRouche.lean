@@ -3,9 +3,10 @@
    mirror-B: D5/B/S3/Weil/ZetaAnalytic/ProjectiveRayleighRouche
    mirror-E: none(waiver:variational-to-analytic-boundary-bridge)
    anchors: []
+   utility: none
    digest: Transfer a proved projective eigenline enclosure through bounded linear readouts to the existing rectangle zero-count theorem. -/
 
-import D5.S3.Weil.ZetaLinear.ProjectiveRayleighCapture
+import D5.S3.Weil.ProjectiveRayleigh.ProjectiveRayleighCapture
 import D5.S3.Weil.ZetaAnalytic.RoucheZeroCount
 import Mathlib.Analysis.Normed.Operator.Basic
 
@@ -33,7 +34,7 @@ namespace D5.S3.Weil.ZetaAnalytic.ProjectiveRayleighRouche
 
 open Complex Set Topology BigOperators
 open scoped InnerProductSpace
-open D5.S3.Weil.ZetaLinear.ProjectiveRayleighCapture
+open D5.S3.Weil.ProjectiveRayleigh.ProjectiveRayleighCapture
 open D5.S3.Weil.ZetaAnalytic.RoucheZeroCount
 
 /-- Squared Hilbert-space error propagates through a bounded linear readout.

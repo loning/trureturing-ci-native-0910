@@ -1,8 +1,9 @@
-/- GID: D5/S3/Weil/ZetaLinear/QuadraticObserverPolarization
+/- GID: D5/S3/Weil/ProjectiveRayleigh/QuadraticObserverPolarization
    generality: G
    mirror-B: none(waiver:formal-unit-only)
    mirror-E: none(waiver:structural-infinite-arena)
    anchors: []
+   utility: none
    digest: Reconstruct binary quadratic forms and certify every probe by deletion. -/
 
 import Mathlib.LinearAlgebra.QuadraticForm.Basic
@@ -25,7 +26,7 @@ escape-rate computation or a seal of the system's maximal canonical catalog.
 set_option autoImplicit false
 set_option relaxedAutoImplicit false
 
-namespace D5.S3.Weil.ZetaLinear.QuadraticObserverPolarization
+namespace D5.S3.Weil.ProjectiveRayleigh.QuadraticObserverPolarization
 
 open D5.S3.ConceptDynamics.ConceptFiberDecomposition
 open D5.S3.ConceptDynamics.Faithfulness.JointFaithfulnessLeibnizCriterion
@@ -183,4 +184,4 @@ theorem three_probe_full_kernel_eq_diagonal :
 #print axioms three_probe_kernel_irredundant
 #print axioms three_probe_full_kernel_eq_diagonal
 
-end D5.S3.Weil.ZetaLinear.QuadraticObserverPolarization
+end D5.S3.Weil.ProjectiveRayleigh.QuadraticObserverPolarization

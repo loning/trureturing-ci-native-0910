@@ -1,8 +1,9 @@
-/- GID: D5/S3/Weil/ZetaLinear/ComplexQuadraticRowBound
+/- GID: D5/S3/Weil/ProjectiveRayleigh/ComplexQuadraticRowBound
    generality: G
    mirror-B: none(waiver:formal-unit-only)
    mirror-E: none(waiver:analytic-inequality)
    anchors: []
+   utility: none
    digest: Extend the existing row estimate to complex mixed forms and series. -/
 
 import D5.S3.PrimeGaps.GreedyResidues
@@ -24,7 +25,7 @@ set_option relaxedAutoImplicit false
 
 open scoped BigOperators ComplexConjugate
 
-namespace D5.S3.Weil.ZetaLinear.ComplexQuadraticRowBound
+namespace D5.S3.Weil.ProjectiveRayleigh.ComplexQuadraticRowBound
 
 variable {ι : Type*} [Fintype ι]
 
@@ -131,4 +132,4 @@ theorem positive_margin_of_complex_rows
 #print axioms negative_margin_of_complex_rows
 #print axioms positive_margin_of_complex_rows
 
-end D5.S3.Weil.ZetaLinear.ComplexQuadraticRowBound
+end D5.S3.Weil.ProjectiveRayleigh.ComplexQuadraticRowBound

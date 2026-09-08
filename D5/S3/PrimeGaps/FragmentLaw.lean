@@ -3,6 +3,7 @@
    mirror-B: none(waiver:formal-unit-only)
    mirror-E: none(waiver:analytic-source-port)
    anchors: []
+   utility: none
    digest: Prove the actual Poisson fragment law and its first-moment tail. -/
 
 /-
