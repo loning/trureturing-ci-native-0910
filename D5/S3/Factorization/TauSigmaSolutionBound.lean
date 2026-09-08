@@ -3,7 +3,7 @@
    mirror-B: D5/B/S3/Factorization/TauSigmaSolutionBound
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
-   utility: kind=numeric-reduction; basis=consumer=D5/S3/Factorization/TauSigmaSolutionBound.tau_sigma_product_eq_self_iff_of_finite; premises=D5/S3/Factorization/TauSigmaPowerBounds.tau_pow_four_le,D5/S3/Factorization/TauSigmaPowerBounds.sigma_pow_four_le; result=D5/S3/Factorization/TauSigmaSolutionBound.tau_sigma_solution_lt
+   utility: none
    digest: Every positive tau-sigma product fixed point is less than three to the thirteenth. -/
 
 import D5.S3.Factorization.TauSigmaPowerBounds
