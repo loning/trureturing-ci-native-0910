@@ -6703,16 +6703,19 @@ catalog；该有限 family 的 membership 来自 `rootId` 的 import closure，�
 
 ### 23.6 AnalysisDisposition 与 census API
 
-当前 dev `1a71fc8751` 的 `DispositionInventory` 只有 `headSha` 与
-`entries : Array (Sigma fun key : StatementKey => AnalysisDisposition key)`；其 `ExactlyCovers`
+当前 `DispositionInventory` 只有 `headSha` 与
+`entries : Array (Sigma fun key : StatementKey => CensusAssessment key)`；其 `ExactlyCovers`
 要求 HEAD 相等、完整 keys 与映射后的 `statementId` 均 `Nodup`、keys 集合等于 frozen theorem
-keys。`UnreachableDisposition.evidence : Name` 由当前 `UnreachableElaborationEvidence` 与
-对应 failed-obligation 检查消费，尚无 `ClosedReasonEvidence`、`CensusAssessment` 或
-`AnalysisObservation`。当前 artifact 报 `theorem_count`、四类／reason `counts` 与 disposition
-`rows`，绑定 `head_sha`、`report_sha256` 与 `source_inputs`；不发射 assessment counters 或
-completeness flags。当前 message／payload shape 见第 31 节 active 三表。
+keys。`UnreachableDisposition.evidence : Name` 由 `UnreachableElaborationEvidence` 与
+对应 failed-obligation 检查消费。声明与检查分别见
+`tools/lean-inspector/LeanInformationAudit/AnalysisDisposition.lean`、
+`tools/lean-inspector/LeanInformationAudit/DispositionEvidence.lean`。
+artifact 报 `theorem_count`、assessment／四类／reason `counts`、assessment `rows` 与
+`certified_complete`，绑定 `head_sha`、`report_sha256` 与 structural source 的 `source_inputs`；
+输出见 `tools/lean-inspector/LeanInformationAudit/DispositionCensus.lean`，message／payload
+shape 见第 31 节 active 三表。
 
-以下六个声明已在 dev `1a71fc8751` 存在，属于现役 API：
+以下六个现役声明位于 `tools/lean-inspector/LeanInformationAudit/AnalysisDisposition.lean`：
 
 ```lean
 inductive UnreachableReason
@@ -6750,18 +6753,20 @@ structure BoundedFiniteTruncationDisposition (key : StatementKey) where
   certification : TruncationCertification
 ```
 
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕以下新增或变更的 evidence／assessment API sketch 为 J2 契约，尚非现役 API：
+evidence wrapper 位于 `tools/lean-inspector/LeanInformationAudit/DispositionEvidence.lean`；
+以下其余 assessment／inventory 声明位于
+`tools/lean-inspector/LeanInformationAudit/AnalysisDisposition.lean`，均为现役 API：
 
 ```lean
-structure ClosedReasonEvidence
-    (key : StatementKey) (reason : UnreachableReason) where
-  semanticContract : Name
-  candidateDomain : Name
-  certificate : Name
+structure UnreachableElaborationEvidence (statement : Prop) where
+  reason : UnreachableReason
+  candidateArena : Option Name
+  explanation : String
+  failedObligation : Option Name := none
 
 structure UnreachableDisposition (key : StatementKey) where
   reason : UnreachableReason
-  evidence : ClosedReasonEvidence key reason
+  evidence : Name
 
 inductive AnalysisDisposition (key : StatementKey) where
   | finiteOccurrence (value : FiniteOccurrenceDisposition key)
@@ -6770,104 +6775,136 @@ inductive AnalysisDisposition (key : StatementKey) where
       (value : BoundedFiniteTruncationDisposition key)
   | unreachable (value : UnreachableDisposition key)
 
-inductive AnalysisObservationStatus
-  | noRegisteredRealization
-  | noRegisteredCertificate
-  | noRegisteredRealizationOrCertificate
+structure ImportClosureScope where
+  modules : Array Name
+  completed : Bool
   deriving DecidableEq, Repr
 
 structure AnalysisObservation (key : StatementKey) where
   owningModule : Name
-  censusRoot : Name
-  importClosure : Array Name
+  root : Name
+  importScope : ImportClosureScope
   queryCompleted : Bool
-  status : AnalysisObservationStatus
+  candidates : Array Name
+  note : String
+  deriving DecidableEq, Repr
 
 inductive CensusAssessment (key : StatementKey) where
   | certified (value : AnalysisDisposition key)
   | observed (value : AnalysisObservation key)
 
-structure CensusInventory where
+structure DispositionInventory where
   headSha : String
-  reportInputId : String
-  censusRoot : Name
   entries : Array (Sigma fun key : StatementKey => CensusAssessment key)
 
-def CensusInventory.keys
-    (inventory : CensusInventory) : List StatementKey :=
+def DispositionInventory.keys
+    (inventory : DispositionInventory) : List StatementKey :=
   inventory.entries.toList.map fun entry => entry.1
 
-def CensusInventory.ExactlyCovers
-    (inventory : CensusInventory)
-    (frozenHeadSha frozenReportInputId : String)
-    (frozenCensusRoot : Name)
+def DispositionInventory.certifiedKeys
+    (inventory : DispositionInventory) : List StatementKey :=
+  inventory.entries.toList.filterMap fun entry =>
+    match entry.2 with
+    | .certified _ => some entry.1
+    | .observed _ => none
+
+def DispositionInventory.ExactlyCovers
+    (inventory : DispositionInventory)
+    (frozenHeadSha : String)
     (frozenTheorems : Finset StatementKey) : Prop :=
   inventory.headSha = frozenHeadSha ∧
-  inventory.reportInputId = frozenReportInputId ∧
-  inventory.censusRoot = frozenCensusRoot ∧
   inventory.keys.Nodup ∧
   (inventory.keys.map fun key => key.statementId).Nodup ∧
   inventory.keys.toFinset = frozenTheorems
-
-def CensusInventory.CertifiedComplete
-    (inventory : CensusInventory)
-    (frozenHeadSha frozenReportInputId : String)
-    (frozenCensusRoot : Name)
-    (frozenTheorems : Finset StatementKey) : Prop :=
-  inventory.ExactlyCovers frozenHeadSha frozenReportInputId
-    frozenCensusRoot frozenTheorems ∧
-  ∀ entry ∈ inventory.entries.toList,
-    ∃ disposition : AnalysisDisposition entry.1,
-      entry.2 = CensusAssessment.certified disposition
 ```
 
-〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕`frozenTheorems` 沿用 `TruthExportCommand` 当前 dialect 的两层选择：先选择
+（J2 落地形态,2026-09-08:S0 的 `ClosedReasonEvidence`、`AnalysisObservationStatus`、`CensusInventory` 与 `CertifiedComplete` 未作为声明落地；现役形态为上述 `Name` evidence、scope record 与 `DispositionInventory`。）
+
+`#disposition_census` 的现役命令形状见
+`tools/lean-inspector/LeanInformationAudit/DispositionCensus.lean`：
+
+```text
+#disposition_census root R report "report.json" head "<head-sha>"
+  report_sha256 "sha256:<report-digest>" inventory inventoryName
+  certificate coverageName output "census.json"
+```
+
+`frozenTheorems` 沿用 `TruthExportCommand` 当前 dialect 的两层选择：先选择
 `freeze_status=frozen` 的 nodes（模块），再选择其 `declarations` 中 `kind=theorem` 的声明；
 key 从 declaration 的 `declaration_name_key` 保留 structured Lean `Name`，并取其 `statement_id`。
 `ExactlyCovers` 是记账完备命题：集合精确相等、每个完整 key 恰一次、
-映射后的 `statementId` 也 `Nodup`，且 HEAD、report input identity 与 census root 精确绑定。
-`reportInputId` 来自该 frozen elaborated export 的不可变输入身份，不是 generator 自报的标签。
+映射后的 `statementId` 也 `Nodup`，且 HEAD 相等。命令的 `parseReport` 另核对
+`stratalint.truth-export.v2`、`schema_version=2`、`source_commit` 与钉住的 `report_sha256`；
+report input identity 来自实际 bytes 的 SHA-256，不是 generator 自报的标签。root 与 evidence
+由 `validateEvidenceSources` 核查，不是 `ExactlyCovers` 的字段。`coverageProof` 对实际 inventory
+构造 `ExactlyCovers` 的 `mkDecideProof`，再以 `checkWithKernel` 检查；命令与 proof 见
+`tools/lean-inspector/LeanInformationAudit/DispositionCensus.lean`，root 检查见
+`tools/lean-inspector/LeanInformationAudit/DispositionEvidence.lean`。
 两个不同 theorem `Name` 不能复用同一个 `statement_id` 来规避 IE-C035；certified 与 observed
 使用同一个 key 空间，不能各自另列 inventory 来绕过唯一性。
+（J2 落地形态,2026-09-08:S0 把 report identity／root 放在 `ExactlyCovers` 内；现役命令在覆盖证明之外分别核查这两项，inventory 无 `reportInputId` 或 `censusRoot` 字段。）
 
-〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕dependent constructors 只决定 payload shape，consumer 仍须逐 constructor 核验证书语义。
-`ClosedReasonEvidence key reason` 的 `certificate` 必须解析为 kernel-checked、reason-specific
-closed-reason proof，其命题同时绑定 key 所指的实际 statement、完整 key、`semanticContract`
-与 `candidateDomain`；不能只核对名称存在。只查询到 registry absence 不能构造该证书。
+dependent constructors 只决定 payload shape，consumer 仍须逐 constructor 核验证书语义。
+`UnreachableDisposition.evidence` 必须解析为当前 statement 上的 `UnreachableElaborationEvidence`，
+reason 匹配、explanation 非空，且 `failedObligation=some name` 指向 kernel-checked 的
+`ClosedNumericalObligation`、`InfinitePrimitiveObligation` 或 `UnfaithfulPrimitiveObligation`。
+它们按第 8.7 节核对 theorem、statement 与候选 arena；完整 key 由 report coverage 绑定，
+不能只核对名称存在。只查询到 registry absence 不能构造该证书，已有注册 realization
+也不能被该 unreachable row 隐藏。证据类型与检查见
+`tools/lean-inspector/LeanInformationAudit/StructuralRealization.lean`、
+`tools/lean-inspector/LeanInformationAudit/DispositionEvidence.lean`。
+（J2 落地形态,2026-09-08:没有 S0 的 `semanticContract`／`candidateDomain` 字段；具名 typed obligation 承担对应的候选语义，超出其范围的 closed reason 仍须另证。）
 
-〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕`AnalysisObservation key` 仅由同一 HEAD／report inputs 的 elaborated environment 查询产生。
-`owningModule` 必须是该 key 的真实所属模块，`censusRoot` 必须等于 inventory root，
-`importClosure` 必须精确列出该 root 的完整传递 import closure 并含 owning module；这些字段
-在 artifact 中分别投影为 `owning_module`、`census_root`、`import_closure`，不是自由描述文本。
-census 自己解析 root、核实 closure 的集合与完整性、在其中完成该 exact key 的 registration
-及 certificate 查询，然后才能记录 `queryCompleted=true`（投影为 `query_completed`）。
-不接受 generator 提供的空列表或自报 completed 作为完成证据；查询失败、不完整或未完成时
-拒绝 observation，不能计为 absence。`status` 由查询结果派生：缺 realization、缺 certificate、
-两者皆缺分别使用上述三个 status；两者皆有时不能填 absence status，已登记但无效的证书
-仍须报告验证失败，不能以 observed 隐藏。query scope/status 错误使用 IE-C044。
+`AnalysisObservation key` 绑定同一 HEAD／report inputs 的 elaborated environment。
+`owningModule` 必须是该 key 的真实所属模块，`root` 必须等于命令 root，
+`importScope.modules` 必须精确列出该 root 的完整传递 import closure，包含 root 与 owning
+module 且不得重复；`queryCompleted` 与 `importScope.completed` 都必须为 true。
+JSON 字段是 `owning_module`、`root`、`import_scope: {modules, completed}`、
+`query_completed`、`candidates` 与 `note`，其中 Name 保持结构编码，note 仅作展示。
+census 从 environment 独立解析 root／closure／owner，并核实每个 supplied candidate 是同一
+theorem 在该范围内的 registration 或 realization；scope、completion 或 candidate 不符用
+IE-C044。字段见 `tools/lean-inspector/LeanInformationAudit/AnalysisDisposition.lean`、
+`tools/lean-inspector/LeanInformationAudit/CensusSchema.lean`，语义检查见
+`tools/lean-inspector/LeanInformationAudit/DispositionEvidence.lean`。
+空 candidates 可在这些检查通过后入账，但不证明 registry absence 或候选列表穷尽性。
+Phase 11 的 J3 完整查询仍须从 environment 产生 rows：空列表或自报 completed 不能代替查询，
+查询失败、不完整或未完成不能计为 absence；若报告缺 realization、缺 certificate 或两者皆缺，
+必须由查询结果支持，两者皆有时不能报告 absence，已登记但无效的证书仍须报告验证失败，
+不能以 observed 隐藏。
+（J2 落地形态,2026-09-08:S0 的 `censusRoot`／`importClosure`／absence-status enum 未采用；现役 validator 核查 scope 和所列 candidates，不自行生成或证明穷尽的 absence 查询。）
 
-〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕在 rows 的上述语义检查通过后，`CertifiedComplete` 才表示认证完备；它额外要求每个 row
+在 exact coverage 与 rows 的上述语义检查通过后，`certified_complete` 才表示认证完备；它要求每个 row
 都是 certified。**observed 永不算 classified，永不履行 AC-023，也永不构成 closed reason。**
-Meta census 的 canonical order 保持为 theorem Lean `Name` text，再按 `statement_id`；排序
+`DispositionInventory.sortedEntries` 的 canonical order 为 theorem Lean `Name` text，再按 `statement_id`；排序
 仅用于输出，身份比较仍用 structured `Name`。artifact（schema
-`lean-information-disposition-census`）包含 exact assessment rows，并从 rows fold 出以下字段，
+`lean-information-disposition-census`）包含 exact assessment rows，`className`／`payloadJson`
+由 assessment constructor 决定，见 `tools/lean-inspector/LeanInformationAudit/AnalysisDisposition.lean`。
+计数从 rows fold 派生，定义见 `tools/lean-inspector/LeanInformationAudit/CensusSchema.lean`；
+artifact 与容器校验见 `tools/lean-inspector/LeanInformationAudit/DispositionCensus.lean`、
+`tools/lean-inspector/LeanInformationAudit/Projection/AnalysisInventory.lean`。
 consumer 必须复核，不信任 generator 自报的 totals 或 flags：
 
 | field | 精确语义 |
 |---|---|
-| `accounted` | 全部有效 assessment rows 的数量 |
-| `certified` | certified rows 的数量，另按四个 disposition class 分项 |
-| `certified_by_class` | `finite_occurrence`、`structural_occurrence`、`bounded_finite_truncation`、`unreachable` 各自数量 |
-| `unreachable_by_reason` | certified unreachable 按 `UnreachableReason` 分项，未出现的 reason 也报零 |
-| `observed` | observed rows 的数量，永不计入 certified 或 classified |
-| `observed_by_status` | 按 `AnalysisObservationStatus` 分项，未出现的 status 也报零 |
-| `accounting_complete` | `ExactlyCovers` 成立且 row 语义检查通过 |
-| `certified_complete` | `CertifiedComplete` 成立且 row 语义检查通过；`observed > 0` 时必为 `false` |
+| `theorem_count` | frozen report 选中的 theorem keys 数量，等于有效 rows 数量 |
+| `counts.accounted` | 全部有效 assessment rows 的数量 |
+| `counts.certified` | certified rows 的数量 |
+| `counts.finite_occurrence`、`counts.structural_occurrence`、`counts.bounded_finite_truncation`、`counts.unreachable` | 四个 certified disposition class 各自数量 |
+| `counts.no_canonical_object_carrier`、`counts.no_finite_primitive_bundle`、`counts.no_faithful_primitive_realization` | certified unreachable 的 reason 分项，未出现者也报零 |
+| `counts.observed` | query completed 的 observed rows 数量，永不计入 certified 或 classified |
+| `counts.observed_query_completed`、`counts.observed_query_incomplete` | query completion 分项；未完成查询拒绝发射，有效 artifact 中后者恒为零 |
+| `certified_complete` | 有效 artifact 中 `counts.observed == 0`；`observed > 0` 时必为 `false` |
 
-〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕必须复核 `accounted = certified + observed`、class 分项之和等于 certified、reason 分项之和
-等于 certified unreachable、status 分项之和等于 observed；计数相等不能替代 exact keys 检查。
+（J2 落地形态,2026-09-08:S0 的 nested class／reason／absence-status maps 与 `accounting_complete` 未发射，也没有 `CertifiedComplete` 声明；记账完备由命令校验和 kernel `ExactlyCovers` 证明体现，JSON 只有上述 flat counts 与 `certified_complete`。）
+
+有效 artifact 必须复核 `accounted = certified + observed`、class 分项之和等于 certified、reason 分项之和
+等于 certified unreachable、query-completion 分项之和等于 observed，且 incomplete 分项为零；
+计数相等不能替代 exact keys 检查。计数重算与字段核对见
+`tools/lean-inspector/LeanInformationAudit/CensusSchema.lean`、
+`tools/lean-inspector/LeanInformationAudit/Projection/AnalysisInventory.lean`。
 census 是 read-only report consumer，artifact 永不作为 seal input 或 required gate；它不推断
 object arena，不把缺 realization 自动归到 finite／structural／unreachable。
+（J2 落地形态,2026-09-08:S0 的 status 总和改为实际 query-completion 分项；未完成 observation 先拒绝，不能用计数平衡把它变成有效 row。）
 
 finite 与 structural constructors 都必须由指定 root maximal catalog occurrence discharge
 `TrivialInCatalog`；bounded truncation 只有 `transferred` constructor 的具名 theorem 所明确
@@ -6875,8 +6912,9 @@ finite 与 structural constructors 都必须由指定 root maximal catalog occur
 disposition coverage 与 5⁗ `AdmissionCertificate` 是不同字段、不同证明义务。后者的 active
 consumer 仍待第 39 节 GATE 的 owner $\tau$ ruling。
 
-〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕外层 certified assessment 认证的是 disposition 及其边界：bounded `reportOnly` 的 comparison
+外层 certified assessment 认证的是 disposition 及其边界：bounded `reportOnly` 的 comparison
 证书可以认证其分类，但不因此取得全对象结论、transfer 或 positivity，原有 truncation 限制不变。
+comparison 与 transfer 的方向检查见 `tools/lean-inspector/LeanInformationAudit/DispositionEvidence.lean`。
 
 ---
 
