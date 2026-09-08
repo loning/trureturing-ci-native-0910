@@ -397,22 +397,22 @@ artifact_id = "none"
 runtime_disposition = "committed-source"
 
 [[files]]
-pattern = "build/lean-cache/**"
-kind = "generated"
-admission_plane = "judge"
-produced_by = "automation"
-consumed_by = ["GitHub-Actions"]
-verified_by = ["StrataLint"]
-artifact_id = "none"
-runtime_disposition = "run-local"
-
-[[files]]
 pattern = "build/ci/**"
 kind = "generated"
 admission_plane = "judge"
 produced_by = "StrataLint"
 consumed_by = ["GitHub-Actions", "StrataLint"]
 verified_by = ["StrataLint"]
+artifact_id = "none"
+runtime_disposition = "run-local"
+
+[[files]]
+pattern = "build/lean-cache/**"
+kind = "generated"
+admission_plane = "judge"
+produced_by = "automation"
+consumed_by = ["GitHub-Actions"]
+verified_by = ["StrataLint", "automation"]
 artifact_id = "none"
 runtime_disposition = "run-local"
 
