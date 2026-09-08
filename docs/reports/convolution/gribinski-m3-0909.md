@@ -614,3 +614,14 @@ All rows were transcribed from committed source, with theorems read through
 Before the emit push, fetch EXIT=0 at dev `fe073d57308689f0d309d54d7d6fa7dbb8298484`;
 index and dev/index path-union counts are raw **18/36**, capacity **18/18**.
 `git diff --cached --check`: EXIT=0.
+
+### Step 4: Lean Build
+
+Emit commit `f3204fbd04` was pushed. `/usr/bin/time -l make lean`: EXIT=0,
+**8.73 real seconds**, 12681 jobs, maximum RSS 1174421504 bytes (`lean.log`).
+Cache receipt: present, method=none, project and Mathlib both warm. Both task
+modules were replayed from the private cache; this is an incremental build
+measurement, not a fresh proof benchmark. The four already recorded unused
+variable warnings in the discriminant module remain. No Lean source was edited.
+Before this verification checkpoint's push, fetch EXIT=0 at dev `fe073d5730`;
+index and dev/index path-union counts remain raw **18/36**, capacity **18/18**.
