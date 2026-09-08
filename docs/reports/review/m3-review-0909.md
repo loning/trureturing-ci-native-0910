@@ -52,6 +52,28 @@ Read-path correction: `sed -n '1,200p' tools/scripts/lean.sh` returned EXIT=1
 because that file does not exist. Reading Makefile:27-31 located the actual
 wrapper `tools/scripts/worktree/lean-cache-run.sh`; no guessed build was run.
 
+### Q1 Run 0: Import Failure, No Mathematical Result
+
+Command: `/usr/bin/time -l make -f Makefile -f "$ATTEMPT/review.mk"
+review-stdin PROBE="$ATTEMPT/q1-direct.txt" > "$ATTEMPT/q1-direct.log" 2>&1`.
+EXIT=2, 6.46 real seconds, RSS=697122816 bytes. The wrapper reported project and
+Mathlib `warm`, but Lean failed at stdin:1:0 because
+`.lake/build/lib/lean/D5/S3/Zeros/Convolution/GribinskiDegreeThree.olean` does
+not exist. No tactic ran; this says nothing about bind-only provability.
+Next action: run the required `make lean` to build this pinned source, then
+retry the independent proof. The build is a Q1 import prerequisite; its own
+final-source measurement will also be reported under Q5 without duplicating it.
+
+Additional searches: cubic Mathlib signature scan (`rg -n
+'theorem.*(discr|root)|def.*discr|discr.*iff'
+.lake/packages/mathlib/Mathlib/Algebra/CubicDiscriminant.lean`) yielded 19 lines,
+EXIT=0. `Cubic.discr_eq_prod_three_roots` requires an already-known list of three
+roots; `discr_ne_zero_iff_roots_nodup` assumes splitting. Neither directly
+discharges the unknown output splitting premise. Repository convolution scan
+(`rg -n '\b(cubic_nonnegative_factorization|boxplus|gribinski|rectangularConvolution)\b'
+D5/S3/Zeros/Convolution --glob '*.lean'`) yielded 24 lines, EXIT=0, including
+the frozen factorization API and the existing m=2 API.
+
 ## Q2-Q6
 
 Pending Q1 completion. No verdict is claimed at this checkpoint.
