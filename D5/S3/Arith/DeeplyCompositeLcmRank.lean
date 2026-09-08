@@ -94,13 +94,13 @@ private theorem dvd_L {d k : ℕ} (hd : 1 ≤ d) (hdk : d ≤ k) : d ∣ L k := 
   exact Finset.dvd_lcm (Finset.mem_Icc.mpr ⟨hd, hdk⟩)
 
 private theorem L_succ (k : ℕ) : L (k + 1) = Nat.lcm (L k) (k + 1) := by
-  have hi : Finset.Icc 1 (k + 1) =
-      insert (k + 1) (Finset.Icc 1 k) := by
-    ext x
-    simp only [mem_Icc, mem_insert]
-    omega
   unfold L Nat.lcmUpto
-  rw [hi, Finset.lcm_insert, lcm_comm, lcm_eq_nat_lcm]
+  have hi : insert (k + 1) (Finset.Icc 1 k) = Finset.Icc 1 (k + 1) := by
+    simpa only [Nat.succ_eq_succ, Nat.succ_eq_add_one] using
+      (Finset.insert_Icc_right_eq_Icc_succ (α := ℕ) (a := 1) (b := k)
+        (by simpa only [Nat.succ_eq_succ] using Nat.succ_le_succ (Nat.zero_le k)))
+  rw [← hi, Finset.lcm_insert,
+    lcm_comm, lcm_eq_nat_lcm]
   rfl
 
 private theorem L_dvd_succ (k : ℕ) : L k ∣ L (k + 1) := by
