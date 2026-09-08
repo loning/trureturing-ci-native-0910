@@ -76,6 +76,25 @@ def validate (inventory : DispositionInventory) (scopes : Array Scope)
           modules.contains payload.owningModule do
         throwError "census projection: owning module mismatch"
 
+/-- The certificate covers these selected keys; the immutable report remains the
+authority for the requested denominator and export identity. -/
+def selectedReport (report : FrozenReport) (inventory : DispositionInventory) : FrozenReport :=
+  let ids := Std.HashSet.ofArray (inventory.entries.map (fun entry => entry.1.statementId))
+  { report with theorems := report.theorems.filter (fun key => ids.contains key.statementId) }
+
+def summaryFields (report : FrozenReport) (inventory : DispositionInventory)
+    (sources : Array ProvenanceSource) : List (String × Json) :=
+  let counts := count inventory
+  let complete := counts.accounted == report.theorems.size
+  [
+    ("schema", toJson "lean-information-disposition-census"),
+    ("head_sha", toJson report.headSha), ("report_sha256", toJson report.reportSha256),
+    ("source_inputs", toJson sources), ("theorem_count", toJson report.theorems.size),
+    ("requested_keys", toJson report.theorems.size),
+    ("status", toJson (if complete then "complete" else "partial")),
+    ("coverage_theorem_count", toJson counts.accounted),
+    ("counts", toJson counts), ("certified_complete", toJson (complete && counts.observed == 0))]
+
 /-- Preserve the census JSON schema while keeping only one serialized row in
 memory. A scope may contain thousands of names and occur in thousands of rows. -/
 private def streamArtifact (path : String) (report : FrozenReport)
@@ -84,11 +103,7 @@ private def streamArtifact (path : String) (report : FrozenReport)
   match checkCounts inventory counts with
   | .ok () => pure ()
   | .error message => throw (IO.userError message)
-  let fields := [
-    ("schema", toJson "lean-information-disposition-census"),
-    ("head_sha", toJson report.headSha), ("report_sha256", toJson report.reportSha256),
-    ("source_inputs", toJson sources), ("theorem_count", toJson report.theorems.size),
-    ("counts", toJson counts), ("certified_complete", toJson (counts.observed == 0))]
+  let fields := summaryFields report inventory sources
   let handle <- IO.FS.Handle.mk path .write
   handle.putStr "{"
   for (field, value) in fields do
@@ -125,7 +140,8 @@ elab "#disposition_census" &"projection" &"root" root:ident &"report" reportPath
     unsafe evalExpr (Array Scope) (mkApp (mkConst ``Array [.zero]) (mkConst ``Scope))
       (mkConst scopesName)
   phase "check-coverage"
-  ofExcept <| checkCoverage report.headSha report.theorems inventory
+  let covered := selectedReport report inventory
+  ofExcept <| checkCoverage report.headSha covered.theorems inventory
   phase "validate-evidence"
   let (proof, sources) <- liftTermElabM do
     validate inventory scopes owners
@@ -136,7 +152,7 @@ elab "#disposition_census" &"projection" &"root" root:ident &"report" reportPath
     IO.println "CENSUS_COVERAGE_BEGIN"
     (<- IO.getStdout).flush
     let started <- IO.monoMsNow
-    let proof <- coverage report (mkConst inventoryName) progress
+    let proof <- coverage covered (mkConst inventoryName) progress
     let elapsed := (<- IO.monoMsNow) - started
     phase s!"coverage-proof-complete milliseconds={elapsed}"
     IO.println s!"CENSUS_COVERAGE_COMPLETE milliseconds={elapsed}"

@@ -63,6 +63,17 @@ def parse_request(value):
     return value
 
 
+def validate_summary(summary, *, requested, accounted):
+    if summary["requested_keys"] != requested or summary["counts"]["accounted"] != accounted:
+        raise ValueError("publication requested/accounted denominator mismatch")
+    complete = accounted == requested
+    if summary["status"] != ("complete" if complete else "partial"):
+        raise ValueError("publication accounting status mismatch")
+    certified_complete = complete and summary["counts"]["observed"] == 0
+    if summary["certified_complete"] is not certified_complete:
+        raise ValueError("publication certified_complete does not use the full requested key set")
+
+
 def frozen_keys(report):
     result = []
     identities = set()
@@ -237,15 +248,7 @@ def execute(options):
             path = scope_module(directory, scope, output, pool, indexes)
             lean(path, "scope-" + label, True)
         completed.sort(key=lambda item: item[0]["statement_id"])
-        completed_ids = {row["statement_id"] for row, _ in completed}
-        if len(completed) != len(all_keys):
-            subset = dict(report, nodes=[dict(node, declarations=[decl for decl in node["declarations"]
-                if decl.get("statement_id") in completed_ids]) for node in report["nodes"]])
-            report_path = directory / "partial-report.json"
-            report_path.write_text(json.dumps(subset) + "\n")
-            state["status"] = "partial"
-        else:
-            state["status"] = "complete"
+        state["status"] = "complete" if len(completed) == len(all_keys) else "partial"
         inventories = []
         for start in range(0, len(completed), 100):
             number = start // 100
@@ -270,7 +273,9 @@ def execute(options):
         path = write_module(directory, "CensusRun.Root", source)
         lean(path, "publication", True)
         summary = json.loads((directory / "census.json.summary.json").read_text())
-        state["artifact_counters"] = dict(summary["counts"], certified_complete=summary["certified_complete"])
+        validate_summary(summary, requested=len(all_keys), accounted=len(completed))
+        state["artifact_counters"] = dict(summary["counts"], requested_keys=summary["requested_keys"],
+                                          certified_complete=summary["certified_complete"])
         state["artifact_bytes"] = (directory / "census.json").stat().st_size
         counts = state["artifact_counters"]
         text = (f"status={state['status']} accounted={counts['accounted']}/{len(all_keys)} "

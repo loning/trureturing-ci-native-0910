@@ -72,6 +72,18 @@ class PipelineTests(unittest.TestCase):
             with self.subTest(result=result), self.assertRaises(ValueError):
                 self.program.validate_result(result, "head", [("D5.A", "key", "id")])
 
+    def test_partial_certification_never_uses_subset_denominator(self):
+        summary = {"requested_keys": 4, "status": "partial",
+                   "counts": {"accounted": 1, "certified": 1, "observed": 0},
+                   "certified_complete": True}
+        with self.assertRaisesRegex(ValueError, "certified_complete"):
+            self.program.validate_summary(summary, requested=4, accounted=1)
+        summary["certified_complete"] = False
+        self.program.validate_summary(summary, requested=4, accounted=1)
+        summary["requested_keys"] = 1
+        with self.assertRaisesRegex(ValueError, "requested"):
+            self.program.validate_summary(summary, requested=4, accounted=1)
+
     def test_scope_name_pool_deduplicates_across_partitions(self):
         import emission
         first = ["str", ["anonymous"], "First"]

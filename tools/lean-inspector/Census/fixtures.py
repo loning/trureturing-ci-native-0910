@@ -43,7 +43,7 @@ def prepare_fixtures(repository, directory):
             logs, "compile", cwd=repository, env=env)
 
     for module in ("Query.Observed", "Query.DuplicateLeft", "Query.DuplicateRight", "Query.Contract",
-                   "Query.Coverage", "AssessmentCommand", "Command", "CommandRejection",
+                   "Query.Coverage", "Query.Publication", "AssessmentCommand", "Command", "CommandRejection",
                    "InvalidEvidence", "LandedFinite"):
         prepare("LeanInformationAudit.Tests.Census." + module)
 
@@ -114,6 +114,14 @@ def main():
         run(["lake", "env", "lean", str(probe)], directory / (label + "-absent"), "process",
             cwd=repository, env=env)
     assert results[0] == results[1], "artifact bytes are nondeterministic"
+    partial = directory / "partial-certified"
+    assert execute(argparse.Namespace(output=str(partial), truth_export=str(report_path),
+                                      lean_report=None, prefix=finite, partition_modules=32)) == 2
+    summary = json.loads((partial / "census.json.summary.json").read_text())
+    assert summary["status"] == "partial" and summary["requested_keys"] == 4
+    assert summary["counts"]["accounted"] == summary["counts"]["certified"] == 1
+    assert summary["counts"]["observed"] == 0 and summary["certified_complete"] is False
+    assert summary["report_sha256"] == "sha256:" + hashlib.sha256(report_path.read_bytes()).hexdigest()
     bad_request = directory / "bad-request.json"
     bad_request.write_text(json.dumps({"head": "fixture-head", "keys": [], "query_completed": True}))
     bad_output = directory / "bad-output.json"
@@ -127,13 +135,14 @@ def main():
         assert not bad_output.exists()
     else:
         raise AssertionError("input completion flag was accepted")
-    for module in ("Query/Contract", "Query/Coverage", "AssessmentCommand", "Command",
+    for module in ("Query/Contract", "Query/Coverage", "Query/Publication", "AssessmentCommand", "Command",
                    "CommandRejection", "InvalidEvidence", "LandedFinite"):
         run(["lake", "env", "lean", "-R", str(repository / "tools/lean-inspector"),
              "-DmaxRecDepth=100000", "-DmaxHeartbeats=0",
              str(repository / f"tools/lean-inspector/LeanInformationAudit/Tests/Census/{module}.lean")],
             directory / module, "process", cwd=repository)
     result = {"query_contract": "passed", "coverage": "passed", "artifact_determinism": results[0],
+              "partial_certified_denominator": "passed (accounted=1/4, certified=1, observed=0, certified_complete=false)",
               "duplicate_name_modules": 2,
               "existing_census_command_fixtures": 5,
               "observed_theorem_absent_from_publication": True, "input_completion_flag_rejected": True,
