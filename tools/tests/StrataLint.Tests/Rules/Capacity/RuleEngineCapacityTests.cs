@@ -123,6 +123,66 @@ public sealed class RuleEngineCapacityTests
     }
 
     [Fact]
+    public void Sl003DoesNotTreatCanonicalProblemPoolDossiersAsASplittableModule()
+    {
+        var fixture = new RuleFixture();
+        for (var index = 1; index <= 60; index++)
+        {
+            var path = $"Problems/oeis-a000001-sample-slug-{index:0000}.md";
+            fixture.Files[path] = "fixture\n";
+            fixture.Changes.Add(path);
+        }
+
+        var diagnostics = RuleCatalog.Default.EvaluateSingle(
+            RuleId.CreateKnown(3),
+            fixture.Build()).Diagnostics;
+
+        Assert.Empty(diagnostics);
+    }
+
+    [Fact]
+    public void Sl003StillBoundsCanonicalProblemPoolDossierLength()
+    {
+        var fixture = new RuleFixture();
+        const string path = "Problems/oeis-a363560-cubic-ninth-power-substitution-mod-three.md";
+        fixture.Baseline[path] = string.Empty;
+        fixture.Files[path] = string.Concat(Enumerable.Repeat("pad\n", 900));
+        fixture.Changes.Add(path);
+
+        var diagnostic = Assert.Single(
+            RuleCatalog.Default.EvaluateSingle(RuleId.CreateKnown(3), fixture.Build()).Diagnostics);
+
+        Assert.Equal(path, diagnostic.Path);
+        Assert.Equal(AdmissionEffect.Block, diagnostic.AdmissionEffect);
+        Assert.Equal("artifact exceeds 800 lines", diagnostic.Message);
+    }
+
+    [Fact]
+    public void Sl003StillCountsNonCanonicalProblemPoolPaths()
+    {
+        var fixture = new RuleFixture();
+        for (var index = 1; index <= 60; index++)
+        {
+            foreach (var path in new[] { $"Problems/Foo{index:0000}.md", $"Problems/sub/x{index:0000}.md" })
+            {
+                fixture.Files[path] = "fixture\n";
+                fixture.Changes.Add(path);
+            }
+        }
+
+        var diagnostics = RuleCatalog.Default.EvaluateSingle(
+            RuleId.CreateKnown(3),
+            fixture.Build()).Diagnostics;
+
+        foreach (var directory in new[] { "Problems", "Problems/sub" })
+        {
+            var diagnostic = Assert.Single(diagnostics, item => item.Path == directory);
+            Assert.Equal(AdmissionEffect.Block, diagnostic.AdmissionEffect);
+            Assert.Contains("directory contains 60 files", diagnostic.Message, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
     public void Sl003RefusesNetGrowthOfAnOverfullBucket()
     {
         var fixture = OverfullBucket(baselineCount: (L - 1), currentCount: (L + 1));

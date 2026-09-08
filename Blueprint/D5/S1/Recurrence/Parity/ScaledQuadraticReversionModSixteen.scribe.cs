@@ -2,13 +2,13 @@ using static StrataLint.Scribe.DefinitionDsl;
 using static StrataLint.Scribe.FormulaDsl;
 using F = StrataLint.Scribe.FormulaDsl;
 
-namespace StrataLint.Scribe.Blueprint.D5.S1.Recurrence.Invariants;
+namespace StrataLint.Scribe.Blueprint.D5.S1.Recurrence.Parity;
 
 internal sealed class ScaledQuadraticReversionModSixteenDocument : IScribeDocumentDefinition
 {
     private const string Prefix = "D5/S1/Recurrence/Parity/ScaledQuadraticReversionModSixteen.";
     private static readonly LibraryNoteRef Source =
-        LibraryNoteRef.Create("D5/L/Arith/hanna2026a396844");
+        LibraryNoteRef.Create("D5/L/Recurrence/hanna2026a396844");
 
     public DocumentDefinition Create() => DocumentDefinition.Create(ScribeNode.Create(
         "The normalized series of OEIS A396844 has alternating dyadic residues modulo sixteen.",

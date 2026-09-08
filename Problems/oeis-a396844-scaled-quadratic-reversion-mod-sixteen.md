@@ -13,7 +13,7 @@ motivation_gids:
 ## Problem
 
 OEIS A396844, Paul D. Hanna, Jul 03 2026, gives the following NAME and
-COMMENT, quoted verbatim from `Library/Arith/hanna2026a396844.md`:
+COMMENT, quoted verbatim from `Library/Recurrence/hanna2026a396844.md`:
 
 > G.f. A(x) satisfies A( x*A(x) - 4*x*A(x)^2 ) = x^2.
 
