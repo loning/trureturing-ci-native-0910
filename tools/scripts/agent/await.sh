@@ -14,6 +14,7 @@
 #   退出码契约:seat/nyx/make —— 0 条件成立(make 只看哨兵出现,不看其值)、124 超 AWAIT_DEADLINE;
 #   vote —— 0 settled(NYX_OK,答案已落 <out>.settled)、6 UNCERTAIN(不重投,打印 task id)、1 DELIVERY(不重投)、
 #   2 参数/IO 错误、124 超时、125 重试耗尽(EXTRACTION/QUOTA/BUSY 各轮均失败)、其余=转发 nyx.sh 的失败/信号状态。
+#   通用:缺必需参数(\${x:?})由 shell 以 1 退出;未知动词 usage 退出 2。
 # 环境:AWAIT_DEADLINE(秒,默认 5400)、AWAIT_TICK(秒,默认 20)
 #
 # 为什么仍有内部轮询:这三样**都没有自带的同步原语**(runner 已返回、nyxid 只有查询式 API、
