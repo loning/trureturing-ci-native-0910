@@ -118,6 +118,26 @@ artifacts follow that observed shape.
 
 Write the Lean module and its `.scribe.cs` mirror using the live template. Discover the current path-to-GID rule from that template and the live path-policy owner; do not rely on a remembered grammar.
 
+**The Scribe document's prose is mathematical exposition, not a production record.** Its reader is
+someone learning what the statements say and why they hold, and the document is a permanent projection
+of the truth graph. So the prose describes objects, hypotheses and implications, and nothing else. It
+must not name the process that produced the deposit: no atom, preregistration, witness, admission,
+coverage, bucket capacity, directory counts, implementation-base SHAs, placement rationale, or review
+vocabulary such as calling a lemma a live consumed step. Say what the lemma states and what consumes
+it mathematically. Two landed instances, each caught by review after all three required checks were
+green: one carried `preregistered witness`, `the atom states`, and `whole preregistered candidate
+theorem`; the other carried its bucket's 24-file count, its implementation base SHA, and why the module
+went where it did. That kind of sentence belongs in the pull request body, which is where the
+provenance account is required anyway.
+
+The cost of getting this wrong is a whole redo, not an edit: the coverage receipt binds the Scribe
+bytes, so prose fixed after `make cover` invalidates the deposit and the lane pays for a second one.
+Read the prose once before depositing and ask of every sentence whether it would still make sense to a
+reader who has never heard of this repository's ledger.
+
+SL-032 rejects a fixed governance word list and CJK characters in Scribe sources, and it passes on
+everything above; a green check here is not evidence that the prose is clean.
+
 A new theorem must go in a new Lean module. Before writing into an existing module, check whether it has an active Freeze event:
 
 ```sh
@@ -181,6 +201,19 @@ git diff --check
 git add -A
 git commit -F <commit-message-file>
 ```
+
+**The theorem you cover with must own the clause unconditionally.** Before `make cover`, list the
+atom's clauses and the chosen theorem's explicit hypotheses side by side, and for each hypothesis name
+the sentence of the atom that supplies it. A hypothesis the atom neither states nor implies makes the
+cover weaker than the source claim — the digestion-side precedents below say the same thing, but a
+deposit lane reaches `make cover` without ever reading them, which is how this class landed twice.
+The specific trap both times: the discharging fact was **already frozen in the same directory**, so
+the unconditional statement cost no new mathematics and was simply not written. Landed cases: a
+parity atom bound to `..._of_generating_function` while the module already proved the unconditional
+form, and a price atom bound to `..._of_isLeast_missing_prime` while `exists_smallest_missing_prime_threshold`
+was frozen two files away. In both, the fix was one composed public theorem and a re-aimed edge, and in
+both the module was already frozen, so the fix cost a full redo. If the difference is a hypothesis some
+frozen theorem discharges, expose the composed unconditional theorem and cover that.
 
 Postcondition: deposit and cover exited 0; preflight exit code and diagnostics reported; the complete intended delta is in one explicit builder commit; and the worktree is clean. A failure is captured as an `open` outcome with diagnostics and no push.
 

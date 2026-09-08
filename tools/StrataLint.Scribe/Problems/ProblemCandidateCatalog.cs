@@ -15,7 +15,8 @@ internal enum ProblemTriage
 internal sealed record ProblemCandidate(
     string Slug,
     BibKey BibKey,
-    Doi Doi,
+    Doi? Doi,
+    Uri? Url,
     ProblemTriage Triage,
     ImmutableArray<GidRef> MotivationGids,
     string RelativePath);
@@ -153,7 +154,7 @@ internal sealed class ProblemCandidateCatalog
         }
 
         var metadata = (Dictionary<string, object?>)YamlSubsetParser.Parse(text[opening.Length..end]);
-        var keys = metadata.Keys.ToHashSet(StringComparer.Ordinal);
+        var keys = metadata.Keys.Where(static key => key != "url").ToHashSet(StringComparer.Ordinal);
         if (!keys.SetEquals(RequiredKeys))
         {
             throw new FormatException($"{relativePath} has missing or unknown metadata fields");
@@ -172,10 +173,18 @@ internal sealed class ProblemCandidateCatalog
 
         var bibKey = BibKey.TryCreate(RequiredLine(metadata, "bibkey", relativePath))
             ?? throw new FormatException($"{relativePath} has a noncanonical bibkey");
-        var source = RequiredLine(metadata, "doi", relativePath);
-        if (!Doi.TryCreate(source, out var doi))
+        Doi? doi = metadata["doi"] switch
         {
-            throw new FormatException($"{relativePath} has a malformed doi");
+            null => null,
+            string value when Doi.TryCreate(value, out var parsed) => parsed,
+            _ => throw new FormatException($"{relativePath} has a malformed doi"),
+        };
+        var url = metadata.ContainsKey("url")
+            ? LiteratureCitation.ParseStableUrl(RequiredLine(metadata, "url", relativePath))
+            : null;
+        if ((doi is null) == (url is null))
+        {
+            throw new FormatException($"{relativePath} requires exactly one DOI or URL");
         }
 
         var triage = RequiredLine(metadata, "triage", relativePath) switch
@@ -206,7 +215,7 @@ internal sealed class ProblemCandidateCatalog
         }
 
         ValidateSections(text[(end + closing.Length)..], relativePath);
-        return new ProblemCandidate(slug, bibKey, doi, triage, motivation, relativePath);
+        return new ProblemCandidate(slug, bibKey, doi, url, triage, motivation, relativePath);
     }
 
     private static void ValidateSections(string body, string relativePath)

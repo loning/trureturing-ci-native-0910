@@ -4,12 +4,13 @@ namespace StrataLint.Scribe;
 
 public sealed record LiteratureCitation
 {
-    private LiteratureCitation(string authors, int year, string title, Doi doi)
+    private LiteratureCitation(string authors, int year, string title, Doi? doi, Uri? url)
     {
         Authors = authors;
         Year = year;
         Title = title;
         Doi = doi;
+        Url = url;
     }
 
     public string Authors { get; }
@@ -18,13 +19,16 @@ public sealed record LiteratureCitation
 
     public string Title { get; }
 
-    public Doi Doi { get; }
+    public Doi? Doi { get; }
+
+    public Uri? Url { get; }
 
     public static LiteratureCitation Create(
         string authors,
         int year,
         string title,
-        string doi)
+        string? doi,
+        string? url = null)
     {
         RequireCanonicalLine(authors, nameof(authors));
         RequireCanonicalLine(title, nameof(title));
@@ -33,12 +37,34 @@ public sealed record LiteratureCitation
             throw new ArgumentOutOfRangeException(nameof(year));
         }
 
-        if (!StrataLint.Engine.Doi.TryCreate(doi, out var parsedDoi))
+        if (doi is null)
+        {
+            return new LiteratureCitation(authors, year, title, null,
+                ParseStableUrl(url ?? throw new ArgumentException("Citation requires a DOI or URL.")));
+        }
+
+        if (url is not null || !StrataLint.Engine.Doi.TryCreate(doi, out var parsedDoi))
         {
             throw new ArgumentException("Citation DOI is not canonical.", nameof(doi));
         }
 
-        return new LiteratureCitation(authors, year, title, parsedDoi);
+        return new LiteratureCitation(authors, year, title, parsedDoi, null);
+    }
+
+    internal static Uri ParseStableUrl(string value)
+    {
+        RequireCanonicalLine(value, nameof(value));
+        if (!Uri.TryCreate(value, UriKind.Absolute, out var uri)
+            || uri.Scheme != Uri.UriSchemeHttps
+            || uri.Host.Length == 0
+            || uri.UserInfo.Length != 0
+            || !Uri.IsWellFormedUriString(value, UriKind.Absolute)
+            || !string.Equals(value, uri.AbsoluteUri, StringComparison.Ordinal))
+        {
+            throw new ArgumentException("Literature URL must be a canonical absolute HTTPS URL.");
+        }
+
+        return uri;
     }
 
     private static void RequireCanonicalLine(string value, string parameter)
