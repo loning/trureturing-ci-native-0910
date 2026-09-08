@@ -36,6 +36,9 @@ __selftest() {  # 分类器的阳性/阴性对照。**立条依据(2026-09-06)**
   chk OK answer-prompt-uncertain-text-zero-exit 'Task failed (prompt_delivery_uncertain).' 0
   chk UNKNOWN bare-diagnostic-line-zero-exit-delivery 'Error: Task failed (Message delivery timed out).' 0
   chk OK answer-quotes-delivery-last-line '{"verdict":"approve","note":"Message delivery timed out. Please try again.Retry"}' 0
+  # 阳性:CLI exit 0 但正文被截断,载体串粘在**结尾** —— 必须判 DELIVERY(2026-09-09 实测漏判)
+  chk DELIVERY carrier-delivery-tail-zero-exit "$(printf '%s\n' 'Attempts: 1 (infrastructure retries 0/3)' \
+    'to m=3 one still needs a new certificate over the whole parameter rangeMessage delivery timed out. Please try again.Retry')" 0
   chk OK answer-delivery-text-zero-exit "$(printf '%s\n' 'Attempts: 1 (infrastructure retries 0/3)' 'Message delivery timed out. Please try again.Retry')" 0
   # 阴性对照:**真答案里引用了同一句失败文本**,但末行是答案 —— 必须仍判 OK。
   # 这条钉的正是「不做全文子串匹配」;改成全文匹配它立刻变红。
