@@ -2,11 +2,11 @@ using static StrataLint.Scribe.DefinitionDsl;
 using static StrataLint.Scribe.FormulaDsl;
 using F = StrataLint.Scribe.FormulaDsl;
 
-namespace StrataLint.Scribe.Blueprint.D5.S1.Recurrence.Parity;
+namespace StrataLint.Scribe.Blueprint.D5.S3.Arith;
 
 internal sealed class ArtinSchreierTracePowersOfTwoDocument : IScribeDocumentDefinition
 {
-    private const string Gid = "D5/S1/Recurrence/Parity/ArtinSchreierTracePowersOfTwo.";
+    private const string Gid = "D5/S3/Arith/ArtinSchreierTracePowersOfTwo.";
 
     public DocumentDefinition Create() => DocumentDefinition.Create(ScribeNode.Create(
         "An Artin-Schreier trace invariant proves the first parity conjecture for OEIS A396808.",

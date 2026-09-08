@@ -1,6 +1,6 @@
-/- GID: D5/S1/Recurrence/Parity/ArtinSchreierTracePowersOfTwo
+/- GID: D5/S3/Arith/ArtinSchreierTracePowersOfTwo
    generality: I
-   mirror-B: D5/B/S1/Recurrence/Parity/ArtinSchreierTracePowersOfTwo
+   mirror-B: D5/B/S3/Arith/ArtinSchreierTracePowersOfTwo
    mirror-E: none(waiver:unbounded-symbolic-proof)
    anchors: []
    utility: none
@@ -16,7 +16,7 @@ set_option relaxedAutoImplicit false
 open scoped PowerSeries
 open Finset Polynomial
 
-namespace D5.S1.Recurrence.Parity.ArtinSchreierTracePowersOfTwo
+namespace D5.S3.Arith.ArtinSchreierTracePowersOfTwo
 
 noncomputable section
 
@@ -590,4 +590,4 @@ example : ∃ n : ℕ, 0 < n := ⟨1, by omega⟩
 
 end
 
-end D5.S1.Recurrence.Parity.ArtinSchreierTracePowersOfTwo
+end D5.S3.Arith.ArtinSchreierTracePowersOfTwo
