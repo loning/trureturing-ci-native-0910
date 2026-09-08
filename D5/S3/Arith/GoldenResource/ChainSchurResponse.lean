@@ -124,6 +124,110 @@ theorem Z_eq (n : ℕ) : Z n = z n • 1 := by
   fin_cases i <;> fin_cases j <;>
     simp [Fintype.sum_sum_type, W, z, pow_two]
 
+private theorem hidden_spatial_diagonal (n : ℕ) (k b : ℝ) :
+    hiddenSpatial n k b = diagonal
+      (Sum.elim (fun i => k - if i = Fin.last n then b else 0) (fun _ => k)) := by
+  ext i j
+  simp [hiddenSpatial, G, spatialWeight, Matrix.submatrix_apply, Matrix.diagonal_apply]
+
+private theorem weighted_column (n : ℕ) (k b : ℝ) :
+    (∑ i, w n i * (k - if i = Fin.last n then b else 0) * w n i) =
+      k * (∑ i, w n i ^ 2) - b * t n ^ 2 := by
+  calc
+    _ = ∑ i, (k * w n i ^ 2 - if i = Fin.last n then b * t n ^ 2 else 0) := by
+      apply Finset.sum_congr rfl
+      intro i _
+      by_cases hi : i = Fin.last n
+      · subst i
+        simp only [if_true, t]
+        ring
+      · simp only [hi, if_false]
+        ring
+    _ = _ := by simp [Finset.sum_sub_distrib, ← Finset.mul_sum]
+
+/-- The spatial coefficient differs from the common scalar only at the first endpoint. -/
+theorem C_eq (n : ℕ) (k b : ℝ) :
+    C n k b = (k * z n) • 1 - (b * t n ^ 2) • diagonal ![1, 0] := by
+  have hc : (∑ i, w n i * k * w n i) = k * (∑ i, w n i ^ 2) := by
+    simpa using weighted_column n k 0
+  rw [C, coupling_inverse, inverse_coupling, hidden_spatial_diagonal]
+  ext i j
+  change k * (1 : Matrix (Fin 2) (Fin 2) ℝ) i j +
+    (∑ a, ((W n)ᵀ * diagonal
+      (Sum.elim (fun a : Fin (n + 1) => k - if a = Fin.last n then b else 0)
+        (fun _ : Fin (n + 1) => k)) : Matrix (Fin 2) (Hidden n) ℝ) i a *
+        W n a j) = _
+  simp only [Matrix.mul_diagonal, Matrix.transpose_apply]
+  fin_cases i <;> fin_cases j <;>
+    simp [Fintype.sum_sum_type, W, weighted_column, hc, Matrix.sub_apply,
+      Matrix.smul_apply, smul_eq_mul]
+  all_goals dsimp [z]; ring
+
+/-- The normalized principal part is computed from the actual inverse of Z. -/
+theorem effective_eq (n : ℕ) (k b : ℝ) :
+    effective n k b = diagonal ![k - b * eta n, k] := by
+  have hz : z n ≠ 0 := ne_of_gt (z_pos n)
+  let : Invertible (z n) := invertibleOfNonzero hz
+  rw [effective, Z_eq, C_eq,
+    Matrix.inv_smul (1 : Matrix (Fin 2) (Fin 2) ℝ) (z n) (by simp)]
+  simp only [invOf_eq_inv, inv_one, Matrix.smul_mul, Matrix.one_mul]
+  ext i j
+  fin_cases i <;> fin_cases j <;>
+    simp [Matrix.sub_apply, Matrix.smul_apply, smul_eq_mul, eta,
+      hz]
+  all_goals field_simp <;> ring
+
+/-- For every invertible hidden perturbation, the response has this exact expansion. -/
+theorem response_expansion (n : ℕ) (k b s μ : ℝ)
+    (h : IsUnit (hiddenBlock n + perturbation n k b s μ)) :
+    response n k b s μ = response n k b 0 0 - s • Z n + μ • C n k b +
+      remainder n k b s μ := by
+  have hi := inverse_first_order (hiddenBlock n) (perturbation n k b s μ)
+    (hidden_posDef n).isUnit h
+  unfold response
+  rw [hi]
+  simp only [perturbation, zero_smul, sub_zero, add_zero, mul_zero, Z, C, remainder]
+  simp only [Matrix.mul_add, Matrix.mul_sub, Matrix.add_mul, Matrix.sub_mul,
+    Matrix.mul_smul, Matrix.smul_mul, smul_add, smul_sub, smul_smul,
+    Matrix.mul_one, Matrix.mul_assoc, add_smul, sub_smul, one_smul]
+  module
+
+private theorem norm_mul_bound {p q r : Type*} [Fintype p] [Fintype q] [Fintype r]
+    (A : Matrix p q ℝ) (D : Matrix q r ℝ) {a d : ℝ}
+    (hA : ‖A‖ ≤ a) (hD : ‖D‖ ≤ d) : ‖A * D‖ ≤ a * d :=
+  (Matrix.linfty_opNorm_mul A D).trans
+    (mul_le_mul hA hD (norm_nonneg _) ((norm_nonneg _).trans hA))
+
+/-- In the maximum absolute row-sum norm, the remainder has two perturbation factors. -/
+theorem remainder_bound (n : ℕ) (k b s μ : ℝ) :
+    ‖remainder n k b s μ‖ ≤
+      (‖B n‖ * ‖(hiddenBlock n)⁻¹‖ ^ 2 *
+        ‖(hiddenBlock n + perturbation n k b s μ)⁻¹‖ * ‖(B n)ᵀ‖) *
+          ‖perturbation n k b s μ‖ ^ 2 := by
+  unfold remainder
+  rw [norm_neg]
+  calc
+    _ ≤ ‖B n‖ * (‖(hiddenBlock n)⁻¹‖ * ‖perturbation n k b s μ‖ *
+      ‖(hiddenBlock n)⁻¹‖ * ‖perturbation n k b s μ‖ *
+      ‖(hiddenBlock n + perturbation n k b s μ)⁻¹‖) * ‖(B n)ᵀ‖ := by
+      repeat first | exact le_rfl | apply norm_mul_bound
+    _ = _ := by ring
+
+/-- A bound M on the perturbed inverse gives a fixed quadratic remainder constant. -/
+theorem remainder_bound_of_inverse_bound (n : ℕ) (k b s μ M : ℝ)
+    (hM : ‖(hiddenBlock n + perturbation n k b s μ)⁻¹‖ ≤ M) :
+    ‖remainder n k b s μ‖ ≤
+      (‖B n‖ * ‖(hiddenBlock n)⁻¹‖ ^ 2 * M * ‖(B n)ᵀ‖) *
+        ‖perturbation n k b s μ‖ ^ 2 := by
+  apply (remainder_bound n k b s μ).trans
+  gcongr
+
+#print axioms C_eq
+#print axioms effective_eq
+#print axioms response_expansion
+#print axioms remainder_bound
+#print axioms remainder_bound_of_inverse_bound
+
 #print axioms inverse_first_order
 #print axioms z_pos
 #print axioms endpoint_formula
