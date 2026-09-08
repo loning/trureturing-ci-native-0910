@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Divergence/MeanKernels/LogarithmicMeanSandwich.logMean_kernel_sandwich
     target_statement_id: sha256:415fea501e8f267d1cf5e0faf6c282a6d429f23298c9eed8e88a6cdf7a06d49a
 receipts:
-  scribe: []
   unresolved_subitems: []

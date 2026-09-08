@@ -32,7 +32,6 @@ public sealed class QuarantineSummaryCommandTests
                 cas_ref: {{capture.Reference}}
                 coverage_gids: []
                 receipts:
-                  scribe: []
                   unresolved_subitems: {{subitems}}
                   chain_atoms: []
                   tail_authorization: null

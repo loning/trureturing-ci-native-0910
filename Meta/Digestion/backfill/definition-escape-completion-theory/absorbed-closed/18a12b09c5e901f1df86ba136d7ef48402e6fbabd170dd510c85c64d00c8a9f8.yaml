@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/DefinitionEscapeRegrade/SemanticTargetLaunderingDecision.target_laundering_decision_nonempty
     target_statement_id: sha256:e54507890cffebac5448576af21147d64a0dcd910e3c963abc224603b66964c0
 receipts:
-  scribe: []
   unresolved_subitems: []

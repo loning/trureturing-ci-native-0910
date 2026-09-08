@@ -16,5 +16,4 @@ coverage_gids:
   - gid: D5/S3/Arith/GoldenResource/RobinRationalBasis.log_harmonic_term_bounds
     target_statement_id: sha256:ff784fa54d8f7b5dae4034ecd152c88c76ede0647e8f9de24a694e5c69d64ff9
 receipts:
-  scribe: []
   unresolved_subitems: []

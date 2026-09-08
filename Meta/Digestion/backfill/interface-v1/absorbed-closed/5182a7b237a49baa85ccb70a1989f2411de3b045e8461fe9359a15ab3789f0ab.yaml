@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S0/Diagonal/CaptureCount.capture_independent
     target_statement_id: sha256:fb40b8f4371062fdf12b6877a9c627cb5aea498db8cedb0adcd34f15ba859013
 receipts:
-  scribe: []
   unresolved_subitems: []

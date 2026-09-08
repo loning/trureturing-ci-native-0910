@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/QuantumBounds/CollisionEntropyUncertainty.collision_entropy_uncertainty
     target_statement_id: sha256:4123891d4c2a44c9d42e596b6850297dea8ed7220a9ca7ec5bccef5c5db2e462
 receipts:
-  scribe: []
   unresolved_subitems: []

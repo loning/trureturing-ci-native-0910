@@ -14,7 +14,6 @@ coverage_gids:
   - gid: D5/S3/Quantum/ObserverCommutator.observer_read_update_commutator_formula
     target_statement_id: sha256:6f0180e088e545c318d5f80e305aed87dce27ae6b325b11e43f59cd885cb0d16
 receipts:
-  scribe: []
   unresolved_subitems:
     - discrete-crossed-product-uniqueness
     - full-crossed-product-identification

@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S0/Diagonal/Probability/EquivariantEscape.transitive_equivariant_escape_probability
     target_statement_id: sha256:ce2221a13b052897b202aeba9dc8f88823f570f769eade7ac1b6a998335fcde9
 receipts:
-  scribe: []
   unresolved_subitems: []

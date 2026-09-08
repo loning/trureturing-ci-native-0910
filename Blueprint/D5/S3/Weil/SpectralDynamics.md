@@ -62,7 +62,7 @@ $$\forall Z:\operatorname{ZeroData},\ \forall n\in\mathbb{N},\ Z_{C(R(n))}=1-\ov
 
 *Commentary.*
 
-The existing reflection and conjugation permutations send every enumerated nontrivial zero to its unique partner for the equation s plus conjugate w equals one, and the two cross-pairs satisfy that equation. The declaration is conditional on a supplied ZeroData value. The repository does not prove that ZeroData is inhabited: no instance or example exists. Accordingly this conditional theorem does not close the source corollary unconditionally; that source obligation remains open. This strengthens the conditional conclusion from off-line zeros to all enumerated zeros, so it permits degenerate critical-line configurations and asserts no pairwise distinct quartet. Resonance here is only the kernel equation, not a new analytic pole or continuation theorem.
+The existing reflection and conjugation permutations send every enumerated nontrivial zero to its unique partner for the equation s plus conjugate w equals one, and the two cross-pairs satisfy that equation. The declaration takes ZeroData as a parameter. An unconditional instance is supplied by UnconditionalCanonicalZeroData, whose nonempty_zeroData witness is zetaZeroData; instantiating with it adds no Riemann hypothesis conclusion, so this conditional theorem still does not close the source corollary unconditionally. This strengthens the conditional conclusion from off-line zeros to all enumerated zeros, so it permits degenerate critical-line configurations and asserts no pairwise distinct quartet. Resonance here is only the kernel equation, not a new analytic pole or continuation theorem.
 
 **Theorem 1.6 (Critical-line predicates use one abscissa).**
 

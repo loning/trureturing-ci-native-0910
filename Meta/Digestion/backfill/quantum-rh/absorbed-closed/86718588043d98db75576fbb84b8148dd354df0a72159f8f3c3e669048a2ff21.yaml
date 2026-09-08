@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Zeros/PochhammerDeformation/LinearFactor.lOp_linear_factor
     target_statement_id: sha256:9b935bfdf3fa8076ff9765602165fd335a437c3fb59962002becff99cb351a9a
 receipts:
-  scribe: []
   unresolved_subitems: []

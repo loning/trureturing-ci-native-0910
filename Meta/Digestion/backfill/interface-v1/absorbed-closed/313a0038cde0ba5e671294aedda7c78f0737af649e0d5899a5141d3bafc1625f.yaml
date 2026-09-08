@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ArithUnits/ThreeWayClassification.three_way_classification_not_binary
     target_statement_id: sha256:0b7ab8a7f5b5227bdd9b6ba9d7edf684cca583a813b349e4c94811b14f76b7d6
 receipts:
-  scribe: []
   unresolved_subitems: []

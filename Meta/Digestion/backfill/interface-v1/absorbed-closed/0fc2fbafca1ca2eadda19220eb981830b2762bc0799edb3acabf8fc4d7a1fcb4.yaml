@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S0/Diagonal/EquivariantEscape.equivariant_escaped_card
     target_statement_id: sha256:e0179048d40ee4f4b1de6bf24f635e76866b791f40d9594dc428bf656363aa47
 receipts:
-  scribe: []
   unresolved_subitems: []

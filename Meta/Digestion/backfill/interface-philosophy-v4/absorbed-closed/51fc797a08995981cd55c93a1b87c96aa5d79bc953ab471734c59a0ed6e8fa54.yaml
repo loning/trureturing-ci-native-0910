@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S0/Naming/Conservation/NamingTowerConservation.countable_tower_anonymous_full_measure
     target_statement_id: sha256:e233b5a6d1578de89a566d77195cffbc6758ff58e347bcc39eb3ad6efaf48347
 receipts:
-  scribe: []
   unresolved_subitems: []

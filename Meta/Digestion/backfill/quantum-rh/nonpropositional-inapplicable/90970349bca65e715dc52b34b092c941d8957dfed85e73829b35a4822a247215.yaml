@@ -4,7 +4,6 @@ fingerprints:
 cas_ref: sha256:90970349bca65e715dc52b34b092c941d8957dfed85e73829b35a4822a247215
 coverage_gids: []
 receipts:
-  scribe: []
   unresolved_subitems: []
   nonpropositional:
     justification: 'Scope commentary on the implication proof in atom 680832dcfe1992a7a4649a763031cb0b45d9cd957f9da47cf5c56c9f2e117744: it distinguishes proving the criterion from proving its RH antecedent, with no new mathematical assertion beyond the preceding theorem.'

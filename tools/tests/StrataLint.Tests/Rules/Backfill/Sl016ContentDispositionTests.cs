@@ -102,7 +102,7 @@ public sealed class Sl016ContentDispositionTests
             atom.Fingerprints.RawSha256["sha256:".Length..],
             atom.Fingerprints,
             [],
-            new DigestionReceipts([], [], [], null),
+            new DigestionReceipts([], [], null),
             new DigestionStatus(DigestionMigrationState.Residual, DigestionTruthState.Open),
             atom.Fingerprints.RawSha256);
         var source = new DigestionLedgerSource(

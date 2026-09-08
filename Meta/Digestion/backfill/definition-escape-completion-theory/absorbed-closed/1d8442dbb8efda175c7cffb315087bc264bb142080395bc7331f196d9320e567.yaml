@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/DefinitionEscapeAdjudication/RetrospectiveLookupFailure.lookup_copy_zero_loss_and_nonanticipating_failure
     target_statement_id: sha256:b0d82584bdd50e58da3362c1d184764e65b48e6a8e32c1fe533f2eee866ebc75
 receipts:
-  scribe: []
   unresolved_subitems: []

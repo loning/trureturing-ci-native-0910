@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S0/Conventions/CanonicalInterchangeability.canonical_interchangeability
     target_statement_id: sha256:e7ff3aa2e82bfb6c48ab2214c93c72fa830cfba64a9c2036476b438e55ac3afa
 receipts:
-  scribe: []
   unresolved_subitems: []

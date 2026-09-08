@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Observer/Bridges/CharacterPreservation.character_preservation
     target_statement_id: sha256:a35087b58d9f12780c4ab713b783d6d8dec27603fc36565be5f33f57fa402bc6
 receipts:
-  scribe: []
   unresolved_subitems: []

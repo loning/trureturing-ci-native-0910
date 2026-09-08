@@ -8,5 +8,4 @@ coverage_gids:
   - gid: D5/S0/Asymptotics/PoissonWeightDecay.poisson_weight_tendsto_zero
     target_statement_id: sha256:2eed1b845cc5f5697d237518c428fc0382cbae9348d027a0362366b4464d7dc6
 receipts:
-  scribe: []
   unresolved_subitems: []

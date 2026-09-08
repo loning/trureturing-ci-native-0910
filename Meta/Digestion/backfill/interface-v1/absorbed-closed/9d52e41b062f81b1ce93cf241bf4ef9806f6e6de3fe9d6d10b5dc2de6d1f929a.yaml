@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S0/Diagonal/EscapeCount.diagonal_landing_fixed
     target_statement_id: sha256:ce90cdf8f8cb0b7f4a59d93f59fd621cfe6da8a8db770da1f3724d79e20c3bb4
 receipts:
-  scribe: []
   unresolved_subitems: []

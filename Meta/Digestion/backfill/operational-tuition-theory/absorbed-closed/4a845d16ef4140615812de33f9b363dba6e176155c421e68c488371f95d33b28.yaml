@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/OperationalTuition/ArtifactSufficiencyAndKillLoss.artifact_sufficient_iff_every_kill_zero_byte_loss
     target_statement_id: sha256:390e67f4b1246695171801849d7706176f0db77e4815485c77dfaffcd05cb0d8
 receipts:
-  scribe: []
   unresolved_subitems: []

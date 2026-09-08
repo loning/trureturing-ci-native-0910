@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S0/Asymptotics/EscapeProbability/CompletelyRecessiveSelectionOrder.completely_recessive_selection_order
     target_statement_id: sha256:f8768c0c4a6bc9572a2c6d51f9c0d5f0baeb28ed5eff0318c562a96070e09ee5
 receipts:
-  scribe: []
   unresolved_subitems: []

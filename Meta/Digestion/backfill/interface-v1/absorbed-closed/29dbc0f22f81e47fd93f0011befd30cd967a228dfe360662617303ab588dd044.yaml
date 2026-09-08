@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Quantum/CloningMachine.machine_entropy_closed_form
     target_statement_id: sha256:38cebeb7b52a1937f9741801c7f10a9e0d5528f43158be88de18013e2c9132bb
 receipts:
-  scribe: []
   unresolved_subitems: []

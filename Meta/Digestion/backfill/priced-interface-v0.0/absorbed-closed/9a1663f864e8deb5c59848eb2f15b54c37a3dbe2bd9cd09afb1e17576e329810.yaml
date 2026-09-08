@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S0/Computability/DescriptionComplexity/XorTransformationTightness.xor_transformation_description_tight
     target_statement_id: sha256:1fd9c468652bbc70033198e235c59937ea139a45590d89b9a632ad93737a601b
 receipts:
-  scribe: []
   unresolved_subitems: []

@@ -121,20 +121,6 @@ public sealed partial class ProductionEnvironmentTests
                                         ? mismatchStatementId
                                         : targetStatementId),
                             ],
-                            Receipts = entry.Receipts with
-                            {
-                                Scribe =
-                                [
-                                    new DigestionScribeReceipt(
-                                        siblingGid,
-                                        mismatchCode == "scribe-definition-mismatch"
-                                            ? mismatchStatementId
-                                            : verified.DefinitionSha256,
-                                        mismatchCode == "scribe-emission-mismatch"
-                                            ? mismatchStatementId
-                                            : verified.EmissionSha256),
-                                ],
-                            },
                         }
                         : entry).ToImmutableArray(),
                 })

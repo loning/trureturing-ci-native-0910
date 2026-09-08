@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Divergence/LogDerivTrace.trace_mul_logDeriv
     target_statement_id: sha256:f6fc2b2f36fe0ff12234183b5817929ace3e6949f49b2e10b7bf0f4ab5c1bbd5
 receipts:
-  scribe: []
   unresolved_subitems: []
