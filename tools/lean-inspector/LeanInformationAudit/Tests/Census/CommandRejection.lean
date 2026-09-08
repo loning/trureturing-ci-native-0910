@@ -6,19 +6,21 @@ open Lean.Elab.Command
 
 namespace LeanInformationAudit.Tests.Census
 
+private def censusReportInput (inventory : DispositionInventory) : Json := Json.mkObj [
+  ("schema", toJson "stratalint.truth-export"), ("schema_version", toJson (2 : Nat)),
+  ("dialect", toJson "stratalint.truth-export.v2"),
+  ("producer", toJson "TruthExportCommand"), ("source_commit", toJson inventory.headSha),
+  ("nodes", Json.arr #[Json.mkObj [("freeze_status", toJson "frozen"),
+    ("declarations", Json.arr <| inventory.entries.map fun row => Json.mkObj [
+      ("kind", toJson "theorem"),
+      ("declaration_name_key", toJson (encodeNameKey row.1.theoremName)),
+      ("statement_id", toJson row.1.statementId)])]])]
+
 /-- Exercise successful publication and inspect its count and kernel certificate. -/
 def expectAcceptedCensus (root inventoryName certificate : Name)
     (inventory : DispositionInventory) (structuralCount : Nat) : CommandElabM Unit :=
   IO.FS.withTempDir fun dir => do
-    let bytes := (Json.mkObj [
-      ("schema", toJson "stratalint.truth-export"), ("schema_version", toJson (1 : Nat)),
-      ("dialect", toJson "stratalint.truth-export.v1"),
-      ("producer", toJson "TruthExportCommand"), ("source_commit", toJson inventory.headSha),
-      ("nodes", Json.arr #[Json.mkObj [("declarations", Json.arr <|
-        inventory.entries.map fun row => Json.mkObj [
-          ("kind", toJson "theorem"),
-          ("declaration_name_key", toJson (encodeNameKey row.1.theoremName)),
-          ("statement_id", toJson row.1.statementId)])]])]).compress
+    let bytes := (censusReportInput inventory).compress
     let reportPath := dir / "report.json"
     let outputPath := dir / "census.json"
     IO.FS.writeFile reportPath bytes
@@ -62,17 +64,10 @@ def expectAcceptedCensus (root inventoryName certificate : Name)
 
 /-- Check the public command's diagnostic and both publication boundaries. -/
 def expectRejectedCensus (root inventoryName certificate : Name)
-    (inventory : DispositionInventory) (expected : String) : CommandElabM Unit :=
+    (inventory : DispositionInventory) (expected : String)
+    (transformReport : Json → Json := id) : CommandElabM Unit :=
   IO.FS.withTempDir fun dir => do
-    let bytes := (Json.mkObj [
-      ("schema", toJson "stratalint.truth-export"), ("schema_version", toJson (1 : Nat)),
-      ("dialect", toJson "stratalint.truth-export.v1"),
-      ("producer", toJson "TruthExportCommand"), ("source_commit", toJson inventory.headSha),
-      ("nodes", Json.arr #[Json.mkObj [("declarations", Json.arr <|
-        inventory.entries.map fun row => Json.mkObj [
-          ("kind", toJson "theorem"),
-          ("declaration_name_key", toJson (encodeNameKey row.1.theoremName)),
-          ("statement_id", toJson row.1.statementId)])]])]).compress
+    let bytes := (transformReport (censusReportInput inventory)).compress
     let reportPath := dir / "report.json"
     let outputPath := dir / "census.json"
     IO.FS.writeFile reportPath bytes
@@ -111,5 +106,99 @@ def expectRejectedCensus (root inventoryName certificate : Name)
         certificate-absent={certificateAbsent} diagnostics={← errors.mapM (·.data.toString)}"
     logInfo expected
     logInfo "rejected=true output-absent=true certificate-absent=true"
+
+private def replaceReportNodes (nodes : Array Json) (report : Json) : Json :=
+  report.setObjVal! "nodes" (Json.arr nodes)
+
+private def expectRejectedReport (certificate : Name) (component expected actual : String)
+    (transformReport : Json → Json) : CommandElabM Unit :=
+  expectRejectedCensus `LeanInformationAudit.Tests.Census.Evidence
+    `LeanInformationAudit.Tests.Census.Evidence.inventory certificate Evidence.inventory
+    (censusError "fixture-head" component expected actual) transformReport
+
+run_cmd do
+  expectRejectedReport `wrongDialect "dialect" "stratalint.truth-export.v2"
+    "unsupported-dialect" (fun report => report.setObjVal! "dialect" (toJson "unsupported-dialect"))
+
+/--
+info: IE-C044 DispositionCensusMismatch head=fixture-head component=schema_version expected=2 actual=0
+---
+info: rejected=true output-absent=true certificate-absent=true
+-/
+#guard_msgs in
+run_cmd do
+  expectRejectedReport `wrongSchema "schema_version" "2" "0"
+    (fun report => report.setObjVal! "schema_version" (toJson (0 : Nat)))
+
+/--
+info: IE-C044 DispositionCensusMismatch head=fixture-head component=freeze_status expected=frozen|proven-not-yet-frozen actual=missing-or-invalid
+---
+info: rejected=true output-absent=true certificate-absent=true
+-/
+#guard_msgs in
+run_cmd do
+  expectRejectedReport `missingFreezeStatus "freeze_status"
+    "frozen|proven-not-yet-frozen" "missing-or-invalid"
+    (replaceReportNodes #[Json.mkObj [("declarations", Json.arr #[])]])
+
+/--
+info: IE-C044 DispositionCensusMismatch head=fixture-head component=freeze_status expected=frozen|proven-not-yet-frozen actual=unknown
+---
+info: rejected=true output-absent=true certificate-absent=true
+-/
+#guard_msgs in
+run_cmd do
+  expectRejectedReport `unknownFreezeStatus "freeze_status"
+    "frozen|proven-not-yet-frozen" "unknown"
+    (replaceReportNodes #[Json.mkObj [("freeze_status", toJson "unknown"),
+      ("declarations", Json.arr #[])]])
+
+/--
+info: IE-C044 DispositionCensusMismatch head=fixture-head component=freeze_status expected=frozen|proven-not-yet-frozen actual=missing-or-invalid
+---
+info: rejected=true output-absent=true certificate-absent=true
+-/
+#guard_msgs in
+run_cmd do
+  expectRejectedReport `invalidFreezeStatus "freeze_status"
+    "frozen|proven-not-yet-frozen" "missing-or-invalid"
+    (replaceReportNodes #[Json.mkObj [("freeze_status", toJson (0 : Nat)),
+      ("declarations", Json.arr #[])]])
+
+private def duplicateReportNodes (secondName : Name) : Array Json :=
+  #[`Fixture.duplicate, secondName].map fun name => Json.mkObj [
+    ("freeze_status", toJson "frozen"),
+    ("declarations", Json.arr #[Json.mkObj [("kind", toJson "theorem"),
+      ("declaration_name_key", toJson (encodeNameKey name)),
+      ("statement_id", toJson "id-duplicate")]])]
+
+run_cmd do
+  expectRejectedReport `duplicateFrozenKey "frozen_keys" "unique"
+    (toJson (StatementKey.mk `Fixture.duplicate "id-duplicate")).compress
+    (replaceReportNodes (duplicateReportNodes `Fixture.duplicate))
+
+run_cmd do
+  expectRejectedReport `duplicateFrozenId "frozen_keys" "unique"
+    (toJson (StatementKey.mk `Fixture.other "id-duplicate")).compress
+    (replaceReportNodes (duplicateReportNodes `Fixture.other))
+
+private def repeatedNameInventory : DispositionInventory := ⟨"fixture-head", #[
+  ⟨⟨`Fixture.repeated, "id-first"⟩, .unreachable ⟨.noCanonicalObjectCarrier, `Evidence⟩⟩,
+  ⟨⟨`Fixture.repeated, "id-second"⟩, .unreachable ⟨.noCanonicalObjectCarrier, `Evidence⟩⟩]⟩
+
+/-- info: Except.ok 2 -/
+#guard_msgs in
+#eval do
+  let bytes := (censusReportInput repeatedNameInventory).compress
+  let report ← parseReport "fixture-head" ("sha256:" ++ Sha256.hex bytes.toUTF8) bytes
+  return report.theorems.size
+
+/-- info: Except.ok () -/
+#guard_msgs in
+#eval checkCoverage "fixture-head" repeatedNameInventory.keys.toArray repeatedNameInventory
+
+run_cmd liftTermElabM do
+  let report : FrozenReport := ⟨"fixture-head", "digest", repeatedNameInventory.keys.toArray⟩
+  discard <| coverageProof report repeatedNameInventory
 
 end LeanInformationAudit.Tests.Census

@@ -10,12 +10,10 @@ open Lean
 namespace DispositionCensus
 
 private def checkFrozenKeys (head : String) (keys : Array StatementKey) : Except String Unit := do
-  let mut names : Std.HashSet Name := {}
   let mut ids : Std.HashSet String := {}
   for key in keys do
-    if names.contains key.theoremName || ids.contains key.statementId then
+    if ids.contains key.statementId then
       throw <| censusError head "frozen_keys" "unique" (toJson key).compress
-    names := names.insert key.theoremName
     ids := ids.insert key.statementId
 
 /-- Duplicate statement IDs are checked before identity and missing-row diagnostics. -/
@@ -37,13 +35,14 @@ def checkCoverage (head : String) (frozen : Array StatementKey)
     let duplicates := records.getD key.statementId #[]
     if duplicates.size > 1 then
       throw s!"IE-C035 DuplicateAnalysisDisposition theorem={key.theoremName} statement_id={key.statementId} records={(toJson duplicates).compress}"
-  let names : Std.HashMap Name StatementKey :=
-    expected.foldl (init := {}) fun result key => result.insert key.theoremName key
+  let names : Std.HashMap Name (Array String) :=
+    expected.foldl (init := {}) fun result key =>
+      result.insert key.theoremName ((result.getD key.theoremName #[]).push key.statementId)
   for entry in inventory.sortedEntries do
     match names[entry.1.theoremName]? with
-    | some key =>
-      unless key.statementId == entry.1.statementId do
-        throw <| identityError key.theoremName "statement_id" key.statementId entry.1.statementId
+    | some ids =>
+      unless ids.contains entry.1.statementId do
+        throw <| identityError entry.1.theoremName "statement_id" ids[0]! entry.1.statementId
     | none =>
       let expectedName := (expected.find? (·.statementId == entry.1.statementId)).map
         (·.theoremName.toString) |>.getD "absent"
@@ -200,9 +199,9 @@ private partial def nameKeyParser : Std.Internal.Parsec.ByteArray.Parser Name :=
 def parseNameKey (text : String) : Except String Name :=
   (nameKeyParser <* Std.Internal.Parsec.eof).run text.toUTF8
 
-/-- Consume the existing strict frozen truth export, produced from an elaborated
-report by TruthExportCommand. source_commit binds HEAD; declaration_name_key
-preserves Lean Name structure; statement_id is read verbatim. Non-theorems are ignored.
+/-- Consume the truth export dialect currently emitted by TruthExportCommand.
+source_commit binds HEAD; declaration_name_key preserves Lean Name structure;
+statement_id is read verbatim. Only frozen nodes' theorem declarations are included.
 The caller pins the report bytes independently with expectedSha256. -/
 def parseReport (expectedHead expectedSha256 bytes : String) : Except String FrozenReport := do
   let actualSha256 := "sha256:" ++ Sha256.hex bytes.toUTF8
@@ -210,11 +209,11 @@ def parseReport (expectedHead expectedSha256 bytes : String) : Except String Fro
     throw <| identityError .anonymous "report_sha256" expectedSha256 actualSha256
   let json ← Json.parse bytes
   for (field, expected) in [("schema", "stratalint.truth-export"),
-      ("dialect", "stratalint.truth-export.v1"), ("producer", "TruthExportCommand")] do
+      ("dialect", "stratalint.truth-export.v2"), ("producer", "TruthExportCommand")] do
     unless (← stringField json field) == expected do
       throw <| censusError expectedHead field expected (← stringField json field)
-  unless (← json.getObjValAs? Nat "schema_version") == 1 do
-    throw <| censusError expectedHead "schema_version" "1"
+  unless (← json.getObjValAs? Nat "schema_version") == 2 do
+    throw <| censusError expectedHead "schema_version" "2"
       (toString (← json.getObjValAs? Nat "schema_version"))
   let head ← stringField json "source_commit"
   unless head == expectedHead do
@@ -222,6 +221,14 @@ def parseReport (expectedHead expectedSha256 bytes : String) : Except String Fro
   let modules ← json.getObjValAs? (Array Json) "nodes"
   let mut keys : Array StatementKey := #[]
   for moduleRow in modules do
+    let freezeStatus ← match moduleRow.getObjValAs? String "freeze_status" with
+      | .ok status => pure status
+      | .error _ =>
+        throw <| censusError head "freeze_status"
+          "frozen|proven-not-yet-frozen" "missing-or-invalid"
+    unless freezeStatus == "frozen" || freezeStatus == "proven-not-yet-frozen" do
+      throw <| censusError head "freeze_status" "frozen|proven-not-yet-frozen" freezeStatus
+    if freezeStatus != "frozen" then continue
     let declarations ← moduleRow.getObjValAs? (Array Json) "declarations"
     for declaration in declarations do
       if (← stringField declaration "kind") == "theorem" then
@@ -318,8 +325,9 @@ private def readUtf8 (path : String) : IO String := do
   | some text => return text
   | none => throw <| IO.userError s!"invalid UTF-8: {path}"
 
-/-- Report-only command. File inputs are stratalint.truth-export.v1 and the source
-modules of structural rows, resolved by findLean/getSrcSearchPath and hashed in
+/-- Report-only command. File inputs are the truth export dialect currently emitted
+by TruthExportCommand and the source modules of structural rows, resolved by
+findLean/getSrcSearchPath and hashed in
 source_inputs. Provenance means generated by structural_theorem in source;
 source rewriting during a build and modified source search paths are out of scope.
 The inventory is a typed declaration in the elaborated environment. It stages
