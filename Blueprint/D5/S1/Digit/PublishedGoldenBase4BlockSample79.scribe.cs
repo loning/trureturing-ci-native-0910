@@ -14,7 +14,7 @@ internal sealed class PublishedGoldenBase4BlockSample79Document : IScribeDocumen
                 DeclarationHandle.Create(
                     "D5/S1/Digit/PublishedGoldenBase4BlockSample79.publishedBlockSample79_expand"),
                 H("Every block record expands to its canonical power word"),
-                StatementSource.FromLean(),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(
                     Paragraph(Text(
@@ -27,7 +27,7 @@ internal sealed class PublishedGoldenBase4BlockSample79Document : IScribeDocumen
                 DeclarationHandle.Create(
                     "D5/S1/Digit/PublishedGoldenBase4BlockSample79.machineFitsPowerSample79_iff_extractSkeletonFits"),
                 H("Machine fitting is equivalent to recurrent-skeleton fitting"),
-                StatementSource.FromLean(),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(
                     Paragraph(Text(

@@ -14,7 +14,7 @@ internal sealed class BinaryZeckendorfBlockSkeletonDocument : IScribeDocumentDef
                 DeclarationHandle.Create(
                     "D5/S0/Automata/BinaryZeckendorfBlockSkeleton.compressLegalWord_expand"),
                 H("The return-block code is uniquely decodable"),
-                StatementSource.FromLean(),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(
                     Paragraph(Text(
@@ -25,7 +25,7 @@ internal sealed class BinaryZeckendorfBlockSkeletonDocument : IScribeDocumentDef
                 DeclarationHandle.Create(
                     "D5/S0/Automata/BinaryZeckendorfBlockSkeleton.same_oneSignature_evalFromState"),
                 H("A transient signature determines every continuation"),
-                StatementSource.FromLean(),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(
                     Paragraph(Text(
@@ -36,7 +36,7 @@ internal sealed class BinaryZeckendorfBlockSkeletonDocument : IScribeDocumentDef
                 DeclarationHandle.Create(
                     "D5/S0/Automata/BinaryZeckendorfBlockSkeleton.canonical_extract_behavior_and_cardinality"),
                 H("Canonical signature reconstruction preserves behaviour and does not add states"),
-                StatementSource.FromLean(),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(
                     Paragraph(Text(
