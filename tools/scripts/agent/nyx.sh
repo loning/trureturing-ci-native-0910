@@ -16,7 +16,13 @@
 export PATH="$HOME/.local/bin:$PATH"
 # 2026-08-28 实测:契约写 limit 4,但实际吞吐更低,且 `nyxid oracle status` 的 in-flight
 # **包含别人的任务**(组织级共享池)—— 某刻显示 3 而我只有 2 张在跑。故保守取 2。
-POOL="${NYX_POOL:-chatgpt-pro-pool}"
+# 缺省 pool(2026-09-06 实测立、2026-09-08 复发后改默认):`extraction_failure` 由 pool 的
+# **worker 脚本版本**决定,不是 brief 大小。同字节对照:`chatgpt-pro-pool`(`cdp-1.3-url-key-image`)
+# 2/2 失败(17.9 KB 与 35.7 KB),同一份 17.9 KB 在 `chrono-chatgpt-pro-pool`(`0.11.7+…`)逐字节重发即成功,
+# 该 pool 另测 24.5 KB 与 34.5 KB 亦成功。2026-09-08 复发:默认仍指向 cdp-1.3 那个 pool,
+# 于是一份 8.1 KB 的 brief 连投两次都 `extraction_failure`,显式 `NYX_POOL=chrono-…` 才通。
+# 缺省与已记录的用法背离,就是器自己产的坏原材料(第 8.4 条);故把缺省改成实测能用的那个。
+POOL="${NYX_POOL:-chrono-chatgpt-pro-pool}"
 # LIMIT 缺省**由 pool 自报容量派生**,不写死(2026-09-04 立)。
 # 案由:await.sh 曾写死 NYX_LIMIT=4,而 company pool 容量为 10、已被他人占 6 —— 6 >= 4,
 # 于是持锁者永远等不到「空位」,10 分钟后报 NYX_BUSY,五票全部卡在提交之前、零输出。
@@ -48,6 +54,20 @@ __capacity() {  # pool 自报的总容量(Dispatched: N / M 的 M)
   local m
   m=$(nyxid oracle status "$POOL" 2>&1 | grep -oE 'Dispatched: *[0-9]+ */ *[0-9]+' | grep -oE '[0-9]+$')
   echo "${m:-2}"   # 读不到退回保守值,fail-closed
+}
+__script_ver() {  # pool 自报的 worker 脚本版本 —— `extraction_failure` 的第一诊断位。
+  # 取表格首个数据行的最后一列(Script)。读不到就空,调用方按缺失处理,不猜。
+  # 注:`nyxid oracle status` 把表写到 **stderr**,必须 2>&1(与 __inflight 同坑)。
+  nyxid oracle status "$POOL" 2>&1 | __script_ver_parse
+}
+__script_ver_parse() {  # 纯函数:从 stdin 读状态表,打印首个数据行的 Script 列
+  awk -F'┆' '
+    /┆/ {
+      v = $NF
+      gsub(/[│┆]/, "", v)
+      gsub(/^[ \t]+|[ \t]+$/, "", v)
+      if (v != "" && v != "Script") { print v; exit }
+    }'
 }
 __inflight() {
   local n
@@ -113,6 +133,22 @@ __selftest() {  # 分类器的阳性/阴性对照。**立条依据(2026-09-06)**
   chk NOFILE     carrier-prompt-missing     'Error: Failed to read prompt'
   chk UNKNOWN    carrier-bare-error         'Error: forbidden'
   chk UNKNOWN    empty-payload              ''
+  # Script 列解析的阳性/阴性对照:缺省 pool 的选择依赖它,解析错了就诊断错了。
+  chkv() {  # chkv <期望> <名字> <表格文本>
+    got=$(printf '%s\n' "$3" | __script_ver_parse)
+    if [ "$got" = "$1" ]; then printf '  ok   %-30s %s\n' "$2" "${got:-<empty>}"
+    else printf '  FAIL %-30s expected=%s got=%s\n' "$2" "$1" "${got:-<none>}"; fail=1; fi
+  }
+  chkv 'cdp-1.3-url-key-image' script-first-data-row "$(printf '%s\n' \
+    '│ Worker          ┆ Seen (s ago) ┆ Task ┆ Script                │' \
+    '╞═════════════════╪══════════════╪══════╪═══════════════════════╡' \
+    '│ share_account_6 ┆ 0            ┆ -    ┆ cdp-1.3-url-key-image │' \
+    '│ share_account_5 ┆ 0            ┆ -    ┆ cdp-1.3-url-key-image │')"
+  chkv '0.11.7+63d573839245' script-other-version "$(printf '%s\n' \
+    '│ Worker ┆ Seen ┆ Task ┆ Script             │' \
+    '│ w1     ┆ 3    ┆ -    ┆ 0.11.7+63d573839245 │')"
+  chkv '' script-no-table "$(printf '%s\n' "Pool 'x':" '  Queued:     0' '  Dispatched: 0 / 20')"
+
   # 回归钉:文件级 __classify 在「最后一行是答案」的文件上必判 RUNNING,
   # 这正是它不能用于活判决的原因;若有人把它改回去,本例变红。
   local tmp; tmp=$(mktemp)
@@ -186,6 +222,9 @@ case "$1" in
     # 2026-08-28 实测:前台 ask 被 2min 超时杀、后台 ask 被 SIGTERM(exit 143)杀,
     # 而 `nyxid oracle result <task-id>` 显示**任务在池里仍活着**(`Phase: waiting_response`)。
     # 故改为提交后立刻拿 id 落盘,等待与取回分离 —— 被杀只丢等待,不丢工作。
+    # **提交前把产地打出来**:失败判词只说 `extraction_failure`,不说是哪个 pool、哪个 worker 脚本,
+    # 于是每次都要另跑一条 `nyxid oracle status` 才能归因。产地进输出即自诊断(第 8.4 条)。
+    echo "NYX_SUBMIT pool=$POOL script=$(__script_ver) tag=$TAG brief_bytes=$(wc -c <"$brief" | tr -d ' ') out=$out"
     nyxid oracle ask "$POOL" --file "$brief" --tag "$TAG" --no-wait > "$out" 2>&1; rc=$?
     tid=$(grep -oE '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}' "$out" | head -1)
     [ -n "$tid" ] && echo "$tid" > "$out.taskid"
