@@ -125,19 +125,22 @@ def nameJson : Name → Json
   | .str parent part => Json.arr #[toJson "str", nameJson parent, toJson part]
   | .num parent part => Json.arr #[toJson "num", nameJson parent, toJson part]
 
-partial def parseNameJson (json : Json) : Except String Name := do
-  let parts ← json.getArr?
-  match parts.toList with
-  | [tag] =>
+/-- Parent recursion follows a strict subtree of the structured name. -/
+def parseNameJson (json : Json) : Except String Name := do
+  match json with
+  | .arr ⟨[tag]⟩ =>
     unless (← tag.getStr?) == "anonymous" do throw "name_constructor"
     return .anonymous
-  | [tag, parent, value] =>
+  | .arr ⟨[tag, parent, value]⟩ =>
     let parent ← parseNameJson parent
     match ← tag.getStr? with
     | "str" => return .str parent (← value.getStr?)
     | "num" => return .num parent (← fromJson? value)
     | _ => throw "name_constructor"
-  | _ => throw "name_components"
+  | .arr _ => throw "name_components"
+  | _ => throw "array expected"
+termination_by sizeOf json
+decreasing_by simp_wf; omega
 
 def UnreachableReason.jsonName : UnreachableReason → String
   | .noCanonicalObjectCarrier => "no_canonical_object_carrier"
