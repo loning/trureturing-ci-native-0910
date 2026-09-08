@@ -205,6 +205,19 @@ curl -fsS --max-time 25 --get 'https://loogle.lean-lang.org/json' --data-urlenco
 
 `LiCurvatureFourierRepresentation.lean:38` 的公开类型也已打开:输入是**任意已给的实概率测度** rho,定义 Cayley 推前混合与积分形式的 `normalizedLi`,不输入或输出实际 zeta 零点族。不能把其名中的 Li 当作实际系数识别证据。本席暂不将它新增为 Q2 承重冻结依赖。
 
+### 批次 6: 首次小片段实测
+
+临时片段 `D5/S3/Weil/TestFunctions/HyperContractionProbe0909.lean` 经默认 glob 进入 `make lean`;它只含显式前件的绑定测试,最终将移入本报告目录。调用 `set -o pipefail; make lean 2>&1 | tee <attempt>/lean-probe-1.log | tail -n 65`(shell 中换行,未用裸 lake)。**exit 2,失败**;原始日志为 runner attempt 下 `lean-probe-1.log`。
+
+两条错误均已定位,不作数学反例:
+
+1. L24 `rw` 在 `X-C (id a)` 与 `X-C a` 的乘积之间未命中;需显式 lambda/定义展开。
+2. L100 `simpa only` 未展开 `Function.comp`,复合函数与 lambda 未统一。
+
+本次 `trial_bound` 与 `normalized_bound_limit` 已产生 `#print axioms` 读数,均为 `[propext, Classical.choice, Quot.sound]`;仍不把局部成功称整文件通过。原式常数 4、指数 2、K 与 n 未改。下一步只做规范化修正。
+
+收窄的 Loogle 查询(与批次 4 相同 endpoint/结构化解析,打印前 3):`Matrix.gram` 18 命中;`Polynomial.Monic, MeasureTheory.Measure` 0 命中;`"orthogonal", Polynomial` 0 命中;`riemannZeta, "infinite"` 0 命中;`"supergeometric"` 0 命中。零命中只对这些类型/名字查询成立。额外本地查询 `rg -n 'theorem prod_eq_zero\|lemma prod_eq_zero\|tendsto.*inv₀\|tendsto_inv₀\|limsup_le_of_tendsto' M/Algebra/BigOperators/GroupWithZero/Finset.lean M/Topology/Algebra/GroupWithZero M/Topology/Order/LiminfLimsup.lean` 返回 2 条 `Finset.prod_eq_zero` 候选,但因中间目录不存在而 exit 2;这是**部分检索失败**,不得记完整零命中。
+
 ## 明确未主张
 
 未证该定理;未主张可证;未主张检索穷尽;未主张与 RH 有任何蕴含关系。尚无 Lean 片段或构建结果。
