@@ -5,9 +5,11 @@ namespace LeanInformationAudit.CensusProjection
 
 open Lean Meta Elab Command DispositionCensus
 
-private def phase (label : String) : IO Unit := do
+private def phase (path label : String) : IO Unit := do
   IO.println ("CENSUS_PUBLICATION " ++ label)
-  (<- IO.getStdout).flush
+  let handle <- IO.FS.Handle.mk path .append
+  handle.putStrLn label
+  handle.flush
 
 /-- Run-local data emitted by the completed partition query. The query process
 checks the elaborated closure; publication consumes its projection, and does not
@@ -106,6 +108,8 @@ elab "#disposition_census" &"projection" &"root" root:ident &"report" reportPath
     &"head" head:str &"report_sha256" reportSha:str &"inventory" inventoryName:ident
     &"scopes" scopesName:ident &"certificate" certificate:ident " output " outputPath:str :
     command => do
+  let progress := outputPath.getString ++ ".progress.log"
+  let phase := phase progress
   phase "parse-report"
   let bytes <- IO.FS.readFile reportPath.getString
   let report <- ofExcept <| parseReport head.getString reportSha.getString bytes
@@ -127,11 +131,13 @@ elab "#disposition_census" &"projection" &"root" root:ident &"report" reportPath
     let certified := { inventory with entries := inventory.entries.filter fun entry =>
       match entry.2 with | .certified _ => true | .observed _ => false }
     let sources <- validateEvidenceSources root.getId certified
+    phase "coverage-proof-begin"
     IO.println "CENSUS_COVERAGE_BEGIN"
     (<- IO.getStdout).flush
     let started <- IO.monoMsNow
     let proof <- coverage report (mkConst inventoryName)
     let elapsed := (<- IO.monoMsNow) - started
+    phase s!"coverage-proof-complete milliseconds={elapsed}"
     IO.println s!"CENSUS_COVERAGE_COMPLETE milliseconds={elapsed}"
     (<- IO.getStdout).flush
     return (proof, sources)
