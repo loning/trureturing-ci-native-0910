@@ -1,6 +1,6 @@
-/- GID: D5/S3/Factorization/DeeplyCompositeLcmRank
+/- GID: D5/S3/Arith/DeeplyCompositeLcmRank
    generality: I
-   mirror-B: D5/B/S3/Factorization/DeeplyCompositeLcmRank
+   mirror-B: D5/B/S3/Arith/DeeplyCompositeLcmRank
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
    utility: none
@@ -12,7 +12,7 @@ import D5.S3.Factorization.DeeplyCompositeNotPrimeExponentRecord
 open Finset
 open D5.S3.Factorization.DeeplyCompositeNotPrimeExponentRecord
 
-namespace D5.S3.Factorization.DeeplyCompositeLcmRank
+namespace D5.S3.Arith.DeeplyCompositeLcmRank
 
 noncomputable section
 
@@ -359,4 +359,4 @@ example : ¬ DC 8 := by
 
 end
 
-end D5.S3.Factorization.DeeplyCompositeLcmRank
+end D5.S3.Arith.DeeplyCompositeLcmRank

@@ -2,12 +2,12 @@ using static StrataLint.Scribe.DefinitionDsl;
 using static StrataLint.Scribe.FormulaDsl;
 using F = StrataLint.Scribe.FormulaDsl;
 
-namespace StrataLint.Scribe.Blueprint.D5.S3.Factorization;
+namespace StrataLint.Scribe.Blueprint.D5.S3.Arith;
 
 internal sealed class DeeplyCompositeLcmRankDocument : IScribeDocumentDefinition
 {
     private const string Prefix =
-        "D5/S3/Factorization/DeeplyCompositeLcmRank.";
+        "D5/S3/Arith/DeeplyCompositeLcmRank.";
 
     public DocumentDefinition Create() => DocumentDefinition.Create(ScribeNode.Create(
         "Deeply composite numbers contain the lcm prefix forced by their square-root rank.",
