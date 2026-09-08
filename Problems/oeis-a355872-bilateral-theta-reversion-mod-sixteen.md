@@ -13,7 +13,7 @@ motivation_gids:
 ## Problem
 
 OEIS A355872 (Paul D. Hanna, Aug 09 2022), as quoted in
-`Library/Arith/hanna2022a355872.md`, gives the NAME:
+`Library/Recurrence/hanna2022a355872.md`, gives the NAME:
 
 > G.f. A(x) satisfies: x = Sum_{n=-oo..+oo} (-x)^(n^2) * A(x)^((n-1)^2).
 
