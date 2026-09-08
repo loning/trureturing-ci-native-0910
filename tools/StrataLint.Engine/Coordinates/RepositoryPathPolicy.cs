@@ -26,7 +26,6 @@ internal static partial class RepositoryPathPolicy
         ".github/workflows/truth-release-publish.yml";
     internal const string AnalysisFixturesWorkflowPath =
         ".github/workflows/lean-analysis-fixtures.yml";
-    internal const string HarnessGatePath = ".github/scripts/harness-gate.sh";
     internal const string RepositoryCoordinate = "the-omega-institute/trureturing";
 
     internal static bool ContainsRepositorySourceMaterializationIndicator(string value) =>
@@ -150,7 +149,6 @@ internal static partial class RepositoryPathPolicy
             or CachePublicationWorkflowPath
             or TruthReleasePublicationWorkflowPath
             or AnalysisFixturesWorkflowPath
-            or HarnessGatePath
             or ".github/CODEOWNERS"
             || value.StartsWith("tools/", StringComparison.Ordinal)
             || DigestionCasStore.IsCanonicalPath(value)

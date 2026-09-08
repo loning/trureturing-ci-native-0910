@@ -267,16 +267,18 @@ public sealed partial class FileMapPolicyTests
         Assert.Equal("Golden/Frozen/state/**/*.json", finding.Path);
     }
 
-    [Fact]
-    public void DanglingGeneratedAndDataActorsAreRejectedByTheRedFixture()
+    [Theory]
+    [InlineData("MissingEmitter")]
+    [InlineData("harness-gate")]
+    public void DanglingGeneratedAndDataActorsAreRejectedByTheRedFixture(string actor)
     {
         const string pattern = "Generated/output.json";
         var manifest = Parse(Entry(
             pattern,
             "generated",
-            "MissingEmitter",
+            actor,
             "reader",
-            "MissingEmitter"));
+            actor));
 
         var findings = FileMapPolicy.InspectDeclaredActors(
             manifest,
@@ -287,11 +289,11 @@ public sealed partial class FileMapPolicyTests
         Assert.All(findings, finding =>
         {
             Assert.Equal("FILEMAP-ACTOR-DANGLING", finding.Code);
-            Assert.Contains("MissingEmitter", finding.Message, StringComparison.Ordinal);
+            Assert.Contains(actor, finding.Message, StringComparison.Ordinal);
         });
         var declaredTypes = new HashSet<string>(StringComparer.Ordinal) { "ScribeEmitter" };
         var danglingProducer = Assert.Single(FileMapPolicy.InspectDeclaredActors(
-            Parse(Entry(pattern, "data", "MissingEmitter", "reader", "ScribeEmitter")),
+            Parse(Entry(pattern, "data", actor, "reader", "ScribeEmitter")),
             declaredTypes,
             "fixture-root"));
         var danglingConsumer = Assert.Single(FileMapPolicy.InspectDeclaredActors(
@@ -299,7 +301,7 @@ public sealed partial class FileMapPolicyTests
             declaredTypes,
             "fixture-root"));
 
-        Assert.Contains("produced_by names MissingEmitter", danglingProducer.Message, StringComparison.Ordinal);
+        Assert.Contains($"produced_by names {actor}", danglingProducer.Message, StringComparison.Ordinal);
         Assert.Contains(
             "consumed_by names DigestionStatusEvaluator",
             danglingConsumer.Message,

@@ -90,7 +90,7 @@ internal static class FileMapPolicy
     // active rules, or the small closed vocabulary of external commands;
     // RepositoryPathPolicy additionally binds the Blueprint build-root actor to its source file.
     private static readonly ImmutableHashSet<string> GeneratedActorWords =
-        ["reader", "harness-gate", "none"];
+        ["reader", "none"];
 
     // kind=data 的 verified_by 曾只被「至少有一个真 verifier」检查(InspectDataVerifiers),
     // 所以一个名字死掉后,只要同条目还留着另一个活的,就永远查不出来:#1116 删掉 emit-check

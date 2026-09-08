@@ -1,29 +1,17 @@
-"""Direct legacy byte addresses and semantic report inputs are distinct contracts."""
+"""Resolved seed partitions and semantic report inputs are distinct contracts."""
 import importlib.util
 import json
 import os
 import subprocess
+import sys
 import tempfile
 import unittest
 from unittest import mock
 
-from lean_seed_contract import INPUT, ROOT, REV, OTHER, PartitionFixture, digest, write
+from lean_seed_contract import INPUT, ROOT, REV, OTHER, PartitionFixture, write
 
 
 class PartitionTests(PartitionFixture, unittest.TestCase):
-    def byte_manifest(self, paths):
-        # Preimage read as data from 7bab46b34852aa352dd437f088c6183db0c537bf;
-        # expectations hash candidate fixture bytes, never execute historical code.
-        return digest(b"".join(
-            (digest((self.root / path).read_bytes()) + "  " + path + "\n").encode("utf-8")
-            for path in paths))
-
-    def address(self, command="address"):
-        result = self.run_input(command)
-        self.assertEqual(0, result.returncode, result.stderr)
-        self.assertRegex(result.stdout, r"^[0-9a-f]{64}( [0-9a-f]{64})?\n$")
-        return result.stdout.strip()
-
     def semantic_input(self):
         with tempfile.TemporaryDirectory() as scratch:
             result = subprocess.run(["bash", "-euo", "pipefail", "-c", '''
@@ -36,63 +24,16 @@ lean_cache_address
         self.assertRegex(result.stdout, r"^[0-9a-f]{64} [0-9a-f]{64}\n$")
         return result.stdout.split()
 
-    def test_legacy_dependency_address_hashes_only_pinned_file_bytes(self):
-        paths = ["lean-toolchain", "lake-manifest.json"]
-        before = self.address("dependency-address")
-        self.assertEqual(self.byte_manifest(paths), before)
-        write(self.root / "D5/A.lean", "def a := 2\n")
-        write(self.root / "lakefile.toml", 'keywords = ["metadata"]\n')
-        write(self.root / "lakefile.lean", "-- executable configuration\n")
-        self.assertEqual(before, self.address("dependency-address"))
-        self.manifest["packages"][0]["inputRev"] = "new-requested-ref"
-        self.save_manifest()
-        changed = self.address("dependency-address")
-        self.assertEqual(self.byte_manifest(paths), changed)
-        self.assertNotEqual(before, changed)
-        write(self.root / "lean-toolchain", "different-toolchain\n")
-        self.assertEqual(self.byte_manifest(paths), self.address("dependency-address"))
-        self.assertNotEqual(changed, self.address("dependency-address"))
-
-    def test_legacy_project_address_hashes_candidate_manifest_bytes(self):
-        for path in ["D5/Z.lean", "D5/nested/B.lean", "tools/lean-inspector/Z.lean",
-                     "tools/lean-inspector/A.lean"]:
-            write(self.root / path, "-- " + path + "\n")
-        sources = ["Trureturing.lean", "D5/A.lean", "D5/Z.lean", "D5/nested/B.lean",
-                   "tools/lean-inspector/A.lean", "tools/lean-inspector/Z.lean"]
-        for lakefiles in [["lakefile.toml"], ["lakefile.toml", "lakefile.lean"], ["lakefile.lean"]]:
-            with self.subTest(lakefiles=lakefiles):
-                if "lakefile.lean" in lakefiles:
-                    write(self.root / "lakefile.lean", "-- executable configuration\n")
-                if "lakefile.toml" not in lakefiles:
-                    (self.root / "lakefile.toml").unlink()
-                expected = self.byte_manifest(sources) + " " + self.byte_manifest(
-                    ["lean-toolchain", "lake-manifest.json", *lakefiles])
-                self.assertEqual(expected, self.address())
-
-    def test_legacy_project_config_tracks_metadata_bytes(self):
-        before = self.address().split()
-        self.manifest["version"] = "new-metadata"
-        self.save_manifest()
-        write(self.root / "lakefile.toml", 'name = "renamed"\nkeywords = ["metadata"]\n[leanOptions]\nmaxRecDepth = 1000\n')
-        after = self.address().split()
-        self.assertEqual(before[0], after[0])
-        self.assertNotEqual(before[1], after[1])
-        self.assertEqual(self.byte_manifest(["lean-toolchain", "lake-manifest.json", "lakefile.toml"]), after[1])
-
-    def test_legacy_inputs_fail_without_required_files(self):
-        for command, paths in [("dependency-address", ["lean-toolchain", "lake-manifest.json"]),
-                               ("address", ["lean-toolchain", "lake-manifest.json", "lakefile.toml", "Trureturing.lean"])]:
-            for relative in paths:
-                with self.subTest(command=command, missing=relative):
-                    path = self.root / relative
-                    before = path.read_bytes()
-                    path.unlink()
-                    try:
-                        result = self.run_input(command)
-                        self.assertEqual(2, result.returncode, result.stdout + result.stderr)
-                        self.assertEqual("", result.stdout)
-                    finally:
-                        path.write_bytes(before)
+    def test_retired_address_commands_are_rejected(self):
+        for command in ["address", "dependency-address"]:
+            with self.subTest(entrypoint="shell", command=command):
+                result = self.run_input(command)
+                self.assertEqual(2, result.returncode, result.stdout + result.stderr)
+                self.assertEqual("", result.stdout)
+        result = subprocess.run([sys.executable, str(ROOT / "tools/scripts/worktree/lean_cache.py"),
+            "dependency-address", "--repository", str(self.root)], text=True, capture_output=True)
+        self.assertEqual(2, result.returncode, result.stdout + result.stderr)
+        self.assertEqual("", result.stdout)
 
     def test_partition_uses_exactly_resolved_mathlib(self):
         self.assertEqual(REV, self.partition())

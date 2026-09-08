@@ -100,7 +100,7 @@ internal sealed class LeanCacheChunkFixture : IDisposable
             failure: failure, buildExit: buildExit, commit: commit);
     }
 
-    internal Attempt Fetch(bool allowSeed = false) => Run("fetch", allowSeed);
+    internal Attempt Fetch() => Run("fetch");
 
     internal void ListReleases(params string[] tags)
     {
@@ -173,7 +173,7 @@ internal sealed class LeanCacheChunkFixture : IDisposable
         Write(Path.Combine(releases, tag, "release.json"), metadata.ToJsonString());
     }
 
-    private Attempt Run(string verb, bool allowSeed = false, string? chunkEnvironment = null,
+    private Attempt Run(string verb, string? chunkEnvironment = null,
         string run = "4242", string? failure = null, int buildExit = 0, string? commit = ProducerSha)
     {
         var arguments = new List<string>
@@ -189,7 +189,6 @@ internal sealed class LeanCacheChunkFixture : IDisposable
         };
         if (chunkEnvironment is not null) arguments.Add($"STRATALINT_CACHE_TEST_CHUNK_BYTES={chunkEnvironment}");
         arguments.AddRange(["/bin/bash", script, verb, "--repository", repository]);
-        if (allowSeed) arguments.Add("--allow-seed");
         var result = TestProcessRunner.Run("/usr/bin/env", arguments.ToArray(), repository,
             TestBudgets.WorkflowProcessHangGuard, 256 * 1024);
         return new Attempt(result.ExitCode, Encoding.UTF8.GetString(result.StandardOutput) + Encoding.UTF8.GetString(result.StandardError));

@@ -46,9 +46,8 @@ public sealed class AdmissionWorkflowTopologyTests
     [InlineData(".github/workflows/ci-push.yml", true)]
     [InlineData(".github/workflows/lean-analysis-fixtures.yml", true)]
     [InlineData(".github/workflows/ci.yml", false)]
-    // Remove this allowance with the gate after ci-push/ci-pr and required-set migration.
-    [InlineData(".github/scripts/harness-gate.sh", true)]
-    public void ControlPathRegistrationKeepsOnlyTheRequiredGateTransition(string value, bool accepted)
+    [InlineData(".github/scripts/harness-gate.sh", false)]
+    public void ControlPathRegistrationKeepsOnlyCurrentStageEntries(string value, bool accepted)
     {
         var policy = new RuleFixture().Build().Policy;
         Assert.True(RepoPath.TryCreate(value, out var path));

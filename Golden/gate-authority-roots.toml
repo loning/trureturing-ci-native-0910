@@ -21,14 +21,6 @@ root_id = "ci-push.yml/engineering"
 entrypoint = ".github/workflows/ci-push.yml"
 
 [[roots]]
-root_id = "harness-gate.sh/check"
-entrypoint = ".github/scripts/harness-gate.sh"
-
-[[roots]]
-root_id = "harness-gate.sh/dotnet"
-entrypoint = ".github/scripts/harness-gate.sh"
-
-[[roots]]
 root_id = "local-harness-gate.sh/current"
 entrypoint = "tools/scripts/local-harness-gate.sh"
 

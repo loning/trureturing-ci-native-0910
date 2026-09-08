@@ -323,9 +323,6 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("command", choices=("address", "publish", "fetch"))
     parser.add_argument("--repository", type=pathlib.Path, default=pathlib.Path(__file__).resolve().parents[3])
-    # Transition for the default dev ci.yml fetch caller; compatibility stays v3.
-    # Remove after ci-push/ci-pr success and required-set migration, with its caller.
-    parser.add_argument("--allow-seed", action="store_true", help=argparse.SUPPRESS)
     # Internal handoff from LeanArchiveFetch after its typed guard assertion.
     parser.add_argument("--writer-owned", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
