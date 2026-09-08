@@ -5,10 +5,10 @@ HERE := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 BASE ?= origin/dev
 REPOSITORY ?= $(HERE)/..
 CHECK_FAST_FILTER := FullyQualifiedName~StrataLint.Tests.CapacityAuditCommandTests|FullyQualifiedName~StrataLint.ArchitectureTests.RepositoryIoAccessPolicyTests|FullyQualifiedName~StrataLint.ArchitectureTests.BannedApiCoverageTests|FullyQualifiedName=StrataLint.Tests.MakeWorkflowTests.CheckFastFilterIsNonEmptyAndPinsRequiredRepositoryChecks
-.PHONY: help dotnet check-fast test engineering-tests selftest capacity-audit update-renderer-contract clean-lanes
+.PHONY: help dotnet check-fast test engineering engineering-tests selftest capacity-audit update-renderer-contract clean-lanes
 
 help:
-	@printf '%s\n' 'make -C tools help                         Show this target list' 'make -C tools dotnet                       Restore and build .NET with warnings as errors' 'make -C tools check-fast                   Run the required fast repository structure checks' 'make -C tools test                         Run the full .NET harness test suite' 'make -C tools engineering-tests HEAD=sha BASE=sha  Run affected test projects' 'make -C tools selftest                     Run deterministic StrataLint selftest' 'make -C tools capacity-audit [REPOSITORY=path]  Audit the current git index against repository capacity limits' 'make -C tools update-renderer-contract     Update the fixed synthetic renderer contract' 'make -C tools clean-lanes [BASE=origin/dev] [FORCE=1]  List reclaimable lanes (dry-run); FORCE=1 removes them'
+	@printf '%s\n' 'make -C tools help                         Show this target list' 'make -C tools dotnet                       Restore and build .NET with warnings as errors' 'make -C tools check-fast                   Run the required fast repository structure checks' 'make -C tools test                         Run the full .NET harness test suite' 'make -C tools engineering                  Restore, build, test every current project, selftest, and prove compile failures' 'make -C tools engineering-tests           Run every current test project once using built outputs' 'make -C tools selftest                     Run deterministic StrataLint selftest' 'make -C tools capacity-audit [REPOSITORY=path]  Audit the current git index against repository capacity limits' 'make -C tools update-renderer-contract     Update the fixed synthetic renderer contract' 'make -C tools clean-lanes [BASE=origin/dev] [FORCE=1]  List reclaimable lanes (dry-run); FORCE=1 removes them'
 
 dotnet:
 	@/bin/bash $(HERE)/scripts/dotnet-build.sh
@@ -19,8 +19,11 @@ check-fast:
 test:
 	@/bin/bash $(HERE)/scripts/dotnet-test.sh $(HERE)/StrataLint.sln
 
+engineering:
+	@/bin/bash "$(HERE)/scripts/ci-stage.sh" engineering
+
 engineering-tests:
-	@cd "$(REPOSITORY)" && dotnet run --project "$(HERE)/StrataLint.EngineeringScope/StrataLint.EngineeringScope.csproj" --configuration Release --no-launch-profile -- --repository "$(REPOSITORY)" --head "$(HEAD)" --base "$(BASE)"
+	@cd "$(REPOSITORY)" && dotnet "$(HERE)/StrataLint.EngineeringScope/bin/Release/net10.0/StrataLint.EngineeringScope.dll" --repository "$(REPOSITORY)"
 
 selftest:
 	@/bin/bash $(HERE)/scripts/stratalint-selftest.sh

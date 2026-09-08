@@ -777,7 +777,7 @@ public sealed class JudgeSurfaceRevisionRuleTests
         return Diagnostics(fixture.BuildScopeProbe(RawChangeSet.Create(fixture.Changes)));
     }
 
-    private static ImmutableArray<RuleFinding> Diagnostics(RuleEvaluationContext context) =>
+    private static ImmutableArray<RuleFinding> Diagnostics(DeltaRuleContext context) =>
         RuleCatalog.Default.EvaluateSingle(RuleId.CreateKnown(30), context).Diagnostics
             .Select(static diagnostic => new RuleFinding(diagnostic.Path, diagnostic.Message))
             .ToImmutableArray();

@@ -496,7 +496,7 @@ public sealed partial class FrozenSurfaceRuleTests
     }
 
     [Fact]
-    public void Sl008CatalogExecutionDoesNotReportStalePinForUnrelatedDocsChange()
+    public void Sl008CurrentReportsStalePinForUnrelatedDocsChange()
     {
         var fixture = new RuleFixture();
         AddState(
@@ -507,13 +507,13 @@ public sealed partial class FrozenSurfaceRuleTests
 
         var completed = ExecuteCatalogWithOnlyModifiedPath(fixture, "docs/x.md");
 
-        Assert.DoesNotContain(completed.Diagnostics, static diagnostic =>
+        Assert.Contains(completed.Diagnostics, static diagnostic =>
             diagnostic.RuleId == RuleId.CreateKnown(8));
-        Assert.Contains(RuleId.CreateKnown(8), completed.SkippedRules);
+        Assert.Contains(RuleId.CreateKnown(8), completed.ExecutedRules);
     }
 
     [Fact]
-    public void Sl008DoesNotRecheckCurrentStatesForAnUnrelatedPath()
+    public void Sl008CurrentRechecksStatesWithoutDeltaSelection()
     {
         var fixture = new RuleFixture();
         foreach (var module in new[] { FrozenPath, RuleFixture.ValuesBindingPath })
@@ -526,11 +526,11 @@ public sealed partial class FrozenSurfaceRuleTests
 
         var evaluation = Evaluate(fixture, ("README.md", RawChangeKind.Modified));
 
-        Assert.Empty(evaluation.Diagnostics);
+        Assert.NotEmpty(evaluation.Diagnostics);
     }
 
     [Fact]
-    public void Sl008DoesNotWakeUnrelatedStateForManagedLeanChange()
+    public void Sl008CurrentRechecksUnrelatedStateForManagedLeanChange()
     {
         var fixture = new RuleFixture();
         AddState(
@@ -540,7 +540,7 @@ public sealed partial class FrozenSurfaceRuleTests
 
         var evaluation = Evaluate(fixture, (FrozenPath, RawChangeKind.Modified));
 
-        Assert.Empty(evaluation.Diagnostics);
+        Assert.NotEmpty(evaluation.Diagnostics);
     }
 
     private static RuleFixture FrozenFixture(out string eventPath)
