@@ -3,10 +3,18 @@
    mirror-B: none(waiver:formal-unit-only)
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: none
    digest: Quantify local residue survivors and turn two prime hits in a bounded translate into a bounded consecutive-prime gap. -/
 
 import D5.S3.Analytic.PrimeProducts.FiniteLocalResidueBlockingCriterion
 import D5.S3.PrimeGaps.SieveCoefficients
+
+/-! # Inherited occupancy interface
+
+This module restores the paper's PR 5236 dependency, absent from the sprint
+base. Its mathematical declarations are inherited unchanged. They support the
+paper's conversion from two prime hits to a consecutive pair in the same window.
+-/
 
 namespace D5.S3.PrimeGaps.ShortGapOccupancyBridge
 
@@ -23,8 +31,8 @@ residue class. This is the finite local notion used by admissible prime tuples. 
 theorem localSurvivorCount_pos_iff
     (H : Finset Int) (p : Nat) (hcount : localResidueCount H p ≤ p) :
     0 < localSurvivorCount H p ↔ localResidueCount H p < p := by
-  unfold localSurvivorCount
-  omega
+  simpa only [localSurvivorCount] using
+    (Nat.sub_pos_iff_lt (n := p) (m := localResidueCount H p))
 
 /-- A `k`-point offset set leaves at least `p-k` residue classes available modulo every
 modulus `p`. For `p > k` this gives a strictly positive local survivor budget without any

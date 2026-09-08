@@ -3,9 +3,17 @@
    mirror-B: none(waiver:formal-unit-only)
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: none
    digest: Equate forbidden-residue counts with the direct admissibility contract used by DHL prime tuples. -/
 
 import D5.S3.Analytic.PrimeProducts.FiniteLocalResidueBlockingCriterion
+
+/-! # Inherited residue presentation bridge
+
+This restores the paper's PR 5236 dependency and supplies its missing positive
+modulus instance during elaboration. All mathematical statements are inherited;
+the bridge connects the new search compiler to the frozen local-residue cutoff.
+-/
 
 namespace D5.S3.PrimeGaps.PrimeGapAdmissibilityContractBridge
 
@@ -45,7 +53,7 @@ theorem direct_admissibility_iff_card_lt
     (∃ a : ZMod p, ∀ h ∈ H, (h : ZMod p) ≠ a) ↔
       (directResidueSet H p).card < p := by
   classical
-  letI : NeZero p := ⟨Nat.ne_of_gt hp⟩
+  let : NeZero p := ⟨Nat.ne_of_gt hp⟩
   have huniv : (Finset.univ : Finset (ZMod p)).card = p := by simp
   constructor
   · rintro ⟨a, ha⟩
