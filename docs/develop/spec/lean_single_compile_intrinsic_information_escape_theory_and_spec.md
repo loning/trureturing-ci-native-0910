@@ -8346,9 +8346,10 @@ $(1,1,1,1)$、reason count $1$ 与 keys exact cover；删除、复制、stale id
 一个 `kind=def` 声明；另一个 `freeze_status=proven-not-yet-frozen` 的 node 含一个 theorem 声明。
 先选择 `freeze_status=frozen` 的 nodes，再选择其 `declarations` 中 `kind=theorem` 的声明，
 读取每个 declaration 的 `declaration_name_key` 与 `statement_id`；两个非目标声明均被排除。
-五个选中 keys 固定为 `(Fixture.finite, id-finite)`、`(Fixture.structural, id-structural)`、
-`(Fixture.bounded, id-bounded)`、`(Fixture.unreachable, id-unreachable)` 与
-`(Fixture.observed, id-observed)`；前项按 structured `Name` 编码，后项为合成 statement identity，
+五个选中 keys 为 `(Fixture.finite, sid_finite)`、`(Fixture.structural, sid_structural)`、
+`(Fixture.bounded, sid_bounded)`、`(Fixture.unreachable, sid_unreachable)` 与
+`(Fixture.observed, sid_observed)`；前项按 structured `Name` 编码，各 `sid_*` 直接取对应声明的
+elaborated `statement_id`，满足当前 dialect 的 `sha256:` 加 64 位 lowercase hex 格式，不使用占位字符串。
 两列各自不同，选择结果的分母恰为 5，不能是空集。
 前四行分别为 certified finite occurrence、structural occurrence、bounded report-only truncation
 与 `unreachable/no_canonical_object_carrier`；最后一行是绑定 exact key、owning module、census
