@@ -6,7 +6,7 @@ using StrataLint.Engine;
 namespace StrataLint.EngineeringScope;
 
 internal sealed class CommonStages(string root, TextWriter output, CancellationToken deadlineCancellation = default,
-    Action<Process>? processExited = null)
+    Action<Process>? processExited = null, TimeProvider? timeProvider = null)
 {
     private readonly List<StageStep> steps = [];
     private string stage = "input";
@@ -91,7 +91,18 @@ internal sealed class CommonStages(string root, TextWriter output, CancellationT
         RequireBinary(engineering, CommonExecutionEvidence.ScribePath);
         RequireBinary(engineering, "tools/StrataLint.EngineeringScope/bin/Release/net10.0/StrataLint.EngineeringScope.dll");
         File.Delete(Path.Combine(root, CommonExecutionEvidence.CurrentPath));
-        Step("lean-report", "/usr/bin/env", [$"STRATALINT_LEAN_CLI_DLL={Path.Combine(root, CommonExecutionEvidence.CliPath)}", "make", "--no-print-directory", "lean-report"]);
+        var logs = Path.Combine(root, CommonExecutionEvidence.RootPath, "logs/current");
+        if (Directory.Exists(logs)) Directory.Delete(logs, recursive: true);
+        var reportBudget = TimeSpan.FromSeconds(StrataLint.Cli.LeanCacheBudgetPolicy.DefaultProvisionBudgetSeconds);
+        string SupervisorBudget(string name) => Environment.GetEnvironmentVariable(name) is { Length: > 0 } value
+            ? value : StrataLint.Cli.LeanCacheBudgetPolicy.DefaultProvisionBudgetSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        // Shared current supports normal cold production within the existing Lean
+        // envelope. Nested defaults must not silently shorten that allowance.
+        Step("lean-report", "/usr/bin/env", [$"STRATALINT_LEAN_CLI_DLL={Path.Combine(root, CommonExecutionEvidence.CliPath)}",
+            $"STRATALINT_BUILD_TIMEOUT_SECONDS={SupervisorBudget("STRATALINT_BUILD_TIMEOUT_SECONDS")}",
+            $"STRATALINT_LOCK_TIMEOUT_SECONDS={SupervisorBudget("STRATALINT_LOCK_TIMEOUT_SECONDS")}",
+            $"STRATALINT_LEAN_REPORT_LOG_DIR={Path.Combine(logs, "lean-inspector")}",
+            "make", "--no-print-directory", "lean-report"], defaultTimeout: reportBudget);
         _ = RawLeanReportArtifact.ReadFile(Path.Combine(root, CommonExecutionEvidence.ReportPath), CommonExecutionEvidence.Snapshot(root), validateMaterials: true);
         Step("scribe", "/bin/bash", ["tools/scripts/workflow/scribe-content-checks.sh", CommonExecutionEvidence.ReportPath, CommonExecutionEvidence.ScribePath]);
         Step("filemap", "dotnet", [CommonExecutionEvidence.CliPath, "filemap-conform"]);
@@ -116,9 +127,10 @@ internal sealed class CommonStages(string root, TextWriter output, CancellationT
         if (!record.Materials.Any(material => material.Path == path)) throw new InvalidDataException("unbound candidate binary: " + path);
     }
 
-    private string Step(string name, string executable, string[] arguments, Func<int, string, bool>? proof = null, bool allowAnnotation = false)
+    private string Step(string name, string executable, string[] arguments, Func<int, string, bool>? proof = null,
+        bool allowAnnotation = false, TimeSpan? defaultTimeout = null)
     {
-        var result = Capture(executable, arguments);
+        var result = Capture(executable, arguments, defaultTimeout);
         var log = $"{CommonExecutionEvidence.RootPath}/logs/{stage}/{name}.log";
         var full = Path.Combine(root, log);
         Directory.CreateDirectory(Path.GetDirectoryName(full)!);
@@ -131,24 +143,25 @@ internal sealed class CommonStages(string root, TextWriter output, CancellationT
         return result.Text;
     }
 
-    private (int Exit, string Text) Capture(string executable, string[] arguments)
+    private (int Exit, string Text) Capture(string executable, string[] arguments, TimeSpan? defaultTimeout = null)
     {
+        var clock = timeProvider ?? TimeProvider.System;
         if (deadlineCancellation.IsCancellationRequested) throw new TimeoutException("PREFLIGHT_BUDGET_EXHAUSTED owner=outer-deadline");
         // Injected deadlines are advanced by their owner, independent of the ambient clock.
-        var timeout = deadlineCancellation.CanBeCanceled ? Timeout.InfiniteTimeSpan : TimeSpan.FromHours(2);
+        var timeout = deadlineCancellation.CanBeCanceled ? Timeout.InfiniteTimeSpan : defaultTimeout ?? TimeSpan.FromHours(2);
         var deadline = deadlineCancellation.CanBeCanceled ? null : Environment.GetEnvironmentVariable("PREFLIGHT_DEADLINE_AT");
         if (deadline is not null)
         {
             if (!long.TryParse(deadline, out var seconds)) throw new ArgumentException("invalid PREFLIGHT_DEADLINE_AT");
-            timeout = DateTimeOffset.FromUnixTimeSeconds(seconds) - TimeProvider.System.GetUtcNow();
+            timeout = DateTimeOffset.FromUnixTimeSeconds(seconds) - clock.GetUtcNow();
             if (timeout <= TimeSpan.Zero) throw new TimeoutException("PREFLIGHT_BUDGET_EXHAUSTED owner=outer-deadline");
         }
         var start = new ProcessStartInfo(executable) { WorkingDirectory = root, RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false };
         start.Environment["DOTNET_CLI_UI_LANGUAGE"] = "en-US";
         foreach (var arg in arguments) start.ArgumentList.Add(arg);
         using var process = Process.Start(start) ?? throw new IOException("cannot start " + executable);
-        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(deadlineCancellation);
-        cancellation.CancelAfter(timeout);
+        using var timer = new CancellationTokenSource(timeout, clock);
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(deadlineCancellation, timer.Token);
         var stdoutText = new StringBuilder();
         var stderrText = new StringBuilder();
         var stdout = Drain(process.StandardOutput, stdoutText, cancellation.Token);

@@ -7,6 +7,41 @@ namespace StrataLint.EngineeringScope.Tests;
 public sealed class PreflightProcessContractTests
 {
     [Fact]
+    public void FailedCurrentDiagnosticsSurvivePrCandidateCleanupWithoutSuccessfulEvidence()
+    {
+        using var fixture = new Fixture(File.ReadAllText(
+            Path.Combine(TestRepositoryLayout.FindRoot(), "tools/scripts/preflight.sh")));
+        fixture.Write(".gitignore", "build/\n");
+        fixture.Write("tools/scripts/ci-stage.sh", """
+            #!/bin/bash
+            mkdir -p build/ci
+            printf 'build/ci\0' > build/ci/artifact-paths.nul
+            if [[ "$1" == current ]]; then
+              mkdir -p build/ci/logs/current/lean-inspector
+              printf 'raw cold build output\n' > build/ci/logs/current/lean-inspector/build.stdout.log
+              printf '{"stage":"current","exit":2}\n' > build/ci/current-result.json
+              exit 124
+            fi
+            """);
+        fixture.Commit();
+        var result = fixture.Preflight("pr", fixture.Git("rev-parse", "HEAD").Trim());
+        Assert.Equal(2, result.Exit);
+        var lines = result.Text.Split('\n');
+        var candidate = lines.Single(line => line.StartsWith("PREFLIGHT_CANDIDATE path=", StringComparison.Ordinal))["PREFLIGHT_CANDIDATE path=".Length..];
+        Assert.False(TemporaryFileSystem.Directory.Exists(candidate));
+        var archive = lines.Single(line => line.StartsWith("PREFLIGHT_ARTIFACT bundle=", StringComparison.Ordinal))["PREFLIGHT_ARTIFACT bundle=".Length..];
+        using var gzip = new System.IO.Compression.GZipStream(File.OpenRead(archive), System.IO.Compression.CompressionMode.Decompress);
+        using var tar = new System.Formats.Tar.TarReader(gzip);
+        var entries = new Dictionary<string, string>();
+        while (tar.GetNextEntry() is { } entry)
+            if (entry.DataStream is { } data)
+                entries.Add(entry.Name, new StreamReader(data).ReadToEnd());
+        Assert.Equal("raw cold build output\n", entries["build/ci/logs/current/lean-inspector/build.stdout.log"]);
+        Assert.DoesNotContain("build/ci/current.json", entries.Keys);
+        Assert.DoesNotContain(CommonExecutionEvidence.ReportPath, entries.Keys);
+    }
+
+    [Fact]
     public void DefaultPushRunsCommonStagesOnceWithoutParentOrRemote()
     {
         using var fixture = new Fixture(File.ReadAllText(
