@@ -33,7 +33,7 @@ noncomputable section
 
 namespace D5.S3.Weil.ZetaLinear.ProjectiveRayleighCapture
 
-open scoped ComplexConjugate
+open scoped ComplexConjugate InnerProductSpace
 
 /-- Align an eigenvector by its actual candidate overlap. The shifted
 operator annihilates the eigenvector, yielding the exact sharp variational
@@ -76,8 +76,7 @@ theorem projective_rayleigh_enclosure
         (⟪ι v, A v⟫_ℂ).re - eigenvalue * ‖ι v‖ ^ 2 := by
     rw [applyB, inner_sub_right, inner_smul_right,
       inner_self_eq_norm_sq_to_K]
-    simp only [← Complex.ofReal_pow, ← Complex.ofReal_mul,
-      Complex.sub_re, Complex.ofReal_re]
+    simp [Complex.mul_re, pow_two]
   have eigenEnergy :
       (⟪ι u, A u⟫_ℂ).re = eigenvalue * ‖ι u‖ ^ 2 := by
     have h := energyB u

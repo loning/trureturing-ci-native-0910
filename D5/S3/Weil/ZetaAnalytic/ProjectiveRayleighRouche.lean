@@ -32,6 +32,7 @@ noncomputable section
 namespace D5.S3.Weil.ZetaAnalytic.ProjectiveRayleighRouche
 
 open Complex Set Topology BigOperators
+open scoped InnerProductSpace
 open D5.S3.Weil.ZetaLinear.ProjectiveRayleighCapture
 open D5.S3.Weil.ZetaAnalytic.RoucheZeroCount
 
