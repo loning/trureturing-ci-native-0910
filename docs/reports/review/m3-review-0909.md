@@ -397,9 +397,76 @@ This checks the full Real-polynomial interface; the C-to-R identification above
 is the mathematical fidelity argument, not a claimed additional Lean cast lemma.
 It establishes exactly the m=3 slice, with every real alpha>-1.
 
-## Q5-Q6
+## Q5: Independent Verification and Final Axiom Closures
 
-Q1-Q4 complete; Q5-Q6 pending. No final verdict at this checkpoint.
+| Command | Own EXIT | Own real seconds | Evidence |
+| --- | ---: | ---: | --- |
+| `/usr/bin/time -l make lean` | 0 | 83.76 | `make-lean.log`, built both final reviewed modules, 12681 jobs |
+| `/usr/bin/time -l make lean-report` | 0 | 10.27 | `make-lean-report.log`, RSS=255688704 bytes |
+| `node "$ATTEMPT/q5-canonical-reading.cjs" > "$ATTEMPT/q5-canonical-reading.json"` | 0 | not measured | full per-declaration own reading, source/hash/provenance checks |
+
+The canonical command reported **`mode=cached`** for the current input address.
+This is an own invocation and own reading of its final-source-bound report,
+not a claim that this invocation reran the inspector from scratch. The preceding
+own `make lean` compiled both reviewed modules and printed their final theorem
+closures; no intermediate implementation log was used as an axiom verdict.
+No naked `lake build` or `lake env lean` was invoked. Review stdin probes were
+also run through make and `lean-cache-run.sh`.
+
+Canonical path: `.lake/build/stratalint/raw-lean-report.json`.
+SHA-256: `20b925ef0ef86b656f60079b914364b66292344a31b3ab47ea941c67d6735b09`.
+Input address: `sha256:a20ab3bd7c3261e58c6f85f9c399e3b5a3f61e6b30d117bbc35fa45374ae880d`.
+Adjacent `.provenance.json` says side=source_side=`candidate`, mode=`cached`.
+Both recorded source hashes equal the source bytes read in this worktree:
+
+| Module | Source SHA-256 | Raw declarations | Included | Included theorems | Included definitions |
+| --- | --- | ---: | ---: | ---: | ---: |
+| main | `f27173bbe2739f8fee728450cad1388f56750656d624610ce90c66f2345d12a6` | 33 | 21 | 12 | 9 |
+| Discriminant | `bcbd16debca04f7147021418b09cc0c4cbd34fc33bfd6e02db505d13cbb341b6` | 131 | 26 | 14 | 12 |
+| total | | 164 | 47 | 26 | 21 |
+
+**Count correction:** the brief's "27 declarations" is not the declaration
+count of these two final modules. The report contains **47 included
+declarations**, exactly the 47 named individually in Q3, plus 117 excluded
+compiler-generated internal theorems. Every one of the 47 included entries
+has exactly `[Classical.choice, Quot.sound, propext]`; all 164 raw entries have
+axioms contained in that set. **sorryAx_present=false, unexpected axioms=0.**
+This covers all nine public theorems and all seventeen private theorems,
+as well as all definitions. No prefix-based axiom assumption is used:
+`q5-canonical-reading.json` retains each full name, kind, included flag,
+statement_id, and its own axioms from the canonical report.
+The implementation report's `added=27` is a retained inspector delta-plan
+measurement, explicitly relative to its prior cache, and is not a claim about
+the final two-module declaration total. Its old delta run was not rerun here.
+
+Own frozen prerequisite reading:
+GID `D5/S3/Zeros/Convolution/FiniteFreeCommutatorDegreeSix.cubic_nonnegative_factorization`,
+statement_id `sha256:984112c0a61e8d34b039bb6d01a1e73d4e1f57b7fb36b42fbd569cc818100618`.
+Module state pin exists and is
+`sha256:c432340052440ba09b56af8739b2dee5b23e520877aa3593410b92b1dbad9daf`;
+these are different identities with different meanings.
+
+Required lexical scan, including identical-feature positive control:
+
+```text
+git grep -n -P '\bsorry\b|\badmit\b|^axiom |\bnative_decide\b' -- D5/S3/Zeros/Convolution/GribinskiDegreeThree.lean D5/S3/Zeros/Convolution/GribinskiDegreeThreeDiscriminant.lean
+git grep -n -P '\bsorry\b|\badmit\b|^axiom |\bnative_decide\b' -- D5/X_Frontier/Hearts.lean
+```
+
+Targets: **0 matching lines, EXIT=1**. Positive control: **1 matching line,
+EXIT=0**, `D5/X_Frontier/Hearts.lean:76: sorry`. The same `\b` PCRE feature
+is exercised. This is only lexical corroboration, not a substitute for the
+canonical axiom closures. An initial control at the nonexistent path
+`D5/X_Assumptions/Hearts.lean` returned EXIT=1, 0 hits; that was not accepted
+as a control. `rg --files D5 -g '*Hearts.lean'` located the correct path above.
+
+`git diff --name-only edcaa0364b401e2a13a4e28bb7bd51ff1dbb5c07` names only
+`docs/reports/review/m3-review-0909.md`. Thus the final-source checks address
+the pinned audited files, not an intermediate source state.
+
+## Q6
+
+Q1-Q5 complete; Q6 pending. No final verdict at this checkpoint.
 
 ## Publication
 
