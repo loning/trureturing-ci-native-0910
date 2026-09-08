@@ -74,6 +74,18 @@ discharges the unknown output splitting premise. Repository convolution scan
 D5/S3/Zeros/Convolution --glob '*.lean'`) yielded 24 lines, EXIT=0, including
 the frozen factorization API and the existing m=2 API.
 
+### Q1 Prerequisite Build / Q5 Own Build Reading
+
+`/usr/bin/time -l make lean > "$ATTEMPT/make-lean.log" 2>&1`:
+**EXIT=0, 83.76 real seconds, 12681 jobs, RSS=7900758016 bytes**.
+The source tree is still the pinned reviewed source. Cache receipt:
+`status=present`, `method=none`, project=Mathlib=`warm`. This warm status did
+not imply that the two newly reviewed modules were already compiled.
+The log reports the discriminant module built in 74s and the main module in
+2.5s; final line is `Build completed successfully (12681 jobs)`.
+This is an independent local build, not CI or admission approval. Canonical
+axiom-report verification remains pending Q5.
+
 ## Q2-Q6
 
 Pending Q1 completion. No verdict is claimed at this checkpoint.
