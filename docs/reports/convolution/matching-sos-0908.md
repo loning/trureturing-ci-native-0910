@@ -460,3 +460,10 @@ syntax and candidates; the unproved equation (2); the monomial-fiber counting
 bijection and step (4); all-degree H_1 removal and equivalence (7); independent
 review and peak RSS. No positive-semidefiniteness claim for H_0(R) is made.
 The machine-verifiable statements above are limited to the two archived sources.
+
+## Report Admission Check
+
+PR #6409's admission job in run `34212840963` rejected the initial report location:
+`SL-003 docs/reports: directory contains 25 files (admission limit 24, repository tolerance 48)`.
+The report was moved into `docs/reports/convolution/` to satisfy the directory
+capacity rule. No threshold, constant, or mathematical source was changed.
