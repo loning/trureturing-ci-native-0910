@@ -5,6 +5,7 @@ import hashlib
 import json
 import pathlib
 import tempfile
+import unittest
 
 from pipeline import execute
 from resources import run
@@ -21,6 +22,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output")
     options = parser.parse_args()
+    suite = unittest.defaultTestLoader.discover(str(pathlib.Path(__file__).parent), pattern="test_*.py")
+    if not unittest.TextTestRunner().run(suite).wasSuccessful():
+        raise SystemExit(1)
     directory = pathlib.Path(options.output or tempfile.mkdtemp(prefix="census-fixtures-")).resolve()
     directory.mkdir(parents=True, exist_ok=True)
     repository = pathlib.Path(__file__).resolve().parents[3]
