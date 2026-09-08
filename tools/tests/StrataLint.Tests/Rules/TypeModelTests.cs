@@ -247,6 +247,8 @@ public sealed class TypeModelTests
     [InlineData("D5/S0/Carrier/Algebra/Ring", "D5/S0/Carrier/Algebra/Ring.lean")]
     [InlineData("D5/S0/Carrier/Algebra/Graded/Ring", "D5/S0/Carrier/Algebra/Graded/Ring.lean")]
     [InlineData("D5/S0/Carrier/Algebra/Graded/Filtered/Ring", "D5/S0/Carrier/Algebra/Graded/Filtered/Ring.lean")]
+    [InlineData("D5/S0/Carrier/Algebra/Carrier/Ring", "D5/S0/Carrier/Algebra/Carrier/Ring.lean")]
+    [InlineData("D5/S0/Carrier/Algebra/Algebra", "D5/S0/Carrier/Algebra/Algebra.lean")]
     [InlineData("D5/S0/Carrier/Algebra/Graded/Ring.norm_mul", "D5/S0/Carrier/Algebra/Graded/Ring.lean")]
     [InlineData("D5/B/S0/Carrier/Algebra/Graded/Ring", "Blueprint/D5/S0/Carrier/Algebra/Graded/Ring.md")]
     [InlineData("D5/E/S0/Carrier/Algebra/Graded/Ring.result--json", "Evidence/D5/S0/Carrier/Algebra/Graded/Ring.result.json")]
