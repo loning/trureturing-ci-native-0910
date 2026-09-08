@@ -336,11 +336,54 @@ theorem card_matchingMonomialFiber_mul (n k : ℕ) (S T : Finset (Fin n))
     card_partner_embeddings n S T hST, mul_assoc,
     card_fixedPointFreeInvolution_mul (k - S.card) (by simpa using hT)]
 
+/-- Formula (C): the powers of two cancel the involution-count denominator. -/
+theorem coeff_matchingSum_fiber (n k : ℕ) (S T : Finset (Fin n))
+    (hST : Disjoint S T) (hk : 2 * k ≤ n)
+    (hS : S.card ≤ k) (hT : T.card = 2 * (k - S.card)) :
+    MvPolynomial.coeff (fiberExponent S T)
+      (matchingSum (MvPolynomial.X : Fin n → MvPolynomial (Fin n) ℚ) k) =
+      (-1 : ℚ) ^ (k - S.card) * ((n - 2 * k + S.card).factorial : ℚ) *
+        ((2 * (k - S.card)).factorial : ℚ) /
+          (((n - 2 * k).factorial : ℚ) * ((k - S.card).factorial : ℚ)) := by
+  have hc : (Fintype.card (MatchingMonomialFiber k S T) : ℚ) *
+      (((k - S.card).factorial : ℚ) * 2 ^ (k - S.card)) =
+      ((n - S.card - T.card).descFactorial S.card : ℚ) *
+        ((2 * (k - S.card)).factorial : ℚ) := by
+    exact_mod_cast card_matchingMonomialFiber_mul n k S T hST hS hT
+  have hm : n - S.card - T.card = n - 2 * k + S.card := by omega
+  have hd : ((n - 2 * k).factorial : ℚ) *
+      ((n - S.card - T.card).descFactorial S.card : ℚ) =
+      ((n - 2 * k + S.card).factorial : ℚ) := by
+    rw [hm]
+    have h := Nat.factorial_mul_descFactorial
+      (n := n - 2 * k + S.card) (k := S.card) (by omega)
+    have he : n - 2 * k + S.card - S.card = n - 2 * k := by omega
+    rw [he] at h
+    exact_mod_cast h
+  have hb : ((n - 2 * k).factorial : ℚ) ≠ 0 := by
+    exact_mod_cast Nat.factorial_ne_zero (n - 2 * k)
+  have hh : ((k - S.card).factorial : ℚ) ≠ 0 := by
+    exact_mod_cast Nat.factorial_ne_zero (k - S.card)
+  apply (eq_div_iff (mul_ne_zero hb hh)).mpr
+  rw [coeff_matchingSum_eq_card_fiber n k S T hST]
+  have hp : (-2 : ℚ) ^ (k - S.card) =
+      (-1 : ℚ) ^ (k - S.card) * 2 ^ (k - S.card) := by
+    rw [← mul_pow]
+    norm_num
+  rw [hp]
+  calc
+    _ = (-1 : ℚ) ^ (k - S.card) * ((n - 2 * k).factorial : ℚ) *
+        ((Fintype.card (MatchingMonomialFiber k S T) : ℚ) *
+          (((k - S.card).factorial : ℚ) * 2 ^ (k - S.card))) := by ring
+    _ = _ := by rw [hc, ← mul_assoc, mul_assoc _ _
+      ((n - S.card - T.card).descFactorial S.card : ℚ), hd]
+
 #print axioms fiberToFactors_injective
 #print axioms fiberToFactors_surjective
 #print axioms matchingMonomialFiberEquiv
 #print axioms card_matchingMonomialFiber
 #print axioms card_matchingMonomialFiber_mul
+#print axioms coeff_matchingSum_fiber
 #print axioms partner_outside
 #print axioms square_edge_injective
 #print axioms square_edges_pairwise

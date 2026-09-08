@@ -129,3 +129,23 @@ Every added definition, instance, private helper and public theorem has
 utility none: it describes or proves a symbolic construction for arbitrary
 n,k,S,T; it neither enumerates bounded parameters, certifies a numerical
 instance, implements a checker, nor leaves a numerical reduction obligation.
+
+Step 2 was pushed as `d7a78b89fe`.
+
+## Step 3
+
+`coeff_matchingSum_fiber` proves (C) over Q for all parameters in the brief.
+Its denominator is the rational product `(n-2k)! * (k-|S|)!`; its numerator
+is `(-1)^(k-|S|) * (n-2k+|S|)! * (2*(k-|S|))!`. This is the stated pair
+of factorial ratios, combined into one field quotient. The proof casts the
+division-free count, uses Nat.factorial_mul_descFactorial, and cancels
+the powers of two. There is no natural-number quotient cast.
+
+`/usr/bin/time -l make lean`: EXIT 0; 12593 jobs; 23.38 seconds;
+maximum RSS 3035693056 bytes (`step-3a-make-lean.log`). Its `#print axioms`
+is [propext, Classical.choice, Quot.sound]. proof_shape content, through
+the live fiber equivalence; escape_witness matchingMonomialFiberEquiv;
+admission_basis escape-witness; direct frozen GID/statement_id none.
+utility none: this is an unbounded symbolic coefficient formula, missing
+all four computational classes. Consumer edge: (star) ->
+coeff_matchingSum_fiber -> card_matchingMonomialFiber_mul.

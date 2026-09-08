@@ -31,5 +31,14 @@ internal sealed class MatchingEquivDocument : IScribeDocumentDefinition
                 Blocks(Paragraph(Text(
                     "The product equality supplies the same count without natural-number "
                     + "division, for use in coefficient fields."))),
+                DescribeRole.Theorem),
+            Describe.Lean(
+                DescribeId.Create("matching-fiber-coefficient"),
+                DeclarationHandle.Create(Prefix + "coeff_matchingSum_fiber"),
+                H("Matching Coefficient"), StatementSource.WithoutFormula(),
+                AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text(
+                    "Formula (C) follows by casting the product count into Q. The powers "
+                    + "of two cancel and leave only the alternating sign and factorial ratios."))),
                 DescribeRole.Theorem))));
 }
