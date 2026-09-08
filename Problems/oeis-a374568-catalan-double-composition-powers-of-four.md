@@ -57,7 +57,7 @@ series directly. `double_composition` then identifies A modulo 2 with C(C),
 Frobenius and strong induction to give support exactly at powers of four.
 The integer oddness bridge concludes `hanna_conjecture`.
 
-The freeze prerequisite is that frozen Catalan module (generality I), with
+The freeze prerequisite is that frozen Catalan module (generality G), with
 `statement_id` `sha256:0033f4a50a501546a5f332ce1203c8cf1a936428e7a155a06a0443bb0f0f6232`.
 The target module also has generality I.
 
