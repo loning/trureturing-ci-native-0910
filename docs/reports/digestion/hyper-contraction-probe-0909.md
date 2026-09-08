@@ -20,7 +20,7 @@
 - 规则读取完成: `CLAUDE.md` 全 764 行已分段读完(首次整文件输出截断,随后补读),`agents/CONTEXT.md` 已读。
 - Q1: 已答,三个前置在源卷中均找到;散文论证不冒充 Lean 证明。
 - Q2: 已答,3 个候选模块均有冻结状态片;均为有作用域限制的抽象端,实际测度识别未因此完成。
-- Q3: 未进入。
+- Q3: 先库后证检索中,尚无 content 判定。
 - Q4: 未进入。
 
 ## 检索留痕
@@ -146,6 +146,33 @@ $$
 补充边界: 第一模块的 `li_curvature_criterion` ([L359](../../../D5/S3/Weil/TestFunctions/LiCurvatureCriterion.lean#L359)) 把 `liCriterion`、曲率递推、`rhFourierRepresentation` 和全阶 `circleHerglotzRepresentation` 均列为**显式假设**。不能凭该模块已冻结,就移除它们或宣称已有实际 RH 测度。
 
 因此 #6503 所称“端可接”的可核实含义是上述 **抽象矩积分/距离接口存在且冻结**。本轮已核出的“只给 RH 就输出式 (27)-(28) 的实际对象与识别”端为 `none`。已有端的实例化/投影自身均 `bind-only`;作用域限制是数学前件,不按代码行数命名为缺陷。
+
+## Q3 检索进行记录
+
+批次 4: `cat tools/scripts/worktree/lean-cache-run.sh lakefile.toml` 确认根 `make lean` 会 ensure 私有缓存,默认 glob 包含 `D5.+`。既有 `docs/reports/convolution/image-cone-probe-0909.md:414` 记录可先临时放 D5 编译、再将片段移至报告目录的探针形态。未改构建参数或常数。本树首次 `make lean` 已启动,尚未以退出码结算。
+
+本仓先搜: `rg -n -i 'hyper.?contract|super.?geometric|contraction|rpow|monic|orthogonal polynomial|infinite.*support' D5/S3/Weil/TestFunctions D5/S3/Observer/Hilbert D5/S3/Analytic/GoldenTomography` 定位到 `FinitePronyAnnihilatorUniqueness` 的首一有限根积及 `LiCurvatureFourierRepresentation` 的抽象 Fourier 表示;这是候选定位,尚未把它们当实际零点接口。
+
+出网实测: 2026-09-09,Loogle `https://loogle.lean-lang.org/json`。命令模板(每个 q 分别调用):
+
+```sh
+set -o pipefail
+curl -fsS --max-time 25 --get 'https://loogle.lean-lang.org/json' --data-urlencode 'q=<下表查询>' | jq '{count,error,header,hits:[.hits[:4][]? | {name,module,type}]}'
+```
+
+| q 原文 | 服务返回 count | 已打开的读数与界限 |
+| --- | ---: | --- |
+| `"integral"` | 4101 | 能力烟测,服务只给前 200;首次原始输出被截断,不作为全量结果 |
+| `MeasureTheory.Measure, "sum"` | 366 | 返回 measure preimage 的 sum/tsum 等;服务只给前 200,本席打印前 4 |
+| `MeasureTheory.integral_mono_ae` | 1 | 完整类型: 两函数 Integrable + a.e. 序关系推出积分序关系 |
+| `"limsup"` | 222 | `Filter.limsup`、`blimsup`、常值公式等;服务只给前 200 |
+| `Polynomial.Monic, "prod"` | 29 | `Polynomial.monic_prod_of_monic` 等一般首一乘积声明 |
+| `"gram"` | 589 | 前 4 为 metaprogramming/histogram 噪声;不得冒充 Gram 矩阵命中,下一批收窄 |
+| `"orthogonal", "polynomial"` | 0 | 同一声明名同时含两词的检索无命中;不排除别名或不同表述 |
+| `"moment"` | 14 | `ProbabilityTheory.moment/centralMoment` 等;非完整单位圆矩问题 |
+| `"tendsto_rpow"` | 19 | `Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics` 中若干幂极限 |
+
+以上是 **在线索引读数,不是本仓 pin 的声明保证**;任何用于探针的命中仍须在钉版源码中核对,再经 `make lean`。未主张第三方生态检索穷尽,也未登记新的 AxiomDebt。
 
 ## 明确未主张
 
