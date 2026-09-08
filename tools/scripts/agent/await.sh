@@ -95,7 +95,7 @@ case "$kind" in
         cat "$out.settled"; exit 0
       fi
       case "$verdict" in
-        NYX_EXTRACTION|NYX_QUOTA|NYX_BUSY)
+        NYX_EXTRACTION|NYX_QUOTA|NYX_BUSY|NYX_DELIVERY)
           # Keep the existing minute-scale backoff between fresh submissions.
           back=$(( 60 * n ))
           printf 'AWAIT_VOTE attempt=%s state=retry verdict=%s at=%s backoff=%ss\n' "$n" "$verdict" "$(__stamp)" "$back"

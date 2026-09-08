@@ -265,6 +265,10 @@ __verdict_of_payload() {  # 判**取回的文本**,不判文件 —— 活判决
   [ -n "$r" ] || { echo UNKNOWN; return; }
   last=$(printf '%s' "$r" | awk 'NF{l=$0} END{print l}')
   case "$last" in *"Message delivery timed out"*) echo DELIVERY; return;; esac
+  # 2026-09-08 16:5x 实测(company 池,task 912474a6):终态 `Error: Task failed (prompt_delivery_uncertain).`
+  # —— worker 不能确认 prompt 已投递,任务失败;与 delivery timeout 同类(载体侧、未消费、可重投),
+  # 此前落到 UNKNOWN(我方 bug 类)于是遍历停在第一个池、调用方也不重试。只认末行,理由同上。
+  case "$last" in *"Task failed (prompt_delivery_uncertain)"*) echo DELIVERY; return;; esac
   first=${r%%$'\n'*}
   case "$first" in "Error:"*) echo UNKNOWN; return;; esac
   echo OK
@@ -384,6 +388,9 @@ __selftest() {  # 分类器的阳性/阴性对照。**立条依据(2026-09-06)**
   # 载体投递失败:失败文本是 payload 的**末行**
   chk DELIVERY   carrier-delivery-timeout   "$(printf '%s\n' 'Attempts: 1 (infrastructure retries 0/3)' \
     'Message delivery timed out. Please try again.Retry')"
+  chk DELIVERY   carrier-prompt-uncertain   "$(printf '%s\n' 'Attempts: 1 (infrastructure retries 0/3)' \
+    'Error: Task failed (prompt_delivery_uncertain).')"
+  chk OK         answer-quotes-prompt-uncertain "$(printf '%s\n' 'The seat hit Error: Task failed (prompt_delivery_uncertain). earlier' '{"verdict":"approve"}')"
   # 阴性对照:**真答案里引用了同一句失败文本**,但末行是答案 —— 必须仍判 OK。
   # 这条钉的正是「不做全文子串匹配」;改成全文匹配它立刻变红。
   chk OK         answer-quotes-delivery-text "$(printf '%s\n' \
@@ -513,6 +520,7 @@ __selftest() {  # 分类器的阳性/阴性对照。**立条依据(2026-09-06)**
           case "$response" in
             extraction) echo 'Error: Task failed (extraction_failure).'; return 1;;
             delivery) printf '%s\n' 'Attempts: 1 (infrastructure retries 0/3)' 'Message delivery timed out. Please try again.Retry';;
+            prompt-uncertain) printf '%s\n' 'Attempts: 1 (infrastructure retries 0/3)' 'Error: Task failed (prompt_delivery_uncertain).'; return 1;;
             quote) printf '%s\n' 'Quoted: Message delivery timed out. Please try again.' '{"verdict":"reject"}';;
             timeout) echo 'Phase: waiting_response';;
             resume) if [ "$(wc -l < "$NYX_TEST_DIR/polls")" -le 2 ]; then echo 'Phase: waiting_response'; else echo '{"ok":true}'; fi;;
@@ -626,10 +634,10 @@ __selftest() {  # 分类器的阳性/阴性对照。**立条依据(2026-09-06)**
       chke absent "lock-released-first-$signal-$cancel" "$(if [ -d "$run_dir/nyx-ask-first.lock" ]; then echo leaked; else echo absent; fi)"
     done
   done
-  for response in delivery quote timeout noid result-error; do
+  for response in delivery prompt-uncertain quote timeout noid result-error; do
     run_case "ask-$response" "${rows_one/answer/$response}"$'\n'"$third"
     case "$response" in
-      delivery) check_run "1|EXIT=1|first|$id1|$id1||NYX_DELIVERY";;
+      delivery|prompt-uncertain) check_run "0|EXIT=0|first,third|$id1,$id3|$id1,$id3|first|NYX_OK";;
       quote) check_run "0|EXIT=0|first|$id1|$id1||NYX_OK";;
       timeout) check_run "3|EXIT=3|first|$id1|$id1,$id1||NYX_TIMEOUT";;
       noid) check_run '1|EXIT=1|first||||NYX_UNKNOWN';;
@@ -716,7 +724,7 @@ __selftest() {  # 分类器的阳性/阴性对照。**立条依据(2026-09-06)**
     rows="${rows_one/answer/$response}"; expected="125|first,first|"
     case "$response" in
       busy) rows="${rows_one/|0|1|/|1|1|}"; expected='125||';;
-      delivery) expected="1|first|$id1";;
+      delivery) expected="125|first,first|$id1,$id1";;   # nyx 只有一个池可投 → DELIVERY → await 重试至耗尽(预登记预测,2026-09-08)
       unknown) expected='7|first|';;
     esac
     run_case "await-vote-$response" "$rows"
@@ -785,7 +793,7 @@ case "${1:-}" in
       LIMIT="${NYX_LIMIT:-}"   # 每池按自报容量重新派生
       __submit_and_poll "$brief" "$out"; rc=$?
       case "$LAST_VERDICT" in
-        EXTRACTION|QUOTA|BUSY|EXPIRED) ;;   # 载体侧/容量侧失败 → 换池重投同一份 brief
+        EXTRACTION|QUOTA|BUSY|EXPIRED|DELIVERY) ;;   # 载体侧/容量侧失败 → 换池重投同一份 brief(DELIVERY:prompt 未被消费,换池安全)
         *) break;;   # OK / TIMEOUT(任务仍活,不重投)/ NOFILE / UNKNOWN(我方 bug,换池无益)
       esac
     done
