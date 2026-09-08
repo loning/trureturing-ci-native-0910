@@ -801,3 +801,250 @@ make -C tools xi-quantization XI_MODE=mps XI_FIRST=1 XI_LAST=1399999 XI_CHUNK=65
 ```
 
 相对 `309ff1c32e2ba45af38856c33059dbc5bbd13b55` 的报告,全部数学输入、尾界、1399999 项覆盖、精确计数、首末见证、控制和 GPU 混淆/差异记录均相同,有序 CSV digest 仍为 `81e77ccc81333be01c37c6fbb3a8168c37386f8293c18131ad45b9f7776e2b60`。变化仅为发布契约/schema、真实新运行的时刻/计时、运行路径和代码来源。报告的 `source_head` 是带未提交修复的该 HEAD,实际运行字节由 manifest 绑定:producer SHA256 `6bd7295216e998874ff2b9f47e7145f4224f0a7547e630d0157a295d10089a1d`,Make SHA256 `360891306af6257eaf4b4def814a9cd0ab73e77b452124277e8fe3ff107a63d4`,共享 writer 仍为第 13 节的 SHA256。新 Markdown 报告 SHA256 为 `cf8220d31dd7f878e0381b50527198868669ad9e485bdead5618597662817806`;旧报告留在上述提交,未把旧计时配给新代码。caller 继续负责 judge/content 分区、复制工程修复、独立复审和 PR 三门;此有界修复不宣称 MERGED、RH 进展或长期研究目标完成。
+
+## 15. 均值与平方偏差的尖锐因数丰度上包络
+
+**状态: PAPER_ARGUMENT / repo-derived 参考输入。** 本节落实第 10 节的距离问题,使用已完成实际 GPT PRO 的论证并由实施者逐步核对;产地见第 17 节。经典 Jensen、Hermite 插值和矩极值方法不是本线的发现。以下不是 Lean-frozen 定理,不主张新颖性或 RH 进展。GH 仍只有第 1 节的工作 RH 解释,没有另行定义。
+
+### 固定素数标签、预算与加权度量
+
+固定有限非空素数集 \(S\),\(k=|S|\),取 \(a_p\in\mathbb Z_{\ge0}\),允许零指数及 \(n=1\)。所有对数都是自然对数,定义
+
+\[
+n=\prod_{p\in S}p^{a_p},\quad T=\log n,\quad
+x_p=(a_p+1)\log p>0,\quad
+\mu=\frac1k\sum_{p\in S}x_p=\frac{T+\sum_{p\in S}\log p}{k},
+\]
+\[
+B=e^\mu>1,\quad s_p=x_p-\mu,\quad V=\sum_{p\in S}s_p^2,\quad
+E_S=\prod_{p\in S}(1-p^{-1})^{-1},\quad f(x)=\log(1-e^{-x}).
+\]
+
+\(V\) 是平方偏差之和,统计学的平均方差是 \(V/k\)。有限几何级数给出
+
+\[
+F:=\log\frac{\sigma(n)}n=\log E_S+\sum_{p\in S}f(x_p),\qquad
+J:=\log E_S+kf(\mu)\ge F.
+\]
+
+零指数对应的真实局部因子为 1。这里的 \(S\) 可以比实际支撑大,不要求是连续素数前缀;必须保留准确的素数标签与 \(E_S\)。添加零指数素数虽不改变 \(F\),却改变 \(k,\mu,V,J\) 及下述包络,没有证书单调增强的结论。
+
+本节在 \(x\) 坐标中选 Euclidean 内积。\(x=\mu\mathbf1+s\)、\(\mathbf1\cdot s=0\) 给出 \(\sum_px_p^2=k\mu^2+V\)。令 \(a_p^0=\mu/\log p-1\),则拉回指数空间得到明确的加权距离
+
+\[
+\langle u,v\rangle_w=\sum_p(\log p)^2u_pv_p,\qquad
+V=\sum_p(\log p)^2(a_p-a_p^0)^2.
+\]
+
+这不同于第 10 节未经加权的原点法向投影;那个投影一般不是因数丰度的连续最优点。对两组位编码的差 \(\delta a_p=\sum_jF_j\delta b_{pj}\),同一度量拉回为
+
+\[
+\|\delta a\|_w^2=\sum_p(\log p)^2\left(\sum_jF_j\delta b_{pj}\right)^2.
+\]
+
+同一素数行的交叉项 \(2(\log p)^2F_iF_j\delta b_{pi}\delta b_{pj}\) 必须保留。中心 \(a^0\) 可以是实数,并不要求有整数位编码。关于精确 \(T\) 截面至多一个整数点及薄层才容纳多个配置,沿用第 10 节,不把编码当成新增正交方向。
+
+### 强化的二次 Jensen 缺口
+
+**命题。** 置 \(N_-=\sum_{s_p<0}s_p^2\),则
+
+\[
+J-F\ge\frac{BN_-}{2(B-1)^2}
+\ge\frac{BV}{2k(B-1)^2}\ge\frac{V}{2kB}.
+\]
+
+**证明。** 对每个正数 \(x\),\(f(x)=-\sum_{q\ge1}e^{-qx}/q\) 绝对收敛。有限求和与级数相减合法,因为差级数的绝对值和被
+\(\sum_{q\ge1}(\sum_pe^{-qx_p}+ke^{-q\mu})/q<\infty\) 控制。因此
+
+\[
+J-F=\sum_{q\ge1}\frac{\sum_pe^{-qs_p}-k}{qB^q}.
+\]
+
+每个括号由 Jensen 非负;负的 \(s_p\) 不妨碍收敛,实际衰减量是 \(e^{-qx_p}\)。对 \(s<0\),\(e^{-qs}\ge1-qs+q^2s^2/2\);对 \(s\ge0\),\(e^{-qs}\ge1-qs\)。求和消掉线性项,再用 \(\sum_{q\ge1}qB^{-q}=B/(B-1)^2\),得到第一步。
+
+若 \(V>0\),负坐标数 \(h\) 满足 \(1\le h\le k-1\)。设 \(\ell=\sum_{s_p>0}s_p=-\sum_{s_p<0}s_p\),则正坐标平方和不超过 \(\ell^2\),而 Cauchy-Schwarz 给出 \(\ell^2\le hN_-\)。故 \(V\le(h+1)N_-\le kN_-\)。最后 \(B^2>(B-1)^2\) 给出第三步。证毕。
+
+若 \(V=0\),全部坐标等于 \(\mu\),\(J=F\),全链取等;特别地 \(k=1\) 总如此。若 \(V>0\),存在负坐标,其指数函数二阶下界严格,所以 \(J-F\) 严格大于上述每一个二次下界。整数指数且 \(k\ge2\) 时,\(V=0\) 会要求两个不同素数的正整数幂相等,由唯一分解排除。因此包括最弱候选在内的上界
+
+\[
+\frac{\sigma(n)}n\le e^J\exp\!\left(-\frac{BV}{2k(B-1)^2}\right)
+\le e^J\exp\!\left(-\frac{V}{2kB}\right)
+\]
+
+对这类整数配置严格。\(J\) 始终是上界;在固定 \(S,T\) 的实指数松弛中,只有 \(B\ge\max S\) 时等坐标点 \(a^0\) 才满足所有 \(a_p\ge0\),此时由严格凹性才可称 \(J\) 为可行连续最优值。若要求 \(a_p\ge1\),条件变为 \(B\ge(\max S)^2\)。
+
+### Hermite 上包络及全部等号情形
+
+**定理。** 对任意 \(k\ge2\) 个正实坐标 \(x_1,\ldots,x_k\),令 \(\mu,V\) 如上,并置
+
+\[
+r=\sqrt{\frac{V}{k(k-1)}},\quad L=\mu-r,\quad H=\mu+(k-1)r,\qquad
+\Psi_k(\mu,V)=f(H)+(k-1)f(L).
+\]
+
+则 \(L>0\),且 \(\sum_if(x_i)\le\Psi_k(\mu,V)\)。这是指定 \(k,\mu,V\) 的正实坐标类中的最优上界。对整数指数因此有
+
+\[
+\frac{\sigma(n)}n\le E_S(1-e^{-H})(1-e^{-L})^{k-1}.
+\]
+
+**证明。** 正性及 \(k\ge2\) 给出 \(\sum_ix_i^2<(\sum_ix_i)^2\),所以 \(V<k(k-1)\mu^2\),即 \(r<\mu\)。又由 \(\sum_{j\ne i}(x_j-\mu)=-(x_i-\mu)\) 及 Cauchy-Schwarz,
+\((x_i-\mu)^2\le(k-1)(V-(x_i-\mu)^2)\),故 \(x_i\le H\)。\(V=0\) 时全部坐标等于 \(\mu\),结论直接成立。
+
+设 \(V>0\),则 \(0<L<H\)。取唯一次数至多二的多项式 \(P\),满足 \(P(L)=f(L),P'(L)=f'(L),P(H)=f(H)\)。直接求导得到
+
+\[
+f'(x)=\frac1{e^x-1},\quad f''(x)=-\frac{e^x}{(e^x-1)^2},\quad
+f'''(x)=\frac{e^x(e^x+1)}{(e^x-1)^3}>0\quad(x>0).
+\]
+
+对任一实际坐标 \(x\notin\{L,H\}\),Hermite 余项为
+
+\[
+f(x)-P(x)=\frac{f'''(\xi)}6(x-L)^2(x-H)<0,
+\]
+
+其中 \(\xi\) 位于 \(x,L,H\) 所张成的正实区间。余项公式可直接由 Rolle 定理得到:取 \(K=(f(x)-P(x))/[(x-L)^2(x-H)]\),函数 \(f(t)-P(t)-K(t-L)^2(t-H)\) 在 \(x,L,H\) 为零,且在 \(L\) 导数为零;连续应用三次 Rolle 即得 \(f'''(\xi)=6K\)。特别地,即使 \(0<x<L\),这些点仍全在 \((0,\infty)\),平方项非负而 \(x-H<0\),符号不变。在节点上余项为零。
+
+原向量与原型 \((H,L,\ldots,L)\) 均有 \(k\) 个坐标,一次和均为 \(k\mu\),二次和均为 \(k\mu^2+V\)(原型平方偏差为 \(((k-1)^2+k-1)r^2=V\))。二次多项式之和只依赖这三个矩,故
+
+\[
+\sum_if(x_i)\le\sum_iP(x_i)=P(H)+(k-1)P(L)=\Psi_k(\mu,V).
+\]
+
+\(V>0\) 时等号要求所有坐标属于 \(\{L,H\}\),由一次和恰有一个 \(H\)。反过来该原型确实取等,并且对每个 \(\mu>0,0\le V<k(k-1)\mu^2\) 都是可行正实向量,故上界尖锐。证毕。
+
+\(V=0\) 的等号恰为全相等;\(k=2\) 时每个正实二元组本来就是原型的排列,总取等。不同素数的整数指数在 \(k\ge3\) 时不可能有至少两个相等的 \(L\),所以上界严格。\(k=1\) 单独定义 \(\Psi_1(\mu,0)=f(\mu)\),不使用含 \(k-1\) 的分母。这里的尖锐性只针对正实松弛,不声称在带素数标签的整数格上可达到。
+
+令 \(\Lambda_k=kf(\mu)-\Psi_k(\mu,V)\)。将前述二次界应用于原型,得
+
+\[
+J-F\ge\Lambda_k\ge\frac{BV}{2k(B-1)^2}.
+\]
+
+固定 \(k,\mu\),在 \(V\to0\) 时对原型作 Taylor 展开,一次项相消、二次平方和为 \(V\),故
+\(\Lambda_k=BV/[2(B-1)^2]+O_{k,\mu}(V^{3/2})\)。勾股分解本身不控制 \(F\);起作用的是 \(f'''\) 的符号及矩匹配。同半径的不同方向可有不同的 \(F\),本定理取其中的最大值。
+
+## 16. 有限指数箱体与预算薄层的充分证书
+
+**状态: 上一定理的 PAPER_ARGUMENT 推论,无新搜索实现。** 固定带准确标签的 \(S\),\(k\ge2\),每个指数限制在有限非空集合 \(A_p\subset\mathbb Z_{\ge0}\)。取有限实数 \(\log5040<T_0\le T_1\),只考虑 \(T_0\le T=\log n\le T_1\) 的配置。定义
+
+\[
+\mu_i=\frac{T_i+\sum_{p\in S}\log p}{k},\quad I=[\mu_0,\mu_1],\quad
+C_p=\{(a+1)\log p:a\in A_p\},\quad
+V_0=\sum_{p\in S}\operatorname{dist}(I,C_p)^2.
+\]
+
+距离是两个集合间距离的下确界,此处可取到。每个实际 \(\mu\in I,x_p\in C_p\),所以 \(|x_p-\mu|\ge\operatorname{dist}(I,C_p)\),从而 \(V\ge V_0\);不需枚举笛卡尔积。若 \(V_0\ge k(k-1)\mu_1^2\),结合 \(V<k(k-1)\mu^2\le k(k-1)\mu_1^2\) 知交集为空。否则 \(\mu_1>0\) 且 \(\mu_1-\sqrt{V_0/[k(k-1)]}>0\),才定义
+
+\[
+U=\log E_S+\Psi_k(\mu_1,V_0).
+\]
+
+在 \(\mu>0,0\le V<k(k-1)\mu^2\) 上,\(\Psi_k\) 对 \(\mu\) 严格递增,因为导数是 \(f'(H)+(k-1)f'(L)>0\);对 \(V>0\) 严格递减,因为对 \(r\) 的导数是 \((k-1)[f'(H)-f'(L)]<0\)。在 \(V=0\) 处连续。先增大 \(\mu\) 至 \(\mu_1\),再减小 \(V\) 至 \(V_0\),全程留在定义域,得 \(F\le U\)。
+
+对 \(T>1\),Robin 的对数阈值是 \(R(T)=\gamma+\log(\log T)\),导数为 \(1/(T\log T)>0\)。因此充分条件
+
+\[
+U<\gamma+\log(\log T_0)
+\]
+
+证明箱体与薄层中每个整数满足严格 Robin 不等式。这里 \(T=\log n\),所以阈值对 \(n\) 是三层对数;\(T_0>\log5040\) 是全局预算条件。分离失败只表示未决,不是反例。\(V_0>0\) 时 \(U\) 严格小于同一薄层的 Jensen 上界 \(\log E_S+kf(\mu_1)\);这不比较其它剪枝器。
+
+### 固定坐标的常数不能丢
+
+若 \(S=S_{\rm fix}\sqcup S_{\rm free}\),固定指数为 \(b_p\),精确保留
+
+\[
+g_p(a)=\log\frac{1-p^{-a-1}}{1-p^{-1}},\quad
+T_{\rm fix}=\sum_{p\in S_{\rm fix}}b_p\log p,\quad
+F_{\rm fix}=\sum_{p\in S_{\rm fix}}g_p(b_p).
+\]
+
+令 \(h=|S_{\rm free}|\ge2\),并以残余预算端点 \(T_i-T_{\rm fix}\) 形成
+\(\widetilde\mu_i=(T_i-T_{\rm fix}+\sum_{p\in S_{\rm free}}\log p)/h\)、\(\widetilde I\) 与仅在自由坐标上的 \(\widetilde V_0\)。若 \(\widetilde\mu_1\le0\),正实自由坐标不可能存在;否则同样先检查 \(\widetilde V_0<h(h-1)\widetilde\mu_1^2\),失败即交集为空。通过后完整目标的上界是
+
+\[
+F\le F_{\rm fix}+\log E_{S_{\rm free}}+
+\Psi_h(\widetilde\mu_1,\widetilde V_0).
+\]
+
+仍与全局 \(\gamma+\log(\log T_0)\) 比较,绝不对可能非正的残余预算取 Robin 对数,也不删掉 \(F_{\rm fix}\)。此版本只覆盖 \(h\ge2\);\(h=0\) 直接检查唯一固定配置的总预算与 \(F_{\rm fix}\),\(h=1\) 对唯一自由行的有限允许指数直接计算总预算与 \(F_{\rm fix}+g_p(a)\)。维数下降不是无限素数尾部已受控。
+
+## 17. 5040 证据、已有 KL 关系与未决比较
+
+### 单个边界整数的有界复算
+
+本次只核验 \(5040=2^4\,3^2\,5\,7\),由整数几何级数得 \(\sigma=19344\)、\(\sigma/n=403/105\)、\(E_S=35/8\)。[5040-variance-0908.md](../../reports/5040-variance-0908.md) 保存 Python-FLINT 0.8.0 / Arb 256 位的完整可执行计算与 \(10^{50}\) 分母的严格有理包围。球比较及包围端点的精确有理比较均认证
+
+\[
+\frac{403}{105}
+<E_S(1-e^{-H})(1-e^{-L})^3
+<e^J e^{-BV/[8(B-1)^2]}
+<e^J.
+\]
+
+这些值依次约为 \(3.838095238095238\)、\(3.838655866895702\)、\(3.850047966183107\)、\(3.854387771992677\),仅作读数展示;证明依据不是解析 Arb 的显示字符串。\(\mu\) 约为 \(3.468067222945721\),\(V\) 约为 \(0.271331752493326\)。5040 不在 Robin 的 \(n>5040\) 域内,此例只展示界的收紧,没有证明 Robin 在 5040 或某个整数范围成立。
+
+### 固定支撑损失不等于任意全局损失
+
+第 10 节及 [Z] 第十二章的精确 Bernoulli-KL 分解是既有输入。定义
+\(D_{\rm Ber}(u\Vert v)=u\log(u/v)+(1-u)\log((1-u)/(1-v))\)。这里的固定支撑同型恒等式为
+
+\[
+J-F=\frac1{1-B^{-1}}\sum_{p\in S}
+D_{\rm Ber}(B^{-1}\Vert e^{-x_p}).
+\]
+
+逐项展开右边为 \(f(\mu)-f(x_p)+s_p/(B-1)\),线性项和为零。方差包络是用少量矩信息压缩这个精确损失,不增加它已有的信息;已给定全部指数时,直接 \(F\) 或精确 KL 保留更多信息。
+
+为与 [Z] 定义 12.1、定理 12.3、推论 12.4 对齐,此处 \(F=W(n)\),\(g_p\) 取第 10 节的实指数解析延拓,并明确写
+
+\[
+\Phi(T)=\max_{\substack{u_p\in\mathbb R_{\ge0},\ u\text{ 有限支撑}\\\sum_pu_p\log p\le T}}
+\sum_pg_p(u_p)\quad(T>0),\qquad
+\mathfrak D(n)=\Phi(\log n)-F\quad(n>1),
+\]
+\[
+\mathfrak Q(T)=\Phi(T)-\gamma-\log(\log T)\quad(T>1),\qquad
+\Delta(n):=\gamma+\log(\log(\log n))-F
+=\mathfrak D(n)-\mathfrak Q(\log n).
+\]
+
+最后一式在 \(\log n>1\) 上使用。任意 \(S\) 的 \(J\) 不一定等于 \(\Phi(T)\);正确的估计是
+\(\mathfrak D(n)\ge\Phi(T)-\log E_S-\Psi_k(\mu,V)\),可与既有 \(\mathfrak D\ge0\) 取较强者。只有核对 [Z] 活跃集合及预算条件后,才能将 \(J-F\) 认作全局 \(\mathfrak D\)。
+
+剩余全局义务仍是对**每个整数 \(n>5040\)** 证明 \(\mathfrak D(n)>\mathfrak Q(\log n)\)。本节没有在增长的支撑、指数和预算上给出足以压过 \(\mathfrak Q\) 的统一格距离估计。唯一分解排除精确等号,不提供所需的定量间隔;漏掉的素数也不能凭近似 Euler 乘积补回。
+
+维数损失有一个仅在正实松弛中的限制:固定 \(\mu=2\),取 \(x=(k+1,1,\ldots,1)\),则 \(V=k(k-1)\),而
+
+\[
+J-F=kf(2)-f(k+1)-(k-1)f(1)=O(k),\qquad
+\frac{e^2(J-F)}{V}\longrightarrow0.
+\]
+
+所以不能在所有维数的正实域上用某个正常数代替粗界中 \(1/k\) 的因子。这不是素数整数格的反例。尖锐连续包络已经达到其矩信息所能给出的最优值;RH 义务仍需额外的算术或全尺度误差信息。
+
+### 离散对偶比较与来源边界
+
+对于第 16 节的同一箱体,既有可分离离散 Lagrange 基线可写为
+
+\[
+U_{\rm dual}=\inf_{\lambda\ge0}
+\left\{\lambda T_1+\sum_{p\in S}\max_{a\in A_p}
+[g_p(a)-\lambda a\log p]\right\}.
+\]
+
+每个括号给所有预算不超过 \(T_1\) 的配置一个上界。距离证书相对这个最优对偶是否有实用优势仍 **OPEN**;比 Jensen 更紧是已经证明的较弱结论,不能升级为优于 \(U_{\rm dual}\)。caller 提供的两次后续任务 `949095a4-d3a7-4179-b842-f255db211159`、`db06ed96-26f3-47ff-90eb-db97ec4de9d6` 只有载体失败记录(`prompt_delivery_uncertain`;`page.goto Page crashed`),没有数学答案。它们既不证明也不否定优势。本增量未执行所提 GPU 窗口,不把预测当作结果,也不让新搜索依赖缺失结论。
+
+主要研究输入是 caller 提供的实际 GPT PRO task `14803801-6a68-4b5a-8a76-f6615d838e88` 的 structured conclusion,完成时间 `2026-09-08T13:17:09.406+00:00`,返回 model `chatgpt-5.5-pro`;该输入没有单独提供 conversation id,不补造。实施 worker 没有打开 oracle transcript 或 opaque log_ref,没有新 oracle 调用。caller 的单点 256 位 Arb 读数是支持证据;本 worker 独立重算同一 5040 输入,结果一致。这里独立指证明核对和计算路径,不表示独立评审或模型族多样性;Codex 为 `repo-prior-exposed`。
+
+文献尽调范围明确如下:实施者于 2026-09-08 读取 [Liao-Berg, Sharpening Jensen's Inequality](https://arxiv.org/abs/1707.08644) 与 [Rodin, Variance and the Inequality of Arithmetic and Geometric Means](https://arxiv.org/abs/1409.0162) 的摘要页及作者元数据。后者摘要已陈述普通乘积在同均值、方差下的一个大坐标极值形状。PRO 自报亲读前者 Theorem 1 / Corollary 1.1、后者 Theorem 1 / Remark 1,并提供前者 DOI `10.1080/00031305.2017.1419145`;本 worker 未独立取得这些正文或核对 DOI,不把转述写成亲验。PRO 另报 Pittenger 的 *Sharp mean-variance bounds for Jensen-type inequalities* 正文获取失败,其一般结果是否覆盖本特例未核实。以上不支持全球新颖性或文献穷尽声明;本节的函数特例由第 15 节完整短证承担。
+
+本次是 `consensus-rnd:sshx` 的委派 implementation,无新增子席或独立评审判词。C17 允许的 continuation 工作树为 `/Users/auricstudio/trureturing-qgh-variance`,分支 `lane/math/quantized-gh-variance-0908`,封存起点 `0b8b5592d56d601d92db36b5f7ef331ef3ed33f1`;原 803 行前缀逐字节保留。源与报告之外仅由以下 canonical 命令生成新 atom/账目,计数由实施结果信封报告:
+
+```sh
+make ingest BASE=0b8b5592d56d601d92db36b5f7ef331ef3ed33f1 SOURCE=arithmetic-boundary-quantization
+```
+
+本轮不新建形式根或修改冻结 Lean,不重做既有有限扫描。独立复审、PR 三门和 MERGED 发布由 caller 负责,尚未交付的环节保持 open;有限追加不完成持续研究目标。
