@@ -21,15 +21,24 @@ import Mathlib.Tactic
    claim is made.
    Pre-registered escape: strong induction identifying the well-founded
    coefficient recursion with all root power sums, including repeated roots.
-   Utility, declaration by declaration: descendingCoeff and newtonSum define
-   general algebraic objects, not checkers or finite certificates. The sum
-   reindexing, recurrence, uniqueness, root identification, scalar-map, and
-   root-enumeration lemmas are unbounded algebraic theorems. None performs
-   bounded enumeration, certifies a fixed instance, checks a certificate, or
-   reduces an analytic goal to an unfulfilled numerical premise.
-   FullHermiteMatrix, TruncatedHankelMatrix, fullHermiteFromMoments, and
-   truncatedHankelFromMoments are general matrix types and constructions.
-   They perform none of those four kinds of computational certification.
+   Utility, declaration by declaration (all none):
+   descendingCoeff: general coefficient function, without a certification claim.
+   newtonSum: general recurrence, without a certificate or bounded search.
+   newton_inner_antidiagonal_sum: arbitrary finite-sum reindexing equality.
+   newton_sum_zero: the defining initial value for arbitrary degree and ring.
+   newton_sum_succ: the defining recurrence at arbitrary order.
+   newton_sum_unique: unbounded strong induction, not a fixed instance.
+   rootElementaryCoeff: general signed symmetric functions, no checker.
+   map_newton_sum: arbitrary ring homomorphism compatibility, no numerical premise.
+   descending_coeff_eq_root_esymm: general Vieta equality, not certification.
+   exists_root_enumeration: arbitrary-degree multiset enumeration existence,
+     not bounded computational enumeration of candidate solutions.
+   FullHermiteMatrix: a general structure type, with no certification operation.
+   TruncatedHankelMatrix: a distinct general structure type, likewise.
+   fullHermiteFromMoments: general indexing construction, no positivity claim.
+   truncatedHankelFromMoments: general indexing construction, no positivity claim.
+   None is a certified-instance, bounded-enumeration, checker, or
+   numeric-reduction. Finite calibration probes are archived separately.
    Scope: the identification of the recursion with root sums remains open;
    no parity block identity or FFC positivity theorem is claimed here. -/
 
