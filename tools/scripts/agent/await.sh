@@ -10,6 +10,8 @@
 #   await.sh seat <flight-id> [attempt]     阻塞到 run_dir 出现 result.json(即席位真交回)
 #   await.sh nyx  <task-id>                 阻塞到 nyxid 任务不再 waiting_response
 #   await.sh make <logfile>                 阻塞到日志出现 EXIT= 哨兵行
+#   await.sh vote <brief> <out> [max]        Submit and await a vote (default max 4).
+#   vote exits 6 on UNCERTAIN, 1 on DELIVERY; neither is retried. The task ID is printed.
 # 环境:AWAIT_DEADLINE(秒,默认 5400)、AWAIT_TICK(秒,默认 20)
 #
 # 为什么仍有内部轮询:这三样**都没有自带的同步原语**(runner 已返回、nyxid 只有查询式 API、
@@ -69,7 +71,7 @@ case "$kind" in
     done ;;
   vote)
     # Follow nyx's command verdict, including traversal. Only TIMEOUT needs fetch;
-    # terminal carrier failures retry via a fresh ask run with preserved history.
+    # EXTRACTION/QUOTA/BUSY retry; UNCERTAIN/DELIVERY stop with recovery references.
     brief="${1:?brief}"; out="${2:?outfile}"; maxn="${3:-4}"
     [[ "$maxn" =~ ^[0-9]+$ ]] && [ "$maxn" -gt 0 ] && [ "$maxn" -le 2147483647 ] 2>/dev/null || exit 2
     rm -f "$out.settled" || exit 2
@@ -80,7 +82,7 @@ case "$kind" in
       : > "$out.log" || exit 2
       while :; do
         bash "$__TOOLDIR/nyx.sh" "${args[@]}" >> "$out.log" 2>&1; rc=$?
-        verdict=$(awk '/^NYX_(OK|EXTRACTION|QUOTA|BUSY|TIMEOUT|DELIVERY|NOFILE|UNKNOWN|EXPIRED|NOPOOL|LOCKBUSY|ERR|IO|CANCELLED)( |$)/ {v=$1} END {print v}' "$out.log")
+        verdict=$(awk '/^NYX_(OK|EXTRACTION|QUOTA|BUSY|TIMEOUT|DELIVERY|UNCERTAIN|NOFILE|UNKNOWN|EXPIRED|NOPOOL|LOCKBUSY|ERR|IO|CANCELLED)( |$)/ {v=$1} END {print v}' "$out.log")
         [ "$rc" -eq 3 ] && [ "$verdict" = NYX_TIMEOUT ] || break
         tid=$(bash "$__TOOLDIR/nyx.sh" taskid "$out") || exit 2
         if __deadline_hit; then
@@ -95,7 +97,12 @@ case "$kind" in
         cat "$out.settled"; exit 0
       fi
       case "$verdict" in
-        NYX_EXTRACTION|NYX_QUOTA|NYX_BUSY|NYX_DELIVERY)
+        NYX_UNCERTAIN|NYX_DELIVERY)
+          tid=$(bash "$__TOOLDIR/nyx.sh" taskid "$out") || exit 2
+          printf 'AWAIT_VOTE attempt=%s task=%s state=stopped verdict=%s at=%s\n' "$n" "$tid" "$verdict" "$(__stamp)"
+          [ "$verdict" != NYX_UNCERTAIN ] || exit 6
+          exit 1 ;;
+        NYX_EXTRACTION|NYX_QUOTA|NYX_BUSY)
           # Keep the existing minute-scale backoff between fresh submissions.
           back=$(( 60 * n ))
           printf 'AWAIT_VOTE attempt=%s state=retry verdict=%s at=%s backoff=%ss\n' "$n" "$verdict" "$(__stamp)" "$back"
