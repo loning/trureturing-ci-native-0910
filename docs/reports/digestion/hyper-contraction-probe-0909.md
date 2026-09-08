@@ -363,7 +363,17 @@ curl -fsS --max-time 25 --get 'https://loogle.lean-lang.org/json' --data-urlenco
 
 `ASSUMED-UNVERIFIED`:源卷 DLMF/arXiv 外链未打开;第三方索引与本仓 pin 的全量一致性未验证(实际使用的命中已本地核对);实际式 (27)-(28)、全目标、完整 nth-root 收束和正性连接未编译;未重放冻结 pin 完整性验证、未做穷尽碰撞/依赖闭包检查。在线 Loogle API 与 #6503 正文实际已打开,不列作未打开页面。
 
-报告与片段随每批提交推送;runner `result.json` 的 `pushed.commits` 保存完整 SHA 列表,避免在报告内写入自身提交哈希产生递归。最终净改动预期仅本报告和相邻片段;以交付时 git 差异读数为准。
+报告与片段随每批提交推送;runner `result.json` 的 `pushed.commits` 保存完整 SHA 列表,避免在报告内写入自身提交哈希产生递归。
+
+最终交付核验批次(检查树 `27a1894a2df65f0344a5159af07c2712ebcce32e`,本次追加仅记录读数):
+
+- `git diff --check 5a29f572a2b0f4dc207528a819efe8552500d86e HEAD`:exit 0,无输出。
+- `git diff --name-status 5a29f572a2b0f4dc207528a819efe8552500d86e HEAD`:恰 2 条 A,即本报告与相邻片段;无生产 D5、冻结片或消化账净改动。
+- `git status --short --branch`:工作树干净,跟踪本探针远端分支。`git ls-remote --heads origin refs/heads/lane/math/hyper-contraction-probe-0909`:远端确为上述检查树。
+- `shasum -a 256 docs/reports/digestion/hyper-contraction-probe-0909-snippets.lean`:与编译时 SHA-256 完全一致,片段保持 106 行。
+- Node 使用 `fs.readFileSync` 与 `source.includes(block)` 核验本报告前 4 个 `text` 块:测度原文、质量等式、变分式、严格正定论证 **4/4 逐字匹配源卷**;使用 `path.resolve` 与 `fs.existsSync` 检查 Markdown 本地链接,坏链接 **0**。这是文本出处检查,不是新的数学证明或 Lean 构建。
+
+上述核验批次亦独立提交推送。最终提交完整 SHA、远端 tip 复核及 runner 工件路径记录于 `result.json`;`result.json.tmp` 和 `completion.sentinel.tmp` 均先写好再分别原子重命名发布。判形依据来自本地钉版源码与本地编译,联网检索仅用于定位上游候选。
 
 ## 明确未主张
 
