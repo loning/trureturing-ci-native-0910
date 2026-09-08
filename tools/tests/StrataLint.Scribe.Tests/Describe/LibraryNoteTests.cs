@@ -5,6 +5,43 @@ namespace StrataLint.Scribe.Tests;
 public sealed class LibraryNoteTests
 {
     [Fact]
+    public void LibraryCatalogCitesAStableUrlWhenNoDoiExists() => WithCatalog(
+        new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["sample2026paper.md"] = Note("sample2026paper", "A stable source", "null")
+                .Replace("doi: null\n", "doi: null\nurl: https://example.org/source\n",
+                    StringComparison.Ordinal),
+        },
+        root =>
+        {
+            var citation = Assert.Single(LibraryNoteCatalog.Load(root).Citations).Value;
+            Assert.Null(citation.Doi);
+            Assert.Equal("https://example.org/source", citation.Url!.AbsoluteUri);
+        });
+
+    [Theory]
+    [InlineData("http://example.org/source")]
+    [InlineData("/source")]
+    [InlineData("https://user:secret@example.org/source")]
+    [InlineData("https://example.org/a b")]
+    [InlineData("javascript:alert(1)")]
+    public void LibraryCatalogRejectsMalformedUrls(string url) => WithCatalog(
+        new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["sample2026paper.md"] = Note("sample2026paper", "A source", "null")
+                .Replace("doi: null\n", $"doi: null\nurl: {url}\n", StringComparison.Ordinal),
+        },
+        root => Assert.Throws<FormatException>(() => LibraryNoteCatalog.Load(root)));
+
+    [Fact]
+    public void CitationRejectsMissingAndAmbiguousLocators()
+    {
+        Assert.Throws<ArgumentException>(() => LiteratureCitation.Create("A", 2026, "T", null));
+        Assert.Throws<ArgumentException>(() => LiteratureCitation.Create(
+            "A", 2026, "T", "10.1000/sample", "https://example.org/source"));
+    }
+
+    [Fact]
     public void LibraryReferenceOwnsTheD5LAddressAndLiteratureAnchor()
     {
         var reference = LibraryNoteRef.Create("D5/L/sos1957threegap");
