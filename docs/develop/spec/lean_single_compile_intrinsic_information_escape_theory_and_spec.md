@@ -8770,7 +8770,7 @@ v4.2 dependency chain 落地后，Phase 10--11 只采用以下一个七步顺序
    `D5/S3/ConceptDynamics/InformationEscapeHierarchy/` 落地 `GeneratedKernel` lattice、
    `KernelChain`（`GeneratorSchedule`／`StrictKernelChain` API）、spectrum/overlap/refinement laws、
    `StructuralArena` 与 `StructuralCatalog`；
-4. 〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕disposition census tool 与完整 inventory：只读 frozen elaborated truth export，建立 exactly-one
+4. 〔pending J3; lane census-generator-0908; #5214; 2026-09-08〕disposition census tool 与完整 inventory：只读 frozen elaborated truth export，建立 exactly-one
    `CensusAssessment` census；记账先完备、认证分类逐步增加，两者按 Phase 11 明确分栏；
 5. judge v3 `kernel_projection` 与 covers-only ASCII renderer；
 6. E1、causal、disposition 与十一 singleton compatibility fixtures；
@@ -8791,36 +8791,40 @@ v1 §6.4 的 nested `InformationEscape/Counting/` proposal，`proof_method` 仍�
 
 ### Phase 11　disposition census
 
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕本阶段只细化上述固定顺序的第 4 步，不改变各步依赖。在 import-closure identity／grouping
+〔pending J3; lane census-generator-0908; #5214; 2026-09-08〕本阶段只细化上述固定顺序的第 4 步，不改变各步依赖。在 import-closure identity／grouping
 mechanics 与第 3 步 structural engine 都存在后，依第 8.7 节 owner 2026-09-08 裁决，census 必须：
 
-1. 〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕先完成 accounting：Lean Meta tool 只读当前 truth export dialect 的完整 elaborated nodes，
+1. 〔pending J3; lane census-generator-0908; #5214; 2026-09-08〕先完成 accounting：Lean Meta tool 只读当前 truth export dialect 的完整 elaborated nodes，
    先选择 `freeze_status=frozen` 的 nodes（模块），再选择其 `declarations` 中 `kind=theorem`
    的声明，由 declaration 的 `declaration_name_key` 与 `statement_id` 派生
    `(structured Name, statement_id)` keys；每个 key 恰有一个 `CensusAssessment`，observed
    允许入账，但其完整 scope 与 completed query 必须由 census 自己核实；
-2. 〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕certified classification 逐步增加：只有证据成立才写 finite／structural／bounded truncation／
+2. 〔pending J3; lane census-generator-0908; #5214; 2026-09-08〕certified classification 逐步增加：只有证据成立才写 finite／structural／bounded truncation／
    unreachable disposition；其余按实际完成查询写 observed，永不计作 classified、AC-023 完成
    或 closed reason。认证完备目标持续 open，直到全部 key 都有 certified disposition；
-3. 〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕成功判据是 honest complete accounting **且**显式 certified／observed split；报告
+3. 〔pending J3; lane census-generator-0908; #5214; 2026-09-08〕成功判据是 honest complete accounting **且**显式 certified／observed split；报告
    `accounted`、certified class／unreachable reason 分项、observed status 分项与 exact rows，
    核实 keys equality 并输出两种 completeness flags。`observed > 0` 时
    `certified_complete=false`，即使所有 keys 已入账也不例外；
-4. 〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕assessment records 绑定 immutable HEAD/report inputs；census report 不回写数学，永不作为
-   seal input 或 required gate；
-5. 〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕上述记账与分栏里程碑成立后才进入第 5 步 judge projection／ASCII；其后依次只能是第 6 步 fixtures 与
+4. assessment records 绑定 immutable HEAD/report inputs；census report 不回写数学，永不作为
+   seal input 或 required gate；现役命令见 `tools/lean-inspector/LeanInformationAudit/DispositionCensus.lean`；
+5. 〔pending J3; lane census-generator-0908; #5214; 2026-09-08〕上述记账与分栏里程碑成立后才进入第 5 步 judge projection／ASCII；其后依次只能是第 6 步 fixtures 与
    第 7 步保持 OPEN 的 dual-novelty gate design／owner $\tau$ ruling request。
 
-〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕里程碑不以 finite percentage 定义，也不以“所有 rows 都是 observed”定义；成功要求完整诚实
+〔pending J3; lane census-generator-0908; #5214; 2026-09-08〕里程碑不以 finite percentage 定义，也不以“所有 rows 都是 observed”定义；成功要求完整诚实
 记账、已有证据的认证及显式分栏，不能把已有认证退回 observed 来声称完成。它与 AC-023 的
 认证完备是两个命题。Real dynamics、function spaces 或 unbounded-index families 只有具备
 structural 所需证据才进入该 class；未有证据不自动分类。只有满足专属 closed-reason proof
 的对象才进入 unreachable；bounded experiment 在无 transfer theorem 时仍明确 `report-only`。
 
 本步骤内的落地顺序固定为：S0 先把裁决写入本 spec（content plane）；J1 为已落地的 current
-truth export 读取与 frozen 过滤（#6340）；**J2 随后**在 `tools/lean-inspector/**` 落
-assessment／closed-reason evidence contract 与合成 fixtures；**J3 在 J2 之后**于 `tools/**`
-落 generator／loader，从 export 与 elaborated environment 产生并核查 assessment inventory。
+truth export 读取与 frozen 过滤（#6340）；**J2 已由 #6389／#6403 于 dev `5e5d5e07c5` 落地**，
+assessment／closed-reason evidence contract 与合成 fixtures 的现役形态见第 23.6、35 节及
+`tools/lean-inspector/LeanInformationAudit/AnalysisDisposition.lean`、
+`tools/lean-inspector/LeanInformationAudit/DispositionEvidence.lean`。
+**J3 在 J2 之后，仍待落地**：于 `tools/**` 落 generator／loader，从 export 与 elaborated
+environment 产生并核查 assessment inventory；observation query、按 module group 分区查询、
+`make census`、run-local census projections 及首轮全仓 census 与其读数均属 J3，不能由 J2 fixtures 冒领。
 J2／J3 均为独立 judge-plane PR，依 `CLAUDE.md` 器律⑦″先在 `integration-census-0908` 验证；
 不与内容行同 PR。真实内容行只在证据存在时落于 `D5/**`，每模块最多 100 条内容行且满足
 SL-003 的模块与目录容量约束；generator 不以空列表为完成证据，不为满足计数生成无证据的内容行。
