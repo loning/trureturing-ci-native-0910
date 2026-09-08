@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 REPO = pathlib.Path(__file__).resolve().parents[4]
 CI = REPO / "tools/scripts/workflow/ci.py"
@@ -208,22 +209,39 @@ class Contracts(unittest.TestCase):
         self.assertEqual(0, result.returncode, result.stderr)
         self.assertFalse((self.root / "build/lean-cache/project/manifest.json").exists())
 
-    def test_locked_compile_metadata_moves_with_engineering(self):
+    def test_transport_delegates_to_common_owner_without_a_package_cache(self):
         sys.path.insert(0, str(CI.parent))
         owner = importlib.import_module("ci")
         self.git("init", "-q")
-        packages = self.root / "packages"
-        package = packages / "fixture/1.0/lib/net10.0"
-        package.mkdir(parents=True)
-        (package / "Fixture.dll").write_bytes(b"metadata")
         lock = self.root / "packages.lock.json"
         lock.write_text(json.dumps({"dependencies": {"net10.0": {"Fixture": {"type": "Direct", "resolved": "1.0"}}}}))
         self.git("add", "packages.lock.json")
-        owner.capture_compile_metadata(self.root, packages)
-        self.assertEqual(b"metadata", (self.root / "build/ci/nuget/fixture/1.0/lib/net10.0/Fixture.dll").read_bytes())
-        shutil.rmtree(packages)
-        with self.assertRaises((OSError, ValueError)):
-            owner.capture_compile_metadata(self.root, packages)
+        run = subprocess.run
+        calls = []
+        def invoke(command, **options):
+            if command[0] == "dotnet":
+                calls.append((command, options))
+                return subprocess.CompletedProcess(command, 0)
+            return run(command, **options)
+        args = owner.argparse.Namespace(repository=self.root, stage="engineering", commit=REV,
+            run_id="17", run_attempt="2", archive=self.root / "stage.tar.gz")
+        with mock.patch.dict(os.environ, dict(self.env, NUGET_PACKAGES=str(self.root / "absent-packages"))), \
+             mock.patch.object(owner.subprocess, "run", side_effect=invoke), \
+             mock.patch.object(owner, "extract") as extract:
+            for command in ("pack", "restore", "verify"):
+                with self.subTest(command=command):
+                    args.command = command
+                    owner.transport(args)
+                    expected = ["dotnet", owner.RUNNER, "transport-pack" if command == "pack" else "transport-verify",
+                        "--repository", str(self.root), "--stage", "engineering", "--commit", REV,
+                        "--run-id", "17", "--run-attempt", "2"]
+                    if command == "pack":
+                        expected.extend(["--archive", str(args.archive)])
+                    self.assertEqual((expected, dict(cwd=self.root, check=True)), calls[-1])
+                    self.assertFalse((self.root / "build/ci/nuget").exists())
+                    self.assertFalse((self.root / "environment").exists())
+        extract.assert_called_once_with(self.root, args.archive)
+        self.assertEqual(3, len(calls))
 
 
 if __name__ == "__main__":

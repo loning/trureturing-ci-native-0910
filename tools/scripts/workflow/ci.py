@@ -4,7 +4,6 @@ import json
 import os
 import pathlib
 import re
-import shutil
 import subprocess
 import sys
 import tarfile
@@ -72,34 +71,7 @@ def extract(root, archive):
         source.extractall(root, members=members)
 
 
-def capture_compile_metadata(root, package_root=None):
-    package_root = pathlib.Path(package_root or os.environ.get("NUGET_PACKAGES") or pathlib.Path.home() / ".nuget/packages")
-    destination = root / "build/ci/nuget"
-    if destination.exists():
-        shutil.rmtree(destination)
-    destination.mkdir(parents=True)
-    packages = set()
-    for lock in run(root, "git", "ls-files", "**/packages.lock.json", "packages.lock.json").splitlines():
-        for framework in json.loads((root / lock).read_text())["dependencies"].values():
-            for name, package in framework.items():
-                if package.get("type") != "Project" and "resolved" in package:
-                    packages.add((name.lower(), package["resolved"].lower()))
-    for name, version in sorted(packages):
-        source = package_root / name / version
-        if not source.is_dir():
-            raise ValueError("locked compile package is missing: " + str(source))
-        for path in sorted(source.rglob("*")):
-            relative = path.relative_to(source)
-            if path.is_file() and (relative.parts[0] in ("ref", "lib") or path.suffix == ".nuspec"):
-                target = destination / name / version / relative
-                target.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(path, target)
-    print("CI_COMPILE_METADATA packages=" + str(len(packages)))
-
-
 def transport(args):
-    if args.command == "pack" and args.stage == "engineering":
-        capture_compile_metadata(args.repository)
     if args.command == "restore":
         extract(args.repository, args.archive)
     command = ["dotnet", RUNNER, "transport-pack" if args.command == "pack" else "transport-verify",
@@ -110,9 +82,6 @@ def transport(args):
     # The runner is the upstream candidate runtime. Validation precedes the
     # downstream stage; the non-adversarial runtime bootstrap does not rebuild.
     subprocess.run(command, cwd=args.repository, check=True)
-    if args.command in ("restore", "verify") and os.environ.get("GITHUB_ENV"):
-        with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as stream:
-            stream.write("NUGET_PACKAGES=" + str(args.repository / "build/ci/nuget") + "\n")
 
 
 def advisory(root, branch):

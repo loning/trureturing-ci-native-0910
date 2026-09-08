@@ -36,8 +36,20 @@ internal static class CommonExecutionEvidence
 
     internal static string Candidate(string root)
     {
+        var snapshot = Snapshot(root);
+        var projects = snapshot.Files.Keys.Select(path => path.Value)
+            .Where(path => path.EndsWith(".csproj", StringComparison.Ordinal)).ToArray();
+        if (projects.Length != 0)
+        {
+            var compile = MsBuildCompileOracle.Query(root, projects, configuration: "Release");
+            if (compile.Findings.Count != 0)
+                throw new InvalidDataException(string.Join("\n", compile.Findings.Select(finding => finding.Message)));
+            foreach (var path in compile.ProjectBySourcePath.Keys)
+                if (!snapshot.TryGetFile(path, out _))
+                    throw new InvalidDataException($"Compile input is absent from candidate source: {path}");
+        }
         using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
-        foreach (var (path, file) in Snapshot(root).Files.OrderBy(static pair => pair.Key.Value, StringComparer.Ordinal))
+        foreach (var (path, file) in snapshot.Files.OrderBy(static pair => pair.Key.Value, StringComparer.Ordinal))
         {
             hash.AppendData(Encoding.UTF8.GetBytes(path.Value + "\0"));
             var mode = OperatingSystem.IsWindows() ? 0 : (int)(File.GetUnixFileMode(Path.Combine(root, path.Value))
@@ -69,9 +81,10 @@ internal static class CommonExecutionEvidence
     {
         var tests = ValidateTests(root);
         RequirePassed(steps, EngineeringSteps);
+        var products = binaries.Concat(CommonCompileMetadata.Export(root, Snapshot(root))).ToArray();
         Write(root, EngineeringPath, new CommonStageRecord(1, tests.Candidate, tests.Round, steps,
-            Materials(root, binaries.Concat([TestsPath]).Concat(steps.Select(step => step.Log)))));
-        WriteBundleList(root, binaries);
+            Materials(root, products.Concat([TestsPath]).Concat(steps.Select(step => step.Log)))));
+        WriteBundleList(root, products);
     }
 
     internal static CommonStageRecord ValidateEngineering(string root)
@@ -81,6 +94,7 @@ internal static class CommonExecutionEvidence
         ValidateRecord(root, record, tests.Candidate, tests.Round);
         RequirePassed(record.Steps, EngineeringSteps);
         if (!record.Materials.Any(material => material.Path == TestsPath)) throw new InvalidDataException("engineering has no bound test evidence");
+        _ = CommonCompileMetadata.Load(root, record.Materials);
         return record;
     }
 

@@ -189,7 +189,7 @@ internal static class ScribeMetadataReferenceResolver
         }
     }
 
-    private static string PackageDirectory(string id, string version)
+    internal static string PackageDirectory(string id, string version)
     {
         var configured = Environment.GetEnvironmentVariable("NUGET_PACKAGES");
         var root = string.IsNullOrWhiteSpace(configured)

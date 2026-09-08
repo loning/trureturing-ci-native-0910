@@ -94,8 +94,7 @@ def assemble(root, area, selected):
                "--producer-package-commit", commit, "--produced-at", produced_at, "--commit-on-protected-dev", "true"]
     for check in selected["required_checks"]:
         command.extend(["--required-check", check["name"] + "=" + check["conclusion"]])
-    environment = dict(os.environ, NUGET_PACKAGES=str(root / "build/ci/nuget"))
-    subprocess.run(command, cwd=root, env=environment, check=True)
+    subprocess.run(command, cwd=root, check=True)
     manifest = json.loads((bundle / "release-manifest.v1.json").read_text())
     digest = manifest["sha256sums_digest"]
     if len(digest) != 71 or not digest.startswith("sha256:") or any(c not in "0123456789abcdef" for c in digest[7:]):

@@ -64,8 +64,9 @@ public sealed class CliOutcomeTests
         const string output = "candidate delta diagnostics\n";
         const string error = "candidate delta stderr\n";
         var console = new BufferedConsole();
+        AdmissionOutcome unused = new AdmissionOutcome.InfrastructureFailure("unused check outcome");
         var environment = new StubCliEnvironment(
-            new AdmissionOutcome.InfrastructureFailure("unused check outcome"),
+            unused,
             checkDelta: new ExplicitCommandResult(expectedExit, output, error));
 
         var exitCode = CliApplication.Run(["check-delta"], environment, console);
@@ -86,8 +87,9 @@ public sealed class CliOutcomeTests
     {
         var console = new BufferedConsole();
         var result = new ExplicitCommandResult(invalidExit, "invalid output\n", "invalid stderr\n");
+        AdmissionOutcome unused = new AdmissionOutcome.InfrastructureFailure("unused check outcome");
         var environment = new StubCliEnvironment(
-            new AdmissionOutcome.InfrastructureFailure("unused check outcome"),
+            unused,
             echoVerify: result, checkCurrent: result, checkDelta: result);
 
         var exitCode = CliApplication.Run([command], environment, console);
