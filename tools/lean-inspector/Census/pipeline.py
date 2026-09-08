@@ -24,6 +24,17 @@ def partition_modules(modules, limit=32):
             for start in range(0, len(members), limit)]
 
 
+def partition_queries(modules, keys, limit=32):
+    owners = {}
+    for module, name, _ in keys:
+        owners.setdefault(name, set()).add(module)
+    isolated = {module for members in owners.values() if len(members) > 1 for module in members}
+    # Lean's imported constant map has one owner per Name. Keep repeated names
+    # in separate elaborated environments while preserving each statement ID.
+    return sorted(partition_modules(set(modules) - isolated, limit)
+                  + [(module, [module]) for module in isolated])
+
+
 def validate_result(result, head, keys):
     if not isinstance(result, dict) or set(result) != {"head", "root", "scope", "entries", "certified_imports"}:
         raise ValueError("incomplete query result")
@@ -158,15 +169,17 @@ def execute(options):
             modules = [module for module in modules
                        if module == options.prefix or module.startswith(options.prefix + ".")]
         partitions = partition_modules(modules, options.partition_modules)
+        query_partitions = partition_queries(modules, keys, options.partition_modules)
         state["partitioning"] = {"module_limit": options.partition_modules, "total": len(partitions),
-                                 "grouping": "top-level directory under D5/S*, sorted chunks"}
+                                 "query_total": len(query_partitions),
+                                 "grouping": "top-level directory under D5/S*, sorted chunks; repeated-name owners queried alone"}
         save()
         evidence_modules = set()
         for number, (label, members) in enumerate(partitions):
             if not options.truth_export:
                 step(["lake", "--no-build", "build", *members], "environment-" + label)
             relative = f"Group{number // 20:04d}.Part{number:05d}"
-            output = directory / "queries" / relative.replace(".", "/") / "discovery.json"
+            output = directory / "discovery" / relative.replace(".", "/") / "discovery.json"
             output.parent.mkdir(parents=True, exist_ok=True)
             source = "import LeanInformationAudit.Census.Command\n" + "".join(f"import {module}\n" for module in members)
             source += f"#census_discover {string(str(output))}\n"
@@ -179,12 +192,13 @@ def execute(options):
         completed = []
         scope_modules = []
         certified_imports = set()
-        for number, (label, members) in enumerate(partitions):
+        for number, (label, members) in enumerate(query_partitions):
             selected = [key for key in keys if key[0] in members]
             if not selected:
                 continue
             relative = f"Group{number // 20:04d}.Part{number:05d}"
             folder = directory / "queries" / relative.replace(".", "/")
+            folder.mkdir(parents=True, exist_ok=True)
             request = folder / "request.json"
             response = folder / "response.json"
             request.write_text(json.dumps({"head": head, "keys": selected}) + "\n")
@@ -199,7 +213,8 @@ def execute(options):
                 state["rejected"].append({"partition": label, "keys": len(selected), "error": str(error)})
                 save()
                 break
-            state["partitions"][label]["query"] = result
+            state["partitions"].setdefault(label, {})["query"] = result
+            state["partitions"][label]["query_modules"] = members
             state["partitions"][label]["keys"] = len(selected)
             certified_imports.update(output["certified_imports"])
             scope = "CensusRun.Scopes." + relative
