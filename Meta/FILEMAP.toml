@@ -205,6 +205,16 @@ mode = "100644"
 history_requirement = "not-required"
 
 [[files]]
+pattern = "build/census/**"
+kind = "generated"
+admission_plane = "content"
+produced_by = "lean-inspector"
+consumed_by = ["reader"]
+verified_by = ["lean-inspector"]
+artifact_id = "none"
+runtime_disposition = "run-local"
+
+[[files]]
 pattern = "Generated/truth-graph.v1.json"
 kind = "generated"
 admission_plane = "content"
