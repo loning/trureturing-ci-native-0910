@@ -1,4 +1,4 @@
-import LeanInformationAudit.AnalysisDisposition
+import LeanInformationAudit.Census.Report
 import LeanInformationAudit.SealCommand
 import LeanInformationAudit.StructuralRealization
 import LeanInformationAudit.Sha256
@@ -64,16 +64,6 @@ structure StructuralProvenanceEntry where
   realizationSyntax : String := ""
   deriving Inhabited
 
-/-- The source bytes consumed by the syntax authority check. -/
-structure ProvenanceSource where
-  moduleName : Name
-  path : String
-  sha256 : String
-  deriving Inhabited, BEq
-
-instance : ToJson ProvenanceSource := ⟨fun source => Json.mkObj [
-  ("module", toJson source.moduleName), ("path", toJson source.path),
-  ("sha256", toJson source.sha256)]⟩
 
 private initialize structuralRegistry :
     SimplePersistentEnvExtension StructuralProvenanceEntry (Array StructuralProvenanceEntry) ←

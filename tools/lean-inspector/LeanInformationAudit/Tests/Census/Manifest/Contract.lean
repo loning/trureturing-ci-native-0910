@@ -1,6 +1,6 @@
 import LeanInformationAudit.Census.Manifest
 
-open Lean Meta LeanInformationAudit DispositionCensus CensusManifest
+open Lean Meta Elab.Command LeanInformationAudit DispositionCensus CensusManifest
 
 private def zeroId := "sha256:" ++ String.ofList (List.replicate 64 '0')
 private def oneId := "sha256:" ++ String.ofList (List.replicate 63 '0') ++ "1"
