@@ -55,6 +55,8 @@ axioms = eg.get("axioms", {})
 numeric = eg.get("numeric_certificate", {})
 ext = eg.get("external_deps", {})
 undecided = []
+rows_order = []
+kinds = {}
 
 print("| 公开声明 | kind | 类型闭合 | 直接依赖含判定程序标记 | 模块内直接依赖(consumer → prerequisite) | 模块外依赖 | axioms |")
 print("|---|---|---|---|---|---|---|")
@@ -63,6 +65,8 @@ for d in p.get("declaration_statement_ids", []):
     if name not in authored or GEN.search(name):
         continue
     kind = d.get("kind", "")
+    rows_order.append(name)
+    kinds[name] = kind
     inner = sorted(set(edges.get(name, [])))
     outer = sorted(set(ext.get(name, [])))
     ax = axioms.get(name, "?")
@@ -85,6 +89,21 @@ for d in p.get("declaration_statement_ids", []):
     print(f"| `{name}` | {kind} | {closed} | {dec} | {inner_s} | {outer_s} | {ax} |")
 
 print()
+# A judgment-table skeleton whose dependency column is machine-filled. The proposer fills only the
+# verdict and the reason; retyping the dependencies by hand is what went wrong three times.
+print("\n### 判词段骨架(依赖列由机器填,判形与理由由提出方填)\n")
+print("复制到 PR 正文后逐行补 `proof_shape` 与理由。**依赖列不要手改**——它是从内核边导出的。\n")
+print("| 公开声明 | proof_shape | 模块内直接依赖(划掉 def 后) | 模块外依赖 | 理由 |")
+print("|---|---|---|---|---|")
+defs = {d for d in kinds if kinds[d] == "def"}
+for name in rows_order:
+    inner = [x for x in sorted(set(edges.get(name, []))) if x.split(" ")[0] not in defs]
+    outer = sorted({o.split(":")[-1].split(".")[-1] for o in set(ext.get(name, []))})
+    print("| `%s` | **待填** | %s | %s | 待填 |" % (
+        name,
+        ", ".join("`%s`" % i for i in inner) or "无",
+        ", ".join("`%s`" % o for o in outer) or "无"))
+
 print("**本表不给判形**。机器三次尝试分类都产出了伪造结论(经本模块定理即 content;活路径无本模块定理即 bind-only;"
       "类型闭合且出现判定程序即数值证书——第三条在一条两行推导上误触发)。故此表只报事实:"
       "kind、类型是否闭合、**直接**依赖里是否出现判定程序标记(`decide` / `norm_num` 一族)、"
