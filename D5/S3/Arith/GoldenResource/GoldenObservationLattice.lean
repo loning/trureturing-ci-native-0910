@@ -3,7 +3,7 @@
    mirror-B: D5/B/S3/Arith/GoldenResource/GoldenObservationLattice
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
-   utility: kind=certified-instance; basis=refutes=atom:9352f754b7437592817050548dd3e5f8f386307ff69d73c934573232e17dd260; result=D5/S3/Arith/GoldenResource/GoldenObservationLattice.Gobs_not_multiplicative_and_not_associative_on_fixed_points; claim=D5/S3/Arith/GoldenResource/GoldenObservationLattice.goldenObservationMultiplicativeOrAssociativeAtWitness
+   utility: kind=certified-instance; basis=refutes=atom:9352f754b7437592817050548dd3e5f8f386307ff69d73c934573232e17dd260; result=D5/S3/Arith/GoldenResource/GoldenObservationLattice.Gobs_lattice_boundary_refutation; claim=D5/S3/Arith/GoldenResource/GoldenObservationLattice.goldenObservationMultiplicativeOrAssociativeAtWitness
    digest: Golden observation preserves gcd and lcm but fails multiplicativity and fixed-point associativity. -/
 
 import D5.S3.Arith.GoldenResource.GoldenDivisorLanguage
