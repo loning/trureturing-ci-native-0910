@@ -1333,7 +1333,8 @@ canonical identity 是 `Arena`／`StructuralArena` declaration。替代表示只
 `bounded_finite_truncation` 与 `unreachable` 把 counted／structural engine 的边界精确入账；
 前者不冒充全对象结论，后者不以“不适用”隐藏缺失工作。census Meta tool 遍历上述全部 frozen
 keys，输出 `accounted`、`certified`（按四类及 unreachable reason 分项）、`observed`（按
-observation status 分项）和 exact rows。`observed > 0` 时必须报告
+query-completion 分项：`counts.observed_query_completed` 与
+`counts.observed_query_incomplete`）和 exact rows。`observed > 0` 时必须报告
 `certified_complete=false`。census artifact 只作 report，永不作为 seal input 或 required gate；
 它不替代以下独立的 first-freeze obligations，也不激活第 39 节 GATE。计数与 artifact 字段见
 `tools/lean-inspector/LeanInformationAudit/CensusSchema.lean` 与
@@ -5645,8 +5646,9 @@ bundle 与 faithful realization；acceptance 由 strict inclusion 和 pair witne
 完整 frozen theorem census 中每个 `(structured Name, statement_id)` 恰有一个
 `CensusAssessment`，inventory keys 与 frozen export keys 完全相等。记账完备与认证完备按
 第 8.7、23.6 节分开；finite counted、structural-only、bounded truncation 与 unreachable
-reasons 只计入 certified 分项，observed 另按 status 计数且不履行 AC-023。认证 totality 的
-目标不变，完整记账本身不是认证 totality，report 不进入 seal 或 required gate。
+reasons 只计入 certified 分项；observed 另按 query-completion 计数，字段为
+`counts.observed_query_completed` 与 `counts.observed_query_incomplete`，且不履行 AC-023。
+认证 totality 的目标不变，完整记账本身不是认证 totality，report 不进入 seal 或 required gate。
 assessment 与覆盖谓词见 `tools/lean-inspector/LeanInformationAudit/AnalysisDisposition.lean`，
 计数与输出见 `tools/lean-inspector/LeanInformationAudit/CensusSchema.lean`、
 `tools/lean-inspector/LeanInformationAudit/DispositionCensus.lean`。
@@ -8477,8 +8479,9 @@ coverage／JSON 反例见 `tools/lean-inspector/LeanInformationAudit/Tests/Censu
 scope／completion／candidate 语义不符用 IE-C044；observation payload 的未知字段、非法 boolean
 类型或伪改 class 用 IE-C037，不存在可伪造的 absence-status enum。
 generator 空列表不能代替完整查询，但通过现役 scope／candidate 校验的空列表可入账，不能称为
-absence 证明。unreachable 缺 reason-specific obligation，或 obligation 不绑定指定 theorem／
-statement／reason／候选语义，用 IE-C037；超出证书 domain 的结论仍不被认证，见第 8.7、23.6 节。
+absence 证明。unreachable 缺 reason-specific obligation、obligation 类型错误，或不绑定指定
+theorem／statement／reason，用 IE-C037。候选 arena 身份不匹配用 IE-C036，component 为
+`canonical_arena`；超出证书 domain 的结论仍不被认证，见第 8.7、23.6 节。
 修改任一 total、把 observed 计入 certified、令混合 inventory 的 `certified_complete=true`，
 均触发 IE-C044，容器反例见 `tools/lean-inspector/LeanInformationAudit/Tests/Census/Assessment.lean`。
 把未冻结 node 的 theorem 声明或 frozen node 的 definition 声明加入 inventory，
@@ -8832,8 +8835,8 @@ SL-003 的模块与目录容量约束；generator 不以空列表为完成证据
 
 **实测基线（2026-09-08，dev `f222885ccb`，第 8.7 节裁决所据读数）**：
 `accounted=22,195`、`certified=11`（全部 finite；structural、bounded truncation 与 certified
-unreachable 均为 0）、`observed=22,184`。这是首张全库图的测量基线，非目标数量，亦不声称
-该次计数已由尚待落地的 J2／J3 产生；按本裁决其 `certified_complete=false`，AC-023 未满足。
+unreachable 均为 0）、`observed=22,184`。这是首张全库图的测量基线，非目标数量。
+该次历史计数并非由当时尚未落地的 J2／J3 产生；按本裁决其 `certified_complete=false`，AC-023 未满足。
 
 ---
 
