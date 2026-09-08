@@ -218,5 +218,32 @@ No m=3 atom was found in that searched scope. GitHub #4996 was read and is
 currently CLOSED; it is cited for the historical freeze/coverage discovery
 gap, not represented as an open blocker or as a rule authorizing fake anchors.
 
-Steps 4-7 remain pending. Landing-form checks have found no discrepancy with
-the supplied admission record.
+Landing-form checks found no discrepancy with the supplied admission record.
+
+## Step 4a: Discriminant Deposit
+
+Step 3 commit `ecb9de8d8f` was pushed successfully. One invocation only:
+
+```text
+make deposit BASE=b9ad72010f6473b22e7616958a7e78db6fe0d2e2 ATOM_ID=0000000000000000000000000000000000000000000000000000000000000000 GID=D5/S3/Zeros/Convolution/GribinskiDegreeThreeDiscriminant.ordered_numerator_nonneg
+```
+
+`04-deposit-discriminant.log`: overall make **EXIT=2**, cover recipe exit **2**.
+Header check passed (`DEPOSIT_HEADER_CHECKED SL-012`); emit changed 0 Blueprints.
+Ledger result: `LEDGER_ALIGN selectors_considered=3818 changed=0 added=1 unchanged=3817 conflicts=0`.
+
+```text
+COVER_INVALID cover atom 0000000000000000000000000000000000000000000000000000000000000000 is absent from the ledger
+PLAYBOOK_DEPOSIT_FROZEN_UNCOVERED atom_id=0000000000000000000000000000000000000000000000000000000000000000 gid=D5/S3/Zeros/Convolution/GribinskiDegreeThreeDiscriminant.ordered_numerator_nonneg reason=COVER_INVALID cover atom 0000000000000000000000000000000000000000000000000000000000000000 is absent from the ledger
+make: *** [deposit] Error 2
+```
+
+The all-zero string is only an absent placeholder argument, not an atom or
+anchor claim. Canonical artifacts are retained as **frozen, uncovered** (#4996):
+
+- State: `Golden/Frozen/state/D5/S3/Zeros/Convolution/GribinskiDegreeThreeDiscriminant.lean.json`.
+- Module statement_id: `sha256:807caeaa011a567f358eeb34c99a6b586d4980176ef5f8d9a2d9352a1e5ada73`.
+- Event: `Golden/Frozen/accepted/3b9fcb14bd41d3e63ec26849c419e12890e7f76ffa6b4d973a8c4bb0710f556f.json`.
+- event_hash: `sha256:3b9fcb14bd41d3e63ec26849c419e12890e7f76ffa6b4d973a8c4bb0710f556f`.
+
+Only these two canonical paths appeared in the worktree. Steps 4b-7 pending.
