@@ -38,7 +38,7 @@ from the eight input roots and alpha > -1, and used to discharge a real-root
 criterion. Merely projecting `PSD <-> all roots real` does not provide that
 identity. No elaborated proof or dependency closure exists at registration.
 
-Scope: no complete m=4 proof, no new D5 module, no deposit, no freeze, no PR,
+Scope: no complete m=4 proof, no production D5 module, no deposit, no freeze, no PR,
 no `make cover`, no changes to `Meta/Digestion/**`, and no budget changes.
 Build probes use `make lean`. Intermediate reports are committed and pushed.
 
@@ -54,6 +54,56 @@ Build probes use `make lean`. Intermediate reports are committed and pushed.
   File-name discovery does not establish theorem applicability.
 - `.lake` is absent before any Lean invocation; cache provisioning must precede
   compilation through the canonical make wrapper.
+
+## Q1 search receipt, batch 1
+
+The following four commands each returned exit 0, at the recorded origin/dev:
+
+```text
+git cat-file -e origin/dev:Golden/Frozen/state/D5/S3/Zeros/Convolution/GribinskiDegreeTwo.lean.json
+git cat-file -e origin/dev:Golden/Frozen/state/D5/S3/Zeros/Convolution/GribinskiDegreeThree.lean.json
+git cat-file -e origin/dev:Golden/Frozen/state/D5/S3/Zeros/Convolution/GribinskiDegreeThreeDiscriminant.lean.json
+git cat-file -e origin/dev:Golden/Frozen/state/D5/S3/Constants/NewtonHankelRealRootCriterion.lean.json
+```
+
+Frozen module identities read directly from those state files (these are module
+statement identities, not invented declaration hashes):
+
+| Module GID | state.statement_id | Applicable scope |
+| --- | --- | --- |
+| D5/S3/Zeros/Convolution/GribinskiDegreeTwo | sha256:184c298cb6b3a6b32640e84511f41eede52d8d0d29ae2b24a68f14ef5722487e | m=2 only; not an m=4 theorem |
+| D5/S3/Zeros/Convolution/GribinskiDegreeThree | sha256:c098e8105cd437ddf8df749c21cf1d4725ca6b74faa16e28a5a9f63fbb292c38 | m3_nonnegative_roots, degree 3, six nonnegative roots |
+| D5/S3/Zeros/Convolution/GribinskiDegreeThreeDiscriminant | sha256:807caeaa011a567f358eeb34c99a6b586d4980176ef5f8d9a2d9352a1e5ada73 | cubic discriminant numerator on ordered triple coordinates |
+| D5/S3/Constants/NewtonHankelRealRootCriterion | sha256:18b030426106ba093ef4ec58fbba090c162f365f32ed6b291aaa0eeba9a358a9 | newtonHankel_posSemidef_iff_roots_real, arbitrary finite conjugation-stable complex root list |
+
+Read the complete GribinskiDegreeThree and NewtonHankelRealRootCriterion source.
+The former uses the PRODUCT of falling factorials
+`(3)_k (3+alpha)_k`, not their quotient. The latter's matrix is
+`Re(sum_j roots[j]^(i+j))/d`, not a coefficient-defined matrix. Its iff assumes
+conjugation stability of the support and retains repeated entries. Its
+negative-root companion additionally requires strict positive coefficients and
+nonzero reversed roots, so it does not directly cover zero roots in this task.
+
+Coarse repository search:
+`rg -n '\b(boxplus4|m4_nonnegative_roots|quartic_nonnegative_factorization|newtonHankel_posSemidef_iff_roots_real|m3_nonnegative_roots|GribinskiDegreeFour|Quartic)\b' D5 docs/reports/convolution`.
+It locates the known m=3 and Hankel declarations; no proposed m=4 name is found
+in that scope. This is a name search, not a semantic nonexistence result.
+
+The m=3 report's lines 168-169 record 20 negative coefficients before repair and
+a 20-square subtraction leaving 767 positive monomials. The certificate source
+also states 767 positive monomials plus 20 squares. No old proof is rebuilt to
+revalidate its frozen truth.
+
+Pinned environment: Lean `leanprover/lean4:v4.33.0`; Mathlib revision
+`db584cd6d46c92f209a44c0f1c829460d327499d` from lake-manifest.json.
+`make lean-cache-ensure` was started before any Lean command.
+
+External read: `gh issue view 6377 --repo the-omega-institute/trureturing
+--json title,body,comments` with a Newton/Hankel/PSD/circularity filter. The
+returned issue material records the circular PSD/square-root route and the
+quartic counterexample to a single discriminant test. Adopted as existing
+decisions; not reproved here. Output was truncated, so no claim is made to have
+read every matching comment.
 
 ## Nonclaims
 
