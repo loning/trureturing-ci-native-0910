@@ -8,6 +8,8 @@
 
 import D5.S1.Words.Complexity.ThueMorseReducedAbelianOdd
 import Mathlib.Order.Lattice.Nat
+import Mathlib.Algebra.BigOperators.Intervals
+import Mathlib.Data.Fintype.BigOperators
 
 namespace D5.S1.Words.Complexity
 
@@ -15,7 +17,11 @@ open private transition alternations alternations_le runs runs_le
   thueMorse_zero thueMorse_two_mul thueMorse_two_mul_add_one
   transition_two_mul transition_two_mul_add_one
   alternations_double_even alternations_double_odd
+  exists_complement_factor reducedAbelianCodes mem_reducedAbelianCodes_iff
+  reducedAbelianCodes_card_eq_classes
   from D5.S1.Words.Complexity.ThueMorseReducedAbelianOdd
+
+open scoped BigOperators
 
 /-- Minimum number of transitions in a factor with `n` edges, over all starts. -/
 noncomputable def minAlternations (n : Nat) : Nat :=
@@ -203,6 +209,160 @@ theorem alternation_extrema_parity (n : Nat) :
           cases h0 : thueMorse j <;> cases h1 : thueMorse (3 * j + 2) <;>
             simp [h0, h1] at hi ⊢ <;> omega
 
+private theorem discrete_walk_hits (f : Nat → Nat)
+    (hstep : ∀ s, f (s + 1) ≤ f s + 1 ∧ f s ≤ f (s + 1) + 1)
+    (m k : Nat) (hlo : min (f 0) (f m) ≤ k) (hhi : k ≤ max (f 0) (f m)) :
+    ∃ s, f s = k := by
+  induction m with
+  | zero => exact ⟨0, by simpa using le_antisymm hlo hhi⟩
+  | succ m ih =>
+      by_cases h : min (f 0) (f m) ≤ k ∧ k ≤ max (f 0) (f m)
+      · exact ih h.1 h.2
+      · have hs := hstep m
+        exact ⟨m + 1, by omega⟩
+
+private theorem alt_interval (n k : Nat) :
+    (∃ s, alternations n s = k) ↔ minAlternations n ≤ k ∧ k ≤ maxAlternations n := by
+  constructor
+  · rintro ⟨s, rfl⟩
+    exact ⟨min_le_alt n s, alt_le_max n s⟩
+  · rintro ⟨hlo, hhi⟩
+    have step (s : Nat) :
+        alternations n (s + 1) ≤ alternations n s + 1 ∧
+          alternations n s ≤ alternations n (s + 1) + 1 := by
+      have h := alt_snoc n s
+      have h1 := transition_le_one s
+      have h2 := transition_le_one (s + n)
+      rw [alternations] at h
+      constructor <;> omega
+    obtain ⟨s, hs⟩ := min_attained n
+    obtain ⟨t, ht⟩ := max_attained n
+    by_cases h0 : alternations n 0 ≤ k
+    · exact discrete_walk_hits (alternations n) step t k (by omega) (by omega)
+    · exact discrete_walk_hits (alternations n) step s k (by omega) (by omega)
+
+private def runCodeInterval (a b : Nat) : Finset (Nat × Bool) :=
+  ((Finset.Icc a b).product Finset.univ).filter fun c => c.1 % 2 = 1 ∨ c.2 = false
+
+private def weightedInterval (a b : Nat) : Nat :=
+  ∑ r ∈ Finset.Icc a b, (1 + r % 2)
+
+private theorem runCodeInterval_card (a b : Nat) :
+    (runCodeInterval a b).card = weightedInterval a b := by
+  rw [runCodeInterval, Finset.product_eq_sprod, Finset.card_eq_sum_ones,
+    Finset.sum_filter, Finset.sum_product]
+  apply Finset.sum_congr rfl
+  intro r _
+  have hr := Nat.mod_lt r (by decide : 0 < 2)
+  by_cases h : r % 2 = 1
+  · simp [h]
+  · have h0 : r % 2 = 0 := by omega
+    simp [h, h0]
+
+private theorem code_spectrum (n : Nat) :
+    reducedAbelianCodes (n + 1) =
+      runCodeInterval (minAlternations n + 1) (maxAlternations n + 1) := by
+  classical
+  ext c
+  rw [mem_reducedAbelianCodes_iff (by omega : 0 < n + 1)]
+  simp only [runCodeInterval, Finset.product_eq_sprod, Finset.mem_filter, Finset.mem_product,
+    Finset.mem_Icc, Finset.mem_univ, and_true]
+  constructor
+  · rintro ⟨s, rfl⟩
+    have hmin := min_le_alt n s
+    have hmax := alt_le_max n s
+    simp only [reducedAbelianCode, runs, Nat.add_one_ne_zero, ↓reduceIte,
+      Nat.add_sub_cancel, Nat.odd_iff]
+    constructor
+    · constructor <;> omega
+    · split <;> simp_all
+  · rintro ⟨⟨hmin, hmax⟩, hb⟩
+    obtain ⟨s, hs⟩ := (alt_interval n (c.1 - 1)).mpr ⟨by omega, by omega⟩
+    have hrs : runs (n + 1) s = c.1 := by
+      simp only [runs, Nat.add_one_ne_zero, ↓reduceIte, Nat.add_sub_cancel]
+      omega
+    by_cases ho : Odd c.1
+    · by_cases ht : thueMorse s = c.2
+      · exact ⟨s, by simp [reducedAbelianCode, hrs, ho, ht]⟩
+      · obtain ⟨t, htr, htt⟩ := exists_complement_factor (n + 1) s
+        have htc : thueMorse t = c.2 := by
+          rw [htt]
+          exact Bool.not_eq_iff.mpr ht
+        exact ⟨t, by simp [reducedAbelianCode, htr, hrs, ho, htc]⟩
+    · have hc : c.2 = false := hb.resolve_left (by simpa [Nat.odd_iff] using ho)
+      refine ⟨s, ?_⟩
+      simp only [reducedAbelianCode, hrs, ho, ↓reduceIte]
+      exact Prod.ext rfl hc.symm
+
+private theorem complexity_weighted (n : Nat) :
+    R (n + 1) = weightedInterval (minAlternations n + 1) (maxAlternations n + 1) := by
+  rw [R, ← reducedAbelianCodes_card_eq_classes (n + 1) (by omega),
+    code_spectrum, runCodeInterval_card]
+
+private theorem weightedInterval_shift (a b : Nat) (h : a ≤ b + 1) :
+    weightedInterval (a + 1) (b + 1) + (1 + a % 2) =
+      weightedInterval a b + (1 + (b + 1) % 2) := by
+  have hi : Finset.Icc a (b + 1) = insert a (Finset.Icc (a + 1) (b + 1)) := by
+    ext k
+    simp only [Finset.mem_Icc, Finset.mem_insert]
+    omega
+  have hn : a ∉ Finset.Icc (a + 1) (b + 1) := by simp
+  have ht := Finset.sum_Icc_succ_top h (fun r => 1 + r % 2)
+  rw [hi, Finset.sum_insert hn] at ht
+  unfold weightedInterval
+  omega
+
+private theorem even_complexity_intervals (n : Nat) (hn : 0 < n) :
+    R (4 * n) = weightedInterval (2 * n + minAlternations n)
+      (2 * n + 1 + maxAlternations n) ∧
+    R (4 * n + 2) = weightedInterval (2 * n + minAlternations n + 1)
+      (2 * n + 1 + maxAlternations n + 1) := by
+  have he := extrema_even n
+  have ho := extrema_odd n
+  have hp := extrema_odd (n - 1)
+  have hbig := extrema_odd (2 * n - 1)
+  have hbig' := extrema_odd (2 * n)
+  have hb := extrema_bounds n
+  rw [show n - 1 + 1 = n by omega, show 2 * (n - 1) + 1 = 2 * n - 1 by omega] at hp
+  rw [show 2 * n - 1 + 1 = 2 * n by omega,
+    show 2 * (2 * n - 1) + 1 = 4 * n - 1 by omega] at hbig
+  rw [show 2 * (2 * n) + 1 = 4 * n + 1 by omega] at hbig'
+  have h1 : minAlternations (4 * n - 1) + 1 = 2 * n + minAlternations n := by omega
+  have h2 : maxAlternations (4 * n - 1) + 1 = 2 * n + 1 + maxAlternations n := by omega
+  have h3 : minAlternations (4 * n + 1) + 1 = 2 * n + minAlternations n + 1 := by omega
+  have h4 : maxAlternations (4 * n + 1) + 1 = 2 * n + 1 + maxAlternations n + 1 := by
+    omega
+  constructor
+  · have hh := complexity_weighted (4 * n - 1)
+    rwa [show 4 * n - 1 + 1 = 4 * n by omega, h1, h2] at hh
+  · simpa only [h3, h4] using complexity_weighted (4 * n + 1)
+
+/-- Equation (11) of Campbell-Currie-Rampersad, with zero-indexed Thue-Morse letters. -/
+theorem reducedAbelianComplexity_even_difference (n : Nat) (hn : 0 < n) :
+    ((R (4 * n + 2) : Int) - R (4 * n)).natAbs =
+      if thueMorse n = thueMorse (3 * n) then 0 else 1 := by
+  obtain ⟨h0, h1⟩ := even_complexity_intervals n hn
+  have hb := extrema_bounds n
+  have hshift := weightedInterval_shift (2 * n + minAlternations n)
+    (2 * n + 1 + maxAlternations n) (by omega)
+  rw [← h0, ← h1] at hshift
+  have ha := Nat.mod_lt (minAlternations n) (by decide : 0 < 2)
+  have hb' := Nat.mod_lt (maxAlternations n) (by decide : 0 < 2)
+  have hp := alternation_extrema_parity n
+  have hd : (R (4 * n + 2) : Int) - R (4 * n) =
+      ((maxAlternations n % 2 : Nat) : Int) - ((minAlternations n % 2 : Nat) : Int) := by
+    omega
+  rw [hd]
+  by_cases ht : thueMorse n = thueMorse (3 * n)
+  · simp only [ht, ↓reduceIte] at hp ⊢
+    have he : minAlternations n % 2 = maxAlternations n % 2 := by omega
+    simp [he]
+  · simp only [ht, ↓reduceIte] at hp ⊢
+    have he : (minAlternations n % 2 = 0 ∧ maxAlternations n % 2 = 1) ∨
+        (minAlternations n % 2 = 1 ∧ maxAlternations n % 2 = 0) := by omega
+    rcases he with ⟨he0, he1⟩ | ⟨he0, he1⟩ <;> simp [he0, he1]
+
 #print axioms alternation_extrema_parity
+#print axioms reducedAbelianComplexity_even_difference
 
 end D5.S1.Words.Complexity
