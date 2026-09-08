@@ -11,7 +11,7 @@ LAKE_BIN="${LAKE_BIN:-$(command -v lake || true)}"
   || { echo "lean-report.sh: an absolute lake executable is required" >&2; exit 2; }
 
 # Every current invocation enters the producer. Incremental seed handling belongs to it.
-export STRATALINT_REPORT_CACHE_ROOT=""
+export STRATALINT_REPORT_CACHE_ROOT="${STRATALINT_REPORT_CACHE_ROOT:-$ROOT/.lake/report-cache}"
 
 exec "$PAIR" \
   --producer "$INSPECTOR" \

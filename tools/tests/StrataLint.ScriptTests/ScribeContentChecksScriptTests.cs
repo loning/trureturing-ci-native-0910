@@ -21,7 +21,7 @@ public sealed class ScribeContentChecksScriptTests
         fixture.ChangeFetcher();
         var result = fixture.RunGate(childExit);
 
-        Assert.Equal(childExit, result.ExitCode);
+        Assert.True(childExit == result.ExitCode, Encoding.UTF8.GetString(result.StandardError));
         Assert.Equal(
             childExit == 0 ? new[] { "projections", "describe-report" } : ["projections"],
             fixture.Invocations);
@@ -57,10 +57,22 @@ public sealed class ScribeContentChecksScriptTests
                 Path.Combine(TestRepositoryLayout.FindRoot(), CacheInputPath), Path.Combine(repository, CacheInputPath));
             ScriptHarnessScratch.CopyScriptInto(
                 Path.Combine(TestRepositoryLayout.FindRoot(), CacheFetcherPath), Path.Combine(repository, CacheFetcherPath));
+            ScriptHarnessScratch.CopyScriptInto(
+                Path.Combine(TestRepositoryLayout.FindRoot(), "tools/scripts/report/producer_paths.py"),
+                Path.Combine(repository, "tools/scripts/report/producer_paths.py"));
+            ScriptHarnessScratch.CopyScriptInto(
+                Path.Combine(TestRepositoryLayout.FindRoot(), "tools/scripts/report/dotnet_producer.py"),
+                Path.Combine(repository, "tools/scripts/report/dotnet_producer.py"));
+            ScriptHarnessScratch.CopyScriptInto(
+                Path.Combine(TestRepositoryLayout.FindRoot(), "tools/scripts/worktree/lean_cache.py"),
+                Path.Combine(repository, "tools/scripts/worktree/lean_cache.py"));
+            ScriptHarnessScratch.CopyScriptInto(
+                Path.Combine(TestRepositoryLayout.FindRoot(), "tools/scripts/worktree/lean_cache_release.py"),
+                Path.Combine(repository, "tools/scripts/worktree/lean_cache_release.py"));
             Write("tools/lean-inspector/inspect.sh", "#!/bin/bash\n");
+            foreach (var module in new[] { "delta", "materials", "report_cache", "runtime_identity" })
+                Write($"tools/lean-inspector/{module}.py", "# synthetic dependency\n");
             Write("tools/scripts/lean-report-pair.sh", "#!/bin/bash\n");
-            // Synthetic producer input; no assertions depend on the repository workflow text.
-            Write(".github/workflows/ci.yml", "jobs:\n  lean-inspect:\n  baseline-admission:\n");
             Write("global.json", "{}\n");
             Write("Directory.Build.props", "<Project />\n");
             Write("Directory.Packages.props", "<Project />\n");
