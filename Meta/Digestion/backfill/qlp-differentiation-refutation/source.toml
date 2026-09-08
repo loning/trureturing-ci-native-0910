@@ -1,0 +1,5 @@
+source_id = "qlp-differentiation-refutation"
+path = "docs/develop/theory/QLP_DIFFERENTIATION_REFUTATION.md"
+atomizer = "generic-v1"
+genre_registry_check = "no-registry"
+unregistered_genres = []

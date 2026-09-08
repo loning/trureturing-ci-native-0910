@@ -1,0 +1,11 @@
+fingerprints:
+  raw_sha256: sha256:29f4f542eda7bfe827c98d86e152bf0497e4500b127502f9519266809bcee3e5
+  normalized_sha256: sha256:29f4f542eda7bfe827c98d86e152bf0497e4500b127502f9519266809bcee3e5
+cas_ref: sha256:29f4f542eda7bfe827c98d86e152bf0497e4500b127502f9519266809bcee3e5
+coverage_gids: []
+receipts:
+  unresolved_subitems: []
+  nonpropositional:
+    justification: Bibliographic and interpretive preamble to the following refutation obligation, not a separate formalization target. It identifies the paper and explains why the polynomial restriction addresses the source question. The analytic correspondence is expressly not claimed as an additional Lean theorem; its fidelity remains subject to independent review. No mathematical theorem is marked proved by this receipt.
+    previous_atom_id: null
+    next_atom_id: 3bcfdb86c3eeef01808e84387737a1e4b1b54b336477dd95f66631b630e3d3af
