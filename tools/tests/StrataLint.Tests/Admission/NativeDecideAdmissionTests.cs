@@ -6,6 +6,55 @@ public sealed class NativeDecideAdmissionTests
 {
     private const string Path = "D5/S0/Carrier/Anonymous.lean";
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void ProductionAdmissionAcceptsDependentCompositionInSelectedOrUnchangedSource(bool historical, bool spaced)
+    {
+        var source = DependentCompositionSource(spaced);
+        var context = Candidate("decide", historical ? "" : source, historical ? source : null,
+            sourceImport: "Mathlib.Logic.Function.Defs");
+        var completed = Assert.IsType<RuleExecutionOutcome.Completed>(RuleCatalog.Default.Execute(context)).Capability;
+        Assert.Contains(completed.ExecutedRules, id => id.Value == "SL-008");
+        Assert.Contains(completed.ExecutedRules, id => id.Value == "SL-035");
+        Assert.DoesNotContain(completed.Diagnostics, item => item.AdmissionEffect == AdmissionEffect.Block);
+        Assert.IsType<AdmissionOutcome.Admitted>(Admit(context));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ProductionAdmissionRejectsNativeDecideFollowingDependentComposition(bool spaced)
+    {
+        var context = Candidate("native_decide", DependentCompositionSource(spaced),
+            sourceImport: "Mathlib.Logic.Function.Defs");
+        var completed = Assert.IsType<RuleExecutionOutcome.Completed>(RuleCatalog.Default.Execute(context)).Capability;
+        Assert.Contains(completed.ExecutedRules, id => id.Value == "SL-035");
+        var diagnostic = Assert.Single(completed.Diagnostics, item => item.AdmissionEffect == AdmissionEffect.Block);
+        Assert.Equal("SL-035", diagnostic.RuleId.Value);
+        Assert.Equal(Path, diagnostic.Path);
+        Assert.Equal("NATIVE_DECIDE_SOURCE line=10: bare native_decide token is forbidden in changed D5 Lean source", diagnostic.Message);
+        var rejected = Assert.IsType<AdmissionOutcome.RuleRejected>(Admit(context));
+        Assert.Contains(diagnostic, rejected.Diagnostics);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ProductionAdmissionAcceptsOrdinaryCompositionControl(bool historical)
+    {
+        var source = DependentCompositionSource(spaced: true).Replace("\u2218'", "\u2218", StringComparison.Ordinal);
+        var context = Candidate("decide", historical ? "" : source, historical ? source : null,
+            sourceImport: "Mathlib.Logic.Function.Defs");
+        Assert.IsType<AdmissionOutcome.Admitted>(Admit(context));
+    }
+
+    private static string DependentCompositionSource(bool spaced) =>
+        "import Mathlib.Logic.Function.Defs\n"
+        + $"example (f g' : Nat -> Nat) : (f \u2218'{(spaced ? " " : "")}g') = (f \u2218 g') := rfl\n";
+
     [Fact]
     public void ProductionAdmissionRejectsAnonymousNativeDecideWithEmptyReport()
     {

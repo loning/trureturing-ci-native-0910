@@ -6,6 +6,62 @@ namespace StrataLint.Tests;
 public sealed partial class FrozenLedgerTests
 {
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void MathlibReanchorRejectsChangedDependencyBesideDependentComposition(bool spaced)
+    {
+        var source = DependentCompositionSource(spaced);
+        AssertIdentifierReanchor(source, source.Replace("=> 0", "=> 1", StringComparison.Ordinal), [], [], expected: false);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void MathlibReanchorAllowsDependentCompositionWithUnchangedOrProofOnlySource(bool spaced, bool proofOnly)
+    {
+        var source = DependentCompositionSource(spaced);
+        var after = proofOnly ? source.Replace("by rfl", "by exact rfl", StringComparison.Ordinal) : source;
+        AssertIdentifierReanchor(source, after, [], [], expected: true);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void MathlibReanchorDoesNotResolveDependentCompositionShadowedBinder(bool spaced)
+    {
+        var source = DependentCompositionSource(spaced).Replace("(f :", "(f g' :", StringComparison.Ordinal);
+        AssertIdentifierReanchor(source, source.Replace("=> 0", "=> 1", StringComparison.Ordinal), [], [], expected: true);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void DependentCompositionPreservesUnchangedImportAdjacencyAndPropositionSource(bool spaced)
+    {
+        var helper = Module("Helper", source: DependentCompositionSource(spaced));
+        const string consumer = "import D5.S0.Carrier.Helper\ntheorem a : True := by trivial\n";
+        var adjacency = LeanImportAdjacency.BuildFromSources(Snapshot([
+            TextFile(PathFor("Helper"), helper.Source), TextFile(PathFor("A"), consumer)]));
+        Assert.Equal(RepoPathFor("Helper"), Assert.Single(adjacency[RepoPathFor("A")]));
+        Assert.Empty(adjacency[RepoPathFor("Helper")]);
+        AssertIdentifierReanchor(consumer, consumer.Replace("by trivial", "by exact True.intro", StringComparison.Ordinal),
+            [helper], [helper], expected: true);
+    }
+
+    [Fact]
+    public void MathlibReanchorPreservesDependentCompositionWhitespace()
+    {
+        AssertIdentifierReanchor(DependentCompositionSource(spaced: true), DependentCompositionSource(spaced: false),
+            [], [], expected: true);
+    }
+
+    private static string DependentCompositionSource(bool spaced) =>
+        "import Mathlib.Logic.Function.Defs\ndef g' : Nat -> Nat := fun _ => 0\n"
+        + $"theorem a (f : Nat -> Nat) : (f \u2218'{(spaced ? " " : "")}g') = (f \u2218'{(spaced ? " " : "")}g') := by rfl\n";
+
+    [Theory]
     [InlineData("p", "p")]
     [InlineData("p?", "p?")]
     [InlineData("p!", "p!")]

@@ -5,6 +5,143 @@ namespace StrataLint.Tests;
 public sealed class LeanSourceTokenizerTests
 {
     [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void RegisteredDependentCompositionPreservesPrimedIdentifier(bool embedded, bool spaced)
+    {
+        var tokens = Scan("f \u2218'" + (spaced ? " " : "") + "g'", embedded);
+        Assert.Equal(new[] { "f", "\u2218'", "g'" }, tokens.Select(static token => token.Text));
+        Assert.False(tokens[1].IsIdentifier);
+        Assert.Equal("g'", tokens[2].Identifier);
+        Assert.Equal(1, tokens[2].Line);
+        Assert.Equal(spaced ? 5 : 4, tokens[2].Column);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void RegisteredPrefixAndInfixPrimesPreserveFollowingNames(bool embedded)
+    {
+        foreach (var term in new[] { "\u00d7'", "\u2295'", "\u03a3'", "\u2200'", "\u2203'", "#'" })
+        {
+            var tokens = Scan(term + "g'", embedded);
+            Assert.Equal(new[] { term, "g'" }, tokens.Select(static token => token.Text));
+            Assert.False(tokens[0].IsIdentifier);
+            Assert.Equal("g'", tokens[1].Identifier);
+            Assert.Equal(2, tokens[1].Column);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void MultiCharacterPrimedPrefixesUseTheCompleteRegisteredSpelling(bool embedded)
+    {
+        foreach (var prefix in new[] { "\u03a3\u2097'", "\u207b\u00b9'", "\u207b\u00b9'o", "''\u1d41" })
+        {
+            var tokens = Scan(prefix + "g'", embedded);
+            Assert.Equal(new[] { prefix, "g'" }, tokens.Select(static token => token.Text));
+            Assert.False(tokens[0].IsIdentifier);
+            Assert.Equal("g'", tokens[1].Identifier);
+            Assert.Equal(prefix.Length, tokens[1].Column);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void BracketedPrimedNotationKeepsBracketAndIdentifierTokens(bool embedded)
+    {
+        foreach (var prefix in new[] { "\u2211'", "\u220f'", "\u227a'", "\u227c'", "\u2118'" })
+        {
+            var tokens = Scan(prefix + "[g']", embedded);
+            Assert.Equal(new[] { prefix, "[", "g'", "]" }, tokens.Select(static token => token.Text));
+            Assert.Equal("g'", tokens[2].Identifier);
+            Assert.Equal(3, tokens[2].Column);
+            var malformed = Assert.Throws<LeanSourceExtractionException>(() => Scan(prefix + "[g')", embedded));
+            Assert.Equal("Lean delimiters are unbalanced.", malformed.Message);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PrimedClosingDelimiterPreservesProofIdentifierAndDelimiterTracking(bool embedded)
+    {
+        var tokens = Scan("xs[i]'h'", embedded);
+        Assert.Equal(new[] { "xs", "[", "i", "]", "'", "h'" }, tokens.Select(static token => token.Text));
+        Assert.Equal("h'", tokens[^1].Identifier);
+        Assert.Equal(6, tokens[^1].Column);
+        var malformed = Assert.Throws<LeanSourceExtractionException>(() => Scan("xs(i]'h'", embedded));
+        Assert.Equal("Lean delimiters are unbalanced.", malformed.Message);
+        Assert.Equal(new[] { "f", "\u27e6", "n", "\u27e7'", "g'" },
+            Scan("f\u27e6n\u27e7'g'", embedded).Select(static token => token.Text));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void EqualityPrimeRecognizesUnambiguousNotationAndPreservesRealCharacters(bool embedded)
+    {
+        foreach (var source in new[] { "=' right'", "='right'" })
+        {
+            var tokens = Scan(source, embedded);
+            Assert.Equal(new[] { "='", "right'" }, tokens.Select(static token => token.Text));
+            Assert.Equal("right'", tokens[1].Identifier);
+        }
+
+        // Without a Lean environment, ='a' can also mean equality followed by a Char.
+        foreach (var literal in new[] { "'a'", "')'", "' '", "'\\''", "'\\x61'", "'\\u0061'", "'\U0001f600'" })
+        {
+            var tokens = Scan("=" + literal, embedded);
+            Assert.Equal(new[] { "=", literal }, tokens.Select(static token => token.Text));
+            Assert.False(tokens[1].IsIdentifier);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void EqualityPrimeDoesNotHideMalformedCharacterEscape(bool embedded)
+    {
+        var error = Assert.Throws<LeanSourceExtractionException>(() => Scan("\n='\\u00xz'", embedded));
+        Assert.Equal(2, error.Line);
+        Assert.Equal("Lean character escape is malformed.", error.Message);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void IdentifierLikePrimesKeepExistingIdentifierProjection(bool embedded)
+    {
+        foreach (var name in new[] { "\u2118'", "\u03c0'", "\U0001d4d3'", "\U0001d4e2'", "haveI'" })
+        {
+            Assert.Equal(name, Assert.Single(Scan(name, embedded)).Identifier);
+        }
+    }
+
+    [Theory]
+    [InlineData("\u227a'a")]
+    [InlineData("\u227c'a")]
+    [InlineData("\u2260'a")]
+    [InlineData("+'a")]
+    [InlineData(":='a")]
+    public void IncompleteOrUnregisteredPrimedPrefixesRemainMalformedCharacters(string source)
+    {
+        foreach (var embedded in new[] { false, true })
+        {
+            var exception = Assert.Throws<LeanSourceExtractionException>(() => Scan("\n" + source, embedded));
+            Assert.Equal(2, exception.Line);
+            Assert.Equal("Lean character literal is unterminated or malformed.", exception.Message);
+        }
+    }
+
+    private static System.Collections.Immutable.ImmutableArray<LeanSourceToken> Scan(string source, bool embedded) =>
+        embedded ? LeanSourceTokenizer.TokenizeIncludingInterpolationTerms(source) : LeanSourceTokenizer.Tokenize(source);
+
+    [Theory]
     [InlineData("')'")]
     [InlineData("'\\''")]
     [InlineData("r#\"quotes \" native_decide )\"#")]

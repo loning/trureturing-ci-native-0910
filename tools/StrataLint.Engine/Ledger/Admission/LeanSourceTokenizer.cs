@@ -102,14 +102,17 @@ internal static class LeanSourceTokenizer
                 }
                 else
                 {
-                    // Pinned mathlib registers complete primed tokens in InfiniteSum/Defs.lean
-                    // (sum/product) and Data/TypeVec.lean (product map).
-                    var symbol = index + 1 < source.Length && source.Substring(index, 2) is
-                        ":=" or "=>" or "->" or "<-" or "::" or "<=" or ">=" or "==" or "!="
-                            or "''" or "\u2211'" or "\u220f'" or "\u2297'"
-                            ? source.Substring(index, 2)
-                            : source.Substring(index, char.IsSurrogatePair(source, index) ? 2 : 1);
+                    var symbol = source.Substring(index, SymbolLength());
                     Advance(symbol.Length);
+                    // Keep the structural delimiter separate for proposition consumers.
+                    if (symbol == "]'")
+                    {
+                        result.Add(new LeanSourceToken("]", tokenLine, tokenColumn));
+                        symbol = "]";
+                        start++;
+                        tokenColumn++;
+                    }
+
                     if (symbol.Length == 1 && symbol[0] is '(' or '[' or '{')
                     {
                         brackets.Push((symbol[0], tokenLine));
@@ -138,6 +141,44 @@ internal static class LeanSourceTokenizer
             }
 
             return result.ToImmutable();
+        }
+
+        private int SymbolLength()
+        {
+            // Lean 4.33 tokenFnAux uses the longest registered prefix. This bounded
+            // symbolic-prime class comes from getTokenTable after importing mathlib
+            // db584cd6 and opening its relevant scopes, plus local notation inspection.
+            // Identifier-like spellings retain ReadIdentifier's existing projection.
+            if (At("\u207b\u00b9'o"))
+            {
+                return 4;
+            }
+
+            if (At("\u207b\u00b9'") || At("\u03a3\u2097'") || At("''\u1d41"))
+            {
+                return 3;
+            }
+
+            // Only the bracketed order tokens are registered; their bare stems are not.
+            // Leave '[' for delimiter tracking, as with the existing sum/product tokens.
+            if (At("\u227a'[") || At("\u227c'["))
+            {
+                return 2;
+            }
+
+            // =' overlaps equality followed by a character. Without a Lean environment,
+            // retain complete character literals; only unambiguous =' uses are supported.
+            if (At("='") && !At("='\\") && CharacterLiteralLength(index + 1, out _) == 0)
+            {
+                return 2;
+            }
+
+            return index + 1 < source.Length && source.Substring(index, 2) is
+                ":=" or "=>" or "->" or "<-" or "::" or "<=" or ">=" or "==" or "!="
+                    or "''" or "]'" or "#'" or "\u00d7'" or "\u03a3'" or "\u2200'" or "\u2203'"
+                    or "\u220f'" or "\u2211'" or "\u2218'" or "\u2295'" or "\u2297'" or "\u27e7'"
+                        ? 2
+                        : char.IsSurrogatePair(source, index) ? 2 : 1;
         }
 
         private void ReadComment()
@@ -244,38 +285,50 @@ internal static class LeanSourceTokenizer
 
         private void ReadCharacter()
         {
-            var startLine = line;
-            Advance();
-            if (index < source.Length && source[index] == '\\')
+            var length = CharacterLiteralLength(index, out var error);
+            if (error is not null)
             {
-                Advance();
-                if (index < source.Length)
+                throw Error(error, line);
+            }
+
+            Advance(length);
+        }
+
+        private int CharacterLiteralLength(int start, out string? error)
+        {
+            var cursor = start + 1;
+            if (cursor < source.Length && source[cursor] == '\\')
+            {
+                cursor++;
+                if (cursor < source.Length)
                 {
-                    var escape = source[index];
-                    Advance();
+                    var escape = source[cursor++];
                     var digits = escape switch { 'x' => 2, 'u' => 4, _ => 0 };
                     for (var count = 0; count < digits; count++)
                     {
-                        if (index >= source.Length || !char.IsAsciiHexDigit(source[index]))
+                        if (cursor >= source.Length || !char.IsAsciiHexDigit(source[cursor]))
                         {
-                            throw Error("Lean character escape is malformed.", startLine);
+                            error = "Lean character escape is malformed.";
+                            return 0;
                         }
 
-                        Advance();
+                        cursor++;
                     }
                 }
             }
-            else if (index < source.Length)
+            else if (cursor < source.Length)
             {
-                Advance(char.IsSurrogatePair(source, index) ? 2 : 1);
+                cursor += char.IsSurrogatePair(source, cursor) ? 2 : 1;
             }
 
-            if (index >= source.Length || source[index] != '\'')
+            if (cursor >= source.Length || source[cursor] != '\'')
             {
-                throw Error("Lean character literal is unterminated or malformed.", startLine);
+                error = "Lean character literal is unterminated or malformed.";
+                return 0;
             }
 
-            Advance();
+            error = null;
+            return cursor - start + 1;
         }
 
         private int NameLiteralPrefixLength()

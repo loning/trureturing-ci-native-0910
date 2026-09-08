@@ -12,6 +12,37 @@ public sealed class NativeDecideSourceRuleTests
         + "example (f : Nat -> Nat) (s : Set Nat) : f '' s = f '' s := rfl\n";
 
     [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void AcceptsDependentCompositionInAddedOrByteChangedSource(bool baseline, bool spaced)
+    {
+        var fixture = Source(DependentCompositionSource(spaced), baseline);
+        fixture.Files[Path] += "example : True := by decide\n";
+        Assert.Empty(Evaluate(fixture, (Path, baseline ? RawChangeKind.Modified : RawChangeKind.Added)));
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void RejectsNativeDecideFollowingDependentCompositionWithSourceLine(bool baseline, bool spaced)
+    {
+        var fixture = Source(DependentCompositionSource(spaced), baseline);
+        fixture.Files[Path] += "example : True := by native_decide\n";
+        var diagnostic = Assert.Single(Evaluate(fixture, (Path, baseline ? RawChangeKind.Modified : RawChangeKind.Added)));
+        Assert.Equal(Path, diagnostic.Path);
+        Assert.Equal(AdmissionEffect.Block, diagnostic.AdmissionEffect);
+        Assert.Equal("NATIVE_DECIDE_SOURCE line=3: bare native_decide token is forbidden in changed D5 Lean source", diagnostic.Message);
+    }
+
+    private static string DependentCompositionSource(bool spaced) =>
+        "import Mathlib.Logic.Function.Defs\n"
+        + $"example (f g' : Nat -> Nat) : (f \u2218'{(spaced ? " " : "")}g') = (f \u2218 g') := rfl\n";
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void AcceptsImageNotationInAddedOrByteChangedSource(bool baseline)
