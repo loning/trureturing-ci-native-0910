@@ -33,8 +33,9 @@ transitions 组成可含 shortcut edges 的 DAG，Hasse cover graph 是该格的
 为 path（因而为 tree）当且仅当格为 chain；存在不可比 kernels 时出现 diamond，因而同一终局
 允许多条合法分解。有限 arena 输出精确计数，
 任意 State 输出 strict-inclusion witness；每个 frozen theorem constant 另由其 elaborated
-`statement_id` 唯一绑定一个 `AnalysisDisposition`，使“适用于所有定理”的边界可枚举、可审计，
-而不是把闭命题真值伪装成对象信息。
+`(structured Name, statement_id)` 唯一绑定一个 `CensusAssessment`。记账完备与认证完备分别按
+第 8.7、23.6 节报告；只有 `certified AnalysisDisposition` 算已分类，`observed` 永不计入
+AC-023，使“适用于所有定理”的边界可枚举、可审计，而不是把闭命题真值伪装成对象信息。
 
 每个定理对象包含：
 
@@ -1250,34 +1251,62 @@ registration modules，且仍不取得 discharge 或 exemption 权限。辅助 r
 
 ### 8.7 AnalysisDisposition and TrivialInCatalog
 
-“适用于每个 theorem”以 frozen theorem constants 的 elaborated report 为闭世界：每个
-`statement_id` 必须恰绑定一个 machine-checked `AnalysisDisposition`，缺失与重复均失败。
+“适用于每个 theorem”以 frozen elaborated truth export 为闭世界：只从同时满足
+`freeze_status=frozen`、`kind=theorem` 的 nodes 派生 frozen theorem keys，identity 是
+`(structured Name, statement_id)`，不是显示字符串或单独的 `statement_id`。
+按 owner 2026-09-08 的 [τ=0 裁决](https://github.com/the-omega-institute/trureturing/issues/5214#issuecomment-5580271314)
+“选 A;observed 永远不算完成;开 J2”，必须分开两个完备命题：
+
+- **记账完备（accounting completeness）**：每个 frozen theorem key 恰有一个
+  `CensusAssessment` row，inventory keys 与 frozen theorem keys 完全相等，缺失与重复均失败；
+- **认证完备（certified completeness）**：记账完备，且每个 key 的 row 都是经证书语义检查的
+  `certified (AnalysisDisposition key)`。**AC-023 只由认证完备满足**；记账完备是可报告的
+  前提，不是 AC-023 的履行。
+
+```text
+CensusAssessment key = certified (AnalysisDisposition key) | observed (AnalysisObservation key)
+```
+
+`observed` 是绑定 exact key、owning module、census root 与 import-closure query scope 的
+elaboration observation，query 必须标为 completed；它只记录该范围内缺少已登记的
+realization／certificate。**observed ≠ classified：observed 永不算已分类，永不计入 AC-023，
+也永不构成 closed reason。** census 必须自己核查该范围并完成查询；generator 提供的空列表
+或自报 completed 均不构成查询完备证据。字段与校验契约只在第 23.6 节定义。
+
 object arena 是显式 semantic input；系统不得从 theorem statement 的表面类型推断 arena，
 canonical identity 是 `Arena`／`StructuralArena` declaration。替代表示只有经
 `CIRPT-IE-022` 的具名 `Equiv` transport 才能声明同一分析。
 
-四类 disposition 互斥且穷尽：
+四类 disposition 在 `certified` 分支内互斥且穷尽；这不声称所有 frozen keys 已获认证：
 
 | class | 必需证据 | 可报告结论 |
 |---|---|---|
 | `finite_occurrence` | canonical `Arena` declaration、显式 realization、nondegeneracy、用于 reflected seal 的完整 state enumeration | certified sets/counts/exact rates 与 structural strictness |
 | `structural_occurrence` | canonical `StructuralArena`、finite bundle/catalog indices、显式 realization、joint-kernel inclusion proof 与 pair witness | certified strictness；无计数或 rate |
 | `bounded_finite_truncation` | truncation family、bound、与原对象的方向明确的 comparison statement | 默认 `report-only`；只有另有 kernel-checked transfer theorem 时才可报告该 theorem 明确传输的结论 |
-| `unreachable` | 一个 closed reason code 及其 payload proof／elaboration evidence | 只报告不可达边界，不得伪造 novelty verdict |
+| `unreachable` | reason-specific closed-reason certificate，绑定 statement、exact key、semantic contract 与 candidate domain | 只报告不可达边界，不得伪造 novelty verdict |
 
-`UnreachableReason` 是 closed enum，其唯一 canonical declaration 位于第 23.6 节；v4.3 只允许
+`UnreachableReason` 是 closed enum，其唯一 canonical declaration 位于第 23.6 节；只允许
 `noCanonicalObjectCarrier`、`noFinitePrimitiveBundle` 与 `noFaithfulPrimitiveRealization`。
 
-- `noCanonicalObjectCarrier`：例如 closed numerical proposition 没有显式 object carrier；其
-  proof truth 不得作常值 readout；
-- `noFinitePrimitiveBundle`：语义本质上需要无限 index family，未给出等价 finite bundle；
-- `noFaithfulPrimitiveRealization`：候选 carrier 已知，但尚无 statement 与 primitive law 的
-  kernel-checked faithful bridge。
+- `noCanonicalObjectCarrier`：证书证明在绑定的 semantic contract 与 candidate domain 内
+  不存在 canonical object carrier；closed numerical proposition 的 proof truth 不得作常值 readout；
+- `noFinitePrimitiveBundle`：证书证明在该 contract／domain 内不存在 faithful finite primitive
+  bundle，包括排除所允许的等价 finite 表示；
+- `noFaithfulPrimitiveRealization`：证书证明在该 contract／domain 内不存在 statement 与
+  primitive law 的 faithful bridge。
+
+`unreachable` 仍是 certified disposition，以上每个 reason 均须由其专属 closed-reason 证书
+成立。registry absence 单独不能产生它；“没有显式 carrier”“尚未登记 finite bundle／bridge”
+只能成为查询观察或 routing facts。carrier／statement syntax 也只提供 routing facts，不证明
+任何 closed reason，更不决定 canonical arena。
 
 `bounded_finite_truncation` 与 `unreachable` 把 counted／structural engine 的边界精确入账；
-前者不冒充全对象结论，后者不以“不适用”隐藏缺失工作。census Meta tool 必须遍历完整 frozen report，以 `statement_id` 为 key，输出四类
-counts 与每个 unreachable reason 的 counts，并证明 inventory keys 与 frozen theorem keys
-相等且无重复。
+前者不冒充全对象结论，后者不以“不适用”隐藏缺失工作。census Meta tool 遍历上述全部 frozen
+keys，输出 `accounted`、`certified`（按四类及 unreachable reason 分项）、`observed`（按
+observation status 分项）和 exact rows。`observed > 0` 时必须报告
+`certified_complete=false`。census artifact 只作 report，永不作为 seal input 或 required gate；
+它不替代以下独立的 first-freeze obligations，也不激活第 39 节 GATE。
 
 定义 catalog-relative triviality：
 
@@ -4834,9 +4863,10 @@ DAG path。
 `escapeAt`／`edgeCapture` 的 executable bodies 还必须分别安装
 `letI := arena.stateFintype; letI := arena.stateDecidableEq`；上面的 signatures 已显式保留该要求。
 
-`UnreachableReason`、`StatementKey`、四个 disposition payload 与 `AnalysisDisposition` **只**采用
-第 23.6 节的定义；本节引用该唯一 API，不另立 enum、String-indexed sketch 或第二组 payload 类型。
-census consumer 必须以 elaborated report 的真实 `StatementKey` 构造它。
+`UnreachableReason`、`StatementKey`、四个 disposition payload、`AnalysisDisposition`、
+`CensusAssessment` 与 `AnalysisObservation` **只**采用第 23.6 节的定义；本节引用该唯一 API，
+不另立 enum、String-indexed sketch 或第二组 payload 类型。census consumer 必须以 frozen
+elaborated truth export 的真实 `StatementKey` 构造 assessment。
 
 ---
 
@@ -4916,11 +4946,14 @@ InformationEscape finite engine
 24. 对每个 maximal catalog 构造 generated-kernel extensional quotient，并认证所有输出 nodes 的 relation equality；
 25. 只把 endpoints 均已 materialize 的 certified strict generator transitions 写作 edges，包含全部 schedule／requested transitions；complete lattice 时才要求 full-DAG array；每边的 `is_cover` 相对 full lattice 认证；equal-kernel additions 完整写入 `collapsed_additions`；
 26. `kernel_projection` 至少覆盖 $K_\varnothing$、$K_I$、全部 $K_{I\setminus\{i\}}$、全部 certified-schedule nodes 与显式请求 nodes，但永不因投影要求枚举完整 $2^m$ subsets；
-27. 每个 frozen theorem `statement_id` 恰有一个 disposition；finite、structural、truncation、unreachable 四类的 payload 分别按其 constructor 验证；
+27. report-only census 中每个 frozen theorem key 恰有一个 `CensusAssessment`；只有 certified 分支的 finite、structural、truncation、unreachable payload 按其 constructor 验证后算已分类；记账与认证完备按第 8.7、23.6 节分开；
 28. structural occurrence 必须有 strict inclusion proof 与 pair witness；bounded truncation 无 transfer theorem 时只能写 `report-only`；
-29. disposition census keys 与完整 frozen theorem keys 完全相等，重复、缺失、stale identity 与伪造 class 均 fail closed；
+29. report-only census keys 与完整 frozen theorem keys 完全相等，重复、缺失、stale identity、未完成的 query scope 与伪造 class 均 fail closed；observed 永不计入 AC-023，也不能充作 unreachable；
 30. `kernel_projection`、ASCII layout、node ID、hash、timing 与 heuristic schedule order 均为单向 projection，任何 admission consumer 读取它们都失败；
 31. catalog `proof_method` 必须报告实际执行的 direct／fused／partition／reflected route，不能以目标路线或 display label 代替真实 proof construction（工程优化规范 v1 §8）。
+
+第 27、29 项是 census 自身的报告校验义务，不是 `#seal_information_theory` 的输入或成功前提；
+记账完备、认证完备及 census artifact 均不得接为 required gate。其余 seal 证书义务保持有效。
 
 ---
 
@@ -5228,21 +5261,24 @@ canonical admission failure 后仍写出 artifact。
 
 ### IE-C034　MissingAnalysisDisposition
 
-frozen theorem `statement_id` 没有 disposition。
+census 的 frozen theorem key 没有 `CensusAssessment` row；有效 observed row 不是 missing。
+独立的 disposition obligation 若要求认证，仍必须有 `AnalysisDisposition`，不能以 observed 履行。
 
 ### IE-C035　DuplicateAnalysisDisposition
 
-同一 `statement_id` 产生多个 disposition records；即使 records 使用不同 theorem `Name` 也失败。
+同一 key 产生多个 assessment records（包括 certified／observed 混合重复），或多个 records
+复用同一 `statement_id`；即使 records 使用不同 theorem `Name` 也失败。
 
 ### IE-C036　DispositionIdentityMismatch
 
-record 绑定的 HEAD、theorem `Name`、`statement_id` 或 canonical arena identity 与 elaborated
-report 不一致。
+record 绑定的 HEAD、report input identity、theorem `Name`、`statement_id` 或 canonical arena
+identity 与 elaborated report 不一致。
 
 ### IE-C037　DispositionClassMismatch
 
 所报 class 与 payload 不符，例如 finite class 无 state enumeration、truncation 无 bound，或
-把 closed-truth constant readout 伪标为 object realization。
+把 closed-truth constant readout 伪标为 object realization；把 observed／registry absence
+冒充带 closed-reason certificate 的 unreachable 同样失败。
 
 ### IE-C038　MissingStructuralWitness
 
@@ -5277,7 +5313,10 @@ order。projection 只能由已完成的 seal truth 单向生成。
 
 ### IE-C044　DispositionCensusMismatch
 
-census keys 与 frozen theorem keys 不完全相等，或分类／reason totals 与 rows 不一致。
+census keys 与 frozen theorem keys 不完全相等，或 `accounted`／`certified`／`observed`、
+class／reason／observation-status totals 或 completeness flags 与 rows 不一致。observation 的
+query 未完成、import closure 不完整、owning module／root／scope 未由 census 核实也使用本码；
+generator 空列表不能代替该查询。具体 component 使用第 23.6 节字段名。
 
 ### IE-C045…IE-C047　DualNoveltyGate（RESERVED / OPEN）
 
@@ -5395,9 +5434,15 @@ without-kernel agreement 与 full-kernel separation。删除 witness 得 IE-C038
 
 ### T-036　disposition census
 
-fixture 同时含四种 dispositions；inventory 与 frozen theorem keys bijective，各 class 与 closed
-reason totals 精确。删除、复制、令两个不同 theorem `Name` 复用同一 `statement_id`，或改旧
-`statement_id`，分别得 IE-C034、IE-C035、IE-C035、IE-C036。
+census 读取 `TruthExportCommand` 当前发射的 truth export dialect，只从
+`freeze_status=frozen` 且 `kind=theorem` 的 elaborated nodes 取得
+`(structured Name, statement_id)` keys；不得把 export 内未冻结或非 theorem nodes 算入分母。
+fixture 同时含四类 certified dispositions 与 observed rows，assessment inventory 与 frozen
+theorem keys bijective。分别验证记账完备、认证完备及第 23.6 节全部 counters／flags；混合
+inventory 只能记账完备，不能满足 AC-023。删除、复制、令两个不同 theorem `Name` 复用同一
+`statement_id`，或改旧 `statement_id`，分别得 IE-C034、IE-C035、IE-C035、IE-C036。
+不完整／未完成的 query scope 得 IE-C044；observed 冒充 unreachable 得 IE-C037。
+第 35 节同号 fixture 固定正反例，report 不进入 seal 或 required gate。
 
 ### T-037　generated-node extensional quotient
 
@@ -5522,9 +5567,11 @@ bundle 与 faithful realization；acceptance 由 strict inclusion 和 pair witne
 
 ### AC-CIRPT-019　Disposition totality
 
-完整 frozen theorem census 中每个 `statement_id` 恰有一个四选一 disposition；finite counted、
-structural-only、bounded truncation 与 unreachable reasons 分栏计数，inventory keys 与 report
-keys 完全相等。
+完整 frozen theorem census 中每个 `(structured Name, statement_id)` 恰有一个
+`CensusAssessment`，inventory keys 与 frozen export keys 完全相等。记账完备与认证完备按
+第 8.7、23.6 节分开；finite counted、structural-only、bounded truncation 与 unreachable
+reasons 只计入 certified 分项，observed 另按 status 计数且不履行 AC-023。认证 totality 的
+目标不变，完整记账本身不是认证 totality，report 不进入 seal 或 required gate。
 
 ### AC-CIRPT-020　Bounded hierarchy projection
 
@@ -5673,7 +5720,7 @@ lake build D5.S3.ConceptDynamics.InformationEscape.SharedInformationRoot
 15. 在 designated root 中组装全部 maximal catalogs 的 `SystemCatalogIrredundant`；
 16. 新共享结果写 schema v3，且不改写 frozen v4.1 schema-v2 singleton baseline。
 17. 为每个 maximal catalog 构造 generated-kernel closure，并输出 bounded hierarchy projection 与 ASCII projection；
-18. 为完整 frozen theorem report 生成 exactly-one `AnalysisDisposition` census；
+18. 为完整 frozen theorem report 生成 exactly-one `CensusAssessment` census，分别报告记账完备与认证完备；其 artifact 只作报告，永不作为 seal input 或 required gate；
 19. finite occurrences 继续精确计数，structural occurrences 以 strict inclusion pair witness 认证，truncations 与 unreachable reasons 诚实分栏；
 20. 保持 hierarchy projection 对 admission 的单向性，并把 5⁗ dual-novelty gate 标为 OPEN，直到 owner $\tau$ ruling。
 
@@ -6613,9 +6660,15 @@ structure BoundedFiniteTruncationDisposition (key : StatementKey) where
   comparisonStatement : Name
   certification : TruncationCertification
 
+structure ClosedReasonEvidence
+    (key : StatementKey) (reason : UnreachableReason) where
+  semanticContract : Name
+  candidateDomain : Name
+  certificate : Name
+
 structure UnreachableDisposition (key : StatementKey) where
   reason : UnreachableReason
-  evidence : Name
+  evidence : ClosedReasonEvidence key reason
 
 inductive AnalysisDisposition (key : StatementKey) where
   | finiteOccurrence (value : FiniteOccurrenceDisposition key)
@@ -6624,34 +6677,109 @@ inductive AnalysisDisposition (key : StatementKey) where
       (value : BoundedFiniteTruncationDisposition key)
   | unreachable (value : UnreachableDisposition key)
 
-structure DispositionInventory where
-  headSha : String
-  entries : Array (Sigma fun key : StatementKey => AnalysisDisposition key)
+inductive AnalysisObservationStatus
+  | noRegisteredRealization
+  | noRegisteredCertificate
+  | noRegisteredRealizationOrCertificate
+  deriving DecidableEq, Repr
 
-def DispositionInventory.keys
-    (inventory : DispositionInventory) : List StatementKey :=
+structure AnalysisObservation (key : StatementKey) where
+  owningModule : Name
+  censusRoot : Name
+  importClosure : Array Name
+  queryCompleted : Bool
+  status : AnalysisObservationStatus
+
+inductive CensusAssessment (key : StatementKey) where
+  | certified (value : AnalysisDisposition key)
+  | observed (value : AnalysisObservation key)
+
+structure CensusInventory where
+  headSha : String
+  reportInputId : String
+  censusRoot : Name
+  entries : Array (Sigma fun key : StatementKey => CensusAssessment key)
+
+def CensusInventory.keys
+    (inventory : CensusInventory) : List StatementKey :=
   inventory.entries.toList.map fun entry => entry.1
 
-def DispositionInventory.ExactlyCovers
-    (inventory : DispositionInventory)
-    (frozenHeadSha : String)
+def CensusInventory.ExactlyCovers
+    (inventory : CensusInventory)
+    (frozenHeadSha frozenReportInputId : String)
+    (frozenCensusRoot : Name)
     (frozenTheorems : Finset StatementKey) : Prop :=
   inventory.headSha = frozenHeadSha ∧
+  inventory.reportInputId = frozenReportInputId ∧
+  inventory.censusRoot = frozenCensusRoot ∧
   inventory.keys.Nodup ∧
   (inventory.keys.map fun key => key.statementId).Nodup ∧
   inventory.keys.toFinset = frozenTheorems
+
+def CensusInventory.CertifiedComplete
+    (inventory : CensusInventory)
+    (frozenHeadSha frozenReportInputId : String)
+    (frozenCensusRoot : Name)
+    (frozenTheorems : Finset StatementKey) : Prop :=
+  inventory.ExactlyCovers frozenHeadSha frozenReportInputId
+    frozenCensusRoot frozenTheorems ∧
+  ∀ entry ∈ inventory.entries.toList,
+    ∃ disposition : AnalysisDisposition entry.1,
+      entry.2 = CensusAssessment.certified disposition
 ```
 
-`ExactlyCovers` 同时断言 frozen `StatementKey` 集合精确相等、每个完整 key 恰一次、映射后的
-`statementId` 也 `Nodup`，以及 `headSha` 与 elaborated report input 相同。因此两个不同 theorem
-`Name` 不能复用同一个 `statement_id` 来规避 IE-C035。dependent constructors 唯一决定 payload
-shape，consumer 另按 constructor 检查其证书语义。Meta census 的 canonical order 是 theorem
-Lean `Name` text，再按 `statement_id`；counts 从 rows fold 得到并与 class/reason totals 复核。census 是
-read-only report consumer，不推断 object arena，也不把缺 realization 自动归到 finite。
+`frozenTheorems` 必须由 `TruthExportCommand` 当前发射的 truth export dialect 的 elaborated
+nodes 派生，只选择 `freeze_status=frozen` 且 `kind=theorem`；key 保留 structured Lean
+`Name` 与 `statement_id`。`ExactlyCovers` 是记账完备命题：集合精确相等、每个完整 key 恰一次、
+映射后的 `statementId` 也 `Nodup`，且 HEAD、report input identity 与 census root 精确绑定。
+`reportInputId` 来自该 frozen elaborated export 的不可变输入身份，不是 generator 自报的标签。
+两个不同 theorem `Name` 不能复用同一个 `statement_id` 来规避 IE-C035；certified 与 observed
+使用同一个 key 空间，不能各自另列 inventory 来绕过唯一性。
+
+dependent constructors 只决定 payload shape，consumer 仍须逐 constructor 核验证书语义。
+`ClosedReasonEvidence key reason` 的 `certificate` 必须解析为 kernel-checked、reason-specific
+closed-reason proof，其命题同时绑定 key 所指的实际 statement、完整 key、`semanticContract`
+与 `candidateDomain`；不能只核对名称存在。只查询到 registry absence 不能构造该证书。
+
+`AnalysisObservation key` 仅由同一 HEAD／report inputs 的 elaborated environment 查询产生。
+`owningModule` 必须是该 key 的真实所属模块，`censusRoot` 必须等于 inventory root，
+`importClosure` 必须精确列出该 root 的完整传递 import closure 并含 owning module；这些字段
+在 artifact 中分别投影为 `owning_module`、`census_root`、`import_closure`，不是自由描述文本。
+census 自己解析 root、核实 closure 的集合与完整性、在其中完成该 exact key 的 registration
+及 certificate 查询，然后才能记录 `queryCompleted=true`（投影为 `query_completed`）。
+不接受 generator 提供的空列表或自报 completed 作为完成证据；查询失败、不完整或未完成时
+拒绝 observation，不能计为 absence。`status` 由查询结果派生：缺 realization、缺 certificate、
+两者皆缺分别使用上述三个 status；两者皆有时不能填 absence status，已登记但无效的证书
+仍须报告验证失败，不能以 observed 隐藏。query scope/status 错误使用 IE-C044。
+
+在 rows 的上述语义检查通过后，`CertifiedComplete` 才表示认证完备；它额外要求每个 row
+都是 certified。**observed 永不算 classified，永不履行 AC-023，也永不构成 closed reason。**
+Meta census 的 canonical order 保持为 theorem Lean `Name` text，再按 `statement_id`；排序
+仅用于输出，身份比较仍用 structured `Name`。artifact（schema
+`lean-information-disposition-census`）包含 exact assessment rows，并从 rows fold 出以下字段，
+consumer 必须复核，不信任 generator 自报的 totals 或 flags：
+
+| field | 精确语义 |
+|---|---|
+| `accounted` | 全部有效 assessment rows 的数量 |
+| `certified` | certified rows 的数量，另按四个 disposition class 分项 |
+| `certified_by_class` | `finite_occurrence`、`structural_occurrence`、`bounded_finite_truncation`、`unreachable` 各自数量 |
+| `unreachable_by_reason` | certified unreachable 按 `UnreachableReason` 分项，未出现的 reason 也报零 |
+| `observed` | observed rows 的数量，永不计入 certified 或 classified |
+| `observed_by_status` | 按 `AnalysisObservationStatus` 分项，未出现的 status 也报零 |
+| `accounting_complete` | `ExactlyCovers` 成立且 row 语义检查通过 |
+| `certified_complete` | `CertifiedComplete` 成立且 row 语义检查通过；`observed > 0` 时必为 `false` |
+
+必须复核 `accounted = certified + observed`、class 分项之和等于 certified、reason 分项之和
+等于 certified unreachable、status 分项之和等于 observed；计数相等不能替代 exact keys 检查。
+census 是 read-only report consumer，artifact 永不作为 seal input 或 required gate；它不推断
+object arena，不把缺 realization 自动归到 finite／structural／unreachable。
 
 finite 与 structural constructors 都必须由指定 root maximal catalog occurrence discharge
 `TrivialInCatalog`；bounded truncation 只有 `transferred` constructor 的具名 theorem 所明确
 蕴含的结论可标 certified，`reportOnly` 不参与准入；`unreachable` 没有 positivity verdict。
+外层 certified assessment 认证的是 disposition 及其边界：bounded `reportOnly` 的 comparison
+证书可以认证其分类，但不因此取得全对象结论、transfer 或 positivity，原有 truncation 限制不变。
 disposition coverage 与 5⁗ `AdmissionCertificate` 是不同字段、不同证明义务。后者的 active
 consumer 仍待第 39 节 GATE 的 owner $\tau$ ruling。
 
@@ -7574,17 +7702,17 @@ table，也不得由现有 compiler 发出。
 
 | code | name | exact fail-closed trigger |
 |---|---|---|
-| IE-C034 | `MissingAnalysisDisposition` | frozen theorem key 没有 disposition row |
-| IE-C035 | `DuplicateAnalysisDisposition` | 同一 `statement_id` 有多于一个 disposition row，即使 theorem `Name` 不同 |
-| IE-C036 | `DispositionIdentityMismatch` | HEAD/name/statement_id/arena 与 elaborated input 不同 |
-| IE-C037 | `DispositionClassMismatch` | class 缺 constructor 所需 payload，或 payload 语义与 class 冲突 |
+| IE-C034 | `MissingAnalysisDisposition` | census 的 frozen theorem key 没有 assessment row；独立认证义务仍要求 disposition |
+| IE-C035 | `DuplicateAnalysisDisposition` | 同一 key 有多个 assessment rows，或同一 `statement_id` 被多行复用，即使 theorem `Name` 不同 |
+| IE-C036 | `DispositionIdentityMismatch` | HEAD/report input identity/name/statement_id/arena 与 elaborated input 不同 |
+| IE-C037 | `DispositionClassMismatch` | class 缺 constructor 所需 payload，或 payload 语义与 class 冲突，含 observed／registry absence 冒充 unreachable |
 | IE-C038 | `MissingStructuralWitness` | structural strictness inclusion/witness 缺失或不成立 |
 | IE-C039 | `InvalidGeneratedKernelNode` | node 非 generated relation，或 extensional equal nodes 未 quotient |
 | IE-C040 | `InvalidGeneratorTransition` | edge 非 single addition/非 strict、stutter 未记 collapsed、required transition 缺失，或 complete-lattice edge array 不完整 |
 | IE-C041 | `IncompleteKernelProjectionBoundary` | 必需 boundary/leave-one-out/schedule/requested node 缺失，或 node reference 无法解析 |
 | IE-C042 | `KernelProjectionCertificateMismatch` | hierarchy component 与 certificate/reflected value 不同 |
 | IE-C043 | `KernelProjectionUsedForAdmission` | admission consumer 读取任何 hierarchy presentation 字段 |
-| IE-C044 | `DispositionCensusMismatch` | inventory frozen keys/totals 不精确相等，或 mapped `statement_id` 不唯一 |
+| IE-C044 | `DispositionCensusMismatch` | inventory frozen keys/totals/flags 不精确，mapped `statement_id` 不唯一，或 observation scope/status 未核实、query 不完整／未完成 |
 
 | code | exact deterministic message shape |
 |---|---|
@@ -8142,12 +8270,31 @@ without agreement 与 full separation，故 strict inclusion 由 kernel proof接
 
 ### T-036　disposition census fixture
 
-fixture frozen report 恰含四个不同 `statement_id`，分别登记 finite occurrence、structural
-occurrence、bounded report-only truncation 与
-`unreachable/no_canonical_object_carrier`。期望 class counts $(1,1,1,1)$、reason count $1$、
-keys exact cover。删除、复制、stale identity、伪改 class payload 依次触发
-IE-C034--IE-C037；另令不同 theorem `Name` 复用同一 `statement_id` 必须触发 IE-C035，修改
-totals 触发 IE-C044。
+fixture 使用 `TruthExportCommand` 当前发射的 truth export dialect，同时包含五个
+`freeze_status=frozen`、`kind=theorem` 的 nodes、一个未冻结 theorem 与一个 frozen 非 theorem；
+后两者必须被排除。五个 frozen theorem keys 的 structured `Name` 与 `statement_id` 各自不同。
+前四行分别为 certified finite occurrence、structural occurrence、bounded report-only truncation
+与 `unreachable/no_canonical_object_carrier`；最后一行是绑定 exact key、owning module、census
+root、完整 import closure 且查询已完成的 observed `noRegisteredRealizationOrCertificate`。
+unreachable 行另带绑定 statement／key／semantic contract／candidate domain 的具名 closed-reason
+proof，不能用 absence 充作证据。
+
+期望 `accounted=5`、`certified=4`、`observed=1`、certified class counts $(1,1,1,1)$，
+`noCanonicalObjectCarrier` reason count $1$、其余 reason 为零；observation status 分项为
+`noRegisteredRealizationOrCertificate=1`、其余为零。keys exact cover，
+`accounting_complete=true`、`certified_complete=false`，AC-023 未满足。
+另以真实有限证据替换 observed 行的正例才可得 `certified=5`、`observed=0`、
+`certified_complete=true`；不能只改 tag／flag。
+
+删除、复制（含同 key 的 certified／observed 重复）、stale identity、伪改 class payload
+依次触发 IE-C034--IE-C037；不同 theorem `Name` 复用同一 `statement_id` 仍触发 IE-C035。
+遗漏 owning module 的 import closure、少列任一 transitive import、错误 root、未完成 query、
+把 generator 空列表作为完成证据、伪造 observation status，均触发 IE-C044。
+把 observed／registry absence 改标为 unreachable 且缺对应 closed-reason proof，或其 proof
+不绑定指定 statement／key／reason／semantic contract／candidate domain，均触发 IE-C037。
+修改任一 total、把 observed 计入 certified、令混合 inventory 的 `certified_complete=true`，
+或把未冻结／非 theorem node 加入 inventory，均触发 IE-C044。所有拒绝均为报告校验，
+census fixture 不把 artifact 接成 seal input 或 required gate。
 
 ### T-037　extensional quotient mutation
 
@@ -8432,8 +8579,8 @@ v4.2 dependency chain 落地后，Phase 10--11 只采用以下一个七步顺序
    `D5/S3/ConceptDynamics/InformationEscapeHierarchy/` 落地 `GeneratedKernel` lattice、
    `KernelChain`（`GeneratorSchedule`／`StrictKernelChain` API）、spectrum/overlap/refinement laws、
    `StructuralArena` 与 `StructuralCatalog`；
-4. disposition census tool 与完整 inventory：只读 frozen elaborated report，建立 exactly-one
-   `AnalysisDisposition` census；
+4. disposition census tool 与完整 inventory：只读 frozen elaborated truth export，建立 exactly-one
+   `CensusAssessment` census；记账先完备、认证分类逐步增加，两者按 Phase 11 明确分栏；
 5. judge v3 `kernel_projection` 与 covers-only ASCII renderer；
 6. E1、causal、disposition 与十一 singleton compatibility fixtures；
 7. gate design 与 owner $\tau$ ruling request；第 7 项保持 **OPEN**，不得接 required check。
@@ -8451,22 +8598,46 @@ coordinates 有 three or four parts）落在 sibling
 v1 §6.4 的 nested `InformationEscape/Counting/` proposal，`proof_method` 仍依工程规范 §8 写真实
 路线，import closure 仍依 §9／§16 seal。
 
-### Phase 11　v4.3 disposition census
+### Phase 11　disposition census
 
-本阶段只细化上述固定顺序的第 4 步，不另立 landing order。在 v4.2 import-closure
-identity／grouping mechanics 与第 3 步 structural engine 都存在后，census 必须：
+本阶段只细化上述固定顺序的第 4 步，不改变各步依赖。在 import-closure identity／grouping
+mechanics 与第 3 步 structural engine 都存在后，依第 8.7 节 owner 2026-09-08 裁决，census 必须：
 
-1. Lean Meta tool 只读完整 frozen elaborated report，按 theorem `statement_id` 建 inventory；
-2. 每个 key 恰由 finite／structural／bounded truncation／unreachable 之一覆盖；
-3. 输出全库 counts、每个 unreachable reason counts 与 exact row list，并验证 keys equality；
-4. disposition records 绑定 immutable HEAD/report inputs；census report 不回写数学；
-5. census 完成后才进入第 5 步 judge projection／ASCII；其后依次只能是第 6 步 fixtures 与
+1. 先完成 accounting：Lean Meta tool 只读当前 truth export dialect 的完整 elaborated nodes，
+   仅从 `freeze_status=frozen` 且 `kind=theorem` 的 nodes 派生
+   `(structured Name, statement_id)` keys；每个 key 恰有一个 `CensusAssessment`，observed
+   允许入账，但其完整 scope 与 completed query 必须由 census 自己核实；
+2. certified classification 逐步增加：只有证据成立才写 finite／structural／bounded truncation／
+   unreachable disposition；其余按实际完成查询写 observed，永不计作 classified、AC-023 完成
+   或 closed reason。认证完备目标持续 open，直到全部 key 都有 certified disposition；
+3. 成功判据是 honest complete accounting **且**显式 certified／observed split；报告
+   `accounted`、certified class／unreachable reason 分项、observed status 分项与 exact rows，
+   核实 keys equality 并输出两种 completeness flags。`observed > 0` 时
+   `certified_complete=false`，即使所有 keys 已入账也不例外；
+4. assessment records 绑定 immutable HEAD/report inputs；census report 不回写数学，永不作为
+   seal input 或 required gate；
+5. 上述记账与分栏里程碑成立后才进入第 5 步 judge projection／ASCII；其后依次只能是第 6 步 fixtures 与
    第 7 步保持 OPEN 的 dual-novelty gate design／owner $\tau$ ruling request。
 
-census 的成功条件是 honest complete classification，不是提高 finite percentage。没有 canonical
-finite carrier 的 Real dynamics、function spaces 或 unbounded-index families 优先进入 structural
-class；只有满足 closed reason 的对象才进入 unreachable，bounded experiment 在无 transfer
-theorem 时明确 `report-only`。
+里程碑不以 finite percentage 定义，也不以“所有 rows 都是 observed”定义；成功要求完整诚实
+记账、已有证据的认证及显式分栏，不能把已有认证退回 observed 来声称完成。它与 AC-023 的
+认证完备是两个命题。Real dynamics、function spaces 或 unbounded-index families 只有具备
+structural 所需证据才进入该 class；未有证据不自动分类。只有满足专属 closed-reason proof
+的对象才进入 unreachable；bounded experiment 在无 transfer theorem 时仍明确 `report-only`。
+
+本步骤内的落地顺序固定为：S0 先把裁决写入本 spec（content plane）；J1 为已落地的 current
+truth export 读取与 frozen 过滤（#6340）；**J2 随后**在 `tools/lean-inspector/**` 落
+assessment／closed-reason evidence contract 与合成 fixtures；**J3 在 J2 之后**于 `tools/**`
+落 generator／loader，从 export 与 elaborated environment 产生并核查 assessment inventory。
+J2／J3 均为独立 judge-plane PR，依 `CLAUDE.md` 器律⑦″先在 `integration-census-0908` 验证；
+不与内容行同 PR。真实内容行只在证据存在时落于 `D5/**`，每模块最多 100 条内容行且满足
+SL-003 的模块与目录容量约束；generator 不以空列表为完成证据，不为满足计数生成无证据的内容行。
+上述 S0／J2／J3 只细分第 4 步，不提前激活第 7 步 GATE。
+
+**实测基线（2026-09-08，dev `f222885ccb`，第 8.7 节裁决所据读数）**：
+`accounted=22,195`、`certified=11`（全部 finite；structural、bounded truncation 与 certified
+unreachable 均为 0）、`observed=22,184`。这是首张全库图的测量基线，非目标数量，亦不声称
+该次计数已由尚待落地的 J2／J3 产生；按本裁决其 `certified_complete=false`，AC-023 未满足。
 
 ---
 
@@ -8652,9 +8823,24 @@ report-only／transfer theorem，真正不可达者使用 closed reason。finite
 
 ### AC-023　Disposition census completeness
 
-全库 frozen theorem keys 与 `AnalysisDisposition` keys 完全相等、每 key 恰一次；artifact 报告
-四类 counts、每个 unreachable reason count 与 exact rows。identity 绑定 HEAD elaborated
-`statement_id`，arena 来自显式 realization，不从 statement syntax 推断。
+必须分别给出两个命题，不得互相冒充：
+
+1. **记账完备（accounting completeness）**：从 frozen elaborated truth export 中
+   `freeze_status=frozen` 且 `kind=theorem` 的 nodes 取得全部
+   `(structured Name, statement_id)` keys，与 `CensusAssessment` inventory keys 完全相等，
+   每 key 恰一次，并保持第 23.6 节的 HEAD／report inputs／root 绑定与唯一性约束；
+2. **认证完备（certified completeness）**：记账完备，且每个 key 的 row 都是语义证据已验证的
+   `certified (AnalysisDisposition key)`，即 finite／structural／bounded truncation／带专属
+   closed-reason proof 的 unreachable 之一。**本 AC 只由认证完备满足**；记账完备是报告中的
+   前提，不是履行。
+
+observed 必须是第 23.6 节规定的 exact key／module／root／import-closure completed query
+observation，永不计作 classified、永不计入本 AC、永不算 closed reason。registry absence
+不能产生 unreachable；后者的证书必须绑定 statement、key、semantic contract 与 candidate
+domain。arena 仍来自显式 realization，不从 carrier／statement syntax 推断（第 8.7 节）。
+artifact 报告 `accounted`、`certified`（四类与 unreachable reason 分项）、`observed`
+（status 分项）及 exact rows，并按第 23.6 节输出两种 completeness flags；`observed > 0`
+时 `certified_complete=false`。census 只作报告，永不作为 seal input 或 required gate。
 
 ### AC-024　Bounded kernel projection
 
@@ -9574,9 +9760,11 @@ v4.3 不修改第 48、49 节的任何字节；它在 v4.2 shared-arena／analys
 6. finite State 使用 exact reflected counts/rates；任意 State 使用
    `StructuralArena`／`StructuralCatalog` 与 strict-inclusion pair witness。已落地
    `StructuralNovelty` 仍是 finite-only bridge，不称 universal；
-7. elaborated frozen report 中每个 theorem `statement_id` 恰有一个
-   `AnalysisDisposition`：finite occurrence、structural occurrence、bounded finite truncation、
-   unreachable closed reason；object arena 必须显式声明，不能从 closed Prop 真值推断；
+7. frozen elaborated truth export 中每个 theorem `(structured Name, statement_id)` 恰有一个
+   `CensusAssessment`；记账完备与认证完备按第 8.7、23.6 节分开。只有 certified 分支的
+   finite occurrence、structural occurrence、bounded finite truncation、unreachable closed
+   reason 算已分类；observed 永不履行 AC-023。object arena 必须显式声明，不能从 closed Prop
+   真值推断，census artifact 永不作为 seal input 或 required gate；
 8. `TrivialInCatalog` 是 $U_i=\varnothing$／structural non-strictness，catalog-relative 且对
    membership 非单调。finite maximal catalog 的 zero members 继续由 IE-C007 全量收集后拒绝；
 9. schema v3 additive `kernel_projection` 采用 `boundary-and-certified-chains`，其中
@@ -9604,5 +9792,5 @@ v4.3 不修改第 48、49 节的任何字节；它在 v4.2 shared-arena／analys
 
 因此 v4.3 回答“树还是 DAG”：数学对象是有限 closure lattice，操作投影是可含 shortcuts 的
 full strict generator DAG；只有该 lattice 的 Hasse diagram 在 nested chain 特例才是 path／tree，
-full strict DAG 仍不因此成为 tree。它也把“适用于所有定理”改写为可验的 total disposition
-census，而不是对不可有限计数对象作虚假统一数值主张。
+full strict DAG 仍不因此成为 tree。它也把“适用于所有定理”改写为分别报告完整记账与认证
+完备的 census，而不是对不可有限计数对象作虚假统一数值主张。
