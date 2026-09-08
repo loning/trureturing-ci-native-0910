@@ -67,6 +67,29 @@ public sealed class LeanSourceTokenizerTests
     }
 
     [Fact]
+    public void RegisteredProductMapNotationPreservesAdjacentPrimedIdentifier()
+    {
+        var tokens = LeanSourceTokenizer.Tokenize("f \u2297'g'");
+        Assert.Equal(new[] { "f", "\u2297'", "g'" }, tokens.Select(static token => token.Text));
+        Assert.False(tokens[1].IsIdentifier);
+        Assert.Equal("g'", tokens[2].Identifier);
+        Assert.Equal(4, tokens[2].Column);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void MalformedCharacterAfterUnicodeSymbolFailsClosedWithLine(bool includeInterpolationTerms)
+    {
+        const string source = "\n\u2260'a";
+        var exception = Assert.Throws<LeanSourceExtractionException>(() => includeInterpolationTerms
+            ? LeanSourceTokenizer.TokenizeIncludingInterpolationTerms(source)
+            : LeanSourceTokenizer.Tokenize(source));
+        Assert.Equal(2, exception.Line);
+        Assert.Equal("Lean character literal is unterminated or malformed.", exception.Message);
+    }
+
+    [Fact]
     public void CharacterLiteralAfterUnicodeOperatorRetainsItsSpelling()
     {
         var tokens = LeanSourceTokenizer.Tokenize("')' \u2260'}'");

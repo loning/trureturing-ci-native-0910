@@ -113,6 +113,47 @@ public sealed class NativeDecideSourceRuleTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void MalformedCharacterAfterUnicodeSymbolBlocksSelectedSourceWithLine(bool baseline)
+    {
+        var fixture = Source("example : True := by decide\n", baseline);
+        fixture.Files[Path] += "example : 'b' \u2260'a\n";
+        var changes = (Path, baseline ? RawChangeKind.Modified : RawChangeKind.Added);
+        var diagnostic = Assert.Single(Evaluate(fixture, changes));
+        Assert.Equal(Path, diagnostic.Path);
+        Assert.Equal(AdmissionEffect.Block, diagnostic.AdmissionEffect);
+        Assert.Equal(DisplaySeverity.Error, diagnostic.DisplaySeverity);
+        Assert.Equal("NATIVE_DECIDE_LEXICAL_ERROR line=2: Lean character literal is unterminated or malformed.", diagnostic.Message);
+        Assert.Equal($"SL-035 {Path}: {diagnostic.Message}", diagnostic.Render());
+
+        var completed = Execute(fixture, changes);
+        Assert.Contains(completed.ExecutedRules, id => id.Value == Rule);
+        Assert.Equal(diagnostic, Assert.Single(completed.Diagnostics, item => item.RuleId.Value == Rule));
+    }
+
+    [Theory]
+    [InlineData("decide")]
+    [InlineData("native_decide")]
+    public void RegisteredProductMapNotationPreservesFollowingSourceCheck(string tactic)
+    {
+        var fixture = Source("import Mathlib.Data.TypeVec\nopen scoped MvFunctor\n"
+            + "example {n : Nat} {a b : TypeVec n} (f g' : a \u27f9 b) : (f \u2297'g') = (f \u2297'g') := rfl\n"
+            + $"example : True := by {tactic}\n");
+        var diagnostics = Evaluate(fixture, (Path, RawChangeKind.Added));
+        if (tactic == "decide")
+        {
+            Assert.Empty(diagnostics);
+        }
+        else
+        {
+            var diagnostic = Assert.Single(diagnostics);
+            Assert.Equal(Path, diagnostic.Path);
+            Assert.Equal("NATIVE_DECIDE_SOURCE line=4: bare native_decide token is forbidden in changed D5 Lean source", diagnostic.Message);
+        }
+    }
+
+    [Theory]
     [InlineData(RawChangeKind.Added)]
     [InlineData(RawChangeKind.Modified)]
     [InlineData(RawChangeKind.Copied)]

@@ -102,23 +102,14 @@ internal static class LeanSourceTokenizer
                 }
                 else
                 {
-                    // Registered mathlib notation wins before lookahead at the following apostrophe.
+                    // Pinned mathlib registers complete primed tokens in InfiniteSum/Defs.lean
+                    // (sum/product) and Data/TypeVec.lean (product map).
                     var symbol = index + 1 < source.Length && source.Substring(index, 2) is
                         ":=" or "=>" or "->" or "<-" or "::" or "<=" or ">=" or "==" or "!="
-                            or "''" or "\u2211'" or "\u220f'"
+                            or "''" or "\u2211'" or "\u220f'" or "\u2297'"
                             ? source.Substring(index, 2)
                             : source.Substring(index, char.IsSurrogatePair(source, index) ? 2 : 1);
                     Advance(symbol.Length);
-                    // Unicode symbolic notation can carry primes (for example mathlib's tsum/tprod).
-                    // ASCII operators still allow an adjacent character literal, as in :=')'.
-                    if (symbol[0] > 127 && Rune.IsSymbol(Rune.GetRuneAt(symbol, 0)))
-                    {
-                        while (index < source.Length && source[index] == '\'' && !AtCharacterLiteral())
-                        {
-                            Advance();
-                        }
-                    }
-
                     if (symbol.Length == 1 && symbol[0] is '(' or '[' or '{')
                     {
                         brackets.Push((symbol[0], tokenLine));
@@ -249,24 +240,6 @@ internal static class LeanSourceTokenizer
             }
 
             throw Error("Lean raw string literal is unterminated.", startLine);
-        }
-
-        private bool AtCharacterLiteral()
-        {
-            var start = (index, line, column);
-            try
-            {
-                ReadCharacter();
-                return true;
-            }
-            catch (LeanSourceExtractionException)
-            {
-                return false;
-            }
-            finally
-            {
-                (index, line, column) = start;
-            }
         }
 
         private void ReadCharacter()
