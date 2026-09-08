@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Constants/RecordEntropy.haar_record_entropy_bits
     target_statement_id: sha256:62b894ace0037d4ccf1192677705a5f4954c848cd7d9a4f6500259da54986380
 receipts:
-  scribe: []
   unresolved_subitems: []

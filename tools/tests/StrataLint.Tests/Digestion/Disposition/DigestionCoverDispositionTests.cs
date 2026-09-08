@@ -118,9 +118,7 @@ public sealed partial class DigestionQuarantineTests
             "atom-dispositioned",
             new DigestionFingerprints(Digest, Digest),
             [],
-            new DigestionReceipts(
-                [],
-                ["remaining theorem clause"],
+            new DigestionReceipts(["remaining theorem clause"],
                 [],
                 null,
                 CoverDisposition: new DigestionCoverDisposition(

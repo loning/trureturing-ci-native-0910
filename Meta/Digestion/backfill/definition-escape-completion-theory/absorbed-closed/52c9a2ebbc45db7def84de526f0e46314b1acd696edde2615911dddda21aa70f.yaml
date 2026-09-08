@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/DefinitionEscapeSemantics/SemanticTransportCertificateValidity.valid_semantic_transport_cert_iff_valid_transport_cert
     target_statement_id: sha256:dc909392553ec489ecd48231f12829bddc81c3fed53ae29ba79fa1480727764a
 receipts:
-  scribe: []
   unresolved_subitems: []

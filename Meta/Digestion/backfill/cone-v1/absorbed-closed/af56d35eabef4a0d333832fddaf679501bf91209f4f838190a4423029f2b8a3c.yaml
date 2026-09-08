@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/QuantumChannels/DecoherenceFreeze.decoherence_freeze_iff_above_critical
     target_statement_id: sha256:e8db3395491b00180f43cef330eafa14c7b5098adc29c89311ce3f5a3a74ac23
 receipts:
-  scribe: []
   unresolved_subitems: []

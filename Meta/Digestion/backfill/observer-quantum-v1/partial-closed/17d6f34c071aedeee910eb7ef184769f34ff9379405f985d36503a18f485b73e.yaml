@@ -16,7 +16,6 @@ coverage_gids:
   - gid: D5/S3/QuantumContext/QuarticContextWitness.quartic_pricing_context_counterexample
     target_statement_id: sha256:eea770e888f242d26823969e4868f38f146312d00d5285b2e272461a7be2bb7c
 receipts:
-  scribe: []
   unresolved_subitems:
     - complete-solution-space-characterization
     - gleason-representation-and-uniqueness-dimension-at-least-three

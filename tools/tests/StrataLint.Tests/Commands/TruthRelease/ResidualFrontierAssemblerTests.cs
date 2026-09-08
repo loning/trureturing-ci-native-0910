@@ -104,7 +104,7 @@ public sealed class ResidualFrontierAssemblerTests
             DigestionMigrationState.Partial,
             DigestionTruthState.Closed,
             [],
-            receipts: new DigestionReceipts([], ["uncovered-control-clause"], [], null),
+            receipts: new DigestionReceipts(["uncovered-control-clause"], [], null),
             sourceId: SourceId,
             sourcePath: SourcePath) with
         {
@@ -187,7 +187,6 @@ public sealed class ResidualFrontierAssemblerTests
         DigestionTruthState.Closed,
         [],
         new DigestionReceipts(
-            [new DigestionScribeReceipt(TargetGid, definitionHash, emissionHash)],
             [],
             [],
             null),

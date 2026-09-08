@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Zeros/PochhammerDeformation/QuadraticInterval.lOp_quadratic
     target_statement_id: sha256:707e6c37f64b9da11c8f342467b45845cc0241759a6df9f61faab95fa9ed90ad
 receipts:
-  scribe: []
   unresolved_subitems: []

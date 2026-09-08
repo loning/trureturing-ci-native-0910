@@ -4,7 +4,6 @@ fingerprints:
 cas_ref: sha256:aea75902e3896658ebc02ee2f40e59171b6a7ee17fb6e5d97dfef3a285b06c1a
 coverage_gids: []
 receipts:
-  scribe: []
   unresolved_subitems: []
   nonpropositional:
     justification: 'Proof-design commentary on atom f884284dcbe90268d39d57188abc63dabeecf00a330b71af9a5ef27099f2fb28: allowing non-strict inequality removes a later certification concern about exact equality involving gamma, but adds no theorem beyond the equivalence already stated.'

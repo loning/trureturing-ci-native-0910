@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Arith/GoldenResourceOptimalInteger.golden_resource_unique_optimum
     target_statement_id: sha256:149b4bf984c5046f8cae1063275f5c9a6640ef07a6ce868a74c506293cc06d7e
 receipts:
-  scribe: []
   unresolved_subitems: []

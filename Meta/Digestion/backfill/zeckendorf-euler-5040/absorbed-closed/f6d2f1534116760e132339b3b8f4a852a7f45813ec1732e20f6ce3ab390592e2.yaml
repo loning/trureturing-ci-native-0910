@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S0/Tower/OneStepMemoryUniqueNaming.one_step_memory_unique_naming
     target_statement_id: sha256:35b3ad37612ed56f62b2e16c0f969cc4cb77686f6c6e28e4dc4adc2b739ecdef
 receipts:
-  scribe: []
   unresolved_subitems: []

@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S0/Computability/DescriptionComplexity/WideVacuumBand.arbitrarily_wide_vacuum_band
     target_statement_id: sha256:736b86db018172aeedf9a7c697bd0c4e18db0e9a18346960ab88c17d43790050
 receipts:
-  scribe: []
   unresolved_subitems: []

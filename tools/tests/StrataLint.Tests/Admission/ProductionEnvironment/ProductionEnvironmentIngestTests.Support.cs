@@ -114,7 +114,6 @@ public sealed partial class ProductionEnvironmentTests
         cas_ref: {{atom.Fingerprints.RawSha256}}
         coverage_gids: []
         receipts:
-          scribe: []
           unresolved_subitems: []
         """;
 

@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/DefinitionEscapeSemantics/TransportRefutationProjection.transport_refutation_witness_projects_to_prop
     target_statement_id: sha256:3eb2d0b6db787907de5259da0b09c038271bf6fd75b884fd8703ea6fbf059440
 receipts:
-  scribe: []
   unresolved_subitems: []

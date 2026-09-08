@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/OperationalTuition/IndependentConvergenceDiscernment.independent_discernment_mono
     target_statement_id: sha256:8cea824909a0bd541297c99180acd548dad5a1517292e2b95580fc8dc7765ddf
 receipts:
-  scribe: []
   unresolved_subitems: []

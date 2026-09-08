@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S0/Naming/SkewedIndependentKillRate.skewed_independent_kill_rate
     target_statement_id: sha256:1057223963afd2ad00d497514e6b40c62f29cc4a2749e08682b3f4945d016c46
 receipts:
-  scribe: []
   unresolved_subitems: []

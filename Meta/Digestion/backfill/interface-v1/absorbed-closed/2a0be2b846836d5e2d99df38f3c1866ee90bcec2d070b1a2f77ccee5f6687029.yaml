@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Constants/Midslope/ThreeValueEvaluation.three_value_evaluation
     target_statement_id: sha256:1f989aa8cffdf17e65c0f9568aa7a6ab14105ed90d128bc3d044540d313b2952
 receipts:
-  scribe: []
   unresolved_subitems: []

@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/DefinitionEscapeAdjudication/ParetoLinearExtensionStopRefutation.op5_pareto_stop_linear_extension_equivalences_refuted
     target_statement_id: sha256:aa3b0a77126d745158fbae9000895b14e4b167986479bdcf078e1e0969ecbbdd
 receipts:
-  scribe: []
   unresolved_subitems: []

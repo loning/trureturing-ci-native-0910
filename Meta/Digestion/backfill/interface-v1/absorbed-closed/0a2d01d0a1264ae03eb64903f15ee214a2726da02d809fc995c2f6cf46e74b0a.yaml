@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S0/Tower/Hardness/RationalSpectrum.rational_tower_hardness_spectrum
     target_statement_id: sha256:eb100e66498fb672850a6fd7e0cad522bf3c946fef90ebdf3a683b189f1fb503
 receipts:
-  scribe: []
   unresolved_subitems: []

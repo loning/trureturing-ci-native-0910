@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S0/Diagonal/Probability/LinearMarginConcentration.linear_margin_concentration
     target_statement_id: sha256:933b8f76c4595c2911594cc8c062dc0c9783b0349d63196d41f8fa4227872726
 receipts:
-  scribe: []
   unresolved_subitems: []

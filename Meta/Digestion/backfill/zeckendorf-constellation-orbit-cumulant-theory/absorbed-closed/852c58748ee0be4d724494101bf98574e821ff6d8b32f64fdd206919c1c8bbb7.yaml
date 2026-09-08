@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/PrimeForms/GoldenEuler/ModFiveLocalEulerFactor.mod_five_local_observer_determinant
     target_statement_id: sha256:46d8700097c38bc32e50277f5002965a145a1e8fa707509356c20188baf5fd42
 receipts:
-  scribe: []
   unresolved_subitems: []

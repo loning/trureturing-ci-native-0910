@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/GraphColoring/GraphCoverDomination.regular_cover_small_domination
     target_statement_id: sha256:312c85e77558874d9b7f7ce08ef74b209dd70b5453508511d0f31cfd28ec0c41
 receipts:
-  scribe: []
   unresolved_subitems: []

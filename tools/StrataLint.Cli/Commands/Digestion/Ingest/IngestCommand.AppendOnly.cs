@@ -257,8 +257,7 @@ internal static partial class IngestCommand
     }
 
     private static bool IsAllowedNewReceipt(DigestionReceipts receipts) =>
-        receipts.Scribe.IsEmpty
-        && receipts.UnresolvedSubitems.IsEmpty
+        receipts.UnresolvedSubitems.IsEmpty
         && receipts.TailAuthorization is null
         && receipts.Quarantine is null
         && receipts.CoverDisposition is null;

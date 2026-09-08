@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Governance/ConsumptionProductionInputSeparation.consumption_not_inverse_to_production_input
     target_statement_id: sha256:605833835264132c96db696158066d7fbdf3b97528110161983bcd206c81c960
 receipts:
-  scribe: []
   unresolved_subitems: []

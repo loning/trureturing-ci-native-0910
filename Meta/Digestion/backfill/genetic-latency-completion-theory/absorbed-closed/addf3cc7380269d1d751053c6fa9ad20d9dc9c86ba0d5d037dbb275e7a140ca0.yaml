@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/DefinitionEscape/DefinitionKernelGalois.not_mem_semanticClosure_iff_kernel_witness
     target_statement_id: sha256:604e0f73a50ec5cd9de73789c057e7bd3d75c67db3143ff0802577324176b231
 receipts:
-  scribe: []
   unresolved_subitems: []

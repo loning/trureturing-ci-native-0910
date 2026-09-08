@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/DefinitionEscapeRegrade/SemanticSketchTargetLaunderingBridge.semantic_sketch_target_laundering_iff_body_and_timestamp
     target_statement_id: sha256:6df4db8171baa5d482fee30f2efe7bbeb2992c50cbbc42f775cf2c73081796d2
 receipts:
-  scribe: []
   unresolved_subitems: []

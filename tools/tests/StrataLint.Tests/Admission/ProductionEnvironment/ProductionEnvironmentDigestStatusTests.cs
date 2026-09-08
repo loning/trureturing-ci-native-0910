@@ -109,7 +109,6 @@ public sealed partial class ProductionEnvironmentTests
             cas_ref: {{captured.Reference}}
             coverage_gids: []
             receipts:
-              scribe: []
               unresolved_subitems: []
               chain_atoms: []
               tail_authorization: null
@@ -196,7 +195,7 @@ public sealed partial class ProductionEnvironmentTests
                 new DigestionCoverageEdge("D5/S0/Carrier/Zeta", null),
                 new DigestionCoverageEdge("D5/S0/Carrier/Alpha", null),
             ],
-            new DigestionReceipts([], [], [], null),
+            new DigestionReceipts([], [], null),
             status,
             fingerprints.RawSha256);
         var evaluation = new DigestionLedgerEvaluation(
@@ -513,14 +512,8 @@ public sealed partial class ProductionEnvironmentTests
             .Replace(
                 "target_statement_id: null",
                 "target_statement_id: sha256:0000000000000000000000000000000000000000000000000000000000000000",
-                StringComparison.Ordinal)
-            .Replace(
-                "scribe: []",
-                "scribe:\n"
-                + $"    - gid: {gid}\n"
-                + $"      definition_sha256: {definitionSha256}\n"
-                + $"      emission_sha256: {emissionSha256}",
                 StringComparison.Ordinal);
+
         foreach (var files in new[] { fixture.Files, fixture.Baseline })
         {
             files.Remove(RuleFixture.FixtureBackfillAtomPath);

@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Quantum/Entanglement/QutritThresholdSharing.qutrit_two_share_reconstruction
     target_statement_id: sha256:96f5955341d9641ecb854686965f979ef5402e8f532bdab61ce2e09113987f61
 receipts:
-  scribe: []
   unresolved_subitems: []

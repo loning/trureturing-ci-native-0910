@@ -498,7 +498,6 @@ public sealed partial class DigestionAlignmentTests
             Fingerprints = atom.Fingerprints,
             Coverage = [new DigestionCoverageEdge(gid, targetStatementId)],
             Receipts = new DigestionReceipts(
-                [new DigestionScribeReceipt(gid, definitionHash, emissionHash)],
                 [],
                 chainAtoms,
                 null),
@@ -681,7 +680,7 @@ public sealed partial class DigestionAlignmentTests
             AtomId = atomId,
             Fingerprints = child.Fingerprints,
             Coverage = [],
-            Receipts = new DigestionReceipts([], [], [], null),
+            Receipts = new DigestionReceipts([], [], null),
             ProjectedStatus = new DigestionStatus(
                 DigestionMigrationState.Residual,
                 DigestionTruthState.Open),

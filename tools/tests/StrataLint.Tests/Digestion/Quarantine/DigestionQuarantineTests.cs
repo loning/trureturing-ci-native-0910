@@ -186,7 +186,6 @@ public sealed partial class DigestionQuarantineTests
             + $"cas_ref: {Digest}\n"
             + "coverage_gids: []\n"
             + "receipts:\n"
-            + "  scribe: []\n"
             + Indent(unresolved, 2)
             + quarantineBlock
             + "\nstatus:\n"
@@ -224,7 +223,7 @@ public sealed partial class DigestionQuarantineTests
             atomId,
             new DigestionFingerprints(Digest, Digest),
             [],
-            new DigestionReceipts([], [.. unresolvedSubitems], [], null, quarantine),
+            new DigestionReceipts([.. unresolvedSubitems], [], null, quarantine),
             new DigestionStatus(DigestionMigrationState.Residual, DigestionTruthState.Open),
             Digest);
 

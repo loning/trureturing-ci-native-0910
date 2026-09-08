@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Weil/PrimeAddress/PrimeAddress.finite_prime_modification_preserves_global_zero_set
     target_statement_id: sha256:05225d1cc9ab938b63ac7331dcb9294c24601d4881636791fb9d34e504948168
 receipts:
-  scribe: []
   unresolved_subitems: []

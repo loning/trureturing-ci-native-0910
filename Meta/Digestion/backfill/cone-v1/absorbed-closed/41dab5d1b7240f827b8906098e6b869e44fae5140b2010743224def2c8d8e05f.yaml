@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/QuantumChannels/AmplitudeDampingContraction.amplitude_damping_sld_rld_endpoints
     target_statement_id: sha256:e4917b18ff9de1f45db305666bf00f74e91823b040d5d86a33f3e2b5475e5306
 receipts:
-  scribe: []
   unresolved_subitems: []

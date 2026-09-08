@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Observer/Linear/SourceContributionDecomposition.source_contribution_unique_decomposition_iff_disjoint
     target_statement_id: sha256:3eca1f0930609362b8faecf82d17ca6e25ce93a8c42a18c77842fc4863d6a27d
 receipts:
-  scribe: []
   unresolved_subitems: []

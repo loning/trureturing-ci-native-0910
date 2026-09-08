@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Transport/TransportCertificateValidity.valid_transport_cert_criterion
     target_statement_id: sha256:f6e284c62c2da0016f8a6ff4ea58b9c8844ee37ed981117150b609276d01508a
 receipts:
-  scribe: []
   unresolved_subitems: []

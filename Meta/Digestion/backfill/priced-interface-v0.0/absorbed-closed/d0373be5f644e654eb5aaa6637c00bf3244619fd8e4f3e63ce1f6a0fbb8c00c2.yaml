@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S0/Naming/TestingTowerStructureMembership.testing_tower_has_multi_filtration_membership
     target_statement_id: sha256:85c2e852c0ad7918d6590a1d4930fe4bf0d2524ccc55f0e6d0585f963f8c786e
 receipts:
-  scribe: []
   unresolved_subitems: []

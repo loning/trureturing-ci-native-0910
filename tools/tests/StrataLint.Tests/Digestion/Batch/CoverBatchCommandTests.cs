@@ -416,7 +416,7 @@ public sealed partial class CoverBatchCommandTests
                     CasRef = parent.Fingerprints.RawSha256,
                     Coverage = inputs.Document.RequireDigestionEntries().Single(entry => entry.AtomId == Second).Coverage,
                     ProjectedStatus = new(DigestionMigrationState.Partial, DigestionTruthState.Closed),
-                    Receipts = new([], [], ChildIds, null),
+                    Receipts = new([], ChildIds, null),
                 };
                 var childEntries = children.Select((child, index) => parentEntry with
                 {
@@ -424,7 +424,7 @@ public sealed partial class CoverBatchCommandTests
                     Fingerprints = child.Fingerprints,
                     CasRef = child.Fingerprints.RawSha256,
                     Coverage = [],
-                    Receipts = new([], [], [], null),
+                    Receipts = new([], [], null),
                     ProjectedStatus = new(DigestionMigrationState.Residual, DigestionTruthState.Open),
                 });
                 document = document.WithDigestionSources([source with

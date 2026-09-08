@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/QuantumBounds/ReferenceFrame/ComplexReferenceFrameTaxExactSpan.complex_reference_frame_tax_exact_span
     target_statement_id: sha256:2f0ed5a7f956e3450dbfcf33080573dd527c290ead17eaf578b35cf0580590a2
 receipts:
-  scribe: []
   unresolved_subitems: []

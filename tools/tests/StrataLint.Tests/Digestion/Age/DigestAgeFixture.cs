@@ -75,7 +75,6 @@ internal sealed record DigestAgeFixture(RawRepositorySnapshot Raw, ImmutableArra
                 cas_ref: {{capture.Reference}}
                 coverage_gids: []
                 receipts:
-                  scribe: []
                   unresolved_subitems: []
                   chain_atoms: []
                   tail_authorization: null

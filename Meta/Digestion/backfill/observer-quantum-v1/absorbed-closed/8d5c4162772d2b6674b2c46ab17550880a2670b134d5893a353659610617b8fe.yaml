@@ -14,5 +14,4 @@ coverage_gids:
   - gid: D5/S3/QuantumChannels/NumericCoherenceCertificate.two_hundred_classical_channels_and_hadamard_certificate
     target_statement_id: sha256:fa0e195949a92b7651fefb3945be8eb7a77d38f8bde42d1426b22ad9118a2cef
 receipts:
-  scribe: []
   unresolved_subitems: []
