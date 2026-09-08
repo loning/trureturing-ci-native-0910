@@ -127,12 +127,13 @@ internal static partial class CoverBatchCommand
             .ToDictionary(static entry => entry.Path, StringComparer.Ordinal);
 
     private static void RequireSameInputs(IReadOnlyDictionary<string, RawRepositoryEntry> expected,
-        IReadOnlyDictionary<string, RawRepositoryEntry> actual)
+        IReadOnlyDictionary<string, RawRepositoryEntry> actual, Func<string, bool>? allowChange = null)
     {
         var mismatch = expected.Keys.Union(actual.Keys, StringComparer.Ordinal)
             .Order(StringComparer.Ordinal).FirstOrDefault(path =>
-                !expected.TryGetValue(path, out var before) || !actual.TryGetValue(path, out var after)
-                || !before.Bytes.AsSpan().SequenceEqual(after.Bytes.AsSpan()));
+                (!expected.TryGetValue(path, out var before) || !actual.TryGetValue(path, out var after)
+                    || !before.Bytes.AsSpan().SequenceEqual(after.Bytes.AsSpan()))
+                && allowChange?.Invoke(path) is not true);
         if (mismatch is not null)
             throw new InvalidOperationException($"shared cover context changed: {mismatch}");
     }
@@ -161,8 +162,24 @@ internal static partial class CoverBatchCommand
         if (exit == 0) exit = ValuesEmitter.Emit(root, false, output, error);
         if (exit == 0) exit = FileMapEmitter.Emit(root, false, output, error);
         if (exit != 0) return new(false, output.ToString(), error.ToString());
-        var dag = DagRenderCommand.Run(root, new(session.Current, session.Lean, session.Report), false,
+        var dag = DagRenderCommand.Run(root, new(ReadEmittedSnapshot(root, session), session.Lean, session.Report), false,
             documentsAssembly, session.Document);
         return new(dag.Success, output + dag.Output, error + dag.Error);
+    }
+
+    private static RepositorySnapshot ReadEmittedSnapshot(string root, CoverAtomCommand.Session session)
+    {
+        var manifestFile = session.Current.Files[RepoPath.CreateKnown(FileMapLoader.RelativePath)];
+        var manifest = FileMapLoader.Parse(manifestFile.RawBytes.AsSpan(), FileMapLoader.RelativePath);
+        var raw = GitRepositorySnapshotReader.ReadCurrent(root);
+        // Generated path membership affects DAG provenance; all authoritative inputs must still match.
+        RequireSameInputs(Inputs(session.CurrentRaw), Inputs(raw),
+            path => manifest.Match(path) is [{ Kind: FileMapKind.Generated }]);
+        IngestCommand.RequireLedgerUnchanged(root, session.CurrentRaw);
+        return SnapshotDecoder.Decode(raw) switch
+        {
+            SnapshotDecodeOutcome.Decoded decoded => decoded.Snapshot,
+            SnapshotDecodeOutcome.InfrastructureFailure failure => throw new InvalidOperationException(failure.Message),
+        };
     }
 }

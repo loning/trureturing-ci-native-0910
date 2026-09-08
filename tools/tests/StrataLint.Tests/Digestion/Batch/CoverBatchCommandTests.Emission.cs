@@ -18,12 +18,21 @@ public sealed partial class CoverBatchCommandTests
         using var batch = new BatchWorld { UseGitReader = true };
         WriteEmissionInputs(batch.Root);
         var reportPath = batch.WriteReportBundle();
+        foreach (var path in new[] { "Blueprint/D5/S0/Carrier/Probe.md", CanonicalValuesWriter.RelativePath })
+        {
+            ReviewRegressionTests.RunGit(batch.Root, "ls-files", "--error-unmatch", path);
+            TemporaryFileSystem.File.Delete(Path.Combine(batch.Root, path));
+            Assert.False(TemporaryFileSystem.File.Exists(Path.Combine(batch.Root, path)));
+        }
         var input = Row(First, Gid) + (partialFailure ? Row("missing-atom", Gid) : "") + Row(Second, OtherGid);
-        using var frozen = new FrozenLoadCounter();
-        using var ledger = new LedgerLoadCounter();
-        using var reports = new ReportLoadCounter();
-
-        var result = batch.RunProducers(input);
+        FrozenLoadCounter frozen;
+        LedgerLoadCounter ledger;
+        ReportLoadCounter reports;
+        CommandResult result;
+        using (frozen = new FrozenLoadCounter())
+        using (ledger = new LedgerLoadCounter())
+        using (reports = new ReportLoadCounter())
+            result = batch.RunProducers(input);
 
         output.WriteLine(result.Output + result.Error);
         Assert.Equal(partialFailure ? 1 : 0, result.ExitCode);
@@ -47,6 +56,49 @@ public sealed partial class CoverBatchCommandTests
             reports.Loads, frozen.Catalogs, frozen.Indexes, ledger.BaselineLoads,
             string.Join(',', ledger.CandidateSnapshotLoads));
         Assert.True(TemporaryFileSystem.File.Exists(reportPath));
+
+        var graphPath = Path.Combine(batch.Root, "Generated/truth-graph.v1.json");
+        var emittedGraph = TemporaryFileSystem.File.ReadAllBytes(graphPath);
+        var truth = DagLedgerCommandPreparation.BuildTruth(batch.Repository, new PrecomputedLeanReportSource(batch.Root));
+        var check = DagRenderCommand.Run(batch.Root, truth, true, typeof(BatchClaimDefinition).Assembly);
+        Assert.True(check.Success, check.Error + check.Output);
+        var canonical = DagRenderCommand.Run(batch.Root, truth, false, typeof(BatchClaimDefinition).Assembly);
+        Assert.True(canonical.Success, canonical.Error + canonical.Output);
+        Assert.Equal(emittedGraph, TemporaryFileSystem.File.ReadAllBytes(graphPath));
+        Assert.Equal(sequential.LedgerImage(), batch.LedgerImage());
+    }
+
+    [Theory]
+    [InlineData(FrozenPath)]
+    [InlineData("D5/S0/Carrier/Probe.lean")]
+    [InlineData(ProblemPath)]
+    public void FinalEmissionRejectsChangedAuthoritativeInputs(string changedPath)
+    {
+        using var world = new BatchWorld { UseGitReader = true };
+        WriteEmissionInputs(world.Root);
+        world.WriteReportBundle();
+        var calls = 0;
+        BatchClaimDefinition.Creating.Value = () =>
+        {
+            if (++calls == 3)
+                TemporaryFileSystem.File.AppendAllText(Path.Combine(world.Root, changedPath), "\n");
+        };
+        try
+        {
+            var result = world.RunProducers(Row(First, Gid) + Row(Second, OtherGid));
+
+            output.WriteLine(result.Output + result.Error);
+            Assert.Equal(1, result.ExitCode);
+            Assert.Equal(["applied", "applied"], Results(result).Select(item => item.Status).ToArray());
+            Assert.Contains("shared cover context changed: " + changedPath, result.Error, StringComparison.Ordinal);
+            Assert.Single(world.Entry(First).Coverage);
+            Assert.Single(world.Entry(Second).Coverage);
+            Assert.False(TemporaryFileSystem.File.Exists(Path.Combine(world.Root, "Generated/DAG.md")));
+        }
+        finally
+        {
+            BatchClaimDefinition.Creating.Value = null;
+        }
     }
 
     [Theory]
@@ -144,7 +196,9 @@ public sealed partial class CoverBatchCommandTests
         WriteProblem(root);
         WriteScribeFixture(root, "Trureturing.lean", "-- synthetic root module\n");
         LeanReportInputScriptTests.CopyBatchProducerInputs(root);
-        WriteScribeFixture(root, ".gitignore", ".lake/\nGenerated/\nBlueprint/**/*.md\nEvidence/D5/values.json\n");
+        WriteScribeFixture(root, ".gitignore", ".lake/\nGenerated/\ntools/Generated/scribe-emissions.v1.json\n");
+        WriteScribeFixture(root, "Blueprint/D5/S0/Carrier/Probe.md", "old blueprint projection\n");
+        WriteScribeFixture(root, CanonicalValuesWriter.RelativePath, "old values projection\n");
         foreach (var path in CanonicalValuesWriter.InputPaths)
         {
             if (!TemporaryFileSystem.File.Exists(Path.Combine(root, path)))
