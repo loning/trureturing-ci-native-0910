@@ -9,6 +9,7 @@ import pathlib
 import argparse
 import hashlib
 import os
+import re
 import subprocess
 import sys
 import time
@@ -72,6 +73,15 @@ def validate_summary(summary, *, requested, accounted):
     certified_complete = complete and summary["counts"]["observed"] == 0
     if summary["certified_complete"] is not certified_complete:
         raise ValueError("publication certified_complete does not use the full requested key set")
+
+
+def validate_fixture_export(report):
+    if report.get("source_commit") != "fixture-head":
+        raise ValueError("explicit input is synthetic fixture only; production revisions are rejected")
+    for node in report["nodes"]:
+        if not re.fullmatch(r"LeanInformationAudit/Tests/(?:[A-Za-z_][A-Za-z_0-9]*/)*[A-Za-z_][A-Za-z_0-9]*\.lean",
+                            node["repo_path"]):
+            raise ValueError("explicit input requires a synthetic fixture module path")
 
 
 def frozen_keys(report):
@@ -146,8 +156,9 @@ def execute(options):
         return step([*arguments, str(path)], label)
 
     try:
-        if not options.truth_export:
-            step(["make", "lean-cache-ensure"], "cache")
+        if options.fixture_truth_export:
+            validate_fixture_export(json.loads(pathlib.Path(options.fixture_truth_export).read_bytes()))
+        step(["make", "lean-cache-ensure"], "cache")
         for module in ["Census.Coverage", "DispositionEvidence", "DispositionCensus",
                        "Census.Query", "Census.Command", "Census.Publish"]:
             source = repository / "tools/lean-inspector/LeanInformationAudit" / (module.replace(".", "/") + ".lean")
@@ -155,8 +166,8 @@ def execute(options):
             target.parent.mkdir(parents=True, exist_ok=True)
             step(["lake", "env", "lean", "-R", str(repository / "tools/lean-inspector"),
                   "-o", str(target), str(source)], "build-" + module)
-        if options.truth_export:
-            report_path = pathlib.Path(options.truth_export).resolve()
+        if options.fixture_truth_export:
+            report_path = pathlib.Path(options.fixture_truth_export).resolve()
         else:
             step(["git", "diff", "--exit-code", "HEAD", "--", "D5", "lean-toolchain",
                   "lake-manifest.json", "lakefile.toml", "Golden/Frozen/state"], "pinned-inputs")
@@ -165,6 +176,10 @@ def execute(options):
         report_bytes = report_path.read_bytes()
         report = json.loads(report_bytes)
         head = report["source_commit"]
+        if not options.fixture_truth_export:
+            environment_head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repository, text=True).strip()
+            if head != environment_head:
+                raise ValueError("report source_commit differs from the queried environment HEAD")
         state["source_commit"] = head
         state["report_sha256"] = "sha256:" + hashlib.sha256(report_bytes).hexdigest()
         all_keys = frozen_keys(report)
@@ -173,13 +188,13 @@ def execute(options):
         state["selected_keys"] = len(keys)
         if not keys:
             raise ValueError("no frozen theorem keys selected")
-        if options.truth_export:
+        if options.fixture_truth_export:
             modules = sorted({node["repo_path"].removesuffix(".lean").replace("/", ".") for node in report["nodes"]})
         else:
             tracked = subprocess.check_output(["git", "ls-files", "-z", "--", "D5"], cwd=repository)
             modules = sorted(path.decode().removesuffix(".lean").replace("/", ".")
                              for path in tracked.split(b"\0") if path.endswith(b".lean"))
-        if options.prefix != "D5" and not options.truth_export:
+        if options.prefix != "D5" and not options.fixture_truth_export:
             modules = [module for module in modules
                        if module == options.prefix or module.startswith(options.prefix + ".")]
         partitions = partition_modules(modules, options.partition_modules)
@@ -190,7 +205,7 @@ def execute(options):
         save()
         evidence_modules = set()
         for number, (label, members) in enumerate(partitions):
-            if not options.truth_export:
+            if not options.fixture_truth_export:
                 step(["lake", "--no-build", "build", *members], "environment-" + label)
             relative = f"Group{number // 20:04d}.Part{number:05d}"
             output = directory / "discovery" / relative.replace(".", "/") / "discovery.json"
@@ -296,7 +311,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", required=True, help="new run-local directory")
     parser.add_argument("--lean-report", default=".lake/build/stratalint/raw-lean-report.json")
-    parser.add_argument("--truth-export", help="explicit export input (also used by fixtures)")
+    parser.add_argument("--fixture-truth-export", help="synthetic fixture input only; rejects production paths and revisions")
     parser.add_argument("--prefix", default="D5", help="explicit partial measurement scope")
     parser.add_argument("--partition-modules", type=int, default=32)
     return execute(parser.parse_args())

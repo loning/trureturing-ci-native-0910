@@ -88,7 +88,7 @@ def main():
     results = []
     for label in ("first", "second"):
         run_directory = directory / label
-        outcome = execute(argparse.Namespace(output=str(run_directory), truth_export=str(report_path),
+        outcome = execute(argparse.Namespace(output=str(run_directory), fixture_truth_export=str(report_path),
                                             lean_report=None, prefix="LeanInformationAudit", partition_modules=32))
         if outcome != 0:
             raise RuntimeError("fixture census did not complete")
@@ -115,7 +115,7 @@ def main():
             cwd=repository, env=env)
     assert results[0] == results[1], "artifact bytes are nondeterministic"
     partial = directory / "partial-certified"
-    assert execute(argparse.Namespace(output=str(partial), truth_export=str(report_path),
+    assert execute(argparse.Namespace(output=str(partial), fixture_truth_export=str(report_path),
                                       lean_report=None, prefix=finite, partition_modules=32)) == 2
     summary = json.loads((partial / "census.json.summary.json").read_text())
     assert summary["status"] == "partial" and summary["requested_keys"] == 4

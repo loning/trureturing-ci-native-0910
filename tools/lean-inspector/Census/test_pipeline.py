@@ -4,6 +4,9 @@ import importlib.util
 import pathlib
 import tempfile
 import unittest
+from unittest import mock
+import argparse
+import json
 
 PROGRAM = pathlib.Path(__file__).with_name("pipeline.py")
 
@@ -83,6 +86,22 @@ class PipelineTests(unittest.TestCase):
         summary["requested_keys"] = 1
         with self.assertRaisesRegex(ValueError, "requested"):
             self.program.validate_summary(summary, requested=4, accounted=1)
+
+    def test_fixture_export_rejects_stale_report_before_queries(self):
+        with tempfile.TemporaryDirectory() as directory:
+            report = pathlib.Path(directory) / "stale.json"
+            report.write_text(json.dumps({"source_commit": "0" * 40, "nodes": []}))
+            options = argparse.Namespace(output=str(pathlib.Path(directory) / "run"),
+                                         fixture_truth_export=str(report))
+            with mock.patch("resources.run", side_effect=AssertionError("query started")):
+                with self.assertRaisesRegex(ValueError, "synthetic fixture"):
+                    self.program.execute(options)
+
+    def test_fixture_export_rejects_production_module_paths(self):
+        for path in ("D5/S0/Production.lean", "LeanInformationAudit/Tests/../../D5/Bad.lean"):
+            with self.subTest(path=path), self.assertRaisesRegex(ValueError, "fixture module"):
+                self.program.validate_fixture_export({"source_commit": "fixture-head",
+                                                      "nodes": [{"repo_path": path}]})
 
     def test_scope_name_pool_deduplicates_across_partitions(self):
         import emission

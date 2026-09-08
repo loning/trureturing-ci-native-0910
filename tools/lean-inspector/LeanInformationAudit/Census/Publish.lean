@@ -91,6 +91,7 @@ def summaryFields (report : FrozenReport) (inventory : DispositionInventory)
     ("head_sha", toJson report.headSha), ("report_sha256", toJson report.reportSha256),
     ("source_inputs", toJson sources), ("theorem_count", toJson report.theorems.size),
     ("requested_keys", toJson report.theorems.size),
+    ("input_kind", toJson (if report.headSha == "fixture-head" then "synthetic_fixture" else "production")),
     ("status", toJson (if complete then "complete" else "partial")),
     ("coverage_theorem_count", toJson counts.accounted),
     ("counts", toJson counts), ("certified_complete", toJson (complete && counts.observed == 0))]
