@@ -49,5 +49,5 @@ This is a named downstream consumer of the new variational theorem and of the ex
 - Truth anchor: `D5/S3/Weil/ZetaAnalytic/ProjectiveRayleighRouche.bounded_linear_readout_error_sq`
 - Truth anchor: `D5/S3/Weil/ZetaAnalytic/ProjectiveRayleighRouche.bounded_linear_readout_rouche_bound`
 - Truth anchor: `D5/S3/Weil/ZetaAnalytic/ProjectiveRayleighRouche.projective_rayleigh_rectangle_zero_count`
+- Dependency: [D5/S3/Weil/ProjectiveRayleigh/ProjectiveRayleighCapture](../ProjectiveRayleigh/ProjectiveRayleighCapture.md)
 - Dependency: [D5/S3/Weil/ZetaAnalytic/RoucheZeroCount](RoucheZeroCount.md)
-- Dependency: [D5/S3/Weil/ZetaLinear/ProjectiveRayleighCapture](../ZetaLinear/ProjectiveRayleighCapture.md)
