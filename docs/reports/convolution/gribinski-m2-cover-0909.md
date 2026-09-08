@@ -85,10 +85,41 @@ binds target statement
 this single coverage GID (`g1-after.log`). Scribe emitted zero changed
 blueprints. The complete G1 unit is committed and pushed before G3 starts.
 
-## G3 and G4
+## G3
 
-Raw bodies and candidate declarations have been read. Their clause tables and
-coverage results will be recorded before their respective commits.
+Atom: `8ef6b9257471235dae81e95cd49a82d8589c77b60cfb90cd4d4355ed0ae75092`.
+Edge target: `D5/S3/Zeros/Convolution/GribinskiDegreeTwo.g3_nonnegative_roots`.
+
+| Atom clause | Lean binder or conclusion | Match |
+| --- | --- | --- |
+| Every real `alpha>-1` | `(alpha : Real) (halpha : -1 < alpha)`, line 202 | verbatim |
+| Every `p,q in P_2(R_{>=0})` | Universal `a b c d : Real`, four separate hypotheses `0<=a`, `0<=b`, `0<=c`, `0<=d`; inputs `rootPair a b`, `rootPair c d` | equivalent |
+| Output belongs to `P_2(R_{>=0})` | `exists r s : Real, 0<=r /\ 0<=s /\ output = rootPair r s`, lines 204-205 | equivalent |
+| Boxed `forall alpha>-1, forall a,b,c,d>=0, exists r,s>=0` with the factorization | Full theorem type, lines 202-205; all input quantifiers precede the output witnesses | verbatim |
+| Membership formulation is equivalent to the boxed formulation | Expand the explicit source membership definition and Lean `rootPair` in both directions | equivalent |
+
+Fidelity verdict: **passed**. The parameter is real, not integer or restricted
+to `alpha>=0`; `-1<alpha<0` is included. Nonnegative means `<=`, not `<`.
+For any member `p` the source definition supplies its two nonnegative root
+witnesses, and the same holds for `q`; the theorem then supplies the output
+witnesses. Conversely those witnesses give membership by the same definition.
+Root order and multiplicity impose no further conditions, and no leading
+scalar is lost because the source class is explicitly monic.
+
+Coverage execution: `make cover` exited 0. Transition:
+`residual-open -> absorbed-closed`, `deletable=true`, no gaps (`g3-cover.log`).
+The edge binds target statement
+`sha256:9b52a48a8690b1a5f3fd750f75a9e2e0b369fc84a49c9e74192b7297a9733c3d`.
+The subsequent `make show-atom` exited 0 and printed the original body and
+this single coverage GID (`g3-after.log`). The Lean report was a cache hit and
+Scribe emitted zero changed blueprints. This atom is committed and pushed
+before starting G4 coverage.
+
+## G4
+
+The complete body contains the generic counterexample assertion, both explicit
+families, and a boxed equivalence. All four corresponding existing declarations
+will be registered together, after their clause table is added here.
 
 ## Command evidence
 
@@ -114,3 +145,8 @@ The first `make cover` used the canonical warm donor (`method=clonefile`, both
 olean states warm), produced a delta report (`changed=0 added=13 recheck=13`),
 then wrote the edge. The full command log contains the writer's whole-ledger
 diagnostic output; only the target's `ENTRY` line is used for this transition.
+
+## Push checkpoints
+
+G1: `1818679f5a56866c77f81ee25af86768c1cb1b94`, commit and push both exited 0.
+The remote branch was created before beginning G3 coverage.
