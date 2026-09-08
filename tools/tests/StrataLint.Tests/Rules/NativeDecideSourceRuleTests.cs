@@ -8,6 +8,31 @@ public sealed class NativeDecideSourceRuleTests
     private const string Rule = "SL-035";
     private const string Path = "D5/S0/Carrier/NativeProbe.lean";
     private const string Implementation = "tools/StrataLint.Engine/Rules/NativeDecideSourceRule.cs";
+    private const string ImageSource = "import Mathlib.Data.Set.Image\n"
+        + "example (f : Nat -> Nat) (s : Set Nat) : f '' s = f '' s := rfl\n";
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AcceptsImageNotationInAddedOrByteChangedSource(bool baseline)
+    {
+        var fixture = Source(ImageSource, baseline);
+        fixture.Files[Path] += "-- byte change\n";
+        Assert.Empty(Evaluate(fixture, (Path, baseline ? RawChangeKind.Modified : RawChangeKind.Added)));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void RejectsNativeDecideFollowingImageNotationWithSourceLine(bool baseline)
+    {
+        var fixture = Source(ImageSource + "example : True := by native_decide\n", baseline);
+        fixture.Files[Path] += "-- byte change after existing use\n";
+        var diagnostic = Assert.Single(Evaluate(fixture, (Path, baseline ? RawChangeKind.Modified : RawChangeKind.Added)));
+        Assert.Equal(Path, diagnostic.Path);
+        Assert.Equal(AdmissionEffect.Block, diagnostic.AdmissionEffect);
+        Assert.Equal("NATIVE_DECIDE_SOURCE line=3: bare native_decide token is forbidden in changed D5 Lean source", diagnostic.Message);
+    }
 
     [Theory]
     [InlineData("example : True := by native_decide", 1)]

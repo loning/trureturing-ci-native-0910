@@ -152,6 +152,92 @@ public sealed partial class FrozenLedgerTests
         AssertIdentifierReanchor(source, source.Replace(":= 0", ":= 1", StringComparison.Ordinal), [], [], expected: true);
     }
 
+    [Fact]
+    public void MathlibReanchorAllowsImageNotationInUnchangedImportedSource()
+    {
+        var helper = Module("Helper", source: "import Mathlib.Data.Set.Image\n"
+            + "theorem helper (f : Nat -> Nat) (s : Set Nat) : f '' s = f '' s := rfl\n");
+        const string consumer = "import D5.S0.Carrier.Helper\ntheorem a : True := by trivial\n";
+        AssertIdentifierReanchor(consumer, consumer, [helper], [helper], expected: true);
+        AssertIdentifierReanchor(consumer, consumer.Replace("by trivial", "by exact True.intro", StringComparison.Ordinal),
+            [helper], [helper], expected: true);
+    }
+
+    [Fact]
+    public void ImageNotationPreservesSourceImportAdjacency()
+    {
+        var helper = TextFile(PathFor("Helper"), "import Mathlib.Data.Set.Image\n"
+            + "theorem helper (f : Nat -> Nat) (s : Set Nat) : f '' s = f '' s := rfl\n");
+        var consumer = TextFile(PathFor("A"), "import D5.S0.Carrier.Helper\ntheorem a : True := by trivial\n");
+        var adjacency = LeanImportAdjacency.BuildFromSources(Snapshot([helper, consumer]));
+        Assert.Equal(RepoPathFor("Helper"), Assert.Single(adjacency[RepoPathFor("A")]));
+        Assert.Empty(adjacency[RepoPathFor("Helper")]);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void MathlibReanchorAllowsImageNotationWithUnchangedOrProofOnlySource(bool proofOnly)
+    {
+        const string source = "import Mathlib.Data.Set.Image\n"
+            + "theorem a (f : Nat -> Nat) (s : Set Nat) : f '' s = f '' s := by rfl\n";
+        var after = proofOnly ? source.Replace("by rfl", "by exact rfl", StringComparison.Ordinal) : source;
+        AssertIdentifierReanchor(source, after, [], [], expected: true);
+    }
+
+    [Theory]
+    [InlineData("\u2211'", false)]
+    [InlineData("\u220f'", false)]
+    [InlineData("\u2211'", true)]
+    [InlineData("\u220f'", true)]
+    public void MathlibReanchorDoesNotResolveAdjacentPrimedBinderAsDefinitionDependency(string notation, bool spaced)
+    {
+        var source = PrimedBinderSource(notation, spaced);
+        AssertIdentifierReanchor(source, source.Replace(":= 0", ":= 1", StringComparison.Ordinal), [], [], expected: true);
+    }
+
+    [Theory]
+    [InlineData("\u2211'")]
+    [InlineData("\u220f'")]
+    public void MathlibReanchorPreservesPrimeBinderWhitespace(string notation)
+    {
+        AssertIdentifierReanchor(PrimedBinderSource(notation, spaced: true), PrimedBinderSource(notation, spaced: false),
+            [], [], expected: true);
+    }
+
+    [Theory]
+    [InlineData("\u2211'", false)]
+    [InlineData("\u220f'", false)]
+    [InlineData("\u2211'", true)]
+    [InlineData("\u220f'", true)]
+    public void MathlibReanchorAllowsPrimedBinderWithUnchangedDefinitionAndProofChange(string notation, bool spaced)
+    {
+        var source = PrimedBinderSource(notation, spaced);
+        AssertIdentifierReanchor(source, source, [], [], expected: true);
+        AssertIdentifierReanchor(source, source.Replace("by rfl", "by exact rfl", StringComparison.Ordinal), [], [], expected: true);
+    }
+
+    [Theory]
+    [InlineData("\u2211'", false)]
+    [InlineData("\u220f'", false)]
+    [InlineData("\u2211'", true)]
+    [InlineData("\u220f'", true)]
+    public void MathlibReanchorRejectsChangedDependencyBesidePrimedBinder(string notation, bool spaced)
+    {
+        var source = PrimedBinderSource(notation, spaced)
+            .Replace("def n'", "def offset : Nat := 0\ndef n'", StringComparison.Ordinal)
+            .Replace("f n')", "f n') + offset", StringComparison.Ordinal);
+        AssertIdentifierReanchor(source, source.Replace("offset : Nat := 0", "offset : Nat := 1", StringComparison.Ordinal),
+            [], [], expected: false);
+    }
+
+    private static string PrimedBinderSource(string notation, bool spaced)
+    {
+        var term = $"({notation}{(spaced ? " " : string.Empty)}n', f n')";
+        return "import Mathlib.Topology.Algebra.InfiniteSum.Defs\ndef n' : Nat := 0\n"
+            + $"theorem a (f : Nat -> Nat) : {term} = {term} := by rfl\n";
+    }
+
     private static ModuleSpec IdentifierHelper(string declaration, string body) =>
         ModuleWithReport("Helper", $"namespace D5.S0.Carrier.Helper\ndef {declaration} : Nat := {body}\nend D5.S0.Carrier.Helper\n",
             statementMaterial: "Nat", declarations: [declaration.Trim('\u00ab', '\u00bb')], kind: "def");

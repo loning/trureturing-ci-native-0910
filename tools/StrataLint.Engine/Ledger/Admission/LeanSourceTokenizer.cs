@@ -86,7 +86,8 @@ internal static class LeanSourceTokenizer
                     var interpolated = result.Count > 0 && result[^1].Text is "s!" or "m!" or "f!";
                     ReadString(interpolated, result);
                 }
-                else if (source[index] == '\'')
+                // Lean tokenFnAux excludes doubled apostrophes from character-literal dispatch.
+                else if (source[index] == '\'' && !At("''"))
                 {
                     ReadCharacter();
                 }
@@ -101,8 +102,10 @@ internal static class LeanSourceTokenizer
                 }
                 else
                 {
+                    // Registered mathlib notation wins before lookahead at the following apostrophe.
                     var symbol = index + 1 < source.Length && source.Substring(index, 2) is
                         ":=" or "=>" or "->" or "<-" or "::" or "<=" or ">=" or "==" or "!="
+                            or "''" or "\u2211'" or "\u220f'"
                             ? source.Substring(index, 2)
                             : source.Substring(index, char.IsSurrogatePair(source, index) ? 2 : 1);
                     Advance(symbol.Length);

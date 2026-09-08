@@ -44,10 +44,40 @@ public sealed class LeanSourceTokenizerTests
     }
 
     [Fact]
+    public void ImageNotationRetainsDoubleApostropheTokensAndLocations()
+    {
+        var tokens = LeanSourceTokenizer.Tokenize("f '' s\nnative_decide");
+        Assert.Equal(new[] { "f", "''", "s", "native_decide" }, tokens.Select(static token => token.Text));
+        Assert.False(tokens[1].IsIdentifier);
+        Assert.Equal(1, tokens[1].Line);
+        Assert.Equal(2, tokens[1].Column);
+        Assert.Equal(2, tokens[^1].Line);
+    }
+
+    [Theory]
+    [InlineData("\u2211'")]
+    [InlineData("\u220f'")]
+    public void PrimedNotationPrecedesAdjacentCharacterLookahead(string notation)
+    {
+        var tokens = LeanSourceTokenizer.Tokenize(notation + "n', f n'");
+        Assert.Equal(new[] { notation, "n'", ",", "f", "n'" }, tokens.Select(static token => token.Text));
+        Assert.False(tokens[0].IsIdentifier);
+        Assert.Equal("n'", tokens[1].Identifier);
+        Assert.Equal(2, tokens[1].Column);
+    }
+
+    [Fact]
     public void CharacterLiteralAfterUnicodeOperatorRetainsItsSpelling()
     {
         var tokens = LeanSourceTokenizer.Tokenize("')' \u2260'}'");
         Assert.Equal(new[] { "')'", "\u2260", "'}'" }, tokens.Select(static token => token.Text));
+    }
+
+    [Fact]
+    public void CharacterLiteralAfterAssignmentRetainsItsSpelling()
+    {
+        var tokens = LeanSourceTokenizer.Tokenize(":=')'");
+        Assert.Equal(new[] { ":=", "')'" }, tokens.Select(static token => token.Text));
     }
 
     [Fact]
