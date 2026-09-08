@@ -121,7 +121,7 @@ an unavailable capability, not evidence against the theorem. This finite
 search does not prove that no other bind-only proof exists. Q2 must still
 assess the claimed new certificate and its live use independently.
 
-## Q2: Escape Witness Four Tests (In Progress)
+## Q2: Escape Witness Four Tests
 
 Run 0 command: `/usr/bin/time -l make -f Makefile -f "$ATTEMPT/review.mk"
 review-stdin PROBE="$ATTEMPT/q2-dependencies.txt" > "$ATTEMPT/q2-dependencies.log" 2>&1`.
@@ -160,9 +160,64 @@ checks identities/coefficient signs with SymPy; it is supplementary to Lean.
 Next action is an isolated `uv run --with sympy==1.14.0 --no-project`, without
 changing repository dependencies or claiming this failed run checked anything.
 
+Exact algebra audit Run 1: `uv run --with sympy==1.14.0 --no-project python
+"$ATTEMPT/q2-certificate.py" > "$ATTEMPT/q2-certificate-1.json"
+2> "$ATTEMPT/q2-certificate-1.stderr"`: **EXIT=0**, stderr empty.
+All four identities hold by independent exact integer polynomial arithmetic.
+The coefficient support counts, with variables `(x,u,v,y,w,z)`, are:
+
+| t-degree | Expanded monomials | Negative coefficients before decomposition | Weighted squares | Positive remainder monomials |
+| --- | ---: | ---: | ---: | ---: |
+| 0 | 310 | 0 | 0 | 310 |
+| 1 | 257 | 0 | 0 | 257 |
+| 2 | 168 | 12 | 12 | 156 |
+| 3 | 52 | 8 | 8 | 44 |
+| total | 787 | 20 | 20 | 767 |
+
+All square weights and all remainder coefficients are positive integer
+polynomials in the nonnegative gaps. This reproduces the worker's count from
+the pinned source independently; SymPy is a cross-check, not a trusted axiom.
+
+**Witness chosen for this review:** the nonnegative ordered parameter
+coefficients `ordered_coeffN_nonneg`, especially N=2,3, established by the
+specific weighted-square decompositions at Discriminant:243-357. A ring
+identity alone, or the top-level discriminant inequality renamed as a witness,
+would not be enough. The new step is the coefficient-sign construction;
+`numerator_expansion` and denominator clearing are normalization.
+
+| Claimed content theorem | (i) Elaborated closure | (ii) Not direct frozen/Mathlib binding | (iii) Not a restatement | (iv) Live use and deletion counterfactual |
+| --- | --- | --- | --- | --- |
+| `m3_nonnegative_roots` (main:237) | true: compiler path through both discriminant theorems to each coefficient-sign construction | true, semantic assessment: the frozen factorization demands Delta >= 0; Q1 supplied its other premises but no permitted direct attempt supplied this inequality | true: four coefficient inequalities in ordered gap coordinates differ from existence of three nonnegative roots | true: the reduced value retains `m3_discriminant_nonneg` and the frozen factorization call; deleting the sign construction leaves the hD goal in Q1 |
+| `m3_discriminant_nonneg` (main:226) | true: reduced path through `ordered_output_discriminant` and `ordered_numerator_nonneg` reaches all four coefficients | true, semantic assessment: sorting and clearing the positive denominator leave new polynomial coefficient signs, including 20 negative expanded terms needing the constructed estimates | true: an individual t-coefficient sign is not the full alpha-dependent discriminant statement; the witness here is not merely `ordered_numerator_nonneg` | true: each sign enters the parameter polynomial and is transported by positive scaling; deleting that construction leaves the cleared numerator inequality |
+| `ordered_numerator_nonneg` (Discriminant:360) | true: each `ordered_coeffN_nonneg`, `coeffN_identity`, and `sosN_nonneg` occurs in its compiled transitive value dependencies | true, semantic assessment: no frozen D5 prerequisite exists; the 12/8 weighted-square constructions establish previously unavailable coefficient inequalities | true: the individual coefficient inequalities are distinct from nonnegativity of their cubic polynomial in arbitrary t | true: source:377-382 and the reduced value use all four in nested `add_nonneg`/`mul_nonneg`; none is a discarded conjunction component |
+
+Counterfactual limits apply to **all three** rows: the actual live-use readings
+are compiler observations; the absence of an alternative bind-only proof is
+a review judgment supported by Q1 and the inspected APIs, not an exhaustive
+machine non-derivability theorem. In particular, nlinarith timeout is not used
+as a standalone proof of novelty. Finding another direct proof would overturn
+test (ii)/(iv) and this assessment.
+
+**Independent proof shape:** the three claimed content results remain
+`content` after inlining new prerequisites. Both modules have a supported
+`escape-witness` basis under clause 3.2, subject to the independent utility
+and fidelity questions still to follow. The six other public theorems remain
+bind-only: `definition_consistency`, `convolution_coefficients`,
+`m3_explicit_coefficients`, `weight_pos`, `m3_nonnegative_coefficients`,
+`nonnegative_rootTriple_coordinates`. Their mechanisms respectively are
+coefficient normalization, field/ring normalization, rewriting, direct
+`descPochhammer_pos`, sign propagation, and order dichotomy plus gap arithmetic.
+The latter constructs coordinates but introduces no new polynomial estimate.
+
+Publication correction: two checkpoint pushes overlapped. The second push
+(`0e8c81894f`) returned EXIT=1 with a remote expected-old-ref lock mismatch
+after the first (`0ed2c563eb`) succeeded. A sequential ordinary
+`git push origin review/m3-0909` returned EXIT=0 and published the descendant.
+No force, fetch, rebase, or source change was used.
+
 ## Q3-Q6
 
-Q1 complete; Q2 in progress; Q3-Q6 pending. No final verdict at this checkpoint.
+Q1-Q2 complete; Q3-Q6 pending. No final verdict at this checkpoint.
 
 ## Publication
 
