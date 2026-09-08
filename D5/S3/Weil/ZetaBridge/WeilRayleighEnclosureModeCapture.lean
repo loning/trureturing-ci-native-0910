@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Weil/ZetaBridge/WeilRayleighEnclosureModeCapture
    mirror-E: none(waiver:operator-domain-variational-bridge)
    anchors: []
+   utility: none
    digest: Two-sided Rayleigh enclosure and codimension-one coercivity capture the ground line without an operator residual. -/
 
 import Mathlib.Analysis.InnerProductSpace.Basic

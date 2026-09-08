@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Weil/ZetaBridge/WeilArchimedeanHighModeBounds
    mirror-E: none(waiver:operator-identification-and-Hilbert-transform-bridge)
    anchors: []
+   utility: none
    digest: Frequency-decaying bounds for the actual arithmetic Gamma symbol and its diagonal correction, with absolute convergence. -/
 
 import D5.S3.Weil.ZetaBridge.WeilArithmeticCouplingJet

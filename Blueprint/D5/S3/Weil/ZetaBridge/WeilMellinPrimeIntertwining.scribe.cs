@@ -134,7 +134,7 @@ internal sealed class WeilMellinPrimeIntertwiningDocument : IScribeDocumentDefin
                         + "paper L2 consequence bounds this correction by "
                         + "2*(a+sum Lambda(n)/sqrt(n))*norm(r). This bound requires the "
                         + "actual L2 realization and does not claim a sufficiently small "
-                        + "Weil residual along an unbounded scale sequence. The theory volume "
+                        + "Weil residual along an unbounded scale sequence. The source analysis "
                         + "records the independently checked fixed-prolate parity budget. "
                         + "Lean elaboration, Scribe emission and the transitive axiom audit "
                         + "have not been run in this research continuation."))),

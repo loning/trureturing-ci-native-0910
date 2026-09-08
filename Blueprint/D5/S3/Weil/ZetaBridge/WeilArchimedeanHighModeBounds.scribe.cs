@@ -79,7 +79,7 @@ internal sealed class WeilArchimedeanHighModeBoundsDocument : IScribeDocumentDef
                             + "resulting simultaneous logarithmic form lower bound, "
                             + "weighted Schur completion and executed c=3 interval "
                             + "certificate are proved separately in the existing RH "
-                            + "theory volume. They are not conclusions of this Lean "
+                            + "source analysis. They are not conclusions of this Lean "
                             + "declaration. Lean and Scribe compilation were not run "
                             + "in this research session."))),
                     DescribeRole.Theorem))));

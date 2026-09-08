@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Weil/ZetaBridge/WeilPrimeThresholdParity
    mirror-E: none(waiver:scaled-Fourier-and-full-space-Schur-identification)
    anchors: []
+   utility: none
    digest: Preserve the actual even/odd arithmetic columns and prove cubic prime-activation energy on finite odd Fourier profiles. -/
 
 import D5.S3.Weil.ZetaBridge.WeilEvenDualStencil

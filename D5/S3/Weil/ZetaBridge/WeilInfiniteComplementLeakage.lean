@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Weil/ZetaBridge/WeilInfiniteComplementLeakage
    mirror-E: none(waiver:infinite-dimensional-analytic-estimate)
    anchors: []
+   utility: none
    digest: Control the low-frequency mass of every square-summable exterior Fourier tail. -/
 
 import D5.S3.Weil.ZetaCore.ExplicitFormula

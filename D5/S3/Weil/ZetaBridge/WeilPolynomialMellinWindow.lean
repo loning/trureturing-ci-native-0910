@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Weil/ZetaBridge/WeilPolynomialMellinWindow
    mirror-E: none(waiver:separate-certified-prolate-spectral-realization)
    anchors: []
+   utility: none
    digest: The actual paper Fourier transform of a finite polynomial arithmetic Mellin window is an explicit finite endpoint sum, with integrability proved. -/
 
 import D5.S3.Weil.ZetaCore.Defs

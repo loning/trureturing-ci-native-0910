@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Weil/ZetaBridge/WeilArithmeticCouplingJet
    mirror-E: none(waiver:analytic-estimate-with-separate-interval-certificate)
    anchors: []
+   utility: none
    digest: Bound the actual prime-pole-Gamma boundary symbol and its exterior coupling remainder. -/
 
 import D5.S3.Weil.ZetaCore.ExplicitFormula

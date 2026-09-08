@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Weil/ZetaBridge/WeilGammaLogarithmicSeed
    mirror-E: none(waiver:Gamma-realization-and-form-domain-transport)
    anchors: []
+   utility: none
    digest: Evaluate the actual cutoff polynomial seed's singular Gamma remainder by finite endpoint powers, proving integrability and removing the lower-endpoint singularity. -/
 
 import D5.S3.Weil.ZetaBridge.WeilMellinPrimeIntertwining

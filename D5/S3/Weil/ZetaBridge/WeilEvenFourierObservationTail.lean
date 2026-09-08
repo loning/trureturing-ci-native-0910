@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Weil/ZetaBridge/WeilEvenFourierObservationTail
    mirror-E: none(waiver:analytic-bound-with-paper-Fourier-identification)
    anchors: []
+   utility: none
    digest: Control the complete complex-frequency observation of an even Fourier tail, with absolute convergence and cubic cutoff decay. -/
 
 import D5.S3.Weil.ZetaBridge.WeilInfiniteComplementLeakage

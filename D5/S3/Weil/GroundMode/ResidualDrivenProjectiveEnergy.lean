@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Weil/GroundMode/ResidualDrivenProjectiveEnergy
    mirror-E: none(waiver:actual-inverse-energy-Schur-and-sector-domain-certificate)
    anchors: []
+   utility: none
    digest: Bound the actual projective eigenvector energy from the candidate residual's complete dual energy, without an absolute lower eigenvalue premise. -/
 
 import Mathlib.Analysis.InnerProductSpace.Basic

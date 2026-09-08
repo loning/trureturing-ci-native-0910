@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Weil/ZetaBridge/WeilArithmeticFourierDualTail
    mirror-E: none(waiver:analytic-dual-tail-with-separate-interval-realization)
    anchors: []
+   utility: none
    digest: Absolutely convergent arithmetic dual Fourier tails with a quadratic truncation rate, from the actual prime-pole-Gamma symbol. -/
 
 import D5.S3.Weil.ZetaBridge.WeilArithmeticCouplingJet

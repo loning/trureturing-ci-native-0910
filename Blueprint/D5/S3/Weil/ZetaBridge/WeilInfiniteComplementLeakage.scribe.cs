@@ -62,7 +62,7 @@ internal sealed class WeilInfiniteComplementLeakageDocument : IScribeDocumentDef
                         "The formula is evaluated on |s|<=N/4, away from every denominator "
                         + "zero. Physical frequency is t=2*pi*s/L. The identification with "
                         + "the Fourier transform of a general L2 exterior mode expansion "
-                        + "is proved on paper in the existing theory volume; it has not "
+                        + "is proved on paper in the existing source analysis; it has not "
                         + "been imported as an extra Lean theorem or axiom."))),
                     DescribeRole.Definition),
                 Describe.Lean(

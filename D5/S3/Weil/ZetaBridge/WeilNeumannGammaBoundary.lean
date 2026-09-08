@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Weil/ZetaBridge/WeilNeumannGammaBoundary
    mirror-E: none(waiver:resolvent-kernel-and-canonical-Gamma-mixture)
    anchors: []
+   utility: none
    digest: The actual Neumann-minus-free Laplace resolvent kernel has a positive rank-two boundary completion, including every finite canonical Gamma mixture. -/
 
 import D5.S3.Weil.ZetaBridge.WeilArithmeticCouplingJet

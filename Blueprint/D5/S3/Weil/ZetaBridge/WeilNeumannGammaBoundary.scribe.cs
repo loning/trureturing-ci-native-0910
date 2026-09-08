@@ -113,7 +113,7 @@ internal sealed class WeilNeumannGammaBoundaryDocument : IScribeDocumentDefiniti
                         + "R=0 is included. The proof has no spectral-gap, residual, "
                         + "zeta-zero or target-positivity premise. Infinite positive summation "
                         + "and the Fourier/Neumann spectral identification are separate "
-                        + "analytic obligations described in the existing theory volume."))),
+                        + "analytic obligations described in the existing source analysis."))),
                     DescribeRole.Theorem))));
     }
 }

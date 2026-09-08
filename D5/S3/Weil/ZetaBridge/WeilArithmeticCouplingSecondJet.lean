@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Weil/ZetaBridge/WeilArithmeticCouplingSecondJet
    mirror-E: none(waiver:analytic-remainder-for-concrete-Weil-symbol)
    anchors: []
+   utility: none
    digest: A second exterior divided-difference jet gains a further N/|m| factor for the actual arithmetic Weil boundary symbol. -/
 
 import D5.S3.Weil.ZetaBridge.WeilArithmeticCouplingJet

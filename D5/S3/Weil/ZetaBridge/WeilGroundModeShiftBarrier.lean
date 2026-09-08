@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Weil/ZetaBridge/WeilGroundModeShiftBarrier
    mirror-E: none(waiver:analytic-obstruction-without-numerical-evidence)
    anchors: []
+   utility: none
    digest: Transfer symmetric translations through the actual Weil correlation and bound the residual required by a candidate gap. -/
 
 import D5.S3.Weil.ZetaCore.ExplicitFormula

@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Weil/ZetaBridge/WeilDivisorWindowCorrespondence
    mirror-E: none(waiver:operator-Euler-product-and-origin-normalization-paper-bridges)
    anchors: []
+   utility: none
    digest: Identify the actual finite divisor synthesis with the canonical Mellin window and its missing-divisor defect, then transport the full prime action. -/
 
 import D5.S3.Weil.ZetaBridge.WeilMellinPrimeIntertwining

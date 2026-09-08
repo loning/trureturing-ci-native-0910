@@ -74,7 +74,7 @@ internal sealed class WeilArithmeticCouplingParityGramDocument : IScribeDocument
                         + "moment Gram blocks. The infinite summation, its scalar remainder, "
                         + "the executable c=3 enclosure certificate and the Fourier/domain "
                         + "identification are separate paper/computer-assisted steps in the "
-                        + "existing RH theory volume. This declaration does not prove an "
+                        + "existing RH source analysis. This declaration does not prove an "
                         + "unbounded-scale Xi limit."))),
                     DescribeRole.Theorem))));
     }

@@ -42,7 +42,7 @@ internal sealed class WeilPolynomialMellinWindowDocument : IScribeDocumentDefini
                     + "on [-a,a], with zero extension. The chosen Ioc endpoints "
                     + "give the same Lebesgue Fourier transform. The finite polynomial "
                     + "is a concrete approximation of the regular prolate modes, "
-                    + "whose independent spectral certification is explained in the theory volume.")),
+                    + "whose independent spectral certification is explained in the source analysis.")),
                 Describe.Lean(DescribeId.Create("mellin-rate"),
                     DeclarationHandle.Create(Owner + "mellinRate"), H("Fourier-shifted monomial rate"),
                     StatementSource.FromAuthor(Disp(Seq(rate, Eq,

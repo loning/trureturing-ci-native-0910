@@ -43,7 +43,7 @@ internal sealed class WeilArithmeticCouplingJetDocument : IScribeDocumentDefinit
                     + "These are the actual boundary terms of the canonical arithmetic form. "
                     + "Their identification with its Fourier matrix follows the explicit "
                     + "calculations in Connes, Consani and Moscovici, arXiv:2511.22755, "
-                    + "Lemma 2.3 and Section 4, and is a paper bridge in the existing theory volume.")),
+                    + "Lemma 2.3 and Section 4, and is a paper bridge in the existing source analysis.")),
                 Describe.Lean(
                     DescribeId.Create("arithmetic-boundary-symbol"),
                     DeclarationHandle.Create(Owner + "arithmeticBoundarySymbol"),

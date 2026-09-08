@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Weil/ZetaBridge/WeilGammaResidualEndpoint
    mirror-E: none(waiver:actual-Gamma-graph-realization-remains-separate)
    anchors: []
+   utility: none
    digest: Bound the genuine logarithmic Gamma endpoint singularity and integrate its complete squared envelope without an integrability premise. -/
 
 import D5.S3.Weil.ZetaBridge.WeilGammaLogarithmicSeed

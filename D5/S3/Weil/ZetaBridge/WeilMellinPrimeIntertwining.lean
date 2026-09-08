@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Weil/ZetaBridge/WeilMellinPrimeIntertwining
    mirror-E: none(waiver:actual-prime-action-with-separate-Gamma-and-domain-analysis)
    anchors: []
+   utility: none
    digest: Collapse the actual finite von Mangoldt translation action on an arithmetic Mellin window, retaining support cutoffs and the odd correction after evenization. -/
 
 import D5.S3.Weil.ZetaBridge.WeilPolynomialMellinWindow
