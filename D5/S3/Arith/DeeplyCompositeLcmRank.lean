@@ -288,10 +288,7 @@ theorem rank_nth (r : ℕ) : rank (a r) = r + 1 := by
   calc
     rank (a r) = ((Finset.Iic (a r)).filter DC).card := rank_eq_card_filter_le _
     _ = ((Finset.range (a r + 1)).filter DC).card := by
-      congr 2
-      ext n
-      simp only [Finset.mem_Iic, Finset.mem_range]
-      omega
+      rw [Nat.range_succ_eq_Iic]
     _ = Nat.count DC (a r + 1) := (Nat.count_eq_card_filter_range DC _).symm
     _ = r + 1 := by
       simpa only [a] using Nat.count_nth_succ_of_infinite dc_infinite r
