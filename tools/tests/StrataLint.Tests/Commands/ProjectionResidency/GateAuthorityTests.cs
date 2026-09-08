@@ -20,7 +20,9 @@ public sealed class GateAuthorityTests
     [Fact]
     public void RepositoryCatalogHasTenUniqueUtf8SortedRoots()
     {
-        var roots = GateAuthorityRootCatalogLoader.LoadRepository(TestRepositoryLayout.FindRoot());
+        var repositoryRoot = TestRepositoryLayout.FindRoot();
+        var catalog = File.ReadAllBytes(Path.Combine(repositoryRoot, GateAuthorityRootCatalogLoader.RelativePath));
+        var roots = GateAuthorityRootCatalogLoader.Parse(catalog);
 
         Assert.Equal(10, roots.Length);
         Assert.Equal(

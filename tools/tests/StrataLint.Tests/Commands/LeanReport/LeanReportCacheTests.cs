@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using FixtureFile = StrataLint.TestSupport.TemporaryFileSystem.File;
 
 namespace StrataLint.Tests;
 
@@ -46,7 +47,7 @@ public sealed class LeanReportCacheTests
         Write(baseline + ".seed.json", JsonSerializer.Serialize(new
         {
             schema = "lean-report-seed-v1", partition, runtime_sha256 = identity, report_sha256 = reportHash,
-            materials_sha256 = Hash(File.ReadAllBytes(baseline + ".materials.zip")),
+            materials_sha256 = Hash(FixtureFile.ReadAllBytes(baseline + ".materials.zip")),
         }));
         var changedName = change switch
         {
@@ -82,7 +83,7 @@ public sealed class LeanReportCacheTests
         var clean = Path.Combine(root, "clean.json");
         Compact(clean, current);
         Assert.Equal(File.ReadAllBytes(clean), File.ReadAllBytes(merged));
-        Assert.Equal(File.ReadAllBytes(clean + ".materials.zip"), File.ReadAllBytes(merged + ".materials.zip"));
+        Assert.Equal(FixtureFile.ReadAllBytes(clean + ".materials.zip"), FixtureFile.ReadAllBytes(merged + ".materials.zip"));
         using var mergedReport = JsonDocument.Parse(File.ReadAllText(merged));
         var result = mergedReport.RootElement.GetProperty("modules").EnumerateArray()
             .Single(module => module.GetProperty("module").GetString() == "Result");
