@@ -71,68 +71,38 @@ internal static class DescribeContentGovernance
         LibraryNoteCatalogInspection libraryInspection)
     {
         var findings = ValidateSources(repositoryRoot).ToBuilder();
-        ValidateCensus(repositoryRoot, documents, findings);
+        ValidateDocumentGidUniqueness(documents, findings);
         ValidateIndependentInventory(documents, reportStats, findings);
         ValidateReferencedNoteLocators(repositoryRoot, documents, libraryInspection, findings);
         return Order(findings);
     }
 
-    internal static void ValidateCensus(
-        string repositoryRoot,
+    /// The receipt census retired with the field it classified: nothing can be receipt-bound
+    /// once `receipts.scribe` no longer exists (#6349). Five of its six clauses simplified to
+    /// tautologies, but the sixth compared a *set* of document GIDs against the document
+    /// *count*, so it was the only thing in the repository judging document GID uniqueness.
+    /// Keep that judgement, name it for what it is, and report which GIDs collided — the old
+    /// finding blamed "receipt-free and receipt-bound sets" for a cause that has nothing to do
+    /// with receipts.
+    internal static void ValidateDocumentGidUniqueness(
         ImmutableArray<ScribeDocument> documents,
         ImmutableArray<DescribeRedFinding>.Builder findings)
     {
-        var documentGids = documents
-            .Select(static document => document.Header.Gid.Value)
-            .ToImmutableHashSet(StringComparer.Ordinal);
-        var census = ReceiptFreeDocumentCatalog.Load(repositoryRoot, documents);
-        // The ledger no longer has a receipt field to read, so nothing can be receipt-bound.
-        // The census machinery this feeds is now tautological and is retired in the next layer.
-        var receiptBound = ImmutableHashSet<string>.Empty;
-        var expectedBound = receiptBound.Intersect(documentGids, StringComparer.Ordinal)
-            .ToImmutableHashSet(StringComparer.Ordinal);
-        var expectedFree = documentGids.Except(receiptBound, StringComparer.Ordinal)
-            .ToImmutableHashSet(StringComparer.Ordinal);
-        ValidateCensusClassification(
-            documentGids,
-            census,
-            expectedBound,
-            expectedFree,
-            documents.Length,
-            findings);
-    }
-
-    internal static void ValidateCensusClassification(
-        ImmutableHashSet<string> documentGids,
-        ReceiptFreeDocumentCensus census,
-        ImmutableHashSet<string> expectedBound,
-        ImmutableHashSet<string> expectedFree,
-        int documentCount,
-        ImmutableArray<DescribeRedFinding>.Builder findings)
-    {
-        var overlap = census.ReceiptFreeDocumentGids
-            .Intersect(census.ReceiptBoundDocumentGids, StringComparer.Ordinal)
+        var duplicates = documents
+            .GroupBy(static document => document.Header.Gid.Value, StringComparer.Ordinal)
+            .Where(static group => group.Count() > 1)
+            .Select(static group => group.Key)
             .Order(StringComparer.Ordinal)
             .ToArray();
-        var classified = census.ReceiptFreeDocumentGids
-            .Union(census.ReceiptBoundDocumentGids, StringComparer.Ordinal)
-            .ToImmutableHashSet(StringComparer.Ordinal);
-        // Owner ruling #5942 retired Scribe receipts, and #6214 removed the final batch.
-        // An empty receipt-bound set is the expected terminal state, not an anomaly.
-        // Keep expectedFree non-empty: an all-bound corpus would mean receipts returned.
-        if (overlap.Length != 0
-            || !classified.SetEquals(documentGids)
-            || !census.ReceiptBoundDocumentGids.SetEquals(expectedBound)
-            || !census.ReceiptFreeDocumentGids.SetEquals(expectedFree)
-            || expectedFree.IsEmpty
-            || census.ReceiptFreeDocumentGids.Count + census.ReceiptBoundDocumentGids.Count
-                != documentCount)
+        if (duplicates.Length == 0)
         {
-            findings.Add(new DescribeRedFinding(
-                "receipt-census",
-                "Meta/Digestion/backfill",
-                "receipt-free and receipt-bound document sets must be disjoint and complete"));
+            return;
         }
+
+        findings.Add(new DescribeRedFinding(
+            "duplicate-document-gid",
+            "Blueprint",
+            "document GIDs must be unique; repeated: " + string.Join(", ", duplicates)));
     }
 
     internal static ImmutableArray<DescribeRedFinding> ValidateIndependentInventory(
