@@ -68,7 +68,7 @@ internal sealed class GribinskiDegreeThreeDiscriminantDocument : IScribeDocument
     }
 
     private static Formula Paren(Formula formula) => Seq(Open, formula, Close);
-    private static Formula Nonnegative(Formula formula) => Seq(D(0), Le, formula);
+    private static Formula Nonnegative(Formula formula) => Seq(D(0), Le, Sp, formula);
     private static Formula SumRoots(Formula x, Formula u, Formula v) =>
         Seq(x, Plus, Paren(Seq(x, Plus, u)), Plus, Paren(Seq(x, Plus, u, Plus, v)));
     private static Formula PairRoots(Formula x, Formula u, Formula v) => Seq(

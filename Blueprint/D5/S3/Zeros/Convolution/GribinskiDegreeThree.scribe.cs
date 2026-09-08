@@ -19,12 +19,12 @@ internal sealed class GribinskiDegreeThreeDocument : IScribeDocumentDefinition
         Formula left = Call("R", a, b, c), right = Call("R", d, e, f);
         Formula output = Call("B", Alpha, left, right);
         Formula a1 = Seq(a, Plus, b, Plus, c), b1 = Seq(d, Plus, e, Plus, f);
-        Formula a2 = Seq(a, Cdot, b, Plus, a, Cdot, c, Plus, b, Cdot, c);
-        Formula b2 = Seq(d, Cdot, e, Plus, d, Cdot, f, Plus, e, Cdot, f);
+        Formula a2 = Seq(a, Cdot, Sp, b, Plus, a, Cdot, Sp, c, Plus, b, Cdot, Sp, c);
+        Formula b2 = Seq(d, Cdot, Sp, e, Plus, d, Cdot, Sp, f, Plus, e, Cdot, Sp, f);
         Formula sum = Seq(a1, Plus, Paren(b1));
         Formula second = Seq(a2, Plus, Paren(b2), Plus,
             Kappa, Paren(Alpha), Cdot, Paren(a1), Cdot, Paren(b1));
-        Formula third = Seq(a, Cdot, b, Cdot, c, Plus, d, Cdot, e, Cdot, f, Plus,
+        Formula third = Seq(a, Cdot, Sp, b, Cdot, Sp, c, Plus, d, Cdot, Sp, e, Cdot, Sp, f, Plus,
             Rho, Paren(Alpha), Cdot,
             Paren(Seq(Paren(a1), Cdot, Paren(b2), Plus, Paren(a2), Cdot, Paren(b1))));
 
@@ -165,8 +165,8 @@ internal sealed class GribinskiDegreeThreeDocument : IScribeDocumentDefinition
                     H("The Explicit Cubic"),
                     StatementSource.FromAuthor(Disp(OnCoefficientDomain(Seq(
                         output, Eq, Pow(indeterminate, 3), Minus,
-                        Call("C", sum), Cdot, Pow(indeterminate, 2), Plus,
-                        Call("C", second), Cdot, indeterminate, Minus, Call("C", third))))),
+                        Call("C", sum), Cdot, Sp, Pow(indeterminate, 2), Plus,
+                        Call("C", second), Cdot, Sp, indeterminate, Minus, Call("C", third))))),
                     AssessedProvenance.FromRepo(),
                     Blocks(Paragraph(DefinitionDsl.Text(
                         "For real alpha,a,b,c,d,e,f with alpha different from -1, -2 "
@@ -269,7 +269,7 @@ internal sealed class GribinskiDegreeThreeDocument : IScribeDocumentDefinition
     private static Formula Reals => Seq(Mathbb, Grp(F.Id("R")));
     private static Formula Paren(Formula formula) => Seq(Open, formula, Close);
     private static Formula Pow(Formula formula, byte exponent) => Seq(formula, Caret, Grp(D(exponent)));
-    private static Formula Nonnegative(Formula formula) => Seq(D(0), Le, formula);
+    private static Formula Nonnegative(Formula formula) => Seq(D(0), Le, Sp, formula);
     private static Formula Call(string name, params Formula[] arguments) =>
         new Formula.FunctionCall(FormulaIdentifier.Create(name), [.. arguments]);
 

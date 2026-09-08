@@ -557,3 +557,13 @@ declarations have no Describe nodes, even when included in the raw report.
 Before the B push, fetch EXIT=0 at dev `fe073d57308689f0d309d54d7d6fa7dbb8298484`;
 index and dev/index path-union counts are raw **18/34**, capacity **18/18**.
 `git diff --cached --check`: EXIT=0; no `.lean` or Digestion path changed.
+
+### Emit Boundary Correction
+
+Mirror B commit `90c69725bc` was pushed. First `make emit`: EXIT=2,
+29.60 real seconds (`emit.log` in the mirror attempt directory). C# compiled;
+Scribe rejected `convolution-coefficients` because `Cdot` immediately followed
+by identifier `b` would emit invalid LaTeX `\cdotb`. No tracked output changed.
+The correction inserts explicit FormulaDsl spaces between control words and
+following identifiers, including the shared nonnegative-relation builders.
+No mathematical formula or Lean source was changed by this correction.
