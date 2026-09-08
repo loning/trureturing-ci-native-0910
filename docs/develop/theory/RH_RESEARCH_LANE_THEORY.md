@@ -6398,333 +6398,899 @@ RH
 \texttt{OfflineZeroPickIndexLowerBound}.
 }
 
+---
+
+## [PR #5065] CANONICAL_ZERO_DATA_NONVACUITY
+
+# Canonical `ZeroData` inhabitant 与全称命题非空洞性
+
+**候选 GID：**
+
+- `D5/S3/Weil/ZetaBridge/RiemannVonMangoldtCountGrowth`
+- `D5/S3/Weil/ZetaBridge/CanonicalZeroDataFromRiemannVonMangoldt`
+- `D5/S3/Weil/ZetaBridge/ZeroDataSemanticNonvacuity`
+- `D5/S3/Weil/ZetaBridge/CanonicalZeroDataProvider`
+- `D5/S3/Weil/ZetaBridge/CanonicalZeroDataNonvacuityAssembly`
+
+## 1. 语义空洞位于 `ZeroData` 的外层类型
+
+仓库的 `ZeroData` 使用固定索引类型 `ℕ`。一旦存在一个值
+
+```lean
+Z : ZeroData
+```
+
+则 `Z.zero 0` 已经是由结构字段证明的非平凡 zeta 零点。因此本路线中的语义空洞风险不来自单个 `ZeroData` 的索引集为空，而来自类型 `ZeroData` 本身可能没有 inhabitant。
+
+此时一个命题
+
+\[
+\forall Z:\operatorname{ZeroData},\;P(Z)
+\]
+
+可以在没有任何零点枚举被实例化时成立。
+
+新节点定义：
+
+\[
+\boxed{
+\operatorname{RealizedZeroDataClaim}(P)
+\iff
+\exists Z:\operatorname{ZeroData},\;P(Z).
+}
+\]
+
+并形式化两条逻辑边：
+
+\[
+\neg\operatorname{Nonempty}(\operatorname{ZeroData})
+\Longrightarrow
+\forall Z:\operatorname{ZeroData},\;P(Z),
+\]
+
+\[
+\operatorname{Nonempty}(\operatorname{ZeroData})
+\land
+\bigl(\forall Z:\operatorname{ZeroData},\;P(Z)\bigr)
+\Longrightarrow
+\exists Z:\operatorname{ZeroData},\;P(Z).
+\]
+
+所以后续审计必须区分“全称条件定理已经证明”和“该定理已经在真实 zeta 零点枚举上实现”。
+
+## 2. Riemann–von Mangoldt 关闭非空洞链
+
+`RiemannVonMangoldtCountGrowth` 从仓库已有结构字段中抽取：
+
+\[
+N_Z(T,2T)
+=
+\frac{T}{2\pi}\ell_1(T)+O(\log T),
+\]
+
+并证明：
+
+\[
+\boxed{
+N_Z(T,2T)\longrightarrow+\infty.
+}
+\]
+
+将其应用于 set-level canonical source `Zeta23.zetaZeroConfig`，得到：
+
+\[
+\boxed{
+\begin{aligned}
+&\operatorname{RiemannVonMangoldt}
+  (\operatorname{zetaZeroConfig})
+\\
+&\Longrightarrow
+N(T,2T)\to\infty
+\\
+&\Longrightarrow
+\operatorname{zetaZeroConfig.carrier}\text{ infinite}
+\\
+&\Longrightarrow
+\{\rho:\operatorname{IsNontrivialZero}(\rho)\}\text{ infinite}
+\\
+&\Longrightarrow
+\operatorname{Nonempty}(\operatorname{ZeroData}).
+\end{aligned}
+}
+\]
+
+最后一箭头直接复用仓库已有的精确定理：
+
+\[
+\operatorname{Nonempty}(\operatorname{ZeroData})
+\iff
+\{\rho:\operatorname{IsNontrivialZero}(\rho)\}\text{ infinite}.
+\]
+
+因此新节点没有再次构造可数性、枚举、解析重数、反射、共轭或局部有限性证明。
+
+## 3. Canonical provider 的含义
+
+定义：
+
+```lean
+structure CanonicalZeroDataSource : Prop where
+  riemannVonMangoldt :
+    Zeta23.RiemannVonMangoldt Zeta23.zetaZeroConfig
+```
+
+由该 source 选择：
+
+\[
+\operatorname{canonicalZeroData}(S)
+:
+\operatorname{ZeroData}.
+\]
+
+该值满足：
+
+1. 每个枚举项都是真实非平凡 zeta 零点；
+2. 每个真实非平凡 zeta 零点恰有一个自然数索引；
+3. 存储的解析重数严格为正；
+4. `ρ ↦ 1 - ρ` 的函数方程反射在索引上忠实实现并保持重数；
+5. 复共轭在索引上忠实实现并保持重数；
+6. 每个对称谱半径截断是有限集。
+
+“canonical”在此表示 canonical zeta-zero object 及其不依赖枚举的观察量。自然数排序由 classical choice 选出，不声称是可计算或唯一的顺序。
+
+仓库已有枚举不变性定理被直接复用。对任何另一份 `Z : ZeroData`：
+
+\[
+\operatorname{truncatedZeroSum}
+(\operatorname{canonicalZeroData}(S),g,T)
+=
+\operatorname{truncatedZeroSum}(Z,g,T),
+\]
+
+对应的 `SymmetricConvergent` 命题等价，收敛后的 `zeroSum` 值相等。
+
+## 4. 最终 certificate 与闭合主定理
+
+`CanonicalZeroDataCertificate` 将下游消费者所需义务显式打包：
+
+```text
+actual ZeroData value
+exact representation
+unique exhaustive index
+positive analytic multiplicity
+reflection fidelity
+conjugation fidelity
+finite symmetric cutoffs
+```
+
+其精确表示定理为：
+
+\[
+\boxed{
+\operatorname{IsNontrivialZero}(\rho)
+\iff
+\exists!n\in\mathbb N,\ C.data.zero(n)=\rho.
+}
+\]
+
+主装配定理：
+
+```lean
+canonical_zeroData_closed_chain
+```
+
+证明：
+
+\[
+\boxed{
+\operatorname{RvM}(\mathcal Z_\zeta)
+\Longrightarrow
+\left[
+\mathcal Z_\zeta\text{ infinite}
+\land
+\operatorname{Nonempty}(\operatorname{ZeroData})
+\land
+\exists C:\operatorname{CanonicalZeroDataCertificate}
+\right].
+}
+\]
+
+扩展定理 `exists_faithful_zeroData_of_riemannVonMangoldt` 直接返回一个实际 `ZeroData`，以及全部表示、重数、对称和局部有限保证。
+
+## 5. 全称命题的语义实现
+
+对任意谓词：
+
+```lean
+P : ZeroData → Prop
+```
+
+如果已经证明：
+
+```lean
+h : ∀ Z : ZeroData, P Z
+```
+
+则 canonical source 给出：
+
+\[
+\boxed{
+\exists C:\operatorname{CanonicalZeroDataCertificate},
+\quad
+P(C.data)
+\land
+\exists\rho:\mathbb C,
+\operatorname{IsNontrivialZero}(\rho).
+}
+\]
+
+因此围绕 `ZeroData` 的全称定理可以被实例化到一个真实、穷尽、重数忠实的 zeta 零点枚举上。外层类型为空导致的语义空洞由该 certificate 消除。
+
+## 6. 当前 claim boundary
+
+本 PR 关闭的是以下完整逻辑链：
+
+\[
+\boxed{
+\begin{aligned}
+\operatorname{RiemannVonMangoldt}
+  (\operatorname{zetaZeroConfig})
+&\Longrightarrow
+N(T,2T)\to\infty
+\\
+&\Longrightarrow
+\text{nontrivial-zero set infinite}
+\\
+&\Longrightarrow
+\operatorname{Nonempty}(\operatorname{ZeroData})
+\\
+&\Longrightarrow
+\text{actual exhaustive multiplicity-aware enumeration}
+\\
+&\Longrightarrow
+\text{canonical provider and certificate}
+\\
+&\Longrightarrow
+\text{universal ZeroData claims are realized}.
+\end{aligned}
+}
+\]
+
+`RiemannVonMangoldt zetaZeroConfig` 在本 PR 中仍作为显式 source。把 provider 进一步升级为 hypothesis-free 常量，需要将仓库中的 global Riemann–von Mangoldt assembly 独立接入该 source。该剩余步骤属于解析数论 owner 的实例化，不再是 `ZeroData` 的枚举、重数、对称或语义逻辑缺口。
+
+本节不声明 RH，不使用 RH，也不把尚未经过 admission 的 Candidate 描述为 Frozen。
 
 ---
 
-## [PR #5562] POISSON_FRAGMENT_MESH_AND_QUADRATIC_CERTIFICATES
+## [PR #5065] UNCONDITIONAL_CANONICAL_ZERO_DATA_CLOSURE
 
-### 地位、来源与实际边界
+# 无参数 `zetaZeroData` 与解析来源闭合
 
-本节同步此前会话的数学推导及已经写入远端的源码。唯一累计理论卷仍为本文件；Lean 是数学真源。本节不把源码写入、文献移植、算术检查与完整解析证明混为同一完成状态。
+本增补恢复本 PR 误删的历史理论段，并把此前显式接收 `RiemannVonMangoldt zetaZeroConfig` 的条件链升级为无参数机器构造。
 
-研究分支为 `work/prime-weil-foundations-probe-20260905`。同步起点是 `a1c05f63d8d544613fa59c02db7d9735712d6317`。在该提交的实际运行 `33951917793`、job `101268201736` 中，`FragmentLaw` 与 `ComplexQuadraticRowBound` 已通过 Lean 4.33.0；其已打印的主定理依赖仅为 `propext`、`Classical.choice`、`Quot.sound`。同一 root 因 `FragmentMeshTruncation` 和 `QuadraticObserverPolarization` 的具体证明错误失败。因此该起点不是完整绿色 root，更不是已冻结 truth release。
-
-本节参考 `docs/develop/spec/lean_single_compile_intrinsic_information_escape_theory_and_spec.md` v4.3，读取 blob 为 `bba1875f68c733b925582ffc81f1344cfce96931`。应用其对象语义、共同 arena、严格核包含和局部/系统 root 分离原则；不修改治理规则，不声称已经获得 maximal-catalog seal 或 AnalysisDisposition 全覆盖。
-
-产地：ChatGPT 主循环直接实施，零独立模型评审席。碎片测度分支与复二次型分支无相互证明依赖，由同一 Lake root 调度编译。编译器检查是实际机器检查，不冒充独立科研同行评审。
-
-上游来源为 `openai/PrimeGaps186` 提交 `61340d0b74163003b32756bb16e91d9209a5e330` 的真实 `PrimeGaps186.lean`，不是 `Challenge.lean` 的占位证明。上游代码按 Apache-2.0 发布，原有第三方 notices 继续适用。`FragmentLaw.lean` 是依赖隔离与固定工具链适配的移植，保留原数学对象和声明名称；它不构成本仓独立发现的 Poisson 期望定理。复数行和估计直接复用本仓 `LongGapsBetweenPrimes.abs_quadratic_form_le_rows`。
-
-原始 physical integral inequalities 独立解除计数仍为 **0/152**。两个 Kloosterman 输入未证明，上游完整 DHL 主链尚未移植。本节不证明 RH、不降低 186、不声称全局 prime-side positivity。
-
-### 1. 碎片测度：先在扩展非负实数中建立总质量
-
-对 zeta > 0，令
+新增 proof-complete 路径为：
 
 \[
-I_k=(0,\zeta]\cap(2^k,2^{k+1}],\qquad
-\mu_k(du)=\mathbf1_{I_k}(u)\frac{du}{u}.
+\boxed{
+\begin{aligned}
+\texttt{GammaStirlingVert.mu\_stirling}
+&\Longrightarrow \texttt{GammaFacts},\\
+\texttt{GammaFacts}
+&\Longrightarrow \texttt{RiemannVonMangoldt(zetaZeroConfig)},\\
+\texttt{RiemannVonMangoldt}
+&\Longrightarrow N(T,2T)\to\infty,\\
+&\Longrightarrow \mathcal Z_\zeta\text{ infinite},\\
+&\Longrightarrow \operatorname{Nonempty}(\texttt{ZeroData}),\\
+&\Longrightarrow \texttt{zetaZeroData : ZeroData}.
+\end{aligned}
+}
 \]
 
-在每个有限强度区间生成 Poisson 个位置，每个原子以其位置为权重：
+机器 owner 为：
+
+```text
+D5/S3/Weil/ZetaGamma/GammaIntMu.lean
+D5/S3/Weil/ZetaGamma/GammaFactsComplete.lean
+D5/S3/Weil/ZetaPntBase/ZetaConj.lean
+D5/S3/Weil/ZetaRvm/Defs.lean
+D5/S3/Weil/ZetaRvm/NcountWindow.lean
+D5/S3/Weil/ZetaRvm/GammaSide.lean
+D5/S3/Weil/ZetaRvm/BacklundDefs.lean
+D5/S3/Weil/ZetaRvm/ReZeroCount.lean
+D5/S3/Weil/ZetaRvm/Backlund.lean
+D5/S3/Weil/ZetaRvm/Fold.lean
+D5/S3/Weil/ZetaRvm/MainTerm.lean
+D5/S3/Weil/ZetaRvm/Statement.lean
+D5/S3/Weil/ZetaBridge/UnconditionalCanonicalZeroData.lean
+```
+
+`zetaZeroData` 是一个固定的自然数索引 presentation。其顺序由 `Classical.choice` 选出。canonical 内容位于它穷尽表示的真实非平凡零点集合、解析重数、反射与共轭作用，以及已经证明为枚举不变的零点观察量。
+
+无参数接口闭合以下事实：
+
+1. `ZeroData` 确实有 inhabitant；
+2. 每个 `zetaZeroData.zero n` 都是真实非平凡 zeta 零点；
+3. 每个真实非平凡零点恰有一个索引；
+4. 存储重数是严格正的解析零点阶；
+5. 函数方程反射与复共轭由索引置换忠实实现，并保持重数；
+6. 每个对称谱半径截断有限；
+7. 枚举上的全称命题与真实非平凡零点上的全称命题等价；
+8. 围绕 `ZeroData` 的任意全称结构定理都可以直接实例化到 `zetaZeroData`。
+
+本增补没有为自然数编号赋予高度排序、可计算性或内在意义，也没有使用 RH。它关闭的是实际零点对象进入既有 `ZeroData` consumer DAG 的语义入口。
+
+
+---
+
+## [PR #5065] MIRROR_KREIN_OPERATOR_GEOMETRY
+
+# 无参数 zeta 零点的镜像 Krein 算子几何
+
+**候选 GID：**
+
+```text
+D5/S3/Weil/ZetaBridge/ZeroDataPresentationEquiv
+D5/S3/Midline/Cayley/CanonicalZetaMirrorFundamentalSymmetry
+D5/S3/Midline/Cayley/CanonicalZetaCayleyJUnitary
+D5/S3/Midline/Cayley/FiniteMirrorKreinIndex
+```
+
+本节建立在同一 PR 的无参数对象 `zetaZeroData : ZeroData` 之上。全部陈述在 admission 完成以前属于 Candidate，Lean 声明承担唯一承重角色。
+
+### 1. presentation 选择与 canonical 内容
+
+任意两个 `ZeroData` 值之间存在唯一的零点保持重标号：
 
 \[
-X_k=\sum_{j=1}^{N_k}U_{k,j}\delta_{U_{k,j}}.
-\]
-
-先令 S=sum_k X_k(R) 取值于 ENNReal；不提前假设有限性。复合 Poisson 期望与非负积分交换给出
-
-\[
-\mathbb E\int h\,dX_k=\int_{I_k}h(u)\,du,
+e_{Z,Z'}:\mathbb N\simeq\mathbb N,
 \qquad
-\mathbb E S=\sum_k|I_k|=\zeta.
+Z'.\operatorname{zero}(e_{Z,Z'}n)=Z.\operatorname{zero}(n).
 \]
 
-因此 S 几乎处处有限。源码的 `finiteFragments` 零测度回退分支几乎处处不触发。`FragmentLaw` 还证明推前映射可测、真实 fragmentLaw 是概率测度，以及任意非负可测 h 的第一矩公式。
+该等价同时保持解析重数、谱参数、函数方程反射、复共轭和同高度镜像，并满足恒等、逆与复合律。因此自然数编号仍是 choice-based presentation，零点、重数、对称作用以及沿唯一重标号运输的观察量具有 presentation-independent 内容。
 
-对应声明：
+### 2. 同高度镜像与固定点
+
+定义 \(M_Z=C_Z\circ R_Z\)，其中 \(R_Z\) 是函数方程反射，\(C_Z\) 是复共轭。机器节点证明：
+
+\[
+Z.\operatorname{zero}(M_Zn)=1-\overline{Z.\operatorname{zero}(n)},
+\]
+
+\[
+M_Z^2=I,
+\qquad
+m_{M_Zn}=m_n,
+\qquad
+\gamma_{M_Zn}=\overline{\gamma_n},
+\]
+
+以及：
+
+\[
+\boxed{M_Zn=n\iff\operatorname{Re}\rho_n=\frac12.}
+\]
+
+所以临界线是由函数方程与实结构预先确定的 involution 固定集。
+
+### 3. fundamental symmetry 与严格负方向
+
+镜像通过解析重数提升到：
+
+\[
+\mathcal I_Z=\sum_{n:\mathbb N}\operatorname{Fin}(m_n),
+\]
+
+并在 \(\mathcal H_Z=\ell^2(\mathcal I_Z)\) 上给出 involutive linear isometry \(J_Z\)。机器节点证明：
+
+\[
+J_Z^2=I,
+\qquad
+\langle J_Z\psi,\phi\rangle=\langle\psi,J_Z\phi\rangle.
+\]
+
+定义：
+
+\[
+[\psi,\phi]_{J_Z}=\langle\psi,J_Z\phi\rangle.
+\]
+
+每个被镜像移动的坐标 \(v\) 给出奇向量 \(v_-=e_v-J_Ze_v\)，并满足：
+
+\[
+J_Zv_-=-v_-,
+\qquad
+[v_-,v_-]_{J_Z}=-\|v_-\|^2<0.
+\]
+
+### 4. Cayley 算子无条件 J-unitary
+
+对 \(c(\rho)=(\rho-1)/\rho\)，镜像坐标满足：
+
+\[
+c(1-\overline\rho)=\overline{c(\rho)}^{-1}.
+\]
+
+因此 multiplicity-expanded 对角 Cayley 算子 \(U_Z\) 满足：
+
+\[
+\boxed{U_Z^*J_ZU_Z=J_Z.}
+\]
+
+该结论只使用函数方程与复共轭对称，不使用 RH。普通 Hilbert 酉性是更强的临界线条件。
+
+### 5. 有限镜像 Krein 指数
+
+在有限对称谱窗口 \(S_T\) 中，从每个非固定二元镜像轨道选一个代表，并按解析重数展开。定义：
+
+\[
+\kappa_T=\sum_{\substack{n\in S_T\\n<M_Zn}}m_n.
+\]
+
+机器节点证明有限奇坐标空间的基数为 \(\kappa_T\)，其标准负型在每个非零向量上严格为负，并且：
+
+\[
+\boxed{\kappa_T=0\iff\forall n\in S_T,\ \operatorname{Re}\rho_n=\frac12.}
+\]
+
+---
+
+## [PR #5065] MIRROR_KREIN_SECOND_LAYER_CLOSURE
+
+# 换枚举不变性、正交偶奇分解、Krein 逆与真实 Gram 惯性
+
+**候选 GID：**
 
 ```text
-PrimeGap186.ae_isFiniteMeasure_fragment_sum
-PrimeGap186.measurable_finiteFragments
-PrimeGap186.fragmentLaw_isProbabilityMeasure
-PrimeGap186.lintegral_fragmentLaw
+D5/S3/Midline/Cayley/ZeroDataHilbertPresentationTransport
+D5/S3/Midline/Cayley/CanonicalZetaMirrorEvenOddDecomposition
+D5/S3/Midline/Cayley/CanonicalZetaCayleyKreinInverse
+D5/S3/Midline/Cayley/FiniteMirrorKreinGramInertia
 ```
 
-删除位置在 (0,epsilon] 中的碎片，其加权质量 D_epsilon 满足
+### 1. 整个 Hilbert 算子系统与 presentation 无关
+
+唯一零点保持重标号提升为 unitary：
 
 \[
-\mathbb ED_\epsilon=\min(\epsilon,\zeta),\qquad
-\Pr(D_\epsilon\ge\delta)\le\frac{\min(\epsilon,\zeta)}{\delta}
-\quad(\delta>0).
+T_{Z,Z'}:\mathcal H_Z\simeq_u\mathcal H_{Z'}.
 \]
 
-这是上游已有证明的真实移植 `fragmentLaw_small_seed_tail`。此前把这一层说成尚待从零研究的缺口不准确；库优先检查后应直接消化现有证明。
-
-### 2. 新的截断接口必须保留网格边界误差
-
-令 X 是原始总质量，Y 是删除小碎片后的保留质量，D=X-Y >= 0。对于网格宽度 h>0，记 j=floor(Y/h)。若原始与保留质量的 cell index 不同，则
+它同时满足：
 
 \[
-\lfloor X/h\rfloor\ne\lfloor Y/h\rfloor
-\quad\Longrightarrow\quad
-D\ge\delta\ \lor\ (j+1)h-\delta\le Y.
+TJ_Z=J_{Z'}T,
+\qquad
+TU_Z=U_{Z'}T,
+\qquad
+[T\psi,T\phi]_{J_{Z'}}=[\psi,\phi]_{J_Z}.
 \]
 
-证明：非负增量使 floor 单调；不同就至少增加 1，所以 (j+1)h <= Y+D。若 D<delta，则保留质量已在下一个边界之前的 delta 条带中。
+因此镜像、Cayley 动力学和不定内积不依赖 choice-based 自然数编号。
 
-在真实 `FiniteMeasure R` 的 fragmentLaw 上得到
+### 2. 规范化偶奇投影
+
+定义：
 
 \[
-\Pr(\text{cell changes})
-\le\frac{\min(\epsilon,\zeta)}{\delta}
-+\Pr\big((\lfloor Y/h\rfloor+1)h-\delta\le Y\big).
+P_+=\frac{I+J}{2},
+\qquad
+P_-=\frac{I-J}{2}.
 \]
 
-第二项明确保留在结论中，没有假设零边界概率、密度界或统一反集中。它正是下一解析目标。只知道删除质量的第一矩，不能忽略 floor 的不连续性。
-
-源码 owner 为 `D5/S3/PrimeGaps/FragmentMeshTruncation.lean`。首次失败出在 set membership 未显式展开、cast/trans 类型推断、以及加法单调性应用方向；这些是候选证明的编译问题，不能因为推导正确就提前称其 kernel-closed。
-
-### 3. 复二次型的完整交叉项控制
-
-对于有限复系数 a_i 和矩阵 K，若 |K_ij|=|K_ji|，则由已有实数行和界得到
+机器节点证明幂等性、互相湮灭、精确重建、\(\pm1\) 镜像本征律和 Hilbert 正交性。Krein 能量精确分解为：
 
 \[
-\left|\sum_{i,j}a_i\overline{a_j}K_{ij}\right|
-\le\sum_i|a_i|^2\sum_j|K_{ij}|.
+\boxed{\operatorname{Re}[\psi,\psi]_J=\|P_+\psi\|^2-\|P_-\psi\|^2.}
 \]
 
-若逐行满足 sum_j |K_ij| <= eta*w_i，则完整形式有界于 eta*sum_i w_i|a_i|^2。这个结论控制全部交叉项，不能由分别检查基向量上的二次值代替。
+所以负扇区是实际 mirror-odd spectral range。
 
-对实际可求和的矩阵系数级数 K_ij=sum_n term(n,i,j)，先以 sum_n |term(n,i,j)| 控制每个矩阵项，再使用同一个行和定理。源码 owner 为 `ComplexQuadraticRowBound`。这里的 summability 和 row estimates 都是明确前件；没有凭空断言任何实际 zeta 实例满足它们。
+### 3. 显式有界 Krein 逆
 
-若 w_i>0 且 eta<margin，则
+镜像互反使倒数 Cayley 系数可以由已有有界系数经镜像置换和共轭获得。由此构造有界双侧逆，并证明：
 
 \[
--\mathrm{margin}\sum_iw_i|a_i|^2+\Re(a^*Ka)<0
-\quad(a\ne0),
+\boxed{U^{-1}=JU^*J,}
+\qquad
+UJU^*=J.
 \]
 
-相应正号也给出严格正性。因此这层可分别服务有限 Weil 负性与 sieve threshold 的正余量，但二者的具体矩阵语义和解析估计仍需分别建立。
+这一步不需要普通酉性或 RH。
 
-### 4. 按 spec 检查交叉项的对象信息
+### 4. 真实有限奇向量 Gram 惯性
 
-使用 Mathlib 的完整对象空间
+对每个有限镜像轨道代表和每个重数副本，取实际 Hilbert 奇向量 \(v_i^-=e_i-Je_i\)。机器节点计算：
+
+\[
+[v_i^-,v_j^-]_J=-2\delta_{ij}.
+\]
+
+因此实际 Gram 矩阵是 \(G_T^-=-2I\)，并由仓库统一惯性接口证明：
+
+\[
+\boxed{\operatorname{negIndex}(G_T^-)=\kappa_T.}
+\]
+
+该定理确认零点目标几何本身拥有 \(\kappa_T\) 维负空间。它不意味着指定的标量 Weil 观察器能覆盖该完整 multiplicity-expanded 空间。
+
+---
+
+## [PR #5065] REDUCED_WEIL_OBSERVER_AND_MULTI_ORBIT_NEGATIVITY
+
+# 标量偶 Weil 观察器的可达空间、约化因子分解与多轨道负证书
+
+**候选 GID：**
 
 ```text
-QuadraticForm R (Fin 2 -> R), R = Real
+D5/S3/Weil/ZetaBridge/WeilEvaluationObservableSubspace
+D5/S3/Weil/ZetaBridge/FiniteMirrorReducedWeilFactorization
+D5/S3/Weil/ZetaBridge/FiniteEvenWeilOddInterpolation
+D5/S3/Weil/ZetaBridge/QuantitativeMultiOrbitWeilNegativeCertificate
 ```
 
-作为无限 arena，不选择人为样本，不把已证明闭命题的 true 值、proof identity、文件名或提交历史塞入读出。
+本增补修正“标量偶 Weil 测试满秩覆盖完整 multiplicity-expanded mirror-odd 空间”的过强目标。真实观察器只访问一个约化空间。所有新陈述在 admission 完成以前属于 Candidate。
 
-标准向量 e_0,e_1 给出三个真实读出
+### 1. 两个真实秩障碍
 
-\[
-c_0(Q)=Q(e_0),\quad c_1(Q)=Q(e_1),\quad c_2(Q)=Q(e_0+e_1).
-\]
-
-极化公式为
+对有限窗口 \(I_T\)，标量评价为：
 
 \[
-Q(x,y)=x^2c_0(Q)+y^2c_1(Q)
-+xy\big(c_2(Q)-c_0(Q)-c_1(Q)\big).
+E_T(g)(n)=\widehat g(\gamma_n),
+\qquad
+\widetilde E_T(g)(n,k)=\widehat g(\gamma_n).
 \]
 
-所以三个读出联合单射。它们组成的固定数学族具有逐项留一见证：
+所以评价在每个解析重数纤维上常值，不能区分同一零点的不同副本。
 
-- 删除 c_0：零二次型与 x^2-xy，在 c_1,c_2 上相同，在 c_0 上不同。
-- 删除 c_1：零二次型与 y^2-xy，在 c_0,c_2 上相同，在 c_1 上不同。
-- 删除 c_2：零二次型与 xy，在 c_0,c_1 上相同，在 c_2 上不同。
-
-由本仓唯一 `jointKernel`/`SemanticClosure` 真源得到每个留一核严格大于完整核。这里计算的是这个明确的数学族，不能提升为整个系统 maximal canonical catalog 的准入结论；无限 arena 也不能输出有限 exact escape rate。极化重构 theorem 是数学定理，不把其 proof 作为第四个对象坐标。
-
-### 5. RH 卷积幂路线：固定常数之后再增加深度
-
-本段保存此前完成的理论推导，状态为 **待接入实际 WeilTestFunction/ZeroData API**。#5065 已有并行的 common Burnol packet 路线，接入前必须读取其最新代码，复用能直接命中的证明，避免另造第二套 zero predicate、multiplicity 或 convolution owner。
-
-若使用固定 `frameOddSynthesis F`，相应余项 R 也固定。不能要求同一个 R 被任意趋零的 epsilon_N 控制，却不解释合成函数如何随 N 变化。要构造新的真实测试函数族 g_(a,N)，再应用既有通用二次型扰动定理。
-
-在紧支撑光滑偶复值测试类与 Fourier-Laplace 约定 FT(g)(z)=int g(x) exp(-i*z*x) dx 下，设零点数据有固定闭条带、局部有限性、共轭和负号对称以及
+同时，`WeilTestFunction` 的偶性给出 \(\widehat g(-z)=\widehat g(z)\)，而 \(\gamma_{R(n)}=-\gamma_n\)。因此：
 
 \[
-C_Z=\sum_\gamma m_\gamma(1+|\gamma|)^{-2}<\infty.
+E_T(g)(R(n))=E_T(g)(n).
 \]
 
-选择有限分离的非实离线四点轨道。先用有限偶插值构造共同 b，在全部目标节点取 B=FT(b)=1；由闭条带衰减取 C>=1 和固定 R，使
+新节点构造显式目标向量并证明：
 
 \[
-|B(z)|\le C/(1+|z|),\qquad |z|>R\Rightarrow |B(z)|\le1/2.
+m_n\ge2\Longrightarrow\widetilde E_T\text{ 不满射},
 \]
 
-再对 R 内的有限零点按 z~-z 合并，以 z^2 为变量做一次多项式插值。P_i 在目标 gamma_j^2 上取 delta_ij，在 conjugate(gamma_j)^2 上取 -delta_ij，并在所有其他低处节点取零。选择共同 D 与 A_i，使
+以及窗口中存在移动的反射对时：
 
 \[
-|P_i(z^2)|\le A_i(1+|z|)^D.
+E_T\text{ 不满射到全部 distinct-zero vectors}.
 \]
 
-至此 b、R、P_i、D、A_i 已固定。令 N0=D+1，构造
+这说明 ambient Krein 负空间和 observer-reachable 负空间必须分开计算。
+
+### 2. 约化有限镜像形式
+
+定义 `FiniteReflectionEvenVector Z T` 为满足反射偶约束的 distinct-zero 向量。解析重数作为形式中的正权重保留，不再被重复解释为独立标量观察坐标。
+
+对 \(v_g(n)=\widehat g(\gamma_n)\)，定义：
 
 \[
-\widehat g_{a,N}(z)=\left(\sum_i a_iP_i(z^2)\right)B(z)^{N0+N}.
+B_T(v,w)=\sum_{n\in I_T}m_n v(n)\overline{w(M(n))}.
 \]
 
-此式在测试函数侧对应 b 的卷积幂再施加 P_i(-d^2/dx^2)。目标值保持为 +a_i/-a_i；低处例外点精确消失。对于剩余零点，Cauchy-Schwarz 给出
+机器节点证明实际有限卷积平方零点和满足：
 
 \[
-|\widehat g_{a,N}(\gamma)|^2
-\le\|a\|^2\Big(\sum_iA_i^2\Big)C^{2N0}4^{-N}(1+|\gamma|)^{-2}.
+\boxed{\operatorname{truncatedZeroSum}(Z,\operatorname{convolutionSquare}(g),T)=B_T(v_g,v_g).}
 \]
 
-因此完整剩余零点和的绝对值由
+对任意有限选择的非实离线四点轨道块，已有单轨道公式被聚合为：
 
 \[
-|R_N(a)|\le K_F4^{-N}\|a\|^2,
-\qquad K_F=C_ZC^{2N0}\sum_iA_i^2
+\boxed{Q_{\mathrm{block}}=E_{\mathrm{even}}-E_{\mathrm{odd}},\qquad E_{\mathrm{even}},E_{\mathrm{odd}}\ge0.}
 \]
 
-一致控制。取深度使 K_F4^-N<4 min_i m_i，则选定轨道的 -4 sum_i m_i|a_i|^2 严格支配余项。
+### 3. 约化奇空间上的显式线性插值
 
-这是一条有限负性族的构造论证，仍需核对 Fourier 约定、测试类闭合、微分乘子、零点和重排和实际幅值常数。支撑随卷积次数增长，没有固定支撑窗口结论。它也没有提供证明 RH 还需要的独立 prime-side/global positivity。
+`FiniteEvenWeilOrbitFrame` 记录有限个离线非实轨道通道及其两组节点 \(\gamma_i,\overline{\gamma_i}\)，并显式携带仓库有限偶插值定理所需的 sign-separation 条件。
 
-### 6. 可验收的后续边界
+对任意 \(a:\iota\to\mathbb C\)，机器节点构造偶 Weil 测试函数，使：
 
-先完成当前 root 的实际编译与完整主声明 axiom 检查；再将网格边界项与实际 scalar/outer/inner 积分连接。解析输入解除只按原始积分命题计数，不把 97 行算术、单纯正性或辅助 Markov 界计入 152。
+\[
+\widehat g(\gamma_i)=a_i,
+\qquad
+\widehat g(\overline{\gamma_i})=-a_i.
+\]
 
-同时保持 #5065 的真实混合零点和为 RH owner，把可用的行和证书应用到它的实际矩阵；多项式路线只在带来新的有效常数或支撑/conditioning 控制时继续，而不是重证已有存在性。
+约化奇读数：
 
-最终的 186 去公理化须同时检查主定理类型无 unresolved analytic hypotheses、依赖闭包无项目公理，以及真实主证明链确实消费了这些已闭合输入。规范的局部结构证书、全局 catalog seal、Lean 编译、仓库冻结和数学新纪录是不同验收项，任何一项都不能冒充另一项。
+\[
+O_i(g)=\frac{\widehat g(\gamma_i)-\widehat g(\overline{\gamma_i})}{2}
+\]
+
+于是满足 \(O_i(g)=a_i\)。节点进一步选择坐标测试函数 \(g_i\)，定义显式有限线性合成：
+
+\[
+S(a)=\sum_i a_i g_i,
+\]
+
+并证明：
+
+\[
+\boxed{O_j(S(a))=a_j.}
+\]
+
+因此 \(S\) 是约化奇读数的右逆，并且是单射。
+
+### 4. 可观察奇 Gram 的精确负指数
+
+定义约化奇形式：
+
+\[
+B^-(g,h)=-4\sum_i m_i\overline{O_i(g)}O_i(h).
+\]
+
+坐标插值基满足 \(B^-(g_i,g_j)=-4m_i\delta_{ij}\)。所以真实可观察奇 Gram 为：
+
+\[
+\boxed{G_{\mathrm{obs}}^-=-4\operatorname{diag}(m_i).}
+\]
+
+解析重数严格为正，因此：
+
+\[
+\boxed{\operatorname{negIndex}(G_{\mathrm{obs}}^-)=|\iota|.}
+\]
+
+每个 independently interpolated orbit channel 贡献一个负方向。重数决定权重与稳定裕量，不增加标量观察器维数。
+
+### 5. 整个负子空间的定量稳定性
+
+对一般有限权重 \(w_i\ge m>0\)，定义 \(Q_0(a)=-\sum_iw_i|a_i|^2\)。若完整形式满足：
+
+\[
+Q(a)=Q_0(a)+R(a),
+\]
+
+并且存在统一二次余项界：
+
+\[
+|R(a)|\le\varepsilon\sum_i|a_i|^2\quad\text{对所有 }a,
+\]
+
+且 \(\varepsilon<m\)，则新通用定理证明：
+
+\[
+\boxed{a\ne0\Longrightarrow Q(a)<0.}
+\]
+
+这是整个有限维负子空间的稳定性结论。仅逐基向量控制余项不足，因为交叉项仍可能破坏线性组合上的负定性。
+
+在 Weil 特化中：
+
+\[
+Q_{\mathrm{target}}(a)=-4\sum_i m_i|a_i|^2,
+\]
+
+\[
+Q_{\mathrm{full}}(a)=\operatorname{Re}\operatorname{zeroSum}\left(Z,S(a)*\widetilde{S(a)}\right),
+\]
+
+并精确定义 \(R(a)=Q_{\mathrm{full}}(a)-Q_{\mathrm{target}}(a)\)。`QuantitativeMultiOrbitCertificate` 只要求一个正重数下界 \(m_*\)、统一余项界和 \(\varepsilon<4m_*\)。随后得到：
+
+\[
+\boxed{a\ne0\Longrightarrow Q_{\mathrm{full}}(a)<0,}
+\]
+
+且合成映射 \(S\) 单射。这给出一整个有限维、彼此独立的严格负完整 Weil 测试族。
+
+### 6. 与现有单轨道 separator 的关系
+
+仓库已有 `OffLineNonrealZeroNegativeWeilSquare` 使用 finite even interpolation、closed-strip Fourier–Laplace decay、convolution-power amplification 和 absolute zero summability，将一个指定离线轨道的负贡献压过其余零点尾项。
+
+新多轨道链没有重复该单轨道构造。它抽取了多维推广所需的正确接口：
+
+\[
+\boxed{\text{统一余项的 operator-norm 型二次界}}
+\]
+
+而不是每个坐标单独的标量尾界。
+
+下一解析节点应从已有 Burnol powering 与 closed-strip decay 中构造 `HasUniformMultiOrbitRemainderBound F epsilon`，并证明其 \(\varepsilon\) 可低于 \(4m_*\)。
+
+### 7. 当前严格边界
+
+本轮已经形式化：
+
+1. scalar even Weil evaluation 的 multiplicity-fiber constancy；
+2. functional-equation reflection evenness；
+3. 对 ambient expanded space 和 unrestricted distinct-zero space 的显式非满射证书；
+4. 有限实际卷积平方零点和的约化镜像因子分解；
+5. 有限 orbit block 的 even-minus-odd 聚合；
+6. sign-separated 多轨道约化奇读数的同时插值；
+7. 显式有限线性 right inverse；
+8. 可观察奇 Gram \( -4\operatorname{diag}(m_i) \)；
+9. 其负指数等于独立可观察轨道数；
+10. 统一二次余项小于最小负裕量时，整个有限维负子空间保持严格负定；
+11. 对真实 `zeroSum` 的条件性多轨道负测试族。
+
+本轮没有证明任意未经筛选的有限轨道集合自动满足 frame 的 sign-separation，也没有从 zeta 尾项具体构造 uniform multi-orbit remainder bound。它没有把 observer negative index 与完整 multiplicity-expanded ambient Krein index混同，也没有证明无限维负指数稳定、prime-side coercivity 或 RH。
+
+### 8. 下一承重方向
+
+下一条分析真源应为：
+
+```text
+MultiOrbitBurnolUniformRemainder
+```
+
+目标是从已有 closed-strip decay、convolution power 和绝对零点可和性，给有限 frame 构造共同 peak packet 与共同 exception killer，并证明：
+
+\[
+|R_N(a)|\le\varepsilon_N\|a\|_2^2,
+\qquad
+\varepsilon_N\to0.
+\]
+
+关键义务包括全部选定轨道上的目标读数同时保持、其余有限异常零点同时消去、远端零点统一几何衰减、交叉项按 Gram/operator norm 共同控制，以及常数随 frame 大小与最小节点分离显式记账。
 
 
 ---
 
-## [PR #5562] MULTIPLICITY_WEIGHTED_SCHUR_CONTINUATION
+## [PR #5065] UNIFORM_MULTI_ORBIT_BURNOL_REMAINDER
 
-### 1. 远端事实勘正与本轮交付范围
+Candidate formalization, 2026-09-05. No successful Lean compilation or axiom audit is claimed by this source-write operation. The reviewed development baseline was `a2412c6c5cbfdcf38145b6386ac54a3cdc536408`; the existing candidate frame APIs were read at `fcfc744126d37ede7750dbecc4b840b5a8923bd7`. This increment stays on the existing draft PR, without merge or rebase.
 
-2026-09-05 重新读取 GitHub：PR #5562 已存在，open、draft，head 为 `work/prime-weil-foundations-probe-20260905`，本轮起点 `e3370a7b504365075371294cf2e0a2a95cbd1add`。本卷上一节 `[PR #5562] POISSON_FRAGMENT_MESH_AND_QUADRATIC_CERTIFICATES` 已实际存在。此前会话末尾关于“尚未确认创建 PR、尚未追加理论卷”的表述不准确，以远端对象为准。
+### Correction and library-first reuse
 
-已保存的 `244a3c949c4414c3baf1598d7f2189f3fcccf8fe` 编译日志包含 `Build completed successfully (8723 jobs)`，四个数学模块的 19 个主声明打印仅有 `propext`、`Classical.choice`、`Quot.sound`。它是该旧提交的证据，不能用来证明后续新增文件已编译。现有 `QuadraticObserverPolarization` 已有三探针留一见证，后续 `QuadraticProbeIrredundance` 不应另立重复的 probe 定义；本轮将直接复用已有 owner。
+Scalar even Weil tests remain constant on multiplicity copies and under functional-equation reflection. The result concerns independently observable four-point orbit channels. Multiplicity sets a weight and margin, not extra scalar rank.
 
-本轮继续遵守 spec v4.3（blob `bba1875f68c733b925582ffc81f1344cfce96931`）的共同对象空间、既有 kernel owner 与局部结果/指定系统 root 分离。以下预条件缩放向量属于数学不等式的证明见证，不是信息逃逸系统的评分权重。它不改变对象 arena、catalog 或 primitive 语义。
+The earlier basis constructor chose a witness after forgetting its full signed values. It is now selected from `exists_even_weil_frame_interpolant`. The public `frameOddBasisTest_target_values` and `frameOddSynthesis_target_values` retain the exact +a/-a values and hence zero target even channel.
 
-产地：ChatGPT 主循环直接推导和实施，未使用独立模型评审。新增 Lean/Scribe 在本轮是待固定工具链检查的 Candidate。此次文件运输只追加本卷并删除先前临时 probe workflow，不运行编译或更改现有 admission 规则。
+Eight previously private helper declarations in the existing single-orbit Burnol owner are made public with unchanged proof bodies. These supply the reflection quotient, gamma injectivity, sign separation, actual zero summability, geometric-depth choice, and equality of the symmetric zero sum with its ordinary tsum. They are reused rather than independently redefined.
 
-### 2. 已有统一局部化之后，应保留每个通道的重数
+### Closed finite-frame chain
 
-PR #5065 本轮读取的 head 为 `fd45ade20ab1ab80f0cbeadf34ee93c554ba1ee3`。其现有候选主线构造同一个有限轨道族上的共同 Burnol 包，并使用全体混合项估计实际余项。其数学目标形状为
+The four owners below construct a common peak, a common finite exceptional ball, simultaneous signed killers, an absolutely summable majorant for ALL mixed terms, and finally a single common power depth at which every nonzero coefficient vector gives a negative FULL Weil zero sum.
 
-$$
-W(f_{N,a})=-4\sum_i m_i|a_i|^2+R_N(a),
-\qquad |R_N(a)|\le 4^{-(N+1)}C\sum_i|a_i|^2.
-$$
+For E(a)=sum_i |a_i|^2, the actual target union contributes -4 sum_i m_i |a_i|^2. The actual complement satisfies
 
-本轮不重新实现 ZeroData、测试函数、卷积或 Burnol 包。应在有限混合矩阵层保留 $m_i$，建立可直接检查的较精细充分条件。设实际余项矩阵 $K$ 的元素范数对称，并取任意正向量 $p_i$。若
+`|R_N(a)| <= (1/4)^(N+1) C_basis E(a)`.
 
-$$
-\sum_j |K_{ij}|p_j\le \eta m_i p_i\quad(\forall i),
-$$
+C_basis is the sum of the absolute mixed-convolution majorants. Its finiteness is proved from existing zeta summability. It depends on the fixed finite basis, but not on a or N. The power factor tends to zero. Since each analytic multiplicity is at least one, one common finite N suffices for strict negativity on the whole nonzero coefficient space.
 
-则
+This constructs a jointly localized basis. It does not assert that the older arbitrarily chosen fixed synthesis already had the full remainder estimate.
 
-$$
-\left|\sum_{i,j}a_i\overline{a_j}K_{ij}\right|
-\le\eta\sum_i m_i|a_i|^2.
-$$
+### Source-level details
 
-证明复用本仓 `LongGapsBetweenPrimes.abs_quadratic_form_le_rows`：在该实数定理中代入 $c_i=|a_i|/p_i$ 与 $L_{ij}=p_ip_j|K_{ij}|$。其右侧为
+#### `FiniteReflectionCompatibleWeilInterpolation`
 
-$$
-\sum_i \frac{|a_i|^2}{p_i^2}\,p_i\sum_j |K_{ij}|p_j
-\le\eta\sum_i m_i|a_i|^2.
-$$
+Status: Candidate source and author projection. Kernel and Scribe reconciliation remain separate checks.
 
-左侧先由三角不等式控制完整复二次型，再精确约去正的 $p_i$。全部交叉项仍在式中。取 $p_i=1$ 恢复旧行和条件；任意正 $p$ 给出更大的可认证集合，但不是每个 $p$ 都改善数值。
+For actual zero data Z, a finite set E of indices, and complex values a satisfying a(R j)=a(j), the module constructs a compact smooth even Weil test g with FT(g)(gamma_j)=a(j) for every j in E.
 
-### 3. 收敛级数、几何深度与严格余量
+The construction reuses the reflection representative and frequency-injectivity lemmas from the existing single-orbit separator. It invokes `even_weilTestFunction_finite_interpolation` on the sign quotient. It does not reconstruct the Fourier-Laplace interpolation theorem.
 
-对实际矩阵级数 $K_{ij}=\sum_n T_{n,ij}$，要求每个 $\sum_n|T_{n,ij}|$ 有限，并对完整 $K$ 验证范数对称。若
+The constant assignment gives a simultaneous unit peak on any finite union of zero orbits.
 
-$$
-\sum_j p_j\sum_n |T_{n,ij}|\le\eta m_i p_i,
-$$
+Main declarations:
 
-则同一个界适用于所有系数 $a$。这里没有交换条件收敛级数，没有假设每个单独的零点混合项都 Hermitian。
+- `even_weil_interpolation_on_finite_indices`
+- `exists_even_weil_finite_unit_peak`
 
-若局部化后的实际矩阵族有
+#### `FiniteOrbitBurnolPacket`
 
-$$
-|K^{(N)}_{ij}|\le4^{-(N+1)}B_{ij},
-\quad B_{ij}=B_{ji}\ge0,
-\quad\sum_jB_{ij}p_j\le\lambda m_i p_i,
-$$
+Status: Candidate source and author projection.
 
-则可使用 $\eta_N=4^{-(N+1)}\lambda$，得到
+For a valid `FiniteEvenWeilOrbitFrame`, the module first proves that the actual four-point zero orbits are pairwise disjoint. It then constructs one peak b, a finite exceptional spectral ball E, and tests k_i satisfying:
 
-$$
-W(f_{N,a})\le-(4-\eta_N)\sum_i m_i|a_i|^2.
-$$
+1. FT(b)=1 at both selected conjugate spectral nodes of every channel.
+2. FT(k_i)(gamma_j)=delta_ij and FT(k_i)(conj gamma_j)=-delta_ij.
+3. Every k_i vanishes at all exceptional zero indices outside the target union.
+4. Outside E, both conjugate evaluations of b have norm at most 1/2.
 
-若另有独立扰动 $E(a)$ 满足 $|E(a)|\le\tau\sum_i m_i|a_i|^2$，则
+Existence follows from finite compatible interpolation and the existing closed-strip decay estimate. The simultaneous exceptional set is essential: multiplying separately chosen single-orbit packets would not automatically preserve the other target values.
 
-$$
-W(f_{N,a})+\Re E(a)
-\le-(4-\eta_N-\tau)\sum_i m_i|a_i|^2.
-$$
+Main declarations: `frame_orbits_pairwise_disjoint`, `exists_common_exceptional_ball`, `exists_orbitBurnolPacket`.
 
-因而 $\eta_N+\tau<4$ 是统一严格负性的充分条件。这个扰动界必须独立证明，不能把它当成 prime-side 输入已经解决。严格负性的余量是显式保留的 $4-\eta_N-\tau$，可用于后续截断、插值数值误差或表示运输。
+#### `FiniteMixedWeilMajorant`
 
-### 4. 一个精确反例说明缩放为何有用
+Status: Candidate source and author projection.
 
-令 $m=(1,9)$，$K$ 的对角元为零、两个非对角元均为 2，目标对角余量取 1。未缩放行和条件要求 $2\le\eta$，因此不能用 $\eta<1$ 认证。取 $p=(3,1)$，则
+For a finite basis k_i define the actual mixed terms
 
-$$
-|K|p=(2,6)=\frac23\operatorname{diag}(1,9)p.
-$$
+`M_ij(n) = zeroSummand Z (convolve (k_i) (involution (k_j))) n`.
 
-新条件以 $\eta=2/3$ 认证全部复系数向量，余量至少为 $(|a_0|^2+9|a_1|^2)/3$。它仅是精确回归例，不是伪造的 zeta 数据或信息逃逸 arena。
+Every M_ij is absolutely summable by the existing zeta summability theorem. The complete coefficient expansion is
 
-更一般地，两个通道的非对角幅值为 $r>0$、对角预算为 $d_0,d_1>0$ 时，存在正比率 $t=p_1/p_0$ 同时满足
+`s_n(a) = sum_ij a_i conjugate(a_j) M_ij(n)`.
 
-$$
-rt<d_0,\qquad r/t<d_1
-$$
+With `E(a)=sum_i |a_i|^2` and `B(n)=sum_ij |M_ij(n)|`, the module proves
 
-当且仅当 $r^2<d_0d_1$。正向将两个不等式相乘；反向在开区间 $(r/d_1,d_0/r)$ 中取 $t$。这说明二维时缩放恢复精确的行列式阈值；本段一般等价目前是理论推导，不冒领为已提交 Lean 定理。
+`|s_n(a)| <= E(a) B(n)` and `sum_n |s_n(a)| <= E(a) C`, where `C=sum_n B(n)`.
 
-### 5. 文献定位与未完成目标
+B is proved summable. C depends on the fixed basis and includes every mixed term. It is not postulated as an operator-norm hypothesis.
 
-上述方法属于经典 Schur test / 正对角缩放，而非新发现的泛函分析定理。文献参照：I. Schur, *Bemerkungen zur Theorie der beschränkten Bilinearformen mit unendlich vielen Veränderlichen*, J. reine angew. Math. 140 (1911), 1–28；N. Holighaus and F. Voigtlaender, *Schur-type Banach modules of integral kernels acting on mixed-norm Lebesgue spaces*, arXiv:2006.01083。后者提供现代加权 Schur 语境，本轮不移植其混合范数广义定理。
+Main declarations: `mixedWeilSummand_summable`, `zeroSummand_finite_synthesis_expansion`, `finiteMixedMajorant_summable`, `finite_synthesis_absolute_sum_le`.
 
-本轮的具体增量是复用既有实数行和 owner，给出复混合级数的缩放证书、重数加权严格余量和可核查回归例，并提供配套 Scribe。要成为实际 Weil 局部化常数改进，仍须从 #5065 的实际 mixedSummand 构造 $B$、证明相应对称性、给出真正的 $p$ 与 $\lambda$，再通过实际 full Gram API 消费它们；本分支不把泛型前件当成已解除的 zeta 分析输入。
+#### `MultiOrbitBurnolUniformRemainder`
 
-原始 physical integral inequalities 独立解除计数仍为 **0/152**。两个 Kloosterman 输入、全局 prime-side positivity、固定支撑窗口的统一局部化及 RH 均未由本轮证明。下一步最有价值的工作是实际通道主要项与余项矩阵的有效估计，而不是重复三探针极化。
+Status: Candidate source and author projection. No successful Lean compilation is claimed by this document.
+
+The actual synthesized tests are
+
+`f_N,a = sum_i a_i (b^{*(N+1)} * k_i)`.
+
+Both target signs are preserved at every N. In particular the selected even channels vanish. The exact selected-orbit union contributes
+
+`-4 sum_i m_i |a_i|^2`.
+
+Writing the complete, absolutely convergent Weil zero sum as that contribution plus R_N(a), the module derives
+
+`|R_N(a)| <= (1/4)^(N+1) C_basis sum_i |a_i|^2`.
+
+The factor tends to zero independently of a. Positive integral analytic multiplicities give the target margin 4, so one finite common N makes the full form strictly negative on every nonzero coefficient vector. Reduced odd evaluation remains a right inverse, proving synthesis injective.
+
+This closes the finite-frame remainder obligation that was previously an input to `QuantitativeMultiOrbitWeilNegativeCertificate`. It does not instantiate that older certificate for its arbitrary fixed basis; it constructs a new, jointly localized basis with proved estimates.
+
+The valid frame is the only orbit assumption. Neither existence of off-line zeros nor a uniform estimate over all moving frames is asserted. Empty frames give the zero-dimensional case; a nonempty frame is required to extract an actual negative test.
+
+Main declarations: `burnolSynthesis_target_union_value`, `multiOrbitBurnol_uniform_remainder`, `multiOrbitBurnol_error_tendsto_zero`, `exists_common_depth_strictly_negative`, `finite_multiOrbit_full_weil_negative_family`.
+
+### Boundaries and next quantitative problems
+
+A valid finite frame of nonreal off-line orbits is an input; existence of an off-line zero is never asserted. An empty frame is zero-dimensional. A nonempty frame is required for an actual negative test.
+
+The constant and selected depth are classical and frame dependent. No computable estimate in minimum node separation, frame size, support radius, or height is established. Convolution depth may enlarge support. No uniform support window over all frames, infinite negative-index stability, prime-side coercivity, RH, or stronger zero-density theorem is claimed.
+
+Next load-bearing goals are to package the actual full mixed Gram as a Hermitian matrix and identify its negative inertia with the realized test dimension, then derive explicit interpolation-conditioning and support-growth bounds and independently verifiable prime/Archimedean margins.
 
 
-### 6. 本轮源码交付补记：缩放证书与 Scribe 已写回
+## [PR #5065] EXACT_OBSERVABLE_RANGE_AND_FULL_WEIL_GRAM_INERTIA
 
-本节记录晚于前述推导的实际交付状态。`ScaledComplexQuadraticRowBound.lean` 已在 `49d90eabbe049ca488544f894c798f6d9187cf91` 写入，包含以下七个带证明体的公开声明：
+[PR #5065] Status: Candidate formalization. This section records the mathematical source increment, not an admission verdict. A source-write workflow, a targeted Lean replay, transitive axiom auditing and the repository required checks are different pieces of evidence. No merge or ready transition is authorized by this appendix.
 
-```text
-norm_complex_quadratic_le_scaled_rows
-norm_series_quadratic_le_scaled_rows
-geometric_matrix_envelope_bound
-scaled_rows_robust_coercive_bound
-scaled_rows_robust_strict_negativity
-two_channel_scaling_iff
-two_channel_scaled_regression
+### [PR #5065] Exact image of the original scalar even observer
+
+[PR #5065] For a fixed ZeroData presentation Z and symmetric finite window T, write I_T for its distinct-zero indices and C_T for the dependent sum of the actual multiplicity copies. The original state space remains all WeilTestFunction values. The new owner `WeilEvaluationExactObservableRange` proves that an index vector v is a genuine Fourier-Laplace evaluation of an actual compact smooth even test if and only if v is invariant under the existing reflection permutation. The proof extends v by zero outside the window and reuses `even_weil_interpolation_on_finite_indices`. Symmetric-window closure proves that the extension remains compatible.
+
+[PR #5065] At the expanded-coordinate level the exact characterization is: w is reachable if and only if w is constant on each multiplicity fiber and its collapsed index vector is reflection even. Every actual analytic multiplicity is positive, so collapse can read its zeroth genuine copy. Expansion and collapse are inverse on the fiber-constant subspace. The previously defined `finiteWeilReducedEvaluation` is consequently surjective onto its specified reduced codomain. These statements supply the converse missing from the earlier necessary-constraint package.
+
+### [PR #5065] Intrinsic-information interpretation on the unchanged arena
+
+[PR #5065] The same new owner proves, for arbitrary original test states g and h, that equality of multiplicity-expanded readouts is equivalent to equality of distinct-zero readouts. Adding the expanded readout as a joint observer also leaves the kernel unchanged. Therefore no pair of original states can witness strict fiber separation by multiplicity replication. This is a semantic zero-gain theorem. Multiplicity still changes the quadratic weight and negative margin, while repeated copies contribute no additional scalar information.
+
+[PR #5065] This interpretation follows `docs/develop/spec/lean_single_compile_intrinsic_information_escape_theory_and_spec.md`: no truth-conditioned State subtype, certificate label or compilation status is used as an observable. The arena is infinite and complex-valued, so this increment does not apply finite pair-count probabilities to it, invent a normalized measure, or claim a new PrimLawSpec/admission. The observable subtype is a codomain characterization, never a restricted state arena. Host-side source delivery and diagnostics supply no Lean theorem assumptions.
+
+### [PR #5065] Mixed finite factorization on the exact range
+
+[PR #5065] `truncatedZeroSum_mixed_eq_reducedMirrorForm` extends the earlier convolution-square identity to arbitrary actual tests g and h. The finite zero sum of convolve(g, involution(h)) is exactly the existing mirror sesquilinear form evaluated on their reduced readouts. This identifies all off-diagonal finite Gram entries and preserves one analytic multiplicity weight per distinct zero. It reuses the existing mirror permutation and form instead of rebuilding them.
+
+### [PR #5065] The actual complete Gram matrix
+
+[PR #5065] The new owner `WeilFullGramInertia` defines W(g,h) as the complete absolutely convergent sum of the actual mixed summands, and sets G_ij = W(b_j,b_i). The index order gives the standard conjugate-linear row convention. Mirror reindexing preserves multiplicity and conjugates the spectral parameter, proving conjugate(W(g,h)) = W(h,g), hence G is Hermitian. Mixed absolute summability permits both finite coefficient sums to commute with the complete zero sum. The resulting exact identity is
+
+```math
+a^*G a = Z\!\left(\left(\sum_i a_i b_i\right)*
+  \left(\sum_i a_i b_i\right)^*\right).
 ```
 
-因而上节关于两通道等价“尚未提交 Lean”的阶段性记录已被本段更新。实际定理只要求 r>0 与 d1>0；行列式不等式会推出所需的 d0 正性，无须额外假设。旧 `weighted_energy_pos` 仅从 private 改为公开，证明体未改；新模块直接复用它。`QuadraticProbeIrredundance` 的重复候选定义已移除，根入口直接引用 `QuadraticObserverPolarization` 的原有三探针及六个结构定理。
+[PR #5065] Here Z denotes the actual full Weil zero functional, not a finite target-only replacement. Every infinite-tail cross term remains in G. In particular this appendix does not assert that the full Gram equals the finite target diagonal -4 diag(m_i).
 
-截至 `e3ae73e5ca01dae205d3065ed1710383b19f8e4f`，五个数学模块与一个导入根均有同路径的 `Blueprint/.../*.scribe.cs` 配套：FragmentLaw、FragmentMeshTruncation、ComplexQuadraticRowBound、QuadraticObserverPolarization、ScaledComplexQuadraticRowBound、PrimeWeilFoundationsRoot。数学声明通过 `StatementSource.FromLean()` 引用；没有手写生成的 Markdown 投影。Scribe 发射与声明解析须在本地工具链完成。
+### [PR #5065] Exact spectral inertia of the realized family
 
-已逐步复核证明的正性、除法方向和完整交叉项。额外的精确 Fraction/SymPy 检查验证了缩放约去恒等式、两条复系数平方和恒等式、210 组有理参数的区间判据和中点见证。特别地，令 a0=x+iy、a1=u+iv，则
+[PR #5065] The existing `finite_multiOrbit_full_weil_negative_family` constructs an injective finite linear synthesis whose complete Weil square has strictly negative real part on every nonzero complex coefficient vector. The new Gram identity transports this result to Matrix.PosDef(-G). Hermitian reality justifies passing from the real-part inequality to the complex star order. The existing RHLinalg negative-index implementation and the standard positive-definite eigenvalue theorem then give
 
-$$
-\frac23(|a_0|^2+9|a_1|^2)\mp4\Re(a_0\overline{a_1})
-=\frac23|a_0\mp3a_1|^2\ge0.
-$$
+```math
+\boxed{\operatorname{negIndex}(G)=\#\{\text{independent observable orbit channels}\}.}
+```
 
-这些代数检查是开发期验证，不等同于 Lean kernel 检查。本轮新增源码未运行 Lean 编译或 Scribe reconciliation，保留 Candidate 状态，由本地固定工具链验收。旧 `244a3c...` 的成功日志不覆盖新模块。本轮没有处理 GitHub CI、改变准入规则、合并或自动合并；用于追加本卷的临时文件运输工作流会自删除。
+[PR #5065] The final declaration is `exists_actual_full_weil_gram_with_exact_negative_index`. Its matrix is built from actual tests and the complete zero sum. No assumed uniform remainder remains beyond the already constructed common Burnol packet. The theorem retains a valid finite separated nonreal off-line orbit frame as input; it does not assert existence of an off-line zero. Empty frames give dimension zero. It does not equate this observable index with the multiplicity-expanded ambient index, prove RH or prime-side coercivity, or supply computable support and conditioning bounds uniform over moving frames.
 
-另须在接入 #5065 时核对复系数约定：本模块使用 sum(a_i*conj(a_j)*K_ij)，而标准 Gram 写作 star(a)*G*a。两者通过有限双重和交换取 K_ij=G_ji 对齐，不能未经证明直接把不同约定的矩阵符号认作同一项。本分支未完成该实际 Gram 适配或实际 majorant 的有效缩放搜索。
+### [PR #5065] Source interfaces and next quantitative obligation
+
+[PR #5065] Both owners have Scribe sources, author Markdown projections and explicit #print axioms requests for their main declarations. The full-Gram module imports the exact-range owner and the existing common Burnol owner, so it is a single dependency-closure replay root for this increment. Matrix interfaces were checked against the repository-pinned Mathlib v4.33.0 source, including `Matrix.PosDef.of_dotProduct_mulVec_pos`, `Matrix.IsHermitian.im_star_dotProduct_mulVec_self` and `Complex.pos_iff`. The eigenvalue-to-index step reuses the repository pattern in `FiniteMirrorKreinGramInertia`. Provenance of the integration is repo-derived; no independent novelty claim for classical interpolation or spectral inertia is made.
+
+[PR #5065] The next quantitative work is to bound interpolation conditioning and convolution support growth for specified frames, then transport an explicit remaining negative margin through the prime/Archimedean explicit-formula interface. A finite full negative-index realization alone supplies no prime-side positive coercivity and no contradiction to a hypothesized off-line frame.
+
+
+## [PR #5065] FINITE_OBSERVABLE_TO_FULL_FORM_LIMIT_AND_REPLAY_CORRECTIONS
+
+[PR #5065] The full-Gram owner now includes `reducedMirrorForm_tendsto_fullMixedWeilForm`: for each actual pair of Weil tests, the multiplicity-weighted reduced mirror forms on growing symmetric windows converge to the actual complete mixed Weil form. The proof uses `truncatedZeroSum_tendsto` from the existing ZeroSum owner and the exact mixed factorization. This is a genuine finite-to-full mathematical dependency on the exact observable range layer.
+
+[PR #5065] Pinned root observations 33969082693 and 33969495413 both failed. The first exposed obsolete finite-sum syntax and an unclosed mirror inverse simplification. The second verified the repaired mirror inverse with only standard axioms, then exposed a finite-window unfolding mismatch and a accidentally omitted second ZeroData binder introduced during the source repair. This revision explicitly unfolds `ZeroConfig.window` and restores that binder, without changing the intended theorem statements or admitting a placeholder. Compiler error recovery containing `sorryAx` is rejected as validation evidence. The new frozen source revision still requires its own observed successful root replay and independent required checks before any admission claim.
