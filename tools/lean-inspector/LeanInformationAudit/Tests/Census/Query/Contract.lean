@@ -10,7 +10,7 @@ set_option maxRecDepth 100000
 set_option maxHeartbeats 0
 
 run_cmd liftTermElabM do
-  let key : StatementKey := ⟨``target, "target-id"⟩
+  let key : StatementKey := ⟨``target, "sha256:000000000000000000000000000000000000000000000000000000000000002a"⟩
   let mut missingScopeRejected := false
   try
     let _ ← CensusQuery.buildIndex `MissingCensusModule
@@ -41,19 +41,19 @@ run_cmd liftTermElabM do
       throwError "registrationScopeIncluded: in-scope candidates were not returned"
   | .certified _ => throwError "registrationScopeIncluded: unsealed registration certified"
   let inside ← CensusQuery.buildIndex `LeanInformationAudit.Tests.Census.Evidence
-  let finiteKey : StatementKey := ⟨``SealSuccess.idTheorem, "finite-id"⟩
+  let finiteKey : StatementKey := ⟨``SealSuccess.idTheorem, "sha256:0000000000000000000000000000000000000000000000000000000000000015"⟩
   let row ← CensusQuery.assess inside "fixture-head" finiteKey
   unless row.className == "finite_occurrence" do
     throwError "insideScopeCertified: certifying registration was not selected"
   validateEvidence `LeanInformationAudit.Tests.Census.Evidence
     ⟨"fixture-head", #[⟨finiteKey, row⟩]⟩
-  let structuralKey : StatementKey := ⟨``Evidence.structuralTheorem, "structural-id"⟩
+  let structuralKey : StatementKey := ⟨``Evidence.structuralTheorem, "sha256:0000000000000000000000000000000000000000000000000000000000000029"⟩
   let structuralRow ← CensusQuery.assess inside "fixture-head" structuralKey
   unless structuralRow.className == "structural_occurrence" do
     throwError "structuralRegistryCertified: imported provenance registry was not queried"
   let mut rejected := false
   try
-    let _ ← CensusQuery.assess outside "fixture-head" ⟨`MissingTheorem, "missing-id"⟩
+    let _ ← CensusQuery.assess outside "fixture-head" ⟨`MissingTheorem, "sha256:0000000000000000000000000000000000000000000000000000000000000042"⟩
   catch _ => rejected := true
   unless rejected do throwError "missingTheoremRejected: query error became an observation"
   logInfo "missingScopeRejected outsideScopeObserved insideScopeCertified structuralRegistryCertified missingTheoremRejected"

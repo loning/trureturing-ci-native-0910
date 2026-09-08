@@ -11,6 +11,10 @@ import json
 PROGRAM = pathlib.Path(__file__).with_name("pipeline.py")
 
 
+def statement_id(value):
+    return "sha256:" + format(value, "064x")
+
+
 class PipelineTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -27,14 +31,14 @@ class PipelineTests(unittest.TestCase):
         nodes = [{"repo_path": f"D5/{module}.lean", "freeze_status": "frozen",
                   "declarations": [{"kind": "theorem", "declaration_name_key": "ns(n0,4:same)",
                                     "statement_id": identity}]}
-                 for module, identity in (("A", "first-id"), ("B", "second-id"))]
+                 for module, identity in (("A", statement_id(1)), ("B", statement_id(2)))]
         self.assertEqual(self.program.frozen_keys({"nodes": nodes}), [
-            ("D5.A", "ns(n0,4:same)", "first-id"),
-            ("D5.B", "ns(n0,4:same)", "second-id")])
+            ("D5.A", "ns(n0,4:same)", statement_id(1)),
+            ("D5.B", "ns(n0,4:same)", statement_id(2))])
 
     def test_repeated_statement_id_is_rejected(self):
         node = {"repo_path": "D5/A.lean", "freeze_status": "frozen", "declarations": [
-            {"kind": "theorem", "declaration_name_key": "ns(n0,4:same)", "statement_id": "id"}]}
+            {"kind": "theorem", "declaration_name_key": "ns(n0,4:same)", "statement_id": statement_id(0)}]}
         with self.assertRaises(ValueError):
             self.program.frozen_keys({"nodes": [node, node]})
 
@@ -46,7 +50,7 @@ class PipelineTests(unittest.TestCase):
                 self.program.exported_path(bad)
 
     def test_partition_preserves_every_key_and_emits_deterministically(self):
-        keys = [("D5.A", "ns(n0,4:same)", f"id-{i}") for i in range(22001)]
+        keys = [("D5.A", "ns(n0,4:same)", statement_id(i)) for i in range(22001)]
         with tempfile.TemporaryDirectory() as first, tempfile.TemporaryDirectory() as second:
             for directory in (first, second):
                 self.program.write_requests(pathlib.Path(directory), keys)
@@ -69,8 +73,8 @@ class PipelineTests(unittest.TestCase):
 
     def test_duplicate_declarations_have_isolated_query_environments(self):
         modules = ["D5.S0.Area.Left", "D5.S0.Area.Right", "D5.S0.Area.Other"]
-        keys = [(modules[0], "same", "left"), (modules[1], "same", "right"),
-                (modules[2], "other", "other")]
+        keys = [(modules[0], "same", statement_id(0)), (modules[1], "same", statement_id(1)),
+                (modules[2], "other", statement_id(2))]
         partitions = self.program.partition_queries(modules, keys, 32)
         self.assertEqual(sorted(module for _, group in partitions for module in group), sorted(modules))
         self.assertIn((modules[0], [modules[0]]), partitions)
@@ -80,7 +84,7 @@ class PipelineTests(unittest.TestCase):
         for result in ({}, {"head": "head", "entries": []},
                        {"head": "head", "entries": [], "query_completed": True}):
             with self.subTest(result=result), self.assertRaises(ValueError):
-                self.program.validate_result(result, "head", [("D5.A", "key", "id")])
+                self.program.validate_result(result, "head", [("D5.A", "key", statement_id(0))])
 
     def test_partial_certification_never_uses_subset_denominator(self):
         summary = {"requested_keys": 4, "status": "partial",
@@ -114,15 +118,13 @@ class PipelineTests(unittest.TestCase):
         import emission
         first = ["str", ["anonymous"], "First"]
         second = ["str", ["anonymous"], "Second"]
-        inputs = [{"scope": {"modules": [first, second]}}, {"scope": {"modules": [first]}}]
-        with tempfile.TemporaryDirectory() as left, tempfile.TemporaryDirectory() as right:
-            modules, indexes = emission.module_pool(pathlib.Path(left), "Pool", inputs)
-            other_modules, other_indexes = emission.module_pool(pathlib.Path(right), "Pool", inputs[::-1])
-            self.assertEqual(indexes, other_indexes)
-            self.assertEqual(sorted(indexes.values()), [0, 1])
-            self.assertEqual([name for name, _ in modules], [name for name, _ in other_modules])
-            self.assertEqual([path.read_bytes() for _, path in modules],
-                             [path.read_bytes() for _, path in other_modules])
+        rows = [{"theorem_name": first, "statement_id": "sha256:" + format(1, "064x"),
+                 "payload": {"import_scope": [first, second] * 1000}}]
+        keys = [("Fixture", "ns(n0,5:First)", rows[0]["statement_id"])]
+        source = emission.manifest_source(rows, keys, "head", "digest", "Root")
+        self.assertNotIn("Second", source)
+        self.assertNotIn("import_scope", source)
+        self.assertNotIn("CensusRun.Scopes", source)
 
     def test_budget_failures_are_rejections(self):
         spec = importlib.util.spec_from_file_location("census_resources", PROGRAM.with_name("resources.py"))

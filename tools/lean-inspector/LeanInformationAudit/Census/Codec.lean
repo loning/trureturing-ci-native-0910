@@ -15,21 +15,23 @@ private def formatError (name : Name) (wire : String) : String :=
 
 /-- Decode only the canonical wire spelling. No trimming or case normalization. -/
 def decodeStatementId (name : Name) (wire : String) : Except String Nat := do
-  unless wire.startsWith "sha256:" && wire.utf8ByteSize == 71 do
+  unless wire.startsWith "sha256:" && wire.utf8ByteSize ≤ 71 do
     throw <| formatError name wire
   let mut value := 0
   for digit in (wire.drop 7).toString.toList do
     let nibble ← if '0' ≤ digit && digit ≤ '9' then pure (digit.toNat - '0'.toNat)
       else if 'a' ≤ digit && digit ≤ 'f' then pure (digit.toNat - 'a'.toNat + 10)
+      else if 'A' ≤ digit && digit ≤ 'F' then pure (digit.toNat - 'A'.toNat + 10)
       else throw (formatError name wire)
     value := value * 16 + nibble
+  -- This equality is the canonical spelling authority, including case and width.
   unless (← renderStatementId value) == wire do throw <| formatError name wire
   return value
 
 /-- Elaborator boundary between a supplied Nat literal and its original wire id. -/
 def bindStatementIdNat (name : Name) (wire : String) (value : Nat) : Except String Unit := do
   let decoded ← decodeStatementId name wire
-  unless decoded == value && (renderStatementId value).toOption == some wire do
+  unless decoded == value do
     throw <| identityError name "statement_id_nat" (toString decoded) (toString value)
 
 end LeanInformationAudit.DispositionCensus

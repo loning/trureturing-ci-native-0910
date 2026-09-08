@@ -47,7 +47,7 @@ def process_rss(pid):
     return max((rss * 1024 for child, _, rss in processes if child in descendants), default=0)
 
 
-def run(command, directory, label, *, cwd=None, env=None, budget_gb=8):
+def run(command, directory, label, *, cwd=None, env=None, budget_gb=8, phase_path=None):
     """The owner-requested safety limit is 8 GiB, with exactly one active child job.
 
     RSS sampling bounds individual descendants; time also records the OS high-water
@@ -57,7 +57,9 @@ def run(command, directory, label, *, cwd=None, env=None, budget_gb=8):
     directory.mkdir(parents=True, exist_ok=True)
     started = time.monotonic()
     measurement = {"label": label, "command": command, "rss_budget_gib": budget_gb,
-                   "peak_rss_bytes": 0, "memory_readings": [], "status": "rejected"}
+                   "peak_rss_bytes": 0, "memory_readings": [], "status": "rejected", "phases": {}}
+    current_phase = "certificate_compile_kernel" if phase_path else label
+    last_sample = started
     proc = None
     timing_path = directory / f"{label}.time.log"
     try:
@@ -74,6 +76,13 @@ def run(command, directory, label, *, cwd=None, env=None, budget_gb=8):
                 rss = process_rss(proc.pid)
                 measurement["peak_rss_bytes"] = max(measurement["peak_rss_bytes"], rss)
                 now = time.monotonic()
+                phase = measurement["phases"].setdefault(current_phase,
+                    {"wall_seconds": 0, "peak_rss_bytes": 0})
+                phase["wall_seconds"] += now - last_sample
+                phase["peak_rss_bytes"] = max(phase["peak_rss_bytes"], rss)
+                last_sample = now
+                if phase_path and pathlib.Path(phase_path).exists():
+                    current_phase = pathlib.Path(phase_path).read_text() or current_phase
                 if now >= next_memory_check:
                     free = free_memory()
                     measurement["memory_readings"].append(
@@ -105,6 +114,11 @@ def run(command, directory, label, *, cwd=None, env=None, budget_gb=8):
             proc.wait()
         raise
     finally:
+        phase = measurement["phases"].setdefault(current_phase,
+            {"wall_seconds": 0, "peak_rss_bytes": 0})
+        phase["wall_seconds"] += time.monotonic() - last_sample
+        for phase in measurement["phases"].values():
+            phase["wall_seconds"] = round(phase["wall_seconds"], 3)
         measurement["wall_seconds"] = round(time.monotonic() - started, 3)
         (directory / f"{label}.resources.json").write_text(json.dumps(measurement, indent=2) + "\n")
         print(json.dumps({"step": label, "status": measurement["status"],

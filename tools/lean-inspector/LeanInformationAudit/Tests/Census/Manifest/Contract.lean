@@ -16,7 +16,7 @@ run_cmd do
   for wire in bad do
     match decodeStatementId `T wire with
     | .error error => unless error.contains "component=statement_id_format" do throwError error
-    | .ok _ => throwError "strictCodecRejections: malformed identity accepted"
+    | .ok _ => throwError "codecRoundTripBinding: strictCodecRejections accepted malformed identity"
   match bindStatementIdNat `T oneId 0 with
   | .error error => unless error.contains "component=statement_id_nat" do throwError error
   | .ok _ => throwError "codecRoundTripBinding: a second wire identity bound to zero"
@@ -47,9 +47,11 @@ run_cmd do
   liftTermElabM do
     let value := toExpr manifest
     let keys := toExpr manifest.keys
-    let proof ← certificateProof value "head" "digest" `Root keys
-    let expected ← mkAppM ``CensusKeyManifest.Certificate
-      #[value, toExpr "head", toExpr "digest", toExpr (`Root : Name), keys]
+    let proof ← try certificateProof value "head" "digest" `Root keys
+      catch error => throwError "certificateAscendingConjunct: {error.toMessageData}"
+    let expected ← Elab.Term.elabTerm (← `(manifest.headSha = "head" ∧ manifest.reportSha256 = "digest" ∧
+      manifest.censusRoot = `Root ∧ strictlyAscending (manifest.keys.map Prod.snd) = true ∧
+      manifest.keys = manifest.keys)) none
     unless ← isDefEq (← inferType proof) expected do
       throwError "certificateAscendingConjunct: certificate type lost a conjunct"
     checkWithKernel proof

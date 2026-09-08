@@ -45,7 +45,10 @@ def prepare_fixtures(repository, directory):
     for module in ("Query.Observed", "Query.DuplicateLeft", "Query.DuplicateRight", "Query.Contract",
                    "Query.Coverage", "Query.Publication", "Query.DirectEvidence", "Query.Enumeration",
                    "AssessmentCommand", "Command", "CommandRejection",
-                   "InvalidEvidence", "LandedFinite"):
+                   "InvalidEvidence", "LandedFinite", "Coverage", "Json", "NameIdentity", "Assessment",
+                   "Evidence", "ArchitectureRepair", "ProvenanceUniverses", "RegisteredClosedTruth",
+                   "SplitRootCatalog", "UnreachableProofs", "UnreachableRoot",
+                   "Manifest.Contract", "Manifest.Environment", "Manifest.Precedence"):
         prepare("LeanInformationAudit.Tests.Census." + module)
     prepare("LeanInformationAudit.Census.Command")
 
@@ -78,12 +81,12 @@ def main():
     source = "LeanInformationAudit.Tests.Census.Query.Observed"
     finite = "LeanInformationAudit.Tests.SealSuccess"
     for module, declaration, identity in [
-            (source, source + ".independent", "b-observed"),
-            (finite, finite + ".idTheorem", "a-certified"),
+            (source, source + ".independent", "sha256:" + format(1, "064x")),
+            (finite, finite + ".idTheorem", "sha256:" + format(0, "064x")),
             ("LeanInformationAudit.Tests.Census.Query.DuplicateLeft",
-             "LeanInformationAudit.Tests.Census.Query.shared", "c-duplicate-left"),
+             "LeanInformationAudit.Tests.Census.Query.shared", "sha256:" + format(2, "064x")),
             ("LeanInformationAudit.Tests.Census.Query.DuplicateRight",
-             "LeanInformationAudit.Tests.Census.Query.shared", "d-duplicate-right"),
+             "LeanInformationAudit.Tests.Census.Query.shared", "sha256:" + format(3, "064x")),
             ("LeanInformationAudit.Tests.Census.Evidence", None, None)]:
         report["nodes"].append({"repo_path": module.replace(".", "/") + ".lean",
                                 "freeze_status": "frozen", "declarations": [] if declaration is None else [
@@ -97,7 +100,7 @@ def main():
         "keys": [[node["repo_path"].removesuffix(".lean").replace("/", "."),
                   decl["declaration_name_key"], decl["statement_id"]]
                  for node in report["nodes"] for decl in node["declarations"]
-                 if decl["statement_id"].startswith(("c-", "d-"))]}) + "\n")
+                 if node["repo_path"].endswith(("DuplicateLeft.lean", "DuplicateRight.lean"))]}) + "\n")
     duplicate_source = directory / "DuplicateEvidenceImports.lean"
     duplicate_output = directory / "duplicate-evidence-output.json"
     duplicate_source.write_text("import LeanInformationAudit.Census.Command\n"
@@ -124,7 +127,8 @@ def main():
         assert projection["counts"]["accounted"] == 4
         assert projection["counts"]["certified"] == 1
         assert projection["counts"]["observed"] == 3
-        duplicates = [row for row in projection["rows"] if row["statement_id"].startswith(("c-", "d-"))]
+        duplicates = [row for row in projection["rows"]
+                      if row["statement_id"] in {"sha256:" + format(n, "064x") for n in (2, 3)}]
         assert len(duplicates) == 2
         assert duplicates[0]["theorem_name"] == duplicates[1]["theorem_name"]
         assert duplicates[0]["payload"]["owning_module"] != duplicates[1]["payload"]["owning_module"]
@@ -170,7 +174,10 @@ def main():
             directory / module, "process", cwd=repository)
     from receipt_fixtures import check_receipts
     receipt_negatives = check_receipts(repository, directory, report_path)
+    from negative_fixtures import check_manifest_negatives
+    manifest_negatives = check_manifest_negatives(repository, directory)
     result = {"query_contract": "passed", "coverage": "passed", "artifact_determinism": results[0],
+              "manifest_negatives": manifest_negatives,
               "query_receipt_negatives": receipt_negatives,
               "duplicate_owners_via_evidence_imports": "rejected",
               "private_evidence": "included", "transparent_alias": "observed; normalization deferred to J4",

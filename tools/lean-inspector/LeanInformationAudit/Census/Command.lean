@@ -30,6 +30,7 @@ elab "#census_query " requestPath:str " output " destination:str : command => do
     let env <- getEnv
     let index <- buildIndex env.header.mainModule
     let mut entries := #[]
+    let mut certifiedRows := #[]
     let mut certifiedImports := #[]
     let mut ids : Std.HashSet String := {}
     for request in requests do
@@ -42,6 +43,7 @@ elab "#census_query " requestPath:str " output " destination:str : command => do
         throwError "census query: owning module mismatch: {key.theoremName}"
       let row <- assess index head key
       if let .certified disposition := row then
+        certifiedRows := certifiedRows.push (Sigma.mk key (.certified disposition))
         let names := match disposition with
           | .finiteOccurrence value => #[value.canonicalArena, value.registration,
               value.realization, value.nondegeneracyCertificate, value.stateEnumerationCertificate] ++
@@ -62,6 +64,7 @@ elab "#census_query " requestPath:str " output " destination:str : command => do
     return (Json.mkObj [
       ("head", toJson head), ("root", nameJson index.root),
       ("scope", toJson (ImportClosureScope.mk index.modules true)),
+      ("source_inputs", toJson (← validateEvidenceSources index.root ⟨head, certifiedRows⟩)),
       ("certified_imports", toJson (certifiedImports.toList.eraseDups.toArray.qsort Name.quickLt
         |>.map Name.toString)),
       ("entries", Json.arr entries)], index.modules)

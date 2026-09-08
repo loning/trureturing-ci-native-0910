@@ -39,7 +39,7 @@ def partition_queries(modules, keys, limit=32):
 
 
 def validate_result(result, head, keys):
-    if not isinstance(result, dict) or set(result) != {"head", "root", "scope", "entries", "certified_imports"}:
+    if not isinstance(result, dict) or set(result) != {"head", "root", "scope", "entries", "certified_imports", "source_inputs"}:
         raise ValueError("incomplete query result")
     if result["head"] != head or result["scope"].get("completed") is not True:
         raise ValueError("query identity or scope incomplete")
@@ -129,7 +129,7 @@ def write_requests(directory: pathlib.Path, keys):
 
 
 def execute(options):
-    from emission import array, module_pool, rows_module, scope_module, string, write_module
+    from emission import string, write_module
     from resources import run
 
     repository = pathlib.Path(__file__).resolve().parents[3]
@@ -147,26 +147,27 @@ def execute(options):
         state["runtime_seconds"]["total"] = round(time.monotonic() - started, 3)
         (directory / "run.json").write_text(json.dumps(state, indent=2) + "\n")
 
-    def step(command, label, log_directory=None):
+    def step(command, label, log_directory=None, phase_path=None):
         log_directory = log_directory or directory / "logs" / label
         print("CENSUS_STEP " + label, flush=True)
-        result = run(command, log_directory, "process", cwd=repository, env=env)
+        result = run(command, log_directory, "process", cwd=repository, env=env, phase_path=phase_path)
         state["runtime_seconds"][label] = result["wall_seconds"]
         save()
         return result
 
-    def lean(path, label, compile_module=False):
+    def lean(path, label, compile_module=False, phase_path=None):
         arguments = ["lake", "env", "lean", "-DmaxRecDepth=100000", "-DmaxHeartbeats=0",
                      "-R", str(directory)]
         if compile_module:
             arguments += ["-o", str(path.with_suffix(".olean"))]
-        return step([*arguments, str(path)], label)
+        return step([*arguments, str(path)], label, phase_path=phase_path)
 
     try:
         if options.fixture_truth_export:
             validate_fixture_export(json.loads(pathlib.Path(options.fixture_truth_export).read_bytes()))
         step(["make", "lean-cache-ensure"], "cache")
-        for module in ["Census.Coverage", "DispositionEvidence", "DispositionCensus",
+        for module in ["Census.Codec", "CensusSchema", "Census.Coverage", "Census.Report",
+                       "Census.Manifest", "Census.Transport", "DispositionEvidence", "DispositionCensus",
                        "Census.Query", "Census.Receipt", "Census.Command", "Census.Publish"]:
             source = repository / "tools/lean-inspector/LeanInformationAudit" / (module.replace(".", "/") + ".lean")
             target = repository / ".lake/build/lib/lean/LeanInformationAudit" / (module.replace(".", "/") + ".olean")
@@ -226,8 +227,6 @@ def execute(options):
             save()
         state["evidence_modules"] = sorted(evidence_modules)
         completed = []
-        query_outputs = []
-        scope_modules = []
         certified_imports = set()
         response_paths = []
         for number, (label, members) in enumerate(query_partitions):
@@ -260,49 +259,23 @@ def execute(options):
             state["partitions"][label]["transitive_closure_count"] = receipt["transitive_closure_count"]
             response_paths.append(str(response))
             certified_imports.update(output["certified_imports"])
-            scope = "CensusRun.Scopes." + relative
-            query_outputs.append((label, scope, output))
-            scope_modules.append(scope)
-            completed.extend((row, scope) for row in output["entries"])
+            completed.extend(output["entries"])
             state["completed_keys"] = len(completed)
             save()
         if not completed:
             raise RuntimeError("no completed query partitions; no census artifact published")
-        pool = "CensusRun.ModuleNames"
-        pool_modules, indexes = module_pool(directory, pool, [output for _, _, output in query_outputs])
-        for module, path in pool_modules:
-            lean(path, "names-" + module, True)
-        for label, scope, output in query_outputs:
-            path = scope_module(directory, scope, output, pool, indexes)
-            lean(path, "scope-" + label, True)
-        completed.sort(key=lambda item: item[0]["statement_id"])
         state["status"] = "complete" if len(completed) == len(all_keys) else "partial"
-        inventories = []
-        for start in range(0, len(completed), 100):
-            number = start // 100
-            module = f"CensusRun.Rows.Group{number // 20:04d}.Rows{number:05d}"
-            path = rows_module(directory, module, completed[start:start + 100])
-            lean(path, "rows-" + str(number), True)
-            inventories.append(module)
-        # Only evidence selected by successful certification enters the final environment.
-        imports = sorted(set(inventories) | certified_imports)
         state["certified_imports"] = sorted(certified_imports)
         receipts = directory / "query-outputs.json"
         receipts.write_text(json.dumps(response_paths) + "\n")
-        source = "".join(f"import {module}\n" for module in imports)
-        source += "open LeanInformationAudit\n"
-        source += f"def CensusRun.inventory : DispositionInventory :=\n  {{ headSha := {string(head)}, entries := "
-        entries = (inventories[0] + ".rows" if len(inventories) == 1 else
-                   "CensusProjection.assemble " + array(module + ".rows" for module in inventories))
-        source += entries + " }\n"
-        source += f"def CensusRun.scopes : Array CensusProjection.Scope := {array(scope + '.record' for scope in scope_modules)}\n"
-        digest = "sha256:" + hashlib.sha256(report_path.read_bytes()).hexdigest()
-        source += (f"#disposition_census projection root CensusRun.Root report {string(str(report_path))}\n"
-                   f"  head {string(head)} report_sha256 {string(digest)} inventory CensusRun.inventory\n"
-                   f"  scopes CensusRun.scopes receipts {string(str(receipts))} "
-                   f"certificate CensusRun.exactlyCovers output {string(str(directory / 'census.json'))}\n")
-        path = write_module(directory, "CensusRun.Root", source)
-        lean(path, "publication", True)
+        step([sys.executable, str(repository / "tools/lean-inspector/Census/manifest.py"),
+              "--directory", str(directory), "--report", str(report_path),
+              "--receipts", str(receipts), "--prefix", options.prefix], "manifest_emission")
+        path = directory / "CensusRun/Root.lean"
+        state["manifest_bytes"] = path.stat().st_size
+        publication = lean(path, "publication", True, directory / "census.json.phase")
+        state["publication_phases"] = publication["phases"]
+        state["final_environment"] = json.loads((directory / "census.json.environment.json").read_text())
         summary = json.loads((directory / "census.json.summary.json").read_text())
         validate_summary(summary, requested=len(all_keys), accounted=len(completed))
         state["artifact_counters"] = dict(summary["counts"], requested_keys=summary["requested_keys"],

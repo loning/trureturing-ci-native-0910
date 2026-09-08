@@ -5,6 +5,16 @@ namespace LeanInformationAudit.CensusManifest
 
 open Lean Meta DispositionCensus
 
+private def literalNameExpr : Name → Expr
+  | .anonymous => mkConst ``Name.anonymous
+  | .str parent part => mkApp2 (mkConst ``Name.str) (literalNameExpr parent) (toExpr part)
+  | .num parent part => mkApp2 (mkConst ``Name.num) (literalNameExpr parent) (toExpr part)
+
+/-- Match the emitted constructor syntax, without ToExpr's Name.mkStrN compression. -/
+def keysLiteralExpr (keys : List (Name × Nat)) : Expr :=
+  letI : ToExpr Name := ⟨literalNameExpr, mkConst ``Name⟩
+  toExpr keys
+
 /-- All renderers consume this ordering: ascending decoded 256-bit ids. -/
 def canonicalKeys (keys : Array StatementKey) : Except String (List (Name × Nat)) := do
   let values ← keys.mapM fun key => do
@@ -25,11 +35,13 @@ private def bindKeys (component : String) (wire : Array StatementKey)
 Checking a reflexive equality alone cannot establish either binding. -/
 def checkManifestBinding (report : FrozenReport) (root : Name) (rows : Array StatementKey)
     (m : CensusKeyManifest) (reportKeys : List (Name × Nat)) : Except String Unit := do
-  checkKeyCoverage report.headSha report.theorems m.headSha rows
+  checkFrozenKeys report.headSha report.theorems
+  checkInventoryDuplicates rows
   unless m.reportSha256 == report.reportSha256 do
     throw <| identityError .anonymous "report_sha256" report.reportSha256 m.reportSha256
   unless m.censusRoot == root do
     throw <| identityError .anonymous "census_root" (nameJson root).compress (nameJson m.censusRoot).compress
+  checkKeyCoverage report.headSha report.theorems m.headSha rows
   bindKeys "manifest_keys" rows m.keys
   bindKeys "report_keys" report.theorems reportKeys
 

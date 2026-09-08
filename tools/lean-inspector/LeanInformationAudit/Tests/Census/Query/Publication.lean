@@ -14,7 +14,12 @@ run_cmd do
       (summary.getObjValAs? Bool "certified_complete").toOption == some false &&
       (summary.getObjValAs? Nat "coverage_theorem_count").toOption == some 1 do
     throwError "partialCertifiedDenominator: 1/4 certified cannot be certified_complete"
-  let selectedReport := selectedReport report selected
+  let bytes := Json.mkObj [("nodes", Json.arr <| full.entries.mapIdx fun index row =>
+    Json.mkObj [("freeze_status", toJson "frozen"),
+      ("repo_path", toJson (if index == 0 then "Selected.lean" else "Other.lean")),
+      ("declarations", Json.arr #[Json.mkObj [("kind", toJson "theorem"),
+        ("statement_id", toJson row.1.statementId)]])])]
+  let selectedReport ← ofExcept <| selectReport report bytes.compress "Selected"
   unless selectedReport.reportSha256 == report.reportSha256 && selectedReport.theorems.size == 1 do
     throwError "partialExportIdentity: original export identity lost"
   match checkCoverage report.headSha selectedReport.theorems selected with

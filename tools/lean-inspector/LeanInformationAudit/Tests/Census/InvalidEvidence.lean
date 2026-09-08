@@ -93,7 +93,7 @@ theorem structuralAlias : ∀ n : Nat, n % 2 < 2 := structuralTheorem
 /-- error: IE-C037 DispositionClassMismatch theorem=LeanInformationAudit.Tests.Census.Evidence.structuralAlias class=structural_occurrence invalid=realization.provenance -/
 #guard_msgs in
 run_cmd liftTermElabM do
-  let key : StatementKey := ⟨``structuralAlias, "alias-id"⟩
+  let key : StatementKey := ⟨``structuralAlias, "sha256:0000000000000000000000000000000000000000000000000000000000000011"⟩
   let rows := inventory.entries.filterMap fun entry => match entry.2 with
     | .certified (.structuralOccurrence value) => some ⟨key, .certified <| AnalysisDisposition.structuralOccurrence {
         canonicalArena := value.canonicalArena
