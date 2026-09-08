@@ -14,7 +14,7 @@ internal sealed class ProjectiveRayleighRoucheDocument : IScribeDocumentDefiniti
                 DescribeId.Create("bounded-linear-projective-error-squared"),
                 DeclarationHandle.Create(Owner + "bounded_linear_readout_error_sq"),
                 H("Propagate a squared Hilbert-space error"),
-                StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                StatementSource.WithoutFormula(), AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
                     "For a bounded complex linear functional L, the existing operator-norm "
                     + "inequality bounds ||Lx-Ly|| by ||L|| ||x-y||. Squaring preserves the "
@@ -26,7 +26,7 @@ internal sealed class ProjectiveRayleighRoucheDocument : IScribeDocumentDefiniti
                 DescribeId.Create("bounded-linear-strict-rouche-boundary"),
                 DeclarationHandle.Create(Owner + "bounded_linear_readout_rouche_bound"),
                 H("A separately certified boundary margin makes the comparison strict"),
-                StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                StatementSource.WithoutFormula(), AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
                     "The explicit inequality ||L||^2 r < ||Ly||^2 supplies strictness. "
                     + "The result is precisely ||Lx-Ly||<||Ly||, the pointwise hypothesis "
@@ -37,7 +37,7 @@ internal sealed class ProjectiveRayleighRoucheDocument : IScribeDocumentDefiniti
                 DescribeId.Create("projective-enclosure-rectangle-zero-count"),
                 DeclarationHandle.Create(Owner + "projective_rayleigh_rectangle_zero_count"),
                 H("Consume the derived projective estimate in the existing zero count"),
-                StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                StatementSource.WithoutFormula(), AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
                     "The operator-domain hypotheses are passed directly to "
                     + "projective_rayleigh_enclosure; no projective error bound is assumed. "

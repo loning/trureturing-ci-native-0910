@@ -67,7 +67,7 @@ internal sealed class ProjectiveRayleighCaptureDocument : IScribeDocumentDefinit
                     DescribeId.Create("prime-three-projective-rational-comparison"),
                     DeclarationHandle.Create(Owner + "prime_three_projective_ratio"),
                     H("Exact endpoint arithmetic"),
-                    StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                    StatementSource.WithoutFormula(), AssessedProvenance.FromRepo(),
                     Blocks(Paragraph(Text(
                         "The endpoints are ell=103/2000000000, U=560909/10000000000000 and "
                         + "T=1/200000, taken from the actual prime3_refined_certificate.json in "
@@ -79,7 +79,7 @@ internal sealed class ProjectiveRayleighCaptureDocument : IScribeDocumentDefinit
                     DescribeId.Create("prime-three-projective-mode-consequence"),
                     DeclarationHandle.Create(Owner + "prime_three_projective_mode_capture"),
                     H("The recorded endpoints imply a projective distance below 0.0305"),
-                    StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                    StatementSource.WithoutFormula(), AssessedProvenance.FromRepo(),
                     Blocks(Paragraph(Text(
                         "The general domain theorem and exact rational comparison supply the last "
                         + "variational implication for the prime-three certificate. Its symmetry, "
