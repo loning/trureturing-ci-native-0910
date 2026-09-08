@@ -1,4 +1,6 @@
-"""Run-local truth census. Lean owns registration queries and certification."""
+"""Report-only census, never a gate. status=complete means accounting completion
+only. Observed rows are unclassified: never certified, never a closed reason,
+and never AC-023. Lean owns registration queries and certification."""
 
 from __future__ import annotations
 
