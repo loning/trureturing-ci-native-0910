@@ -241,3 +241,64 @@ At this checkpoint Step 4 is still incomplete: this theorem covers ordered-gap
 coordinates. The next obligation is to express any nonnegative root triple in
 these coordinates up to equality of its polynomial, then clear denominators
 and connect the result to the original coefficient convolution.
+
+## Step 4: Full Root Domain
+
+Certificate checkpoint `ab7fd079b0` was pushed successfully. Step 4 is now
+proved by `GribinskiDegreeThree.m3_discriminant_nonneg`. Its hypotheses are
+exactly six nonnegative real roots and `alpha > -1`; no ordering, distinctness,
+strict root positivity, or additional parameter restriction is assumed.
+
+`nonnegative_rootTriple_coordinates` proves that each nonnegative triple has
+the same polynomial as `rootTriple x (x+u) (x+u+v)` with x,u,v nonnegative.
+The proof covers all six weak orderings using `le_total`, then chooses
+`x=r`, `u=s-r`, `v=t-s` for a sorted triple r,s,t. Factor commutativity proves
+polynomial equality. The main theorem invokes this result separately on both
+input triples and rewrites both input polynomials before applying the
+certificate. Thus the previously identified coordinate-image gap is closed.
+
+The scalar bridge `discriminant_numerator` proves exactly
+`27*(alpha+3)^3*Delta = numerator (alpha+1) S (6P+2Q) (3P+2Q) (6R) (3R+V)`,
+where T=P+kappa*Q and U=R+rho*V. Substitution uses
+P=A2+B2, Q=A1*B1, R=A3+B3, V=A1*B2+A2*B1. Since alpha+3 is positive,
+the cleared sign implies the original cubic discriminant sign. The bridge to
+the input operation uses `definition_consistency` and
+`convolution_coefficients`, so the certificate is connected to Definition 3.10.
+
+| Public declaration | proof_shape | escape_witness | admission_basis | utility |
+| --- | --- | --- | --- | --- |
+| `discriminant` | not-applicable(definition) | none | not-applicable(definition) | signed monic cubic coefficient discriminant; kind=none |
+| `nonnegative_rootTriple_coordinates` | bind-only | none | escape-witness, companion within this content module | coordinate coverage obligation; kind=none |
+| `m3_discriminant_nonneg` | content | the live four-coefficient SOS certificate, plus coverage of both arbitrary triples | escape-witness | full symbolic discriminant sign for Step 5; kind=none |
+
+The coordinate construction is conservatively classified bind-only: its six
+order cases use pinned order dichotomy and arithmetic normalization. It is
+not asserted to justify an independent freeze. Actual consumer-to-prerequisite
+edges are `m3_discriminant_nonneg -> nonnegative_rootTriple_coordinates` and
+`m3_discriminant_nonneg -> ordered_output_discriminant -> ordered_numerator_nonneg`.
+The latter also consumes the scalar clearing identity and the original
+coefficient formulas. Direct frozen dependencies for Step 4: none.
+
+New pinned upstream lookup receipts: `le_total` in
+`Mathlib/Order/Defs/LinearOrder.lean:92`, and
+`nonneg_of_mul_nonneg_right` in
+`Mathlib/Algebra/Order/Ring/Unbundled/Basic.lean:346` are used directly.
+Search commands: `rg -n '\b(sort_perm\|perm_sort\|le_total)\b'` on the pinned
+List/Sort and Order/Defs/LinearOrder files gave 6 matching lines (all in the
+latter); `rg -n 'theorem nonneg_of_mul_nonneg_(left\|right)\|lemma nonneg_of_mul_nonneg_(left\|right)'`
+on pinned Mathlib/Algebra/Order with `--glob '*.lean'` gave 2 lines. Both
+commands used unescaped alternation pipes; EXIT=0. These are local source
+lookups, subsequently validated by Lean applications, not absence claims.
+
+| Command/log (attempt-2) | EXIT | Jobs | Real seconds | Maximum RSS bytes |
+| --- | ---: | ---: | ---: | ---: |
+| `/usr/bin/time -l make lean`, `step4-1.log` | 2 | 12681 | 18.42 | 3034906624 |
+| `/usr/bin/time -l make lean`, `step4-2.log` | 0 | 12681 | 21.40 | 3094347776 |
+
+The first build already proved the coordinate lemma and scalar identity; its
+only error was rewrite matching at the certificate bridge, caused by addition
+and multiplication association. `simp only [mul_assoc, add_assoc]` aligned
+the expressions. The successful build prints standard three-axiom closures
+for all seven public theorems in the main module and both new private helpers;
+the certificate's fourteen theorem closures remain standard three-axiom.
+Both caches are warm; the one coordinate-tactic style warning is nonsemantic.

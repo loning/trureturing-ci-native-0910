@@ -9,6 +9,7 @@
 import Mathlib.RingTheory.Polynomial.Pochhammer
 import Mathlib.Algebra.CubicDiscriminant
 import Mathlib.Tactic
+import D5.S3.Zeros.Convolution.GribinskiDegreeThreeDiscriminant
 
 /-!
 Definition 3.10 of Campbell, Morales, and Perales, arXiv:2502.00254v2,
@@ -143,10 +144,100 @@ theorem m3_nonnegative_coefficients (alpha a b c d e f : Real) (halpha : -1 < al
   have hr : 0 < rho alpha := div_pos (by linarith only [halpha]) hden
   exact ⟨by positivity, by positivity, by positivity⟩
 
+/-- The monic cubic discriminant in the signed coefficient convention. -/
+def discriminant (p : Real[X]) : Real :=
+  let S := elementaryCoeff p 1
+  let T := elementaryCoeff p 2
+  let U := elementaryCoeff p 3
+  S^2*T^2 - 4*T^3 - 4*S^3*U - 27*U^2 + 18*S*T*U
+
+/-- Every nonnegative root triple has ordered nonnegative gap coordinates,
+with the same polynomial, including repeated and zero roots. -/
+theorem nonnegative_rootTriple_coordinates (a b c : Real)
+    (ha : 0 <= a) (hb : 0 <= b) (hc : 0 <= c) :
+    ∃ x u v : Real, 0 <= x ∧ 0 <= u ∧ 0 <= v ∧
+      rootTriple a b c = rootTriple x (x+u) (x+u+v) := by
+  suffices ∃ r s t : Real, 0 <= r ∧ r <= s ∧ s <= t ∧
+      rootTriple a b c = rootTriple r s t by
+    obtain ⟨r, s, t, hr, hrs, hst, hpoly⟩ := this
+    refine ⟨r, s-r, t-s, hr, sub_nonneg.mpr hrs, sub_nonneg.mpr hst, ?_⟩
+    convert hpoly using 1 <;> congr 1 <;> ring
+  rcases le_total a b with hab | hba
+  · rcases le_total b c with hbc | hcb
+    · exact ⟨a, b, c, ha, hab, hbc, rfl⟩
+    · rcases le_total a c with hac | hca
+      · refine ⟨a, c, b, ha, hac, hcb, ?_⟩
+        unfold rootTriple
+        ring
+      · refine ⟨c, a, b, hc, hca, hab, ?_⟩
+        unfold rootTriple
+        ring
+  · rcases le_total a c with hac | hca
+    · refine ⟨b, a, c, hb, hba, hac, ?_⟩
+      unfold rootTriple
+      ring
+    · rcases le_total b c with hbc | hcb
+      · refine ⟨b, c, a, hb, hbc, hca, ?_⟩
+        unfold rootTriple
+        ring
+      · refine ⟨c, b, a, hc, hcb, hba, ?_⟩
+        unfold rootTriple
+        ring
+
+private theorem discriminant_numerator (alpha S P Q R V : Real) (halpha : -1 < alpha) :
+    let T := P + kappa alpha * Q
+    let U := R + rho alpha * V
+    27*(alpha+3)^3 * (S^2*T^2 - 4*T^3 - 4*S^3*U - 27*U^2 + 18*S*T*U) =
+      GribinskiDegreeThreeDiscriminant.numerator (alpha+1) S
+        (6*P+2*Q) (3*P+2*Q) (6*R) (3*R+V) := by
+  have hden : alpha + 3 ≠ 0 := by linarith only [halpha]
+  dsimp only
+  unfold kappa rho GribinskiDegreeThreeDiscriminant.numerator
+  field_simp
+  ring
+
+private theorem ordered_output_discriminant (alpha x u v y w z : Real)
+    (halpha : -1 < alpha) (hx : 0 <= x) (hu : 0 <= u) (hv : 0 <= v)
+    (hy : 0 <= y) (hw : 0 <= w) (hz : 0 <= z) :
+    0 <= discriminant (boxplus3 alpha
+      (rootTriple x (x+u) (x+u+v)) (rootTriple y (y+w) (y+w+z))) := by
+  have hnum := GribinskiDegreeThreeDiscriminant.ordered_numerator_nonneg
+    (alpha+1) x u v y w z (by linarith only [halpha]) hx hu hv hy hw hz
+  dsimp only at hnum
+  simp only [mul_assoc, add_assoc] at hnum
+  rw [← discriminant_numerator alpha _ _ _ _ _ halpha] at hnum
+  have hscale : 0 < 27*(alpha+3)^3 := by
+    have : 0 < alpha+3 := by linarith only [halpha]
+    positivity
+  have hdisc := nonneg_of_mul_nonneg_right hnum hscale
+  dsimp only [discriminant]
+  rw [definition_consistency _ _ _ 1 (by norm_num),
+    definition_consistency _ _ _ 2 (by norm_num),
+    definition_consistency _ _ _ 3 (by norm_num)]
+  obtain ⟨_, h1, h2, h3⟩ := convolution_coefficients alpha x (x+u) (x+u+v)
+    y (y+w) (y+w+z) (by linarith only [halpha]) (by linarith only [halpha])
+    (by linarith only [halpha])
+  rw [h1, h2, h3]
+  simpa only [mul_assoc, add_assoc] using hdisc
+
+/-- The cubic discriminant is nonnegative on the entire six-root domain. -/
+theorem m3_discriminant_nonneg (alpha a b c d e f : Real) (halpha : -1 < alpha)
+    (ha : 0 <= a) (hb : 0 <= b) (hc : 0 <= c)
+    (hd : 0 <= d) (he : 0 <= e) (hf : 0 <= f) :
+    0 <= discriminant (boxplus3 alpha (rootTriple a b c) (rootTriple d e f)) := by
+  obtain ⟨x, u, v, hx, hu, hv, hp⟩ := nonnegative_rootTriple_coordinates a b c ha hb hc
+  obtain ⟨y, w, z, hy, hw, hz, hq⟩ := nonnegative_rootTriple_coordinates d e f hd he hf
+  rw [hp, hq]
+  exact ordered_output_discriminant alpha x u v y w z halpha hx hu hv hy hw hz
+
 #print axioms definition_consistency
 #print axioms convolution_coefficients
 #print axioms m3_explicit_coefficients
 #print axioms weight_pos
 #print axioms m3_nonnegative_coefficients
+#print axioms nonnegative_rootTriple_coordinates
+#print axioms discriminant_numerator
+#print axioms ordered_output_discriminant
+#print axioms m3_discriminant_nonneg
 
 end D5.S3.Zeros.Convolution.GribinskiDegreeThree
