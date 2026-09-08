@@ -11,7 +11,9 @@
 #   await.sh nyx  <task-id>                 阻塞到 nyxid 任务不再 waiting_response
 #   await.sh make <logfile>                 阻塞到日志出现 EXIT= 哨兵行
 #   await.sh vote <brief> <out> [max]        Submit and await a vote (default max 4).
-#   vote exits 6 on UNCERTAIN, 1 on DELIVERY; neither is retried. The task ID is printed.
+#   退出码契约:seat/nyx/make —— 0 条件成立(make 只看哨兵出现,不看其值)、124 超 AWAIT_DEADLINE;
+#   vote —— 0 settled(NYX_OK,答案已落 <out>.settled)、6 UNCERTAIN(不重投,打印 task id)、1 DELIVERY(不重投)、
+#   2 参数/IO 错误、124 超时、125 重试耗尽(EXTRACTION/QUOTA/BUSY 各轮均失败)、其余=转发 nyx.sh 的失败/信号状态。
 # 环境:AWAIT_DEADLINE(秒,默认 5400)、AWAIT_TICK(秒,默认 20)
 #
 # 为什么仍有内部轮询:这三样**都没有自带的同步原语**(runner 已返回、nyxid 只有查询式 API、

@@ -259,7 +259,7 @@ __verdict_of_payload() {  # 判**取回的文本**,不判文件 —— 活判决
   # "Message delivery timed out" has no upstream safe-retry promise either.
   [ -n "$r" ] || { echo UNKNOWN; return; }
   last=$(printf '%s' "$r" | awk 'NF{l=$0} END{print l}')
-  if [ "$cli_rc" -ne 0 ] || [[ "$last" == "Error: Task failed ("* ]]; then
+  if [ "$cli_rc" -ne 0 ]; then   # 只认 CLI 非零退出;exit 0 时末行即便是该诊断原文也是答案(复核 attempt 2 反例)
     case "$last" in
       *"Task failed (prompt_delivery_uncertain)"*) echo UNCERTAIN; return;;
       *"Message delivery timed out"*) echo DELIVERY; return;;

@@ -28,12 +28,13 @@ __selftest() {  # 分类器的阳性/阴性对照。**立条依据(2026-09-06)**
     'Message delivery timed out. Please try again.Retry')" 1
   chk UNCERTAIN  carrier-prompt-uncertain   "$(printf '%s\n' 'Attempts: 1 (infrastructure retries 0/3)' 'Error: Task failed (prompt_delivery_uncertain).')" 1
   chk OK         answer-quotes-prompt-uncertain "$(printf '%s\n' 'The seat hit Error: Task failed (prompt_delivery_uncertain). earlier' '{"verdict":"approve"}')"
-  chk UNCERTAIN carrier-prompt-uncertain-prefix-zero-exit 'Error: Task failed (prompt_delivery_uncertain).' 0
+  chk OK answer-prompt-uncertain-prefix-zero-exit 'Error: Task failed (prompt_delivery_uncertain).' 0
+  chk OK answer-multiline-prompt-uncertain-last-line-zero-exit "$(printf '%s\n' 'The exact diagnostic is:' 'Error: Task failed (prompt_delivery_uncertain).')" 0
   chk UNCERTAIN carrier-prompt-uncertain-nonzero 'Task failed (prompt_delivery_uncertain).' 1
   chk OK answer-quotes-prompt-uncertain-last-line "$(printf '%s\n' 'Attempts: 1 (infrastructure retries 0/3)' \
     '{"verdict":"approve","note":"Error: Task failed (prompt_delivery_uncertain)."}')" 0
   chk OK answer-prompt-uncertain-text-zero-exit 'Task failed (prompt_delivery_uncertain).' 0
-  chk DELIVERY carrier-delivery-prefix-zero-exit 'Error: Task failed (Message delivery timed out).' 0
+  chk OK answer-delivery-prefix-zero-exit 'Error: Task failed (Message delivery timed out).' 0
   chk OK answer-quotes-delivery-last-line '{"verdict":"approve","note":"Message delivery timed out. Please try again.Retry"}' 0
   chk OK answer-delivery-text-zero-exit "$(printf '%s\n' 'Attempts: 1 (infrastructure retries 0/3)' 'Message delivery timed out. Please try again.Retry')" 0
   # 阴性对照:**真答案里引用了同一句失败文本**,但末行是答案 —— 必须仍判 OK。
