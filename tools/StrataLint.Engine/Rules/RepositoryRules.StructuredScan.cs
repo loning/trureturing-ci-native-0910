@@ -177,6 +177,7 @@ internal static partial class RepositoryRules
         var opaque = new ArrayBufferWriter<byte>(bytes.Length);
         var cursor = 0;
         var index = 0;
+        var malformedAnomalyRecord = false;
         while (index < bytes.Length)
         {
             if (bytes[index] is not ((byte)'{' or (byte)'['))
@@ -193,6 +194,27 @@ internal static partial class RepositoryRules
             if (!TryParseEmbeddedJson(bytes, index, out var document, out var consumed)
                 || document is null)
             {
+                if (slot == AddressSlot.WorkflowStepScalar && !malformedAnomalyRecord)
+                {
+                    var reader = new Utf8JsonReader(bytes.AsSpan(index));
+                    try
+                    {
+                        while (reader.Read())
+                        {
+                            if (reader.TokenType == JsonTokenType.PropertyName
+                                && AnomalySchemaKeys.Contains(reader.GetString() ?? string.Empty))
+                            {
+                                malformedAnomalyRecord = true;
+                                break;
+                            }
+                        }
+                    }
+                    catch (JsonException)
+                    {
+                        // The malformed container may expose schema keys before parsing fails.
+                    }
+                }
+
                 index++;
                 continue;
             }
@@ -223,7 +245,8 @@ internal static partial class RepositoryRules
             Encoding.UTF8.GetString(opaque.WrittenSpan),
             "\\\\u([0-9a-fA-F]{4})",
             static match => ((char)Convert.ToInt32(match.Groups[1].Value, 16)).ToString());
-        if ((AnomalyBearingPattern.IsMatch(unescaped)
+        if (malformedAnomalyRecord
+            || (AnomalyBearingPattern.IsMatch(unescaped)
                 && slot != AddressSlot.WorkflowStepScalar
                 && !IsDeclarationGidResidueAtDeclaredSlot(path, slot, unescaped)
                 )

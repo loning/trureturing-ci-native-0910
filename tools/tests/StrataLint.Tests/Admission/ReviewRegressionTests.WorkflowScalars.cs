@@ -8,6 +8,10 @@ public sealed partial class ReviewRegressionTests
     [InlineData(".github/workflows/diagnostics.yml", "failure()", "Retain current failure diagnostics")]
     [InlineData(".github/workflows/alternate.yaml", "${{ failure() }}", "Collect exception details")]
     [InlineData(".github/workflows/diagnostics.yml", "${{ always() && steps.check.outcome == 'failure' }}", "Inspect anomalies")]
+    [InlineData(".github/workflows/diagnostics.yml", "'failure() {anomaly}'", "'Retain current failure diagnostics {anomaly}'")]
+    [InlineData(".github/workflows/diagnostics.yml", "'failure() \"anomaly\"'", "'Retain current failure diagnostics \"anomaly\"'")]
+    [InlineData(".github/workflows/diagnostics.yml", "'failure() {\"note\":\"drift\"'", "'Retain current failure diagnostics {\"note\":\"drift\"'")]
+    [InlineData(".github/workflows/diagnostics.yml", "'failure() {\"note\":\"ok\"}'", "'Retain current failure diagnostics {\"note\":\"ok\"}'")]
     public void Sl019AcceptsActionsStepConditionsAndLabels(string path, string condition, string label)
     {
         var fixture = new RuleFixture();
@@ -36,14 +40,35 @@ public sealed partial class ReviewRegressionTests
 
     [Theory]
     [InlineData("if", "'{\"anomaly\":\"drift\"}'", "unledgered anomaly")]
+    [InlineData("name", "'Retain current failure diagnostics {\"anomaly\":\"drift\"}'", "unledgered anomaly")]
+    [InlineData("if", "'Retain current failure diagnostics {\"anomaly\":\"drift\"'", "unknown anomaly-bearing schema")]
+    [InlineData("name", "'Retain current failure diagnostics {\"anomaly\":\"drift\"'", "unknown anomaly-bearing schema")]
+    [InlineData("if", "'{\"exception\":\"drift\"'", "unknown anomaly-bearing schema")]
+    [InlineData("name", "'{\"exception\":\"drift\"'", "unknown anomaly-bearing schema")]
+    [InlineData("if", "'{\"failure\":\"drift\"'", "unknown anomaly-bearing schema")]
+    [InlineData("name", "'{\"failure\":\"drift\"'", "unknown anomaly-bearing schema")]
+    [InlineData("if", "'{\"tension\":\"drift\"'", "unknown anomaly-bearing schema")]
+    [InlineData("name", "'{\"tension\":\"drift\"'", "unknown anomaly-bearing schema")]
+    [InlineData("if", "'{\"unresolved\":true'", "unknown anomaly-bearing schema")]
+    [InlineData("name", "'{\"unresolved\":true'", "unknown anomaly-bearing schema")]
+    [InlineData("if", "'{\"anomalies\":[\"drift\"]'", "unknown anomaly-bearing schema")]
+    [InlineData("name", "'{\"anomalies\":[\"drift\"]'", "unknown anomaly-bearing schema")]
+    [InlineData("if", "'{\"exceptions\":[\"drift\"]'", "unknown anomaly-bearing schema")]
+    [InlineData("name", "'{\"exceptions\":[\"drift\"]'", "unknown anomaly-bearing schema")]
+    [InlineData("if", "'{\"failures\":[\"drift\"]'", "unknown anomaly-bearing schema")]
+    [InlineData("name", "'{\"failures\":[\"drift\"]'", "unknown anomaly-bearing schema")]
+    [InlineData("if", "'{\"tensions\":[\"drift\"]'", "unknown anomaly-bearing schema")]
+    [InlineData("name", "'{\"tensions\":[\"drift\"]'", "unknown anomaly-bearing schema")]
     [InlineData("name", "'Retain failure {\"kind\":\"failure\",\"state\":\"unresolved\"}'", "unledgered anomaly")]
     [InlineData("if", "'{\"kind\":\"failure\",\"state\":\"unexpected\"}'", "unknown anomaly-bearing schema")]
     [InlineData("name", "'{\"category\":\"failure\"}'", "unknown anomaly-bearing schema")]
     [InlineData("name", "'Retain failure \"kind\":broken'", "unknown anomaly-bearing schema")]
+    [InlineData("if", "'{\"kind\":\"failure\"'", "unknown anomaly-bearing schema")]
     [InlineData("if", "\n          anomaly: drift", "unledgered anomaly")]
     [InlineData("name", "\n          kind: failure\n          state: unresolved", "unledgered anomaly")]
     [InlineData("name", "\n          category: failure", "unknown anomaly-bearing schema")]
     [InlineData("payload", "failure", "unknown anomaly-bearing schema")]
+    [InlineData("payload", "'Retain current failure diagnostics {\"anomaly\":\"drift\"'", "unknown anomaly-bearing schema")]
     public void Sl019StillChecksAnomalyDataInsideActionsSteps(string field, string value, string message)
     {
         var fixture = new RuleFixture();
