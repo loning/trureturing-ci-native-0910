@@ -152,6 +152,14 @@ name count. Scope: local reachable subgraph, with beta/zeta and constructor/
 And projection reduction; it is not a general-purpose proof-shape decision
 procedure or exhaustive search for alternative proofs.
 
+Exact algebra audit Run 0: `python3 "$ATTEMPT/q2-certificate.py" >
+"$ATTEMPT/q2-certificate.json"` returned EXIT=1 with
+`ModuleNotFoundError: No module named 'sympy'`. No polynomial was evaluated.
+The one-shot audit parses integer polynomial expressions into an AST and
+checks identities/coefficient signs with SymPy; it is supplementary to Lean.
+Next action is an isolated `uv run --with sympy==1.14.0 --no-project`, without
+changing repository dependencies or claiming this failed run checked anything.
+
 ## Q3-Q6
 
 Q1 complete; Q2 in progress; Q3-Q6 pending. No final verdict at this checkpoint.
