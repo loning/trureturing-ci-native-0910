@@ -1295,3 +1295,253 @@ V_0=13199640003/10^{12}=0.013199640003.
 **本次产地及保留义务。** 主输入是 caller 提供的实际 browser-PRO task `84963abe-485a-4093-901b-03acf69dc52e`,conversation `conv_fc5fcce44d2bc103`,载体 `company-chatgpt-pro` browser Work,实际返回模型 `GPT-6 Astra`,完成时间 `2026-09-08T15:45:56.133+00:00`。这不同于第 17 节返回 `chatgpt-5.5-pro` 的任务;此前两个失败任务保持失败,不复活。实施者在 caller 已应用的 `consensus-rnd:sshx` 下核对纸面证明和这个固定网格,为 `repo-prior-exposed`,无 sterile-prior、模型族多样性或独立评审批准声明。未打开 opaque primary log_ref 或 oracle transcript;结构化主结论是输入,不是批准票。
 
 本次使用已隔离且清洁复用的 `/Users/auricstudio/trureturing-qgh-variance`,分支 `lane/math/quantized-gh-dual-0909`,起点 `fa198bc9a4e5da392e3f2a6f826f73f2ea672c3c`。源与报告之外,仅由 `make ingest BASE=fa198bc9a4e5da392e3f2a6f826f73f2ea672c3c SOURCE=arithmetic-boundary-quantization` 生成 atoms/消化条目,全部历史保留。没有 CPU 候选生成、GPU 工作、xi/5040 实验重跑、工具改动、Lean 重建或冻结;无无限覆盖、新颖性或 RH 进展声明。独立复审、git/PR 三门及 MERGED 落地仍由 caller 承担,未合并即 open;本次追加不完成持续目标。
+
+## 22. 正实二点网格的二坐标全域占优与等号分类
+
+**状态: PAPER_ARGUMENT / repo-derived 参考输入,后续结算。** 本次于 2026-09-09 追加,完整保留 I5 的 1297 行及其中历史 OPEN 陈述。这里解决第 18-20 节相邻二点问题的整个 \(k=2\) 参数族,并加强到任意正实二点坐标网格;不是把第 17 节的任意有限指数集合问题一并关闭。一般真实素数 \(k\ge3\) 比较仍 **OPEN**,第 21 节人工 \(k=3\) 反例及其原有适用范围保持有效。GH 的未定义边界沿用第 1 节。
+
+**定理。** 取 \(C_i=\{c_i,d_i\}\subset\mathbb R\),\(0<c_i<d_i\),\(i=1,2\),以及有限实数 \(M_0<M_1\)。假设四个角点中至少两个不同的**实际角点**属于
+
+\[
+\mathcal C=\{(x_1,x_2)\in C_1\times C_2:
+M_0\le x_1+x_2\le M_1\}.
+\]
+
+不同角点的坐标和允许相等,也允许不等;要求的是 \(|\mathcal C|\ge2\),不是两个满足期望预算的混合。所有对数为自然对数,定义
+
+\[
+f(x)=\log(1-e^{-x})\quad(x>0),\qquad
+\mu_j=M_j/2\ (j=0,1),\quad I=[\mu_0,\mu_1],
+\]
+\[
+\operatorname{dist}(I,C_i)=\min_{u\in I,\,x\in C_i}|u-x|,
+\quad V_0=\sum_{i=1}^2\operatorname{dist}(I,C_i)^2,
+\]
+\[
+D(M_1)=\inf_{\lambda\ge0}
+\left\{\lambda M_1+\sum_{i=1}^2\max_{x\in C_i}[f(x)-\lambda x]\right\}.
+\]
+
+对 \(m>0\)、\(0\le V<2m^2\),明确使用第 15 节的归一化
+
+\[
+r=\sqrt{V/2},\qquad \Psi_2(m,V)=f(m-r)+f(m+r).
+\]
+
+这里 \(V\) 是两个坐标的平方偏差**之和**,不是平均方差。则
+
+\[
+\mu_1>0,\qquad 0\le V_0<2\mu_1^2,\qquad
+D(M_1)\le\Psi_2(\mu_1,V_0),
+\]
+\[
+D(M_1)=\Psi_2(\mu_1,V_0)
+\quad\Longleftrightarrow\quad (\mu_1,\mu_1)\in C_1\times C_2.
+\]
+
+### 定义域、精确 LP 与整数最优解
+
+**证明。** 取任一 \(x\in\mathcal C\),令 \(m=(x_1+x_2)/2\in I\)、\(V=\sum_i(x_i-m)^2\)。正性给出
+\(m>0\)、\(V=2m^2-2x_1x_2<2m^2\)。集合距离给出 \(V_0\le V\),而 \(m\le\mu_1\),所以 \(\mu_1>0\) 且 \(V_0<2\mu_1^2\)。不额外假设 \(\mu_0>0\)。由 \(f'>0,f''<0\),\(\Psi_2\) 对均值严格递增、对正方差严格递减,并在 \(V=0\) 连续;这也使包含零端点的方差比较严格,与第 16 节一致。
+
+令 \(h_i=d_i-c_i>0\)、\(\Delta_i=f(d_i)-f(c_i)>0\)、\(\rho_i=\Delta_i/h_i\)、\(R=M_1-c_1-c_2\ge0\)。第 18 节的逐项弱对偶及匹配证书,将重量 \(\ell_p\) 换成 \(h_i\),即给出
+
+\[
+D(M_1)=\max_{\substack{0\le\alpha_i\le1\\
+h_1\alpha_1+h_2\alpha_2\le R}}
+\sum_{i=1}^2[f(c_i)+\alpha_i\Delta_i].
+\]
+
+这里只引用其已证的分数背包机制,不另假定 LP 强对偶。\(R\ge h_1+h_2\) 时全上端点与 \(\lambda_*=0\) 匹配;\(R=0\) 时可取 \(\lambda_*\ge\max_i\rho_i\)。中间预算按 \(\rho_i\) 非增填充,真正分数行取 \(\lambda_*\) 为该行密度,整数断点可取相邻密度之间的乘子。并列时该区间可退化,任何固定排序仍给出匹配值和至多一个真正分数坐标的最优解。
+
+现在**任选一个至多一个真正分数坐标的 LP 最优解**;后证不依赖并列时选了哪一个,也不声称所有最优解均如此。若 \(R<h_1+h_2\),每个最优解都饱和预算:否则尚有未填满的行,因 \(\Delta_i>0\) 可增加目标。若 \(R\ge h_1+h_2\),正增益使全上端点为唯一最优解,预算可能有松弛。
+
+若所选解为角点 \(x^*\),它确在实际薄层内。预算饱和时 \(x_1^*+x_2^*=M_1>M_0\);全箱预算可行时 \(x^*=(d_1,d_2)\),其和不超过 \(M_1\),又不小于任一已有薄层角点的和,所以至少为 \(M_0\)。置
+
+\[
+m^*=(x_1^*+x_2^*)/2,\qquad V^*=\sum_{i=1}^2(x_i^*-m^*)^2.
+\]
+
+二元组本来就是 \(m^*\pm\sqrt{V^*/2}\) 的排列,故
+
+\[
+D(M_1)=\sum_i f(x_i^*)=\Psi_2(m^*,V^*)
+\le\Psi_2(\mu_1,V^*)\le\Psi_2(\mu_1,V_0).
+\]
+
+第一步先增大均值,第二步用 \(V_0\le V^*\) 减小方差,全程留在正实定义域;松弛时不能把 \(m^*\) 写成 \(\mu_1\)。整数情形的等号稍后分类。
+
+### 两个实际角点引理与均值方差情形
+
+若所选解有唯一真正分数行,交换行标签后记该行端点为 \(c<d\),另一行固定端点为 \(t>0\),另一可选端点为 \(t'\ne t\)。记 \(\mu=\mu_1\),上端点权重为 \(\theta\in(0,1)\),则
+
+\[
+z=(1-\theta)c+\theta d=2\mu-t,\quad c<z<d,\quad
+D(M_1)=(1-\theta)f(c)+\theta f(d)+f(t).
+\]
+
+**实际两角点引理。** 在上述条件下,\((c,t)\) 必须属于实际薄层,特别是 \(\mu_0\le(c+t)/2\)。
+
+**引理证明。** 预算饱和给出 \(c+t<M_1<d+t\)。假设 \(c+t<M_0\):若 \(t'<t\),则 \(c+t'<M_0\),四角点中 \((c,t),(c,t'),(d,t)\) 均不可行,只剩 \((d,t')\) 一个可能可行;若 \(t'>t\),则 \(d+t'>M_1\),四角点中 \((c,t),(d,t),(d,t')\) 均不可行,只剩 \((c,t')\) 一个可能可行。两种次序都与 \(|\mathcal C|\ge2\) 矛盾。故 \(M_0\le c+t<M_1\),包括 \(c+t=M_0\) 的边界。此计数不依赖两个可行角点的预算是否相等。证毕。
+
+写 \(z=\mu+s,t=\mu-s\),均值向量的平方偏差为 \(\overline V=2s^2<2\mu^2\)。若 \(\overline V\ge V_0\),真正分数行的严格凹性给出
+
+\[
+D(M_1)<f(z)+f(t)=\Psi_2(\mu,\overline V)
+\le\Psi_2(\mu,V_0).
+\]
+
+这里 \(\overline V\) 不包含分数行的随机方差,不能与混合的二阶矩混同。
+
+### 剩余情形的内侧割线与 Hermite 上包络
+
+只余 \(2s^2<V_0\)。置 \(v=\operatorname{dist}(I,\{c,d\})\)、\(e=\operatorname{dist}(I,\{t,t'\})\)。因 \(\mu\in I\) 且 \(t\) 是实际端点,\(e\le|t-\mu|=|s|\),所以
+
+\[
+2s^2<V_0=v^2+e^2\le v^2+s^2,\qquad v>|s|.
+\]
+
+于是两个分数行端点都不在 \(I\)。它们不能同在左侧:若 \(d<\mu_0\),则 \(|s|=\mu-z>\mu-d\ge\mu_0-d\ge v\);也不能同在右侧:若 \(c>\mu\),则 \(|s|=z-\mu>c-\mu\ge v\)。故
+
+\[
+c<\mu_0\le\mu<d,\qquad v=\min(\mu_0-c,d-\mu).
+\]
+
+实际两角点引理使 \(v\le\mu_0-c\le(t-c)/2\),故 \(c\le t-2v=\mu-2v-s\),且 \(d\ge\mu+v\)。定义
+
+\[
+c'=\mu-2v-s,\qquad d'=\mu+v.
+\]
+
+由 \(z-c'=2(v+s)>0\)、\(d'-z=v-s>0\),得到所需的完整包含和正性
+
+\[
+0<c\le c'<z<d'\le d.
+\]
+
+在 \(c',d'\) 间保持同一期望 \(z\),其**上端点权重**为
+
+\[
+\theta'=\frac{z-c'}{d'-c'}=\frac{2(v+s)}{3v+s}\in(0,1).
+\]
+
+令 \(A(x)\) 为原端点 \((c,f(c)),(d,f(d))\) 的仿射割线。凹性给出 \(f(c')\ge A(c'),f(d')\ge A(d')\),因此内侧割线抬高同均值处的目标:
+
+\[
+(1-\theta)f(c)+\theta f(d)=A(z)
+\le(1-\theta')f(c')+\theta'f(d').
+\]
+
+这些内点及后面的三点混合只是解析比较工具,不是新的离散状态,也不要求各自落在原实际薄层。保留固定坐标 \(t\),对函数 \(\phi\) 记加权和
+
+\[
+\mathcal M(\phi)=(1-\theta')\phi(c')+\theta'\phi(d')+\phi(t).
+\]
+
+它的总质量为 2,不是质量为 1 的三点概率分布。由于 \(c'-\mu=-2v-s,d'-\mu=v,t-\mu=-s\),直接得到
+
+\[
+(1-\theta')(-2v-s)^2+\theta'v^2=2v^2-s^2,
+\]
+\[
+\mathcal M(1)=2,\qquad\mathcal M(x)=z+t=2\mu,\qquad
+\mathcal M((x-\mu)^2)=2v^2.
+\]
+
+令 \(L=\mu-v,H=\mu+v\)。由 \(c'>0\) 及 \(L-c'=v+s>0\),有 \(L>0\);又 \(|s|<v\),所以全部比较支撑 \(c',d',t\) 均为正且不超过 \(H\)。取唯一的至多二次 Hermite 多项式
+
+\[
+P(L)=f(L),\qquad P'(L)=f'(L),\qquad P(H)=f(H).
+\]
+
+因 \(f'''(x)=e^x(e^x+1)/(e^x-1)^3>0\),第 15 节由 Rolle 推出的余项在每个非节点支撑上满足
+
+\[
+f(x)-P(x)=\frac{f'''(\xi)}6(x-L)^2(x-H)\le0,
+\]
+
+其中 \(\xi\) 在 \(x,L,H\) 张成的正实区间内;节点上余项为零。即使 \(c'<L\) 也有正确的上界符号,但没有在 \(H\) 以上使用它。\(\mathcal M\) 与两个单位质量节点 \(L,H\) 的总质量、一次矩及中心二次矩完全相同,故
+
+\[
+D(M_1)\le\mathcal M(f)\le\mathcal M(P)
+=P(L)+P(H)=\Psi_2(\mu,2v^2).
+\]
+
+最后 \(L>0\) 给出 \(v<\mu\),而前面的距离估计给出
+
+\[
+V_0\le v^2+s^2<2v^2<2\mu^2.
+\]
+
+由方差严格单调性,\(D(M_1)\le\Psi_2(\mu,2v^2)<\Psi_2(\mu,V_0)\)。这完成全部真正分数情形的严格占优,不需要第三个充分条件的额外距离比例假设。
+
+### 等号恰为上预算的等坐标角点
+
+真正分数的所选最优解已经严格。整数情形若 \(m^*<\mu_1\),均值严格单调性也使不等式严格。若 \(m^*=\mu_1\) 而两坐标不等,选较小坐标 \(x_i^*<\mu_1\)。严格薄层宽度 \(\mu_0<\mu_1\) 给出
+
+\[
+\operatorname{dist}(I,C_i)\le\operatorname{dist}(I,\{x_i^*\})
+=\max(\mu_0-x_i^*,0)<\mu_1-x_i^*.
+\]
+
+另一坐标的距离至多是其偏差绝对值,所以 \(V_0<V^*\),方差比较仍严格。因此等号要求所选整数最优角点为 \((\mu_1,\mu_1)\)。
+
+反过来,若该角点存在,它的和为 \(M_1\),确在薄层中,并有 \(V_0=0\)。对任意 LP 可行混合,逐行及二元 Jensen 给出
+\(\sum_i\mathbb E f(X_i)\le2f((\mathbb E X_1+\mathbb E X_2)/2)\le2f(\mu_1)\),该角点取得此值。还可直接匹配价格端:取 \(\lambda=f'(\mu_1)>0\),凹函数的支撑切线给出
+\(f(x)-\lambda x\le f(\mu_1)-\lambda\mu_1\),每行因含 \(\mu_1\) 而取到最大值。于是该价格值为 \(2f(\mu_1)\),与角点的弱对偶下界匹配,故 \(D(M_1)=2f(\mu_1)=\Psi_2(\mu_1,0)\)。等号分类不依赖未证明的强对偶。证毕。
+
+## 23. 两个不同素数的严格专门化与本次来源边界
+
+**推论。** 在第 18 节完整素数域中取 \(S=\{p,q\}\),\(p\ne q\) 为素数,\(b_p,b_q\in\mathbb Z_{\ge0}\),\(A_i=\{b_i,b_i+1\}\)。保留有限的 \(\log5040<T_0<T_1\),并要求至少两个不同的实际指数配置满足 \(T_0\le a_p\log p+a_q\log q\le T_1\)。则同一箱体和薄层的最优离散可分离对偶满足
+
+\[
+U_{\rm dual}<U_{\rm var}.
+\]
+
+**证明:预算与常数的精确平移。** 对 \(i\in\{p,q\}\) 置
+
+\[
+\ell_i=\log i,\quad x_i=(a_i+1)\ell_i,\quad
+c_i=(b_i+1)\ell_i>0,\quad d_i=(b_i+2)\ell_i>c_i,
+\]
+\[
+M_j=T_j+\ell_p+\ell_q\quad(j=0,1),\qquad
+E_S=(1-p^{-1})^{-1}(1-q^{-1})^{-1}.
+\]
+
+因 \(a_p\ell_p+a_q\ell_q=x_p+x_q-\ell_p-\ell_q\),指数薄层与 \(M_0\le x_p+x_q\le M_1\) 的实际角点一一对应;两个实际配置和严格宽度都保留。\(\mu_j=M_j/2\)、\(I\)、\(V_0\) 恰是第 16/19 节原来的量,没有另换度量或方差归一化。又 \(g_i(a)=f((a+1)\ell_i)-\log(1-i^{-1})\),对每个 \(\lambda\ge0\) 都逐项精确有
+
+\[
+\lambda T_1+\sum_{i\in S}\max_{a\in A_i}[g_i(a)-\lambda a\ell_i]
+=\log E_S+\lambda M_1+\sum_{i\in S}\max_{x\in C_i}[f(x)-\lambda x].
+\]
+
+取下确界得到
+
+\[
+U_{\rm dual}=\log E_S+D(M_1),\qquad
+U_{\rm var}=\log E_S+\Psi_2(\mu_1,V_0).
+\]
+
+第 22 节给出弱占优,等号则要求某个允许指数对满足
+
+\[
+(a_p+1)\log p=(a_q+1)\log q=\mu_1,
+\qquad p^{a_p+1}=q^{a_q+1}.
+\]
+
+两个幂指数都是正整数,与不同素数的唯一分解矛盾,所以严格。允许相邻指数选择包含零,因为 \(a_i+1\ge1\)、\(x_i>0\),且 \(g_i(0)=0\) 无需例外。假设 \(T_0>\log5040\) 完整继承,其具体数值不是这条比较所需的额外条件。证明只用两个不同配置确实落在薄层内,不要求它们预算相等;一般实数定理允许等预算角点。证毕。
+
+**本次来源与核验限度。** 主输入是 caller 提供的已完成 browser-PRO structured conclusion:task `6f6085dc-6f5a-473f-a229-072469c98c75`,conversation `conv_fc5fcce44d2bc103`,载体 `company-chatgpt-pro` browser Work,实际返回模型 `GPT-6 Astra`,完成时间 `2026-09-08T16:20:22.227+00:00`,opaque primary log_ref `qgh0909:k2-dominance:14c8e7b2`。这些是该次调用的来源记录,不是新的模型调用或独立批准票;该 opaque 引用及原始对话均未打开。主输入自报 `external-prior-exposed; sterile-context-unverified`。实施者是 caller 已应用的 `consensus-rnd:sshx` 下的委派 Codex implementation,为 `repo-prior-exposed`,没有新面板、子席、独立模型或 sterile-prior 声明。I5 的源和报告作为实施输入读取,不充作独立评审证据;caller 已有核对也只作支持。
+
+本次纸面审核展开了实际角点计数、内点正性、上端权重、质量为 2 的矩匹配、Hermite 余项符号及等号的双向证明,并将整数情形统一记为 \(m^*,V^*\)。经典分数背包归属沿用第 18 节;实施时还读取 [Hermite interpolation](https://en.wikipedia.org/wiki/Hermite_interpolation) 的摘要接口,仅核对以函数值和导数值插值的经典方法归属,没有从摘要取得本定理。所需余项的自含 Rolle 证明已在第 15 节。本次是具体函数与网格条件下的仓内纸面推导,不主张文献穷尽、全球新颖性、RH 进展或 Lean 冻结。
+
+工作树仍为 `/Users/auricstudio/trureturing-qgh-variance`,分支 `lane/math/quantized-gh-dual-0909`。本次唯一摄入基线是已终态提交的 I5 `ba80db594e632ae67aad496a3d68bab506769478`;其完整前缀为 1297 行、81750 字节、SHA256 `c112c2a0f0aa190845d05e80b67ad36e784aa894730c3b4d0e5ec017277713d0`。除追加本卷,新 atom 与消化条目只通过以下 canonical 命令生成,所有历史 atoms/条目保留:
+
+```sh
+make ingest BASE=ba80db594e632ae67aad496a3d68bab506769478 SOURCE=arithmetic-boundary-quantization
+```
+
+本次无 CPU/GPU 候选搜索,不重跑 xi、5040 或人工网格实验,不修改既有报告、数值证据、工具、测试套件、其它理论、形式根或冻结状态。一般真实素数 \(k\ge3\) 仍 **OPEN**;未将另行进行的 primary follow-up 结论纳入本增量。反驳本结算须在完整二点域内给出 \(D>\Psi_2\),或在无等坐标角点时给出等号;真实二素数域中经精确匹配证书认证的 \(U_{\rm dual}\ge U_{\rm var}\) 也会反驳严格推论,只有一个实际薄层角点的例子不在定理域内。
+
+这关闭的是一个二坐标参数族的纸面比较,不产生新的 Robin 有限证书或无限整数覆盖,也不完成长期研究目标。I5/I6 组合源的独立复审、CI 三门和 PR MERGED 落地仍由 caller 承担;本次实施不声明这些义务已履行,也不为已解决的二素数比较安排 GPU 搜索。
