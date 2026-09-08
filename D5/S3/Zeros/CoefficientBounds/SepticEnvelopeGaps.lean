@@ -100,4 +100,11 @@ theorem gap_b_nonneg (a b c d e f : ℝ)
   unfold gapB
   positivity
 
+theorem gap_z_nonneg (a b c d e f : ℝ)
+    (ha : 0 ≤ a) (hb : 0 ≤ b) (hc : 0 ≤ c)
+    (hd : 0 ≤ d) (he : 0 ≤ e) (hf : 0 ≤ f) :
+    0 ≤ gapZ a b c d e f := by
+  unfold gapZ
+  positivity
+
 end D5.S3.Zeros.CoefficientBounds.SepticEnvelopeGaps
