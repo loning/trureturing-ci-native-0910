@@ -329,7 +329,7 @@ Bounded Connective Constant*. arXiv:2604.02746v1 (2026), especially Definition 1
 Theorem 1.2 and Appendix A.6.
 https://arxiv.org/html/2604.02746v1
 
-[2] Alistair Sinclair, Piyush Srivastava, Stefankovic and Yitong Yin.
+[2] Alistair Sinclair, Piyush Srivastava, Daniel Stefankovic and Yitong Yin.
 *Spatial mixing and the connective constant: Optimal bounds*.
 arXiv:1410.2595, Appendix A, printed pages 27-28.
 https://arxiv.org/abs/1410.2595
@@ -590,12 +590,12 @@ Neither target is promised by the present radius-four certificate.
 
 Cross-author comparison informed this separation. Loning's #5326 distinguishes
 behavioral compression from preservation of the mathematical quantity consumed
-downstream. The newer #5882 supplies an explicit determinant-loss family even
-under small balanced behavior error. Our shared-weight packing accordingly
-preserves every mask and direction; it is not a behavioral quotient. The recent
-#5602 actual prolate-model comparison likewise emphasizes deriving the relation
-between concrete objects before transporting estimates. These PRs were read as
-research context, not imported as proofs of hard-core facts.
+downstream. The newer #5882 exhibits determinant-zero loss under small balanced
+behavior error. Our shared-weight packing accordingly preserves every mask and
+direction; it is not a behavioral quotient. The recent #5602 actual prolate-model
+comparison likewise emphasizes deriving the relation between concrete objects
+before transporting estimates. These PRs were read as research context, not
+imported as proofs of hard-core facts.
 
 ## 13. Source and verification status of this continuation
 
