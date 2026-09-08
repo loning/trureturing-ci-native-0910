@@ -28,7 +28,7 @@ internal sealed class TridiagonalChainInverseDocument : IScribeDocumentDefinitio
                 DeclarationHandle.Create(Prefix + "chain_apply"),
                 H("The tridiagonal entries"),
                 StatementSource.FromAuthor(Disp(Eq(Call("H", F.Id("m"), F.Id("i"), F.Id("j")),
-                    Seq(D(4), Cdot, Indicator(Eq(F.Id("i"), F.Id("j"))), Minus,
+                    Seq(D(4), Cdot, Sp, Indicator(Eq(F.Id("i"), F.Id("j"))), Minus,
                         Indicator(Eq(Add(F.Id("i"), D(1)), F.Id("j"))), Minus,
                         Indicator(Eq(Add(F.Id("j"), D(1)), F.Id("i"))))))),
                 AssessedProvenance.FromRepo(),
@@ -68,7 +68,7 @@ internal sealed class TridiagonalChainInverseDocument : IScribeDocumentDefinitio
                 DeclarationHandle.Create(Prefix + "chain_energy"),
                 H("The energy identity"),
                 StatementSource.FromAuthor(Disp(Eq(Call("E", F.Id("n"), F.Id("x")),
-                    Seq(D(2), Cdot, Call("V", F.Id("n"), F.Id("x")), Plus,
+                    Seq(D(2), Cdot, Sp, Call("V", F.Id("n"), F.Id("x")), Plus,
                         Pow(Call("x", D(0)), D(2)), Plus, Pow(Call("x", F.Id("n")), D(2)),
                         Plus, Call("A", F.Id("n"), F.Id("x")))))),
                 AssessedProvenance.FromRepo(),
@@ -81,7 +81,7 @@ internal sealed class TridiagonalChainInverseDocument : IScribeDocumentDefinitio
                 DeclarationHandle.Create(Prefix + "chain_coercive"),
                 H("A uniform lower bound"),
                 StatementSource.FromAuthor(Disp(Le(
-                    Seq(D(2), Cdot, Call("V", F.Id("n"), F.Id("x"))),
+                    Seq(D(2), Cdot, Sp, Call("V", F.Id("n"), F.Id("x"))),
                     Call("E", F.Id("n"), F.Id("x"))))),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text("All boundary and edge squares are nonnegative."))),
@@ -102,8 +102,8 @@ internal sealed class TridiagonalChainInverseDocument : IScribeDocumentDefinitio
                 DeclarationHandle.Create(Prefix + "chain_inv_column"),
                 H("Multiplication by the reversed recurrence"),
                 StatementSource.FromAuthor(Disp(Eq(
-                    Seq(Call("H", Next()), Cdot, Call("v", F.Id("n"))),
-                    Seq(Call("d", Next()), Cdot, Call("e", D(0)))))),
+                    Seq(Call("H", Next()), Cdot, Sp, Call("v", F.Id("n"))),
+                    Seq(Call("d", Next()), Cdot, Sp, Call("e", D(0)))))),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text("The first row gives d(n+1). Each interior row vanishes "
                     + "by the recurrence. The last row vanishes since four times d(0) equals d(1). "
