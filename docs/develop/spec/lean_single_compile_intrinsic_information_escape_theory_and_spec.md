@@ -1264,19 +1264,19 @@ frozen theorem key 的 identity 是
 〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕按 owner 2026-09-08 的 [τ=0 裁决](https://github.com/the-omega-institute/trureturing/issues/5214#issuecomment-5580271314)
 “选 A;observed 永远不算完成;开 J2”，必须分开两个完备命题：
 
-- 〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕**记账完备（accounting completeness）**：每个 frozen theorem key 恰有一个
+- 〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕**记账完备（accounting completeness）**：每个 frozen theorem key 恰有一个
   `CensusAssessment` row，inventory keys 与 frozen theorem keys 完全相等，缺失与重复均失败；
-- 〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕**认证完备（certified completeness）**：记账完备，且每个 key 的 row 都是经证书语义检查的
+- 〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕**认证完备（certified completeness）**：记账完备，且每个 key 的 row 都是经证书语义检查的
   `certified (AnalysisDisposition key)`。**AC-023 只由认证完备满足**；记账完备是可报告的
   前提，不是 AC-023 的履行。
 
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕assessment 分支如下：
+〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕assessment 分支如下：
 
 ```text
 CensusAssessment key = certified (AnalysisDisposition key) | observed (AnalysisObservation key)
 ```
 
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕`observed` 是绑定 exact key、owning module、census root 与 import-closure query scope 的
+〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕`observed` 是绑定 exact key、owning module、census root 与 import-closure query scope 的
 elaboration observation，query 必须标为 completed；它只记录该范围内缺少已登记的
 realization／certificate。**observed ≠ classified：observed 永不算已分类，永不计入 AC-023，
 也永不构成 closed reason。** census 必须自己核查该范围并完成查询；generator 提供的空列表
@@ -1286,7 +1286,7 @@ object arena 是显式 semantic input；系统不得从 theorem statement 的表
 canonical identity 是 `Arena`／`StructuralArena` declaration。替代表示只有经
 `CIRPT-IE-022` 的具名 `Equiv` transport 才能声明同一分析。
 
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕下表是 J2 的 certified disposition 契约。
+〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕下表是 J2 的 certified disposition 契约。
 四类 disposition 在 `certified` 分支内互斥且穷尽；这不声称所有 frozen keys 已获认证：
 
 | class | 必需证据 | 可报告结论 |
@@ -1299,19 +1299,19 @@ canonical identity 是 `Arena`／`StructuralArena` declaration。替代表示只
 `UnreachableReason` 是 closed enum，其唯一 canonical declaration 位于第 23.6 节；只允许
 `noCanonicalObjectCarrier`、`noFinitePrimitiveBundle` 与 `noFaithfulPrimitiveRealization`。
 
-- 〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕`noCanonicalObjectCarrier`：证书证明在绑定的 semantic contract 与 candidate domain 内
+- 〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕`noCanonicalObjectCarrier`：证书证明在绑定的 semantic contract 与 candidate domain 内
   不存在 canonical object carrier；closed numerical proposition 的 proof truth 不得作常值 readout；
-- 〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕`noFinitePrimitiveBundle`：证书证明在该 contract／domain 内不存在 faithful finite primitive
+- 〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕`noFinitePrimitiveBundle`：证书证明在该 contract／domain 内不存在 faithful finite primitive
   bundle，包括排除所允许的等价 finite 表示；
-- 〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕`noFaithfulPrimitiveRealization`：证书证明在该 contract／domain 内不存在 statement 与
+- 〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕`noFaithfulPrimitiveRealization`：证书证明在该 contract／domain 内不存在 statement 与
   primitive law 的 faithful bridge。
 
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕`unreachable` 仍是 certified disposition，以上每个 reason 均须由其专属 closed-reason 证书
+〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕`unreachable` 仍是 certified disposition，以上每个 reason 均须由其专属 closed-reason 证书
 成立。registry absence 单独不能产生它；“没有显式 carrier”“尚未登记 finite bundle／bridge”
 只能成为查询观察或 routing facts。carrier／statement syntax 也只提供 routing facts，不证明
 任何 closed reason，更不决定 canonical arena。
 
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕`bounded_finite_truncation` 与 `unreachable` 把 counted／structural engine 的边界精确入账；
+〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕`bounded_finite_truncation` 与 `unreachable` 把 counted／structural engine 的边界精确入账；
 前者不冒充全对象结论，后者不以“不适用”隐藏缺失工作。census Meta tool 遍历上述全部 frozen
 keys，输出 `accounted`、`certified`（按四类及 unreachable reason 分项）、`observed`（按
 observation status 分项）和 exact rows。`observed > 0` 时必须报告
@@ -4876,9 +4876,13 @@ DAG path。
 当前 dev `1a71fc8751` 的 census consumer 以真实 `StatementKey` 构造 `AnalysisDisposition`，
 由 `DispositionInventory` 承载；现役形态见第 23.6 节。
 
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕`UnreachableReason`、`StatementKey`、四个 disposition payload、`AnalysisDisposition`、
-`CensusAssessment` 与 `AnalysisObservation` **只**采用第 23.6 节的定义；本节引用该唯一 API，
-不另立 enum、String-indexed sketch 或第二组 payload 类型。census consumer 必须以 frozen
+`UnreachableReason`、`StatementKey`、`FiniteOccurrenceDisposition`、
+`StructuralOccurrenceDisposition`、`TruncationCertification` 与
+`BoundedFiniteTruncationDisposition` 是现役声明，只采用第 23.6 节的 current API 定义；
+不另立 enum、String-indexed sketch 或第二组 payload 类型。
+
+〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕`ClosedReasonEvidence`、携带该证据的 `UnreachableDisposition` 与相应的 `AnalysisDisposition`、
+`CensusAssessment` 与 `AnalysisObservation` 只采用第 23.6 节的 J2 API 定义。census consumer 必须以 frozen
 elaborated truth export 的真实 `StatementKey` 构造 assessment。
 
 ---
@@ -4961,14 +4965,14 @@ InformationEscape finite engine
 26. `kernel_projection` 至少覆盖 $K_\varnothing$、$K_I$、全部 $K_{I\setminus\{i\}}$、全部 certified-schedule nodes 与显式请求 nodes，但永不因投影要求枚举完整 $2^m$ subsets；
 27. 〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕report-only census 中每个 frozen theorem key 恰有一个 `CensusAssessment`；只有 certified 分支的 finite、structural、truncation、unreachable payload 按其 constructor 验证后算已分类；记账与认证完备按第 8.7、23.6 节分开；
 28. structural occurrence 必须有 strict inclusion proof 与 pair witness；bounded truncation 无 transfer theorem 时只能写 `report-only`；
-29. 〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕report-only census keys 与完整 frozen theorem keys 完全相等，重复、缺失、stale identity、未完成的 query scope 与伪造 class 均 fail closed；observed 永不计入 AC-023，也不能充作 unreachable；
+29. 〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕report-only census keys 与完整 frozen theorem keys 完全相等，重复、缺失、stale identity、未完成的 query scope 与伪造 class 均 fail closed；observed 永不计入 AC-023，也不能充作 unreachable；
 30. `kernel_projection`、ASCII layout、node ID、hash、timing 与 heuristic schedule order 均为单向 projection，任何 admission consumer 读取它们都失败；
 31. catalog `proof_method` 必须报告实际执行的 direct／fused／partition／reflected route，不能以目标路线或 display label 代替真实 proof construction（工程优化规范 v1 §8）。
 
 当前 census 对 `DispositionInventory` 检查 exactly-one disposition、完整 frozen keys、重复、
 缺失、stale identity 与 constructor payload；这些检查由 census 命令执行。
 
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕第 27、29 项是 census 自身的报告校验义务，不是 `#seal_information_theory` 的输入或成功前提；
+〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕第 27、29 项是 census 自身的报告校验义务，不是 `#seal_information_theory` 的输入或成功前提；
 记账完备、认证完备及 census artifact 均不得接为 required gate。其余 seal 证书义务保持有效。
 
 ---
@@ -6670,7 +6674,7 @@ keys。`UnreachableDisposition.evidence : Name` 由当前 `UnreachableElaboratio
 `rows`，绑定 `head_sha`、`report_sha256` 与 `source_inputs`；不发射 assessment counters 或
 completeness flags。当前 message／payload shape 见第 31 节 active 三表。
 
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕以下整段 API sketch 为 J2 契约，尚非现役 API：
+以下六个声明已在 dev `1a71fc8751` 存在，属于现役 API：
 
 ```lean
 inductive UnreachableReason
@@ -6706,7 +6710,11 @@ structure BoundedFiniteTruncationDisposition (key : StatementKey) where
   bound : Nat
   comparisonStatement : Name
   certification : TruncationCertification
+```
 
+〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕以下新增或变更的 evidence／assessment API sketch 为 J2 契约，尚非现役 API：
+
+```lean
 structure ClosedReasonEvidence
     (key : StatementKey) (reason : UnreachableReason) where
   semanticContract : Name
@@ -6775,7 +6783,7 @@ def CensusInventory.CertifiedComplete
       entry.2 = CensusAssessment.certified disposition
 ```
 
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕`frozenTheorems` 沿用 `TruthExportCommand` 当前 dialect 的两层选择：先选择
+〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕`frozenTheorems` 沿用 `TruthExportCommand` 当前 dialect 的两层选择：先选择
 `freeze_status=frozen` 的 nodes（模块），再选择其 `declarations` 中 `kind=theorem` 的声明；
 key 从 declaration 的 `declaration_name_key` 保留 structured Lean `Name`，并取其 `statement_id`。
 `ExactlyCovers` 是记账完备命题：集合精确相等、每个完整 key 恰一次、
@@ -6784,12 +6792,12 @@ key 从 declaration 的 `declaration_name_key` 保留 structured Lean `Name`，�
 两个不同 theorem `Name` 不能复用同一个 `statement_id` 来规避 IE-C035；certified 与 observed
 使用同一个 key 空间，不能各自另列 inventory 来绕过唯一性。
 
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕dependent constructors 只决定 payload shape，consumer 仍须逐 constructor 核验证书语义。
+〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕dependent constructors 只决定 payload shape，consumer 仍须逐 constructor 核验证书语义。
 `ClosedReasonEvidence key reason` 的 `certificate` 必须解析为 kernel-checked、reason-specific
 closed-reason proof，其命题同时绑定 key 所指的实际 statement、完整 key、`semanticContract`
 与 `candidateDomain`；不能只核对名称存在。只查询到 registry absence 不能构造该证书。
 
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕`AnalysisObservation key` 仅由同一 HEAD／report inputs 的 elaborated environment 查询产生。
+〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕`AnalysisObservation key` 仅由同一 HEAD／report inputs 的 elaborated environment 查询产生。
 `owningModule` 必须是该 key 的真实所属模块，`censusRoot` 必须等于 inventory root，
 `importClosure` 必须精确列出该 root 的完整传递 import closure 并含 owning module；这些字段
 在 artifact 中分别投影为 `owning_module`、`census_root`、`import_closure`，不是自由描述文本。
@@ -6800,7 +6808,7 @@ census 自己解析 root、核实 closure 的集合与完整性、在其中完�
 两者皆缺分别使用上述三个 status；两者皆有时不能填 absence status，已登记但无效的证书
 仍须报告验证失败，不能以 observed 隐藏。query scope/status 错误使用 IE-C044。
 
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕在 rows 的上述语义检查通过后，`CertifiedComplete` 才表示认证完备；它额外要求每个 row
+〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕在 rows 的上述语义检查通过后，`CertifiedComplete` 才表示认证完备；它额外要求每个 row
 都是 certified。**observed 永不算 classified，永不履行 AC-023，也永不构成 closed reason。**
 Meta census 的 canonical order 保持为 theorem Lean `Name` text，再按 `statement_id`；排序
 仅用于输出，身份比较仍用 structured `Name`。artifact（schema
@@ -6818,7 +6826,7 @@ consumer 必须复核，不信任 generator 自报的 totals 或 flags：
 | `accounting_complete` | `ExactlyCovers` 成立且 row 语义检查通过 |
 | `certified_complete` | `CertifiedComplete` 成立且 row 语义检查通过；`observed > 0` 时必为 `false` |
 
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕必须复核 `accounted = certified + observed`、class 分项之和等于 certified、reason 分项之和
+〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕必须复核 `accounted = certified + observed`、class 分项之和等于 certified、reason 分项之和
 等于 certified unreachable、status 分项之和等于 observed；计数相等不能替代 exact keys 检查。
 census 是 read-only report consumer，artifact 永不作为 seal input 或 required gate；它不推断
 object arena，不把缺 realization 自动归到 finite／structural／unreachable。
@@ -6829,7 +6837,7 @@ finite 与 structural constructors 都必须由指定 root maximal catalog occur
 disposition coverage 与 5⁗ `AdmissionCertificate` 是不同字段、不同证明义务。后者的 active
 consumer 仍待第 39 节 GATE 的 owner $\tau$ ruling。
 
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕外层 certified assessment 认证的是 disposition 及其边界：bounded `reportOnly` 的 comparison
+〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕外层 certified assessment 认证的是 disposition 及其边界：bounded `reportOnly` 的 comparison
 证书可以认证其分类，但不因此取得全对象结论、transfer 或 positivity，原有 truncation 限制不变。
 
 ---
@@ -7799,12 +7807,12 @@ owner $\tau$ ruling 与 mutation suite 落地后，才可另一个 policy PR 把
 被 selector 排除的未冻结 theorem 或 frozen definition，在 keys equality 检查前由 identity
 检查发出 IE-C036；不得把下列 J2 的 IE-C044 映射当作当前行为。
 
-**pending J2**
+**J2 assessment triggers**
 
 〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕下表单独列出 J2 待生效的 trigger 语义，关联第 23.6 节、CIRPT-38.2 与 CIRPT-40 第 27、29 项。
 它们复用上述诊断 identifiers、deterministic message shape 与 required payload keys，不新增码或改名 payload key。
 
-| code | name | pending J2 fail-closed trigger |
+| code | name | fail-closed trigger |
 |---|---|---|
 | IE-C034 | `MissingAnalysisDisposition` | census 的 frozen theorem key 没有 assessment row；有效 observed row 不是 missing，独立认证义务仍要求 disposition |
 | IE-C035 | `DuplicateAnalysisDisposition` | 同一 key 有多个 assessment rows，含 certified／observed 混合重复，或同一 `statement_id` 被多行复用，即使 theorem `Name` 不同 |
@@ -8357,14 +8365,14 @@ root、完整 import closure 且查询已完成的 observed `noRegisteredRealiza
 unreachable 行另带绑定 statement／key／semantic contract／candidate domain 的具名 closed-reason
 proof，不能用 absence 充作证据。
 
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕期望 `accounted=5`、`certified=4`、`observed=1`、certified class counts $(1,1,1,1)$，
+〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕期望 `accounted=5`、`certified=4`、`observed=1`、certified class counts $(1,1,1,1)$，
 `noCanonicalObjectCarrier` reason count $1$、其余 reason 为零；observation status 分项为
 `noRegisteredRealizationOrCertificate=1`、其余为零。keys exact cover，
 `accounting_complete=true`、`certified_complete=false`，AC-023 未满足。
 另以真实有限证据替换 observed 行的正例才可得 `certified=5`、`observed=0`、
 `certified_complete=true`；不能只改 tag／flag。
 
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕删除、复制（含同 key 的 certified／observed 重复）、stale identity、伪改 class payload
+〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕删除、复制（含同 key 的 certified／observed 重复）、stale identity、伪改 class payload
 依次触发 IE-C034--IE-C037；不同 theorem `Name` 复用同一 `statement_id` 仍触发 IE-C035。
 遗漏 owning module 的 import closure、少列任一 transitive import、错误 root、未完成 query、
 把 generator 空列表作为完成证据、伪造 observation status，均触发 IE-C044。
@@ -8682,30 +8690,30 @@ v1 §6.4 的 nested `InformationEscape/Counting/` proposal，`proof_method` 仍�
 〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕本阶段只细化上述固定顺序的第 4 步，不改变各步依赖。在 import-closure identity／grouping
 mechanics 与第 3 步 structural engine 都存在后，依第 8.7 节 owner 2026-09-08 裁决，census 必须：
 
-1. 〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕先完成 accounting：Lean Meta tool 只读当前 truth export dialect 的完整 elaborated nodes，
+1. 〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕先完成 accounting：Lean Meta tool 只读当前 truth export dialect 的完整 elaborated nodes，
    先选择 `freeze_status=frozen` 的 nodes（模块），再选择其 `declarations` 中 `kind=theorem`
    的声明，由 declaration 的 `declaration_name_key` 与 `statement_id` 派生
    `(structured Name, statement_id)` keys；每个 key 恰有一个 `CensusAssessment`，observed
    允许入账，但其完整 scope 与 completed query 必须由 census 自己核实；
-2. 〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕certified classification 逐步增加：只有证据成立才写 finite／structural／bounded truncation／
+2. 〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕certified classification 逐步增加：只有证据成立才写 finite／structural／bounded truncation／
    unreachable disposition；其余按实际完成查询写 observed，永不计作 classified、AC-023 完成
    或 closed reason。认证完备目标持续 open，直到全部 key 都有 certified disposition；
-3. 〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕成功判据是 honest complete accounting **且**显式 certified／observed split；报告
+3. 〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕成功判据是 honest complete accounting **且**显式 certified／observed split；报告
    `accounted`、certified class／unreachable reason 分项、observed status 分项与 exact rows，
    核实 keys equality 并输出两种 completeness flags。`observed > 0` 时
    `certified_complete=false`，即使所有 keys 已入账也不例外；
-4. 〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕assessment records 绑定 immutable HEAD/report inputs；census report 不回写数学，永不作为
+4. 〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕assessment records 绑定 immutable HEAD/report inputs；census report 不回写数学，永不作为
    seal input 或 required gate；
-5. 〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕上述记账与分栏里程碑成立后才进入第 5 步 judge projection／ASCII；其后依次只能是第 6 步 fixtures 与
+5. 〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕上述记账与分栏里程碑成立后才进入第 5 步 judge projection／ASCII；其后依次只能是第 6 步 fixtures 与
    第 7 步保持 OPEN 的 dual-novelty gate design／owner $\tau$ ruling request。
 
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕里程碑不以 finite percentage 定义，也不以“所有 rows 都是 observed”定义；成功要求完整诚实
+〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕里程碑不以 finite percentage 定义，也不以“所有 rows 都是 observed”定义；成功要求完整诚实
 记账、已有证据的认证及显式分栏，不能把已有认证退回 observed 来声称完成。它与 AC-023 的
 认证完备是两个命题。Real dynamics、function spaces 或 unbounded-index families 只有具备
 structural 所需证据才进入该 class；未有证据不自动分类。只有满足专属 closed-reason proof
 的对象才进入 unreachable；bounded experiment 在无 transfer theorem 时仍明确 `report-only`。
 
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕本步骤内的落地顺序固定为：S0 先把裁决写入本 spec（content plane）；J1 为已落地的 current
+本步骤内的落地顺序固定为：S0 先把裁决写入本 spec（content plane）；J1 为已落地的 current
 truth export 读取与 frozen 过滤（#6340）；**J2 随后**在 `tools/lean-inspector/**` 落
 assessment／closed-reason evidence contract 与合成 fixtures；**J3 在 J2 之后**于 `tools/**`
 落 generator／loader，从 export 与 elaborated environment 产生并核查 assessment inventory。
@@ -8905,17 +8913,17 @@ report-only／transfer theorem，真正不可达者使用 closed reason。finite
 
 〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕必须分别给出两个命题，不得互相冒充：
 
-1. 〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕**记账完备（accounting completeness）**：从 frozen elaborated truth export 中
+1. 〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕**记账完备（accounting completeness）**：从 frozen elaborated truth export 中
    先选择 `freeze_status=frozen` 的 nodes（模块），再选择其 `declarations` 中 `kind=theorem`
    的声明，以 declaration 的 `declaration_name_key` 与 `statement_id` 取得全部
    `(structured Name, statement_id)` keys，与 `CensusAssessment` inventory keys 完全相等，
    每 key 恰一次，并保持第 23.6 节的 HEAD／report inputs／root 绑定与唯一性约束；
-2. 〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕**认证完备（certified completeness）**：记账完备，且每个 key 的 row 都是语义证据已验证的
+2. 〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕**认证完备（certified completeness）**：记账完备，且每个 key 的 row 都是语义证据已验证的
    `certified (AnalysisDisposition key)`，即 finite／structural／bounded truncation／带专属
    closed-reason proof 的 unreachable 之一。**本 AC 只由认证完备满足**；记账完备是报告中的
    前提，不是履行。
 
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕observed 必须是第 23.6 节规定的 exact key／module／root／import-closure completed query
+〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕observed 必须是第 23.6 节规定的 exact key／module／root／import-closure completed query
 observation，永不计作 classified、永不计入本 AC、永不算 closed reason。registry absence
 不能产生 unreachable；后者的证书必须绑定 statement、key、semantic contract 与 candidate
 domain。arena 仍来自显式 realization，不从 carrier／statement syntax 推断（第 8.7 节）。
@@ -9875,5 +9883,5 @@ v4.3 不修改第 48、49 节的任何字节；它在 v4.2 shared-arena／analys
 full strict generator DAG；只有该 lattice 的 Hasse diagram 在 nested chain 特例才是 path／tree，
 full strict DAG 仍不因此成为 tree。
 
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕“适用于所有定理”改写为分别报告完整记账与认证
+〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕“适用于所有定理”改写为分别报告完整记账与认证
 完备的 census，而不是对不可有限计数对象作虚假统一数值主张。
