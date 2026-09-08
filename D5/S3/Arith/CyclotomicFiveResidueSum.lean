@@ -10,6 +10,8 @@ import D5.S3.Arith.ChineseRemainder
 import Mathlib.Algebra.BigOperators.Intervals
 import Mathlib.Algebra.BigOperators.Ring.Finset
 import Mathlib.Data.Nat.Factorization.Induction
+import Mathlib.FieldTheory.Finite.Basic
+import Mathlib.GroupTheory.SpecificGroups.Cyclic
 import Mathlib.Tactic.IntervalCases
 import Mathlib.Tactic.NormNum
 import Mathlib.Tactic.Ring
@@ -236,11 +238,127 @@ theorem residueCount_pow (p a : ℕ) :
   rw [pow_succ', count_blocks]
   rfl
 
+private theorem fifth_roots_count (p : ℕ) [Fact p.Prime] :
+    (∑ x : ZMod p, if x ^ 5 = 1 then (1 : ℕ) else 0) = (p - 1).gcd 5 := by
+  classical
+  let K := (powMonoidHom 5 : (ZMod p)ˣ →* (ZMod p)ˣ).ker
+  let f : K → {x : ZMod p // x ^ 5 = 1} := fun u =>
+    ⟨u.val.val, by
+      have h : u.val ^ 5 = 1 := u.property
+      exact congrArg Units.val h⟩
+  have hf : Function.Bijective f := by
+    constructor
+    · intro x y hxy
+      apply Subtype.ext
+      apply Units.ext
+      exact congrArg Subtype.val hxy
+    · intro x
+      have hx : x.val ≠ 0 := by
+        intro hh
+        have := x.property
+        simp [hh] at this
+      refine ⟨⟨Units.mk0 x.val hx, ?_⟩, ?_⟩
+      · change (Units.mk0 x.val hx) ^ 5 = 1
+        apply Units.ext
+        exact x.property
+      · apply Subtype.ext
+        rfl
+  calc
+    _ = Fintype.card {x : ZMod p // x ^ 5 = 1} := by
+      simp [Fintype.card_subtype]
+    _ = Nat.card K := by
+      rw [Nat.card_eq_fintype_card]
+      exact (Fintype.card_congr (Equiv.ofBijective f hf)).symm
+    _ = (p - 1).gcd 5 := by
+      rw [IsCyclic.card_powMonoidHom_ker]
+      simp only [Nat.card_eq_fintype_card, ZMod.card_units]
+
+private theorem prime_count_balance (p : ℕ) [Fact p.Prime] (hp5 : p ≠ 5) :
+    residueCount p + (p - 1).gcd 5 = p := by
+  classical
+  have hp : Nat.Prime p := Fact.out
+  have h5 : (5 : ZMod p) ≠ 0 := by
+    intro hz
+    have hd : p ∣ 5 := (ZMod.natCast_eq_zero_iff 5 p).mp hz
+    exact hp5 ((Nat.dvd_prime (by decide : Nat.Prime 5)).mp hd |>.resolve_left hp.ne_one)
+  have hi (x : ZMod p) :
+      (if good x then (1 : ℕ) else 0) + (if x ^ 5 = 1 then 1 else 0) +
+        (if x = 0 then 1 else 0) = 1 + (if x = 1 then 1 else 0) := by
+    have hmul : (x - 1) * cyclo x = x ^ 5 - 1 := by unfold cyclo; ring
+    by_cases hx0 : x = 0
+    · subst x
+      norm_num [good, cyclo]
+    by_cases hx1 : x = 1
+    · subst x
+      norm_num [good, cyclo, isUnit_iff_ne_zero, h5]
+    have hr : x ^ 5 = 1 ↔ cyclo x = 0 := by
+      rw [← sub_eq_zero, ← hmul, mul_eq_zero]
+      simp [sub_eq_zero, hx1]
+    by_cases hc : cyclo x = 0 <;> simp [good, isUnit_iff_ne_zero, hx0, hx1, hr, hc]
+  have hsum := congrArg (fun f : ZMod p → ℕ => ∑ x, f x) (funext hi)
+  simp only [Finset.sum_add_distrib, Finset.sum_const, Finset.card_univ, ZMod.card,
+    smul_eq_mul, mul_one, Finset.sum_ite_eq', Finset.mem_univ, if_true] at hsum
+  rw [← count_eq_zmod, fifth_roots_count] at hsum
+  omega
+
+/-- For a prime other than five, the admissible count is prime minus the root-kernel size. -/
+theorem residueCount_prime (p : ℕ) [Fact p.Prime] (hp5 : p ≠ 5) :
+    residueCount p = p - (p - 1).gcd 5 := by
+  have := prime_count_balance p hp5
+  omega
+
+private theorem prime_count_not_dvd (p : ℕ) [Fact p.Prime] (hp5 : p ≠ 5) :
+    ¬5 ∣ residueCount p := by
+  have hp : Nat.Prime p := Fact.out
+  have h := prime_count_balance p hp5
+  have hg : (p - 1).gcd 5 ∣ 5 := Nat.gcd_dvd_right _ _
+  rcases (Nat.dvd_prime (by decide : Nat.Prime 5)).mp hg with hg | hg
+  · rw [hg] at h
+    intro hd
+    have hg1 : (p - 1).gcd 5 = 1 := hg
+    have he : p - 1 = residueCount p := by omega
+    have hc : 5 ∣ (p - 1).gcd 5 := Nat.dvd_gcd (he ▸ hd) dvd_rfl
+    rw [hg1] at hc
+    norm_num at hc
+  · rw [hg] at h
+    intro hd
+    have hpdiv : 5 ∣ p := h ▸ dvd_add hd (dvd_refl 5)
+    exact hp5 (((Nat.dvd_prime hp).mp hpdiv).resolve_left (by decide)).symm
+
+/-- The CRT-compatible count is never divisible by five away from multiples of five. -/
+theorem residueCount_not_dvd_five (m : ℕ) (hm : ¬5 ∣ m) : ¬5 ∣ residueCount m := by
+  revert hm
+  induction m using Nat.recOnPosPrimePosCoprime with
+  | zero => simp
+  | one => simp [residueCount, admissible, phi5]
+  | prime_pow p e hp he =>
+      intro hnot
+      obtain ⟨a, rfl⟩ := Nat.exists_eq_succ_of_ne_zero he.ne'
+      have : Fact p.Prime := ⟨hp⟩
+      have hp5 : p ≠ 5 := by
+        rintro rfl
+        exact hnot (dvd_pow_self 5 (Nat.succ_ne_zero _))
+      rw [residueCount_pow]
+      apply (show Nat.Prime 5 by decide).not_dvd_mul
+      · intro hd
+        exact hnot (dvd_mul_of_dvd_left hd p)
+      · exact prime_count_not_dvd p hp5
+  | coprime a b ha hb hab iha ihb =>
+      intro hnot
+      have : NeZero a := ⟨by omega⟩
+      have : NeZero b := ⟨by omega⟩
+      rw [residueCount_mul a b hab]
+      exact (show Nat.Prime 5 by decide).not_dvd_mul
+        (iha fun h => hnot (dvd_mul_of_dvd_left h b))
+        (ihb fun h => hnot (dvd_mul_of_dvd_right h a))
+
 #print axioms phi5_mod_five_eq_zero_iff
 #print axioms sum_goodUnits_five_pow
 #print axioms residue_sum_five_pow_ne_zero
 #print axioms residueCount_mul
 #print axioms sum_goodUnits_mul_cast
 #print axioms residueCount_pow
+#print axioms residueCount_prime
+#print axioms residueCount_not_dvd_five
 
 end D5.S3.Arith.CyclotomicFiveResidueSum
