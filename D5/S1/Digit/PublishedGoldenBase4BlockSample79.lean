@@ -2,7 +2,8 @@
    generality: I
    mirror-B: D5/B/S1/Digit/PublishedGoldenBase4BlockSample79
    mirror-E: none(waiver:published-block-sample-instance)
-   anchors: [D5/S0/Automata/BinaryZeckendorfBlockSkeleton,D5/S1/Digit/GoldenBase4AutomataOracle]
+   anchors: []
+   utility: none
    digest: The first 79 canonical Zeckendorf encodings of powers of four admit kernel-checked first-return block codes, and finite machine fitting is equivalent to fitting the transported recurrent skeleton sample. -/
 
 import D5.S0.Automata.BinaryZeckendorfBlockSkeleton

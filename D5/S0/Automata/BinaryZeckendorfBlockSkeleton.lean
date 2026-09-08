@@ -2,7 +2,8 @@
    generality: G
    mirror-B: D5/B/S0/Automata/BinaryZeckendorfBlockSkeleton
    mirror-E: none(waiver:first-return-skeleton)
-   anchors: [mathlib/module/Mathlib]
+   anchors: []
+   utility: none
    digest: Legal binary Zeckendorf words factor uniquely into the return blocks 0 and 10 with an optional terminal 1; the transient state fiber of every typed DFAO is quotiented by its output-and-zero-successor signature, yielding an equivalent canonical skeleton machine with no more states. -/
 
 import Mathlib
