@@ -4,6 +4,30 @@ namespace StrataLint.ArchitectureTests;
 
 public sealed class CapacityPolicyTests
 {
+    [Fact]
+    public void CapacityExcludesOnlyCanonicalProblemPoolPaths()
+    {
+        Assert.True(RepositoryRules.IsDirectoryCapacityExcluded(
+            "Problems/oeis-a363560-cubic-ninth-power-substitution-mod-three.md"));
+        Assert.False(RepositoryRules.IsDirectoryCapacityExcluded("Problems/sub/x.md"));
+        Assert.False(RepositoryRules.IsDirectoryCapacityExcluded("Problems/Foo.md"));
+        Assert.False(RepositoryRules.IsCapacityExcluded(
+            "Problems/oeis-a363560-cubic-ninth-power-substitution-mod-three.md"));
+    }
+
+    [Fact]
+    public void CapacityAuditExcludesCanonicalProblemPoolOccupancyButBoundsDossierLength()
+    {
+        var files = Enumerable.Range(0, RepositoryRules.DirectoryToleranceLimit + 1)
+            .Select(static i => ($"Problems/oeis-a000001-sample-slug-{i:0000}.md",
+                i == 0 ? string.Concat(Enumerable.Repeat("pad\n", 900)) : "fixture\n"));
+
+        var finding = Assert.Single(RepositoryCapacityAudit.InspectFiles(files));
+
+        Assert.Equal("Problems/oeis-a000001-sample-slug-0000.md", finding.Path);
+        Assert.Equal("artifact spans 900 lines (hard limit 800)", finding.Message);
+    }
+
     // RED: an artifact one line past the hard limit must be flagged.
     [Fact]
     public void OversizeArtifactIsRejectedByRedFixture()
