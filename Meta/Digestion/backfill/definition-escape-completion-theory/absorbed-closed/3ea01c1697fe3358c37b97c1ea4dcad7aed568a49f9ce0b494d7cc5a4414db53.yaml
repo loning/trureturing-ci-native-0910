@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/DefinitionEscape/BlindKernelReductionMeasure.blind_kernel_reduction_measure
     target_statement_id: sha256:35a52c48cf8f7daec204e1dec768b4f894c20b93ad0525fde2b4ff8d94b82391
 receipts:
-  scribe: []
   unresolved_subitems: []

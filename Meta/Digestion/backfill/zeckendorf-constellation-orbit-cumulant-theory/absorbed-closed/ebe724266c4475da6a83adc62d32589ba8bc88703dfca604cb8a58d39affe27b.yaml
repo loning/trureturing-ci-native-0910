@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Quantum/Completion/LimitStageResidualIntersection.limit_stage_residual_intersection
     target_statement_id: sha256:ac50b549300b544ed2938625567dda4b2caf11c03dc49246386890ff82dc8055
 receipts:
-  scribe: []
   unresolved_subitems: []

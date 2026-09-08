@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/DefinitionEscapeAdjudication/ParetoEqOnDecidableEquivalence.pareto_eq_on_equivalence_laws
     target_statement_id: sha256:944964e51f1d10b67c60936ae20461cad06eb2be52e5e58e42b452fca9f44148
 receipts:
-  scribe: []
   unresolved_subitems: []

@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/EscapeSpectrum/SpectrumCommitmentScope.spectrum_commitment_atom_family_and_scope
     target_statement_id: sha256:8ced989a2df0efdc47c898f6d7d5b3d185764646b6dff64b38b058a0d23a2140
 receipts:
-  scribe: []
   unresolved_subitems: []

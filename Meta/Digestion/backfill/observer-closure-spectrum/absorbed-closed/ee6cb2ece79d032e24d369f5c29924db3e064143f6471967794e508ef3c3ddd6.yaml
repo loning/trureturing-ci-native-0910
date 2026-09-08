@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Observer/AgencyReserveStability.agency_reserve_stability
     target_statement_id: sha256:11cc7031811d176a4fa1a6638c8146c9675d22a2a17483c8306fba2a91cc3eb1
 receipts:
-  scribe: []
   unresolved_subitems: []

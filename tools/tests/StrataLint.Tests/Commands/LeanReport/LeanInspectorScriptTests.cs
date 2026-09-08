@@ -13,8 +13,11 @@ public sealed class LeanInspectorScriptTests
     private const string ResourceObservationLibrary = "tools/scripts/lib/resource-observation-lib.sh";
     private const string CacheRunScript = "tools/scripts/worktree/lean-cache-run.sh";
 
-    [Fact]
-    public void InspectorDefaultsToCompleteModuleEnumeration()
+    [Theory]
+    [InlineData("standalone", 0)]
+    [InlineData("prebuilt", 0)]
+    [InlineData("missing-prebuilt", 2)]
+    public void InspectorDefaultsToCompleteModuleEnumeration(string cliMode, int expectedExit)
     {
         if (OperatingSystem.IsWindows()) return;
         using var temporary = new TemporaryDirectory();
@@ -24,9 +27,25 @@ public sealed class LeanInspectorScriptTests
         File.SetUnixFileMode(lake, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
         var log = Path.Combine(temporary.Path, "lake.log");
         var output = Path.Combine(temporary.Path, "report.json");
+        var cli = Path.Combine(repository, "tools/StrataLint.Cli/bin/Release/net10.0/StrataLint.Cli.dll");
+        if (cliMode == "prebuilt")
+        {
+            var build = Run("dotnet", ["build", "tools/StrataLint.Cli/StrataLint.Cli.csproj", "--configuration", "Release"], repository);
+            Assert.True(build.ExitCode == 0, Encoding.UTF8.GetString(build.StandardOutput) + Encoding.UTF8.GetString(build.StandardError));
+            File.WriteAllText(Path.Combine(repository, "tools/StrataLint.Cli/Fixture.cs"), "invalid source forbids a repeated build");
+        }
 
-        var full = Run("env", [$"LAKE_BIN={lake}", $"STUB_LOG={log}", Path.Combine(repository, InspectorScript), "--repository", repository, "--output", output], repository);
-        Assert.True(full.ExitCode == 0, Encoding.UTF8.GetString(full.StandardError));
+        var full = Run("env", [$"LAKE_BIN={lake}", $"STUB_LOG={log}",
+            $"STRATALINT_LEAN_CLI_DLL={(cliMode == "standalone" ? "" : cli)}",
+            Path.Combine(repository, InspectorScript), "--repository", repository, "--output", output], repository);
+        Assert.True(full.ExitCode == expectedExit, Encoding.UTF8.GetString(full.StandardError));
+        if (expectedExit != 0)
+        {
+            Assert.Contains("candidate CLI is absent", Encoding.UTF8.GetString(full.StandardError), StringComparison.Ordinal);
+            Assert.False(File.Exists(output));
+            return;
+        }
+        Assert.Equal("[]", File.ReadAllText(output + ".logs/utility-input.stdout.log").Trim());
         var fullInspect = File.ReadAllLines(log).Single(static line => line.Contains(" --output ", StringComparison.Ordinal));
         Assert.Contains("Trureturing Trureturing.lean sha256:", fullInspect, StringComparison.Ordinal);
         Assert.Contains("D5.Probe D5/Probe.lean sha256:", fullInspect, StringComparison.Ordinal);
@@ -105,6 +124,7 @@ public sealed class LeanInspectorScriptTests
         File.SetUnixFileMode(poisoned, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
         InstallCacheRun(repository);
         InstallProducerInputs(repository);
+        Assert.Equal(0, Run("git", ["init", "--quiet"], repository).ExitCode);
         var lake = Path.Combine(temporary.Path, "lake");
         File.WriteAllText(lake, "#!/usr/bin/env bash\nif [[ \"$*\" == *' --output '* ]]; then while [[ $# -gt 0 ]]; do [[ $1 == --output ]] && { printf '{\"modules\": [], \"schema\": \"stratalint-lean-inspector-spool-v1\"}\\n' > \"$2\"; break; }; shift; done; fi\n", new UTF8Encoding(false));
         File.SetUnixFileMode(lake, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
@@ -143,6 +163,10 @@ public sealed class LeanInspectorScriptTests
             Write(repository, $"tools/{project}/{project}.csproj", "<Project Sdk=\"Microsoft.NET.Sdk\" />\n");
             Write(repository, $"tools/{project}/Fixture.cs", "// fixture\n");
         }
+        Write(repository, "tools/StrataLint.Cli/StrataLint.Cli.csproj",
+            "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><OutputType>Exe</OutputType>"
+            + "<TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>\n");
+        Write(repository, "tools/StrataLint.Cli/Fixture.cs", "System.Console.WriteLine(\"[]\");\n");
         Write(repository, "tools/scripts/lean-report-pair.sh", "#!/usr/bin/env bash\n");
         Write(repository, "tools/scripts/worktree/lean-cache-publish.sh", "#!/usr/bin/env bash\n");
         Write(repository, "tools/scripts/workflow/scribe-content-checks.sh", "#!/usr/bin/env bash\n");

@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Quantum/DoubleArtanhBounds.double_artanh_bounds
     target_statement_id: sha256:f85d76a246d00741ff6d28197b7a5d7fd21d643b0ce39147e541ebcfa55a5f57
 receipts:
-  scribe: []
   unresolved_subitems: []

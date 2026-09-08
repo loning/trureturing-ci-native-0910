@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Governance/FiniteAcyclicJudgingGraphRoot.finite_acyclic_judging_graph_has_root
     target_statement_id: sha256:64e0800028c1d20869935d303de165bcd3ba63f10ff0b09e068c643a228935b3
 receipts:
-  scribe: []
   unresolved_subitems: []

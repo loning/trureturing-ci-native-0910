@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Closure/IndexedObservationClosureLaws.indexed_observation_closure_laws
     target_statement_id: sha256:3ee9f69d0bfe18eaf729b337b6d6d3015fc9586829e3538df7c57930e063799b
 receipts:
-  scribe: []
   unresolved_subitems: []

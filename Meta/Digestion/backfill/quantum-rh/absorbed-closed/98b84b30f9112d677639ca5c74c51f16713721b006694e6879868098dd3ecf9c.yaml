@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Zeros/PochhammerDeformation/QuadraticRadii.quadratic_outer_radius
     target_statement_id: sha256:904b7b772aadec16f638b509d6ec0fdc123c042f9756b30a8d7c5d796b8319b4
 receipts:
-  scribe: []
   unresolved_subitems: []

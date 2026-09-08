@@ -136,6 +136,13 @@ public sealed class CurrentDeltaCliContractTests
         var exit = CliApplication.Run(["check-delta", "--protected-base", basis, "--candidate-lean-report", report], environment, console);
         Assert.True(exit == expectedExit, $"expected exit {expectedExit}, got {exit}: {console.Output}{console.Error}");
         Assert.Contains(diagnostic, console.Output + console.Error, StringComparison.Ordinal);
+        if (scenario == "missing-base-project")
+        {
+            Assert.Contains($"ENGINEERING_TEST_PROJECT_REMOVED project={JsonSerializer.Serialize(firstProject)}",
+                console.Output, StringComparison.Ordinal);
+            Assert.Contains($"base test project has no successful candidate execution: {firstProject}",
+                console.Error, StringComparison.Ordinal);
+        }
         if (scenario == "annotation")
         {
             Assert.Empty(console.Error);

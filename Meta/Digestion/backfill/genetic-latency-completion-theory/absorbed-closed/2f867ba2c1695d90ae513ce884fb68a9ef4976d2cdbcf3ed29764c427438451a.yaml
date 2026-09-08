@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/InvolutionLogic/SingletonRelativeComplementCriterion.singleton_relative_complement_iff_two_point_universe
     target_statement_id: sha256:b14d2ad81ebd8b70ec0bd48e52c2543170dc7613a70917b5074f345a22801026
 receipts:
-  scribe: []
   unresolved_subitems: []

@@ -30,7 +30,6 @@ coverage_gids:
   - gid: D5/S3/QuantumContext/ProjectionValuationObstruction.projection_valuation_obstruction
     target_statement_id: sha256:bed803597c697c05a5bd49384c223d18179f4172782d201487d13621e1c2a9bc
 receipts:
-  scribe: []
   unresolved_subitems:
     - hidden-address-local-variable-interpretation
     - kochen-specker-projection-valuation-obstruction

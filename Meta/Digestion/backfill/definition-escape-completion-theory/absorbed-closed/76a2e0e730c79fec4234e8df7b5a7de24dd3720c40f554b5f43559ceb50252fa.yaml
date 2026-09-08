@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/DefinitionEscapeSignatures/AdjudicationSignatureNecessity.adjudication_signature_coordinate_necessity
     target_statement_id: sha256:97af24c64cd0e0a682990798219551fdd36e9c6679b65720e5debcd6560ffa7e
 receipts:
-  scribe: []
   unresolved_subitems: []

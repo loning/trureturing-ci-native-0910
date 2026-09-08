@@ -32,7 +32,7 @@ internal static class Program
                 foreach (var assembly in assemblies) output.WriteLine(assembly);
                 return 0;
             }
-            var repository = RepositoryOption(arguments);
+            var repository = RepositoryOption(arguments, allowAll: true);
             return RunCurrentTests(repository, (project, results) => RunTests(repository, project, results), output);
         }
         catch (Exception exception)
@@ -42,10 +42,14 @@ internal static class Program
         }
     }
 
-    private static string RepositoryOption(IReadOnlyList<string> arguments) =>
-        arguments.Count == 2 && arguments[0] == "--repository" && !string.IsNullOrWhiteSpace(arguments[1])
+    private static string RepositoryOption(IReadOnlyList<string> arguments, bool allowAll = false)
+    {
+        if (allowAll && arguments.Count == 3 && arguments.Count(static argument => argument == "--all") == 1)
+            arguments = arguments.Where(static argument => argument != "--all").ToArray();
+        return arguments.Count == 2 && arguments[0] == "--repository" && !string.IsNullOrWhiteSpace(arguments[1])
             ? Path.GetFullPath(arguments[1])
             : throw new ArgumentException("options must be exactly --repository value");
+    }
 
     internal static int RunCurrentTests(string root, Func<string, string, int> run, TextWriter output)
     {

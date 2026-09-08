@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ResourceOrder/AtomlessFiniteAnchorImpossibility.atomless_finite_anchor_evasion
     target_statement_id: sha256:9a58470e0683aecb61c4c69f606e798f84c1d467afe61a1baab9208dffb20df0
 receipts:
-  scribe: []
   unresolved_subitems: []

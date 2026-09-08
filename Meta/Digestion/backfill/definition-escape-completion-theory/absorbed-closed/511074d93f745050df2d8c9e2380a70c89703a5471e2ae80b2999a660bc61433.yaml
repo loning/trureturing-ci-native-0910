@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/DefinitionEscapeSignatures/AdjudicationSignatureSufficiency.target_laundering_signature_counterexample
     target_statement_id: sha256:206db1c67a4d9eeffeb6794e4bf09f38300dc184be7f6148567b14359f9eb447
 receipts:
-  scribe: []
   unresolved_subitems: []

@@ -8,5 +8,4 @@ coverage_gids:
   - gid: D5/S3/Constants/Values.t1
     target_statement_id: sha256:fb83e543cc6504bb06cdd67a065a63af409a90baaf1d77d1d605955543f791f6
 receipts:
-  scribe: []
   unresolved_subitems: []

@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Interpretation/PartySimulationFreshBeaconCertification.party_simulation_and_fresh_beacon_certification
     target_statement_id: sha256:85c3f5cf51b2251f7ebe06989b5e5a33abb8fbf3fa35ccb33b6b731220c2f34e
 receipts:
-  scribe: []
   unresolved_subitems: []

@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/QuantumStates/GNSStateCone.state_cone_sections
     target_statement_id: sha256:c5dda327473686650dc4c623b6f1970c56bd2adc21a0b8451fa85d5007eccadf
 receipts:
-  scribe: []
   unresolved_subitems: []

@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S0/Computability/DescriptionComplexity/BidirectionalTransformationDescriptionBound.bidirectional_transformation_description_bounds
     target_statement_id: sha256:fa8fddda07f82409527c47c028d0280ad6989984be7b23af59cc6eca2d1c8637
 receipts:
-  scribe: []
   unresolved_subitems: []

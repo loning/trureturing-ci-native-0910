@@ -23,7 +23,7 @@ engineering:
 	@/bin/bash "$(HERE)/scripts/ci-stage.sh" engineering
 
 engineering-tests:
-	@cd "$(REPOSITORY)" && dotnet "$(HERE)/StrataLint.EngineeringScope/bin/Release/net10.0/StrataLint.EngineeringScope.dll" --repository "$(REPOSITORY)"
+	@cd "$(REPOSITORY)" && dotnet "$(HERE)/StrataLint.EngineeringScope/bin/Release/net10.0/StrataLint.EngineeringScope.dll" --repository "$(REPOSITORY)" --all
 
 selftest:
 	@/bin/bash $(HERE)/scripts/stratalint-selftest.sh

@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Agency/MinimumSafeObservationAlphabet.minimum_safe_observation_alphabet
     target_statement_id: sha256:471af601c426399f17e64010a3b24a9f0875f06ca19eca24490478e7f003ef06
 receipts:
-  scribe: []
   unresolved_subitems: []

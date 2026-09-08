@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Text;
 using StrataLint.Cli;
 using StrataLint.Engine;
 using Trureturing.Truth;
@@ -39,7 +40,7 @@ public sealed class StripScribeReceiptsCommandTests
         Assert.Equal(
             $"SCRIBE_STRIP source=alpha-v0.1 atom={document.RequireDigestionSources()[0].Entries[0].AtomId} receipts=2\n"
             + $"SCRIBE_STRIP source=beta-v0.1 atom={document.RequireDigestionSources()[1].Entries[0].AtomId} receipts=1\n"
-            + "SCRIBE_STRIP_SUMMARY entries=2 receipts=3 dry_run=true\n",
+            + "SCRIBE_STRIP_SUMMARY entries=2 receipts=3 normalized=0 dry_run=true\n",
             result.Output);
     }
 
@@ -247,7 +248,7 @@ public sealed class StripScribeReceiptsCommandTests
         Assert.Empty(console.Error);
         Assert.Equal(
             $"SCRIBE_STRIP source=alpha-v0.1 atom={alpha.AtomId} receipts=2\n"
-            + "SCRIBE_STRIP_SUMMARY entries=1 receipts=2 dry_run=false\n",
+            + "SCRIBE_STRIP_SUMMARY entries=1 receipts=2 normalized=0 dry_run=false\n",
             console.Output);
         Assert.Equal(betaBytes, File.ReadAllBytes(betaFullPath));
         var written = BackfillInventoryLoader.LoadRoot(temporary.Path).RequireDigestionSources();
@@ -288,7 +289,7 @@ public sealed class StripScribeReceiptsCommandTests
         Assert.Equal(0, firstExitCode);
         Assert.Empty(firstConsole.Error);
         Assert.EndsWith(
-            "SCRIBE_STRIP_SUMMARY entries=2 receipts=3 dry_run=false\n",
+            "SCRIBE_STRIP_SUMMARY entries=2 receipts=3 normalized=0 dry_run=false\n",
             firstConsole.Output,
             StringComparison.Ordinal);
         Assert.All(
@@ -313,7 +314,7 @@ public sealed class StripScribeReceiptsCommandTests
         Assert.Equal(0, secondExitCode);
         Assert.Empty(secondConsole.Error);
         Assert.Equal(
-            "SCRIBE_STRIP_SUMMARY entries=0 receipts=0 dry_run=false\n",
+            "SCRIBE_STRIP_SUMMARY entries=0 receipts=0 normalized=0 dry_run=false\n",
             secondConsole.Output);
         Assert.Equal(afterFirst, DirectoryLedgerTestSupport.RepositoryImage(temporary));
     }
@@ -334,7 +335,7 @@ public sealed class StripScribeReceiptsCommandTests
         Assert.Equal(2, result.Output.Split('\n').Count(static line =>
             line.StartsWith("SCRIBE_STRIP source=", StringComparison.Ordinal)));
         Assert.EndsWith(
-            "SCRIBE_STRIP_SUMMARY entries=2 receipts=3 dry_run=true\n",
+            "SCRIBE_STRIP_SUMMARY entries=2 receipts=3 normalized=0 dry_run=true\n",
             result.Output,
             StringComparison.Ordinal);
     }
@@ -361,7 +362,7 @@ public sealed class StripScribeReceiptsCommandTests
         Assert.Equal(
             $"SCRIBE_STRIP source=alpha-v0.1 atom={document.RequireDigestionSources()[0].Entries[0].AtomId} receipts=2\n"
             + $"SCRIBE_STRIP source=beta-v0.1 atom={document.RequireDigestionSources()[1].Entries[0].AtomId} receipts=1\n"
-            + "SCRIBE_STRIP_SUMMARY entries=2 receipts=3 dry_run=true\n",
+            + "SCRIBE_STRIP_SUMMARY entries=2 receipts=3 normalized=0 dry_run=true\n",
             second.Output);
     }
 
@@ -384,7 +385,7 @@ public sealed class StripScribeReceiptsCommandTests
             static (_, _, _) => { });
 
         Assert.True(result.Success, result.Error);
-        Assert.Equal("SCRIBE_STRIP_SUMMARY entries=0 receipts=0 dry_run=false\n", result.Output);
+        Assert.Equal("SCRIBE_STRIP_SUMMARY entries=0 receipts=0 normalized=0 dry_run=false\n", result.Output);
     }
 
     [Fact]
@@ -399,6 +400,98 @@ public sealed class StripScribeReceiptsCommandTests
         Assert.False(result.Success);
         Assert.Empty(result.Output);
         Assert.Equal("SCRIBE_STRIP_INVALID first line second line\n", result.Error);
+    }
+
+    [Fact]
+    public void LegacyEmptyScribeKeyIsRemovedByCanonicalRewrite()
+    {
+        var (fixture, files, alpha) = LegacyEmptyScribeKeyOnAlpha();
+        var current = RawRepositorySnapshot.Create(files.Select(static pair =>
+            RawRepositoryEntry.FromText(pair.Key, pair.Value)));
+        using var temporary = new TemporaryDirectory();
+        DirectoryLedgerTestSupport.Write(temporary.Path, files);
+        var console = new BufferedConsole();
+        var environment = new ProductionCliEnvironment(
+            temporary.Path,
+            new FakeRepositoryGateway(RawChangeSet.Create([]), current, current),
+            new FakeLeanReportSource(fixture.Inputs.Report));
+
+        var exitCode = CliApplication.Run(
+            ["strip-scribe-receipts", "--source", "alpha-v0.1"],
+            environment,
+            console);
+
+        Assert.Equal(0, exitCode);
+        Assert.Empty(console.Error);
+        Assert.Equal(
+            "SCRIBE_STRIP_SUMMARY entries=0 receipts=0 normalized=1 dry_run=false\n",
+            console.Output);
+        var alphaFullPath = Path.Combine(
+            temporary.Path,
+            CoverageWithoutScribeFixture.EntryPath(alpha).Replace('/', Path.DirectorySeparatorChar));
+        Assert.Equal(
+            BackfillInventoryWriter.WriteAtom(alpha).ToArray(),
+            File.ReadAllBytes(alphaFullPath));
+        Assert.DoesNotContain("scribe", File.ReadAllText(alphaFullPath), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void LegacyEmptyScribeKeyOutsideTheSelectedSourceIsLeftAlone()
+    {
+        var (fixture, files, alpha) = LegacyEmptyScribeKeyOnAlpha();
+        var alphaPath = CoverageWithoutScribeFixture.EntryPath(alpha);
+        var legacyBytes = new UTF8Encoding(false, true).GetBytes(files[alphaPath]);
+        var current = RawRepositorySnapshot.Create(files.Select(static pair =>
+            RawRepositoryEntry.FromText(pair.Key, pair.Value)));
+        using var temporary = new TemporaryDirectory();
+        DirectoryLedgerTestSupport.Write(temporary.Path, files);
+        var console = new BufferedConsole();
+        var environment = new ProductionCliEnvironment(
+            temporary.Path,
+            new FakeRepositoryGateway(RawChangeSet.Create([]), current, current),
+            new FakeLeanReportSource(fixture.Inputs.Report));
+
+        var exitCode = CliApplication.Run(
+            ["strip-scribe-receipts", "--source", "beta-v0.1"],
+            environment,
+            console);
+
+        Assert.Equal(0, exitCode);
+        Assert.Empty(console.Error);
+        Assert.Equal(
+            "SCRIBE_STRIP_SUMMARY entries=0 receipts=0 normalized=0 dry_run=false\n",
+            console.Output);
+        Assert.Equal(
+            legacyBytes,
+            File.ReadAllBytes(Path.Combine(
+                temporary.Path,
+                alphaPath.Replace('/', Path.DirectorySeparatorChar))));
+    }
+
+    private static (CoverageWithoutScribeFixture Fixture, Dictionary<string, string> Files,
+        DigestionLedgerEntry Alpha) LegacyEmptyScribeKeyOnAlpha()
+    {
+        var (fixture, document) = TwoSourceDocumentWithReceipts();
+        var withoutReceipts = document.WithDigestionSources(document.RequireDigestionSources()
+            .Select(static source => source with
+            {
+                Entries = source.Entries
+                    .Select(static entry => entry with
+                    {
+                        Receipts = entry.Receipts with { Scribe = [] },
+                    })
+                    .ToImmutableArray(),
+            }).ToImmutableArray());
+        var alpha = withoutReceipts.RequireDigestionSources()[0].Entries[0];
+        var alphaPath = CoverageWithoutScribeFixture.EntryPath(alpha);
+        var files = FilesWithHistoricalReceipts(fixture, withoutReceipts);
+        // The retired writer wrote `receipts.scribe` even when the list was empty. Those bytes are
+        // still on disk and no comparison-guarded writer can reach them, because both sides of the
+        // comparison now serialise without the key.
+        var legacy = files[alphaPath].Replace("receipts:\n", "receipts:\n  scribe: []\n", StringComparison.Ordinal);
+        Assert.NotEqual(files[alphaPath], legacy);
+        files[alphaPath] = legacy;
+        return (fixture, files, alpha);
     }
 
     private static (CoverageWithoutScribeFixture Fixture, BackfillInventoryDocument Document)

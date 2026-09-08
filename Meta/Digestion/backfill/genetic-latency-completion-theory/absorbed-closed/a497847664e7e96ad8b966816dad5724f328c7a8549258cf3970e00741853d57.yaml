@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Negation/PolyploidAlleleComplementarity.polyploid_allele_events_overlap_and_haploid_complement
     target_statement_id: sha256:8446fae5d9ae865e86888eb67a5c7bdc3f30ce220ab311077582ad3f89339963
 receipts:
-  scribe: []
   unresolved_subitems: []
