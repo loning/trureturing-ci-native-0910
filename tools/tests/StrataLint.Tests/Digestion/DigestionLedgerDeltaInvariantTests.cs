@@ -179,7 +179,6 @@ public sealed partial class DigestionLedgerTests
         Assert.DoesNotContain(evaluation.Findings, finding => finding.Contains(
             "handwritten status",
             StringComparison.Ordinal));
-        Assert.Empty(entry.Entry.Receipts.Scribe);
     }
 
     [Fact]
@@ -257,7 +256,6 @@ public sealed partial class DigestionLedgerTests
         string gid,
         string definitionHash,
         string emissionHash) => new(
-        [new DigestionScribeReceipt(gid, definitionHash, emissionHash)],
         [],
         [],
         null);

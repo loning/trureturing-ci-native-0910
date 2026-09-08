@@ -457,7 +457,7 @@ public sealed class DagLedgerMathlibReanchorWriterTests
             DigestionMigrationState.Absorbed,
             DigestionTruthState.Closed,
             [],
-            new DigestionReceipts([], [], [], null)) with
+            new DigestionReceipts([], [], null)) with
         {
             Coverage = [receipt],
         };

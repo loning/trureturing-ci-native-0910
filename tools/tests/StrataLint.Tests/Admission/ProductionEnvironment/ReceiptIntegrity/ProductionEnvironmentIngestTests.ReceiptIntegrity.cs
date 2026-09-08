@@ -111,16 +111,6 @@ public sealed partial class ProductionEnvironmentTests
                     coverageGid,
                     "sha256:" + new string('c', 64))]
                 : [],
-            Receipts = stableEntry.Receipts with
-            {
-                Scribe = includeInputMismatch
-                    ? [new DigestionScribeReceipt(coverageGid,
-                        DigestionFingerprint.Compute(Encoding.UTF8.GetBytes(
-                            fixture.Files[ScribeEmissionAttestation.DefinitionPath(coverageGid)])).RawSha256,
-                        DigestionFingerprint.Compute(Encoding.UTF8.GetBytes(
-                            fixture.Files[ScribeEmissionAttestation.EmissionPath(coverageGid)])).RawSha256)]
-                    : [],
-            },
         };
         var document = DigestionTestSupport.Document(
             atomizerId,

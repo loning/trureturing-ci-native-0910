@@ -292,7 +292,7 @@ internal static class ReportFreeDigestionIngestor
             atomId,
             atom.Fingerprints,
             [],
-            new DigestionReceipts([], [], [], null),
+            new DigestionReceipts([], [], null),
             ResidualOpen,
             casReference);
 
