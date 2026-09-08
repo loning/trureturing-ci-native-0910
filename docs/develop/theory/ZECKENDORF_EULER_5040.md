@@ -35292,3 +35292,59 @@ $$
 F-1 至 F-4 各自可独立落地,次序为 F-1、F-2、F-3、F-4。若 F-2 的充分性方向连续两周无边际改进,则按预算包络换 \(\Gamma\):只落地 F-1 与 F-4,把 F-2 降级为以夹逼构造为假设的条件命题并显式携带该假设,**不得声称已给出充要判据**。若发现夹逼构造在并列最优处失效,则追加勘注记录该失效,并保留 F-4 作为独立读数。
 
 ---
+
+---
+
+# 四十二、勘注:第四十一节对「仓内没有 GoldenFixedPoint」的断言为假;并预登记格收缩的剩余义务
+
+本节先更正第四十一节的一处**事实错误**,再预登记该错误所压掉的那一半工作。
+
+## 一、更正
+
+第四十一节的产地段写着:某研究席称仓内已有 `GoldenResource/GoldenFixedPoint.lean` 及其中的 `Gobs_greatest_golden_divisor`、`b_fixed_iff`、`Gobs_dvd_of_dvd`,并据此推出「最小极大丰倍数 ⊣ 最大黄金因子」的伴随;该节称「**全树检索证实这三个声明与该文件都不存在**」,并据此**不收**该伴随及其下游。
+
+**该断言为假,三个声明与该文件都存在,且已冻结。**
+
+| 项 | 读数 |
+|---|---|
+| 文件 | `D5/S3/Arith/GoldenResource/GoldenFixedPoint.lean` |
+| 声明 | `b_fixed_iff`、`isGolden_iff_Gobs_fixed`、`Gobs_isGolden`、`Gobs_dvd_of_dvd`、`Gobs_greatest_golden_divisor` |
+| 首个提交 | `3f74376965`,2026-09-08 10:08:53 +0800 |
+| 合入 dev | PR #6364,merge `977eece921`,2026-09-08 11:27:17 +0800 |
+| 冻结状态片 | `Golden/Frozen/state/D5/S3/Arith/GoldenResource/GoldenFixedPoint.lean.json`,在 |
+
+**根因是取读数的位置错了,不是检索写错了。** 该检索以 `git grep` 对**主检出的工作树**求值,而主检出当时停在 `2ac66ebda8`,落后 dev 约二百个提交,其上确实没有该文件。而该研究席自称审阅的 pin `d1d404860b` 上**文件存在**——逐 revision 复核:
+
+| revision | 该文件 |
+|---|---|
+| `2ac66ebda8`(检索时的主检出) | 不存在 |
+| `d1d404860b`(该席自称的 pin,亦即第四十、四十一节 ingest 所用的 dev) | **存在** |
+| `be1cbc43ea`、`5869846264` | **存在** |
+
+**故该席的陈述准确,包括三个声明名;第四十一节对它的驳斥是错的。** 这是本卷第 16 条「主检出是活的基线,凡取读数须在钉住的修订上做」的一次违反:对一棵陈旧的工作树 `git grep`,与对 `origin/dev` 求值,**在「某声明是否存在」这个问题上给出相反答案,而两者的输出形状完全一样**。
+
+**被压掉的一半予以恢复**:该伴随(`i : F ↪ ℕ₊` 以 `Gobs` 为右伴随,即 `g ∣ n ⟺ g ∣ Gobs n` 对不动点 `g`)现已由仓内 `Gobs_greatest_golden_divisor` 承担,**不需要再形式化**;第四十一节「不收」的理由不成立,但其**结论碰巧无害**——因为该性质已经是冻结事实,收与不收都不改变真值账。
+
+## 二、预登记:格收缩的剩余义务
+
+在 `Gobs_dvd_of_dvd` 与 `Gobs_greatest_golden_divisor` 已冻结之后,下列四条仍不在仓内(逐条以 `git grep` 对 `origin/dev` 求值确认,不再对工作树求值)。
+
+**H-1**:观测保最大公因数。对一切正整数 \(m,n\):\(\mathrm{Gobs}(\gcd(m,n))=\gcd(\mathrm{Gobs}\,m,\mathrm{Gobs}\,n)\)。
+
+**H-2**:观测保最小公倍数。对一切正整数 \(m,n\):\(\mathrm{Gobs}(\mathrm{lcm}(m,n))=\mathrm{lcm}(\mathrm{Gobs}\,m,\mathrm{Gobs}\,n)\)。
+
+**H-3**:反驳。观测不是乘性的,且它在不动点上诱导的运算 \(x\star y=\mathrm{Gobs}(xy)\) **不结合**:\((2\star2)\star4=16\) 而 \(2\star(2\star4)=4\)。故不动点集在 \(\star\) 下不构成幺半群,格同余不升级为乘法同余。
+
+**H-4**:一般纤维盒。设 \(g\) 为不动点,\(T\) 为逐坐标取所在斐波那契窗右端点之映射;则 \(\mathrm{Gobs}\,n=g\iff g\mid n\mid T(g)\)。这是 `golden_fiber_5040` 的一般形。
+
+**预登记的逃逸内容**:在 **H-1 / H-2** 处是「单调映射与逐坐标 min / max 交换」这一步,再经 `Nat.factorization` 对 gcd / lcm 的刻画搬到整数层;在 **H-4** 处是右端点映射 \(T\) 的构造与双向包含。**H-3 的落地依据是反驳边(refutes),不另称新内容。**
+
+**判形的诚实边界**:H-1 与 H-2 若最终只是「`b_monotone` 加一条 Mathlib 的 min/max 引理」的复合,则应判为绑定即得,其落地依据改为伴随声明或 `atom-required-bridge`,**不得因为它们看起来是新定理就报 content**。这一点写在实施之前。
+
+**已验读数**:\(\mathrm{Gobs}(\gcd)=\gcd(\mathrm{Gobs},\mathrm{Gobs})\) 在 \(m,n<260\) 上反例数 **0**;\(\mathrm{Gobs}(\mathrm{lcm})=\mathrm{lcm}(\mathrm{Gobs},\mathrm{Gobs})\) 在 \(m,n<160\) 上反例数 **0**;\(\mathrm{Gobs}\) 非乘性的最小反例为 \((2,4)\):\(\mathrm{Gobs}(2)\cdot\mathrm{Gobs}(4)=8\) 而 \(\mathrm{Gobs}(8)=4\);\(\star\) 非结合的见证如 H-3 所列。全部以精确整数算得。
+
+**档位与文献**:不是开放问题,是本线机器挣得的定理。经典对应是「保序收缩保 meet 与 join」,本节不冒领该一般事实;所形式化的是它在观测映射上的实例与 H-3 的具体反驳。
+
+**停止判据**:H-1 至 H-4 各自可独立落地,次序 H-3、H-1、H-2、H-4。若 H-4 的右端点构造连续两周无进展,按预算包络换 \(\Gamma\):只落地 H-1 至 H-3,把 H-4 降级为对具体不动点的条件命题,**不得声称已给出一般纤维刻画**。
+
+---
