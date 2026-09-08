@@ -1,6 +1,6 @@
-/- GID: D5/S1/Recurrence/Parity/RationalCompositionParityPeriodTen
+/- GID: D5/S3/Arith/RationalCompositionParityPeriodTen
    generality: I
-   mirror-B: D5/B/S1/Recurrence/Parity/RationalCompositionParityPeriodTen
+   mirror-B: D5/B/S3/Arith/RationalCompositionParityPeriodTen
    mirror-E: none(waiver:symbolic-unbounded-parity-theorems)
    anchors: []
    utility: none
@@ -15,7 +15,7 @@ import Mathlib.Tactic.LinearCombination
 set_option autoImplicit false
 set_option relaxedAutoImplicit false
 
-namespace D5.S1.Recurrence.Parity.RationalCompositionParityPeriodTen
+namespace D5.S3.Arith.RationalCompositionParityPeriodTen
 
 noncomputable section
 
@@ -444,4 +444,4 @@ example : ∃ n : Nat, 1 <= n := ⟨1, by decide⟩
 end
 
 
-end D5.S1.Recurrence.Parity.RationalCompositionParityPeriodTen
+end D5.S3.Arith.RationalCompositionParityPeriodTen

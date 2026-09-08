@@ -2,11 +2,11 @@ using static StrataLint.Scribe.DefinitionDsl;
 using static StrataLint.Scribe.FormulaDsl;
 using F = StrataLint.Scribe.FormulaDsl;
 
-namespace StrataLint.Scribe.Blueprint.D5.S1.Recurrence.Parity;
+namespace StrataLint.Scribe.Blueprint.D5.S3.Arith;
 
 internal sealed class RationalCompositionParityPeriodTenDocument : IScribeDocumentDefinition
 {
-    private const string Prefix = "D5/S1/Recurrence/Parity/RationalCompositionParityPeriodTen.";
+    private const string Prefix = "D5/S3/Arith/RationalCompositionParityPeriodTen.";
 
     public DocumentDefinition Create() => DocumentDefinition.Create(ScribeNode.Create(
         "Formula (2) for OEIS A396093 determines an integer sequence whose parity has period ten.",
