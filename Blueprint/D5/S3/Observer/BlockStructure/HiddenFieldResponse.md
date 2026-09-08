@@ -26,7 +26,7 @@ $$\forall O0 \in \mathbb{R}, Oh \in \mathbb{R}, c0 \in \mathbb{R}, ch \in \mathb
 
 *Commentary.*
 
-Substitution of hidden_field_solve_eq into the visible equation identifies the exact inverse response as the coefficient multiplying q. The identity also holds at q = 0; no cancellation by the visible amplitude is used. Proof dependency: hidden_field_schur_response -> hidden_field_solve_eq.
+Substitution of hidden_field_solve_eq into the visible equation identifies the exact inverse response as the coefficient multiplying q. The identity also holds at q = 0; no cancellation by the visible amplitude is used.
 
 **Lemma 1.3 (Companion: squared-speed shift).**
 
@@ -38,7 +38,7 @@ $$\forall c0 \in \mathbb{R}, ch \in \mathbb{R}, lam \in \mathbb{R}, Oh \in \math
 
 *Commentary.*
 
-This is a bind-only algebraic companion, not additional escape content. Named use: effective_speed_parameter_comparison -> c_eff_sq_sub_bare (consumer -> prerequisite).
+The shift is a nonnegative mixing weight times the difference of the two squared speeds. In particular, zero coupling gives zero shift.
 
 **Lemma 1.4 (Companion: squared-speed interval).**
 
@@ -50,7 +50,7 @@ $$\forall c0 \in \mathbb{R}, ch \in \mathbb{R}, lam \in \mathbb{R}, Oh \in \math
 
 *Commentary.*
 
-Nonnegative weights place the coefficient between the two squared speeds. This is a bind-only order companion. Named use: effective_speed_parameter_comparison -> c_eff_sq_bounds (consumer -> prerequisite).
+The weights are nonnegative and sum to one, placing the coefficient between the two squared speeds.
 
 **Lemma 1.5 (Companion: characteristic locus).**
 
@@ -62,7 +62,7 @@ $$\forall c0 \in \mathbb{R}, ch \in \mathbb{R}, lam \in \mathbb{R}, Oh \in \math
 
 *Commentary.*
 
-This bind-only equivalence rewrites the zero set of the normalized massless principal symbol. Named use: leading_order_characteristic_readout -> principal_symbol_eq_zero_iff (consumer -> prerequisite). These named uses are applications of the derived model, not extra Lean proof dependencies.
+The equivalence rewrites the zero set of the normalized massless principal symbol as the leading-order dispersion relation.
 
 The source's physical model has positive gaps and a positive zero-momentum restoring matrix. The coefficient interpretation requires its low-frequency window; the total real expressions at a zero hidden gap carry no such claim. No controlled expansion remainder or limiting PDE is certified here.
 

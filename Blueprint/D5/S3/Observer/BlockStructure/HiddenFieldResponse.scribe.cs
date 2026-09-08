@@ -33,8 +33,7 @@ internal sealed class HiddenFieldResponseDocument : IScribeDocumentDefinition
                 Blocks(Paragraph(Text(
                     "Substitution of hidden_field_solve_eq into the visible equation identifies "
                     + "the exact inverse response as the coefficient multiplying q. The identity "
-                    + "also holds at q = 0; no cancellation by the visible amplitude is used. "
-                    + "Proof dependency: hidden_field_schur_response -> hidden_field_solve_eq."))),
+                    + "also holds at q = 0; no cancellation by the visible amplitude is used."))),
                 DescribeRole.Theorem),
             Describe.Lean(
                 DescribeId.Create("effective-speed-shift-companion"),
@@ -43,9 +42,8 @@ internal sealed class HiddenFieldResponseDocument : IScribeDocumentDefinition
                 StatementSource.FromAuthor(CoefficientStatement(false)),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
-                    "This is a bind-only algebraic companion, not additional escape content. "
-                    + "Named use: effective_speed_parameter_comparison -> c_eff_sq_sub_bare "
-                    + "(consumer -> prerequisite)."))),
+                    "The shift is a nonnegative mixing weight times the difference of the "
+                    + "two squared speeds. In particular, zero coupling gives zero shift."))),
                 DescribeRole.Lemma),
             Describe.Lean(
                 DescribeId.Create("effective-speed-interval-companion"),
@@ -54,10 +52,8 @@ internal sealed class HiddenFieldResponseDocument : IScribeDocumentDefinition
                 StatementSource.FromAuthor(CoefficientStatement(true)),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
-                    "Nonnegative weights place the coefficient between the two squared speeds. "
-                    + "This is a bind-only order companion. Named use: "
-                    + "effective_speed_parameter_comparison -> c_eff_sq_bounds "
-                    + "(consumer -> prerequisite)."))),
+                    "The weights are nonnegative and sum to one, placing the coefficient "
+                    + "between the two squared speeds."))),
                 DescribeRole.Lemma),
             Describe.Lean(
                 DescribeId.Create("principal-symbol-companion"),
@@ -66,10 +62,8 @@ internal sealed class HiddenFieldResponseDocument : IScribeDocumentDefinition
                 StatementSource.FromAuthor(SymbolStatement()),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
-                    "This bind-only equivalence rewrites the zero set of the normalized massless "
-                    + "principal symbol. Named use: leading_order_characteristic_readout -> "
-                    + "principal_symbol_eq_zero_iff (consumer -> prerequisite). These named uses "
-                    + "are applications of the derived model, not extra Lean proof dependencies."))),
+                    "The equivalence rewrites the zero set of the normalized massless principal "
+                    + "symbol as the leading-order dispersion relation."))),
                 DescribeRole.Lemma),
             Paragraph(Text(
                 "The source's physical model has positive gaps and a positive zero-momentum "
