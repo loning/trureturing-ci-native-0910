@@ -1,32 +1,44 @@
-name: Lean build cache publication
+name: Current live failure evidence
 
 on:
-  schedule:
-    - cron: '0 */6 * * *'
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+  actions: read
+
+env:
+  CANDIDATE_SHA: c921489b0bf7322d1feb0b7596058e2c09a89b11
+  BASE_SHA: c453ec177aaf2157985d5610ce2248fa0d8d0121
+  CI_WORKFLOW_INPUTS: '{"candidate_sha":"c921489b0bf7322d1feb0b7596058e2c09a89b11"}'
+  STRATALINT_CACHE_WRITES: 'false'
 
 jobs:
-  publish:
-    name: Publish the Lean build cache
-    if: github.ref == 'refs/heads/dev'
+  current:
     runs-on: ubuntu-24.04
-    timeout-minutes: 120
-    env:
-      STRATALINT_CACHE_WRITES: 'false'
+    timeout-minutes: 360
+    outputs:
+      artifact_id: ${{ steps.upload.outputs.artifact-id }}
+      run_id: ${{ steps.pack.outputs.run_id }}
+      run_attempt: ${{ steps.pack.outputs.run_attempt }}
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ env.CANDIDATE_SHA }}
           persist-credentials: false
-      - env:
-          CANDIDATE_SHA: ${{ github.sha }}
-        run: python3 tools/scripts/workflow/ci.py checkout --repository "$GITHUB_WORKSPACE" --commit "$CANDIDATE_SHA"
+      - run: python3 tools/scripts/workflow/ci.py checkout --repository "$GITHUB_WORKSPACE" --commit "$CANDIDATE_SHA"
       - uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
-      - run: make -C tools dotnet
+      - uses: actions/download-artifact@v4
+        with:
+          artifact-ids: '10057099046'
+          run-id: '34228315645'
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/engineering
+          merge-multiple: true
+      - name: Validate original candidate engineering evidence
+        run: python3 tools/scripts/workflow/ci.py restore --repository "$GITHUB_WORKSPACE" --stage engineering --commit "$CANDIDATE_SHA" --run-id 34228315645 --run-attempt 1 --archive "$RUNNER_TEMP/engineering/ci-engineering.tar.gz"
       - id: keys
         run: python3 tools/scripts/worktree/lean_actions.py keys --repository "$GITHUB_WORKSPACE"
       - id: elan
@@ -67,11 +79,185 @@ jobs:
           PROJECT_KEY: ${{ steps.project.outputs.cache-matched-key }}
           REPORT_KEY: ${{ steps.report.outputs.cache-matched-key }}
         run: python3 tools/scripts/worktree/lean_actions.py restore --repository "$GITHUB_WORKSPACE" --dependency-key "$DEPENDENCY_KEY" --project-key "$PROJECT_KEY" --report-key "$REPORT_KEY"
-      - name: Try the same-partition Release fallback
+      - name: Observe current production
         env:
           GH_TOKEN: ${{ github.token }}
-        run: make lean-cache-from-github-without-mathlib || printf '%s\n' 'Optional Release seed unavailable; production continues'
-      - name: Build once and publish the successful snapshot
+        shell: bash {0}
+        run: |
+          set +e
+          set -uo pipefail
+          journalctl --system --boot --no-pager --lines=1 --output=json | jq -e 'has("__CURSOR")' || exit 2
+          observe_current() (
+            cd "${GITHUB_WORKSPACE:?fixed candidate workspace required}" || exit 2
+            [[ "$(git rev-parse HEAD)" == "${CANDIDATE_SHA:?immutable candidate SHA required}" ]] || exit 2
+            for diag_tool in tail journalctl systemctl ps findmnt awk cat date sleep; do
+              command -v "$diag_tool" >/dev/null || exit 2
+            done
+            diag_root=$BASHPID
+            diag_logs="$PWD/build/ci/logs/current/lean-inspector"
+            diag_temp="${RUNNER_TEMP:-/tmp}"
+            diag_signal=0
+            diag_observer=""
+            diag_make_status=UNAVAILABLE
+            # shellcheck disable=SC2329
+            diag_finish() {
+              local diag_exit=$? diag_pid diag_observer_status
+              trap - EXIT
+              if [[ -n "$diag_observer" ]]; then
+                for diag_pid in $(jobs -pr); do
+                  if [[ "$diag_pid" == "$diag_observer" ]]; then
+                    kill -TERM "$diag_pid" 2>/dev/null || :
+                  fi
+                done
+                wait "$diag_observer"
+                diag_observer_status=$?
+                printf 'LIVE_OBSERVER_REAP pid=%s exit=%s\n' "$diag_observer" "$diag_observer_status"
+              fi
+              if (( diag_exit == 0 && diag_signal != 0 )); then diag_exit=$diag_signal; fi
+              printf 'LIVE_CURRENT_RESULT make_exit=%s shell_signal_exit=%s exit=%s\n' \
+                "$diag_make_status" "$diag_signal" "$diag_exit"
+              exit "$diag_exit"
+            }
+            trap diag_finish EXIT
+            trap 'diag_signal=129' HUP
+            trap 'diag_signal=130' INT
+            trap 'diag_signal=143' TERM
+            printf 'LIVE_CURRENT_IDENTITY candidate=%s workflow_sha=%s run=%s attempt=%s root_pid=%s\n' \
+              "$CANDIDATE_SHA" "${GITHUB_WORKFLOW_SHA:-UNAVAILABLE}" \
+              "${GITHUB_RUN_ID:-UNAVAILABLE}" "${GITHUB_RUN_ATTEMPT:-UNAVAILABLE}" "$diag_root"
+            (
+              trap - EXIT HUP INT TERM
+              diag_readers=()
+              diag_sleep=""
+              diag_sampler=$BASHPID
+              # shellcheck disable=SC2329
+              diag_observer_finish() {
+                local diag_exit=$? diag_pid
+                trap - EXIT
+                for diag_pid in $(jobs -pr); do kill -TERM "$diag_pid" 2>/dev/null || :; done
+                for diag_pid in "${diag_readers[@]}" "$diag_sleep"; do
+                  if [[ -n "$diag_pid" ]]; then
+                    wait "$diag_pid" 2>/dev/null || :
+                    if kill -0 "$diag_pid" 2>/dev/null; then
+                      printf 'LIVE_OBSERVER_CHILD_REAP pid=%s status=ALIVE\n' "$diag_pid"
+                      diag_exit=2
+                    else
+                      printf 'LIVE_OBSERVER_CHILD_REAP pid=%s status=GONE\n' "$diag_pid"
+                    fi
+                  fi
+                done
+                exit "$diag_exit"
+              }
+              trap diag_observer_finish EXIT
+              trap 'exit 129' HUP
+              trap 'exit 130' INT
+              trap 'exit 143' TERM
+              source tools/scripts/lib/resource-observation-lib.sh || exit 2
+              tail -n +1 -F --sleep-interval=1 \
+                "$diag_logs"/{build,inspect}.{command,stdout,stderr,exit}.log \
+                "$diag_logs"/{utility-input,compact}.{command,stderr,exit}.log &
+              diag_readers+=("$!")
+              journalctl --system --boot --follow --no-tail --since now \
+                --no-pager --output=short-iso-precise \
+                _TRANSPORT=kernel + _PID=1 + _SYSTEMD_UNIT=systemd-oomd.service &
+              diag_readers+=("$!")
+              systemctl status "$diag_root" --no-pager --full --lines=0 || \
+                printf 'LIVE_UNIT_MAPPING status=UNAVAILABLE\n'
+              findmnt -n -t cgroup2 -o TARGET,FSROOT || \
+                printf 'LIVE_CGROUP_MOUNT status=UNAVAILABLE\n'
+              diag_sequence=0
+              diag_phase=baseline
+              while :; do
+                resource_observe_sample "$diag_sequence" "$diag_root" "$PWD" "$diag_temp" \
+                  "$diag_phase" "$diag_sampler" || :
+                printf 'LIVE_PROCESS_SAMPLE utc=%s command_columns=768\n' "$(date -u +%FT%TZ)"
+                ps --cols 768 -C lake,lean,leantar,dotnet,make,python3,bash \
+                  -o pid,ppid,pgid,lstart,stat,time,rss,wchan:24,args || :
+                diag_mount="$(resource_observation_cgroup_root)"
+                diag_path="$(resource_observation_cgroup_path "$diag_root")"
+                if [[ "$diag_mount" != UNAVAILABLE && "$diag_path" != UNAVAILABLE ]]; then
+                  diag_mount="${diag_mount%/}"
+                  diag_cgroup="$diag_mount$diag_path"
+                  diag_cgroup="${diag_cgroup%/}"
+                  while [[ "$diag_cgroup" == "$diag_mount" || "$diag_cgroup" == "$diag_mount/"* ]]; do
+                    for diag_file in memory.events memory.events.local; do
+                      printf 'LIVE_CGROUP_EVENTS path=%s/%s\n' "$diag_cgroup" "$diag_file"
+                      cat "$diag_cgroup/$diag_file" || printf 'LIVE_CGROUP_EVENTS status=UNAVAILABLE\n'
+                    done
+                    [[ "$diag_cgroup" == "$diag_mount" ]] && break
+                    diag_cgroup="${diag_cgroup%/*}"
+                  done
+                fi
+                diag_sequence=$((diag_sequence + 1))
+                diag_phase=periodic
+                sleep 30 &
+                diag_sleep=$!
+                wait "$diag_sleep"
+                diag_sleep=""
+              done
+            ) &
+            diag_observer=$!
+            (( diag_signal == 0 )) || exit "$diag_signal"
+            "$@"
+            diag_make_status=$?
+            exit "$diag_make_status"
+          )
+          observe_current /bin/bash -c 'sleep 1; exit 7' | tee "$RUNNER_TEMP/current-observer-probe.log"
+          probe_status=${PIPESTATUS[0]}
+          test "$probe_status" -eq 7 || exit 2
+          grep -q '^LIVE_CURRENT_RESULT make_exit=7 shell_signal_exit=0 exit=7$' "$RUNNER_TEMP/current-observer-probe.log" || exit 2
+          grep -q '^RESOURCE_SAMPLE sequence=0 phase=baseline ' "$RUNNER_TEMP/current-observer-probe.log" || exit 2
+          grep -q '^LIVE_OBSERVER_REAP ' "$RUNNER_TEMP/current-observer-probe.log" || exit 2
+          grep -q '^LIVE_OBSERVER_CHILD_REAP .*status=GONE$' "$RUNNER_TEMP/current-observer-probe.log" || exit 2
+          if grep -q '^LIVE_OBSERVER_CHILD_REAP .*status=ALIVE$' "$RUNNER_TEMP/current-observer-probe.log"; then exit 2; fi
+          printf 'LIVE_OBSERVER_PROBE status=PASS workload_exit=7\n'
+          observe_current make current
+      - id: pack
+        run: python3 tools/scripts/workflow/ci.py pack --repository "$GITHUB_WORKSPACE" --stage current --commit "$CANDIDATE_SHA" --archive "$RUNNER_TEMP/ci-current.tar.gz"
+      - id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.pack.outputs.artifact_name }}
+          path: ${{ steps.pack.outputs.archive }}
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+      - if: always()
+        run: python3 tools/scripts/workflow/ci.py summary --repository "$GITHUB_WORKSPACE" --stage current
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: current-live-phase-logs
+          path: |
+            build/ci/current-result.json
+            build/ci/logs/current
+          if-no-files-found: warn
+          retention-days: 7
+
+  delta:
+    needs: current
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.CANDIDATE_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - run: python3 tools/scripts/workflow/ci.py checkout --repository "$GITHUB_WORKSPACE" --commit "$CANDIDATE_SHA"
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - uses: actions/download-artifact@v4
+        with:
+          artifact-ids: ${{ needs.current.outputs.artifact_id }}
+          path: ${{ runner.temp }}/current
+          merge-multiple: true
+      - name: Validate upstream common bundle
         env:
-          GH_TOKEN: ${{ github.token }}
-        run: make lean-cache-to-github-without-mathlib
+          UPSTREAM_RUN: ${{ needs.current.outputs.run_id }}
+          UPSTREAM_ATTEMPT: ${{ needs.current.outputs.run_attempt }}
+        run: python3 tools/scripts/workflow/ci.py restore --repository "$GITHUB_WORKSPACE" --stage current --commit "$CANDIDATE_SHA" --run-id "$UPSTREAM_RUN" --run-attempt "$UPSTREAM_ATTEMPT" --archive "$RUNNER_TEMP/current/ci-current.tar.gz"
+      - run: make delta BASE="$BASE_SHA"
+      - if: always()
+        run: python3 tools/scripts/workflow/ci.py summary --repository "$GITHUB_WORKSPACE" --stage delta
