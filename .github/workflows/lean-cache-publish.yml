@@ -36,7 +36,7 @@ jobs:
   push:
     name: push
     needs: resolve
-    uses: the-omega-institute/trureturing/.github/workflows/ci-push.yml@6b99657b1c729c0b33283826a91504aa5302d47d
+    uses: the-omega-institute/trureturing/.github/workflows/ci-push.yml@9fe6857c5589120dde92f97793089a2b08d83b3b
     with:
       candidate_sha: ${{ needs.resolve.outputs.candidate_sha }}
 
