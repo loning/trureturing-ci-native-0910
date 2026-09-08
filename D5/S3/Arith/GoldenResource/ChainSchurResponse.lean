@@ -173,9 +173,8 @@ theorem effective_eq (n : ℕ) (k b : ℝ) :
   simp only [invOf_eq_inv, inv_one, Matrix.smul_mul, Matrix.one_mul]
   ext i j
   fin_cases i <;> fin_cases j <;>
-    simp [Matrix.sub_apply, Matrix.smul_apply, smul_eq_mul, eta,
-      hz]
-  all_goals field_simp <;> ring
+    simp [Matrix.sub_apply, Matrix.smul_apply, smul_eq_mul, eta]
+  all_goals field_simp
 
 /-- For every invertible hidden perturbation, the response has this exact expansion. -/
 theorem response_expansion (n : ℕ) (k b s μ : ℝ)
@@ -222,11 +221,46 @@ theorem remainder_bound_of_inverse_bound (n : ℕ) (k b s μ M : ℝ)
   apply (remainder_bound n k b s μ).trans
   gcongr
 
+private theorem perturbed_inverse_bound {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (A E : Matrix ι ι ℝ) (hA : IsUnit A) (hAE : IsUnit (A + E))
+    (hsmall : ‖A⁻¹‖ * ‖E‖ ≤ 1 / 2) : ‖(A + E)⁻¹‖ ≤ 2 * ‖A⁻¹‖ := by
+  have hi := Matrix.inv_sub_inv (show IsUnit A ↔ IsUnit (A + E) from
+    ⟨fun _ => hAE, fun _ => hA⟩)
+  rw [add_sub_cancel_left] at hi
+  have he : (A + E)⁻¹ = A⁻¹ - A⁻¹ * E * (A + E)⁻¹ := by
+    rw [← hi]
+    abel
+  have hn : ‖(A + E)⁻¹‖ ≤ ‖A⁻¹‖ + ‖A⁻¹‖ * ‖E‖ * ‖(A + E)⁻¹‖ := by
+    calc
+      _ = ‖A⁻¹ - A⁻¹ * E * (A + E)⁻¹‖ := congrArg norm he
+      _ ≤ ‖A⁻¹‖ + ‖A⁻¹ * E * (A + E)⁻¹‖ := norm_sub_le _ _
+      _ ≤ _ := by
+        gcongr
+        exact norm_mul_bound _ _ (Matrix.linfty_opNorm_mul _ _) le_rfl
+  have hs := mul_le_mul_of_nonneg_right hsmall (norm_nonneg (A + E)⁻¹)
+  linarith
+
+/-- Small invertible perturbations admit a fixed, explicit quadratic error constant. -/
+theorem response_first_order (n : ℕ) (k b s μ : ℝ)
+    (h : IsUnit (hiddenBlock n + perturbation n k b s μ))
+    (hsmall : ‖(hiddenBlock n)⁻¹‖ * ‖perturbation n k b s μ‖ ≤ 1 / 2) :
+    response n k b s μ = response n k b 0 0 - s • Z n + μ • C n k b +
+      remainder n k b s μ ∧
+    ‖remainder n k b s μ‖ ≤
+      (2 * ‖B n‖ * ‖(hiddenBlock n)⁻¹‖ ^ 3 * ‖(B n)ᵀ‖) *
+        ‖perturbation n k b s μ‖ ^ 2 := by
+  refine ⟨response_expansion n k b s μ h, ?_⟩
+  have hQ := perturbed_inverse_bound (hiddenBlock n) (perturbation n k b s μ)
+    (hidden_posDef n).isUnit h hsmall
+  convert remainder_bound_of_inverse_bound n k b s μ (2 * ‖(hiddenBlock n)⁻¹‖) hQ
+    using 1 <;> ring
+
 #print axioms C_eq
 #print axioms effective_eq
 #print axioms response_expansion
 #print axioms remainder_bound
 #print axioms remainder_bound_of_inverse_bound
+#print axioms response_first_order
 
 #print axioms inverse_first_order
 #print axioms z_pos
