@@ -20,7 +20,7 @@ diagonal blocks. Taking one block of order two and all remaining blocks of
 order one gives the determinant bound formalized here. The integer loss and
 the logarithmic selector estimate are subsequent arithmetic deductions.
 
-## Checked References
+## Verified locator
 
 - DOI: https://doi.org/10.1017/CBO9781139020411
 - Secondary statement and locator: https://en.wikipedia.org/wiki/Fischer%27s_inequality
