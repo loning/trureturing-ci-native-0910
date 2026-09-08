@@ -320,9 +320,86 @@ Spec was read at `docs/develop/spec/golden-ledger-repo-spec.md:111-121`.
 This verifies the requested header grammar; it does not claim a full SL-031
 or admission run. All extra utility fields are not-applicable(kind=none).
 
-## Q4-Q6
+## Q4: Fidelity to CMP Conjecture 3.13 at m=3
 
-Q1-Q3 complete; Q4-Q6 pending. No final verdict at this checkpoint.
+**Verdict: (a) true, (b) true, (c) true.** The source was actually opened:
+
+```text
+curl --fail --location --max-time 60 --output "$ATTEMPT/cmp-v2.html" https://arxiv.org/html/2502.00254v2
+curl --fail --location --max-time 60 --output "$ATTEMPT/cmp-v2.pdf" https://arxiv.org/pdf/2502.00254v2
+```
+
+Both EXIT=0. HTML section 2.1 (`S2.SS1.p1`, saved line 296) says:
+"the set of monic polynomials (over the complex plane C) of degree n";
+`P_n(K)` specifies that **all** roots belong to K. Notation 2.1 gives
+`p(x)=sum_{k=0}^n x^(n-k)(-1)^k e_k(p)` and `e_0(p)=1`.
+Definition 3.10 (`S3.ThmTheorem10`, saved lines 1233-1244) gives
+
+`e_k(p boxplus_m^alpha q) = W_k * sum_{i+j=k} (e_i(p)/W_i)*(e_j(q)/W_j)`,
+where `W_k=(m)_{falling k}*(m+alpha)_{falling k}`.
+
+The PDF was also parsed, not merely downloaded:
+`uv run --with pymupdf --no-project python -c
+'import pymupdf,sys; doc=pymupdf.open(sys.argv[1]); print("PyMuPDF",pymupdf.VersionBind,"pages",len(doc)); print(doc[12].get_text())'
+"$ATTEMPT/cmp-v2.pdf" > "$ATTEMPT/cmp-v2-page13.txt"`, EXIT=0.
+PyMuPDF=1.28.2, pages=33. Printed page 13 contains exactly the quoted
+Conjecture 3.13, including `alpha > -1` and `R_{>=0}`. Its neighboring result
+3.14 addresses alpha=-1/2, not all m and alpha. `pdftotext` was unavailable
+(`command -v pdftotext`, EXIT=1); PyMuPDF provided the actual page reading.
+
+### (a) Operation
+
+| Component | Frozen m=2 source | Reviewed m=3 source | Independent comparison |
+| --- | --- | --- | --- |
+| signed e_k | DegreeTwo:61-62 | main:36-37 | `(-1)^k * coeff(m-k)`, 2 replaced by 3 |
+| W_k | DegreeTwo:65-66 | main:40-41 | product of the two falling factorials, same alpha shift |
+| normalized coefficient | DegreeTwo:68-69 | main:43-44 | identical ratio |
+| i+j=k sum | DegreeTwo:72-74 | main:47-49 | identical `range(k+1)`, j=k-i |
+| polynomial reconstruction | DegreeTwo:77-79 | main:52-55 | alternating signs and degree 3, including k=0 and k=3 |
+
+For m=3, W_0=1, W_1=3(alpha+3), W_2=6(alpha+3)(alpha+2),
+W_3=6(alpha+3)(alpha+2)(alpha+1), all positive when alpha>-1.
+Thus e_0=1, e_1=A1+B1,
+e_2=A2+B2+[2(alpha+2)/(3(alpha+3))]A1B1, and
+e_3=A3+B3+[(alpha+1)/(3(alpha+3))](A1B2+A2B1).
+The two cross ratios are respectively W_2/W_1^2 and W_3/(W_1 W_2).
+Every term and sign agrees with Definition 3.10; this is the same family.
+The definition's extension to other polynomials or singular alpha is immaterial
+to the asserted domain, where all denominators are nonzero.
+
+### (b) All Inputs and (c) Output Membership
+
+The product of three monic linear factors is monic of degree exactly three.
+Repeated factors and a factor X (zero root) do not lower that degree. Conversely,
+a monic degree-three split polynomial has a roots multiset of cardinality three,
+and equals the product over that multiset. No `Nodup`/distinctness or strict
+positivity assumption is needed. Although the paper starts over C, a monic
+polynomial with all roots real has real coefficients by that same product
+formula, so passage to `Real[X]` loses none of `P_3(R_{>=0})`.
+
+Independent Lean check (`q4-fidelity.txt`, no `.lean` edit): define the review
+predicate `P3 p := p.Monic /\ p.natDegree=3 /\ p.Splits /\
+(forall r in p.roots, 0<=r)`. Pinned Mathlib
+`Polynomial.Splits.natDegree_eq_card_roots`, `Multiset.card_eq_three`, and
+`Polynomial.Splits.eq_prod_roots_of_monic` directly prove
+`P3 p <-> exists a b c >= 0, p = rootTriple a b c`.
+The reverse direction checks monicity, exact degree, splitting, and every
+root's sign. Applying the reviewed theorem through this equivalence proves
+`forall p q, P3 p -> P3 q -> P3 (boxplus3 alpha p q)` for alpha>-1.
+
+Command: `/usr/bin/time -l make -f Makefile -f "$ATTEMPT/review.mk"
+review-stdin PROBE="$ATTEMPT/q4-fidelity.txt" > "$ATTEMPT/q4-fidelity.log" 2>&1`.
+**EXIT=0, 13.94 real seconds.** All four review theorems
+`all_inputs_covered`, `factorization_is_membership`,
+`membership_iff_rootTriple`, and `conjecture_at_three` have exactly
+`[propext, Classical.choice, Quot.sound]`.
+This checks the full Real-polynomial interface; the C-to-R identification above
+is the mathematical fidelity argument, not a claimed additional Lean cast lemma.
+It establishes exactly the m=3 slice, with every real alpha>-1.
+
+## Q5-Q6
+
+Q1-Q4 complete; Q5-Q6 pending. No final verdict at this checkpoint.
 
 ## Publication
 
