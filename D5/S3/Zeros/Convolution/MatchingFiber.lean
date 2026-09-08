@@ -7,6 +7,7 @@
    digest: All-degree matching sums and symmetrization coefficient normalization. -/
 
 import D5.S3.Zeros.Convolution.FiniteConvolutionCoefficients
+import D5.S3.Zeros.Convolution.PerfectMatchingCount
 import Mathlib.Data.Sym.Sym2
 import Mathlib.Data.Fintype.Powerset
 import Mathlib.Data.Fintype.CardEmbedding
@@ -581,5 +582,175 @@ theorem card_partner_embeddings (n : ℕ) (S T : Finset (Fin n)) (hST : Disjoint
 #print axioms chosenSquarePartner_mem
 #print axioms chosenSquarePartner_ne
 #print axioms chosenSquarePartner_exponent
+
+private theorem fiberExponent_eq_one_iff {n : ℕ} (S T : Finset (Fin n))
+    (hST : Disjoint S T) (x : Fin n) : fiberExponent S T x = 1 ↔ x ∈ T := by
+  have hd : ¬ (x ∈ S ∧ x ∈ T) := fun h => Finset.disjoint_left.mp hST h.1 h.2
+  simp only [fiberExponent, Finsupp.add_apply, squarefreeExponent_apply]
+  by_cases hs : x ∈ S <;> by_cases ht : x ∈ T <;> simp_all
+
+/-- Two matching edges incident to the same vertex are identical. -/
+theorem matching_edge_eq_of_mem {n k : ℕ} (M : Matching n k)
+    {e f : Sym2 (Fin n)} (he : e ∈ M.val) (hf : f ∈ M.val)
+    {x : Fin n} (hx : x ∈ e.toFinset) (hy : x ∈ f.toFinset) : e = f := by
+  by_contra hne
+  exact Finset.disjoint_left.mp (M.prop.2.2 he hf hne) hx hy
+
+private theorem exists_cross_partner {n k : ℕ} (M : Matching n k)
+    (c : MatchingDecoration M) (S T : Finset (Fin n)) (hST : Disjoint S T)
+    (hc : decorationExponent M c = fiberExponent S T) (t : T) :
+    ∃ u : T, s(t.val, u.val) ∈ M.val := by
+  have ht : decorationExponent M c t.val = 1 := by
+    rw [hc]; exact (fiberExponent_eq_one_iff S T hST _).mpr t.prop
+  obtain ⟨e, he⟩ := exists_edge_of_decorationExponent_ne_zero M c t.val (by omega)
+  have hnone : c e = none := by
+    have hl := decorationExponent_apply_of_mem M c e t.val he
+    rw [ht] at hl
+    cases hce : c e with
+    | none => rfl
+    | some x =>
+      simp only [hce, edgeChoiceExponent, Finsupp.single_apply] at hl
+      split_ifs at hl <;> omega
+  let u := Sym2.Mem.other (Sym2.mem_toFinset.mp he)
+  have hu : u ∈ e.val.toFinset := Sym2.mem_toFinset.mpr (Sym2.other_mem _)
+  have hut : u ∈ T := by
+    apply (fiberExponent_eq_one_iff S T hST u).mp
+    rw [← hc, decorationExponent_apply_of_mem M c e u hu, hnone]
+    simp [edgeChoiceExponent, squarefreeExponent_apply, hu]
+  refine ⟨⟨u, hut⟩, ?_⟩
+  rw [show s(t.val, u) = e.val from Sym2.other_spec _]
+  exact e.prop
+
+/-- The other endpoint of the cross edge incident to a linear variable. -/
+def crossPartner {n k : ℕ} (M : Matching n k) (c : MatchingDecoration M)
+    (S T : Finset (Fin n)) (hST : Disjoint S T)
+    (hc : decorationExponent M c = fiberExponent S T) (t : T) : T :=
+  (exists_cross_partner M c S T hST hc t).choose
+
+theorem crossPartner_mem {n k : ℕ} (M : Matching n k) (c : MatchingDecoration M)
+    (S T : Finset (Fin n)) (hST : Disjoint S T)
+    (hc : decorationExponent M c = fiberExponent S T) (t : T) :
+    s(t.val, (crossPartner M c S T hST hc t).val) ∈ M.val :=
+  (exists_cross_partner M c S T hST hc t).choose_spec
+
+/-- Incidence determines the cross partner uniquely. -/
+theorem crossPartner_eq_iff {n k : ℕ} (M : Matching n k) (c : MatchingDecoration M)
+    (S T : Finset (Fin n)) (hST : Disjoint S T)
+    (hc : decorationExponent M c = fiberExponent S T) (t u : T) :
+    crossPartner M c S T hST hc t = u ↔ s(t.val, u.val) ∈ M.val := by
+  constructor
+  · intro h; rw [← h]; exact crossPartner_mem M c S T hST hc t
+  · intro hu
+    apply Subtype.ext
+    apply Sym2.congr_right.mp
+    exact matching_edge_eq_of_mem M (crossPartner_mem M c S T hST hc t) hu
+      (x := t.val) (by simp) (by simp)
+
+theorem crossPartner_involutive {n k : ℕ} (M : Matching n k)
+    (c : MatchingDecoration M) (S T : Finset (Fin n)) (hST : Disjoint S T)
+    (hc : decorationExponent M c = fiberExponent S T) :
+    Function.Involutive (crossPartner M c S T hST hc) := by
+  intro t
+  apply (crossPartner_eq_iff M c S T hST hc _ _).mpr
+  rw [Sym2.eq_swap]
+  exact crossPartner_mem M c S T hST hc t
+
+theorem crossPartner_ne {n k : ℕ} (M : Matching n k)
+    (c : MatchingDecoration M) (S T : Finset (Fin n)) (hST : Disjoint S T)
+    (hc : decorationExponent M c = fiberExponent S T) (t : T) :
+    crossPartner M c S T hST hc t ≠ t := by
+  intro h
+  have he := crossPartner_mem M c S T hST hc t
+  rw [h] at he
+  exact M.prop.2.1 _ he (by simp)
+
+/-- The cross-edge factor extracted from a decorated matching fiber. -/
+def crossPartnerInvolution {n k : ℕ} (M : Matching n k) (c : MatchingDecoration M)
+    (S T : Finset (Fin n)) (hST : Disjoint S T)
+    (hc : decorationExponent M c = fiberExponent S T) :
+    PerfectMatchingCount.FixedPointFreeInvolution T :=
+  ⟨(crossPartner_involutive M c S T hST hc).toPerm _,
+    crossPartner_involutive M c S T hST hc, crossPartner_ne M c S T hST hc⟩
+
+/-- Every extracted square partner is joined to its squared vertex. -/
+theorem squarePartnerEmbedding_mem {n k : ℕ} (M : Matching n k)
+    (c : MatchingDecoration M) (S T : Finset (Fin n)) (hST : Disjoint S T)
+    (hc : decorationExponent M c = fiberExponent S T) (s : S) :
+    s(s.val, (squarePartnerEmbedding M c S T hST hc s).val) ∈ M.val := by
+  let q := (squareChoiceEquiv M c S T hST hc).symm s
+  have hv : chosenSquareVertex M c q = s.val :=
+    congrArg Subtype.val ((squareChoiceEquiv M c S T hST hc).apply_symm_apply s)
+  change s(s.val, chosenSquarePartner M c q) ∈ M.val
+  rw [← hv, show s(chosenSquareVertex M c q, chosenSquarePartner M c q) =
+    q.val.val from Sym2.other_spec _]
+  exact q.val.prop
+
+/-- The two extracted factors account for every edge of the original matching. -/
+theorem matching_edge_cases {n k : ℕ} (M : Matching n k) (c : MatchingDecoration M)
+    (S T : Finset (Fin n)) (hST : Disjoint S T)
+    (hc : decorationExponent M c = fiberExponent S T) (e : M.val) :
+    (∃ s : S, e.val = s(s.val, (squarePartnerEmbedding M c S T hST hc s).val)) ∨
+    (∃ t : T, e.val = s(t.val, (crossPartner M c S T hST hc t).val)) := by
+  classical
+  cases hce : c e with
+  | some x =>
+    let q : SquareChoices M c := ⟨e, by simp [hce]⟩
+    refine Or.inl ⟨squareChoiceEquiv M c S T hST hc q, ?_⟩
+    change e.val = s(chosenSquareVertex M c q,
+      chosenSquarePartner M c ((squareChoiceEquiv M c S T hST hc).symm
+        (squareChoiceEquiv M c S T hST hc q)))
+    rw [Equiv.symm_apply_apply]
+    exact (Sym2.other_spec _).symm
+  | none =>
+    obtain ⟨x, hx⟩ : ∃ x, x ∈ e.val.toFinset :=
+      e.val.inductionOn fun x y => ⟨x, by simp⟩
+    have ht : x ∈ T := by
+      apply (fiberExponent_eq_one_iff S T hST x).mp
+      rw [← hc, decorationExponent_apply_of_mem M c e x hx, hce]
+      simp [edgeChoiceExponent, squarefreeExponent_apply, hx]
+    refine Or.inr ⟨⟨x, ht⟩, ?_⟩
+    exact matching_edge_eq_of_mem M e.prop (crossPartner_mem M c S T hST hc ⟨x, ht⟩)
+      (x := x) hx (by simp)
+
+/-- Distinct local choices cannot cancel because matching edges are disjoint. -/
+theorem decorationExponent_injective {n k : ℕ} (M : Matching n k) :
+    Function.Injective (decorationExponent M) := by
+  intro c d h
+  funext e
+  have he (x : Fin n) (hx : x ∈ e.val.toFinset) :
+      edgeChoiceExponent e.val (c e) x = edgeChoiceExponent e.val (d e) x := by
+    rw [← decorationExponent_apply_of_mem M c e x hx,
+      ← decorationExponent_apply_of_mem M d e x hx, h]
+  cases hce : c e with
+  | none =>
+    cases hde : d e with
+    | none => rfl
+    | some y =>
+      have hy := he y.val y.prop
+      simp [hce, hde, edgeChoiceExponent, squarefreeExponent_apply, y.prop] at hy
+  | some x =>
+    cases hde : d e with
+    | none =>
+      have hx := he x.val x.prop
+      simp [hce, hde, edgeChoiceExponent, squarefreeExponent_apply, x.prop] at hx
+    | some y =>
+      apply congrArg some
+      apply Subtype.ext
+      by_contra hne
+      have hx := he x.val x.prop
+      simp [hce, hde, edgeChoiceExponent, Finsupp.single_apply,
+        Ne.symm hne] at hx
+
+#print axioms matching_edge_eq_of_mem
+#print axioms crossPartner_mem
+#print axioms crossPartner_eq_iff
+#print axioms crossPartner_involutive
+#print axioms crossPartner_ne
+#print axioms crossPartnerInvolution
+#print axioms exists_cross_partner
+#print axioms fiberExponent_eq_one_iff
+#print axioms squarePartnerEmbedding_mem
+#print axioms matching_edge_cases
+#print axioms decorationExponent_injective
 
 end D5.S3.Zeros.Convolution.MatchingFiber
