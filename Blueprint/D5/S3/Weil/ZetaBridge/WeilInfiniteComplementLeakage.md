@@ -16,7 +16,7 @@ $$\operatorname{D}(L, N, u, v, s)=\operatorname{div}(L, {pi}^{2}) {\operatorname
 
 *Commentary.*
 
-The formula is evaluated on |s|<=N/4, away from every denominator zero. Physical frequency is t=2*pi*s/L. The identification with the Fourier transform of a general L2 exterior mode expansion is proved on paper in the existing theory volume; it has not been imported as an extra Lean theorem or axiom.
+The formula is evaluated on |s|<=N/4, away from every denominator zero. Physical frequency is t=2*pi*s/L. The identification with the Fourier transform of a general L2 exterior mode expansion is proved on paper in the existing source analysis; it has not been imported as an extra Lean theorem or axiom.
 
 **Theorem 1.2 (Infinite tails cannot concentrate in the low-frequency quarter band).**
 

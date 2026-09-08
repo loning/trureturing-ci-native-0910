@@ -4,7 +4,7 @@
 
 The explicit pole, Gamma and finite-prime boundary symbol controls every exterior divided-difference coupling mode.
 
-c is a natural number at least two, L=log(c), omega_n=2*pi*n/L, beta_j=2*j+1/2, and w_j=vonMangoldt(j)/sqrt(j). The symbol is s(c,n)=-2*omega_n*(cosh(L/2)-1)/(omega_n^2+1/4) -sum_{j>=0} omega_n*(1-exp(-beta_j*L))/(beta_j^2+omega_n^2) -sum_{j<c} w_j*sin(omega_n*log(j)). These are the actual boundary terms of the canonical arithmetic form. Their identification with its Fourier matrix follows the explicit calculations in Connes, Consani and Moscovici, arXiv:2511.22755, Lemma 2.3 and Section 4, and is a paper bridge in the existing theory volume.
+c is a natural number at least two, L=log(c), omega_n=2*pi*n/L, beta_j=2*j+1/2, and w_j=vonMangoldt(j)/sqrt(j). The symbol is s(c,n)=-2*omega_n*(cosh(L/2)-1)/(omega_n^2+1/4) -sum_{j>=0} omega_n*(1-exp(-beta_j*L))/(beta_j^2+omega_n^2) -sum_{j<c} w_j*sin(omega_n*log(j)). These are the actual boundary terms of the canonical arithmetic form. Their identification with its Fourier matrix follows the explicit calculations in Connes, Consani and Moscovici, arXiv:2511.22755, Lemma 2.3 and Section 4, and is a paper bridge in the existing source analysis.
 
 **Definition 1.1 (The full arithmetic boundary symbol).**
 

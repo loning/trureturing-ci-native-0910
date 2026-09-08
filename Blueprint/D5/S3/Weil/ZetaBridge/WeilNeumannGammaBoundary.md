@@ -100,7 +100,7 @@ $$\operatorname{CanonicalGammaBoundaryNonnegative}(a, R, S, x, v)$$
 
 *Commentary.*
 
-For a>0 and every natural R, summing the actual kernel corrections over rates b_r=2r+1/2, r<R, preserves finite quadratic positivity. R=0 is included. The proof has no spectral-gap, residual, zeta-zero or target-positivity premise. Infinite positive summation and the Fourier/Neumann spectral identification are separate analytic obligations described in the existing theory volume.
+For a>0 and every natural R, summing the actual kernel corrections over rates b_r=2r+1/2, r<R, preserves finite quadratic positivity. R=0 is included. The proof has no spectral-gap, residual, zeta-zero or target-positivity premise. Infinite positive summation and the Fourier/Neumann spectral identification are separate analytic obligations described in the existing source analysis.
 
 ## References
 
