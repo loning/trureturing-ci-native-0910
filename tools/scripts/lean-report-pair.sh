@@ -36,6 +36,10 @@ trap finish EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
 OUTPUT="$STAGING/$(basename "$CANDIDATE_OUTPUT")"
+# Current keeps raw phase diagnostics outside both cache replacement and staging
+# cleanup. They are not a report bundle and cannot establish successful evidence.
+LOG_DIR="${STRATALINT_LEAN_REPORT_LOG_DIR:-$OUTPUT.logs}"
+[[ "$LOG_DIR" == /* ]] || { echo 'lean-report-pair: log directory must be absolute' >&2; exit 2; }
 
 address_output="$("$INPUT_HELPER" address --repository "$CANDIDATE_ROOT" --producer "$PRODUCER" --inspector "$INSPECTOR")" || exit 2
 address_pattern='^([0-9a-f]{64} ){3}[0-9a-f]{64}$'
@@ -67,7 +71,11 @@ fi
     STRATALINT_REPORT_RESIDENT_SHA256="$producer_sha256" \
     STRATALINT_REPORT_SOURCES_SHA256="$sources_sha256" \
     STRATALINT_REPORT_CONFIG_SHA256="$config_sha256" \
-    "$PRODUCER" --repository "$CANDIDATE_ROOT" --output "$OUTPUT"
+    "$PRODUCER" --repository "$CANDIDATE_ROOT" --output "$OUTPUT" --log-dir "$LOG_DIR"
+
+if [[ "$LOG_DIR" != "$OUTPUT.logs" ]]; then
+  cp -R "$LOG_DIR" "$OUTPUT.logs"
+fi
 
 python3 "$CACHE_HELPER" bind --repository "$CANDIDATE_ROOT" --report "$OUTPUT" \
   --input-address "$input_address" --repository-sha "$repository_sha256" \

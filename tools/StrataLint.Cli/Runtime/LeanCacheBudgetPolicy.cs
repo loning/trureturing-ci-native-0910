@@ -45,8 +45,11 @@ internal static class LeanCacheBudgetPolicy
     /// 首次保存后归档大小基本不变(约 1.217 GB;该读数我未复验)——即跨轮**没有可累计的进度**。故这条链
     /// **不产生任何耗时下界或倍数**(#4122 曾据它写过下界与倍数,已全部撤回,不再复述);它只说明 ARM 上该
     /// 集成树的冷建在检查点制度下未能完成,原因未查(记 open,归 #3769 集成流)。**本值的取值依据只用 ④。**
-    /// These measurements predate the shared current workflow. Its enclosing
-    /// stage deadline now bounds CI production independently of this budget.
+    /// These measurements predate the shared current workflow. After run 34184656783
+    /// hit CommonStages' shorter default, shared current uses this existing envelope
+    /// for report capture and its supervisor. This is a bounded report allowance,
+    /// not a measured CI duration or a sum of nested command budgets. Explicit
+    /// PREFLIGHT_DEADLINE_AT and caller cancellation still take precedence.
     /// ⑥(2026-08-30,#4122 四轮评审;**披露,非解决**)**嵌套 deadline 取最小**:本机 `make lean-report`
     /// 的 worker `tools/lean-inspector/inspect.sh` 最坏顺序跑 3 条 Lake 阶段,每条之前的 ensure 前导可进入
     /// provisioning(`cp -R` / `lake exe cache get` / 归档取回,各有自己的预算),阶段之间还有非 Lake 工作;
