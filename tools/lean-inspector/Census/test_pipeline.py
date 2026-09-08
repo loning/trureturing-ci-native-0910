@@ -16,7 +16,7 @@ class PipelineTests(unittest.TestCase):
         spec.loader.exec_module(cls.program)
 
     def test_completion_cannot_be_supplied(self):
-        for field in ("queryCompleted", "query_completed", "completed"):
+        for field in ("queryCompleted", "query_completed", "completed", "candidates"):
             with self.subTest(field=field), self.assertRaises(ValueError):
                 self.program.parse_request({"root": "Root", "report": "report.json", field: True})
 
@@ -49,6 +49,29 @@ class PipelineTests(unittest.TestCase):
             self.assertTrue(all(len(self.program.read_keys(data)) <= 100 for data in left.values()))
             self.assertTrue(all(len(list(path.iterdir())) <= 24
                                 for path in pathlib.Path(first).rglob("*") if path.is_dir()))
+
+    def test_module_partitions_are_bounded_exhaustive_and_deterministic(self):
+        modules = [f"D5.S3.Area.Subgroup.Module{i:04d}" for i in range(3687)]
+        partitions = self.program.partition_modules(modules, 32)
+        self.assertEqual(partitions, self.program.partition_modules(list(reversed(modules)), 32))
+        self.assertEqual(sorted(module for _, group in partitions for module in group), modules)
+        self.assertTrue(all(0 < len(group) <= 32 for _, group in partitions))
+
+    def test_incomplete_partition_is_rejected(self):
+        for result in ({}, {"head": "head", "entries": []},
+                       {"head": "head", "entries": [], "query_completed": True}):
+            with self.subTest(result=result), self.assertRaises(ValueError):
+                self.program.validate_result(result, "head", [("D5.A", "key", "id")])
+
+    def test_budget_failures_are_rejections(self):
+        spec = importlib.util.spec_from_file_location("census_resources", PROGRAM.with_name("resources.py"))
+        resources = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(resources)
+        with self.assertRaisesRegex(resources.ResourceRejected, "free_memory"):
+            resources.check_budget(29, 0, 8 * 1024 ** 3)
+        with self.assertRaisesRegex(resources.ResourceRejected, "rss"):
+            resources.check_budget(83, 8 * 1024 ** 3 + 1, 8 * 1024 ** 3)
+        resources.check_budget(30, 8 * 1024 ** 3, 8 * 1024 ** 3)
 
 
 if __name__ == "__main__":
