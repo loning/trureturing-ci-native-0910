@@ -20,7 +20,7 @@ A positive telescoping estimate for j>=1 bounds the majorant sum omega/(beta_j^2
 
 For the correction use |beta_j^2-omega^2|<=beta_j^2+omega^2. Its absolute series is dominated by the same summable majorant divided by |omega|. Multiplication by 2/L and |omega|=2*pi*|n|/L gives the displayed diagonal error. Absolute summability is proved, so totalized divergent series cannot make either bound vacuous.
 
-The same-source Fourier calculation identifies this series as the actual Gamma diagonal correction. Combining the new symbol bound with the classical integer discrete-Hilbert norm at most pi controls every off-diagonal mode. The resulting simultaneous logarithmic form lower bound, weighted Schur completion and executed c=3 interval certificate are proved separately in the existing RH theory volume. They are not conclusions of this Lean declaration. Lean and Scribe compilation were not run in this research session.
+The same-source Fourier calculation identifies this series as the actual Gamma diagonal correction. Combining the new symbol bound with the classical integer discrete-Hilbert norm at most pi controls every off-diagonal mode. The resulting simultaneous logarithmic form lower bound, weighted Schur completion and executed c=3 interval certificate are proved separately in the existing RH source analysis. They are not conclusions of this Lean declaration. Lean and Scribe compilation were not run in this research session.
 
 ## References
 

@@ -4,7 +4,7 @@
 
 An actual finite polynomial arithmetic Mellin window has an integrable complex Fourier kernel and an exact finite endpoint transform.
 
-This source reuses Zeta23.paperFT with kernel exp(i*z*x). For h(t)=sum_{r<d} A_r*t^(2*r), the arithmetic window is 4*exp(x/2)*sum_{1<=m<=M, m*exp(x)<=exp(a)} h(m*exp(x)) on [-a,a], with zero extension. The chosen Ioc endpoints give the same Lebesgue Fourier transform. The finite polynomial is a concrete approximation of the regular prolate modes, whose independent spectral certification is explained in the theory volume.
+This source reuses Zeta23.paperFT with kernel exp(i*z*x). For h(t)=sum_{r<d} A_r*t^(2*r), the arithmetic window is 4*exp(x/2)*sum_{1<=m<=M, m*exp(x)<=exp(a)} h(m*exp(x)) on [-a,a], with zero extension. The chosen Ioc endpoints give the same Lebesgue Fourier transform. The finite polynomial is a concrete approximation of the regular prolate modes, whose independent spectral certification is explained in the source analysis.
 
 **Definition 1.1 (Fourier-shifted monomial rate).**
 

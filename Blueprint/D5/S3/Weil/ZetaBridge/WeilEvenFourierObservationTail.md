@@ -4,7 +4,7 @@
 
 The full even Fourier tail admits an absolutely convergent complex-frequency response with cubic squared cutoff decay. The estimate controls the observable needed by the Weil-to-Xi route.
 
-The actual window is [-L/2,L/2]. For n>0 use the existing phase-adjusted cosine basis (-1)^n*sqrt(2/L)*cos(2*pi*n*x/L), zero extended outside that interval, with Fourier kernel exp(i*z*x). The coefficient sequence v_j refers to n=N+j+1. The Fourier identification is a paper bridge in the existing RH theory volume.
+The actual window is [-L/2,L/2]. For n>0 use the existing phase-adjusted cosine basis (-1)^n*sqrt(2/L)*cos(2*pi*n*x/L), zero extended outside that interval, with Fourier kernel exp(i*z*x). The coefficient sequence v_j refers to n=N+j+1. The Fourier identification is a paper bridge in the existing RH source analysis.
 
 **Definition 1.1 (The complete exterior response).**
 
@@ -32,7 +32,7 @@ The norm restriction gives norm(n_j^2-w^2)>=3*n_j^2/4. A positive telescoping id
 
 For norm(z)<=R and abs(Im(z))<=b the paper consequence is norm(response)<=sqrt(8/(27*pi^4))*L^(3/2)*R*exp(b*L/2) *N^(-3/2)*norm(v). This applies to an arbitrary even L2 tail after the same-source Fourier/Parseval identification. If its arithmetic energy dominates beta*norm(v)^2, the squared observation budget is divided by beta.
 
-The existing theory volume applies this estimate to the explicit, suitably normalized prolate model of Connes-Consani-Moscovici. It constructs an evenized, finite dyadic candidate family with the same Xi limit. That model-limit proof, the factor-four Mellin normalization calculation, and the observable Schur energy certificate are paper results. None is silently asserted by this Lean theorem. The fixed 129-entry numerical candidate has not been identified with that new family. No unbounded-scale ground approximation or RH conclusion is claimed. Lean and Scribe compilation were not run in this session.
+The existing source analysis applies this estimate to the explicit, suitably normalized prolate model of Connes-Consani-Moscovici. It constructs an evenized, finite dyadic candidate family with the same Xi limit. That model-limit proof, the factor-four Mellin normalization calculation, and the observable Schur energy certificate are paper results. None is silently asserted by this Lean theorem. The fixed 129-entry numerical candidate has not been identified with that new family. No unbounded-scale ground approximation or RH conclusion is claimed. Lean and Scribe compilation were not run in this session.
 
 ## References
 

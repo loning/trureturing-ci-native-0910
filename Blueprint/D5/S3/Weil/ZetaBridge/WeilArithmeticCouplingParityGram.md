@@ -28,7 +28,7 @@ $$\operatorname{Nonzero}(m)\Rightarrow \operatorname{normSq}(\operatorname{J2}(c
 
 *Commentary.*
 
-S is any finite integer set and v is any complex coefficient family. A0=sum v_n, B0=sum s_n*v_n, A1=sum n*v_n, B1=sum n*s_n*v_n. U_m=-s_m*A0+B1/m and V_m=B0-s_m*A1/m. The collected jets are J2(m)=(U_m+V_m)/(pi*m) and J2(-m)=(U_m-V_m)/(pi*m). The complex parallelogram identity proves the displayed result. No coefficient parity, reality or boundary-moment cancellation is assumed. Summing over positive exterior indices gives two positive 2-by-2 moment Gram blocks. The infinite summation, its scalar remainder, the executable c=3 enclosure certificate and the Fourier/domain identification are separate paper/computer-assisted steps in the existing RH theory volume. This declaration does not prove an unbounded-scale Xi limit.
+S is any finite integer set and v is any complex coefficient family. A0=sum v_n, B0=sum s_n*v_n, A1=sum n*v_n, B1=sum n*s_n*v_n. U_m=-s_m*A0+B1/m and V_m=B0-s_m*A1/m. The collected jets are J2(m)=(U_m+V_m)/(pi*m) and J2(-m)=(U_m-V_m)/(pi*m). The complex parallelogram identity proves the displayed result. No coefficient parity, reality or boundary-moment cancellation is assumed. Summing over positive exterior indices gives two positive 2-by-2 moment Gram blocks. The infinite summation, its scalar remainder, the executable c=3 enclosure certificate and the Fourier/domain identification are separate paper/computer-assisted steps in the existing RH source analysis. This declaration does not prove an unbounded-scale Xi limit.
 
 ## References
 
