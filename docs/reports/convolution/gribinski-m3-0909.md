@@ -383,3 +383,102 @@ No PR, merge, deposit, freeze, coverage update, or CI approval is claimed.
 The two modules are delivered unfrozen on the requested branch. Their stated
 escape-witness basis is the worker's proof-shape assessment for review, not a
 claim that the soft admission semantics have been independently approved.
+
+## Final Semantic Verification
+
+Step 5 commit `1b046a2d6c169fea247611f2c16d375ebb79e821` was pushed
+successfully. The final Lean source tree is unchanged after its successful
+build. `/usr/bin/time -l make lean-report` then exited 0 in 69.71 seconds,
+with maximum RSS 4773314560 bytes (`attempt-2/lean-report.log`). Its cache
+receipt is `present`, `method=none`, with both project and Mathlib warm.
+The inspector delta was `changed=0 added=27 removed=0 recheck=27` relative
+to the retained semantic-report cache; this is not the task's Git diff.
+
+Canonical report: `.lake/build/stratalint/raw-lean-report.json`.
+Report SHA-256:
+`20b925ef0ef86b656f60079b914364b66292344a31b3ab47ea941c67d6735b09`.
+Input address:
+`sha256:a20ab3bd7c3261e58c6f85f9c399e3b5a3f61e6b30d117bbc35fa45374ae880d`.
+The producer provenance is the adjacent
+`raw-lean-report.json.provenance.json`. Both task modules occur in this
+report, and `shasum -a 256` matches their recorded source hashes:
+
+| Module | Source SHA-256 |
+| --- | --- |
+| `GribinskiDegreeThree` | `sha256:f27173bbe2739f8fee728450cad1388f56750656d624610ce90c66f2345d12a6` |
+| `GribinskiDegreeThreeDiscriminant` | `sha256:bcbd16debca04f7147021418b09cc0c4cbd34fc33bfd6e02db505d13cbb341b6` |
+
+The direct frozen prerequisite of `m3_nonnegative_roots` has GID
+`D5/S3/Zeros/Convolution/FiniteFreeCommutatorDegreeSix.cubic_nonnegative_factorization`
+and declaration statement_id
+`sha256:984112c0a61e8d34b039bb6d01a1e73d4e1f57b7fb36b42fbd569cc818100618`.
+This declaration identity is distinct from the frozen module state pin
+recorded above. It is the only direct frozen public-theorem prerequisite
+of the new main target; the other public theorems have no direct frozen
+public-theorem prerequisites. Pinned Mathlib is not counted as a frozen GID.
+
+All 26 explicit theorem printouts agree with the semantic report. In the
+following tables, each entry records that theorem's own `#print axioms`
+result, not an inference from its module's imports. Namespace prefixes
+`D5.S3.Zeros.Convolution` and private compiler mangling are omitted in the
+labels. The worker-owned `attempt-2/semantic-receipt.json` retains the full
+names, statement identities, and axiom sets.
+
+| Public theorem | #print axioms |
+| --- | --- |
+| `GribinskiDegreeThree.convolution_coefficients` | `[propext, Classical.choice, Quot.sound]` |
+| `GribinskiDegreeThree.definition_consistency` | `[propext, Classical.choice, Quot.sound]` |
+| `GribinskiDegreeThree.m3_discriminant_nonneg` | `[propext, Classical.choice, Quot.sound]` |
+| `GribinskiDegreeThree.m3_explicit_coefficients` | `[propext, Classical.choice, Quot.sound]` |
+| `GribinskiDegreeThree.m3_nonnegative_coefficients` | `[propext, Classical.choice, Quot.sound]` |
+| `GribinskiDegreeThree.m3_nonnegative_roots` | `[propext, Classical.choice, Quot.sound]` |
+| `GribinskiDegreeThree.nonnegative_rootTriple_coordinates` | `[propext, Classical.choice, Quot.sound]` |
+| `GribinskiDegreeThree.weight_pos` | `[propext, Classical.choice, Quot.sound]` |
+| `GribinskiDegreeThreeDiscriminant.ordered_numerator_nonneg` | `[propext, Classical.choice, Quot.sound]` |
+
+| Private theorem | #print axioms |
+| --- | --- |
+| `GribinskiDegreeThree.discriminant_numerator` | `[propext, Classical.choice, Quot.sound]` |
+| `GribinskiDegreeThree.ordered_output_discriminant` | `[propext, Classical.choice, Quot.sound]` |
+| `GribinskiDegreeThree.rootTriple_coefficients` | `[propext, Classical.choice, Quot.sound]` |
+| `GribinskiDegreeThree.weight_values` | `[propext, Classical.choice, Quot.sound]` |
+| `GribinskiDegreeThreeDiscriminant.coeff0_identity` | `[propext, Classical.choice, Quot.sound]` |
+| `GribinskiDegreeThreeDiscriminant.coeff1_identity` | `[propext, Classical.choice, Quot.sound]` |
+| `GribinskiDegreeThreeDiscriminant.coeff2_identity` | `[propext, Classical.choice, Quot.sound]` |
+| `GribinskiDegreeThreeDiscriminant.coeff3_identity` | `[propext, Classical.choice, Quot.sound]` |
+| `GribinskiDegreeThreeDiscriminant.numerator_expansion` | `[propext, Classical.choice, Quot.sound]` |
+| `GribinskiDegreeThreeDiscriminant.ordered_coeff0_nonneg` | `[propext, Classical.choice, Quot.sound]` |
+| `GribinskiDegreeThreeDiscriminant.ordered_coeff1_nonneg` | `[propext, Classical.choice, Quot.sound]` |
+| `GribinskiDegreeThreeDiscriminant.ordered_coeff2_nonneg` | `[propext, Classical.choice, Quot.sound]` |
+| `GribinskiDegreeThreeDiscriminant.ordered_coeff3_nonneg` | `[propext, Classical.choice, Quot.sound]` |
+| `GribinskiDegreeThreeDiscriminant.sos0_nonneg` | `[propext, Classical.choice, Quot.sound]` |
+| `GribinskiDegreeThreeDiscriminant.sos1_nonneg` | `[propext, Classical.choice, Quot.sound]` |
+| `GribinskiDegreeThreeDiscriminant.sos2_nonneg` | `[propext, Classical.choice, Quot.sound]` |
+| `GribinskiDegreeThreeDiscriminant.sos3_nonneg` | `[propext, Classical.choice, Quot.sound]` |
+
+Final source checks: `git diff --check d625f554ae` exited 0.
+`rg -n '\b(sorry|admit|axiom)\b|set_option (maxHeartbeats|maxRecDepth)'
+D5/S3/Zeros/Convolution/GribinskiDegreeThree.lean
+D5/S3/Zeros/Convolution/GribinskiDegreeThreeDiscriminant.lean` returned
+0 matching lines, EXIT=1. This lexical result only corroborates the
+kernel and semantic-report observations; it does not replace them.
+
+The maximum `/usr/bin/time -l make lean` RSS across this attempt is
+7801700352 bytes (certificate build, 64.18 seconds, EXIT=0). The last
+`make lean` used 3097346048 bytes (19.71 seconds, EXIT=0). No budget
+options, mathematical constants, or toolchain pins were changed.
+The successful proof uses the planned four parameter coefficients and
+separate identity/sign declarations; there is no remaining Lean goal.
+
+Changed paths relative to the inherited `d625f554ae` checkpoint:
+
+- `D5/S3/Zeros/Convolution/GribinskiDegreeThree.lean`
+- `D5/S3/Zeros/Convolution/GribinskiDegreeThreeDiscriminant.lean`
+- `docs/reports/convolution/gribinski-m3-0909.md`
+
+`make gate` was not run, and no gate, CI, or admission approval is claimed.
+This is the requested unfrozen branch delivery of Steps 4--5. The earlier
+Step 3 bind-only assessment remains in force; the new certificate supplies
+the proposed escape-witness basis for the combined content delivery.
+independent_review: ASSUMED-UNVERIFIED. Literature completeness, priority,
+and general-m Conjecture 3.13 remain explicitly unclaimed.
