@@ -95,8 +95,8 @@ private lemma inertiaCorrection_nonneg (lam Oh : ℝ) : 0 ≤ inertiaCorrection 
 private lemma kineticCoeff_pos (lam Oh : ℝ) : 0 < kineticCoeff lam Oh :=
   add_pos_of_pos_of_nonneg zero_lt_one (inertiaCorrection_nonneg lam Oh)
 
-/-- Bind-only companion for effective_speed_parameter_comparison: the shift from
-the bare squared speed has the sign of the hidden-versus-visible difference. -/
+/-- Bind-only companion for effective_speed_parameter_comparison: the shift is
+a nonnegative mixing weight times the hidden-versus-visible squared-speed difference. -/
 theorem c_eff_sq_sub_bare (c0 ch lam Oh : ℝ) :
     cEffSq c0 ch lam Oh - c0 ^ 2 =
       inertiaCorrection lam Oh / kineticCoeff lam Oh * (ch ^ 2 - c0 ^ 2) := by
