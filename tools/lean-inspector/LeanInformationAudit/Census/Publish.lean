@@ -19,8 +19,8 @@ def checkFinalEnvironment (env : Environment) : CoreM Unit := do
         (module.getRoot == `LeanInformationAudit && !allowed.contains module) then
       throwError "finalEnvironmentImports: payload import {module}"
 
-private def phase (output label : String) : IO Unit :=
-  IO.FS.writeFile (output ++ ".phase") label
+private def phase (destination label : String) : IO Unit :=
+  IO.FS.writeFile (destination ++ ".phase") label
 
 /-- Selection depends only on the immutable report and explicit requested prefix. -/
 def selectReport (report : FrozenReport) (bytes selectionPrefix : String) : Except String FrozenReport := do
@@ -106,13 +106,13 @@ elab "#disposition_census" &"projection" &"root" root:ident &"report" reportPath
     &"head" head:str &"report_sha256" reportSha:str &"prefix" selectionPrefix:str
     &"manifest" manifestName:ident &"report_keys" reportKeysName:ident &"receipts" receiptsPath:str
     &"certificate" certificate:ident " output " outputPath:str : command => do
-  let output := outputPath.getString
+  let destination := outputPath.getString
   liftTermElabM <| checkFinalEnvironment (← getEnv)
   let imports := (← getEnv).header.imports.map (·.module.toString)
   let closure := (← getEnv).header.moduleNames.map Name.toString
-  IO.FS.writeFile (output ++ ".environment.json") ((Json.mkObj [
+  IO.FS.writeFile (destination ++ ".environment.json") ((Json.mkObj [
     ("imports", toJson imports), ("transitive_imports", toJson closure)]).pretty ++ "\n")
-  phase output "manifest_binding"
+  phase destination "manifest_binding"
   let bytes ← IO.FS.readFile reportPath.getString
   let report ← ofExcept <| parseReportData bytes
   let selected ← ofExcept <| selectReport report bytes selectionPrefix.getString
@@ -124,15 +124,15 @@ elab "#disposition_census" &"projection" &"root" root:ident &"report" reportPath
   let value := mkConst manifestName
   let reportKeysExpr := mkConst reportKeysName
   liftTermElabM do
-    let manifest ← do unsafe evalExpr CensusKeyManifest (mkConst ``CensusKeyManifest) value
+    let keyManifest ← do unsafe evalExpr CensusKeyManifest (mkConst ``CensusKeyManifest) value
     let reportKeys ← do unsafe evalExpr (List (Name × Nat)) (toTypeExpr (List (Name × Nat))) reportKeysExpr
     unless (← getConstInfoDefn reportKeysName).value == keysLiteralExpr reportKeys do
       throwError "{identityError .anonymous "report_keys_binding" "independent canonical literal" "alias or expression"}"
-    ofExcept <| checkManifestBinding selected root.getId (inventory.entries.map (·.1)) manifest reportKeys
-  phase output "receipt_verification"
+    ofExcept <| checkManifestBinding selected root.getId (inventory.entries.map (·.1)) keyManifest reportKeys
+  phase destination "receipt_verification"
   liftTermElabM do
     for path in paths do discard <| CensusReceipt.verify path report
-  phase output "certificate_compile_kernel"
+  phase destination "certificate_compile_kernel"
   let certificateName := (← getCurrNamespace) ++ certificate.getId.eraseMacroScopes
   let (proof, proposition) ← liftTermElabM do
     let proof ← certificateProof value report.headSha report.reportSha256 root.getId reportKeysExpr
@@ -154,17 +154,17 @@ elab "#disposition_census" &"projection" &"root" root:ident &"report" reportPath
     ("type", toJson typeText), ("axioms", toJson (axioms.map Name.toString))]
   let fields := summaryFields report inventory sources ++ [("certificate", certificateJson)]
   ofExcept <| checkCounts inventory (count inventory)
-  if ← (System.FilePath.mk output).pathExists then
-    let same ← IO.Process.output { cmd := "/bin/test", args := #[reportPath.getString, "-ef", output] }
+  if ← (System.FilePath.mk destination).pathExists then
+    let same ← IO.Process.output { cmd := "/bin/test", args := #[reportPath.getString, "-ef", destination] }
     unless same.exitCode == 1 do throwError "census projection: output aliases report"
-  phase output "json_emission"
-  let temporary := output ++ ".tmp"
+  phase destination "json_emission"
+  let temporary := destination ++ ".tmp"
   streamArtifact temporary fields inventory
   IO.FS.writeFile (temporary ++ ".summary.json") ((Json.mkObj fields).pretty ++ "\n")
-  IO.FS.rename temporary output
-  IO.FS.rename (temporary ++ ".summary.json") (output ++ ".summary.json")
+  IO.FS.rename temporary destination
+  IO.FS.rename (temporary ++ ".summary.json") (destination ++ ".summary.json")
   setEnv staged
-  phase output "certificate_compile_kernel"
+  phase destination "certificate_compile_kernel"
   elabCommand (← `(command| #print axioms $(mkIdent certificateName)))
 
 end LeanInformationAudit.CensusProjection
