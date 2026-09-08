@@ -90,6 +90,8 @@ public sealed partial class MakeWorkflowTests
         "capacity-audit",
         "update-renderer-contract",
         "clean-lanes",
+        "xi-quantization",
+        "xi-quantization-test",
     ];
 
     [Fact]
