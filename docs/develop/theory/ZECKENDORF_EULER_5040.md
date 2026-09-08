@@ -35236,3 +35236,59 @@ $$
 **不受影响者**。W-2 至 W-6 的陈述与依赖关系不变;第三十三节的停止判据不变。W-5 仍为该节预登记的另一处非绑定内容,本节不改动它。
 
 ---
+
+---
+
+# 四十一、整除区间内的极大丰数可行性判据,及预算侧的反面见证
+
+本节是**预登记**,写在实施之前。它不是一个开放问题的候选,而是本线**已冻结机器直接挣得的下一条定理**:闭包算子、价格区间、上确界达成规范三者合起来,恰好给出「一个整除区间里有没有极大丰数」的**充要判据**,且不可行时有**两层证书**。
+
+**产地**。候选由一席 ChatGPT Pro 研究席沿本卷理论推理得出;**本节的每一条读数由 orchestrator 独立复算或在仓内复核后写下**。同一份回答中另有两处需要点名的错:该席称仓内已有 `GoldenResource/GoldenFixedPoint.lean` 及其中的 `Gobs_greatest_golden_divisor`、`b_fixed_iff`、`Gobs_dvd_of_dvd`,并据此推出一条「最小极大丰倍数 ⊣ 最大黄金因子」的伴随;**全树检索证实这三个声明与该文件都不存在**(仓内同名文件是黄金比例的不动点,与观测映射无关)。故本节**不收**该伴随及其下游(黄金纤维的极大丰可实现性分类),它们缺一条腿。本节只收腿脚齐全的那一半。
+
+## 已在仓内的材料(逐条复核过)
+
+`colossalClosure` 及 `colossal_closure_factorization`、`dvd_colossal_closure`、`colossal_closure_dvd_of_dvd_colossally_abundant`、`colossal_closure_is_colossally_abundant`(`GoldenColossalClosure`,已冻结);`goldenUpperPrice`、`goldenLowerPrice`、`golden_upper_price_spec`、`IsColossallyAbundant`(`GoldenResourcePriceInterval`,已冻结);`goldenPositiveLayerCount`、`optimal_layer_count_spec`、`positive_part_sum_finite_support`(`GoldenResourceOptimalLayerCount`,已冻结);`golden_missing_prime_threshold_iff_of_isLeast`(`GoldenSmallestMissingPrime`,已冻结)。
+
+**仓内没有的**:任何把「某整除区间内存在极大丰数」写成判据的声明。检索方式记录在案:在 `D5/S3/Arith/GoldenResource/` 下检索 `ColossallyAbundant` 的定理位置,只命中其定义处;`goldenPositiveLayerCount` 虽已存在,但只在阈值价格 \(L(B)\) 处使用,没有对任意价格的形式。
+
+## 待形式化的义务
+
+设 \(1<A\),\(A\mid B\),记 \(C(A)\) 为 \(A\) 的极大丰闭包(仓内 `colossalClosure`),\(v_p\) 为 \(p\)-adic 赋值,\(\rho(p,a)\) 为第 \(a\) 层边际。
+
+**F-1**:整除判据。存在极大丰数 \(N\) 使 \(A\mid N\) 且 \(N\mid B\),当且仅当 \(C(A)\mid B\)。
+
+**F-2**:价格判据。同一命题又等价于 \(U(B)\le L(A)\);此处 \(U,L\) 取仓内 `goldenUpperPrice` 与 `goldenLowerPrice` 的声明含义,不取本卷两处 docstring 里颠倒的字母。
+
+**F-3**:两层不可行证书。设 \(q_B\) 为不整除 \(B\) 的最小素数;若 \(U(B)\le L(A)\) 不成立,则存在 \(p\in\{q_B\}\cup\{p:p\mid B\}\) 与素数 \(r\mid A\),使 \(\rho(p,v_p(B)+1)>\rho(r,v_r(A))\)。这两层即证书:无需构造可能巨大的 \(C(A)\),即可断定整个整除区间内没有极大丰数。
+
+**F-4**:预算侧的反面见证。取 \(\lambda_0=\rho(3,1)\) 与预算 \(x=\ln 4\);则 \(2\) 与 \(6\) 同时在 \(\lambda_0\) 处最优,而预算下的真最优值与其对偶值之差恰为 \((\rho(3,1)-\rho(2,2))\ln 2>0\)。故价格参数化给出的是整除约束下的精确解,不是预算约束下的精确解;该差为恒等式而非估计,因 \(\ln(7/4)=\ln(3/2)+\ln(7/6)\) 且 \(\rho(2,2)=\ln(7/6)/\ln 2\)。
+
+## 预登记的逃逸内容
+
+**在 F-2 的充分性方向**:给定 \(\lambda\in[U(B),L(A)]\),按
+$$
+e_p=\max\Bigl(v_p(A),\ \#\{a\ge 1:\rho(p,a)>\lambda\}\Bigr)
+$$
+构造指数向量,并证 \(v_p(A)\le e_p\le v_p(B)\)——即**把最优轮廓夹在两个指数向量之间**。左不等式由 \(\lambda\le L(A)\)(强制层的边际都不亏),右不等式由 \(U(B)\le\lambda\)(超出上限的层都不赚)。仓内已有的层计数只在单一阈值价格处使用,这个**双侧夹逼**是新的一步。
+
+**F-4 的内容**是那处**并列最优**:\(J_{\lambda_0}(2)=J_{\lambda_0}(6)\) 恰好相等,加一条严格不等式 \(\rho(3,1)>\rho(2,2)\)。两者都是有理数区间可判的,由已冻结的 `rational_log_bounds` 供给。
+
+**F-1 与 F-3 判为绑定即得**:F-1 是闭包的泛性质的直接投影;F-3 是 F-2 加 W-1 的有限最大值再取见证。**它们的落地依据是伴随声明,不另称新内容。**
+
+## 本节与 W-1 的关系
+
+**F-3 是 W-1 第二句的具名下游消费者**:把 \(U(B)\) 化为有限最大值之后,不可行性才落到**有限**多层上、才写得出证书。第三十三节末已预登记「W-2、W-3 依赖 W-1」;本节把消费者具体到了一个可写出的形式。
+
+## 档位与文献
+
+**不是开放问题**,故不入第三十三节以来的三档;它是本线机器挣得的定理。文献状态:价格到指数的精确对应是经典的(Alaoglu–Erdős 的指数选择、Ramanujan 的 superior highly composite 阈值不等式),**本节不冒领这一层**;所提的**整除区间可行性判据与两层证书**在该席检索与 orchestrator 复核的范围内未见,**但这不是穷尽性新颖主张**,标 `ASSUMED-UNVERIFIED`。实施前须按第一档规矩再做一次文献核对并写入评注。
+
+## 已验读数
+
+\(\rho(3,1)=0.2618595\ldots>26/100\);\(\rho(2,2)=0.2223924\ldots<23/100\);\(\overline H(\ln4)-H(\ln4)=0.0273564\ldots\),与 \((\rho(3,1)-\rho(2,2))\ln 2\) 逐位相等(60 位十进制)。\(J_{\lambda_0}(2)=J_{\lambda_0}(6)\) 亦逐位相等;在 \(1\le m\le 20000\) 上 \(J_{\lambda_0}\) 的最大值点为 \(2\)。全部读数用精确有理数与 60 位十进制对数,不用浮点近似判相等。
+
+## 停止判据
+
+F-1 至 F-4 各自可独立落地,次序为 F-1、F-2、F-3、F-4。若 F-2 的充分性方向连续两周无边际改进,则按预算包络换 \(\Gamma\):只落地 F-1 与 F-4,把 F-2 降级为以夹逼构造为假设的条件命题并显式携带该假设,**不得声称已给出充要判据**。若发现夹逼构造在并列最优处失效,则追加勘注记录该失效,并保留 F-4 作为独立读数。
+
+---
