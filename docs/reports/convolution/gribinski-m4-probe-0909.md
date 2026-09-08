@@ -105,6 +105,44 @@ quartic counterexample to a single discriminant test. Adopted as existing
 decisions; not reproved here. Output was truncated, so no claim is made to have
 read every matching comment.
 
+## Q1 search receipt, batch 2
+
+Cache ensure returned exit 0: `status=seeded`, `method=clonefile`, donor
+`/Users/auricstudio/trureturing`, one clonefile attempt, both project and
+Mathlib olean states warm, no missing Mathlib oleans.
+
+Collision controls, all searched with `rg -n` in `D5` before adding probe code:
+
+| Regex | Matching lines | exit |
+| --- | ---: | ---: |
+| `\b(boxplus4\|m4_nonnegative_roots\|quartic_nonnegative_factorization\|GribinskiDegreeFour)\b` | 0 | 1 |
+| `\b(newtonHankel_posSemidef_iff_roots_real\|m3_nonnegative_roots)\b` | 5 | 0 |
+| `\b(GribinskiM4ProbeAbsentControl0909)\b` | 0 | 1 |
+
+The table escapes pipes for Markdown; the executed regex uses ordinary `|`
+alternation. Both controls exercise the same word-boundary feature as the
+candidate search. These results assert only absence of the searched names.
+
+Pinned searches used
+`rg -n -i '\b(quartic|discrim|newton|hankel)\b|real.?root|PosSemidef.*minor|minor.*PosSemidef'`
+over Mathlib/Algebra, Mathlib/LinearAlgebra, and Mathlib/RingTheory/Polynomial,
+and `rg -n '\b(roots|splits|Splits|of_roots|eq_prod_roots)\b'` on
+Algebra/Polynomial/Roots.lean, Analysis/Complex/Polynomial/Basic.lean and
+LinearAlgebra/Matrix/PosDef.lean. Hits include quadratic `discrim`,
+`Polynomial.Monic.prod_multiset_X_sub_C`, `Polynomial.card_roots'`,
+`Polynomial.roots_multiset_prod_X_sub_C`, and complex splitting infrastructure.
+These do not supply four real roots: the factorization API requires the real
+root count already equal the degree. Substring searches remain to be done.
+
+Network capability is present: the LeanSearch homepage was opened, and Loogle
+`GET /json?q=quartic` returned `unknown identifier 'quartic'` with suggestion
+`"quartic"`. This is a query-syntax failure, not a no-hit receipt. The corrected
+quoted query will be used. The CMP v2 PDF has been downloaded, but not yet read.
+
+The exact m=3 raw expansion recorded in its existing report is 787 monomials,
+split by t-degree as 310, 257, 168, 52, in sorted-gap variables. This is distinct
+from its repaired certificate (20 squares plus 767 positive monomials).
+
 ## Nonclaims
 
 This probe has not proved m=4, does not claim m=4 is provable by the proposed
