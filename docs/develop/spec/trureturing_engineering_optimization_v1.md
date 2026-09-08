@@ -594,7 +594,7 @@ registry 的持久化扩展与公开/私有模块迁移也要测试。不能因�
 | `tools/StrataLint.Engine/` | 消费确定报告、保持治理规则；不重算数学分数 |
 | `tools/StrataLint.Scribe/` | 读取同一快照投影，按受影响 GID 生成 |
 | `tools/tests/` 与现有 Lean 测试目录 | 字节对照、故障注入、算法等价与真实 Lake 集成 |
-| `.github/workflows/ci-push.yml` / `ci-pr.yml` | 编排 engineering/current/delta 与可选种子传输；程序拥有检查与缓存语义。下文 S10 仍指审查快照中的旧 workflow |
+| `.github/workflows/ci.yml` | 仅改变执行与缓存恢复，required verdict 合同保留 |
 | `Makefile` | 仍只路由，不塞逻辑 |
 
 初期不新增集中式数据库或常驻服务。需要快速索引时先用可重建的本地索引和模块对象目录，测到瓶颈后再扩展。源存档与索引不是两个数学真源。
