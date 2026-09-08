@@ -135,6 +135,23 @@ value`: the review probe omitted `allowOpaque := true` in that control's
 theorem-value lookup. This is a reviewer tooling error, not a source failure.
 The control must be corrected and rerun before claiming the completed test.
 
+Q2 Run 1 used the same make command with log `q2-dependencies-1.log` after
+correcting only the review control. **EXIT=0, 51.74 real seconds,
+RSS=3790225408 bytes.** It reports 155 local reachable constants, including
+compiler-generated numeral proofs. The dead-conjunct control now reduces to
+`fun p q h frozen => frozen`, eliminating `h` as required.
+The actual path, both raw and reduced, is:
+
+`m3_nonnegative_roots -> m3_discriminant_nonneg -> ordered_output_discriminant
+-> ordered_numerator_nonneg -> ordered_coeffN_nonneg ->
+{coeffN_identity, sosN_nonneg}` for **each N=0,1,2,3**.
+
+The main proof also retains the frozen `cubic_nonnegative_factorization` call.
+This is an actual path in elaborated theorem values, not an import or textual
+name count. Scope: local reachable subgraph, with beta/zeta and constructor/
+And projection reduction; it is not a general-purpose proof-shape decision
+procedure or exhaustive search for alternative proofs.
+
 ## Q3-Q6
 
 Q1 complete; Q2 in progress; Q3-Q6 pending. No final verdict at this checkpoint.
