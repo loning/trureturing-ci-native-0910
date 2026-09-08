@@ -113,6 +113,13 @@ def read_keys(data):
     return value
 
 
+def exported_path(log):
+    receipts = [line for line in log.splitlines() if line.startswith("TRUTH_EXPORT ")]
+    if len(receipts) != 1 or not receipts[0].partition(" out=")[2]:
+        raise ValueError("truth-export did not emit exactly one output-path receipt")
+    return pathlib.Path(receipts[0].partition(" out=")[2]).resolve()
+
+
 def write_requests(directory: pathlib.Path, keys):
     for start in range(0, len(keys), 100):
         chunk = start // 100
@@ -172,7 +179,7 @@ def execute(options):
             step(["git", "diff", "--exit-code", "HEAD", "--", "D5", "lean-toolchain",
                   "lake-manifest.json", "lakefile.toml", "Golden/Frozen/state"], "pinned-inputs")
             step(["make", "truth-export", f"OUT={directory / 'truth'}", f"LEAN_REPORT={options.lean_report}"], "truth-export")
-            report_path = directory / "truth/truth-export.v1.json"
+            report_path = exported_path((directory / "logs/truth-export/process.log").read_text())
         report_bytes = report_path.read_bytes()
         report = json.loads(report_bytes)
         head = report["source_commit"]

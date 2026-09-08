@@ -38,6 +38,13 @@ class PipelineTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.program.frozen_keys({"nodes": [node, node]})
 
+    def test_export_path_is_read_from_the_canonical_writer_receipt(self):
+        log = "build output\nTRUTH_EXPORT nodes=4 source_commit=head out=/tmp/with spaces/current.json\n"
+        self.assertEqual(self.program.exported_path(log), pathlib.Path("/tmp/with spaces/current.json").resolve())
+        for bad in ("", log + log, "TRUTH_EXPORT nodes=4 source_commit=head\n"):
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                self.program.exported_path(bad)
+
     def test_partition_preserves_every_key_and_emits_deterministically(self):
         keys = [("D5.A", "ns(n0,4:same)", f"id-{i}") for i in range(22001)]
         with tempfile.TemporaryDirectory() as first, tempfile.TemporaryDirectory() as second:

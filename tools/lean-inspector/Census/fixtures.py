@@ -43,7 +43,7 @@ def prepare_fixtures(repository, directory):
             logs, "compile", cwd=repository, env=env)
 
     for module in ("Query.Observed", "Query.DuplicateLeft", "Query.DuplicateRight", "Query.Contract",
-                   "Query.Coverage", "Query.Publication", "AssessmentCommand", "Command", "CommandRejection",
+                   "Query.Coverage", "Query.Publication", "Query.DirectEvidence", "AssessmentCommand", "Command", "CommandRejection",
                    "InvalidEvidence", "LandedFinite"):
         prepare("LeanInformationAudit.Tests.Census." + module)
 
@@ -66,9 +66,13 @@ def main():
     directory.mkdir(parents=True, exist_ok=True)
     repository = pathlib.Path(__file__).resolve().parents[3]
     prepare_fixtures(repository, directory)
-    report = {"schema": "stratalint.truth-export", "schema_version": 2,
-              "dialect": "stratalint.truth-export.v2", "producer": "TruthExportCommand",
-              "source_commit": "fixture-head", "nodes": []}
+    identity_path = directory / "identity.json"
+    identity_source = directory / "Identity.lean"
+    identity_source.write_text("import LeanInformationAudit.DispositionCensus\n"
+        f"#eval IO.FS.writeFile {json.dumps(str(identity_path))} "
+        "LeanInformationAudit.DispositionCensus.truthExportIdentity.compress\n")
+    run(["lake", "env", "lean", str(identity_source)], directory / "identity", "process", cwd=repository)
+    report = dict(json.loads(identity_path.read_text()), source_commit="fixture-head", nodes=[])
     source = "LeanInformationAudit.Tests.Census.Query.Observed"
     finite = "LeanInformationAudit.Tests.SealSuccess"
     for module, declaration, identity in [
@@ -135,13 +139,14 @@ def main():
         assert not bad_output.exists()
     else:
         raise AssertionError("input completion flag was accepted")
-    for module in ("Query/Contract", "Query/Coverage", "Query/Publication", "AssessmentCommand", "Command",
+    for module in ("Query/Contract", "Query/Coverage", "Query/Publication", "Query/DirectEvidence", "AssessmentCommand", "Command",
                    "CommandRejection", "InvalidEvidence", "LandedFinite"):
         run(["lake", "env", "lean", "-R", str(repository / "tools/lean-inspector"),
              "-DmaxRecDepth=100000", "-DmaxHeartbeats=0",
              str(repository / f"tools/lean-inspector/LeanInformationAudit/Tests/Census/{module}.lean")],
             directory / module, "process", cwd=repository)
     result = {"query_contract": "passed", "coverage": "passed", "artifact_determinism": results[0],
+              "direct_unreachable_bounded_and_malformed_evidence": "passed",
               "partial_certified_denominator": "passed (accounted=1/4, certified=1, observed=0, certified_complete=false)",
               "duplicate_name_modules": 2,
               "existing_census_command_fixtures": 5,

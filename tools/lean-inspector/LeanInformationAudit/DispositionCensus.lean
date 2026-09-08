@@ -88,6 +88,11 @@ private partial def nameKeyParser : Std.Internal.Parsec.ByteArray.Parser Name :=
 def parseNameKey (text : String) : Except String Name :=
   (nameKeyParser <* Std.Internal.Parsec.eof).run text.toUTF8
 
+/-- The supported wire identity, also used by synthetic producer fixtures. -/
+def truthExportIdentity : Json := Json.mkObj [
+  ("schema", toJson "stratalint.truth-export"), ("schema_version", toJson (2 : Nat)),
+  ("dialect", toJson "stratalint.truth-export.v2"), ("producer", toJson "TruthExportCommand")]
+
 /-- Consume the truth export dialect currently emitted by TruthExportCommand.
 source_commit binds HEAD; declaration_name_key preserves Lean Name structure;
 statement_id is read verbatim. Only frozen nodes' theorem declarations are included.
@@ -97,12 +102,13 @@ def parseReport (expectedHead expectedSha256 bytes : String) : Except String Fro
   unless actualSha256 == expectedSha256 do
     throw <| identityError .anonymous "report_sha256" expectedSha256 actualSha256
   let json ← Json.parse bytes
-  for (field, expected) in [("schema", "stratalint.truth-export"),
-      ("dialect", "stratalint.truth-export.v2"), ("producer", "TruthExportCommand")] do
+  for field in ["schema", "dialect", "producer"] do
+    let expected ← truthExportIdentity.getObjValAs? String field
     unless (← stringField json field) == expected do
       throw <| censusError expectedHead field expected (← stringField json field)
-  unless (← json.getObjValAs? Nat "schema_version") == 2 do
-    throw <| censusError expectedHead "schema_version" "2"
+  let version ← truthExportIdentity.getObjValAs? Nat "schema_version"
+  unless (← json.getObjValAs? Nat "schema_version") == version do
+    throw <| censusError expectedHead "schema_version" (toString version)
       (toString (← json.getObjValAs? Nat "schema_version"))
   let head ← stringField json "source_commit"
   unless head == expectedHead do
