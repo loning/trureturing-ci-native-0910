@@ -81,6 +81,10 @@ private initialize structuralRegistry :
     addEntryFn := Array.push
     addImportedFn := fun entries => entries.foldl (· ++ ·) #[] }
 
+/-- Read-only access for exhaustive registration queries. -/
+def structuralProvenanceEntries (env : Environment) : Array StructuralProvenanceEntry :=
+  structuralRegistry.getState env
+
 private def failClass (key : StatementKey) (className invalid : String) : MetaM α :=
   throwError (classError key.theoremName className invalid)
 
@@ -110,38 +114,8 @@ private def canonicalArgument (key : StatementKey) (actual : Expr)
       (actual.getAppFn.constName?.map Name.toString |>.getD "noncanonical-expression")
       expected.toString)
 
-private def validateFinite (root : Name) (key : StatementKey)
-    (payload : FiniteOccurrenceDisposition key) : MetaM Unit := do
-  let env ← getEnv
-  let candidates := InformationRegistry.entries env |>.filter fun entry =>
-    entry.theoremName == key.theoremName &&
-      entry.canonicalObjectArenaName == payload.canonicalArena
-  let some registration := candidates[0]?
-    | throwError (identityError key.theoremName "canonical_arena" "registered-arena"
-        payload.canonicalArena.toString)
-  match ← validatePersistedEntry env registration with
-  | .error message => throwError message
-  | .ok () => pure ()
-  unless payload.registration == registration.unitName do
-    throwError (identityError key.theoremName "registration" registration.unitName.toString
-      payload.registration.toString)
-  unless payload.realization == registration.realizationName do
-    throwError (identityError key.theoremName "realization" registration.realizationName.toString
-      payload.realization.toString)
-  let some sealed := (SealRecords.occurrencesForRoot env root).find? fun occurrence =>
-      occurrence.theoremName == key.theoremName && occurrence.objectArenaName == payload.canonicalArena
-    | failClass key "finite_occurrence" "maximal_catalog_seal"
-  let certificate ← constant key "finite_occurrence" "seal_certificate" sealed.certificateName
-  checkWithKernel certificate
-  let lawArena ← mkConstWithFreshMVarLevels registration.arenaName
-  let arena ← mkAppM ``PrimitiveLawArena.toArena #[lawArena]
-  let _ ← typed key "finite_occurrence" "nondegeneracy_certificate"
-    payload.nondegeneracyCertificate (← mkAppM ``Arena.Nondegenerate #[arena])
-  let _ ← typed key "finite_occurrence" "state_enumeration_certificate"
-    payload.stateEnumerationCertificate (← mkAppM ``Arena.StateEnumeration #[arena])
-
 /-- Module ownership and transitive imports come from Lean's elaborated environment. -/
-private def rootModules (env : Environment) (root : Name) : Array Name := Id.run do
+def censusRootModules (env : Environment) (root : Name) : Array Name := Id.run do
   let mut closure := #[]
   let mut visited : Std.HashSet Name := {root}
   let mut pending := #[root]
@@ -158,6 +132,49 @@ private def rootModules (env : Environment) (root : Name) : Array Name := Id.run
         visited := visited.insert item.module
         pending := pending.push item.module
   return closure
+
+/-- An imported seal is usable only when its catalog covers every in-scope peer. -/
+def finiteSealInScope? (env : Environment) (modules : Array Name)
+    (theoremName arena : Name) : Option Name := Id.run do
+  let peers := (InformationRegistry.entries env).filter fun entry =>
+    modules.contains entry.registrationModuleName && entry.canonicalObjectArenaName == arena
+  for record in SealRecords.entries env do
+    if !modules.contains record.catalog.rootId || record.catalog.arenaName != arena then continue
+    unless record.theorems.size == peers.size && peers.all (fun peer =>
+        record.theorems.any (·.theoremName == peer.theoremName)) do continue
+    if let some occurrence := record.theorems.find? (·.theoremName == theoremName) then
+      return some occurrence.certificateName
+  return none
+
+private def validateFinite (root : Name) (key : StatementKey)
+    (payload : FiniteOccurrenceDisposition key) : MetaM Unit := do
+  let env ← getEnv
+  let modules := censusRootModules env root
+  let candidates := InformationRegistry.entries env |>.filter fun entry =>
+    modules.contains entry.registrationModuleName && entry.theoremName == key.theoremName &&
+      entry.canonicalObjectArenaName == payload.canonicalArena
+  let some registration := candidates[0]?
+    | throwError (identityError key.theoremName "canonical_arena" "registered-arena"
+        payload.canonicalArena.toString)
+  match ← validatePersistedEntry env registration with
+  | .error message => throwError message
+  | .ok () => pure ()
+  unless payload.registration == registration.unitName do
+    throwError (identityError key.theoremName "registration" registration.unitName.toString
+      payload.registration.toString)
+  unless payload.realization == registration.realizationName do
+    throwError (identityError key.theoremName "realization" registration.realizationName.toString
+      payload.realization.toString)
+  let some sealed := finiteSealInScope? env modules key.theoremName payload.canonicalArena
+    | failClass key "finite_occurrence" "maximal_catalog_seal"
+  let certificate ← constant key "finite_occurrence" "seal_certificate" sealed
+  checkWithKernel certificate
+  let lawArena ← mkConstWithFreshMVarLevels registration.arenaName
+  let arena ← mkAppM ``PrimitiveLawArena.toArena #[lawArena]
+  let _ ← typed key "finite_occurrence" "nondegeneracy_certificate"
+    payload.nondegeneracyCertificate (← mkAppM ``Arena.Nondegenerate #[arena])
+  let _ ← typed key "finite_occurrence" "state_enumeration_certificate"
+    payload.stateEnumerationCertificate (← mkAppM ``Arena.StateEnumeration #[arena])
 
 private def inRoot (env : Environment) (modules : Array Name) (name : Name) : Bool :=
   env.contains name && modules.contains
@@ -621,7 +638,7 @@ def validateEvidenceSources (root : Name) (inventory : DispositionInventory) :
   let env ← getEnv
   unless root == env.header.mainModule || env.header.moduleNames.contains root do
     throwError (censusError inventory.headSha "root" "existing-module" root.toString)
-  let modules := rootModules env root
+  let modules := censusRootModules env root
   let registrations ← structuralRegistrations modules
   let mut sources := #[]
   for entry in inventory.sortedEntries do
