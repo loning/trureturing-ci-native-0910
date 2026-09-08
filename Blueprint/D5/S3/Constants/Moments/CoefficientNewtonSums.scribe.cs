@@ -13,7 +13,7 @@ internal sealed class CoefficientNewtonSumsDocument : IScribeDocumentDefinition
                 DeclarationHandle.Create(
                     "D5/S3/Constants/Moments/CoefficientNewtonSums.newton_sum_unique"),
                 H("Uniqueness of the coefficient recursion"),
-                StatementSource.FromLean(),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
                     "Strong induction identifies any sequence satisfying the initial value "
@@ -26,7 +26,7 @@ internal sealed class CoefficientNewtonSumsDocument : IScribeDocumentDefinition
                 DeclarationHandle.Create(
                     "D5/S3/Constants/Moments/CoefficientNewtonSums.descending_coeff_eq_root_esymm"),
                 H("Vieta including the zero coefficient tail"),
-                StatementSource.FromLean(),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
                     "For a monic polynomial of the stated degree, a root list whose multiset "
@@ -38,7 +38,7 @@ internal sealed class CoefficientNewtonSumsDocument : IScribeDocumentDefinition
                 DeclarationHandle.Create(
                     "D5/S3/Constants/Moments/CoefficientNewtonSums.exists_root_enumeration"),
                 H("Enumeration retains multiplicities"),
-                StatementSource.FromLean(),
+                StatementSource.WithoutFormula(),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
                     "The list is obtained from the polynomial root multiset, with length "

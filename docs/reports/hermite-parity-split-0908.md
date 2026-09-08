@@ -160,6 +160,9 @@ by uniqueness. The other companions have the pre-registered intended consumer
 `newton_sum_eq_root_sum`; that consumer is archived and unproved, not an existing
 closed declaration or coverage edge. The typed matrix constructors support
 the archived joint calibration and the requested eventual parity theorem.
+The archived root-sum theorem takes an enumeration as an argument. Enumeration
+existence is for its intended specialization to every complex polynomial;
+it is not a dependency of the archived proof body itself.
 
 Per-public-theorem proof-shape accounting (direct frozen dependencies are `[]`
 for every row; the module admission basis is `escape-witness`):
@@ -205,9 +208,41 @@ not changed. `local_make_lean_EXIT: 0` for the delivered proof bodies and the
 joint calibration; report/deposit/PR receipts will be recorded in the result envelope.
 `make lean-report` also passed (EXIT 0, 71.78 s, maximum RSS 4,299,358,208 bytes),
 and `make -C tools selftest` passed (EXIT 0, 7.62 s, maximum RSS 253,640,704 bytes).
+The final header wording was re-inspected successfully (EXIT 0, 61.91 s,
+maximum RSS 4,300,029,952 bytes). The first `make emit` failed because Scribe
+has no automatic formula projection for these new declarations (EXIT 2,
+8.21 s). The Scribe source now uses its supported `WithoutFormula()` path,
+with declaration references and explicit narrative scope.
 
-`frozen_output`: pending workflow verification. `pushed`: initial partial
-implementation commit `877ff6375d` is pushed. `pr`: pending workflow.
+`make emit` then passed (EXIT 0, 62.43 s, maximum RSS 1,260,666,880 bytes).
+It refreshed six unrelated mirrors already equal to current dev; those are
+not part of this PR's authored changes. Before PR opening, the collision search
+was repeated at dev `aee1eaff34f997e44f04147cee1010bb482c4c1b` with the same
+zero-hit result and successful criterion/parity positive controls.
+
+`frozen_output: frozen, uncovered`. The exact workflow was
+
+```text
+make deposit ATOM_ID=uncovered-hermite-parity-split-0908 \
+  GID=D5/S3/Constants/Moments/CoefficientNewtonSums.map_newton_sum \
+  BASE=f1164377233bc771d6c477464e54a5941a22e253
+```
+
+`uncovered-hermite-parity-split-0908` is an explicitly unmatched workflow
+argument, not a claimed atom. The header precheck passed; ledger alignment
+reported `added=1, conflicts=0`; coverage then returned `COVER_INVALID` because
+that identifier is absent. The workflow emitted
+`PLAYBOOK_DEPOSIT_FROZEN_UNCOVERED` and exited 2 (94.93 s, maximum RSS
+1,486,454,784 bytes). No coverage edge was fabricated.
+
+State: `Golden/Frozen/state/D5/S3/Constants/Moments/CoefficientNewtonSums.lean.json`.
+Statement identity: `sha256:2eaa9526bade862a1a821b87daf78426f82845dc681d9a7dc8f637cb255c66c6`.
+Freeze event: `sha256:98abbda2bcb7f6fd8bd002784480a485d613306472ca3e3ed70378ace72da202`.
+Its recorded frozen prerequisites are `[]`.
+
+`pushed`: implementation commits `877ff6375d` and `c42193988f` were pushed;
+the final push SHA and PR/check status are recorded in the completion envelope.
+`pr`: the final URL and check receipt are external to this pre-PR report.
 `assumed_unverified`: the unproved root-sum correspondence, frozen normalization
 bridge, parity identity, general Lean factorial simplification, and independent
 semantic review are `ASSUMED-UNVERIFIED`.
