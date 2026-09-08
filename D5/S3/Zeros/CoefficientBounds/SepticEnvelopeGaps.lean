@@ -107,4 +107,33 @@ theorem gap_z_nonneg (a b c d e f : ℝ)
   unfold gapZ
   positivity
 
+set_option maxRecDepth 4096 in
+set_option maxHeartbeats 4000000 in
+theorem gap_b_upper (a b c d e f : ℝ)
+    (ha : 0 ≤ a) (hb : 0 ≤ b) (hc : 0 ≤ c)
+    (hd : 0 ≤ d) (he : 0 ≤ e) (hf : 0 ≤ f) :
+    gapB a b c d e f ≤ 49*(gapA a b c d e f)^2/20 := by
+  have hid : 49*(gapA a b c d e f)^2/20 - gapB a b c d e f =
+      (2401/40)*(a^2-f^2)^2 +
+      (2401 / 40) * (a * (a * (a * (17 * a + 60 * b + 48 * c + 36 * d + 24 * e + 12 * f) + b * (70 *
+      b + 112 * c + 84 * d + 56 * e + 28 * f) + c * (40 * c + 60 * d + 40 * e + 20 * f) + d * (18 *
+      d + 24 * e + 12 * f) + e * (4 * e + 4 * f)) + b * (b * (20 * b + 48 * c + 36 * d + 24 * e + 12
+      * f) + c * (40 * c + 60 * d + 40 * e + 20 * f) + d * (24 * d + 32 * e + 16 * f) + e * (12 * e
+      + 12 * f) + 4 * f ^ 2) + c * (d * (12 * d + 16 * e + 8 * f) + e * (16 * e + 16 * f) + 12 * f ^
+      2) + d * (e * (20 * e + 20 * f) + 20 * f ^ 2) + e * (e * (8 * e + 12 * f) + 28 * f ^ 2) + 12 *
+      f ^ 3) + b * (b * (b * (10 * b + 32 * c + 24 * d + 16 * e + 8 * f) + c * (40 * c + 60 * d + 40
+      * e + 20 * f) + d * (24 * d + 32 * e + 16 * f) + e * (12 * e + 12 * f) + 4 * f ^ 2) + c * (d *
+      (24 * d + 32 * e + 16 * f) + e * (32 * e + 32 * f) + 24 * f ^ 2) + d * (e * (40 * e + 40 * f)
+      + 40 * f ^ 2) + e * (e * (16 * e + 24 * f) + 56 * f ^ 2) + 24 * f ^ 3) + c * (c * (d * (18 * d
+      + 24 * e + 12 * f) + e * (24 * e + 24 * f) + 18 * f ^ 2) + d * (e * (60 * e + 60 * f) + 60 * f
+      ^ 2) + e * (e * (24 * e + 36 * f) + 84 * f ^ 2) + 36 * f ^ 3) + d * (d * (e * (40 * e + 40 *
+      f) + 40 * f ^ 2) + e * (e * (32 * e + 48 * f) + 112 * f ^ 2) + 48 * f ^ 3) + e * (e * (e * (10
+      * e + 20 * f) + 70 * f ^ 2) + 60 * f ^ 3) + 17 * f ^ 4) := by
+    unfold gapA gapB
+    ring
+  have h : 0 ≤ 49*(gapA a b c d e f)^2/20 - gapB a b c d e f := by
+    rw [hid]
+    positivity
+  linarith only [h]
+
 end D5.S3.Zeros.CoefficientBounds.SepticEnvelopeGaps
