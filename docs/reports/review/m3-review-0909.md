@@ -499,5 +499,251 @@ updates and any later implementation changes are outside this pinned review.
 ## Publication
 
 Each completed question and validation is recorded and pushed immediately.
-Q1-Q6 are complete. The final result envelope will list the pushed commit SHAs;
-the structured conclusion and artifact publication follow this Q6 checkpoint.
+Q1-Q6 are complete and their checkpoints were pushed to `review/m3-0909`.
+The commit list below is the acknowledged publication snapshot when this
+conclusion was written. The runner envelope extends that list with the commits
+carrying this conclusion and the final checks; a Git commit cannot embed its
+own resulting hash. Its final `pushed.snapshot_tip` identifies the complete
+published report. No implementation, Blueprint, or frozen-state file was edited.
+
+## Conclusion
+
+`approve` is this independent review's verdict on the pinned source and report,
+not an admission, CI, freeze, or general-m verdict. There are no blocking
+findings. The Q1 failure readings and the semantic limits on Q2 tests (ii)/(iv)
+remain part of the verdict, not discarded qualifications.
+
+```json
+{
+  "verdict": "approve",
+  "blocking": [],
+  "audited_commit": "edcaa0364b401e2a13a4e28bb7bd51ff1dbb5c07",
+  "review_report": "docs/reports/review/m3-review-0909.md",
+  "proof_shape_independent": [
+    {
+      "theorem": "GribinskiDegreeThree.m3_nonnegative_roots",
+      "implementation_self_report": "content",
+      "independent": "content",
+      "file:line": "D5/S3/Zeros/Convolution/GribinskiDegreeThree.lean:237",
+      "reason": "The frozen cubic theorem still requires the output discriminant inequality. Its live proof uses the new ordered coefficient-sign construction after inlining."
+    },
+    {
+      "theorem": "GribinskiDegreeThree.m3_discriminant_nonneg",
+      "implementation_self_report": "content",
+      "independent": "content",
+      "file:line": "D5/S3/Zeros/Convolution/GribinskiDegreeThree.lean:226",
+      "reason": "Sorting and denominator normalization transport a new universal polynomial estimate built from four ordered coefficient inequalities."
+    },
+    {
+      "theorem": "GribinskiDegreeThreeDiscriminant.ordered_numerator_nonneg",
+      "implementation_self_report": "content",
+      "independent": "content",
+      "file:line": "D5/S3/Zeros/Convolution/GribinskiDegreeThreeDiscriminant.lean:360",
+      "reason": "The constructed weighted-square estimates for coefficients 2 and 3 supply the substantive new signs; the four signs are consumed in the parameter polynomial."
+    },
+    {
+      "theorem": "GribinskiDegreeThree.definition_consistency",
+      "implementation_self_report": "bind-only",
+      "independent": "bind-only",
+      "file:line": "D5/S3/Zeros/Convolution/GribinskiDegreeThree.lean:60",
+      "reason": "Coefficient extraction and definition normalization."
+    },
+    {
+      "theorem": "GribinskiDegreeThree.convolution_coefficients",
+      "implementation_self_report": "bind-only",
+      "independent": "bind-only",
+      "file:line": "D5/S3/Zeros/Convolution/GribinskiDegreeThree.lean:86",
+      "reason": "Finite coefficient expansion and field/ring normalization."
+    },
+    {
+      "theorem": "GribinskiDegreeThree.m3_explicit_coefficients",
+      "implementation_self_report": "bind-only",
+      "independent": "bind-only",
+      "file:line": "D5/S3/Zeros/Convolution/GribinskiDegreeThree.lean:110",
+      "reason": "Reconstruction using the normalized coefficient identities."
+    },
+    {
+      "theorem": "GribinskiDegreeThree.weight_pos",
+      "implementation_self_report": "bind-only",
+      "independent": "bind-only",
+      "file:line": "D5/S3/Zeros/Convolution/GribinskiDegreeThree.lean:123",
+      "reason": "Direct descPochhammer_pos instantiation and sign arithmetic."
+    },
+    {
+      "theorem": "GribinskiDegreeThree.m3_nonnegative_coefficients",
+      "implementation_self_report": "bind-only",
+      "independent": "bind-only",
+      "file:line": "D5/S3/Zeros/Convolution/GribinskiDegreeThree.lean:130",
+      "reason": "Sign propagation from the input signs and explicit coefficient formulas."
+    },
+    {
+      "theorem": "GribinskiDegreeThree.nonnegative_rootTriple_coordinates",
+      "implementation_self_report": "bind-only",
+      "independent": "bind-only",
+      "file:line": "D5/S3/Zeros/Convolution/GribinskiDegreeThree.lean:157",
+      "reason": "Order dichotomy, gap subtraction, and commutative polynomial normalization."
+    }
+  ],
+  "escape_witness_four_tests": {
+    "witness": "The ordered parameter-coefficient inequalities, especially ordered_coeff2_nonneg and ordered_coeff3_nonneg with their weighted-square constructions.",
+    "GribinskiDegreeThree.m3_nonnegative_roots": {
+      "i": {"pass": true, "reason": "The elaborated and reduced dependency paths reach all four coefficient-sign proofs through both discriminant results."},
+      "ii": {"pass": true, "reason": "The frozen factorization demands the missing discriminant sign. The new coefficient estimates supply it; the actual restricted binding probes did not."},
+      "iii": {"pass": true, "reason": "Individual ordered-gap coefficient inequalities are distinct from the existence of three nonnegative output roots."},
+      "iv": {"pass": true, "reason": "The reduced term retains both the discriminant proof and the frozen factorization application. Removing the sign construction leaves the hD obligation exposed in Q1."}
+    },
+    "GribinskiDegreeThree.m3_discriminant_nonneg": {
+      "i": {"pass": true, "reason": "The elaborated and reduced closure reaches ordered_output_discriminant, ordered_numerator_nonneg, and all four sign constructions."},
+      "ii": {"pass": true, "reason": "Sorting and positive-denominator clearing leave coefficient inequalities; coefficients 2 and 3 require the constructed square estimates for their negative expanded terms."},
+      "iii": {"pass": true, "reason": "An individual parameter-coefficient inequality is neither definitionally the full alpha-dependent discriminant inequality nor its restatement."},
+      "iv": {"pass": true, "reason": "The signs are used to prove the cleared numerator and transported by positive scaling. Deleting the construction leaves that numerator sign unsupported."}
+    },
+    "GribinskiDegreeThreeDiscriminant.ordered_numerator_nonneg": {
+      "i": {"pass": true, "reason": "All four ordered_coeffN_nonneg, coeffN_identity, and sosN_nonneg declarations survive the compiler-semantic dependency traversal."},
+      "ii": {"pass": true, "reason": "The new degree-2 and degree-3 coefficient-sign estimates use the specific 12-square and 8-square constructions; no direct frozen or Mathlib preservation result was found."},
+      "iii": {"pass": true, "reason": "The coefficient statements are distinct from their full cubic-in-t nonnegativity conclusion."},
+      "iv": {"pass": true, "reason": "All four signs occur in the reduced nested add_nonneg/mul_nonneg proof at lines 377-382; no witness is discarded by a projection."}
+    },
+    "dead_term_control": "(And.intro h frozen).2 reduced to fun p q h frozen => frozen.",
+    "assessment_limit": "Tests (ii) and the alternative-proof part of (iv) are semantic review judgments supported by actual restricted attempts and inspected APIs. No exhaustive non-derivability theorem is claimed; the nlinarith timeout is not such a theorem.",
+    "module_admission_basis": {
+      "GribinskiDegreeThree": "escape-witness supported",
+      "GribinskiDegreeThreeDiscriminant": "escape-witness supported"
+    },
+    "certificate_own_reading": {
+      "weighted_squares": 20,
+      "positive_remainder_monomials": 767,
+      "parameter_coefficient_degrees": [0, 1, 2, 3],
+      "all_four_exact_identities_verified": true,
+      "positive_remainder_counts": [310, 257, 156, 44],
+      "square_counts": [0, 0, 12, 8]
+    }
+  },
+  "utility_classification_verdict": {
+    "GribinskiDegreeThree": "none valid",
+    "GribinskiDegreeThreeDiscriminant": "none valid",
+    "all_47_source_declarations_reviewed": true,
+    "per_declaration_readings": "Q3 table",
+    "ordinary_positive_finite_instance_found": false,
+    "bounded_enumeration_found": false,
+    "reason": "The deliverables are universal symbolic inequalities and preservation for every cubic input and every alpha > -1. Finite algebraic support and four parameter coefficients do not enumerate input objects or certify a particular input.",
+    "a5_1_header_grammar_valid": true,
+    "header_lines_both_modules": {"anchors": 5, "utility": 6, "digest": 7},
+    "sl031_or_full_admission_run_claimed": false
+  },
+  "fidelity_verdict": {
+    "a": {"pass": true, "reason": "Definition 3.10 and the frozen m=2 definition use the identical signed-coefficient, falling-factorial, convolution, and reconstruction formulas with m replaced by 3."},
+    "b": {"pass": true, "reason": "The paper's P3 consists of monic exact-degree-three polynomials. A roots multiset of cardinality three gives rootTriple, including repeated and zero roots; the Real-polynomial equivalence was checked in Lean."},
+    "c": {"pass": true, "reason": "Equality to a nonnegative rootTriple is equivalent to monic degree-three split polynomial membership with all roots nonnegative, verified in Lean."},
+    "paper_opened": ["https://arxiv.org/html/2502.00254v2", "https://arxiv.org/pdf/2502.00254v2"],
+    "quoted_page_verified": 13,
+    "lean_equivalence_probe_exit": 0,
+    "complex_to_real_scope": "Mathematical identification by monic factorization with all roots real; no separate Lean complex-to-real cast lemma is claimed."
+  },
+  "own_exit_codes": {"make lean": 0, "make lean-report": 0},
+  "own_timings_seconds": {"make lean": 83.76, "make lean-report": 10.27},
+  "axioms_own_reading": {
+    "canonical_path": ".lake/build/stratalint/raw-lean-report.json",
+    "report_sha256": "20b925ef0ef86b656f60079b914364b66292344a31b3ab47ea941c67d6735b09",
+    "input_address": "sha256:a20ab3bd7c3261e58c6f85f9c399e3b5a3f61e6b30d117bbc35fa45374ae880d",
+    "own_make_lean_report_mode": "cached",
+    "both_source_hashes_verified": true,
+    "brief_declaration_count": 27,
+    "actual_included_declarations": 47,
+    "included_theorems": 26,
+    "included_definitions": 21,
+    "raw_declarations_checked": 164,
+    "axioms_of_every_included_declaration": ["Classical.choice", "Quot.sound", "propext"],
+    "all_raw_axiom_sets_are_subsets_of_standard_three": true,
+    "unexpected_axiom_count": 0,
+    "per_declaration_artifact": "q5-canonical-reading.json in the worker artifact directory",
+    "count_correction": "The brief's 27 is not the final included count. Implementation added=27 explicitly describes an inspector cache delta."
+  },
+  "sorryax_present": false,
+  "lexical_own_reading": {
+    "regex": "\\bsorry\\b|\\badmit\\b|^axiom |\\bnative_decide\\b",
+    "target_matching_lines": 0,
+    "target_exit": 1,
+    "positive_control": "D5/X_Frontier/Hearts.lean:76",
+    "positive_control_matching_lines": 1,
+    "positive_control_exit": 0
+  },
+  "mathlib_hits": {
+    "convolution_name_search": {"regex": "\\b(gribinski|boxplus|rectangular.*convolution)\\b", "scope": ".lake/packages/mathlib/Mathlib/**/*.lean", "case_insensitive": true, "matching_lines": 0, "exit": 1},
+    "boundary_feature_positive_search": {"matching_lines": 12, "exit": 0},
+    "relevant_declarations": ["Cubic.prod_X_sub_C_eq", "descPochhammer_pos", "Cubic.discr_eq_prod_three_roots", "Cubic.discr_ne_zero_iff_roots_nodup"],
+    "assessment": "No preservation theorem found in the searched scope. Cubic root/discriminant lemmas assume the roots or splitting that remain to be proved; textual absence is not semantic absence."
+  },
+  "direct_bind_probe": {
+    "frozen_assembly_checked": true,
+    "successful_bind_only_main_proof_found": false,
+    "combined_probe_exit": 2,
+    "nlinarith": "200000-heartbeat timeout at whnf",
+    "linarith_only": "Failed to find a contradiction with Delta < 0 and the listed sign/square facts",
+    "polyrith": "Actually invoked; pinned Mathlib reports tactic unavailable because its external service shut down",
+    "log": "q1-direct-1.log in the worker artifact directory"
+  },
+  "report_honesty_verdict": {
+    "pass": true,
+    "explicit_nonclaims_present": true,
+    "nonclaims_are_positive_evidence": true,
+    "scope_and_producer_boundaries_accurate": true,
+    "evidence": "Implementation report:3-11, 180-185, 213-223, 331-349, 366-395, 420-457, 479-484; Q6 above"
+  },
+  "pushed": {
+    "branch": "review/m3-0909",
+    "remote": "https://github.com/the-omega-institute/trureturing.git",
+    "snapshot_tip": "f49fd4aedbae01e850091701fc31fc2838e6bd5c",
+    "snapshot_scope": "All acknowledged Q1-Q6 checkpoint pushes; the final result envelope extends this list with the conclusion and final-check commits.",
+    "commits": [
+      "fa04de47a2cf7de1acaffaee4c6fe3e7f428edf2",
+      "c0c19c3ef78feb93159251089a4ff164f22c24b4",
+      "e85a2a058422d09dc527d785f3d5f51cdf9207bd",
+      "e2a0c7a649ab09ee8a5262468df15d68b20e53da",
+      "b146a0d1ddcbfe9b835a3a5ca2c6967ef93a06e8",
+      "0ed2c563eb06f1c4823d42cab8da82a0de400d59",
+      "0e8c81894fe44e96191567e891f4f720431111cd",
+      "c7c3d63d35a3d9995e59401d74ef2dd5ecea1d63",
+      "9431e556edcc28b36a85769eaf1ef960e10ce654",
+      "d14a79a2b04e0e5e2d91cc412f7159cbcac68b8d",
+      "57240cf822e178b2280bda3cec08d28a0dd0f006",
+      "f49fd4aedbae01e850091701fc31fc2838e6bd5c"
+    ]
+  },
+  "assumed_unverified": [
+    "Implementation historical timing logs and prior Loogle receipts were not independently rerun.",
+    "Campbell--Jalowy HTML and the retained issue-comment receipts were not opened by this reviewer.",
+    "The other seats' runtime identities and model diversity were not independently established.",
+    "Blueprint updates in the other worktree and source changes after the audited commit were not reviewed."
+  ],
+  "nonclaims": [
+    "No general-m result or full solution of Conjecture 3.13.",
+    "No literature completeness or worldwide priority claim.",
+    "No exhaustive proof that every possible bind-only derivation fails.",
+    "No claim that the cached make lean-report invocation regenerated the inspector report from scratch.",
+    "No make gate, CI, merge, deposit, freeze, coverage, or admission approval."
+  ]
+}
+```
+
+## Final Delivery Checks
+
+Command: `node "$ATTEMPT/finalize-review.cjs" check >
+"$ATTEMPT/final-validation.json"`, **EXIT=0**. The machine-readable receipt
+records all required conclusion fields, six completed question sections,
+nine public proof-shape entries, twelve explicit witness-test booleans, and
+three fidelity booleans. Both audited source SHA-256 values and the canonical
+report SHA-256 match the Q5 readings. `git diff --check edcaa0364b` exited 0;
+`git diff --name-only edcaa0364b` names only this review report. No successful
+Lean verification was repeated without a new reason.
+
+The artifact publisher, `node "$ATTEMPT/finalize-review.cjs" publish`, reads
+the structured conclusion above, fills the final pushed commit list, and
+requires a clean worktree with HEAD equal to `origin/review/m3-0909` after
+the acknowledged push. It generates the strict two-key envelope
+`{"conclusion": {...}, "log_ref": "<absolute review-report path>"}` and
+publishes `result.json.tmp` by atomic rename to `result.json`. Only afterward
+does it atomically rename `completion.sentinel.tmp` to `completion.sentinel`.
+`publication-receipt.json` retains the final commit and envelope hash in the
+worker artifact directory. These worker artifacts are generated by this
+reviewer, not left for runner repair or normalization.
