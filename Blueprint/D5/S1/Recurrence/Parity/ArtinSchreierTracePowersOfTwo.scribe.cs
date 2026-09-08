@@ -26,10 +26,8 @@ internal sealed class ArtinSchreierTracePowersOfTwoDocument : IScribeDocumentDef
                         + "finite-prefix rule extracted from the defining equation of OEIS "
                         + "A396808. The symbols mk and coeff below denote PowerSeries.mk and "
                         + "PowerSeries.coeff, with the coefficient index written first; castZ "
-                        + "is the natural-to-integer cast. The preregistered S3/Arith bucket "
-                        + "contains 24 Lean files at implementation base 507e74d425, so this "
-                        + "module uses S1/Recurrence, whose 21 Lean files include the natural "
-                        + "finite-prefix recurrence family."))),
+                        + "is the natural-to-integer cast. Thus P_n determines a(n), and "
+                        + "adjoining a(n) times X to power n produces P_(n+1)."))),
                 DescribeRole.Definition),
             Describe.Lean(
                 DescribeId.Create("a396808-prefix-polynomial"),
@@ -39,9 +37,8 @@ internal sealed class ArtinSchreierTracePowersOfTwoDocument : IScribeDocumentDef
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
                     "The public prefix polynomial is initialized at zero and extends by the "
-                        + "new coefficient a(n) at degree n. It is the P_n used in the source "
-                        + "recurrence, now named by its Lean declaration rather than by an "
-                        + "invented narrative alias."))),
+                        + "new coefficient a(n) at degree n. Consequently, the coefficient of "
+                        + "X to power j in P_n is a(j) when j<n and zero otherwise."))),
                 DescribeRole.Definition),
             Describe.Lean(
                 DescribeId.Create("a396808-prefix-polynomial-sum"),
@@ -52,7 +49,7 @@ internal sealed class ArtinSchreierTracePowersOfTwoDocument : IScribeDocumentDef
                 Blocks(Paragraph(Text(
                     "For every n, prefixPolynomial(n) is exactly the finite sum over j in "
                         + "range(n) of the constant polynomial C(a(j)) times X to power j. "
-                        + "This is the atom's defining expression for P_n."))),
+                        + "Hence the recursive and finite-sum descriptions of P_n agree."))),
                 DescribeRole.Theorem),
             Describe.Lean(
                 DescribeId.Create("a396808-source-equation"),
@@ -62,8 +59,10 @@ internal sealed class ArtinSchreierTracePowersOfTwoDocument : IScribeDocumentDef
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
                     "For every n greater than one, the formal power series mk(a) satisfies "
-                        + "the coefficient equation in the OEIS name line. Both powers and both "
-                        + "integer factors are displayed exactly as in the Lean theorem."))),
+                        + "the coefficient equation in the OEIS name line. The strict-prefix "
+                        + "coefficient formula isolates the contribution of a(n) to both "
+                        + "powers, and the defining recurrence makes the resulting terms "
+                        + "cancel."))),
                 DescribeRole.Theorem),
             Describe.Lean(
                 DescribeId.Create("a396808-normalized-solution-unique"),
@@ -96,8 +95,8 @@ internal sealed class ArtinSchreierTracePowersOfTwoDocument : IScribeDocumentDef
                 Blocks(Paragraph(Text(
                     "The coefficient recursion defines S over ZMod(2). It has coefficient one "
                         + "at degree zero and at exactly the powers of two, so S is "
-                        + "1+x+x^2+x^4+x^8+.... This constant-one normalization is the corrected "
-                        + "witness from PZG comment 27.851; the two roots differ by one."))),
+                        + "1+x+x^2+x^4+x^8+.... Its constant term is one, while S+1 has "
+                        + "constant term zero; these are the two roots of Y^2+Y=X."))),
                 DescribeRole.Definition),
             Describe.Lean(
                 DescribeId.Create("a396808-artin-series-square-add"),
@@ -130,8 +129,9 @@ internal sealed class ArtinSchreierTracePowersOfTwoDocument : IScribeDocumentDef
                 Blocks(Paragraph(Text(
                     "For every natural exponent m, coercing T_m to a formal power series "
                         + "equals S^m+(S+1)^m. Both roots obey the same two-step power "
-                        + "recurrence, which proves the identity by two-step induction. The "
-                        + "displayed coe is the polynomial-to-power-series coercion."))),
+                        + "recurrence, which proves the identity by two-step induction. Here "
+                        + "T_m is viewed as a formal power series through the coefficientwise "
+                        + "embedding of polynomials."))),
                 DescribeRole.Theorem),
             Describe.Lean(
                 DescribeId.Create("a396808-trace-polynomial-degree"),
@@ -153,8 +153,9 @@ internal sealed class ArtinSchreierTracePowersOfTwoDocument : IScribeDocumentDef
                 Blocks(Paragraph(Text(
                     "If floor(m/2)<n<m, coefficient n of S^m is zero. The degree bound kills "
                         + "coefficient n of T_m, while S+1 has zero constant coefficient and "
-                        + "therefore its mth power has no coefficient below m. This is the live "
-                        + "Artin-Schreier trace consumed step."))),
+                        + "therefore its mth power has no coefficient below m. The trace "
+                        + "identity then forces coefficient n of S^m to vanish because both "
+                        + "other terms have zero nth coefficient."))),
                 DescribeRole.Theorem),
             Describe.Lean(
                 DescribeId.Create("a396808-reduced-series-is-artin-series"),
