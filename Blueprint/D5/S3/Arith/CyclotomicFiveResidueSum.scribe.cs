@@ -66,7 +66,10 @@ internal sealed class CyclotomicFiveResidueSumDocument : IScribeDocumentDefiniti
                 + "short. So the valuation of the sum is exactly one short of the modulus, "
                 + "and in particular the modulus does not divide it. Nothing is claimed for "
                 + "moduli not divisible by five, where the sum often is a multiple.",
-                DescribeRole.Theorem, AssessedProvenance.FromRepo(Source)))));
+                DescribeRole.Theorem, AssessedProvenance.FromRepo(Source),
+                new OpenProblemResolutionClaim(
+                    ProblemSlugRef.Create("oeis-a290322-cyclotomic-five-residue-sum"),
+                    ResolutionKind.Proved)))));
 
     private static DocumentBlock Node(string name, string title, Formula formula, string prose,
         DescribeRole role, AssessedProvenance provenance,
