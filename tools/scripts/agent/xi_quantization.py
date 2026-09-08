@@ -308,7 +308,8 @@ def system_evidence():
 
 
 def publish_report(path, report):
-    require(report["status"] == "complete" and report["coverage"]["unresolved_count"] == 0,
+    require(report["status"] == "publication_unconfirmed" and report["mathematical_status"] == "complete"
+            and report["coverage"]["unresolved_count"] == 0,
             "incomplete runs cannot publish/replace a report")
     path = Path(path).resolve()
     root = Path(__file__).resolve().parents[3]
@@ -324,7 +325,9 @@ def publish_report(path, report):
             "Generated numerical-library evidence for one fixed three-observation matrix. "
             "The analytic tail is a paper argument with exact endpoint arithmetic; nothing here is Lean-frozen. "
             "GPU outputs are candidates. Counts and the mathematical digest cover only the requested prefix; "
-            "the two controls are separately recorded. Independent review and publication remain caller-owned.\n\n"
+            "the two controls are separately recorded. This is a certified pre-publication snapshot: "
+            "publication_unconfirmed does not assert I/O success. Consult the runtime record and process exit "
+            "for the subsequent publication/recording outcome. Independent review and PR publication remain caller-owned.\n\n"
             "```json\n"+body+"\n```\n")
     state_store.atomic_write(path, lambda stream: stream.write(text.encode("utf-8")))
 
@@ -338,7 +341,8 @@ def run(args):
     counters = {method: Counter({key: 0 for key in CLASSES}) for method in ("entrywise", "schur")}
     extremes = {method: {} for method in counters}
     comparisons = {method: comparison_summary() for method in ("naive", "centered")}
-    report = {"status": "incomplete", "started_at_utc": state_store.utc_now(),
+    report = {"schema_version": 2, "status": "incomplete", "started_at_utc": state_store.utc_now(),
+              "publication_contract": "mathematical_status describes certified coverage only. Markdown is a pre-publication snapshot with status=publication_unconfirmed, even on successful writes. Runtime/stdout status=complete records that the report writer returned; exit 0 additionally requires runtime recording to return. Failures before replacement preserve old destination bytes. A failed post-replacement directory sync may leave new visible bytes; persistence is uncertain. No rollback is promised. Runtime records use the same writer and cannot certify their own final sync.",
               "command": shlex.join(PINS+[str(Path(__file__).resolve()), *sys.argv[1:]]),
               "settings": vars(args), "evidence_status": "Arb enclosure + exact Python integers; not Lean-frozen",
               "exact_classification": "CPU Python arbitrary-precision integers; both endpoints of x,y,beta certified at EVERY classified m, including MPS nonnegative candidates",
@@ -419,17 +423,30 @@ def run(args):
         if gpu:
             report["mps"] = gpu.summary()
         report["finished_at_utc"] = state_store.utc_now()
-        state_store.atomic_json(runtime_path, report)
-        if report["status"] == "complete":
-            try:
-                publish_report(args.report, report)
-            except (Exception, KeyboardInterrupt) as error:
-                report.update(status="publication_failed", error=f"{type(error).__name__}: {error}")
+        report["mathematical_status"] = report["status"]
+        if report["mathematical_status"] == "complete":
+            report["status"] = "publication_unconfirmed"
+        try:
+            # Persist certified coverage before attempting the independent report write.
+            state_store.atomic_json(runtime_path, report)
+            if report["mathematical_status"] == "complete":
+                try:
+                    publish_report(args.report, report)
+                except (Exception, KeyboardInterrupt) as error:
+                    report.update(status="publication_failed", error=f"{type(error).__name__}: {error}")
+                else:
+                    report["status"] = "complete"
                 state_store.atomic_json(runtime_path, report)
+        except (Exception, KeyboardInterrupt) as error:
+            report["runtime_record_error"] = f"{type(error).__name__}: {error}"
+            if report["status"] != "publication_failed":
+                report["status"] = "recording_failed"
         print(json.dumps({"status": report["status"], "runtime_record": str(runtime_path),
+                          "mathematical_status": report["mathematical_status"],
                           "coverage": report["coverage"], "exact_counts": counters,
-                          "classification_sha256": digest.hexdigest(), "error": report.get("error")}, sort_keys=True))
-        return 0 if report["status"] == "complete" else 1
+                          "classification_sha256": digest.hexdigest(), "error": report.get("error"),
+                          "runtime_record_error": report.get("runtime_record_error")}, sort_keys=True))
+        return 0 if report["status"] == "complete" and "runtime_record_error" not in report else 1
 
 
 def main():

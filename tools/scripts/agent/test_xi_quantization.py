@@ -104,27 +104,100 @@ class QuantizationTests(unittest.TestCase):
         self.assertEqual(1, summary["entrywise_confusion_exact_then_candidate"]["indefinite"]["singular"])
         self.assertEqual(200, summary["sign_examples"][0]["m"])
 
-    def test_publication_failure_is_not_a_complete_run(self):
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            report = root / "completed.md"
-            report.write_text("existing completed evidence\n")
-            args = SimpleNamespace(first=1, last=3, chunk=2, precision=256, digits=40,
-                                   mode="cpu", state_dir=str(root / "state"), report=str(report))
-            intervals = {"x": (0, 0, 1), "y": (0, 0, 1), "beta": (0, 0, 1)}
-            receipt = {"coarse_intervals": {"gap": (1, 1, 1)}}
-            environment = {"dependencies": {"torch": "2.8.0", "numpy": "2.0.2", "python-flint": "0.8.0"}}
-            with (patch.object(q, "generate_inputs", return_value=(intervals, receipt)),
-                  patch.object(q, "system_evidence", return_value=environment),
-                  patch.object(q.sys, "version_info", (3, 12)),
-                  patch.dict(os.environ, {"GPU5040_SHARED_ROOT": str(root / "shared")}),
-                  patch.object(q, "publish_report", side_effect=OSError("injected storage failure")),
-                  redirect_stdout(io.StringIO())):
-                self.assertEqual(1, q.run(args))
-            record = json.loads(next((root / "state").glob("run-*.json")).read_text())
-            self.assertEqual("publication_failed", record["status"])
-            self.assertEqual(3, record["coverage"]["classified_count"])
-            self.assertEqual("existing completed evidence\n", report.read_text())
+    def test_real_report_writer_separates_certification_from_publication(self):
+        for failure in (None, "before_replace", "directory_sync", "failure_record_sync", "success_record_sync"):
+            with self.subTest(failure=failure), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory).resolve()
+                report = root / "completed.md"
+                report.write_text("existing completed evidence\n")
+                args = SimpleNamespace(first=1, last=3, chunk=2, precision=256, digits=40,
+                                       mode="cpu", state_dir=str(root / "state"), report=str(report))
+                intervals = {"x": (0, 0, 1), "y": (0, 0, 1), "beta": (0, 0, 1)}
+                receipt = {"coarse_intervals": {"gap": (1, 1, 1)}}
+                environment = {"dependencies": {"torch": "2.8.0", "numpy": "2.0.2", "python-flint": "0.8.0"}}
+                replace = q.state_store.os.replace
+                sync_directory = q.state_store.sync_directory
+
+                def replace_or_fail(source, destination):
+                    if Path(destination) == report and failure == "before_replace":
+                        raise OSError("injected report replacement failure")
+                    replace(source, destination)
+
+                def sync_or_fail(directory):
+                    if Path(directory) == report.parent and failure in ("directory_sync", "failure_record_sync"):
+                        raise OSError("injected report directory sync failure")
+                    if Path(directory) == root / "state" and failure in ("failure_record_sync", "success_record_sync"):
+                        visible = json.loads(next((root / "state").glob("run-*.json")).read_text())
+                        if visible["status"] in ("publication_failed", "complete"):
+                            raise OSError("injected runtime record directory sync failure")
+                    sync_directory(directory)
+
+                output = io.StringIO()
+                with (patch.object(q, "generate_inputs", return_value=(intervals, receipt)),
+                      patch.object(q, "system_evidence", return_value=environment),
+                      patch.object(q.sys, "version_info", (3, 12)),
+                      patch.dict(os.environ, {"GPU5040_SHARED_ROOT": str(root / "shared")}),
+                      patch.object(q.state_store.os, "replace", side_effect=replace_or_fail),
+                      patch.object(q.state_store, "sync_directory", side_effect=sync_or_fail),
+                      redirect_stdout(output)):
+                    self.assertEqual(1 if failure else 0, q.run(args))
+                record = json.loads(next((root / "state").glob("run-*.json")).read_text())
+                summary = json.loads(output.getvalue())
+                self.assertEqual("complete" if failure in (None, "success_record_sync") else "publication_failed",
+                                 record["status"])
+                self.assertEqual("recording_failed" if failure == "success_record_sync" else record["status"],
+                                 summary["status"])
+                self.assertEqual("complete", record["mathematical_status"])
+                self.assertEqual("complete", summary["mathematical_status"])
+                self.assertEqual(3, record["coverage"]["classified_count"])
+                self.assertEqual([], record["coverage"]["unresolved_ranges"])
+                self.assertTrue(record["digest_complete_for_requested_interval"])
+                expected_digest = hashlib.sha256(b"1,0,0,0,pd,pd\n2,0,0,0,pd,pd\n3,0,0,0,pd,pd\n").hexdigest()
+                self.assertEqual(expected_digest, record["classification_sha256"])
+                if failure not in (None, "success_record_sync"):
+                    self.assertIn("injected report", record["error"])
+                    self.assertEqual(record["error"], summary["error"])
+                if failure in ("failure_record_sync", "success_record_sync"):
+                    self.assertIn("injected runtime record", summary["runtime_record_error"])
+                else:
+                    self.assertIsNone(summary["runtime_record_error"])
+                if failure == "before_replace":
+                    self.assertEqual("existing completed evidence\n", report.read_text())
+                else:
+                    snapshot = json.loads(report.read_text().split("```json\n")[1].split("\n```")[0])
+                    self.assertEqual(2, snapshot["schema_version"])
+                    self.assertEqual("publication_unconfirmed", snapshot["status"])
+                    self.assertEqual("complete", snapshot["mathematical_status"])
+                    self.assertEqual(record["runtime_record"], snapshot["runtime_record"])
+                    for key in ("coverage", "exact_counts", "classification_sha256"):
+                        self.assertEqual(record[key], snapshot[key])
+                    self.assertIn("before replacement", snapshot["publication_contract"])
+                    self.assertIn("persistence is uncertain", snapshot["publication_contract"])
+
+    def test_tail_rational_bound_and_strict_hypotheses(self):
+        intervals = {"x": (999196806720852614, 999196806720852615, 10**18),
+                     "y": (996790337371607624, 996790337371607625, 10**18),
+                     "beta": (-998866411947906582, -998866411947906581, 10**18)}
+        coarse = {"gap": (1820249309832, 1820249309833, 10**18)}
+        tail = q.tail_certificate(intervals, coarse)
+        # Independent rational values of the paper's 5/(2M) + 1/(2M^2) at M=1400000.
+        error = F(7000001, 3920000000000)
+        self.assertEqual(1400000, tail["from_m"])
+        self.assertEqual(error, F(tail["error_at_M"]))
+        self.assertEqual(F(211525460221, 6125000000000000000), F(tail["gap_minus_error"]))
+        self.assertEqual(F(1820249309832, 10**18), F(tail["gap_lower_used"]))
+        for deficit in (F(0), F(1, 10**18)):
+            gap = error-deficit
+            with self.subTest(gap=gap), self.assertRaisesRegex(ValueError, "tail bounds failed"):
+                q.tail_certificate(intervals, {"gap": (gap.numerator, gap.numerator, gap.denominator)})
+            for name, sign in (("x", -1), ("x", 1), ("y", 1), ("beta", -1), ("beta", 1)):
+                endpoint = sign*(1-F(1, 2800000)+deficit)
+                changed = {**intervals, name: (endpoint.numerator, endpoint.numerator, endpoint.denominator)}
+                message = "Schur tail strictness failed" if name == "beta" else "tail bounds failed"
+                with self.subTest(name=name, sign=sign, deficit=deficit), self.assertRaisesRegex(ValueError, message):
+                    q.tail_certificate(changed, coarse)
+        with self.assertRaisesRegex(ValueError, "independent endpoint PD check failed"):
+            q.tail_certificate({**intervals, "x": (3, 3, 4), "y": (0, 0, 1)}, coarse)
 
 
 if __name__ == "__main__":
