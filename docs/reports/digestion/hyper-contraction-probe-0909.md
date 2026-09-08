@@ -21,7 +21,9 @@
 - Q1: 已答,三个前置在源卷中均找到;散文论证不冒充 Lean 证明。
 - Q2: 已答,3 个矩/距离候选模块均有冻结状态片;批次 8 另核 3 个实际零点前置模块。实际测度识别未因此完成。
 - Q3: 已答,②与以式 (28) 为前件的③为 `bind-only`;①④⑤完整部件为 `likely-bind-only`,其中若干绑定片段已通过。无 content 见证,停止证明扩展。
-- Q4: 未进入。
+- Q4: 已答,建议修订短名单的 content 预判;`verdict=revise`,`escape_witness=null`,不进入实施。
+
+当前结论: **前置在源卷找到,抽象矩/Gram 端确有冻结 pin,但没有查实仅凭 RH 即输出实际式 (27)-(28) 的冻结端。②③已被绑定消去,整体 `likely-bind-only`;没有可点名的逃逸见证。** 这是否定本席将其升级为 content 实施候选的依据,不是反驳源定理。
 
 ## 检索留痕
 
@@ -252,7 +254,7 @@ curl -fsS --max-time 25 --get 'https://loogle.lean-lang.org/json' --data-urlenco
 
 | 命令 | 匹配行数 / exit | 边界 |
 | --- | --- | --- |
-| `rg -n 'structure ZeroData\|finite\|norm\|height\|tendsto' D5/S3/Weil/ZeroSum.lean` | 12 / 0 | 候选定位,随后读取结构及正重数类型 |
+| `rg -n 'structure ZeroData\|finite\|norm\|height\|tendsto' D5/S3/Weil/ZeroSum.lean` | 14 / 0 | 候选定位,随后读取结构及正重数类型;按保存的完整输出复数纠正前一提交的 12 |
 | `rg --files Golden/Frozen/state \| rg -P '(?:ExplicitFormulaObstruction\|ZeroDataNonemptyIffInfinite\|ZeroSum)\.lean\.json$'` | 3 / 0 | 冻结路径存在,另实读 pin |
 | `rg -n -P '\b(?:inter_riemannZetaZeros_finite\|tendsto_riemannZeta_cofinite_cocompact)\b' M/NumberTheory/LSeries/ZetaZeros.lean` | 3 / 0 | 1 文档行 + 2 声明行,不是 3 个定理 |
 | `rg -n -P '\b(?:inter_riemannZetaZeros_probeNegative0909\|tendsto_riemannZeta_probeNegative0909)\b' M/NumberTheory/LSeries/ZetaZeros.lean` | 0 / 1 | 同 PCRE 词界与分组的阴性对照 |
@@ -329,6 +331,39 @@ curl -fsS --max-time 25 --get 'https://loogle.lean-lang.org/json' --data-urlenco
 | `spectral_distance_tendsto` | ①:取逆范数与倒数趋零的复合 |
 
 `sq_nonneg` 加 `linarith only` 也是本席允许的绑定尝试;此处所需非负性已有 `norm_nonneg`/`pow_nonneg`,无须为使用某个 tactic 再造声明。没有因 tactic 名、行数或构造语法把任一片段判为 content。
+
+## Q4: 六栏与逃逸见证
+
+`verdict: revise` 表示修订“最像内容、应进入实施”的候选判断;**不表示定理为假**。`proof_shape: likely-bind-only`,`escape_witness: null`,`admission_basis: none(probe-only)`。②的显式构造与④的固定 r 极限均未通过非绑定性条件,本席不认可其为第 3.2 条形态 (2) 的逃逸见证。完整目标没有 elaborate 的证明项,故也没有可供认证的活依赖路径。
+
+来源分栏: **冻结件**为 Q2 三模块和批次 8 三模块,全部给了实际 state pin;**钉版 Mathlib**为批次 5/8 的已打开类型及已编译调用;**dev 上未冻结件**没有被本席作为本靶承重前置。`WeakQlpDifferentiation` 只用作“代码存在但无 state”的阴性对照,与本靶无数学依赖关系。`LiCurvatureFourierRepresentation` 只读了候选类型,本席未核其 state,不擅自归入未冻结栏或承重冻结栏。
+
+六栏中的 gap 只谈数学前件与逻辑缺口。**未发现源卷此段的确定数学错误;尚未打通某条 Lean 等式不等于发现数学缺陷。** 缺失的实际测度、矩与变分识别指本席已核接口的作用域,不主张全库没有这些端。
+
+| from | steps | gap | escapes | payoff | cost_shape |
+| --- | --- | --- | --- | --- | --- |
+| 全靶:源卷 RH + 式 (27)-(28);冻结矩/Gram 与实际零点前置;钉版 Mathlib;dev 未冻结承重项 none | 实例化测度/最小残差,选择有限根积,积分比较,固定 r 后取极限 | 抽象接口不能省去实际权重总和、Li 矩、Schur 残差与 L2 距离的同对象识别;源卷提供散文前件,本席未形式化该连接 | null,整体 likely-bind-only | 将短名单第 1 名降为未有 content 依据的探针结论;只处理 RH 条件结论,不推进 RH | 定义与接口实例化占主导;无支持新分析内容的读数,不给小时估算 |
+| ①:Mathlib `ZetaZeros`/倒数极限;冻结 `ZeroData` 路径可替代 | 倒数范数趋零;紧球零点有限后取子集与像 | 单条序列极限不足覆盖全谱,须实际零点局部有限;库已给 | 未能给出,likely-bind-only | 不需另做零点计数或重证离散性 | 集合/滤子与 Cayley 坐标改写 |
+| ②:Mathlib 多项式、范数、有限乘积、幂 | 构造 P,首一/次数/零值,逐因子界,平方规范化 | a.e. 积分界要实际测度集中在谱点;点态估计自身无已识别缺陷 | none,bind-only | 实测消去首要拟议构造见证 | 4 个多项式片段已通过;停止该部件证明 |
+| ③:式 (28);Mathlib `IsLeast`/积分序;冻结 Gram 识别候选 | 取 min 下界,代入 P,概率常数积分 | 不得把抽象矩二次型直接称作原 Schur h_n;须前述同对象识别 | none,bind-only under variational premise | 比较本身无独立内容 | 最小值投影及可积性/a.e. 前件核对 |
+| ④:Mathlib rpow 连续性、常数除 n 极限、序极限 | 固定 r 与 K(r),根上界趋 r^2,再取任意小 r | 根比较需非负底数与最终 n>0;limsup 路径需最终有界,不需要 K 对 r 一致 | 未能给出,likely-bind-only;固定 r 核心 bind-only | 未测出新的“一致估计”内容 | 实/自然指数改写与滤子组合;未编译完整收束 |
+| ⑤:冻结实际零点无限与正重数;Mathlib 有限根集、正积分、闭集距离 | 正质量非根点使残差正;达到最小值或有限维闭性使 h_n 正 | 正积分逐点成立不足推出 inf 正;必须达到或闭性,且谱点正质量 | 未能给出,likely-bind-only | 排除重复实现零点无限性,保留真正需要的正性前件 | 实际 L2 独立性/Gram 识别;只编译抽象正性端 |
+
+### 碰撞检查与停止点
+
+批次 7 的全 D5 + Frozen/state 目标 atom/标题/英文近名为 **0 行,exit 1**,同范围已有矩/Gram 声明阳性为 **6 行,exit 0**;批次 2/3 和 8 的 PCRE 词界/分组阴阳对照也通过。该结果只排除所搜名字与 atom 标记的碰撞。**语义前置碰撞已实际命中**:矩积分、Gram 距离、实际零点无限、紧集零点有限以及乘积/极限通用工具;不能把目标名字零命中解释为新数学。未执行内容指纹同一性、全库语义等价或 Lean 传递闭包穷尽检查。
+
+停止于用户授权的探针范围:Q1-Q4 已回答,无可辩护的 `why_not_bind_only` 见证,不增加完整目标定理、不申请准入例外。未执行 `make cover`、`make deposit`、冻结或 PR 操作,`Meta/Digestion/**` 只读。
+
+### 最终片段与验证边界
+
+片段位于 [hyper-contraction-probe-0909-snippets.lean](hyper-contraction-probe-0909-snippets.lean)。已通过 `make lean` 的临时 D5 源码共 106 行,原样移至此处;编译时的 SHA-256 为 `ac641497349d9862a70b82af70d6f30eed9cc1c86e3b7c1dcc62979164cb1b25`。报告目录不在 D5 的常规 glob 中,本席不声称它移入文档目录后会自动进入生产构建。重放时可将同一字节临时置于记录的 D5 路径并执行 `make lean`。
+
+验证读数:首次环境构建通过;两次片段调用失败如批次 6 记账;第三次片段构建 exit 0、12686 jobs。只查看了两个关键声明的显式 `#print axioms` 输出,不把这两个列表冒充所有声明的逐个公理审计。未运行无关 harness/治理全检,未调整 `maxHeartbeats`、`maxRecDepth` 或估计常数。
+
+`ASSUMED-UNVERIFIED`:源卷 DLMF/arXiv 外链未打开;第三方索引与本仓 pin 的全量一致性未验证(实际使用的命中已本地核对);实际式 (27)-(28)、全目标、完整 nth-root 收束和正性连接未编译;未重放冻结 pin 完整性验证、未做穷尽碰撞/依赖闭包检查。在线 Loogle API 与 #6503 正文实际已打开,不列作未打开页面。
+
+报告与片段随每批提交推送;runner `result.json` 的 `pushed.commits` 保存完整 SHA 列表,避免在报告内写入自身提交哈希产生递归。最终净改动预期仅本报告和相邻片段;以交付时 git 差异读数为准。
 
 ## 明确未主张
 
