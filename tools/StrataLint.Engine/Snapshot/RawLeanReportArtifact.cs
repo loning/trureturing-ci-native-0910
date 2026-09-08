@@ -14,12 +14,12 @@ internal static class RawLeanReportArtifact
     internal const string DefaultRelativePath = ".lake/build/stratalint/raw-lean-report.json";
 
     private static readonly UTF8Encoding StrictUtf8 = new(false, true);
-    internal static LeanAxiomReport ReadFile(string path, RepositorySnapshot snapshot)
+    internal static LeanAxiomReport ReadFile(string path, RepositorySnapshot snapshot, bool validateMaterials = false)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         var fullPath = Path.GetFullPath(path);
         var bytes = File.ReadAllBytes(fullPath);
-        return Read(bytes, snapshot, MaterialsPath(fullPath));
+        return Read(bytes, snapshot, MaterialsPath(fullPath), validateMaterials);
     }
 
     internal static LeanAxiomReport Read(ReadOnlySpan<byte> bytes, RepositorySnapshot snapshot)
@@ -28,7 +28,8 @@ internal static class RawLeanReportArtifact
     private static LeanAxiomReport Read(
         ReadOnlySpan<byte> bytes,
         RepositorySnapshot snapshot,
-        string? materialPath)
+        string? materialPath,
+        bool validateMaterials = false)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         var text = StrictUtf8.GetString(bytes);
@@ -120,6 +121,7 @@ internal static class RawLeanReportArtifact
                 "Raw Lean report is missing modules: " + string.Join(", ", missing));
         }
 
+        if (validateMaterials) materialArchive!.ValidateAll();
         return LeanAxiomReport.Create(reports);
     }
 
@@ -465,6 +467,13 @@ internal static class RawLeanReportArtifact
                 value => new Lazy<string>(
                     () => ReadCore(value),
                     LazyThreadSafetyMode.ExecutionAndPublication)).Value;
+        }
+
+        internal void ValidateAll()
+        {
+            _ = addressesValidated.Value;
+            foreach (var name in contents.Value.Entries.Keys)
+                _ = Read("sha256:" + name[EntryPrefix.Length..]);
         }
 
         private string ReadCore(string address)
