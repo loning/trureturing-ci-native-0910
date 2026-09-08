@@ -136,7 +136,7 @@ def execute(options):
     directory = pathlib.Path(options.output).resolve()
     directory.mkdir(parents=True, exist_ok=False)
     started = time.monotonic()
-    state = {"status": "running", "rss_budget_gib": 8, "concurrency": 1, "partitions": {},
+    state = {"status": "running", "rss_budget_gib": 8, "concurrency": 2, "pipeline_jobs": 1, "partitions": {},
              "runtime_seconds": {}, "rejected": [], "assumed_unverified": []}
     env = dict(os.environ, LEAN_NUM_THREADS="1")
     # Lake adds its own search paths after this run-local root.
@@ -167,7 +167,7 @@ def execute(options):
             validate_fixture_export(json.loads(pathlib.Path(options.fixture_truth_export).read_bytes()))
         step(["make", "lean-cache-ensure"], "cache")
         for module in ["Census.Coverage", "DispositionEvidence", "DispositionCensus",
-                       "Census.Query", "Census.Command", "Census.Publish"]:
+                       "Census.Query", "Census.Receipt", "Census.Command", "Census.Publish"]:
             source = repository / "tools/lean-inspector/LeanInformationAudit" / (module.replace(".", "/") + ".lean")
             target = repository / ".lake/build/lib/lean/LeanInformationAudit" / (module.replace(".", "/") + ".olean")
             target.parent.mkdir(parents=True, exist_ok=True)
@@ -229,6 +229,7 @@ def execute(options):
         query_outputs = []
         scope_modules = []
         certified_imports = set()
+        response_paths = []
         for number, (label, members) in enumerate(query_partitions):
             selected = [key for key in keys if key[0] in members]
             if not selected:
@@ -238,7 +239,8 @@ def execute(options):
             folder.mkdir(parents=True, exist_ok=True)
             request = folder / "request.json"
             response = folder / "response.json"
-            request.write_text(json.dumps({"head": head, "keys": selected}) + "\n")
+            request.write_text(json.dumps({"head": head, "keys": selected,
+                                           "report": str(report_path), "report_sha256": state["report_sha256"]}) + "\n")
             source = "import LeanInformationAudit.Census.Command\n" + "".join(
                 f"import {module}\n" for module in sorted(set(members) | evidence_modules))
             source += f"#census_query {string(str(request))} output {string(str(response))}\n"
@@ -253,6 +255,10 @@ def execute(options):
             state["partitions"].setdefault(label, {})["query"] = result
             state["partitions"][label]["query_modules"] = members
             state["partitions"][label]["keys"] = len(selected)
+            receipt = json.loads(pathlib.Path(str(response) + ".receipt.json").read_text())
+            state["partitions"][label]["direct_import_count"] = receipt["direct_import_count"]
+            state["partitions"][label]["transitive_closure_count"] = receipt["transitive_closure_count"]
+            response_paths.append(str(response))
             certified_imports.update(output["certified_imports"])
             scope = "CensusRun.Scopes." + relative
             query_outputs.append((label, scope, output))
@@ -281,6 +287,8 @@ def execute(options):
         # Only evidence selected by successful certification enters the final environment.
         imports = sorted(set(inventories) | certified_imports)
         state["certified_imports"] = sorted(certified_imports)
+        receipts = directory / "query-outputs.json"
+        receipts.write_text(json.dumps(response_paths) + "\n")
         source = "".join(f"import {module}\n" for module in imports)
         source += "open LeanInformationAudit\n"
         source += f"def CensusRun.inventory : DispositionInventory :=\n  {{ headSha := {string(head)}, entries := "
@@ -291,7 +299,8 @@ def execute(options):
         digest = "sha256:" + hashlib.sha256(report_path.read_bytes()).hexdigest()
         source += (f"#disposition_census projection root CensusRun.Root report {string(str(report_path))}\n"
                    f"  head {string(head)} report_sha256 {string(digest)} inventory CensusRun.inventory\n"
-                   f"  scopes CensusRun.scopes certificate CensusRun.exactlyCovers output {string(str(directory / 'census.json'))}\n")
+                   f"  scopes CensusRun.scopes receipts {string(str(receipts))} "
+                   f"certificate CensusRun.exactlyCovers output {string(str(directory / 'census.json'))}\n")
         path = write_module(directory, "CensusRun.Root", source)
         lean(path, "publication", True)
         summary = json.loads((directory / "census.json.summary.json").read_text())

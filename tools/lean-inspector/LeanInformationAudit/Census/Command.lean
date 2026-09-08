@@ -1,4 +1,4 @@
-import LeanInformationAudit.Census.Query
+import LeanInformationAudit.Census.Receipt
 
 namespace LeanInformationAudit.CensusQuery
 
@@ -20,17 +20,13 @@ elab "#census_discover " destination:str : command => do
     return modules.toList.eraseDups.toArray.qsort Name.quickLt
   IO.FS.writeFile destination.getString ((toJson (modules.map Name.toString)).compress ++ "\n")
 
-/-- The input carries keys and HEAD only. Output is written after every query
-succeeds; no input completion bit or candidate array exists. Scopes are shared in
-the transport, then restored as typed data by the inventory emitter. -/
+/-- Keys are bound to the immutable report before querying. The census emits a
+receipt only after every query succeeds; caller-supplied completion flags reject. -/
 elab "#census_query " requestPath:str " output " destination:str : command => do
-  let input <- ofExcept <| Json.parse (<- IO.FS.readFile requestPath.getString)
-  let object <- ofExcept <| input.getObj?
-  unless object.size == 2 && object.contains "head" && object.contains "keys" do
-    throwError "census query: input requires exactly head and keys"
+  let (input, _) <- liftTermElabM <| CensusReceipt.readRequest requestPath.getString
   let head <- ofExcept <| stringField input "head"
   let requests <- ofExcept <| input.getObjValAs? (Array (Array String)) "keys"
-  let result <- liftTermElabM do
+  let (result, modules) <- liftTermElabM do
     let env <- getEnv
     let index <- buildIndex env.header.mainModule
     let mut entries := #[]
@@ -63,12 +59,12 @@ elab "#census_query " requestPath:str " output " destination:str : command => do
             (((json.getObjVal? "payload").toOption.get!).setObjVal! "import_scope" Json.null)
         | .certified _ => json
       entries := entries.push json
-    return Json.mkObj [
+    return (Json.mkObj [
       ("head", toJson head), ("root", nameJson index.root),
       ("scope", toJson (ImportClosureScope.mk index.modules true)),
       ("certified_imports", toJson (certifiedImports.toList.eraseDups.toArray.qsort Name.quickLt
         |>.map Name.toString)),
-      ("entries", Json.arr entries)]
-  IO.FS.writeFile destination.getString (result.compress ++ "\n")
+      ("entries", Json.arr entries)], index.modules)
+  liftTermElabM <| CensusReceipt.write requestPath.getString destination.getString input result modules
 
 end LeanInformationAudit.CensusQuery

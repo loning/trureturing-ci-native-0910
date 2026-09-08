@@ -43,9 +43,11 @@ def prepare_fixtures(repository, directory):
             logs, "compile", cwd=repository, env=env)
 
     for module in ("Query.Observed", "Query.DuplicateLeft", "Query.DuplicateRight", "Query.Contract",
-                   "Query.Coverage", "Query.Publication", "Query.DirectEvidence", "AssessmentCommand", "Command", "CommandRejection",
+                   "Query.Coverage", "Query.Publication", "Query.DirectEvidence", "Query.Enumeration",
+                   "AssessmentCommand", "Command", "CommandRejection",
                    "InvalidEvidence", "LandedFinite"):
         prepare("LeanInformationAudit.Tests.Census." + module)
+    prepare("LeanInformationAudit.Census.Command")
 
 
 def name_key(text):
@@ -89,6 +91,27 @@ def main():
                                      "statement_id": identity}]})
     report_path = directory / "report.json"
     report_path.write_text(json.dumps(report) + "\n")
+    duplicate_request = directory / "duplicate-evidence-imports.json"
+    duplicate_request.write_text(json.dumps({"head": "fixture-head", "report": str(report_path),
+        "report_sha256": "sha256:" + hashlib.sha256(report_path.read_bytes()).hexdigest(),
+        "keys": [[node["repo_path"].removesuffix(".lean").replace("/", "."),
+                  decl["declaration_name_key"], decl["statement_id"]]
+                 for node in report["nodes"] for decl in node["declarations"]
+                 if decl["statement_id"].startswith(("c-", "d-"))]}) + "\n")
+    duplicate_source = directory / "DuplicateEvidenceImports.lean"
+    duplicate_output = directory / "duplicate-evidence-output.json"
+    duplicate_source.write_text("import LeanInformationAudit.Census.Command\n"
+        "import LeanInformationAudit.Tests.Census.Query.DuplicateLeft\n"
+        "import LeanInformationAudit.Tests.Census.Query.DuplicateRight\n"
+        f"#census_query {json.dumps(str(duplicate_request))} output {json.dumps(str(duplicate_output))}\n")
+    try:
+        run(["lake", "env", "lean", str(duplicate_source)], directory / "duplicate-evidence-imports",
+            "process", cwd=repository)
+    except RuntimeError:
+        assert "owning module mismatch" in (directory / "duplicate-evidence-imports/process.log").read_text()
+        assert not duplicate_output.exists()
+    else:
+        raise AssertionError("duplicate-name owners reintroduced by evidence imports were accepted")
     results = []
     for label in ("first", "second"):
         run_directory = directory / label
@@ -135,17 +158,22 @@ def main():
     try:
         run(["lake", "env", "lean", str(bad_source)], directory / "input-flag", "process", cwd=repository)
     except RuntimeError:
-        assert "input requires exactly head and keys" in (directory / "input-flag/process.log").read_text()
+        assert "input requires exactly head, keys, report and report_sha256" in (directory / "input-flag/process.log").read_text()
         assert not bad_output.exists()
     else:
         raise AssertionError("input completion flag was accepted")
-    for module in ("Query/Contract", "Query/Coverage", "Query/Publication", "Query/DirectEvidence", "AssessmentCommand", "Command",
+    for module in ("Query/Contract", "Query/Coverage", "Query/Publication", "Query/DirectEvidence", "Query/Enumeration", "AssessmentCommand", "Command",
                    "CommandRejection", "InvalidEvidence", "LandedFinite"):
         run(["lake", "env", "lean", "-R", str(repository / "tools/lean-inspector"),
              "-DmaxRecDepth=100000", "-DmaxHeartbeats=0",
              str(repository / f"tools/lean-inspector/LeanInformationAudit/Tests/Census/{module}.lean")],
             directory / module, "process", cwd=repository)
+    from receipt_fixtures import check_receipts
+    receipt_negatives = check_receipts(repository, directory, report_path)
     result = {"query_contract": "passed", "coverage": "passed", "artifact_determinism": results[0],
+              "query_receipt_negatives": receipt_negatives,
+              "duplicate_owners_via_evidence_imports": "rejected",
+              "private_evidence": "included", "transparent_alias": "observed; normalization deferred to J4",
               "direct_unreachable_bounded_and_malformed_evidence": "passed",
               "partial_certified_denominator": "passed (accounted=1/4, certified=1, observed=0, certified_complete=false)",
               "duplicate_name_modules": 2,

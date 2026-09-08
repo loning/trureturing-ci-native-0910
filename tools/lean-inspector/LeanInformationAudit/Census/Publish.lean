@@ -1,5 +1,6 @@
 import LeanInformationAudit.DispositionCensus
 import LeanInformationAudit.Census.Coverage
+import LeanInformationAudit.Census.Receipt
 
 namespace LeanInformationAudit.CensusProjection
 
@@ -11,10 +12,7 @@ private def phase (path label : String) : IO Unit := do
   handle.putStrLn label
   handle.flush
 
-/-- Run-local data emitted by the completed partition query. The query process
-checks the elaborated closure; publication consumes its projection, and does not
-re-import observed targets. Editing generated query outputs is outside this
-producer contract, as with the truth export itself. -/
+/-- Scope data must agree with an independently replayed Lean query receipt. -/
 structure Scope where
   root : Name
   importScope : ImportClosureScope
@@ -76,6 +74,31 @@ def validate (inventory : DispositionInventory) (scopes : Array Scope)
           modules.contains payload.owningModule do
         throwError "census projection: owning module mismatch"
 
+private def validateReceipts (report : FrozenReport) (inventory : DispositionInventory)
+    (manifest : String) : MetaM Unit := do
+  let paths ← ofExcept <| fromJson? (α := Array String) (← ofExcept <| Json.parse (← IO.FS.readFile manifest))
+  if paths.isEmpty then throwError "query receipt: no independently verified query partitions"
+  let mut rows : Std.HashMap String (Json × Json × Json) := {}
+  for path in paths do
+    let result ← CensusReceipt.verify path report
+    let root ← ofExcept <| result.getObjVal? "root"
+    let scope ← ofExcept <| result.getObjVal? "scope"
+    for row in ← ofExcept <| result.getObjValAs? (Array Json) "entries" do
+      let id ← ofExcept <| stringField row "statement_id"
+      if rows.contains id then throwError "query receipt: duplicate partition key"
+      rows := rows.insert id (row, root, scope)
+  unless rows.size == inventory.entries.size do throwError "query receipt: exact key set mismatch"
+  for entry in inventory.entries do
+    let some (expected, root, scope) := rows[entry.1.statementId]?
+      | throwError "query receipt: inventory key was not queried"
+    let mut actual := dispositionRowJson entry
+    if let .observed value := entry.2 then
+      unless (nameJson value.root).compress == root.compress && (toJson value.importScope).compress == scope.compress do
+        throwError "query receipt: invented scope or completion record"
+      actual := actual.setObjVal! "payload"
+        (((actual.getObjVal? "payload").toOption.get!).setObjVal! "import_scope" Json.null)
+    unless actual.compress == expected.compress do throwError "query receipt: edited inventory row"
+
 /-- The certificate covers these selected keys; the immutable report remains the
 authority for the requested denominator and export identity. -/
 def selectedReport (report : FrozenReport) (inventory : DispositionInventory) : FrozenReport :=
@@ -92,6 +115,7 @@ def summaryFields (report : FrozenReport) (inventory : DispositionInventory)
     ("source_inputs", toJson sources), ("theorem_count", toJson report.theorems.size),
     ("requested_keys", toJson report.theorems.size),
     ("input_kind", toJson (if report.headSha == "fixture-head" then "synthetic_fixture" else "production")),
+    ("query_verification", toJson "lean_query_replay"),
     ("status", toJson (if complete then "complete" else "partial")),
     ("coverage_theorem_count", toJson counts.accounted),
     ("counts", toJson counts), ("certified_complete", toJson (complete && counts.observed == 0))]
@@ -123,7 +147,8 @@ private def streamArtifact (path : String) (report : FrozenReport)
 Certified rows are always checked again in the final evidence-only environment. -/
 elab "#disposition_census" &"projection" &"root" root:ident &"report" reportPath:str
     &"head" head:str &"report_sha256" reportSha:str &"inventory" inventoryName:ident
-    &"scopes" scopesName:ident &"certificate" certificate:ident " output " outputPath:str :
+    &"scopes" scopesName:ident &"receipts" receiptsPath:str
+    &"certificate" certificate:ident " output " outputPath:str :
     command => do
   let progress := outputPath.getString ++ ".progress.log"
   let phase := phase progress
@@ -145,6 +170,8 @@ elab "#disposition_census" &"projection" &"root" root:ident &"report" reportPath
   ofExcept <| checkCoverage report.headSha covered.theorems inventory
   phase "validate-evidence"
   let (proof, sources) <- liftTermElabM do
+    phase "verify-query-receipts"
+    validateReceipts report inventory receiptsPath.getString
     validate inventory scopes owners
     let certified := { inventory with entries := inventory.entries.filter fun entry =>
       match entry.2 with | .certified _ => true | .observed _ => false }

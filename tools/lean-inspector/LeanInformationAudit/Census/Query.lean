@@ -194,6 +194,6 @@ def assess (index : Index) (head : String) (key : StatementKey) : MetaM (CensusA
     importScope := ⟨index.modules, true⟩
     queryCompleted := true
     candidates := candidates.toList.eraseDups.toArray.qsort Name.quickLt
-    note := "Exhaustive registration query completed; no complete named disposition evidence." }
+    note := "Exhaustive query completed within this import scope and the supported syntactic named-evidence domain; no complete evidence found in that domain." }
 
 end LeanInformationAudit.CensusQuery
