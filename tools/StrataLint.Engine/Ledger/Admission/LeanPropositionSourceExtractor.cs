@@ -264,7 +264,7 @@ internal sealed partial class LeanSourceCatalog
 
         var bound = BoundIdentifiers(declaration.SemanticTokens);
         foreach (var name in QualifiedIdentifiers(declaration.SemanticTokens)
-            .Where(name => !IsBoundIdentifier(name, bound) && !ReservedIdentifiers.Contains(name))
+            .Where(name => !IsBoundIdentifier(name, bound))
             .Distinct(StringComparer.Ordinal))
         {
             var candidates = ResolveDependencyCandidates(declaration, name);
@@ -691,7 +691,8 @@ internal sealed partial class LeanSourceCatalog
     {
         for (var index = 0; index < tokens.Length; index++)
         {
-            if (!tokens[index].IsIdentifier)
+            // Escaped keywords are names; classify the spelling before normalization.
+            if (!tokens[index].IsIdentifier || ReservedIdentifiers.Contains(tokens[index].Text))
             {
                 continue;
             }

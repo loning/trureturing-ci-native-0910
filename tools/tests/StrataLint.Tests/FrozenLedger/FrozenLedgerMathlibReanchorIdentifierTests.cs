@@ -14,6 +14,7 @@ public sealed partial class FrozenLedgerTests
     [InlineData("p\u2127", "p\u2127")]
     [InlineData("p\U0001d49c", "p\U0001d49c")]
     [InlineData("p\u2080", "p\u2080")]
+    [InlineData("\u00abby\u00bb", "\u00abby\u00bb")]
     public void MathlibReanchorRejectsChangedLocalIdentifierDependency(string declaration, string reference)
     {
         var before = $"def {declaration} : Prop := 1 = 1\ntheorem a : {reference} := by rfl\n";
@@ -30,6 +31,7 @@ public sealed partial class FrozenLedgerTests
     [InlineData("p\u2127", "p\u2127")]
     [InlineData("p\U0001d49c", "p\U0001d49c")]
     [InlineData("p\u2080", "p\u2080")]
+    [InlineData("\u00abby\u00bb", "\u00abby\u00bb")]
     public void MathlibReanchorAllowsUnchangedLocalIdentifierDependencyAndProofChange(string declaration, string reference)
     {
         var source = $"def {declaration} : Prop := 1 = 1\ntheorem a : {reference} := by rfl\n";
@@ -109,6 +111,16 @@ public sealed partial class FrozenLedgerTests
     }
 
     [Theory]
+    [InlineData("\u2211'")]
+    [InlineData("\u220f'")]
+    public void MathlibReanchorDoesNotResolvePrimedBinderAsDefinitionDependency(string notation)
+    {
+        var source = "import Mathlib.Topology.Algebra.InfiniteSum.Defs\ndef n : Nat := 0\n"
+            + $"theorem a (f : Nat -> Nat) : ({notation} n, f n) = ({notation} n, f n) := by rfl\n";
+        AssertIdentifierReanchor(source, source.Replace(":= 0", ":= 1", StringComparison.Ordinal), [], [], expected: true);
+    }
+
+    [Theory]
     [InlineData("a?", "a?")]
     [InlineData("a!", "a!")]
     [InlineData("\u00aba?\u00bb", "a?")]
@@ -133,6 +145,7 @@ public sealed partial class FrozenLedgerTests
     [InlineData("p!")]
     [InlineData("\u00abp?\u00bb")]
     [InlineData("\U0001d49c")]
+    [InlineData("\u00abby\u00bb")]
     public void MathlibReanchorDoesNotResolveBoundIdentifierAsDefinitionDependency(string name)
     {
         var source = $"def {name} : Nat := 0\ntheorem a ({name} : Nat) : {name} = {name} := by rfl\n";

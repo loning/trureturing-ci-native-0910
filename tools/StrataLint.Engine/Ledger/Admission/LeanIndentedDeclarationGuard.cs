@@ -307,7 +307,7 @@ internal sealed partial class LeanSourceCatalog
         LeanSourceToken token,
         ImmutableHashSet<string>.Builder result)
     {
-        if (token.IsIdentifier && !ReservedIdentifiers.Contains(token.Identifier))
+        if (token.IsIdentifier && !ReservedIdentifiers.Contains(token.Text))
         {
             result.Add(token.Identifier);
         }
