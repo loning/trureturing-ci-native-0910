@@ -5642,11 +5642,14 @@ bundle 与 faithful realization；acceptance 由 strict inclusion 和 pair witne
 
 ### AC-CIRPT-019　Disposition totality
 
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕完整 frozen theorem census 中每个 `(structured Name, statement_id)` 恰有一个
+完整 frozen theorem census 中每个 `(structured Name, statement_id)` 恰有一个
 `CensusAssessment`，inventory keys 与 frozen export keys 完全相等。记账完备与认证完备按
 第 8.7、23.6 节分开；finite counted、structural-only、bounded truncation 与 unreachable
 reasons 只计入 certified 分项，observed 另按 status 计数且不履行 AC-023。认证 totality 的
 目标不变，完整记账本身不是认证 totality，report 不进入 seal 或 required gate。
+assessment 与覆盖谓词见 `tools/lean-inspector/LeanInformationAudit/AnalysisDisposition.lean`，
+计数与输出见 `tools/lean-inspector/LeanInformationAudit/CensusSchema.lean`、
+`tools/lean-inspector/LeanInformationAudit/DispositionCensus.lean`。
 
 ### AC-CIRPT-020　Bounded hierarchy projection
 
