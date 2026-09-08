@@ -34,10 +34,11 @@ transitions 组成可含 shortcut edges 的 DAG，Hasse cover graph 是该格的
 允许多条合法分解。有限 arena 输出精确计数，
 任意 State 输出 strict-inclusion witness。
 
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕每个 frozen theorem constant 另由其 elaborated
+report-only census 中每个 frozen theorem constant 由其 elaborated
 `(structured Name, statement_id)` 唯一绑定一个 `CensusAssessment`。记账完备与认证完备分别按
 第 8.7、23.6 节报告；只有 `certified AnalysisDisposition` 算已分类，`observed` 永不计入
 AC-023，使“适用于所有定理”的边界可枚举、可审计，而不是把闭命题真值伪装成对象信息。
+assessment 类型与覆盖谓词见 `tools/lean-inspector/LeanInformationAudit/AnalysisDisposition.lean`。
 
 每个定理对象包含：
 
@@ -1258,25 +1259,27 @@ registration modules，且仍不取得 discharge 或 exemption 权限。辅助 r
 `freeze_status` 是 node 字段；`kind`、`declaration_name_key`、`statement_id` 是 declaration 字段。
 frozen theorem key 的 identity 是
 `(structured Name, statement_id)`，不是显示字符串或单独的 `statement_id`。
-当前 dev `1a71fc8751` 要求每个 key 恰有一个 `AnalysisDisposition`，缺失与重复均失败；
-尚无 assessment／observation inventory。
+当前 `DispositionInventory` 要求每个 key 恰有一个 `CensusAssessment`，缺失与重复均失败；
+类型与覆盖谓词见 `tools/lean-inspector/LeanInformationAudit/AnalysisDisposition.lean`，
+frozen selector 见 `tools/lean-inspector/LeanInformationAudit/DispositionCensus.lean`。
 
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕按 owner 2026-09-08 的 [τ=0 裁决](https://github.com/the-omega-institute/trureturing/issues/5214#issuecomment-5580271314)
+按 owner 2026-09-08 的 [τ=0 裁决](https://github.com/the-omega-institute/trureturing/issues/5214#issuecomment-5580271314)
 “选 A;observed 永远不算完成;开 J2”，必须分开两个完备命题：
 
-- 〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕**记账完备（accounting completeness）**：每个 frozen theorem key 恰有一个
+- **记账完备（accounting completeness）**：每个 frozen theorem key 恰有一个
   `CensusAssessment` row，inventory keys 与 frozen theorem keys 完全相等，缺失与重复均失败；
-- 〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕**认证完备（certified completeness）**：记账完备，且每个 key 的 row 都是经证书语义检查的
+  覆盖谓词见 `tools/lean-inspector/LeanInformationAudit/AnalysisDisposition.lean`；
+- **认证完备（certified completeness）**：记账完备，且每个 key 的 row 都是经证书语义检查的
   `certified (AnalysisDisposition key)`。**AC-023 只由认证完备满足**；记账完备是可报告的
-  前提，不是 AC-023 的履行。
+  前提，不是 AC-023 的履行；证据检查见 `tools/lean-inspector/LeanInformationAudit/DispositionEvidence.lean`。
 
-〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕assessment 分支如下：
+assessment 分支由 `tools/lean-inspector/LeanInformationAudit/AnalysisDisposition.lean` 定义：
 
 ```text
 CensusAssessment key = certified (AnalysisDisposition key) | observed (AnalysisObservation key)
 ```
 
-〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕`observed` 是绑定 exact key、owning module、census root 与 import-closure query scope 的
+〔pending J3; lane census-generator-0908; #5214; 2026-09-08〕`observed` 是绑定 exact key、owning module、census root 与 import-closure query scope 的
 elaboration observation，query 必须标为 completed；它只记录该范围内缺少已登记的
 realization／certificate。**observed ≠ classified：observed 永不算已分类，永不计入 AC-023，
 也永不构成 closed reason。** census 必须自己核查该范围并完成查询；generator 提供的空列表
@@ -1286,7 +1289,9 @@ object arena 是显式 semantic input；系统不得从 theorem statement 的表
 canonical identity 是 `Arena`／`StructuralArena` declaration。替代表示只有经
 `CIRPT-IE-022` 的具名 `Equiv` transport 才能声明同一分析。
 
-〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕下表是 J2 的 certified disposition 契约。
+下表是当前 certified disposition 契约，payload 与证据检查分别见
+`tools/lean-inspector/LeanInformationAudit/AnalysisDisposition.lean` 与
+`tools/lean-inspector/LeanInformationAudit/DispositionEvidence.lean`。
 四类 disposition 在 `certified` 分支内互斥且穷尽；这不声称所有 frozen keys 已获认证：
 
 | class | 必需证据 | 可报告结论 |
@@ -1294,29 +1299,45 @@ canonical identity 是 `Arena`／`StructuralArena` declaration。替代表示只
 | `finite_occurrence` | canonical `Arena` declaration、显式 realization、nondegeneracy、用于 reflected seal 的完整 state enumeration | certified sets/counts/exact rates 与 structural strictness |
 | `structural_occurrence` | canonical `StructuralArena`、finite bundle/catalog indices、显式 realization、joint-kernel inclusion proof 与 pair witness | certified strictness；无计数或 rate |
 | `bounded_finite_truncation` | truncation family、bound、与原对象的方向明确的 comparison statement | 默认 `report-only`；只有另有 kernel-checked transfer theorem 时才可报告该 theorem 明确传输的结论 |
-| `unreachable` | reason-specific closed-reason certificate，绑定 statement、exact key、semantic contract 与 candidate domain | 只报告不可达边界，不得伪造 novelty verdict |
+| `unreachable` | `UnreachableElaborationEvidence` 指向 reason-specific failed obligation，核对 theorem、statement 与显式候选；exact key 由 report coverage 绑定 | 只报告该 obligation 证明的候选边界，不得伪造 novelty verdict |
 
-`UnreachableReason` 是 closed enum，其唯一 canonical declaration 位于第 23.6 节；只允许
+（J2 落地形态,2026-09-08:unreachable 使用具名 failed obligation；S0 的通用 semantic contract／candidate domain 字段未落地，结论范围以该 obligation 为限。）
+
+`UnreachableReason` 是 closed enum，其唯一 canonical declaration 位于
+`tools/lean-inspector/LeanInformationAudit/AnalysisDisposition.lean`，第 23.6 节列出其 API；只允许
 `noCanonicalObjectCarrier`、`noFinitePrimitiveBundle` 与 `noFaithfulPrimitiveRealization`。
 
-- 〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕`noCanonicalObjectCarrier`：证书证明在绑定的 semantic contract 与 candidate domain 内
-  不存在 canonical object carrier；closed numerical proposition 的 proof truth 不得作常值 readout；
-- 〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕`noFinitePrimitiveBundle`：证书证明在该 contract／domain 内不存在 faithful finite primitive
-  bundle，包括排除所允许的等价 finite 表示；
-- 〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕`noFaithfulPrimitiveRealization`：证书证明在该 contract／domain 内不存在 statement 与
-  primitive law 的 faithful bridge。
+- `noCanonicalObjectCarrier`：`ClosedNumericalObligation` 绑定 theorem 的 Nat 等式，validator
+  核实两侧可归约为 numeral、statement 相等且 `candidateArena=none`；closed numerical
+  proposition 的 proof truth 不得作常值 readout。声明见
+  `tools/lean-inspector/LeanInformationAudit/StructuralRealization.lean`，检查见
+  `tools/lean-inspector/LeanInformationAudit/DispositionEvidence.lean`。
+  （J2 落地形态,2026-09-08:本 reason 认证未提供对象变化的闭合数值边界，不证明 S0 所述任意 semantic domain 内所有 carrier 均不存在；该更强结论仍须另证。）
+- `noFinitePrimitiveBundle`：`InfinitePrimitiveObligation` 绑定显式 arena、无限 Index、kernels
+  与 statement，证明 statement 与 law 等价，且任一 finite subfamily 都不能保持完整 joint
+  kernel；声明见 `tools/lean-inspector/LeanInformationAudit/StructuralRealization.lean`，检查见
+  `tools/lean-inspector/LeanInformationAudit/DispositionEvidence.lean`。
+  （J2 落地形态,2026-09-08:证书排除给定 family 的 finite subfamily；S0 所要求的全部等价 finite 表示排除仍须另证，不能由本证书外推。）
+- `noFaithfulPrimitiveRealization`：`UnfaithfulPrimitiveObligation` 证明指定 statement 与指定
+  law arena／realization 之间不存在 faithful bridge；声明见
+  `tools/lean-inspector/LeanInformationAudit/StructuralRealization.lean`，检查见
+  `tools/lean-inspector/LeanInformationAudit/DispositionEvidence.lean`。
+  （J2 落地形态,2026-09-08:证书是该候选的 `no_bridge`，不量化 S0 所述整个 candidate domain；全域不可达结论仍须另证。）
 
-〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕`unreachable` 仍是 certified disposition，以上每个 reason 均须由其专属 closed-reason 证书
+`unreachable` 是 certified disposition，以上每个 reason 均须由其专属 closed-reason 证书
 成立。registry absence 单独不能产生它；“没有显式 carrier”“尚未登记 finite bundle／bridge”
 只能成为查询观察或 routing facts。carrier／statement syntax 也只提供 routing facts，不证明
-任何 closed reason，更不决定 canonical arena。
+任何 closed reason，更不决定 canonical arena；证书语义检查见
+`tools/lean-inspector/LeanInformationAudit/DispositionEvidence.lean`。
 
-〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕`bounded_finite_truncation` 与 `unreachable` 把 counted／structural engine 的边界精确入账；
+`bounded_finite_truncation` 与 `unreachable` 把 counted／structural engine 的边界精确入账；
 前者不冒充全对象结论，后者不以“不适用”隐藏缺失工作。census Meta tool 遍历上述全部 frozen
 keys，输出 `accounted`、`certified`（按四类及 unreachable reason 分项）、`observed`（按
 observation status 分项）和 exact rows。`observed > 0` 时必须报告
 `certified_complete=false`。census artifact 只作 report，永不作为 seal input 或 required gate；
-它不替代以下独立的 first-freeze obligations，也不激活第 39 节 GATE。
+它不替代以下独立的 first-freeze obligations，也不激活第 39 节 GATE。计数与 artifact 字段见
+`tools/lean-inspector/LeanInformationAudit/CensusSchema.lean` 与
+`tools/lean-inspector/LeanInformationAudit/DispositionCensus.lean`。
 
 定义 catalog-relative triviality：
 
