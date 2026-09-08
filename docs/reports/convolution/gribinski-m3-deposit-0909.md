@@ -6,7 +6,7 @@
 - Carrier: one Codex worker executes the freeze commands and verifies their artifacts. No new review seats are invoked here. The user reports an earlier independent admission review with `approve` and zero blocking findings; the reviewer identity/model family and original ballot are not supplied to this worker.
 - Mixing: serial landing-form verification by this worker, using the already approved `escape-witness` basis. Prior mathematical classifications are attributed to the supplied review, not claimed as a new independent review.
 - Form: `deposit`. The mathematical implementation and both Blueprint mirrors already landed through PR #6525. This lane adds only canonical freeze artifacts and its report.
-- Chain: no m=3 atom is supplied or created. Intended outcome: **frozen, uncovered**, with the uncovered boundary recorded against #4996.
+- Chain: no m=3 atom is supplied or created. Both modules are **frozen, uncovered**, with the uncovered boundary recorded against #4996.
 - Nonclaims: no new mathematics, no arbitrary-m theorem, no coverage, no new atom or source volume, no `.lean` edits, no budget or domain changes, no auto-merge.
 
 ## Step 1: Baseline and Precedent
@@ -246,4 +246,33 @@ anchor claim. Canonical artifacts are retained as **frozen, uncovered** (#4996):
 - Event: `Golden/Frozen/accepted/3b9fcb14bd41d3e63ec26849c419e12890e7f76ffa6b4d973a8c4bb0710f556f.json`.
 - event_hash: `sha256:3b9fcb14bd41d3e63ec26849c419e12890e7f76ffa6b4d973a8c4bb0710f556f`.
 
-Only these two canonical paths appeared in the worktree. Steps 4b-7 pending.
+Only these two canonical paths appeared in the worktree.
+
+## Step 4b: Main Module Deposit
+
+Discriminant commit `1faa5ec155` was pushed before starting the main deposit.
+One invocation only:
+
+```text
+make deposit BASE=b9ad72010f6473b22e7616958a7e78db6fe0d2e2 ATOM_ID=0000000000000000000000000000000000000000000000000000000000000000 GID=D5/S3/Zeros/Convolution/GribinskiDegreeThree.m3_nonnegative_roots
+```
+
+`04-deposit-main.log`: overall make **EXIT=2**, cover recipe exit **2**.
+Header check passed (`DEPOSIT_HEADER_CHECKED SL-012`); emit changed 0 Blueprints.
+Ledger result: `LEDGER_ALIGN selectors_considered=3819 changed=0 added=1 unchanged=3818 conflicts=0`.
+
+```text
+COVER_INVALID cover atom 0000000000000000000000000000000000000000000000000000000000000000 is absent from the ledger
+PLAYBOOK_DEPOSIT_FROZEN_UNCOVERED atom_id=0000000000000000000000000000000000000000000000000000000000000000 gid=D5/S3/Zeros/Convolution/GribinskiDegreeThree.m3_nonnegative_roots reason=COVER_INVALID cover atom 0000000000000000000000000000000000000000000000000000000000000000 is absent from the ledger
+make: *** [deposit] Error 2
+```
+
+Canonical artifacts retained as **frozen, uncovered** (#4996):
+
+- State: `Golden/Frozen/state/D5/S3/Zeros/Convolution/GribinskiDegreeThree.lean.json`.
+- Module statement_id: `sha256:c098e8105cd437ddf8df749c21cf1d4725ca6b74faa16e28a5a9f63fbb292c38`.
+- Event: `Golden/Frozen/accepted/d1a1b810284a94bff6f773404f15c33ab1e380e438529ac99b94879b2841d6a5.json`.
+- event_hash: `sha256:d1a1b810284a94bff6f773404f15c33ab1e380e438529ac99b94879b2841d6a5`.
+
+Only these two further canonical paths appeared. No retry was performed on
+either deposit. Steps 5-7 pending.
