@@ -238,11 +238,84 @@ theorem integer_log_unique_maximum {k : ℕ} (hk : 2 ≤ k) {p : ℝ}
         simp [Finset.sum_sub_distrib]
       linarith
 
+private theorem diagonal_single_loss {k : ℕ} (hk : 2 ≤ k) (p : ℝ)
+    (i₀ : n) (t : ℤ) (ht : 0 < t) (hne : t ≠ (k : ℤ)) :
+    ∃ T : Matrix n n ℤ, (T.map fun z => (z : ℝ)).PosDef ∧
+      T ≠ (k : ℤ) • (1 : Matrix n n ℤ) ∧
+      Real.log ((k : ℝ) ^ Fintype.card n) - p * ((Fintype.card n : ℝ) * k) -
+        (Real.log (T.det : ℝ) - p * (T.trace : ℝ)) =
+        (Real.log (k : ℝ) - p * k) - (Real.log (t : ℝ) - p * t) := by
+  let d : n → ℤ := fun i => if i = i₀ then t else k
+  have hd (i : n) : 0 < (d i : ℝ) := by
+    dsimp [d]
+    split_ifs
+    · exact_mod_cast ht
+    · exact_mod_cast (show 0 < k by omega)
+  refine ⟨diagonal d, ?_, ?_, ?_⟩
+  · rw [diagonal_map (Int.cast_zero : ((0 : ℤ) : ℝ) = 0)]
+    exact Matrix.PosDef.diagonal hd
+  · intro heq
+    have hii := congrArg (fun A : Matrix n n ℤ => A i₀ i₀) heq
+    exact hne (by simpa [d] using hii)
+  · have hlog : Real.log ((diagonal d).det : ℝ) = ∑ i, Real.log (d i : ℝ) := by
+      rw [det_diagonal, Int.cast_prod]
+      exact Real.log_prod fun i _ => (hd i).ne'
+    have htrace : ((diagonal d).trace : ℝ) = ∑ i, (d i : ℝ) := by
+      simp [trace_diagonal]
+    calc
+      _ = ∑ i, ((Real.log (k : ℝ) - p * k) -
+          (Real.log (d i : ℝ) - p * (d i : ℝ))) := by
+        rw [hlog, htrace, Real.log_pow]
+        simp only [Finset.sum_sub_distrib, Finset.sum_const, Finset.card_univ,
+          nsmul_eq_mul, ← Finset.mul_sum]
+        ring
+      _ = (Real.log (k : ℝ) - p * k) - (Real.log (t : ℝ) - p * t) := by
+        rw [Finset.sum_eq_single i₀]
+        · simp [d]
+        · intro j _ hj
+          simp [d, hj]
+        · simp
+
+/-- In every nonempty finite dimension, a distinct positive definite integer matrix
+attains exactly the selector gap by changing one diagonal entry to an adjacent integer. -/
+theorem selectorGap_sharp {k : ℕ} (hk : 2 ≤ k) {p : ℝ}
+    (hlo : Real.log (((k + 1 : ℕ) : ℝ) / k) < p)
+    (hhi : p < Real.log ((k : ℝ) / (k - 1 : ℕ))) [Nonempty n] :
+    ∃ T : Matrix n n ℤ, (T.map fun z => (z : ℝ)).PosDef ∧
+      T ≠ (k : ℤ) • (1 : Matrix n n ℤ) ∧
+      Real.log ((k : ℝ) ^ Fintype.card n) - p * ((Fintype.card n : ℝ) * k) -
+        (Real.log (T.det : ℝ) - p * (T.trace : ℝ)) = selectorGap k p := by
+  obtain ⟨i₀⟩ := ‹Nonempty n›
+  have hkZ : (2 : ℤ) ≤ k := by exact_mod_cast hk
+  have hkpos : 0 < (k : ℝ) := by exact_mod_cast (show 0 < k by omega)
+  rw [selectorGap_eq_min hk hlo hhi]
+  by_cases hmin : Real.log ((k : ℝ) / (k - 1 : ℕ)) - p ≤
+      p - Real.log (((k + 1 : ℕ) : ℝ) / k)
+  · rw [min_eq_left hmin]
+    obtain ⟨T, hT, hne, hloss⟩ :=
+      diagonal_single_loss hk p i₀ ((k : ℤ) - 1) (by omega) (by omega)
+    refine ⟨T, hT, hne, hloss.trans ?_⟩
+    have hmpos : 0 < ((k - 1 : ℕ) : ℝ) := by
+      exact_mod_cast (show 0 < k - 1 by omega)
+    rw [Real.log_div hkpos.ne' hmpos.ne',
+      Nat.cast_sub (show 1 ≤ k by omega), Nat.cast_one]
+    push_cast
+    ring
+  · rw [min_eq_right (le_of_not_ge hmin)]
+    obtain ⟨T, hT, hne, hloss⟩ :=
+      diagonal_single_loss hk p i₀ ((k : ℤ) + 1) (by omega) (by omega)
+    refine ⟨T, hT, hne, hloss.trans ?_⟩
+    have hppos : 0 < ((k + 1 : ℕ) : ℝ) := by positivity
+    rw [Real.log_div hppos.ne' hkpos.ne']
+    push_cast
+    ring
+
 #print axioms fischer_two_block
 #print axioms integer_fischer_gap
 #print axioms selectorGap_eq_min
 #print axioms selectorGap_pos
 #print axioms integer_log_unique_maximum
+#print axioms selectorGap_sharp
 
 end
 end D5.S3.Arith.GoldenResource.IntegerFischerSelector
