@@ -118,7 +118,7 @@ internal sealed class TridiagonalChainInverseDocument : IScribeDocumentDefinitio
                         Call("d", Next()))))),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text("Positive definiteness makes H invertible. Divide the "
-                    + "multiplication identity by the positive denominator and apply the inverse."))),
+                    + "identity by the positive denominator and apply the inverse."))),
                 DescribeRole.Theorem),
             Describe.Lean(
                 DescribeId.Create("chain-endpoint-transfer"),
