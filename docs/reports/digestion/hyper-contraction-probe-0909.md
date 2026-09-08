@@ -220,6 +220,24 @@ curl -fsS --max-time 25 --get 'https://loogle.lean-lang.org/json' --data-urlenco
 
 第二次片段 `make lean` **exit 2**,日志 `lean-probe-2.log`。上一轮两个规范化点已消除;剩余 L26 参数类型错误和其遗留目标: `natDegree_prod_of_monic` 的 finite-set 与 polynomial-family 为显式参数,本席漏传了它们。该失败仍是调用签名错误,不作为数学缺陷;不加证明预算、不改估计常数。`spectral_distance_tendsto` 在本轮已无错误。
 
+### 批次 7: 片段通过与碰撞读数
+
+第三次 `make lean` **exit 0**,日志为 runner attempt 下 `lean-probe-3.log`;命令为 `set -o pipefail` 后换行执行 `make lean 2>&1 | tee <attempt>/lean-probe-3.log | tail -n 30`。结果包含 `Built D5.S3.Weil.TestFunctions.HyperContractionProbe0909 (11s)` 与 `Build completed successfully (12686 jobs).`。唯一修正是补齐 `natDegree_prod_of_monic` 的显式参数。`trial_bound` 与 `normalized_bound_limit` 的公理读数均仅为 `[propext, Classical.choice, Quot.sound]`。这是抽象前件下的片段通过,不是目标定理通过。
+
+以下计数由完整工具输出逐行计数;`M` 仍为钉版 `.lake/packages/mathlib/Mathlib`。碰撞检查排除本席临时片段,不把自己的新声明算上游命中。
+
+| 命令 | 匹配行数 / exit | 解释 |
+| --- | --- | --- |
+| `rg -n 'norm_prod_le\|prod_le_pow_card\|prod_le_prod\|norm_prod' M/Analysis/Normed/Group/Basic.lean M/Analysis/Normed/Ring M/Algebra/Order/BigOperators` | 99 / 0 | 乘积界通用工具;此前截断展示的 84 不是总数 |
+| `rg -n 'one_div.*atTop.*zero_nat\|inv.*atTop.*zero.*nat\|limsup_le_of_le\|tendsto_of_le_liminf\|limsup_le_iff\|tendsto_order' M/Topology M/Analysis/SpecialFunctions/Pow` | 45 / 0 | 极限与 limsup 工具 |
+| `rg -n 'integral.*(pos\|zero_iff\|le_const)\|infDist.*pos\|starProjection_minimal\|finite_setOf_isRoot' M/MeasureTheory/Integral/Bochner/Basic.lean M/Topology/MetricSpace/HausdorffDistance.lean M/Analysis/InnerProductSpace/Projection M/Algebra/Polynomial/Roots.lean` | 43 / 0 | 正性与闭子空间距离工具 |
+| `rg -n -i 'hyper.?contract\|super.?geometric\|contraction\|rpow\|monic\|orthogonal polynomial\|infinite.*support' D5/S3/Weil/TestFunctions D5/S3/Observer/Hilbert D5/S3/Analytic/GoldenTomography -g '!HyperContractionProbe0909.lean'` | 20 / 0 | 局部名字候选,不等于语义排除 |
+| `rg -n -i 'bb2f81213482f52a1bbf2bbfed1f7fe097d2d9f4949ebb55dc0da2e94d4f1f45\|hyper.?contraction\|super.?geometric\|超几何收缩' D5 Golden/Frozen/state -g '!HyperContractionProbe0909.lean'` | 0 / 1 | 目标名字/atom 阴性 |
+| `rg -n -i 'toeplitz_quadratic_eq_integral\|finite_synthesis_gram_distance_inverse' D5 Golden/Frozen/state -g '!HyperContractionProbe0909.lean'` | 6 / 0 | 同范围、同 alternation 特性的阳性;更完整 PCRE 对照见批次 2/3 |
+| `rg -n -i 'infinite.{0,50}(riemann\|zeta\|nontrivial)\|(?:riemann\|zeta\|nontrivial).{0,50}infinite' D5 M/NumberTheory` | 62 / 0 | 新发现实际零点无穷性候选,待核类型及冻结片 |
+
+最后一项定位到 `D5/S3/Weil/ZeroInfinitude/ExplicitFormulaObstruction.lean:194` 的 `isNontrivialZero_infinite`,以及 `ZeroData` 相关模块。Loogle 的零命中不能覆盖仓内声明;在核查前不把实际零点无穷性记作缺失或未冻结。
+
 ## 明确未主张
 
-未证该定理;未主张可证;未主张检索穷尽;未主张与 RH 有任何蕴含关系。尚无 Lean 片段或构建结果。
+未证该定理;未主张可证;未主张检索穷尽;未主张与 RH 有任何蕴含关系。片段只核验显式抽象前件下的绑定,不定义实际 zeta 测度,不构成全目标证明。

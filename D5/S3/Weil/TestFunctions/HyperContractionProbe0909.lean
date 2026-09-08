@@ -23,7 +23,7 @@ theorem trial_degree (s : Finset ℂ) (n : ℕ) (hn : s.card ≤ n) :
     (trial s n).natDegree = n := by
   rw [trial, (monic_prod_X_sub_C (fun a : ℂ => a) s).natDegree_mul
     ((monic_X_sub_C (1 : ℂ)).pow _)]
-  rw [natDegree_prod_of_monic (fun a _ => monic_X_sub_C a)]
+  rw [natDegree_prod_of_monic s (fun a : ℂ => X - C a) (fun a _ => monic_X_sub_C a)]
   simp only [natDegree_X_sub_C, Finset.sum_const, smul_eq_mul, mul_one,
     Polynomial.natDegree_pow]
   omega
