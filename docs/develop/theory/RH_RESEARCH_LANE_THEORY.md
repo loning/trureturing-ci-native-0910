@@ -10904,3 +10904,208 @@ L_0=\tfrac12W_0(1+|r|)+24e^{-a_-/2}\|\widetilde H\|_\infty.
 Lean 的三个公开声明与三个同名 Scribe handles 对应，完整谱实现、积分变换、跨激活拼接和归一化运输仍是上述纸面桥。Lean elaboration、Scribe emission、传递公理报告未执行，没有新增冻结或 CI 状态声明。经典谱残差、Leibniz 公式和商估计不作数学优先权主张。当前窄尺度区间和小复圆盘尚不能推出无界尺度族上的 Xi 极限或 RH。
 
 参考：Connes-Consani-Moscovici, *Zeta Spectral Triples*, arXiv:2511.22755v1, Sections 7-8；Connes, arXiv:2602.04022；既有 `WeilPolynomialMellinWindow`、`WeilMellinScaleFlow` 和本卷 prolate Jacobi 实现。
+
+
+---
+
+## [PR #5602] SAME_SCALE_GROUND_PROLATE_AND_RESIDUAL_INVERSE_ENERGY
+
+# 2026-09-08：同尺度 ground/prolate 联合区间证书与残差驱动的逆能量
+
+新 Lean：`D5/S3/Weil/GroundMode/ResidualDrivenProjectiveEnergy.lean`，配套同名 Scribe。
+主程序：`research/weil_ground_mode/certify_prime3_uniform_ground_readout.py`；主结果为 `prime3_uniform_ground_readout_certificate.json`。
+第二表达检查：`test_uniform_ground_readout.py` 与 `uniform_ground_readout_regression.json`。
+
+本节连接前两节分别完成的统一 Weil 谱分离和真实 prolate 尺度传递。对同一个连续尺度区间和同一个复圆盘，直接认证实际最低模态与同尺度真实模型的原点归一化差。方法以实际候选残差和观察代表元在完整逆能量中的预算为输入，不再预设一条绝对的统一最低特征值下界。数值证书使用新鲜重放的全空间算术矩阵、高补空间和真实 prolate 数据；其 Fourier/core、高空间估计和逆形式识别仍是纸面分析，不冒称端到端内核结果。
+
+## 1. 精确交付目标与同一对象
+
+保持
+\[
+a_0=\tfrac12\log3,\quad I=[a_0-2\cdot10^{-8},a_0+2\cdot10^{-8}],
+\quad D=\{z:|z-(20+i/4)|\le10^{-3}\}.
+\tag{UG1}
+\]
+令 u_a 为原 Weil Friedrichs 实现的真实最低模态，p_a^+ 为前节同一个真实零积分 prolate 构造的算术合成与偶化。两个原点分母都需单独证明非零。本节的计算机辅助结论为
+\[
+\boxed{\sup_{a\in I,z\in D}
+\left|\frac{\widehat u_a(z)}{\widehat u_a(0)}-
+\frac{\widehat p_a^+(z)}{\widehat p_a^+(0)}\right|<\frac1{5000}.}
+\tag{UG2}
+\]
+实际充分上预算小于 0.000187345067。区间没有扩大，但原先缺少的同尺度 ground/model 连接现在被兑现。#5895 已记录中心尺度上更小的 7/50000 预算，本节不宣称改进其中心精度；这里同时覆盖整个 I 和 D，并去掉旧绝对 ground 下界这一数值前提。所有出现的十进制“上预算区间”都只用于上界，不能把其左端点解读为未知真实误差的正下界。
+
+用 J_a f(y)=sqrt(a)f(ay) 统一到 H=L2([-1,1])。k 为原 129 个整数坐标归一化后的固定实偶候选。记 A=J_a A_a J_a^-1、mu=<k,Ak>，本节所有内积第一变量反线性。原区间程序重新验证 mu<U=3/2500000、全候选正交补 q>=tau||.||^2，其中 tau=3/500000，并独立验证奇扇区下界。因此 lambda_0<U、最低模态单纯偶性以及原全空间间隔 >4.8e-6 在本节通过新鲜重放取得，不以历史结果 JSON 为输入。
+
+## 2. 新残差能量步骤：无需绝对 ground 下界
+
+在偶不变域设 M=A-U，Q 为 k 的正交补投影，r=QAk=Ak-mu k。设该补空间有 q_M(f)>=kap||f||^2、kap>0，并已由实际候选残差的独立计算得到
+\[
+|\langle r,f\rangle|^2\le E q_M(f)\qquad(f\perp k).
+\tag{UG3}
+\]
+令 alpha=<k,u>。如果 alpha=0，非零 u 位于该补空间，但 q_M(u)=(lambda_0-U)||u||^2<=0，与正 coercivity 矛盾。因此 alpha 非零。精确误差 w=u/alpha-k 满足 w perpendicular k，由本征方程有
+\[
+\boxed{q_M(w)+(U-\lambda_0)\|w\|^2=-\Re\langle w,r\rangle.}
+\tag{UG4}
+\]
+于是 0<=q_M(w)<=|<w,r>|；(UG3) 给出 q_M(w)^2<=E q_M(w)，从而
+\[
+\boxed{q_M(w)\le E,\qquad \|w\|^2\le E/\mathrm{kap}.}
+\tag{UG5}
+\]
+新 Lean `residual_driven_projective_energy` 从同一线性域上的 eigen-equation、非正 shifted eigenvalue、单位 k 和完整 residual-functional bound 证明非零 overlap、正交性及 (UG5)。其 residual 是 M(k)-Re<k,M(k)>k。真实自伴性用于数值消费者的谱和逆能量识别；这条代数/能量引理本身不额外要求未使用的对称性。没有接收未知 w 的误差界或绝对 lambda_0 下界作为假设。
+
+若实际 centered Fourier 代表元 g 另有 |<g,f>|^2<=C q_M(f) 于同一补空间，则 |<g,w>|^2<=EC。该最后一步是既有能量对偶思想的直接使用，不建立第二套通用读出 owner。
+
+## 3. 完整逆能量由实际 Schur 数据控制
+
+令 v 为原候选尚未归一化的有限实偶坐标，v=sqrt(beta)k，beta=||v||^2 由整数精确决定。考虑稳定化的偶扇区算子
+\[
+G=A-U+vv^*.
+\]
+它在 k 的正交补上与 M 具有相同二次型。低/高分块写成 G=[[L,C^*],[C,H]]，H>=D0>0，原生产者重新计算的 Wup 满足 Wup>=C^*D0^-1 C。D0 对近场 shells 取已证明下界 d_shell-tau；因 U<tau，这也保守控制 G 的高块。远场采用同一高空间公式在 M_cut+1 的下界，取 M_cut=32768。
+
+若 S=L-Wup>0，则 G_D=[[L,C^*],[C,D0]] 正定且 G>=G_D。对任意完整 load b=(b_L,b_H)，变分逆单调性和完整平方分解给出
+\[
+\begin{aligned}
+\langle b,G^{-1}b\rangle
+&\le\langle b,G_D^{-1}b\rangle\\
+&= e_H+\langle b_L-y,(L-C^*D_0^{-1}C)^{-1}(b_L-y)\rangle\\
+&\le e_H+\langle b_L-y,S^{-1}(b_L-y)\rangle,
+\quad e_H=\langle b_H,D_0^{-1}b_H\rangle,\quad y=C^*D_0^{-1}b_H.
+\end{aligned}
+\tag{UG6}
+\]
+这些等式先对有限高组合和低坐标配对证明，再由加权平方可和及形式表示推广；所有高坐标是实际无限空间，未把截断逆矩阵当作完整逆。C 的列是真实有限低基函数的高算子像，属于 L2；D0 下界正，交叉项由 Cauchy-Schwarz 收敛。
+
+浮点 Cholesky 只提出方阵 R，其每项随后固定为分母 2^32 的精确 dyadic。定向乘法与 Gershgorin 逐行认证
+\[
+R^*S R\succeq(99/100)I.
+\]
+因此 R 必可逆，S^-1<=RR^*/(99/100)。认证器实际使用
+\[
+\boxed{\langle b,G^{-1}b\rangle\le e_H+
+\|R^*(b_L-y)\|^2/(99/100).}
+\tag{UG7}
+\]
+R 的数值产生过程不提供正确性或最优性假设。把全逆变分 supremum 限制到 k 的正交补，只会使它变小，所以 (UG7) 同时给出 (UG3) 与观察量的完整双范数预算。
+
+另一次独立严格区间 LDL 检查增强偶 sector 的 coercivity。令 d_min 为首个高偶 shell 的下界，rho=(d_min-tau)/(d_min-U-kap)，取 kap=1/1000；对所有更高 d，(d-tau)/(d-U-kap)<=rho。程序验证 d_min>U+kap 和
+\[
+A_{\rm low}+vv^*-(U+\mathrm{kap})I-\rho W_{\rm up}>0.
+\]
+完整 Schur 推出 G>=kap I，因而同一偶 candidate complement 上 q_M>=kap||.||^2。这是新的整区间偶扇区检查；不能把 kap 赋给奇扇区或声称它是全空间 ground gap。
+
+## 4. 候选残差先保留共同高符号，再求完整逆能量
+
+取正 parity 基 E0=1/sqrt2、En=(-1)^n cos(pi*n*y)。设 k_n 为该基中的实际归一化候选坐标，s_n 为原 prime/pole/Gamma 边界符号。对 m>64，候选残差高坐标等于
+\[
+\boxed{r_m=
+\sum_{n=1}^{64}\frac{2n k_n s_n}{\pi(m^2-n^2)}
+-s_m\left\{\frac{\sqrt2 k_0}{\pi m}+
+\sum_{n=1}^{64}\frac{2m k_n}{\pi(m^2-n^2)}\right\}.}
+\tag{UG8}
+\]
+与原 parity 列相加完全相同，但同一个 s_m 只在候选求和之后乘一次。这保留了真实相关抵消。低残差则用同一完整低矩阵计算 Ak-mu k，没有假设有限候选是本征向量。
+
+所有 65<=m<=32768 的高 load、加权平方和及 y 的每个坐标都以向外舍入区间计算。最终批量求和将 binary64 上下端点精确转换为有理数，再向外包一次，不使用无误差预算的浮点求和。工作精度 100/120 位不意味着每个 bulk 输入有同样准确度。
+
+远场保留候选的两个真实边界 jet：
+\[
+t_0=k_0+\sqrt2\sum n^0k_n,\qquad t_1=\sqrt2\sum n k_n s_n,
+\quad K_1=|k_0|+\sqrt2\sum|k_n|.
+\]
+原符号 |s_n|<=B=4 由原生产者的真实 Gamma、pole、两个素数预算重新验证。原有列的二阶展开给出
+\[
+|r_m|\le a_1/m+a_2/m^2+a_3/m^3,
+\quad a_1=\sqrt2 B|t_0|/\pi,\ a_2=\sqrt2|t_1|/\pi,
+\quad a_3=\frac{2\sqrt2 BN^2K_1}{\pi(1-N/M_{\rm cut})}.
+\tag{UG9}
+\]
+因此远场加权平方尾为至多
+\[
+f_{\rm tail}\sum_{i,j=1}^3
+\frac{a_i a_j}{(i+j-1)M_{\rm cut}^{i+j-1}}.
+\]
+正 parity 坐标已经包含两个原始 Fourier 方向，不能再重复乘二。每个交叉坐标的远场模长用 sqrt(T_i e_tail) 控制，T_i 是原耦合列的完整加权尾上界。复圆盘外包为矩形会增加保守性，但不会丢掉相位或尾部。没有终端频率截止。
+
+## 5. 真正的 Fourier 观察量与整体归一化
+
+固定空间中取 g_(a,z)(y)=conjugate(cos(a*z*y))，K0=<1,k>=sqrt2*k0，与 a 无关。令 K_a(z)=<g_(a,z),k>/K0，并把代表元中心化为
+\[
+h_{a,z}=g_{a,z}-\overline{K_a(z)}\,1.
+\]
+它在 k 上严格读出零。写 zeta=conjugate(a z)，正 parity Fourier 系数为
+\[
+(g_{a,z})_0=\sqrt2\sin\zeta/\zeta,
+\qquad(g_{a,z})_n=\frac{2\zeta\sin\zeta}{\zeta^2-\pi^2n^2}\quad(n>0).
+\]
+中心化只改变零坐标，实际采用 h0=-sum_(n>0)k_n*g_n/k0，因此候选配对恒等式先精确消去。中心 z0 非实且 a>0，实际有限分母非零。对所有 m>M_cut 且 M_cut>=2|zeta|/pi，|h_m|<=4|2zeta sin zeta|/(3pi^2m^2)，完整加权平方尾由相应 m^-4 积分覆盖。
+
+把同一 (UG7) 分别用于 r_a 和 h_(a,z0)，两档执行均认证
+\[
+\boxed{E_a<4.4\cdot10^{-9},\qquad C_{a,z_0}<3.7.}
+\tag{UG10}
+\]
+实际充分上表达式的上端分别约为 4.353429552e-9、3.678035788。前者的原始近高加权质量约 1.19402e-9，剩余无限高尾上预算约 5.80375e-12，低 load 与全部高交叉相消后的预算也计入。
+
+令 b=251/1000、a_+=sup I、rho_z=1/1000。有限窗口 Fourier 导数和固定 k 给出
+\[
+\|h_{a,z}-h_{a,z_0}\|\le
+\sqrt2 a_+e^{a_+b}(1+\sqrt2/|K0|)\rho_z=:d.
+\]
+由于整个偶扇区 G>=kap I，在其逆能量范数中应用三角不等式，得
+\[
+C_{a,D}\le(\sqrt{C_{a,z_0}}+d/\sqrt{\mathrm{kap}})^2<4.
+\tag{UG11}
+\]
+这是整个复圆盘的解析控制，不是采样网格。
+
+由 (UG5)，||w_a||<=sqrt(E_a/kap)。固定空间的 projective 原点分母满足
+\[
+b_a=|\langle1,k+w_a\rangle|\ge |K0|-\sqrt2\sqrt{E_a/\mathrm{kap}}>27/25.
+\tag{UG12}
+\]
+这里 K0 约为 -1.085330103，是伸缩到 [-1,1] 后的积分；不要与旧物理窗口中的 -0.804394472 混用。物理 Fourier 积分有 sqrt(a) 因子，它在原点归一化中消去。精确中心化恒等式给出
+\[
+\boxed{\sup_{a\in I,z\in D}
+\left|\frac{\widehat u_a(z)}{\widehat u_a(0)}-K_a(z)\right|
+\le\frac{\sqrt{E_a C_{a,D}}}{b_a}<1/8000.}
+\tag{UG13}
+\]
+实际上预算小于 0.000120866616。固定区间的 ground placement、偶性和所有分母均已支付，没有每个 z 单独选择的相位。
+
+## 6. 接回同尺度真实 prolate 模型
+
+主程序实际重跑原中心 `certify_prime3_prolate_model.py` 和区间 `certify_prime3_prolate_scale_transport.py`。两者包含真实无限 Legendre 补空间和完整 residual，不从存储结果读取真假。保持此前同一个零积分组合和全局符号，中心单位模型与 k 的距离仍按新鲜结果 <113/100000 运输；多项式 Mellin 端点积分给出中心 Fourier 和原点值，真实模型误差及其分母变化全部保留。
+
+用代表元的频率变化界控制中心尺度的整个 D，再加固定 k 的尺度变化及前节真实 prolate 原点归一化尺度差，得到
+\[
+\boxed{\sup_{a\in I,z\in D}|K_a(z)-P_a(z)|<67\cdot10^{-6}.}
+\tag{UG14}
+\]
+其实际上预算小于 0.000066478451。相加 (UG13)、(UG14) 得 (UG2)，且粗有理界已满足 1/8000+67/10^6<1/5000。主程序还直接相加未粗化区间以保留更窄的数值余量。
+
+## 7. 源码复用、复验与边界
+
+原 `certify_prime3_scale_interval.py` 只增加关键字 `with_components` 返回已经完成全部 checks 的新鲜算术矩阵、symbols、shells 和耦合列，避免复制其计算或读取旧 JSON。默认执行和数学结论保持不变；单独重新执行 70 位后，解析后的结果与原记录唯一差异为源哈希。现行结果记录随之更新，排版变化不承担精度。原有 Lean/Scribe 字节不修改。
+
+新主程序最终源码在 100、120 位分别执行通过。每次都重跑全部 full-space Weil interval、两个真正 prolate 验证器、完整 loads、逆 Schur、增强偶 coercivity、原点与 Fourier 预算。旧绝对 ell、旧中心 ground 下界和旧能量对偶成功 JSON 均不作为数值前提。没有 zeta 零点、未验证 eigensolver 或随机采样作为全称证明。
+
+同一作者的第二表达检查通过 60 个精确复 Schur 恒等式、60 个高块逆单调比较、180 个残差能量例子、4 个原始列代数恒等式及9个完整尾原函数。60 个错误交叉符号都被发现；去掉非正 shifted eigenvalue 有一个精确失败例子。三个不允许的精度和一个错误输入 pin 均在重计算前拒绝；启用 Python -O 也实际拒绝。人工矩阵只检验代数，不被称为实际 Weil 数值证据或独立作者审稿。
+
+Lean 的唯一公开定理有同名 FromLean Scribe 条目。当前环境未取得 Lean/lake 执行，故没有 elaboration、公理闭包或 Scribe 发射成功声明。新定理是逻辑审查后的 Candidate；原 Fourier/core、完整高空间下界、逆形式和无限 block 消元继续属于明确的纸面桥。精确/区间重放不是内核验收。
+
+主程序 SHA-256：`9dd3a99fc5881b2acf59853633821a705d3416bc7d0f1b0b69d9ae43bdd74e15`。
+新鲜矩阵生产者 SHA-256：`13b50abcec06663e35ad8f704cac6de9f3c1a2c37159e7f63e8c24fee4681993`。
+
+## 8. 最新相关研究与剩余开放目标
+
+实际读取 #5895 at `023e6d1eccb223a563939590d301085a220b38f2` 的 `InvariantSectorEnergyReadout.lean`：不变 readout 可只支付本 sector 的 coercivity，但不能把该阈值充当全空间间隔。本节保留这一分工，并对更宽的前节 I 重做完整偶检查；未隐式导入未合并模块。#5882 的 `ProjectiveEnergyDual.lean` at `65339a3acbe99e661c6955dbb21728c4c62dfe76` 使用绝对 ell 和 U-ell，本节改用 (UG3)-(UG5) 中实际 residual 的双能量输入，未重复其通用读出包装。
+
+5040 研究 #6398 的 `PrimeValuationGap.lean` at `efd0a8a82d885491b22497822ad25da8cc2ee0bd` 已有固定素数/有界指数类的 Robin 尖锐渐近上包络。实际源码先固定 boost，再取整数阈值，保留量词顺序；该标量结果没有被移作当前谱假设。本节也不把“每个窄区间可认证”误写成无界尺度统一收敛。
+
+再次核对 CCM arXiv:2511.22755v1 Sections 7-8 的实际模型和缺失步骤，以及 Dusson-Sigal-Stamm arXiv:2008.10871 的 Schur 方法背景。残差后验估计、逆单调性和 block 配方为经典工具；这里的工作是同一算术对象的完整兑现，不宣称方法优先权。任何外部 Schrödinger 正则性假设均未移入本算子。
+
+本节完成的连接是：在一个跨 prime-3 激活的连续参数区间上，统一谱分离、真实模型尺度流和同尺度规范化 Fourier 误差终于同时可用。区间仍窄，复圆盘仍小，不能给出 Xi 极限。下一承重任务是扩展实际可认证的参数跨度，或在无界尺度序列上同时控制残差逆能量 E_a、centered 观察预算 C_(a,K)、非零原点 b_a 和正确模型识别，使 E_a C_(a,K)/b_a^2 趋零。本节不证明该全尺度率、一般简单偶最低族或 RH。
