@@ -100,7 +100,7 @@ $$
 
 ### h_n 的定义与变分识别
 
-原始定义是 Schur 余量,并非从 inf 开始定义。[L50618](../../develop/theory/QUANTUM-RH.md?plain=1#L50618) 先假设 `T_n` 严格正定,取 `A_n=(r_{j-i})_{1<=i,j<=n}`、`u_n=(r_1,...,r_n)^T`,式 (11) 是 `h_n=1-u_n^T A_n^(-1)u_n`;紧随原文“这里 \(h_n>0\)。”[L50720 附近](../../develop/theory/QUANTUM-RH.md?plain=1#L50720) 另定 `h_0=1`。实际数据来自 [L50454](../../develop/theory/QUANTUM-RH.md?plain=1#L50454) 的 `r_n=c_n/c_0` 与 `T_N=(r_{j-i})_{0<=i,j<=N}`。
+原始定义是 Schur 余量,并非从 inf 开始定义。[L50618](../../develop/theory/QUANTUM-RH.md?plain=1#L50618) 先假设 `T_n` 严格正定,取 `A_n=(r_{j-i})_{1<=i,j<=n}`、`u_n=(r_1,...,r_n)^T`,式 (11) 是 `h_n=1-u_n^T A_n^(-1)u_n`;紧随原文“这里 \(h_n>0\)。”[L50735](../../develop/theory/QUANTUM-RH.md?plain=1#L50735) 另定 `h_0=1`。实际数据来自 [L50454](../../develop/theory/QUANTUM-RH.md?plain=1#L50454) 的 `r_n=c_n/c_0` 与 `T_N=(r_{j-i})_{0<=i,j<=N}`。
 
 [L51116](../../develop/theory/QUANTUM-RH.md?plain=1#L51116) 的变分识别及解释逐字:
 
@@ -237,6 +237,26 @@ curl -fsS --max-time 25 --get 'https://loogle.lean-lang.org/json' --data-urlenco
 | `rg -n -i 'infinite.{0,50}(riemann\|zeta\|nontrivial)\|(?:riemann\|zeta\|nontrivial).{0,50}infinite' D5 M/NumberTheory` | 62 / 0 | 新发现实际零点无穷性候选,待核类型及冻结片 |
 
 最后一项定位到 `D5/S3/Weil/ZeroInfinitude/ExplicitFormulaObstruction.lean:194` 的 `isNontrivialZero_infinite`,以及 `ZeroData` 相关模块。Loogle 的零命中不能覆盖仓内声明;在核查前不把实际零点无穷性记作缺失或未冻结。
+
+### 批次 8: 实际零点前置的纠正
+
+读取 `ExplicitFormulaObstruction.lean` 的公开类型及其 state 后确认:实际非平凡零点无限性**已有冻结定理**,不能因批次 5 的窄 Mathlib 检索无命中就列作缺失。下列仍是模块 state pin,不是新造的声明 ID。
+
+| 来源 | statement_id | 已核作用域 |
+| --- | --- | --- |
+| 冻结 GID `D5/S3/Weil/ZeroInfinitude/ExplicitFormulaObstruction`,声明 `isNontrivialZero_infinite` [L194](../../../D5/S3/Weil/ZeroInfinitude/ExplicitFormulaObstruction.lean#L194)、`nonempty_zeroData` L203 | `sha256:9a0cd0b0899d03fb4847cb680718e6e80b6bbde5f8314c960e2b6d9d38608530` | 前者公开类型无额外假设,断言 `{rho : Complex \| IsNontrivialZero rho}.Infinite`;后者给 `Nonempty ZeroData`。不证明本靶的实际权重可和、Li 矩识别或变分式;无穷性本身不推出 RH。 |
+| 冻结 GID `D5/S3/Weil/ZetaBridge/ZeroDataNonemptyIffInfinite`,声明 `nonempty_zeroData_iff_infinite` L237 | `sha256:b229afb240722c611063bf4bf3aaae465c7cdd06c7997e298b15bee5c2874945` | 仅给 `Nonempty ZeroData` 与实际非平凡零点无限性的 iff;上行已可供给其右端。该模块关于谱半径有界集有限的内部引理是 private,不冒充公开投影端。 |
+| 冻结 GID `D5/S3/Weil/ZeroSum`,结构 `ZeroData` [L72](../../../D5/S3/Weil/ZeroSum.lean#L72) 与 `ZeroData.multiplicity_pos` L89 | `sha256:154bf5eb20dafaf731874c5a333f66d46013e89637103c8b19f9b773f0bceace` | 给定 Z 时可投影不重复且穷尽的零点枚举、准确重数及 `locallyFinite`。结构本身不声明 inhabitant,须由上行的存在端取出。未给式 (27) 的概率测度。 |
+
+以上三份 state 均直接 `cat Golden/Frozen/state/<GID>.lean.json` 实读。另全文打开钉版 `Mathlib/NumberTheory/LSeries/ZetaZeros.lean`:`IsCompact.inter_riemannZetaZeros_finite` L66 给任意紧集与实际 zeta 零点集之交有限;`tendsto_riemannZeta_cofinite_cocompact` L72 给零点子类型的余有限滤子逃离紧集。**谱点外集有限已有更直接的 Mathlib 绑定起点**:对 `r>0`,外点满足 `norm rho < 1/r`,限制于 `closedBall 0 (1/r)` 后取有限子集与像。`rho != 0` 来自非平凡零点实部正。映射 `rho -> 1-rho^(-1)` 在非零零点上单射,是取逆与平移的规范化消去;本批不增加完整证明。
+
+| 命令 | 匹配行数 / exit | 边界 |
+| --- | --- | --- |
+| `rg -n 'structure ZeroData\|finite\|norm\|height\|tendsto' D5/S3/Weil/ZeroSum.lean` | 12 / 0 | 候选定位,随后读取结构及正重数类型 |
+| `rg --files Golden/Frozen/state \| rg -P '(?:ExplicitFormulaObstruction\|ZeroDataNonemptyIffInfinite\|ZeroSum)\.lean\.json$'` | 3 / 0 | 冻结路径存在,另实读 pin |
+| `rg -n -P '\b(?:inter_riemannZetaZeros_finite\|tendsto_riemannZeta_cofinite_cocompact)\b' M/NumberTheory/LSeries/ZetaZeros.lean` | 3 / 0 | 1 文档行 + 2 声明行,不是 3 个定理 |
+| `rg -n -P '\b(?:inter_riemannZetaZeros_probeNegative0909\|tendsto_riemannZeta_probeNegative0909)\b' M/NumberTheory/LSeries/ZetaZeros.lean` | 0 / 1 | 同 PCRE 词界与分组的阴性对照 |
+| `rg -n -F 'h_0=1' docs/develop/theory/QUANTUM-RH.md` | 2 / 0 | L8993 属别处;本段准确出处 L50735,已修正 Q1 的近似行号 |
 
 ## 明确未主张
 
