@@ -1,5 +1,5 @@
 /- GID: D5/S3/Zeros/Convolution/GribinskiDegreeThree
-   generality: G
+   generality: I
    mirror-B: D5/B/S3/Zeros/Convolution/GribinskiDegreeThree
    mirror-E: none(waiver:symbolic-real-parameter-proof)
    anchors: []
