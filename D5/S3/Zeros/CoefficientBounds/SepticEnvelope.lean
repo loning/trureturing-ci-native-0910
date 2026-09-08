@@ -6,21 +6,25 @@
    utility: none
    digest: Coefficient inequalities for arbitrary centered real-rooted septics. -/
 
-import D5.S3.Zeros.CoefficientBounds.SepticEnvelopeGaps
+import D5.S3.Zeros.CoefficientBounds.SepticEnvelopeUpper
 import Mathlib.Algebra.Polynomial.BigOperators
 import Mathlib.Data.Fin.Tuple.Sort
 
 /-!
-All declarations quantify over arbitrary real root maps or real gap variables.
-They are algebraic identities and inequalities, with no bounded enumeration,
-checker, numerical premise, or certified finite instance. Thus utility is none.
+`coefficient_second_moment` is an identity for every real root map, and
+`roots_zero_of_invariant_zero` is its universal zero-case consequence.
+`gapPolynomial` is a symbolic product of seven real linear factors, and
+`gap_coefficients` identifies its coefficients for arbitrary real gaps.
+`centered_real_septic_envelope` bounds the coefficients of every centered real
+root map. None enumerates a bounded family, implements a checker, assumes a
+numerical premise, or certifies a finite instance. Thus utility is none.
 -/
 
 noncomputable section
 
 namespace D5.S3.Zeros.CoefficientBounds.SepticEnvelope
 
-open Polynomial SepticEnvelopeGaps
+open Polynomial SepticEnvelopeGaps SepticEnvelopeUpper
 
 set_option maxRecDepth 4096 in
 set_option maxHeartbeats 4000000 in
@@ -79,7 +83,7 @@ theorem centered_real_septic_envelope (r : Fin 7 → ℝ) (hcenter : ∑ i, r i 
     let B := u^2 + 21*w/5
     let Z := -(2*s + 2*u*w/7 - 4*v^2/35)
     0 ≤ A ∧ 0 ≤ B ∧ B ≤ 49*A^2/20 ∧ 0 ≤ Z ∧
-      120*A*B - 245*A^3 ≤ 270*Z := by
+      120*A*B - 245*A^3 ≤ 270*Z ∧ 9*Z*(49*A^2 - 5*B) ≤ 10*A*B^2 := by
   classical
   dsimp only
   by_cases hzero : -(∏ i, (X - C (r i)) : ℝ[X]).coeff 5 = 0
@@ -137,7 +141,8 @@ theorem centered_real_septic_envelope (r : Fin 7 → ℝ) (hcenter : ∑ i, r i 
     gap_b_nonneg a b c d e f ha hb hc hd he hf,
     gap_b_upper a b c d e f ha hb hc hd he hf,
     gap_z_nonneg a b c d e f ha hb hc hd he hf,
-    gap_z_lower a b c d e f ha hb hc hd he hf⟩
+    gap_z_lower a b c d e f ha hb hc hd he hf,
+    gap_z_upper a b c d e f ha hb hc hd he hf⟩
 
 #print axioms centered_real_septic_envelope
 
