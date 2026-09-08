@@ -84,7 +84,7 @@ internal sealed class WeilPolynomialMellinWindowDocument : IScribeDocumentDefini
                     AssessedProvenance.FromRepo(),
                     Blocks(Paragraph(Text("For every real a, natural M,d, complex coefficient family A and complex z, the actual Fourier integrand is integrable. Compact interval continuity proves each summand integrable, followed by finite linearity. This excludes totalized nonintegrable Fourier values."))),
                     DescribeRole.Theorem),
-                Describe.Lean(DescribeId.Create("polynomial-mellin-window-paperFT"),
+                Describe.Lean(DescribeId.Create("polynomial-mellin-window-paper-ft"),
                     DeclarationHandle.Create(Owner + "polynomial_mellin_window_paperFT"), H("Quadrature-free Fourier evaluation"),
                     StatementSource.FromAuthor(Disp(Seq(
                         Call("And", Call("ForAllIcc", D(1), M, Call("LessEqual", Call("log", m), Call("mul", D(2), a))),
