@@ -9,6 +9,11 @@ Branch: lane/math/matching-equiv-0908
 Base: ceb8502be9e6ccabf98518284f0051b971e7104b
 Lane: #6377. Predecessor: #6433.
 
+All five requested steps are proved and pushed. The exact main theorem is
+`MatchingEquiv.card_matchingMonomialFiber`; the endpoint is
+`MatchingPolynomial.matching_identity : MatchingIdentity`.
+There is no remaining Lean goal for this brief.
+
 The user brief preregisters the fiber equivalence as the proposed escape
 witness. The orchestrator checked only the numerical readings listed in
 that brief. All Lean results in this report are worker-run.
@@ -115,15 +120,16 @@ maximum RSS 3019046912 bytes (`step-2h-make-lean.log`). Every added theorem's
 step-2c through step-2g failures concern dependent choice normalization,
 explicit incidence vertices, and local API arguments; no bound was raised.
 
-The added public theorems in MatchingFiber and MatchingEquiv have
-proof_shape content after inlining their live local construction; no direct
-frozen repository theorem is used (GID/statement_id: none). Their proposed
-and observed escape is the brief's square-partner/cross-involution
-decomposition, with the edge-incidence and exponent-locality lemmas as its
-live intermediate obligations. admission_basis is escape-witness; each
-auxiliary declaration is consumed by matchingMonomialFiberEquiv, which is
-consumed by both cardinality theorems. Detailed per-declaration accounting
-will accompany the final canonical report.
+The constructive public results have proof_shape content after inlining
+their live local construction; no direct frozen repository theorem is used
+(GID/statement_id: none). The two normalization companions
+matching_edge_eq_of_mem and decorationExponent_injective are conservatively
+classified bind-only, with no independent deposit basis. The proposed and
+observed escape is the brief's square-partner/cross-involution decomposition;
+the companion consumer is fiberToFactors_injective. The constructive
+results use admission_basis escape-witness and matchingMonomialFiberEquiv
+is consumed by both cardinality theorems. The final audit below gives each
+declaration separately.
 
 Every added definition, instance, private helper and public theorem has
 utility none: it describes or proves a symbolic construction for arbitrary
@@ -212,3 +218,184 @@ path is coeff_additiveConvolution through the predecessor's
 symmetrize_coefficient; direct frozen definition identities are itemized in
 the final declaration audit. No H_0 positivity, complete parity identity,
 or all-order omission of H_1 follows as a claim of this delivery.
+
+Step 5 was pushed as `de5b6601e1`.
+
+## Per-declaration Audit
+
+The complete [declaration audit](matching-equiv-0908-declarations.json)
+contains one entry for each of the canonical report's 234 declarations in
+the four changed Lean modules. Each entry has its exact name, statement_id,
+axioms, individual utility classification and reason, and frozen dependency
+GID/statement_id records. Every public theorem also has proof_shape,
+escape_witness, and admission_basis. This includes the 17 unchanged public
+theorems in MatchingFiber and the compiler-generated congruence companions.
+No imported-but-unused theorem is counted as a mathematical premise.
+
+There are 35 authored public theorems, 49 authored private theorems, and two
+compiler-generated public congruence theorems. Every one of the 84 authored
+theorems has an explicit `#print axioms` in its source; a source-to-report
+cross-check found zero missing prints. Their closures are exactly
+`[Classical.choice, Quot.sound, propext]`. The remaining generated
+declarations and definitions have closures contained in that set; no
+`sorryAx` or new axiom appears in the verified report.
+
+For every one of the 234 declarations, utility is individually `none`:
+the authored declarations concern arbitrary finite types, degrees, subsets,
+or root families; generated declarations support those same symbolic
+operations. None enumerates a bounded set of theorem parameters, certifies
+a numerical instance, implements a checker, or leaves a numerical reduction
+premise. These utility and proof-shape classifications are worker
+assessments, not an independent review or a machine claim of semantic
+classification. SL-031 reports `semantics=unverified-by-machine`.
+
+The following table isolates this brief's 18 new public theorems. All use
+direct frozen theorem premises `none`, except that the final identity reaches
+the coefficient theorem through the predecessor's local helper as described
+below. Definition references are recorded separately in the JSON audit.
+
+| Declaration | proof_shape | escape_witness | admission_basis / directed companion use |
+| --- | --- | --- | --- |
+| PerfectMatchingCount.card_fixedPointFreeInvolution_mul | bind-only | none | rule-11-upstream-wrapper; card_matchingMonomialFiber_mul -> this count |
+| PerfectMatchingCount.card_fixedPointFreeInvolution | bind-only | none | rule-11-upstream-wrapper; card_matchingMonomialFiber -> this count |
+| MatchingFiber.matching_edge_eq_of_mem | bind-only | none | companion: fiberToFactors_injective -> incidence uniqueness |
+| MatchingFiber.crossPartner_mem | content | exists_cross_partner | escape-witness |
+| MatchingFiber.crossPartner_eq_iff | content | exists_cross_partner and unique incidence | escape-witness |
+| MatchingFiber.crossPartner_involutive | content | explicit paired cross endpoints | escape-witness |
+| MatchingFiber.crossPartner_ne | content | actual loop-free cross edge | escape-witness |
+| MatchingFiber.squarePartnerEmbedding_mem | content | squareChoiceEquiv recovers the chosen edge | escape-witness |
+| MatchingFiber.matching_edge_cases | content | explicit square/cross decomposition of all edges | escape-witness |
+| MatchingFiber.decorationExponent_injective | bind-only | none | companion: fiberToFactors_injective -> local-choice uniqueness |
+| MatchingEquiv.fiberToFactors_injective | content | matching_edges_factors | escape-witness |
+| MatchingEquiv.fiberToFactors_surjective | content | rebuilt_exponent and fiberToFactors_rebuilt | escape-witness |
+| MatchingEquiv.card_matchingMonomialFiber | content | matchingMonomialFiberEquiv | escape-witness |
+| MatchingEquiv.card_matchingMonomialFiber_mul | content | matchingMonomialFiberEquiv | escape-witness |
+| MatchingEquiv.coeff_matchingSum_fiber | content | matchingMonomialFiberEquiv via the product count | escape-witness |
+| MatchingPolynomial.matchingSum_esymm_mul | content | fiber equivalence, exponent classification, shifted sum | escape-witness |
+| MatchingPolynomial.matchingSum_esymm | content | live proof of matchingSum_esymm_mul | escape-witness |
+| MatchingPolynomial.matching_identity | content | the fiber equivalence on the coefficient/evaluation path | escape-witness |
+
+The nontrivial equivalence is on the live proof path, not an unused import
+or a discarded conjunction component. The directions are
+`matching_identity -> real_matchingSum_mul -> matchingSum_esymm_mul ->
+coeff_matchingSum_fiber -> card_matchingMonomialFiber_mul ->
+matchingMonomialFiberEquiv`. The inverse requires both rebuilt_exponent and
+fiberToFactors_rebuilt. The count cannot be obtained from just the two
+factor cardinalities without that equivalence, as the mandatory probe shows
+for the restricted proof attempt.
+
+The frozen boundary reached through symmetrize_coefficient is:
+
+| Frozen GID | statement_id |
+| --- | --- |
+| D5/S3/Zeros/Convolution/FiniteConvolutionCoefficients.coeff_additiveConvolution | sha256:22e74279dd95309d79b0e8a1737f0f3cc47b35cea04bebdf984da4f26e3926f7 |
+| D5/S3/Zeros/Convolution/FiniteFreeCommutatorDegreeFour.dilate | sha256:cfeef8d70acd59c3974ef7fce414e3607d72c81cb6d6f9e6d41be3b66c990cee |
+| D5/S3/Zeros/Convolution/FiniteFreeCommutatorDegreeFour.symmetrize | sha256:e9db27e70bca5288a1bc78fb5b5f63f1dbfc300b6b176a87a46b3231ebae4bab |
+| D5/S3/Zeros/Convolution/FiniteFreeCommutatorDegreeFour.elementaryCoeff | sha256:6edacf40fa3575becc3b3548435bf99326ea1e208a06ab9255b2ff81051fe2c9 |
+| D5/S3/Zeros/Convolution/FiniteFreeCommutatorDegreeFour.additiveConvolution | sha256:25a49b95cd06b2a42797145a0f0d8ea2f69fd2aad30577f099a73d629d88b267 |
+
+These identities were cross-checked against the fresh canonical report;
+the corresponding state-pin files are present. The complete source and
+proof-shape assessments remain ASSUMED-UNVERIFIED by an independent seat.
+
+## Search Receipts
+
+All negative/positive controls below use the same supported `\b` word
+boundary feature. The repository controls use the immutable pre-edit base,
+so candidate declarations cannot contaminate the negative result.
+
+```sh
+git grep -n -P '\b(card_matchingMonomialFiber|card_perfectMatching|card_perfect_matching|card_fixedPointFreeInvolutions)\b' ceb8502be9e6ccabf98518284f0051b971e7104b -- D5
+git grep -n -P '\b(card_partner_embeddings|squarePartnerEmbedding|MatchingMonomialFiber)\b' ceb8502be9e6ccabf98518284f0051b971e7104b -- D5/S3/Zeros/Convolution
+rg -n '\b(card_fixedPointFreeInvolution|card_fixedPointFreeInvolutions|card_perfectMatching|card_perfect_matching)\b' .lake/packages/mathlib/Mathlib
+rg -n '\b(card_of_cycleType_mul_eq|card_of_cycleType|doubleFactorial|card_embedding_eq|cycleType_of_pow_prime_eq_one)\b' .lake/packages/mathlib/Mathlib/GroupTheory/Perm/Centralizer.lean .lake/packages/mathlib/Mathlib/GroupTheory/Perm/Cycle/Type.lean .lake/packages/mathlib/Mathlib/Data/Nat/Factorial/DoubleFactorial.lean .lake/packages/mathlib/Mathlib/Data/Fintype/CardEmbedding.lean
+```
+
+Line-hit counts in order: **0, 7, 0, 17**; raw command exits: **1, 0, 1, 0**.
+The earlier preliminary positive-count note of 31 is not used as a receipt;
+17 is the mechanically recounted result for the exact final command above.
+The two searched positive controls prove the word-boundary searches are
+operational. Additional candidate-name checks for matchingSum_esymm,
+matching_identity and exists_fiberExponent returned zero before that module
+was written; their positive control on the three coefficient/factorial
+theorem names returned six lines.
+
+Online searches were actually run before the local count implementation:
+
+| Endpoint | Query | Result |
+| --- | --- | --- |
+| loogle.lean-lang.org/json | `"doubleFactorial"` | 10 declarations; arithmetic API, no involution count |
+| loogle.lean-lang.org/json | `"Involutive", "card"` | 1 group-homomorphism theorem, not the required permutation count |
+| loogle.lean-lang.org/json | `"PerfectMatching"` | 14 declarations, no counting theorem |
+| leansearch.net/search | `The number of fixed point free involutive permutations on a finite type of cardinality 2*n is the odd double factorial` | 10 related results, no exact counting theorem |
+
+LeanSearch used POST JSON with a one-element query array and
+`num_results: 10`. Raw command strings and parsed responses are retained in
+`search-audit.json` in the attempt directory, extracted from the worker's
+JSONL transcript. The broader local cycle-type search found
+Mathlib/GroupTheory/Perm/Centralizer.lean:680 and that theorem is directly
+used. DoubleFactorial arithmetic, Equiv.Perm, SimpleGraph matching APIs,
+and Finset.sym2 were inspected; no recurrence was re-proved.
+For the final bridge, the pinned Vieta and aeval_esymm declarations were
+found locally and used directly. A missing AEval.lean filename was corrected
+by searching the directory; the API lives in Algebra/MvPolynomial/Eval.lean.
+No absolute nonexistence claim outside these searched scopes is made.
+
+## Final Verification
+
+The final Lean source hash matches the worker-produced canonical report
+for all four changed Lean modules. Canonical report SHA-256:
+`4ad88ef4e96216f51c5070499b6526b239960005d4e460ee49a593af2b33aec7`.
+
+| Check | EXIT | Seconds | Maximum RSS Bytes |
+| --- | --- | --- | --- |
+| /usr/bin/time -l make lean (step-5c) | 0 | 17.46 | 3137781760 |
+| /usr/bin/time -l make lean-report | 0 | 72.06 | 3996041216 |
+| /usr/bin/time -l make emit | 0 | 59.61 | 1262092288 |
+| /usr/bin/time -l make -C tools selftest | 0 | 3.90 | 251904000 |
+| timed candidate admission check | 3 | 75.70 | 6578225152 |
+
+The direct make lean reports 12594 jobs. The canonical report uses delta
+mode, rechecking four modules; it does not print a separate job count.
+The supervisor samples a process-tree peak of 4911232 KB for the report;
+this is a different measurement from time's single-process RSS and is not
+substituted for it. All timed attempts, including failures and their job
+counts, are itemized in the worker-owned `build-audit.json`.
+
+Selftest reports SELFTEST PASS, deterministic checks, and active rules
+SL-001, SL-002, SL-003, SL-004, SL-006, SL-007, SL-008, SL-009, SL-010,
+SL-011, SL-012, SL-013, SL-014, SL-015, SL-016, SL-017, SL-018, SL-019,
+SL-020, SL-021, SL-022, SL-023, SL-025, SL-026, SL-028, SL-030, SL-031,
+SL-032, SL-033, SL-034. The explicit deferred cases are SL-007:D5-T0011,
+SL-009:D5-T0012, SL-013:D5-T0013, and SL-014:D5-T0010.
+
+The admission command was:
+
+```sh
+/usr/bin/time -l dotnet run --project tools/StrataLint.Cli/StrataLint.Cli.csproj --configuration Release -- check --candidate-lean-report .lake/build/stratalint/raw-lean-report.json --protected-base ceb8502be9e6ccabf98518284f0051b971e7104b
+```
+
+Raw EXIT **3**, not zero. Scribe verification, Lean closure, canonicalization,
+and all content-rule passes succeeded (`rule-passes: passed`). The sole
+final annotation is `PROTECTED_SURFACE_CHANGE count=3`, naming the new
+MatchingEquiv, MatchingPolynomial and PerfectMatchingCount `.scribe.cs`
+files under Blueprint/D5/S3/Zeros/Convolution. No gate or policy was changed.
+SL-031 observes utility none for all four Lean modules. SL-034 observes
+missing state pins, consistent with this branch-only, no-deposit delivery.
+The generated Markdown was emitted from typed Scribe; MatchingFiber.md only
+gains its new imported-module dependency. No Blueprint Markdown was authored
+by hand.
+
+## Worker Artifacts
+
+Attempt directory:
+`/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/matching-equiv-0908/attempt-1`.
+
+The worker owns the raw build logs, bind-only probe, declaration-audit.json,
+build-audit.json, search-audit.json, result.json and completion.sentinel.
+The result envelope has exactly conclusion and log_ref at top level, records
+all pushed commits and changed paths, and is published by temporary file
+plus atomic rename, followed by the same sequence for the sentinel.
+No PR, freeze pin, coverage edge, independent review, H_0(R) positive
+semidefiniteness, complete parity identity, or all-order H_1 omission is
+claimed. The mathematical obligations in steps 1-5 are all complete.
