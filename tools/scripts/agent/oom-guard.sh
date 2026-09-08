@@ -3,9 +3,14 @@
 # a lane before any Lean build runs there. Copies artifacts from a donor lane
 # that has them, but only when the source bytes match exactly.
 #
+# The copy is a plain one: the repository forbids per-file clone walks, and the
+# seven artifacts of this one module measure two megabytes together, so a clone
+# would buy nothing. LC_ALL is pinned because shasum is a Perl program on Darwin.
+#
 # Usage: oom-guard.sh <lane-dir> [donor-dir ...]
 # Exit 0 when the lane is safe to build; 2 when it is not and no donor could fix it.
 set -u
+export LC_ALL=C
 
 MODULE="D5/S1/Recurrence/Parity/ExponentialImplicitParityPeriodThree"
 LANE="${1:?usage: oom-guard.sh <lane-dir> [donor-dir ...]}"
@@ -37,11 +42,11 @@ for d in "${DONORS[@]}"; do
   n=0
   for ext in .olean .olean.hash .ilean .ilean.hash .trace; do
     s="$d/.lake/build/lib/lean/$MODULE$ext"
-    [ -f "$s" ] && cp -c "$s" "$LANE/.lake/build/lib/lean/$MODULE$ext" 2>/dev/null && n=$((n+1))
+    [ -f "$s" ] && cp "$s" "$LANE/.lake/build/lib/lean/$MODULE$ext" 2>/dev/null && n=$((n+1))
   done
   for ext in .c .c.hash .c.trace; do
     s="$d/.lake/build/ir/$MODULE$ext"
-    [ -f "$s" ] && cp -c "$s" "$LANE/.lake/build/ir/$MODULE$ext" 2>/dev/null && n=$((n+1))
+    [ -f "$s" ] && cp "$s" "$LANE/.lake/build/ir/$MODULE$ext" 2>/dev/null && n=$((n+1))
   done
   echo "OOM_GUARD lane=$LANE status=seeded donor=$d files=$n sha=$want"
   exit 0
