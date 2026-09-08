@@ -11,6 +11,54 @@ public sealed class NativeDecideAdmissionTests
     [InlineData(false, true)]
     [InlineData(true, false)]
     [InlineData(true, true)]
+    public void EqualityAmbiguityProductionAdmissionAcceptsSelectedOrUnchangedSource(bool historical, bool spaced)
+    {
+        var source = FirstOrderEqualitySource(spaced);
+        var context = Candidate("decide", historical ? "" : source, historical ? source : null,
+            sourceImport: "Mathlib.ModelTheory.Syntax");
+        var completed = Assert.IsType<RuleExecutionOutcome.Completed>(RuleCatalog.Default.Execute(context)).Capability;
+        Assert.Contains(completed.ExecutedRules, id => id.Value == "SL-008");
+        Assert.Contains(completed.ExecutedRules, id => id.Value == "SL-035");
+        Assert.DoesNotContain(completed.Diagnostics, item => item.AdmissionEffect == AdmissionEffect.Block);
+        Assert.IsType<AdmissionOutcome.Admitted>(Admit(context));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void EqualityAmbiguityProductionAdmissionRejectsFollowingNativeDecide(bool spaced)
+    {
+        var context = Candidate("native_decide", FirstOrderEqualitySource(spaced),
+            sourceImport: "Mathlib.ModelTheory.Syntax");
+        var completed = Assert.IsType<RuleExecutionOutcome.Completed>(RuleCatalog.Default.Execute(context)).Capability;
+        Assert.Contains(completed.ExecutedRules, id => id.Value == "SL-035");
+        var diagnostic = Assert.Single(completed.Diagnostics, item => item.AdmissionEffect == AdmissionEffect.Block);
+        Assert.Equal("SL-035", diagnostic.RuleId.Value);
+        Assert.Equal(Path, diagnostic.Path);
+        Assert.Equal("NATIVE_DECIDE_SOURCE line=12: bare native_decide token is forbidden in changed D5 Lean source", diagnostic.Message);
+        Assert.Contains(diagnostic, Assert.IsType<AdmissionOutcome.RuleRejected>(Admit(context)).Diagnostics);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void EqualityAmbiguityProductionAdmissionAcceptsRealCharacters(bool historical)
+    {
+        const string source = "example : 'g' ='g' := by rfl\n";
+        var context = Candidate("decide", historical ? "" : source, historical ? source : null, sourceImport: "Init");
+        Assert.IsType<AdmissionOutcome.Admitted>(Admit(context));
+    }
+
+    private static string FirstOrderEqualitySource(bool spaced) =>
+        "import Mathlib.ModelTheory.Syntax\nopen scoped FirstOrder\n"
+        + "example (t g' : FirstOrder.Language.Term FirstOrder.Language.empty (Sum Nat (Fin 0))) :\n"
+        + $"    (t ='{(spaced ? " " : "")}g') = (t ='{(spaced ? " " : "")}g') := by rfl\n";
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
     public void ProductionAdmissionAcceptsDependentCompositionInSelectedOrUnchangedSource(bool historical, bool spaced)
     {
         var source = DependentCompositionSource(spaced);

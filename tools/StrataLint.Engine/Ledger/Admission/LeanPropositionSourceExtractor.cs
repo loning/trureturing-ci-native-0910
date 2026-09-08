@@ -692,12 +692,17 @@ internal sealed partial class LeanSourceCatalog
         for (var index = 0; index < tokens.Length; index++)
         {
             // Escaped keywords are names; classify the spelling before normalization.
-            if (!tokens[index].IsIdentifier || ReservedIdentifiers.Contains(tokens[index].Text))
+            if (tokens[index].IsIdentifier && !ReservedIdentifiers.Contains(tokens[index].Text))
             {
-                continue;
+                yield return tokens[index].Identifier;
             }
 
-            yield return tokens[index].Identifier;
+            // Without a Lean scope environment, require equivalence under both readings.
+            // ResolveDependencies applies the same candidate lookup and shadowing filter.
+            if (tokens[index].PossibleEqualityIdentifier is { } possible)
+            {
+                yield return possible.Identifier;
+            }
         }
     }
 

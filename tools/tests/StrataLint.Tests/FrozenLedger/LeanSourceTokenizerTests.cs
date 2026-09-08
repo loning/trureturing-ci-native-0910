@@ -5,6 +5,39 @@ namespace StrataLint.Tests;
 public sealed class LeanSourceTokenizerTests
 {
     [Theory]
+    [InlineData(false, "g'")]
+    [InlineData(true, "g'")]
+    [InlineData(false, "a'")]
+    [InlineData(true, "a'")]
+    public void EqualityAmbiguityRetainsDependencyProjection(bool embedded, string name)
+    {
+        var tokens = Scan("\nt ='" + name, embedded);
+        Assert.Equal(new[] { "t", "=", "'" + name }, tokens.Select(static token => token.Text));
+        Assert.False(tokens[^1].IsIdentifier);
+        Assert.Equal(2, tokens[^1].Line);
+        Assert.Equal(3, tokens[^1].Column);
+
+        // Exercise the existing dependency consumer with both scanner outputs.
+        var project = typeof(LeanSourceCatalog).GetMethod("QualifiedIdentifiers",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+        Assert.NotNull(project);
+        var identifiers = Assert.IsAssignableFrom<IEnumerable<string>>(project.Invoke(null, [tokens]));
+        Assert.Equal(new[] { "t", name }, identifiers);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void EqualityAmbiguityKeepsRealCharactersInertAndPositioned(bool embedded)
+    {
+        var tokens = Scan("\n'g' ='g'", embedded);
+        Assert.Equal(new[] { "'g'", "=", "'g'" }, tokens.Select(static token => token.Text));
+        Assert.All(tokens, token => Assert.False(token.IsIdentifier));
+        Assert.Equal(2, tokens[^1].Line);
+        Assert.Equal(5, tokens[^1].Column);
+    }
+
+    [Theory]
     [InlineData(false, false)]
     [InlineData(false, true)]
     [InlineData(true, false)]

@@ -6,6 +6,64 @@ namespace StrataLint.Tests;
 public sealed partial class FrozenLedgerTests
 {
     [Theory]
+    [InlineData(false, "g'")]
+    [InlineData(true, "g'")]
+    [InlineData(false, "a'")]
+    [InlineData(true, "a'")]
+    public void EqualityAmbiguityRejectsChangedDependency(bool spaced, string name)
+    {
+        var source = FirstOrderEqualitySource(spaced, name);
+        AssertIdentifierReanchor(source, source.Replace(".inl 0", ".inl 1", StringComparison.Ordinal),
+            [], [], expected: false);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void EqualityAmbiguityAllowsUnchangedOrProofOnlySource(bool spaced, bool proofOnly)
+    {
+        var source = FirstOrderEqualitySource(spaced, "g'");
+        var after = proofOnly ? source.Replace("by rfl", "by exact rfl", StringComparison.Ordinal) : source;
+        AssertIdentifierReanchor(source, after, [], [], expected: true);
+    }
+
+    [Theory]
+    [InlineData(false, "g'")]
+    [InlineData(true, "g'")]
+    [InlineData(false, "a'")]
+    [InlineData(true, "a'")]
+    public void EqualityAmbiguityPreservesBoundNameShadowing(bool spaced, string name)
+    {
+        var source = FirstOrderEqualitySource(spaced, name).Replace("(t :", $"(t {name} :", StringComparison.Ordinal);
+        AssertIdentifierReanchor(source, source.Replace(".inl 0", ".inl 1", StringComparison.Ordinal),
+            [], [], expected: true);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void EqualityAmbiguityAllowsRealCharacterProofChangeAndRejectsLiteralChange(bool spaced)
+    {
+        var source = "def unrelated : Nat := 0\n"
+            + $"theorem a : 'g' ={(spaced ? " " : "")}'g' := by rfl\n";
+        AssertIdentifierReanchor(source, source, [], [], expected: true);
+        AssertIdentifierReanchor(source, source.Replace("by rfl", "by exact rfl", StringComparison.Ordinal),
+            [], [], expected: true);
+        AssertIdentifierReanchor(source, source.Replace(":= 0", ":= 1", StringComparison.Ordinal),
+            [], [], expected: true);
+        AssertIdentifierReanchor(source, source.Replace("'g'", "'a'", StringComparison.Ordinal),
+            [], [], expected: false);
+    }
+
+    private static string FirstOrderEqualitySource(bool spaced, string name) =>
+        "import Mathlib.ModelTheory.Syntax\nopen scoped FirstOrder\n"
+        + $"def {name} : FirstOrder.Language.Term FirstOrder.Language.empty (Sum Nat (Fin 0)) := .var (.inl 0)\n"
+        + "theorem a (t : FirstOrder.Language.Term FirstOrder.Language.empty (Sum Nat (Fin 0))) :\n"
+        + $"    (t ='{(spaced ? " " : "")}{name}) = (t ='{(spaced ? " " : "")}{name}) := by rfl\n";
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void MathlibReanchorRejectsChangedDependencyBesideDependentComposition(bool spaced)

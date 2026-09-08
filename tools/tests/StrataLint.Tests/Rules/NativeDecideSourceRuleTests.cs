@@ -16,6 +16,38 @@ public sealed class NativeDecideSourceRuleTests
     [InlineData(false, true)]
     [InlineData(true, false)]
     [InlineData(true, true)]
+    public void EqualityAmbiguitySourceRuleAcceptsAddedOrByteChangedSource(bool baseline, bool spaced)
+    {
+        var fixture = Source(FirstOrderEqualitySource(spaced), baseline);
+        fixture.Files[Path] += "-- byte change\n";
+        Assert.Empty(Evaluate(fixture, (Path, baseline ? RawChangeKind.Modified : RawChangeKind.Added)));
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void EqualityAmbiguitySourceRuleRejectsFollowingNativeDecideWithLine(bool baseline, bool spaced)
+    {
+        var fixture = Source(FirstOrderEqualitySource(spaced), baseline);
+        fixture.Files[Path] += "example : True := by native_decide\n";
+        var diagnostic = Assert.Single(Evaluate(fixture, (Path, baseline ? RawChangeKind.Modified : RawChangeKind.Added)));
+        Assert.Equal(Path, diagnostic.Path);
+        Assert.Equal(AdmissionEffect.Block, diagnostic.AdmissionEffect);
+        Assert.Equal("NATIVE_DECIDE_SOURCE line=5: bare native_decide token is forbidden in changed D5 Lean source", diagnostic.Message);
+    }
+
+    private static string FirstOrderEqualitySource(bool spaced) =>
+        "import Mathlib.ModelTheory.Syntax\nopen scoped FirstOrder\n"
+        + "example (t g' : FirstOrder.Language.Term FirstOrder.Language.empty (Sum Nat (Fin 0))) :\n"
+        + $"    (t ='{(spaced ? " " : "")}g') = (t ='{(spaced ? " " : "")}g') := by rfl\n";
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
     public void AcceptsDependentCompositionInAddedOrByteChangedSource(bool baseline, bool spaced)
     {
         var fixture = Source(DependentCompositionSource(spaced), baseline);

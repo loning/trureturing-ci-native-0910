@@ -4,7 +4,8 @@ using System.Text;
 namespace StrataLint.Engine;
 
 internal sealed record LeanSourceToken(
-    string Text, int Line, int Column, ImmutableArray<string> IdentifierParts = default)
+    string Text, int Line, int Column, ImmutableArray<string> IdentifierParts = default,
+    LeanSourceToken? PossibleEqualityIdentifier = null)
 {
     internal bool IsIdentifier => !IdentifierParts.IsDefaultOrEmpty;
     internal string Identifier => LeanSourceTokenizer.IdentifierText(IdentifierParts);
@@ -76,6 +77,7 @@ internal static class LeanSourceTokenizer
                 var tokenLine = line;
                 var tokenColumn = column;
                 var identifierParts = ImmutableArray<string>.Empty;
+                LeanSourceToken? possibleEqualityIdentifier = null;
                 var rawQuote = RawStringQuote();
                 if (rawQuote >= 0)
                 {
@@ -90,6 +92,21 @@ internal static class LeanSourceTokenizer
                 else if (source[index] == '\'' && !At("''"))
                 {
                     ReadCharacter();
+                    if (result.Count > 0 && result[^1].Text == "="
+                        && result[^1].Line == tokenLine && result[^1].Column + 1 == tokenColumn
+                        && source[start + 1] != '\u00ab' && IsIdentifierStart(CodePointAt(start + 1)))
+                    {
+                        // ='g' can also be registered =' followed by g'. Keep both
+                        // readings; dependency consumers must not discard the name.
+                        var literalEnd = (index, line, column);
+                        index = start + 1;
+                        line = tokenLine;
+                        column = tokenColumn + 1;
+                        var parts = ReadIdentifier();
+                        possibleEqualityIdentifier = new LeanSourceToken(
+                            source[(start + 1)..index], tokenLine, tokenColumn + 1, parts);
+                        (index, line, column) = literalEnd;
+                    }
                 }
                 else if (NameLiteralPrefixLength() is var prefix && prefix > 0)
                 {
@@ -127,7 +144,8 @@ internal static class LeanSourceTokenizer
                     }
                 }
 
-                result.Add(new LeanSourceToken(source[start..index], tokenLine, tokenColumn, identifierParts));
+                result.Add(new LeanSourceToken(source[start..index], tokenLine, tokenColumn,
+                    identifierParts, possibleEqualityIdentifier));
             }
 
             if (brackets.TryPeek(out var opening))
@@ -166,8 +184,8 @@ internal static class LeanSourceTokenizer
                 return 2;
             }
 
-            // =' overlaps equality followed by a character. Without a Lean environment,
-            // retain complete character literals; only unambiguous =' uses are supported.
+            // Keep complete characters in the structural projection. ReadCode retains
+            // the possible =' identifier interpretation for dependency consumers.
             if (At("='") && !At("='\\") && CharacterLiteralLength(index + 1, out _) == 0)
             {
                 return 2;
