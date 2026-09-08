@@ -158,8 +158,7 @@ open Meta Elab Command
 private def keyExpr (key : StatementKey) : Expr :=
   mkApp2 (mkConst ``StatementKey.mk) (toExpr key.theoremName) (toExpr key.statementId)
 
-def rowExpr (entry : Sigma fun key : StatementKey => CensusAssessment key)
-    (sharedScope : Option Expr := none) : MetaM Expr := do
+private def rowExpr (entry : Sigma fun key : StatementKey => CensusAssessment key) : MetaM Expr := do
   let key := keyExpr entry.1
   let assessment ← match entry.2 with
     | .certified disposition => match disposition with
@@ -197,10 +196,8 @@ def rowExpr (entry : Sigma fun key : StatementKey => CensusAssessment key)
         let disposition ← mkAppOptM ``AnalysisDisposition.unreachable #[some key, some payload]
         mkAppOptM ``CensusAssessment.certified #[some key, some disposition]
     | .observed value => do
-      let scope ← match sharedScope with
-        | some scope => pure scope
-        | none => mkAppOptM ``ImportClosureScope.mk #[
-            some (toExpr value.importScope.modules), some (toExpr value.importScope.completed)]
+      let scope ← mkAppOptM ``ImportClosureScope.mk #[
+        some (toExpr value.importScope.modules), some (toExpr value.importScope.completed)]
       let observation ← mkAppOptM ``AnalysisObservation.mk #[some key,
         some (toExpr value.owningModule), some (toExpr value.root), some scope,
         some (toExpr value.queryCompleted), some (toExpr value.candidates), some (toExpr value.note)]
@@ -211,16 +208,12 @@ def rowExpr (entry : Sigma fun key : StatementKey => CensusAssessment key)
 
 /-- Reifies the actual inventory and asks Lean's kernel to verify ExactlyCovers.
 No native evaluation result is used as a proof. -/
-def coverageProof (report : FrozenReport) (inventory : DispositionInventory)
-    (declaredInventory : Option Expr := none) : MetaM Expr := do
+def coverageProof (report : FrozenReport) (inventory : DispositionInventory) : MetaM Expr := do
   let motive := mkLambda `key .default (mkConst ``StatementKey)
     (mkApp (mkConst ``CensusAssessment) (.bvar 0))
   let rowType := mkApp2 (mkConst ``Sigma [.zero, .zero]) (mkConst ``StatementKey) motive
-  let inventoryExpr ← match declaredInventory with
-    | some value => pure value
-    | none => do
-      let entries ← mkArrayLit rowType (← inventory.entries.toList.mapM (rowExpr ·))
-      pure <| mkApp2 (mkConst ``DispositionInventory.mk) (toExpr inventory.headSha) entries
+  let entries ← mkArrayLit rowType (← inventory.entries.toList.mapM rowExpr)
+  let inventoryExpr := mkApp2 (mkConst ``DispositionInventory.mk) (toExpr inventory.headSha) entries
   let keys ← mkListLit (mkConst ``StatementKey) (report.theorems.toList.map keyExpr)
   let frozen ← mkAppM ``List.toFinset #[keys]
   let proposition ← mkAppM ``DispositionInventory.ExactlyCovers
@@ -276,8 +269,7 @@ elab "#disposition_census" &"root" root:ident &"report" reportPath:str
     throwError "disposition census certificate already exists: {certificateName}"
   let (proof, sources) ← liftTermElabM do
     let sources ← validateEvidenceSources root.getId.eraseMacroScopes inventory
-    let inventoryName ← realizeGlobalConstNoOverloadWithInfo inventoryName
-    return (← coverageProof report inventory (some (mkConst inventoryName)), sources)
+    return (← coverageProof report inventory, sources)
   let proofType ← liftTermElabM <| inferType proof
   let projection ← ofExcept <| artifact report inventory sources
   ofExcept <| checkArtifact report inventory projection sources

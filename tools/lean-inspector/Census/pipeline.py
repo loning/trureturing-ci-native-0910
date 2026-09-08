@@ -140,7 +140,8 @@ def execute(options):
             source = repository / "tools/lean-inspector/LeanInformationAudit" / (module.replace(".", "/") + ".lean")
             target = repository / ".lake/build/lib/lean/LeanInformationAudit" / (module.replace(".", "/") + ".olean")
             target.parent.mkdir(parents=True, exist_ok=True)
-            step(["lake", "env", "lean", "-o", str(target), str(source)], "build-" + module)
+            step(["lake", "env", "lean", "-R", str(repository / "tools/lean-inspector"),
+                  "-o", str(target), str(source)], "build-" + module)
         if options.truth_export:
             report_path = pathlib.Path(options.truth_export).resolve()
         else:

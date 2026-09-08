@@ -34,11 +34,15 @@ run_cmd liftTermElabM do
     throwError "insideScopeCertified: certifying registration was not selected"
   validateEvidence `LeanInformationAudit.Tests.Census.Evidence
     ⟨"fixture-head", #[⟨finiteKey, row⟩]⟩
+  let structuralKey : StatementKey := ⟨``Evidence.structuralTheorem, "structural-id"⟩
+  let structuralRow ← CensusQuery.assess inside "fixture-head" structuralKey
+  unless structuralRow.className == "structural_occurrence" do
+    throwError "structuralRegistryCertified: imported provenance registry was not queried"
   let mut rejected := false
   try
     let _ ← CensusQuery.assess outside "fixture-head" ⟨`MissingTheorem, "missing-id"⟩
   catch _ => rejected := true
   unless rejected do throwError "missingTheoremRejected: query error became an observation"
-  logInfo "missingScopeRejected outsideScopeObserved insideScopeCertified missingTheoremRejected"
+  logInfo "missingScopeRejected outsideScopeObserved insideScopeCertified structuralRegistryCertified missingTheoremRejected"
 
 end LeanInformationAudit.Tests.Census.Query

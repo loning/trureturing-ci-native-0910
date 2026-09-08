@@ -30,7 +30,7 @@ def main():
     source = "LeanInformationAudit.Tests.Census.Query.Observed"
     finite = "LeanInformationAudit.Tests.SealSuccess"
     for module in ("Observed", "DuplicateLeft", "DuplicateRight"):
-        run(["lake", "env", "lean", "-o",
+        run(["lake", "env", "lean", "-R", str(repository / "tools/lean-inspector"), "-o",
              str(repository / f".lake/build/lib/lean/LeanInformationAudit/Tests/Census/Query/{module}.olean"),
              str(repository / f"tools/lean-inspector/LeanInformationAudit/Tests/Census/Query/{module}.lean")],
             directory / (module + "-fixture"), "process", cwd=repository)
@@ -90,12 +90,15 @@ def main():
         assert not bad_output.exists()
     else:
         raise AssertionError("input completion flag was accepted")
-    for module in ("Contract", "Coverage"):
-        run(["lake", "env", "lean", "-DmaxRecDepth=100000", "-DmaxHeartbeats=0",
-             str(repository / f"tools/lean-inspector/LeanInformationAudit/Tests/Census/Query/{module}.lean")],
+    for module in ("Query/Contract", "Query/Coverage", "AssessmentCommand", "Command",
+                   "CommandRejection", "InvalidEvidence", "LandedFinite"):
+        run(["lake", "env", "lean", "-R", str(repository / "tools/lean-inspector"),
+             "-DmaxRecDepth=100000", "-DmaxHeartbeats=0",
+             str(repository / f"tools/lean-inspector/LeanInformationAudit/Tests/Census/{module}.lean")],
             directory / module, "process", cwd=repository)
     result = {"query_contract": "passed", "coverage": "passed", "artifact_determinism": results[0],
               "duplicate_name_modules": 2,
+              "existing_census_command_fixtures": 5,
               "observed_theorem_absent_from_publication": True, "input_completion_flag_rejected": True,
               "counts": projection["counts"]}
     (directory / "fixtures.json").write_text(json.dumps(result, indent=2) + "\n")
