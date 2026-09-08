@@ -5885,7 +5885,7 @@ v4.3 hierarchy／structural engine modules 必须落在 GID-legal sibling
 modules 独立落在 sibling `InformationEscapeCounting/`。两处 sibling placement 都由 H10 ruling、
 上述 measured 11/12 capacity 与 governing parser rule
 `tools/StrataLint.Engine/Coordinates/Gid.cs:318-321` 共同决定；该处
-`ParseFormalCoordinates` 规定 ordinary formal coordinates 只有 three or four parts。counting
+`ParseFormalCoordinates` 当时规定 ordinary formal coordinates 只有 three or four parts(该上限已于 2026-09-08 放开为 `>= 3`,见 PR #6426;本款的落址结论此后由其自身理由承担,不再由文法深度推出)。counting
 sibling 明确 **SUPERSEDES** 工程优化规范 v1 §6.4 提出的 nested
 `InformationEscape/Counting/` proposal。
 
@@ -8630,7 +8630,7 @@ $$
 与 proof sharing 实现本规范 seal 的计算；本文仍唯一负责数学定义与 admission semantics。
 H10 ruling、measured `InformationEscape` 11/12 capacity 与 governing parser rule
 `tools/StrataLint.Engine/Coordinates/Gid.cs:318-321`（`ParseFormalCoordinates`：ordinary formal
-coordinates 有 three or four parts）要求 counting modules 落在 canonical-depth sibling
+coordinates 有 three or four parts;该上限已于 2026-09-08 放开为 `>= 3`(PR #6426),下述落址结论此后由其自身理由承担）要求 counting modules 落在 canonical-depth sibling
 `D5/S3/ConceptDynamics/InformationEscapeCounting/`；此裁决明确 **SUPERSEDES** 工程规范 v1
 §6.4 的 nested `InformationEscape/Counting/` proposal。schema v3 的 `proof_method` 必须报告
 实际 direct、fused、partition 或 reflected certificate route，不得为字节对照伪装成旧方法
@@ -8787,7 +8787,7 @@ grouping mechanics。auxiliary root 不得通过避开 imported registrations �
 counting 优化若参与 hierarchy reflected values，只能依 H10 ruling、measured
 `InformationEscape` 11/12 capacity 与 governing parser rule
 `tools/StrataLint.Engine/Coordinates/Gid.cs:318-321`（`ParseFormalCoordinates`：ordinary formal
-coordinates 有 three or four parts）落在 sibling
+coordinates 有 three or four parts;该上限已于 2026-09-08 放开为 `>= 3`(PR #6426),下述落址结论此后由其自身理由承担）落在 sibling
 `D5/S3/ConceptDynamics/InformationEscapeCounting/`；此位置明确 **SUPERSEDES** 工程优化规范
 v1 §6.4 的 nested `InformationEscape/Counting/` proposal，`proof_method` 仍依工程规范 §8 写真实
 路线，import closure 仍依 §9／§16 seal。
@@ -9091,7 +9091,7 @@ request。registry consumers 必须等待 v4.2 import-closure identity／groupin
 engine 与 counting modules 分别留在 GID-compliant siblings `InformationEscapeHierarchy/` 与
 `InformationEscapeCounting/`；此布局依 H10 ruling、measured `InformationEscape` 11/12 capacity
 与 governing parser rule `tools/StrataLint.Engine/Coordinates/Gid.cs:318-321`
-（`ParseFormalCoordinates`：ordinary formal coordinates 有 three or four parts），且 counting
+（`ParseFormalCoordinates`：ordinary formal coordinates 有 three or four parts;该上限已于 2026-09-08 放开为 `>= 3`(PR #6426),下述落址结论此后由其自身理由承担），且 counting
 sibling 明确 **SUPERSEDES** 工程规范 v1 §6.4 的 nested `InformationEscape/Counting/` proposal；
 frozen D5 与 `Trureturing.lean` 零修改。
 
@@ -9999,7 +9999,7 @@ v4.3 不修改第 48、49 节的任何字节；它在 v4.2 shared-arena／analys
 11. sealing scope 始终是 import closure（工程优化规范 v1 §9／§16）；H10 ruling、measured
     `InformationEscape` 11/12 capacity 与 governing parser rule
     `tools/StrataLint.Engine/Coordinates/Gid.cs:318-321`（`ParseFormalCoordinates`：ordinary formal
-    coordinates 有 three or four parts）要求 hierarchy／structural modules 位于 GID-compliant
+    coordinates 有 three or four parts;该上限已于 2026-09-08 放开为 `>= 3`(PR #6426),下述落址结论此后由其自身理由承担）要求 hierarchy／structural modules 位于 GID-compliant
     sibling `InformationEscapeHierarchy/`，counting modules 位于 `InformationEscapeCounting/`；
     后者明确 **SUPERSEDES** 工程优化规范 v1 §6.4 的 nested
     `InformationEscape/Counting/` proposal。`proof_method` 依工程规范 §8 如实报告真实路线；
