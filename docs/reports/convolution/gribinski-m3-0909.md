@@ -302,3 +302,84 @@ the expressions. The successful build prints standard three-axiom closures
 for all seven public theorems in the main module and both new private helpers;
 the certificate's fourteen theorem closures remain standard three-axiom.
 Both caches are warm; the one coordinate-tactic style warning is nonsemantic.
+
+## Step 5: Nonnegative Roots
+
+Step 4 commit `d714993877` was pushed. The requested theorem
+`GribinskiDegreeThree.m3_nonnegative_roots` is now kernel-checked:
+
+```lean
+theorem m3_nonnegative_roots (alpha a b c d e f : Real) (halpha : -1 < alpha)
+    (ha : 0 <= a) (hb : 0 <= b) (hc : 0 <= c)
+    (hd : 0 <= d) (he : 0 <= e) (hf : 0 <= f) :
+    ∃ r s t : Real, 0 <= r ∧ 0 <= s ∧ 0 <= t ∧
+      boxplus3 alpha (rootTriple a b c) (rootTriple d e f) = rootTriple r s t
+```
+
+The proof applies the already frozen
+`D5/S3/Zeros/Convolution/FiniteFreeCommutatorDegreeSix.cubic_nonnegative_factorization`
+directly to Step 3 and Step 4, then reconstructs the polynomial using the
+original coefficient definition and its leading coefficient 1. The frozen
+module's state pin is
+`sha256:c432340052440ba09b56af8739b2dee5b23e520877aa3593410b92b1dbad9daf`.
+No root reconstruction theorem was reproved.
+
+| Public declaration | proof_shape | escape_witness | admission_basis | utility |
+| --- | --- | --- | --- | --- |
+| `m3_nonnegative_roots` | content | the four-coefficient discriminant certificate consumed through `m3_discriminant_nonneg` | escape-witness | preservation for every six-root tuple and alpha > -1; kind=none |
+
+The final assembly is a thin application of the frozen factorization theorem;
+the whole proof is content after inlining its newly proved prerequisites.
+Its discriminant premise is supplied by the live new SOS certificate, not by
+a frozen hypothesis. The proof contains no dead certificate term or discarded
+conjunct. Consumer-to-prerequisite edges:
+`m3_nonnegative_roots -> m3_nonnegative_coefficients`,
+`m3_nonnegative_roots -> m3_discriminant_nonneg`, and
+`m3_nonnegative_roots -> cubic_nonnegative_factorization`.
+
+The earlier five public theorems retain their bind-only classifications.
+For this combined content delivery they are named companions under the
+module's `escape-witness` basis; their own escape_witness remains none.
+`definition_consistency` and `convolution_coefficients` are live prerequisites
+of Steps 3--5; `m3_explicit_coefficients` is the explicitly preregistered
+Step 2 obligation, and `weight_pos` is the explicitly preregistered Step 3
+weight-domain obligation. Neither of the latter two is misrepresented as a
+live escape prerequisite. Definitions have no independent admission basis;
+the earlier certificate-table phrase "companion to certificate" refers to
+that role, not to a fourth allowed basis. No `refutes` basis is used.
+
+| Command/log (attempt-2) | EXIT | Jobs | Real seconds | Maximum RSS bytes |
+| --- | ---: | ---: | ---: | ---: |
+| `/usr/bin/time -l make lean`, `step5-1.log` | 2 | 12681 | 20.76 | 3044573184 |
+| `/usr/bin/time -l make lean`, `step5-2.log` | 0 | 12681 | 19.71 | 3097346048 |
+
+The first assembly build obtained the three nonnegative roots but left the
+final polynomial equality open after unnecessarily unfolding both input
+`rootTriple` definitions. Using `change` only on the result shape fixed the
+syntactic match. The successful build prints all eight public and all four
+private main-module theorem closures, each exactly
+`[propext, Classical.choice, Quot.sound]`. Together with the certificate this
+accounts for 26 theorem printouts, including all 9 public theorems.
+The certificate's four benign unused-variable warnings remain; the main
+module has no new warning in the final build.
+
+## Explicit Nonclaims
+
+All five requested mathematical steps are proved, with Steps 1--3 inherited
+and Steps 4--5 completed here. This is only the fixed m=3, second-tier slice.
+It does not prove general m, solve Conjecture 3.13 in full, or claim priority.
+As of 2026-09-09, the retained searches did not locate an answer covering m=3
+and every alpha > -1; this is a search observation, not a nonexistence proof.
+The previous attempt's literature and Loogle receipts were reused as requested:
+`loogle-cubic.json` contains 11 hits, `loogle-discrim.json` 14, and
+`loogle-pochhammer.json` 43. The retained Campbell--Jalowy HTML contains the
+"It appears open whether ... preserves positive roots for non-integer ..."
+passage at line 1220; the #6494 qualification comment is
+https://github.com/the-omega-institute/trureturing/issues/6494#issuecomment-5590690493.
+
+independent_review: ASSUMED-UNVERIFIED. These are this implementation worker's
+local observations, not orchestrator revalidation or independent review.
+No PR, merge, deposit, freeze, coverage update, or CI approval is claimed.
+The two modules are delivered unfrozen on the requested branch. Their stated
+escape-witness basis is the worker's proof-shape assessment for review, not a
+claim that the soft admission semantics have been independently approved.

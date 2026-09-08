@@ -10,6 +10,7 @@ import Mathlib.RingTheory.Polynomial.Pochhammer
 import Mathlib.Algebra.CubicDiscriminant
 import Mathlib.Tactic
 import D5.S3.Zeros.Convolution.GribinskiDegreeThreeDiscriminant
+import D5.S3.Zeros.Convolution.FiniteFreeCommutatorDegreeSix
 
 /-!
 Definition 3.10 of Campbell, Morales, and Perales, arXiv:2502.00254v2,
@@ -161,7 +162,8 @@ theorem nonnegative_rootTriple_coordinates (a b c : Real)
       rootTriple a b c = rootTriple r s t by
     obtain ⟨r, s, t, hr, hrs, hst, hpoly⟩ := this
     refine ⟨r, s-r, t-s, hr, sub_nonneg.mpr hrs, sub_nonneg.mpr hst, ?_⟩
-    convert hpoly using 1 <;> congr 1 <;> ring
+    convert hpoly using 1
+    congr 1 <;> ring
   rcases le_total a b with hab | hba
   · rcases le_total b c with hbc | hcb
     · exact ⟨a, b, c, ha, hab, hbc, rfl⟩
@@ -230,6 +232,30 @@ theorem m3_discriminant_nonneg (alpha a b c d e f : Real) (halpha : -1 < alpha)
   rw [hp, hq]
   exact ordered_output_discriminant alpha x u v y w z halpha hx hu hv hy hw hz
 
+/-- Degree-three generalized rectangular convolution preserves nonnegative
+real roots for every alpha > -1, with multiplicities retained. -/
+theorem m3_nonnegative_roots (alpha a b c d e f : Real) (halpha : -1 < alpha)
+    (ha : 0 <= a) (hb : 0 <= b) (hc : 0 <= c)
+    (hd : 0 <= d) (he : 0 <= e) (hf : 0 <= f) :
+    ∃ r s t : Real, 0 <= r ∧ 0 <= s ∧ 0 <= t ∧
+      boxplus3 alpha (rootTriple a b c) (rootTriple d e f) = rootTriple r s t := by
+  have hsign := m3_nonnegative_coefficients alpha a b c d e f halpha ha hb hc hd he hf
+  have hdisc := m3_discriminant_nonneg alpha a b c d e f halpha ha hb hc hd he hf
+  obtain ⟨r, s, t, hr, hs, ht, hfactor⟩ :=
+    FiniteFreeCommutatorDegreeSix.cubic_nonnegative_factorization _ _ _
+      hsign.1 hsign.2.1 hsign.2.2 hdisc
+  refine ⟨r, s, t, hr, hs, ht, ?_⟩
+  change boxplus3 alpha (rootTriple a b c) (rootTriple d e f) =
+    (X-C r)*(X-C s)*(X-C t)
+  rw [← hfactor]
+  rw [definition_consistency _ _ _ 1 (by norm_num),
+    definition_consistency _ _ _ 2 (by norm_num),
+    definition_consistency _ _ _ 3 (by norm_num)]
+  have h0 := (convolution_coefficients alpha a b c d e f
+    (by linarith only [halpha]) (by linarith only [halpha])
+    (by linarith only [halpha])).1
+  simp only [boxplus3, h0, C_1, one_mul]
+
 #print axioms definition_consistency
 #print axioms convolution_coefficients
 #print axioms m3_explicit_coefficients
@@ -239,5 +265,8 @@ theorem m3_discriminant_nonneg (alpha a b c d e f : Real) (halpha : -1 < alpha)
 #print axioms discriminant_numerator
 #print axioms ordered_output_discriminant
 #print axioms m3_discriminant_nonneg
+#print axioms m3_nonnegative_roots
+#print axioms weight_values
+#print axioms rootTriple_coefficients
 
 end D5.S3.Zeros.Convolution.GribinskiDegreeThree
