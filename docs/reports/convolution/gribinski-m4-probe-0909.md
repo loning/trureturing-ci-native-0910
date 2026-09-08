@@ -275,6 +275,11 @@ its header and initial construction concern coefficient-matrix traces with a
 complex split factorization, not positivity. These identities do not discharge
 the missing output-PSD premise. Their state files were read, not newly written.
 
+After archiving and removing the intentionally failing temporary module,
+`/usr/bin/time -l make lean` completed successfully (exit 0, 12,695 jobs).
+Log: `attempt-1/q1-cleanup-build.log`; real time 8.61 seconds, maximum RSS
+1,173,929,984 bytes, both caches warm. No production Lean change remains.
+
 ## Q2 answer: a finite criterion, including repeated and zero roots
 
 For `f(X)=X^4+aX^3+bX^2+cX+d`, define its coefficient Newton sums:
@@ -380,6 +385,77 @@ not every possible quartic criterion or compressed certificate.
 Installed SymPy 1.14.0 and gmpy2 2.3.1 in a runner-local virtual environment
 before calculation. Calculation itself uses offline rational polynomial
 arithmetic. No Lean budget or repository budget constant is changed.
+
+## Q3 exact readings
+
+The script was archived as `gribinski-m4-probe-0909-cost.py.txt` in pushed
+commit `b954e022df146483128c7ef6270cb211690a85c1` before execution. The command
+was (with ATTEMPT denoting the runner directory stated at handoff):
+
+```sh
+"$ATTEMPT/sympy-env/bin/python" "$ATTEMPT/cost-probe.py" > "$ATTEMPT/costs.jsonl" 2> "$ATTEMPT/costs.stderr.log"
+```
+
+For `A_i=e_i(p)`, `B_i=e_i(q)` and `t=alpha+1>0`, the adopted definition gives:
+
+```text
+c0 = 1
+c1 = A1+B1
+c2 = A2+B2 + 3(t+2)/(4(t+3))*A1*B1
+c3 = A3+B3 + (t+1)/(2(t+3))*(A1*B2+A2*B1)
+c4 = A4+B4 + t/(4(t+3))*(A1*B3+A3*B1)
+              + t(t+1)/(6(t+3)(t+2))*A2*B2
+boxplus4 = X^4-c1*X^3+c2*X^2-c3*X+c4.
+```
+
+These are exact rational expressions from the falling-factorial definition.
+The degrees below refer to the reduced numerator, since a rational function
+does not itself have a polynomial t-degree. Numerator content is normalized
+to be positive and primitive. Thus H0 is represented as 1/(1/4)=4; this
+convention does not change signs or monomial counts.
+
+| Output coefficient | Raw-root monomials | Ordered-gap monomials | Numerator t-degree | Positive denominator |
+| --- | ---: | ---: | ---: | --- |
+| c0 | 1 | 1 | 0 | 1 |
+| c1 | 8 | 8 | 0 | 1 |
+| c2 | 56 | 68 | 1 | 4(t+3) |
+| c3 | 112 | 200 | 1 | 2(t+3) |
+| c4 | 142 | 470 | 2 | 12(t+2)(t+3) |
+
+All numerator coefficients in this table are positive; the polynomial itself
+has alternating coefficient signs as displayed above. The raw variables are
+`(x,u,v,w)` and `(y,r,s,z)`, each an independent nonnegative input root.
+
+Inequality readings in the preregistered ordered-gap coordinates:
+
+| ID | Monomials | Numerator t-degree | Negative coefficients | Positive denominator |
+| --- | ---: | ---: | ---: | --- |
+| C1 | 8 | 0 | 0 | 1 |
+| C2 | 68 | 1 | 0 | 4(t+3) |
+| C3 | 200 | 1 | 0 | 2(t+3) |
+| C4 | 470 | 2 | 0 | 12(t+2)(t+3) |
+| H0 | 1 | 0 | 0 | 1/4 |
+| H1 | 72 | 1 | 0 | 2(t+3) |
+| H2 | 1,320 | 3 | 0 | 24(t+2)(t+3)^2 |
+| H3 | 8,580 | 4 | 0 | 32(t+2)(t+3)^3 |
+| H01 | 40 | 1 | 0 | t+3 |
+| H02 | 1,240 | 3 | 0 | 12(t+2)(t+3)^2 |
+| H03 | 8,460 | 4 | 0 | 16(t+2)(t+3)^3 |
+| H12 | 8,211 | 4 | 17 | 48(t+2)(t+3)^3 |
+| H13 | 38,169 | 5 | 0 | 144(t+2)^2(t+3)^3 |
+| H23 | pending at this receipt | pending | pending | pending |
+| H012 | not yet reached | null | null | null |
+| H013 | not yet reached | null | null | null |
+| H023 | not yet reached | null | null | null |
+| H123 | not yet reached | null | null | null |
+| H0123 | not yet reached | null | null | null |
+
+The same script independently reproduced the m=3 raw discriminant numerator:
+787 monomials, 20 negative and 767 positive coefficients, t-degree 3, with
+t-degree counts `(310,257,168,52)` and denominator `27(t+2)^3`.
+The frozen m=3 certificate is **20 weighted squares + 767 positive monomials**.
+Raw expanded monomials and certificate blocks are different measurements;
+no m=4 certificate is measured here.
 
 ## Nonclaims
 
