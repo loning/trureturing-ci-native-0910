@@ -94,17 +94,23 @@ private theorem goldenCell5040_crt_data (n : Nat)
   simp only [Finset.mem_insert, Finset.mem_singleton] at hn
   rcases hn with rfl | rfl | rfl | rfl | rfl | rfl
   · refine ⟨2, 16, 4, ?_⟩
-    norm_num [three_order_16, Nat.Coprime] <;> decide
+    norm_num [three_order_16, Nat.Coprime]
+    decide
   · refine ⟨2, 32, 8, ?_⟩
-    norm_num [three_order_32, Nat.Coprime] <;> decide
+    norm_num [three_order_32, Nat.Coprime]
+    decide
   · refine ⟨3, 16, 4, ?_⟩
-    norm_num [three_order_16, Nat.Coprime] <;> decide
+    norm_num [three_order_16, Nat.Coprime]
+    decide
   · refine ⟨2, 64, 16, ?_⟩
-    norm_num [three_order_64, Nat.Coprime] <;> decide
+    norm_num [three_order_64, Nat.Coprime]
+    decide
   · refine ⟨3, 32, 8, ?_⟩
-    norm_num [three_order_32, Nat.Coprime] <;> decide
+    norm_num [three_order_32, Nat.Coprime]
+    decide
   · refine ⟨3, 64, 16, ?_⟩
-    norm_num [three_order_64, Nat.Coprime] <;> decide
+    norm_num [three_order_64, Nat.Coprime]
+    decide
 
 /-- Every member of the six-element 5040 cell has power residue 2241 modulo itself. -/
 theorem goldenCell5040_modEq_2241 (n : Nat)
