@@ -11,6 +11,7 @@ internal static class BackfillInventoryWriter
     internal static ImmutableArray<byte> WriteEntry(DigestionLedgerEntry entry)
     {
         ArgumentNullException.ThrowIfNull(entry);
+        entry = WithCanonicalGidOrder(entry);
         var builder = new StringBuilder();
         Line(builder, $"source_id: {Scalar(entry.SourceId)}");
         Line(builder, $"source_path: {Scalar(entry.SourcePath)}");
@@ -22,6 +23,7 @@ internal static class BackfillInventoryWriter
     internal static ImmutableArray<byte> WriteAtom(DigestionLedgerEntry entry)
     {
         ArgumentNullException.ThrowIfNull(entry);
+        entry = WithCanonicalGidOrder(entry);
         var builder = new StringBuilder();
         Line(builder, "fingerprints:");
         Line(builder, $"  raw_sha256: {Scalar(entry.Fingerprints.RawSha256)}");
@@ -29,9 +31,9 @@ internal static class BackfillInventoryWriter
         Line(builder, $"cas_ref: {Scalar(entry.CasRef)}");
         AtomCoverage(builder, entry.Coverage);
         Line(builder, "receipts:");
-        AtomScribeReceipts(builder, entry.Receipts.Scribe);
         Strings(builder, "  unresolved_subitems", entry.Receipts.UnresolvedSubitems, 4);
         AtomQuarantine(builder, entry.Receipts.Quarantine);
+        Nonpropositional(builder, entry.Receipts.Nonpropositional, "  ");
         CoverDisposition(builder, entry.Receipts.CoverDisposition, "  ");
         if (entry.Receipts.ChainAtoms.Length > 0)
         {
@@ -81,6 +83,34 @@ internal static class BackfillInventoryWriter
         DigestionLedgerEntry entry) =>
         [.. WriteSourceMetadata(source with { AcknowledgedStale = [] }), .. WriteEntry(entry)];
 
+    private static DigestionLedgerEntry WithCanonicalGidOrder(DigestionLedgerEntry entry) =>
+        entry with
+        {
+            Coverage = CanonicalCoverage(entry.Coverage),
+        };
+
+    private static ImmutableArray<DigestionCoverageEdge> CanonicalCoverage(
+        ImmutableArray<DigestionCoverageEdge> edges)
+    {
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var edge in edges)
+        {
+            if (!seen.Add(edge.Gid))
+            {
+                throw new InvalidOperationException(
+                    $"BACKFILL_COVERAGE_DUPLICATE_GID: coverage_gids contains duplicate gid {edge.Gid}");
+            }
+        }
+
+        edges = StableOrderByGid(edges, static edge => edge.Gid);
+        return edges;
+    }
+
+    private static ImmutableArray<T> StableOrderByGid<T>(
+        ImmutableArray<T> values,
+        Func<T, string> selectGid) =>
+        values.OrderBy(selectGid, StringComparer.Ordinal).ToImmutableArray();
+
     private static void ValidateGenreRegistryCheck(GenreRegistryCheck check)
     {
         ArgumentNullException.ThrowIfNull(check);
@@ -111,9 +141,9 @@ internal static class BackfillInventoryWriter
 
         Coverage(builder, entry.Coverage);
         Line(builder, "        receipts:");
-        ScribeReceipts(builder, entry.Receipts.Scribe);
         Strings(builder, "          unresolved_subitems", entry.Receipts.UnresolvedSubitems, 12);
         Quarantine(builder, entry.Receipts.Quarantine);
+        Nonpropositional(builder, entry.Receipts.Nonpropositional, "          ");
         CoverDisposition(builder, entry.Receipts.CoverDisposition, "          ");
         Strings(builder, "          chain_atoms", entry.Receipts.ChainAtoms, 12);
         if (entry.Receipts.TailAuthorization is { } tail)
@@ -152,25 +182,6 @@ internal static class BackfillInventoryWriter
         }
     }
 
-    private static void ScribeReceipts(
-        StringBuilder builder,
-        ImmutableArray<DigestionScribeReceipt> receipts)
-    {
-        if (receipts.Length == 0)
-        {
-            Line(builder, "          scribe: []");
-            return;
-        }
-
-        Line(builder, "          scribe:");
-        foreach (var receipt in receipts)
-        {
-            Line(builder, $"            - gid: {Scalar(receipt.Gid)}");
-            Line(builder, $"              definition_sha256: {Scalar(receipt.DefinitionSha256)}");
-            Line(builder, $"              emission_sha256: {Scalar(receipt.EmissionSha256)}");
-        }
-    }
-
     private static void AtomCoverage(
         StringBuilder builder,
         ImmutableArray<DigestionCoverageEdge> edges)
@@ -189,25 +200,6 @@ internal static class BackfillInventoryWriter
         }
     }
 
-    private static void AtomScribeReceipts(
-        StringBuilder builder,
-        ImmutableArray<DigestionScribeReceipt> receipts)
-    {
-        if (receipts.Length == 0)
-        {
-            Line(builder, "  scribe: []");
-            return;
-        }
-
-        Line(builder, "  scribe:");
-        foreach (var receipt in receipts)
-        {
-            Line(builder, $"    - gid: {Scalar(receipt.Gid)}");
-            Line(builder, $"      definition_sha256: {Scalar(receipt.DefinitionSha256)}");
-            Line(builder, $"      emission_sha256: {Scalar(receipt.EmissionSha256)}");
-        }
-    }
-
     private static void AtomQuarantine(StringBuilder builder, DigestionQuarantine? quarantine)
     {
         if (quarantine is null)
@@ -218,12 +210,7 @@ internal static class BackfillInventoryWriter
         Line(builder, "  quarantine:");
         Line(builder, $"    justification: {Scalar(quarantine.Justification)}");
         Line(builder, $"    reentry_condition: {Scalar(quarantine.ReentryCondition)}");
-        // 仅在有值时输出:既有条目无 blocker_class,若无条件写出会改动其字节,
-        // 导致全量账本 churn 并连带触发 SL-008 材料漂移。
-        if (quarantine.BlockerClass is { } blockerClass)
-        {
-            Line(builder, $"    blocker_class: {Scalar(blockerClass)}");
-        }
+        Line(builder, $"    blocker_class: {Scalar(quarantine.BlockerClass)}");
     }
 
     private static void Quarantine(StringBuilder builder, DigestionQuarantine? quarantine)
@@ -236,10 +223,16 @@ internal static class BackfillInventoryWriter
         Line(builder, "          quarantine:");
         Line(builder, $"            justification: {Scalar(quarantine.Justification)}");
         Line(builder, $"            reentry_condition: {Scalar(quarantine.ReentryCondition)}");
-        if (quarantine.BlockerClass is { } nestedBlockerClass)
-        {
-            Line(builder, $"            blocker_class: {Scalar(nestedBlockerClass)}");
-        }
+        Line(builder, $"            blocker_class: {Scalar(quarantine.BlockerClass)}");
+    }
+
+    private static void Nonpropositional(StringBuilder builder, DigestionNonpropositional? receipt, string indent)
+    {
+        if (receipt is null) return;
+        Line(builder, indent + "nonpropositional:");
+        Line(builder, indent + "  justification: " + Scalar(receipt.Justification));
+        Line(builder, indent + "  previous_atom_id: " + NullableScalar(receipt.PreviousAtomId));
+        Line(builder, indent + "  next_atom_id: " + NullableScalar(receipt.NextAtomId));
     }
 
     private static void CoverDisposition(

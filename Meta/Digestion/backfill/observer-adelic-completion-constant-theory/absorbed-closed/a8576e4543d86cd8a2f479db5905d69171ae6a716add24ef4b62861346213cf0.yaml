@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Weil/Scattering/PoissonSemigroup.coarse_poisson_semigroup
     target_statement_id: sha256:8bf3dc42703afb87808a0aacfc54394b053e965575fc2b2dac0b044e40fc14ec
 receipts:
-  scribe:
-    - gid: D5/S3/Weil/Scattering/PoissonSemigroup.coarse_poisson_semigroup
-      definition_sha256: sha256:6a05eba058822ebf0f9358c33129267b7a47d54cfce247b56354917aaa4e6395
-      emission_sha256: sha256:27b242ad6009e62b3ebe54645bb7a69745065222a540e10d6195c013ea56376f
   unresolved_subitems: []

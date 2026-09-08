@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Weil/TestFunctions/PaleyWienerGauge.paleyWienerGauge
     target_statement_id: sha256:c842b09231b43d73809915436712afc822a2ac9f6f62a39a7fd95ba4c19cb841
 receipts:
-  scribe:
-    - gid: D5/S3/Weil/TestFunctions/PaleyWienerGauge.paleyWienerGauge
-      definition_sha256: sha256:7f31bedfaaf1b2f860f59213f3ca122a68fb524e744b6f8d4f7d2bb747a28d34
-      emission_sha256: sha256:61e3d9fafae446639a44b659e32b1d5f0d444619e100535d549d106bfbfd39af
   unresolved_subitems: []

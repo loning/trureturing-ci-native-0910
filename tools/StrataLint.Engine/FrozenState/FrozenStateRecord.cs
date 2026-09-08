@@ -39,7 +39,8 @@ internal static class FrozenStateRecordLoader
         {
             if (!FrozenStatePath.TryToModulePath(file.Path.Value, out _))
             {
-                throw new FormatException("path does not decode to a canonical D5 Lean selector");
+                throw new FormatException(
+                    "path must encode exactly one canonical repository Lean module");
             }
 
             var bytes = file.RawBytes.AsSpan();
@@ -106,6 +107,10 @@ internal sealed class FrozenStateCatalog
 
     internal ImmutableDictionary<RepoPath, FrozenStateRecord> Records { get; }
 
+    internal ImmutableArray<RepoPath> Selectors => Records.Keys
+        .OrderBy(static path => path.Value, StringComparer.Ordinal)
+        .ToImmutableArray();
+
     internal static FrozenStateCatalog Load(RepositorySnapshot snapshot)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
@@ -117,7 +122,8 @@ internal sealed class FrozenStateCatalog
             if (!FrozenStatePath.TryToModulePath(file.Path.Value, out var modulePath))
             {
                 throw new FormatException(
-                    $"Frozen state {file.Path.Value}: path does not decode to a canonical D5 Lean selector");
+                    $"Frozen state {file.Path.Value}: "
+                    + "path must encode exactly one canonical repository Lean module");
             }
 
             var record = FrozenStateRecordLoader.Load(file);

@@ -63,8 +63,18 @@ public sealed class Sl016WakeupTests
             FrozenModule(targetGid, FrozenStatementReceiptTestData.Id('a')),
             FrozenModule("D5/S0/Carrier/Unrelated", FrozenStatementReceiptTestData.Id('c')));
         var context = fixture.Build(RawChangeSet.Create(FrozenLedgerDelta(fixture)));
+        var document = BackfillInventoryLoader.LoadCandidateDelta(
+            context.Current,
+            context.Baseline,
+            context.Changes);
+        var impact = BackfillDeltaImpactResolver.Resolve(
+            context.Current,
+            context.Baseline,
+            context.Lean.Report,
+            document,
+            context.Changes);
 
-        Assert.False(BackfillInventoryRule.IsAffectedBy(context));
+        Assert.False(impact.HasAffectedEdges);
     }
 
     [Fact]
@@ -109,7 +119,6 @@ public sealed class Sl016WakeupTests
             "D5/S0/Carrier/BackfillTarget",
             FrozenStatementReceiptTestData.Id('0'));
         fixture.Baseline.Remove(RuleFixture.FixtureCasPath);
-        fixture.ForkPoint.Remove(RuleFixture.FixtureCasPath);
         var context = fixture.Build(RawChangeSet.CreateWithKinds(
             [(RuleFixture.FixtureCasPath, RawChangeKind.Added)]));
         var document = BackfillInventoryLoader.LoadCandidateDelta(
@@ -119,6 +128,7 @@ public sealed class Sl016WakeupTests
         var impact = BackfillDeltaImpactResolver.Resolve(
             context.Current,
             context.Baseline,
+            context.Lean.Report,
             document,
             context.Changes);
         var entry = Assert.Single(document.RequireDigestionEntries());
@@ -132,34 +142,8 @@ public sealed class Sl016WakeupTests
                 StringComparison.Ordinal));
     }
 
-    [Fact]
-    public void ReferencedScribeEmissionChangeStillWakesAndJudgesEdge()
-    {
-        var (context, evaluation) = EvaluateReceiptIntegrityGap(
-            mismatchCode: null,
-            gapExistsInBaseline: true,
-            candidateScribeInputsChanged: true,
-            candidateScribeEmissionOnly: true);
-        var document = BackfillInventoryLoader.LoadCandidateDelta(
-            context.Current,
-            context.Baseline,
-            context.Changes);
-        var impact = BackfillDeltaImpactResolver.Resolve(
-            context.Current,
-            context.Baseline,
-            document,
-            context.Changes);
-
-        Assert.True(DigestionCasStore.EntryChanged(
-            Assert.Single(document.RequireDigestionEntries()),
-            impact.EvaluationChanges));
-        Assert.Contains(evaluation.Diagnostics, static finding => finding.Message.Contains(
-            "scribe-emission-mismatch",
-            StringComparison.Ordinal));
-    }
-
-    [Fact]
-    public void ReferencedLeanTargetValueChangeEntersAuthorityAndReceiptScopes()
+     [Fact]
+    public void LeanHeaderChangeWithStableTargetValueDoesNotWakeReferencedEdge()
     {
         const string targetGid = "D5/S0/Carrier/BackfillTarget";
         var targetPath = targetGid + ".lean";
@@ -175,22 +159,191 @@ public sealed class Sl016WakeupTests
         var impact = BackfillDeltaImpactResolver.Resolve(
             context.Current,
             context.Baseline,
+            context.Lean.Report,
             document,
             context.Changes);
         var entry = Assert.Single(document.RequireDigestionEntries());
 
-        Assert.True(DigestionCasStore.EntryChanged(entry, impact.EvaluationChanges));
-        Assert.Contains(
-            impact.ReceiptVerificationChanges.Paths,
-            path => path.Value == targetPath);
+        Assert.False(impact.HasAffectedEdges);
+        Assert.False(DigestionCasStore.EntryChanged(entry, impact.EvaluationChanges));
     }
 
     [Fact]
-    public void UnchangedBaseEntryDuplicateCoverageIsNotRepublishedForUnrelatedDelta()
+    public void ReportFreeIngestDoesNotComparePersistedTargetAgainstMissingReport()
+    {
+        const string targetGid = "D5/S0/Carrier/BackfillTarget";
+        var fixture = CoverageReceiptFixture(
+            targetGid,
+            FrozenStatementReceiptTestData.Id('a'));
+        var context = fixture.Build(RawChangeSet.Create(["README.md"]));
+        var document = BackfillInventoryLoader.LoadCandidateDelta(
+            context.Current,
+            context.Baseline,
+            context.Changes);
+
+        var impact = BackfillDeltaImpactResolver.Resolve(
+            context.Current,
+            context.Baseline,
+            report: null,
+            document,
+            context.Changes);
+
+        Assert.False(impact.HasAffectedEdges);
+        Assert.False(DigestionCasStore.EntryChanged(
+            Assert.Single(document.RequireDigestionEntries()),
+            impact.EvaluationChanges));
+    }
+
+    [Fact]
+    public void ReportFreeFrozenModuleStatementIdChangeWakesReferencedEdge()
+    {
+        const string targetGid = "D5/S0/Carrier/BackfillTarget";
+        var fixture = CoverageReceiptFixture(
+            targetGid,
+            FrozenStatementReceiptTestData.Id('a'));
+        InstallFrozenModulesInto(
+            fixture.Files,
+            FrozenModule(targetGid, FrozenStatementReceiptTestData.Id('b')));
+        var context = fixture.Build(RawChangeSet.Create(FrozenLedgerDelta(fixture)));
+        var document = BackfillInventoryLoader.LoadCandidateDelta(
+            context.Current,
+            context.Baseline,
+            context.Changes);
+
+        var impact = BackfillDeltaImpactResolver.Resolve(
+            context.Current,
+            context.Baseline,
+            report: null,
+            document,
+            context.Changes);
+
+        Assert.True(impact.HasAffectedEdges);
+        Assert.Contains(impact.EvaluationChanges.Paths, path => path.Value == AtomPath);
+    }
+
+    [Fact]
+    public void UnrelatedD5ModuleDoesNotDeriveCoverageTargetValue()
+    {
+        const string targetGid = "D5/S0/Carrier/BackfillTarget";
+        var fixture = CoverageReceiptFixture(
+            targetGid,
+            FrozenStatementReceiptTestData.Id('a'));
+        var context = fixture.Build(RawChangeSet.Create(["D5/S3/Probe/Unrelated.lean"]));
+        var document = BackfillInventoryLoader.LoadCandidateDelta(
+            context.Current,
+            context.Baseline,
+            context.Changes);
+        var derivations = 0;
+
+        var impact = BackfillDeltaImpactResolver.Resolve(
+            context.Current,
+            context.Baseline,
+            context.Lean.Report,
+            document,
+            context.Changes,
+            _ => derivations++);
+
+        Assert.Equal(0, derivations);
+        Assert.False(impact.HasAffectedEdges);
+    }
+
+    [Fact]
+    public void ChangedHostModuleDerivesOnlyReverseIndexedCoverageTarget()
+    {
+        const string targetGid = "D5/S0/Carrier/BackfillTarget";
+        const string otherGid = "D5/S0/Carrier/UnrelatedTarget";
+        var fixture = CoverageReceiptFixture(
+            targetGid,
+            FrozenStatementReceiptTestData.Id('a'));
+        foreach (var files in new[] { fixture.Files, fixture.Baseline })
+        {
+            files[AtomPath] = files[AtomPath].Replace(
+                "receipts:\n",
+                $"  - gid: {otherGid}\n"
+                    + $"    target_statement_id: {FrozenStatementReceiptTestData.Id('c')}\n"
+                    + "receipts:\n",
+                StringComparison.Ordinal);
+            InstallFrozenModulesInto(
+                files,
+                FrozenModule(targetGid, FrozenStatementReceiptTestData.Id('a')),
+                FrozenModule(otherGid, FrozenStatementReceiptTestData.Id('c')));
+        }
+        var context = fixture.Build(RawChangeSet.Create([targetGid + ".lean"]));
+        var document = BackfillInventoryLoader.LoadCandidateDelta(
+            context.Current,
+            context.Baseline,
+            context.Changes);
+        var derivedGids = new List<string>();
+
+        _ = BackfillDeltaImpactResolver.Resolve(
+            context.Current,
+            context.Baseline,
+            context.Lean.Report,
+            document,
+            context.Changes,
+            derivedGids.Add);
+
+        Assert.Equal([targetGid], derivedGids);
+    }
+
+    [Fact]
+    public void EntryLocalChangeDoesNotDeriveSharedCoverageGidOrWakePeer()
+    {
+        const string targetGid = "D5/S0/Carrier/BackfillTarget";
+        var fixture = CoverageReceiptFixture(
+            targetGid,
+            FrozenStatementReceiptTestData.Id('a'));
+        var otherFingerprint = DigestionFingerprint.Compute(
+            Encoding.UTF8.GetBytes("shared coverage peer\n"));
+        var otherAtomPath = BackfillInventoryLoader.RootPath
+            + "delta-v0.1/partial-open/"
+            + otherFingerprint.RawSha256["sha256:".Length..]
+            + ".yaml";
+        var otherCasPath = DigestionCasStore.RootPath
+            + otherFingerprint.RawSha256["sha256:".Length..];
+        foreach (var files in new[] { fixture.Files, fixture.Baseline })
+        {
+            files[otherAtomPath] = files[AtomPath]
+                .Replace(
+                    RuleFixture.FixtureCasReference,
+                    otherFingerprint.RawSha256,
+                    StringComparison.Ordinal)
+                .Replace(
+                    "target_statement_id: " + FrozenStatementReceiptTestData.Id('a'),
+                    "target_statement_id: " + FrozenStatementReceiptTestData.Id('c'),
+                    StringComparison.Ordinal);
+            files[otherCasPath] = "shared coverage peer\n";
+        }
+        fixture.Files[AtomPath] = fixture.Files[AtomPath].Replace(
+            "unresolved_subitems: []",
+            "unresolved_subitems:\n    - entry-local-change",
+            StringComparison.Ordinal);
+        var context = fixture.Build(RawChangeSet.Create([AtomPath]));
+        var document = BackfillInventoryLoader.LoadCandidateDelta(
+            context.Current,
+            context.Baseline,
+            context.Changes);
+        var derivations = 0;
+
+        var impact = BackfillDeltaImpactResolver.Resolve(
+            context.Current,
+            context.Baseline,
+            context.Lean.Report,
+            document,
+            context.Changes,
+            _ => derivations++);
+
+        Assert.Equal(0, derivations);
+        Assert.Contains(impact.EvaluationChanges.Paths, path => path.Value == AtomPath);
+        Assert.DoesNotContain(impact.EvaluationChanges.Paths, path => path.Value == otherAtomPath);
+    }
+
+    [Fact]
+    public void UnchangedBaseEntryDuplicateCoverageFailsClosedAtLoad()
     {
         var fixture = new RuleFixture();
         fixture.UseValidDirectoryBackfill();
-        foreach (var files in new[] { fixture.Files, fixture.Baseline, fixture.ForkPoint })
+        foreach (var files in new[] { fixture.Files, fixture.Baseline })
         {
             files[AtomPath] = files[AtomPath].Replace(
                 "coverage_gids:\n  - gid: D5/S0/Carrier/BackfillTarget\n    target_statement_id: null",
@@ -202,8 +355,8 @@ public sealed class Sl016WakeupTests
         var findings = BackfillInventoryRule.EvaluateCandidateDelta(
             fixture.Build(RawChangeSet.Create(["D5/S3/Probe/Unrelated.lean"])));
 
-        Assert.DoesNotContain(findings, finding => finding.Message.Contains(
-            "duplicate coverage GIDs",
+        Assert.Contains(findings, finding => finding.Message.Contains(
+            "BACKFILL_COVERAGE_ORDER",
             StringComparison.Ordinal));
     }
 
@@ -222,7 +375,7 @@ public sealed class Sl016WakeupTests
             fixture.Build(RawChangeSet.Create([AtomPath])));
 
         Assert.Contains(findings, finding => finding.Message.Contains(
-            "duplicate coverage GIDs",
+            "BACKFILL_COVERAGE_ORDER",
             StringComparison.Ordinal));
     }
 
@@ -300,59 +453,6 @@ public sealed class Sl016WakeupTests
         Assert.Equal(AdmissionEffect.Block, diagnostic.AdmissionEffect);
     }
 
-    [Theory]
-    [InlineData("scribe-definition-mismatch")]
-    [InlineData("scribe-emission-mismatch")]
-    public void ChangedEdgeScribeReceiptIntegrityGapIsBlockingAtSl016Admission(
-        string mismatchCode)
-    {
-        var (_, evaluation) = EvaluateReceiptIntegrityGap(
-            mismatchCode,
-            gapExistsInBaseline: false);
-
-        var diagnostic = Assert.Single(evaluation.Diagnostics, item => item.Message.Contains(
-            mismatchCode,
-            StringComparison.Ordinal));
-        Assert.Equal(AdmissionEffect.Block, diagnostic.AdmissionEffect);
-    }
-
-    [Theory]
-    [InlineData("scribe-definition-mismatch")]
-    [InlineData("scribe-emission-mismatch")]
-    public void RuleImplementationChangeDoesNotRepublishHistoricalScribeGap(
-        string mismatchCode)
-    {
-        var (context, evaluation) = EvaluateReceiptIntegrityGap(
-            mismatchCode,
-            gapExistsInBaseline: true);
-
-        Assert.True(context.RuleImplementationChanged);
-        Assert.DoesNotContain(evaluation.Diagnostics, item => item.Message.Contains(
-            mismatchCode,
-            StringComparison.Ordinal));
-    }
-
-    [Fact]
-    public void CandidateScribeVerificationKeepsNewGapBlockingAtSl016Admission()
-    {
-        var (_, evaluation) = EvaluateReceiptIntegrityGap(
-            mismatchCode: null,
-            gapExistsInBaseline: false,
-            candidateScribeInputsChanged: true);
-
-        foreach (var mismatchCode in new[]
-                 {
-                     "scribe-definition-mismatch",
-                     "scribe-emission-mismatch",
-                 })
-        {
-            var diagnostic = Assert.Single(evaluation.Diagnostics, item => item.Message.Contains(
-                mismatchCode,
-                StringComparison.Ordinal));
-            Assert.Equal(AdmissionEffect.Block, diagnostic.AdmissionEffect);
-        }
-    }
-
     private static (RuleEvaluationContext Context, SingleRuleEvaluation Evaluation)
         EvaluateReceiptIntegrityGap(
             string? mismatchCode,
@@ -389,7 +489,7 @@ public sealed class Sl016WakeupTests
             fixture.Files,
             coverageGid);
         var mismatchSha256 = "sha256:" + new string('0', 64);
-        foreach (var files in new[] { fixture.Baseline, fixture.ForkPoint })
+        foreach (var files in new[] { fixture.Baseline })
         {
             files[targetPath] = fixture.Files[targetPath];
             files[definitionPath] = baselineDefinition;
@@ -401,16 +501,11 @@ public sealed class Sl016WakeupTests
         var receiptProjection = "coverage_gids:\n"
             + $"  - gid: {coverageGid}\n"
             + $"    target_statement_id: {(mismatchCode == "coverage-target-mismatch" ? mismatchSha256 : targetStatementId)}\n"
-            + "receipts:\n"
-            + "  scribe:\n"
-            + $"    - gid: {coverageGid}\n"
-            + $"      definition_sha256: {(mismatchCode == "scribe-definition-mismatch" ? mismatchSha256 : baselineDefinitionSha256)}\n"
-            + $"      emission_sha256: {(mismatchCode == "scribe-emission-mismatch" ? mismatchSha256 : baselineEmissionSha256)}";
+            + "receipts:\n";
         fixture.Files[AtomPath] = AddReceipts(fixture.Files[AtomPath], receiptProjection);
         if (gapExistsInBaseline || candidateScribeInputsChanged)
         {
             fixture.Baseline[AtomPath] = AddReceipts(fixture.Baseline[AtomPath], receiptProjection);
-            fixture.ForkPoint[AtomPath] = AddReceipts(fixture.ForkPoint[AtomPath], receiptProjection);
         }
 
         var verifiedScribeEmissions = VerifiedScribeEmissions.Create(
@@ -463,8 +558,7 @@ public sealed class Sl016WakeupTests
         "coverage_gids:\n"
             + "  - gid: D5/S0/Carrier/BackfillTarget\n"
             + "    target_statement_id: null\n"
-            + "receipts:\n"
-            + "  scribe: []",
+            + "receipts:\n",
         receiptProjection,
         StringComparison.Ordinal);
 
@@ -475,7 +569,7 @@ public sealed class Sl016WakeupTests
         fixture.UseValidDirectoryBackfill();
         InstallFrozenModules(fixture, "D5/S0/Carrier/BackfillTarget");
         const string targetPath = "D5/S0/Carrier/BackfillTarget.lean";
-        foreach (var files in new[] { fixture.Baseline, fixture.ForkPoint })
+        foreach (var files in new[] { fixture.Baseline })
         {
             files[targetPath] = fixture.Files[targetPath];
         }
@@ -488,7 +582,7 @@ public sealed class Sl016WakeupTests
                 gid,
                 FrozenStatementReceiptTestData.Id('a')))
             .ToArray();
-        foreach (var files in new[] { fixture.Files, fixture.Baseline, fixture.ForkPoint })
+        foreach (var files in new[] { fixture.Files, fixture.Baseline })
         {
             InstallFrozenModulesInto(files, modules);
         }
@@ -500,9 +594,8 @@ public sealed class Sl016WakeupTests
         var receipt = "coverage_gids:\n"
             + $"  - gid: {targetGid}\n"
             + $"    target_statement_id: {targetStatementId}\n"
-            + "receipts:\n"
-            + "  scribe: []";
-        foreach (var files in new[] { fixture.Files, fixture.Baseline, fixture.ForkPoint })
+            + "receipts:\n";
+        foreach (var files in new[] { fixture.Files, fixture.Baseline })
         {
             files[AtomPath] = AddReceipts(files[AtomPath], receipt);
         }
@@ -538,12 +631,19 @@ public sealed class Sl016WakeupTests
     private static string[] FrozenLedgerDelta(RuleFixture fixture)
     {
         var current = fixture.Files.Keys
-            .Where(static path => FrozenLedgerChangeClassifier.IsAcceptedEventPath(path));
+            .Where(static path => FrozenLedgerChangeClassifier.IsAcceptedEventPath(path)
+                || FrozenStatePath.IsUnderRoot(path));
         var baseline = fixture.Baseline.Keys
-            .Where(static path => FrozenLedgerChangeClassifier.IsAcceptedEventPath(path));
+            .Where(static path => FrozenLedgerChangeClassifier.IsAcceptedEventPath(path)
+                || FrozenStatePath.IsUnderRoot(path));
         var delta = current
             .Except(baseline, StringComparer.Ordinal)
             .Concat(baseline.Except(current, StringComparer.Ordinal))
+            .Concat(current.Intersect(baseline, StringComparer.Ordinal).Where(path =>
+                !string.Equals(
+                    fixture.Files[path],
+                    fixture.Baseline[path],
+                    StringComparison.Ordinal)))
             .ToArray();
         Assert.NotEmpty(delta);
         return delta;

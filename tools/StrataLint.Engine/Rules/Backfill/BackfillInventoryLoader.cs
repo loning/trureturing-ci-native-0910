@@ -107,6 +107,12 @@ internal sealed partial class BackfillInventoryDocument
         var receipts = ParseReceipts(
             atomId,
             entry.GetValueOrDefault("receipts"));
+        if (receipts.Nonpropositional is not null
+            && (coverage.Length > 0 || receipts.Quarantine is not null
+                || receipts.CoverDisposition is not null || !receipts.UnresolvedSubitems.IsEmpty))
+        {
+            throw new FormatException($"entry {atomId} nonpropositional cannot coexist with coverage, quarantine, cover_disposition or unresolved_subitems");
+        }
         if (receipts.Quarantine is not null && coverage.Length > 0)
         {
             throw new FormatException(
@@ -136,9 +142,9 @@ internal sealed partial class BackfillInventoryDocument
             parsedFingerprints,
             coverage,
             receipts,
-            new DigestionStatus(
-                ParseMigration(Scalar(status, "migration", $"entry {atomId} migration")),
-                ParseTruth(Scalar(status, "truth", $"entry {atomId} truth"))),
+            ParseStatus(
+                Scalar(status, "migration", $"entry {atomId} migration"),
+                Scalar(status, "truth", $"entry {atomId} truth")),
             Scalar(entry, "cas_ref", $"entry {atomId} cas_ref"));
     }
 
@@ -151,8 +157,15 @@ internal sealed partial class BackfillInventoryDocument
         {
             var edge = Mapping(rawEdge, $"entry {atomId} coverage edge must be a mapping");
             ExactKeys(edge, ["gid", "target_statement_id"], $"entry {atomId} coverage edge");
+            var gid = Scalar(edge, "gid", $"entry {atomId} coverage gid");
+            if (coverage.Count > 0 && StringComparer.Ordinal.Compare(coverage[^1].Gid, gid) >= 0)
+            {
+                throw new FormatException(
+                    $"BACKFILL_COVERAGE_ORDER: entry {atomId} coverage_gids must have unique gids in ordinal order");
+            }
+
             coverage.Add(new DigestionCoverageEdge(
-                Scalar(edge, "gid", $"entry {atomId} coverage gid"),
+                gid,
                 NullableScalar(
                     edge,
                     "target_statement_id",
@@ -175,20 +188,9 @@ internal sealed partial class BackfillInventoryDocument
         // 只是尚无实例;把「当前没有实例」当成「机制已死」会削掉一条真能力。
         ExactKeys(
             receipts,
-            ["scribe", "unresolved_subitems"],
-            ["chain_atoms", "tail_authorization", "quarantine", "cover_disposition"],
+            ["unresolved_subitems"],
+            ["chain_atoms", "tail_authorization", "quarantine", "nonpropositional", "cover_disposition"],
             $"entry {atomId} receipts");
-        var scribe = ImmutableArray.CreateBuilder<DigestionScribeReceipt>();
-        foreach (var rawScribe in List(receipts, "scribe", $"entry {atomId} scribe receipts must be a list"))
-        {
-            var item = Mapping(rawScribe, $"entry {atomId} scribe receipt must be a mapping");
-            ExactKeys(item, ["gid", "definition_sha256", "emission_sha256"], $"entry {atomId} scribe receipt");
-            scribe.Add(new DigestionScribeReceipt(
-                Scalar(item, "gid", $"entry {atomId} scribe gid"),
-                Scalar(item, "definition_sha256", $"entry {atomId} definition_sha256"),
-                Scalar(item, "emission_sha256", $"entry {atomId} emission_sha256")));
-        }
-
         DigestionExternalReceipt? tailAuthorization = null;
         if (receipts.GetValueOrDefault("tail_authorization") is { } rawTail)
         {
@@ -217,29 +219,27 @@ internal sealed partial class BackfillInventoryDocument
                     $"entry {atomId} quarantine reentry_condition is required");
             }
 
-            // `ExactKeys` 要求键集**恰好相等**(不是白名单),故按 blocker_class 是否出现
-            // 分别给出期望键集——否则既有的两键条目会被判「keys are not exactly …」而全部拒载。
+            if (!rawQuarantine.ContainsKey("blocker_class"))
+            {
+                throw new FormatException(
+                    $"entry {atomId} quarantine blocker_class is required");
+            }
+
             ExactKeys(
                 rawQuarantine,
-                rawQuarantine.ContainsKey("blocker_class")
-                    ? ["justification", "reentry_condition", "blocker_class"]
-                    : ["justification", "reentry_condition"],
+                ["justification", "reentry_condition", "blocker_class"],
                 $"entry {atomId} quarantine");
-            string? blockerClass = null;
-            if (rawQuarantine.ContainsKey("blocker_class"))
+            var blockerClass = Scalar(
+                rawQuarantine,
+                "blocker_class",
+                $"entry {atomId} quarantine blocker_class");
+            // 封闭字母表,未知取值 fail-closed:分类的价值全在于它可被机器统计与比较,
+            // 放行任意字符串等于退回自由文本(#2137 要治的正是那个)。
+            if (!DigestionQuarantine.BlockerClasses.Contains(blockerClass, StringComparer.Ordinal))
             {
-                blockerClass = Scalar(
-                    rawQuarantine,
-                    "blocker_class",
-                    $"entry {atomId} quarantine blocker_class");
-                // 封闭字母表,未知取值 fail-closed:分类的价值全在于它可被机器统计与比较,
-                // 放行任意字符串等于退回自由文本(#2137 要治的正是那个)。
-                if (!DigestionQuarantine.BlockerClasses.Contains(blockerClass, StringComparer.Ordinal))
-                {
-                    throw new FormatException(
-                        $"entry {atomId} quarantine blocker_class '{blockerClass}' is not one of "
-                        + string.Join(", ", DigestionQuarantine.BlockerClasses));
-                }
+                throw new FormatException(
+                    $"entry {atomId} quarantine blocker_class '{blockerClass}' is not one of "
+                    + string.Join(", ", DigestionQuarantine.BlockerClasses));
             }
 
             quarantine = new DigestionQuarantine(
@@ -249,7 +249,6 @@ internal sealed partial class BackfillInventoryDocument
         }
 
         return new DigestionReceipts(
-            scribe.ToImmutable(),
             Strings(
                 List(receipts, "unresolved_subitems", $"entry {atomId} unresolved_subitems must be a list"),
                 $"entry {atomId} unresolved_subitems"),
@@ -260,7 +259,8 @@ internal sealed partial class BackfillInventoryDocument
                 : [],
             tailAuthorization,
             quarantine,
-            ParseCoverDisposition(atomId, receipts));
+            ParseCoverDisposition(atomId, receipts),
+            ParseNonpropositional(atomId, receipts));
     }
 
     private static DigestionCoverDisposition? ParseCoverDisposition(
@@ -286,9 +286,7 @@ internal sealed partial class BackfillInventoryDocument
                 $"entry {atomId} cover_disposition outcome must be a canonical digestion status");
         }
 
-        var outcome = new DigestionStatus(
-            ParseMigration(outcomeText[..separator]),
-            ParseTruth(outcomeText[(separator + 1)..]));
+        var outcome = ParseStatus(outcomeText[..separator], outcomeText[(separator + 1)..]);
         var gids = Strings(
             List(raw, "gids", $"entry {atomId} cover_disposition gids must be a list"),
             $"entry {atomId} cover_disposition gids");
@@ -333,6 +331,7 @@ internal sealed partial class BackfillInventoryDocument
         "residual" => DigestionMigrationState.Residual,
         "partial" => DigestionMigrationState.Partial,
         "absorbed" => DigestionMigrationState.Absorbed,
+        "nonpropositional" => DigestionMigrationState.Nonpropositional,
         _ => throw new FormatException($"invalid digestion migration status: {value}"),
     };
 
@@ -341,6 +340,7 @@ internal sealed partial class BackfillInventoryDocument
         "closed" => DigestionTruthState.Closed,
         "tail" => DigestionTruthState.Tail,
         "open" => DigestionTruthState.Open,
+        "inapplicable" => DigestionTruthState.Inapplicable,
         _ => throw new FormatException($"invalid digestion truth status: {value}"),
     };
 
@@ -437,8 +437,22 @@ internal static partial class BackfillInventoryLoader
         if (parts.Length != 3 || !parts[2].EndsWith(".yaml", StringComparison.Ordinal)) return false;
         var state = parts[1].Split('-');
         return state.Length == 2
-            && state[0] is "residual" or "partial" or "absorbed"
-            && state[1] is "closed" or "tail" or "open";
+            && ((state[0] is "residual" or "partial" or "absorbed"
+                 && state[1] is "closed" or "tail" or "open")
+                || (state[0] == "nonpropositional" && state[1] == "inapplicable"));
+    }
+
+    internal static bool IsInputPath(string path) =>
+        path.StartsWith(RootPath, StringComparison.Ordinal)
+        || string.Equals(path, RelativePath, StringComparison.Ordinal)
+        || IsD5LeanPath(path);
+
+    internal static RepositorySnapshot ProjectInputSnapshot(RepositorySnapshot snapshot)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+        return RepositorySnapshot.Create(snapshot.Files
+            .Where(static pair => IsInputPath(pair.Key.Value))
+            .ToImmutableDictionary());
     }
 
     internal static BackfillInventoryDocument Load(RepositorySnapshot snapshot) =>
@@ -471,14 +485,7 @@ internal static partial class BackfillInventoryLoader
         var changed = changes.Paths
             .Select(static path => path.Value)
             .ToHashSet(StringComparer.Ordinal);
-        var entries = new Dictionary<string, RawRepositoryEntry>(StringComparer.Ordinal);
-        foreach (var (path, file) in candidate.Files)
-        {
-            entries[path.Value] = new RawRepositoryEntry(
-                path.Value,
-                file.RawBytes,
-                file.GitBlobOid);
-        }
+        var files = ProjectInputSnapshot(candidate).Files.ToBuilder();
 
         // Candidate-side parsing is authoritative only for the declared delta. For every
         // unchanged backfill record still present in the candidate, feed the trusted baseline
@@ -490,18 +497,10 @@ internal static partial class BackfillInventoryLoader
                      .Where(pair => candidate.TryGetFile(pair.Key.Value, out _))
                      .Where(pair => !changed.Contains(pair.Key.Value)))
         {
-            entries[path.Value] = new RawRepositoryEntry(
-                path.Value,
-                file.RawBytes,
-                file.GitBlobOid);
+            files[path] = file;
         }
 
-        var decoded = SnapshotDecoder.Decode(RawRepositorySnapshot.Create(entries.Values));
-        return decoded switch
-        {
-            SnapshotDecodeOutcome.Decoded decodedSnapshot => Load(decodedSnapshot.Snapshot),
-            SnapshotDecodeOutcome.InfrastructureFailure failure => throw new FormatException(failure.Message),
-        };
+        return Load(RepositorySnapshot.Create(files.ToImmutable()));
     }
 
     private static BackfillInventoryDocument LoadSnapshot(
@@ -714,8 +713,7 @@ internal static partial class BackfillInventoryLoader
     {
         var modulesByCase = new SortedDictionary<string, string>(StringComparer.Ordinal);
         foreach (var (path, file) in snapshot.Files
-                     .Where(static pair => pair.Key.Value.StartsWith("D5/", StringComparison.Ordinal)
-                         && pair.Key.Value.EndsWith(".lean", StringComparison.Ordinal))
+                     .Where(static pair => IsD5LeanPath(pair.Key.Value))
                      .OrderBy(static pair => pair.Key.Value, StringComparer.Ordinal))
         {
             var module = path.Value[..^".lean".Length];
@@ -738,6 +736,10 @@ internal static partial class BackfillInventoryLoader
             .Select(static pair => new BackfillTicketReference(pair.Key, pair.Value))
             .ToImmutableArray();
     }
+
+    private static bool IsD5LeanPath(string path) =>
+        path.StartsWith("D5/", StringComparison.Ordinal)
+        && path.EndsWith(".lean", StringComparison.Ordinal);
 
     private static IEnumerable<string> EnumerateD5LeanPaths(string root)
     {

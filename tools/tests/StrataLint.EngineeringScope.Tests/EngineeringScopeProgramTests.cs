@@ -15,6 +15,13 @@ public sealed class EngineeringScopeProgramTests
     private const string NewProductProject = "tools/NewProduct/NewProduct.csproj";
     private const string NewProductTestsProject =
         "tools/tests/NewProduct.Tests/NewProduct.Tests.csproj";
+    // 这个项目由 WriteGateInfrastructure 写进夹具树,且是 IsTestProject=true 的真项目;
+    // 它**不出现在**任何 SelectedProjects 断言里,正是「CI 永不选中脚本测试项目」
+    // (owner 2026-09-07)在端到端边界上的证据 —— 不是夹具漏写。
+    private const string ScriptTestsProject =
+        "tools/tests/StrataLint.ScriptTests/StrataLint.ScriptTests.csproj";
+    private const string ProductFeature = "tools/Product/Feature.cs";
+    private const string FileMapPath = "Meta/FILEMAP.toml";
 
     [Fact]
     public void CandidateNewTestProjectIsSelectedOnItsIntroducingChange()
@@ -36,6 +43,28 @@ public sealed class EngineeringScopeProgramTests
             [NewProductTestsProject, ProductTestsProject],
             result.SelectedProjects);
         Assert.Equal(2, result.RetryCount);
+    }
+
+    [Fact]
+    public void CandidateDeletedBaseTestProjectIsExcludedAndReported()
+    {
+        var result = RunBoundary(
+            WriteProductProjects,
+            root =>
+            {
+                TemporaryFileSystem.File.Delete(Path.Combine(root, ProductTestsProject));
+                TemporaryFileSystem.File.Delete(Path.Combine(
+                    root,
+                    Path.GetDirectoryName(ProductTestsProject)!,
+                    "SmokeTests.cs"));
+            });
+
+        Assert.True(result.ExitCode == 0, result.Diagnostic);
+        Assert.Empty(result.SelectedProjects);
+        Assert.Contains(
+            $"ENGINEERING_TEST_PROJECT_REMOVED project={JsonSerializer.Serialize(ProductTestsProject)}",
+            result.Output,
+            StringComparison.Ordinal);
     }
 
     [Fact]
@@ -83,6 +112,189 @@ public sealed class EngineeringScopeProgramTests
             StringComparison.Ordinal);
     }
 
+
+    [Fact]
+    public void JudgePlaneChangeForcesFullEngineeringScope()
+    {
+        var result = RunBoundary(
+            root =>
+            {
+                WriteProductProjects(root);
+                WriteFile(root, ProductFeature, "internal sealed class Feature { }\n");
+                WriteAdmissionPlaneFileMap(root, (ProductFeature, "judge"));
+            },
+            root => WriteFile(root, ProductFeature, "internal sealed class Feature { public int Value => 1; }\n"));
+
+        Assert.True(result.ExitCode == 0, result.Diagnostic);
+        Assert.Equal([ProductTestsProject], result.SelectedProjects);
+        Assert.Contains("ENGINEERING_TEST_PLAN state=full", result.Output, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void DigestionOnlyContentChangeSelectsNoEngineeringTestsUnlessFull(bool full)
+    {
+        const string path = "Meta/Digestion/backfill/source/residual-open/atom.yaml";
+        var result = RunBoundary(
+            root =>
+            {
+                WriteProductProjects(root);
+                WriteFile(root, path, "# before\n");
+                WriteAdmissionPlaneFileMap(root, (path, "content"));
+            },
+            root => WriteFile(root, path, "# after\n"),
+            full: full);
+
+        Assert.True(result.ExitCode == 0, result.Diagnostic);
+        Assert.Equal(full ? [ProductTestsProject] : [], result.SelectedProjects);
+        Assert.Contains(
+            $"ENGINEERING_TEST_PLAN state={(full ? "full" : "none")}",
+            result.Output,
+            StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void InvalidAdmissionIsRejectedBeforeFullRouting(bool full, bool mixed)
+    {
+        const string path = "Meta/Digestion/backfill/source/residual-open/atom.yaml";
+        var result = RunBoundary(
+            root =>
+            {
+                WriteProductProjects(root);
+                WriteFile(root, path, "# before\n");
+                WriteFile(root, ProductFeature, "internal sealed class Feature { }\n");
+                WriteAdmissionPlaneFileMap(
+                    root,
+                    (mixed ? path : "unmatched", "content"),
+                    (ProductFeature, "judge"));
+            },
+            root =>
+            {
+                WriteFile(root, path, "# after\n");
+                if (mixed)
+                    WriteFile(root, ProductFeature, "internal sealed class Feature { public int Value => 1; }\n");
+            },
+            full: full);
+
+        Assert.True(result.ExitCode == 2, result.Diagnostic);
+        Assert.Empty(result.SelectedProjects);
+        Assert.DoesNotContain("ENGINEERING_TEST_PLAN state=", result.Output, StringComparison.Ordinal);
+        Assert.Contains(
+            mixed ? "ADMISSION-PLANE-MIXED" : "ADMISSION-PLANE-PATH-MATCH-COUNT",
+            result.Error,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ChangingOnlyTheScriptTestsProjectSelectsNoTestProjectAtAll()
+    {
+        // owner 2026-09-07:脚本 / make target 测试保留在树上,CI 永不执行它们。
+        // 本例走 Program 的真实边界(真 git 树 + 真 plan),而非 policy 的合成 topology:
+        // 只改该项目自己的源文件时,计划必须为空 —— 既不选它,也不因它而选别的。
+        var result = RunBoundary(
+            root =>
+            {
+                WriteProductProjects(root);
+                WriteFile(
+                    root,
+                    "tools/tests/StrataLint.ScriptTests/WarmDonorScriptTests.cs",
+                    "internal sealed class WarmDonorScriptTests { }\n");
+            },
+            root => WriteFile(
+                root,
+                "tools/tests/StrataLint.ScriptTests/WarmDonorScriptTests.cs",
+                "internal sealed class WarmDonorScriptTests { public int Value => 1; }\n"));
+
+        Assert.True(result.ExitCode == 0, result.Diagnostic);
+        Assert.Empty(result.SelectedProjects);
+        Assert.Contains("ENGINEERING_TEST_PLAN state=none", result.Output, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ClassificationUsesCandidateFileMapForFullRouting()
+    {
+        var result = RunBoundary(
+            root =>
+            {
+                WriteProductProjects(root);
+                WriteAdmissionPlaneFileMap(root, (FileMapPath, "content"));
+            },
+            root => WriteAdmissionPlaneFileMap(root, (FileMapPath, "judge")));
+
+        Assert.True(result.ExitCode == 0, result.Diagnostic);
+        Assert.Equal([ProductTestsProject], result.SelectedProjects);
+        Assert.Contains("ENGINEERING_TEST_PLAN state=full", result.Output, StringComparison.Ordinal);
+        Assert.Contains(
+            "candidate admission plane judgeonly requires full engineering",
+            result.Output,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void CandidateFileMapEntryAndNewJudgeFamilyInSameDeltaForceFullEngineeringScope()
+    {
+        const string newJudgePath = "tools/new-lib/Program.cs";
+        var result = RunBoundary(
+            root =>
+            {
+                WriteProductProjects(root);
+                WriteAdmissionPlaneFileMap(root, (FileMapPath, "judge"));
+            },
+            root =>
+            {
+                WriteFile(root, newJudgePath, "internal sealed class Program { }\n");
+                WriteAdmissionPlaneFileMap(
+                    root,
+                    (FileMapPath, "judge"),
+                    ("tools/new-lib/**", "judge"));
+            });
+
+        Assert.True(result.ExitCode == 0, result.Diagnostic);
+        Assert.Equal([ProductTestsProject], result.SelectedProjects);
+        Assert.Contains("ENGINEERING_TEST_PLAN state=full", result.Output, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AdmissionPlaneFirstCandidateFileMapForcesFullEngineeringScope()
+    {
+        var result = RunBoundary(
+            root =>
+            {
+                WriteProductProjects(root);
+                TemporaryFileSystem.File.Delete(Path.Combine(root, FileMapPath));
+            },
+            root => WriteAdmissionPlaneFileMap(root, (FileMapPath, "judge")));
+
+        Assert.True(result.ExitCode == 0, result.Diagnostic);
+        Assert.Equal([ProductTestsProject], result.SelectedProjects);
+        Assert.Contains("ENGINEERING_TEST_PLAN state=full", result.Output, StringComparison.Ordinal);
+        Assert.Contains(
+            "candidate admission plane judgeonly requires full engineering",
+            result.Output,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ContentPlaneChangeKeepsIncrementalEngineeringScope()
+    {
+        var result = RunBoundary(
+            root =>
+            {
+                WriteProductProjects(root);
+                WriteFile(root, ProductFeature, "internal sealed class Feature { }\n");
+            },
+            root => WriteFile(root, ProductFeature, "internal sealed class Feature { public int Value => 1; }\n"));
+
+        Assert.True(result.ExitCode == 0, result.Diagnostic);
+        Assert.Equal([ProductTestsProject], result.SelectedProjects);
+        Assert.Contains("ENGINEERING_TEST_PLAN state=selected", result.Output, StringComparison.Ordinal);
+    }
+
     [Fact]
     public void MissingBuildOutputRetriesOnce() =>
         AssertRunTestsScenario(
@@ -99,27 +311,18 @@ public sealed class EngineeringScopeProgramTests
             "Fails", "Assert.True(false, \"intentional\");", prebuild: true, expectedExitCode: 1, expectedRetryCount: 0);
 
     [Fact]
-    public void ConfiguredEvidenceDirectoryRetainsTrxAfterExecution()
+    public void CandidateTestInvocationUsesMinimalVerbosity()
     {
-        var evidence = TemporaryFileSystem.Directory.CreateTempSubdirectory(
-            "stratalint-engineering-evidence-").FullName;
-        var original = Environment.GetEnvironmentVariable("ENGINEERING_TRX_DIRECTORY");
-        try
-        {
-            Environment.SetEnvironmentVariable("ENGINEERING_TRX_DIRECTORY", evidence);
-            var result = RunBoundary(
-                WriteProductProjects,
-                root => WriteSmokeTest(root, "ExportsEvidence", "Assert.True(true);"));
+        var arguments = Program.BuildTestArguments(
+            ProductTestsProject,
+            noBuild: true,
+            resultsDirectory: "/tmp/engineering-results");
 
-            Assert.True(result.ExitCode == 0, result.Diagnostic);
-            Assert.NotEmpty(Directory.GetFiles(evidence, "*.trx", SearchOption.AllDirectories));
-        }
-        finally
-        {
-            Environment.SetEnvironmentVariable("ENGINEERING_TRX_DIRECTORY", original);
-            TemporaryFileSystem.Directory.Delete(evidence, recursive: true);
-        }
+        var verbosityIndex = Array.IndexOf(arguments.ToArray(), "--verbosity");
+        Assert.True(verbosityIndex >= 0, $"arguments=[{string.Join(", ", arguments)}]");
+        Assert.Equal("minimal", arguments[verbosityIndex + 1]);
     }
+
 
     private static void AssertRunTestsScenario(
         string testName,
@@ -144,11 +347,11 @@ public sealed class EngineeringScopeProgramTests
     private static BoundaryResult RunBoundary(
         Action<string> writeBase,
         Action<string> writeCandidate,
-        Action<string>? prepareExecution = null)
+        Action<string>? prepareExecution = null,
+        bool full = false)
     {
         var root = TemporaryFileSystem.Directory.CreateTempSubdirectory(
             "stratalint-engineering-scope-").FullName;
-        var originalFull = Environment.GetEnvironmentVariable("FULL");
         var originalOutput = Console.Out;
         var originalError = Console.Error;
         try
@@ -156,6 +359,7 @@ public sealed class EngineeringScopeProgramTests
             RunGit(root, "init", "--quiet");
             RunGit(root, "config", "user.email", "engineering-scope@example.invalid");
             RunGit(root, "config", "user.name", "Engineering Scope Tests");
+            WriteGateInfrastructure(root);
             writeBase(root);
             RunGit(root, "add", ".");
             RunGit(root, "commit", "--quiet", "-m", "base");
@@ -163,8 +367,6 @@ public sealed class EngineeringScopeProgramTests
             RunGit(root, "add", ".");
             RunGit(root, "commit", "--quiet", "-m", "candidate");
             prepareExecution?.Invoke(root);
-
-            Environment.SetEnvironmentVariable("FULL", null);
 
             var head = GitText(root, "rev-parse", "HEAD");
             var @base = GitText(root, "rev-parse", "HEAD^1");
@@ -177,6 +379,7 @@ public sealed class EngineeringScopeProgramTests
                     "--repository", root,
                     "--head", head,
                     "--base", @base,
+                    .. full ? new[] { "--full", "1" } : [],
                 ],
                 TestResultEvidence.Load,
                 output,
@@ -199,7 +402,6 @@ public sealed class EngineeringScopeProgramTests
         {
             Console.SetOut(originalOutput);
             Console.SetError(originalError);
-            Environment.SetEnvironmentVariable("FULL", originalFull);
             TemporaryFileSystem.Directory.Delete(root, recursive: true);
         }
     }
@@ -278,6 +480,45 @@ public sealed class EngineeringScopeProgramTests
         WriteProject(root, ProductProject, isTest: false);
         WriteProject(root, ProductTestsProject, isTest: true, ProductProject);
     }
+
+    private static void WriteGateInfrastructure(string root)
+    {
+        WriteAdmissionPlaneFileMap(root, ("**", "content"));
+        WriteProject(root, ScriptTestsProject, isTest: true);
+        WriteFile(
+            root,
+            "tools/tests/StrataLint.ScriptTests/packages.lock.json",
+            """
+            {
+              "version": 2,
+              "dependencies": {
+                "net10.0": {
+                  "xunit.assert": { "type": "Transitive", "resolved": "2.9.3" },
+                  "xunit.extensibility.core": { "type": "Transitive", "resolved": "2.9.3" }
+                }
+              }
+            }
+
+            """);
+        WriteProject(
+            root,
+            "tools/StrataLint.EngineeringScope/StrataLint.EngineeringScope.csproj",
+            isTest: false);
+        WriteFile(root, "Directory.Build.props", "<Project />\n");
+        WriteFile(root, "Directory.Packages.props", "<Project />\n");
+        WriteFile(root, "tools/scripts/report/report-supervisor.sh", "exit 0\n");
+    }
+
+    private static void WriteAdmissionPlaneFileMap(
+        string root,
+        params (string Pattern, string Plane)[] entries) =>
+        WriteFile(
+            root,
+            FileMapPath,
+            string.Join(
+                "\n",
+                entries.Select(entry =>
+                    $"[[files]]\npattern = \"{entry.Pattern}\"\nadmission_plane = \"{entry.Plane}\"\n")));
 
     private static void WriteFile(string root, string path, string content)
     {

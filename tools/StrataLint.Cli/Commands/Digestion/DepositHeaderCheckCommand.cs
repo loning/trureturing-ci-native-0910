@@ -8,17 +8,21 @@ internal static class DepositHeaderCheckCommand
 
     internal static ExplicitCommandResult Run(
         IRepositoryGateway repository,
+        ILeanReportSource leanReportSource,
         IReadOnlyList<string> arguments)
     {
         ArgumentNullException.ThrowIfNull(repository);
+        ArgumentNullException.ThrowIfNull(leanReportSource);
         ArgumentNullException.ThrowIfNull(arguments);
-        if (!TryParseTarget(arguments, out var target))
+        if (!TryParseTarget(arguments, out var target, out var protectedBase))
         {
             return Usage();
         }
 
         try
         {
+            var prepared = repository.Prepare(protectedBase);
+            var baseline = Decode(repository.ReadRevision(prepared.Revision));
             var current = Decode(repository.ReadCurrent());
             if (!current.TryGetFile(target, out var targetFile))
             {
@@ -58,6 +62,29 @@ internal static class DepositHeaderCheckCommand
                     1,
                     string.Concat(evaluation.Diagnostics.Select(diagnostic => diagnostic.Render() + "\n")),
                     string.Empty);
+            }
+
+            var statePath = FrozenStatePath.FromModulePath(targetFile.Path);
+            if (!baseline.Files.ContainsKey(statePath))
+            {
+                _ = RepositoryRules.TryHeader(targetFile.Text, out var header);
+                var validation = UtilityDeclarationValidator.Validate(
+                    UtilityValidationPhase.PreDeposit,
+                    targetFile.Path,
+                    header.Utility,
+                    current,
+                    () => leanReportSource.Load(current));
+                if (!validation.IsAccepted)
+                {
+                    return UtilityFailure(target, validation);
+                }
+
+                if (baseline.Files.TryGetValue(targetFile.Path, out var previous)
+                    && UtilityDeclarationValidator.IsClassificationDowngrade(previous, targetFile))
+                {
+                    return UtilityFailure(target, new UtilityValidationResult(validation.Declaration,
+                        UtilityValidationFailure.ClassificationDowngrade, "reason=ordinary-body-unchanged"));
+                }
             }
 
             return new ExplicitCommandResult(
@@ -103,22 +130,55 @@ internal static class DepositHeaderCheckCommand
                 throw new InvalidOperationException(failure.Message),
         };
 
-    private static bool TryParseTarget(IReadOnlyList<string> arguments, out string target)
+    private static bool TryParseTarget(IReadOnlyList<string> arguments, out string target, out string? protectedBase)
     {
         target = string.Empty;
-        if (arguments.Count != 2
+        protectedBase = null;
+        if (arguments.Count != 4
             || !string.Equals(arguments[0], "--target", StringComparison.Ordinal)
-            || !RepoPath.TryCreate(arguments[1], out var path))
+            || !RepoPath.TryCreate(arguments[1], out var path)
+            || arguments[2] != "--protected-base"
+            || arguments[3].Length is not (40 or 64)
+            || !arguments[3].All(char.IsAsciiHexDigit))
         {
             return false;
         }
 
         target = path.Value;
+        protectedBase = arguments[3];
         return true;
     }
 
     private static ExplicitCommandResult Usage() => new(
         2,
         string.Empty,
-        "USAGE: StrataLint deposit-header-check --target D5/.../*.lean\n");
+        "USAGE: StrataLint deposit-header-check --target D5/.../*.lean --protected-base COMMIT_SHA\n");
+
+    private static ExplicitCommandResult UtilityFailure(
+        string module,
+        UtilityValidationResult validation) =>
+        new(
+            1,
+            $"{DepositFailureCode(validation.Failure)} module={module}"
+                + (validation.Detail.Length == 0 ? "\n" : $" {validation.Detail}\n"),
+            string.Empty);
+
+    private static string DepositFailureCode(UtilityValidationFailure failure) => failure switch
+    {
+        UtilityValidationFailure.Missing => "DEPOSIT_HEADER_UTILITY_MISSING",
+        UtilityValidationFailure.Syntax => "DEPOSIT_HEADER_UTILITY_SYNTAX",
+        UtilityValidationFailure.InstanceMissing => "DEPOSIT_HEADER_UTILITY_INSTANCE_MISSING",
+        UtilityValidationFailure.PremisesMissing => "DEPOSIT_HEADER_UTILITY_PREMISES_MISSING",
+        UtilityValidationFailure.InputUnknown => "DEPOSIT_HEADER_UTILITY_INPUT_UNKNOWN",
+        UtilityValidationFailure.TargetDangling => "DEPOSIT_HEADER_UTILITY_TARGET_DANGLING",
+        UtilityValidationFailure.RefutesAtomNoCoverage =>
+            "DEPOSIT_HEADER_UTILITY_REFUTES_ATOM_NO_COVERAGE",
+        UtilityValidationFailure.ConsumerUnreachable =>
+            "DEPOSIT_HEADER_UTILITY_CONSUMER_UNREACHABLE",
+        UtilityValidationFailure.OrdinaryInstanceForbidden => "DEPOSIT_HEADER_UTILITY_ORDINARY_INSTANCE_BANNED",
+        UtilityValidationFailure.ClassificationDowngrade => "DEPOSIT_HEADER_UTILITY_CLASSIFICATION_DOWNGRADE",
+        UtilityValidationFailure.RefutationInvalid => "DEPOSIT_HEADER_UTILITY_REFUTATION_INVALID",
+        UtilityValidationFailure.RefutationEvidenceMissing => "DEPOSIT_HEADER_UTILITY_REFUTATION_EVIDENCE_MISSING",
+        _ => throw new ArgumentOutOfRangeException(nameof(failure)),
+    };
 }

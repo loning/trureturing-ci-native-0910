@@ -12,6 +12,5 @@ coverage_gids:
   - gid: D5/S3/Zeros/ZeroGeometry.off_line_scaling_entry_spec
     target_statement_id: sha256:c7ffb59fb227f2a9f999119e6f1df6eba4167d0d000917bc7f1cf931e508d5da
 receipts:
-  scribe: []
   unresolved_subitems:
     - scaling-unbounded-along-me2

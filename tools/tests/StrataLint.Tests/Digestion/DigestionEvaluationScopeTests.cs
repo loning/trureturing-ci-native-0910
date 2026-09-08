@@ -239,7 +239,7 @@ public sealed class DigestionEvaluationScopeTests
         DigestionCoverageEdge? coverageReceipt = null,
         bool includeCoverageGid = true)
     {
-        var receipts = new DigestionReceipts([], [], [], null);
+        var receipts = new DigestionReceipts([], [], null);
         var entry = DigestionTestSupport.Entry(
             atom,
             "scope-probe",

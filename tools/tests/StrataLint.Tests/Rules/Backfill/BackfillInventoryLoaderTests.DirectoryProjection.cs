@@ -140,6 +140,11 @@ public sealed partial class BackfillInventoryLoaderTests
         var root = TestRepositoryLayout.FindRoot();
         var entries = BackfillInventoryLoader.LoadRoot(root)
             .RequireDigestionEntries();
+        Assert.All(
+            entries.Where(static entry => entry.Receipts.Quarantine is not null),
+            static entry => Assert.Contains(
+                Assert.IsType<string>(entry.Receipts.Quarantine!.BlockerClass),
+                DigestionQuarantine.BlockerClasses));
         string[] expectedAtomIds =
         [
             "8eb0bfb6d9c7aa1dc7ddd5faa46452907d7d4aa8efc4b52574393bb91aeed22d",
@@ -159,7 +164,6 @@ public sealed partial class BackfillInventoryLoaderTests
 
             Assert.Empty(entry.CoverageGids);
             Assert.Empty(entry.Coverage);
-            Assert.Empty(entry.Receipts.Scribe);
             Assert.NotEmpty(entry.Receipts.UnresolvedSubitems);
             Assert.Equal(DigestionMigrationState.Residual, entry.ProjectedStatus.Migration);
             Assert.Equal(DigestionTruthState.Open, entry.ProjectedStatus.Truth);

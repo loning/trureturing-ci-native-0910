@@ -4,7 +4,6 @@ fingerprints:
 cas_ref: sha256:a266227290ea2f057271f03ccac251c4f158f58cee71bcd3e66a0bcd8a9a6283
 coverage_gids: []
 receipts:
-  scribe: []
   unresolved_subitems: []
   quarantine:
     justification: D5 supplies generic nested-frontier and finite-window sampling convergence theorems, but no canonical xi local-completion predicate at scale one half, no theorem constructing natural-budget completions from RH, and no weighted local-to-global uniqueness theorem identifying every limiting positive spectrum with the singular pure-point xi zero measure. A generic proof can close only by adding cluster domination and singularity as hypotheses, which are consequences asserted by the source rather than premises of theorem 498.2 and therefore would under-cover the named theorem.

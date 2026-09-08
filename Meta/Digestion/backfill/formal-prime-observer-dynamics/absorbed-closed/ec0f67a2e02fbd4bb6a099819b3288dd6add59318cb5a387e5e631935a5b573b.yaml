@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Analytic/Boundary/ZetaPrimeProductCommonBoundary.zeta_prime_product_common_boundary
     target_statement_id: sha256:26cbde49429817eb5f9916249f68cd1dc05f6be82743f96bc337dc8b685d5c43
 receipts:
-  scribe:
-    - gid: D5/S3/Analytic/Boundary/ZetaPrimeProductCommonBoundary.zeta_prime_product_common_boundary
-      definition_sha256: sha256:bc4b85cc954e0fb29349ab487874298e519298dbfb93e203ec940f6e745090b8
-      emission_sha256: sha256:7cba07107119073ef7f0fd8afc9bcd12e85bfc7e1ae188382afbc6fddba9a3cd
   unresolved_subitems: []

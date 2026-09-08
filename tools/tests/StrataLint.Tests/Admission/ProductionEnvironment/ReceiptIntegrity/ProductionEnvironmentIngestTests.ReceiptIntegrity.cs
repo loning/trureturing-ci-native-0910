@@ -103,7 +103,8 @@ public sealed partial class ProductionEnvironmentTests
             atomizerId,
             coverageGids: [],
             sourceId: "fixture-source",
-            sourcePath: RuleFixture.FixtureDigestionSourcePath) with
+            sourcePath: RuleFixture.FixtureDigestionSourcePath);
+        stableEntry = stableEntry with
         {
             Coverage = includeInputMismatch
                 ? [new DigestionCoverageEdge(

@@ -14,10 +14,6 @@ coverage_gids:
   - gid: D5/S3/Zeros/Symmetry/ZetaConjugationCovariance.riemann_zeta_conj
     target_statement_id: sha256:acd6c15d96a17e3f637a9a0636319ae0958028afe99540ba02c519cbf20646e5
 receipts:
-  scribe:
-    - gid: D5/S3/Weil/ReflectionLedger.mirror_reversal_spec
-      definition_sha256: sha256:67de1be388e78bdfa74ed54c5e67f94587de944e5a0dc2edc667911f47c96d94
-      emission_sha256: sha256:3e226d946a792b8440dec47bc411ad5ff7bd1eb381645798116b8be54993092f
   unresolved_subitems:
     - critical-line-existence-from-information-reversal
     - genesis-plus-terminal-information-equals-total-knowledge

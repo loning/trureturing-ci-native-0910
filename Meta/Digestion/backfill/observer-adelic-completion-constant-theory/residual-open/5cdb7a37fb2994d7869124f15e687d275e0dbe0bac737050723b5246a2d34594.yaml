@@ -4,7 +4,6 @@ fingerprints:
 cas_ref: sha256:5cdb7a37fb2994d7869124f15e687d275e0dbe0bac737050723b5246a2d34594
 coverage_gids: []
 receipts:
-  scribe: []
   unresolved_subitems: []
   quarantine:
     justification: D5 retrieval found no unbounded common-domain operator-family or strong-differentiability primitive. Pinned Mathlib retrieval found LinearPMap, its adjoint, IsFormalAdjoint, and IsSelfAdjoint.dense_domain, but no pointwise-strong derivative theorem or result upgrading the constructed symmetric derivative operator to a self-adjoint operator on the same invariant domain. Third-party retrieval found related Physlib and TauCeti partial-operator symmetry and perturbation APIs, but no exact differentiation or self-adjoint-square bridge, and their Lean and Mathlib pins differ from this repository. The local construction attempt can integrate the two pointwise HasDerivAt laws for each vector in the common domain, but reaches only a pointwise quadratic identity and formal symmetry; proving the source conclusion that the recovered H is self-adjoint requires adjoint-domain equality not supplied by the source hypotheses or the available APIs. Retaining the bounded C-star-algebra theorem would therefore close the atom on the wrong carrier.

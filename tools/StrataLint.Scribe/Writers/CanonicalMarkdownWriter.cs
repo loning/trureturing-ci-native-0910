@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Text;
+using System.Text.Json;
 using StrataLint.Engine;
 
 namespace StrataLint.Scribe;
@@ -219,6 +220,27 @@ public static class CanonicalMarkdownWriter
                 break;
             default:
                 throw new UnreachableException("Unknown Describe statement.");
+        }
+
+        if (describe.OpenProblemResolutionClaim is { } claim)
+        {
+            var declarationGid = ((DescribeStatement.LeanDeclaration)describe.Statement).Value.Value;
+            var resolutionKind = DescribeVocabulary.CanonicalName(claim.ResolutionKind);
+            var marker = JsonSerializer.Serialize(new
+            {
+                problem_slug = claim.ProblemSlug.Value,
+                declaration_gid = declarationGid,
+                resolution_kind = resolutionKind,
+            });
+            builder.Append("\n\n*Resolves.* `Problems/")
+                .Append(claim.ProblemSlug.Value)
+                .Append("` (")
+                .Append(resolutionKind)
+                .Append(") by `")
+                .Append(declarationGid)
+                .Append("`.\n\n<!-- scribe-open-problem-resolution-v1 ")
+                .Append(marker)
+                .Append(" -->");
         }
 
         if (describe.LiteratureReference is { } literature)

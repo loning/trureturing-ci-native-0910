@@ -625,7 +625,10 @@ public sealed partial class BackfillInventoryLoaderTests
         {
             Receipts = entry.Receipts with
             {
-                Quarantine = new DigestionQuarantine(expected, "bridge lands"),
+                Quarantine = new DigestionQuarantine(
+                    expected,
+                    "bridge lands",
+                    "missing-prerequisite"),
             },
         };
 
@@ -678,7 +681,6 @@ public sealed partial class BackfillInventoryLoaderTests
             cas_ref: {{fingerprint}}
             coverage_gids: []
             receipts:
-              scribe: []
               unresolved_subitems: []
               chain_atoms: []
               tail_authorization: null
@@ -736,7 +738,6 @@ public sealed partial class BackfillInventoryLoaderTests
         if (fields.Contains("receipts"))
         {
             entry.AppendLine("        receipts:");
-            entry.AppendLine("          scribe: []");
             entry.AppendLine("          unresolved_subitems: []");
             entry.AppendLine("          chain_atoms: []");
             entry.AppendLine("          tail_authorization: null");

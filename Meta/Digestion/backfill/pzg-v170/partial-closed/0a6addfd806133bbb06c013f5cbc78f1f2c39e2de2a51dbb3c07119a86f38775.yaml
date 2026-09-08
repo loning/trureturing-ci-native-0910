@@ -10,7 +10,6 @@ coverage_gids:
   - gid: D5/S0/Conventions/UnitIntervalReflection.unit_interval_reflection_involutive
     target_statement_id: sha256:14226dcc33ae6d2cf79684e7a4995d198271efda9d98a358aca2152b35c775d0
 receipts:
-  scribe: []
   unresolved_subitems:
     - even-conclusion-selected-by-the-cone
     - even-weight-integral-as-jeffreys-symmetric-divergence

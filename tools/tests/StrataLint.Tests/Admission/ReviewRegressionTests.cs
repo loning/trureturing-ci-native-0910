@@ -250,7 +250,6 @@ public sealed partial class ReviewRegressionTests
         var obsolete = DigestionCasStore.Capture(Encoding.UTF8.GetBytes("obsolete atom\n"));
         var obsoleteText = Encoding.UTF8.GetString(obsolete.Bytes.AsSpan());
         fixture.Baseline[obsolete.RelativePath] = obsoleteText;
-        fixture.ForkPoint[obsolete.RelativePath] = obsoleteText;
         return (fixture, obsolete.RelativePath);
     }
 
@@ -616,6 +615,7 @@ public sealed partial class ReviewRegressionTests
         using var temporary = new TemporaryDirectory();
         var fixture = new RuleFixture();
         fixture.AddBackfillTargets();
+        ProductionEnvironmentTests.InstallDefaultAdmissionPlaneFileMap(fixture);
         fixture.SetRingDeclaration("invented", "theorem", "unregistered.axiom");
         var currentReport = LeanAxiomReport.Create(fixture.Reports);
         var gateway = new FakeRepositoryGateway(
@@ -703,7 +703,7 @@ public sealed partial class ReviewRegressionTests
         // These assertions live inside this test because Cf9 already reads
         // BackfillInventoryRule.cs, so they extend a read that is already paid for. Unknown
         // repository-read debt is now charged to the candidate that introduces a method identity
-        // after its fork point; the repository-wide tolerance net remains separate.
+        // after the protected baseline; the repository-wide tolerance net remains separate.
         var casChainSource = engineSource
             + File.ReadAllText(
                 Path.Combine(TestRepositoryLayout.FindRoot(), "tools", "StrataLint.Engine", "Digestion", "DigestionLedgerAligner.cs"),

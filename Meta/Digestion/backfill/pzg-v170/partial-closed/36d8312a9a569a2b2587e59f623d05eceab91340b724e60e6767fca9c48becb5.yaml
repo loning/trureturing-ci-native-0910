@@ -8,7 +8,6 @@ coverage_gids:
   - gid: D5/S1/Depth/GoldenHurwitzBound.golden_hurwitz_bound
     target_statement_id: sha256:a982663a06856268f59db877cde7130b5e4c1680c150e2a63098e4e9c9d4a8e7
 receipts:
-  scribe: []
   unresolved_subitems:
     - first-two-lagrange-spectrum-levels-sqrt-five-and-sqrt-eight
     - hurwitz-theorem-and-optimality-of-sqrt-five

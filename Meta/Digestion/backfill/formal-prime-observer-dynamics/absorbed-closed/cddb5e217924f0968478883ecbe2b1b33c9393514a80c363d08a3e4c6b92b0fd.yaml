@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Arith/Coding/FullCRTBlindCountAndDistance.full_crt_blind_count_distance_and_detection_limit
     target_statement_id: sha256:e907915e7a23e63faac6a75f6715513857b637187c3289ad5e8a9ea4cd598d41
 receipts:
-  scribe:
-    - gid: D5/S3/Arith/Coding/FullCRTBlindCountAndDistance.full_crt_blind_count_distance_and_detection_limit
-      definition_sha256: sha256:b952c87f060216b1ae240734d46fb7f75c57ca07a39101042d4df8893fc82c34
-      emission_sha256: sha256:4b6595bb378a7c39cd9821b631c8e3203718054a40f39c2786ec5a3f143ff10d
   unresolved_subitems: []

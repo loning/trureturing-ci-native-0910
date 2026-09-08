@@ -4,9 +4,23 @@ namespace StrataLint.Engine;
 
 internal sealed record ProcessOutput(int ExitCode, byte[] StandardOutput, byte[] StandardError);
 
+internal sealed record StreamedProcessOutput<T>(int ExitCode, T StandardOutput, byte[] StandardError);
+
 internal static class BoundedProcessRunner
 {
+    internal delegate ProcessOutput ProcessRunner(
+        string fileName,
+        IEnumerable<string> arguments,
+        string workingDirectory,
+        TimeSpan timeout,
+        int maximumOutputBytes,
+        ReadOnlyMemory<byte> standardInput = default,
+        IReadOnlyDictionary<string, string>? environment = null);
+
     internal static readonly TimeSpan HangDetectionBudget = TimeSpan.FromMinutes(5);
+
+    // Flow the startup seam into Task.Run without sharing overrides between checks.
+    internal static readonly AsyncLocal<Func<Process, bool>?> StartProcess = new();
 
     internal static ProcessOutput Run(
         string fileName,
@@ -14,7 +28,24 @@ internal static class BoundedProcessRunner
         string workingDirectory,
         TimeSpan timeout,
         int maximumOutputBytes,
-        ReadOnlyMemory<byte> standardInput = default)
+        ReadOnlyMemory<byte> standardInput = default,
+        IReadOnlyDictionary<string, string>? environment = null)
+    {
+        var result = RunStreaming(fileName, arguments, workingDirectory, timeout, maximumOutputBytes,
+            (stream, cancellation) => ReadLimitedAsync(stream, maximumOutputBytes, cancellation),
+            standardInput, environment);
+        return new ProcessOutput(result.ExitCode, result.StandardOutput, result.StandardError);
+    }
+
+    internal static StreamedProcessOutput<T> RunStreaming<T>(
+        string fileName,
+        IEnumerable<string> arguments,
+        string workingDirectory,
+        TimeSpan timeout,
+        int maximumErrorBytes,
+        Func<Stream, CancellationToken, Task<T>> readStandardOutput,
+        ReadOnlyMemory<byte> standardInput = default,
+        IReadOnlyDictionary<string, string>? environment = null)
     {
         var startInfo = new ProcessStartInfo
         {
@@ -26,13 +57,21 @@ internal static class BoundedProcessRunner
             RedirectStandardInput = !standardInput.IsEmpty,
             CreateNoWindow = true,
         };
+        if (environment is not null)
+        {
+            startInfo.Environment.Clear();
+            foreach (var (name, value) in environment)
+            {
+                startInfo.Environment.Add(name, value);
+            }
+        }
         foreach (var argument in arguments)
         {
             startInfo.ArgumentList.Add(argument);
         }
 
         using var process = new Process { StartInfo = startInfo };
-        if (!process.Start())
+        if (!(StartProcess.Value?.Invoke(process) ?? process.Start()))
         {
             throw new InvalidOperationException($"could not start {fileName}");
         }
@@ -40,13 +79,12 @@ internal static class BoundedProcessRunner
         using var cancellation = new CancellationTokenSource(timeout);
         try
         {
-            var stdout = ReadLimitedAsync(
+            var stdout = readStandardOutput(
                 process.StandardOutput.BaseStream,
-                maximumOutputBytes,
                 cancellation.Token);
             var stderr = ReadLimitedAsync(
                 process.StandardError.BaseStream,
-                maximumOutputBytes,
+                maximumErrorBytes,
                 cancellation.Token);
             var stdin = standardInput.IsEmpty
                 ? Task.CompletedTask
@@ -63,7 +101,7 @@ internal static class BoundedProcessRunner
             {
                 // The child owns whether it consumes stdin; preserve its completed verdict.
             }
-            return new ProcessOutput(
+            return new StreamedProcessOutput<T>(
                 process.ExitCode,
                 stdout.GetAwaiter().GetResult(),
                 stderr.GetAwaiter().GetResult());

@@ -1,7 +1,7 @@
 ---
 slug: wall-sun-sun-golden-unit-lift
 bibkey: shi2026second
-arxiv_id: 2603.25343
+doi: 10.48550/arXiv.2603.25343
 triage: wall
 motivation_gids:
   - D5/S0/Carrier/Ring

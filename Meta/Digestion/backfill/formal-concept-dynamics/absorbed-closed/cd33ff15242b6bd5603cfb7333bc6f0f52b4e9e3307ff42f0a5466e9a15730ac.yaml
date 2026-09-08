@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Information/RefinementEntropyMonotonicity.refinement_information_residual_monotone
     target_statement_id: sha256:215822fbfabe2e830e1e9b10ffb686167a970888799e6d7d55a30079bfb777fd
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Information/RefinementEntropyMonotonicity.refinement_information_residual_monotone
-      definition_sha256: sha256:01b6d824ecb15b288e83c33dbe5e5e78ef8ac71ecb0c1cf2d06bbde6b716f273
-      emission_sha256: sha256:f8f6203a8b7b30989ec2680470afd1bd6f22528658d92a41ac6c81abec79a766
   unresolved_subitems: []

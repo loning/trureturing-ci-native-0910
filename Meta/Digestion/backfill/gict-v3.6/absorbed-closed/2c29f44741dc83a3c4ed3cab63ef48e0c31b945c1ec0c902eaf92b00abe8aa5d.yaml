@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/PrimeForms/EisensteinDiscriminant.forms_biject_eisenstein_representations
     target_statement_id: sha256:2b66633500bb00d14966769eb69ae886dc657a0767c87c997a377f5682e7a967
 receipts:
-  scribe:
-    - gid: D5/S3/PrimeForms/EisensteinDiscriminant.forms_biject_eisenstein_representations
-      definition_sha256: sha256:4903a45364d786e259d3ddcf7fdc1df2434ebca4ad0a5bed17262afa5ca67e31
-      emission_sha256: sha256:3d733d8221d33d3f548b739458c42cf08c667fd5fddf4eada309ee1e4fd85486
   unresolved_subitems: []

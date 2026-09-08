@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S0/Observation/PowerTraceSimilarityCountermodel.power_traces_do_not_determine_similarity
     target_statement_id: sha256:4517650b2617e5309ef96f882c07fc0659b4002476fa2b88a97f094bdd18cd79
 receipts:
-  scribe:
-    - gid: D5/S0/Observation/PowerTraceSimilarityCountermodel.power_traces_do_not_determine_similarity
-      definition_sha256: sha256:77efcb92bd4290651edb7afdb52290560c73044e5c6db128f9f83574e8c4afc6
-      emission_sha256: sha256:bcbb5646454069869ed5efab74b190f447d6be92bc4046c5f7c561bbbe1f9269
   unresolved_subitems: []

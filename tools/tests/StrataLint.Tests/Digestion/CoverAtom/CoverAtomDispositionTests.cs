@@ -30,7 +30,6 @@ public sealed partial class CoverAtomTests
         Assert.Equal("remaining theorem clause", gap.Detail);
         Assert.Empty(entry.CoverageGids);
         Assert.Empty(entry.Coverage);
-        Assert.Empty(entry.Receipts.Scribe);
         Assert.Equal(DigestionMigrationState.Residual, entry.ProjectedStatus.Migration);
         Assert.Equal(DigestionTruthState.Open, entry.ProjectedStatus.Truth);
     }
@@ -72,7 +71,6 @@ public sealed partial class CoverAtomTests
         Assert.Equal("new failed retry", gap.Detail);
         Assert.Empty(entry.CoverageGids);
         Assert.Empty(entry.Coverage);
-        Assert.Empty(entry.Receipts.Scribe);
     }
 
     private static DigestionCoverDisposition PriorDisposition(string gid) =>

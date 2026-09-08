@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Information/SharedSourcePerfectCorrelation.fair_shared_source_perfect_observational_correlation
     target_statement_id: sha256:058e9be184aa94d3b51012c2e5446c27073692959bd29947b0cd9d0ca0c4d5ef
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Information/SharedSourcePerfectCorrelation.fair_shared_source_perfect_observational_correlation
-      definition_sha256: sha256:c710eb828eb835c305ed16087e5bd4e0932f3bcd3ec4e5fc759881801c92ae9e
-      emission_sha256: sha256:24781997fbda1c30732818b706077b28049fed2a3b71e880311c3773b278d732
   unresolved_subitems: []

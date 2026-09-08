@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/PrimeForms/AlignmentClifford.generalized_flow
     target_statement_id: sha256:fac754ca80d120e8ab076aba5ae82ea2e53a6451b7abedd93c54e0cc0efe882b
 receipts:
-  scribe:
-    - gid: D5/S3/PrimeForms/AlignmentClifford.generalized_flow
-      definition_sha256: sha256:eff007be0a9e9cb5e60ce87315a712750d603ad8d04d1c230ce766426820f4e1
-      emission_sha256: sha256:1b1b4c70ccb5fb40589f7ecef130da5cc8d225d84ed10c8a2480444838308d7b
   unresolved_subitems: []

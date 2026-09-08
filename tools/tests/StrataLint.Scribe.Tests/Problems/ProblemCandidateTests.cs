@@ -2,7 +2,7 @@ using System.Text;
 
 namespace StrataLint.Scribe.Tests;
 
-public sealed class ProblemCandidateTests
+public sealed partial class ProblemCandidateTests
 {
     [Fact]
     public void CatalogParsesCanonicalFrontMatterAndSections()
@@ -17,7 +17,7 @@ public sealed class ProblemCandidateTests
                 var candidate = Assert.Single(ProblemCandidateCatalog.Load(root).Candidates);
                 Assert.Equal("sample-open-problem", candidate.Slug);
                 Assert.Equal("sos1957threegap", candidate.BibKey.Value);
-                Assert.Equal("2305.08349", candidate.ArxivId);
+                Assert.Equal("10.48550/arXiv.2305.08349", candidate.Doi.Value);
                 Assert.Equal(ProblemTriage.Theorem, candidate.Triage);
                 Assert.Equal(
                     "D5/S1/Phase/Basic",
@@ -44,7 +44,7 @@ public sealed class ProblemCandidateTests
     [Theory]
     [InlineData("slug")]
     [InlineData("bibkey")]
-    [InlineData("arxiv_id")]
+    [InlineData("doi")]
     [InlineData("triage")]
     [InlineData("motivation_gids")]
     public void CatalogRejectsAMissingRequiredField(string field)
@@ -99,19 +99,21 @@ public sealed class ProblemCandidateTests
             root => Assert.Throws<FormatException>(() => ProblemCandidateCatalog.Load(root)));
     }
 
-    [Theory]
-    [InlineData("arXiv:2305.08349")]
-    [InlineData("2305.08349v1")]
-    [InlineData("2305.083491")]
-    [InlineData("")]
-    public void CatalogRejectsANoncanonicalArxivId(string arxivId)
+    [Fact]
+    public void CatalogRejectsArxivIdInsteadOfDoi()
     {
         WithCatalog(
             new Dictionary<string, string>(StringComparer.Ordinal)
             {
-                ["sample-open-problem.md"] = Candidate("sample-open-problem", arxivId: arxivId),
+                ["sample-open-problem.md"] = Candidate("sample-open-problem")
+                    .Replace("doi: 10.48550/arXiv.2305.08349", "arxiv_id: 2305.08349",
+                        StringComparison.Ordinal),
             },
-            root => Assert.Throws<FormatException>(() => ProblemCandidateCatalog.Load(root)));
+            root =>
+            {
+                var error = Assert.Throws<FormatException>(() => ProblemCandidateCatalog.Load(root));
+                Assert.Contains("missing or unknown metadata fields", error.Message, StringComparison.Ordinal);
+            });
     }
 
     [Fact]
@@ -267,7 +269,7 @@ public sealed class ProblemCandidateTests
             new Dictionary<string, string>(StringComparer.Ordinal)
             {
                 ["first-problem.md"] = Candidate("first-problem", triage: "open"),
-                ["second-problem.md"] = Candidate("second-problem", arxivId: "bad"),
+                ["second-problem.md"] = Candidate("second-problem", doi: "bad"),
             },
             root =>
             {
@@ -305,7 +307,8 @@ public sealed class ProblemCandidateTests
             Candidate("sample-open-problem"),
             Note("sos1957threegap", "10.48550/arXiv.2305.08349"),
             declarations: ["D5/S1/Phase/Basic"],
-            assertion: root => Assert.Empty(DescribeRepositoryValidator.Validate(root, [])));
+            assertion: root => Assert.Empty(DescribeRepositoryValidator.Validate(root, [])),
+            frozenDeclarations: ["D5/S1/Phase/Basic"]);
     }
 
     [Fact]
@@ -320,11 +323,12 @@ public sealed class ProblemCandidateTests
                 var finding = Assert.Single(DescribeRepositoryValidator.Validate(root, []));
                 Assert.Equal("dangling-problem-bibkey", finding.Code);
                 Assert.Equal("Problems/sample-open-problem.md", finding.Path);
-            });
+            },
+            frozenDeclarations: ["D5/S1/Phase/Basic"]);
     }
 
     [Fact]
-    public void ValidatorRejectsAnArxivIdThatDisagreesWithTheNoteDoi()
+    public void ValidatorRejectsADoiThatDisagreesWithTheNoteDoi()
     {
         WithRepository(
             Candidate("sample-open-problem"),
@@ -335,7 +339,8 @@ public sealed class ProblemCandidateTests
                 var finding = Assert.Single(DescribeRepositoryValidator.Validate(root, []));
                 Assert.Equal("problem-source-mismatch", finding.Code);
                 Assert.Contains("2305.08349", finding.Message, StringComparison.Ordinal);
-            });
+            },
+            frozenDeclarations: ["D5/S1/Phase/Basic"]);
     }
 
     [Fact]
@@ -353,11 +358,30 @@ public sealed class ProblemCandidateTests
             });
     }
 
+    [Fact]
+    public void ValidatorRejectsAnExistingMotivationHostThatIsNotAFrozenStateMember()
+    {
+        WithRepository(
+            Candidate("sample-open-problem"),
+            Note("sos1957threegap", "10.48550/arXiv.2305.08349"),
+            declarations: ["D5/S1/Phase/Basic"],
+            assertion: root =>
+            {
+                var finding = Assert.Single(DescribeRepositoryValidator.Validate(root, []));
+                Assert.Equal("dangling-problem-gid", finding.Code);
+                Assert.Contains(
+                    "host selector D5/S1/Phase/Basic.lean is not a frozen state member",
+                    finding.Message,
+                    StringComparison.Ordinal);
+            });
+    }
+
     private static void WithRepository(
         string candidate,
         string note,
         IReadOnlyList<string> declarations,
-        Action<string> assertion)
+        Action<string> assertion,
+        IReadOnlyList<string>? frozenDeclarations = null)
     {
         var root = Path.Combine(
             Path.GetTempPath(),
@@ -384,6 +408,20 @@ public sealed class ProblemCandidateTests
                     Path.Combine(root, declaration.Replace('/', Path.DirectorySeparatorChar) + ".lean"));
                 TemporaryFileSystem.Directory.CreateDirectory(Path.GetDirectoryName(path)!);
                 TemporaryFileSystem.File.WriteAllText(path, "-- fixture\n", encoding);
+            }
+            foreach (var declaration in frozenDeclarations ?? [])
+            {
+                var path = Path.GetFullPath(Path.Combine(
+                    root,
+                    "Golden",
+                    "Frozen",
+                    "state",
+                    declaration.Replace('/', Path.DirectorySeparatorChar) + ".lean.json"));
+                TemporaryFileSystem.Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+                TemporaryFileSystem.File.WriteAllText(
+                    path,
+                    "{\"statement_id\":\"sha256:" + new string('d', 64) + "\"}\n",
+                    encoding);
             }
 
             assertion(root);
@@ -455,7 +493,7 @@ public sealed class ProblemCandidateTests
     private static string Candidate(
         string slug,
         string bibkey = "sos1957threegap",
-        string arxivId = "2305.08349",
+        string doi = "10.48550/arXiv.2305.08349",
         string triage = "theorem",
         IReadOnlyList<string>? motivationGids = null)
     {
@@ -467,7 +505,7 @@ public sealed class ProblemCandidateTests
         return "---\n"
             + $"slug: {slug}\n"
             + $"bibkey: {bibkey}\n"
-            + $"arxiv_id: {arxivId}\n"
+            + $"doi: {doi}\n"
             + $"triage: {triage}\n"
             + chain
             + "---\n"

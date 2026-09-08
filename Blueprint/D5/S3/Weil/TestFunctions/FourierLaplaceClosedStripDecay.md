@@ -2,11 +2,35 @@
 
 ## Abstract
 
-Fourier-Laplace transforms of Weil test functions decay uniformly on closed strips.
+The Fourier-Laplace closed-strip bound has a specific two-jet constant, bounded by finite unweighted L1 enclosures and the support radius.
 
-**Theorem 1.1 (Uniform quadratic decay on every closed strip).**
+**Definition 1.1 (Explicit weighted two-jet constant).**
 
-$$\forall b \in WeilTestFunction, eta \in \mathbb{R},\; 0 \le eta \Rightarrow \left(\exists C \in \mathbb{R},\; 0 \le C \land \left(\forall w \in \mathbb{C},\; \left|w.im\right| \le eta \Rightarrow \left\lVert \operatorname{fourierLaplace}(b, w) \right\rVert \le \frac{C}{1+w.re^{2}}\right)\right)$$
+Lean statement: `D5/S3/Weil/TestFunctions/FourierLaplaceClosedStripDecay.closedStripJetBudget`
+
+*Formalization.* `D5/S3/Weil/TestFunctions/FourierLaplaceClosedStripDecay.closedStripJetBudget` (`✓ std3`).
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+This is the precise constant produced by the existing two integrations by parts. No convergence-neighborhood choice occurs.
+
+**Theorem 1.2 (The named constant satisfies the original bound).**
+
+Lean statement: `D5/S3/Weil/TestFunctions/FourierLaplaceClosedStripDecay.closedStripJetBudget_spec`
+
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/FourierLaplaceClosedStripDecay.closedStripJetBudget_spec` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+The existing integration-by-parts proof is retained and exposes its actual weighted zeroth and second derivative integrals.
+
+**Theorem 1.3 (Uniform quadratic decay on every closed strip).**
+
+Lean statement: `D5/S3/Weil/TestFunctions/FourierLaplaceClosedStripDecay.fourierLaplace_decay_closedStrip`
 
 *Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/FourierLaplaceClosedStripDecay.fourierLaplace_decay_closedStrip` (`✓ std3`). ∎
 
@@ -14,10 +38,23 @@ $$\forall b \in WeilTestFunction, eta \in \mathbb{R},\; 0 \le eta \Rightarrow \l
 
 *Commentary.*
 
-For an arbitrary nonnegative strip width eta, compact support bounds the complex exponential by exp(eta times the absolute value of x). Two integrations by parts transfer two derivatives to the test function and give a quadratic denominator in the real direction.
+The original public existential statement is preserved as an application of the named constant theorem.
 
-The constant is the sum of the zeroth- and second-derivative strip majorants. The statement is uniform over the closed strip and does not assert a zero-sum or separator-limit conclusion.
+**Theorem 1.4 (Support and finite seminorm enclosures).**
+
+Lean statement: `D5/S3/Weil/TestFunctions/FourierLaplaceClosedStripDecay.closedStripJetBudget_le_support_jets`
+
+*Proof.* Machine-checked in Lean as `D5/S3/Weil/TestFunctions/FourierLaplaceClosedStripDecay.closedStripJetBudget_le_support_jets` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+Derivative topological supports lie in the original support. Bound each exponential weight on that closed interval, compare the integrals and add.
 
 ## References
 
+- Truth anchor: `D5/S3/Weil/TestFunctions/FourierLaplaceClosedStripDecay.closedStripJetBudget`
+- Truth anchor: `D5/S3/Weil/TestFunctions/FourierLaplaceClosedStripDecay.closedStripJetBudget_le_support_jets`
+- Truth anchor: `D5/S3/Weil/TestFunctions/FourierLaplaceClosedStripDecay.closedStripJetBudget_spec`
 - Truth anchor: `D5/S3/Weil/TestFunctions/FourierLaplaceClosedStripDecay.fourierLaplace_decay_closedStrip`

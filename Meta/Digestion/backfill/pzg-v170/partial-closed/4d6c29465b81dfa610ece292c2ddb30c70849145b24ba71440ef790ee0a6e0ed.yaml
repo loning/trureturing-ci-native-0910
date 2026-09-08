@@ -10,10 +10,6 @@ coverage_gids:
   - gid: D5/S3/Zeros/ZeroGeometry.mirror_pair_distinct_iff_off_line_and_cancels
     target_statement_id: sha256:269d9f52fed5f629c115ae717c4da2a08b5f80667c87db54c02a74acda647ac1
 receipts:
-  scribe:
-    - gid: D5/S3/Weil/ReflectionLedger.mirror_reversal_spec
-      definition_sha256: sha256:67de1be388e78bdfa74ed54c5e67f94587de944e5a0dc2edc667911f47c96d94
-      emission_sha256: sha256:3e226d946a792b8440dec47bc411ad5ff7bd1eb381645798116b8be54993092f
   unresolved_subitems:
     - controlled-forgetting-of-identity-order-and-eigenbasis
     - half-density-cut-as-universal-measurement-midline

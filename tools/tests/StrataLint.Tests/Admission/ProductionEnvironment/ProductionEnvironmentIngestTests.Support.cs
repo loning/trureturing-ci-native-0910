@@ -114,7 +114,6 @@ public sealed partial class ProductionEnvironmentTests
         cas_ref: {{atom.Fingerprints.RawSha256}}
         coverage_gids: []
         receipts:
-          scribe: []
           unresolved_subitems: []
         """;
 
@@ -122,6 +121,7 @@ public sealed partial class ProductionEnvironmentTests
         string repositoryRoot,
         IReadOnlyDictionary<string, string> files)
     {
+        Directory.CreateDirectory(Path.Combine(repositoryRoot, ".git"));
         foreach (var (path, text) in files.Where(static pair =>
                      BackfillInventoryLoader.IsCanonicalPath(pair.Key)))
         {

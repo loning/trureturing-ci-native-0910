@@ -14,6 +14,7 @@ internal static partial class RepositoryRules
         + "   mirror-B: (?<mirrorB>[^\\n]+)\\n"
         + "   mirror-E: (?<mirrorE>[^\\n]+)\\n"
         + "   anchors: \\[(?<anchors>[^\\n]*)\\]\\n"
+        + "(?:   utility: (?<utility>[^\\n]*)\\n)?"
         + "   digest: (?<digest>[^\\n]+) -/\\n?",
         RegexOptions.CultureInvariant);
 
@@ -77,7 +78,7 @@ internal static partial class RepositoryRules
             "trust"),
         Register(10, "Generality closure", new RepositoryRule(GeneralSource, Generality, LeanReportAffected)),
         Register(11, "Controlled domains", new RepositoryRule(DomainScoped, Domains, DomainsAffected)),
-        Register(12, "Six-line Lean header", new RepositoryRule(Formal, Headers, FormalSourceAffected)),
+        Register(12, "Canonical Lean header", new RepositoryRule(Formal, Headers, FormalSourceAffected)),
         // SL-013 remains deferred and has no rejection predicate. Keep this descriptor in place:
         // positional consumers would silently bind later registrations to the wrong rule otherwise.
         Register(
@@ -153,6 +154,44 @@ internal static partial class RepositoryRules
                 DuplicateStatementAdvisory.Evaluate,
                 DuplicateStatementAdvisory.IsAffectedBy),
             AdmissionEffect.Observe),
+        Register(
+            30,
+            "Judge surface reads no other revision",
+            new RepositoryRule(
+                JudgeSurfaceScoped,
+                JudgeSurfaceRevisionMaterialization,
+                JudgeSurfaceAffected),
+            category: "trust"),
+        Register(
+            31,
+            "Computational utility admission",
+            new RepositoryRule(
+                Formal,
+                UtilityAdmissionRule.Evaluate,
+                UtilityAdmissionRule.IsAffectedBy,
+                UtilityAdmissionRule.Evaluate)),
+        Register(
+            32,
+            "Scribe narrative provenance",
+            new RepositoryRule(ScribeDefinitionScoped, ScribeNarrativeProvenance, ScribeSourceAffected)),
+        Register(
+            33,
+            "Frozen state and accepted Freeze pairing",
+            new RepositoryRule(
+                (artifact, _) => FrozenPairRule.IsPairPath(artifact.Path.Value),
+                FrozenPairRule.Evaluate,
+                FrozenPairRule.IsAffectedBy,
+                FrozenPairRule.Evaluate)),
+        Register(
+            34,
+            "Closed Lean modules missing frozen state",
+            new RepositoryRule(
+                ModuleStateGateRule.IsApplicable,
+                ModuleStateGateRule.Evaluate,
+                ModuleStateGateRule.IsAffectedBy,
+                ModuleStateGateRule.Evaluate),
+            AdmissionEffect.Observe,
+            recheckOnImplementationChange: false),
     ];
 
     private static RuleRegistration Register(
@@ -161,7 +200,8 @@ internal static partial class RepositoryRules
         IRepositoryRule rule,
         AdmissionEffect effect = AdmissionEffect.Block,
         CaseId? deferredCase = null,
-        string category = "repository") =>
+        string category = "repository",
+        bool recheckOnImplementationChange = true) =>
         new(
             new RuleDescriptor(
                 RuleId.CreateKnown(number),
@@ -171,7 +211,8 @@ internal static partial class RepositoryRules
                 effect,
                 deferredCase is null ? RuleLifecycle.Active : RuleLifecycle.Deferred,
                 deferredCase),
-            rule);
+            rule,
+            recheckOnImplementationChange);
 
     private static ImmutableArray<RuleFinding> DescribeLatex(RuleEvaluationContext context) =>
         context.VerifiedScribeEmissions is null

@@ -71,51 +71,9 @@ internal static class DescribeContentGovernance
         LibraryNoteCatalogInspection libraryInspection)
     {
         var findings = ValidateSources(repositoryRoot).ToBuilder();
-        ValidateCensus(repositoryRoot, documents, findings);
         ValidateIndependentInventory(documents, reportStats, findings);
         ValidateReferencedNoteLocators(repositoryRoot, documents, libraryInspection, findings);
         return Order(findings);
-    }
-
-    private static void ValidateCensus(
-        string repositoryRoot,
-        ImmutableArray<ScribeDocument> documents,
-        ImmutableArray<DescribeRedFinding>.Builder findings)
-    {
-        var documentGids = documents
-            .Select(static document => document.Header.Gid.Value)
-            .ToImmutableHashSet(StringComparer.Ordinal);
-        var census = ReceiptFreeDocumentCatalog.Load(repositoryRoot, documents);
-        var receiptBound = BackfillInventoryLoader.LoadRoot(repositoryRoot)
-            .RequireDigestionEntries()
-            .SelectMany(static entry => entry.Receipts.Scribe)
-            .Select(static receipt => ScribeEmissionAttestation.DocumentGid(receipt.Gid))
-            .ToImmutableHashSet(StringComparer.Ordinal);
-        var expectedBound = receiptBound.Intersect(documentGids, StringComparer.Ordinal)
-            .ToImmutableHashSet(StringComparer.Ordinal);
-        var expectedFree = documentGids.Except(receiptBound, StringComparer.Ordinal)
-            .ToImmutableHashSet(StringComparer.Ordinal);
-        var overlap = census.ReceiptFreeDocumentGids
-            .Intersect(census.ReceiptBoundDocumentGids, StringComparer.Ordinal)
-            .Order(StringComparer.Ordinal)
-            .ToArray();
-        var classified = census.ReceiptFreeDocumentGids
-            .Union(census.ReceiptBoundDocumentGids, StringComparer.Ordinal)
-            .ToImmutableHashSet(StringComparer.Ordinal);
-        if (overlap.Length != 0
-            || !classified.SetEquals(documentGids)
-            || !census.ReceiptBoundDocumentGids.SetEquals(expectedBound)
-            || !census.ReceiptFreeDocumentGids.SetEquals(expectedFree)
-            || expectedBound.IsEmpty
-            || expectedFree.IsEmpty
-            || census.ReceiptFreeDocumentGids.Count + census.ReceiptBoundDocumentGids.Count
-                != documents.Length)
-        {
-            findings.Add(new DescribeRedFinding(
-                "receipt-census",
-                "Meta/Digestion/backfill",
-                "receipt-free and receipt-bound document sets must be disjoint and complete"));
-        }
     }
 
     internal static ImmutableArray<DescribeRedFinding> ValidateIndependentInventory(

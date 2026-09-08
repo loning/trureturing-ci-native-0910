@@ -58,7 +58,7 @@ public sealed partial class ProductionEnvironmentTests
     }
 
     [Fact]
-    public void AlignDigestionStatusRefreshesCoverageTargetAndSecondRunIsByteIdentical()
+    public void AlignDigestionStatusWithoutScribeReceiptsRefreshesCoverageTargetAndSecondRunIsByteIdentical()
     {
         const string coverageGid = "D5/S0/Carrier/Ring";
         var fixture = new RuleFixture();
@@ -101,7 +101,7 @@ public sealed partial class ProductionEnvironmentTests
         var result = environment.AlignDigestionStatus(["--base", "baseline"]);
 
         Assert.True(result.Success, result.Error);
-        var newPath = DirectoryAtomPath(AtomId(atom), "partial-closed");
+        var newPath = DirectoryAtomPath(AtomId(atom), "absorbed-closed");
         Assert.False(File.Exists(Path.Combine(
             temporary.Path,
             oldPath.Replace('/', Path.DirectorySeparatorChar))));
@@ -111,7 +111,7 @@ public sealed partial class ProductionEnvironmentTests
         Assert.True(File.Exists(outputPath));
         var entry = Assert.Single(BackfillInventoryLoader.LoadRoot(temporary.Path)
             .RequireDigestionEntries());
-        Assert.Equal(DigestionMigrationState.Partial, entry.ProjectedStatus.Migration);
+        Assert.Equal(DigestionMigrationState.Absorbed, entry.ProjectedStatus.Migration);
         Assert.Equal(DigestionTruthState.Closed, entry.ProjectedStatus.Truth);
         Assert.Equal([coverageGid], entry.CoverageGids.ToArray());
         Assert.Equal(
@@ -175,10 +175,6 @@ public sealed partial class ProductionEnvironmentTests
         var atomIds = atoms.Select(AtomId).ToArray();
         DigestionLedgerEntry Entry(int index, DigestionMigrationState migration, string? childId = null)
         {
-            var receipt = new DigestionScribeReceipt(
-                coverageGid,
-                definitionHash,
-                emissionHash);
             return DigestionTestSupport.Entry(
                 atoms[index],
                 atomIds[index],
@@ -187,7 +183,6 @@ public sealed partial class ProductionEnvironmentTests
                 DigestionTruthState.Closed,
                 [coverageGid],
                 new DigestionReceipts(
-                    [receipt],
                     [],
                     childId is null ? [] : [childId],
                     null),
@@ -491,7 +486,7 @@ public sealed partial class ProductionEnvironmentTests
     [InlineData("coverage-target-mismatch")]
     [InlineData("scribe-definition-mismatch")]
     [InlineData("scribe-emission-mismatch")]
-    public void AlignRepairsCoverageButRejectsScribeIntegrityMismatchBeforeWritingLedger(
+    public void AlignRepairsCoverageAndAcceptsScribeByteMismatchBeforeWritingLedger(
         string mismatchCode)
     {
         var materialized = CoverWorld.Materialize(new CoverSpec
@@ -509,25 +504,19 @@ public sealed partial class ProductionEnvironmentTests
 
         var result = environment.AlignDigestionStatus(["--base", "baseline"]);
 
+        Assert.True(result.Success, result.Error);
+        Assert.DoesNotContain(mismatchCode, result.Error, StringComparison.Ordinal);
         if (mismatchCode == "coverage-target-mismatch")
-        {
-            Assert.True(result.Success, result.Error);
             Assert.NotEqual(before, DirectoryLedgerTestSupport.RepositoryImage(temporary));
-        }
         else
-        {
-            Assert.False(result.Success);
-            Assert.Contains("digest status is invalid", result.Error, StringComparison.Ordinal);
-            Assert.Contains(mismatchCode, result.Error, StringComparison.Ordinal);
             Assert.Equal(before, DirectoryLedgerTestSupport.RepositoryImage(temporary));
-        }
     }
 
     [Theory]
     [InlineData("coverage-target-mismatch")]
     [InlineData("scribe-definition-mismatch")]
     [InlineData("scribe-emission-mismatch")]
-    public void AlignRepairsCoverageButRejectsScribeBacklogAtForkPoint(string mismatchCode)
+    public void AlignRepairsCoverageAndAcceptsScribeByteBacklogAtBaseline(string mismatchCode)
     {
         var materialized = CoverWorld.Materialize(new CoverSpec
         {
@@ -537,7 +526,7 @@ public sealed partial class ProductionEnvironmentTests
                 ["D5/S0/Carrier/Probe.sibling"],
                 []),
         });
-        var inputs = DirectoryInputs(WithReceiptMismatchAtForkPoint(
+        var inputs = DirectoryInputs(WithReceiptMismatchAtBaseline(
             materialized,
             mismatchCode,
             byteIdenticalBaseline: true));
@@ -548,17 +537,12 @@ public sealed partial class ProductionEnvironmentTests
 
         var result = environment.AlignDigestionStatus(["--base", "baseline"]);
 
-        if (mismatchCode == "coverage-target-mismatch")
-        {
-            Assert.True(result.Success, result.Error);
-            Assert.NotEqual(before, DirectoryLedgerTestSupport.RepositoryImage(temporary));
-        }
-        else
-        {
-            Assert.False(result.Success);
-            Assert.Contains(mismatchCode, result.Error, StringComparison.Ordinal);
-            Assert.Equal(before, DirectoryLedgerTestSupport.RepositoryImage(temporary));
-        }
+        Assert.True(result.Success, result.Error);
+        Assert.DoesNotContain(mismatchCode, result.Error, StringComparison.Ordinal);
+        Assert.NotEqual(before, DirectoryLedgerTestSupport.RepositoryImage(temporary));
+        var sibling = Assert.Single(BackfillInventoryLoader.LoadRoot(temporary.Path)
+            .RequireDigestionEntries(), entry => entry.AtomId == CoverWorld.UnrelatedAtomId);
+        Assert.Equal(DigestionMigrationState.Absorbed, sibling.ProjectedStatus.Migration);
     }
 
     [Fact]

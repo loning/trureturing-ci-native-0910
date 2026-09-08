@@ -53,7 +53,6 @@ public sealed partial class CoverAtomTests
         var fixture = new RuleFixture();
         Replace(fixture.Files, currentFiles);
         Replace(fixture.Baseline, baselineFiles);
-        Replace(fixture.ForkPoint, baselineFiles);
         fixture.Reports.Clear();
         foreach (var report in inputs.Report.Files)
         {
@@ -92,8 +91,11 @@ public sealed partial class CoverAtomTests
             ["--cover-atom", spec.AtomId, "--gid", spec.Gid, "--base", "baseline"]);
 
         Assert.False(execution.Result.Success);
-        Assert.Contains("current edge GID", execution.Result.Error, StringComparison.Ordinal);
-        Assert.Contains("resolves to 0 report declarations", execution.Result.Error, StringComparison.Ordinal);
+        Assert.Equal(
+            "COVER_INVALID current edge GID D5/S0/Carrier/Probe.probe has no unique active "
+                + "frozen statement: coverage GID resolves to 0 current report declarations: "
+                + "D5/S0/Carrier/Probe.probe\n",
+            execution.Result.Error);
         Assert.Equal(execution.Before, execution.After);
     }
 
@@ -125,9 +127,11 @@ public sealed partial class CoverAtomTests
             currentReport: ambiguousReport);
 
         Assert.False(execution.Result.Success);
-        Assert.Contains("COVER_INVALID", execution.Result.Error, StringComparison.Ordinal);
-        Assert.Contains("current edge GID", execution.Result.Error, StringComparison.Ordinal);
-        Assert.Contains("resolves to 2 report declarations", execution.Result.Error, StringComparison.Ordinal);
+        Assert.Equal(
+            "COVER_INVALID current edge GID D5/S0/Carrier/Probe.probe has no unique active "
+                + "frozen statement: coverage GID resolves to 2 current report declarations: "
+                + "D5/S0/Carrier/Probe.probe\n",
+            execution.Result.Error);
         Assert.Equal(execution.Before, execution.After);
     }
 
@@ -201,25 +205,20 @@ public sealed partial class CoverAtomTests
         Assert.Equal([gid], sibling.CoverageGids.ToArray());
         Assert.Equal([gid], target.Coverage.Select(static receipt => receipt.Gid).ToArray());
         Assert.Equal([gid], sibling.Coverage.Select(static receipt => receipt.Gid).ToArray());
-        Assert.Equal([gid], target.Receipts.Scribe.Select(static receipt => receipt.Gid).ToArray());
-        Assert.Equal([gid], sibling.Receipts.Scribe.Select(static receipt => receipt.Gid).ToArray());
     }
 
     [Fact]
-    public void CoverReceiptUsesVerifiedProducerEmissionWhenTrackedProjectionDiffers()
+    public void CoverOmitsScribeReceiptWhenTrackedProjectionDiffers()
     {
         var spec = new CoverSpec();
         var inputs = spec.Materialize();
         var currentFiles = DirectoryLedgerTestSupport.Project(inputs.Files);
         var baselineFiles = DirectoryLedgerTestSupport.Project(inputs.Baseline);
         var documentGid = ScribeEmissionAttestation.DocumentGid(inputs.Gid);
-        Assert.True(inputs.VerifiedEmissions!.TryGet(documentGid, out var verifiedRecord));
 
         var emissionPath = ScribeEmissionAttestation.EmissionPath(documentGid);
         var trackedEmission = "# stale tracked projection\n";
         currentFiles[emissionPath] = trackedEmission;
-        var trackedEmissionSha256 = DigestionFingerprint.Compute(
-            Encoding.UTF8.GetBytes(trackedEmission)).RawSha256;
 
         using var temporary = new TemporaryDirectory();
         DirectoryLedgerTestSupport.Write(temporary.Path, currentFiles);
@@ -240,9 +239,13 @@ public sealed partial class CoverAtomTests
         var entry = Assert.Single(
             BackfillInventoryLoader.LoadRoot(temporary.Path).RequireDigestionEntries(),
             candidate => candidate.AtomId == spec.AtomId);
-        var receipt = Assert.Single(entry.Receipts.Scribe);
-        Assert.Equal(verifiedRecord.EmissionSha256, receipt.EmissionSha256);
-        Assert.NotEqual(trackedEmissionSha256, receipt.EmissionSha256);
+        var written = File.ReadAllText(Path.Combine(
+            temporary.Path,
+            BackfillInventoryLoader.RootPath,
+            entry.SourceId,
+            "absorbed-closed",
+            entry.AtomId + ".yaml"));
+        Assert.DoesNotContain("scribe:", written, StringComparison.Ordinal);
     }
 
     private static void Replace(

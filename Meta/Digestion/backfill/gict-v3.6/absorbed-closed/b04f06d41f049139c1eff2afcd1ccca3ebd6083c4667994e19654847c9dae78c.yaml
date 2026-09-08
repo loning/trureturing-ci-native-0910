@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/PrimeForms/Crossing/NegativeDeterminantTraceSquare.trace_square_of_det_neg_one
     target_statement_id: sha256:8a67976648f98795c66d7ee2044dac8409f7c8dd88ac0ce3e9c93dbf5c7c96e5
 receipts:
-  scribe:
-    - gid: D5/S3/PrimeForms/Crossing/NegativeDeterminantTraceSquare.trace_square_of_det_neg_one
-      definition_sha256: sha256:b6151ecb43afa21a162e28bd6bad4f990dd87978ea22d759656992c65cae65bf
-      emission_sha256: sha256:9d30ac9430634b7a411aedf6cf0d50fda78c8248504cba3254e0fb93cd6065ea
   unresolved_subitems: []

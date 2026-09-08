@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Interventions/InterventionCounterfactualSeparation.intervention_strictly_weaker_than_counterfactual
     target_statement_id: sha256:dce9bd1984c14aada975ffc082b36b521aaaa1914ee8d94db44d2f51daed3ac6
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Interventions/InterventionCounterfactualSeparation.intervention_strictly_weaker_than_counterfactual
-      definition_sha256: sha256:8e4460ca31e4a933b2d53d2f0a83b4d12199a352218727d54d6a174857c35b77
-      emission_sha256: sha256:b4c72e65b4948559f4c5d4eb9ff91bde5ae0cf400675984525985c1178aab337
   unresolved_subitems: []

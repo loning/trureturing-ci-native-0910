@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Modularity/InterfaceInsufficiency.modular_interfaces_cannot_verify_global_target
     target_statement_id: sha256:c19d9502f40b3ee5aae4ffbe9fbe6ddfb4e29bdb6e1c11abd3ddec4d8c2f79e8
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Modularity/InterfaceInsufficiency.modular_interfaces_cannot_verify_global_target
-      definition_sha256: sha256:db23d26f890faca4b4e1b5160e3b4a912b86b0d544d5bd06ecc75ba10795d2cb
-      emission_sha256: sha256:c8f473ce337ebb15e30d475ba6ad5ad97191342bf2988117c40f335464137d7e
   unresolved_subitems: []

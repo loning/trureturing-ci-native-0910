@@ -116,6 +116,7 @@ public sealed partial class WorktreeCommandTests
         DetachDonorTo(repository.Path, "dev~1");
         var target = Path.Combine(repository.Path, "read-only-probe-lane");
         var runner = new RecordingWorktreeProcessRunner();
+        var donorHead = ReviewRegressionTests.RunGit(repository.Path, "rev-parse", "HEAD");
 
         var result = WorktreeCommand.Run(
             repository.Path,
@@ -123,12 +124,14 @@ public sealed partial class WorktreeCommandTests
             runner);
 
         Assert.True(result.Success, result.Error);
+        Assert.Equal(donorHead, ReviewRegressionTests.RunGit(repository.Path, "rev-parse", "HEAD"));
         // 探测不得引入 lake,也不得引入把货源往前推的 git 写动词。
         // (建树自身对 .git 的写——`worktree add`——不在此列,那是本命令的本职。)
         var forbidden = runner.Invocations
-            .Where(static call =>
+            .Where(call =>
                 Path.GetFileName(call.FileName) == "lake"
                 || (call.FileName == "git"
+                    && call.WorkingDirectory == repository.Path
                     && call.Arguments.Count > 0
                     && (call.Arguments[0] == "pull"
                         || call.Arguments[0] == "merge"

@@ -48,7 +48,7 @@ public sealed partial class ProductionEnvironmentTests
     [InlineData("coverage-target-mismatch")]
     [InlineData("scribe-definition-mismatch")]
     [InlineData("scribe-emission-mismatch")]
-    public void CoverAtomAlwaysValidatesCurrentCoverageButScopesForkPointScribeBacklog(
+    public void CoverAtomAlwaysValidatesCurrentCoverageButScopesBaselineScribeBacklog(
         string mismatchCode)
     {
         var materialized = CoverWorld.Materialize(new CoverSpec
@@ -56,7 +56,7 @@ public sealed partial class ProductionEnvironmentTests
             OtherAtomGid = "D5/S0/Carrier/Probe.sibling",
             ReportDeclarations = ImmutableArray.Create("probe", "sibling"),
         });
-        var inputs = DirectoryInputs(WithReceiptMismatchAtForkPoint(
+        var inputs = DirectoryInputs(WithReceiptMismatchAtBaseline(
             materialized,
             mismatchCode,
             byteIdenticalBaseline: true));
@@ -92,7 +92,9 @@ public sealed partial class ProductionEnvironmentTests
                 "D5/S9/Unrelated/FrozenBacklog.lean",
                 FrozenStatementReceiptTestData.Id('9'),
                 []));
-        var eventPath = Assert.Single(files.Keys.Except(existingPaths, StringComparer.Ordinal));
+        var eventPath = Assert.Single(
+            files.Keys.Except(existingPaths, StringComparer.Ordinal),
+            FrozenLedgerChangeClassifier.IsAcceptedEventPath);
         return (inputs with { Files = files }, eventPath);
     }
 }

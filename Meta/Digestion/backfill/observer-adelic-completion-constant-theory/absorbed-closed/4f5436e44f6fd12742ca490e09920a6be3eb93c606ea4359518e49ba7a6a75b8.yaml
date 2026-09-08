@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Weil/CofinalSupport/GoldenCofinalPositivity.golden_cofinal_positivity
     target_statement_id: sha256:df4d80baf85eef0dd7ae438a1b7bf360a2006e3b70d52b27c17ed58fbf0a04eb
 receipts:
-  scribe:
-    - gid: D5/S3/Weil/CofinalSupport/GoldenCofinalPositivity.golden_cofinal_positivity
-      definition_sha256: sha256:01bcf93a8885e2ff14f84ca38966406d89aba24ff00e4e9422238d6421a6e124
-      emission_sha256: sha256:782a14a5f78353aad428601aea9b63fb2b89dc54c08a21a2da51e0a594ebdd57
   unresolved_subitems: []
