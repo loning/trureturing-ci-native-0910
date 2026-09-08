@@ -21,7 +21,8 @@ internal sealed class DeeplyCompositeLcmRankDocument : IScribeDocumentDefinition
                 "The rank of n is the cardinality of the filter by DC of the closed "
                     + "natural interval from one through n. In displayed formulas, "
                     + "filter(S,P) denotes the elements of the finite set S satisfying P. "
-                    + "This is the repository rank encoding.",
+                    + "Equivalently, rank(n) counts the deeply composite positive integers "
+                    + "no greater than n.",
                 AssessedProvenance.FromRepo()),
             Theorem(
                 "rank-literal-count-bridge",
@@ -30,7 +31,7 @@ internal sealed class DeeplyCompositeLcmRankDocument : IScribeDocumentDefinition
                 StatementSource.FromAuthor(Disp(RankEqCardFilterLeFormula())),
                 "This theorem is the definition-fidelity bridge to the source formula "
                     + "r(n) = #{m <= n : DC(m)}. Positivity is already part of DC, so the "
-                    + "repository interval starting at one counts exactly the same terms as "
+                    + "interval starting at one counts exactly the same terms as "
                     + "the literal bounded set displayed here.",
                 AssessedProvenance.FromRepo()),
             Definition(
@@ -38,7 +39,7 @@ internal sealed class DeeplyCompositeLcmRankDocument : IScribeDocumentDefinition
                 "a",
                 "The zero-indexed enumeration of deeply composite numbers",
                 StatementSource.FromAuthor(Disp(EnumerationFormula())),
-                "The repository sequence a(r) is Nat.nth applied to DC, so r starts at zero. "
+                "The sequence a(r) is Nat.nth applied to DC, so r starts at zero. "
                     + "It supplies the sequence-level representation corresponding to OEIS "
                     + "A095848 (Switkay, comments 2023 and 2025).",
                 AssessedProvenance.FromRepo()),
@@ -48,8 +49,8 @@ internal sealed class DeeplyCompositeLcmRankDocument : IScribeDocumentDefinition
                 "The least common multiple prefix",
                 StatementSource.FromAuthor(Disp(LFormula())),
                 "L(k) is Nat.lcmUpto(k), the least common multiple of the positive "
-                    + "integers through k, corresponding to OEIS A003418. This is the "
-                    + "repository abbreviation used in the proof.",
+                    + "integers through k, corresponding to OEIS A003418. The abbreviation "
+                    + "keeps these lcm prefixes explicit in later divisibility arguments.",
                 AssessedProvenance.FromRepo()),
             Definition(
                 "records-below-lcm-prefix",
@@ -57,7 +58,7 @@ internal sealed class DeeplyCompositeLcmRankDocument : IScribeDocumentDefinition
                 "Deeply composite records below an lcm prefix",
                 StatementSource.FromAuthor(Disp(RecordsBelowFormula())),
                 "recordsBelowL(k) filters the half-open interval from one to L(k) by the "
-                    + "repository predicate DC.",
+                    + "condition DC, retaining exactly the deeply composite natural numbers.",
                 AssessedProvenance.FromRepo()),
             Definition(
                 "successive-lcm-record-band",
@@ -71,7 +72,7 @@ internal sealed class DeeplyCompositeLcmRankDocument : IScribeDocumentDefinition
                 "L_succ_le_mul",
                 "The next lcm prefix is bounded by endpoint multiplication",
                 StatementSource.FromAuthor(Disp(LSuccLeMulFormula())),
-                "The repository proof expands the next lcm prefix and uses that a least "
+                "The bound follows by expanding the next lcm prefix and using that a least "
                     + "common multiple divides the corresponding product.",
                 AssessedProvenance.FromRepo()),
             Theorem(
@@ -79,7 +80,7 @@ internal sealed class DeeplyCompositeLcmRankDocument : IScribeDocumentDefinition
                 "prefix_locking",
                 "Every reached lcm prefix divides a deeply composite number",
                 StatementSource.FromAuthor(Disp(PrefixLockingFormula())),
-                "For repository-encoded DC(n), if L(j) <= n then L(j) divides n. Otherwise "
+                "If n is deeply composite and L(j) <= n, then L(j) divides n. Otherwise "
                     + "the first divisor "
                     + "through j missing from n makes the smaller number L(j) precede n, "
                     + "contradicting the record condition.",
@@ -92,8 +93,8 @@ internal sealed class DeeplyCompositeLcmRankDocument : IScribeDocumentDefinition
                 "Below L(k), at most NatDiv(k*(k-1),2) deeply composite numbers occur. "
                     + "Here NatDiv is natural-number Euclidean division, not rational "
                     + "division. The proof partitions records into successive lcm bands and "
-                    + "injects the k-th band into the positive integers below k+1. This is a "
-                    + "repository counting theorem.",
+                    + "injects the k-th band into the positive integers below k+1. Summing "
+                    + "the band bounds gives the stated triangular bound.",
                 AssessedProvenance.FromRepo()),
             Theorem(
                 "positive-rank",
@@ -101,7 +102,7 @@ internal sealed class DeeplyCompositeLcmRankDocument : IScribeDocumentDefinition
                 "A deeply composite number has positive rank",
                 StatementSource.FromAuthor(Disp(RankPositiveFormula())),
                 "A deeply composite n belongs to its own filtered closed interval, so the "
-                    + "cardinality defining the repository rank(n) is positive.",
+                    + "cardinality defining rank(n) is positive.",
                 AssessedProvenance.FromRepo()),
             Theorem(
                 "deeply-composite-lcm-square-root-rank",
@@ -114,7 +115,7 @@ internal sealed class DeeplyCompositeLcmRankDocument : IScribeDocumentDefinition
                     + "and the counting bound force this divisibility: failure would place n "
                     + "below the lcm prefix while making twice its rank simultaneously no "
                     + "larger and strictly larger than the same square. This proves the "
-                    + "repository DC/rank specialization of Switkay's A095848 comment of "
+                    + "DC/rank specialization of Switkay's A095848 comment of "
                     + "2025-09-07.",
                 AssessedProvenance.FromRepo()),
             Theorem(
@@ -122,7 +123,7 @@ internal sealed class DeeplyCompositeLcmRankDocument : IScribeDocumentDefinition
                 "dc_nth",
                 "Every enumerated term is deeply composite",
                 StatementSource.FromAuthor(Disp(DcNthFormula())),
-                "Infinitude of the repository predicate DC and Nat.nth membership show that "
+                "Infinitude of DC and Nat.nth membership show that "
                     + "every zero-indexed term a(r) satisfies DC.",
                 AssessedProvenance.FromRepo()),
             Theorem(
@@ -130,7 +131,7 @@ internal sealed class DeeplyCompositeLcmRankDocument : IScribeDocumentDefinition
                 "rank_nth",
                 "Enumeration index and deeply composite rank agree",
                 StatementSource.FromAuthor(Disp(RankNthFormula())),
-                "The repository rank counts through its endpoint, while Nat.nth is "
+                "The rank counts through its endpoint, while Nat.nth is "
                     + "zero-indexed, so rank(a(r)) equals r+1.",
                 AssessedProvenance.FromRepo()),
             Theorem(
@@ -138,7 +139,7 @@ internal sealed class DeeplyCompositeLcmRankDocument : IScribeDocumentDefinition
                 "oeis_a095848_lcm_sqrt_rank",
                 "The square-root-rank lcm law for the enumerated sequence",
                 StatementSource.FromAuthor(Disp(SequenceMainFormula())),
-                "Substituting the public DC and rank bridges into the repository theorem gives "
+                "Using DC(a(r)) and rank(a(r)) = r+1 in the divisibility law gives "
                     + "the zero-indexed sequence form of Switkay's OEIS A095848 conjecture "
                     + "from the comment of 2025-09-07.",
                 AssessedProvenance.FromRepo()))));
