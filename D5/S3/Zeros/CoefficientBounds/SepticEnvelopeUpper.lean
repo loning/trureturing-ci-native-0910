@@ -6,7 +6,6 @@
    utility: none
    digest: Universal degree-ten upper certificate for centered septic root gaps. -/
 
-import D5.S3.Zeros.CoefficientBounds.SepticEnvelopeUpperLow
 import D5.S3.Zeros.CoefficientBounds.SepticEnvelopeUpperHigh
 
 /-!
@@ -22,10 +21,11 @@ noncomputable section
 
 namespace D5.S3.Zeros.CoefficientBounds.SepticEnvelopeUpper
 
-open SepticEnvelopeGaps SepticEnvelopeUpperLow SepticEnvelopeUpperHigh
+open SepticEnvelopeGaps SepticEnvelopeUpperHigh
 
 set_option maxRecDepth 4096 in
 set_option maxHeartbeats 4000000 in
+-- Recombine seven coefficients with the invariant coefficients kept abstract.
 private theorem upper_identity (a b c d e f : ℝ) :
     12*(10*gapA a b c d e f*(gapB a b c d e f)^2 -
       9*gapZ a b c d e f*(49*(gapA a b c d e f)^2 - 5*gapB a b c d e f)) =
@@ -50,13 +50,8 @@ theorem gap_z_upper (a b c d e f : ℝ)
     9*gapZ a b c d e f*(49*(gapA a b c d e f)^2 - 5*gapB a b c d e f)
       ≤ 10*gapA a b c d e f*(gapB a b c d e f)^2 := by
   have hid := upper_identity a b c d e f
-  have h0 := upper_coeff0_nonneg b c d e f hb hc hd he hf
-  have h1 := upper_coeff1_nonneg b c d e f hb hc hd he hf
-  have h2 := upper_coeff2_nonneg b c d e f hb hc hd he hf
-  have h3 := upper_coeff3_nonneg b c d e f hb hc hd he hf
-  have h4 := upper_coeff4_nonneg b c d e f hb hc hd he hf
-  have h5 := upper_coeff5_nonneg b c d e f hb hc hd he hf
-  have h6 := upper_coeff6_nonneg b c d e f hb hc hd he hf
+  obtain ⟨h0, h1, h2, h3, h4, h5, h6⟩ :=
+    upper_coefficients_nonneg b c d e f hb hc hd he hf
   have h : 0 ≤
       upperCoeff0 b c d e f + a * (upperCoeff1 b c d e f + a * (upperCoeff2 b c d e f + a *
       (upperCoeff3 b c d e f + a * (upperCoeff4 b c d e f + a * (upperCoeff5 b c d e f + a *

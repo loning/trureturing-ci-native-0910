@@ -15,6 +15,9 @@ family. No declaration implements a checker or certifies a finite instance;
 utility is none.
 -/
 
+-- Check one certificate at a time to bound elaboration memory.
+set_option Elab.async false
+
 noncomputable section
 
 namespace D5.S3.Zeros.CoefficientBounds.SepticEnvelopeUpperLow
@@ -23,6 +26,7 @@ open SepticEnvelopeGaps
 
 set_option maxRecDepth 4096 in
 set_option maxHeartbeats 4000000 in
+-- Normalize the exact degree-ten coefficient identity.
 theorem upper_coeff0_nonneg (b c d e f : ℝ)
     (hb : 0 ≤ b) (hc : 0 ≤ c) (hd : 0 ≤ d)
     (he : 0 ≤ e) (hf : 0 ≤ f) :
@@ -207,14 +211,14 @@ theorem upper_coeff0_nonneg (b c d e f : ℝ)
       * (e * (e * (1000 * e + 4500 * f) + 8480 * f ^ 2) + 8680 * f ^ 3) + 5160 * f ^ 4) + 1700 * f ^
       5) + 240 * f ^ 6)) + e ^ 4 * (e * (e * (e * (e * (e * (125 * e + 625 * f) + 1325 * f ^ 2) +
       1550 * f ^ 3) + 1075 * f ^ 4) + 425 * f ^ 5) + 75 * f ^ 6)) := by
-    simp only [upperCoeff0, aCoeff0, aCoeff1, bCoeff0, bCoeff1, bCoeff2,
-      zCoeff0, zCoeff1, zCoeff2]
+    simp only [upperCoeff0, aCoeff0, bCoeff0, zCoeff0]
     ring
   rw [hid]
   positivity
 
 set_option maxRecDepth 4096 in
 set_option maxHeartbeats 4000000 in
+-- Normalize the exact degree-ten coefficient identity.
 theorem upper_coeff1_nonneg (b c d e f : ℝ)
     (hb : 0 ≤ b) (hc : 0 ≤ c) (hd : 0 ≤ d)
     (he : 0 ≤ e) (hf : 0 ≤ f) :
@@ -350,8 +354,7 @@ theorem upper_coeff1_nonneg (b c d e f : ℝ)
       e ^ 2 * (e * (e * (e * (e * (e * (1825 * e + 7300 * f) + 11974 * f ^ 2) + 10372 * f ^ 3) +
       5032 * f ^ 4) + 1294 * f ^ 5) + 135 * f ^ 6)) + e ^ 3 * (e * (e * (e * (e * (e * (250 * e +
       1125 * f) + 2120 * f ^ 2) + 2170 * f ^ 3) + 1290 * f ^ 4) + 425 * f ^ 5) + 60 * f ^ 6)) := by
-    simp only [upperCoeff1, aCoeff0, aCoeff1, bCoeff0, bCoeff1, bCoeff2,
-      zCoeff0, zCoeff1, zCoeff2]
+    simp only [upperCoeff1, aCoeff0, aCoeff1, bCoeff0, bCoeff1, zCoeff0, zCoeff1]
     ring
   rw [hid]
   positivity

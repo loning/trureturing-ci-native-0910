@@ -28,6 +28,7 @@ open Polynomial SepticEnvelopeGaps SepticEnvelopeUpper
 
 set_option maxRecDepth 4096 in
 set_option maxHeartbeats 4000000 in
+-- Expand seven linear factors and normalize the second coefficient.
 private theorem coefficient_second_moment (r : Fin 7 → ℝ) :
     2 * (∏ i, (X - C (r i)) : ℝ[X]).coeff 5 =
       (∑ i, r i)^2 - ∑ i, (r i)^2 := by
@@ -60,6 +61,7 @@ private def gapPolynomial (a b c d e f : ℝ) : ℝ[X] :=
 
 set_option maxRecDepth 4096 in
 set_option maxHeartbeats 4000000 in
+-- Normalize three invariant identities for the symbolic seven-factor product.
 private theorem gap_coefficients (a b c d e f : ℝ) :
     let p := gapPolynomial a b c d e f;
     -p.coeff 5 = gapA a b c d e f ∧

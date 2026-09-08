@@ -117,6 +117,7 @@ theorem gap_z_nonneg (a b c d e f : ℝ)
 
 set_option maxRecDepth 4096 in
 set_option maxHeartbeats 4000000 in
+-- Normalize the explicit square and positive quartic remainder.
 theorem gap_b_upper (a b c d e f : ℝ)
     (ha : 0 ≤ a) (hb : 0 ≤ b) (hc : 0 ≤ c)
     (hd : 0 ≤ d) (he : 0 ≤ e) (hf : 0 ≤ f) :
@@ -146,6 +147,7 @@ theorem gap_b_upper (a b c d e f : ℝ)
 
 set_option maxRecDepth 4096 in
 set_option maxHeartbeats 4000000 in
+-- Normalize the degree-six positive lower remainder.
 theorem gap_z_lower (a b c d e f : ℝ)
     (ha : 0 ≤ a) (hb : 0 ≤ b) (hc : 0 ≤ c)
     (hd : 0 ≤ d) (he : 0 ≤ e) (hf : 0 ≤ f) :
@@ -312,6 +314,7 @@ def zCoeff2 (b c d e f : ℝ) : ℝ :=
 
 set_option maxRecDepth 4096 in
 set_option maxHeartbeats 4000000 in
+-- Normalize the first-gap decomposition of the invariant.
 theorem gap_a_first_gap (a b c d e f : ℝ) :
     gapA a b c d e f = aCoeff0 b c d e f +
       a*(aCoeff1 b c d e f + a*(21)) := by
@@ -320,6 +323,7 @@ theorem gap_a_first_gap (a b c d e f : ℝ) :
 
 set_option maxRecDepth 4096 in
 set_option maxHeartbeats 4000000 in
+-- Normalize the first-gap decomposition of the invariant.
 theorem gap_b_first_gap (a b c d e f : ℝ) :
     gapB a b c d e f = bCoeff0 b c d e f +
       a*(bCoeff1 b c d e f + a*(bCoeff2 b c d e f)) := by
@@ -328,6 +332,7 @@ theorem gap_b_first_gap (a b c d e f : ℝ) :
 
 set_option maxRecDepth 4096 in
 set_option maxHeartbeats 4000000 in
+-- Normalize the first-gap decomposition of the invariant.
 theorem gap_z_first_gap (a b c d e f : ℝ) :
     gapZ a b c d e f = zCoeff0 b c d e f +
       a*(zCoeff1 b c d e f + a*(zCoeff2 b c d e f)) := by

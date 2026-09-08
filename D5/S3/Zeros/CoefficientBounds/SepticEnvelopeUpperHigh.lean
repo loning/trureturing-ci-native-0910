@@ -6,7 +6,7 @@
    utility: none
    digest: Universal coefficient sign certificates for the septic joint upper bound. -/
 
-import D5.S3.Zeros.CoefficientBounds.SepticEnvelopeGaps
+import D5.S3.Zeros.CoefficientBounds.SepticEnvelopeUpperLow
 
 /-!
 Each `upper_coeff` theorem is an inequality for every nonnegative real five-tuple.
@@ -15,14 +15,20 @@ family. No declaration implements a checker or certifies a finite instance;
 utility is none.
 -/
 
+-- Check one certificate at a time to bound elaboration memory.
+set_option Elab.async false
+
 noncomputable section
 
 namespace D5.S3.Zeros.CoefficientBounds.SepticEnvelopeUpperHigh
 
 open SepticEnvelopeGaps
 
+open SepticEnvelopeUpperLow
+
 set_option maxRecDepth 4096 in
 set_option maxHeartbeats 4000000 in
+-- Normalize the exact degree-ten coefficient identity.
 theorem upper_coeff2_nonneg (b c d e f : ℝ)
     (hb : 0 ≤ b) (hc : 0 ≤ c) (hd : 0 ≤ d)
     (he : 0 ≤ e) (hf : 0 ≤ f) :
@@ -119,14 +125,14 @@ theorem upper_coeff2_nonneg (b c d e f : ℝ)
       f ^ 6) + e * (e * (e * (e * (e * (e * (1908 * e + 6678 * f) + 8970 * f ^ 2) + 5730 * f ^ 3) +
       1812 * f ^ 4) + 327 * f ^ 5) + 45 * f ^ 6)) + e ^ 3 * (e * (e * (e * (e * (275 * e + 1100 * f)
       + 1688 * f ^ 2) + 1214 * f ^ 3) + 389 * f ^ 4) + 38 * f ^ 5)) := by
-    simp only [upperCoeff2, aCoeff0, aCoeff1, bCoeff0, bCoeff1, bCoeff2,
-      zCoeff0, zCoeff1, zCoeff2]
+    simp only [upperCoeff2, aCoeff0, aCoeff1, bCoeff0, bCoeff1, bCoeff2, zCoeff0, zCoeff1, zCoeff2]
     ring
   rw [hid]
   positivity
 
 set_option maxRecDepth 4096 in
 set_option maxHeartbeats 4000000 in
+-- Normalize the exact degree-ten coefficient identity.
 theorem upper_coeff3_nonneg (b c d e f : ℝ)
     (hb : 0 ≤ b) (hc : 0 ≤ c) (hd : 0 ≤ d)
     (he : 0 ≤ e) (hf : 0 ≤ f) :
@@ -189,15 +195,16 @@ theorem upper_coeff3_nonneg (b c d e f : ℝ)
       f ^ 3) + 654 * f ^ 4) + e * (e * (e * (e * (2734 * e + 6835 * f) + 7684 * f ^ 2) + 4691 * f ^
       3) + 1616 * f ^ 4) + 254 * f ^ 5) + e * (e * (e * (e * (e * (1037 * e + 3111 * f) + 4144 * f ^
       2) + 3103 * f ^ 3) + 1467 * f ^ 4) + 434 * f ^ 5) + 60 * f ^ 6) + e * (e * (e * (e * (e * (e *
-      (172 * e + 602 * f) + 916 * f ^ 2) + 785 * f ^ 3) + 430 * f ^ 4) + 161 * f ^ 5) + 30 * f ^ 6)) := by
-    simp only [upperCoeff3, aCoeff0, aCoeff1, bCoeff0, bCoeff1, bCoeff2,
-      zCoeff0, zCoeff1, zCoeff2]
+      (172 * e + 602 * f) + 916 * f ^ 2) + 785 * f ^ 3) + 430 * f ^ 4) + 161 * f ^ 5) + 30 * f ^ 6))
+      := by
+    simp only [upperCoeff3, aCoeff0, aCoeff1, bCoeff0, bCoeff1, bCoeff2, zCoeff0, zCoeff1, zCoeff2]
     ring
   rw [hid]
   positivity
 
 set_option maxRecDepth 4096 in
 set_option maxHeartbeats 4000000 in
+-- Normalize the exact degree-ten coefficient identity.
 theorem upper_coeff4_nonneg (b c d e f : ℝ)
     (hb : 0 ≤ b) (hc : 0 ≤ c) (hd : 0 ≤ d)
     (he : 0 ≤ e) (hf : 0 ≤ f) :
@@ -239,14 +246,14 @@ theorem upper_coeff4_nonneg (b c d e f : ℝ)
       4086 * f ^ 3) + 936 * f ^ 4) + e * (e * (e * (e * (1336 * e + 3340 * f) + 4864 * f ^ 2) + 3956
       * f ^ 3) + 1736 * f ^ 4) + 320 * f ^ 5) + e * (e * (e * (e * (e * (268 * e + 804 * f) + 1418 *
       f ^ 2) + 1496 * f ^ 3) + 999 * f ^ 4) + 385 * f ^ 5) + 75 * f ^ 6) := by
-    simp only [upperCoeff4, aCoeff0, aCoeff1, bCoeff0, bCoeff1, bCoeff2,
-      zCoeff0, zCoeff1, zCoeff2]
+    simp only [upperCoeff4, aCoeff0, aCoeff1, bCoeff0, bCoeff1, bCoeff2, zCoeff0, zCoeff1, zCoeff2]
     ring
   rw [hid]
   positivity
 
 set_option maxRecDepth 4096 in
 set_option maxHeartbeats 4000000 in
+-- Normalize the exact degree-ten coefficient identity.
 theorem upper_coeff5_nonneg (b c d e f : ℝ)
     (hb : 0 ≤ b) (hc : 0 ≤ c) (hd : 0 ≤ d)
     (he : 0 ≤ e) (hf : 0 ≤ f) :
@@ -271,14 +278,14 @@ theorem upper_coeff5_nonneg (b c d e f : ℝ)
       * f) + 432 * f ^ 2) + e * (e * (738 * e + 1107 * f) + 1485 * f ^ 2) + 558 * f ^ 3) + e * (e *
       (e * (435 * e + 870 * f) + 1503 * f ^ 2) + 1068 * f ^ 3) + 255 * f ^ 4) + e * (e * (e * (e *
       (104 * e + 260 * f) + 488 * f ^ 2) + 472 * f ^ 3) + 190 * f ^ 4) + 25 * f ^ 5) := by
-    simp only [upperCoeff5, aCoeff0, aCoeff1, bCoeff0, bCoeff1, bCoeff2,
-      zCoeff0, zCoeff1, zCoeff2]
+    simp only [upperCoeff5, aCoeff1, bCoeff1, bCoeff2, zCoeff1, zCoeff2]
     ring
   rw [hid]
   positivity
 
 set_option maxRecDepth 4096 in
 set_option maxHeartbeats 4000000 in
+-- Normalize the exact degree-ten coefficient identity.
 theorem upper_coeff6_nonneg (b c d e f : ℝ)
     (hb : 0 ≤ b) (hc : 0 ≤ c) (hd : 0 ≤ d)
     (he : 0 ≤ e) (hf : 0 ≤ f) :
@@ -291,12 +298,26 @@ theorem upper_coeff6_nonneg (b c d e f : ℝ)
       (c * (2 * c + 6 * d + 4 * e + 2 * f) + d * (9 * d + 12 * e + 6 * f) + e * (6 * e + 6 * f) + 3
       * f ^ 2) + d * (e * (12 * e + 12 * f) + 12 * f ^ 2) + e * (e * (4 * e + 6 * f) + 18 * f ^ 2) +
       8 * f ^ 3) + d * (d * (e * (9 * e + 9 * f) + 9 * f ^ 2) + e * (e * (6 * e + 9 * f) + 27 * f ^
-      2) + 12 * f ^ 3) + e * (e * (e * (2 * e + 4 * f) + 18 * f ^ 2) + 16 * f ^ 3) + 5 * f ^ 4) := by
-    simp only [upperCoeff6, aCoeff0, aCoeff1, bCoeff0, bCoeff1, bCoeff2,
-      zCoeff0, zCoeff1, zCoeff2]
+      2) + 12 * f ^ 3) + e * (e * (e * (2 * e + 4 * f) + 18 * f ^ 2) + 16 * f ^ 3) + 5 * f ^ 4) :=
+      by
+    simp only [upperCoeff6, bCoeff2, zCoeff2]
     ring
   rw [hid]
   positivity
+
+theorem upper_coefficients_nonneg (b c d e f : ℝ)
+    (hb : 0 ≤ b) (hc : 0 ≤ c) (hd : 0 ≤ d)
+    (he : 0 ≤ e) (hf : 0 ≤ f) :
+    0 ≤ upperCoeff0 b c d e f ∧ 0 ≤ upperCoeff1 b c d e f ∧ 0 ≤ upperCoeff2 b c d e f ∧ 0 ≤
+    upperCoeff3 b c d e f ∧ 0 ≤ upperCoeff4 b c d e f ∧ 0 ≤ upperCoeff5 b c d e f ∧ 0 ≤ upperCoeff6
+    b c d e f := by
+  exact ⟨upper_coeff0_nonneg b c d e f hb hc hd he hf,
+    upper_coeff1_nonneg b c d e f hb hc hd he hf,
+    upper_coeff2_nonneg b c d e f hb hc hd he hf,
+    upper_coeff3_nonneg b c d e f hb hc hd he hf,
+    upper_coeff4_nonneg b c d e f hb hc hd he hf,
+    upper_coeff5_nonneg b c d e f hb hc hd he hf,
+    upper_coeff6_nonneg b c d e f hb hc hd he hf⟩
 
 #print axioms upper_coeff2_nonneg
 #print axioms upper_coeff3_nonneg
