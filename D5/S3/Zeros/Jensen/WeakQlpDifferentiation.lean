@@ -58,5 +58,48 @@ def Question62Claim : Prop :=
   ∀ q : ℝ, 0 < q → q < 1 → ∀ f : ℝ[X],
     (qBorel q f).Splits → (qBorel q f.derivative).Splits
 
+/-- At `q = 1/2`, the witness maps to `(X + 1)^3`, but its derivative maps
+to `7 * X^2 + 9 * X + 3`. The latter has discriminant `-3`, hence no real
+root, so it cannot split. This refutes the polynomial restriction and
+therefore differentiation closure of the entire-function class. -/
+theorem question62_refuted : ¬ Question62Claim := by
+  intro h
+  have hB : qBorel (1 / 2) halfCounterexample = (X + 1) ^ 3 := by
+    norm_num [qBorel, halfCounterexample, Polynomial.lsum_apply, Polynomial.sum_add_index,
+      Polynomial.sum_monomial_index, add_smul, Nat.factorial, Finset.prod_range_succ]
+    norm_num [Polynomial.sum, show (1 : ℝ[X]).support = {0} by
+      simpa only [C_1] using support_C (one_ne_zero : (1 : ℝ) ≠ 0),
+      smul_monomial, smul_eq_mul]
+    norm_num [← C_mul_X_pow_eq_monomial, smul_eq_C_mul, map_ofNat]
+    ring
+  have hD : qBorel (1 / 2) halfCounterexample.derivative =
+      C 7 * X ^ 2 + C 9 * X + C 3 := by
+    norm_num [qBorel, halfCounterexample, Polynomial.lsum_apply, derivative_add,
+      derivative_monomial, Polynomial.sum_add_index, Polynomial.sum_monomial_index,
+      add_smul, Nat.factorial, Finset.prod_range_succ]
+    norm_num [smul_monomial, smul_eq_mul]
+    norm_num [← C_mul_X_pow_eq_monomial, smul_eq_C_mul, map_ofNat]
+    ring
+  have hf : (qBorel (1 / 2) halfCounterexample).Splits := by
+    rw [hB]
+    simpa only [C_1] using (Splits.X_add_C (1 : ℝ)).pow 3
+  have hd : (qBorel (1 / 2) halfCounterexample.derivative).Splits :=
+    h (1 / 2) (by norm_num) (by norm_num) halfCounterexample hf
+  rw [hD] at hd
+  obtain ⟨x, hx⟩ := hd.exists_eval_eq_zero (by
+    rw [degree_quadratic (by norm_num : (7 : ℝ) ≠ 0)]
+    norm_num)
+  have hx' : (7 : ℝ) * (x * x) + 9 * x + 3 = 0 := by
+    simpa only [eval_add, eval_mul, eval_C, eval_pow, eval_X, pow_two] using hx
+  have hs := discrim_eq_sq_of_quadratic_eq_zero hx'
+  norm_num [discrim] at hs
+  have hn := sq_nonneg (2 * (7 : ℝ) * x + 9)
+  linarith only [hs, hn]
+
+#print axioms qBorel
+#print axioms halfCounterexample
+#print axioms Question62Claim
+#print axioms question62_refuted
+
 end
 end D5.S3.Zeros.Jensen.WeakQlpDifferentiation
