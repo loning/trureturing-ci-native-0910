@@ -68,32 +68,42 @@ case "$kind" in
       sleep "$TICK"
     done ;;
   vote)
-    # vote <brief> <outfile> [max_attempts] — nyxid 一票的完整闭环:派发 → 阻塞 → extraction_failure 自动重投
-    # 立条依据(2026-09-03):extraction_failure 是**随机**故障(本会话实测 20+ 次),
-    # 每次手搓「重投一次、再等一次」既费 turn 又常忘记上限。判据写死:只对 extraction_failure 重投,
-    # 其它落定值(含 approve/reject/comment)一律直接返回。
+    # Follow nyx's command verdict, including traversal. Only TIMEOUT needs fetch;
+    # terminal carrier failures retry via a fresh ask run with preserved history.
     brief="${1:?brief}"; out="${2:?outfile}"; maxn="${3:-4}"
+    [[ "$maxn" =~ ^[0-9]+$ ]] && [ "$maxn" -gt 0 ] && [ "$maxn" -le 2147483647 ] 2>/dev/null || exit 2
+    rm -f "$out.settled" || exit 2
     n=0
     while [ "$n" -lt "$maxn" ]; do
       n=$(( n + 1 ))
-      bash "$__TOOLDIR/nyx.sh" ask "$brief" "$out" >"${out}.log" 2>&1
-      tid=$(grep -oE '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}' "$out" 2>/dev/null | head -1)
-      if [ -z "$tid" ]; then
-        printf 'AWAIT_VOTE attempt=%s state=no-task-id at=%s\n' "$n" "$(__stamp)"; sleep "$TICK"; continue
+      args=(ask "$brief" "$out")
+      : > "$out.log" || exit 2
+      while :; do
+        bash "$__TOOLDIR/nyx.sh" "${args[@]}" >> "$out.log" 2>&1; rc=$?
+        verdict=$(awk '/^NYX_(OK|EXTRACTION|QUOTA|BUSY|TIMEOUT|DELIVERY|NOFILE|UNKNOWN|EXPIRED|NOPOOL|LOCKBUSY|ERR|IO|CANCELLED)( |$)/ {v=$1} END {print v}' "$out.log")
+        [ "$rc" -eq 3 ] && [ "$verdict" = NYX_TIMEOUT ] || break
+        tid=$(bash "$__TOOLDIR/nyx.sh" taskid "$out") || exit 2
+        if __deadline_hit; then
+          printf 'AWAIT_VOTE attempt=%s task=%s state=deadline at=%s\n' "$n" "$tid" "$(__stamp)"; exit 124
+        fi
+        args=(fetch "$tid" "$out")
+      done
+      if [ "$rc" -eq 0 ] && [ "$verdict" = NYX_OK ]; then
+        tid=$(bash "$__TOOLDIR/nyx.sh" taskid "$out") || exit 2
+        cat "$out" > "$out.settled" || exit 2
+        printf 'AWAIT_VOTE attempt=%s task=%s state=settled at=%s\n' "$n" "$tid" "$(__stamp)"
+        cat "$out.settled"; exit 0
       fi
-      res=$(AWAIT_DEADLINE="$DEADLINE" AWAIT_TICK="$TICK" bash "$__TOOLDIR/await.sh" nyx "$tid")
-      case "$res" in
-        *extraction_failure*)
-          # 退避(2026-09-03 立):extraction_failure 常是浏览器侧**瞬时**故障,失败在提交侧、秒级返回。
-          # 实测:4 次重投落在 03:52:51/:54/:56/03:53:19 —— 30 秒烧光预算,全撞同一个故障窗;
-          # 而同一天空闲池上成功的一票用了约 20 分钟才落定。故重投必须拉开到分钟级。
+      case "$verdict" in
+        NYX_EXTRACTION|NYX_QUOTA|NYX_BUSY)
+          # Keep the existing minute-scale backoff between fresh submissions.
           back=$(( 60 * n ))
-          printf 'AWAIT_VOTE attempt=%s task=%s state=extraction_failure at=%s backoff=%ss\n' "$n" "$tid" "$(__stamp)" "$back"
+          printf 'AWAIT_VOTE attempt=%s state=retry verdict=%s at=%s backoff=%ss\n' "$n" "$verdict" "$(__stamp)" "$back"
           [ "$n" -lt "$maxn" ] && sleep "$back" ;;
         *)
-          printf 'AWAIT_VOTE attempt=%s task=%s state=settled at=%s\n' "$n" "$tid" "$(__stamp)"
-          printf '%s' "$res" > "$out.settled"
-          printf '%s' "$res"; exit 0 ;;
+          printf 'AWAIT_VOTE attempt=%s state=failed verdict=%s at=%s\n' "$n" "$verdict" "$(__stamp)"
+          [ "$rc" -ne 0 ] || rc=1
+          exit "$rc" ;;
       esac
     done
     printf 'AWAIT_VOTE state=exhausted attempts=%s at=%s\n' "$maxn" "$(__stamp)"; exit 125 ;;
