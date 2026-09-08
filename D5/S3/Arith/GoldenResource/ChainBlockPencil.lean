@@ -1,5 +1,5 @@
 /- GID: D5/S3/Arith/GoldenResource/ChainBlockPencil
-   generality: I
+   generality: G
    mirror-B: D5/B/S3/Arith/GoldenResource/ChainBlockPencil
    mirror-E: none(waiver:general-matrix-family)
    anchors: []
@@ -21,6 +21,10 @@ abbrev Hidden (n : ℕ) := Fin (n + 1) ⊕ Fin (n + 1)
 
 /-- Two visible coordinates followed by the two hidden chains. -/
 abbrev Total (n : ℕ) := Fin 2 ⊕ Hidden n
+
+/-- Flattening the hidden coordinates gives precisely `2 * (n + 1)` coordinates. -/
+def hiddenEquiv (n : ℕ) : Hidden n ≃ Fin (2 * (n + 1)) :=
+  finSumFinEquiv.trans (finCongr (by omega))
 
 /-- The direct sum of two identical diagonal-four chains. -/
 def hiddenBlock (n : ℕ) : Matrix (Hidden n) (Hidden n) ℝ :=
@@ -160,12 +164,58 @@ theorem spatial_posDef (n : ℕ) {k b : ℝ} (hk : 2 ≤ k) (hb : b ≤ 1) :
   intro i
   exact lt_of_lt_of_le (by norm_num) (spatial_weight_ge_one n hk hb i)
 
+private theorem mass_entry (n : ℕ) (i j : Total n) :
+    K n i j = -1 ∨ K n i j = 0 ∨ K n i j = 1 ∨ K n i j = 4 := by
+  rcases i with i | (i | i) <;> rcases j with j | (j | j)
+  all_goals
+    simp only [K, hiddenBlock, fromBlocks_apply₁₁, fromBlocks_apply₁₂,
+      fromBlocks_apply₂₁, fromBlocks_apply₂₂, B, Matrix.transpose_apply,
+      ite_apply, Pi.single_apply, Matrix.one_apply, chain_apply]
+  all_goals (try split_ifs) <;> norm_num
+
+/-- Integer parameters give integer entries uniformly bounded independently of length. -/
+theorem coefficient_bounds (n : ℕ) {k b : ℤ} (hk : 2 ≤ k) (hb₀ : 0 ≤ b) (hb₁ : b ≤ 1)
+    (i j : Total n) :
+    ∃ a c : ℤ, K n i j = (a : ℝ) ∧ G n k b i j = (c : ℝ) ∧
+      |a| ≤ max k 4 ∧ |c| ≤ max k 4 := by
+  have hm : ∃ a : ℤ, K n i j = (a : ℝ) ∧ |a| ≤ max k 4 := by
+    rcases mass_entry n i j with h | h | h | h
+    · refine ⟨-1, by simpa using h, ?_⟩
+      norm_num
+    · exact ⟨0, by simpa using h, by norm_num⟩
+    · exact ⟨1, by simpa using h, by norm_num⟩
+    · exact ⟨4, by simpa using h, by norm_num⟩
+  have hg : ∃ c : ℤ, G n k b i j = (c : ℝ) ∧ |c| ≤ max k 4 := by
+    by_cases hij : i = j
+    · subst j
+      rcases i with i | (i | i)
+      · exact ⟨k, by simp [G, spatialWeight], by rw [abs_le]; omega⟩
+      · by_cases hi : i = Fin.last n
+        · exact ⟨k - b, by simp [G, spatialWeight, hi], by rw [abs_le]; omega⟩
+        · exact ⟨k, by simp [G, spatialWeight, hi], by rw [abs_le]; omega⟩
+      · exact ⟨k, by simp [G, spatialWeight], by rw [abs_le]; omega⟩
+    · exact ⟨0, by simp [G, Matrix.diagonal_apply_ne _ hij], by norm_num⟩
+  obtain ⟨a, ha, hab⟩ := hm
+  obtain ⟨c, hc, hcb⟩ := hg
+  exact ⟨a, c, ha, hc, hab, hcb⟩
+
+/-- The integer block family simultaneously has uniform mass, spatial, and entry bounds. -/
+theorem uniform_pencil_bounds (n : ℕ) {k b : ℤ} (hk : 2 ≤ k)
+    (hb₀ : 0 ≤ b) (hb₁ : b ≤ 1) :
+    (K n - (1 / 3 : ℝ) • 1).PosSemidef ∧ (G n k b - 1).PosSemidef ∧
+      ∀ i j : Total n, ∃ a c : ℤ, K n i j = (a : ℝ) ∧ G n k b i j = (c : ℝ) ∧
+        |a| ≤ max k 4 ∧ |c| ≤ max k 4 := by
+  exact ⟨mass_lower_bound n, spatial_lower_bound n (by exact_mod_cast hk)
+    (by exact_mod_cast hb₁), coefficient_bounds n hk hb₀ hb₁⟩
+
 #print axioms mass_coercive
 #print axioms mass_lower_bound
 #print axioms mass_posDef
 #print axioms spatial_lower_bound
 #print axioms spatial_coercive
 #print axioms spatial_posDef
+#print axioms coefficient_bounds
+#print axioms uniform_pencil_bounds
 
 end
 
