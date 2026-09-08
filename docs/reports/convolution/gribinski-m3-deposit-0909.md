@@ -61,6 +61,162 @@ The report directory has 10 direct files including this new report, below 48.
 Collection: Ruby `Dir.children`, filtered with `File.file?` at the immediate
 parent; no directory or budget change was made.
 
-Steps 3-7 remain pending. Both modules already contain their `#print axioms`
+Both modules already contain their `#print axioms`
 commands (12 main-module theorems and 14 discriminant-module theorems), so the
 make build can expose these readings without editing a Lean file.
+
+## Admission Record (Inherited Review, Landing Form Rechecked)
+
+Let A be `D5/S3/Zeros/Convolution/GribinskiDegreeThree`, B be
+`D5/S3/Zeros/Convolution/GribinskiDegreeThreeDiscriminant`.
+`F` below is the direct protected-base frozen declaration
+`D5/S3/Zeros/Convolution/FiniteFreeCommutatorDegreeSix.cubic_nonnegative_factorization`,
+statement_id `sha256:984112c0a61e8d34b039bb6d01a1e73d4e1f57b7fb36b42fbd569cc818100618`.
+This identity was read from accepted event
+`07b22eef3e97f44d5239919946fe29c4fd7c178181c8c8931583f91c704c1d77.json`;
+the module pin is separately `sha256:c432340052440ba09b56af8739b2dee5b23e520877aa3593410b92b1dbad9daf`.
+Pinned Mathlib declarations are not counted as frozen GIDs.
+Classification is for this joint first-freeze delivery relative to immutable
+base `b9ad72010f6473b22e7616958a7e78db6fe0d2e2`, where A and B are both unfrozen.
+The mechanical order will freeze B before A to place its dependency first;
+this does not reopen the supplied mathematical admission assessment.
+
+`W` denotes B's `ordered_coeff2_nonneg` / `ordered_coeff3_nonneg`, using the
+weighted-square construction (20 squares and 767 positive monomials across
+the four coefficient decompositions). The supplied independent review passed
+all four clause 3.2 witness conditions: elaborated dependency closure,
+non-bind-only content, non-equivalence to the final statement, and live use
+after reduction. This worker does not rerun that mathematical review.
+
+| Public theorem | proof_shape | Direct frozen dependencies at protected base | escape_witness | admission_basis |
+| --- | --- | --- | --- | --- |
+| A.definition_consistency | bind-only | none | none | escape-witness (named companion) |
+| A.convolution_coefficients | bind-only | none | none | escape-witness (named companion) |
+| A.m3_explicit_coefficients | bind-only | none | none | escape-witness (preregistered Step 2 companion) |
+| A.weight_pos | bind-only | none | none | escape-witness (preregistered Step 3 companion) |
+| A.m3_nonnegative_coefficients | bind-only | none | none | escape-witness (named companion) |
+| A.nonnegative_rootTriple_coordinates | bind-only | none | none | escape-witness (named companion) |
+| A.m3_discriminant_nonneg | content | none | W through B.ordered_numerator_nonneg | escape-witness |
+| A.m3_nonnegative_roots | content | F (GID and declaration identity above) | W through A.m3_discriminant_nonneg | escape-witness |
+| B.ordered_numerator_nonneg | content | none | W on the four-coefficient construction path | escape-witness |
+
+Companion obligations and consumer -> prerequisite edges are inherited from
+`docs/reports/convolution/gribinski-m3-0909.md`: A.m3_nonnegative_roots ->
+A.m3_nonnegative_coefficients and A.m3_discriminant_nonneg;
+A.m3_nonnegative_coefficients -> A.definition_consistency and
+A.convolution_coefficients; A.m3_discriminant_nonneg ->
+A.nonnegative_rootTriple_coordinates and the ordered discriminant bridge ->
+B.ordered_numerator_nonneg. A.m3_explicit_coefficients ->
+A.convolution_coefficients fulfills preregistered Step 2; A.weight_pos fulfills
+preregistered Step 3's weight-domain obligation. Those two are not claimed
+as live escape prerequisites. There is no corresponding atom to cite.
+
+`question_answered`: freeze the already merged fixed m=3 result, with every
+real alpha > -1 and six nonnegative real roots. The earlier mathematical
+preregistration is the report's "Preregistered Attempt" section under
+#6494 / #6160; this lane's scope is the user-supplied deposit brief.
+`dominating_theorem_search`: reused the committed prior search record per the
+brief; the prior scope was D5, pinned Mathlib, Loogle and the quoted literature.
+`found`: F as the factorization consumer; `not-found-in-searched-scope`: a
+dominating full m=3 result. No fresh global literature or priority claim.
+
+## Utility: none
+
+The supplied independent review found `utility: none` valid. The declaration
+statements below range over arbitrary real parameters or polynomial inputs.
+Fixed degree, finite expressions, and proof normalization do not turn their
+delivery semantics into bounded enumeration, a checker, numerical reduction,
+or a certified finite input instance. Each reason below is statement-level;
+none relies on an unrelated theorem elsewhere in the module.
+All other utility fields are `not-applicable(kind=none)` in this prose only.
+
+| Declaration | Reason for kind=none |
+| --- | --- |
+| A.elementaryCoeff | Symbolic signed coefficient for arbitrary polynomial and index. |
+| A.weight | Symbolic falling-factorial weight with real alpha. |
+| A.normalizedCoeff | Symbolic normalized coefficient for arbitrary polynomial. |
+| A.convolutionCoeff | Defines the coefficient operation for arbitrary polynomial inputs. |
+| A.boxplus3 | Defines a polynomial from arbitrary input coefficients. |
+| A.rootTriple | Product of factors at three arbitrary real roots. |
+| A.definition_consistency | Coefficient identity for every polynomial pair and allowed index. |
+| A.kappa | Rational expression in an arbitrary real parameter. |
+| A.rho | Rational expression in an arbitrary real parameter. |
+| A.weight_values (private) | Symbolic weight identities, not numerical input certificates. |
+| A.rootTriple_coefficients (private) | Elementary symmetric identities for arbitrary roots. |
+| A.convolution_coefficients | Coefficient identities for arbitrary real root triples. |
+| A.m3_explicit_coefficients | Symbolic polynomial identity, fulfilling the defining-formula obligation. |
+| A.weight_pos | Universal parameter inequality for each allowed coefficient index. |
+| A.m3_nonnegative_coefficients | Signs for every nonnegative root tuple and alpha > -1. |
+| A.discriminant | Symbolic coefficient expression for an arbitrary polynomial. |
+| A.nonnegative_rootTriple_coordinates | Existential coordinate representation of every nonnegative real triple. |
+| A.discriminant_numerator (private) | Symbolic denominator-clearing identity for arbitrary real data. |
+| A.ordered_output_discriminant (private) | Universal discriminant sign on nonnegative gap coordinates. |
+| A.m3_discriminant_nonneg | Universal discriminant sign on the complete six-root real domain. |
+| A.m3_nonnegative_roots | Existential root factorization uniformly over the real-parameter domain. |
+| B.numerator | Symbolic cleared cubic discriminant expression. |
+| B.coeff0 (private) | Symbolic constant coefficient of the parameter polynomial. |
+| B.coeff1 (private) | Symbolic linear coefficient of the parameter polynomial. |
+| B.coeff2 (private) | Symbolic quadratic coefficient of the parameter polynomial. |
+| B.coeff3 (private) | Symbolic cubic coefficient of the parameter polynomial. |
+| B.numerator_expansion (private) | Polynomial identity for arbitrary real arguments. |
+| B.sumRoots (private) | Sum of an arbitrary ordered-gap triple. |
+| B.pairRoots (private) | Pairwise-product sum of an arbitrary ordered-gap triple. |
+| B.prodRoots (private) | Product of an arbitrary ordered-gap triple. |
+| B.sos0 (private) | Symbolic weighted-square polynomial, not a concrete input certificate. |
+| B.sos0_nonneg (private) | Universal real-tuple inequality for sos0. |
+| B.coeff0_identity (private) | Exact symbolic identity connecting coefficient 0 and sos0. |
+| B.ordered_coeff0_nonneg (private) | Coefficient 0 sign for every nonnegative real gap tuple. |
+| B.sos1 (private) | Symbolic weighted-square polynomial in real variables. |
+| B.sos1_nonneg (private) | Universal real-tuple inequality for sos1. |
+| B.coeff1_identity (private) | Exact symbolic identity connecting coefficient 1 and sos1. |
+| B.ordered_coeff1_nonneg (private) | Coefficient 1 sign for every nonnegative real gap tuple. |
+| B.sos2 (private) | Symbolic weighted-square polynomial in real variables. |
+| B.sos2_nonneg (private) | Universal real-tuple inequality for sos2. |
+| B.coeff2_identity (private) | Exact symbolic identity connecting coefficient 2 and sos2. |
+| B.ordered_coeff2_nonneg (private) | Coefficient 2 sign for every nonnegative real gap tuple. |
+| B.sos3 (private) | Symbolic weighted-square polynomial in real variables. |
+| B.sos3_nonneg (private) | Universal real-tuple inequality for sos3. |
+| B.coeff3_identity (private) | Exact symbolic identity connecting coefficient 3 and sos3. |
+| B.ordered_coeff3_nonneg (private) | Coefficient 3 sign for every nonnegative real gap tuple. |
+| B.ordered_numerator_nonneg | Universal seven-real-variable inequality, with no input enumeration. |
+
+## Step 3: Lean and Semantic Report
+
+Step 2 commit `173b3116b0` was pushed successfully.
+`make lean` exited **0** (`03-lean.log`), 12694 jobs. Cache receipt:
+`status=seeded`, `method=clonefile`, project and Mathlib both warm.
+Both targets actually built: B reported 91s and A 3.0s (per-target build
+messages, not isolated benchmarks). `build_seconds=null`: total wall time
+was not separately measured. No budget was changed.
+
+All **26** target-module `#print axioms` outputs were read from that build log:
+12 in A (8 public, 4 private), 14 in B (1 public, 13 private). Every output is
+exactly `[propext, Classical.choice, Quot.sound]`; no `sorryAx` or additional
+axiom occurs in any target declaration's report closure.
+
+`make lean-report` exited **0** (`03-lean-report.log`),
+`mode=delta changed=0 added=13 removed=0 recheck=13` (inspector cache delta,
+not this PR's source delta). It includes 21 declarations in A and 26 in B,
+with public counts 17 and 2 respectively. All 47 authored included
+declarations appear in the utility table above; compiler-generated auxiliary
+records are not additional authored declarations.
+
+- Report SHA-256: `d27126d2d1dfa95d83ed955cb06431c801606b9870d542e2d4a6470c56789cf6`.
+- Input address: `sha256:4a95dc087810d456e5530e0235258829621ff1d20a4e97a6103298b841524c7d`.
+- A source SHA-256: `2394ad41b6f9f5cf3e7c25a77ee6386ba25cc0e0857fac45312bb14397fc8b7f`.
+- B source SHA-256: `bcbd16debca04f7147021418b09cc0c4cbd34fc33bfd6e02db505d13cbb341b6`.
+
+The source hashes were checked against the report's bound `source_sha256`.
+This source-binding check does not recompute any previously accepted
+statement identity.
+
+The requested atom search `rg -l -P '(?:\\boxplus|Conjecture\s*3\.13)'
+Meta/Digestion/atoms/sha256/` returned 16 candidates. Their headings and the
+three contextual Conjecture-3.13 passages were read: the Gribinski items are
+m=2 G1/G3/G4 and m=2 context; the remaining symbols belong to other topics.
+No m=3 atom was found in that searched scope. GitHub #4996 was read and is
+currently CLOSED; it is cited for the historical freeze/coverage discovery
+gap, not represented as an open blocker or as a rule authorizing fake anchors.
+
+Steps 4-7 remain pending. Landing-form checks have found no discrepancy with
+the supplied admission record.
