@@ -115,8 +115,10 @@ elab "#disposition_census" &"projection" &"root" root:ident &"report" reportPath
       match entry.2 with | .certified _ => true | .observed _ => false }
     let sources <- validateEvidenceSources root.getId certified
     IO.println "CENSUS_COVERAGE_BEGIN"
+    let started <- IO.monoMsNow
     let proof <- coverage report (mkConst inventoryName)
-    IO.println "CENSUS_COVERAGE_COMPLETE"
+    let elapsed := (<- IO.monoMsNow) - started
+    IO.println s!"CENSUS_COVERAGE_COMPLETE milliseconds={elapsed}"
     return (proof, sources)
   let certificateName := (<- getCurrNamespace) ++ certificate.getId.eraseMacroScopes
   let declaration := Declaration.thmDecl {
