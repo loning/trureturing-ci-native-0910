@@ -251,6 +251,19 @@ code, the canonical-report declaration IDs, and delivery check outcomes.
 - Canonical `make lean-report`: EXIT=0, `lean-report.log`; Lean 4.33.0 and Mathlib `db584cd6d46c92f209a44c0f1c829460d327499d`.
 - `make emit`: EXIT=0, `emit.log`; one new Blueprint document emitted.
 - `deposit-header-check` against the recorded base: EXIT=0, `deposit-header-check.log`.
+- Canonical `ledger-align --add` with the current Lean report: EXIT=0, `freeze.log`; 3672 modules considered, 1 added, 0 changed, 0 conflicts.
+- `make -C tools selftest`: EXIT=0, `selftest.log`; all active and case-backed deferred rule IDs listed.
+
+The new freeze records 21 authored declarations. Its module state ID is
+`sha256:c432340052440ba09b56af8739b2dee5b23e520877aa3593410b92b1dbad9daf`;
+the accepted event is
+`sha256:07b22eef3e97f44d5239919946fe29c4fd7c178181c8c8931583f91c704c1d77`.
+The target declaration ID is
+`sha256:45f7393b076b05c516370c4b560b5ab1d48cc5f421c38f211a9f2dd34f195f28`.
+The escape declaration ID is
+`sha256:984112c0a61e8d34b039bb6d01a1e73d4e1f57b7fb36b42fbd569cc818100618`.
+The freeze uses the canonical writer underlying `make deposit`, after its
+header check and emission steps. Its atom-cover phase is omitted as required.
 
 The actual `#print axioms` output for each of the six public theorems is
 `[propext, Classical.choice, Quot.sound]`. For the target:
