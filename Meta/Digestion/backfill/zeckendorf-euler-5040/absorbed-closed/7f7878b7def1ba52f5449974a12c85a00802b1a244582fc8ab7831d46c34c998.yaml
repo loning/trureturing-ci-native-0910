@@ -2,6 +2,8 @@ fingerprints:
   raw_sha256: sha256:7f7878b7def1ba52f5449974a12c85a00802b1a244582fc8ab7831d46c34c998
   normalized_sha256: sha256:7f7878b7def1ba52f5449974a12c85a00802b1a244582fc8ab7831d46c34c998
 cas_ref: sha256:7f7878b7def1ba52f5449974a12c85a00802b1a244582fc8ab7831d46c34c998
-coverage_gids: []
+coverage_gids:
+  - gid: D5/S3/Arith/GoldenResource/GoldenObservationLattice.Gobs_gcd
+    target_statement_id: sha256:0f3a2606d2e164f4eec3912ff3213da34383313c18771557f98a3803e966c728
 receipts:
   unresolved_subitems: []
