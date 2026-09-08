@@ -8429,44 +8429,63 @@ without agreement 与 full separation，故 strict inclusion 由 kernel proof接
 
 ### T-036　disposition census fixture
 
-当前 dev `1a71fc8751` 的 fixture inventory 只含四类 `AnalysisDisposition`，检查 class counts
-$(1,1,1,1)$、reason count $1$ 与 keys exact cover；删除、复制、stale identity、伪改 class payload
-依次触发 IE-C034--IE-C037，修改 totals 触发 IE-C044。向 inventory 额外加入未冻结 theorem
-或 frozen definition，当前由 identity 检查发出 IE-C036。
+现役四类 certified fixture 检查 class counts $(1,1,1,1)$、reason count $1$ 与 keys exact cover；
+声明见 `tools/lean-inspector/LeanInformationAudit/Tests/Census/Coverage.lean`，真实证据见
+`tools/lean-inspector/LeanInformationAudit/Tests/Census/Evidence.lean`。
 
-〔pending J2(lane census-assessment-0908,#5214;2026-09-08): current dev 1a71fc8751 implements disposition-only inventory; the following becomes active when J2 lands〕fixture 使用 `TruthExportCommand` 当前发射的 truth export dialect：
-一个 `freeze_status=frozen` 的 node（模块）的 `declarations` 含五个 `kind=theorem` 声明及
-一个 `kind=def` 声明；另一个 `freeze_status=proven-not-yet-frozen` 的 node 含一个 theorem 声明。
+report fixtures 使用 `TruthExportCommand` 的 `stratalint.truth-export.v2`、`schema_version=2`：
+`tools/lean-inspector/LeanInformationAudit/Tests/Census/Json.lean` 的 frozen node 含四个 theorem
+及一个 def；`tools/lean-inspector/LeanInformationAudit/Tests/Census/Command.lean` 另以四个
+frozen theorem 与一个未冻结 node 的 theorem 验证过滤。
 先选择 `freeze_status=frozen` 的 nodes，再选择其 `declarations` 中 `kind=theorem` 的声明，
-读取每个 declaration 的 `declaration_name_key` 与 `statement_id`；两个非目标声明均被排除。
-五个选中 keys 为 `(Fixture.finite, sid_finite)`、`(Fixture.structural, sid_structural)`、
-`(Fixture.bounded, sid_bounded)`、`(Fixture.unreachable, sid_unreachable)` 与
-`(Fixture.observed, sid_observed)`；前项按 structured `Name` 编码，各 `sid_*` 直接取对应声明的
-elaborated `statement_id`，满足当前 dialect 的 `sha256:` 加 64 位 lowercase hex 格式，不使用占位字符串。
-两列各自不同，选择结果的分母恰为 5，不能是空集。
-前四行分别为 certified finite occurrence、structural occurrence、bounded report-only truncation
-与 `unreachable/no_canonical_object_carrier`；最后一行是绑定 exact key、owning module、census
-root、完整 import closure 且查询已完成的 observed `noRegisteredRealizationOrCertificate`。
-unreachable 行另带绑定 statement／key／semantic contract／candidate domain 的具名 closed-reason
-proof，不能用 absence 充作证据。
+读取每个 declaration 的 `declaration_name_key` 与 `statement_id`；两个非目标声明在各自
+fixture 中被排除。selector 见 `tools/lean-inspector/LeanInformationAudit/DispositionCensus.lean`。
+`tools/lean-inspector/LeanInformationAudit/Tests/Census/Assessment.lean` 的 mixed inventory
+有五个不同 keys：`(Fixture.finite, id-finite)`、`(Fixture.structural, id-structural)`、
+`(Fixture.first, first-id)`、`(Fixture.second, second-id)`、`(Fixture.third, third-id)`；
+前两行 certified，后三行 observed。命令级 mixed fixture 位于
+`tools/lean-inspector/LeanInformationAudit/Tests/Census/AssessmentCommand.lean`：其 keys 为
+`Evidence.boundedTheorem/bounded-id`、`Evidence.closedNumerical/unreachable-id`、
+`Evidence.structuralTheorem/structural-id`、`Evidence.finiteNondegenerate/first-observed`、
+`Evidence.transfer/second-observed`，其中 `Evidence` 是
+`LeanInformationAudit.Tests.Census.Evidence` 的命名空间简写，前两行 certified，后三行 observed。
+前两行分别是 bounded report-only truncation 与 `unreachable/no_canonical_object_carrier`；
+unreachable 由 `noCarrier` 指向绑定 theorem／statement 的 `closedObligation`，不能用 absence
+充作证据。observed 绑定真实 owner／root／完整 scope；structural observed row 还列出 matching
+registration 与 realization，说明 observed 本身不宣称缺席。两个 mixed fixture 分母均为 5，不能是空集。
+（J2 落地形态,2026-09-08:S0 的五类单一 fixture 未采用，selector 与两种 mixed fixture 分开；合成 keys 使用上述字符串，生产 `statement_id` 仍须取 elaborated export 的真实 `sha256:` identity，不以 fixture 标签代替。）
 
-〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕期望 `accounted=5`、`certified=4`、`observed=1`、certified class counts $(1,1,1,1)$，
-`noCanonicalObjectCarrier` reason count $1$、其余 reason 为零；observation status 分项为
-`noRegisteredRealizationOrCertificate=1`、其余为零。keys exact cover，
-`accounting_complete=true`、`certified_complete=false`，AC-023 未满足。
-另以真实有限证据替换 observed 行的正例才可得 `certified=5`、`observed=0`、
-`certified_complete=true`；不能只改 tag／flag。
+两个 mixed fixture 都期望 `accounted=5`、`certified=2`、`observed=3`、
+`observed_query_completed=3`、`observed_query_incomplete=0`、`certified_complete=false`，
+keys exact cover，AC-023 未满足。按 finite／structural／bounded／unreachable 顺序，
+`tools/lean-inspector/LeanInformationAudit/Tests/Census/Assessment.lean` 的 class counts 是
+$(1,1,0,0)$，全部 reasons 为零；
+`tools/lean-inspector/LeanInformationAudit/Tests/Census/AssessmentCommand.lean` 的 class counts 是
+$(0,0,1,1)$，`no_canonical_object_carrier=1`，其余 reasons 为零。
+前者另以四类全 certified fixture 得 `4/4/0` 与 `certified_complete=true`；后者以真实 bounded／
+unreachable 证据的全 certified fixture 得 `2/2/0` 与 `certified_complete=true`。
+认证完备要求每行真实证据通过，不能只改 tag／flag；没有 `accounting_complete` JSON 字段。
+（J2 落地形态,2026-09-08:S0 的 `5/4/1`、absence-status counts 与替换为 `5/5/0` 的正例未落地；实际 mixed 为 `5/2/3`，全 certified 正例分别为 `4/4/0` 与 `2/2/0`。）
 
-〔pending J2; lane census-assessment-0908; #5214; 2026-09-08〕删除、复制（含同 key 的 certified／observed 重复）、stale identity、伪改 class payload
+删除、复制（含同 key 的 certified／observed 重复）、stale identity、伪改 class payload
 依次触发 IE-C034--IE-C037；不同 theorem `Name` 复用同一 `statement_id` 仍触发 IE-C035。
-遗漏 owning module 的 import closure、少列任一 transitive import、错误 root、未完成 query、
-把 generator 空列表作为完成证据、伪造 observation status，均触发 IE-C044。
-把 observed／registry absence 改标为 unreachable 且缺对应 closed-reason proof，或其 proof
-不绑定指定 statement／key／reason／semantic contract／candidate domain，均触发 IE-C037。
+coverage／JSON 反例见 `tools/lean-inspector/LeanInformationAudit/Tests/Census/Coverage.lean`、
+`tools/lean-inspector/LeanInformationAudit/Tests/Census/Json.lean`；mixed duplicate、错误 owner／root、
+少列或重复 closure module、未完成 query／scope、unknown／unrelated candidate，及 observation
+冒充 unreachable 的命令反例见
+`tools/lean-inspector/LeanInformationAudit/Tests/Census/AssessmentCommand.lean`。
+scope／completion／candidate 语义不符用 IE-C044；observation payload 的未知字段、非法 boolean
+类型或伪改 class 用 IE-C037，不存在可伪造的 absence-status enum。
+generator 空列表不能代替完整查询，但通过现役 scope／candidate 校验的空列表可入账，不能称为
+absence 证明。unreachable 缺 reason-specific obligation，或 obligation 不绑定指定 theorem／
+statement／reason／候选语义，用 IE-C037；超出证书 domain 的结论仍不被认证，见第 8.7、23.6 节。
 修改任一 total、把 observed 计入 certified、令混合 inventory 的 `certified_complete=true`，
-均触发 IE-C044。把未冻结 node 的 theorem 声明或 frozen node 的 definition 声明加入 inventory，
-J2 契约将使用 IE-C044；此映射尚未生效，当前 dev `1a71fc8751` 仍发出 IE-C036。所有拒绝均为报告校验，
+均触发 IE-C044，容器反例见 `tools/lean-inspector/LeanInformationAudit/Tests/Census/Assessment.lean`。
+把未冻结 node 的 theorem 声明或 frozen node 的 definition 声明加入 inventory，
+`tools/lean-inspector/LeanInformationAudit/DispositionCensus.lean` 的 identity 检查发出 IE-C036。
+所有拒绝均为报告校验，
 census fixture 不把 artifact 接成 seal input 或 required gate。
+（J2 落地形态,2026-09-08:S0 的空列表一律拒绝、absence-status IE-C044 与 excluded-row IE-C044 未采用；现役检查区分 observation schema 的 IE-C037、scope／candidate 的 IE-C044 和 excluded identity 的 IE-C036。）
 
 ### T-037　extensional quotient mutation
 
