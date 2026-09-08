@@ -590,12 +590,12 @@ Neither target is promised by the present radius-four certificate.
 
 Cross-author comparison informed this separation. Loning's #5326 distinguishes
 behavioral compression from preservation of the mathematical quantity consumed
-downstream. The newer #5882 exhibits determinant-zero loss under small balanced
-behavior error. Our shared-weight packing accordingly preserves every mask and
-direction; it is not a behavioral quotient. The recent #5602 actual prolate-model
-comparison likewise emphasizes deriving the relation between concrete objects
-before transporting estimates. These PRs were read as research context, not
-imported as proofs of hard-core facts.
+downstream. The newer #5882 supplies an explicit determinant-loss family even
+under small balanced behavior error. Our shared-weight packing accordingly
+preserves every mask and direction; it is not a behavioral quotient. The recent
+#5602 actual prolate-model comparison likewise emphasizes deriving the relation
+between concrete objects before transporting estimates. These PRs were read as
+research context, not imported as proofs of hard-core facts.
 
 ## 13. Source and verification status of this continuation
 
@@ -997,7 +997,7 @@ Sections 16.1-16.3 remain a paper transfer requiring independent scrutiny and
 future end-to-end formalization, even if the current real certificate compiles.
 
 The next priority is to formalize the actual finite independent-set identities
-(16.1)-(16.2), the typed holomorphic coordinate/Jacobian calculation and the
+(16.1)-(16.2), the typed holomorphic coordinates and Jacobian, and the
 uniform complex-neighborhood induction. This turns the proposed 2.55 conclusion
 into a complete machine-checkable graph theorem. A quantitative epsilon would
 also be useful, but is distinct from proving its existence. Larger activity
