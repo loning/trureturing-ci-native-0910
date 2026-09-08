@@ -8,6 +8,7 @@
 
 import D5.S3.Zeros.Convolution.MatchingEquiv
 import D5.S3.Zeros.Convolution.AlternatingFactorialSum
+import Mathlib.RingTheory.Polynomial.Vieta
 
 /-!
 All exponent and coefficient statements are symbolic at arbitrary degrees.
@@ -23,6 +24,7 @@ noncomputable section
 namespace D5.S3.Zeros.Convolution.MatchingPolynomial
 
 open MatchingFiber MatchingEquiv AlternatingFactorialSum MvPolynomial
+open FiniteFreeCommutatorDegreeFour
 open scoped BigOperators
 
 variable {n k : ℕ}
@@ -93,7 +95,7 @@ private theorem decoration_good (M : Matching n k) (c : MatchingDecoration M) :
         | none => simp [edgeChoiceExponent, squarefree_apply, hx]
         | some y =>
           have hy : y.val ≠ x := fun hy => hx (hy ▸ y.prop)
-          simp [edgeChoiceExponent, Finsupp.single_apply, hy]
+          simp [edgeChoiceExponent, hy]
       omega
   · have he (e : M.val) : ∑ x, edgeChoiceExponent e.val (c e) x = 2 := by
       cases c e with
@@ -248,7 +250,6 @@ theorem matchingSum_esymm_mul (n k : ℕ) (hk : 2 * k ≤ n) :
     have hh : ((k - S.card).factorial : ℚ) ≠ 0 := by
       exact_mod_cast Nat.factorial_ne_zero (k - S.card)
     field_simp
-    <;> ring
   · rw [coeff_matchingSum_zero d hd, mul_zero, matchingNumerator]
     simp only [coeff_sum, coeff_C_mul]
     symm
@@ -270,6 +271,90 @@ theorem matchingSum_esymm (n k : ℕ) (hk : 2 * k ≤ n) :
   rw [← matchingSum_esymm_mul n k hk, ← mul_assoc, ← map_mul,
     one_div_mul_cancel (mul_ne_zero hb hh), map_one, one_mul]
 
+private theorem aeval_matchingSum (r : Fin n → ℝ) (k : ℕ) :
+    aeval r (matchingSum (X : Fin n → MvPolynomial (Fin n) ℚ) k) =
+      matchingSum r k := by
+  classical
+  have he (e : Sym2 (Fin n)) :
+      aeval r (edgeSquare (X : Fin n → MvPolynomial (Fin n) ℚ) e) = edgeSquare r e := by
+    induction e using Sym2.ind with
+    | _ i j => simp [edgeSquare]
+  simp only [matchingSum, map_sum, map_prod, he]
+
+private theorem elementaryCoeff_root (r : Fin n → ℝ) (i : ℕ) (hi : i ≤ n) :
+    elementaryCoeff n (rootPolynomial r) i =
+      aeval r (esymm (Fin n) ℚ i) := by
+  classical
+  rw [aeval_esymm_eq_multiset_esymm]
+  have hp : rootPolynomial r =
+      ((Finset.univ.val.map r).map fun t => Polynomial.X - Polynomial.C t).prod := by
+    simp only [rootPolynomial, Multiset.map_map, Finset.prod]
+    rfl
+  have hc : (Finset.univ.val.map r).card = n := by simp
+  rw [elementaryCoeff, hp, Multiset.prod_X_sub_C_coeff _ (by rw [hc]; omega),
+    hc, Nat.sub_sub_self hi, ← mul_assoc, ← mul_pow]
+  norm_num
+
+private theorem real_descFactorial (n i : ℕ) (hi : i ≤ n) :
+    (n.descFactorial i : ℝ) = (n.factorial : ℝ) / ((n - i).factorial : ℝ) := by
+  apply (eq_div_iff (by exact_mod_cast Nat.factorial_ne_zero (n - i))).mpr
+  exact_mod_cast (by simpa only [Nat.mul_comm] using Nat.factorial_mul_descFactorial hi)
+
+private theorem real_matchingSum_mul (n k : ℕ) (hk : 2 * k ≤ n) (r : Fin n → ℝ) :
+    (((n - 2 * k).factorial : ℝ) * ((n - k).factorial : ℝ)) * matchingSum r k =
+      ∑ i ∈ Finset.range (2 * k + 1),
+        (-1 : ℝ) ^ (k + i) * ((n - i).factorial : ℝ) *
+          ((n - 2 * k + i).factorial : ℝ) *
+          (elementaryCoeff n (rootPolynomial r) i *
+            elementaryCoeff n (rootPolynomial r) (2 * k - i)) := by
+  classical
+  have h := congrArg (fun P : MvPolynomial (Fin n) ℚ => aeval r P)
+    (matchingSum_esymm_mul n k hk)
+  simp only [map_mul, aeval_matchingSum, matchingNumerator, map_sum,
+    map_pow, map_neg, map_one, map_natCast] at h
+  rw [h]
+  apply Finset.sum_congr rfl
+  intro i hi
+  have hi' : i ≤ 2 * k := by simpa only [Finset.mem_range, Nat.lt_succ_iff] using hi
+  rw [elementaryCoeff_root r i (by omega), elementaryCoeff_root r (2 * k - i) (by omega)]
+
+private theorem symmetrize_factorial (n k : ℕ) (hk : 2 * k ≤ n) (p : Polynomial ℝ) :
+    (-1 : ℝ) ^ k * (symmetrize n p).coeff (n - 2 * k) =
+      (∑ i ∈ Finset.range (2 * k + 1),
+        (-1 : ℝ) ^ (k + i) * ((n - i).factorial : ℝ) *
+          ((n - 2 * k + i).factorial : ℝ) *
+          (elementaryCoeff n p i * elementaryCoeff n p (2 * k - i))) /
+        (((n - 2 * k).factorial : ℝ) * (n.factorial : ℝ)) := by
+  classical
+  rw [symmetrize_coefficient n k hk, Finset.mul_sum, Finset.sum_div]
+  apply Finset.sum_congr rfl
+  intro i hi
+  have hi' : i ≤ 2 * k := by simpa only [Finset.mem_range, Nat.lt_succ_iff] using hi
+  rw [real_descFactorial n (2 * k) hk, real_descFactorial n i (by omega),
+    real_descFactorial n (2 * k - i) (by omega),
+    show n - (2 * k - i) = n - 2 * k + i by omega, pow_add]
+  have hn : (n.factorial : ℝ) ≠ 0 := by exact_mod_cast Nat.factorial_ne_zero n
+  have hb : ((n - 2 * k).factorial : ℝ) ≠ 0 := by
+    exact_mod_cast Nat.factorial_ne_zero (n - 2 * k)
+  have hi0 : ((n - i).factorial : ℝ) ≠ 0 := by
+    exact_mod_cast Nat.factorial_ne_zero (n - i)
+  have hj0 : ((n - 2 * k + i).factorial : ℝ) ≠ 0 := by
+    exact_mod_cast Nat.factorial_ne_zero (n - 2 * k + i)
+  field_simp
+
+/-- The all-degree matching identity follows from (star), Vieta, and symmetrization. -/
+theorem matching_identity : MatchingIdentity := by
+  intro n k hk r
+  rw [symmetrize_factorial n k hk, real_descFactorial n k (by omega)]
+  have h := real_matchingSum_mul n k hk r
+  have hn : (n.factorial : ℝ) ≠ 0 := by exact_mod_cast Nat.factorial_ne_zero n
+  have hb : ((n - 2 * k).factorial : ℝ) ≠ 0 := by
+    exact_mod_cast Nat.factorial_ne_zero (n - 2 * k)
+  have hh : ((n - k).factorial : ℝ) ≠ 0 := by
+    exact_mod_cast Nat.factorial_ne_zero (n - k)
+  field_simp
+  simpa only [mul_assoc, mul_left_comm, mul_comm] using h.symm
+
 #print axioms squarefree_apply
 #print axioms sum_squarefree
 #print axioms goodExponent_fiber
@@ -282,5 +367,11 @@ theorem matchingSum_esymm (n k : ℕ) (hk : 2 * k ≤ n) :
 #print axioms coeff_matchingNumerator_fiber
 #print axioms matchingSum_esymm_mul
 #print axioms matchingSum_esymm
+#print axioms aeval_matchingSum
+#print axioms elementaryCoeff_root
+#print axioms real_descFactorial
+#print axioms real_matchingSum_mul
+#print axioms symmetrize_factorial
+#print axioms matching_identity
 
 end D5.S3.Zeros.Convolution.MatchingPolynomial

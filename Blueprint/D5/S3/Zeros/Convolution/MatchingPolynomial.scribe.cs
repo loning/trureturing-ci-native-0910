@@ -31,5 +31,14 @@ internal sealed class MatchingPolynomialDocument : IScribeDocumentDefinition
                 Blocks(Paragraph(Text(
                     "The factorial denominator is nonzero in Q, giving the scalar-quotient "
                     + "form for every n and k with 2k at most n."))),
+                DescribeRole.Theorem),
+            Describe.Lean(
+                DescribeId.Create("matching-identity"),
+                DeclarationHandle.Create(Prefix + "matching_identity"),
+                H("Matching Identity"), StatementSource.WithoutFormula(),
+                AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text(
+                    "Evaluation in R, Mathlib Vieta, and the symmetrization coefficient "
+                    + "formula prove the complete MatchingIdentity for every admissible n and k."))),
                 DescribeRole.Theorem))));
 }

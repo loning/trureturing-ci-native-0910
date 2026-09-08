@@ -180,3 +180,35 @@ Direct frozen GID/statement_id: none. utility none for each of the 14
 declarations: each is a symbolic definition or an unbounded theorem,
 outside the four computational classes. No freeze or independent review
 is claimed.
+
+Step 4 was pushed as `8637dd6e4f`.
+
+## Step 5
+
+`matching_identity : MatchingIdentity` is proved. Evaluation of (star) in R,
+Mathlib's Multiset.prod_X_sub_C_coeff and
+MvPolynomial.aeval_esymm_eq_multiset_esymm, followed by
+symmetrize_coefficient, gives the all-degree identity. Descending factorials
+are converted through Nat.factorial_mul_descFactorial; all factorial
+denominators are proved nonzero. The final proof normalizes multiplication
+inside the finite sum before applying the evaluated identity.
+
+`/usr/bin/time -l make lean`: EXIT 0; 12594 jobs; 17.46 seconds;
+maximum RSS 3137781760 bytes (`step-5c-make-lean.log`). The 18 theorem axiom
+prints in MatchingPolynomial are [propext, Classical.choice, Quot.sound].
+The first attempt failed because the local namespace parsed R[X] as an
+index expression (step-5a: EXIT 2, 25.37 s, RSS 3081879552). The second
+failed because linarith treated differently parenthesized sum terms as
+different atoms (step-5b: EXIT 2, 11.65 s, RSS 3079405568). Both had 12594
+jobs. Explicit Polynomial R and multiplication normalization fix these
+without changing any resource bound.
+
+proof_shape content; escape_witness matchingMonomialFiberEquiv on the live
+coefficient-to-polynomial-to-evaluation path; admission_basis escape-witness.
+utility none for the public theorem and each of its five private helpers:
+all quantify over arbitrary degrees or root families and none falls into
+the four computational classes. The only frozen theorem used along this
+path is coeff_additiveConvolution through the predecessor's
+symmetrize_coefficient; direct frozen definition identities are itemized in
+the final declaration audit. No H_0 positivity, complete parity identity,
+or all-order omission of H_1 follows as a claim of this delivery.
