@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Fibers/ObserverConceptReadoutCorrespondence.observer_concept_readout_correspondence
     target_statement_id: sha256:23f18ce2e563b286c3fc601e735cc97c365035561f097533f37f8192cbcac04c
 receipts:
-  scribe: []
   unresolved_subitems: []

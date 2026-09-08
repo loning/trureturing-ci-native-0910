@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Observer/InfiniteSourceAugmentationIdeal.infinite_source_augmentation_ideal_not_finitely_generated
     target_statement_id: sha256:7b399f11c9f14d4dfeeaca57f0f88318e4c013e5737d468220fcdcd2fda38a23
 receipts:
-  scribe: []
   unresolved_subitems: []

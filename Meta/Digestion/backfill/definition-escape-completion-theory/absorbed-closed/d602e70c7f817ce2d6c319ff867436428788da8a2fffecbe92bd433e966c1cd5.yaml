@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/DefinitionEscapeAdjudication/FiniteParetoQuotient.finite_pareto_quotient_exact_and_complete
     target_statement_id: sha256:b5a6abd37cc1bc87ae8d7915f06f680c85bc6a90a0f77b32ca1a96549566568a
 receipts:
-  scribe: []
   unresolved_subitems: []

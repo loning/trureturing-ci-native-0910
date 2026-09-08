@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Observer/GoldenCoding/ModFiveCharacterWordQuotient.mod_five_character_word_scalar_quotient
     target_statement_id: sha256:3e2b9febadcd49c2e2515a484abf13d8f9fc0e3436bc34fa5f8eef1040408de5
 receipts:
-  scribe: []
   unresolved_subitems: []

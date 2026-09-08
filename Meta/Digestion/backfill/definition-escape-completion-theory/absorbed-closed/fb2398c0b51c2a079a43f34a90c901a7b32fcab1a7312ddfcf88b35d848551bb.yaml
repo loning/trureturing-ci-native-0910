@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/DefinitionEscapeRegrade/ProtectedCoordinateExtensionality.protected_coordinate_dependent_extensionality
     target_statement_id: sha256:e485e871b38271562607aad0dfd4f99b7ff2dec4d0b622141e2a2194f6887908
 receipts:
-  scribe: []
   unresolved_subitems: []

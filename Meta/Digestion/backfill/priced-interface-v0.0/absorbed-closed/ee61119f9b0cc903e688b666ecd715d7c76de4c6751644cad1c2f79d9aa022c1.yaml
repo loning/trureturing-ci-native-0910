@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S0/Computability/DescriptionComplexity/ProgramCostFiltration.program_cost_filtration_classification
     target_statement_id: sha256:b0b7bb5eb70af6bbb05273b4d4d244d41c9f7eb103fe58f49a71c5a702bb081b
 receipts:
-  scribe: []
   unresolved_subitems: []

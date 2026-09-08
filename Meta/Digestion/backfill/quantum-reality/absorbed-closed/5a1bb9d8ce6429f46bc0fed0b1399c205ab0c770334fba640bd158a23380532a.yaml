@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Quantum/Magic/QuquintWignerCriticalGeometry.gradient_psi
     target_statement_id: sha256:5c7ef9c2f024584cfe984cb894f8380db7920e6f399bfb7cab9638c47bb4d169
 receipts:
-  scribe: []
   unresolved_subitems: []

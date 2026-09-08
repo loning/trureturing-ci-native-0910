@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S0/Computability/GuardedWall.wall_never_positive
     target_statement_id: sha256:9b8e383285eba286847ad399d5c6f0802b62786b39a2820dae64c5ff2a722c29
 receipts:
-  scribe: []
   unresolved_subitems: []

@@ -4,7 +4,6 @@ fingerprints:
 cas_ref: sha256:4040087941f87b1188eb04c9299629112ed7ad62f9fd8b64bca2522461317af2
 coverage_gids: []
 receipts:
-  scribe: []
   unresolved_subitems: []
   cover_disposition:
     outcome: partial-closed

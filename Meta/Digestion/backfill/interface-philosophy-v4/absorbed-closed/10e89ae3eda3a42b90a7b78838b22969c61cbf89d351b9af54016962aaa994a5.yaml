@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S0/Diagonal/RecordExtensionCount.restricted_extension_card_le
     target_statement_id: sha256:c3c0c7f04c29880b62a7a89c9df2051b634d0f47faabd4f58981fda4b85fd13f
 receipts:
-  scribe: []
   unresolved_subitems: []

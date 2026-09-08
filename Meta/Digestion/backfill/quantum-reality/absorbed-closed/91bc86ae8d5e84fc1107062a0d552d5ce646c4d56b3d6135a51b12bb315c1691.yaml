@@ -6,5 +6,4 @@ coverage_gids:
   - gid: D5/S3/Quantum/Magic/QuquintWignerCriticalGeometry.critical_geometry
     target_statement_id: sha256:cb468a639a708a98511e5cf911f2bf64d365e8465c662cdf5d2331647c41ce62
 receipts:
-  scribe: []
   unresolved_subitems: []

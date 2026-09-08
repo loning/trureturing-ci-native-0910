@@ -4,7 +4,6 @@ fingerprints:
 cas_ref: sha256:9d4bdbe7a52d2ff40ada9297eb0fb2ade1973cd9a47b98a4731d6a3ea7f2699c
 coverage_gids: []
 receipts:
-  scribe: []
   unresolved_subitems: []
   quarantine:
     justification: "the boxed identity (274.5) and the Möbius half-plane clause are provable on the frozen owner: D5/S3/Weil/TestFunctions/LiCaratheodoryIdentity.li_caratheodory_identity (PR ＃4925), but the clause \"xi'/xi is the excess connection\" refers to the source's toroidal connection difference A_{P_K} − A_{T_K} = d xi / xi (OACC display 190.2) for which D5 has no carrier; a hosted-extension deposit was withdrawn in PR ＃4945 after review because that clause was hollow and the normalization clause had been closed definitionally."
