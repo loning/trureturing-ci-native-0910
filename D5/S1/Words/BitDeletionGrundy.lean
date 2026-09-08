@@ -8,11 +8,14 @@
 
 import Mathlib.Data.Nat.Digits.Lemmas
 import Mathlib.Tactic.FinCases
+import D5.S1.Recurrence.ComplementaryGoldenRatioLimit
 
 set_option autoImplicit false
 set_option relaxedAutoImplicit false
 
 namespace D5.S1.Words.BitDeletionGrundy
+
+open D5.S1.Recurrence.ComplementaryGoldenRatioLimit
 
 private abbrev Word := List Bool
 
@@ -101,12 +104,6 @@ private theorem length_lt_of_mem_erasures {v w : Word} (hv : v ∈ erasures w) :
       rcases hv with rfl | ⟨u, hu, rfl⟩
       · simp
       · simpa using Nat.succ_lt_succ (ih hu)
-
-/-- A bounded search for the first natural outside a finite set. -/
-def mexScan (used : Finset Nat) : Nat -> Nat -> Nat
-  | 0, candidate => candidate
-  | fuel + 1, candidate =>
-      if candidate ∈ used then mexScan used fuel (candidate + 1) else candidate
 
 /-- The minimum excluded natural number. -/
 def mex (used : Finset Nat) : Nat :=
@@ -754,8 +751,10 @@ theorem g_mex_bitDeletionSuccessors (n : Nat) :
     rw [hdel]
 theorem g_zero : g 0 = 0 := by
   simp [g, binaryWord, wordGrundy]
-example : bitDeletionSuccessors 5 = {1, 3, 2} := by native_decide
-example : g 5 = 3 := by native_decide
+example : bitDeletionSuccessors 5 = {1, 3, 2} := by decide
+example : g 5 = 3 := by
+  rw [g, wordGrundy_eq_formula]
+  decide
 theorem g_le_three (n : Nat) : g n <= 3 := by
   rw [g, wordGrundy_eq_formula]
   exact Nat.le_of_lt_succ (formula (binaryWord n)).isLt

@@ -21,12 +21,6 @@ internal sealed class BitDeletionGrundyDocument : IScribeDocumentDefinition
                     + "here. The negative literature search is ASSUMED-UNVERIFIED for unindexed "
                     + "results.")),
             Definition(
-                "mexScan", "bounded-mex-scan", "The bounded mex scanner",
-                MexScanDefinition(),
-                AssessedProvenance.FromRepo(),
-                "At zero fuel the scanner returns its candidate. With successor fuel, it "
-                    + "increments a used candidate and recurses, or returns an unused one."),
-            Definition(
                 "mex", "minimum-excluded-value", "Minimum excluded value",
                 MexDefinition(),
                 AssessedProvenance.FromRepo(),
@@ -106,7 +100,7 @@ internal sealed class BitDeletionGrundyDocument : IScribeDocumentDefinition
                     + "realization, and the cons-1 mex certificate. Strong induction on word "
                     + "length then identifies wordGrundy with val(formula). The injective "
                     + "four-bit code for M is only an implementation device for kernel "
-                    + "reduction, not a change to the preregistered witness."),
+                    + "reduction, not a change to the function computed by the automaton."),
             Definition(
                 "bitDeletionSuccessors", "natural-bit-deletion-successors",
                 "Natural successors by one binary-digit deletion",
@@ -115,9 +109,9 @@ internal sealed class BitDeletionGrundyDocument : IScribeDocumentDefinition
                 "For n in N, remove each positional digit from Mathlib's little-endian "
                     + "Nat.digits 2 n and re-encode the remaining list with Nat.ofDigits 2. "
                     + "The result is a Finset, so duplicate numerical outcomes are identified. "
-                    + "Nat.ofDigits drops any high zero digits automatically; this is exactly "
-                    + "the atom's leading-zero normalization. The atom states a "
-                    + "natural-number recurrence, and this module's word model corresponds to it under binary decoding."),
+                    + "Nat.ofDigits drops any high zero digits automatically, which agrees "
+                    + "with leading-zero normalization. The word model corresponds to the "
+                    + "natural-number recurrence under binary decoding."),
             Theorem(
                 "bitDeletionSuccessors_lt", "natural-successors-are-smaller",
                 "Every natural successor is smaller",
@@ -148,14 +142,14 @@ internal sealed class BitDeletionGrundyDocument : IScribeDocumentDefinition
                 AssessedProvenance.FromRepo(),
                 "The digit-decoding correspondence identifies every normalized word deletion "
                     + "with exactly one Nat.ofDigits successor, and identifies its wordGrundy "
-                    + "value with g. Rewriting the existing word mex equation therefore gives "
-                    + "the atom's public natural-number recurrence, to which this module's word model corresponds under binary decoding."),
+                    + "value with g. Rewriting the word mex equation therefore gives the "
+                    + "natural-number recurrence under binary decoding."),
             Theorem(
                 "g_zero", "natural-bit-deletion-zero", "The zero boundary value",
                 GZero(),
                 AssessedProvenance.FromRepo(),
                 "The zero digit list is empty, so its word is empty and the mex of the empty "
-                    + "successor set is zero. This records the atom's g(0)=0 boundary."),
+                    + "successor set is zero, establishing g(0)=0."),
             Theorem(
                 "g_le_three", "grundy-values-at-most-three",
                 "No Grundy value exceeds three",
@@ -176,8 +170,8 @@ internal sealed class BitDeletionGrundyDocument : IScribeDocumentDefinition
                 "Both OEIS A398916 conjectures",
                 Conjectures(),
                 AssessedProvenance.FromRepo(),
-                "This is the whole preregistered candidate theorem: all values are at most "
-                    + "three, and g(4n)=g(n) for every natural n.")),
+                "Together these conclusions state that all values are at most three and "
+                    + "g(4n)=g(n) for every natural n.")),
         []));
 
     private static DocumentBlock Definition(string declaration, string id, string title,
@@ -221,25 +215,6 @@ internal sealed class BitDeletionGrundyDocument : IScribeDocumentDefinition
     private static Formula WordValue(Formula word) => Call("wordGrundy", word);
     private static Formula Transition(byte parity, Formula value) =>
         Call($"transition{parity}", value);
-
-    private static Formula MexScanDefinition()
-    {
-        Formula set = F.Id("S"), fuel = F.Id("fuel"), candidate = F.Id("candidate");
-        Formula zeroCase = Seq(
-            Bound("S", FinsetNaturals()),
-            Bound("candidate", Naturals()),
-            Call("mexScan", set, D(0), candidate), Sp, Eq, Sp, candidate);
-        Formula successorCase = Seq(
-            Bound("S", FinsetNaturals()),
-            Bound("fuel", Naturals()),
-            Bound("candidate", Naturals()),
-            Call("mexScan", set, Seq(fuel, Sp, Plus, Sp, D(1)), candidate), Sp, Eq, Sp,
-            Call("ite", Parenthesized(Seq(candidate, Sp, InMacro, Sp, set)),
-                Call("mexScan", set, fuel, Seq(candidate, Sp, Plus, Sp, D(1))), candidate));
-        return Disp(Seq(
-            Parenthesized(zeroCase), Sp, Land, Sp,
-            Parenthesized(successorCase)));
-    }
 
     private static Formula MexDefinition()
     {
