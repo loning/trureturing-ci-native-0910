@@ -1,6 +1,17 @@
 #!/usr/bin/env bash
 # nyx.sh — nyxid 派票与状态分类。**不要再用 `tail -1` 肉眼判成败。**
 #
+# Caller contract: every ask/fetch invocation starts a NEW RUN for <out>.
+# Append previous <out> bytes to <out>.history after a line
+# NYX_RUN_BOUNDARY <utc-stamp> <verb>, then truncate <out>. History is audit only.
+# Completion readers (status, await make/vote, tail) see RUNNING/no EXIT= until
+# this run's sole terminal EXIT=<rc>. Unwritable artifacts fail with NYX_IO.
+# <out>.taskid is append-only across runs; its last line is the current task ID.
+# Use `nyx.sh taskid <out>` (prints that ID or exits 1), never parse the sidecar.
+# ask submits afresh, including after terminal EXTRACTION/QUOTA/BUSY failures;
+# fetch resumes the supplied task. A TIMEOUT still has a live task: use fetch.
+# await vote follows the command verdict; successful traversal settles the vote.
+#
 # 立条依据(2026-08-28):我用「tail -1 != EXIT=0」当失败的代理,它把**四个状态**混成一个:
 #   110B  Failed to read prompt   —— 我自己的 mkrev bug
 #   153B  extraction_failure      —— 载体侧随机,可重投
@@ -12,6 +23,7 @@
 # 用法:
 #   nyx.sh ask <brief> <outfile>     投一票;NYX_POOL 未设时**按池排名遍历**(见 pools),载体侧失败换下一池
 #   nyx.sh fetch <task-id> <out>     续等一个已提交的任务(ask 超时后用它,不重复提交)
+#   nyx.sh taskid <out>             Print the authoritative current task ID, or exit 1.
 #   nyx.sh pools                     打印全部 active 池的排名表(脚本版本/在线 worker/空位/队列/可用性)
 #   nyx.sh status [glob]             分类打印 /tmp/nyx-*.out 的真实状态
 #   nyx.sh inflight                  当前 in-flight 数(NYX_POOL 或排名第一的池)
@@ -92,15 +104,33 @@ __finish() {  # The only terminal sentinel writer, including pre-submit failures
   exit "$rc"
 }
 __open_output() {
-  local out="$1"
-  [ -n "$out" ] && { [ ! -e "$out" ] || [ -f "$out" ]; } && : >> "$out" || {
+  local out="$1" verb="$2"
+  [ -n "$out" ] && { [ ! -e "$out" ] || [ -f "$out" ]; } &&
+    [ ! "$out" -ef "$out.taskid" ] && [ ! "$out" -ef "$out.history" ] &&
+    [ ! "$out.taskid" -ef "$out.history" ] || {
     echo "NYX_IO outfile must be a writable regular file: $out" >&2; return 2;
   }
+  if [ -e "$out" ]; then
+    [ ! -e "$out.history" ] || [ -f "$out.history" ] || {
+      echo "NYX_IO history must be a writable regular file: $out.history" >&2; return 2;
+    }
+    if [ -s "$out.history" ] && [ -n "$(tail -c 1 "$out.history")" ]; then __append "$out.history" '' || return 2; fi
+    __append "$out.history" "NYX_RUN_BOUNDARY $(date -u +%Y-%m-%dT%H:%M:%SZ) $verb" || return 2
+    cat "$out" >> "$out.history" || { echo "NYX_IO cannot archive: $out" >&2; return 2; }
+  fi
+  : > "$out" || { echo "NYX_IO cannot truncate: $out" >&2; return 2; }
   OUT="$out"
   # These handlers belong to the command, not to a candidate pool's lock path.
   trap '__finish $?' EXIT
   trap '__cancel 130' INT
   trap '__cancel 143' TERM
+}
+__taskid() {
+  local id
+  [ -f "$1.taskid" ] || return 1
+  id=$(tail -1 "$1.taskid") || return 1
+  __uuid "$id" || return 1
+  printf '%s\n' "$id"
 }
 __open_taskids() {
   local out="$1" id
@@ -115,12 +145,12 @@ __open_taskids() {
 __classify() {  # 读一个 .out,打印:OK|EXTRACTION|QUOTA|NOFILE|RUNNING|UNKNOWN
   local f="$1"
   [ -f "$f" ] || { echo NOFILE_OUT; return; }
+  grep -qE '^EXIT=[0-9]+$' "$f" || { echo RUNNING; return; }
   if [ "$(tail -1 "$f")" = "EXIT=0" ]; then echo OK; return; fi
   grep -q 'oracle_quota_exceeded\|HTTP 429' "$f" && { echo QUOTA; return; }
   grep -q 'Failed to read prompt' "$f" && { echo NOFILE; return; }
   grep -q 'extraction_failure' "$f" && { echo EXTRACTION; return; }
-  grep -q 'EXIT=' "$f" && { echo UNKNOWN; return; }
-  echo RUNNING   # 无 EXIT= 行 ⟹ 进程还没结束
+  echo UNKNOWN
 }
 
 __expired() {  # 会话过期是能力缺口,不是池满 —— 必须与 in-flight 区分,否则白等 10 分钟
@@ -335,8 +365,9 @@ __selftest() {  # 分类器的阳性/阴性对照。**立条依据(2026-09-06)**
   # `tail -1 = EXIT=0`,而 `EXIT=` 是**分类之后**才追加的 —— 在 ask 的活判决里该分支
   # **结构上不可达**,于是每一次成功取回都被判 rc=1。器律④:坏原材料让调用方误判。
   # 该错配无运行期信号(答案就在文件里,只有退出码是错的),故必须由对照钉住。
-  local fail=0 got BAD_SCRIPTS=cdp-1.3
+  local fail=0 cases=0 got BAD_SCRIPTS=cdp-1.3
   chk() {  # chk <期望> <名字> <payload>
+    cases=$((cases+1))
     got=$(__verdict_of_payload "$3" 2>/dev/null)
     if [ "$got" = "$1" ]; then printf '  ok   %-30s %s\n' "$2" "$got"
     else printf '  FAIL %-30s expected=%s got=%s\n' "$2" "$1" "${got:-<none>}"; fail=1; fi
@@ -362,6 +393,7 @@ __selftest() {  # 分类器的阳性/阴性对照。**立条依据(2026-09-06)**
   chk UNKNOWN    empty-payload              ''
   # Script 列解析的阳性/阴性对照:缺省 pool 的选择依赖它,解析错了就诊断错了。
   chkv() {  # chkv <期望> <名字> <表格文本>
+    cases=$((cases+1))
     got=$(printf '%s\n' "$3" | __script_ver_parse)
     if [ "$got" = "$1" ]; then printf '  ok   %-30s %s\n' "$2" "${got:-<empty>}"
     else printf '  FAIL %-30s expected=%s got=%s\n' "$2" "$1" "${got:-<none>}"; fail=1; fi
@@ -378,6 +410,7 @@ __selftest() {  # 分类器的阳性/阴性对照。**立条依据(2026-09-06)**
 
   # 池遍历三个纯函数的对照(2026-09-08 立):排名错了就把票投进坏池,与固定缺省同病。
   chke() {  # chke <期望> <名字> <实际>
+    cases=$((cases+1))
     if [ "$3" = "$1" ]; then printf '  ok   %-30s %s\n' "$2" "${3:-<empty>}"
     else printf '  FAIL %-30s expected=[%s] got=[%s]\n' "$2" "$1" "$3"; fail=1; fi
   }
@@ -434,20 +467,24 @@ __selftest() {  # 分类器的阳性/阴性对照。**立条依据(2026-09-06)**
   # 这正是它不能用于活判决的原因;若有人把它改回去,本例变红。
   local tmp; tmp=$(mktemp) || return 1
   printf 'Task submitted.\n\n{"ok":true}\n' > "$tmp"
-  got=$(__classify "$tmp"); rm -f "$tmp"
-  if [ "$got" = RUNNING ]; then printf '  ok   %-30s %s\n' file-classifier-unusable-live "$got"
-  else printf '  FAIL %-30s expected=RUNNING got=%s\n' file-classifier-unusable-live "$got"; fail=1; fi
+  got=$(__classify "$tmp")
+  chke RUNNING file-classifier-unusable-live "$got"
+  printf 'Error: Task failed (extraction_failure).\n' > "$tmp"
+  chke RUNNING file-classifier-carrier-running "$(__classify "$tmp")"; rm -f "$tmp"
   # Run the real command dispatcher in child shells with an isolated, fail-closed CLI.
   # Fixture columns: slug|script|online|dispatched|capacity|queued|response|task-id.
   __nyx_fake_cli() {
     local slug script online dispatched capacity queued response id i
     printf '%s\n' "$*" >> "$NYX_TEST_DIR/calls"
     [ "$1" = oracle ] || return 97
+    [ "$2" != result ] || printf '%s\n' "$3" >> "$NYX_TEST_DIR/polls"
     while IFS='|' read -r slug script online dispatched capacity queued response id; do
       if [ "$2 $3" = 'pool list' ]; then
         printf '│ %s ┆ Fixture ┆ org ┆ %s ┆ yes ┆ no │\n' "$slug" "$online"; continue
       fi
-      if [ "$2" = result ]; then [ "$3" = "$id" ] || continue
+      if [ "$2" = result ]; then
+        if [ "${NYX_TEST_UNIQUE_IDS:-}" = 1 ]; then [ "${3%-*}" = "${id%-*}" ] || continue; id="$3"
+        else [ "$3" = "$id" ] || continue; fi
       else [ "$3" = "$slug" ] || continue; fi
       case "$2" in
         status)
@@ -461,7 +498,9 @@ __selftest() {  # 分类器的阳性/阴性对照。**立条依据(2026-09-06)**
           done; return 0;;
         ask)
           [ "$4" = --file ] && [ -r "$5" ] && [ "$6" = --tag ] && [ "$7" = mode:chat ] && [ "$8" = --no-wait ] || return 97
+          cmp -s "$5" "$NYX_TEST_DIR/expected-brief" || return 97
           printf '%s\n' "$slug" >> "$NYX_TEST_DIR/submits"
+          if [ "${NYX_TEST_UNIQUE_IDS:-}" = 1 ]; then id="${id%-*}-$(printf '%012d' "$(wc -l < "$NYX_TEST_DIR/submits")")"; fi
           case "$response" in
             quota) echo 'Error: HTTP 429 oracle_quota_exceeded'; return 1;;
             nofile) echo 'Error: Failed to read prompt'; return 2;;
@@ -471,12 +510,13 @@ __selftest() {  # 分类器的阳性/阴性对照。**立条依据(2026-09-06)**
           esac
           printf 'Task submitted: %s\n' "$id"; return 0;;
         result)
-          printf '%s\n' "$id" >> "$NYX_TEST_DIR/polls"
           case "$response" in
             extraction) echo 'Error: Task failed (extraction_failure).'; return 1;;
             delivery) printf '%s\n' 'Attempts: 1 (infrastructure retries 0/3)' 'Message delivery timed out. Please try again.Retry';;
             quote) printf '%s\n' 'Quoted: Message delivery timed out. Please try again.' '{"verdict":"reject"}';;
             timeout) echo 'Phase: waiting_response';;
+            resume) if [ "$(wc -l < "$NYX_TEST_DIR/polls")" -le 2 ]; then echo 'Phase: waiting_response'; else echo '{"ok":true}'; fi;;
+            barrier) printf 'ready\n' > "$NYX_TEST_DIR/ready"; IFS= read -r response < "$NYX_TEST_DIR/release"; echo '{"ok":true}';;
             result-error) echo 'Unexpected transport failure'; return 1;;
             *) echo '{"ok":true}';;
           esac; return 0;;
@@ -485,7 +525,8 @@ __selftest() {  # 分类器的阳性/阴性对照。**立条依据(2026-09-06)**
     done <<< "$NYX_TEST_ROWS"
     [ "$2 $3" = 'pool list' ] || return 97
   }
-  local testroot run_name run_dir run_out run_rc run_rows run_env run_args
+  local testroot run_name run_dir run_out run_rc run_rows run_env run_args run_script
+  local await_script; await_script="$(dirname "$0")/await.sh"
   local id1=11111111-1111-4111-8111-111111111111 id2=22222222-2222-4222-8222-222222222222 id3=33333333-3333-4333-8333-333333333333
   local selection traversal third
   testroot=$(mktemp -d) || return 1
@@ -497,17 +538,21 @@ __selftest() {  # 分类器的阳性/阴性对照。**立条依据(2026-09-06)**
     run_dir="$testroot/$run_name"; run_out="$run_dir/result.out"
     mkdir "$run_dir" || return 1
     printf 'fixture brief\n' > "$run_dir/brief"
+    cp "$run_dir/brief" "$run_dir/expected-brief"
     : > "$run_dir/calls"; : > "$run_dir/submits"; : > "$run_dir/polls"
     case "$run_name" in
       ask-output-init-error) mkdir "$run_out";;
       ask-sidecar-init-error) mkdir "$run_out.taskid";;
       *foreign*|ask-lockbusy) mkdir "$run_dir/nyx-ask-second.lock";;
+      await-vote-*) printf '%s\n' "$id3" > "$run_out.taskid"; printf 'EXIT=1\n' > "$run_out"; : > "$run_out.settled";;
     esac
     run_env=("TMPDIR=$run_dir" 'NYX_CLI=__nyx_fake_cli' 'NYX_POOL=' 'NYX_LIMIT=' 'NYX_BAD_SCRIPTS=cdp-1.3' 'NYX_TAG=mode:chat'
       'NYX_POLL_SECONDS=0' 'NYX_POLL_ROUNDS=2' "NYX_TEST_DIR=$run_dir" "NYX_TEST_OUT=$run_out" "NYX_TEST_ROWS=$run_rows"
-      'NYX_TEST_SIGNAL=' 'NYX_TEST_CANCEL=' 'NYX_TEST_WRITE_ERROR=' "$@")
+      'NYX_TEST_SIGNAL=' 'NYX_TEST_CANCEL=' 'NYX_TEST_WRITE_ERROR=' 'NYX_TEST_UNIQUE_IDS=' 'AWAIT_TICK=0' 'AWAIT_DEADLINE=5400' "$@")
+    run_script="$0"
     run_args=(ask "$run_dir/brief" "$run_out")
     case "$run_name" in fetch-*) run_args=(fetch "$id1" "$run_out");; esac
+    case "$run_name" in await-vote-*) run_script="$await_script"; run_args=(vote "$run_dir/brief" "$run_out" 2);; esac
     case "$run_name" in
       ask-missing-brief) run_args=(ask "$run_dir/missing" "$run_out");;
       fetch-invalid-id) run_args=(fetch '1-2-3-4-5' "$run_out");;
@@ -532,7 +577,7 @@ __selftest() {  # 分类器的阳性/阴性对照。**立条依据(2026-09-06)**
       return "$rc"
     }
     export -f __nyx_fake_cli nyxid sleep mkdir printf
-    env "${run_env[@]}" bash "$0" "${run_args[@]}"
+    env "${run_env[@]}" bash "$run_script" "${run_args[@]}"
   )
   joined() { if [ -f "$1" ]; then awk 'NF {printf "%s%s", sep, $0; sep=","}' "$1"; fi; }
   check_run() {  # rc | final line | submissions | recorded IDs | polled IDs | next pools | last verdict
@@ -548,7 +593,7 @@ __selftest() {  # 分类器的阳性/阴性对照。**立条依据(2026-09-06)**
   check_run "0|EXIT=0|good|$id3|$id3||NYX_OK"
   run_case ask-ranked-traversal "$traversal"
   check_run "0|EXIT=0|first,second|$id1,$id2|$id1,$id2|first|NYX_OK"
-  run_name=ask-rerun-resumes
+  run_name=fetch-rerun-resumes; run_args=(fetch "$id2" "$run_out")
   run_child > "$run_dir/stdout" 2>&1; run_rc=$?
   check_run "0|EXIT=0|first,second|$id1,$id2|$id1,$id2,$id2||NYX_OK"
   run_case ask-all-bad "bad|cdp-1.3-old|1|0|1|0|answer|$id1"
@@ -622,13 +667,69 @@ __selftest() {  # 分类器的阳性/阴性对照。**立条依据(2026-09-06)**
   done
   run_case fetch-delivery "${rows_one/answer/delivery}"
   check_run "1|EXIT=1||$id1|$id1||NYX_DELIVERY"
+  # A fresh ask after terminal failure retains audit bytes and both IDs, but submits again.
+  run_case ask-rerun-history "${rows_one/answer/extraction}" NYX_POOL=first
+  cp "$run_out" "$run_dir/prior"
+  run_env+=("NYX_TEST_ROWS=first|v|1|0|1|0|answer|$id2")
+  run_child > "$run_dir/stdout" 2>&1; run_rc=$?
+  check_run "0|EXIT=0|first,first|$id1,$id2|$id1,$id2||NYX_OK"
+  run_args=(taskid "$run_out")
+  chke "$id2" taskid-current "$(run_child)"
+  chke yes ask-history-bytes "$(if tail -n +2 "$run_out.history" 2>/dev/null | cmp -s - "$run_dir/prior"; then echo yes; fi)"
+  chke 1 ask-current-sentinel-count "$(grep -c '^EXIT=' "$run_out")"
+  chke 1 ask-history-boundary "$(grep -Ec '^NYX_RUN_BOUNDARY [0-9T:Z-]+ ask$' "$run_out.history" 2>/dev/null)"
+  cp "$run_out.history" "$run_dir/first-history"
+  run_args=(ask "$run_dir/brief" "$run_out"); run_child > "$run_dir/stdout" 2>&1
+  chke 2 ask-history-appends "$(grep -c '^NYX_RUN_BOUNDARY ' "$run_out.history")"
+  chke yes ask-history-prefix-preserved "$(if head -n "$(wc -l < "$run_dir/first-history")" "$run_out.history" | cmp -s - "$run_dir/first-history"; then echo yes; fi)"
+  run_args=(taskid "$run_dir/missing"); run_child > "$run_dir/taskid-missing" 2>&1; got=$?
+  chke '1|' taskid-missing "$got|$(cat "$run_dir/taskid-missing")"
+  # FIFO handshakes hold an actual fetch at result; the timeout only guards broken infrastructure.
+  run_case fetch-timeout "${rows_one/answer/timeout}"
+  cp "$run_out" "$run_dir/prior"
+  mkfifo "$run_dir/ready" "$run_dir/release"
+  exec 8<> "$run_dir/ready" 9<> "$run_dir/release"
+  run_env+=("NYX_TEST_ROWS=${rows_one/answer/barrier}")
+  run_child > "$run_dir/stdout" 2>&1 &
+  local fetch_pid=$! ready='' running make_rc fetch_rc
+  IFS= read -r -t 30 -u 8 ready || { echo 'infrastructure-hang-guard expired: fetch barrier'; fail=1; }
+  run_args=(status "$run_out")
+  running=$(run_child 2>/dev/null | awk '/(RUNNING|OK|UNKNOWN).*result$/ {print $(NF-2)}')
+  run_script="$await_script"; run_args=(make "$run_out"); run_env+=('AWAIT_DEADLINE=0')
+  run_child > "$run_dir/make-running" 2>&1; make_rc=$?
+  printf 'release\n' >&9
+  wait "$fetch_pid"; fetch_rc=$?
+  exec 8>&- 9>&-
+  run_script="$0"; run_args=(status "$run_out")
+  got=$(run_child 2>/dev/null | awk '/(RUNNING|OK|UNKNOWN).*result$/ {print $(NF-2)}')
+  chke 'ready|RUNNING|124|0|OK|EXIT=0' run-boundary-fetch-running "$ready|$running|$make_rc|$fetch_rc|$got|$(tail -1 "$run_out")"
+  chke yes fetch-history-bytes "$(if tail -n +2 "$run_out.history" 2>/dev/null | cmp -s - "$run_dir/prior"; then echo yes; fi)"
+  chke 1 fetch-current-sentinel-count "$(grep -c '^EXIT=' "$run_out")"
+  run_case await-vote-fallback "$traversal"
+  chke "0|$id1,$id2|yes|yes" await-vote-fallback "$run_rc|$(joined "$run_dir/polls")|$(if [ -f "$run_out.settled" ]; then echo yes; fi)|$(if grep -q "task=$id2 state=settled" "$run_dir/stdout"; then echo yes; fi)"
+  run_case await-vote-exhausted "${traversal/answer/extraction}" NYX_TEST_UNIQUE_IDS=1
+  chke "125|first,second,first,second|${id1%-*}-000000000001,${id2%-*}-000000000002,${id1%-*}-000000000003,${id2%-*}-000000000004|no|yes" await-vote-exhausted \
+    "$run_rc|$(joined "$run_dir/submits")|$(joined "$run_dir/polls")|$(if [ -f "$run_out.settled" ]; then echo yes; else echo no; fi)|$(if grep -q 'state=exhausted attempts=2' "$run_dir/stdout"; then echo yes; fi)"
+  run_case await-vote-timeout "${rows_one/answer/resume}"
+  chke "0|first|$id1,$id1,$id1|yes" await-vote-timeout "$run_rc|$(joined "$run_dir/submits")|$(joined "$run_dir/polls")|$(if grep -q "task=$id1 state=settled" "$run_dir/stdout"; then echo yes; fi)"
+  for response in quota busy delivery unknown; do
+    rows="${rows_one/answer/$response}"; expected="125|first,first|"
+    case "$response" in
+      busy) rows="${rows_one/|0|1|/|1|1|}"; expected='125||';;
+      delivery) expected="1|first|$id1";;
+      unknown) expected='7|first|';;
+    esac
+    run_case "await-vote-$response" "$rows"
+    chke "$expected|no" "await-vote-$response" "$run_rc|$(joined "$run_dir/submits")|$(joined "$run_dir/polls")|$(if [ -f "$run_out.settled" ]; then echo yes; else echo no; fi)"
+  done
   rm -rf "$testroot"
-  [ $fail -eq 0 ] && echo "SELFTEST_OK" || echo "SELFTEST_FAIL"
+  [ $fail -eq 0 ] && echo "SELFTEST_OK cases=$cases" || echo "SELFTEST_FAIL cases=$cases"
   return $fail
 }
 
 case "${1:-}" in
   --selftest) __selftest; exit $? ;;
+  taskid) [ "$#" -eq 2 ] && __taskid "$2"; exit $? ;;
   pools) __validate_settings || exit 2; __pools_table ;;
   inflight)
     __validate_settings || exit 2
@@ -650,32 +751,26 @@ case "${1:-}" in
     # 那时任务**仍活在池里**,只是没有动词能续等 —— 本会话两次撞上,故补此动词(器律⑥″:一切经器)。
     # 幂等:重复调用只是再取一次;不重复提交,不消耗配额。
     tid="${2:-}"; out="${3:-}"
-    __open_output "$out" || exit 2
+    __open_output "$out" fetch || exit 2
     __validate_settings || exit 2
     [ "$#" -eq 3 ] || { echo 'NYX_ERR fetch needs <task-id> <outfile>' >&2; exit 2; }
     [ -n "$tid" ] || { echo "NYX_ERR fetch 需要 <task-id>"; exit 2; }
     [ -n "$out" ] || { echo "NYX_ERR fetch 需要 <outfile>"; exit 2; }
     __uuid "$tid" || { echo "NYX_ERR fetch 的 <task-id> 不是 uuid 形: $tid"; exit 2; }
     __open_taskids "$out" || exit 2
-    if [ "$(tail -1 "$out.taskid")" != "$tid" ]; then __append "$out.taskid" "$tid" || exit 2; fi
+    if [ "$(__taskid "$out")" != "$tid" ]; then __append "$out.taskid" "$tid" || exit 2; fi
     __poll_task "$tid" "$out"; exit $?
     ;;
   ask)
     brief="${2:-}"; out="${3:-}"
-    if [ "$brief" -ef "$out" ] || [ "$brief" -ef "$out.taskid" ]; then
+    if [ "$brief" -ef "$out" ] || [ "$brief" -ef "$out.taskid" ] || [ "$brief" -ef "$out.history" ]; then
       echo 'NYX_ERR brief and recovery artifacts must be separate files' >&2; exit 2
     fi
-    __open_output "$out" || exit 2
+    __open_output "$out" ask || exit 2
     __validate_settings || exit 2
     [ "$#" -eq 3 ] && [ -f "$brief" ] && [ -r "$brief" ] || { echo "NYX_ERR ask needs a readable brief and outfile: $brief"; exit 2; }
     [ -d "${TMPDIR:-/tmp}" ] && [ -w "${TMPDIR:-/tmp}" ] || { echo 'NYX_ERR TMPDIR must be writable' >&2; exit 2; }
     __open_taskids "$out" || exit 2
-    if [ -s "$out.taskid" ]; then
-      tid=$(tail -1 "$out.taskid")
-      echo "NYX_RESUME task=$tid out=$out"
-      __poll_task "$tid" "$out"; exit $?
-    fi
-    [ ! -s "$out" ] || { echo "NYX_ERR nonempty audit without recovery id: $out; use a new outfile" >&2; exit 2; }
     if [ -n "$POOL" ]; then
       candidates="$POOL"   # 显式指定:只投这一个池,不遍历(调用方要确定性)
     else
@@ -696,5 +791,5 @@ case "${1:-}" in
     done
     exit $rc
     ;;
-  *) echo "usage: nyx.sh {ask <brief> <out>|fetch <task-id> <out>|pools|status [glob]|inflight|--selftest}" >&2; exit 2 ;;
+  *) echo "usage: nyx.sh {ask <brief> <out>|fetch <task-id> <out>|taskid <out>|pools|status [glob]|inflight|--selftest}" >&2; exit 2 ;;
 esac
