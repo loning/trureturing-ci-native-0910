@@ -3,6 +3,7 @@
    mirror-B: none(waiver:formal-unit-only)
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: none
    digest: Exact rational source-row geometry with checked mesh and physical-radius normalization. -/
 
 import Mathlib

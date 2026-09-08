@@ -3,6 +3,7 @@
    mirror-B: none(waiver:formal-unit-only)
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: none
    digest: Formalize the exact source-row selection rule feeding the six PrimeGaps186 physical groups. -/
 
 import D5.S3.PrimeGaps.PrimeGap186PhysicalSourceGroups

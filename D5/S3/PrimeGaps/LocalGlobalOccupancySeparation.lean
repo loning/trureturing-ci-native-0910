@@ -3,6 +3,7 @@
    mirror-B: none(waiver:formal-unit-only)
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: none
    digest: Exhibit an admissible two-offset pattern whose translated prime occupancy can be both zero and two. -/
 
 import D5.S3.PrimeGaps.DHLAdmissibleDiameterTransfer

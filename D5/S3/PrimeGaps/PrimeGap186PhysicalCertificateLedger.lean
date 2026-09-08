@@ -1,8 +1,9 @@
 /- GID: D5/S3/PrimeGaps/PrimeGap186PhysicalCertificateLedger
-   generality: G
+   generality: I
    mirror-B: none(waiver:formal-unit-only)
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: none
    digest: Split the PrimeGaps186 physical-integral input into independently dischargeable finite obligations. -/
 
 import Mathlib

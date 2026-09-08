@@ -3,6 +3,7 @@
    mirror-B: none(waiver:formal-unit-only)
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: none
    digest: Isolate the two finite-field Kloosterman estimates used by the conditional DHL[40,2] source. -/
 
 import Mathlib

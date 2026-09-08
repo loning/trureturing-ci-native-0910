@@ -3,6 +3,7 @@
    mirror-B: none(waiver:formal-unit-only)
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: none
    digest: Record the explicit diameter-186 forty-tuple and close its finite bounded-window consequences. -/
 
 import D5.S3.PrimeGaps.ShortGapOccupancyBridge

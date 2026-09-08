@@ -3,6 +3,7 @@
    mirror-B: none(waiver:formal-unit-only)
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: none
    digest: Exact six-group ownership and coarse schedule partition used by the PrimeGaps186 physical certificate. -/
 
 import D5.S3.PrimeGaps.PrimeGap186PhysicalSourceGeometry

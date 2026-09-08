@@ -3,6 +3,7 @@
    mirror-B: none(waiver:formal-unit-only)
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: none
    digest: Instantiate the generic DHL-versus-diameter decomposition with the certified forty-point window of width 186. -/
 
 import D5.S3.PrimeGaps.DHLAdmissibleDiameterTransfer

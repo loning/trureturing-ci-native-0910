@@ -3,6 +3,7 @@
    mirror-B: none(waiver:formal-unit-only)
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: none
    digest: Prove the exact rational safety margin and its conditional real-valued transfer after a certified physical loss budget. -/
 
 import Mathlib.Data.Real.Basic

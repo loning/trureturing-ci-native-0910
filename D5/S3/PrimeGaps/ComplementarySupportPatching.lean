@@ -3,6 +3,7 @@
    mirror-B: none(waiver:formal-unit-only)
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: none
    digest: Complementary certification regions enlarge a finite nonnegative sieve support and strictly improve its objective when they expose positive new mass. -/
 
 import Mathlib

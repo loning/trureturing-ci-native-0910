@@ -3,6 +3,7 @@
    mirror-B: none(waiver:formal-unit-only)
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: none
    digest: Exact typed row, component, and scalar addresses with constructive finite enumeration. -/
 
 import D5.S3.PrimeGaps.PrimeGap186PhysicalSourceGroups

@@ -3,6 +3,7 @@
    mirror-B: none(waiver:formal-unit-only)
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: none
    digest: Allocate a verified positive error allowance to all 149 physical components while preserving the strict numerical score margin. -/
 
 import D5.S3.PrimeGaps.PrimeGap186CertifiedLossBudget

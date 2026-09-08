@@ -3,6 +3,7 @@
    mirror-B: none(waiver:formal-unit-only)
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: none
    digest: Certify the explicit diameter-186 forty-tuple against every local prime obstruction. -/
 
 import D5.S3.PrimeGaps.PrimeGap186FiniteFrontEnd

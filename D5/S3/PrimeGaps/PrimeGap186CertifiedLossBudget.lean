@@ -3,6 +3,7 @@
    mirror-B: none(waiver:formal-unit-only)
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: none
    digest: Replay all 97 weighted rounding checks and prove quantitative additional-loss allowances for the conditional sieve score. -/
 
 import D5.S3.PrimeGaps.PrimeGap186PhysicalBoundTables
