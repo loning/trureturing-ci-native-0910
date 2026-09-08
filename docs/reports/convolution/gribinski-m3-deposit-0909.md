@@ -307,5 +307,34 @@ unchanged `origin/dev`. The five added paths are exactly two state pins,
 two accepted events and this report. All Lean, Blueprint, Digestion,
 domain and budget paths have zero diff from baseline.
 
-Steps 6-7 pending. Preflight will run once, retaining any host/engineering
-diagnostic without treating it as a new mathematical admission verdict.
+## Step 6: Preflight (One Run)
+
+Artifact-audit commit `cf7d253a8c` was pushed before preflight.
+`make preflight BASE=$(git rev-parse origin/dev)` resolved BASE to
+`b9ad72010f6473b22e7616958a7e78db6fe0d2e2` and ran at HEAD
+`cf7d253a8c7e7a4cc4099c93d103648b17cf1e4b`. **EXIT=0** (`06-preflight.log`).
+No rerun, deadline override, budget edit or reduced test configuration.
+
+Engineering selected 7 projects and all **4878 tests passed**, zero failures
+and zero skips, with TRX execution evidence for every project. Counts by
+project: Scribe.Documents 1, Truth 88, Engine 26, Scribe 465,
+EngineeringScope 26, Architecture 230, StrataLint.Tests 4042.
+Selftest and expected compile-failure proofs passed. Compiler diagnostics
+from those deliberately failing proof projects are expected negative tests,
+not rejected content rules. The final local gate, admission and
+filemap-conform all passed; the gate summary reports `exit_code=0`.
+
+Rejected rules: **[]**. Content-attributable rejection: **none**.
+Host-noise rejection: **none observed in this run**. No Perl-locale,
+`ENGINEERING_TEST_EVIDENCE_FAILED`, or SL-022 rejection was reported.
+The two relevant nonblocking observations are retained verbatim:
+
+```text
+OBSERVED SL-031 D5/S3/Zeros/Convolution/GribinskiDegreeThree.lean: UTILITY-OBSERVED module=D5/S3/Zeros/Convolution/GribinskiDegreeThree.lean kind=none basis=none target=none semantics=unverified-by-machine
+OBSERVED SL-031 D5/S3/Zeros/Convolution/GribinskiDegreeThreeDiscriminant.lean: UTILITY-OBSERVED module=D5/S3/Zeros/Convolution/GribinskiDegreeThreeDiscriminant.lean kind=none basis=none target=none semantics=unverified-by-machine
+```
+
+This preserves the boundary between machine admission and the supplied
+independent utility/proof-shape review. The utility table was also checked
+against the 47 included semantic-report declaration names: missing rows **[]**.
+Step 7 pending; remote required-CI results are not inferred from local PASS.
