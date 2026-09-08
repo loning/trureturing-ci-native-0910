@@ -19,8 +19,6 @@ import Mathlib.Tactic.Linarith
 
 namespace D5.S3.Arith.CyclotomicFiveResidueSum
 
-open scoped Classical
-
 def phi5 (u : ℕ) : ℕ := u ^ 4 + u ^ 3 + u ^ 2 + u + 1
 
 def goodUnits (n : ℕ) : Finset ℕ :=
@@ -134,6 +132,7 @@ private theorem sum_zmod {M : Type*} [AddCommMonoid M] (n : ℕ) [NeZero n]
   | zero => exact (NeZero.ne 0 rfl).elim
   | succ n => exact Fin.sum_univ_eq_sum_range f (n + 1)
 
+open Classical in
 private theorem count_eq_zmod (n : ℕ) [NeZero n] :
     residueCount n = ∑ x : ZMod n, if good x then 1 else 0 := by
   classical
@@ -142,6 +141,7 @@ private theorem count_eq_zmod (n : ℕ) [NeZero n] :
   intro x _
   simp only [← good_cast, ZMod.natCast_zmod_val]
 
+open Classical in
 private theorem sum_eq_zmod (n : ℕ) [NeZero n] :
     (residueSum n : ZMod n) = ∑ x : ZMod n, if good x then x else 0 := by
   classical
@@ -238,6 +238,7 @@ theorem residueCount_pow (p a : ℕ) :
   rw [pow_succ', count_blocks]
   rfl
 
+open Classical in
 private theorem fifth_roots_count (p : ℕ) [Fact p.Prime] :
     (∑ x : ZMod p, if x ^ 5 = 1 then (1 : ℕ) else 0) = (p - 1).gcd 5 := by
   classical
