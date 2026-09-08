@@ -299,11 +299,16 @@ public static class CanonicalMarkdownWriter
             .Append(citation.Year)
             .Append("). *")
             .Append(citation.Title)
-            .Append("*. DOI: [")
-            .Append(citation.Doi.Value)
-            .Append("](https://doi.org/")
-            .Append(citation.Doi.Value)
-            .Append(").");
+            .Append("*. ");
+        if (citation.Doi is { } doi)
+        {
+            builder.Append("DOI: [").Append(doi.Value)
+                .Append("](https://doi.org/").Append(doi.Value).Append(").");
+        }
+        else
+        {
+            builder.Append("URL: <").Append(citation.Url!.AbsoluteUri).Append(">.");
+        }
     }
 
     private static IReadOnlySet<string> ReferencedDescribeIds(

@@ -181,17 +181,19 @@ internal static class DescribeContentGovernance
                 : text[(locator + headingLength)..].Split("\n## ", 2)[0];
             var bindsDoi = note.Doi is null
                 || body.Contains(note.Doi.Value, StringComparison.OrdinalIgnoreCase);
+            var bindsUrl = note.Url is null
+                || body.Contains(note.Url.AbsoluteUri, StringComparison.Ordinal);
             var canonicalAnchorComplete = bibkey != "watrous2018theory"
                 || body.Contains("Section 4.4", StringComparison.Ordinal)
                     && text.Contains(
                         "No specific theorem number is attributed",
                         StringComparison.Ordinal);
-            if (string.IsNullOrWhiteSpace(body) || !bindsDoi || !canonicalAnchorComplete)
+            if (string.IsNullOrWhiteSpace(body) || !bindsDoi || !bindsUrl || !canonicalAnchorComplete)
             {
                 findings.Add(new DescribeRedFinding(
                     "incomplete-library-locator",
                     note.RelativePath,
-                    $"referenced Library note {bibkey} must bind its DOI and retain its "
+                    $"referenced Library note {bibkey} must bind its DOI or URL and retain its "
                         + "canonical verified locator scope"));
             }
         }
