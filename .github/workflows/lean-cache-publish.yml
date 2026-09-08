@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   trace-current:
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-24.04
     timeout-minutes: 360
     env:
       CANDIDATE_SHA: 9254e88a2c9305f9cf80bf63f2439f96da60124a
