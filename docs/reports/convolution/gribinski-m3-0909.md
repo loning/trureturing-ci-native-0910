@@ -482,3 +482,47 @@ Step 3 bind-only assessment remains in force; the new certificate supplies
 the proposed escape-witness basis for the combined content delivery.
 independent_review: ASSUMED-UNVERIFIED. Literature completeness, priority,
 and general-m Conjecture 3.13 remain explicitly unclaimed.
+
+## Scribe Mirror Completion (2026-09-09)
+
+Producer: one Codex implementation worker in the enclosing `consensus-rnd:sshx`
+attempt; no additional skill or review seats invoked. All observations below
+are this worker's readings, not independent review or orchestrator revalidation.
+Initial HEAD: `edcaa0364b401e2a13a4e28bb7bd51ff1dbb5c07`; clean worktree.
+This stage changes narrative sources, emitted projections, and this report only.
+
+### Step 0: Gate and Capacity Source Read
+
+`gate_found`: **SL-004, Mirror completeness**. Registration is at
+`tools/StrataLint.Engine/Rules/RepositoryRules.cs:62`; its default effect is
+Block and lifecycle Active (`:201`, `:212`). The evaluator calls
+`ValidateMirror` at `Rules/RepositoryRules.Structure.cs:337`; the actual
+missing-file predicate and finding are at `Rules/RepositoryRules.Helpers.cs:128`
+and `:131`: `missing mirror <path>`. These `Rules/` paths are under
+`tools/StrataLint.Engine/`. The rule is awakened by changed Lean/Blueprint
+paths (`Rules/Scoping/RepositoryRules.Affected.cs:23`), and a changed formal
+source selects its pair (`Rules/RepositoryRules.Helpers.cs:86`). Both committed
+Lean headers name their own `D5/B/...` mirrors without waivers. GID conversion
+maps those addresses to `Blueprint/D5/.../<module>.md`
+(`tools/StrataLint.Engine/Coordinates/Gid.cs:192`). Thus the two missing `.md`
+files satisfy the blocking predicate even though the modules are unfrozen.
+This is source-based confirmation; `make gate` was not run.
+
+Search receipt: `git grep -n -P '\bMirror completeness\b|\bValidateMirror\b|\bMirrorPairAffected\b|\bMirrorsAffected\b' -- tools/StrataLint.Engine`
+returned 7 matching lines, EXIT=0; the registration is a positive word-boundary
+control. `Meta/FILEMAP.toml:90` identifies `.md` as ScribeEmitter projections;
+`:100` identifies `.scribe.cs` as ScribeCompiler-verified source data.
+
+Capacity source: `RepositoryRules.Structure.cs:68` sets `DirectoryFileLimit=48`;
+`:109` excludes Blueprint `.md`, and `:117` groups the remaining paths by their
+immediate parent. After `git fetch origin dev` (EXIT=0), dev was
+`96e7e6d8fea1c2e3a1ec17f56fcc411f671b674c`. Direct-child `git ls-tree -r --name-only`
+counts for D5/Blueprint Convolution respectively: dev raw **16/32**, capacity
+**16/16**; initial HEAD raw **18/32**, capacity **18/16**. Planned final raw
+**18/36**, capacity **18/18**; actual counts will be repeated before pushes.
+
+The m=2 source was read from `origin/dev`. Its theorem nodes use
+`WithoutFormula`; the brief's cited `DescribeMigrationTests.cs:123-130` does
+not exist in this checkout (the file has 67 lines). Those are not copied as
+current requirements: all new theorem nodes will use `FromAuthor` as explicitly
+required by this task. No mathematical, budget, or Digestion edit is authorized.
