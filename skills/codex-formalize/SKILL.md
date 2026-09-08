@@ -118,6 +118,26 @@ artifacts follow that observed shape.
 
 Write the Lean module and its `.scribe.cs` mirror using the live template. Discover the current path-to-GID rule from that template and the live path-policy owner; do not rely on a remembered grammar.
 
+**The Scribe document's prose is mathematical exposition, not a production record.** Its reader is
+someone learning what the statements say and why they hold, and the document is a permanent projection
+of the truth graph. So the prose describes objects, hypotheses and implications, and nothing else. It
+must not name the process that produced the deposit: no atom, preregistration, witness, admission,
+coverage, bucket capacity, directory counts, implementation-base SHAs, placement rationale, or review
+vocabulary such as calling a lemma a live consumed step. Say what the lemma states and what consumes
+it mathematically. Two landed instances, each caught by review after all three required checks were
+green: one carried `preregistered witness`, `the atom states`, and `whole preregistered candidate
+theorem`; the other carried its bucket's 24-file count, its implementation base SHA, and why the module
+went where it did. That kind of sentence belongs in the pull request body, which is where the
+provenance account is required anyway.
+
+The cost of getting this wrong is a whole redo, not an edit: the coverage receipt binds the Scribe
+bytes, so prose fixed after `make cover` invalidates the deposit and the lane pays for a second one.
+Read the prose once before depositing and ask of every sentence whether it would still make sense to a
+reader who has never heard of this repository's ledger.
+
+SL-032 rejects a fixed governance word list and CJK characters in Scribe sources, and it passes on
+everything above; a green check here is not evidence that the prose is clean.
+
 A new theorem must go in a new Lean module. Before writing into an existing module, check whether it has an active Freeze event:
 
 ```sh
