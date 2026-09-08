@@ -79,9 +79,29 @@ to the archived source fence. `/usr/bin/time -l make lean`: EXIT 0; 12586 jobs;
 Log: `step-2-make-lean.log`. The three `#print axioms` outputs are each exactly
 `[propext, Classical.choice, Quot.sound]`.
 
+Step 2 was pushed as `8e62755894`.
+
+Step 3 (B) is verified for arbitrary n,i,j and disjoint S,T over Q.
+`coeff_esymm_mul_eq_card` identifies the coefficient with the subset-pair
+fiber; `card_elementaryFiber` constructs the bijection
+`U -> (S union U, S union (T \\ U))` from `T.powersetCard ell`, with inverse
+`(A,B) -> A inter T`; `coeff_esymm_mul_fiber` includes all zero boundary cases.
+The condition `S.card <= i` is essential when interpreting `i - S.card` in N.
+Build: `/usr/bin/time -l make lean`, EXIT 0; 12586 jobs; 28.86 seconds;
+maximum resident set size 3026927616 bytes. Log: `step-3b-make-lean.log`.
+All three public theorem axiom prints are exactly
+`[propext, Classical.choice, Quot.sound]`. The only warning is an unused
+upper-bound hypothesis in `card_elementaryFiber`.
+
+The preceding `step-3a-make-lean.log` records EXIT 2, 12586 jobs,
+21.46 seconds, RSS 2978086912 bytes: two calls used `card_sdiff` where the
+pinned API requires `card_sdiff_of_subset`, and the curried double sum
+requires `sum_product'`. These API errors were corrected. The failed
+elaboration's `sorryAx` prints are not verification evidence.
+
 ## Declaration Accounting
 
-For the two currently proved public theorems:
+For the currently proved public theorems:
 
 | Declaration | proof_shape | Direct Frozen Theorem Dependencies | escape_witness | admission_basis |
 | --- | --- | --- | --- | --- |
@@ -90,6 +110,9 @@ For the two currently proved public theorems:
 | opposite_inv_series_mul | bind-only | none (Mathlib only) | none | none for independent deposit; prerequisite of alternating_choose_convolution |
 | alternating_choose_convolution | bind-only | none (Mathlib only) | none | none for independent deposit; prerequisite of alternating_factorial_sum |
 | alternating_factorial_sum | bind-only | none (Mathlib only) | none | none for independent deposit; preregistered consumer is the full matching identity |
+| coeff_esymm_mul_eq_card | bind-only | none (Mathlib only) | none | companion reduction for the fiber bijection; not independently deposited |
+| card_elementaryFiber | content | none | explicit inverse subset-pair bijection, with injectivity and surjectivity proofs | constructive fiber counting; independent review unverified; not deposited |
+| coeff_esymm_mul_fiber | content | none | subset-pair bijection plus impossibility of fibers outside the degree/cardinality guard | arbitrary-degree coefficient formula (B); independent review unverified; not deposited |
 
 The frozen theorem's GID is
 `D5/S3/Zeros/Convolution/FiniteConvolutionCoefficients.coeff_additiveConvolution`.
@@ -114,6 +137,18 @@ These identities are read from the merged predecessor report, not recomputed.
 | opposite_inv_series_mul | An arbitrary-power identity over every commutative ring; no parameter enumeration, checker, numerical reduction, or certified instance. |
 | alternating_choose_convolution | A symbolic coefficient identity for arbitrary d,h; none of the four computational classes. |
 | alternating_factorial_sum | A symbolic identity for every d,h with exact rational casts; none of the four computational classes. |
+| squarefreeExponent | An exponent vector for an arbitrary finite subset; no certified instance, bounded enumeration, checker, or numerical reduction. |
+| fiberExponent | A symbolic exponent vector for arbitrary S,T; none of the four computational classes. |
+| squarefreeExponent_apply (private) | A general pointwise formula; none of the four computational classes. |
+| fiber_pair_decomposition (private) | A general set reconstruction under an exponent equality; none of the four computational classes. |
+| split_pair_exponent (private) | A symbolic exponent equality for arbitrary subsets; none of the four computational classes. |
+| split_pair_inter (private) | A general set identity proving the inverse map; none of the four computational classes. |
+| fiber_pair_cards (private) | Symbolic cardinalities for arbitrary finite sets; no enumeration of bounded parameters, certified instance, checker, or numerical reduction. |
+| elementaryFiber | A parameterized finite fiber, not an enumeration over bounded theorem parameters; no certified instance, checker, or numerical reduction. |
+| mem_elementaryFiber (private) | Symbolic fiber membership for arbitrary n,i,j; none of the four computational classes. |
+| coeff_esymm_mul_eq_card | A universally quantified coefficient identity; no certified instance, bounded parameter enumeration, checker, or numerical reduction. |
+| card_elementaryFiber | A universally quantified fiber cardinality theorem; none of the four computational classes. |
+| coeff_esymm_mul_fiber | A universally quantified coefficient formula, including impossible cases; none of the four computational classes. |
 
 Other utility fields are `not-applicable(kind=none)`.
 
