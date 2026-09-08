@@ -57,6 +57,15 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(sorted(module for _, group in partitions for module in group), modules)
         self.assertTrue(all(0 < len(group) <= 32 for _, group in partitions))
 
+    def test_duplicate_declarations_have_isolated_query_environments(self):
+        modules = ["D5.S0.Area.Left", "D5.S0.Area.Right", "D5.S0.Area.Other"]
+        keys = [(modules[0], "same", "left"), (modules[1], "same", "right"),
+                (modules[2], "other", "other")]
+        partitions = self.program.partition_queries(modules, keys, 32)
+        self.assertEqual(sorted(module for _, group in partitions for module in group), sorted(modules))
+        self.assertIn((modules[0], [modules[0]]), partitions)
+        self.assertIn((modules[1], [modules[1]]), partitions)
+
     def test_incomplete_partition_is_rejected(self):
         for result in ({}, {"head": "head", "entries": []},
                        {"head": "head", "entries": [], "query_completed": True}):

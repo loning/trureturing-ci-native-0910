@@ -29,13 +29,18 @@ def main():
               "source_commit": "fixture-head", "nodes": []}
     source = "LeanInformationAudit.Tests.Census.Query.Observed"
     finite = "LeanInformationAudit.Tests.SealSuccess"
-    run(["lake", "env", "lean", "-o",
-         str(repository / ".lake/build/lib/lean/LeanInformationAudit/Tests/Census/Query/Observed.olean"),
-         str(repository / "tools/lean-inspector/LeanInformationAudit/Tests/Census/Query/Observed.lean")],
-        directory / "observed-fixture", "process", cwd=repository)
+    for module in ("Observed", "DuplicateLeft", "DuplicateRight"):
+        run(["lake", "env", "lean", "-o",
+             str(repository / f".lake/build/lib/lean/LeanInformationAudit/Tests/Census/Query/{module}.olean"),
+             str(repository / f"tools/lean-inspector/LeanInformationAudit/Tests/Census/Query/{module}.lean")],
+            directory / (module + "-fixture"), "process", cwd=repository)
     for module, declaration, identity in [
             (source, source + ".independent", "b-observed"),
             (finite, finite + ".idTheorem", "a-certified"),
+            ("LeanInformationAudit.Tests.Census.Query.DuplicateLeft",
+             "LeanInformationAudit.Tests.Census.Query.shared", "c-duplicate-left"),
+            ("LeanInformationAudit.Tests.Census.Query.DuplicateRight",
+             "LeanInformationAudit.Tests.Census.Query.shared", "d-duplicate-right"),
             ("LeanInformationAudit.Tests.Census.Evidence", None, None)]:
         report["nodes"].append({"repo_path": module.replace(".", "/") + ".lean",
                                 "freeze_status": "frozen", "declarations": [] if declaration is None else [
@@ -52,9 +57,13 @@ def main():
             raise RuntimeError("fixture census did not complete")
         artifact = (run_directory / "census.json").read_bytes()
         projection = json.loads(artifact)
-        assert projection["counts"]["accounted"] == 2
+        assert projection["counts"]["accounted"] == 4
         assert projection["counts"]["certified"] == 1
-        assert projection["counts"]["observed"] == 1
+        assert projection["counts"]["observed"] == 3
+        duplicates = [row for row in projection["rows"] if row["statement_id"].startswith(("c-", "d-"))]
+        assert len(duplicates) == 2
+        assert duplicates[0]["theorem_name"] == duplicates[1]["theorem_name"]
+        assert duplicates[0]["payload"]["owning_module"] != duplicates[1]["payload"]["owning_module"]
         assert projection["certified_complete"] is False
         results.append(hashlib.sha256(artifact).hexdigest())
         probe = run_directory / "Absent.lean"
@@ -86,6 +95,7 @@ def main():
              str(repository / f"tools/lean-inspector/LeanInformationAudit/Tests/Census/Query/{module}.lean")],
             directory / module, "process", cwd=repository)
     result = {"query_contract": "passed", "coverage": "passed", "artifact_determinism": results[0],
+              "duplicate_name_modules": 2,
               "observed_theorem_absent_from_publication": True, "input_completion_flag_rejected": True,
               "counts": projection["counts"]}
     (directory / "fixtures.json").write_text(json.dumps(result, indent=2) + "\n")
