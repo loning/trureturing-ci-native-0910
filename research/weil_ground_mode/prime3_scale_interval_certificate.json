@@ -10,26 +10,98 @@
   "interval_decimal_digits": 70,
   "parity_shells": [
     [
-      {"first": 65, "last": 128, "lower": "24750975/8388608"},
-      {"first": 129, "last": 256, "lower": "3815391/1048576"},
-      {"first": 257, "last": 512, "lower": "36316417/8388608"},
-      {"first": 513, "last": 1024, "lower": "42120317/8388608"},
-      {"first": 1025, "last": 2048, "lower": "47929533/8388608"},
-      {"first": 2049, "last": 4096, "lower": "107482821/16777216"},
-      {"first": 4097, "last": 8192, "lower": "59554619/8388608"},
-      {"first": 8193, "last": 16384, "lower": "65368493/8388608"},
-      {"first": 16385, "last": 32768, "lower": "17795675/2097152"}
+      {
+        "first": 65,
+        "last": 128,
+        "lower": "24750975/8388608"
+      },
+      {
+        "first": 129,
+        "last": 256,
+        "lower": "3815391/1048576"
+      },
+      {
+        "first": 257,
+        "last": 512,
+        "lower": "36316417/8388608"
+      },
+      {
+        "first": 513,
+        "last": 1024,
+        "lower": "42120317/8388608"
+      },
+      {
+        "first": 1025,
+        "last": 2048,
+        "lower": "47929533/8388608"
+      },
+      {
+        "first": 2049,
+        "last": 4096,
+        "lower": "107482821/16777216"
+      },
+      {
+        "first": 4097,
+        "last": 8192,
+        "lower": "59554619/8388608"
+      },
+      {
+        "first": 8193,
+        "last": 16384,
+        "lower": "65368493/8388608"
+      },
+      {
+        "first": 16385,
+        "last": 32768,
+        "lower": "17795675/2097152"
+      }
     ],
     [
-      {"first": 65, "last": 128, "lower": "927117/1048576"},
-      {"first": 129, "last": 256, "lower": "26333397/16777216"},
-      {"first": 257, "last": 512, "lower": "37897323/16777216"},
-      {"first": 513, "last": 1024, "lower": "49493731/16777216"},
-      {"first": 1025, "last": 2048, "lower": "61106451/16777216"},
-      {"first": 2049, "last": 4096, "lower": "72727345/16777216"},
-      {"first": 4097, "last": 8192, "lower": "42176165/8388608"},
-      {"first": 8193, "last": 16384, "lower": "47989681/8388608"},
-      {"first": 16385, "last": 32768, "lower": "107607419/16777216"}
+      {
+        "first": 65,
+        "last": 128,
+        "lower": "927117/1048576"
+      },
+      {
+        "first": 129,
+        "last": 256,
+        "lower": "26333397/16777216"
+      },
+      {
+        "first": 257,
+        "last": 512,
+        "lower": "37897323/16777216"
+      },
+      {
+        "first": 513,
+        "last": 1024,
+        "lower": "49493731/16777216"
+      },
+      {
+        "first": 1025,
+        "last": 2048,
+        "lower": "61106451/16777216"
+      },
+      {
+        "first": 2049,
+        "last": 4096,
+        "lower": "72727345/16777216"
+      },
+      {
+        "first": 4097,
+        "last": 8192,
+        "lower": "42176165/8388608"
+      },
+      {
+        "first": 8193,
+        "last": 16384,
+        "lower": "47989681/8388608"
+      },
+      {
+        "first": 16385,
+        "last": 32768,
+        "lower": "107607419/16777216"
+      }
     ]
   ],
   "weighted_Gram_error_budgets": [
@@ -82,7 +154,7 @@
     }
   },
   "base_sha256": "8bb067fc5499b0f2e1e48836e7a82237a15504109f82a856c72478d1096d69d0",
-  "source_sha256": "0bbadda0977f11052c7c492d2d44f958f6318b89954587486edc4bc6db796688",
+  "source_sha256": "13b50abcec06663e35ad8f704cac6de9f3c1a2c37159e7f63e8c24fee4681993",
   "status": "All interval matrices, all-mode weighted tails and final strict LDL guards passed.",
   "scope": "One full parameter interval, including prime-3 activation. Paper operator/domain and logarithmic/Neumann high-space estimates are inherited analytically; no historical numeric spectral result is assumed. Not a Lean/kernel result, all-scale gap, or Xi limit."
 }

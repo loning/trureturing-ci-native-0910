@@ -87,7 +87,7 @@ def congruence_ldl(matrix):
     digest=hashlib.sha256(json.dumps(integers.tolist(),separators=(',',':')).encode()).hexdigest()
     return {'positive_interval_pivot_display':lower,'dyadic_basis_sha256':digest}
 
-def run(step=F(1,5*10**7), digits=70, threshold=F(6,10**6), upper=F(6,5*10**6)):
+def run(step=F(1,5*10**7), digits=70, threshold=F(6,10**6), upper=F(6,5*10**6), *, with_components=False):
     if step<=0 or step>F(1,10000) or not 55<=digits<=200 or not 0<upper<threshold<F(1,100):
         raise ValueError('Parameters outside the reviewed range.')
     iv.dps=digits
@@ -225,7 +225,7 @@ def run(step=F(1,5*10**7), digits=70, threshold=F(6,10**6), upper=F(6,5*10**6)):
         piv['even_complement' if not sector else 'odd_full']=congruence_ldl(matrix)
         print('piv',piv,flush=True)
     assert upper<threshold
-    return {'step':str(step),'length_interval':str(L),'even_odd_Gamma_high_lower_at_65':[str(weight(65,False)),str(weight(65,True))],
+    report = {'step':str(step),'length_interval':str(L),'even_odd_Gamma_high_lower_at_65':[str(weight(65,False)),str(weight(65,True))],
        'N':N,'M':M,'interval_decimal_digits':digits,'parity_shells':shell_records,'weighted_Gram_error_budgets':list(map(str,etas)),
        'candidate_rayleigh_interval':str(ray),'candidate_upper':str(upper),'candidate_orthogonal_threshold':str(threshold),
        'spectral_gap_lower':str(threshold-upper),
@@ -244,6 +244,15 @@ def run(step=F(1,5*10**7), digits=70, threshold=F(6,10**6), upper=F(6,5*10**6)):
        'pivot_displays':piv,'base_sha256':PIN,'source_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
        'status':'All interval matrices, all-mode weighted tails and final strict LDL guards passed.',
        'scope':'One full parameter interval, including prime-3 activation. Paper operator/domain and logarithmic/Neumann high-space estimates are inherited analytically; no historical numeric spectral result is assumed. Not a Lean/kernel result, all-scale gap, or Xi limit.'}
+
+    if with_components:
+        # The readout consumer receives freshly checked arithmetic arrays,
+        # never values deserialized from an old certificate. Default output
+        # and all original checks remain unchanged.
+        return report, {'low_blocks': A, 'schur_budgets': WW,
+            'candidate': vv, 'symbols': sig, 'low_symbols': sy,
+            'even_columns': evenC, 'length': L, 'shells': shell_records}
+    return report
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)

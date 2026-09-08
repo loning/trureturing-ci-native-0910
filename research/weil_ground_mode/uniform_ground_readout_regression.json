@@ -1,0 +1,14 @@
+{
+  "source_sha256": "a9fd2831585ee936763876b8f5c3f8361eb3e090add3adaf2263ef525abcc4d8",
+  "exact_complex_inverse_Schur_identities": 60,
+  "exact_positive_high_block_inverse_comparisons": 60,
+  "wrong_cross_sign_mutations_detected": 60,
+  "exact_candidate_residual_energy_cases": 180,
+  "positive_shifted_eigenvalue_counterexample": true,
+  "exact_actual_column_algebra_identities": 4,
+  "exact_infinite_tail_primitives": 9,
+  "two_directed_precisions_same_claims": true,
+  "invalid_precision_and_pin_rejections": 4,
+  "status": "All exact Schur/residual identities, mutations, endpoint algebra and replay bindings passed.",
+  "scope": "Single-author development diagnostics. Synthetic matrices verify algebra only; the separate producer supplies the actual Weil/prolate numerical certificate. No Lean/Scribe or independent-author review."
+}
