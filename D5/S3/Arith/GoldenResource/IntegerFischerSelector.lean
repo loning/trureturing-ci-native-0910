@@ -79,7 +79,59 @@ theorem fischer_two_block (T : Matrix n n ℝ) (hT : T.PosDef) {i j : n} (hij : 
     field_simp [ne_of_gt (hT.diag_pos (i := i))]
   simpa [hd, hp] using real_hadamard hS
 
+/-- A nonzero off-diagonal integer entry gives a multiplicative determinant loss. -/
+theorem integer_fischer_gap (T : Matrix n n ℤ)
+    (hT : (T.map fun z => (z : ℝ)).PosDef) {i j : n}
+    (hij : i ≠ j) (hoff : T i j ≠ 0) :
+    T.det * (T i i * T j j) ≤ (T i i * T j j - 1) * ∏ l, T l l := by
+  have hf := fischer_two_block (T.map fun z => (z : ℝ)) hT hij
+  rw [← Int.cast_det] at hf
+  simp only [Matrix.map_apply] at hf
+  have hfi : T.det ≤ (T i i * T j j - T i j * T j i) *
+      ∏ l ∈ Finset.univ \ {i, j}, T l l := by exact_mod_cast hf
+  have hsym : T j i = T i j := by
+    have h := hT.isHermitian.apply i j
+    simpa using h
+  have hsquare : 1 ≤ T i j * T j i := by
+    rw [hsym]
+    have h := sq_pos_of_ne_zero hoff
+    nlinarith
+  have hdiag := (IntegerHadamard.integer_posDef_hadamard T hT).1
+  have hr : 0 ≤ ∏ l ∈ Finset.univ \ {i, j}, T l l :=
+    Finset.prod_nonneg fun l _ => le_of_lt (hdiag l)
+  have hbound : T.det ≤ (T i i * T j j - 1) *
+      ∏ l ∈ Finset.univ \ {i, j}, T l l :=
+    hfi.trans (mul_le_mul_of_nonneg_right (by linarith) hr)
+  have hp := Finset.prod_sdiff (f := fun l => T l l)
+    (Finset.subset_univ ({i, j} : Finset n))
+  rw [Finset.prod_pair hij] at hp
+  calc
+    T.det * (T i i * T j j) ≤
+        ((T i i * T j j - 1) * ∏ l ∈ Finset.univ \ {i, j}, T l l) *
+          (T i i * T j j) :=
+      mul_le_mul_of_nonneg_right hbound (le_of_lt (mul_pos (hdiag i) (hdiag j)))
+    _ = (T i i * T j j - 1) * ∏ l, T l l := by rw [mul_assoc, hp]
+
+/-- The smaller scalar endpoint margin and the two-coordinate determinant loss. -/
+def selectorGap (k : ℕ) (p : ℝ) : ℝ :=
+  min (min (Real.log ((k : ℝ) / (k - 1 : ℕ)) - p)
+    (p - Real.log (((k + 1 : ℕ) : ℝ) / k)))
+    (Real.log ((k : ℝ) ^ 2) - Real.log ((k : ℝ) ^ 2 - 1))
+
+/-- The selector gap is positive throughout the strict price window. -/
+theorem selectorGap_pos {k : ℕ} (hk : 2 ≤ k) {p : ℝ}
+    (hlo : Real.log (((k + 1 : ℕ) : ℝ) / k) < p)
+    (hhi : p < Real.log ((k : ℝ) / (k - 1 : ℕ))) :
+    0 < selectorGap k p := by
+  have hkR : (2 : ℝ) ≤ k := by exact_mod_cast hk
+  have hs : 0 < (k : ℝ) ^ 2 - 1 := by nlinarith
+  exact lt_min (lt_min (sub_pos.mpr hhi) (sub_pos.mpr hlo))
+    (sub_pos.mpr (Real.strictMonoOn_log hs
+      (show 0 < (k : ℝ) ^ 2 by nlinarith) (by linarith)))
+
 #print axioms fischer_two_block
+#print axioms integer_fischer_gap
+#print axioms selectorGap_pos
 
 end
 end D5.S3.Arith.GoldenResource.IntegerFischerSelector
