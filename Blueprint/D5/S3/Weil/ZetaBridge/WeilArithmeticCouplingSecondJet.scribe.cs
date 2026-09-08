@@ -24,7 +24,7 @@ internal sealed class WeilArithmeticCouplingSecondJetDocument : IScribeDocumentD
     public DocumentDefinition Create()
     {
         Formula c = F.Id("c"), N = F.Id("N"), m = F.Id("m"), v = F.Id("v");
-        Formula budget = Call("B_arith", c);
+        Formula budget = Call("BArith", c);
         Formula rhs = Seq(
             new Formula.Fraction(
                 Seq(D(2), Sp, budget, Sp, new Formula.Power(N, Grp(D(2)))),
