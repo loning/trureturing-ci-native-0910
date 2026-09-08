@@ -1,0 +1,188 @@
+"""One-shot offline probe. No SOS search or proof generation."""
+import itertools
+import json
+import math
+import time
+from functools import lru_cache
+
+import sympy as sp
+from sympy.polys.rings import ring
+from sympy.polys.domains import QQ
+
+LIMIT = 50000
+R, T, x, u, v, w, y, r, s, z = ring("t,x,u,v,w,y,r,s,z", QQ)
+t = sp.Symbol("t")
+C = sp.symbols("C1:5")
+
+
+def emit(record):
+    print(json.dumps(record, sort_keys=True), flush=True)
+
+
+def esym(roots):
+    return [R.one] + [
+        sum((math.prod(group) for group in itertools.combinations(roots, k)), R.zero)
+        for k in range(1, len(roots) + 1)
+    ]
+
+
+def evaluate(poly, values):
+    out = R.zero
+    for powers, coeff in poly.terms():
+        term = R.ground_new(QQ.convert(coeff))
+        for value, power in zip(values, powers):
+            term *= value ** power
+        out += term
+    return out
+
+
+def family(left, right):
+    n = len(left)
+    A = (sp.Integer(1),) + sp.symbols("A1:" + str(n + 1))
+    B = (sp.Integer(1),) + sp.symbols("B1:" + str(n + 1))
+    weights = [
+        sp.prod(n - j for j in range(k)) *
+        sp.prod(n + t - 1 - j for j in range(k))
+        for k in range(n + 1)
+    ]
+    ea, eb = esym(left), esym(right)
+    values = (T, *ea[1:], *eb[1:])
+    gens = (t, *A[1:], *B[1:])
+    numerators, denominators, formulas = [], [], []
+    for k in range(n + 1):
+        expr = sp.cancel(weights[k] * sum(
+            A[i] * B[k-i] / (weights[i] * weights[k-i])
+            for i in range(k + 1)
+        ))
+        num, den = sp.fraction(expr)
+        numerators.append(evaluate(sp.Poly(num, *gens), values))
+        denominators.append(sp.factor(den))
+        formulas.append(str(expr))
+    return numerators, denominators, formulas
+
+
+def reduced(num, den):
+    # All nonconstant denominator factors depend only on t.
+    _, factors = sp.factor_list(den, t)
+    for factor, exponent in factors:
+        divisor = R.from_expr(factor)
+        for _ in range(exponent):
+            quotient, remainder = divmod(num, divisor)
+            if remainder:
+                break
+            num = quotient
+            den = sp.cancel(den / factor)
+    content, primitive = num.primitive()
+    if content:
+        assert content > 0
+        num = primitive
+        den = sp.cancel(den / sp.Rational(content.numerator, content.denominator))
+    return num, sp.factor(den)
+
+
+def substitute(expr, fam):
+    nums, dens, _ = fam
+    poly = sp.Poly(expr, *C[:len(nums)-1])
+    terms = poly.terms()
+    term_denoms = [
+        sp.prod(dens[i+1] ** power for i, power in enumerate(powers))
+        for powers, _ in terms
+    ]
+    common = sp.lcm_list(term_denoms)
+
+    @lru_cache(None)
+    def numerator_power(i, power):
+        return nums[i+1] ** power
+
+    out = R.zero
+    for (powers, coeff), den in zip(terms, term_denoms):
+        scale = sp.cancel(common / den)
+        assert sp.fraction(scale)[1] == 1
+        term = R.ground_new(QQ.convert(coeff)) * R.from_expr(scale)
+        for i, power in enumerate(powers):
+            term *= numerator_power(i, power)
+        out += term
+    return reduced(out, common)
+
+
+def reading(label, num, den, **extra):
+    counts = {}
+    for powers in num:
+        counts[powers[0]] = counts.get(powers[0], 0) + 1
+    negative = sum(1 for coeff in num.values() if coeff < 0)
+    return {
+        "id": label,
+        "monomials": len(num),
+        "t_degree": max(counts, default=-1),
+        "by_t_degree": counts,
+        "negative_coefficients": negative,
+        "positive_coefficients": len(num) - negative,
+        "root_total_degree": max((sum(p[1:]) for p in num), default=-1),
+        "positive_denominator": str(den),
+        **extra,
+    }
+
+
+def main():
+    emit({"phase": "environment", "sympy": sp.__version__,
+          "domain": str(QQ), "variables": [str(g) for g in R.gens],
+          "limit": LIMIT, "network_calls": 0})
+
+    m3 = family([x, x+u, x+u+v], [y, y+r, y+r+s])
+    c1, c2, c3, c4 = C
+    disc3 = c1**2*c2**2 - 4*c2**3 - 4*c1**3*c3 - 27*c3**2 + 18*c1*c2*c3
+    num, den = substitute(disc3, m3)
+    calibration = reading("m3_discriminant", num, den, phase="calibration")
+    emit(calibration)
+    assert calibration["monomials"] == 787
+    assert calibration["negative_coefficients"] == 20
+
+    ordered = family([x, x+u, x+u+v, x+u+v+w], [y, y+r, y+r+s, y+r+s+z])
+    raw = family([x, u, v, w], [y, r, s, z])
+    emit({"phase": "definition_formulas", "coefficients": ordered[2]})
+    for coordinate, fam in [("raw_roots", raw), ("ordered_gaps", ordered)]:
+        for k, (num, den) in enumerate(zip(fam[0], fam[1])):
+            num, den = reduced(num, den)
+            emit(reading("c" + str(k), num, den, phase="coefficient",
+                         coordinates=coordinate))
+
+    signed = [sp.Integer(1), -c1, c2, -c3, c4]
+    moments = [sp.Integer(4)]
+    for k in range(1, 7):
+        value = -sum(signed[j] * moments[k-j] for j in range(1, min(k, 5)))
+        if k <= 4:
+            value -= k * signed[k]
+        moments.append(sp.expand(value))
+    H = sp.Matrix(4, 4, lambda i, j: moments[i+j])
+    conditions = [("C" + str(k), C[k-1]) for k in range(1, 5)]
+    for size in range(1, 5):
+        for indices in itertools.combinations(range(4), size):
+            minor = H.extract(indices, indices).det(method="domain-ge")
+            conditions.append(("H" + "".join(map(str, indices)), sp.expand(minor)))
+    expected_order = [
+        "C1", "C2", "C3", "C4", "H0", "H1", "H2", "H3",
+        "H01", "H02", "H03", "H12", "H13", "H23",
+        "H012", "H013", "H023", "H123", "H0123"
+    ]
+    assert [label for label, _ in conditions] == expected_order
+    emit({"phase": "condition_definitions",
+          "conditions": [{"id": label, "in_output_elementary_coefficients": str(expr)}
+                         for label, expr in conditions]})
+
+    for index, (label, expr) in enumerate(conditions):
+        start = time.perf_counter()
+        num, den = substitute(expr, ordered)
+        record = reading(label, num, den, phase="inequality", coordinates="ordered_gaps",
+                         elapsed_seconds=time.perf_counter()-start)
+        emit(record)
+        if record["monomials"] > LIMIT:
+            emit({"phase": "stop", "stopped_by": 3, "status": "blocked-on-cost",
+                  "trigger": label, "monomials": record["monomials"],
+                  "unmeasured": expected_order[index+1:]})
+            return
+    emit({"phase": "complete", "stopped_by": None, "status": "within-measured-envelope"})
+
+
+if __name__ == "__main__":
+    main()
+
