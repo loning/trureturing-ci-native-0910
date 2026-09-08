@@ -337,4 +337,30 @@ OBSERVED SL-031 D5/S3/Zeros/Convolution/GribinskiDegreeThreeDiscriminant.lean: U
 This preserves the boundary between machine admission and the supplied
 independent utility/proof-shape review. The utility table was also checked
 against the 47 included semantic-report declaration names: missing rows **[]**.
-Step 7 pending; remote required-CI results are not inferred from local PASS.
+Remote required-CI results are not inferred from local PASS.
+
+## Step 7: Pull Request
+
+Preflight checkpoint `9081184815` was pushed successfully. The required command
+was invoked once, with no `AUTO_MERGE` argument and no watch-budget override:
+
+```text
+make pr-open HEAD=lane/math/gribinski-m3-deposit-0909 MESSAGE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/gribinski-m3-deposit-0909/attempt-1/pr-message.md
+```
+
+PR **#6533**: https://github.com/the-omega-institute/trureturing/pull/6533
+Base `dev`, head `lane/math/gribinski-m3-deposit-0909`, state **OPEN**.
+GitHub's creation API returned **exit_code=0**. `autoMergeRequest=null` and
+`isDraft=false` were read back. The full provenance, escape/utility tables,
+freeze identities, cover failures and preflight result are in its body.
+
+This checkpoint is committed and pushed immediately after PR creation, while
+the same `make pr-open` process continues its native required-CI wait. At the
+creation checkpoint the three checks were not yet reported (`missing=3`).
+Its eventual overall EXIT and CI observation are written into the worker-owned
+`result.json` and appended to the PR body after the wait returns. No local PASS
+is substituted for remote CI, and no merge is requested or claimed.
+
+Delivery scope: both canonical state/event pairs are on the pushed branch,
+**frozen, uncovered**, and the PR is open for integration. The two modules
+are not claimed frozen on dev until that PR is actually merged.
