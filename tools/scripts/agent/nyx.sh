@@ -259,6 +259,20 @@ __verdict_of_payload() {  # 判**取回的文本**,不判文件 —— 活判决
   # "Message delivery timed out" has no upstream safe-retry promise either.
   [ -n "$r" ] || { echo UNKNOWN; return; }
   last=$(printf '%s' "$r" | awk 'NF{l=$0} END{print l}')
+  # 2026-09-09 实测漏判:`nyxid oracle result` **exit 0** 而答案被截断,
+  # 载体错误串**接在正文半句话后面、且落在整份 payload 的最末尾**
+  # (末 60 字符 `…α>-1 的整个参数区Message delivery timed out. Please try again.Retry`),
+  # 于是绕过下面的 cli_rc 门被判 OK —— 一次失败的派席在调用方眼里是成功的(第 8.4 条)。
+  #
+  # **判据是「以它结尾」∧「不只是它」两项合取**,三态各自可分:
+  #   截断态  末行以该串**结尾**且**不等于**它(错误被接在半句话后)      → DELIVERY
+  #   引用态  末行含该串但以答案自己的结尾收口(`…Retry"}`)             → 不触发(`answer-quotes-delivery-last-line`)
+  #   纯诊断  末行**恰好等于**该串(`answer-delivery-text-zero-exit`)    → 不触发,交给 cli_rc 门按既有判例处理
+  # 少任一项都会误判:只判「结尾」会翻掉纯诊断那条,只判「不等于」会翻掉引用那条(两次实测各红 1 条)。
+  case "$last" in
+    *"Message delivery timed out. Please try again.Retry")
+      [ "$last" = "Message delivery timed out. Please try again.Retry" ] || { echo DELIVERY; return; };;
+  esac
   if [ "$cli_rc" -ne 0 ]; then   # 只认 CLI 非零退出;exit 0 时末行即便是该诊断原文也是答案(复核 attempt 2 反例)
     case "$last" in
       *"Task failed (prompt_delivery_uncertain)"*) echo UNCERTAIN; return;;
