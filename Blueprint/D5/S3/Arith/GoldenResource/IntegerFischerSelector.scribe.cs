@@ -46,6 +46,18 @@ internal sealed class IntegerFischerSelectorDocument : IScribeDocumentDefinition
                     + "diagonal entries yields the integer form of the bound."))),
                 DescribeRole.Theorem),
             Describe.Lean(
+                DescribeId.Create("fischer-selector-gap-two-margins"),
+                DeclarationHandle.Create(Prefix + "selectorGap_eq_min"),
+                H("Only the endpoint margins determine the gap"),
+                StatementSource.FromAuthor(GapMinimumFormula()),
+                AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("The two endpoint margins add to log(k squared) "
+                    + "minus log(k squared minus one), since (k-1)(k+1) equals k squared "
+                    + "minus one. Both margins are positive on the price interval, so their "
+                    + "minimum does not exceed their sum. Thus delta(k, p) equals the "
+                    + "minimum of the two endpoint margins."))),
+                DescribeRole.Theorem),
+            Describe.Lean(
                 DescribeId.Create("fischer-selector-gap-positive"),
                 DeclarationHandle.Create(Prefix + "selectorGap_pos"),
                 H("A positive margin depending on k and p"),
@@ -69,6 +81,20 @@ internal sealed class IntegerFischerSelectorDocument : IScribeDocumentDefinition
                     + "entry's loss. If every diagonal entry equals k, a nonzero off-diagonal "
                     + "entry gives the two-coordinate loss. Taking logarithms cancels "
                     + "the remaining diagonal product, so this loss is independent of dimension."))),
+                DescribeRole.Theorem),
+            Describe.Lean(
+                DescribeId.Create("fischer-selector-gap-attained"),
+                DeclarationHandle.Create(Prefix + "selectorGap_sharp"),
+                H("The gap is attained in every nonempty dimension"),
+                StatementSource.FromAuthor(GapSharpFormula()),
+                AssessedProvenance.FromRepo(),
+                Blocks(Paragraph(Text("Choose an index and replace its diagonal entry in k times "
+                    + "the identity by k-1 or k+1. Both resulting integer matrices are positive "
+                    + "definite and distinct from k times the identity. The logarithm of a "
+                    + "diagonal determinant is the sum of the logarithms of its entries. "
+                    + "All unchanged coordinates cancel from the objective difference, leaving "
+                    + "exactly log(k/(k-1))-p or p-log((k+1)/k). Choose the smaller margin; "
+                    + "equality with delta(k, p) shows that the uniform gap cannot be increased."))),
                 DescribeRole.Theorem))));
 
     private static Formula FischerFormula()
@@ -100,6 +126,13 @@ internal sealed class IntegerFischerSelectorDocument : IScribeDocumentDefinition
             [Bound("k", Naturals()), Bound("p", Reals())],
             Implies(PriceWindow(), Lt(D(0), MarginBody()))));
 
+    private static Formula GapMinimumFormula() =>
+        Disp(new Formula.BindMany(FormulaQuantifier.ForAll,
+            [Bound("k", Naturals()), Bound("p", Reals())],
+            Implies(PriceWindow(),
+                new Formula.Relation(Margin(), FormulaRelationOperator.Equal,
+                    Call("min", Sub(RatioPrev(), F.Id("p")), Sub(F.Id("p"), RatioNext()))))));
+
     private static Formula SelectorFormula()
     {
         Formula optimum = Mul(Group(Call("card", F.Id("n"))),
@@ -112,6 +145,28 @@ internal sealed class IntegerFischerSelectorDocument : IScribeDocumentDefinition
                         Le(objective, Sub(optimum, Margin()))))));
         return QuantifiedMatrix(Integers(), new Formula.BindMany(FormulaQuantifier.ForAll,
             [Bound("k", Naturals()), Bound("p", Reals())], body));
+    }
+
+    private static Formula GapSharpFormula()
+    {
+        Formula optimum = Sub(Call("log", Seq(F.Id("k"), Caret,
+                Grp(Call("card", F.Id("n"))))),
+            Mul(F.Id("p"), Group(Mul(Call("card", F.Id("n")), F.Id("k")))));
+        Formula objective = Sub(Call("log", Det()), Mul(F.Id("p"), Call("tr", F.Id("T"))));
+        Formula witness = new Formula.BindMany(FormulaQuantifier.Exists,
+            [Bound("T", Call("Matrix", F.Id("n"), F.Id("n"), Integers()))],
+            And(PosDefInteger(),
+                And(NotEqual(F.Id("T"), Mul(F.Id("k"), Identity())),
+                    new Formula.Relation(Sub(optimum, Group(objective)),
+                        FormulaRelationOperator.Equal, Margin()))));
+        return Disp(Seq(
+            Forall, Sp, F.Id("n"), Colon, Sp, F.Id("Type"), Comma, Sp,
+            OpenBracket, Call("Fintype", F.Id("n")), CloseBracket, Sp,
+            OpenBracket, Call("DecidableEq", F.Id("n")), CloseBracket, Sp,
+            OpenBracket, Call("Nonempty", F.Id("n")), CloseBracket, Comma, Sp,
+            new Formula.BindMany(FormulaQuantifier.ForAll,
+                [Bound("k", Naturals()), Bound("p", Reals())],
+                Implies(PriceWindow(), witness))));
     }
 
     private static Formula QuantifiedMatrix(Formula scalars, Formula body) => Disp(Seq(
