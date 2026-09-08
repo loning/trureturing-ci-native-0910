@@ -21,7 +21,7 @@ theorem trial_monic (s : Finset ℂ) (n : ℕ) : (trial s n).Monic := by
 
 theorem trial_degree (s : Finset ℂ) (n : ℕ) (hn : s.card ≤ n) :
     (trial s n).natDegree = n := by
-  rw [trial, (monic_prod_X_sub_C id s).natDegree_mul
+  rw [trial, (monic_prod_X_sub_C (fun a : ℂ => a) s).natDegree_mul
     ((monic_X_sub_C (1 : ℂ)).pow _)]
   rw [natDegree_prod_of_monic (fun a _ => monic_X_sub_C a)]
   simp only [natDegree_X_sub_C, Finset.sum_const, smul_eq_mul, mul_one,
@@ -97,7 +97,7 @@ theorem positive_distance {A : Type*} [MetricSpace A] (S : Set A)
 theorem spectral_distance_tendsto (rho : ℕ → ℂ)
     (h : Tendsto (fun n => ‖rho n‖) atTop atTop) :
     Tendsto (fun n => ‖(1 - (rho n)⁻¹) - 1‖) atTop (𝓝 0) := by
-  simpa only [sub_sub_cancel_left, norm_neg, norm_inv] using
+  simpa only [sub_sub_cancel_left, norm_neg, norm_inv, Function.comp_def] using
     tendsto_inv_atTop_zero.comp h
 
 #print axioms trial_bound

@@ -218,6 +218,8 @@ curl -fsS --max-time 25 --get 'https://loogle.lean-lang.org/json' --data-urlenco
 
 收窄的 Loogle 查询(与批次 4 相同 endpoint/结构化解析,打印前 3):`Matrix.gram` 18 命中;`Polynomial.Monic, MeasureTheory.Measure` 0 命中;`"orthogonal", Polynomial` 0 命中;`riemannZeta, "infinite"` 0 命中;`"supergeometric"` 0 命中。零命中只对这些类型/名字查询成立。额外本地查询 `rg -n 'theorem prod_eq_zero\|lemma prod_eq_zero\|tendsto.*inv₀\|tendsto_inv₀\|limsup_le_of_tendsto' M/Algebra/BigOperators/GroupWithZero/Finset.lean M/Topology/Algebra/GroupWithZero M/Topology/Order/LiminfLimsup.lean` 返回 2 条 `Finset.prod_eq_zero` 候选,但因中间目录不存在而 exit 2;这是**部分检索失败**,不得记完整零命中。
 
+第二次片段 `make lean` **exit 2**,日志 `lean-probe-2.log`。上一轮两个规范化点已消除;剩余 L26 参数类型错误和其遗留目标: `natDegree_prod_of_monic` 的 finite-set 与 polynomial-family 为显式参数,本席漏传了它们。该失败仍是调用签名错误,不作为数学缺陷;不加证明预算、不改估计常数。`spectral_distance_tendsto` 在本轮已无错误。
+
 ## 明确未主张
 
 未证该定理;未主张可证;未主张检索穷尽;未主张与 RH 有任何蕴含关系。尚无 Lean 片段或构建结果。
