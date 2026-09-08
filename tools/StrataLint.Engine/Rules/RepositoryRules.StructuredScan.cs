@@ -12,8 +12,8 @@ internal static partial class RepositoryRules
 {
     /// <summary>
     /// The candidate structural position of a node, tracked as the scan descends. <c>Entry</c> is
-    /// assigned to the root of every scanned document, which is where a digestion entry would sit
-    /// if the document were one; the position says where a node stands, not what the document is.
+    /// assigned to document roots except Actions workflows. A slot says where a node stands,
+    /// not whether it is an anomaly record.
     /// </summary>
     private enum AddressSlot
     {
@@ -26,6 +26,12 @@ internal static partial class RepositoryRules
         ReceiptList,
         ReceiptEntry,
         ReceiptGid,
+        Workflow,
+        WorkflowJobs,
+        WorkflowJob,
+        WorkflowSteps,
+        WorkflowStep,
+        WorkflowStepScalar,
     }
 
     private static bool IsGovernedStructured(RepoPath path, ValidatedPolicy policy) =>
@@ -87,7 +93,7 @@ internal static partial class RepositoryRules
                     path,
                     property.Value,
                     $"{location}.{property.Name}",
-                    ChildSlot(slot, property.Name),
+                    ChildSlot(slot, property.Name, property.Value.ValueKind),
                     tasks,
                     findings,
                     scanAnomalies,
@@ -218,6 +224,7 @@ internal static partial class RepositoryRules
             "\\\\u([0-9a-fA-F]{4})",
             static match => ((char)Convert.ToInt32(match.Groups[1].Value, 16)).ToString());
         if ((AnomalyBearingPattern.IsMatch(unescaped)
+                && slot != AddressSlot.WorkflowStepScalar
                 && !IsDeclarationGidResidueAtDeclaredSlot(path, slot, unescaped)
                 )
             || Regex.IsMatch(unescaped, "\\\"(?:kind|type|category|record_type)\\\"\\s*:"))
@@ -227,13 +234,17 @@ internal static partial class RepositoryRules
     }
 
     /// <summary>Advances the structural position by one property name.</summary>
-    private static AddressSlot ChildSlot(AddressSlot slot, string name) => (slot, name) switch
+    private static AddressSlot ChildSlot(AddressSlot slot, string name, JsonValueKind kind) => (slot, name) switch
     {
         (AddressSlot.Entry, "coverage_gids") => AddressSlot.CoverageList,
         (AddressSlot.Entry, "receipts") => AddressSlot.Receipts,
         (AddressSlot.Receipts, "scribe") => AddressSlot.ReceiptList,
         (AddressSlot.CoverageEntry, "gid") => AddressSlot.CoverageGid,
         (AddressSlot.ReceiptEntry, "gid") => AddressSlot.ReceiptGid,
+        (AddressSlot.Workflow, "jobs") when kind == JsonValueKind.Object => AddressSlot.WorkflowJobs,
+        (AddressSlot.WorkflowJobs, _) when kind == JsonValueKind.Object => AddressSlot.WorkflowJob,
+        (AddressSlot.WorkflowJob, "steps") when kind == JsonValueKind.Array => AddressSlot.WorkflowSteps,
+        (AddressSlot.WorkflowStep, "if" or "name") when kind == JsonValueKind.String => AddressSlot.WorkflowStepScalar,
         _ => AddressSlot.None,
     };
 
@@ -241,6 +252,7 @@ internal static partial class RepositoryRules
     {
         AddressSlot.CoverageList when elementKind == JsonValueKind.Object => AddressSlot.CoverageEntry,
         AddressSlot.ReceiptList => AddressSlot.ReceiptEntry,
+        AddressSlot.WorkflowSteps when elementKind == JsonValueKind.Object => AddressSlot.WorkflowStep,
         _ => AddressSlot.None,
     };
 
@@ -320,11 +332,15 @@ internal static partial class RepositoryRules
         {
             var value = YamlSubsetParser.Parse(text);
             var element = JsonSerializer.SerializeToElement(value);
+            const string workflowPrefix = ".github/workflows/";
+            var rootSlot = path.StartsWith(workflowPrefix, StringComparison.Ordinal)
+                && !path.AsSpan(workflowPrefix.Length).Contains('/')
+                ? AddressSlot.Workflow : AddressSlot.Entry;
             ScanJson(
                 path,
                 element,
                 "$",
-                AddressSlot.Entry,
+                rootSlot,
                 tasks,
                 findings,
                 scanAnomalies,
