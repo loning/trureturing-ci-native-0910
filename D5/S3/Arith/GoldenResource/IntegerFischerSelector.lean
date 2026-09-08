@@ -129,9 +129,104 @@ theorem selectorGap_pos {k : ℕ} (hk : 2 ≤ k) {p : ℝ}
     (sub_pos.mpr (Real.strictMonoOn_log hs
       (show 0 < (k : ℝ) ^ 2 by nlinarith) (by linarith)))
 
+private theorem integer_scalar_bound {k : ℕ} (hk : 2 ≤ k) {p : ℝ}
+    (hlo : Real.log (((k + 1 : ℕ) : ℝ) / k) < p)
+    (hhi : p < Real.log ((k : ℝ) / (k - 1 : ℕ)))
+    (t : ℤ) (ht : 0 < t) :
+    Real.log (t : ℝ) - p * t ≤ Real.log (k : ℝ) - p * k ∧
+      (t ≠ (k : ℤ) → selectorGap k p ≤
+        (Real.log (k : ℝ) - p * k) - (Real.log (t : ℝ) - p * t)) := by
+  have hcZ := Int.toNat_of_nonneg (le_of_lt ht)
+  have hc : (t.toNat : ℝ) = (t : ℝ) := by exact_mod_cast hcZ
+  have hn : 0 < t.toNat := by omega
+  have h := DiscreteLogSelector.discrete_log_unique_maximum hk hlo hhi t.toNat hn
+  change (Real.log (t.toNat : ℝ) - p * t.toNat ≤ Real.log (k : ℝ) - p * k) ∧
+    (t.toNat ≠ k → min (Real.log ((k : ℝ) / (k - 1 : ℕ)) - p)
+      (p - Real.log (((k + 1 : ℕ) : ℝ) / k)) ≤
+      (Real.log (k : ℝ) - p * k) - (Real.log (t.toNat : ℝ) - p * t.toNat)) at h
+  rw [hc] at h
+  refine ⟨h.1, fun hne => (min_le_left _ _).trans (h.2 ?_)⟩
+  intro heq
+  apply hne
+  rw [heq] at hcZ
+  exact hcZ.symm
+
+/-- The strict scalar price window selects the scalar integer matrix, with a gap
+depending only on the selected integer and the price, for every finite dimension. -/
+theorem integer_log_unique_maximum {k : ℕ} (hk : 2 ≤ k) {p : ℝ}
+    (hlo : Real.log (((k + 1 : ℕ) : ℝ) / k) < p)
+    (hhi : p < Real.log ((k : ℝ) / (k - 1 : ℕ)))
+    (T : Matrix n n ℤ) (hT : (T.map fun z => (z : ℝ)).PosDef) :
+    0 < selectorGap k p ∧
+      Real.log (T.det : ℝ) - p * (T.trace : ℝ) ≤
+        (Fintype.card n : ℝ) * (Real.log (k : ℝ) - p * k) ∧
+      (T ≠ (k : ℤ) • (1 : Matrix n n ℤ) →
+        Real.log (T.det : ℝ) - p * (T.trace : ℝ) ≤
+          (Fintype.card n : ℝ) * (Real.log (k : ℝ) - p * k) - selectorGap k p) := by
+  let b := Real.log (k : ℝ) - p * k
+  let f : n → ℝ := fun i => Real.log (T i i : ℝ) - p * (T i i : ℝ)
+  have hdata := IntegerHadamard.integer_posDef_hadamard T hT
+  have hd : 0 < (T.det : ℝ) := by exact_mod_cast hdata.2.1
+  have hdiag (i : n) : 0 < (T i i : ℝ) := by exact_mod_cast hdata.1 i
+  have hprod : 0 < ∏ i, (T i i : ℝ) := Finset.prod_pos fun i _ => hdiag i
+  have hlog : Real.log (T.det : ℝ) ≤ ∑ i, Real.log (T i i : ℝ) := by
+    calc
+      Real.log (T.det : ℝ) ≤ Real.log (∏ i, (T i i : ℝ)) :=
+        Real.log_le_log hd (by exact_mod_cast hdata.2.2.1)
+      _ = ∑ i, Real.log (T i i : ℝ) := Real.log_prod fun i _ => (hdiag i).ne'
+  have hscalar (i : n) : f i ≤ b ∧
+      (T i i ≠ (k : ℤ) → selectorGap k p ≤ b - f i) :=
+    integer_scalar_bound hk hlo hhi (T i i) (hdata.1 i)
+  have hsum : ∑ i, f i = ∑ i, Real.log (T i i : ℝ) - p * (T.trace : ℝ) := by
+    simp [f, Finset.sum_sub_distrib, ← Finset.mul_sum, Matrix.trace]
+  have hsumle : ∑ i, f i ≤ (Fintype.card n : ℝ) * b := by
+    simpa using Finset.sum_le_sum (s := Finset.univ) (fun i _ => (hscalar i).1)
+  refine ⟨selectorGap_pos hk hlo hhi, ?_, ?_⟩
+  · change Real.log (T.det : ℝ) - p * (T.trace : ℝ) ≤ (Fintype.card n : ℝ) * b
+    linarith
+  · intro hoff
+    change Real.log (T.det : ℝ) - p * (T.trace : ℝ) ≤
+      (Fintype.card n : ℝ) * b - selectorGap k p
+    by_cases hall : ∀ i, T i i = (k : ℤ)
+    · have hx : ∃ i j, i ≠ j ∧ T i j ≠ 0 := by
+        by_contra! hz
+        apply hoff
+        ext i j
+        by_cases hij : i = j
+        · subst j
+          simp [hall]
+        · simp [hij, hz i j hij]
+      obtain ⟨i, j, hij, hoffij⟩ := hx
+      have hf := integer_fischer_gap T hT hij hoffij
+      rw [hall i, hall j] at hf
+      have hfR : (T.det : ℝ) * (k : ℝ) ^ 2 ≤
+          ((k : ℝ) ^ 2 - 1) * ∏ l, (T l l : ℝ) := by
+        simp only [pow_two]
+        exact_mod_cast hf
+      have hkR : (2 : ℝ) ≤ k := by exact_mod_cast hk
+      have hk2 : 0 < (k : ℝ) ^ 2 := by nlinarith
+      have hk2m : 0 < (k : ℝ) ^ 2 - 1 := by nlinarith
+      have hlg := Real.log_le_log (mul_pos hd hk2) hfR
+      rw [Real.log_mul hd.ne' hk2.ne', Real.log_mul hk2m.ne' hprod.ne',
+        Real.log_prod (fun l _ => (hdiag l).ne')] at hlg
+      have hsumEq : ∑ l, f l = (Fintype.card n : ℝ) * b := by
+        simp [f, b, hall, mul_sub]
+      have hgap : selectorGap k p ≤
+          Real.log ((k : ℝ) ^ 2) - Real.log ((k : ℝ) ^ 2 - 1) := min_le_right _ _
+      linarith
+    · push Not at hall
+      obtain ⟨i, hi⟩ := hall
+      have hiGap := (hscalar i).2 hi
+      have hsingle : b - f i ≤ ∑ l, (b - f l) :=
+        Finset.single_le_sum (fun l _ => sub_nonneg.mpr (hscalar l).1) (Finset.mem_univ i)
+      have hgapSum : ∑ l, (b - f l) = (Fintype.card n : ℝ) * b - ∑ l, f l := by
+        simp [Finset.sum_sub_distrib]
+      linarith
+
 #print axioms fischer_two_block
 #print axioms integer_fischer_gap
 #print axioms selectorGap_pos
+#print axioms integer_log_unique_maximum
 
 end
 end D5.S3.Arith.GoldenResource.IntegerFischerSelector
