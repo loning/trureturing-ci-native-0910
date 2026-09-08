@@ -24,11 +24,8 @@ internal static class ReceiptFreeDocumentCatalog
             throw new InvalidOperationException("Scribe document corpus must not be empty.");
         }
 
-        var inventory = BackfillInventoryLoader.LoadRoot(repositoryRoot);
-        var receiptBound = inventory.RequireDigestionEntries()
-            .SelectMany(static entry => entry.Receipts.Scribe)
-            .Select(static receipt => ScribeEmissionAttestation.DocumentGid(receipt.Gid))
-            .ToImmutableHashSet(StringComparer.Ordinal);
+        // The ledger no longer has a receipt field to read, so nothing can be receipt-bound.
+        var receiptBound = ImmutableHashSet<string>.Empty;
         var unknown = receiptBound.Except(documentGids, StringComparer.Ordinal)
             .Order(StringComparer.Ordinal)
             .ToArray();

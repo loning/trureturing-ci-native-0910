@@ -27,7 +27,6 @@ public sealed partial class CoverAtomTests
             candidate => candidate.AtomId == CoverWorld.DefaultAtomId);
         Assert.Equal(["D5/S0/Carrier/Probe.probe"], entry.CoverageGids.ToArray());
         Assert.Single(entry.Coverage);
-        Assert.Empty(entry.Receipts.Scribe);
         Assert.Equal(DigestionMigrationState.Absorbed, entry.ProjectedStatus.Migration);
         Assert.Equal(DigestionTruthState.Closed, entry.ProjectedStatus.Truth);
     }
@@ -102,7 +101,6 @@ public sealed partial class CoverAtomTests
             candidate => candidate.AtomId == CoverWorld.DefaultAtomId);
         Assert.Equal(["D5/S0/Carrier/Probe.probe"], entry.CoverageGids.ToArray());
         Assert.Single(entry.Coverage);
-        Assert.Empty(entry.Receipts.Scribe);
     }
 
     [Fact]

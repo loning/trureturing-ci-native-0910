@@ -130,9 +130,7 @@ internal sealed record DigestionFrontierFixture(
             atomId,
             fingerprints,
             [],
-            new DigestionReceipts(
-                [],
-                [],
+            new DigestionReceipts([],
                 chainAtoms.IsDefault ? [] : chainAtoms,
                 null,
                 quarantine,
