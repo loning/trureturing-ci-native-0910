@@ -23,7 +23,7 @@ triage: anchor
 
 `dispatch` 按拟议逃逸的明确程度、数值可验性和 open 证据排序；它是有停止条件的后续探针建议，**不是已经构造出逃逸见证**。同族依赖任务合并派，避免按 A 号重复实施。所有签名均为未编译的数学伪签名。bind 风险是源代码声明检索判断：列出的通用声明只说明最接近的候选；`none` 不是全库不存在定理的证明。
 
-本检查点已分诊 **72/93** 条：dispatch 7，note-only 47，drop 18；文献 open 43，published 9，unknown 20。 尚未列出的条目仍在查证，不能视为已淘汰。
+本检查点已分诊 **78/93** 条：dispatch 7，note-only 52，drop 19；文献 open 47，published 9，unknown 22。 尚未列出的条目仍在查证，不能视为已淘汰。
 
 ## Verified locator
 
@@ -53,6 +53,7 @@ triage: anchor
 | [A382590](https://oeis.org/A382590) | 固定初值 a₀=b₀=b₁=1、a₁=2 的耦合递推中，∣aₙ∣ 的第 k 个不同质因数（不足时记1）对每个 k>1 最终周期。 | 1 | published | low | yes | note-only |
 | [A392197](https://oeis.org/A392197) | SRS(m)所有部分宽为1且中央两部分相遇，当且仅当奇因子数等于2-稠密因子块数且中央相邻因子满足d₊=2d₋+1。 | 1 | unknown | med | yes | note-only |
 | [A394791](https://oeis.org/A394791) | 中心两部相接且有2n个 SRS 部分的最小整数，等于相同条件的2n稠密块最小整数。 | 1 | unknown | med | yes | note-only |
+| [A394906](https://oeis.org/A394906) | 猜想以素数为位权且十进制读值最大的表示中，最右两位数字不超过2，其余位数字不超过1。 | 1 | open | med | yes | note-only |
 | [A395156](https://oeis.org/A395156) | 中心两部相接且有2k个 SRS 部分的第 n 个整数，等于满足中央因子关系的2k稠密块整数。 | 1 | unknown | med | yes | note-only |
 | [A396836](https://oeis.org/A396836) | 猜想把最小未用整数的无前导零二进制字依次写在方形螺线上、禁止零位互为马步的贪心序列覆盖所有正整数。 | 1 | open | low | yes | note-only |
 | [A396837](https://oeis.org/A396837) | 猜想把最小未用整数的无前导零二进制字依次写在方形螺线上、禁止零位互为马步的贪心序列覆盖所有非负整数（零写成单个0）。 | 1 | open | low | yes | note-only |
@@ -61,6 +62,10 @@ triage: anchor
 | [A352656](https://oeis.org/A352656) | 令 a(n) 为 n×n×2n 盒内平面分拆数，猜想所有素数 p 及 n,r≥1 满足 a(np^r)≡a(np^(r−1))^p (mod p^(4r))。 | 3 | unknown | low | yes | note-only |
 | [A380583](https://oeis.org/A380583) | G=Πₖ≥₁((1+x²ᵏ)/(1−xᵏ))^(k²)、a(n)=[xⁿ]Gⁿ时，对p≥7素数及n,r>0有a(npʳ)≡a(npʳ⁻¹) modp³ʳ。 | 3 | unknown | low | yes | note-only |
 | [A381460](https://oeis.org/A381460) | 对n>2，最终同余速度恰n的最小非平凡n次幂总由两个十进制幂等根±lim 5^(2^k)生成。 | 3 | unknown | low | yes | note-only |
+| [A386608](https://oeis.org/A386608) | 猜想对每个正整数n都存在k，使σ(k)对称表示的最小连通部分面积恰为n；同页另猜所有此类k≤n²。 | 3 | open | low | yes | note-only |
+| [A386827](https://oeis.org/A386827) | 猜想每个n>1都有素数n<p<2n(n−1)，使Σ_{k=1..n}x^(n−k)/k在F_p上不可约。 | 3 | unknown | low | yes | note-only |
+| [A386850](https://oeis.org/A386850) | 猜想每个n>1都有素数n<p≤(n−1)(2n−1)，使Σ_{k=1..n}x^(n−k)/k!在F_p上不可约。 | 3 | open | low | yes | note-only |
+| [A386893](https://oeis.org/A386893) | 猜想对n≥92，n阶Farey序列中首对非同向分子的最小间隔减1等于floor(n/4)+d(n mod4)，其中d=(1,2,2,4)。 | 3 | unknown | low | yes | note-only |
 | [A387421](https://oeis.org/A387421) | 对每个正整数n，σ(n)不等于其powerful部分的两倍。 | 3 | open | low | yes | note-only |
 | [A387947](https://oeis.org/A387947) | 猜想除n=1、2、4、9、25外，每个正整数n均有素数q<p≤n使(p−1)²≡(q−1)²(mod n)。 | 3 | open | low | yes | note-only |
 | [A387959](https://oeis.org/A387959) | 猜想区分前n个素数的(p−1)²值的最小正模数等于第n+1个素数，例外n=1、2、4、9。 | 3 | open | low | yes | note-only |
@@ -101,6 +106,7 @@ triage: anchor
 | [A389650](https://oeis.org/A389650) | 猜想对任意 c>C=limsup a(n)/p_n，充分大n时以s=c·p_n代入Golomb–Keller公式会正确取整得到下一素数。 | out | open | med | yes | drop |
 | [A390878](https://oeis.org/A390878) | 卷积Σₖ₌₁ⁿp(n−k)·SRS部分数(k)是否等于原文所指以各整数因子组成分拆的2-稠密因子块总数。 | out | unknown | high | yes | drop |
 | [A392059](https://oeis.org/A392059) | 原文猜想由高斯整数中分歧或惰性素数幂组成的乘积是移位二项式模1+i的最小正虚向周期，但通常解释下n=1已不成立。 | out | open | low | yes | drop |
+| [A393273](https://oeis.org/A393273) | 本条仅定义刻意避开底项1的贪心素数序列；提到的实际猜想是标准升序素数差分三角形的Gilbreath猜想，并非本条的新覆盖性猜想。 | out | open | low | yes | drop |
 | [A394059](https://oeis.org/A394059) | 猜想素数模6的余数序列中，每个正长度都有无穷多个连续回文块。 | out | published | low | yes | drop |
 | [A395520](https://oeis.org/A395520) | 猜想按首次出现记录的 even-sopfr 间隙中的素数值最终按素数大小顺序出现，仅有有限次逆序。 | out | unknown | low | yes | drop |
 | [A395605](https://oeis.org/A395605) | 原猜想称每个素数p≠2,5的 Lucas–Möbius 商uₖ(p)在ℤₚ收敛且首位为(L(p)−1)/p modp；p=3存在可推导的不收敛反例。 | out | unknown | low | yes | drop |
@@ -140,6 +146,8 @@ triage: anchor
 
 **A394791 — precise；note-only。** 文献/卡点：Höft 2026-03-21 Theorem4 的完整证明已解“部分数=最大2-稠密因子块数”，Theorem1(c,d) 证明中心相接⇒中央因子 d₂=2d₁+1 并点名 A298856；A298856 另有其 Dyck 路径刻画的完整双向论证。但将 d₂=2d₁+1 反向推出中心相接的桥，所读证明未明确单独闭合，不能把这些单向结果合称整个枚举猜想已证。故全目标 unknown，先补文献/几何桥，不直接派实施。A384149 的2025-06-27七页手稿 Theorems2–4也已读，仅用其已证部分。 Mathlib：none：几何编码/稠密块桥未在钉版 Mathlib 找到；一旦输入该公开桥，第 n 个相等仅为集合改写，故中风险。 数值方案：试除取得因子排序、在 next>2·previous 处断块并检查两中央因子；另一侧用 A237593 两条 Dyck 路径的网格边界计部分、检测中央相接，扫描小整数直到所需列/最小项，不能两边都用断块公式。 定位：https://oeis.org/A237270/a237270_4.pdf；https://oeis.org/A384149/a384149.pdf；https://oeis.org/A298856。 全部直接 A 引用：A000203、A014105、A033676、A033677、A071561、A174973、A191363、A207375、A237270、A237271、A237593、A239929、A240062、A245092、A262259、A262626、A264104、A280107、A298856、A320511、A384222、A392197、A395156。
 
+**A394906 — precise；note-only。** 文献/卡点：已读主源和A185101/A007924/A049345所有要求字段，并实际下载/完整读David Dewan的两页Conjectures Notes（2026-04-05）。第三猜想仅给n≤10^8实验和假设Goldbach的重写理由，并非证明。首个“任意非零数字数”猜想在主comment有Hasler完整素数间隙构造；全定义性notes给弱Goldbach论证，但这两项不推出本次选的digit bound。open仅针对选中命题及已查资料。 Mathlib：Nat.exists_prime_lt_and_le_two_mul（.lake/packages/mathlib/Mathlib/NumberTheory/Bertrand.lean:222）已读，给n<p≤2n；Nat.ofDigits_digits（Data/Nat/Digits/Defs.lean:242）给数位转换。它们不直接处理最大表示、余数1的禁区与重复素位的交换，未命中精确digit bound。 数值方案：约25行有界背包DP，以素数pᵢ为重量、10^i为价值，每个权重允许0..9份；对每个金额≤N保存最大整数价值或None。这样完全枚举最优表示而不假定源的贪心程序正确。已计算N=1000，所有主data匹配，n2..1000均有表示且无数字界反例；可扩到10^4，注意价值有π(N)位，避免只用机器整数。 全部直接 A 引用：A007924、A049345、A185101。
+
 **A395156 — precise；note-only。** 文献/卡点：Höft 2026-03-21 Theorem4 的完整证明已解“部分数=最大2-稠密因子块数”，Theorem1(c,d) 证明中心相接⇒中央因子 d₂=2d₁+1 并点名 A298856；A298856 另有其 Dyck 路径刻画的完整双向论证。但将 d₂=2d₁+1 反向推出中心相接的桥，所读证明未明确单独闭合，不能把这些单向结果合称整个枚举猜想已证。故全目标 unknown，先补文献/几何桥，不直接派实施。A384149 的2025-06-27七页手稿 Theorems2–4也已读，仅用其已证部分。 Mathlib：none：几何编码/稠密块桥未在钉版 Mathlib 找到；一旦输入该公开桥，第 n 个相等仅为集合改写，故中风险。 数值方案：试除取得因子排序、在 next>2·previous 处断块并检查两中央因子；另一侧用 A237593 两条 Dyck 路径的网格边界计部分、检测中央相接，扫描小整数直到所需列/最小项，不能两边都用断块公式。 定位：https://oeis.org/A237270/a237270_4.pdf；https://oeis.org/A384149/a384149.pdf；https://oeis.org/A298856。 全部直接 A 引用：A000203、A014105、A033676、A033677、A071561、A191363、A207375、A237270、A237271、A237593、A240062、A262259、A262626、A264104、A280107、A298856、A320511、A384222、A392197、A394791。
 
 **A396836 — precise；note-only。** 文献/卡点：主条目与全部一跳引用要求字段已读；两条零限制序列及四条一限制亲缘序列都仍标覆盖性conjecture，仅有数据表/图像，没有目标证明。旋转或反射螺线保持马步，固定右上左下为明确实现。全1的新整数总可继续，故局部贪心确有无限延拓；surjectivity仍需额外论证。这是离散覆盖命题，未按解析无穷性误剔除，但目前只作note-only。 Mathlib：Nat.ofDigits_digits（.lake/packages/mathlib/Mathlib/Data/Nat/Digits/Defs.lean:242）与 Nat.digits_zero（同文件:84）已读；前者给数位解码，后者提醒Mathlib把0写成空列表，必须补[0]约定。全库检索 knight/square spiral/A396836 无目标覆盖性定理。 数值方案：约45行 Python 生成坐标(0,0)起向右、上、左、下，步长1,1,2,2,...；保存已用整数、已有零格集合及下个格索引。从最小未用数逐个试bin(m)[2:]，逐个新零检查8个马步邻格，包括本候选先前新零；通过才整字提交。已独立生成前100项且与全部主data一致；可扩至5000并追踪最小遗漏数，有限遗漏不作反例。 全部直接 A 引用：A007088、A396603、A396604、A396607、A396608、A396837。
@@ -155,6 +163,14 @@ triage: anchor
 **A380583 — precise；note-only。** 文献/卡点：主源和3个直接引用全读；各条都明确把强模数列为conjecture。A380290所述Stanley/Lagrange路线只说明Gauss模p^r；其Notes PDF尝试打开返回403，未能排除其中已处理本题，故unknown。主条目更广u(n)句缺少原本的n倍指数，与本序列定义不一致，所选目标仅用明确a(n)定义。形式幂级数无限积在每次系数上有限，故不是解析out；但所有p,n,r的强提升尚无小路线。 Mathlib：PowerSeries.coeff_mul，Mathlib/RingTheory/PowerSeries/Basic.lean:249，已读卷积声明；全Mathlib文本检索supercongruence、Gauss congruence、Coster无目标命中。Gauss模p^r不能直接绑定为模p^(3r)。 数值方案：只需k≤N截断Euler积到次数N。对每k用整数二项式展开(1+x^(2k))^(Nk²)、(1−x^k)^(−Nk²)，卷积截到N取系数，算a(N)；p=7,11,13，n=1..3、r=1，另p=7,r=2,n=1使N=49。可用log导数递推作第二路线，但若模数下除以j不可逆应先整数精确除再取模。 全部直接 A 引用：A380290、A380581、A380582。
 
 **A381460 — vague；note-only。** 文献/卡点：主源及15个一跳引用所需字段全读。A379243的公式只给有指定速度的n次幂上界，不控制最小者来自哪类根。主源明确称probabilistic argument且只测至50；MathOverflow链接尝试打开返回HTTP403，2024/2021论文全文未打开，因此unknown。还存在A373387对2的初始约定冲突；该条生成根的截断层数也未在源中量化，故precision=vague并保留研究线。 Mathlib：padicValInt，Mathlib/NumberTheory/Padics/PadicVal/Basic.lean:87；未检出tetration、congruence speed、decadic目标。Mathlib有p-adic设施，但10非素数，不能直接把PadicInt 10当本题所需素数p-adic域绑定。 数值方案：对n=3..8依次扫描整数底数b≥2至首次V(b^n)=n；V用v₂、v₅分支整除计算，n固定时b^n单调故此扫描证最小值。初期可设b≤10^5并报告未找到为unknown。用CRT独立生成e_n∈[0,10^n)满足e_n≡1 mod2^n、e_n≡0 mod5^n，比较b^n mod10^n是否为±e_n；须先确认此截断就是原文generated的意思。 全部直接 A 引用：A018247、A018248、A063006、A091661、A091663、A091664、A120817、A120818、A290372、A290373、A290374、A290375、A317905、A373387、A379243。
+
+**A386608 — precise；note-only。** 文献/卡点：主条目及8个一跳引用完整要求字段已读，另读A377654的partsSRS程序以消歧算法。A249223有宽度的除数半区间解释及周期性证明；A377654有奇素数幂的中心面积公式，但没有给所有n的最小面积实现。主源仍列两个Conjecture。相关背景定理不蕴含本满射，也不能由可能的n²上界反推非空。open只表示这批资料未给目标证明，研究线不自主派。 Mathlib：none（SRS最小面积满射层面）。检索symmetric representation/SRS/Dyck后读 Mathlib/Combinatorics/Enumerative/DyckWord.lean 的DyckWord结构(:65)及equivTreesOfNumNodesEq(:540)，只覆盖Dyck字与树，未给相邻σ边界连通面积或满射定理。 数值方案：约35行按formal的整数天花板和宽度公式生成SRS(k)，扫描k=1..K，对每个最小部分n保存首次k及全部已见k；检查k>n²的反例。已扫描K=10000，全部主data匹配，n1..100皆找到，无扫描范围内k>n²；未找到的n只能记未知，因为尚未证明n²全局截止。两套几何/系数定义的等价还需实施复核。 全部直接 A 引用：A003056、A235791、A237048、A237591、A237593、A249223、A351903、A377654。
+
+**A386827 — precise；note-only。** 文献/卡点：主全部字段与6个直接ref指定字段已读。通过API真打开MO498716完整问题及唯一回答498719。问题将“Q上不可约”与本文小素数猜想分开；Dotsenko回答给基于Newton多边形的有理不可约论证并引用2019论文，未给n<p<2n(n−1)的p。该论文全文未打开核验，且即便有理结论正确仍不覆盖有界约化；因此文献unknown，不拔高published。 Mathlib：Polynomial.Monic.irreducible_of_irreducible_map（Mathlib/Algebra/Polynomial/Eval/Irreducible.lean:44）已读；它是不可约约化到原环不可约的方向，不能由Q上不可约推出某个范围素模数不可约。 数值方案：约50行Python对n=2..50穷举n<p<2n(n−1)的素数，系数使用pow(k,−1,p)；数组实现乘法/长除/快速模幂/gcd，以Rabin判据验证度数d=n−1的f。对所有ℓ∣d素数检验gcd(f,X^(p^(d/ℓ))−X)=1，最后检验X^(p^d)≡X。记录首个p及此前所有失败原因，搜空则给该n的反例。 全部直接 A 引用：A000040、A385658、A385676、A385678、A386828、A386850。
+
+**A386850 — precise；note-only。** 文献/卡点：主全部字段与4个直接ref全部指定字段已读；同族A386827/A386828均只标存在猜想。未见本二次素数界的证明，open仅在所查源与refs内。阶乘的定义、exp级数和有理不可约性都不保证有限范围内有不可约约化；每个n有限可判并不使全n结论成为短任务。 Mathlib：Polynomial.Monic.irreducible_of_irreducible_map（Mathlib/Algebra/Polynomial/Eval/Irreducible.lean:44）已读，仅从某个约化不可约推出原多项式不可约，方向不能反用来给指定范围的p；无目标存在定理。 数值方案：约50行Python埃氏筛生成≤(N−1)(2N−1)素数，N=40；对每n与范围p计算k!的模逆作系数。用数组多项式除法、模幂和gcd实现Rabin判据：d=n−1，X^(p^d)=X mod f，且每个素因子ℓ∣d均有gcd(f,X^(p^(d/ℓ))−X)=1；d=1直接通过。穷尽有限p后可严格报告该n存在或不存在，不仅找见证。 全部直接 A 引用：A000040、A000142、A386827、A386828。
+
+**A386893 — precise；note-only。** 文献/卡点：主条目所有字段已读，直接A号refs为空。真打开van Doorn arXiv:2509.00121全部9页：Theorem1及第2页证明给同一四分支上界，紧接的Conjecture才是n≥92精确等式；Theorem2仅给约n/12下界。又打开Erdős1005网页（2026-09-01更新），其SOLVED对应Ci26证明f(n)=(1/4+o(1))n，不能映射为精确floor加常数；Ci26全文未取得并核验，故选定精确猜想仍标unknown，不冒充published。 Mathlib：none；钉版Mathlib全树检索Farey、farey未找到对应极值对象或精确间隔定理，需自建有限有理数排序及分子分母关系。 数值方案：约40行Python用Fraction约分并排序{a/b:0≤a≤b≤n,gcd(a,b)=1}；对n=4..200按索引差h从1开始检查所有相距h的两项，若分子差乘分母差<0，则a(n)=h−1，立即停止该n。用n≥92的四个余数类别逐项比较；不依赖候选上界停止，必定能枚举至首反例。 全部直接 A 引用：none。
 
 **A387421 — precise；note-only。** 文献/卡点：主源和8个一跳引用全部字段已读，未见目标证明，open仅指这些源。上述分解说明问题真正剩下powerful完美数；A386428明确说明其奇Euler形特殊素数指数≥5正是Descartes–Frénicle–Sorli猜想排除的一类。A387719仅给必要包含关系，没有证明不存在。因而本条不是普通sigma符号改写的小猜想。 Mathlib：Nat.perfect_iff_sum_divisors_eq_two_mul，Mathlib/NumberTheory/Divisors.lean:401；ArithmeticFunction.isMultiplicative_sigma及sigma素因子积公式，NumberTheory/ArithmeticFunction/Misc.lean:202、206。已读；检索powerful没有目标声明。 数值方案：最小素因子筛到10^6，分解n=Πp^e，计算B=Π_{e≥2}p^e，并独立约数筛计算σ；记录σ=2B的n。还可生成p^(4a+1)r²且a≥1的powerful Euler候选，用因子积交叉检验。小范围无解不是新有限前沿。 全部直接 A 引用：A000203、A057521、A085971、A363169、A378859、A386428、A387420、A387719。
 
@@ -235,6 +251,8 @@ triage: anchor
 **A390878 — vague；drop。** 文献/卡点：主源及18个一跳引用所需字段已完整读，包括很长的A000041。A176206指定整数k出现p(n−k)次；但目标句未说明重复部分/因子组如何计数。实际打开Höft 2026 p.4 Theorem 4，证明SRS部分数=因子块数；这只解决点态权重。按上述澄清版本可直接有限双计数推导，不能据此声称含糊原句已有发表证明。范围上属于语义未固定或既有结论加权，无适当新目标。 Mathlib：Nat.Partition.partitionWithPartEquiv，Mathlib/Combinatorics/Enumerative/Partition/Basic.lean:236，删除一个指定部分的等价；已读声明及实现。没有SRS/因子块目标；若按A176206的p(n−k)多重性定义右端，则剩余为已知点态等式的加权。 数值方案：先明确右端多重性。可用递归枚举n≤15的整数分拆并记录每个不同部分k出现的分拆数，核查为p(n−k)；再独立枚举k因子块并求和，与分拆DP算p及几何SRS算出的卷积比较。若按所有部分出现次数计数则应是Σⱼp(n−jk)，这能检出语义差异。 定位：https://oeis.org/A237270/a237270_4.pdf#page=4。 全部直接 A 引用：A000041、A174973、A176206、A196020、A221529、A235791、A236104、A237270、A237271、A237591、A237593、A245092、A262626、A336811、A384222、A384931、A390877、A390880。
 
 **A392059 — vague；drop。** 文献/卡点：读完主条目及A387569、A392055全部指定字段；没有引用目标证明。open仅指所查源未見证明；这里另有完整初等反例：高斯整数z=x+yi被1+i整除 iff x+y偶数，n=1、k=P(1)=1时差为i不整除。对整数a或高斯整数a都已失败。范围out是源表述/同余对象问题；未把定义乘积等同于猜想。 Mathlib：none；钉版Mathlib检索Gaussian.*binomial及binomial.*Gaussian无该周期定理；普通高斯整数环或二项式接口不决定分母与模同余约定。 数值方案：n=1无需长程序：a(1)=空积=1，取实部a=0，binom(i,1)−binom(0,1)=i，其实虚部之和为1，故1+i不整除i。约35行Python用Fraction对高斯数对逐项乘(a+ki−j)/n!，测试是否落在Z[i]及差的实虚部和是否偶数；枚举n≤8、a=0..100、k≤2·所给乘积，区分整数性和同余，分母非整数记未定义。 全部直接 A 引用：A387569、A392055。
+
+**A393273 — precise；drop。** 文献/卡点：主条目所有字段及唯一直接引用A393281的要求字段已读。主comment只有标准Gilbreath背景、定义良好理由及大跳数值，没有声称本序列为全素数置换等新猜想。A393281仅给三角形递推。故不能把“选出底项不为1的排列”错当解决Gilbreath；按仅定义条目out/drop。open指所查源仍称标准目标为conjecture，非穷尽检索。 Mathlib：Nat.exists_infinite_primes（.lake/packages/mathlib/Mathlib/Data/Nat/Prime/Infinite.lean:33）给任意下界以上有素数，已读完整声明；可用于本条延拓存在性。NumberTheory/Combinatorics检索Gilbreath未命中其底项定理，none（猜想层面）。 数值方案：约25行筛前200个升序素数，对每个长度m≥2前缀反复取相邻绝对差直至一个数，查底项是否1。若复现本条，则每次试最小未用素数q，对已有右边界自顶向底更新x←abs(x−edge)，仅当底项≠1才接受；前100项足够核对规则，后段已知大跳会使暴力扫素数很慢。两项计算不能混同。 全部直接 A 引用：A393281。
 
 **A394059 — precise；drop。** 文献/卡点：已读 Shiu《Strings of Congruent Primes》JLMS 61(2), 359–373 (2000) 的出版社摘要；明确宣称证明对任意 k 有连续 k 个素数同余于任意给定互素类，并由 Crossref 出版记录及 Freiberg 引言核对。取模6、余数1，任意长常值串内含任意多长度 n 的回文窗口，直接推出本目标；不是“有人提出过”而是命中已发表的支配定理。Shiu 正文 PDF 访问未成功，未声称重审整篇证明。即使忽略该文献，infinitely many 也在本席范围外。 Mathlib：none；钉版Mathlib检索Shiu、palindrom.*prime、consecutive primes未得连续同余素数块定理。 数值方案：约35行Python用埃氏筛列出≤10^7素数并取模6，对n=1..30滑动窗口，比较w==w[::-1]，记录最小起点和总出现次数；或中心扩展同时统计各长度。有限次数不能证明无穷多。 定位：https://doi.org/10.1112/S0024610799007863；https://www.cambridge.org/core/services/aop-cambridge-core/content/view/S0024610799007863；https://arxiv.org/pdf/1005.4703。 全部直接 A 引用：A039704、A393703。
 
