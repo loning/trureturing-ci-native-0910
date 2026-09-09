@@ -423,6 +423,32 @@ claims from the formula's explicit domain. No global absence claim is made.
 Probe receipt: `prior/probes/Pick105.lean`; inherited `make lean` exit 0;
 decoded `prior/logs/Pick105.log.gz` ends in `EXIT: 0`.
 
+## Atom 126: Inspection In Progress
+
+The full atom and `prior/probes/Return126.lean` have been read. The source prints
+the survival-norm definition with `s_0=1`, the one-step balance (3), and the
+finite-sum conservation law (4). The probe defines the actual iterated monitored
+history and proves both laws without assuming the recurrence being tested.
+Local Mathlib bodies have been opened: projection onto a unit singleton at
+`Mathlib/Analysis/InnerProductSpace/Projection/Basic.lean:417`, projection
+Pythagoras at 557, complementary projection at 209, and the `to_additive`
+producer `prod_range_div'` at
+`Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean:903`.
+
+R126 candidate search:
+`rg -n '\b(step_balance|first_return|starProjection_unit_singleton|norm_sq_eq_add_norm_sq_starProjection|sum_range_sub)\b' D5/S3 .lake/packages/mathlib/Mathlib/Analysis/InnerProductSpace/Projection/Basic.lean`
+returned 27 lines (21 D5 leads, 6 Mathlib lines), with the same-regex positive
+controls at 417 and 557. Inherited `Return126` log ends in `EXIT: 0`.
+
+Preregistered new inspection: an attempt-local `UpstreamSignatures.lean` imports
+Mathlib and `#check`s `Finset.sum_range_sub'` plus the three projection declarations,
+and prints the telescoping theorem's axioms. Expected result: exit 0 and the
+reversed telescoping signature `sum (f i - f (i+1)) = f 0 - f n`.
+Run through `make -f Makefile -f <attempt>/probe.mk lean PROBE=<attempt>/UpstreamSignatures.lean`.
+This adds symbol evidence for a generated declaration; it neither replays the
+seven archived proofs nor builds a new production module. Judgment pending this
+inspection receipt. Temporary files stay outside `D5/` and outside the repo.
+
 ## Push Receipts
 
 | Commit | Completed unit | Push result |
@@ -432,6 +458,7 @@ decoded `prior/logs/Pick105.log.gz` ends in `EXIT: 0`.
 | `5f6b525177589b4fe361303687ba4a99932e0595` | Atom 89 | exit 0 |
 | `8a48ad8068a6e8abd3a237daf18e1542a7d3116b` | Atom 90 | exit 0 |
 | `3b0ea401d33d72def4731520c7ef7171b5670287` | Atom 104 | exit 0 |
+| `20666941dd35dbc37d825d01a0c431502b61383a` | Atom 105 | exit 0 |
 
 ## Nonclaims
 
