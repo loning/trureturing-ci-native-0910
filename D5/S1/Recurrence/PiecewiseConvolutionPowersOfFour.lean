@@ -41,12 +41,12 @@ noncomputable def series : PowerSeries ℕ := mk seq
 
 theorem seq_zero : seq 0 = 1 := by rw [seq_eq]; simp
 
-theorem seq_recurrence {n : ℕ} (hn : 0<n) :
+theorem seq_recurrence {n : ℕ} (hn : 0 < n) :
     seq n = coeff (n-1) (series ^ (if Even n then 2 else 4)) := by
   rw [seq_eq, if_neg (by omega)]
   apply pow_coeff_congr
   intro i hi
-  simp only [series, coeff_mk, if_pos (by omega : i<n)]
+  simp only [series, coeff_mk, if_pos (by omega : i < n)]
 
 private theorem square_even_coeff (f : PowerSeries (ZMod 2))
     (hf : coeff 0 f = 0) {m : ℕ} (hm : 1 ≤ m) :
@@ -84,7 +84,7 @@ private noncomputable def binary : PowerSeries (ZMod 2) :=
 private theorem binary_coeff (n : ℕ) : coeff n binary = (seq n : ZMod 2) := by
   simp [binary, series, coeff_map]
 
-private theorem binary_recurrence {n : ℕ} (hn : 0<n) :
+private theorem binary_recurrence {n : ℕ} (hn : 0 < n) :
     (seq n : ZMod 2) = coeff (n-1) (binary ^ (if Even n then 2 else 4)) := by
   have h := congrArg (Nat.castRingHom (ZMod 2)) (seq_recurrence hn)
   rw [binary, ← map_pow, coeff_map]
