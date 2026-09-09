@@ -13,11 +13,16 @@ run_cmd liftTermElabM do
     throwError "ownerMembershipPositive: fixture did not exercise first-import ambiguity"
   unless <- CensusOwnership.recordedModuleContainsTheorem env index.modules owner name do
     throwError "ownerMembershipPositive: valid realizing module rejected"
-  let row <- CensusQuery.assess index "fixture-head"
-    (.mk name ("sha256:" ++ String.ofList (List.replicate 64 '0'))) (some owner)
+  let key := StatementKey.mk name ("sha256:" ++ String.ofList (List.replicate 64 '0'))
+  let row <- CensusQuery.assess index "fixture-head" key (some owner)
   let .observed value := row | throwError "ownerMembershipPositive: expected observation"
   unless value.owningModule == owner do
     throwError "ownerMembershipPositive: recorded provenance was lost"
+  let scope := DispositionCensus.censusRootModules env owner
+  unless <- CensusOwnership.theoremInScope env scope name do
+    throwError "ownerMembershipScopedPositive: valid occurrence outside first-import scope rejected"
+  DispositionCensus.validateEvidence owner ⟨"fixture-head", #[⟨key, .observed
+    { value with root := owner, importScope := ⟨scope, true⟩ }⟩]⟩
   if <- CensusOwnership.recordedModuleContainsTheorem env #[] owner name then
     throwError "ownerMembershipOutOfScope: out-of-scope module accepted"
   if <- CensusOwnership.recordedModuleContainsTheorem env index.modules `Init name then

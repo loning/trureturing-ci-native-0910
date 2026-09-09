@@ -20,4 +20,13 @@ def recordedModuleContainsTheorem (env : Environment) (scope : Array Name)
   let some index := env.getModuleIdx? owner | return false
   return moduleContainsTheorem env.header.moduleData[index.toNat]! info
 
+/-- A theorem may have several valid module occurrences within a selected root. -/
+def theoremInScope (env : Environment) (scope : Array Name) (declaration : Name) : IO Bool := do
+  let first := (env.getModuleIdxFor? declaration).map (env.header.moduleNames[·.toNat]!)
+    |>.getD env.header.mainModule
+  if <- recordedModuleContainsTheorem env scope first declaration then return true
+  for owner in scope do
+    if owner != first && (<- recordedModuleContainsTheorem env scope owner declaration) then return true
+  return false
+
 end LeanInformationAudit.CensusOwnership

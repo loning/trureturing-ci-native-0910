@@ -298,14 +298,15 @@ current root also resolves imports from the same library. For the main module
 (including standalone probes), the resolved path must equal the input filename.
 No source is elaborated. Nested commands, quotations and generated syntax do not
 introduce declarations for this contract. Unparseable source fails closed. -/
-private def validateProvenanceSyntax (entry : StructuralProvenanceEntry) : MetaM ProvenanceSource := do
+private def validateProvenanceSyntax (modules : Array Name)
+    (entry : StructuralProvenanceEntry) : MetaM ProvenanceSource := do
   let key : StatementKey := ⟨entry.theoremName, ""⟩
   let reject : MetaM ProvenanceSource :=
     failClass key "structural_occurrence" "realization.provenance.syntax"
   let env ← getEnv
-  let owner := (env.getModuleIdxFor? entry.theoremName).map
-    (env.header.moduleNames[·.toNat]!) |>.getD env.header.mainModule
-  unless owner == entry.registrationModule do return ← reject
+  let owner := entry.registrationModule
+  unless ← CensusOwnership.recordedModuleContainsTheorem env modules owner entry.theoremName do
+    return ← reject
   try
     let mut searchPath ← getSrcSearchPath
     let inputPath ← IO.FS.realPath (← readThe Core.Context).fileName
@@ -374,7 +375,8 @@ private def validateStructuralProvenance (root : Name) (head : String) (modules 
   let entries := (structuralRegistry.getState env).filter (·.theoremName == key.theoremName)
   unless entries.size == 1 do failClass key className "realization.provenance"
   let entry := entries[0]!
-  unless modules.contains entry.registrationModule && inRoot env modules key.theoremName do
+  unless ← CensusOwnership.recordedModuleContainsTheorem env modules
+      entry.registrationModule key.theoremName do
     throwError (censusError head "root" s!"import-closure-containing:{key.theoremName}" root.toString)
   let info ← getConstInfo key.theoremName
   unless info.levelParams.length == entry.levelParams.length do
@@ -418,7 +420,7 @@ private def validateStructuralProvenance (root : Name) (head : String) (modules 
     failClass key className "registration"
   unless registrationType.getAppArgs[2]!.isConstOf entry.unitConst do
     failClass key className "realization.compiled_kernels"
-  validateProvenanceSyntax entry
+  validateProvenanceSyntax modules entry
 
 private def validateStructural (root : Name) (head : String) (modules : Array Name)
     (registrations : Array (Name × Expr)) (key : StatementKey)
@@ -604,8 +606,6 @@ private def validateObserved (head : String) (root : Name) (modules : Array Name
   unless ← CensusOwnership.recordedModuleContainsTheorem env modules
       payload.owningModule key.theoremName do
     throwError (censusError head "owning_module" actualOwner.toString payload.owningModule.toString)
-  unless inRoot env modules key.theoremName do
-    throwError (censusError head "root" s!"import-closure-containing:{key.theoremName}" root.toString)
   for candidate in payload.candidates do
     let finite := (InformationRegistry.entries env).any fun entry =>
       entry.theoremName == key.theoremName && modules.contains entry.registrationModuleName &&
@@ -649,7 +649,7 @@ def validateEvidenceSources (root : Name) (inventory : DispositionInventory) :
         unless sources.contains source do sources := sources.push source
       | .boundedFiniteTruncation payload => validateBounded key statement payload
       | .unreachable payload =>
-        unless inRoot env modules key.theoremName do
+        unless ← CensusOwnership.theoremInScope env modules key.theoremName do
           throwError (censusError inventory.headSha "root"
             s!"import-closure-containing:{key.theoremName}" root.toString)
         validateUnreachable modules registrations key statement payload
