@@ -5,6 +5,106 @@ judgment, no independent review or consensus claimed. The caller supplied the
 consensus-rnd/sshx implementation artifact contract. LANE #6160. User scope:
 bind-only first, stop on success, no deposit/cover/freeze, PR without auto-merge.
 
+## Outcome
+
+**Bind-only; user stop rule 1 triggered. No D5 module is delivered.**
+Run 03 of `make lean` exited 0 (12743 jobs). The unrestricted-P theorem,
+the positive logarithm-domain check, and the seven-smooth tail specialization
+all pass with exactly `[propext, Classical.choice, Quot.sound]`.
+The ten named theorems are retained, with identical checked bytes, in
+`docs/reports/robin-smooth-general-0909-snippets.lean`, outside the build glob.
+Its temporary build location was `D5/S3/Arith/Robin/FinitePrimeProbe0909.lean`.
+No production Lean, Scribe, frozen state, or digestion file is changed.
+
+The exact checked target is:
+
+```lean
+theorem RobinSmoothProbe0909.robin_smooth
+    (P : Finset Nat) (hP : forall p, p ∈ P -> p.Prime)
+    (n : Nat) (hn : 0 < n) (hs : forall p, p.Prime -> p ∣ n -> p ∈ P)
+    (ht : P.prod (fun p => (p : Real) / ((p : Real) - 1)) /
+      Real.exp Real.eulerMascheroniConstant < Real.log (Real.log (n : Real))) :
+    (ArithmeticFunction.sigma 1 n : Real) / n <
+      Real.exp Real.eulerMascheroniConstant * Real.log (Real.log (n : Real))
+```
+
+`Finset.prod` is the same product as the proposed big-operator notation.
+There are no added hypotheses. The theorem derives exp(1)<n from ht and hn;
+thus both logarithms and the denominator are on their intended positive
+domain on every admissible input. No bounded enumeration occurs in the proof.
+
+Proof shape: bind-only. Escape witness: null. Admission basis:
+`not-applicable(user-stop-rule-1; report-only)`. None of the three module
+admission routes is invoked, because the user explicitly requires stopping
+without a module on a successful restricted reproof. No exception is claimed.
+
+## Declaration Accounting
+
+These are archived probe declarations, not new public D5 API. All have
+proof_shape=bind-only, escape_witness=null, and no requested admission.
+
+| Declaration (RobinSmoothProbe0909 prefix) | Binding source or consumer edge |
+| --- | --- |
+| prime_factor_gt_one | prime.one_lt; division-order rewrite; linarith only |
+| local_ratio_lt | geom_sum_eq; sub_lt_self; positive-division monotonicity |
+| sigma_ratio_product | Mathlib sigma factorization and natural prime factorization; cast/product rewrites |
+| support_product_le | Finset.prod_le_prod_of_subset_of_one_le; prime-divisor membership projection |
+| sigma_ratio_lt | Finset.prod_lt_prod_of_nonempty; local_ratio_lt; support_product_le |
+| threshold_domain | product positivity, log_pos_iff and lt_log_iff_exp_lt |
+| robin_smooth | sigma_ratio_lt and threshold_domain; positive-division rewrite |
+| empty_support_excluded | primeFactors_eq_empty; empty membership; n nonzero |
+| seven_tail_threshold | frozen rational log/gamma bounds plus exp lower sum and monotonicity |
+| robin_seven_smooth_tail | robin_smooth at P={2,3,5,7}; seven_tail_threshold |
+
+The main theorem and general algebra/order helpers have utility kind none:
+they prove universal statements, not an enumerator, checker, numeric reduction,
+or isolated certified input. The tail threshold is a report-only numerical
+side-condition check; it is not submitted as a public finite certificate.
+The anonymous n=1/P=empty equality is also a report-only diagnostic. Neither
+is used to obtain module admission. The tail consumer quantifies over all
+four exponents and is a direct companion specialization, not an enumerated set.
+
+Direct frozen dependencies of the main theorem and its helpers: none, only
+pinned Mathlib. The report-only `seven_tail_threshold` uses
+`D5/S3/Arith/GoldenResource/RobinRationalBasis.eulerMascheroni_decimal_bounds`
+and `.log_pow_two_mul_bounds`, with the public `atanhPartial` definition;
+module statement_id
+`sha256:6dcafd483a23c78180a3518807013e46c0dccfcb211d2d5f442207eb1ee621c2`.
+Scope: the stated rational gamma bracket and the dyadic logarithm bracket for
+k>=1 and 1<=y<2. No private SevenSmooth helper or enumeration is referenced.
+
+## Seven-Smooth Instantiation
+
+The checked `RobinSmoothProbe0909.robin_seven_smooth_tail` has exactly the
+SevenSmooth conclusion and hypothesis `131072 <= 2^a * 3^b * 5^c * 7^d`.
+In particular it covers the requested strict n>131072 segment (and its endpoint).
+Its proof starts `apply robin_smooth {2, 3, 5, 7}` and supplies:
+
+- primality of 2,3,5,7;
+- positivity from n>=131072;
+- prime support by `Nat.Prime.dvd_mul` and `Nat.prime_eq_prime_of_dvd_pow`;
+- C(P)=35/8, normalized by norm_num, and `seven_tail_threshold hn`.
+
+The threshold proof derives exp(gamma)>89/50 and loglog(n)>123/50 from the
+frozen public rational bounds and monotonicity. Since
+(89/50)*(123/50)=10947/2500>35/8, the strict threshold follows.
+All three numeric quantities are certified in Lean, independently of the
+floating-point witnesses. Frozen `SevenSmooth.lean` is untouched; its
+5040<n<131072 part is neither generalized nor reimplemented here.
+
+## Reproduction And Limits
+
+Place the archived snippet's unchanged bytes at its temporary D5 path above,
+run `make lean`, and remove that temporary source afterwards. Do not register
+or freeze it. Run the Node witness script for the separate numerical diagnostic.
+Run 03 retained one harmless tactic-style warning in the tail instantiation;
+this is a successful build, not a warning-free claim. No budget was changed.
+
+No mathematical novelty, independent review, exhaustive third-party search,
+full Robin theorem, RH consequence, common 5040 threshold for arbitrary P,
+or rational enclosure of T is claimed. CI and PR status are separate from
+the local kernel verification; this delivery requests no merge or auto-merge.
+
 ## Preregistered Scope
 
 Baseline: `1faf06c8bf58b7221f4cd8b35210705064761e4e`, equal to the local
@@ -94,7 +194,7 @@ its public statement is not the requested arbitrary-P estimate.
   silently adding it as a stronger assumption.
 - P empty and n positive and smooth forces n=1, again excluded by the threshold.
 
-## Status
+## Historical Initial Status
 
 No target Lean proof has yet been checked. No production declaration, new
 module, admission basis, or escape witness is claimed. Numerical witnesses,
@@ -159,3 +259,9 @@ positivity, n>e, primality, and smoothness; only the threshold premise fails,
 and the Robin conclusion is false. This supplies the required two-sided check.
 For P={2,3,5,7}, the computed T is 116143.04312771709; no new rational enclosure
 is claimed. The temporary unrestricted-P Lean probe is currently compiling.
+
+Run 03 supersedes the pending/failure states above: `make lean` exited 0;
+all ten named declarations print exactly the standard three axioms. The
+snippet was archived with no proof-byte changes, and the temporary D5 source
+was removed. No enumeration of smooth integers or admitted finite instance
+was introduced. The earlier failed build exits remain part of the record.
