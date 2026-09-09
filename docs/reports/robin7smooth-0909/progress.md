@@ -183,6 +183,32 @@ The measured finite count remains 482; corrected five-window counts are
 71, 89, 103, 121, 98. Logs are attempt-1/lean-report.log, emit.log and
 measurement.json. git diff --check exited 0.
 
+## Local admission and current-base check
+
+make -C tools selftest exited 0 (SELFTEST PASS; deterministic output comparison).
+The raw CLI check against immutable fork baseline
+a8809894ea0f1dac06913ed56e09db6223d7ddfa exited 3, with all content checks
+passed and one SL-022 protected-surface diagnostic for the new Scribe source.
+Its exact final marker was PROTECTED_SURFACE_CHANGE count=1; this is not an
+exit-zero claim. Scribe verification passed. SL-031 observed utility kind=none,
+explicitly semantics=unverified-by-machine. SL-034 observed the intentionally
+absent frozen state. The CI workflow at .github/workflows/ci.yml:706-713 accepts
+0 or 3 after the complete candidate content check; PR CI remains authoritative.
+Logs: attempt-1/selftest.log and admission-local.log.
+
+Current dev at the final pre-PR lookup is
+6ba4ff1193eac1fe21a54b6ec688cd3cfc75b3aa. git merge-tree --write-tree --messages
+against candidate 2bfa101e79d778d39e6965d4b651fbe33c0cb155 exited 0 without
+conflicts (result tree 62f094dd8b1179bf82c90b9f2865fa947c119984). No files were
+deleted between the fork baseline and that dev revision, so the intersection
+with retired paths is empty. The PR diff contains exactly five added files.
+
+The current-dev duplicate query used git grep -n -P
+'\b(robin|Robin|robinDelta|RobinPositiveJudge)\w*\b|7.smooth' <dev-sha> -- D5
+and returned 112 matching lines. The positive control with the same word-boundary
+and alternation features, '\b(robin_delta_10080_pos|robinPositiveJudge_sound)\b',
+returned six. No newly dominating full-family result appeared in that scope.
+
 ## Current nonclaims
 
 No claim of mathematical novelty, exhaustive library/web search, a Lean proof
