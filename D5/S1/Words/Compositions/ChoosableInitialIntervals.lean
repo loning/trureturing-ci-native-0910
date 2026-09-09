@@ -36,7 +36,7 @@ private theorem choosable_iff_list (l : List ℕ) :
     refine ⟨List.ofFn f, List.nodup_ofFn.mpr hf, ?_⟩
     apply List.forall₂_of_length_eq_of_get (by simp)
     intro i hi hr
-    simpa only [List.get_ofFn] using hb ⟨i, hi⟩
+    simpa only [List.get_ofFn, Fin.cast_mk] using hb ⟨i, hi⟩
   · rintro ⟨r, hr, hrel⟩
     let e : Fin l.length → Fin r.length := Fin.cast hrel.length_eq
     refine ⟨fun i => r.get (e i), ?_, fun i => hrel.get i.isLt (e i).isLt⟩
