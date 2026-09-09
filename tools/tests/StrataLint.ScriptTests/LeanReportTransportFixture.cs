@@ -16,6 +16,7 @@ internal sealed class LeanReportTransportFixture : IDisposable
     private string[]? address;
     private string Bin => Path.Combine(temporary.Path, "bin");
     private string Release => Path.Combine(temporary.Path, "release");
+    private string AssetMetadata => Path.Combine(temporary.Path, "asset-metadata.json");
     internal string Repository => Path.Combine(temporary.Path, "repository");
     internal string CacheRoot => Path.Combine(temporary.Path, "cache");
     internal string Output => Path.Combine(Repository, ".lake/build/stratalint/raw-lean-report.json");
@@ -30,6 +31,8 @@ internal sealed class LeanReportTransportFixture : IDisposable
     internal string[] ProducerCalls => Calls("producer.log");
     internal string[] SlotCalls => Calls("slot.log");
     internal int UploadCount => ReleaseCalls.Count(value => value.StartsWith("release upload ", StringComparison.Ordinal));
+    internal int DeleteCount => ReleaseCalls.Count(value => value.StartsWith("api --method DELETE ", StringComparison.Ordinal));
+    internal int AssetReadCount => ReleaseCalls.Count(value => value.Contains("/releases/42/assets?", StringComparison.Ordinal));
     internal string[] Assets => Directory.Exists(Release)
         ? Directory.EnumerateFiles(Release, "*", SearchOption.TopDirectoryOnly).Order(StringComparer.Ordinal).ToArray() : [];
     internal string[] CacheEntries => Directory.Exists(CacheRoot)
@@ -79,6 +82,7 @@ internal sealed class LeanReportTransportFixture : IDisposable
         Executable(Path.Combine(Bin, "dotnet"), "[[ \"$1\" == msbuild ]]\n"
             + "printf '{\"Items\":{\"Compile\":[{\"FullPath\":\"%s/Probe.cs\"}]}}\\n' \"$(dirname \"$2\")\"");
         Executable(Path.Combine(Bin, "gh"), GithubStub);
+        File.WriteAllText(Path.Combine(Bin, "sitecustomize.py"), PublicationClockStub);
     }
 
     internal void WriteSource(string relative, string text)
@@ -147,7 +151,29 @@ internal sealed class LeanReportTransportFixture : IDisposable
         .Append(Digest(File.ReadAllBytes(Output + ".logs/producer.log"))).ToArray();
     internal string[] CacheSnapshot() => Suffixes.Select(suffix => Digest(File.ReadAllBytes(CachedReport + suffix))).ToArray();
     internal string[] ReleaseSnapshot() => Assets.Select(path => Path.GetFileName(path) + "=" + Digest(File.ReadAllBytes(path))).ToArray();
-    internal void SimulateTransferDuration() => File.WriteAllText(Path.Combine(Bin, "sitecustomize.py"), TransferClockStub);
+    internal void SimulateTransferDuration() => File.WriteAllText(Path.Combine(Bin, "sitecustomize.py"), PublicationClockStub + "\n" + TransferClockStub);
+    internal string FailedStarterPair(string member = "both")
+    {
+        var bundle = Bundle();
+        var result = Publish(bundle, "FIXTURE_GH_STARTER_FAILURE=" + member, "FIXTURE_NOW=2026-09-07T00:00:00Z");
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.Contains("HTTP 502", result.Text, StringComparison.Ordinal);
+        return bundle;
+    }
+    internal void SetAssetMetadata(string suffix, string state, int? size, string? updated)
+    {
+        var metadata = JsonNode.Parse(File.ReadAllBytes(AssetMetadata))!;
+        var asset = metadata["assets"]![Path.GetFileName(CurrentArchive) + suffix]!;
+        asset["state"] = state;
+        if (size is null) asset.AsObject().Remove("size"); else asset["size"] = size.Value;
+        if (updated is null) asset.AsObject().Remove("updated_at"); else asset["updated_at"] = updated;
+        File.WriteAllText(AssetMetadata, metadata.ToJsonString());
+    }
+    internal string[] AssetStates()
+    {
+        var metadata = JsonNode.Parse(File.ReadAllBytes(AssetMetadata))!;
+        return Assets.Select(path => metadata["assets"]![Path.GetFileName(path)]!["state"]!.GetValue<string>()).ToArray();
+    }
     internal void RemoveDigestAsset() => File.Delete(CurrentArchive + ".sha256");
     private string CurrentArchive => Assets.Single(value => value.EndsWith("-" + RepositoryAddress + ".zip", StringComparison.Ordinal));
 
@@ -219,6 +245,7 @@ internal sealed class LeanReportTransportFixture : IDisposable
     }
     private Attempt Run(string[] command, params string[] environment)
     {
+        File.Delete(Path.Combine(temporary.Path, "asset-reads"));
         var arguments = new[] { "-u", "STRATALINT_REPORT_CACHE_REMOTE", "-u", "STRATALINT_REPORT_CACHE_TRANSFER_TIMEOUT_SECONDS",
             $"PYTHONPATH={Bin}", $"PATH={Bin}:{Environment.GetEnvironmentVariable("PATH")}", $"REPORT_FIXTURE={temporary.Path}",
             $"REPORT_REPOSITORY={Repository}", $"STRATALINT_REPORT_CACHE_ROOT={CacheRoot}", "STRATALINT_REPORT_CACHE_REPO=fixture/cache",
@@ -239,6 +266,12 @@ internal sealed class LeanReportTransportFixture : IDisposable
     }
     public void Dispose() => temporary.Dispose();
     internal sealed record Attempt(int ExitCode, string Stdout, string Stderr) { internal string Text => Stdout + Stderr; }
+
+    // Explicit UTC input for publication abandonment; no elapsed real time.
+    private const string PublicationClockStub = """
+        import datetime, os, time
+        time.time = lambda: datetime.datetime.fromisoformat(os.environ.get('FIXTURE_NOW', '2026-09-09T00:00:00Z')).timestamp()
+        """;
 
     // Inject elapsed IO time at subprocess.run's deadline boundary. The command
     // still executes the real fake-gh transport on success; no wall clock or
@@ -290,17 +323,50 @@ internal sealed class LeanReportTransportFixture : IDisposable
         import fnmatch, hashlib, json, os, pathlib, shutil, sys, zipfile
         args = sys.argv[1:]
         root = pathlib.Path(os.environ['REPORT_FIXTURE']) / 'release'
+        metadata_path = root.parent / 'asset-metadata.json'
+        metadata = json.loads(metadata_path.read_text()) if metadata_path.exists() else dict(next_id=1, assets={})
         def value(flag): return args[args.index(flag)+1]
+        def save(): metadata_path.write_text(json.dumps(metadata))
+        def record(target, state='uploaded'):
+            now = os.environ.get('FIXTURE_NOW', '2026-09-09T00:00:00Z')
+            metadata['assets'][target.name] = dict(id=metadata['next_id'], name=target.name, state=state,
+                size=target.stat().st_size, created_at=now, updated_at=now)
+            metadata['next_id'] += 1
+            save()
+        def asset(p):
+            return dict(metadata['assets'][p.name], digest='sha256:'+hashlib.sha256(p.read_bytes()).hexdigest())
         if args[0] == 'api':
             endpoint = next(a for a in args[1:] if a.startswith('repos/'))
             if not root.is_dir(): raise SystemExit(1)
-            if '/tags/' in endpoint:
+            if '--method' in args:
+                assert value('--method') == 'DELETE' and '/releases/assets/' in endpoint
+                identity = int(endpoint.rsplit('/', 1)[1])
+                target = next((root / name for name, item in metadata['assets'].items() if item['id'] == identity), None)
+                if os.environ.get('FIXTURE_GH_DELETE_FAIL') == '1': raise SystemExit(69)
+                if target is not None and os.environ.get('FIXTURE_GH_DELETE_RACE') == '1':
+                    record(target, 'open')
+                    raise SystemExit(1)
+                if target is None or not target.exists(): raise SystemExit(1)
+                target.unlink()
+                del metadata['assets'][target.name]
+                save()
+            elif '/tags/' in endpoint:
                 assert endpoint.endswith('/lean-report-cache-v1')
                 print(42 if '--jq' in args else json.dumps(dict(id=42)))
             else:
                 assert '/releases/42/assets' in endpoint
+                counter = root.parent / 'asset-reads'
+                count = int(counter.read_text()) + 1 if counter.exists() else 1
+                counter.write_text(str(count))
                 if os.environ.get('FIXTURE_GH_ASSETS_FAIL') == '1': raise SystemExit(69)
-                assets = [dict(name=p.name, digest='sha256:'+hashlib.sha256(p.read_bytes()).hexdigest(), state='uploaded', updated_at='2026-09-09T00:00:00Z') for p in root.iterdir()]
+                scenario = os.environ.get('FIXTURE_GH_METADATA_SCENARIO')
+                if scenario == 'initial-unavailable' or (scenario == 'confirm-unavailable' and count == 2): raise SystemExit(69)
+                if count == 2 and scenario in ('confirm-active', 'confirm-replaced'):
+                    target = next(p for p in root.iterdir() if p.suffix == '.zip')
+                    if scenario == 'confirm-active': metadata['assets'][target.name]['state'] = 'open'
+                    else: metadata['assets'][target.name]['id'] += 1000
+                    save()
+                assets = [asset(p) for p in root.iterdir()]
                 print(json.dumps([assets] if '--slurp' in args else assets))
         elif args[:2] == ['release', 'create']:
             assert args[2] == 'lean-report-cache-v1' and '--latest=false' in args
@@ -314,20 +380,36 @@ internal sealed class LeanReportTransportFixture : IDisposable
                 shutil.copyfile(archive, target)
                 with zipfile.ZipFile(target, 'a') as z: z.comment = b'independent successful publisher'
                 (root / (target.name + '.sha256')).write_text(hashlib.sha256(target.read_bytes()).hexdigest() + '  ' + target.name + '\n')
+                record(target)
+                record(root / (target.name + '.sha256'))
                 raise SystemExit(1)
+            starter = os.environ.get('FIXTURE_GH_STARTER_FAILURE')
             for source in sources:
                 target = root / source.name
                 if target.exists():
                     if '--clobber' not in args: raise SystemExit(1)
                     target.unlink()
                 if os.environ.get('FIXTURE_GH_UPLOAD_FAIL') == '1': raise SystemExit(69)
-                shutil.copyfile(source, target)
+                if starter == 'both' or starter == ('archive' if source.suffix == '.zip' else 'digest'):
+                    target.write_bytes(b'')
+                    record(target, 'starter')
+                else:
+                    shutil.copyfile(source, target)
+                    record(target)
+            if starter:
+                print('HTTP 502: Bad Gateway; empty starter asset left by upstream', file=sys.stderr)
+                raise SystemExit(1)
+            damage = os.environ.get('FIXTURE_GH_UPLOADED_DAMAGE')
+            if damage:
+                target = next(root / p.name for p in sources if p.suffix == '.zip')
+                if damage == 'missing-digest': pathlib.Path(str(target)+'.sha256').unlink()
+                elif damage == 'corrupt-archive': target.write_bytes(b'broken')
         elif args[:2] == ['release', 'download']:
             assert args[2] == 'lean-report-cache-v1'
             destination = pathlib.Path(value('--dir'))
             if os.environ.get('FIXTURE_GH_DOWNLOAD_FAIL') in ('any', destination.name): raise SystemExit(69)
             for pattern in [args[i+1] for i,a in enumerate(args) if a == '--pattern']:
-                matches = [p for p in root.iterdir() if fnmatch.fnmatchcase(p.name, pattern)]
+                matches = [p for p in root.iterdir() if fnmatch.fnmatchcase(p.name, pattern) and asset(p)['state'] == 'uploaded']
                 if not matches: raise SystemExit(1)
                 for p in matches: shutil.copyfile(p, destination/p.name)
         else: raise SystemExit('unsupported fake gh: '+repr(args))

@@ -40,8 +40,9 @@ done
 # deadline. Bound optional transfers to at most one day; this is not a resource
 # estimate or a report correctness budget. An explicitly empty override is bad.
 TRANSFER_TIMEOUT_SECONDS="${STRATALINT_REPORT_CACHE_TRANSFER_TIMEOUT_SECONDS-1800}"
+MAX_TRANSFER_TIMEOUT_SECONDS=86400
 if [[ ! "$TRANSFER_TIMEOUT_SECONDS" =~ ^[1-9][0-9]{0,4}$ ]] \
-  || (( TRANSFER_TIMEOUT_SECONDS > 86400 )); then
+  || (( TRANSFER_TIMEOUT_SECONDS > MAX_TRANSFER_TIMEOUT_SECONDS )); then
   echo 'lean-report-cache: STRATALINT_REPORT_CACHE_TRANSFER_TIMEOUT_SECONDS must be an integer from 1 to 86400' >&2
   exit 2
 fi
@@ -140,7 +141,7 @@ if [[ -n "$release_id" ]]; then
   [[ "$release_id" =~ ^[0-9]+$ ]] || miss invalid-release
   gh_io api --paginate --slurp "repos/$REPO/releases/$release_id/assets?per_page=100" > "$TMP_ROOT/assets.json" \
     || miss publication-unavailable
-  state="$(python3 "$HELPER" publication-state "$TMP_ROOT/assets.json" "$asset")" || miss publication-unavailable
+  state="$(python3 "$HELPER" publication-state "$TMP_ROOT/assets.json" "$asset" "$MAX_TRANSFER_TIMEOUT_SECONDS")" || miss publication-unavailable
   case "$state" in
     complete)
       verification=0
@@ -150,6 +151,18 @@ if [[ -n "$release_id" ]]; then
         1) upload_options=(--clobber) ;;
         *) miss publication-unavailable ;;
       esac ;;
+    starter)
+      gh_io api --paginate --slurp "repos/$REPO/releases/$release_id/assets?per_page=100" > "$TMP_ROOT/confirmed-assets.json" \
+        || miss publication-unavailable
+      python3 "$HELPER" starter-recovery-ids "$TMP_ROOT/assets.json" "$TMP_ROOT/confirmed-assets.json" \
+        "$asset" "$MAX_TRANSFER_TIMEOUT_SECONDS" > "$TMP_ROOT/recovery-ids" || miss publication-unavailable
+      printf 'LEAN_REPORT_CACHE status=recovering reason=abandoned-starter asset=%s\n' "$asset" >&2
+      # At most two observed IDs, then one non-clobber upload. Deleting by ID
+      # cannot remove a new same-name asset installed by a concurrent publisher.
+      while IFS= read -r asset_id; do
+        gh_io api --method DELETE "repos/$REPO/releases/assets/$asset_id" || miss publication-unavailable
+      done < "$TMP_ROOT/recovery-ids"
+      ;;
     partial) upload_options=(--clobber) ;;
     absent) ;;
     *) miss publication-unavailable ;;
