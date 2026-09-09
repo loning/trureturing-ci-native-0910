@@ -148,3 +148,10 @@ LEAN_CACHE {"status":"present","worktree":"/Users/chronoai/trureturing-a375007",
 - 没有把用户扫描当作本席实测，也没有将有限检查作为无限证明。
 - 未访问的 xref 外链、通用搜索引擎未能取得的内容均为 ASSUMED-UNVERIFIED。
 - 本席独立评审席为 0，未宣称多模型共识；PR 创建、CI 和合入情况在最终交付记录中另报。
+
+## 实施交付
+
+PR：https://github.com/the-omega-institute/trureturing/pull/6696 ，base=dev，head=lane/math/a375007；由 `make pr-open` 创建，未开启 auto-merge。
+本席按 brief 三态判为 **成**：make lean EXIT=0、无 sorry/私 axiom、PR 已开。
+这不等于宣称 PR 已 MERGED 或 CI 三门已绿：开出时机器观察为 OPEN，CI 刚启动，最终观察见 runner result.json。
+差量共 7 个新增文件，未改工具/判官/理论卷/atom；`git diff --check` EXIT=0。
