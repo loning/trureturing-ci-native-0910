@@ -201,3 +201,5 @@ missing:D5/S3/Arith/Paths/MonotoneOnePaths.mean_monotone_one_paths。
 第二次 make emit EXIT=2，5.628 秒：新增 authored 公式少一个右括号（CS1026）。已修正该语法错误。两次发射失败原因不同；未改变数学、工具或门。
 
 第三次 make emit EXIT=2，29.187 秒：DSL 的 Le 紧接 n 会发射成非法 LaTeX 宏。检查整条公式的控制词边界，同时补齐 Le 与 Cdot 后的 Sp；这是同一 authored 公式的发射调试，尚未发生 deposit 或整 lane 重做。
+
+make emit 最终 EXIT=0，67.168 秒；仅本题 1 个 Blueprint 被修改。已逐字读投影公式，与 Lean 主定理及 n≥1 限制一致。Generated/ 与 tools/Generated 的运行期投影不加入 Git。
