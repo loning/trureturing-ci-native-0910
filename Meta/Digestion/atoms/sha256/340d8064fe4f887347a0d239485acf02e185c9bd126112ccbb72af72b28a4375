@@ -1,0 +1,40 @@
+**命题 69（JT-4：环境 lift、背景非空性与有效覆盖世界）。** 令
+$B=S\setminus U$，定义环境柱状关系
+
+$$
+J^S=\{\gamma\in\mathcal A(S):\gamma|_U\in J\}.
+$$
+
+映射
+
+$$
+J\times\mathcal A(B)\longrightarrow J^S,\qquad
+(u,b)\longmapsto u\cup b
+\tag{JT-lift}
+$$
+
+是双射。因此 $J^S\ne\varnothing$ 当且仅当
+$J\ne\varnothing$ 且 $\mathcal A(B)\ne\varnothing$。若
+$\mathcal A(B)\ne\varnothing$ 且命题 67 的等价条件成立，则
+
+$$
+\pi_{S_i}^S(J^S)=\Gamma_i\qquad(i\in I).
+$$
+
+对环境约束 $K\subseteq\mathcal A(S)$，令 $\Gamma=J^S\cap K$，其有效覆盖关系为
+
+$$
+W=\pi_U^S(\Gamma)
+ =\{u\in J:\exists b\in\mathcal A(B),\ u\cup b\in K\}.
+\tag{JT-effective-covered}
+$$
+
+每个只依赖 $U$ 的响应，在 $\Gamma$ 上的实际像与相应响应在 $W$ 上的像相等。此外
+
+$$
+\Gamma=J^S\quad\Longleftrightarrow\quad J^S\subseteq K;
+\tag{JT-ambient-equality}
+$$
+
+仅有 $W=J$ 不能推出这个环境世界等式。
+

@@ -1,0 +1,24 @@
+**定义 41（JT-D6：局部响应、实际联合像与严格求值）。** 对每个节点取集合 $Y_i$ 及全函数 $h_i:\Gamma_i\to Y_i$。多个局部响应可捆绑为一个 $Y_i$ 中的元组；闲置节点可取 singleton 值域及常值响应。定义
+
+$$
+H:J\longrightarrow\prod_{i\in I}Y_i,\qquad
+H(u)=\bigl(h_i(u|_{S_i})\bigr)_{i\in I},\qquad
+R_W=H[W]\quad(W\subseteq J).
+\tag{JT-response}
+$$
+
+$R_W$ 是实际联合响应像，不是各 $h_i[\Gamma_i]$ 的独立乘积。给定部分函数
+$f:D_f\subseteq\prod_iY_i\to Y$，沿用 §34 定义 32 的不交标签，记
+$\operatorname{ok}(y)=\operatorname{succ}(y)=(1,y)$，并使用独立失败符号 $\bot$。其总化为
+
+$$
+\widehat f(y)=
+\begin{cases}
+\operatorname{ok}(f(y)),&y\in D_f,\\
+\bot,&y\notin D_f.
+\end{cases}
+\tag{JT-tag}
+$$
+
+有限表达式按 §14 定义 16 严格传播每个中间失败：任何内部节点失败，包围它的求值也失败，不把 $\bot$ 当成普通后续输入。$\operatorname{ok}$ 是语义标签，不是新的算术运算。
+

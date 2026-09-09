@@ -1,0 +1,9 @@
+**BFMY83。** Catriel Beeri、Ronald Fagin、David Maier、Mihalis Yannakakis，
+*On the Desirability of Acyclic Database Schemes*，
+*Journal of the ACM* **30**(3), 479–513, 1983，
+[DOI: 10.1145/2402.322389](https://doi.org/10.1145/2402.322389)。
+按主来源的核读记录，§2 p.481 定义有限属性元组、有限关系、投影与连接；
+§3 的属性宇宙取 scopes 的并。Condition 3.7 p.485 涉及 pairwise consistency 与精确全局投影；Theorem 3.4 p.488 联系无环性、普遍的两两到全局相容性、join tree 与 running intersection 等性质。Figure 4 p.486 展示反例 JT-CE3 所用的二元循环障碍。
+
+该文 p.486 对可能无限关系的扩充不是无限属性定理。命题 66–67 对任意可能无限 scope 的覆盖，由本单元所载完整赋值的公开拼接证明承担。BFMY83 Theorem 3.4 按其自身前提引用，不附加下面 Maier83 相应定理的 connected database scheme 前提。
+

@@ -1,0 +1,8 @@
+**命题 67（JT-2：EC、投影忠实性与有条件的局部延拓）。** 在有限非空 $I$、非空 $\Gamma_i$ 和 RI 的前提下，以下四项等价：
+
+- A：每条树边满足 EC。
+- B：$J\ne\varnothing$，且对每个 $i$，$\pi_{S_i}^U(J)=\Gamma_i$。
+- C：存在 $W\subseteq\mathcal A(U)$，使对每个 $i$，$\pi_{S_i}^U(W)=\Gamma_i$。
+- D：任意两节点的局部关系在完整 scope 交集上的投影相等，即对所有 $i,j\in I$，令 $D_{ij}=S_i\cap S_j$，有
+  $\pi_{D_{ij}}^{S_i}(\Gamma_i)=\pi_{D_{ij}}^{S_j}(\Gamma_j)$。
+

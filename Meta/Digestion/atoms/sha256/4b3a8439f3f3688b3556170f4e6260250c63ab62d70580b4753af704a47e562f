@@ -1,0 +1,1 @@
+| 指定带标签结果像不变 $(\widehat f\circ H)[W]=(\widehat f\circ H)[J]$ | 对每个 $z\in(\widehat f\circ H)[J]$，$K\cap\{u\in J:\widehat f(H(u))=z\}\ne\varnothing$

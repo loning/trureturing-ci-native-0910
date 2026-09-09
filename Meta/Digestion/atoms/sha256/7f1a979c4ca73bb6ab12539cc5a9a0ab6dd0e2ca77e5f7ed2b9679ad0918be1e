@@ -1,0 +1,20 @@
+**定义 38（JT-D3：指定连接树、RI 与 EC）。** 设 $T$ 是顶点集 $I$ 上的有限无向简单树，允许单顶点树。运行交集条件（RI）要求：对每个 $s\in U$，出现顶点集
+$\{i\in I:s\in S_i\}$ 在 $T$ 中连通。等价地，若 $s\in S_i\cap S_j$，则从 $i$ 到 $j$ 的唯一树路径上每个 scope 都含 $s$。
+
+对每条树边 $\{i,j\}$，separator 是完整交集
+
+$$
+C_{ij}=S_i\cap S_j.
+$$
+
+边一致条件（EC）为
+
+$$
+\pi_{C_{ij}}^{S_i}(\Gamma_i)
+ =\pi_{C_{ij}}^{S_j}(\Gamma_j)
+ \qquad\text{对每条 }\{i,j\}\in E(T).
+\tag{JT-EC}
+$$
+
+等式比较的是完整 separator 赋值的实际投影。空 separator 合法；不能因它没有字段而删去这条树边。EC 是每条边的输入义务，不另要求一份所有节点对的准入清单。
+

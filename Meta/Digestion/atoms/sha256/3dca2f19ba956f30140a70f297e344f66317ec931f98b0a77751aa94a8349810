@@ -1,0 +1,35 @@
+**命题 73（JT-8：共同世界准入及严格算术的精确实际像）。** 若每个
+$h_i:\Gamma_i\to\mathcal B$ 都是到既有合法丰富状态的全函数，则在命题 67 提供的非空 $J$ 上，
+
+$$
+F_i(u)=h_i(u|_{S_i})
+$$
+
+给出 §10 定义 15 的合法不确定丰富状态。任意显式非空
+$W\subseteq J$，以及命题 69 的非空环境 $\Gamma$，同样可作为共同世界域。
+各响应必须从同一个世界读取共同变量。
+
+更一般地，沿用定义 41 的响应值域与部分消费者 $f$，令
+$R_W=H[W]$。成功世界域、成功结果像及带标签像分别为
+
+$$
+W_f=\{u\in W:H(u)\in D_f\}
+       =(H|_W)^{-1}[D_f],\qquad
+\operatorname{Success}=f[R_W\cap D_f],
+\tag{JT-success}
+$$
+
+$$
+(\widehat f\circ H)[W]
+ =
+ \{\operatorname{ok}(f(y)):y\in R_W\cap D_f\}
+ \cup
+ \begin{cases}
+ \{\bot\},&R_W\setminus D_f\ne\varnothing,\\
+ \varnothing,&R_W\setminus D_f=\varnothing.
+ \end{cases}
+\tag{JT-tagged-image}
+$$
+
+原表达式在整个 $W$ 上处处有定义，当且仅当 $R_W\subseteq D_f$。
+

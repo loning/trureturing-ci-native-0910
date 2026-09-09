@@ -1,0 +1,57 @@
+**命题 67（JT-2：EC、投影忠实性与有条件的局部延拓）。** 在有限非空 $I$、非空 $\Gamma_i$ 和 RI 的前提下，以下四项等价：
+
+- A：每条树边满足 EC。
+- B：$J\ne\varnothing$，且对每个 $i$，$\pi_{S_i}^U(J)=\Gamma_i$。
+- C：存在 $W\subseteq\mathcal A(U)$，使对每个 $i$，$\pi_{S_i}^U(W)=\Gamma_i$。
+- D：任意两节点的局部关系在完整 scope 交集上的投影相等，即对所有 $i,j\in I$，令 $D_{ij}=S_i\cap S_j$，有
+  $\pi_{D_{ij}}^{S_i}(\Gamma_i)=\pi_{D_{ij}}^{S_j}(\Gamma_j)$。
+
+**当上述等价条件 A–D 成立时**，每个任意指定的局部元组 $a\in\Gamma_i$ 都延拓到某个 $u\in J$。同样在这些等价条件成立时，对每个非空连通顶点子集 $B\subseteq I$，都有
+
+$$
+\pi_{U_B}^U(J)=J_B.
+\tag{JT-connected-extension}
+$$
+
+这两项延拓结论不是脱离 EC 的无条件附言。
+
+**证明。** 先证 A$\Rightarrow$B。任取根节点 $r$ 和任意指定的 $a_r\in\Gamma_r$，按父节点先于子节点的顺序处理其余节点。设正加入父节点为 $p$ 的子节点 $c$，$P$ 是已处理顶点集。因为 $p\in P$，有 $C_{cp}\subseteq S_c\cap U_P$。反过来，若 $s\in S_c\cap U_P$，存在已处理节点 $k\in P$ 含 $s$；从 $c$ 到 $k$ 的路径必先经过 $p$，RI 推出 $s\in S_p$。因此
+
+$$
+S_c\cap U_P=C_{cp}.
+\tag{JT-parent-overlap}
+$$
+
+已选 $a_p$ 的 separator 值 $a_p|_{C_{cp}}$ 属于
+$\pi_{C_{cp}}^{S_p}(\Gamma_p)$。EC 保证它也属于
+$\pi_{C_{cp}}^{S_c}(\Gamma_c)$，故可取一个完整元组 $a_c\in\Gamma_c$，满足
+$a_c|_{C_{cp}}=a_p|_{C_{cp}}$。由刚证明的 overlap 恒等式，$a_c$ 在它与已拼接赋值的整个定义域交集上一致，所以可以加入函数并。有限次之后得到 $u\in J$，且 $u|_{S_r}=a_r$。
+
+根及指定根元组任意，故每个 $\Gamma_i$ 的每个元组都有全局延拓。于是
+$\Gamma_i\subseteq\pi_{S_i}^U(J)$；反向包含来自 $J$ 的定义。因 $I$ 非空且根关系非空，至少可选一个根元组，因而 $J\ne\varnothing$，得到 B。
+
+B$\Rightarrow$C 取 $W=J$。若 C 成立，由 $I$ 非空及所有 $\Gamma_i$ 非空，$W$ 必非空；命题 66 的最大性给出 $W\subseteq J$，于是
+
+$$
+\Gamma_i=\pi_{S_i}^U(W)
+ \subseteq\pi_{S_i}^U(J)\subseteq\Gamma_i.
+$$
+
+这同时证明 C$\Rightarrow$B 的精确投影与非空性。若 B 成立，再投影到
+$D_{ij}$，两边都等于 $\pi_{D_{ij}}^U(J)$，得到 B$\Rightarrow$D。D$\Rightarrow$A 则因树边只是节点对的特例。因此四项等价。所有节点对的投影相等是这里的等价结论，不是 A 之外的额外输入清单。
+
+最后在这些条件成立时证明连通子集结论。
+$\pi_{U_B}^U(J)\subseteq J_B$ 由限制直接成立。给定任意 $v\in J_B$，把非空连通 $B$ 的全部节点视为已处理，当前赋值就是 $v$。在树中，若已处理顶点集连通且尚未覆盖全部顶点，可添加一个与它相邻的外部节点；该节点向已处理集恰有一条附着边，否则会出现环。新 scope 与已处理并域的交集仍由 RI 等于这条边的 separator。利用 EC，按上面的完整元组拼接一步延拓 $v$。有限次扩展后得到 $u\in J$ 且 $u|_{U_B}=v$，从而得到反向包含。它是同一延拓证明的配套推论，不增设一个连通子包接口或额外准入门。$\square$
+
+**非空、空 scope 与选择边界。** 单顶点树有 $U=S_r$、$J=\Gamma_r$，EC 空真，命题直接成立。空 scope 上的非空关系恰为 $\{\varnothing\}$；任意非空关系到空 separator 的投影也为 $\{\varnothing\}$。这样的边没有待匹配的字段值，但仍是树的一条合法边。若全部 scope 为空，则 $U=\varnothing$、$J=\{\varnothing\}$，得到一个空赋值组成的非空一世界模型。
+
+主证明不要求 $U,S_i,V_s,\Gamma_i$ 有限；每个所选 $a_i$ 已是其可能无限 scope 上的完整赋值，只选有限多个局部元组，不逐变量选择值。核心论证因此在 ZF 中由有限选择成立。它逐个证明指定元组有延拓，没有同时为所有局部元组选择一个 canonical 延拓函数；即使在 ZFC 中可以为相应满射选取截面，也没有断言该截面规范唯一。
+
+EC 对保留全部宣称局部元组是必要的，对 $J$ 仅仅非空则不必要。
+
+**反例 JT-CE2（非空 join 不保证宣称元组全部延拓）。** 取两个相同 scope
+$S_1=S_2=\{x\}$、二元值域，令 $\Gamma_1=\{0,1\}$、$\Gamma_2=\{0\}$，用两顶点树。RI 成立，自然连接 $J=\{0\}$ 非空，但完整 separator 为 $\{x\}$，两侧投影不相等，$\Gamma_1$ 的元组 $x=1$ 不可能延拓。失败的是投影忠实性，不能由这个 EC 失败推出 join 为空，也不能对本例无条件使用命题 67 的延拓附言。
+
+**反例 JT-CE7（空关系与空 scope 不是一回事）。** 若允许单顶点关系
+$\Gamma_1=\varnothing$，所有边条件空真，但 $J=\varnothing$。同样，两份空局部关系的 separator 投影都为 $\varnothing$，所以它们可以满足投影相等而仍无世界。非空局部关系假设不能据此删除。这与空 scope 上非空关系 $\{\varnothing\}$ 的一世界情形不同：$\varnothing\ne\{\varnothing\}$。
+

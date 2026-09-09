@@ -1,0 +1,3 @@
+**反例 JT-CE7（空关系与空 scope 不是一回事）。** 若允许单顶点关系
+$\Gamma_1=\varnothing$，所有边条件空真，但 $J=\varnothing$。同样，两份空局部关系的 separator 投影都为 $\varnothing$，所以它们可以满足投影相等而仍无世界。非空局部关系假设不能据此删除。这与空 scope 上非空关系 $\{\varnothing\}$ 的一世界情形不同：$\varnothing\ne\{\varnothing\}$。
+

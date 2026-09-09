@@ -1,0 +1,20 @@
+**命题 71（JT-6：树边 cut-splicing 当且仅当精确重建）。** 仅假设 RI；对任意
+$W\subseteq\mathcal A(U)$，由其实际局部投影定义
+
+$$
+J(W)=\{u\in\mathcal A(U):
+ u|_{S_i}\in\pi_{S_i}^U(W)\ \text{对所有 }i\in I\}.
+\tag{JT-rejoin}
+$$
+
+这里不要求 $W$ 或其实际投影非空。则 $W=J(W)$ 当且仅当：对每条树边
+$\{i,j\}$ 的切分 $I=L\sqcup R$，任意 $g,h\in W$ 只要在 $C_{ij}$ 上一致，就有
+
+$$
+g|_{U_L}\ \cup\ h|_{U_R}\in W.
+\tag{JT-splicing}
+$$
+
+特别地，**若** $W\subseteq J$ 已保留所有宣称局部投影
+$\pi_{S_i}^U(W)=\Gamma_i$，**才有** $J(W)=J$，从而 $W=J$ 等价于上述每边 splice 封闭性。
+

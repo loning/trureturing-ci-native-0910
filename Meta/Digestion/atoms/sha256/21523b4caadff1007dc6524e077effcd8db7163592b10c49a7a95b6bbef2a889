@@ -1,0 +1,31 @@
+**命题 72（JT-7：完整见证公式与联合边界表示）。** 在 RI 下，
+
+$$
+H[J]=
+\left\{\bigl(h_i(a_i)\bigr)_{i\in I}:
+                a\in\operatorname{Comp}_T\right\}.
+\tag{JT-full-response}
+$$
+
+若 $K\subseteq\mathcal A(U)$、$W=J\cap K$，则准确公式为
+
+$$
+H[W]=
+\left\{\bigl(h_i(a_i)\bigr)_{i\in I}:
+       a\in\operatorname{Comp}_T,\ m(a)\in K\right\}.
+\tag{JT-constrained-response}
+$$
+
+没有额外 hidden $K$ 时，还可仅用定义 42 的联合边界—响应关系表示
+$H[J]$：响应元组 $(y_i)_{i\in I}\in\prod_iY_i$ 可达，当且仅当存在
+$b_i\in\mathcal A(B_i)$（所有 $i$），满足
+
+$$
+(b_i,y_i)\in Q_i\quad(i\in I),\qquad
+b_i|_{C_{ij}}=b_j|_{C_{ij}}
+           \quad(\{i,j\}\in E(T)).
+\tag{JT-boundary-response}
+$$
+
+这些像等式不需要 EC，连接为空时仍成立；当命题 67 的等价条件成立时，无额外约束的这些像非空。
+

@@ -1,0 +1,18 @@
+**命题 66（JT-1：结构拼接、边 cut 恒等式与最大性）。** 在定义 36–40 的类型及 RI 下，不要求 EC，限制映射
+
+$$
+\rho:J\longrightarrow\operatorname{Comp}_T,\qquad
+\rho(u)=(u|_{S_i})_{i\in I}
+$$
+
+是双射，其逆为 $m$。删除树边 $\{i,j\}$ 后，顶点集分成含 $i$ 的一侧 $L$ 和含 $j$ 的另一侧 $R$，则
+
+$$
+U_L\cap U_R=C_{ij}.
+\tag{JT-cut}
+$$
+
+此外，无须 RI，$J$ 总是满足
+$\pi_{S_i}^U(W)\subseteq\Gamma_i$（所有 $i$）的关系
+$W\subseteq\mathcal A(U)$ 中最大的一个。
+

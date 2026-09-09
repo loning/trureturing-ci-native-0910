@@ -1,0 +1,9 @@
+**当上述等价条件 A–D 成立时**，每个任意指定的局部元组 $a\in\Gamma_i$ 都延拓到某个 $u\in J$。同样在这些等价条件成立时，对每个非空连通顶点子集 $B\subseteq I$，都有
+
+$$
+\pi_{U_B}^U(J)=J_B.
+\tag{JT-connected-extension}
+$$
+
+这两项延拓结论不是脱离 EC 的无条件附言。
+

@@ -1,0 +1,20 @@
+**定义 40（JT-D5：完整兼容元组、merger 与覆盖约束）。** 定义
+
+$$
+\operatorname{Comp}_T=
+\left\{(a_i)_{i\in I}\in\prod_{i\in I}\Gamma_i:
+ a_i|_{C_{ij}}=a_j|_{C_{ij}}\ \text{对每条 }\{i,j\}\in E(T)\right\}.
+$$
+
+这里保留每个完整局部赋值。在 RI 下，命题 66 将证明函数并
+
+$$
+m(a)=\bigcup_{i\in I}a_i
+\tag{JT-merger}
+$$
+
+是 $U$ 上的有类型赋值，并给出 $J$ 与 $\operatorname{Comp}_T$ 的双射。此并集只是来源赋值的函数并，不是丰富事件档案的合并操作。
+
+覆盖域上的附加约束是 $K\subseteq\mathcal A(U)$，实际世界关系为
+$W=J\cap K$。如果约束原本属于 $\mathcal A(S)$，须先按命题 69 处理环境 lift；不能直接把赋值域不同的关系相交。集合等式允许 $W$ 为空，但要使用定义 15 的不确定历史模型，仍须另有 $W\ne\varnothing$。
+

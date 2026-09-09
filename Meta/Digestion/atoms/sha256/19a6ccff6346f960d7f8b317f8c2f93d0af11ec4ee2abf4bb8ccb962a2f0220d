@@ -1,0 +1,12 @@
+**Maier83。** David Maier，*The Theory of Relational Databases*，
+Computer Science Press, 1983，Chapter 13，*Acyclic Database Schemes*。
+按主来源对作者提供的该章的核读记录，§13.3.3 Theorem 13.2 p.460
+明确假设 connected database scheme，并在此语境中联系 join trees、running intersection、full reducers 与 pairwise-to-total consistency。
+Lemmas 13.7–13.9 pp.471–472 给出根序与逐步连接的论证；Lemma 13.10
+pp.472–473 使用一条边的 separator 等于两侧 scope 并的交集，以及相应依赖下的重建机制。这些引用保留该章相应定理及引理的 connected-schema 语境。
+
+数据库 scheme 的连通性与指定 $T$ 是一棵连通树不是同一个前提。不能因
+$T$ 连通，就把书中带 connected-schema 条件的陈述改成没有该条件的原文结论。命题 71 给出当前集合类型的直接 cut-splicing 证明；空 separator 与任意 scope 的覆盖由这里的公开证明承担。经典连接等价性、join dependency 及 splicing 机制均为成熟数学复用，不宣称新发现。
+
+上述文献位置及适用边界来自已采纳来源的核读记录，本实施席没有新作外部文献抓取。正文使用可读书目信息；来源中的合成浏览器标记不作为引用或额外证据。
+

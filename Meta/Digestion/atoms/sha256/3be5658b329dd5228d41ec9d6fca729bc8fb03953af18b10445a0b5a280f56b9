@@ -1,0 +1,8 @@
+**证明。** 对 $u\in J$，其全部局部限制属于各 $\Gamma_i$，且相邻两侧来自同一个函数，故 $\rho(u)\in\operatorname{Comp}_T$。若两个 $U$ 上的函数在每个 $S_i$ 上相同，因为这些 scope 覆盖 $U$，它们在 $U$ 上相同，所以 $\rho$ 单射。
+
+反之取 $a=(a_i)_i\in\operatorname{Comp}_T$。若 $s\in S_i\cap S_j$，RI 保证从 $i$ 到 $j$ 的唯一树路径上每个 scope 都含 $s$；相邻节点在完整 separator 上一致，沿路径逐边得到 $a_i(s)=a_j(s)$。因此任意两个局部函数在其定义域的整个交集上一致，函数并 $u=\bigcup_i a_i$ 定义良好，定义域为 $U$，每个值仍属于对应 $V_s$，而且 $u|_{S_i}=a_i$。于是 $u\in J$、$\rho(u)=a$。两方向的构造互逆。这是来源赋值的拼接；没有对丰富事件档案作 raw set union。论证没有用 EC 或 $J$ 非空，故空连接时的双射陈述仍成立。
+
+证明 cut 恒等式时，$C_{ij}\subseteq U_L\cap U_R$ 直接成立。若 $s\in U_L\cap U_R$，两侧分别存在含 $s$ 的 scope。从这两个节点之间的树路径必经过所删边 $\{i,j\}$；RI 因而把 $s$ 放在 $S_i$ 和 $S_j$ 中，故 $s\in C_{ij}$。这证明完整交集确实等于 separator，而不仅是边上一致。
+
+最后，若 $W$ 满足所述投影包含条件，则对任意 $u\in W$ 和每个 $i$，都有 $u|_{S_i}\in\Gamma_i$，所以 $u\in J$。反过来 $J$ 的定义本身给出全部投影包含条件，因而 $J$ 最大。这一段不需要树或 RI，也不说明受独立约束的指定实际世界必等于 $J$。$\square$
+

@@ -1,0 +1,18 @@
+**定义 39（JT-D4：自然连接、投影忠实性与精确重建）。** 对 $B\subseteq I$，令
+
+$$
+U_B=\bigcup_{i\in B}S_i,\qquad
+J_B=\{u\in\mathcal A(U_B):
+                 u|_{S_i}\in\Gamma_i\ \text{对所有 }i\in B\}.
+$$
+
+因而 $U_\varnothing=\varnothing$、$J_\varnothing=\{\varnothing\}$，并记
+$J=J_I\subseteq\mathcal A(U)$。对指定世界关系 $W\subseteq\mathcal A(U)$，相对于这些宣称局部关系的投影忠实性是
+
+$$
+\pi_{S_i}^U(W)=\Gamma_i\qquad(i\in I).
+\tag{JT-faithfulness}
+$$
+
+自然连接精确重建指定 $W$ 则是 $W=J$，要求保留全部兼容覆盖世界。在 $W\subseteq J$ 的实际模型范围内，投影忠实性要求每个宣称局部元组仍有世界见证；它与全部覆盖世界相等不是同一个条件。
+

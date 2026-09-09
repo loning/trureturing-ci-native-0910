@@ -1,0 +1,28 @@
+**证明。** 先证 A$\Rightarrow$B。任取根节点 $r$ 和任意指定的 $a_r\in\Gamma_r$，按父节点先于子节点的顺序处理其余节点。设正加入父节点为 $p$ 的子节点 $c$，$P$ 是已处理顶点集。因为 $p\in P$，有 $C_{cp}\subseteq S_c\cap U_P$。反过来，若 $s\in S_c\cap U_P$，存在已处理节点 $k\in P$ 含 $s$；从 $c$ 到 $k$ 的路径必先经过 $p$，RI 推出 $s\in S_p$。因此
+
+$$
+S_c\cap U_P=C_{cp}.
+\tag{JT-parent-overlap}
+$$
+
+已选 $a_p$ 的 separator 值 $a_p|_{C_{cp}}$ 属于
+$\pi_{C_{cp}}^{S_p}(\Gamma_p)$。EC 保证它也属于
+$\pi_{C_{cp}}^{S_c}(\Gamma_c)$，故可取一个完整元组 $a_c\in\Gamma_c$，满足
+$a_c|_{C_{cp}}=a_p|_{C_{cp}}$。由刚证明的 overlap 恒等式，$a_c$ 在它与已拼接赋值的整个定义域交集上一致，所以可以加入函数并。有限次之后得到 $u\in J$，且 $u|_{S_r}=a_r$。
+
+根及指定根元组任意，故每个 $\Gamma_i$ 的每个元组都有全局延拓。于是
+$\Gamma_i\subseteq\pi_{S_i}^U(J)$；反向包含来自 $J$ 的定义。因 $I$ 非空且根关系非空，至少可选一个根元组，因而 $J\ne\varnothing$，得到 B。
+
+B$\Rightarrow$C 取 $W=J$。若 C 成立，由 $I$ 非空及所有 $\Gamma_i$ 非空，$W$ 必非空；命题 66 的最大性给出 $W\subseteq J$，于是
+
+$$
+\Gamma_i=\pi_{S_i}^U(W)
+ \subseteq\pi_{S_i}^U(J)\subseteq\Gamma_i.
+$$
+
+这同时证明 C$\Rightarrow$B 的精确投影与非空性。若 B 成立，再投影到
+$D_{ij}$，两边都等于 $\pi_{D_{ij}}^U(J)$，得到 B$\Rightarrow$D。D$\Rightarrow$A 则因树边只是节点对的特例。因此四项等价。所有节点对的投影相等是这里的等价结论，不是 A 之外的额外输入清单。
+
+最后在这些条件成立时证明连通子集结论。
+$\pi_{U_B}^U(J)\subseteq J_B$ 由限制直接成立。给定任意 $v\in J_B$，把非空连通 $B$ 的全部节点视为已处理，当前赋值就是 $v$。在树中，若已处理顶点集连通且尚未覆盖全部顶点，可添加一个与它相邻的外部节点；该节点向已处理集恰有一条附着边，否则会出现环。新 scope 与已处理并域的交集仍由 RI 等于这条边的 separator。利用 EC，按上面的完整元组拼接一步延拓 $v$。有限次扩展后得到 $u\in J$ 且 $u|_{U_B}=v$，从而得到反向包含。它是同一延拓证明的配套推论，不增设一个连通子包接口或额外准入门。$\square$
+

@@ -1,0 +1,13 @@
+**定义 42（JT-D7：联合边界—响应关系）。** 对节点 $i$，令
+
+$$
+B_i=\bigcup_{j:\{i,j\}\in E(T)}C_{ij}\subseteq S_i,\qquad
+Q_i=\{(a|_{B_i},h_i(a)):a\in\Gamma_i\}
+       \subseteq\mathcal A(B_i)\times Y_i.
+\tag{JT-boundary}
+$$
+
+$Q_i$ 联合保留所有边界坐标与响应的关系。分别保存各 separator 的边缘、只保存响应值域，或把这些集合独立相乘，都不是本定义。下文命题 72 证明它对指定联合响应的充分性，并明确一般附加 $K$ 的保留位置。
+
+<a id="jt-gluing"></a>
+

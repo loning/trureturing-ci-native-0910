@@ -1,0 +1,17 @@
+**定义 36（JT-D1：有类型赋值与实际投影）。** 设 $S$ 是来源变量名的集合，$(V_s)_{s\in S}$ 是集合指标的非空集合族。对 $D\subseteq S$，令
+
+$$
+\mathcal A(D)=\{a:\operatorname{dom}(a)=D,\quad
+                    a(s)\in V_s\ \text{对所有 }s\in D\}.
+$$
+
+赋值是定义域恰为 $D$ 的函数；仅当 $C\subseteq D$ 时使用限制 $a|_C$。特别地，$\mathcal A(\varnothing)=\{\varnothing\}$，其中 $\varnothing$ 是空函数，$\{\varnothing\}$ 是非空集合。对 $D\subseteq B\subseteq S$ 及 $R\subseteq\mathcal A(B)$，定义
+
+$$
+\pi_D^B(R)=\{a|_D:a\in R\}.
+\tag{JT-projection}
+$$
+
+这是关系的实际限制像，不是各坐标像的 Cartesian 积。投影满足再限制恒等式
+$\pi_C^D(\pi_D^B(R))=\pi_C^B(R)$（$C\subseteq D\subseteq B$），由函数限制的结合律直接得到。空关系的任何投影都是空集；非空关系到空域的投影则是 $\{\varnothing\}$。
+
