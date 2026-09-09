@@ -252,3 +252,18 @@ unbounded multiplicity statement, and they are not frozen as finite instances.
 | leading_counter_multiplicity | sha256:80db245f1604b878987fe5451c2ebdde412b1ab9e9efe3f73f727923c8ed850e |
 | a_one | sha256:bd0b2ea1cf0ce25271bda8c4e3597b1271a3985e8e01ae1aaa6db196f8fadd05 |
 | eq_def | sha256:9521ff731d924a2fb48f4d5928018457a62765969a508717b46fa5eacc7a8f89 |
+
+## Scribe emission and duplicate recheck
+
+- make emit EXIT=0, 63.397 seconds, one changed Blueprint. Log:
+  attempt-1/make-emit.log. The emitted Markdown was read in full; all three
+  formulas agree with the Lean statements, including positive times,
+  positive values, the finite occurrence set, and the indicator at k=1.
+- Fetched origin/dev, then git merge-tree --write-tree HEAD origin/dev
+  returned tree e10c7367844d3eb4de618aeb373c9d5bc3e7e2d6 without conflicts.
+  git grep -P for A384309 and both multiplicity spellings over origin/dev
+  D5/Blueprint returned no matches (grep exit 1 means no match).
+- Started the required scribe-content-checks script using immutable base
+  f838f20236e5a723d0c025ef53a80a07483008fa. Also run projections --check
+  explicitly, because this content-only change does not awaken that branch
+  of the script. The remaining Describe and real KaTeX checks are not skipped.
