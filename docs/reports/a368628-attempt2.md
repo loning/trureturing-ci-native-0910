@@ -37,3 +37,7 @@
 热树 `lake env lean /tmp/a368628-probe.lean`：原卷积 well-founded 定义、`seq_zero`、`seq_recurrence`、一般 `pow_coeff_congr` 均成功 elaborate。退出1仅因探索用 `#check` 三个不存在的 interval 引理；具体 `Unknown identifier sum_Icc_succ_bot / sum_Icc_eq_sum_range / Finset.sum_Ico_zero_bot`。这些查询已从正式文件移除。序列不包含模二支撑规律。
 
 钉版 Mathlib 检索命中 `PowerSeries.coeff_mul`、`coeff_expand_mul`、`coeff_expand_of_not_dvd`、`MvPowerSeries.map_frobenius_expand`；直接复用。arXiv API `all:A368628` HTTP 200，totalResults=0。
+
+### 编译尝试 2
+
+正式定义文件单文件编译 EXIT=0，提交 `55fbae1c3c` 已推送。配对探针实际应用 `convolution_pairing`，通过 `g=X*expand₂(f)` 把奇次平方系数变为 g 的偶次平方系数。第一次 EXIT=1，goal 为 `∑ x ∈ range (2*m), coeff x f * coeff (2*m-x) f + … = coeff m f ^ 2`，`sum_range_eq_add_Ico` 缺显式求和函数参数。修复传入该函数；不是数学障碍。完整 goal 在 attempt 工件的 Lean 日志中保存。
