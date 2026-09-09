@@ -82,6 +82,8 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(sorted(module for _, group in partitions for module in group), sorted(modules))
         self.assertIn((modules[0], [modules[0]]), partitions)
         self.assertIn((modules[1], [modules[1]]), partitions)
+        partial = self.program.partition_queries([modules[0]], keys, 32)
+        self.assertEqual(partial, [(modules[0], [modules[0]])])
 
     def test_incomplete_partition_is_rejected(self):
         for result in ({}, {"head": "head", "entries": []},

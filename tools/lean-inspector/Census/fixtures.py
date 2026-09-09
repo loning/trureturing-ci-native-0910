@@ -112,7 +112,8 @@ def main():
             "process", cwd=repository)
     except RuntimeError:
         log = (directory / "duplicate-evidence-imports/process.log").read_text()
-        assert "owning module mismatch" in log or "already been declared" in log, log
+        assert any(message in log for message in
+                   ("owning module mismatch", "already been declared", "environment already contains")), log
         assert not duplicate_output.exists()
     else:
         raise AssertionError("duplicate-name owners reintroduced by evidence imports were accepted")

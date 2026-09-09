@@ -31,7 +31,7 @@ def partition_queries(modules, keys, limit=32):
     owners = {}
     for module, name, _ in keys:
         owners.setdefault(name, set()).add(module)
-    isolated = {module for members in owners.values() if len(members) > 1 for module in members}
+    isolated = {module for members in owners.values() if len(members) > 1 for module in members} & set(modules)
     # Lean's imported constant map has one owner per Name. Keep repeated names
     # in separate elaborated environments while preserving each statement ID.
     return sorted(partition_modules(set(modules) - isolated, limit)
@@ -207,13 +207,14 @@ def execute(options):
         if options.prefix != "D5" and not options.fixture_truth_export:
             modules = [module for module in modules
                        if module == options.prefix or module.startswith(options.prefix + ".")]
-        partitions = partition_modules(modules, options.partition_modules)
+        partitions = partition_queries(modules, all_keys, options.partition_modules)
         query_partitions = partition_queries(modules, keys, options.partition_modules)
         state["partitioning"] = {"module_limit": options.partition_modules, "total": len(partitions),
                                  "query_total": len(query_partitions),
-                                 "grouping": "top-level directory under D5/S*, sorted chunks; repeated-name owners queried alone"}
+                                 "grouping": "top-level directory under D5/S*, sorted chunks; repeated-name owners discovered and queried alone"}
         save()
         evidence_modules = set()
+        discovery_started = time.monotonic()
         for number, (label, members) in enumerate(partitions):
             if not options.fixture_truth_export:
                 step(["lake", "--no-build", "build", *members], "environment-" + label)
@@ -227,6 +228,7 @@ def execute(options):
             evidence_modules.update(json.loads(output.read_text()))
             state["partitions"][label] = {"modules": members, "discovery": result}
             save()
+        state["runtime_seconds"]["discovery"] = round(time.monotonic() - discovery_started, 3)
         state["evidence_modules"] = sorted(evidence_modules)
         completed = []
         certified_imports = set()
