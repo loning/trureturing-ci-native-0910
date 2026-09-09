@@ -114,8 +114,7 @@ internal static class MsBuildCompileOracle
         IEnumerable<string> projectPaths,
         string? dotnetExecutable = null,
         TimeSpan? timeout = null,
-        BoundedProcessRunner.ProcessRunner? run = null,
-        string? configuration = null)
+        BoundedProcessRunner.ProcessRunner? run = null)
     {
         var owners = new Dictionary<string, string>(StringComparer.Ordinal);
         var findings = new List<MsBuildCompileFinding>();
@@ -127,7 +126,7 @@ internal static class MsBuildCompileOracle
             {
                 var output = (run ?? BoundedProcessRunner.Run)(
                     dotnet,
-                    QueryArguments(repositoryRoot, projectPath, configuration),
+                    QueryArguments(repositoryRoot, projectPath),
                     repositoryRoot,
                     timeout ?? BoundedProcessRunner.HangDetectionBudget,
                     MaximumOutputBytes,
@@ -226,7 +225,7 @@ internal static class MsBuildCompileOracle
         }
     }
 
-    private static IReadOnlyList<string> QueryArguments(string repositoryRoot, string projectPath, string? configuration)
+    private static IReadOnlyList<string> QueryArguments(string repositoryRoot, string projectPath)
     {
         var props = FindDirectoryBuildFile(repositoryRoot, projectPath, "Directory.Build.props");
         var targets = FindDirectoryBuildFile(repositoryRoot, projectPath, "Directory.Build.targets");
@@ -243,7 +242,6 @@ internal static class MsBuildCompileOracle
         };
         if (props is not null) arguments.Add($"-property:DirectoryBuildPropsPath={props}");
         if (targets is not null) arguments.Add($"-property:DirectoryBuildTargetsPath={targets}");
-        if (configuration is not null) arguments.Add($"-property:Configuration={configuration}");
         return arguments;
     }
 

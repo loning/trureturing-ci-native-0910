@@ -101,10 +101,13 @@ internal static partial class BackfillInventoryRule
         "^[A-Za-z0-9]+(?:[.-][A-Za-z0-9]+)*$",
         RegexOptions.CultureInvariant);
 
-    internal static ImmutableArray<RuleFinding> EvaluateCandidateDelta(DeltaRuleContext context)
+    internal static ImmutableArray<RuleFinding> Evaluate(RuleEvaluationContext context)
+        => Evaluate(context, changes: null);
+
+    internal static ImmutableArray<RuleFinding> EvaluateCandidateDelta(RuleEvaluationContext context)
         => Evaluate(context, context.Changes);
 
-    internal static bool IsAffectedBy(DeltaRuleContext context)
+    internal static bool IsAffectedBy(RuleEvaluationContext context)
     {
         if (context.Changes.Paths.IsDefaultOrEmpty)
         {
@@ -143,8 +146,8 @@ internal static partial class BackfillInventoryRule
     }
 
     private static ImmutableArray<RuleFinding> Evaluate(
-        DeltaRuleContext context,
-        RawChangeSet changes)
+        RuleEvaluationContext context,
+        RawChangeSet? changes)
     {
         BackfillInventoryDocument document;
         RawChangeSet? evaluationChanges = changes;
@@ -152,7 +155,10 @@ internal static partial class BackfillInventoryRule
         Func<string, bool>? isBaseFactAffected = null;
         try
         {
-            document = context.BackfillCandidateDeltaSession.GetDocument(changes);
+            document = changes is null
+                ? BackfillInventoryLoader.Load(context.Current)
+                : context.BackfillCandidateDeltaSession.GetDocument(changes);
+            if (changes is not null)
             {
                 var impact = BackfillDeltaImpactResolver.Resolve(
                     context.Current,

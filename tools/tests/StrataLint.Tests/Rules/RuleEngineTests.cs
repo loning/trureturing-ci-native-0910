@@ -40,7 +40,7 @@ public sealed class RuleEngineTests
         { 23, RuleFixture.BlueprintSourcePath },
         { 23, "Directory.Build.props" },
         { 25, RuleFixture.BlueprintPath },
-        { 30, RuleFixture.StageScriptPath },
+        { 30, RuleFixture.HarnessGatePath },
     };
 
     public static TheoryData<int, string?> UnaffectedInputs => new()
@@ -196,16 +196,20 @@ public sealed class RuleEngineTests
 
     [Theory]
     [MemberData(nameof(UnaffectedInputs))]
-    public void DeltaPredicateIsRecordedAsSkippedWhenItsInputClosureDoesNotChange(
+    public void ActiveRuleIsRecordedAsSkippedWhenItsInputClosureDoesNotChange(
         int number,
         string? path)
     {
         var fixture = new RuleFixture();
         var changes = RawChangeSet.Create(path is null ? [] : [path]);
         var completed = Assert.IsType<RuleExecutionOutcome.Completed>(
-            RuleCatalog.Default.ExecuteDelta(fixture.BuildScopeProbe(changes))).Capability;
+            RuleCatalog.Default.Execute(fixture.BuildScopeProbe(changes))).Capability;
+        var skippedProperty = typeof(CompletedRuleSet).GetProperty("SkippedRules");
+        Assert.NotNull(skippedProperty);
+        var skipped = Assert.IsType<ImmutableArray<RuleId>>(skippedProperty!.GetValue(completed));
+
         Assert.DoesNotContain(RuleId.CreateKnown(number), completed.ExecutedRules);
-        Assert.Contains(RuleId.CreateKnown(number), completed.SkippedRules);
+        Assert.Contains(RuleId.CreateKnown(number), skipped);
     }
 
     [Fact]
@@ -281,10 +285,6 @@ public sealed class RuleEngineTests
     {
         var fixture = new RuleFixture();
         fixture.UseSyntheticDirectoryBackfill();
-        fixture.Baseline.Clear();
-        foreach (var pair in fixture.Files) fixture.Baseline.Add(pair.Key, pair.Value);
-        fixture.Changes.Clear();
-        fixture.Changes.AddRange(fixture.Files.Keys.Where(BackfillInventoryLoader.IsCanonicalPath));
 
         var diagnostics = RuleCatalog.Default.EvaluateSingle(
             RuleId.CreateKnown(16),
@@ -321,7 +321,6 @@ public sealed class RuleEngineTests
         fixture.AddBackfillTargets();
         fixture.Baseline[RuleFixture.FixtureBackfillSourcePath] = RemoveGenreMarkers(
             fixture.Baseline[RuleFixture.FixtureBackfillSourcePath]);
-        fixture.Changes.Add(RuleFixture.FixtureBackfillSourcePath);
 
         var diagnostics = RuleCatalog.Default.EvaluateSingle(
             RuleId.CreateKnown(16),
@@ -337,7 +336,6 @@ public sealed class RuleEngineTests
         fixture.AddBackfillTargets();
         fixture.Files[RuleFixture.FixtureBackfillSourcePath] = RemoveGenreMarkers(
             fixture.Files[RuleFixture.FixtureBackfillSourcePath]);
-        fixture.Changes.Add(RuleFixture.FixtureBackfillSourcePath);
 
         var diagnostic = Assert.Single(RuleCatalog.Default.EvaluateSingle(
             RuleId.CreateKnown(16),
@@ -354,8 +352,6 @@ public sealed class RuleEngineTests
         var fixture = new RuleFixture();
         fixture.AddBackfillTargets();
         fixture.Files.Remove(RuleFixture.FixtureCasPath);
-        fixture.Changes.Add(RuleFixture.FixtureCasPath);
-        fixture.Changes.Add(RuleFixture.FixtureBackfillAtomPath);
         fixture.Files[RuleFixture.FixtureBackfillAtomPath] = fixture.Files[
                 RuleFixture.FixtureBackfillAtomPath]
             .Replace(

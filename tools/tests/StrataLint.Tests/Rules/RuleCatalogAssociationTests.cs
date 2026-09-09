@@ -30,16 +30,19 @@ public sealed class RuleCatalogAssociationTests
     }
 
     [Fact]
-    public void EveryActiveDeltaPredicateDeclaresAnAffectedClosure()
+    public void EveryActiveRepositoryRuleDeclaresAnAffectedClosure()
     {
-        var context = new RuleFixture().BuildScopeProbe(RawChangeSet.Create([]));
+        var affectedPredicateType = typeof(Func<RuleEvaluationContext, bool>);
         var active = RepositoryRules.CreateRegistrations()
-            .Where(static registration => registration.Descriptor.Lifecycle is RuleLifecycle.Active && registration.Rule.HasDeltaPredicate);
+            .Where(static registration => registration.Descriptor.Lifecycle is RuleLifecycle.Active);
 
         foreach (var registration in active)
         {
-            // A missing predicate defaults to affected, so an empty delta must exercise the closure.
-            Assert.False(registration.Rule.IsAffectedBy(context),
+            var predicateField = registration.Rule.GetType()
+                .GetFields(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                .SingleOrDefault(field => field.FieldType == affectedPredicateType);
+            Assert.True(
+                predicateField?.GetValue(registration.Rule) is not null,
                 $"{registration.Descriptor.Id.Value} has no explicit affected closure");
         }
     }
@@ -435,7 +438,7 @@ public sealed class RuleCatalogAssociationTests
         var registrations = RepositoryRules.CreateRegistrations();
         var catalog = RuleCatalog.CreateForTesting(registrations);
         var fixture = new RuleFixture();
-        DeltaRuleContext context;
+        RuleEvaluationContext context;
         if (scenario == "shared-rule-implementation")
         {
             context = fixture.Build(RawChangeSet.Create(
@@ -540,7 +543,7 @@ public sealed class RuleCatalogAssociationTests
     private static IRepositoryRule PredicateRule(Func<string, bool> predicate) =>
         new FakeRule(file => predicate(file.Path.Value), ImmutableArray<RuleFinding>.Empty);
 
-    private static RepositoryFile Artifact(DeltaRuleContext context, string path) =>
+    private static RepositoryFile Artifact(RuleEvaluationContext context, string path) =>
         context.Current.Files.Single(pair => pair.Key.Value == path).Value;
 
     private sealed class FakeRule(
@@ -550,20 +553,18 @@ public sealed class RuleCatalogAssociationTests
         public bool AppliesTo(RepositoryFile artifact, RuleApplicabilityContext context) =>
             appliesTo(artifact);
 
-        public ImmutableArray<RuleFinding> EvaluateCurrent(CurrentRuleContext context) => findings;
+        public ImmutableArray<RuleFinding> Evaluate(RuleEvaluationContext context) => findings;
     }
 
     private sealed class CountingUnaffectedRule : IRepositoryRule
     {
-        public bool HasCurrentPredicate => false;
-        public bool HasDeltaPredicate => true;
         internal int EvaluationCount { get; private set; }
 
         public bool AppliesTo(RepositoryFile artifact, RuleApplicabilityContext context) => false;
 
-        public bool IsAffectedBy(DeltaRuleContext context) => false;
+        public bool IsAffectedBy(RuleEvaluationContext context) => false;
 
-        public ImmutableArray<RuleFinding> EvaluateDelta(DeltaRuleContext context)
+        public ImmutableArray<RuleFinding> Evaluate(RuleEvaluationContext context)
         {
             EvaluationCount++;
             return [];
@@ -579,7 +580,7 @@ public sealed class RuleCatalogAssociationTests
     {
         public bool AppliesTo(RepositoryFile artifact, RuleApplicabilityContext context) => true;
 
-        public ImmutableArray<RuleFinding> EvaluateCurrent(CurrentRuleContext context)
+        public ImmutableArray<RuleFinding> Evaluate(RuleEvaluationContext context)
         {
             state.IsSet = true;
             return [];
@@ -590,7 +591,7 @@ public sealed class RuleCatalogAssociationTests
     {
         public bool AppliesTo(RepositoryFile artifact, RuleApplicabilityContext context) => true;
 
-        public ImmutableArray<RuleFinding> EvaluateCurrent(CurrentRuleContext context) =>
+        public ImmutableArray<RuleFinding> Evaluate(RuleEvaluationContext context) =>
             state.IsSet
                 ? []
                 : [new RuleFinding("synthetic/order-dependent.txt", "state was unset")];
