@@ -33,3 +33,11 @@ n=0 不进入结论；禁止反向、重复或对角步，n=1 须符合单格路
 尚未证明、构建、冻结、开 PR。尚未打开的外部页面全部 ASSUMED-UNVERIFIED。
 不主张全球不存在公开证明，不主张发现优先权，不以用户枚举替代一般证明。
 不主张独立模型共识或 CI 已绿。
+
+## 检索第 2 批
+
+- 本工作树尚无 .lake，首次本地 mathlib 粗筛报路径不存在，未冒称零命中。已先启动 make lean-cache-ensure。
+- 改读主检出已有的 mathlib 源，git rev-parse HEAD 与指定 pin 完全相等。
+  rg 搜 A380392 / monotone.?path / lattice.?path / bernoulli.*path，只命中 DyckWord 文档与无关范畴路径声明；未命中目标。
+- 已实际读取 spec A5.1：utility: none 是合法完整字段，位于 anchors 与 digest 之间。
+- Library/Words/oeis2026triage0910.md 第 302 行含用户分诊记录；不将其当本席外网核验。
