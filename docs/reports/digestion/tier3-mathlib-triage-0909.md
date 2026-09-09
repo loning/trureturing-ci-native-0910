@@ -54,7 +54,7 @@ pushed immediately, including failures. Report-only delivery: no PR.
 
 ## conclusion
 
-Screened: **125/150**. A=5, B=35, C=85, D=0, E=0.
+Screened: **150/150**. A=7, B=41, C=102, D=0, E=0.
 
 Structured result: [conclusion.json](tier3-mathlib-triage-0909/conclusion.json).
 Complete canonical atom reads (raw and normalized text, command, EXIT) are in `atoms-1.json` through `atoms-6.json` as collected. Reading ahead does not count as screening.
@@ -188,6 +188,31 @@ All Mathlib paths below are relative to `.lake/packages/mathlib/`. Every listed 
 | 123 | `df8445edb07e25e1e79b9efacc91d4900583fa229efe7706745af103ff1cb3f5` | 推论：线性尺度上的体积确实趋零 | C | 缺实际 HCIZ 双尺度局部一致极限及 S_d 收敛；指数/对数的极限运算不供应这些实际前置结论。 | none claimed | not run | special-polynomials, gaussian-moments |
 | 124 | `e12105bf8ad122862f6fe04a1b4abe22b29365455992101560012d8a9cdf9f44` | 定理 T3：Gamma—整数分解 | C | 缺实际 theta 密度的换元、混合求和与概率密度识别；上游 Gamma 分布并不直接等于该指定模型。 | none claimed | not run | theta-analytic, gaussian-moments |
 | 125 | `e17855c9db943466019087527afd9e178fa5c465197a1a9de44490e5fa8444b2` | 定理 J4：残差的精确极限 | C | 缺允许 Jordan 块的统一残差上界与实际高斯流单调性；一般谱定理不覆盖非正规矩阵的这个构造。 | none claimed | not run | negative-spectrum-refined, gaussian-moments |
+| 126 | `e405a7f40fa7ee5313052263686a73c8b8578d18290d1f429cb1826603f82480` | 定理一：首次返回概率具有精确的逐步守恒账目 | A | 一维单位向量投影公式、正交投影勾股恒等式和 Finset.sum_range_sub' 直接给完整结论；探针实际定义 QU 的迭代，没有将所求递推式放入假设。sum_range_sub' 由所引行 prod_range_div' 的 to_additive 生成。 | `Submodule.starProjection_unit_singleton` (Mathlib/Analysis/InnerProductSpace/Projection/Basic.lean:417); `Submodule.norm_sq_eq_add_norm_sq_starProjection` (Mathlib/Analysis/InnerProductSpace/Projection/Basic.lean:557); `Submodule.starProjection_orthogonal` (Mathlib/Analysis/InnerProductSpace/Projection/Basic.lean:209); `Finset.sum_range_sub'` (Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean:903) | Return126: 0 | sixth-projection-null, unitary-involution |
+| 127 | `e44ad50e6f818d656b6b3b1318b466ef65b9d4fe363f0d70d2f988ffda11c865` | 定理二：RH 等价于这个实际边界函数的收缩性 | B | Schwarz 引理直接给 S(0)=0 后的加强模界；缺实际 S_xi 与 RH 的双向解析/收缩性桥，不能把任意 Schur 函数的结论当作该实际对象已属 Schur 类。 | `Complex.norm_le_norm_of_mapsTo_ball` (Mathlib/Analysis/Complex/Schwarz.lean:238) | not run | sixth-final-bindings, theta-analytic, toeplitz |
+| 128 | `e5d2d285af1f22158b076150c40f53f7d8ce44d2a32dbf3093e84e39ae416c82` | 定理 M3：双尺度极限 | C | 缺实际谱幂和、Schur 展开与维数缩放相结合的可求和统一控制，及所给无限指数级数的双尺度极限。 | none claimed | not run | special-polynomials, gaussian-moments |
+| 129 | `e608f6dc2b3e96087ebd63bf03573113e4862368d4ca9073b2e7e18b62f93d6a` | 定理十七：假设存在失稳时，有严格夹逼 | C | 缺实际 F_xi 失稳零点与正性首次触界之间的严格比较，特别是 a_geom<a_*<R0；普通连续性不供应这两个严格间隔。 | none claimed | not run | theta-analytic, toeplitz |
+| 130 | `e6b6fecddb5eee0812a0243c4df590974799c2c4403225694671db7205f1e6a0` | 定理 L1：非负平方展开 | C | 缺酉群 HCIZ 积分的 Schur 字符展开、各阶系数平方表示与无限求和/积分交换。 | none claimed | not run | special-polynomials, gaussian-moments |
+| 131 | `e9720c882324b7c79f984b3a679f76fadc56b24259982372cfb13ef034c4860a` | 定理 N4：离线根产生固定的负平方测试 | B | 有理数稠密性供应有限系数扰动的原料；缺隔离指定非实共轭对、消去其余大谱点并压低无限尾的负平方见证，以及该二次型对系数扰动的连续性绑定。 | `Rat.denseRange_cast` (Mathlib/Topology/Algebra/Order/Archimedean.lean:33) | not run | sixth-final-bindings, negative-spectrum-refined, special-polynomials |
+| 132 | `ee425ea06616fd0f316f4ec675f08c194f1a322c66490006b88f876689118d41` | 定理 I2：有限观察空间的边界缺额 | C | 缺实际无界微分算子及其伴随的共同定义域、标量交换关系和不变子空间压缩恒等式；有限矩阵 Gram 正性不认证这个无限维历史残差等式。 | none claimed | not run | gaussian-moments, negative-spectrum-refined, sixth-final-bindings |
+| 133 | `eeec54732cd5164f183f001e2f20aca1e7c3d82f7e60e2ae713bb6be62891335` | 定理 J1：历史方差演化 | C | 缺矩阵指数高斯积分的参数微分、分部积分与三项生成元的精确绑定。 | none claimed | not run | gaussian-moments, real-calculus |
+| 134 | `ef6f54cb65d0244d86eb6429a06d130952605ede928d46583fdd5558ae1c0b90` | 定理 R4：相邻态严格正交 | B | 幺正反射保持内积，结合相反奇偶本征值即可给抽象正交；缺实际 L² 条件态、反射的等距实现及各 n 奇偶/归一化绑定，未核这组适配义务。 | `LinearIsometryEquiv.inner_map_map` (Mathlib/Analysis/InnerProductSpace/LinearMap.lean:120) | not run | sixth-final-bindings, unitary-involution |
+| 135 | `efc75726d17ed8663b268d9d47e0616c4b92a0383da0261cb7c4c6c7f3b819d2` | 定理 L4：平方级数的精确指数率 | C | 缺 HCIZ/非负平方级数的精确大 r 指数率；最大项下界与全级数上界必须达到同一 Q_q。 | none claimed | not run | special-polynomials, gaussian-moments |
+| 136 | `f19c5a47126f834bc6db65cd85562ee9c8c64fbe0f5db7868a89cc9f8713412b` | 定理八：历史绕行读数恢复实际对数导数的极点 | C | 缺该具体历史周期的分支校正、解析继续以及实际 zeta 对数导数全部极点的精确恢复。 | none claimed | not run | discrete-winding, logderiv-residue, theta-analytic |
+| 137 | `f4f9b0a4df470ba2b4bf10beee83d880ad7f4b3f0386116c90457ebb5d0fe984` | 定理十：不使用 RH，也能排除两个实径向上的有限触界 | C | 缺实际 theta/ξ 比值在两条实径向上的无零点及正号证明，普通解析函数理论不识别这些实际符号。 | none claimed | not run | theta-analytic, toeplitz |
+| 138 | `f62752ed0e3bef8ecf2a83bb81efd8d286d810248bbeb79696cb3710c0c3b1e5` | 定理 K1：这个历史读出是忠实的 | C | 缺该伴随矩阵与指定输出坐标的可观测性满秩，以及从矩阵指数全时读出为零提取前 d 阶导数的绑定。 | none claimed | not run | special-polynomials, sixth-topics |
+| 139 | `f7638bdcf1e35350eda1b731d962c04911ac25c6a52343035a7db2a5bb04e456` | 定理三：临界处的有限历史间隙有双边幂律 | C | 缺符号有限阶零点与有限 Toeplitz Rayleigh 商间的双边定量谱估计，包括与 N 无关的正下界常数。 | none claimed | not run | toeplitz, negative-spectrum-refined |
+| 140 | `f7ca82eaa0b6663d12c0bfd1a9ddf79bed9767d3db424fab41f9fc1bf4da0364` | 定理 R3：放大后的干涉极限 | C | 缺实际筛选密度的缩放高斯极限、指数矩统一尾界及从实紧集提升至复紧集的控制。 | none claimed | not run | gaussian-moments, theta-analytic |
+| 141 | `f94e72b42f9e6da0084b96b95d047cefcf3467c62f9875897dd6b2e40f6d2e97` | 定理二：开放历史链的精确谱间隙 | C | 缺开放路径 Laplacian 的完整特征值/首正特征值计算，以及门序列的块对角酉规约；pathGraph 的组合定义不提供该谱公式。 | none claimed | not run | sixth-topics, negative-spectrum-refined |
+| 142 | `fa8b4b6196fcba7e8ebb4dd83eb2eef163a13a0db12bf2d3c4701126f37ade22` | 定理 J5：该流全局存在、保谱，并与高斯历史等价 | B | 可逆矩阵共轭保持特征多项式已有；缺该微分流的全局解、准确耗散系数1/2、共轭路径构造与逐时刻高斯历史酉等价。 | `Matrix.charpoly_units_conj` (Mathlib/LinearAlgebra/Matrix/Charpoly/Basic.lean:285) | not run | sixth-topics, gaussian-moments |
+| 143 | `fad0a54d7c08517061dd72156313f2d20793a832d69377d4b2c6ccafb4a15a71` | 定理 O3：负特征值的精确计数 | C | 缺无限算子负指标的双向精确计数：各共轭对负方向构造、独立性和不多于该对数的上界。 | none claimed | not run | negative-spectrum-refined, special-polynomials |
+| 144 | `fb1c38b64efe553d45ac383d0721cd76c7b64279dcff96cd63865be615fbdfb5` | 引理：三角读出的单侧上界 | C | 缺该具体权重的 Mellin/Dirichlet 极点分析及从单侧界排除所有离线零点的 Tauber 型论证。 | none claimed | not run | theta-analytic, logderiv-residue |
+| 145 | `fb59b24ac5caf7f843daafe640a109f5656d2c90a088f47e404bc07f5425aefc` | 定理 Q1：所有二次倾斜的 Turán 不等式 | C | 缺指定核对所有倾斜参数的严格矩比控制及精确系数 (2n-1)/(2n+1)；通用矩凸性不能给反向严格界。 | none claimed | not run | gaussian-moments, theta-analytic, special-polynomials |
+| 146 | `fc7df336d8009cc2fb6b17b81726c35280f4a7c87df6b80aeb2ab2ed62148dc1` | 定理一：平滑后的所有有限阶矩阵具有统一正下界 | C | 缺实际 Fourier 系数的概率测度表示与 Poisson 核点态双边界传递至所有有限截面；一般 PSD 不供应严格统一下界。 | none claimed | not run | toeplitz, negative-spectrum-refined |
+| 147 | `fe2435c31f17b225da1fc23447f6bc697da4eab605315d6d8611f1370db9369d` | 定理 T5：双副本补偿恒等式 | C | 缺实际 theta 种子补偿算子的双副本乘积恒等式及 Fourier 分部积分/微分交换，包括精确常数 pi²。 | none claimed | not run | theta-analytic, real-calculus |
+| 148 | `fe32fa800185d6c61117be686cf2b1eca3bb051f168159cfafd23edb452fb19f` | 推论：细化读数几乎必然最终等于零 | B | 无原子测度下有限事件集测度为零已有；缺实际极限 Y_infty 的连续密度、嵌套窗口缩点及空窗口到 M_n=0 的绑定。正文使用有限 log p 集与极限点回避，不是 Borel-Cantelli 求和假设。 | `Set.Finite.measure_zero` (Mathlib/MeasureTheory/Measure/Typeclasses/NullSingletonClass.lean:79) | not run | sixth-projection-null, sixth-topics |
+| 149 | `fed862d04754e331ffe1254aa2d4f4f01ae3fb08ffb349002952eee303bf8a3e` | 定理 S1：原来的 \(R_n(t)\) 是这些局部读数的特定加权平均 | B | Fubini 接口支持双副本积分次序交换；缺实际密度的可积性、Jacobian 为1的两模态换元、偶性折半及非零归一化分母的完整绑定。 | `MeasureTheory.integral_integral_swap` (Mathlib/MeasureTheory/Integral/Prod.lean:482) | not run | sixth-topics, theta-analytic |
+| 150 | `ff41c11de3a485a3451a5788237056c9099133f734e8bf7b75a1240d6746dd85` | 定理四：闭环不相容的精确代价 | A | 取 a=U1*x,b=U2*x；Mathlib 范数平方展开后 field_simp/ring 配方，平方非负给全体 y 下界，加权中心取到。探针证明一般实内积空间的完整 IsLeast，复内积空间可限制标量至实数；初次失败和修复成功均归档。 | `norm_sub_sq_real` (Mathlib/Analysis/InnerProductSpace/Basic.lean:435); `norm_add_sq_real` (Mathlib/Analysis/InnerProductSpace/Basic.lean:409) | Endpoint150: 2; Endpoint150-v2: 0 | sixth-topics, sixth-projection-null, sixth-final-bindings |
 
 ## probe_runs
 
@@ -272,6 +297,8 @@ Full commands and untruncated hits: [search-receipts.json](tier3-mathlib-triage-
 | sixth-topics | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '(Borel.Cantelli|measure_limsup|ae_eventually|integral.*odd|Odd.*integral|path.*spectr|spectr.*path|laplacian.*path|path.*laplacian|charpoly.*conj|charpoly.*similar|integral_integral_swap|norm_sub_sq_real)' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 120 | 0 |
 | sixth-projection-null | D5 | `rg '-n' '-i' '-P' '\b(norm_sq_eq_add_norm_sq_starProjection|starProjection_unit_singleton|starProjection_orthogonal|prod_range_div|measure_zero|norm_sub_sq_real)\b' 'D5' '-g' '*.lean'` | 26 | 0 |
 | sixth-projection-null | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '\b(norm_sq_eq_add_norm_sq_starProjection|starProjection_unit_singleton|starProjection_orthogonal|prod_range_div|measure_zero|norm_sub_sq_real)\b' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 61 | 0 |
+| sixth-final-bindings | D5 | `rg '-n' '-i' '-P' '\b(Rat\.denseRange_cast|norm_le_norm_of_mapsTo_ball|inner_map_map|posSemidef_conjTranspose_mul_self|norm_add_sq_real|charpoly_units_conj)\b' 'D5' '-g' '*.lean'` | 27 | 0 |
+| sixth-final-bindings | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '\b(Rat\.denseRange_cast|norm_le_norm_of_mapsTo_ball|inner_map_map|posSemidef_conjTranspose_mul_self|norm_add_sq_real|charpoly_units_conj)\b' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 61 | 0 |
 
 The positive and negative controls share case-insensitivity, alternation, word boundaries and whitespace matching. The initial `negative-spectrum` query matched `registerTraceClass` (logging infrastructure); the refined word-boundary query excludes this false positive. Generic Caratheodory measure hits are not Toeplitz spectral theorems.
 
@@ -283,31 +310,7 @@ Frozen state JSON stores only `statement_id`; module names must be located throu
 
 ## unscreened
 
-- `e405a7f40fa7ee5313052263686a73c8b8578d18290d1f429cb1826603f82480`
-- `e44ad50e6f818d656b6b3b1318b466ef65b9d4fe363f0d70d2f988ffda11c865`
-- `e5d2d285af1f22158b076150c40f53f7d8ce44d2a32dbf3093e84e39ae416c82`
-- `e608f6dc2b3e96087ebd63bf03573113e4862368d4ca9073b2e7e18b62f93d6a`
-- `e6b6fecddb5eee0812a0243c4df590974799c2c4403225694671db7205f1e6a0`
-- `e9720c882324b7c79f984b3a679f76fadc56b24259982372cfb13ef034c4860a`
-- `ee425ea06616fd0f316f4ec675f08c194f1a322c66490006b88f876689118d41`
-- `eeec54732cd5164f183f001e2f20aca1e7c3d82f7e60e2ae713bb6be62891335`
-- `ef6f54cb65d0244d86eb6429a06d130952605ede928d46583fdd5558ae1c0b90`
-- `efc75726d17ed8663b268d9d47e0616c4b92a0383da0261cb7c4c6c7f3b819d2`
-- `f19c5a47126f834bc6db65cd85562ee9c8c64fbe0f5db7868a89cc9f8713412b`
-- `f4f9b0a4df470ba2b4bf10beee83d880ad7f4b3f0386116c90457ebb5d0fe984`
-- `f62752ed0e3bef8ecf2a83bb81efd8d286d810248bbeb79696cb3710c0c3b1e5`
-- `f7638bdcf1e35350eda1b731d962c04911ac25c6a52343035a7db2a5bb04e456`
-- `f7ca82eaa0b6663d12c0bfd1a9ddf79bed9767d3db424fab41f9fc1bf4da0364`
-- `f94e72b42f9e6da0084b96b95d047cefcf3467c62f9875897dd6b2e40f6d2e97`
-- `fa8b4b6196fcba7e8ebb4dd83eb2eef163a13a0db12bf2d3c4701126f37ade22`
-- `fad0a54d7c08517061dd72156313f2d20793a832d69377d4b2c6ccafb4a15a71`
-- `fb1c38b64efe553d45ac383d0721cd76c7b64279dcff96cd63865be615fbdfb5`
-- `fb59b24ac5caf7f843daafe640a109f5656d2c90a088f47e404bc07f5425aefc`
-- `fc7df336d8009cc2fb6b17b81726c35280f4a7c87df6b80aeb2ab2ed62148dc1`
-- `fe2435c31f17b225da1fc23447f6bc697da4eab605315d6d8611f1370db9369d`
-- `fe32fa800185d6c61117be686cf2b1eca3bb051f168159cfafd23edb452fb19f`
-- `fed862d04754e331ffe1254aa2d4f4f01ae3fb08ffb349002952eee303bf8a3e`
-- `ff41c11de3a485a3451a5788237056c9099133f734e8bf7b75a1240d6746dd85`
+[]
 
 ## pushed.commits
 
@@ -323,6 +326,7 @@ Frozen state JSON stores only `statement_id`; module names must be located throu
 - `047b934232c4af2ade19c4c4c2aeba52bf60edb2`
 - `04be1e7a603eeca9c364c70bd8c17be0530256d6`
 - `5408df1bd556f4426487cce03b82b5b239b82454`
+- `d85d63b1763bbd197a317496845b18d5f5de7dab`
 
 Every listed checkpoint was pushed successfully. The final runner envelope includes the commit containing this final report (a commit cannot contain its own hash).
 
