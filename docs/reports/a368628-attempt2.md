@@ -65,3 +65,26 @@
 追加 private 的前四项回声，直接从自然数卷积递推计算，不使用奇偶定理。首次编译仅该 private echo 有两处 simp 未归约：`coeff 0 (mk seq ^ 4)`、`if Even 3 then … else …`；修复为显式 constantCoeff/map_pow 和奇偶分支。主定理仍闭合。编译期 `getUsedConstants` 已确认七条预登记直接依赖，包括 `square_even_coeff → ConvolutionRecurrenceOddPowersOfTwo.convolution_pairing`，复用不是闲置 import。
 
 Private `initial_echo` 修复后正式模块编译 EXIT=0、零 warning/error，前四项 1,1,2,14 经 kernel 验证，未作为公开有限实例冻结。另独立 Python 原卷积探针 n=0..300：前十项与 brief 全等，奇指标 [0,1,5,21,85] 与谓词预测逐项相同，耗时0.599秒；只作语义回声，不计证明进展。
+
+## 逐声明判形与准入依据
+
+本节判形按 base 到 candidate 首次冻结的完整证明，私有 helper 展开；只列直接冻结前置，Mathlib 不计入该栏。唯一冻结数学前置记为 P：`D5/S1/Recurrence/ConvolutionRecurrenceOddPowersOfTwo.convolution_pairing`，`statement_id=sha256:cbd33875d118bc97517ffb5a2744a145bf46d7e61edab71f567ae26059725edb`，读取既有 accepted 事件 `7d9d1b753ea1e0d2b907b2e3784379a289c59ebe0601a95489ce227a5978b1a5`；模块 pin 为 `sha256:01c1cad519e2e056064c9dbb822bbb04688d12c1ea8bc8584da0bc48c4eabee7`。本模块内新前置并非 base 已冻结前置。
+
+| 公开定理 | proof_shape | 直接冻结依赖 | escape_witness | admission_basis |
+| --- | --- | --- | --- | --- |
+| seq_zero | bind-only | [] | null | escape-witness 模块内伴随；义务为基例，消费者 a368628_odd_iff → seq_zero |
+| seq_recurrence | content | [] | private pow_coeff_congr | escape-witness |
+| seq_even_index_zero | content | [P]，经 private 平方系数桥 | private pow_coeff_congr，经 binary_recurrence / seq_recurrence | escape-witness |
+| seq_four_mul_add_three | content | [] | private pow_coeff_congr，经 binary_recurrence / seq_recurrence | escape-witness |
+| seq_four_mul_add_one | content | [] | private pow_coeff_congr，经 binary_recurrence / seq_recurrence | escape-witness |
+| a368628_odd_iff | content | [P]，经正偶指标消失 | 三条新序列系数递推，并以强归纳构造指数 | escape-witness |
+
+`pow_coeff_congr` 的内容是任意半环、任意幂次的有限系数一致性传播，以幂次归纳及卷积的两个坐标界证明；该引理不引用仓内冻结定理。对 seq_recurrence 和三条 residue 定理逐条适用第3.2四项：(i) 它分别在本定理已 elaborate 的闭包内，seq_recurrence 直接使用，三条 residue 经 binary_recurrence 使用；(ii) 空/仅 P 的冻结前置未提供任意半环的截断一致性归纳，需新归纳步骤，非投影与参数绑定；(iii) 该一般二序列一致性命题与具体 seq 的递推或余类结论不定义等价；(iv) 用它消去有限递归的零延拓，结果实际喂给模二系数计算，没有丢弃的合取项或死代码。若只相对已证明的本模块 seq_recurrence 看，三个 residue 的剩余 Frobenius/配对计算是直接库复用；本表按要求内联回 base，故如实披露 content 的来源，而不冒领 Frobenius 为新定理。
+
+主定理四项：(i) 三条 seq 余类引理在 getUsedConstants 的直接常量集合中；(ii) P 只给任意函数的平方配对，不能直接投影出这条新分段递归序列的余类规律与指数存在性；(iii) 每条余类递推与全称双向指数判据均不定义等价；(iv) 强归纳分别使用两条零值排除分支与 4j+1 递归分支，删去任一即对应分支无法由当前项闭合。强归纳自身还构造 k+1 并反向剥离正指数，不是冻结 iff 的换名。
+
+两条公开 def（seq、series）是原递推构造及其系数封装，不单独作定理准入主张。全部六条公开定理回答无界符号问题，非四类计算性内容，`utility: none`；private initial_echo 不作独立正向实例冻结。伴随边另有主定理 → 三条 residue → seq_recurrence，终点为本次用户预登记目标。
+
+## 全项目门读数
+
+`make lean`：首次 C# 括号错误 EXIT=2 / 2.411s；第二次 FormulaDsl.D 参数要求 byte，Residue helper 用 int，EXIT=2 / 10.984s。两处均修在新增 Scribe 文件。第三次 **EXIT=0 / 59.182s / 12828 jobs**，日志含 LEAN_CACHE 收据，未更改检测或预算；旧模块的重放 warning 不归本次新模块。新模块单文件编译零 warning/error。后续 lean-report/emit/冻结/Scribe 检查按序进行。

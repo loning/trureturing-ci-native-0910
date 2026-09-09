@@ -10,6 +10,7 @@ import D5.S1.Recurrence.ConvolutionRecurrenceOddPowersOfTwo
 import Mathlib.RingTheory.PowerSeries.Expand
 import Mathlib.Algebra.BigOperators.Intervals
 import Mathlib.FieldTheory.Finite.Basic
+
 open Finset PowerSeries
 open D5.S1.Recurrence.ConvolutionRecurrenceOddPowersOfTwo (convolution_pairing)
 
@@ -35,6 +36,7 @@ private theorem seq_eq (n : ℕ) : seq n = if n=0 then 1 else
     coeff (n-1) ((mk (fun i => if i < n then seq i else 0) : PowerSeries ℕ) ^
       (if Even n then 2 else 4)) := by
   exact Nat.lt_wfRel.wf.fix_eq _ n
+
 noncomputable def series : PowerSeries ℕ := mk seq
 
 theorem seq_zero : seq 0 = 1 := by rw [seq_eq]; simp
@@ -45,7 +47,6 @@ theorem seq_recurrence {n : ℕ} (hn : 0<n) :
   apply pow_coeff_congr
   intro i hi
   simp only [series, coeff_mk, if_pos (by omega : i<n)]
-
 
 private theorem square_even_coeff (f : PowerSeries (ZMod 2))
     (hf : coeff 0 f = 0) {m : ℕ} (hm : 1 ≤ m) :
@@ -95,12 +96,12 @@ theorem seq_even_index_zero (j : ℕ) : (seq (2*j+2) : ZMod 2) = 0 := by
     show 2*j+2-1 = 2*j+1 by omega]
   exact square_odd_coeff binary j
 
-
 private theorem square_expand (f : PowerSeries (ZMod 2)) : f.expand 2 (by decide) = f^2 := by
   have h := MvPowerSeries.map_frobenius_expand 2 (by decide : 2 ≠ 0) (f := f)
   change (f.expand 2 (by decide)).map (frobenius (ZMod 2) 2) = f ^ 2 at h
   rw [ZMod.frobenius_zmod, PowerSeries.map_id] at h
   exact h
+
 private theorem fourth_expand (f : PowerSeries (ZMod 2)) : f.expand 4 (by decide) = f^4 := by
   calc
     f.expand 4 (by decide) = (f.expand 2 (by decide)).expand 2 (by decide) :=
@@ -120,15 +121,11 @@ theorem seq_four_mul_add_three (j : ℕ) : (seq (4*j+3) : ZMod 2) = 0 := by
     omega), show 4*j+3-1 = 4*j+2 by omega]
   exact fourth_coeff_three binary j
 
-
-
 /-- At indices congruent to one modulo four, parity descends to the quotient. -/
 theorem seq_four_mul_add_one (j : ℕ) : (seq (4*j+1) : ZMod 2) = (seq j : ZMod 2) := by
   rw [binary_recurrence (by omega), if_neg (by
     rintro ⟨k, hk⟩
     omega), show 4*j+1-1 = 4*j by omega, ← fourth_expand, coeff_expand_mul, binary_coeff]
-
-
 
 /-- The parity conjecture for OEIS A368628, including its index-zero initial value. -/
 theorem a368628_odd_iff (n : ℕ) : Odd (seq n) ↔ ∃ k : ℕ, 3 * n + 1 = 4 ^ k := by
@@ -179,7 +176,6 @@ theorem a368628_odd_iff (n : ℕ) : Odd (seq n) ↔ ∃ k : ℕ, 3 * n + 1 = 4 ^
 #print axioms seq_four_mul_add_three
 #print axioms seq_four_mul_add_one
 #print axioms a368628_odd_iff
-
 
 -- A coefficient-level echo of the original integer recurrence, not of the parity theorem.
 private theorem initial_echo : seq 0 = 1 ∧ seq 1 = 1 ∧ seq 2 = 2 ∧ seq 3 = 14 := by
