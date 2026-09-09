@@ -3224,6 +3224,22 @@
       ],
       "archived_probe": "probes/Endpoint150.lean",
       "log_encoding": "gzip"
+    },
+    {
+      "probe": "Endpoint150-v2",
+      "command": "make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Endpoint150-v2.lean'",
+      "exit": 0,
+      "signal": null,
+      "log": "logs/Endpoint150-v2.log.gz",
+      "started": "2026-09-09T05:38:36.065Z",
+      "atoms": [
+        "ff41c11de3a485a3451a5788237056c9099133f734e8bf7b75a1240d6746dd85"
+      ],
+      "indices": [
+        150
+      ],
+      "archived_probe": "probes/Endpoint150-v2.lean",
+      "log_encoding": "gzip"
     }
   ],
   "unscreened": [
@@ -4205,6 +4221,38 @@
       ],
       "exit": 0,
       "line_match_count": 120
+    },
+    {
+      "id": "sixth-projection-null",
+      "scope": "D5",
+      "program": "rg",
+      "args": [
+        "-n",
+        "-i",
+        "-P",
+        "\\b(norm_sq_eq_add_norm_sq_starProjection|starProjection_unit_singleton|starProjection_orthogonal|prod_range_div|measure_zero|norm_sub_sq_real)\\b",
+        "D5",
+        "-g",
+        "*.lean"
+      ],
+      "exit": 0,
+      "line_match_count": 26
+    },
+    {
+      "id": "sixth-projection-null",
+      "scope": ".lake/packages/mathlib/Mathlib",
+      "program": "rg",
+      "args": [
+        "-n",
+        "-i",
+        "-P",
+        "\\b(norm_sq_eq_add_norm_sq_starProjection|starProjection_unit_singleton|starProjection_orthogonal|prod_range_div|measure_zero|norm_sub_sq_real)\\b",
+        ".lake/packages/mathlib/Mathlib",
+        "-g",
+        "*.lean"
+      ],
+      "exit": 0,
+      "line_match_count": 61
     }
   ],
   "repository_leads": [
@@ -4242,7 +4290,8 @@
       "0bce26792dcc213354e1d279a96e52e44b711c98",
       "43dc167e1f7ccfbb80f9edd18a5ca48bbc94a4d0",
       "f9334cdd41556baa415a2d3ccb369c7f248fee87",
-      "047b934232c4af2ade19c4c4c2aeba52bf60edb2"
+      "047b934232c4af2ade19c4c4c2aeba52bf60edb2",
+      "04be1e7a603eeca9c364c70bd8c17be0530256d6"
     ],
     "branch": "lane/math/tier3-mathlib-triage-0909",
     "note": "Commits through the preceding checkpoint; final delivery envelope also records its containing report commit."

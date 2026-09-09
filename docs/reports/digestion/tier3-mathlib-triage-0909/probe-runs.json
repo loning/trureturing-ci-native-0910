@@ -122,5 +122,21 @@
     ],
     "archived_probe": "probes/Endpoint150.lean",
     "log_encoding": "gzip"
+  },
+  {
+    "probe": "Endpoint150-v2",
+    "command": "make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Endpoint150-v2.lean'",
+    "exit": 0,
+    "signal": null,
+    "log": "logs/Endpoint150-v2.log.gz",
+    "started": "2026-09-09T05:38:36.065Z",
+    "atoms": [
+      "ff41c11de3a485a3451a5788237056c9099133f734e8bf7b75a1240d6746dd85"
+    ],
+    "indices": [
+      150
+    ],
+    "archived_probe": "probes/Endpoint150-v2.lean",
+    "log_encoding": "gzip"
   }
 ]
