@@ -12,6 +12,7 @@ internal sealed class StationaryOccupationRankNullityDocument : IScribeDocumentD
         Formula I = Id("I");
         Formula K = Id("K");
         Formula G = Id("G");
+        Formula C = Id("C");
         Formula q = Id("q");
         Formula a = Id("a");
 
@@ -39,6 +40,23 @@ internal sealed class StationaryOccupationRankNullityDocument : IScribeDocumentD
                             Imp(Le(Call("finrank", Complex(), Call("ker", Call("mulVecLin", G))), q),
                                 Le(Sub(ProdAt("i", I, Add(Call("a", i), D(1))), q),
                                     Call("rank", G))))))));
+        Formula factorUpper = All("I", Id("Type"),
+            All("K", Id("Type"),
+                Imp(And(Call("Fintype", I), Call("Fintype", K)),
+                    All("C", Call("Matrix", K, I, Complex()),
+                        Le(Call("rank", Call("mul", Call("conjTranspose", C), C)),
+                                        Call("FintypeCard", K))))));
+        Formula memoryLower = All("I", Id("Type"),
+            All("K", Id("Type"),
+                Imp(And(Call("Fintype", I), And(Call("DecidableEq", I), Call("Fintype", K))),
+                    All("a", Call("Function", I, N),
+                        All("C", Call("Matrix", K, Call("Profile", a), Complex()),
+                            All("q", N,
+                                Imp(Le(Call("finrank", Complex(),
+                                        Call("ker", Call("mulVecLin", Call("mul",
+                                            Call("conjTranspose", C), C)))), q),
+                                    Le(Sub(ProdAt("i", I, Add(Call("a", i), D(1))), q),
+                                        Call("FintypeCard", K)))))))));
 
         return DocumentDefinition.Create(ScribeNode.Create(
             "Finite Gram matrices convert kernel bounds into rank lower bounds.",
@@ -53,7 +71,11 @@ internal sealed class StationaryOccupationRankNullityDocument : IScribeDocumentD
                 Theorem("gram-rank-ge-card-sub-nullity", "gram_rank_ge_card_sub_nullity", rankLower,
                     "The model-specific input is an explicit upper bound on kernel finrank."),
                 Theorem("bounded-profile-rank-ge", "bounded_profile_rank_ge", profileLower,
-                    "The profile cardinality theorem supplies the product term; no stationary-minimum claim is included."))));
+                    "The profile cardinality theorem supplies the product term; no stationary-minimum claim is included."),
+                Theorem("gram-factor-rank-le-memory-card", "gram_factor_rank_le_memory_card", factorUpper,
+                    "A Gram factor through a finite memory carrier has rank at most that carrier's cardinality."),
+                Theorem("bounded-profile-memory-ge", "bounded_profile_memory_ge", memoryLower,
+                    "Combining the profile lower bound with the factor upper bound yields a conditional memory lower bound."))));
     }
 
     private static DocumentBlock Theorem(string id, string name, Formula formula, string text) =>

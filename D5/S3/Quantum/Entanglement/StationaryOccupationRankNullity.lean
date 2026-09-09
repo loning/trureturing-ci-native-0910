@@ -51,4 +51,22 @@ theorem bounded_profile_rank_ge
   rw [← card_bounded_profiles a]
   exact gram_rank_ge_card_sub_nullity G q hker
 
+/- A Gram factor through a finite memory coordinate carrier cannot have rank
+   larger than that carrier. The factor form stays independent of positivity
+   and leaves the model-specific kernel estimate explicit. -/
+theorem gram_factor_rank_le_memory_card {ι κ : Type*} [Fintype ι] [Fintype κ]
+    (C : Matrix κ ι ℂ) :
+    (C.conjTranspose * C).rank ≤ Fintype.card κ := by
+  exact (Matrix.rank_mul_le_left C.conjTranspose C).trans
+    (Matrix.rank_le_card_width C.conjTranspose)
+
+theorem bounded_profile_memory_ge
+    {ι κ : Type*} [Fintype ι] [DecidableEq ι] [Fintype κ]
+    (a : ι → Nat) (C : Matrix κ (Profile a) ℂ) (q : Nat)
+    (hker : Module.finrank ℂ
+      (LinearMap.ker (C.conjTranspose * C).mulVecLin) ≤ q) :
+    (∏ i : ι, (a i + 1)) - q ≤ Fintype.card κ := by
+  exact (bounded_profile_rank_ge a (C.conjTranspose * C) q hker).trans
+    (gram_factor_rank_le_memory_card C)
+
 end D5.S3.Quantum.Entanglement.StationaryOccupationRankNullity
