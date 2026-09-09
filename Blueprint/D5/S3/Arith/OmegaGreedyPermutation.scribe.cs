@@ -46,7 +46,7 @@ internal sealed class OmegaGreedyPermutationDocument : IScribeDocumentDefinition
                 + "set, as do the omega values by injectivity of prime enumeration. Some "
                 + "queue is selected infinitely often, but its multiples have arbitrarily "
                 + "many distinct prime factors, a contradiction. Queue 2 therefore exhausts "
-                + "all even numbers. For each r, multiply the product of the first r+1 "
+                + "all positive even numbers. For each r, multiply the product of the first r+1 "
                 + "primes by successive positive powers of 2: these are distinct even "
                 + "numbers with exactly r+1 prime factors. Their occurrence forces infinitely "
                 + "many selections of prime(r). Every integer greater than 1 has a prime "
