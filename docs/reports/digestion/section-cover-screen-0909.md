@@ -242,6 +242,18 @@ Counts are matching lines including comments in baseline D5 Lean files, unless a
 | S40 | `rg -n --glob '*.lean' '(?i)trial.?divis\|instruction.*count\|counter.?machine' D5` | 0 |
 | S41 | `rg -n --glob '*.lean' '(?i)negative.*(monoton\|rate)\|negativePart\|negTrace' D5` | 157 |
 | S42 | `rg -n --glob '*.lean' '(?i)retur.*(moment\|measure)\|moment.*endpoint\|resolvent.*(upper\|lower)' D5` | 5 |
+| S43 | `rg -n --glob '*.lean' '(?i)product.*sum.*(quad\|four)\|quad.*(product\|sum)\|four.*(product\|sum)\|4211' D5` | 230 |
+| S44 | `rg -n --glob '*.lean' '(?i)descen.*(dynam\|fiber\|fibre)\|dynam.*(quotient\|descen)\|semiconjug\|fiber.*(preserv\|stable)' D5` | 370 |
+| S45 | `rg -n --glob '*.lean' '(?i)plaquette\|flat.?connection\|holonomy\|path.?independ' D5` | 437 |
+| S46 | `rg -n --glob '*.lean' '(?i)cut.*(path\|histor)\|path.*(cut\|partition)\|faithful.*cut\|separator.*sum' D5` | 84 |
+| S47 | `rg -n --glob '*.lean' '(?i)vectoriz\|choi.*(trace\|inner)\|trace.*square\|relative.?amplitude' D5` | 32 |
+| S48 | `rg -n --glob '*.lean' '(?i)rising.?factorial\|ascFactorial\|pochhammer\|low.?order.*bound' D5` | 145 |
+| S49 | `rg -n --glob '*.lean' '(?i)first.?return\|return.?probability\|return.*discount\|schur.*coeff' D5` | 216 |
+| S50 | `rg -n --glob '*.lean' '(?i)log.*deriv.*residu\|residu.*log.*deriv\|multiple.?zero\|multiplicity.*resid' D5` | 15 |
+| S51 | `rg -n --glob '*.lean' '(?i)fixed.*interval\|real.*interval.*positive\|local.*pick\|pick.*interval' D5` | 3 |
+| S52 | `rg -n --glob '*.lean' '(?i)normSq.*(filter\|projection)\|projection.*probability\|invariant.*fock' D5` | 42 |
+| S53 | `rg -n --glob '*.lean' '(?i)laguerre.*(criter\|positiv)\|generalized.*laguerre\|laguerre.*inequal' D5` | 7 |
+| S54 | `rg -n --glob '*.lean' '(?i)f.?star\|positivity.*interval\|critical.*radius\|contact.*threshold' D5` | 92 |
 
 Full count collection for streaming receipts: `rg -n ... | node` consumes stdout, splits into matching lines, and emits the count and distinct paths. Final result.json retains collection commands and returned paths. Controls: C+2=1, C+3=4, C-=0, C-2=0.
 
