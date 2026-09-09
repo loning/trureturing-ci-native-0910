@@ -35,3 +35,27 @@ blocked = 实际 Lean 尝试的 goal/错误、路线与最锐剩余子命题。
 未主张已证明、已冻结、已构建或已开 PR。未主张全球不存在同目标证明或首创性。
 尚未打开的外部页面为 ASSUMED-UNVERIFIED；用户的 131/162/163 口径不是本席枚举。
 不主张独立模型共识，不把有限核对作为一般定理的部分进展。
+
+## 检索第 2 批与缓存
+
+- make lean-cache-ensure EXIT=0：status=seeded, donor=/Users/chronoai/trureturing,
+  method=clonefile, clonefile_attempts=1, stamp_miss=null, project_olean_state=warm,
+  mathlib_olean_state=warm, archive_status=not_attempted；无冷树裸 lake。
+- 实测 lean-toolchain v4.33.0，Mathlib HEAD=db584cd6d46c92f209a44c0f1c829460d327499d。
+- 已检查命中 D5 模块公开面：一般的 trace/companion doubling、dyadic summability、
+  protocol leaf/cardinality/log-depth 结果均需本题未提供的对象；生成级数唯一性与奇系数结果
+  亦不提供平方差估计。未发现可直接消费的 D5 前置；不是按模块题名排除。
+- Mathlib 检索 Mersenne/gap/A390871，未见目标。LucasLehmer 的一般 Mersenne 公开接口
+  包括严格单调、正性、奇性和模 4/8 余数；目标不等式未提供。
+  直接复用 Nat.pow_log_le_self、Nat.lt_pow_succ_log_self、Nat.le_log_of_pow_le、
+  Nat.log_lt_iff_lt_pow、幂单调性；源码签名已读，不重证对数夹逼。
+- curl 实际成功打开 OEIS A390871/internal，完整字段读过；revision 48 (2025-12-11)。
+  指数界仍明确写 I conjecture；Israel 2025-12-01 两评注分别证明模 4 观察和因子构造，
+  不是指数界。作者 Ctibor O. Zizka，2025-11-22。
+- A000079/A000225/A000523 internal 均成功下载，提取字段保存在 runner attempt 中。
+  A000079/A000225 的合并显示被截断，故不冒称本席一跳全文细读完成；全文关键词粗筛
+  A390871、square/difference、exponent bound、log+3 未见目标，已读 A000523 全文。
+  用户提供的一跳全文结论仍标用户核验；条目外链未读，ASSUMED-UNVERIFIED。
+- gh search code 'A390871 language:Lean' 返回 []；目标定理名搜索仅返回本仓分诊 note。
+  arXiv search query=A390871 成功打开，页面明确 produced no results。
+- dominating_theorem_search=not-found-in-searched-scope，维持第一档；不声称全球无证明。
