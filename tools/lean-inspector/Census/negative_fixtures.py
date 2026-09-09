@@ -36,6 +36,23 @@ def lean_env(repository):
 
 def lean(repository, directory, program, args, label, env):
     binary = shutil.which("lean", path=env["PATH"])
+    if program in ("scan.lean", "membership.lean"):
+        from native import build
+        native = build(repository, program, env)
+        result = run([str(native), *map(str, args)], directory, label, cwd=repository, env=env,
+                     budget_gb=1 if program == "scan.lean" else 0.5)
+        if program == "scan.lean":
+            from extraction import finish_record
+            path = pathlib.Path(args[2])
+            temporary = path.with_suffix(".finished")
+            with path.open() as source, temporary.open("wb") as out:
+                from streaming import canonical
+                for line in source:
+                    row = json.loads(line)
+                    out.write(canonical(finish_record(row, "tools/lean-inspector/" +
+                        row["module"].replace(".", "/") + ".lean")))
+            os.replace(temporary, path)
+        return result
     return run([binary, "-DmaxRecDepth=100000", "-DmaxHeartbeats=0", "--run",
                 str(repository / "tools/lean-inspector/Census" / program), *map(str, args)],
                directory, label, cwd=repository, env=env)
@@ -46,7 +63,8 @@ def prepare(repository, directory):
     env = lean_env(repository)
     enumerate_domain(repository, directory)
     keys = [key("StreamingTarget", "StreamingTarget.target"),
-            key("DuplicateLeft", "shared", 1), key("DuplicateRight", "shared", 2)]
+            key("DuplicateLeft", "shared", 1), key("DuplicateRight", "shared", 2),
+            key("StatementLeft", "statement_shared", 3), key("StatementRight", "statement_shared", 4)]
     write(directory / "request.json", {"keys": keys})
     lean(repository, directory, "scan.lean", [directory / "manifest.json", directory / "request.json",
                                             directory / "index.jsonl"], "fixture_index", env)
@@ -71,7 +89,14 @@ def membership_case(repository, directory, label, roots, keys, discovery=None):
     write(input_path, request)
     lean(repository, directory, "membership.lean", [directory / "index.jsonl", input_path, output_path],
          label, lean_env(repository))
-    return read(output_path)
+    result = read(output_path)
+    result["rows"] = [json.loads(line) for line in pathlib.Path(str(output_path) + ".rows.jsonl").open()]
+    result["scopes"] = [[root, [result["module_names"][i] for i in indices]] for root, indices in result["scopes"]]
+    from incremental import BATCH_MODULE_BOUND
+    result["batch_module_bound"] = BATCH_MODULE_BOUND
+    # This small fixture view also serves the independent candidate command.
+    write(output_path, result)
+    return result
 
 
 def validate_control(repository, directory):
@@ -112,6 +137,18 @@ def check_case(repository, directory, case):
         result = membership_case(repository, directory, case, [row[0] for row in keys] + [COMMAND], keys)
         assert len(result["errors"]) == 2 and all("IE-C035" in e["error"] for e in result["errors"]), "streamOwnershipCollision"
         assert all(not row["payload"]["query_completed"] for row in result["rows"]), "streamOwnershipCollision"
+    elif case == "statement_collision":
+        keys = []
+        for line in (directory / "index.jsonl").open():
+            row = json.loads(line)
+            if row["module"] in [PREFIX + "StatementLeft", PREFIX + "StatementRight"]:
+                for owner in row["owners"]:
+                    keys.append([row["module"], name_key(PREFIX + "statement_shared"), owner["statement_id"]])
+        assert len(keys) == 2, "streamStatementCollisionPositive"
+        result = membership_case(repository, directory, case, [k[0] for k in keys] + [COMMAND], keys)
+        assert not result["errors"] and len(result["rows"]) == 2, "streamStatementCollisionPositive"
+        assert all(c["resolved_by_statement"] for c in result["collisions"]), "streamStatementCollisionPositive"
+        assert all(r["payload"]["query_completed"] for r in result["rows"]), "streamStatementCollisionPositive"
     elif case == "unclassifiable_named_key":
         result = membership_case(repository, directory, case, [PREFIX + "StreamingUnknown", COMMAND], [target])
         assert any("unclassifiable_named_key" in e["error"] for e in result["errors"]), "streamUnclassifiableNamedKey"
@@ -158,7 +195,8 @@ def check_case(repository, directory, case):
 def check_manifest_negatives(repository, directory):
     # The old per-partition transport fixtures are retired with that transport.
     return [check_case(repository, directory, case) for case in
-            ("stale_olean", "missing_olean", "ownership_collision", "unclassifiable_named_key", "out_of_scope")]
+            ("stale_olean", "missing_olean", "ownership_collision", "statement_collision",
+             "unclassifiable_named_key", "out_of_scope")]
 
 
 if __name__ == "__main__":

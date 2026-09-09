@@ -15,6 +15,20 @@ private structure Candidate where
   identity : String := ""
   name : String := ""
 
+/-- A root stores module bits, sharing the graph's single name-to-index table.
+No transitive string closure is retained per key. -/
+private structure ModuleSet where
+  indices : Std.HashMap String Nat
+  bits : ByteArray
+
+private def ModuleSet.contains (scope : ModuleSet) (name : String) : Bool :=
+  (scope.indices[name]?).any (fun i => scope.bits[i]! != 0)
+
+def resolveCollision (occurrences : Std.HashMap String Json) (identity : String) : Array String :=
+  occurrences.toArray.filterMap fun (moduleName, record) =>
+    if (record.getObjValAs? String "statement_id").toOption == some identity then
+      some moduleName else none
+
 def graphClosure (graph : Std.HashMap String (Array String)) (roots : Array String) :
     Except String (Array String) := do
   let mut visited : Std.HashSet String := {}
@@ -54,8 +68,10 @@ def membership (stream request destination : String) : IO Unit := do
   let mut seals : Array (String × String) := #[]
   let mut modules : Std.HashSet String := {}
   let mut headers : Array Json := #[]
-  for line in (← IO.FS.lines stream) do
-    if line.isEmpty then continue
+  let streamIn ← IO.FS.Handle.mk stream .read
+  repeat
+    let line ← streamIn.getLine
+    if line.isEmpty then break
     let data ← IO.ofExcept <| Json.parse line
     let moduleName ← str data "module"
     modules := modules.insert moduleName
@@ -91,15 +107,21 @@ def membership (stream request destination : String) : IO Unit := do
   for (moduleName, root) in seals do
     if discovery.contains moduleName then evidence := evidence.insert root
   let evidenceModules := evidence.toArray.qsort (· < ·)
+  let moduleNames := ((graph.toArray.map (·.1)) ++ roots.map (·.1)).qsort (· < ·)
+  let moduleIndices := Std.HashMap.ofArray (moduleNames.mapIdx fun i name => (name, i))
   let mut scopes := #[]
-  let mut scopeSets : Std.HashMap String (Std.HashSet String) := {}
+  let mut scopeSets : Std.HashMap String ModuleSet := {}
   for (root, imports) in roots do
     let scope ← IO.ofExcept <| graphClosure graph (imports ++ evidenceModules)
-    scopes := scopes.push (root, (scope.push root).qsort (· < ·))
-    scopeSets := scopeSets.insert root (Std.HashSet.ofArray scope)
-  let mut rows := #[]
+    let indices := (scope.push root).map (moduleIndices.getD · 0) |>.qsort (· < ·)
+    scopes := scopes.push (root, indices)
+    let mut bits := ByteArray.mk (Array.replicate moduleNames.size (0 : UInt8))
+    for i in indices do bits := bits.set! i 1
+    scopeSets := scopeSets.insert root ⟨moduleIndices, bits⟩
+  let rowsOut ← IO.FS.Handle.mk (destination ++ ".rows.jsonl") .write
   let mut candidates := #[]
   let mut errors := #[]
+  let mut collisions := #[]
   let mut validationImports : Std.HashSet String := {}
   let allNamed := named.toArray.map (·.2) |>.qsort (fun a b => a.compress < b.compress)
   -- Decode the small index once, before the repository-sized key loop.
@@ -125,14 +147,21 @@ def membership (stream request destination : String) : IO Unit := do
     let occurrences := owners.getD nameText {}
     let mut error : Option String := none
     if occurrences.size > 1 then
-      error := some s!"IE-C035 DuplicateAnalysisDisposition component=ownership_collision modules={toJson (occurrences.toArray.map (·.1) |>.qsort (· < ·))}"
-    else if let some record := occurrences[owner]? then
-      unless (← IO.ofExcept <| record.getObjValAs? Bool "matches") && scope.contains owner do
+      let matching := resolveCollision occurrences id
+      let resolved := matching.size == 1 && matching[0]! == owner
+      collisions := collisions.push <| Json.mkObj [("key", toJson key),
+        ("modules", toJson (occurrences.toArray.map (·.1) |>.qsort (· < ·))),
+        ("matching_modules", toJson matching), ("resolved_by_statement", toJson resolved)]
+      unless resolved do
+        error := some s!"IE-C035 DuplicateAnalysisDisposition component=ownership_collision modules={toJson (occurrences.toArray.map (·.1) |>.qsort (· < ·))}"
+    if error.isNone then
+      if let some record := occurrences[owner]? then
+        unless (← IO.ofExcept <| record.getObjValAs? Bool "matches") && scope.contains owner do
+          error := some "IE-C036 DispositionIdentityMismatch component=owning_module_membership"
+      else if occurrences.isEmpty then
+        error := some "IE-C034 MissingAnalysisDisposition component=owning_module_membership"
+      else
         error := some "IE-C036 DispositionIdentityMismatch component=owning_module_membership"
-    else if occurrences.isEmpty then
-      error := some "IE-C034 MissingAnalysisDisposition component=owning_module_membership"
-    else
-      error := some "IE-C036 DispositionIdentityMismatch component=owning_module_membership"
     let mut hits := #[]
     for entry in allRegistrations do
       if scope.contains entry.moduleName && entry.key == nameText then
@@ -151,17 +180,19 @@ def membership (stream request destination : String) : IO Unit := do
         hits := hits.push entry
     if let some message := error then
       errors := errors.push <| Json.mkObj [("key", toJson key), ("error", toJson message)]
-      rows := rows.push (observation owner name id root error)
+      rowsOut.putStrLn (observation owner name id root error).compress
     else if hits.isEmpty then
-      rows := rows.push (observation owner name id root none)
+      rowsOut.putStrLn (observation owner name id root none).compress
     else
       candidates := candidates.push key
       validationImports := validationImports.insert owner
       -- All in-scope evidence, including support and seals, is provided by the
       -- discovery modules in this root's definition. Peer payloads are omitted.
       for entry in hits do validationImports := validationImports.insert entry.moduleName
-  let result := Json.mkObj [("rows", Json.arr rows), ("candidate_keys", toJson candidates),
+  rowsOut.flush
+  let result := Json.mkObj [("candidate_keys", toJson candidates),
     ("errors", Json.arr errors), ("scopes", toJson scopes), ("named", toJson allNamed),
+    ("module_names", toJson moduleNames), ("collisions", Json.arr collisions),
     ("assignment", assignment), ("evidence_modules", toJson evidenceModules),
     ("validation_imports", toJson ((validationImports.toArray ++ evidenceModules).toList.eraseDups.toArray.qsort (· < ·))),
     ("headers", Json.arr headers), ("external_graph", toJson external)]

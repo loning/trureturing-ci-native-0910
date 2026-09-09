@@ -1,6 +1,7 @@
 import LeanInformationAudit.RegistryTypes
 import LeanInformationAudit.NameWire
 import LeanInformationAudit.Census.Ownership
+import LeanInformationAudit.StatementEncoding
 
 namespace LeanInformationAudit.CensusStream
 
@@ -114,13 +115,16 @@ private unsafe def registryRecords (data : ModuleData) : Json := Id.run do
     ("seals", Json.arr seals)]
 
 @[noinline] private unsafe def emitData (moduleName part : String) (data : ModuleData)
-    (keys : Std.HashSet Name) (out : IO.FS.Handle) : IO Unit := do
+    (keys : Std.HashSet Name) (out : IO.FS.Stream) : IO Unit := do
   let mut named := #[]
   let mut owners := #[]
   for info in data.constants do
     if keys.contains info.name then
       owners := owners.push <| Json.mkObj [("name", nameJson info.name),
-        ("matches", toJson (CensusOwnership.moduleContainsTheorem data info))]
+        ("matches", toJson (CensusOwnership.moduleContainsTheorem data info)),
+        ("kind", toJson (if info.isTheorem then "theorem" else "other")),
+        ("name_key", toJson (encodeName info.name)),
+        ("statement_material", toJson (encodeStatement info))]
     if let some head := indexedHead info then named := named.push (namedRecord info head)
   let imports := data.imports.map fun entry => Json.mkObj [
     ("module", toJson entry.module.toString), ("all", toJson entry.importAll),
@@ -135,7 +139,7 @@ before freeing parts in reverse dependency order. Parts are never loaded alone.
 J3's generated roots have no `module` declaration: Lean imports them at the
 private level, so all available parts and private import edges are in scope. -/
 @[noinline] private unsafe def readAndEmit (moduleName : String) (paths : Array String)
-    (keys : Std.HashSet Name) (out : IO.FS.Handle) : IO (Array CompactedRegion) := do
+    (keys : Std.HashSet Name) (out : IO.FS.Stream) : IO (Array CompactedRegion) := do
   let parts ← readModuleDataParts (paths.map System.FilePath.mk)
   let mut regions := #[]
   for h : i in [:parts.size] do
@@ -153,12 +157,14 @@ unsafe def scan (manifest request destination : String) : IO Unit := do
     keys := keys.insert (← IO.ofExcept <| parseNameKey row[1]!)
   let input ← IO.ofExcept <| Json.parse (← IO.FS.readFile manifest)
   let modules ← IO.ofExcept <| fromJson? (α := Array (String × Array String)) input
-  let out ← IO.FS.Handle.mk destination .write
+  let out ← if destination == "-" then IO.getStdout else
+    IO.FS.Stream.ofHandle <$> IO.FS.Handle.mk destination .write
   for (moduleName, paths) in modules do
     unless paths.size ≥ 1 && paths.size ≤ 3 do
       throw <| IO.userError "IE-C044 expected a prefix of olean parts"
     let regions ← readAndEmit moduleName paths keys out
     for region in regions.reverse do region.free
+    out.flush
   out.flush
 
 end LeanInformationAudit.CensusStream

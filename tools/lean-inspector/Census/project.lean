@@ -2,37 +2,29 @@ import LeanInformationAudit.Census.Report
 
 open Lean LeanInformationAudit LeanInformationAudit.DispositionCensus
 
+/-- Rows have already been scoped by membership. Parse and account for one row
+at a time; the emitter expands its shared, receipt-bound scope by root. -/
 def main (args : List String) : IO Unit := do
   let [inputPath, destination] := args | throw <| IO.userError "expected input and output"
   let input ← IO.ofExcept <| Json.parse (← IO.FS.readFile inputPath)
   let head ← IO.ofExcept <| input.getObjValAs? String "head"
-  let scopes ← IO.ofExcept <| input.getObjValAs? (Array (String × Array String)) "scopes"
-  let mut scopeMap : Std.HashMap Name ImportClosureScope := {}
-  for (root, modules) in scopes do
-    scopeMap := scopeMap.insert root.toName ⟨modules.map String.toName, true⟩
-  let mut entries := #[]
-  for row in ← IO.ofExcept <| input.getObjValAs? (Array Json) "rows" do
-    let scope ← if (← IO.ofExcept <| stringField row "class") == "observed" then do
-      let payload ← IO.ofExcept <| row.getObjVal? "payload"
-      let root ← IO.ofExcept <| parseNameJson (← IO.ofExcept <| payload.getObjVal? "root")
-      let some scope := scopeMap[root]? | throw <| IO.userError "IE-C044 row root is missing"
-      pure (some scope)
-    else pure none
-    entries := entries.push (← IO.ofExcept <| parseRow row scope)
-  let inventory := DispositionInventory.mk head entries
-  IO.ofExcept <| checkInventoryDuplicates (entries.map (·.1))
-  let counts := count inventory
-  -- Incomplete rows are diagnostic output only; certificate admission retains
-  -- its existing rejection of incomplete observations.
-  if counts.observedQueryIncomplete == 0 then IO.ofExcept <| checkCounts inventory counts
-  let mut rows := #[]
-  for row in inventory.sortedEntries do
-    -- Retain shared scopes during transport; emission expands the same bytes.
-    let json := match row.2 with
-      | .observed value => dispositionRowJson ⟨row.1, .observed {value with importScope := ⟨#[], true⟩}⟩
-      | _ => dispositionRowJson row
-    let json := if let .observed _ := row.2 then
-      json.setObjVal! "payload" ((← IO.ofExcept <| json.getObjVal? "payload").setObjVal! "import_scope" Json.null)
-      else json
-    rows := rows.push json
-  IO.FS.writeFile destination (Json.mkObj [("counts", toJson counts), ("rows", toJson rows)]).compress
+  let rowsPath ← IO.ofExcept <| input.getObjValAs? String "rows_file"
+  let rowsIn ← IO.FS.Handle.mk rowsPath .read
+  let rowsOut ← IO.FS.Handle.mk (destination ++ ".rows.jsonl") .write
+  let mut counts : Counts := {}
+  repeat
+    let line ← rowsIn.getLine
+    if line.isEmpty then break
+    let row ← IO.ofExcept <| Json.parse line
+    let entry ← IO.ofExcept <| parseRow row (some ⟨#[], true⟩)
+    if let .observed value := entry.2 then
+      if value.queryCompleted then IO.ofExcept <| checkObservationStatus head value
+    counts := counts.addEntry entry
+    let json := dispositionRowJson entry
+    let json := if let .observed _ := entry.2 then
+      json.setObjVal! "payload" ((← IO.ofExcept <| json.getObjVal? "payload").setObjVal!
+        "import_scope" Json.null) else json
+    rowsOut.putStrLn (Json.mkObj [("sort_name", toJson entry.1.theoremName.toString),
+      ("row", json)]).compress
+  rowsOut.flush
+  IO.FS.writeFile destination (Json.mkObj [("counts", toJson counts)]).compress

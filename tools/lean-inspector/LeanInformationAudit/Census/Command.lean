@@ -19,6 +19,9 @@ elab "#census_validate " requestPath:str " using " membershipPath:str
     let assignment ← ofExcept <| metadata.getObjVal? "assignment"
     let named ← ofExcept <| metadata.getObjValAs? (Array Json) "named"
     let env ← getEnv
+    let bound ← ofExcept <| metadata.getObjValAs? Nat "batch_module_bound"
+    unless env.header.moduleNames.size ≤ bound do
+      throwError "IE-C044 candidate batch exceeds module bound: {env.header.moduleNames.size} > {bound}"
     let mut entries := #[]
     let mut sources : Array ProvenanceSource := #[]
     for request in requests do

@@ -6,6 +6,8 @@ import json
 import os
 import pathlib
 import subprocess
+import sqlite3
+import functools
 
 from streaming import canonical, digest, enumerate_oleans, file_stamp, hash_inputs, tracked_domain
 
@@ -25,6 +27,7 @@ def enumerate_domain(repository, directory):
     write(directory / "manifest.json", manifest)
     write(directory / "inputs.json", inputs)
     write(directory / "stamps.json", {path: file_stamp(path) for _, _, path in inputs})
+    write(directory / "olean-hashes.json", hash_inputs(inputs, read(directory / "stamps.json")))
 
 
 def external_graph(directory):
@@ -79,22 +82,24 @@ def hash_receipt(repository, directory):
     programs = [[p.decode(), "sha256:" + hashlib.sha256((repository / p.decode()).read_bytes()).hexdigest()]
                 for p in paths if p and pathlib.Path(p.decode()).suffix in (".lean", ".py", ".toml", ".json", "")]
     graph = {"project_headers": membership["headers"], "upstream": membership["external_graph"]}
-    validation = None
-    if membership["candidate_keys"]:
-        validation = read(directory / "candidates.json.receipt.json")
-        actual = "sha256:" + hashlib.sha256((directory / "candidates.json").read_bytes()).hexdigest()
-        if (validation["rows_sha256"] != actual or validation["head"] != request["head"]
-                or validation["report_sha256"] != request["report_sha256"]):
-            raise ValueError("IE-C044 candidate validation receipt differs from its output or request")
+    validation = read(directory / "validation.json")["receipt"]
+    stamps = read(directory / "stamps.json")
+    for _, _, path in read(directory / "inputs.json"):
+        if file_stamp(path) != stamps[path]:
+            raise ValueError("IE-C044 olean changed after extraction")
+    extraction = read(directory / "extraction.json")
     inputs = {"head": request["head"],
-              "oleans": hash_inputs(read(directory / "inputs.json"), read(directory / "stamps.json")),
+              "oleans": read(directory / "olean-hashes.json"),
               "import_graph": digest(graph), "programs": sorted(programs),
               "export_sha256": request["report_sha256"], "domain": read(directory / "domain.json"),
-              "scopes": membership["scopes"], "candidate_validation": validation,
+              "scopes": membership["scopes"], "module_names": membership["module_names"],
+              "extraction": {k: extraction[k] for k in ["cache_keys", "source_digest", "frozen_names_digest"]},
+              "candidate_validation": validation,
               "toolchain": (repository / "lean-toolchain").read_text().strip()}
     from streaming import receipt_digest
     receipt = {"inputs": inputs, "digest": receipt_digest(inputs),
-               "rows_sha256": digest(projection), "candidate_keys": membership["candidate_keys"]}
+               "counts_sha256": digest(projection), "rows_sha256": projection["rows_sha256"],
+               "candidate_keys": membership["candidate_keys"]}
     write(directory / "receipt.json", receipt)
 
 
@@ -113,29 +118,72 @@ def emit(directory):
     fields = dict(info, schema="lean-information-disposition-census", counts=counts,
                   status="complete" if complete else "partial", coverage_theorem_count=counts["accounted"],
                   certified_complete=complete and counts["certified"] == counts["accounted"])
-    scopes = {}
-    for root, modules in read(directory / "membership.json")["scopes"]:
-        scopes[canonical(name_json(root))] = canonical({"modules": [name_json(m) for m in modules],
-                                                       "completed": True}).rstrip(b"\n")
+    metadata = read(directory / "membership.json")
+    names = [name_json(m) for m in metadata["module_names"]]
+    scope_files = {}
+    folder = directory / "scopes"
+    folder.mkdir()
+    for number, (root, indices) in enumerate(metadata["scopes"]):
+        path = folder / f"{number}.json"
+        path.write_bytes(canonical({"modules": [names[i] for i in indices], "completed": True}).rstrip(b"\n"))
+        scope_files[canonical(name_json(root))] = path
+    del names, metadata
+
+    @functools.lru_cache(maxsize=4)
+    def scope_bytes(key):
+        return scope_files[key].read_bytes()
     # Scope bytes are encoded once per semantic root, then copied to each row.
     # This retains the J2 row schema without constructing a repository-sized DOM.
     with (directory / "census.json").open("wb") as out:
         out.write(canonical(fields)[:-2] + b',"rows":[\n')
-        for number, row in enumerate(projection["rows"]):
+        for number, line in enumerate((directory / "rows.jsonl").open("rb")):
+            row = json.loads(line)
             if number:
                 out.write(b",\n")
             encoded = canonical(row).rstrip(b"\n")
             if row["class"] == "observed":
                 encoded = encoded.replace(b'"import_scope":null', b'"import_scope":' +
-                    scopes[canonical(row["payload"]["root"])] , 1)
+                    scope_bytes(canonical(row["payload"]["root"])) , 1)
             out.write(encoded)
         out.write(b"\n]}\n")
     write(directory / "census.json.summary.json", fields)
 
 
+def sort_rows(directory):
+    """Disk sort with an 8 MiB page cache; each row is parsed once at a time."""
+    database = directory / "rows.sqlite"
+    with sqlite3.connect(database) as db:
+        db.execute("PRAGMA cache_size=-8192")
+        db.execute("PRAGMA temp_store=FILE")
+        db.execute("CREATE TABLE rows (name TEXT, identity TEXT PRIMARY KEY, row BLOB)")
+        try:
+            for line in (directory / "projection.json.rows.jsonl").open():
+                value = json.loads(line)
+                row = value["row"]
+                db.execute("INSERT INTO rows VALUES (?, ?, ?)",
+                           (value["sort_name"], row["statement_id"], canonical(row)))
+        except sqlite3.IntegrityError as error:
+            raise ValueError("IE-C035 duplicate accounting row") from error
+        expected = read(directory / "request.json")["keys"]
+        if db.execute("SELECT count(*) FROM rows").fetchone()[0] != len(expected):
+            raise ValueError("IE-C044 accounting row count differs from request")
+        for _, _, identity in expected:
+            if db.execute("SELECT 1 FROM rows WHERE identity=?", (identity,)).fetchone() is None:
+                raise ValueError("IE-C044 missing accounting key")
+        hashed = hashlib.sha256()
+        with (directory / "rows.jsonl").open("wb") as out:
+            for (row,) in db.execute("SELECT row FROM rows ORDER BY name, identity"):
+                out.write(row)
+                hashed.update(row)
+    projection = read(directory / "projection.json")
+    projection["rows_sha256"] = "sha256:" + hashed.hexdigest()
+    write(directory / "projection.json", projection)
+    database.unlink()
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("phase", choices=["enumerate", "graph", "hash", "emit"])
+    parser.add_argument("phase", choices=["enumerate", "graph", "hash", "emit", "sort", "native"])
     parser.add_argument("repository", type=pathlib.Path)
     parser.add_argument("directory", type=pathlib.Path)
     options = parser.parse_args()
@@ -145,5 +193,11 @@ if __name__ == "__main__":
         external_graph(options.directory)
     elif options.phase == "hash":
         hash_receipt(options.repository, options.directory)
+    elif options.phase == "sort":
+        sort_rows(options.directory)
+    elif options.phase == "native":
+        from native import build
+        write(options.directory / "runtime.json", {name: str(build(options.repository, name))
+              for name in ["scan.lean", "membership.lean"]})
     else:
         emit(options.directory)

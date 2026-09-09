@@ -1,4 +1,4 @@
-import LeanInformationAudit.Census.Stream
+import LeanInformationAudit.Census.Membership
 
 open Lean LeanInformationAudit CensusStream
 
@@ -23,3 +23,17 @@ run_cmd do
       some `LeanInformationAudit.BoundedTruncationFamily do
     throwError "streamTypeHeads: direct family evidence not indexed"
   logInfo "streamMembershipPositive streamMembershipMalformed streamNamedKeyPositive streamUnclassifiableNamedKey streamTypeHeads"
+
+run_cmd do
+  let left := Json.mkObj [("statement_id", toJson "left-statement")]
+  let right := Json.mkObj [("statement_id", toJson "right-statement")]
+  let records := Std.HashMap.ofArray #[ ("Left", left), ("Right", right) ]
+  unless resolveCollision records "left-statement" == #["Left"] &&
+      resolveCollision records "right-statement" == #["Right"] do
+    throwError "streamStatementCollisionPositive"
+  unless (resolveCollision records "missing").isEmpty do
+    throwError "streamStatementCollisionUnresolved"
+  let ambiguous := Std.HashMap.ofArray #[ ("Left", left), ("Right", left) ]
+  unless (resolveCollision ambiguous "left-statement").size == 2 do
+    throwError "streamStatementCollisionAmbiguous"
+  logInfo "streamStatementCollisionPositive streamStatementCollisionUnresolved streamStatementCollisionAmbiguous"

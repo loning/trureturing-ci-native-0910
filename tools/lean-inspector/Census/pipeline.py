@@ -97,12 +97,12 @@ def execute(options):
         state["wall_seconds"] = round(time.monotonic() - started, 3)
         write(directory / "run.json", state)
 
-    def step(command, label, *, build=False, design_limit_gb=None):
+    def step(command, label, *, build=False, design_limit_gb=None, budget_gb=4):
         print("CENSUS_STEP " + label, flush=True)
         census_seconds = sum(value["wall_seconds"] for value in state["phases"].values()
                              if value["rss_budget_gib"] is not None)
         result = run(command, directory / "logs", label, cwd=repository, env=env,
-                     budget_gb=None if build else 4, design_limit_gb=design_limit_gb,
+                     budget_gb=None if build else budget_gb, design_limit_gb=design_limit_gb,
                      wall_limit_s=max(1, 1200 - census_seconds))
         state["phases"][label] = result
         if build:
@@ -152,6 +152,9 @@ def execute(options):
         request = {"head": head, "keys": keys, "report": str(report_path),
                    "report_sha256": "sha256:" + hashlib.sha256(report_bytes).hexdigest()}
         write(directory / "request.json", request)
+        step([sys.executable, str(repository / "tools/lean-inspector/Census/phases.py"),
+              "native", str(repository), str(directory)], "native_build", build=True)
+        runtime = read(directory / "runtime.json")
         io_phase("enumerate", "tracked_domain")
         domain = read(directory / "domain.json")
         if options.fixture_truth_export:
@@ -161,35 +164,25 @@ def execute(options):
         roots, assignment = root_definitions(modules, keys, [])
         write(directory / "membership-request.json", {"keys": keys, "roots": roots, "assignment": assignment,
               "discovery_roots": sorted(set(modules) | {"LeanInformationAudit.Census.Command"})})
-        lean("scan.lean", [directory / "manifest.json", directory / "request.json", directory / "index.jsonl"],
-             "streaming_index", 3)
+        step([sys.executable, str(repository / "tools/lean-inspector/Census/extraction.py"),
+              str(repository), str(directory), runtime["scan.lean"]], "streaming_index", budget_gb=1)
         io_phase("graph", "upstream_graph")
-        lean("membership.lean", [directory / "index.jsonl", directory / "membership-request.json",
-                                directory / "membership.json"], "closure_membership")
+        step([runtime["membership.lean"], str(directory / "index.jsonl"),
+              str(directory / "membership-request.json"), str(directory / "membership.json")],
+             "closure_membership", budget_gb=0.5)
         membership = read(directory / "membership.json")
-        candidates = {"entries": [], "source_inputs": []}
-        if membership["candidate_keys"]:
-            owners = {key[0] for key in membership["candidate_keys"]}
-            candidate_roots = {assignment[owner] for owner in owners}
-            write(directory / "candidate-index.json", {
-                "candidate_keys": membership["candidate_keys"], "named": membership["named"],
-                "assignment": {owner: assignment[owner] for owner in owners},
-                "scopes": [scope for scope in membership["scopes"] if scope[0] in candidate_roots]})
-            imports = sorted(set(membership["validation_imports"]) | {"LeanInformationAudit.Census.Command"})
-            source = "".join("import " + module + "\n" for module in imports)
-            source += "#census_validate " + json.dumps(str(directory / "request.json"))
-            source += " using " + json.dumps(str(directory / "candidate-index.json"))
-            source += " output " + json.dumps(str(directory / "candidates.json")) + "\n"
-            driver = directory / "Candidates.lean"
-            driver.write_text(source)
-            step([lean_binary, "-DmaxRecDepth=100000", "-DmaxHeartbeats=0", str(driver)],
-                 "candidate_environment", design_limit_gb=8)
-            candidates = read(directory / "candidates.json")
-        rows = membership["rows"] + candidates["entries"]
-        if sorted(row["statement_id"] for row in rows) != sorted(key[2] for key in keys):
-            raise ValueError("IE-C044 streaming query did not account for each selected key exactly once")
-        write(directory / "projection-input.json", {"head": head, "rows": rows, "scopes": membership["scopes"]})
+        from validation import prepare as prepare_validation, run_batches
+        plan = prepare_validation(repository, directory, membership, request)
+        candidates, validation = run_batches(repository, directory, membership, request, plan, step, lean_binary)
+        with (directory / "accounting-input.jsonl").open("wb") as out:
+            with (directory / "membership.json.rows.jsonl").open("rb") as observations:
+                shutil.copyfileobj(observations, out, 1024 * 1024)
+            for row in candidates["entries"]:
+                out.write(canonical(row))
+        write(directory / "projection-input.json", {"head": head,
+              "rows_file": str(directory / "accounting-input.jsonl")})
         lean("project.lean", [directory / "projection-input.json", directory / "projection.json"], "row_accounting")
+        io_phase("sort", "row_sort")
         projection = read(directory / "projection.json")
         io_phase("hash", "receipt_hashing")
         sources = {canonical(source): source for source in candidates["source_inputs"]}
@@ -203,11 +196,20 @@ def execute(options):
         state.update(status=summary["status"], requested_keys=len(all_keys), counts=projection["counts"],
                      candidate_keys=len(membership["candidate_keys"]), tracked_modules=len(domain),
                      artifact_bytes=(directory / "census.json").stat().st_size,
-                     candidate_environment_modules=candidates.get("environment_modules", 0))
+                     extraction_cache=read(directory / "extraction.json"),
+                     validation_cache={k: validation[k] for k in ["hits", "misses", "revalidated_keys"]},
+                     batches={"bound": validation["receipt"]["bound"],
+                              "count": len(validation["receipt"]["batches"]),
+                              "executed": len(validation["executions"])},
+                     collisions={"total": len(membership["collisions"]),
+                         "resolved_by_statement": sum(c["resolved_by_statement"] for c in membership["collisions"]),
+                         "remaining": sum(not c["resolved_by_statement"] for c in membership["collisions"])})
+        state["census_phases_wall_s"] = round(sum(v["wall_seconds"] for v in state["phases"].values()
+                                                 if v["rss_budget_gib"] is not None), 3)
         if options.replay_of:
             expected = pathlib.Path(options.replay_of).resolve()
-            # Reaching here has re-enumerated, re-read, recomputed membership and
-            # revalidated candidates. Hash checking alone never sets this flag.
+            # Re-enumeration, content hashing and membership always run. Cached
+            # extraction/validation reuse is itself bound by the fresh receipt.
             state["replay"] = replay(lambda: {"receipt": read(directory / "receipt.json"),
                 "projection": projection}, {"receipt": read(expected / "receipt.json"),
                 "projection": read(expected / "projection.json")})
