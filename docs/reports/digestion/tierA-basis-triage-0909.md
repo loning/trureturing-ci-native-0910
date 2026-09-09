@@ -49,7 +49,7 @@ atom judgment is committed and pushed before advancing to the next one.
 
 ## Progress
 
-`screened: 2 / 7`. Completed: M4 readback, Schur minimum.
+`screened: 3 / 7`. Completed: M4 readback, Schur minimum, reflected-pair disk.
 
 ## Evidence Coordinates
 
@@ -187,12 +187,106 @@ declaration window 350-411 and PosDef windows 297-313 and 496-516 were opened.
 Probe receipt: `prior/probes/Schur89.lean`; inherited `make lean` exit 0, decoded
 `prior/logs/Schur89.log.gz` ends with `EXIT: 0`. No new Lean run in this seat.
 
+## Atom 90: Reflected-Pair Disk
+
+`atom_id: 96902e5b1d0b9ac78c37f6c1f75fd1d5043bfd6c18f5e2451352b6fbc6977b46`
+
+Complete raw body returned by `make show-atom` (exit 0, hash matches, no coverage):
+
+```text
+### 定理十五：一个反射零点对的负贡献区域，恰好是一个圆盘
+
+令 \(u=t-\gamma\)。该配对对 \(\Re L(s)\) 的贡献为
+
+$$
+\begin{aligned}
+\mathcal P_{\delta,\gamma}(s)
+&=
+m\left[
+\frac{x-\delta}{(x-\delta)^2+u^2}
++
+\frac{x+\delta}{(x+\delta)^2+u^2}
+\right]\\[1mm]
+&=
+\boxed{
+\frac{
+2mx(x^2+u^2-\delta^2)
+}{
+[(x-\delta)^2+u^2][(x+\delta)^2+u^2]
+}.
+}
+\end{aligned}
+\tag{87}
+$$
+
+因此，在排除零点本身后，
+
+$$
+\boxed{
+\mathcal P_{\delta,\gamma}(s)<0
+\iff
+x^2+(t-\gamma)^2<\delta^2.
+}
+\tag{88}
+$$
+```
+
+| Source assertion | Original probe counterpart | Status | Domain and boundary check |
+| --- | --- | --- | --- |
+| `u = t - gamma` coordinate substitution | Instantiate the universally quantified real `u` by `t - gamma` | equivalent | No restriction on `t` or `gamma`; real translation is bijective. |
+| The displayed two-pole expression is this actual zero pair's contribution to `Re L(s)` | No `L`, xi, actual zeros, multiplicities-as-zero-data, or contribution map in the probe | not-covered | Source 67678-67729 identifies `L = xi'/xi` and uses its zero expansion (86). The probe does not supply that identification. This gap concerns the atom's introductory assertion, not a demand to reprove all of (86) as an additional atom. |
+| Two rational terms equal the single boxed fraction (87) | First conjunct of `Triage90.reflected_pair` | equivalent | All real `delta,u`, positive real `m,x`; positive integral zero multiplicity is included. Source `0 < delta < 1/2` is a subset of the probe's domain. |
+| Strict negativity iff the strict disk inequality (88), and the heading's geometric locus | Second conjunct, after `u := t - gamma`, for the algebraic two-pole expression | equivalent | Both directions of iff, both strict inequalities. Domain is the source's `x > 0` half-plane, with poles removed, not the full plane including `x = 0`. |
+
+`fidelity: partial`. Both boxed algebraic subclaims are covered; the asserted
+identification with actual `Re L(s)` is not printed in the probe. Treating the
+display as a definition of a model `P` proves the model statement only. To claim
+full fidelity, a later result must explicitly connect that model to the actual
+source contribution; this seat has not verified such a typed connection.
+The two denominator hypotheses exclude exactly `(x-delta,u)=(0,0)` and
+`(x+delta,u)=(0,0)` over the reals, as the source requests. No disk boundary is
+discarded: the strict-negativity equivalence is false on both sides there.
+
+`upstream_declaration: none` (none carries the paired-pole/disk conclusion).
+Opened local ingredients: `sq_nonneg`,
+`.lake/packages/mathlib/Mathlib/Algebra/Order/Ring/Unbundled/Basic.lean:606`;
+`div_lt_iff₀`,
+`.lake/packages/mathlib/Mathlib/Algebra/Order/GroupWithZero/Basic.lean:1146`;
+`mul_lt_mul_iff_right₀`,
+`.lake/packages/mathlib/Mathlib/Algebra/Order/GroupWithZero/Defs.lean:286`.
+They state square nonnegativity and preservation of a comparison under positive
+division/multiplication, not a zero-pair theorem.
+`wrapper_thinness: not-applicable`: `field_simp` and `ring` generate the paired
+numerator; order rewrites then cancel the positive factors.
+`necessity_citation`: (87), (88), and the exact introductory contribution claim
+above are source demands, but none establishes an upstream-wrapper basis. No
+atom-mandated new typed bridge with a preregistered named consumer is supplied.
+`verdict: partial-fidelity`; independently `admission_basis: none` for this
+normalization-only candidate, also listed in `no_basis`.
+`proof_shape: bind-only`; `direct_frozen_dependencies: []`; `escape_witness: null`.
+`why_not_escape_witness`: positive denominators come from squares and excluded
+zeros, and the conclusion follows by common-denominator and sign normalization.
+
+Search receipt R90: focused
+`rg -n '\b(reflected_pair|pair_contribution|negative_disk|disk_criterion)\b' D5/S3/Weil D5/S3/Zeros`
+returned 0 lines (exit 1). Same-feature positive control
+`rg -n '\b(reflected_pair|pair_contribution|negative_disk|disk_criterion|sq_nonneg)\b' .lake/packages/mathlib/Mathlib/Algebra/Order/Ring/Unbundled/Basic.lean`
+returned 4 lines (exit 0). A preceding broad `reflection|reflected|disk|Disk|circular|circle`
+search returned truncated output and was not used for an absence conclusion.
+The `\b` variant around Unicode-subscript names only returned `sq_nonneg` hits;
+the literal declaration-prefix search was used to locate the other two names,
+then all three bodies were opened. No absence of those declarations is claimed.
+Probe receipt: `prior/probes/Disk90-v2.lean`, inherited `make lean` exit 0;
+decoded `prior/logs/Disk90-v2.log.gz` confirms `EXIT: 0`. Earlier `Disk90` exit 2
+is retained in the inherited run ledger and does not certify a statement.
+
 ## Push Receipts
 
 | Commit | Completed unit | Push result |
 | --- | --- | --- |
 | `6fca6dde2388835a42f0904463b50100e1aa6c36` | Preregistration | exit 0; remote lane created |
 | `b11e3e695343125c81d378db2fe79f5f5677d823` | Atom 75 | exit 0 |
+| `5f6b525177589b4fe361303687ba4a99932e0595` | Atom 89 | exit 0 |
 
 ## Nonclaims
 
