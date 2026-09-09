@@ -110,4 +110,121 @@ private theorem transpose_sum (d : YoungDiagram) : d.transpose.rowLens.sum = d.r
   rw [rowLens_sum, rowLens_sum]
   simp [YoungDiagram.transpose]
 
+private abbrev Rows := {l : List ℕ // l.SortedGE ∧ ∀ x ∈ l, 0 < x}
+
+private abbrev OddRows := {l : Rows // ∀ x ∈ l.val, ¬ Even x}
+
+private def conjugate : Rows ≃ Rows :=
+  YoungDiagram.equivListRowLens.symm.trans
+    (YoungDiagram.transposeOrderIso.toEquiv.trans YoungDiagram.equivListRowLens)
+
+private theorem conjugate_sum (r : Rows) : (conjugate r).val.sum = r.val.sum := by
+  change (YoungDiagram.ofRowLens r.val r.property.1).transpose.rowLens.sum = _
+  rw [transpose_sum, YoungDiagram.rowLens_ofRowLens_eq_self r.property.2]
+
+private theorem rowLen_zero (d : YoungDiagram) : d.rowLen 0 = d.rowLens.headD 0 := by
+  cases h : d.rowLens with
+  | nil =>
+    have hz : d.colLen 0 = 0 := by simpa [h] using (d.length_rowLens).symm
+    have hn : ¬ (0, 0) ∈ d := by rw [YoungDiagram.mem_iff_lt_colLen, hz]; omega
+    rw [YoungDiagram.mem_iff_lt_rowLen] at hn
+    simpa using (Nat.eq_zero_of_not_pos hn)
+  | cons a l =>
+    have hlen : 0 < d.rowLens.length := by simp [h]
+    have hg := YoungDiagram.get_rowLens (μ := d) (i := 0) (h := hlen)
+    simpa [h] using hg.symm
+
+private theorem conjugate_length (r : Rows) : (conjugate r).val.length = r.val.headD 0 := by
+  change (YoungDiagram.ofRowLens r.val r.property.1).transpose.rowLens.length = _
+  rw [YoungDiagram.length_rowLens, YoungDiagram.colLen_transpose, rowLen_zero,
+    YoungDiagram.rowLens_ofRowLens_eq_self r.property.2]
+
+private def oddify : Rows ≃ OddRows where
+  toFun r := ⟨⟨r.val.map (fun x => 2 * x - 1),
+    (r.property.1.pairwise.map _ (by intros; omega)).sortedGE, by
+      intro x hx
+      obtain ⟨a, ha, rfl⟩ := List.mem_map.mp hx
+      have := r.property.2 a ha
+      omega⟩, by
+        intro x hx
+        obtain ⟨a, ha, rfl⟩ := List.mem_map.mp hx
+        have := r.property.2 a ha
+        rw [Nat.even_iff]
+        omega⟩
+  invFun r := ⟨r.val.val.map (fun x => (x + 1) / 2),
+    (r.val.property.1.pairwise.map _ (by intros; omega)).sortedGE, by
+      intro x hx
+      obtain ⟨a, ha, rfl⟩ := List.mem_map.mp hx
+      have := r.val.property.2 a ha
+      omega⟩
+  left_inv r := by
+    apply Subtype.ext
+    simp only [List.map_map]
+    apply Eq.trans (b := r.val.map id) ?_ (List.map_id _)
+    apply List.map_congr_left
+    intro x hx
+    have := r.property.2 x hx
+    dsimp
+    omega
+  right_inv r := by
+    apply Subtype.ext
+    apply Subtype.ext
+    simp only [List.map_map]
+    apply Eq.trans (b := r.val.val.map id) ?_ (List.map_id _)
+    apply List.map_congr_left
+    intro x hx
+    have := r.property x hx
+    rw [Nat.even_iff] at this
+    dsimp
+    omega
+
+private theorem oddify_sum (r : Rows) :
+    (oddify r).val.val.sum + r.val.length = 2 * r.val.sum := by
+  change (r.val.map (fun x => 2 * x - 1)).sum + r.val.length = _
+  suffices h : ∀ l : List ℕ, (∀ x ∈ l, 0 < x) →
+      (l.map (fun x => 2 * x - 1)).sum + l.length = 2 * l.sum from h r.val r.property.2
+  intro l hp
+  induction l with
+  | nil => simp
+  | cons a l ih =>
+    have ha := hp a (by simp)
+    have hi := ih (fun x hx => hp x (by simp [hx]))
+    simp only [List.map_cons, List.sum_cons, List.length_cons]
+    omega
+
+private noncomputable def rowFirstEquiv : Rows ≃ {y : List ℕ // IsZeroPrependedFirstSums y} :=
+  Equiv.ofBijective (fun r => ⟨firstSums (0 :: r.val.reverse), r.val.reverse,
+    r.property.1.reverse.pairwise, by simpa using r.property.2, rfl⟩) (by
+      constructor
+      · intro r t h
+        apply Subtype.ext
+        have he := firstSums_injective 0 (congrArg Subtype.val h)
+        simpa using congrArg List.reverse he
+      · rintro ⟨y, s, hs, hp, rfl⟩
+        refine ⟨⟨s.reverse, hs.sortedLE.reverse, by simpa using hp⟩, ?_⟩
+        apply Subtype.ext
+        simp)
+
+private noncomputable def firstOddEquiv :
+    {y : List ℕ // IsZeroPrependedFirstSums y} ≃ OddRows :=
+  rowFirstEquiv.symm.trans (conjugate.trans oddify)
+
+private theorem row_weight (r : Rows) :
+    (oddify (conjugate r)).val.val.sum = (firstSums (0 :: r.val.reverse)).sum := by
+  have ho := oddify_sum (conjugate r)
+  rw [conjugate_sum, conjugate_length] at ho
+  have hf := firstSums_sum 0 r.val.reverse
+  have hl : r.val.reverse.getLastD 0 = r.val.headD 0 := by
+    cases r.val with
+    | nil => rfl
+    | cons a l => simp [List.reverse_cons]
+  rw [hl, List.sum_reverse] at hf
+  omega
+
+private theorem firstOddEquiv_sum (y : {y : List ℕ // IsZeroPrependedFirstSums y}) :
+    (firstOddEquiv y).val.val.sum = y.val.sum := by
+  obtain ⟨r, rfl⟩ := rowFirstEquiv.surjective y
+  simp only [firstOddEquiv, Equiv.trans_apply, Equiv.symm_apply_apply]
+  exact row_weight r
+
 end D5.S1.Words.Compositions.ZeroPrependedFirstSumsOddParts
