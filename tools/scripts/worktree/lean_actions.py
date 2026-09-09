@@ -8,6 +8,7 @@ import os
 import pathlib
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 
@@ -69,7 +70,26 @@ def snapshot(root, keys):
             with tempfile.TemporaryDirectory(prefix=".snapshot-", dir=target.parent) as temporary:
                 staged = pathlib.Path(temporary)
                 with cache_guard(root, shared=True):
-                    shutil.copytree(root / spec["target"], staged / "data", symlinks=True)
+                    if layer == "report":
+                        sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "lean-inspector"))
+                        from report_cache import store, seed_valid
+                        current = json.loads((root / "build/ci/current-result.json").read_text())
+                        if not isinstance(current, dict) or current.get("stage") != "current" or current.get("exit") != 0:
+                            raise ValueError("current report production did not succeed")
+                        # Store only the declared current output; local history is
+                        # useful to producers but must not accumulate remotely.
+                        if not store(argparse.Namespace(repository=root, report=root / current["report"], cache_root=staged / "data")):
+                            raise ValueError("current report is not a complete same-partition seed")
+                        reports = list((staged / "data" / keys["partition"]).glob("*/raw-lean-report.json"))
+                        if len(reports) != 1 or not seed_valid(reports[0], keys["partition"]):
+                            raise ValueError("staged report seed is invalid")
+                        verified = subprocess.run(["bash", str(root / "tools/scripts/report/lean-report-input.sh"),
+                            "verify", "--repository", str(root.resolve()), "--report", str(reports[0].resolve())],
+                            capture_output=True, text=True)
+                        if verified.returncode:
+                            raise ValueError("current report identity mismatch: " + verified.stdout + verified.stderr)
+                    else:
+                        shutil.copytree(root / spec["target"], staged / "data", symlinks=True)
                 manifest = {"schema": "lean-actions-seed-v1", "partition": keys["partition"], "layer": layer,
                             "key": spec["key"], "files": files(staged / "data", materialize_links=layer == "dependency")}
                 (staged / "manifest.json").write_text(json.dumps(manifest, sort_keys=True) + "\n")
@@ -78,7 +98,7 @@ def snapshot(root, keys):
                 staged.rename(target)
                 ready = True
                 receipt(layer, "snapshot", key=spec["key"])
-        except (OSError, ValueError, TypeError) as error:
+        except (OSError, ValueError, TypeError, KeyError) as error:
             receipt(layer, "save-failed", reason=str(error))
         finally:
             output({layer + "_ready": ready})

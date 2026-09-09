@@ -259,6 +259,199 @@ class Contracts(CacheFixture, unittest.TestCase):
 
 
 class SnapshotContracts(CacheFixture, unittest.TestCase):
+    def prepare_report(self):
+        from lean_seed_contract import InspectorTests, FAKE_LAKE
+        fixture = InspectorTests("test_inspector_runs_lake_on_exact_seed_with_zero_reinspection")
+        fixture.setUp()
+        self.addCleanup(fixture.doCleanups)
+        self.root = fixture.root
+        fixture.manifest["packages"][0]["rev"] = REV
+        fixture.save_manifest()
+        fixture.output = self.root / "out/declared-current-report.json"
+        # Exercise real compaction/validation with nonempty declaration material.
+        fixture.lake.write_text(FAKE_LAKE.replace("output.write_text(", '''
+spool = pathlib.Path(args[args.index("--material-spool") + 1])
+spool.mkdir(parents=True, exist_ok=True)
+for index, row in enumerate(modules):
+    name = str(index) + ".statement"
+    (spool / name).write_text(row["module"] + ":" + (root / row["source_path"]).read_text())
+    row["declarations"] = [{"name": "value", "name_key": "ns(n0,5:value)", "kind": "def",
+        "include_in_statement": True, "axioms": [], "material_file": name}]
+    row["imports"] = ["D5.A"] if row["module"] == "Trureturing" else []
+output.write_text('''))
+        self.env.update(HOME=str(self.root), GITHUB_OUTPUT=str(self.root / "outputs"),
+                        GITHUB_ENV=str(self.root / "environment"))
+        return fixture
+
+    def produce_report(self, fixture):
+        result = fixture.pair()
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        summary = self.root / "build/ci/current-result.json"
+        summary.parent.mkdir(parents=True, exist_ok=True)
+        summary.write_text(json.dumps({"stage": "current", "exit": 0,
+            "report": fixture.output.relative_to(self.root).as_posix()}))
+        return next(seed for seed in fixture.seeds()
+                    if fixture.bundle_bytes(seed)[".seed.json"] == fixture.bundle_bytes(fixture.output)[".seed.json"])
+
+    def test_report_snapshot_keeps_only_current_complete_seed(self):
+        from argparse import Namespace
+        from lean_seed_contract import DeltaTests
+        sys.path.insert(0, str(REPO / "tools/lean-inspector"))
+        from report_cache import store
+        fixture = self.prepare_report()
+        current = self.produce_report(fixture)
+        partition = json.loads(fixture.bundle_bytes(current)[".seed.json"])["partition"]
+        history = DeltaTests()
+        history.setUp()
+        self.addCleanup(history.doCleanups)
+        history.add_declaration_material()
+        for index, seed_partition in enumerate((partition, partition, partition.replace(REV, "f" * 40)), 1):
+            history.address = str(index) * 64
+            history.store()
+            pathlib.Path(str(history.report) + ".seed.json").write_text(json.dumps({
+                "schema": "lean-report-seed-v1", "partition": seed_partition, "runtime_sha256": "c" * 64,
+                "report_sha256": hashlib.sha256(history.report.read_bytes()).hexdigest(),
+                "materials_sha256": hashlib.sha256(pathlib.Path(str(history.report) + ".materials.zip").read_bytes()).hexdigest()}))
+            self.assertTrue(store(Namespace(repository=None, report=history.report, cache_root=fixture.cache)))
+        seeds = fixture.seeds()
+        self.assertEqual(4, len(seeds))
+        for seed in seeds:
+            os.utime(seed.parent, ns=(1, 1) if seed == current else (2, 2))
+        before = {seed: fixture.bundle_bytes(seed) for seed in seeds}
+        readiness, receipts = self.snapshot_result()
+        self.assertEqual("true", readiness["report_ready"], receipts)
+        cached = self.root / "build/lean-cache/report"
+        expected = {current.relative_to(fixture.cache).as_posix() + suffix: data
+                    for suffix, data in before[current].items()}
+        actual = {path.relative_to(cached / "data").as_posix(): path.read_bytes()
+                  for path in (cached / "data").rglob("*") if path.is_file()}
+        print("REPORT_SNAPSHOT_INVENTORY " + json.dumps({
+            "local_seed_count": len(seeds), "snapshot_files": len(actual),
+            "snapshot_bytes": sum(map(len, actual.values())), "current_files": len(expected),
+            "current_bytes": sum(map(len, expected.values())), "paths": sorted(actual)}), flush=True)
+        self.assertEqual(expected, actual)
+        self.assertEqual(before, {seed: fixture.bundle_bytes(seed) for seed in seeds})
+        self.assertFalse(any(path.is_symlink() for path in (cached / "data").rglob("*")))
+        self.assertEqual(0o700, (cached / "data").stat().st_mode & 0o777)
+        key = json.loads((cached / "manifest.json").read_text())["key"]
+        # Simulate a fresh PR runner; no report output can secretly seed it.
+        shutil.rmtree(fixture.cache)
+        shutil.rmtree(fixture.output.parent)
+        self.env.update(GITHUB_EVENT_NAME="pull_request_target", STRATALINT_CACHE_WRITES="false")
+        restored = self.run_tool(CACHE, "restore", "--report-key", key)
+        self.assertEqual(0, restored.returncode, restored.stdout + restored.stderr)
+        self.assertIn('"status": "restored"', restored.stdout)
+        self.assertEqual([current], fixture.seeds())
+        self.assertEqual(before[current], fixture.bundle_bytes(current))
+        config = self.root / "lakefile.toml"
+        config.write_text(config.read_text().replace('name = "fixture"', 'name = "metadata-only"'))
+        reused = fixture.pair()
+        self.assertEqual(0, reused.returncode, reused.stdout + reused.stderr)
+        self.assertIn("mode=reuse changed=0 added=0 removed=0 recheck=0", reused.stdout)
+        (self.root / "D5/A.lean").write_text("def a := 4\n")
+        incremental = fixture.pair()
+        self.assertEqual(0, incremental.returncode, incremental.stdout + incremental.stderr)
+        self.assertIn("mode=delta changed=1 added=0 removed=0 recheck=2", incremental.stdout)
+        produced = fixture.bundle_bytes(fixture.output)
+        fixture.cache = self.root / "clean-cache"
+        fixture.output = self.root / "clean-output/raw-lean-report.json"
+        clean = fixture.pair()
+        self.assertEqual(0, clean.returncode, clean.stdout + clean.stderr)
+        for suffix in ("", ".materials.zip", ".seed.json", ".provenance.json", ".input.attestation"):
+            self.assertEqual(produced[suffix], fixture.bundle_bytes(fixture.output)[suffix])
+        commands = (self.root / "lake-runs").read_text().splitlines()
+        self.assertEqual(4, commands.count("build"))
+        self.assertEqual(3, sum("--run" in command for command in commands))
+        readiness, receipts = self.snapshot_result()
+        self.assertEqual("false", readiness["report_ready"])
+        self.assertEqual("save-disabled", receipts["report"]["status"])
+        self.assertEqual(actual, {path.relative_to(cached / "data").as_posix(): path.read_bytes()
+                               for path in (cached / "data").rglob("*") if path.is_file()})
+
+    def test_report_snapshot_rejects_invalid_current_without_using_history(self):
+        fixture = self.prepare_report()
+        current = self.produce_report(fixture)
+        self.assertEqual("true", self.snapshot_result()[0]["report_ready"])
+        cached = self.root / "build/lean-cache/report/manifest.json"
+        saved = cached.read_bytes()
+        bundle = fixture.bundle_bytes(fixture.output)
+        summary = self.root / "build/ci/current-result.json"
+        original_summary = summary.read_bytes()
+        cases = ["missing-summary", "failed-current", "missing-report", "missing-seed", "materials", "partition", "identity"]
+        for case in cases:
+            with self.subTest(case=case):
+                if case == "missing-summary": summary.unlink()
+                elif case == "failed-current":
+                    failed = fixture.pair(LAKE_BUILD_FAIL="19")
+                    self.assertEqual(19, failed.returncode, failed.stdout + failed.stderr)
+                    summary.write_text(json.dumps({"stage": "current", "exit": 2,
+                        "report": fixture.output.relative_to(self.root).as_posix()}))
+                elif case == "missing-report": fixture.output.unlink()
+                elif case == "missing-seed": pathlib.Path(str(fixture.output) + ".seed.json").unlink()
+                elif case == "materials": pathlib.Path(str(fixture.output) + ".materials.zip").write_bytes(b"corrupt")
+                elif case == "partition":
+                    seed = json.loads(bundle[".seed.json"])
+                    seed["partition"] = seed["partition"].replace(REV, "f" * 40)
+                    pathlib.Path(str(fixture.output) + ".seed.json").write_text(json.dumps(seed))
+                else: (self.root / "D5/A.lean").write_text("def a := 99\n")
+                readiness, receipts = self.snapshot_result()
+                self.assertEqual("false", readiness["report_ready"], receipts)
+                self.assertEqual("save-failed", receipts["report"]["status"])
+                self.assertEqual(saved, cached.read_bytes())
+                self.assertFalse(list(cached.parent.parent.glob(".snapshot-*")))
+                fixture.write_bundle_bytes(fixture.output, bundle)
+                summary.write_bytes(original_summary)
+                (self.root / "D5/A.lean").write_text("def a := 1\n")
+        self.assertEqual(bundle[".materials.zip"], fixture.bundle_bytes(current)[".materials.zip"])
+
+    def test_report_staging_and_restore_validate_independently(self):
+        fixture = self.prepare_report()
+        self.produce_report(fixture)
+        self.assertEqual("true", self.snapshot_result()[0]["report_ready"])
+        cached = self.root / "build/lean-cache/report"
+        saved = (cached / "manifest.json").read_bytes()
+        hooks = self.root / "snapshot-hooks"
+        hooks.mkdir()
+        (hooks / "sitecustomize.py").write_text('''
+import pathlib, shutil
+copy = shutil.copyfile
+def damaged(source, target, *args, **kwargs):
+    result = copy(source, target, *args, **kwargs)
+    path = pathlib.Path(target)
+    if any(part.startswith(".snapshot-") for part in path.parts) and path.name.endswith(".materials.zip"):
+        path.write_bytes(b"damaged staging copy")
+    return result
+shutil.copyfile = damaged
+''')
+        with mock.patch.dict(self.env, PYTHONPATH=str(hooks)):
+            readiness, receipts = self.snapshot_result()
+        self.assertEqual("false", readiness["report_ready"], receipts)
+        self.assertEqual("save-failed", receipts["report"]["status"])
+        self.assertEqual(saved, (cached / "manifest.json").read_bytes())
+        self.assertFalse(list(cached.parent.glob(".snapshot-*")))
+        report = next((cached / "data").glob("*/*/*/raw-lean-report.json"))
+        bundle = fixture.bundle_bytes(report)
+        for case in ("missing", "materials", "partition"):
+            with self.subTest(case=case):
+                manifest = json.loads(saved)
+                if case == "missing": report.unlink()
+                elif case == "materials": pathlib.Path(str(report) + ".materials.zip").write_bytes(b"corrupt")
+                else:
+                    path = pathlib.Path(str(report) + ".seed.json")
+                    seed = json.loads(path.read_text())
+                    seed["partition"] = seed["partition"].replace(REV, "f" * 40)
+                    path.write_text(json.dumps(seed))
+                    for item in manifest["files"]:
+                        item["sha256"] = hashlib.sha256((cached / "data" / item["path"]).read_bytes()).hexdigest()
+                (cached / "manifest.json").write_text(json.dumps(manifest))
+                shutil.rmtree(fixture.cache, ignore_errors=True)
+                restored = self.run_tool(CACHE, "restore", "--report-key", manifest["key"])
+                self.assertEqual(0, restored.returncode, restored.stdout + restored.stderr)
+                self.assertIn('"status": "miss"', restored.stdout)
+                self.assertEqual([], fixture.seeds())
+                fixture.write_bundle_bytes(report, bundle)
+        (cached / "manifest.json").write_bytes(saved)
+
     def snapshot_result(self):
         (self.root / "outputs").unlink(missing_ok=True)
         result = self.run_tool(CACHE, "snapshot")
@@ -334,8 +527,10 @@ class SnapshotContracts(CacheFixture, unittest.TestCase):
         self.assertEqual(expected["batteries/README.md"][0], (source / "batteries/README.md").read_bytes())
 
     def test_invalid_dependency_links_disable_only_that_save_with_an_offending_path(self):
+        fixture = self.prepare_report()
+        self.produce_report(fixture)
         source, _ = self.dependency_files()
-        for target in (".lake/build", ".lake/report-cache"):
+        for target in (".lake/build",):
             directory = self.root / target
             directory.mkdir(parents=True)
             (directory / "fixture").write_bytes(b"other layer bytes")
@@ -420,11 +615,13 @@ class SnapshotContracts(CacheFixture, unittest.TestCase):
         self.assertEqual(["producer"] * 10, (self.root / "calls").read_text().splitlines())
 
     def test_snapshot_readiness_and_material_follow_writer_permissions(self):
+        fixture = self.prepare_report()
+        current = self.produce_report(fixture)
         material = {
             "dependency": (".lake/packages", "mathlib/Mathlib.olean", b"private dependency seed\n"),
             "project": (".lake/build", "lib/Module.olean", b"private project seed\n"),
-            "report": (".lake/report-cache", "fixture/raw-lean-report.json", b'{"fixture":"report seed"}\n'),
         }
+        layers = (*material, "report")
         for target, relative, data in material.values():
             path = self.root / target / relative
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -472,15 +669,17 @@ class SnapshotContracts(CacheFixture, unittest.TestCase):
                     env["STRATALINT_CHECK_SUCCEEDED"] = success
                 result = self.run_tool(CACHE, "snapshot", env=env)
                 self.assertEqual(0, result.returncode, result.stdout + result.stderr)
-                self.assertEqual({layer + "_ready": str(allowed).lower() for layer in material},
+                self.assertEqual({layer + "_ready": str(allowed).lower() for layer in layers},
                                  dict(line.split("=", 1) for line in output.read_text().splitlines()), result.stdout)
                 receipts = [json.loads(line.removeprefix("LEAN_ACTIONS_CACHE "))
                             for line in result.stdout.splitlines() if line.startswith("LEAN_ACTIONS_CACHE ")]
-                self.assertEqual({layer: "snapshot" if allowed else "save-disabled" for layer in material},
+                self.assertEqual({layer: "snapshot" if allowed else "save-disabled" for layer in layers},
                                  {receipt["layer"]: receipt["status"] for receipt in receipts})
                 if not allowed:
                     self.assertFalse(cache.exists())
                     continue
+                self.assertEqual(fixture.bundle_bytes(current), fixture.bundle_bytes(
+                    cache / "report/data" / current.relative_to(fixture.cache)))
                 for layer, (target, relative, data) in material.items():
                     staged = cache / layer
                     self.assertEqual(data, (staged / "data" / relative).read_bytes())
