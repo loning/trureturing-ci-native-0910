@@ -54,12 +54,17 @@ internal sealed class SumInConcatenationDocument : IScribeDocumentDefinition
                 "The first term is 1. Every later term is at least 10. Hence 2 has no positive "
                 + "index, so the sequence is not surjective onto the positive integers and "
                 + "cannot be a permutation. This answers the permutation question in OEIS "
-                + "A359482; it does not address the stronger multiples-of-ten conjecture."))));
+                + "A359482; it does not address the stronger multiples-of-ten conjecture.",
+                new OpenProblemResolutionClaim(
+                    ProblemSlugRef.Create("oeis-a359482-positive-permutation"),
+                    ResolutionKind.Refuted)))));
 
-    private static DocumentBlock Node(string name, string title, Formula formula, string prose) =>
+    private static DocumentBlock Node(string name, string title, Formula formula, string prose,
+        OpenProblemResolutionClaim? resolution = null) =>
         Describe.Lean(DescribeId.Create("a359482-" + name.Replace('_', '-')),
             DeclarationHandle.Create(Prefix + name), H(title), StatementSource.FromAuthor(formula),
-            AssessedProvenance.FromRepo(Source), Blocks(Paragraph(Text(prose))), DescribeRole.Theorem);
+            AssessedProvenance.FromRepo(Source), Blocks(Paragraph(Text(prose))),
+            DescribeRole.Theorem, resolution);
 
     private static Formula V(string name) => F.Id(name);
     private static Formula Call(string name, params Formula[] args) =>

@@ -84,6 +84,10 @@ $$\neg(\forall m \in \mathbb{N}, 0 < m \implies \exists n \in \mathbb{N}, 1 \le 
 
 *Proof.* Machine-checked in Lean as `D5/S3/Arith/SumInConcatenation.not_positive_permutation` (`✓ std3`). ∎
 
+*Resolves.* `Problems/oeis-a359482-positive-permutation` (refuted) by `D5/S3/Arith/SumInConcatenation.not_positive_permutation`.
+
+<!-- scribe-open-problem-resolution-v1 {"problem_slug":"oeis-a359482-positive-permutation","declaration_gid":"D5/S3/Arith/SumInConcatenation.not_positive_permutation","resolution_kind":"refuted"} -->
+
 *Source.* Repository-derived.
 
 *Acknowledgement.* Eric Angelini, Hans Havermann, and M. F. Hasler (2023). *OEIS A359482 and the single-digit conjecture*. URL: <https://oeis.org/A359482>.
