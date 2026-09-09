@@ -111,3 +111,9 @@ Private `initial_echo` 修复后正式模块编译 EXIT=0、零 warning/error，
 最终主定理 statement_id：`sha256:644382e255f117a10aaa49f2edd5a8629e11da145f9a55fb35ca6bf687be2449`。模块 pin：`sha256:caf87d3426617c6f0545e97f8dd2dbc2878d58ecaa35521d5e7940afea45d083`。七个新增文件，零已有内容修改；目录容量未超限。开 PR 前再次仓内搜索目标，仅命中本实现。`git fetch origin dev` 后 dev 仍为预登记基线；`git merge-tree --write-tree HEAD origin/dev` EXIT=0、无冲突，树 `279539e6c3268787bf82fafabb54726ccf8f68ef`。`git diff --check` EXIT=0。
 
 三条分步证明分别在提交 f9892a2311、0aeb40556a、31c09cfef8 推送；完整目标首次证明提交 eaeacbc412；冻结 fa3b58f259。均为真实 Lean 一般证明，不以有限核对计进展。PR 按本轮停止条件开启，auto-merge 不开启；不把 PR 开出冒充已合并。
+
+## 最终交付
+
+**成**：目标 `a368628_odd_iff` 已由 Lean 核验，最终 `make lean` EXIT=0，公理闭包仅标准三项，PR [#6718](https://github.com/the-omega-institute/trureturing/pull/6718) 已开出，目标分支 dev。数学剩余子命题：无。
+
+PR 创建时源码提交 `638755ba199687da6516f64d2fe58ce85ed936ba`；读回状态 OPEN，工程检查与 Canonical Lean report production 正在运行，此时不主张 CI 通过。最终远端状态及逐门收据另写入 runner 指定 attempt-2 的 `implementation-report.md` 与 `result.json`。单线程实施、零独立评审席；未开启 auto-merge，未合并。
