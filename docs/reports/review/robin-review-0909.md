@@ -10,7 +10,7 @@
 - Read first: tracked `tools/scripts/agent/probe-brief-note.txt`, then all of `CLAUDE.md` and `agents/CONTEXT.md`.
 - Scope: review only; no edits to `D5/**` or `Blueprint/**`, no freeze/deposit/cover/merge action.
 - Worker artifacts: `/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/robin-review-0909/attempt-1` (called `ATTEMPT` below).
-- Checkpoints: Q1-Q4 complete; Q5-Q6 pending. Overall verdict is pending until all six questions are reviewed.
+- Checkpoints: Q1-Q5 complete; Q6 pending. Overall verdict is pending until all six questions are reviewed.
 
 ## Q1. Mathematical correctness
 
@@ -238,6 +238,73 @@ The private witness's generated Lean name was also confirmed through the compile
 
 Push receipt for Q3: `c8bdef184b`, EXIT 0. Q4 is recorded in the next checkpoint commit.
 
+## Q5. Own verification and complete axiom audit
+
+Result: pass. These commands were run by this review worker, not copied from implementation-seat readings.
+
+| Command | EXIT | Measured wall seconds | Log under ATTEMPT |
+| --- | ---: | ---: | --- |
+| `make lean` | 0 | 16.224060833 | `make-lean.log` |
+| `make lean-report` | 0 | 58.270924125 | `make-lean-report.log` |
+
+Timing uses `time.monotonic` around the foreground Make subprocess owned by the Codex exec session; the child exit is persisted in `make-lean.exit.json` and `make-lean-report.exit.json`. No shell-detached job or launcher-success substitution. `make lean` was needed during Q3 to query the actual compiled proof; it was not rerun just to repeat a successful measurement.
+
+Environment: Darwin arm64, Apple M3 Ultra; Lean `v4.33.0`; Mathlib `db584cd6d46c92f209a44c0f1c829460d327499d`. Both commands reported `LEAN_CACHE status=present`, `method=none`, `project_olean_state=warm`, `mathlib_olean_state=warm`, `stamp_miss=null`, no missing Mathlib oleans. The target itself was newly built in this worktree: `Built D5.S3.Arith.Robin.SevenSmooth (8.1s)`, followed by `Build completed successfully (12741 jobs)`. Warm project status did not mean every newly added module already had an olean.
+
+Canonical report: `.lake/build/stratalint/raw-lean-report.json`, producer `mode=produced`, `source_side=candidate`, delta `changed=0 added=6 removed=0 recheck=6`. This is an own fresh report production using the canonical incrementality contract, not a claimed cold rebuild of unchanged dependencies.
+
+```
+input_address: sha256:f34fcc0f60a47faed00a2b5c6de50c190a97edc297917a201a6dcf67925a7fb3
+report_sha256: 577ace7491ae9068434a0123d1902dcc8562cd7b4b59be9d81040c5c70ecb339
+target source_sha256: sha256:650a2ef0a93531eb21bff7133b8ab4587c02bc5e3ab4a2a46717ccebc2394a5d
+public theorem statement_id: sha256:f22c3edbec1a3d227094dd2e2884f48ca1fd14c62a89fad16111d41fbfe5b15b
+```
+
+The target source hash equals the inspected source bytes. Q3's predecessor declaration identities are unchanged in this newly generated canonical report. The module record and provenance were extracted with `jq` into worker-owned `canonical-module.json` and `canonical-provenance.json`; all declaration names/kinds/inclusion flags/axioms are in `all-declarations.tsv`.
+
+### Every declaration, including compiler internals
+
+Own canonical count: **49 declarations = 46 theorems + 3 definitions**. `include_in_statement=true`: 16; false: 33. Of the 16 included authored declarations, only 1 is source-public and 15 are private. The inspector's inclusion flag is not a public-visibility flag (`Inspector.lean:106-109`); private authored declarations participate in the statement inventory. This distinction does not turn private proof helpers into publicly delivered finite results under Q4's brief-specific criterion.
+
+All 49 axiom closures were read, without filtering out private or excluded declarations. Let `A={Classical.choice, Quot.sound, propext}`, `B={Quot.sound, propext}`, and `C={propext}`. This partition names every declaration:
+
+| Declarations (local names) | Count | Axiom closure |
+| --- | ---: | --- |
+| The public theorem; all 12 private theorems; private `geometric` and `divisorSum` | 15 | A |
+| private `smooth` | 1 | C |
+| `small_values._proof_1_1` through `_proof_1_17` | 17 | A |
+| `exponent_bounds._proof_1_1` through `_proof_1_8` | 8 | B |
+| `robin_seven_smooth._proof_1_2`, `_proof_1_3`, `_proof_1_4` | 3 | A |
+| `robin_seven_smooth._proof_1_1`, `_proof_1_5` | 2 | B |
+| `divisorSum.eq_1`, `geometric.eq_1` | 2 | A |
+| `smooth.eq_1` | 1 | C |
+
+Totals: **A:37, B:10, C:2**. No declared axiom; no closure member outside the standard three; **`sorryax_present=false` (0 of 49)**. In particular, both the public theorem and `small_values` have exactly A. Canonical closure computation traverses theorem proof values as well as types (`Inspector.lean:124-136,149-213`); this is not a grep inference.
+
+Machine-readable check on the extracted target:
+
+```
+jq -e 'all(.declarations[]; all(.axioms[]; . == "Classical.choice" or . == "Quot.sound" or . == "propext"))' "$ATTEMPT/canonical-module.json"
+# true, EXIT 0
+```
+
+The same predicate on the canonical `D5.X_Frontier.Hearts` module returns false, EXIT 1: `D5.X_Frontier.Hearts.o5_independence` contains `sorryAx`. This is the axiom-field positive control, not a failure of SevenSmooth. No claim that the whole repository is sorry-free is made.
+
+### Requested source scan and exact-regex control
+
+```
+git grep -n -P '\bsorry\b|\badmit\b|^axiom |\bnative_decide\b' -- D5/S3/Arith/Robin/SevenSmooth.lean
+# 0 matching lines; EXIT 1 (no matches, not an execution error)
+git grep -n -P '\bsorry\b|\badmit\b|^axiom |\bnative_decide\b' -- D5/X_Frontier/Hearts.lean
+# 1 matching line; EXIT 0: D5/X_Frontier/Hearts.lean:76:  sorry
+```
+
+The positive control uses the identical full PCRE, including `\b`, alternation and the line-start branch. No `git grep -E` was used. Textual nonmatches are supplemented by the full canonical axiom audit above; `decide +kernel` is ordinary kernel-checked finite proof, not `native_decide`.
+
+The Make operations only update generated caches/reports. The review's tracked diff at this checkpoint is one report file, with no D5 or Blueprint changes. No remote CI, admission, freeze, or merge result is claimed from these local commands.
+
+Push receipt for Q4: `36d0448210`, EXIT 0. Q5 is recorded in the next checkpoint commit.
+
 ## Pending checks and nonclaims
 
-At this checkpoint Q5-Q6 have not been concluded. The canonical report/axiom audit and mirrors remain pending. `make lean` has independently returned EXIT 0 in 16.224060833 s; its scope and the report command are recorded under Q5 when that check completes. No claim of general Robin, RH, novelty, search exhaustiveness, successful freeze, or remote CI/merge is made. No external literature page has been opened or used as evidence.
+At this checkpoint Q6 has not been concluded; mirrors remain pending. No claim of general Robin, RH, novelty, search exhaustiveness, successful freeze, or remote CI/merge is made. No external literature page has been opened or used as evidence.
