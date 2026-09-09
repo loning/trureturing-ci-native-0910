@@ -43,3 +43,5 @@
 正式定义文件单文件编译 EXIT=0，提交 `55fbae1c3c` 已推送。配对探针实际应用 `convolution_pairing`，通过 `g=X*expand₂(f)` 把奇次平方系数变为 g 的偶次平方系数。第一次 EXIT=1，goal 为 `∑ x ∈ range (2*m), coeff x f * coeff (2*m-x) f + … = coeff m f ^ 2`，`sum_range_eq_add_Ico` 缺显式求和函数参数。修复传入该函数；不是数学障碍。完整 goal 在 attempt 工件的 Lean 日志中保存。
 
 配对探针修复后 EXIT=0：`square_even_coeff` 实际应用既有 `convolution_pairing`；`square_odd_coeff` 经 `X*expand₂(f)` 降到 midpoint=0，不重证 involution。首次序列 cast 桥 EXIT=1：`simp only` 未把 `map(series^p)` 与 `(map series)^p` 对齐，具体两侧为 `Nat.castRingHom … (coeff … (series^p))` / `coeff … ((PowerSeries.map … series)^p)`；改为反向 `map_pow` 再 `coeff_map`。
+
+**第一步完成**：`seq_even_index_zero (j : ℕ) : (seq (2*j+2) : ZMod 2)=0`，正式文件热树增量编译 EXIT=0；`#print axioms` 仅 `propext, Classical.choice, Quot.sound`。原卷积到自然数 cast 桥已闭合。全项目门与冻结待最终模块齐备后依序执行。
