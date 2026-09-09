@@ -56,13 +56,26 @@ partial def encodeName : Name → String
   | .str parent value => s!"ns({encodeName parent},{atom value})"
   | .num parent value => s!"nn({encodeName parent},{value})"
 
-partial def encodeLevel : Level → String
-  | .zero => "l0"
-  | .succ level => s!"ls({encodeLevel level})"
-  | .max left right => s!"lm({encodeLevel left},{encodeLevel right})"
-  | .imax left right => s!"li({encodeLevel left},{encodeLevel right})"
-  | .param name => s!"lp({encodeName name})"
-  | .mvar id => s!"lv({encodeName id.name})"
+partial def emitLevel (emit : String → IO Unit) : Level → IO Unit
+  | .zero => emit "l0"
+  | .succ level => do
+      emit "ls("
+      emitLevel emit level
+      emit ")"
+  | .max left right => do
+      emit "lm("
+      emitLevel emit left
+      emit ","
+      emitLevel emit right
+      emit ")"
+  | .imax left right => do
+      emit "li("
+      emitLevel emit left
+      emit ","
+      emitLevel emit right
+      emit ")"
+  | .param name => emit s!"lp({encodeName name})"
+  | .mvar id => emit s!"lv({encodeName id.name})"
 
 def encodeBinderInfo : BinderInfo → String
   | .default => "bd"
@@ -70,38 +83,88 @@ def encodeBinderInfo : BinderInfo → String
   | .strictImplicit => "bs"
   | .instImplicit => "bc"
 
-def encodeLiteral : Literal → String
-  | .natVal value => s!"ln({value})"
-  | .strVal value => s!"lt({atom value})"
+def emitLiteral (emit : String → IO Unit) : Literal → IO Unit
+  | .natVal value => emit s!"ln({value})"
+  | .strVal value => do
+      emit "lt("
+      emit (toString value.utf8ByteSize)
+      emit ":"
+      emit value
+      emit ")"
 
-partial def encodeExpr : Expr → String
-  | .bvar index => s!"eb({index})"
-  | .fvar id => s!"ef({encodeName id.name})"
-  | .mvar id => s!"em({encodeName id.name})"
-  | .sort level => s!"es({encodeLevel level})"
-  | .const name levels =>
-      s!"ec({encodeName name},[{String.intercalate "," (levels.map encodeLevel)}])"
-  | .app function argument => s!"ea({encodeExpr function},{encodeExpr argument})"
-  | .lam _ type body binderInfo =>
-      s!"el({encodeBinderInfo binderInfo},{encodeExpr type},{encodeExpr body})"
-  | .forallE _ type body binderInfo =>
-      s!"ep({encodeBinderInfo binderInfo},{encodeExpr type},{encodeExpr body})"
-  | .letE _ type value body nondependent =>
-      s!"ee({if nondependent then "1" else "0"},{encodeExpr type},{encodeExpr value},{encodeExpr body})"
-  | .lit literal => s!"ei({encodeLiteral literal})"
-  | .mdata _ body => s!"ed({encodeExpr body})"
-  | .proj name index body => s!"ej({encodeName name},{index},{encodeExpr body})"
+partial def emitExpr (emit : String → IO Unit) : Expr → IO Unit
+  | .bvar index => emit s!"eb({index})"
+  | .fvar id => emit s!"ef({encodeName id.name})"
+  | .mvar id => emit s!"em({encodeName id.name})"
+  | .sort level => do
+      emit "es("
+      emitLevel emit level
+      emit ")"
+  | .const name levels => do
+      emit s!"ec({encodeName name},["
+      let mut first := true
+      for level in levels do
+        if first then first := false else emit ","
+        emitLevel emit level
+      emit "])"
+  | .app function argument => do
+      emit "ea("
+      emitExpr emit function
+      emit ","
+      emitExpr emit argument
+      emit ")"
+  | .lam _ type body binderInfo => do
+      emit s!"el({encodeBinderInfo binderInfo},"
+      emitExpr emit type
+      emit ","
+      emitExpr emit body
+      emit ")"
+  | .forallE _ type body binderInfo => do
+      emit s!"ep({encodeBinderInfo binderInfo},"
+      emitExpr emit type
+      emit ","
+      emitExpr emit body
+      emit ")"
+  | .letE _ type value body nondependent => do
+      emit s!"ee({if nondependent then "1" else "0"},"
+      emitExpr emit type
+      emit ","
+      emitExpr emit value
+      emit ","
+      emitExpr emit body
+      emit ")"
+  | .lit literal => do
+      emit "ei("
+      emitLiteral emit literal
+      emit ")"
+  | .mdata _ body => do
+      emit "ed("
+      emitExpr emit body
+      emit ")"
+  | .proj name index body => do
+      emit s!"ej({encodeName name},{index},"
+      emitExpr emit body
+      emit ")"
 
-def encodeStatement (info : ConstantInfo) : String :=
-  let parameters := info.levelParams.map encodeName
-  let header :=
-    s!"statement-v1(uparams=[{String.intercalate "," parameters}],type={encodeExpr info.type}"
+/-- Emit in canonical order to a synchronous borrowed sink. Only the caller owns
+the handle; no material-sized string or deferred writes survive the traversal. -/
+def emitStatement (emit : String → IO Unit) (info : ConstantInfo) : IO Unit := do
+  emit "statement-v1(uparams=["
+  let mut first := true
+  for parameter in info.levelParams do
+    if first then first := false else emit ","
+    emit (encodeName parameter)
+  emit "],type="
+  emitExpr emit info.type
   match info with
   | .defnInfo _ | .opaqueInfo _ =>
       match info.value? (allowOpaque := true) with
-      | some value => header ++ s!",value={encodeExpr value})"
-      | none => header ++ ",value=missing)"
-  | _ => header ++ ")"
+      | some value => do
+          emit ",value="
+          emitExpr emit value
+      | none => emit ",value=missing"
+  | _ => pure ()
+  emit ")"
 
 def includeInStatement (name : Name) : ConstantInfo → Bool
   | .thmInfo _ => !(privateToUserName name).isInternalDetail
@@ -253,11 +316,12 @@ def inspectModule (env : Environment) (cache : IO.Ref AxiomClosureState)
     let some info := environment.find? name
       | throw <| IO.userError s!"declaration missing: {name}"
     let axioms ← collectAxiomsShared environment cache name
-    let statement := encodeStatement info
     let materialIndex ← materialCounter.get
     materialCounter.set (materialIndex + 1)
     let materialFile := s!"{materialIndex}.statement"
-    IO.FS.writeFile (materialSpool / materialFile) statement
+    IO.FS.withFile (materialSpool / materialFile) .write fun handle => do
+      emitStatement handle.putStr info
+      handle.flush
     return {
       axioms := sortedUnique (axioms.map Name.toString)
       includeInStatement := includeInStatement name info
