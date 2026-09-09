@@ -269,3 +269,9 @@ Canonical declaration identities from the Lean report:
 - Private escape witness: `sha256:ebf9271d79b19ab3e5471802cb117ec8096f5d39f684c79bff02695c491fb9c7`.
 - `IsDisjointStrictRefinement`: `sha256:45cb643497a80430d7c39f92f368f3f8a095b7d5ae9593ae1c9ddb434640f136`.
 - `NontrivialDisjointRefinement`: `sha256:d0eedc4448afe0f6ec075f5dfae34431cb01f2f0af059892991ea18325713832`.
+
+Explicit `projections --check --report` via the canonical
+`StrataLint.Scribe.Documents` project: EXIT 0, 13.06 seconds. No diagnostics.
+The same canonical report was supplied both as the environment variable and
+the report argument. Log/timing: runner `projections-check.log` /
+`projections-check-result.json`. All three requested Scribe checks have now run.
