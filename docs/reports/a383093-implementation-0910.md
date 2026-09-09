@@ -70,3 +70,19 @@
 - arXiv A383093 检索页成功下载；下一批读其结果及全部 xref 的相关命中。
 - 精确可复用 Mathlib 命中：Multiset.exists_smul_of_dvd_count，
   ∀a∈s, k∣count a s → ∃u, s=k•u。已读完整证明与签名；本题将直接应用，禁止重证。
+
+## 检索第 5 批与 Lean 片段 1
+
+- 42 xref 的全文提取字段检索 lcm|least common|normaliz|bijection|bijective|383093|moebius|möbius|mobius|common sum。
+  逐条读相关命中并完整补读 A382204、A383096、A383098、A383100、A383110、A047966。
+  A047966 是 uniform partitions 到 distinct partitions 的另一除数变换；未给本题 lcm 桥。
+  arXiv 搜 A383093 明确 produced no results。未打开的 xref 外链、未逐字段细读的普通族条目
+  仍标 ASSUMED-UNVERIFIED；不主张全球搜索穷尽。dominating_theorem_search=not-found-in-searched-scope。
+- canonical route EXIT=0 返回 D5/S1/Words/Compositions/ConstantEqualSumDivisorIdentity.lean，S1/G。
+  创建前该 Lean 桶 7 文件，Blueprint 桶 14 文件；utility: none（无界组合证明）。
+- 热树 /tmp/A383093.lean 首试失败于缺 NormalizedGCDMonoid ℕ 实例与 nlinarith import。
+  加 Mathlib.Algebra.GCDMonoid.Nat 与 tactics 后 EXIT=0，无 sorry/私 axiom。
+- 已证私有 normalize：正整数多重集 m 在 D>0 可行，则存在 t>0、u，
+  m=t•u、D=t*lcm(u)、u capable；使用 Mathlib.exists_smul_of_dvd_count，未重证它。
+  lcm_smul/canonical/admits_smul 同批通过。这是无界构造，非有限枚举进展。
+- 定义尚在组装：下一步为块多重集编码证明、重量与计数双射。主目标尚未证明。
