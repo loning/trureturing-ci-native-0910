@@ -123,4 +123,13 @@ theorem seq_four_mul_add_three (j : ℕ) : (seq (4*j+3) : ZMod 2) = 0 := by
 
 #print axioms seq_four_mul_add_three
 
+
+/-- At indices congruent to one modulo four, parity descends to the quotient. -/
+theorem seq_four_mul_add_one (j : ℕ) : (seq (4*j+1) : ZMod 2) = (seq j : ZMod 2) := by
+  rw [binary_recurrence (by omega), if_neg (by
+    rintro ⟨k, hk⟩
+    omega), show 4*j+1-1 = 4*j by omega, ← fourth_expand, coeff_expand_mul, binary_coeff]
+
+#print axioms seq_four_mul_add_one
+
 end D5.S1.Recurrence.PiecewiseConvolutionPowersOfFour

@@ -47,3 +47,5 @@
 **第一步完成**：`seq_even_index_zero (j : ℕ) : (seq (2*j+2) : ZMod 2)=0`，正式文件热树增量编译 EXIT=0；`#print axioms` 仅 `propext, Classical.choice, Quot.sound`。原卷积到自然数 cast 桥已闭合。全项目门与冻结待最终模块齐备后依序执行。
 
 **第二步完成**：四次 Frobenius 探针 EXIT=0；正式 `seq_four_mul_add_three (j)` 编译 EXIT=0，标准三公理闭包。`square_expand` 直接用 Mathlib `map_frobenius_expand` 和 `ZMod.frobenius_zmod`；两次 expand 合成四次，再用 `coeff_expand_of_not_dvd`。认证 GitHub 代码搜索 `gh api search/code?q=A368628+language:Lean` 成功，total_count=0；替代此前401失败，检索边界仍限字面 A 号。
+
+**第三步完成**：`seq_four_mul_add_one (j) : (seq (4*j+1) : ZMod 2) = (seq j : ZMod 2)`，正式文件增量编译 EXIT=0，标准三公理闭包。与第二步共用一般 `fourth_expand`，此步精确应用 `coeff_expand_mul`。三个无界模二递推均已闭合，下一步为指数双向强归纳。
