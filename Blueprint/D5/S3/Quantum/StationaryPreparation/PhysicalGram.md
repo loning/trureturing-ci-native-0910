@@ -132,9 +132,60 @@ $$\forall A \in Type,\; \forall K \in Type,\; \left(\left(Fintype\left(A\right) 
 
 The PSD recurrence and unit zero entry give the product-minus-supremum rank bound. The Gram rank is at most the memory dimension. For zero occupation, the unit initial vector ensures a nonempty memory coordinate set, giving the same bound. Neither the common final vector nor the blank symbol is prescribed beyond the displayed hypotheses.
 
+**Definition 1.11 (stationaryMemoryDimensions).**
+
+$$\forall A \in Type,\; \left(Fintype\left(A\right) \land DecidableEq\left(A\right)\right) \Rightarrow \left(\forall a \in Multiset\left(A\right),\; stationaryMemoryDimensions\left(a\right) = setOf\left(d:\mathbb{N} \mapsto \exists blank \in A,\; \exists U \in Unitary\left(Product\left(A, Fin\left(d\right)\right)\right),\; \exists x \in Space\left(Fin\left(d\right)\right),\; \exists f \in Space\left(Fin\left(d\right)\right),\; norm\left(x\right) = 1 \land \left(norm\left(f\right) = 1 \land \left(\forall w \in Fin\left(card\left(a\right)\right) \to A,\; \forall k \in Fin\left(d\right),\; circuit\left(t:\mathbb{N} \mapsto U, card\left(a\right), 0, initialized\left(blank, card\left(a\right), x\right), pair\left(w, k\right)\right) = sectorVector\left(card\left(a\right), a, w\right) \cdot f\left(k\right)\right)\right)\right)\right)$$
+
+*Formalization.* `D5/S3/Quantum/StationaryPreparation/PhysicalGram.stationaryMemoryDimensions` (`✓ std3`).
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+The set consists of natural memory dimensions d for which the displayed physical preparation exists. setOf takes the set of arguments satisfying its predicate. Fin(d) supplies exactly d complex memory coordinates. One blank, one fixed U, and the unit memories x and f are chosen before every word and coordinate is quantified. No inequality or minimality condition is part of this definition.
+
+**Theorem 1.12 (stationary_memory_dimension_isLeast).**
+
+$$\forall A \in Type,\; \left(\left(Fintype\left(A\right) \land DecidableEq\left(A\right)\right) \land Nonempty\left(A\right)\right) \Rightarrow \left(\forall a \in Multiset\left(A\right),\; IsLeast\left(stationaryMemoryDimensions\left(a\right), \prod_{i:A}{count\left(a, i\right) + 1} - FinsetSup\left(univ\left(A\right), i:A \mapsto count\left(a, i\right)\right)\right)\right)$$
+
+*Proof.* Machine-checked in Lean as `D5/S3/Quantum/StationaryPreparation/PhysicalGram.stationary_memory_dimension_isLeast` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+For every finite nonempty alphabet and every multiset a, the displayed dimension belongs to stationaryMemoryDimensions(a) and is no greater than any other member; this is the meaning of IsLeast. Counts are natural numbers, so zero capacities are included. The supremum over the finite alphabet is the maximum count. The lower bound applies to every member, and the fixed unitary attainment supplies a member of exactly this dimension.
+
+**Theorem 1.13 (zero_occupation_memory_isLeast).**
+
+$$\forall A \in Type,\; \left(\left(Fintype\left(A\right) \land DecidableEq\left(A\right)\right) \land Nonempty\left(A\right)\right) \Rightarrow IsLeast\left(stationaryMemoryDimensions\left(0\right), 1\right)$$
+
+*Proof.* Machine-checked in Lean as `D5/S3/Quantum/StationaryPreparation/PhysicalGram.zero_occupation_memory_isLeast` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+For zero occupation the minimum is one. Choose any blank, the identity unitary on A times Fin(1), and x and f both equal to the sole coordinate basis vector. The empty circuit preserves this unit vector, and the unique empty word has sector coefficient one. A unit vector excludes zero-dimensional memory. This construction has no positive-occupation hypothesis.
+
+Here a with subscript 5040 denotes CoherentHistorySchmidt.occupation5040 on Option(Fin(3)): its count at none is four, and its counts at some(0), some(1), and some(2) are two, one, and one. The count of actual occupation words follows from the multinomial formula: 8! divided by 4! 2! 1! 1! is 840. The product of count plus one is 60 and the maximum count is four. The square root below is the nonnegative real square root, embedded in the complex scalars.
+
+**Theorem 1.14 (occupation_5040_stationary_minimum).**
+
+$$card\left(a_{5040}\right) = 8 \land \left(card\left(sectorWords\left(8, a_{5040}\right)\right) = 840 \land \left(IsLeast\left(stationaryMemoryDimensions\left(a_{5040}\right), 56\right) \land \left(\exists blank \in Option\left(Fin\left(3\right)\right),\; \exists U \in Unitary\left(Product\left(Option\left(Fin\left(3\right)\right), Fin\left(56\right)\right)\right),\; \exists x \in Space\left(Fin\left(56\right)\right),\; \exists f \in Space\left(Fin\left(56\right)\right),\; norm\left(x\right) = 1 \land \left(norm\left(f\right) = 1 \land \left(\forall w \in Fin\left(8\right) \to Option\left(Fin\left(3\right)\right),\; \forall k \in Fin\left(56\right),\; circuit\left(t:\mathbb{N} \mapsto U, 8, 0, initialized\left(blank, 8, x\right), pair\left(w, k\right)\right) = ite\left(occupation\left(w\right) = a_{5040}, \frac{1}{\sqrt{840}}, 0\right) \cdot f\left(k\right)\right)\right)\right)\right)\right)$$
+
+*Proof.* Machine-checked in Lean as `D5/S3/Quantum/StationaryPreparation/PhysicalGram.occupation_5040_stationary_minimum` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+The same statement gives length eight, 840 actual legal words, least stationary memory dimension 56, and a physical preparation in that dimension. Every length-eight word and every memory coordinate satisfies the displayed equation. Legal words have the same positive coefficient 1/sqrt(840), and all other words have coefficient zero, with one common unit final memory. The circuit uses the same U at each emission. Its length-eight domain is obtained from the occupation cardinality equality.
+
 ## References
 
 - Truth anchor: `D5/S3/Quantum/StationaryPreparation/PhysicalGram.circuit_fixed_coefficients`
+- Truth anchor: `D5/S3/Quantum/StationaryPreparation/PhysicalGram.occupation_5040_stationary_minimum`
 - Truth anchor: `D5/S3/Quantum/StationaryPreparation/PhysicalGram.occupation_gram_psd`
 - Truth anchor: `D5/S3/Quantum/StationaryPreparation/PhysicalGram.occupation_gram_rank_le`
 - Truth anchor: `D5/S3/Quantum/StationaryPreparation/PhysicalGram.occupation_gram_recurrence`
@@ -143,6 +194,10 @@ The PSD recurrence and unit zero entry give the product-minus-supremum rank boun
 - Truth anchor: `D5/S3/Quantum/StationaryPreparation/PhysicalGram.residual_letter_of_not_mem`
 - Truth anchor: `D5/S3/Quantum/StationaryPreparation/PhysicalGram.residual_representative_independent`
 - Truth anchor: `D5/S3/Quantum/StationaryPreparation/PhysicalGram.residual_zero`
+- Truth anchor: `D5/S3/Quantum/StationaryPreparation/PhysicalGram.stationaryMemoryDimensions`
+- Truth anchor: `D5/S3/Quantum/StationaryPreparation/PhysicalGram.stationary_memory_dimension_isLeast`
 - Truth anchor: `D5/S3/Quantum/StationaryPreparation/PhysicalGram.stationary_memory_dimension_lower_bound`
+- Truth anchor: `D5/S3/Quantum/StationaryPreparation/PhysicalGram.zero_occupation_memory_isLeast`
 - Dependency: [D5/S3/Quantum/Entanglement/SequentialRegisterCircuit](../Entanglement/SequentialRegisterCircuit.md)
 - Dependency: [D5/S3/Quantum/StationaryGram/StationaryOccupationRankNullity](../StationaryGram/StationaryOccupationRankNullity.md)
+- Dependency: [D5/S3/Quantum/StationaryPreparation/StationaryOccupationResidualStep](StationaryOccupationResidualStep.md)
