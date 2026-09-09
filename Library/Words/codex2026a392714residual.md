@@ -260,6 +260,16 @@ A5/A5.1 真源已查：utility 位于 anchors 与 digest 之间，无计算性�
 类型头需 Classical 的 DecidablePred 已显式提供。余一个不承重的 unused change 警告，
 下批会删除该行。未引入 sorry 或 axiom；上界总和的最终消去仍待验证。
 
+
+## Lean 核验批次 4：上界集合的消去
+
+热树增量最终 EXIT=0，无诊断。upper_fixed_prefix、upper_identity、
+exists_min_move、upper_sum_vanish 已通过 kernel。
+非恒等 a 的固定交换取最小错位值所在位置及前一位置，与 b 无关，故稳定。
+修正了 ext 继续下钻到 Fin.val 的类型错位、let 的替换方向和一次 rw 的匹配侧；
+数学陈述未改。两个承重消去引理现在均已编译；最后需把原始 L(a) 的逐项条件接上，
+再进入 D5/Scribe/构建门，尚未报“成”。
+
 <!-- lean-checkpoint -->
 ## 当前已编译源码快照
 
@@ -387,8 +397,6 @@ theorem lower_cut_removal {n} (a : Equiv.Perm (Fin n)) (r : ℕ) :
     intro b
     dsimp only [s]
     simp only [Finset.mem_filter, Finset.mem_univ, true_and]
-    change ((Upper a b ∧ LowerFrom a b (r + 1)) ∧ test b) ↔
-      Upper a b ∧ LowerFrom a b r
     constructor
     · rintro ⟨⟨hu, hl⟩, ht⟩
       refine ⟨hu, fun i hi => ?_⟩
@@ -447,6 +455,112 @@ theorem rowSum_eq_upper {n} (a : Equiv.Perm (Fin n)) :
     | succ r ih => exact ih.trans (lower_cut_removal a r)
   rw [hr n]
   simp [rowSum, LowerFrom, show ∀ i : Fin n, ¬n ≤ i.val from fun i => by omega]
+
+
+theorem value_ge_of_fixed {n} (p : Equiv.Perm (Fin n)) {r : ℕ}
+    (hf : ∀ i : Fin n, i.val < r → p i = i) (i : Fin n) (hi : r ≤ i.val) :
+    r ≤ (p i).val := by
+  by_contra h
+  have hp := hf (p i) (by omega)
+  have he : p i = i := p.injective hp
+  rw [he] at h
+  omega
+
+theorem prefixSum_congr {n} (a b : Equiv.Perm (Fin n)) (k : ℕ)
+    (h : ∀ i : Fin n, i.val < k → a i = b i) : prefixSum a k = prefixSum b k := by
+  apply Finset.sum_congr rfl
+  intro i hi
+  rw [h i (Finset.mem_filter.mp hi).2]
+
+theorem upper_fixed_prefix {n} (a b : Equiv.Perm (Fin n)) (hu : Upper a b)
+    {r : ℕ} (ha : ∀ i : Fin n, i.val < r → a i = i) :
+    ∀ i : Fin n, i.val < r → b i = i := by
+  have aux : ∀ k, k ≤ r → ∀ i : Fin n, i.val < k → b i = i := by
+    intro k
+    induction k with
+    | zero => intro hk i hi; omega
+    | succ k ih =>
+      intro hk i hi
+      have hf := ih (by omega)
+      by_cases hik : i.val < k
+      · exact hf i hik
+      · have hik : i.val = k := by omega
+        have hai := ha i (by omega)
+        have hp : prefixSum b i.val = prefixSum a i.val := by
+          apply prefixSum_congr
+          intro j hj
+          rw [hf j (by omega), ha j (by omega)]
+        have hs := hu (i.val + 1) (by omega)
+        rw [prefixSum_step, prefixSum_step, hp, hai] at hs
+        have hg := value_ge_of_fixed b hf i (by omega)
+        exact Fin.ext (by omega)
+  exact aux r le_rfl
+
+theorem upper_identity {n} (b : Equiv.Perm (Fin n)) : Upper 1 b ↔ b = 1 := by
+  constructor
+  · intro hu
+    apply Equiv.ext
+    intro i
+    exact upper_fixed_prefix 1 b hu (r := n) (by simp) i i.isLt
+  · rintro rfl; intro k hk; exact le_rfl
+
+theorem exists_min_move {n} (a : Equiv.Perm (Fin n)) (ha : a ≠ 1) :
+    ∃ k j : Fin n, k.val < j.val ∧ a j = k ∧
+      ∀ i : Fin n, i.val < k.val → a i = i := by
+  let s := Finset.univ.filter fun i : Fin n => a i ≠ i
+  have hs : s.Nonempty := by
+    by_contra h
+    apply ha
+    apply Equiv.ext
+    intro i
+    by_contra hi
+    exact h ⟨i, Finset.mem_filter.mpr ⟨Finset.mem_univ _, by simpa using hi⟩⟩
+  let k := s.min' hs
+  have hk : a k ≠ k := (Finset.mem_filter.mp (Finset.min'_mem s hs)).2
+  have hf : ∀ i : Fin n, i.val < k.val → a i = i := by
+    intro i hi
+    by_contra hai
+    have hki := Finset.min'_le s i (by simp [s, hai])
+    have : k.val ≤ i.val := hki
+    omega
+  let j := a.symm k
+  have hj : a j = k := a.apply_symm_apply k
+  have hkj : k.val < j.val := by
+    by_contra h
+    by_cases he : j = k
+    · rw [he] at hj
+      exact hk hj
+    · have hlt : j.val < k.val := by
+        have : j.val ≠ k.val := fun e => he (Fin.ext e)
+        omega
+      have := hf j hlt
+      have : j = k := this.symm.trans hj
+      exact he this
+  exact ⟨k, j, hkj, hj, hf⟩
+
+theorem upper_sum_vanish {n} (a : Equiv.Perm (Fin n)) (ha : a ≠ 1) :
+    (∑ b : Equiv.Perm (Fin n) with Upper a b, signInt b) = 0 := by
+  obtain ⟨k, v, hkv, hav, hfix⟩ := exists_min_move a ha
+  let u : Fin n := ⟨v.val - 1, by omega⟩
+  have huv : v.val = u.val + 1 := by dsimp [u]; omega
+  apply swap_sum_zero _ u v (by intro he; have := congrArg Fin.val he; dsimp [u] at this; omega)
+  intro b hb
+  have hu := (Finset.mem_filter.mp hb).2
+  apply Finset.mem_filter.mpr
+  refine ⟨Finset.mem_univ _, ?_⟩
+  intro l hl
+  by_cases he : l = v.val
+  · subst l
+    have hfb := upper_fixed_prefix a b hu hfix
+    have hbu := value_ge_of_fixed b hfb u (by dsimp [u]; omega)
+    have hbv := hu (v.val + 1) (by omega)
+    rw [prefixSum_step a v, hav] at hbv
+    have hstep := prefixSum_step (b * Equiv.swap u v) v
+    rw [prefixSum_swap b u v huv (k := v.val + 1) (by omega)] at hstep
+    simp only [Equiv.Perm.mul_apply, Equiv.swap_apply_right] at hstep
+    omega
+  · rw [prefixSum_swap b u v huv he]
+    exact hu l hl
 
 end Residual
 ```
