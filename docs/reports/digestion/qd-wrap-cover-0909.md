@@ -77,6 +77,116 @@ atom `c0a72a217fb966246fd4a48a809795cdc539435d1e88d1a10d041a9bcd9ed98d`。
 
 ## 运行结算
 
-实施尚未开始；无 deposit、cover 或 PR 判词。最终实际声明、逐声明用途、公理、退出码、提交和 cover 前后态将在此追加，runner 的 result.json 承载完整结构化结算。
+B1.1 实际声明已按上表逐项复核：全部 equivalent，无 not-covered。`source_jensen_integral_extension` 的六组合取依次是实际源复化识别、完整导数、零点常数、全实数积分式、任意常数平移的导数/值/零点 iff、任意实 x 的两常数见证。没有排除 x=0 或负 x，没有改变 d≥2。
+
+B1.1 `make lean` 第三次 EXIT=0（27.901 秒）；前两次 EXIT=2 是 map/reflect 改写及 simp 心跳问题，改为指定改写闭合，未改预算。公理仅 `[propext, Classical.choice, Quot.sound]`。首次 emit 因 report 过期退出，`make lean-report` EXIT=0（102.810 秒）；第二次 emit 因公式 `\foralld` 缺空格退出；修正显式空格后第三次 emit EXIT=0（77.451 秒），生成公式已人工逐行核对。首次 deposit 因 origin/dev 非祖先退出；合入 `9dbd613904` 无冲突并推送 merge `3f196f3609` 后重试。第二次 deposit 已通过头部检查并首次冻结该模块，但 cover 返回 EXIT=2、`partial-closed deletable=false gaps=chain-migration-incomplete,chain-migration-incomplete`。
+
+该父 atom 在开工 HEAD 中已经有两个 chain_atoms；本席未创建分解。`ae0bab9f69ee727493c512081c7cf2ec5c7992e536f73c885d5b43ff5e848dd8` 是表中积分定义和 B6；`2ddc623648638e26a2ab88e8751cc1159762a5ec1a6aa6b15028686d37699552` 是表中完整导数、常数信息、难易评语和极值/实根散文。两次额外 `make show-atom` EXIT=0，逐字核对确认分别对应既有忠实性表前三行和后三行，均由同一主声明完整承载，故按 canonical cover 逐个闭合，再重试父 atom；不删链、不把散文静默 settle。
+
+15 个显式声明（含私有 helper）的逐声明用途理由、公理与 statement_id 见 [declaration-audit.json](qd-wrap-cover-0909/declaration-audit.json)，全部 `utility: none`。主声明身份为 `sha256:a8936b9e14aa7a92fc0e635fc797651d50954edfd7b5a05df5349a1a55a1455e`。anchors=实际第 9 行直接 import；其余 proofs 均是 FTC/反射/系数绑定，helpers 不单独申请准入。
 
 ASSUMED-UNVERIFIED：源规范 a₀=1 的分析证明不在本席；未打开外部论文网页；无独立评审；前席日志不重放。nonclaims：不证明 RH，不主张新数学内容，不以编译绿代替忠实性，不把 rule-11 的必要性等同于可证性，不以 refutes 新造准入依据。
+
+B1.1 积分公式子 atom `ae0bab9f…`：`make cover` EXIT=0（174.578 秒），`ledger_changed=true`，已迁入 absorbed-closed；本次提交携带首次冻结、镜像和这条 coverage。父 atom 和散文子 atom 尚未计为完成。
+
+## 必要性原文（CAS 字节，不缩写矩阵）
+
+### B1.1：准入必要性所引的原文字节
+
+```text
+## 推论 B1.1：高阶延拓是一项带常数的积分问题
+
+定义：
+
+$$
+\boxed{
+R_d(x)
+=
+\int_0^x
+d\alpha_d^{\,d-1}q_{d-1}(u/\alpha_d)\,du.
+}
+$$
+
+那么：
+
+$$
+\boxed{
+q_d(x)=R_d(x)+\beta_d,
+\qquad
+\beta_d=(-1)^d\frac{d!}{d^d}a_d.
+}
+\tag{B6}
+$$
+
+这很重要：
+
+**已知前 \(d-1\) 阶，整个导数 \(q_d'\) 已经确定；新增的实际信息只进入一个积分常数。**
+
+但“只增加一个数”不等于这一步容易。
+
+这个数会同时改变全部极值点的高度，因此可能影响整个多项式的实根结构。
+
+---
+
+```
+
+### B3：准入必要性所引的原文字节
+
+```text
+## 定理 B3：一步正延拓的精确判据
+
+在上述有限假设下：
+
+$$
+\boxed{
+q_d\text{ 全部为正实根}
+\iff
+\eta_{d,i}\ge0
+\quad\forall i.
+}
+\tag{B13}
+$$
+
+而当这些数非负时，可以构造：
+
+$$
+\boxed{
+K_d=
+\begin{pmatrix}
+a_1/d&\sqrt{\eta_{d,1}}&\cdots&\sqrt{\eta_{d,d-1}}\\
+\sqrt{\eta_{d,1}}&t_1&&0\\
+\vdots&&\ddots&\\
+\sqrt{\eta_{d,d-1}}&0&&t_{d-1}
+\end{pmatrix}>0,
+}
+\tag{B14}
+$$
+
+使：
+
+$$
+\det(xI-K_d)=q_d(x).
+$$
+
+```
+
+### B4：准入必要性所引的原文字节
+
+```text
+## 定理 B4：新增耦合总预算
+
+在定理 B3 的设置下：
+
+$$
+\boxed{
+\sum_{i=1}^{d-1}\eta_{d,i}
+=
+\frac{d-1}{d^2}
+\left(a_1^2-2a_2\right)
+=
+-\frac{d-1}{12d^2}\chi_4.
+}
+\tag{B18}
+$$
+
+```

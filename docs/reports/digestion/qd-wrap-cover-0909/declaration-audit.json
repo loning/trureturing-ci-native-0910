@@ -1,0 +1,182 @@
+[
+  {
+    "declaration": "D5.S3.Zeros.Jensen.SourceJensenIntegralExtension.sourceP",
+    "visibility": "public",
+    "utility": "none",
+    "reason": "任意自然数阶的源系数符号和，不是有界枚举实例。",
+    "axioms": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "statement_id": "sha256:50487afd5147a34d9005a5b81ca030db6a35bc4e362c16a8be2105a9c4e2f84d"
+  },
+  {
+    "declaration": "_private.D5.S3.Zeros.Jensen.SourceJensenIntegralExtension.0.D5.S3.Zeros.Jensen.SourceJensenIntegralExtension.reflected",
+    "visibility": "private",
+    "utility": "none",
+    "reason": "任意实多项式的反射定义，不执行有限认证。",
+    "axioms": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "statement_id": "sha256:195b1c75b4998c0990716f74e7f0ea1472ab0c0f79f324acda82834dfc41d53a"
+  },
+  {
+    "declaration": "D5.S3.Zeros.Jensen.SourceJensenIntegralExtension.sourceQ",
+    "visibility": "public",
+    "utility": "none",
+    "reason": "任意阶的实际源反射定义。",
+    "axioms": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "statement_id": "sha256:622969cbf0ab6b076dd5499970cf5b0eef1e7bbf9691bdd32a2917e8d5fa70b4"
+  },
+  {
+    "declaration": "D5.S3.Zeros.Jensen.SourceJensenIntegralExtension.scale",
+    "visibility": "public",
+    "utility": "none",
+    "reason": "任意阶的符号比例，定理限定 d≥2。",
+    "axioms": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "statement_id": "sha256:9a856116c0ac1d90f3202989d97b10f3912d00ef5e84a30ed9bf49a895b25ce7"
+  },
+  {
+    "declaration": "D5.S3.Zeros.Jensen.SourceJensenIntegralExtension.sourceConstant",
+    "visibility": "public",
+    "utility": "none",
+    "reason": "任意阶的符号系数式。",
+    "axioms": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "statement_id": "sha256:e3baee8ba7eecf076bd17a9b278cf449ba543829d8ff28390bb036e2b2da3c56"
+  },
+  {
+    "declaration": "D5.S3.Zeros.Jensen.SourceJensenIntegralExtension.sourcePrimitive",
+    "visibility": "public",
+    "utility": "none",
+    "reason": "任意阶、任意实 x 的有向积分。",
+    "axioms": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "statement_id": "sha256:4b02441d53ed223a0587e25fd8affd039885d4469268835af3674d25d67cf435"
+  },
+  {
+    "declaration": "_private.D5.S3.Zeros.Jensen.SourceJensenIntegralExtension.0.D5.S3.Zeros.Jensen.SourceJensenIntegralExtension.source_map",
+    "visibility": "private",
+    "utility": "none",
+    "reason": "任意阶有限和的环同态规范化。",
+    "axioms": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "statement_id": "sha256:6f8337a8869e985c68ec1481cf91cc065b82eb5301d0dc8e40414b8e0dd04742"
+  },
+  {
+    "declaration": "_private.D5.S3.Zeros.Jensen.SourceJensenIntegralExtension.0.D5.S3.Zeros.Jensen.SourceJensenIntegralExtension.source_degree",
+    "visibility": "private",
+    "utility": "none",
+    "reason": "任意阶多项式次数界的上游实例。",
+    "axioms": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "statement_id": "sha256:8192aba680ebb24c8bd861e6c8f44c0b46bb078b56942a3603a84cdb8b16d437"
+  },
+  {
+    "declaration": "_private.D5.S3.Zeros.Jensen.SourceJensenIntegralExtension.0.D5.S3.Zeros.Jensen.SourceJensenIntegralExtension.scale_ne_zero",
+    "visibility": "private",
+    "utility": "none",
+    "reason": "所有 d≥2 的域侧条件。",
+    "axioms": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "statement_id": "sha256:04ca322ed16b87e087fb417ed216951d462af7ccd45bd3321bb3ed7d51053713"
+  },
+  {
+    "declaration": "_private.D5.S3.Zeros.Jensen.SourceJensenIntegralExtension.0.D5.S3.Zeros.Jensen.SourceJensenIntegralExtension.source_lowering",
+    "visibility": "private",
+    "utility": "none",
+    "reason": "任意 d≥2 的冻结降阶等式经实复映射绑定。",
+    "axioms": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "statement_id": "sha256:90b8107981101ea95f137f6eb23938652e6bb6dafcd02779952024ead9474b9f"
+  },
+  {
+    "declaration": "_private.D5.S3.Zeros.Jensen.SourceJensenIntegralExtension.0.D5.S3.Zeros.Jensen.SourceJensenIntegralExtension.reflect_transport",
+    "visibility": "private",
+    "utility": "none",
+    "reason": "任意 p、r、d 的反射系数运输，没有有限实例认证。",
+    "axioms": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "statement_id": "sha256:974b8c46bf242ffdd88a38ed0c62246556584cc036c386e640d3f0d0750d76e2"
+  },
+  {
+    "declaration": "_private.D5.S3.Zeros.Jensen.SourceJensenIntegralExtension.0.D5.S3.Zeros.Jensen.SourceJensenIntegralExtension.source_derivative",
+    "visibility": "private",
+    "utility": "none",
+    "reason": "任意 d≥2 的反射导数绑定。",
+    "axioms": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "statement_id": "sha256:0cfbf3513fc67b7f6587bdb6affc0ad9eefbb941a413da05955db851084e1b43"
+  },
+  {
+    "declaration": "_private.D5.S3.Zeros.Jensen.SourceJensenIntegralExtension.0.D5.S3.Zeros.Jensen.SourceJensenIntegralExtension.source_zero",
+    "visibility": "private",
+    "utility": "none",
+    "reason": "任意阶的反射常数项规范化。",
+    "axioms": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "statement_id": "sha256:e51f33afe41f1973e6fcffd9acde6ccf966117d255986a9f728c6107f428bc81"
+  },
+  {
+    "declaration": "_private.D5.S3.Zeros.Jensen.SourceJensenIntegralExtension.0.D5.S3.Zeros.Jensen.SourceJensenIntegralExtension.source_integral",
+    "visibility": "private",
+    "utility": "none",
+    "reason": "任意 d≥2、实 x 的 FTC 绑定。",
+    "axioms": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "statement_id": "sha256:8cb08d9d4e939d9f0954baccaa69d4686931b506ac21398e501c4bc98c38a638"
+  },
+  {
+    "declaration": "D5.S3.Zeros.Jensen.SourceJensenIntegralExtension.source_jensen_integral_extension",
+    "visibility": "public",
+    "utility": "none",
+    "reason": "量化无界 d 与任意实常数、实点的完整积分/平移断言。",
+    "axioms": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "statement_id": "sha256:a8936b9e14aa7a92fc0e635fc797651d50954edfd7b5a05df5349a1a55a1455e"
+  }
+]
