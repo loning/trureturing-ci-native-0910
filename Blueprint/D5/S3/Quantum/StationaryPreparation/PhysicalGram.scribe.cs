@@ -40,6 +40,24 @@ internal sealed class PhysicalGramDocument : IScribeDocumentDefinition
                     At(B, Call("lower", Counts(a), i, r), Call("lower", Counts(a), i, s)), D(0))))))));
         Formula lower = Setup(Le(Sub(ProdAt("i", Id("A"), Add(Call("count", a, i), D(1))),
             Call("FinsetSup", Call("univ", Id("A")), Counts(a))), Call("FintypeCard", Id("K"))), true);
+        Formula dimension = Sub(ProdAt("i", Id("A"), Add(Call("count", a, i), D(1))),
+            Call("FinsetSup", Call("univ", Id("A")), Counts(a)));
+        Formula feasible = AlphabetContext(All("a", Call("Multiset", Id("A")),
+            Eq(Call("stationaryMemoryDimensions", a), Call("setOf", LambdaAt("d", N,
+                FixedWitness(Id("A"), Id("d"), Call("card", a),
+                    Mul(Call("sectorVector", Call("card", a), a, w), At(f, k))))))), false);
+        Formula minimum = AlphabetContext(All("a", Call("Multiset", Id("A")),
+            Call("IsLeast", Call("stationaryMemoryDimensions", a), dimension)), true);
+        Formula zeroMinimum = AlphabetContext(
+            Call("IsLeast", Call("stationaryMemoryDimensions", D(0)), D(1)), true);
+        Formula canonical = new Formula.Subscript(a, D(5, 0, 4, 0));
+        Formula canonicalAlphabet = Call("Option", Call("Fin", D(3)));
+        Formula canonicalAmplitude = Call("ite", Eq(Call("occupation", w), canonical),
+            Seq(Frac, Grp(D(1)), Grp(Seq(Sqrt, Grp(D(8, 4, 0))))), D(0));
+        Formula canonicalMinimum = And(Eq(Call("card", canonical), D(8)),
+            And(Eq(Call("card", Call("sectorWords", D(8), canonical)), D(8, 4, 0)),
+                And(Call("IsLeast", Call("stationaryMemoryDimensions", canonical), D(5, 6)),
+                    FixedWitness(canonicalAlphabet, D(5, 6), D(8), Mul(canonicalAmplitude, At(f, k))))));
 
         return DocumentDefinition.Create(ScribeNode.Create(
             "Actual fixed-unitary residual memories give the stationary memory dimension lower bound.",
@@ -101,9 +119,63 @@ internal sealed class PhysicalGramDocument : IScribeDocumentDefinition
                     "bound. The Gram rank is at most the memory dimension. For zero occupation, " +
                     "the unit initial vector ensures a nonempty memory coordinate set, giving " +
                     "the same bound. Neither the common final vector nor the blank symbol is " +
-                    "prescribed beyond the displayed hypotheses."))));
+                    "prescribed beyond the displayed hypotheses."),
+                Theorem("stationary-memory-dimensions", "stationaryMemoryDimensions", feasible,
+                    "The set consists of natural memory dimensions d for which the displayed " +
+                    "physical preparation exists. setOf takes the set of arguments satisfying its " +
+                    "predicate. Fin(d) supplies exactly d complex memory coordinates. One blank, " +
+                    "one fixed U, and the unit memories x and f are chosen before every word and " +
+                    "coordinate is quantified. No inequality or minimality condition is part of " +
+                    "this definition."),
+                Theorem("stationary-memory-dimension-is-least", "stationary_memory_dimension_isLeast", minimum,
+                    "For every finite nonempty alphabet and every multiset a, the displayed " +
+                    "dimension belongs to stationaryMemoryDimensions(a) and is no greater than " +
+                    "any other member; this is the meaning of IsLeast. Counts are natural numbers, " +
+                    "so zero capacities are included. The supremum over the finite alphabet is " +
+                    "the maximum count. The lower bound applies to every member, and the fixed " +
+                    "unitary attainment supplies a member of exactly this dimension."),
+                Theorem("zero-occupation-memory-is-least", "zero_occupation_memory_isLeast", zeroMinimum,
+                    "For zero occupation the minimum is one. Choose any blank, the identity " +
+                    "unitary on A times Fin(1), and x and f both equal to the sole coordinate basis " +
+                    "vector. The empty circuit preserves this unit vector, and the unique empty " +
+                    "word has sector coefficient one. A unit vector excludes zero-dimensional " +
+                    "memory. This construction has no positive-occupation hypothesis."),
+                Paragraph(Text(
+                    "Here a with subscript 5040 denotes CoherentHistorySchmidt.occupation5040 " +
+                    "on Option(Fin(3)): its count at none is four, and its counts at some(0), " +
+                    "some(1), and some(2) are two, one, and one. The count of actual occupation " +
+                    "words follows from the multinomial formula: 8! divided by 4! 2! 1! 1! " +
+                    "is 840. The product of count plus one is 60 and the maximum count is four. " +
+                    "The square root below is the nonnegative real square root, embedded in " +
+                    "the complex scalars.")),
+                Theorem("occupation-stationary-minimum", "occupation_5040_stationary_minimum", canonicalMinimum,
+                    "The same statement gives length eight, 840 actual legal words, least " +
+                    "stationary memory dimension 56, and a physical preparation in that dimension. " +
+                    "Every length-eight word and every memory coordinate satisfies the displayed " +
+                    "equation. Legal words have the same positive coefficient 1/sqrt(840), " +
+                    "and all other words have coefficient zero, with one common unit final memory. " +
+                    "The circuit uses the same U at each emission. Its length-eight domain is " +
+                    "obtained from the occupation cardinality equality."))));
     }
 
+    private static Formula AlphabetContext(Formula body, bool nonempty)
+    {
+        Formula facts = And(Call("Fintype", Id("A")), Call("DecidableEq", Id("A")));
+        if (nonempty) facts = And(facts, Call("Nonempty", Id("A")));
+        return All("A", Id("Type"), Imp(facts, body));
+    }
+    private static Formula FixedWitness(Formula alphabet, Formula dimension, Formula length, Formula output)
+    {
+        Formula memory = Call("Fin", dimension), space = Call("Space", memory);
+        Formula coefficients = All("w", Arrow(Call("Fin", length), alphabet), All("k", memory,
+            Eq(Circuit(length, D(0), Id("x"), Id("w"), Id("k")), output)));
+        return Some("blank", alphabet,
+            Some("U", Call("Unitary", Call("Product", alphabet, memory)),
+                Some("x", space, Some("f", space,
+                    And(Unit(Id("x")), And(Unit(Id("f")), coefficients))))));
+    }
+    private static Formula Some(string name, Formula domain, Formula body) =>
+        new Formula.Bind(FormulaQuantifier.Exists, FormulaIdentifier.Create(name), domain, body);
     private static Formula Setup(Formula body, bool unitEndpoints = false)
     {
         Formula hypotheses = unitEndpoints ? And(Unit(Id("x")), And(Unit(Id("f")), Output())) : Output();
