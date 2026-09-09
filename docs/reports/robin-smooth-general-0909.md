@@ -102,6 +102,30 @@ the seven-smooth tail instantiation, and axiom checks are pending. No exhaustive
 search, mathematical novelty, or implication concerning RH is claimed.
 Independent review and pages not actually opened are unverified.
 
+## Bind-Only Stop Observed
+
+Run 01: `make lean` exited 2. The exact unrestricted-P main theorem
+`RobinSmoothProbe0909.robin_smooth` and its six live prerequisite helpers
+elaborated successfully with only `[propext, Classical.choice, Quot.sound]`.
+The separate empty-support diagnostic failed because an indented term was
+parsed outside its lambda; its error-recovery `sorryAx` is not proof evidence.
+The main theorem's closure does not contain this failed diagnostic.
+The repair is confined to the diagnostic, with no hypothesis changes.
+
+The user stop rule is now triggered: **bind-only**, no production module.
+Remaining work is artifact validation and the specifically requested
+seven-smooth-tail instantiation report. No content implementation proceeds.
+The successful estimate uses `geom_sum_eq`, `sub_lt_self`, positivity,
+division-order equivalences and finite product-order theorems; it does not
+need `sq_nonneg`, nonlinear arithmetic, enumeration, induction, or new
+analytic input. The sigma multiplicativity/factorization is Mathlib's own.
+`threshold_domain` derives exp(1)<n from exactly the original threshold and
+positivity assumptions, and is used by the main proof.
+
+Run log: runner attempt directory, `lean-bind-01.log`.
+Cache receipt: status=present, method=none, stamp_miss=null,
+mathlib_olean_state=warm, project_olean_state=warm.
+
 Incidental command accounting: querying the nonexistent optional
 Evidence/D5/S3/Arith/Robin directory exited 1; searching for nested AGENTS.md or
 CLAUDE.md in D5/Blueprint/Evidence/tools returned 0 matches (rg exit 1).
