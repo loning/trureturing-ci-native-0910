@@ -100,7 +100,9 @@ def run_batches(repository, directory, membership, request, plan, step, lean_bin
                              report_sha256="sha256:" + hashlib.sha256(report_path.read_bytes()).hexdigest())
         atomic_json(folder / "request.json", batch_request)
         roots = {membership["assignment"][owner] for owner in owners}
-        atomic_json(folder / "index.json", {"candidate_keys": batch["keys"], "named": membership["named"],
+        batch_scope = set().union(*(set(plan["scopes"][root]) for root in roots))
+        named = [entry for entry in membership["named"] if entry["module"] in batch_scope]
+        atomic_json(folder / "index.json", {"candidate_keys": batch["keys"], "named": named,
             "assignment": {owner: membership["assignment"][owner] for owner in owners},
             "scopes": [[root, plan["scopes"][root]] for root in sorted(roots)],
             "batch_module_bound": plan["bound"], "batch_key_bound": plan["key_bound"]})
