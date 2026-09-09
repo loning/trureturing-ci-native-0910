@@ -28,7 +28,7 @@ $$
 }
 $$
 
-三者彼此独立(定理 5.5、评注 4.2、定理 5.6 各给一个分离陈述),又彼此需要:美负责在前沿上**选**,善负责在选定之后**诚实地做**,真是做成之后**冻结**的那部分。逻辑对选择沉默(定理 5.6),故任何选择都用到了状态之外的信息——本卷把「用美序选题」作为采纳的政策;审美不携真值(定理 5.5:美不是真的函数),故任何审美猜想都必须经第二只手;第二只手的义务就是善——**账,必须平**(假设 4.3)。
+三者彼此独立(定理 5.5、评注 4.2、定理 5.6 各给一个分离陈述),又彼此需要:美负责在前沿上**选**,善负责在选定之后**诚实地做**,真是做成之后**冻结**的那部分。状态函数不能区分可动前沿中的候选(定理 5.6),故任何非常值的选择都用到了状态之外的信息——本卷把「用美序选题」作为采纳的政策;审美不携真值(定理 5.5:美不是真的函数),故任何审美猜想都必须经第二只手;第二只手的义务就是善——**账,必须平**(假设 4.3)。
 
 本卷的方法与对象同形:各部按依赖偏序排列,后部只引用前部;每条定理标明证明状态;证明义务预登记于第十二部,与可证伪预测同列。整卷自身就是一张小的真值 DAG。
 
@@ -376,7 +376,7 @@ $$
 
 **定理 5.6(选择不由状态函数决定)**〔证〕。设可动前沿 $F^{+}(L)$ 含至少两个元素。任一在 $F^{+}(L)$ 上非常值的选择函数 $\chi$(选出下一个要证的命题)都不能通过 $s_L$ 因子化:不存在 $\bar\chi$ 使 $\chi=\bar\chi\circ s_L$。
 *证明*。$s_L$ 在 $F^{+}(L)$ 上恒为 $\mathsf{open}$,故 $\bar\chi\circ s_L$ 在其上常值。∎
-*读法*。状态函数对「算哪一个」沉默;任何非平凡的选择都用到了 $s_L$ 之外的信息(句法、固定枚举次序、或美序——本定理不区分它们)。这条思想的谱系是 Poincaré(1908):审美感受力是数学创造中「精细的筛」(*un crible délicat*),无此筛者不能成为真正的创造者——本定理只是把「筛不能由逻辑充当」写成一个不可因子化陈述。以美序(定义 5.4)作为选题依据,是本仓采纳的**选择政策**(第十三部),不是本定理的结论——读取句法或固定枚举次序的程序同样使用状态外信息。「美是罗盘,逻辑是棘轮」在此的可证部分只有一句:**棘轮**(核与账本)决定什么留下,**罗盘**不能由状态函数充当。
+*读法*。状态函数对「算哪一个」沉默;任何非平凡的选择都用到了 $s_L$ 之外的信息(句法、固定枚举次序、或美序——本定理不区分它们)。这条思想的谱系是 Poincaré(1908):审美感受力是数学创造中「精细的筛」(*un crible délicat*),无此筛者不能成为真正的创造者——本定理只是把「非常值的选择不能经状态函数因子化」写成一个精确陈述。以美序(定义 5.4)作为选题依据,是本仓采纳的**选择政策**(第十三部),不是本定理的结论——读取句法或固定枚举次序的程序同样使用状态外信息。「美是罗盘,逻辑是棘轮」在此的可证部分只有一句:**棘轮**(核与账本)决定什么留下,**罗盘**不能由状态函数充当。
 
 **定理 5.7(幸存者形状)**〔证〕。设审计算子 $A:\mathcal P(\mathrm{Pres})\to\mathcal P(\mathrm{Pres})$ 从一个表述集中移除被反驳、被勘误或浮账的表述,满足:收缩 $A(S)\subseteq S$、单调、幂等。则对任一初始集 $S_0$(不限有限),$S_1=A(S_0)$ 已是不动点,且是 $S_0$ 之下 $A$ 的最大不动点。
 *证明*。幂等给 $A(S_1)=S_1$;若 $S'\subseteq S_0$ 为另一不动点,则由单调 $S'=A(S')\subseteq A(S_0)=S_1$。∎ 若只假设收缩与单调而不假设幂等,则最大不动点的存在由 Knaster–Tarski(Tarski 1955,*Pacific J. Math.* 5:285–309,`literature-attested`;mathlib `OrderHom.gfp`,本仓已有包装先例 #572)给出,迭代可多于一步——那是「多轮审计」的情形。
@@ -572,7 +572,7 @@ FCD 以「概念 = 读数 $q:X\to B$」为本体,本卷以「账本 + 变换 + �
 - **X-E(保守由诚推出;定理 4.6)**。主张记录为 `List`,`AppendOnly` 复用冻结模块 `TargetChangeSettlementConservation` 的同名定义(不重造);证账平 ∧ 冻结节点消失 ⟹ 存在晚于原主张的新主张。预判 `bind-only`(精确定义 `last` 后可由 `AppendOnly` 与 `List.find?_append`、`List.find?_eq_some_iff_getElem`、`List.reverse_append` 绑定——评审席读数);先做直接复用探针,失败再登记见证。前件须含 $\mathrm{last}_t(P)=\mathsf{frozen}$(定理 4.6)。
 - **X-F(伪造与降级是浮账;定理 4.9、定理 13.11)**。预判 `bind-only`;其内容是账平定义与(定理 13.11 的)读数桥的展开,不是 X-E 定义的直接实例化;伴随落点待定,规则同 X-D。
 - **X-G(美不是真的函数;定理 5.5)**。形式:`claim := ∃ f, ∀ ρ₁ ρ₂, (ρ₁ ≽ ρ₂ ↔ f (s ρ₁) (s ρ₂))`,`result : ¬ claim`,以两节点有限见证反驳。用途依据 **`refutes`**(母仓第 3.3 条:反驳保留);预判 `bind-only`:同读数异结果的分离已有冻结 `manifestation_excludes_noninterference_descent`(评审席指认,模块 `ManifestationDescentObstruction`,路径待 route 核对)可经 $s\times s$ 实例化,抽象布尔见证只需规范化;`refutes` 是用途依据,不改变判形。账本侧读数只作叙事锚,形式化只用定理 5.5 给出的三节点命题逻辑模型。
-- **X-H(逻辑不能选题;定理 5.6)**。$s$ 在 $F^{+}$ 上常值 ⟹ 非常值选择不经 $s$ 因子化。预判 `bind-only`;伴随落点待定,规则同 X-D:须有真实使用边,「同一分离主题」不算。
+- **X-H(选择不由状态函数决定;定理 5.6)**。$s$ 在 $F^{+}$ 上常值 ⟹ 非常值选择不经 $s$ 因子化。预判 `bind-only`;伴随落点待定,规则同 X-D:须有真实使用边,「同一分离主题」不算。
 - **X-I(幸存者形状;定理 5.7)**。有限情形:收缩序列稳定于最大不动点(`Finset` 上归纳);一般情形包装 mathlib `OrderHom.gfp`(`Mathlib/Order/FixedPoints.lean:54`)或本仓 `D5/S1/Dynamics/KnasterTarski`;固定单轮筛选特例已由 `D5/S3/ConceptDynamics/Promotion/ResearchPromotionLoop` 的 `Survives`/`survivors` 冻结,X-I 须在其上扩展。在幂等假设下任一初始集**一步**稳定,有限归纳不是新增内容,故预判 `bind-only`;若为最大不动点包装 mathlib `OrderHom.gfp`,则 `rule-11-upstream-wrapper` 填入 **admission_basis**(它不是 proof_shape),并引用定理 5.7 为使包装成为必要的子句。
 - **X-J(先立门后补账;定理 13.16)**。有限步递推模型,证 (b) 的单调递减与 (c) 的停摆。预判**未定 / 探针**:先列仓内与钉版库的终止 / 不变量候选(`invariant_safety`、有限基数良基归纳、`Finset.card` 单调引理)及命中范围;未写出拟议新中间命题与活使用边之前,不据此派独立实施席。
 - **X-K(翻译定理;11.2 末)**。`open`;第六轮题目,本轮不派。
@@ -601,7 +601,7 @@ FCD 以「概念 = 读数 $q:X\to B$」为本体,本卷以「账本 + 变换 + �
 
 ## 12.4 成熟锚(逐条状态,不冒领)
 
-**状态口径**:下表 `literature-attested` 一律指**出版元数据已联网核对**(作者、年份、刊名、卷页、DOI);原文段落的**内容转述**除 Schmidhuber(评审席亲读 arXiv:0812.4360 §2.3–2.4)与 Poincaré(搜索结果含英译原句)外,一律 `ASSUMED-UNVERIFIED`(逐项收据见 12.6)。
+**状态口径**:下表 `literature-attested` 一律指**出版元数据已联网核对**(作者、年份、刊名、卷页、DOI);原文段落的**内容转述**除 Schmidhuber(评审席亲读 arXiv:0812.4360 §2.3–2.4)、Poincaré 与 Hardy(搜索结果含英译原句,已读范围仅该句)外,一律 `ASSUMED-UNVERIFIED`(逐项收据见 12.6)。
 
 | 锚 | 用于 | 状态 |
 |---|---|---|
@@ -611,7 +611,7 @@ FCD 以「概念 = 读数 $q:X\to B$」为本体,本卷以「账本 + 变换 + �
 | Moore 1903,*Principia Ethica* §13 | 评注 4.2 | `literature-attested`(仅出版元数据已核;内容转述 `ASSUMED-UNVERIFIED`) |
 | Popper 1934/1959,*Logik der Forschung*(Springer,Wien)/ *The Logic of Scientific Discovery*(Hutchinson,London) | 定理 3.9 | `literature-attested`(仅出版元数据已核;内容转述 `ASSUMED-UNVERIFIED`) |
 | Poincaré 1908,*Science et méthode*「有用的组合恰恰是最美的」 | 假设 13.33 | `literature-attested`(出版元数据已核;英译原句见搜索结果,已读范围仅该句) |
-| Hardy 1940,*A Mathematician's Apology*「丑陋的数学没有永久的位置」 | 假设 13.33 | `literature-attested`(仅出版元数据与该句已核;其余内容 `ASSUMED-UNVERIFIED`) |
+| Hardy 1940,*A Mathematician's Apology*「丑陋的数学没有永久的位置」 | 假设 13.33 | `literature-attested`(出版元数据已核;该句见搜索结果引文,已读范围仅该句;其余内容 `ASSUMED-UNVERIFIED`) |
 | Schmidhuber 2009,*J. SICE* 48(1):21–32;arXiv:0812.4360 | 假设 13.33 | `literature-attested`(出版元数据已核;§2.3–2.4 由评审席亲读,其余内容 `ASSUMED-UNVERIFIED`) |
 | Solomonoff 1964,*Information and Control* 7(1):1–22 与 7(2):224–254 | 假设 13.33 | `literature-attested`(仅出版元数据已核;内容转述 `ASSUMED-UNVERIFIED`) |
 | Tarski 1955,*Pacific J. Math.* 5:285–309 | 定理 5.7 | `literature-attested`(仅出版元数据已核;定理内容以 mathlib `OrderHom.gfp` 本机 grep 命中为准) |
@@ -647,13 +647,13 @@ FCD 以「概念 = 读数 $q:X\to B$」为本体,本卷以「账本 + 变换 + �
 - **本仓 D5(先库后证;读数于 `fa65edefdc` 复算,初稿把 `head` 截断后的数当成了总数,已更正)**:`git grep -n -i -E "^(theorem|def|structure) [A-Za-z_.]*(honest|balanced|beauty|aesthetic|survivor)" -- 'D5/**/*.lean'`——**100** 行命中,其中 86 行在 `S0/Tower/Champions` 之外(主要为 `S3/Observer/Hankel/*Balanced*` 的平衡实现、`S0/Tower/*Survivor*` 的动力幸存集、`S3/ConceptDynamics/Spacetime/ComplementCharge`);按名与 docstring 抽查,无一是「主张与账本状态一致」意义的声明,但 `S3/ConceptDynamics/Promotion/ResearchPromotionLoop.lean` 的 `Survives`/`survivors` 是定理 5.7 的固定筛选特例(已在 5.7 与 X-I 引用)。`git grep -n -i -E "^(theorem|def|structure|inductive) [A-Za-z_.]*(ledger|claim)" -- 'D5/**/*.lean'`——**83** 行命中,近邻结构含 `S0/History/LedgerLimit.lean:LedgerHistory`、`S0/History/ResidualLedger.lean:ResidualLedgerEntry`、`S1/Dynamics/CodeLedgerIdentity.lean:CodeLedgerState`、`S3/ConceptDynamics/GovernanceFixedPoint/Core.lean:LedgerEntry`、`S3/ConceptDynamics/DefinitionEscapeAdjudication/RoleLedgerPrefixStability.lean:VersionedRoleLedger`、`S3/ConceptDynamics/Answering/AssertionSettlementCeiling.lean:Claim`(已在定义 1.5 近邻注引用,X-A/X-E 落地前逐一比对)。`git grep -l -E "ClosureOperator|OrderHom\.gfp|OrderHom\.lfp" -- 'D5/**/*.lean'`——**20** 模块(含 `S0/Diagonal/Lawvere/TheoryIsConsequenceFixedPoint`、`S1/Dynamics/KnasterTarski`、`S1/FixedPoints/MaximalForwardInvariantSubkernel`、`S3/ConceptDynamics/Closure/DefinitionClosureOperator`、`S3/ConceptDynamics/Closure/SourceClosureLaws`),X-C、X-I 须先复用。
 - **钉版 mathlib(本机 `.lake/packages/mathlib`,Lean 4.33.0)**:`ClosureOperator`(`Mathlib/Order/Closure.lean:60`)、`OrderHom.gfp`(`Mathlib/Order/FixedPoints.lean:54`)、`Equiv.Perm.closure_isSwap`(`Mathlib/GroupTheory/Perm/Sign.lean:121`)三者 grep 命中;loogle/leansearch 未查。
 - **既有理论卷**:读 FCD §19、§51、§94、§187、§195、66.6;OSUV 全卷;OTT 全卷;GFPT 第一部与 5.1;DECT 第十四部;PZG「永恒主题」与观察 6.67 引注;GICT 卷头与定义/定理编号样式。母仓 `CLAUDE.md` 全文。
-- **联网**(2026-09-10,逐项):Gödel 1931——Springer DOI `10.1007/BF01700692`;Tarski 1944——Cambridge Core(JSL 书评页)与 PhilPapers `TARTSC`;Hume 1739——*Treatise* III.i.1 段落(Cambridge Core / PhilosophyNow 转录);Moore 1903——SEP「Moore's Moral Philosophy」与 Wikipedia「Open-question argument」(§13);Popper——Wikipedia「The Logic of Scientific Discovery」(1934 Springer Wien / 1959 Hutchinson);Poincaré 1908——PhilPapers `POISAM` 与 *Mathematical Creation* 英译文本(「useful combinations are precisely the most beautiful」「delicate sieve」);Hardy 1940——Wikiquote / plus.maths.org;Schmidhuber 2009——jstage `sicejl/48/1/48_21` 与 arXiv `0812.4360`;Solomonoff 1964——Wikipedia 与 ResearchGate(*Inf. Control* 7(1):1–22,7(2):224–254);Tarski 1955——Project Euclid `pjm/1103044538`。**核对范围**:上列全部只核对了出版元数据(作者、年份、刊名、卷页、DOI);原文段落的**内容转述**除 Schmidhuber(评审席亲读 arXiv:0812.4360 §2.3–2.4)与 Poincaré(搜索结果含英译原句)外,一律 `ASSUMED-UNVERIFIED`。**组合形检索**(两次,英文):①「truth as fixed point of admissible transformations, verified ledger, philosophy」——未见哲学侧同题文献;工程近邻:MathLedger(arXiv `2601.00816`,验证器判词写入不可变账本的学习基底)、模态不动点语义(arXiv `2606.07884`,可容许延续核作为最大不动点),二者内容未读,`ASSUMED-UNVERIFIED`;②「logic cannot select which problem, aesthetic selection, Poincaré sieve」——命中 Poincaré「精细的筛」谱系与 arXiv `2412.00011`(开放系统中非逻辑搜索),故 12.4 末段 (iii) 的谱系已有出处,只有其不可因子化的形式陈述保留 `suspected-novel`。
+- **联网**(2026-09-10,逐项):Gödel 1931——Springer DOI `10.1007/BF01700692`;Tarski 1944——Cambridge Core(JSL 书评页)与 PhilPapers `TARTSC`;Hume 1739——*Treatise* III.i.1 段落(Cambridge Core / PhilosophyNow 转录);Moore 1903——SEP「Moore's Moral Philosophy」与 Wikipedia「Open-question argument」(§13);Popper——Wikipedia「The Logic of Scientific Discovery」(1934 Springer Wien / 1959 Hutchinson);Poincaré 1908——PhilPapers `POISAM` 与 *Mathematical Creation* 英译文本(「useful combinations are precisely the most beautiful」「delicate sieve」);Hardy 1940——Wikiquote / plus.maths.org(搜索结果含原句「Beauty is the first test: there is no permanent place in the world for ugly mathematics」,已读范围仅该句);Schmidhuber 2009——jstage `sicejl/48/1/48_21` 与 arXiv `0812.4360`;Solomonoff 1964——Wikipedia 与 ResearchGate(*Inf. Control* 7(1):1–22,7(2):224–254);Tarski 1955——Project Euclid `pjm/1103044538`。**核对范围**:上列全部只核对了出版元数据(作者、年份、刊名、卷页、DOI);原文段落的**内容转述**除 Schmidhuber(评审席亲读 arXiv:0812.4360 §2.3–2.4)、Poincaré 与 Hardy(搜索结果含原句,已读范围仅该句)外,一律 `ASSUMED-UNVERIFIED`。**组合形检索**(两次,英文):①「truth as fixed point of admissible transformations, verified ledger, philosophy」——未见哲学侧同题文献;工程近邻:MathLedger(arXiv `2601.00816`,验证器判词写入不可变账本的学习基底)、模态不动点语义(arXiv `2606.07884`,可容许延续核作为最大不动点),二者内容未读,`ASSUMED-UNVERIFIED`;②「logic cannot select which problem, aesthetic selection, Poincaré sieve」——命中 Poincaré「精细的筛」谱系与 arXiv `2412.00011`(开放系统中非逻辑搜索),故 12.4 末段 (iii) 的谱系已有出处,只有其不可因子化的形式陈述保留 `suspected-novel`。
 
 ## 12.7 产地(母仓第 5.2 条,三项)
 
 - **skill 上下文**:正文写作无 skill,claude 主循环直接实施;评审阶段按 `consensus-rnd:sshx` 的评审三席形态派 codex-cli 席位(本仓政策:席位全为 codex-cli,不用 subagent)。
 - **载体与分工**:全部正文由 claude 主循环(Claude Fable 5.1)亲撰;文献锚由主循环联网核对;评审席为 codex-cli(异模型族于作者)。作者与评审**不同族**;评审席之间**同族**,如实声明,不冒充多样性共识。
-- **混合方式**:评审席并发、互不可见;每席产出 `approve` / `comment` / `reject` 与 findings;orchestrator 逐条亲核 findings 后修订正文(合并前修订计入 v1.0)。**第一轮票数:reject / reject / reject**(quality 27 blocking + 3 advisory;architecture 11 blocking + 6 advisory;tests 12 blocking + 16 advisory),全部 blocking 经亲核成立并已修订;第二轮复审票数见追加账本。
+- **混合方式**:评审席并发、互不可见;每席产出 `approve` / `comment` / `reject` 与 findings;orchestrator 逐条亲核 findings 后修订正文(合并前修订计入 v1.0)。**六轮票数**:第一轮 reject/reject/reject(50 blocking),第二轮 reject/reject/reject(20),第三轮 reject/reject/reject(24),第四轮 reject/reject/reject(8),第五轮 reject/comment/comment(1),第六轮 comment/comment/comment(0);逐轮 findings 与处置见追加账本。全部 blocking 经 orchestrator 亲核成立并修订,无被拒绝的 blocking。
 
 ---
 
@@ -827,13 +827,15 @@ FCD 以「概念 = 读数 $q:X\to B$」为本体,本卷以「账本 + 变换 + �
 
 **第二轮复审(2026-09-10,合并前;flight `fpp-review2-20260910-{quality,architecture,tests}`,基准 `c0ce9e9f2e`)**:quality `reject`(第一轮 30 条:20 closed / 10 partial;新增 10 blocking + 5 advisory),architecture `reject`(17 条:13 closed / 4 partial;新增 2 blocking + 8 advisory),tests `reject`(28 条:18 closed / 10 partial;新增 8 blocking + 8 advisory,其中 blocking 全部与前两席重合)。新增 blocking 全部采纳:1.3(ii) 改为**证书**接口且 1.5 显式要求 $E$ 无环、1.15 追加证明补齐合并无环论证;撤去 $\mathfrak M^{*}$(定义域不同,不合成幺半群),善的 (iii) 改为 $T\in\mathfrak M$,勘误只在记录账本上作全函数;4.3 去掉「登记完备」款(主体无观察流,不是已定义数据上的谓词,降为第十三部「方法论推论与政策」 规范)并补初态条件;4.6 补账平前件;4.10 准入复合改合取、单位 $\top$;3.1 主张只取 $\mathcal P$;5.1a 补表述存在与新名供给;5.5 改用可实现的三节点命题逻辑见证并删「状态越真越美」句;5.8 证明末句改为「入账规则不以美序为前件」;6.4 收窄;9.4 明确 $p$ 为派生值;10.3 改逐世界条件断言;定理 13.16(c) 补 $V_{t_0}\neq\varnothing$ 前件;13.12 补有限清单与可判相等;字典/对照表/12.4 增量说明同步;Knaster 1928 拆行降级;X-C 计数改引 12.6;定理 13.11 改名「撤销检测须更正已有主张」且「检测绝不降级」改列独立规范;X-B 预判改 bind-only(`invariant_safety` 可直接实例化);伴随落点改为「须有真实使用边」;P1–P3 补 cohort、起算点、分母与零值结算规则。
 
+**第六轮复审(2026-09-10,基准 `ae158b66ab`;flight `fpp-review6-20260910-{quality,architecture,tests}`)**:三席皆 `comment`,**无 blocking**;第五轮 findings:quality 5 closed / 1 partial,architecture 3 closed / 3 partial,tests 5 closed / 1 partial;剩余 advisory 6 条(5.6 读法与摘要的「逻辑」措辞、X-H 标题、Hardy 引句核对口径、第四轮账本归属措辞)全部采纳。至此六轮评审的 blocking 计数为 50 → 20 → 24 → 8 → 1 → 0;合并前修订按 OSUV 惯例整体计入 v1.0。
+
 **第五轮复审·quality(2026-09-10,基准 `2c4e1851d0`)**:`reject`;第四轮 10 条:8 closed / 2 partial;新增 1 blocking(FPP-R5-Q01:记录账本上 $\hat s$ 在 $P,\neg P$ 同在时不良定)+ 5 advisory,全部采纳:1.17 改优先分支定义;10.4 改四情形;5.6 读法与摘要把「用美序选题」降为政策;4.11 读法条件化;13.11 去重并改为不可能性陈述;3.9 改题「不可反驳断言的排除集为空」。
 **第五轮复审·architecture(同基准)**:`comment`(无 blocking);第四轮 12 条:9 closed / 3 partial;6 advisory 全部采纳:导航三处、归约表 8.3 行去「前瞻」、12.4 逐行标明「仅出版元数据已核」、5.6 标题改「选择不由状态函数决定」并把「用美序选题」列为政策、13.11 去重、第四轮账本措辞。
 **第五轮复审·tests(同基准)**:`comment`(无 blocking);第四轮 7 条:5 closed / 2 partial;6 advisory 全部采纳:13.11 键记号统一;3.14 转述补全绿前件;P3 KM 尾部可估计判据;导航三处;4.4 读法末句;第四轮账本措辞。
 
 **第四轮复审·tests(2026-09-10,基准 `ee77c25c21`)**:`reject`;第三轮 18 条:12 closed / 6 partial;新增 2 blocking + 5 advisory,全部采纳:13.36 改为类型化接口(Key = $\mathcal P\uplus(\mathcal D\times\mathrm{Ver})$、状态 $X=(L,R)$、$s_{\mathrm{app}}$、诚$_{\mathrm{app}}$、版本约定),13.11 改为同一版本化键翻转的条件式;13.25 改〔引·semantic〕并把检测义务列为政策、3.14 转述改「测试上不可区分」;P1 目标身份改声明级预登记;P3 固定 $1-\hat S_{\mathrm{KM}}(90)$ 与同刻/零样本规则;10.5(i) 指向 9.2。
 
-**第四轮复审·architecture(2026-09-10,基准 `ee77c25c21`)**:`reject`;第三轮 12 条:9 closed / 3 partial;新增 2 blocking(ARCH-R4-01 归约表「恕道」行冒充律本身;ARCH-R4-02 10.1 工程句留在正文)+ 10 advisory(含 3.9 分栏残留),全部采纳:恕道行改政策并收窄 4.4 读法;字典「真」行改「账真 = 不动集正半」;6.6 同一性含准入;导航旧节号逐一修正;13.3 标题改「八个冻结声明(六个条目)」;卷首「本仓只是模型」改「拟议模型」;4.2/13.8/13.31/13.11/13.25 摘要与政策边界同步;归约表 2.2 行收窄;6.2 增量措辞;12.4 加状态口径说明。
+**第四轮复审·architecture(2026-09-10,基准 `ee77c25c21`)**:`reject`;第三轮 12 条:9 closed / 3 partial;新增 2 blocking(ARCH-R4-01 归约表「恕道」行冒充律本身;ARCH-R4-02 10.1 工程句留在正文)+ 10 advisory(ARCH-R4-03…12;3.9 分栏残留是 ARCH-R4-02 论述中的附带事项,其独立 advisory 见 quality Q07 / tests T06),全部采纳:恕道行改政策并收窄 4.4 读法;字典「真」行改「账真 = 不动集正半」;6.6 同一性含准入;导航旧节号逐一修正;13.3 标题改「八个冻结声明(六个条目)」;卷首「本仓只是模型」改「拟议模型」;4.2/13.8/13.31/13.11/13.25 摘要与政策边界同步;归约表 2.2 行收窄;6.2 增量措辞;12.4 加状态口径说明。
 
 **第四轮复审·quality(2026-09-10,基准 `ee77c25c21`)**:`reject`;第三轮 18 条:15 closed / 3 partial;新增 4 blocking + 6 advisory,全部采纳:1.18(ii) 成员资格可判改为「给定 $P\in O$ 可判」;10.4 不可证者三分(反证已冻结 / 反证可证未冻结 / 双侧不可证);4.9(i) 补 last 前件;10.1 工程句移出为评注 13.39;2.12 读法去「从来不曾」;4.11 重证改条件许可;3.9 后注政策句移至 13.32;6.2 改「不由状态函数决定」;13.36 补状态 $X=(L,R)$ 与版本键。
 
