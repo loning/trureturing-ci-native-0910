@@ -1,8 +1,6 @@
 -- Statement encodings are spooled here; the producer compactor computes the
 -- byte-identical .NET statement addresses before publishing the report.
 
-import LeanInformationAudit.StatementEncoding
-import LeanInformationAudit.DeclarationDependencies
 import Lean.Environment
 import Lean.CoreM
 import Lean.PrivateName
@@ -10,6 +8,60 @@ import Lean.Util.CollectAxioms
 import Lean.Meta
 
 open Lean
+
+def atom (value : String) : String := s!"{value.utf8ByteSize}:{value}"
+
+partial def encodeName : Name → String
+  | .anonymous => "n0"
+  | .str parent value => s!"ns({encodeName parent},{atom value})"
+  | .num parent value => s!"nn({encodeName parent},{value})"
+
+partial def encodeLevel : Level → String
+  | .zero => "l0"
+  | .succ level => s!"ls({encodeLevel level})"
+  | .max left right => s!"lm({encodeLevel left},{encodeLevel right})"
+  | .imax left right => s!"li({encodeLevel left},{encodeLevel right})"
+  | .param name => s!"lp({encodeName name})"
+  | .mvar id => s!"lv({encodeName id.name})"
+
+def encodeBinderInfo : BinderInfo → String
+  | .default => "bd"
+  | .implicit => "bi"
+  | .strictImplicit => "bs"
+  | .instImplicit => "bc"
+
+def encodeLiteral : Literal → String
+  | .natVal value => s!"ln({value})"
+  | .strVal value => s!"lt({atom value})"
+
+partial def encodeExpr : Expr → String
+  | .bvar index => s!"eb({index})"
+  | .fvar id => s!"ef({encodeName id.name})"
+  | .mvar id => s!"em({encodeName id.name})"
+  | .sort level => s!"es({encodeLevel level})"
+  | .const name levels =>
+      s!"ec({encodeName name},[{String.intercalate "," (levels.map encodeLevel)}])"
+  | .app function argument => s!"ea({encodeExpr function},{encodeExpr argument})"
+  | .lam _ type body binderInfo =>
+      s!"el({encodeBinderInfo binderInfo},{encodeExpr type},{encodeExpr body})"
+  | .forallE _ type body binderInfo =>
+      s!"ep({encodeBinderInfo binderInfo},{encodeExpr type},{encodeExpr body})"
+  | .letE _ type value body nondependent =>
+      s!"ee({if nondependent then "1" else "0"},{encodeExpr type},{encodeExpr value},{encodeExpr body})"
+  | .lit literal => s!"ei({encodeLiteral literal})"
+  | .mdata _ body => s!"ed({encodeExpr body})"
+  | .proj name index body => s!"ej({encodeName name},{index},{encodeExpr body})"
+
+def encodeStatement (info : ConstantInfo) : String :=
+  let parameters := info.levelParams.map encodeName
+  let header :=
+    s!"statement-v1(uparams=[{String.intercalate "," parameters}],type={encodeExpr info.type}"
+  match info with
+  | .defnInfo _ | .opaqueInfo _ =>
+      match info.value? (allowOpaque := true) with
+      | some value => header ++ s!",value={encodeExpr value})"
+      | none => header ++ ",value=missing)"
+  | _ => header ++ ")"
 
 structure ModuleInput where
   moduleName : String
@@ -68,6 +120,19 @@ def kindOf : ConstantInfo → String
 def sortedUnique (values : Array String) : Array String :=
   (values.qsort (· < ·)).foldl (init := #[]) fun result value =>
     if result.back? == some value then result else result.push value
+
+/-- The constants whose axiom closures a declaration's own closure is the union
+of. Mirrors the per-kind traversal of `Lean.CollectAxioms.collect`: bodies (type
+and, where present, value/constructors) contribute their used constants. -/
+def declarationDependencies : ConstantInfo → Array Name
+  | .axiomInfo info => info.type.getUsedConstants
+  | .defnInfo info => info.type.getUsedConstants ++ info.value.getUsedConstants
+  | .thmInfo info => info.type.getUsedConstants ++ info.value.getUsedConstants
+  | .opaqueInfo info => info.type.getUsedConstants ++ info.value.getUsedConstants
+  | .quotInfo _ => #[]
+  | .ctorInfo info => info.type.getUsedConstants
+  | .recInfo info => info.type.getUsedConstants
+  | .inductInfo info => info.type.getUsedConstants ++ info.ctors.toArray
 
 /-- Report-shared state for axiom-closure collection. `closure` memoizes the final
 sorted axiom set of every constant once its strongly connected component has been
@@ -302,7 +367,44 @@ def parseArguments : List String → Except String
   | _ => .error
       "usage: Inspector.lean --output FILE --material-spool DIR [--utility-input FILE] MODULE SOURCE_PATH SOURCE_SHA256 [...]"
 
+/-- Read statement material only for requested Names in collision modules. No
+project module is imported: ModuleData parts are read and released one at a time. -/
+@[noinline] private unsafe def emitStatementIdentities (moduleName : String)
+    (paths : Array String) (keys : Std.HashSet String) (out : IO.FS.Stream) :
+    IO (Array CompactedRegion) := do
+  let parts ← readModuleDataParts (paths.map System.FilePath.mk)
+  let mut regions := #[]
+  for h : i in [:parts.size] do
+    let (data, region) := parts[i]
+    for info in data.constants do
+      let nameKey := encodeName info.name
+      unless keys.contains nameKey do continue
+      out.putStrLn (Json.mkObj [("module", toJson moduleName),
+        ("part", toJson (#["base", "server", "private"][i]!)),
+        ("name_key", toJson nameKey),
+        ("kind", toJson (if info.isTheorem then "theorem" else "other")),
+        ("statement_material", toJson (encodeStatement info))]).compress
+    regions := regions.push region
+  return regions
+
+private unsafe def statementIdentities (manifest request : String) : IO Unit := do
+  let modules ← IO.ofExcept <| (Json.parse (← IO.FS.readFile manifest) >>= fromJson?
+    (α := Array (String × Array String)))
+  let input ← IO.ofExcept <| Json.parse (← IO.FS.readFile request)
+  let rows ← IO.ofExcept <| input.getObjValAs? (Array (Array String)) "keys"
+  let keys := Std.HashSet.ofArray (rows.map (·[1]!))
+  let out ← IO.getStdout
+  for (moduleName, paths) in modules do
+    unless paths.size ≥ 1 && paths.size ≤ 3 do
+      throw <| IO.userError "expected a prefix of olean parts"
+    let regions ← emitStatementIdentities moduleName paths keys out
+    for region in regions.reverse do region.free
+    out.flush
+
 unsafe def main (args : List String) : IO Unit := do
+  if let ["--statement-identities", manifest, request] := args then
+    statementIdentities manifest request
+    return
   let (output, materialSpool, utilityInput, inputs) ← match parseArguments args with
     | .ok parsed => pure parsed
     | .error message => throw <| IO.userError message

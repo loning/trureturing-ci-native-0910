@@ -12,7 +12,7 @@ private def alterFinite (f : {key : StatementKey} → FiniteOccurrenceDispositio
         | .certified (.finiteOccurrence value) => .certified (.finiteOccurrence (f value))
         | value => value⟩ }
 
-/-- error: IE-C037 DispositionClassMismatch theorem=LeanInformationAudit.Tests.SealSuccess.idTheorem class=finite_occurrence invalid=state_enumeration_certificate -/
+/-- error: IE-C037 DispositionClassMismatch theorem=LeanInformationAudit.Tests.SealSuccess.idTheorem class=finite_occurrence invalid=state_enumeration_certificate.root_membership -/
 #guard_msgs in
 run_cmd liftTermElabM do
   validateEvidence `LeanInformationAudit.Tests.Census.Evidence

@@ -80,6 +80,53 @@ class PipelineTests(unittest.TestCase):
                 self.program.validate_fixture_export({"source_commit": "fixture-head",
                                                       "nodes": [{"repo_path": path}]})
 
+    def test_report_provenance_regenerates_before_truth_export(self):
+        self._report_provenance([False, True], True, True)
+
+    def test_report_provenance_rejects_failed_regeneration(self):
+        self._report_provenance([False, False], True, False)
+
+    def test_report_provenance_accepts_fresh_without_regeneration(self):
+        self._report_provenance([True], False, True)
+
+    def _report_provenance(self, verifications, regenerate, exported):
+        class ExportReached(Exception):
+            pass
+        calls = []
+        pending = list(verifications)
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = pathlib.Path(temporary) / "run"
+            options = argparse.Namespace(output=str(directory), fixture_truth_export=None,
+                                         lean_report="donor-report.json")
+            def step(command, logs, label, **kwargs):
+                logs.mkdir(parents=True, exist_ok=True)
+                (logs / (label + ".log")).write_text("")
+                calls.append(command)
+                if "verify" in command:
+                    self.assertIn("lean-report-input.sh", command[1])
+                    if not pending.pop(0):
+                        raise RuntimeError("raw Lean report producer is stale for current repository inputs")
+                if command[:2] == ["make", "truth-export"]:
+                    self.assertFalse(pending, "reportProvenanceBeforeTruthExport")
+                    self.assertEqual(["make", "lean-report"] in calls, regenerate,
+                                     "reportProvenanceBeforeTruthExport")
+                    if regenerate:
+                        self.assertTrue(any(arg.endswith("/.lake/build/stratalint/raw-lean-report.json")
+                                            for arg in command), "reportProvenanceBeforeTruthExport")
+                    raise ExportReached()
+                return {"wall_seconds": 0, "rss_budget_gib": None}
+            env = json.dumps(dict(os.environ)).encode()
+            with mock.patch("resources.run", side_effect=step), mock.patch.object(
+                    self.program.subprocess, "check_output", return_value=env):
+                if exported:
+                    with self.assertRaises(ExportReached):
+                        self.program.execute(options)
+                else:
+                    with self.assertRaisesRegex(RuntimeError, "producer is stale"):
+                        self.program.execute(options)
+            self.assertFalse(pending, "reportProvenanceBeforeTruthExport")
+            self.assertEqual(any(c[:2] == ["make", "truth-export"] for c in calls), exported)
+
     def test_manifest_excludes_scope_payloads(self):
         import emission
         first = ["str", ["anonymous"], "First"]

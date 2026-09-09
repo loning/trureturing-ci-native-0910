@@ -8,7 +8,7 @@ import sys
 from phases import read, write
 from resources import run
 from streaming import canonical, closure
-from negative_fixtures import COMMAND, PREFIX, key, lean_env
+from negative_fixtures import COMMAND, PREFIX, key, lean_env, truth_export_identity
 
 
 def non_evidence(repository, directory, request=None):
@@ -94,12 +94,11 @@ def two_batches(repository, directory):
                 "module_names": names, "assignment": {k[0]: k[0] for k in keys},
                 "scopes": [[k[0], sorted(indices[n] for n in closure(graph, imports[k[0]]))] for k in keys],
                 "evidence_modules": [], "named": []}
-    report = {"schema": "stratalint.truth-export", "schema_version": 2,
-              "dialect": "stratalint.truth-export.v2", "producer": "TruthExportCommand",
-              "source_commit": "fixture-head", "nodes": [
+    report = dict(truth_export_identity(repository, directory),
+              source_commit="fixture-head", nodes=[
                   {"repo_path": k[0].replace(".", "/") + ".lean", "freeze_status": "frozen",
                    "declarations": [{"kind": "theorem", "declaration_name_key": k[1], "statement_id": k[2]}]}
-                  for k in keys]}
+                  for k in keys])
     write(folder / "report.json", report)
     for name in ["domain.json", "olean-hashes.json"]:
         shutil.copyfile(directory / name, folder / name)

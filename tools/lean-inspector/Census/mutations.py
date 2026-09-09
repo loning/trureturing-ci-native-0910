@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 import pathlib
+import shutil
 import sys
 
 from resources import run
@@ -13,6 +14,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", required=True, type=pathlib.Path)
     parser.add_argument("--fixtures", required=True, type=pathlib.Path)
+    parser.add_argument("--review-only", action="store_true")
     options = parser.parse_args()
     directory = options.output.resolve()
     repository = pathlib.Path(__file__).resolve().parents[3]
@@ -46,8 +48,8 @@ def main():
          '    addresses = {module: digest(module) for module, _ in manifest}',
          [sys.executable, "-m", "unittest", "tests.test_incremental.IncrementalTests.test_stale_extraction_cache_reextracts_changed_olean_only"]),
         ("ignore-batch-bound", incremental, "test_two_batches_respect_union_closure_bound",
-         '            if current_keys and (len(modules | scope) > bound or len(current_keys) + len(chunk) > BATCH_KEY_BOUND):',
-         '            if current_keys and len(current_keys) + len(chunk) > BATCH_KEY_BOUND:',
+         '            if current_keys and (name_collision or len(modules | scope) > bound or len(current_keys) + len(chunk) > BATCH_KEY_BOUND):',
+         '            if current_keys and (name_collision or len(current_keys) + len(chunk) > BATCH_KEY_BOUND):',
          [sys.executable, "-m", "unittest", "tests.test_incremental.IncrementalTests.test_two_batches_respect_union_closure_bound"]),
         ("skip-statement-collision-resolution", membership, "streamStatementCollisionPositive",
          '      let matching := resolveCollision occurrences id',
@@ -62,6 +64,26 @@ def main():
          '    return digest([modules, scopes, emitter])',
          [sys.executable, "-m", "unittest", "tests.test_incremental.IncrementalTests.test_expanded_rows_cache_binds_rows_scopes_and_emitter"]),
     ]
+    review_cases = [
+        ("drop-name-isolation", incremental, "candidateNameIsolation",
+         '            name_collision = any(name in current_names and current_names[name] != owner for name in owner_names)',
+         '            name_collision = False', "colliding_owners"),
+        ("drop-nested-scope", source_root / "LeanInformationAudit/DispositionEvidence.lean", "nestedEvidenceRootScope",
+         '  unless ← CensusOwnership.nameInScope (← getEnv) modules name do\n    failClass key className s!"{field}.root_membership"\n',
+         '', "nested_scope"),
+        ("skip-replay-comparison", streaming, "streamReceiptReplayMismatch",
+         '    if canonical(actual) != canonical(expected):\n        raise ValueError("IE-C044 receipt replay mismatch")\n',
+         '', "receipt_controls"),
+        ("retain-all-named-evidence", python_root / "validation.py", "batchScopedNamedEvidence",
+         '        named = [entry for entry in membership["named"] if entry["module"] in batch_scope]',
+         '        named = membership["named"]', "named_ballast"),
+    ]
+    review_labels = {case[0] for case in review_cases}
+    review_cases = [(label, source, expected, old, new, [sys.executable,
+        str(python_root / "tests/review_fixtures.py"), "--directory",
+        str(directory / label / "fixture-inputs"), "--case", case])
+        for label, source, expected, old, new, case in review_cases]
+    cases = review_cases if options.review_only else cases + review_cases
     outcomes = []
     for label, source, expected, old, new, command in cases:
         original = source.read_bytes()
@@ -73,6 +95,12 @@ def main():
         native_bytes = native.read_bytes() if native else None
         logs = directory / label
         logs.mkdir(parents=True, exist_ok=False)
+        if label in review_labels:
+            inputs = logs / "fixture-inputs"
+            inputs.mkdir()
+            for name in ["index.jsonl", "manifest.json", "request.json", "external.json", "domain.json",
+                         "olean-hashes.json", "inputs.json", "stamps.json"]:
+                shutil.copyfile(options.fixtures / name, inputs / name)
         record = {"mutation": label, "location": str(source.relative_to(repository)),
                   "expected_named_red": [expected], "expected_red_count": 1,
                   "pristine_sha256": hashlib.sha256(original).hexdigest(),

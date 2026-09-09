@@ -137,7 +137,7 @@ def assess (index : Index) (head : String) (key : StatementKey)
           let obligation ← whnf evidence.getAppArgs[4]!
           if obligation.isAppOfArity ``Option.some 2 then
             let obligationName : Name ← reduceEval obligation.getAppArgs[1]!
-            if env.contains obligationName then
+            if ← CensusOwnership.nameInScope env index.modules obligationName then
               let obligationType := (← getConstInfo obligationName).type
               if [``ClosedNumericalObligation, ``InfinitePrimitiveObligation,
                   ``UnfaithfulPrimitiveObligation].contains

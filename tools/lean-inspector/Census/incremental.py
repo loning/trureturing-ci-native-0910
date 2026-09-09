@@ -56,16 +56,23 @@ def candidate_batches(keys, owner_imports, graph, bound=BATCH_MODULE_BOUND):
         grouped.setdefault(key[0], []).append(key)
     batches = []
     current_keys, imports, modules = [], set(), set()
+    current_names = {}
     for owner in sorted(grouped):
+        owner_names = {key[1] for key in grouped[owner]}
         required = set(owner_imports[owner])
         scope = set(closure(graph, required))
         if len(scope) > bound:
             raise ValueError(f"IE-C044 candidate batch owner={owner} modules={len(scope)} bound={bound}")
         for start in range(0, len(grouped[owner]), BATCH_KEY_BOUND):
             chunk = grouped[owner][start:start + BATCH_KEY_BOUND]
-            if current_keys and (len(modules | scope) > bound or len(current_keys) + len(chunk) > BATCH_KEY_BOUND):
+            # Distinct owners of the same Lean Name must never be reimported
+            # together merely because their union fits the module bound.
+            name_collision = any(name in current_names and current_names[name] != owner for name in owner_names)
+            if current_keys and (name_collision or len(modules | scope) > bound or len(current_keys) + len(chunk) > BATCH_KEY_BOUND):
                 batches.append({"keys": current_keys, "imports": sorted(imports), "modules": sorted(modules)})
                 current_keys, imports, modules = [], set(), set()
+                current_names = {}
+            current_names.update((name, owner) for name in owner_names)
             current_keys.extend(chunk)
             imports.update(required)
             modules.update(scope)
