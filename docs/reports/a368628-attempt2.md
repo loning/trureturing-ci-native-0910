@@ -94,3 +94,5 @@ Private `initial_echo` 修复后正式模块编译 EXIT=0、零 warning/error，
 最终格式的 `make lean` 再验 **EXIT=0 / 18.629s / 12828 jobs**；新模块无风格 warning。`git diff --check` EXIT=0。此前成功数学构建仍有效，本次重验只因源码空格改变需报告绑定最终字节。
 
 最终源码 `make lean-report` **EXIT=0 / 60.118s**，delta changed=1 / recheck=1。六条公开定理及全部 private 声明的报告公理集合均在标准许可集内；无 sorryAx。声明身份随该空格修改不变。
+
+首次 `make emit` EXIT=2 / 16.341s：Library 的非空 `strata_touched: [S1]` 不被本仓 note parser 接受（`strata_touched must be a list`），连带 literature reference 无法解析。改成既有 block-list 文法 `strata_touched:\n  - S1`，Verified locator 中原样 url/doi 已在；未改 Lean 源码。
