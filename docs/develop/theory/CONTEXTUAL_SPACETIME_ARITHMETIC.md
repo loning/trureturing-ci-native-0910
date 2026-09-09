@@ -2134,3 +2134,88 @@ ALL_FINITE_CHECKS_PASSED
 ```
 
 这些结果只判所列样本；完整一般证明位于命题 24–36。canonical ingest 与差分检查的实际命令、退出码、新增 atom/backfill 及 residual-open 计数由本 worker 的 runner 结果工件记录，独立评审与 git/GitHub 生命周期交由 caller 接续。
+
+<a id="pr3-source"></a>
+
+## 24. PR3 增补 I：来源语言与来源–位置双电荷
+
+本节沿用定义 1 的来源树集合 $T$，将定义 12／命题 9 的联合分箱 $f(e)=(x(e),\rho(e))$ 向全域补零。记全局读数为 $\rho_{\rm src}$，与逐事件来源函数 $\rho(e)$ 区分：
+
+$$
+\rho_{\rm src}(X)=(w_X^\rho,z_X^\rho),\qquad
+w_X^\rho(p,r)=\sum_{\substack{e\in\Omega_X\\x(e)=p,\ \rho(e)=r}}\sigma(e),\quad
+z_X^\rho(p,r)=\sum_{\substack{e\in A_X\\x(e)=p,\ \rho(e)=r}}\sigma(e).
+\tag{SRC}
+$$
+
+两分量都是 $\mathbb Z^3\times T\to\mathbb Z$ 的有限支撑函数；比较时可先取两对象所用联合 bin 的有限并。这是已有粗观察的特化，不另建来源本体。$q(X)=\sum_{p,r}z_X^\rho(p,r)$，$\sum_{p,r}w_X^\rho(p,r)=0$；对来源求和恢复 $\pi$。
+
+在加法群 $R_T=\mathbb Z^{(\mathbb Z^3\times T)}$ 上定义魔群环乘法：
+
+$$
+\delta_{(p,r)}\star\delta_{(q,s)}
+=\delta_{(p+q,\operatorname{pair}(r,s))},
+\tag{SRC*}
+$$
+
+再作 $\mathbb Z$ 双线性延拓。于是
+$(c\star d)(u,\operatorname{pair}(r,s))=\sum_{p+q=u}c(p,r)d(q,s)$，而每个叶来源处的乘积系数为零。pair 单射使每个 pair 结点的两个来源子树分解唯一；位置仍需对全部有限支撑拆分求和。这个乘法**非结合、非交换**：三叶的 $\operatorname{pair}(\operatorname{pair}(r,s),t)$ 与 $\operatorname{pair}(r,\operatorname{pair}(s,t))$ 不同；$r\ne s$ 时 $\operatorname{pair}(r,s)\ne\operatorname{pair}(s,r)$，相应基向量已见失败。双线性及有限支撑不授予结合律；§15 交换 rng 的结合证明、§19 的整性与单位分类不施于这个来源 pair 代数。
+
+指定 $\Sigma_{\rm src}=\Sigma_{\rm sp}\cup\{F_L:L\subseteq T\}$，载体仍为 $\mathcal B$，观察与全槽位、全参数、任意有限深度上下文仍按定义 16。
+
+**命题 37（来源双电荷的精确更新，repo-derived）。** 写 $w=w_X^\rho,z=z_X^\rho,w'=w_Y^\rho,z'=z_Y^\rho$，则
+
+$$
+\begin{aligned}
+\rho_{\rm src}(X\boxplus Y)&=(w+w',z+z'),\\
+\rho_{\rm src}(X\boxtimes Y)&=(w\star w',z\star z'),\\
+\rho_{\rm src}(NX)&=(w,w-z),\\
+\rho_{\rm src}(F_SX)&=(w,\mathbf1_{S\times T}z),\\
+\rho_{\rm src}(F_LX)&=(w,\mathbf1_{\mathbb Z^3\times L}z).
+\end{aligned}
+\tag{SRC-UP}
+$$
+
+**证明。** 沿命题 20 的分组求和，在联合 bin 中并行两份电荷相加；新乘积事件的联合属性为 $(p+q,\operatorname{pair}(r,s))$，父 bin 对上的有限双和是系数之积，再向该联合属性推送即为 $\star$。旧档案不入当前区域，故不添线性项。补集在每个 bin 内取未选电荷；两种筛选只掩蔽所选电荷，背景不变。各操作在 $\mathcal B$ 上总定义；增广对 $\star$ 保乘由有限双和给出，所以背景总和仍为零。证毕。
+
+**命题 38（来源语言的观察核，repo-derived）。**
+
+$$
+\approx_{\Sigma_{\rm src}}=\ker\rho_{\rm src}.
+\tag{SRC-EQ}
+$$
+
+**证明。** 充分性按定义 16 归纳，与命题 22 同形：恒等孔保读数；任一基本上下文在两侧使用同一个固定丰富参数，(SRC-UP) 给同一输出读数；有限复合反复应用这些更新，最终 $q$ 由 $z^\rho$ 求和恢复。所有操作总定义，不遗漏部分域。必要性对每个 $p\in\mathbb Z^3,r\in T$ 用签名内的探针
+
+$$
+q(F_pF_{\{r\}}X)=z_X^\rho(p,r),\qquad
+q(F_pF_{\{r\}}NX)=w_X^\rho(p,r)-z_X^\rho(p,r).
+\tag{SRC-REC}
+$$
+
+这里 $F_p$ 按 §16 为位置单点筛选，$F_{\{r\}}$ 是来源单树筛选。第一式恢复 $z^\rho$，两式相加恢复 $w^\rho$；因此观察等价蕴含全部坐标相同。证毕。
+
+**旧见证的新读数（repo-derived）。** 以下只给既有对象追加 (SRC) 读数，数值由定义 8、B1 和 (SRC-UP) 直接计算，附录 `pr3_source` 检查这些等式。记 $l_i=\operatorname{leaf}(i)$。B1 两对象分别有 $\rho_{\rm src}=(0,\delta_{(0,l_7)})$ 与 $(0,\delta_{(0,l_8)})$，故在 $(0,l_7)/(0,l_8)$ 处被分开。§4 的 $X=Y=\mathbf i(1),Z=\mathbf i(2)$ 两括号分别有
+
+$$
+\begin{aligned}
+z_{(X\boxtimes Y)\boxtimes Z}^\rho
+ &=\sum_{j=0}^1\delta_{(0,\operatorname{pair}(\operatorname{pair}(l_0,l_0),l_j))},\\
+z_{X\boxtimes(Y\boxtimes Z)}^\rho
+ &=\sum_{j=0}^1\delta_{(0,\operatorname{pair}(l_0,\operatorname{pair}(l_0,l_j)))}.
+\end{aligned}
+$$
+
+两者 $w^\rho=0$，所列支撑不交，虽 $q=2$ 相同。§18 的来源交换例分别有 $z^\rho=\delta_{(0,\operatorname{pair}(l_7,l_8))}$ 与 $\delta_{(0,\operatorname{pair}(l_8,l_7))}$，同样 $w^\rho=0$。这些事实证明 $\rho_{\rm src}$ 能区分相应对象，**不证明它恢复档案基数**；§4 的 $28/32$ 仍是档案计数，(SRC) 只数当前区域。
+
+**命题 39（来源与时间混合语言，repo-derived）。**
+
+$$
+\approx_{\Sigma_{\rm src}\cup\Sigma_{\rm st}}
+=\ker(\rho_{\rm src},m,M,s).
+\tag{SRC-ST}
+$$
+
+**证明。** 对两种并集复合，$\rho_{\rm src}$ 都逐分量相加；时间复合只添边，其精确守卫仍为命题 29 的 $M_X<m_Y$。乘法、补集、两种筛选按 (SRC-UP)，$T_k$ 不改联合电荷。端点对并集、乘法、补集、平移复用命题 29；来源筛选与空间筛选一样不改 $E,\Omega,t$，故不改端点。现在对**混合**上下文归纳：基本步骤用同一参数、同一守卫，两侧同步失败，或成功并得到同一四元摘要；复合严格传播失败，成功则继续归纳，终端由 $z^\rho$ 求和。故此核充分，证明没有把两条核定理取交当作混合闭包证明。反向，来源单点探针 (SRC-REC) 仍在；命题 30 的平衡 $U_t$、左右时间守卫与有限右乘放大探针也仍在，分别恢复 $m,M,s$。因此所有四个坐标必要。证毕。
+
+本节的联合分箱沿用 §8，核证明沿用 §14–16 的上下文方法，CSA 专用公式与见证标 `repo-derived`；成熟框架与外部文献的范围在 §26、§28 逐项列明，不主张新颖性或完整来源代数分类。
