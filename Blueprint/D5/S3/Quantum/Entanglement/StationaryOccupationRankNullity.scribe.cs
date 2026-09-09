@@ -9,6 +9,7 @@ internal sealed class StationaryOccupationRankNullityDocument : IScribeDocumentD
     public DocumentDefinition Create()
     {
         Formula i = Id("i");
+        Formula A = Id("A");
         Formula I = Id("I");
         Formula K = Id("K");
         Formula G = Id("G");
@@ -71,17 +72,26 @@ internal sealed class StationaryOccupationRankNullityDocument : IScribeDocumentD
                                 Imp(Le(Call("finrank", Complex(),
                                         Call("ker", Call("mulVecLin", Call("mul",
                                             Call("conjTranspose", C), C)))), q),
-                                    Le(Sub(ProdAt("i", I, Add(Call("a", i), D(1))), q),
+                                        Le(Sub(ProdAt("i", I, Add(Call("a", i), D(1))), q),
                                         Call("FintypeCard", K)))))))));
+        Formula physicalLower = All("A", Id("Type"),
+            All("K", Id("Type"),
+                Imp(And(Call("Fintype", A), And(Call("DecidableEq", A), Call("Fintype", K))),
+                    All("a", Call("Multiset", A),
+                        Imp(Call("StationaryPreparation", a, K),
+                            Le(Sub(ProdAt("i", A, Add(Call("count", i, a), D(1))),
+                                   Call("FinsetSup", Call("count", a))),
+                               Call("FintypeCard", K)))))));
 
         return DocumentDefinition.Create(ScribeNode.Create(
-            "Finite Gram matrices convert kernel bounds into rank lower bounds.",
+            "Stationary occupation residual Grams force the product-minus-maximum memory lower bound.",
             H("Stationary Occupation Rank Nullity"),
             Blocks(
                 Paragraph(Text(
                     "For finite row and column types, rank-nullity turns a bound on the "
                     + "kernel dimension into a lower bound on rank. The profile-specific "
-                    + "form uses the finite carrier Profile(a).")),
+                    + "form uses the finite carrier Profile(a). The final theorem applies the "
+                    + "same rank-nullity argument to the actual stationary residual Gram.")),
                 Theorem("gram-rank-add-nullity", "gram_rank_add_nullity", rankNullity,
                     "This finite-dimensional identity uses no Gram positivity or realization."),
                 Theorem("gram-rank-ge-card-sub-nullity", "gram_rank_ge_card_sub_nullity", rankLower,
@@ -97,7 +107,9 @@ internal sealed class StationaryOccupationRankNullityDocument : IScribeDocumentD
                 Theorem("gram-factor-kernel-eq", "gram_factor_kernel_eq", factorKernel,
                     "The Gram factor and its coefficient matrix have the same linear kernel, so kernel estimates transport exactly."),
                 Theorem("bounded-profile-memory-ge", "bounded_profile_memory_ge", memoryLower,
-                    "Combining the profile lower bound with the factor upper bound yields a conditional memory lower bound."))));
+                    "Combining the profile lower bound with the factor upper bound yields a conditional memory lower bound."),
+                Theorem("stationary-memory-dimension-lower-bound", "stationary_memory_dimension_lower_bound", physicalLower,
+                    "The preparation predicate abbreviates the unitary, normalized input/output, and stationary coefficient hypotheses; the residual Gram recurrence and polynomial rigidity then close the source lower bound."))));
     }
 
     private static DocumentBlock Theorem(string id, string name, Formula formula, string text) =>
