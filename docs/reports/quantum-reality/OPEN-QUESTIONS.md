@@ -48,6 +48,31 @@ BINDONLY_PROBE status=open lane=/Users/chronoai/trureturing-a392714r2 seconds=15
 **对选题的意义**:四项中的 cross-species 一项,其拟议首切片**没有**在这一侧当场作废。
 其余三项的切片**尚未探针**,不得据此推广。
 
+### 第二条探针:Einstein 切片也是 `open`,**并就此停止定价**(2026-09-10)
+
+```
+BINDONLY_PROBE status=open lane=/Users/chronoai/trureturing-a372018 seconds=44
+```
+
+靶是 `linearized_einstein_symbol_transverse`(`k^μ E_μν(k,h) = 0`)。
+签名把 Fierz–Pauli symbol 作为**假设**给出,而不是由我定义 ——
+这样问的是「给定该 symbol,横向性是否钉版 Mathlib 一项即闭」,
+而不是「我猜的定义对不对」。陈述 elaborate 通过,唯一错误是 `exact?` 未闭合。
+
+**四项中已定价两项(cross-species、Einstein),两项未探,且我就此停止。** 理由:
+
+1. 两次探针**都返回 `open`**,而 `open` 是信息量低的那一侧 ——
+   只有 `closed` 是决定性的(命中即当场作废该切片)。连续两次没有作废任何东西,
+   按第 2.7 条预算包络,这已经是**对着下确界加班**;
+2. 余下两条里,**§17.1 / §18 那条需要先替它发明一个 Lean 可表达的替身**
+   (钉版 Mathlib 没有 Fock 空间 / `a†a`)。那是**建模选择**,属该项「需要新物理输入」的一部分,
+   不该由 orchestrator 单方面替 owner 做。observer→objective 那条虽是有限维、可表达,
+   但按第 1 点,它的期望信息量同样低。
+
+**这两条 `open` 能支持的结论只有一句**:那两条切片**不是**钉版 Mathlib 一项就能闭的。
+**不支持**「它们可派」「它们有逃逸内容」「它们不是 bind-only」——
+`exact?` 只试单项闭合,不排除数行 bind-only 组合。
+
 ### 重启条件(不变)
 
 τ=0 指定右栏四项之一(或给出新的物理输入),把它写成新的 Q1 填进本文件,跑
