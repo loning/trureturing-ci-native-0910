@@ -149,3 +149,44 @@ basis/consumer/instance/premises/result/claim 为 not-applicable(kind=none)。
 question_answered：用户预登记的 A380392 全正尺寸平均公式是否成立。
 dominating_theorem_search：D5 → 钉版 mathlib → GitHub Lean/OEIS/arXiv，
 not-found-in-searched-scope；失败请求和未读外链已逐项标明。
+
+## Canonical Lean report 与开 PR 前复查
+
+- make lean-report EXIT=0，75.760 秒；delta changed=0, added=12, removed=0, recheck=12。
+  该差量是 donor 报告到本树的差量，不把 12 个模块说成本席新增。
+- 报告 SHA256：4f4346c1828173949292575478fa6b5a1e35056e578cacd5a51242511271165c。
+- git fetch origin dev 后，git grep -P 在 origin/dev 的 D5/Blueprint 再搜 A380392、
+  mean_monotone_one_paths、monotone/lattice path；仅有无关格论叙事，无目标命中。
+  当次 git merge-tree --write-tree HEAD origin/dev EXIT=0，输出树
+  7451d6227043a1a28695ebd8e4cbe02901091c0e；不需要为无冲突追平移动 dev。
+
+Included 声明的 statement_id（私有 helper 也被 inspector 纳入模块身份）：
+
+| 声明 | statement_id |
+| --- | --- |
+| mean_monotone_one_paths | sha256:6971a52ccdcb12ccb9739f22a44daf9f5694dff90611cd8a94f82d6b94551215 |
+| Path | sha256:0016ea644f5f00a744b084338741be497183bda99cd0829bc1dc964f235a72d5 |
+| pathCell | sha256:b1e483351ff535a70201b562dc27b2a10143a5b5b6afcc825dc8742a722dc78e |
+| pathCells | sha256:b1f90765ee48ae382e206398f61feb8d06dfa50f7fa2d221b288a1d15b2aef95 |
+| pathCount | sha256:3a4b2333aa416be0b1bc7f9046df562dbd5960e7ef6dcce4dacda17a031e12da |
+| path_subset | sha256:3b3c3ecc0f7ccb57781bace2d97a431600babcaafc2c3792e352b6802035ca89 |
+| pathCell_rank | sha256:05235139481248257e60391fb00b7c5101b4200528fa6d3eb65ed9db2ebe797e |
+| pathCell_step | sha256:2dce3c058e4b73fa8dca027f4f6438d7e2d0bcfdf2c83551d3d566be743e6c1d |
+| freeCellsEquiv | sha256:7d11a7208c9754196af0c8c1bdde3860a97071215329a5cce320b11bf8820b7d |
+| pathCells_card | sha256:973cdf9ea96d2715f6bf44e9eb3bae40730fd7150b9f25aeb6eb03600cf9d28b |
+| fixed_path_count | sha256:7938912310e796fd5fc4ca507c188327e2b5f935768d212aa469f16c59dd4a63 |
+| total_path_count | sha256:f020a13dd763d54f3a7490b1321241a7478fea0f4923da4fa6e02fd3fa3d46f0 |
+| fixed_cells_count | sha256:b392e0cfaabb602da514d90a0e76f70aad6a9d7ea322aff3cdc3a0f5d5dd9bab |
+| pathCell_endpoints | sha256:72e706bdab8580ee666d1a1509e59fc1f410dd08e28a64d36d5a6f5bc347a812 |
+| pathCell_injective | sha256:3229fdf639fdb9b78b88bbadba082821944bb80c0adcec3f6e2a694d224adfd1 |
+| path_card | sha256:5b456218dc910065c9ac09d096bcdae25d37859c2f069721d3fdb7fd941c021c |
+| match_1 | sha256:9760f3fe8d1d8e8d5c303b46708bad01838ae6b335d13a45c3096a5bf4eae606 |
+| splitter | sha256:e3f96d9a4d1ea68ca11cf45492dc05514b66724f42dc6ff3e1571730e996ce06 |
+
+本模块 included 声明公理均为标准三公理；完整模块报告在 attempt-1/module-report.json。
+
+make lean 的完整 LEAN_CACHE 收据：
+
+```text
+LEAN_CACHE {"status":"present","worktree":"/Users/chronoai/trureturing-a380392","donor":null,"method":"none","reason":null,"stamp_miss":null,"pin_sha256":"sha256:6c4c682ffba051b5744fe7a75ccc99d7f3b20227b3b026f392f3315be0adaa4e","clonefile_errno":null,"clonefile_errnos":[],"clonefile_attempts":0,"clonefile_cleanup_error":null,"mathlib_missing_olean_files":0,"mathlib_missing_olean_samples":[],"archive_status":"not_attempted","archive_mode":null,"archive_skip_reason":"project olean state is warm","archive_reason":null,"archive_producer_commit_sha":null,"archive_workflow_run_id":null,"mathlib_olean_state":"warm","mathlib_olean_probe_error":null,"project_olean_state":"warm","project_olean_probe_error":null}
+```
