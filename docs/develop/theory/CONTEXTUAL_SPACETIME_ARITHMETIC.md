@@ -4289,3 +4289,33 @@ INGEST residual_open_added=57 skipped_existing=217 coarse_fallbacks=0 open_genre
 只追加的字节核对以基线本卷 **248728 字节** 为对象：去掉唯一新增 pr4_ 插入后的前缀逐字节等于基线全文，且只有一个 Python 块。它同时核对顶部导航与 §1–31；不将“未去掉附录插入的整段原始前缀相等”报告为通过。
 
 本节是上述固定检查点之后的正文追加，仍须以同一命令再运行 ingest，使本节产地与收据进入消化账；最终累计计数不以这里的 57／57 代替。正文最后改动之后的摄入、最终 HEAD、逐节提交、推送、试合及干净状态，由 runner 目录 `/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/csa-pr4-impl-0910/attempt-1` 的 `result.json` 与 `implementation.log` 绑定记录。本批按 brief 只交付推送分支，不开 PR；这不是持续研究目标、评审或仓库准入已完成的声明。
+
+<a id="pr5-mixed"></a>
+
+## 34. PR5 增补 N：混合语言闭包与区域筛选的表达性分类
+
+本节接续 §32 的 ARCH-R4-A1：先将定义 23 的区域筛选及定义 24 的配对选择加入含时间因果语言，证明混合闭包；再分类区域筛选在原语言中的丰富输出表达性。载体、单孔上下文、历史同构分别沿用定义 3、16、7。以下新增定义、引理、命题、反例及直接推论均为 `repo-derived`，没有新外部引用，不作 `suspected-novel` 或优先权声明；有限实验只核对所列实例，不替代全称证明。
+
+### 34.1 定义 27：混合语言与表达性量词
+
+**定义 27（混合语言与丰富输出表达性，repo-derived）。** 沿用 $K=\mathbb Z\times\mathbb Z^3$，令
+
+$$
+\Sigma_{\rm mix}=\Sigma_{{\rm cau},t}
+ \cup\{F_B:B\subseteq K\}
+ \cup\{M_P:P\subseteq K\times K\}.
+\tag{MIX-LANG}
+$$
+
+$F_B,M_P$ 分别严格使用定义 23、24 的函数：前者检查事件自身的时间—位置单元，后者只限制完整档案乘积的选择。依 #6684 的命名，$\Sigma_{\rm ts}$ **不含** $M_P$；含全部 $M_P$ 的是 §25.3 的 $\Sigma_{\rm ts}^{\rm pair}$。本节不改动这两个旧签名的名字或定义。
+
+载体仍为全部平衡表示 $\mathcal B$。上下文仍是定义 16 的恒等孔、全部固定丰富参数、每个二元操作的两个槽位及任意有限复合；任何基本步失败都严格向外传播。对一个预先指定的 $B$，称 $F_B$ 在 $\Sigma_{{\rm cau},t}$ 中可作**丰富输出表达**，当且仅当
+
+$$
+\exists\,\text{固定有限单孔上下文 }C_B\in\operatorname{Ctx}_{\Sigma_{{\rm cau},t}}
+\quad\forall X\in\mathcal B:\quad
+ C_B(X)\text{ 有定义且 }C_B(X)\cong_h F_B(X).
+\tag{MIX-HEXPR}
+$$
+
+$B$ 可以决定上下文、平移和全部参数，$X$ 不得决定它们；量词次序是 $\exists C_B\,\forall X$。三个问题分别是：**在 $\Gamma_t$ 上下降**，即存在由输入剖面确定输出剖面的语义算子；**固定上下文至 $\cong_h$ 表达**，即 (MIX-HEXPR)；**仅 $q$ 相等的表达**，即将同一量词中的历史同构换为 $q(C_B(X))=q(F_B(X))$。后两项要求原语言中的一个固定上下文，第一项没有该要求。命题 52、53、54 分别处理这些层次；命题 51／D12 已表明仅 $q$ 相等不能推出历史同构表达。
