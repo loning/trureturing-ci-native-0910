@@ -14,6 +14,7 @@ all pass with exactly `[propext, Classical.choice, Quot.sound]`.
 The ten named theorems are retained, with identical checked bytes, in
 `docs/reports/robin-smooth-general-0909-snippets.lean`, outside the build glob.
 Its temporary build location was `D5/S3/Arith/Robin/FinitePrimeProbe0909.lean`.
+SHA-256: `372ad2da2dfe7d969966211569ca943c4a5fc43ebdb9953ecd0afa954b9e655d`.
 No production Lean, Scribe, frozen state, or digestion file is changed.
 
 The exact checked target is:
@@ -104,6 +105,19 @@ No mathematical novelty, independent review, exhaustive third-party search,
 full Robin theorem, RH consequence, common 5040 threshold for arbitrary P,
 or rational enclosure of T is claimed. CI and PR status are separate from
 the local kernel verification; this delivery requests no merge or auto-merge.
+
+Final-tree `make lean-report` exited 0. The canonical raw report uses schema
+`stratalint-raw-lean-report-v2`; producer report SHA-256 is
+`de9a643467ce79509b2cda46ca6fa93524184d6dc221484166fd1f20d701d76b`.
+The archived probe is outside that report's current D5 source set.
+`git diff --check` exited 0. `git merge-tree --write-tree HEAD origin/dev`
+exited 0 against `9e1687db6cb75fed0c3da3a48a9574ec4b07c723`, producing union
+tree `9a173d1dfca2bda2dcd962de1e232265fe5bf383` with no conflicts.
+
+PR: https://github.com/the-omega-institute/trureturing/pull/6574 (base dev).
+At creation it was OPEN, with autoMergeRequest=null. The canonical pr-open
+command waits for required CI; its eventual exit and check outcomes are
+recorded in the worker-owned result.json, not inferred from the local build.
 
 ## Preregistered Scope
 
