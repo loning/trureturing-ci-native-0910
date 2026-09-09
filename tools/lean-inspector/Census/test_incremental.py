@@ -60,6 +60,27 @@ class IncrementalTests(unittest.TestCase):
         self.assertEqual([len(batch["keys"]) for batch in batches], [128, 128, 1])
         self.assertEqual([key for batch in batches for key in batch["keys"]], keys)
 
+    def test_upstream_header_memo_detects_same_size_rewrite(self):
+        import json
+        import os
+        from unittest.mock import patch
+        from phases import upstream_header
+        with tempfile.TemporaryDirectory() as folder:
+            root = pathlib.Path(folder)
+            path, cache, memo = root / "A.ilean", root / "cache", {}
+            path.write_text(json.dumps({"module": "A", "directImports": [["Old"]]}))
+            old_stamp = path.stat()
+            first, _, reread = upstream_header(path, memo, cache)
+            self.assertEqual(first["imports"], ["Old"])
+            self.assertTrue(reread)
+            with patch.object(pathlib.Path, "read_bytes", side_effect=AssertionError("unchanged metadata was reread")):
+                self.assertEqual(upstream_header(path, memo, cache), (first, True, False))
+            path.write_text(json.dumps({"module": "A", "directImports": [["New"]]}))
+            os.utime(path, ns=(old_stamp.st_atime_ns, old_stamp.st_mtime_ns))
+            changed, _, reread = upstream_header(path, memo, cache)
+            self.assertTrue(reread)
+            self.assertEqual(changed["imports"], ["New"])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -30,6 +30,33 @@ def enumerate_domain(repository, directory):
     write(directory / "olean-hashes.json", hash_inputs(inputs, read(directory / "stamps.json")))
 
 
+def upstream_header(path, memo, cache):
+    """Memoize pinned upstream metadata by path and full filesystem identity.
+
+    This does not shortcut hashing any tracked project olean. A size/mtime/
+    ctime/device/inode change requires rereading the compiler metadata bytes.
+    """
+    from incremental import atomic_json
+    before = file_stamp(path)
+    previous = memo.get(str(path))
+    if previous and previous["stamp"] == before:
+        return previous["header"], True, False
+    encoded = path.read_bytes()
+    if file_stamp(path) != before:
+        raise ValueError("IE-C044 upstream metadata changed during read: " + str(path))
+    address = hashlib.sha256(encoded).hexdigest()
+    cached = cache / (address + ".json")
+    hit = cached.is_file()
+    if hit:
+        header = read(cached)
+    else:
+        data = json.loads(encoded)
+        header = {"module": data["module"], "imports": sorted(set(e[0] for e in data["directImports"]))}
+        atomic_json(cached, header)
+    memo[str(path)] = {"stamp": before, "address": address, "header": header}
+    return header, hit, True
+
+
 def external_graph(directory):
     """Upstream packages cannot depend on this downstream package.
 
@@ -54,7 +81,10 @@ def external_graph(directory):
     result = {}
     from incremental import atomic_json
     cache = repository / ".lake/build/census/upstream"
-    hits = misses = 0
+    memo_path = cache / ("files-" + hashlib.sha256(pathlib.Path(__file__).read_bytes()).hexdigest() + ".json")
+    memo = read(memo_path) if memo_path.is_file() else {}
+    used_memo = {}
+    hits = misses = rereads = 0
     while pending:
         module = pending.pop()
         if module in result:
@@ -63,19 +93,11 @@ def external_graph(directory):
         path = next((root / relative for root in search if (root / relative).is_file()), None)
         if path is None:
             raise ValueError("IE-C044 missing upstream compiler import metadata: " + module)
-        encoded = path.read_bytes()
-        address = hashlib.sha256(encoded).hexdigest()
-        cached = cache / (address + ".json")
-        if cached.is_file():
-            header = read(cached)
-            hits += 1
-        else:
-            data = json.loads(encoded)
-            header = {"module": data["module"], "imports": sorted(set(e[0] for e in data["directImports"]))}
-            del data
-            atomic_json(cached, header)
-            misses += 1
-        del encoded
+        header, hit, reread = upstream_header(path, memo, cache)
+        used_memo[str(path)] = memo[str(path)]
+        hits += hit
+        misses += not hit
+        rereads += reread
         if header["module"] != module:
             raise ValueError("IE-C044 mismatched compiler import metadata: " + module)
         imports = header["imports"]
@@ -86,7 +108,8 @@ def external_graph(directory):
     request = read(directory / "membership-request.json")
     request["external_graph"] = sorted(result.items())
     write(directory / "membership-request.json", request)
-    write(directory / "upstream-cache.json", {"hits": hits, "misses": misses})
+    atomic_json(memo_path, used_memo)
+    write(directory / "upstream-cache.json", {"hits": hits, "misses": misses, "metadata_files_reread": rereads})
 
 
 def hash_receipt(repository, directory):
