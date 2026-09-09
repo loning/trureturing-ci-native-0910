@@ -102,6 +102,24 @@ assert.deepEqual(mixedGram(mixedPi), [[0.5, 0], [0, 0.5]]);
 assert.equal(rank2(mixedZero), 1);
 assert.equal(rank2(mixedPi), 2);
 
+function spectrum2(g) {
+  assert.equal(g[0][1], g[1][0]);
+  const trace = g[0][0] + g[1][1];
+  const determinant = g[0][0] * g[1][1] - g[0][1] * g[1][0];
+  const discriminant = trace * trace - 4 * determinant;
+  assert.ok(g[0][0] >= 0 && g[1][1] >= 0 && determinant >= 0);
+  assert.ok(discriminant >= 0);
+  const root = Math.sqrt(discriminant);
+  return [(trace + root) / 2, (trace - root) / 2];
+}
+const positiveSpectrum = spectrum2(gram(phaseZeroSupport));
+assert.deepEqual(positiveSpectrum, spectrum2(gram(phasePiSupport)));
+const mixedZeroSpectrum = spectrum2(mixedGram(mixedZero));
+const mixedPiSpectrum = spectrum2(mixedGram(mixedPi));
+assert.deepEqual(positiveSpectrum, [0.5, 0.5]);
+assert.deepEqual(mixedZeroSpectrum, [1, 0]);
+assert.deepEqual(mixedPiSpectrum, [0.5, 0.5]);
+
 console.log(JSON.stringify({
   historyCount: histories.length,
   inversionHistogram: histogram,
@@ -115,7 +133,7 @@ console.log(JSON.stringify({
     positive: {
       occupation: [1, 1], cut: [1, 1], cardinalityPremise: '2 = 1 + 1',
       legalWords: validWordCount, squareRootArgument: validWordCount,
-      schmidtSquaresAtZeroAndPi: [0.5, 0.5],
+      schmidtSquaresAtZeroAndPi: positiveSpectrum,
       rank: rank2(validSupport), boundaryCount: 2,
       entropyApprox: Math.log(2)
     },
@@ -131,7 +149,7 @@ console.log(JSON.stringify({
       occupiedSectors: [[2, 0], [1, 1], [0, 2]],
       fixedOccupationPremise: false,
       normSquaredAtBothPhases: 1,
-      schmidtSquaresAtZero: [1, 0], schmidtSquaresAtPi: [0.5, 0.5],
+      schmidtSquaresAtZero: mixedZeroSpectrum, schmidtSquaresAtPi: mixedPiSpectrum,
       rankAtZero: rank2(mixedZero), rankAtPi: rank2(mixedPi),
       entropyAtZero: 0, entropyAtPiApprox: Math.log(2),
       failedConclusion: '[1,0] != [1/2,1/2]'

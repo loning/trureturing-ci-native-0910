@@ -109,7 +109,7 @@ Direct frozen dependencies use these full pins:
 | `all_theta_5040_rank` | CHS `history_5040_max_schmidt_rank` | Equation (29), all theta |
 | `normalization_positive` | CHS `schmidt_coefficient_pos`; OWS `multiplicity_pos`, `boundary_spec`, `complement_card` | Denominator/root/log-domain audit |
 
-The six auxiliary definitions only spell out the source phase, phased vectors,
+The seven auxiliary definitions only spell out the source phase, phased vectors,
 the matrix, and the entropy functional, or package a diagonal matrix as a
 unitary. They supply notation to the consumers above, not separate content.
 `area_append` uses OWS's word/occupation definitions, but no direct frozen
@@ -159,9 +159,22 @@ The source-specific pi/4 overlap has equal inversion-residue counts
 [105,105,105,105,105,105,105,105]. Reduction modulo q^4+1 gives [0,0,0,0], hence
 overlap 0/840=0. Exact small-integer enumeration is independently executable
 in Node, but has not been proved correct by Lean. Entropy decimals are
-approximations, not certified intervals. The diagnostic is being rerun after
-adding the fixed-occupation counterexample; its final exit code is recorded
-in the runner result.
+approximations, not certified intervals. The diagnostic exited 0 after adding
+the fixed-occupation counterexample. The eigenvalues in both small examples
+are computed from the actual Gram matrices; positivity/nonnegativity is
+checked before division, log, or square root. `make lean` on the final tree
+after archiving the probe also exited 0 (`lean-final-tree.log`).
+
+Final search-count audit on the unchanged source tree: using `rg -c -i -P`
+with the two repository regexes printed below returned 76 and 37 matching
+lines respectively (both exit 0). The same-option matrix-directory search
+for `\\b(?:\\w*singularValues\\w*|\\w*singular_values\\w*|\\w*svd\\w*)\\b`
+returned 0 (exit 1); its same-feature control
+`\\b(?:\\w*conjTranspose\\w*|\\w*unitary\\w*)\\b` returned 398 (exit 0).
+The directories were `.lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix`
+and `.lake/packages/mathlib/Mathlib/Analysis/Matrix`. The count is matching
+lines, not declarations. The actual singular-value API was read under
+`Analysis/InnerProductSpace`, as recorded below.
 
 ## Explicit Nonclaims
 
