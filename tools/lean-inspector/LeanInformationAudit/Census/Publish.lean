@@ -36,9 +36,11 @@ def elaborateFinalSource (input : String) (fileName : String) (root : Name)
   IO.FS.createDirAll compiledSource.parent.get!
   IO.FS.writeFile compiledSource input
   let target := compiledSource.withExtension "olean"
+  -- The invoking Lean process already has the warm toolchain and LEAN_PATH.
+  -- Its child needs only the compiler, not a second Lake environment startup.
   let result ← IO.Process.output {
-    cmd := "lake"
-    args := #["env", "lean", "-DmaxHeartbeats=0", "-DmaxRecDepth=4000",
+    cmd := "lean"
+    args := #["-DmaxHeartbeats=0", "-DmaxRecDepth=4000",
       "-R", directory.toString, "-o", target.toString, compiledSource.toString]
     env := #[("LEAN_NUM_THREADS", some "1")] }
   IO.FS.writeFile (source.withExtension "compiler.log") (result.stdout ++ result.stderr)
