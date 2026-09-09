@@ -106,3 +106,46 @@ n=0 不进入结论；禁止反向、重复或对角步，n=1 须符合单格路
   rascoe2025a380392 满足 bibkey 文法，Verified locator 正文逐字含 canonical URL。
 - Scribe 使用 StatementSource.FromLean 直接投影主定理，说明路径编码和双重计数。
   未将治理判形词汇放入 Scribe。尚未 emit 与 Scribe 内容门，不冒称其已绿。
+
+## 内核语义回声与依赖审计
+
+- runner attempt-1/KernelAudit.lean 经 lake env lean 检查 EXIT=0。
+  两条 private 回声对所有 1×1、2×2 矩阵作 kernel decide：
+  n=1 恰为唯一格的真值指示数；n=2 恰为两条合法路径的指示数之和。
+  文件仅在 runner attempt 中，不冻结有限实例，不用 native_decide。
+- #print axioms mean_monotone_one_paths = [propext, Classical.choice, Quot.sound]。
+- 使用 Lean 环境 ConstantInfo.type.getUsedConstants 和 value?(allowOpaque:=true)
+  遍历 elaborate 后传递常量闭包，7342 个常量；D5 依赖全部属于本模块。
+  命中 fixed_path_count、freeCellsEquiv、pathCells_card、pathCell_injective、pathCell_rank。
+  这是 Lean 编译器语义 API 读数，不用文本粗筛冒充依赖结论。
+- pathCell_endpoints/step 是独立的 private 语义核对，不在主定理活推导路径中；
+  不将它们冒称主定理的 escape_witness。
+
+## 公开定理的判形与准入
+
+唯一公开定理：D5/S3/Arith/Paths/MonotoneOnePaths.mean_monotone_one_paths。
+proof_shape: content；direct_frozen_dependencies: []（无前置 GID/statement_id 对）；
+escape_witness: fixed_path_count（经 pathCells_card、pathCell_injective 与 freeCellsEquiv）；
+admission_basis: escape-witness。
+
+对 CLAUDE.md 3.2 四项逐项核对：
+
+1. 依赖闭包内：以上 Lean 语义遍历明确命中这些具名 helper，主定理依次消费
+   total_path_count → fixed_path_count → fixed_cells_count/freeCellsEquiv 与 pathCells_card。
+2. 非投影可得：库中的子集/函数基数接口并未提供该编码路径访问格互异或固定路径矩阵数。
+   本模块由前缀坐标构造出注入，再构造补格限制/填充的双侧逆，得到新的固定路径计数命题。
+   空的 D5 冻结前置集无法单靠实例化/投影提供这些路径事实；非某条已有目标公式的改名。
+3. 非定义等价：fixed_path_count 的结论是一个固定路径所支持的矩阵基数，主定理是
+   对全部矩阵中全部路径计数的有理平均；两者量化对象与结论不同，不是别名或重述。
+4. 活推导路径：求和交换之后，每个内和用 fixed_path_count 的等式替换；该等式的
+   指数利用 pathCells_card，而后者以 pathCell_injective 把 image 的基数化为时间域基数。
+   freeCellsEquiv 的两侧逆承担 Fintype.card_congr，没有无关合取分量被投影丢弃。
+   去掉这些步骤，有限求和只交换索引，不能给出内和的值。此项为证明项的语义自查，
+   不声称依赖遍历本身机器决定全部判形。
+
+Path/pathCell/pathCells/pathCount 是实际组合对象定义，不冒称额外公开定理。
+全部 included 声明为定义或无界符号定理，computational_content.kind=none；
+basis/consumer/instance/premises/result/claim 为 not-applicable(kind=none)。
+question_answered：用户预登记的 A380392 全正尺寸平均公式是否成立。
+dominating_theorem_search：D5 → 钉版 mathlib → GitHub Lean/OEIS/arXiv，
+not-found-in-searched-scope；失败请求和未读外链已逐项标明。
