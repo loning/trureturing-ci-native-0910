@@ -1,6 +1,7 @@
 """Streaming census contracts: scope, ownership, freshness, and actual replay."""
 
 import copy
+import json
 import pathlib
 import tempfile
 import unittest
@@ -8,6 +9,17 @@ from unittest import mock
 
 
 class StreamingTests(unittest.TestCase):
+    def test_domain_follows_lakes_default_library_globs(self):
+        from streaming import tracked_domain
+        config = {"defaultTargets": ["Project", "Inspector"], "lean_lib": [
+            {"name": "Project", "globs": ["D5.+"]},
+            {"name": "Inspector", "srcDir": "tools/lean-inspector", "globs": ["Inspector.+"]},
+            {"name": "OptIn", "srcDir": "tools/lean-inspector", "globs": ["Analysis.+"]}]}
+        paths = b"D5/A.lean\0tools/lean-inspector/Inspector/B.lean\0tools/lean-inspector/Analysis/C.lean\0"
+        with mock.patch("streaming.subprocess.check_output", side_effect=[paths, json.dumps(config)]):
+            self.assertEqual(tracked_domain("/fixture"), {
+                "D5.A": "D5/A.lean", "Inspector.B": "tools/lean-inspector/Inspector/B.lean"})
+
     def test_freshness_gate_propagates_lake_failure(self):
         from streaming import freshness
         calls = []

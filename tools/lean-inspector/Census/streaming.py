@@ -34,9 +34,10 @@ def check_domain(expected, actual):
 
 
 def tracked_domain(repository):
-    """Enumerate FROM tracked sources selected by Lake's lean_lib globs.
+    """Enumerate FROM tracked sources in Lake's default lean_lib globs.
 
     Cached modules outside this domain are never opened, statted or hashed.
+    Opt-in analysis libraries are outside the default inspector build/domain.
     Dependency packages cannot import this downstream project: the package DAG
     is the evidence-free boundary, not a list of upstream module names.
     """
@@ -48,6 +49,8 @@ def tracked_domain(repository):
         cwd=repository, text=True))
     domain = {}
     for library in config["lean_lib"]:
+        if library["name"] not in config["defaultTargets"]:
+            continue
         source_root = pathlib.PurePosixPath(library.get("srcDir", "."))
         for path in paths:
             if not path.is_relative_to(source_root):
