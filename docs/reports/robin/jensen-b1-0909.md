@@ -30,3 +30,5 @@ LANE #6160；atom `087e3caa7c278b4ea58f06604daa8721ab5258f6c451a25ed8f2d0092d823
 第三次探针总退出 2（`A/probe-03.log`），但 `b1_polynomial`、`reciprocal_binding`、`source_binding` 均已通过，闭包仅 `[propext, Classical.choice, Quot.sound]`。剩余失败在零点求值缺显式 `coeff_zero_eq_eval_zero` 改写、求值包装与 sample_q2 的宽 `simp` 达默认递归深度；不提高预算，改为指定公式分步规范化。尚未把总失败报为整体验证通过。
 
 第四次探针总退出 2（`A/probe-04.log`），B1 的全部一般性声明 `b1_polynomial`、`b1_eval`、固定源 `b1_source` 与两种绑定均已通过，六条公理闭包全部只有标准三公理。唯一剩余报错是具体 sample_q2 的 `reflect 2 X` 与 `revAt 2 2` 化简遗漏。**停止判据 1 已触发：B1 整体判 `bind-only`，停止模块实施，不创建 D5 模块、不 deposit、不寻准入依据。** 后续仅完成 brief 必需的数值/退化诊断与报告交付。
+
+第五次总退出 2（`A/probe-05.log`），仍仅 sample_q2 的常量多项式 `C (-1)`、`C 1` 尚未映射成环常量；一般性 B1 与绑定的六条闭包继续为标准三公理。增加最后一次常量规范化，不加预算。d=0 与首系数为零的诊断已加入且未报错。最终同特性正则读数：Jensen 对象 36 行/rc0；`\bsource_jensen_degree_lowering\b` 阳性 1 行/rc0；新绑定名字阴性 0 行/rc1；Mathlib `\b(reflect|reverse)\b` 61 行/rc0。名字阴性不解释为语义穷尽；四个原始检索保存在 `A/search-receipts.json` 及对应 txt。
