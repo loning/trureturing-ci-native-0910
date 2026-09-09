@@ -57,7 +57,7 @@ def elaborateFinalSource (input : String) (fileName : String) (root : Name)
   let (data, _) ← readModuleData target
   checkSourceImports data.imports
   -- Serialized output is the standalone compiler's environment, including its
-  -- kernel-checked theorem on the second pass, never the IO driver's environment.
+  -- kernel-checked theorem, never the IO driver's environment.
   IO.FS.writeBinFile (source.withExtension "olean") (← IO.FS.readBinFile target)
   let previous ← searchPathRef.get
   try
@@ -72,6 +72,21 @@ def certificateSource (input : String) (ids reportIds certificate : Name) (reque
   input ++ "\ntheorem " ++ certificate.toString ++ " :\n  LeanInformationAudit.CensusKeyManifest.Certificate " ++
     ids.toString ++ " " ++ toString requested ++ " " ++ reportIds.toString ++
     " := by\n  exact ⟨by decide +kernel, by decide +kernel, rfl⟩\n"
+
+/-- A valid certificate needs one imported environment. Both the kernel theorem
+and its constructor graph are checked before publication. If its proof fails,
+elaborate the data alone so the binder reports identity before missing rows;
+the original compiler failure is rethrown if the data passes all checks. -/
+def elaborateBoundSource (input checkedInput : String) (source checked : System.FilePath)
+    (root : Name) (options : Options) (check : Environment → CommandElabM Unit) :
+    CommandElabM Environment := do
+  let staged ← try elaborateFinalSource checkedInput checked.toString root options
+    catch error => do
+      let data ← elaborateFinalSource input source.toString root options
+      check data
+      throw error
+  check staged
+  return staged
 
 private def phase (destination label : String) : IO Unit :=
   IO.FS.writeFile (destination ++ ".phase") label
@@ -171,31 +186,30 @@ elab "#disposition_census" &"projection" &"root" root:ident &"source" sourcePath
   let manifestName := manifestName.getId.eraseMacroScopes
   let reportKeysName := reportKeysName.getId.eraseMacroScopes
   let (inventory, sources) ← liftTermElabM <| readRows paths report head.getString reportSha.getString
-  phase destination "manifest_compile"
+  phase destination "certificate_compile_kernel"
   let options := ((← getOptions).erase `maxRecDepth).setBool `Elab.async false
   let input ← IO.FS.readFile sourcePath.getString
-  let finalEnv ← elaborateFinalSource input sourcePath.getString root.getId options
-  liftTermElabM <| checkFinalEnvironment finalEnv (some root.getId)
-  let (data, _) ← readModuleData ((System.FilePath.mk sourcePath.getString).withExtension "olean")
+  let source := System.FilePath.mk sourcePath.getString
+  let checkedPath := source.withExtension "checked.lean"
+  let certificateName := (← getCurrNamespace) ++ certificate.getId.eraseMacroScopes
+  let checkedInput := certificateSource input (manifestName.appendAfter "Keys") reportKeysName
+    certificateName selected.theorems.size
+  let staged ← elaborateBoundSource input checkedInput source checkedPath root.getId options fun env => do
+    phase destination "manifest_binding"
+    liftTermElabM <| checkFinalEnvironment env (some root.getId)
+    withEnv env <| liftTermElabM <| withOptions (fun _ => options) do
+      bindEmittedManifest selected root.getId (inventory.entries.map (·.1)) manifestName reportKeysName
+  let (data, _) ← readModuleData (checkedPath.withExtension "olean")
   let imports := data.imports.map (·.module.toString)
-  let closure := finalEnv.header.moduleNames.filter (· != root.getId) |>.map Name.toString
+  let closure := staged.header.moduleNames.filter (· != root.getId) |>.map Name.toString
   IO.FS.writeFile (destination ++ ".environment.json") ((Json.mkObj [
     ("imports", toJson imports), ("transitive_imports", toJson closure)]).pretty ++ "\n")
-  phase destination "manifest_binding"
   let ids := mkConst (manifestName.appendAfter "Keys")
   let reportKeysExpr := mkConst reportKeysName
-  withEnv finalEnv <| liftTermElabM <| withOptions (fun _ => options) do
-    bindEmittedManifest selected root.getId (inventory.entries.map (·.1)) manifestName reportKeysName
   phase destination "receipt_verification"
   liftTermElabM do
     for path in paths do discard <| CensusReceipt.verify path report
   phase destination "certificate_compile_kernel"
-  let certificateName := (← getCurrNamespace) ++ certificate.getId.eraseMacroScopes
-  let checkedPath := (System.FilePath.mk sourcePath.getString).withExtension "checked.lean"
-  let checkedInput := certificateSource input (manifestName.appendAfter "Keys") reportKeysName
-    certificateName selected.theorems.size
-  let staged ← elaborateFinalSource checkedInput checkedPath.toString root.getId options
-  liftTermElabM <| checkFinalEnvironment staged (some root.getId)
   let proposition ← withEnv staged <| liftTermElabM do
     let expected ← mkAppM ``CensusKeyManifest.Certificate #[ids, toExpr selected.theorems.size, reportKeysExpr]
     let actual ← getConstInfo certificateName

@@ -23,19 +23,16 @@ elab "#census_certificate_benchmark" &"report" reportPath:str &"head" head:str
   let source := destination / "CensusRun/Root.lean"
   let input ← IO.FS.readFile source
   let options := (← getOptions).setBool `Elab.async false
-  phase "compile_kernel"
-  let env ← elaborateFinalSource input source.toString `CensusRun.Root options
-  phase "boundary_axioms"
-  liftTermElabM <| checkFinalEnvironment env (some `CensusRun.Root)
-  withEnv env <| liftTermElabM do
-    bindEmittedManifest report `CensusRun.Root report.theorems `CensusRun.manifest `CensusRun.reportKeys
-  phase "compile_kernel"
   let checked := source.withExtension "checked.lean"
   let certificate := `CensusRun.accountingCertificate
-  let staged ← elaborateFinalSource (certificateSource input `CensusRun.manifestKeys
-    `CensusRun.reportKeys certificate report.theorems.size) checked.toString `CensusRun.Root options
+  phase "compile_kernel"
+  let staged ← elaborateBoundSource input (certificateSource input `CensusRun.manifestKeys
+      `CensusRun.reportKeys certificate report.theorems.size) source checked `CensusRun.Root options fun env => do
+    phase "boundary_axioms"
+    liftTermElabM <| checkFinalEnvironment env (some `CensusRun.Root)
+    withEnv env <| liftTermElabM do
+      bindEmittedManifest report `CensusRun.Root report.theorems `CensusRun.manifest `CensusRun.reportKeys
   phase "boundary_axioms"
-  liftTermElabM <| checkFinalEnvironment staged (some `CensusRun.Root)
   let (data, _) ← readModuleData (checked.withExtension "olean")
   let axioms ← withEnv staged <| collectAxioms certificate
   unless axioms.all (#[`propext, `Classical.choice, `Quot.sound].contains ·) do

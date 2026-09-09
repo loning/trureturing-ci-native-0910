@@ -47,7 +47,7 @@ def packIds (ids : List Nat) : Nat :=
 
 /-- Match both the chunk graph and every packed Nat literal. No evalExpr or
 unfolding of global definitions: cross-side aliases, moves, duplication, order
-and arity changes are rejected before kernel proof construction. -/
+and arity changes are rejected before publication. -/
 def bindChunkedKeys (listName : Name) (component : String)
     (wire : Array StatementKey) : MetaM (List Nat) := do
   let keys ← ofExcept <| canonicalKeys wire
