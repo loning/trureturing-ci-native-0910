@@ -284,6 +284,20 @@ class SnapshotContracts(CacheFixture, unittest.TestCase):
             ("other_branch", "push", "refs/heads/topic", "true", "true", False),
             ("other_integration", "push", "refs/heads/integration-ci-other-tests", "true", "true", False),
         ]
+        # Integration-only rollout data: exclude this block from dev delivery.
+        integration = "integration-ci-current-stability-0909-tests"
+        cases += [
+            ("integration_push", "push", f"refs/heads/{integration}", "true", "true", True),
+            ("integration_pr_target", "pull_request_target", f"refs/heads/{integration}", "true", "true", False),
+            ("integration_pr", "pull_request", f"refs/heads/{integration}", "true", "true", False),
+            ("integration_dispatch", "workflow_dispatch", f"refs/heads/{integration}", "true", "true", False),
+            ("integration_writes_false", "push", f"refs/heads/{integration}", "false", "true", False),
+            ("integration_check_failed", "push", f"refs/heads/{integration}", "true", "false", False),
+            ("integration_check_missing", "push", f"refs/heads/{integration}", "true", None, False),
+            ("integration_suffix", "push", f"refs/heads/{integration}-other", "true", "true", False),
+            ("integration_tag", "push", f"refs/tags/{integration}", "true", "true", False),
+        ]
+        # End integration-only rollout data.
         for name, event, ref, writes, success, allowed in cases:
             with self.subTest(case=name):
                 cache = self.root / "build/lean-cache"
