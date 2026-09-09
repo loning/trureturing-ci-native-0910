@@ -37,7 +37,7 @@ internal sealed class QuarticEGFModFourDocument : IScribeDocumentDefinition
                 DeclarationHandle.Create(Prefix + "mod_four"), H("The OEIS conjecture"),
                 StatementSource.FromAuthor(Disp(Seq(
                     Forall, Sp, F.Id("n"), Colon, Mathbb, Grp(F.Id("N")), Comma, Sp,
-                    D(1), Leq, F.Id("n"), Implies,
+                    D(1), Leq, Sp, F.Id("n"), Implies, Sp,
                     new Formula.Modulo(Call("a", F.Id("n")), D(4)), Eq,
                     new Formula.Modulo(F.Id("n"), D(4))))),
                 AssessedProvenance.FromRepo(Source),

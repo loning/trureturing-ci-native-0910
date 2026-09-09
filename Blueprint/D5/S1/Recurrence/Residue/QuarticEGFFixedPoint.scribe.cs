@@ -46,7 +46,8 @@ internal sealed class QuarticEGFFixedPointDocument : IScribeDocumentDefinition
                 + "Together these identify the formal series used in the final congruence."))));
 
     private static DocumentBlock Note(string name, string title, string prose) =>
-        Describe.Remark(DescribeId.Create("quartic-egf-" + name.Replace('_', '-').ToLowerInvariant()),
+        Describe.Remark(DescribeId.Create("quartic-egf-"
+                + (name == "A" ? "series-a" : name.Replace('_', '-').ToLowerInvariant())),
             DeclarationHandle.Create(Prefix + name), H(title), AssessedProvenance.FromRepo(),
             Blocks(Paragraph(Text(prose))));
 }
