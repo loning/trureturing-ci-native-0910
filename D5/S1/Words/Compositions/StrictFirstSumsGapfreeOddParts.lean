@@ -211,3 +211,29 @@ private theorem firstOddEquiv_gapfree
     rw [Equiv.symm_apply_apply]
   rw [he]
   exact row_gapfree r
+
+private noncomputable def strictPartitionEquiv (n : ℕ) :
+    {p : Nat.Partition n // IsStrictFirstSums (p.parts.sort (· ≤ ·))} ≃
+      {p : Nat.Partition n // GapfreeOdd p.parts} := by
+  let e := ((sibling% firstListEquiv) n).trans
+    (((sibling% firstOddEquiv).subtypeEquiv (fun y => by
+      rw [sibling% firstOddEquiv_sum])).trans ((sibling% oddListEquiv) n).symm)
+  have h (p : {p : Nat.Partition n //
+      IsZeroPrependedFirstSums (p.parts.sort (· ≤ ·))}) :
+      IsStrictFirstSums (p.val.parts.sort (· ≤ ·)) ↔ GapfreeOdd (e p).val.parts := by
+    exact firstOddEquiv_gapfree (((sibling% firstListEquiv) n) p).val
+  exact (Equiv.subtypeSubtypeEquivSubtype (fun hy => strict_implies_weak hy)).symm.trans
+    ((e.subtypeEquiv h).trans
+      (Equiv.subtypeSubtypeEquivSubtype (fun hm => gapfree_implies_odd hm)))
+
+open scoped Classical in
+/-- Strict zero-prepended first-sums partitions are counted by gapfree odd partitions. -/
+theorem card_strictFirstSums_eq_gapfreeOdd (n : ℕ) :
+    ((Finset.univ : Finset (Nat.Partition n)).filter
+      (fun p => IsStrictFirstSums (p.parts.sort (· ≤ ·)))).card =
+    ((Finset.univ : Finset (Nat.Partition n)).filter
+      (fun p => GapfreeOdd p.parts)).card := by
+  classical
+  simpa only [Fintype.card_subtype] using Fintype.card_congr (strictPartitionEquiv n)
+
+end D5.S1.Words.Compositions.StrictFirstSumsGapfreeOddParts
