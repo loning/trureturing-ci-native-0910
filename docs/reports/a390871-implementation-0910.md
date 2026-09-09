@@ -151,3 +151,18 @@ question_answered：用户预登记的 A390871 非 2 幂项指数双边界是否
   64a32609f7cca379183a75b03986b77c3705422d；不需追平无冲突的移动基线。
 - 当前 scribe-content-checks 的 projection 子项仅在相关 projection/producer delta 时唤醒；
   本题无此 delta，故另显式执行 projections --check，随后运行用户要求的完整脚本。
+
+## 开 PR 前 Scribe 内容门
+
+- projections --check --report .lake/build/stratalint/raw-lean-report.json EXIT=0，14.780 秒。
+- bash tools/scripts/workflow/scribe-content-checks.sh .lake/build/stratalint/raw-lean-report.json
+  "" 3759149d0ea0884cb8a57fb950e3caddab007a38 EXIT=0，28.193 秒。
+  describe-report --check 通过；真实 KaTeX：markdown: judged=1 formula(s)=1 red=0。
+  既有 notes 的 online-doi-title-check 为非阻断 Observe，不冒作在线 DOI 核验。
+- 无 atom 冻结门 make deposit-uncovered 已启动；内部重用 canonical report、头部预检、emit 与 ledger-align --add。
+
+完整 make lean 的 LEAN_CACHE 收据：
+
+```text
+LEAN_CACHE {"status":"present","worktree":"/Users/chronoai/trureturing-a390871","donor":null,"method":"none","reason":null,"stamp_miss":null,"pin_sha256":"sha256:6c4c682ffba051b5744fe7a75ccc99d7f3b20227b3b026f392f3315be0adaa4e","clonefile_errno":null,"clonefile_errnos":[],"clonefile_attempts":0,"clonefile_cleanup_error":null,"mathlib_missing_olean_files":0,"mathlib_missing_olean_samples":[],"archive_status":"not_attempted","archive_mode":null,"archive_skip_reason":"project olean state is warm","archive_reason":null,"archive_producer_commit_sha":null,"archive_workflow_run_id":null,"mathlib_olean_state":"warm","mathlib_olean_probe_error":null,"project_olean_state":"warm","project_olean_probe_error":null}
+```
