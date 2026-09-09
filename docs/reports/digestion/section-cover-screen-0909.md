@@ -54,7 +54,7 @@ basis. No source recompilation or independent theorem is required for screening.
 
 ## Progress
 
-Screened: 90 / 164. frozen-covered: 5; frozen-partial: 2; needs-lean: 83; not-an-assertion: 0; unreadable: 0.
+Screened: 91 / 164. frozen-covered: 6; frozen-partial: 2; needs-lean: 83; not-an-assertion: 0; unreadable: 0.
 
 All screened source bodies were read in full. The theorem-like headings are not treated as evidence by themselves. Source IDs are quantum-rh. Atom links point to immutable CAS bodies. The input bytes field is retained as supplied and is not used as a classifier.
 
@@ -69,6 +69,7 @@ Scope: state pins identify the module statement; theorem selectors are listed se
 | 66 | [66fd622e5d54c25826af9d416db18df1d8eecf9c71288d80ff0460237e3e95d2](../../../Meta/Digestion/atoms/sha256/66fd622e5d54c25826af9d416db18df1d8eecf9c71288d80ff0460237e3e95d2) ## 定理 G2　判别式的下界及其取等情形 | frozen-covered | `D5/S3/Zeros/Convolution/GribinskiDegreeTwo` | 冻结 G2 给出判别式恒等式、非严格下界和双重根输入的取等；输出判别式桥在源文相同 alpha 定义域成立。 | C+3, S48 |
 | 77 | [7901adf784a2db15b73b33751c521fc703f8bbe431efb0304c449cfa3b049907](../../../Meta/Digestion/atoms/sha256/7901adf784a2db15b73b33751c521fc703f8bbe431efb0304c449cfa3b049907) ## 定理 G1　二次矩形卷积的显式系数 | frozen-covered | `D5/S3/Zeros/Convolution/GribinskiDegreeTwo` | G1 的全部二次系数和实参数排除条件与冻结声明一致；卷积含义采用已追加的乘积前因子勘误。 | C+2, C+3, S48 |
 | 80 | [7b2657006891568aa395dfd9fa14bde9d9d23d2ade0c449b00f7cdf5c616baec](../../../Meta/Digestion/atoms/sha256/7b2657006891568aa395dfd9fa14bde9d9d23d2ade0c449b00f7cdf5c616baec) ## 定理二：什么时候投影后的几何能够独立执行？ | frozen-covered | `D5/S0/Rewriting/Quotients/DynamicsDescent` | 将观察的余域限制到 pi(X) 后映射自动满射；冻结的存在唯一下降 iff 保持纤维与源文存在下降 iff 保持纤维等价。 | S44 |
+| 92 | [8ef6b9257471235dae81e95cd49a82d8589c77b60cfb90cd4d4355ed0ae75092](../../../Meta/Digestion/atoms/sha256/8ef6b9257471235dae81e95cd49a82d8589c77b60cfb90cd4d4355ed0ae75092) ## 定理 G3　Gribinski 猜想在 \(m=2\) 处成立 | frozen-covered | `D5/S3/Zeros/Convolution/GribinskiDegreeTwo` | 冻结 G3 的五个全称实参数、严格 alpha>-1 和两个存在非负实根与 boxed 断言一致。 | C+3, S48 |
 | 10 | [0a350824194cd6312628fc5708116dfece7d0e63fec2a1e2f8c201549d63c707](../../../Meta/Digestion/atoms/sha256/0a350824194cd6312628fc5708116dfece7d0e63fec2a1e2f8c201549d63c707) ## 定理三：每一个连续时间切面的 Schmidt 系数都与 \(\theta\) 无关 | frozen-partial | `D5/S3/Quantum/Entanglement/CoherentHistorySchmidt` | 冻结件覆盖 theta=0 的分解、权重和中切 rank=12；未覆盖任意 theta 的相位历史。 | S10, S23 |
 | 45 | [3f70bb4b78d38951e5b98029e96abb9e4d697c94e858de86ce861782dfe79bb9](../../../Meta/Digestion/atoms/sha256/3f70bb4b78d38951e5b98029e96abb9e4d697c94e858de86ce861782dfe79bb9) ### 定理十一：消去正的内部块，不丢失任何负方向 | frozen-partial | `D5/S3/Weil/ZetaLinear/ExactStickyReduction` | 实内积空间的 Schur 能量负指数相等已冻；源文复 Hermitian 惯性计数所需域桥未核实。 | S32, S18, S17 |
 | 1 | [028cb6a153eaec67ee356ef9571a406a6d9460c0092fbc031df4abab42884a85](../../../Meta/Digestion/atoms/sha256/028cb6a153eaec67ee356ef9571a406a6d9460c0092fbc031df4abab42884a85) ## 定理十一：有限多边形绕数证书 | needs-lean | none | 若每段严格误差界成立则矩形零点数等于多边形绕数；RoucheZeroCount 只给两个解析函数的零数相等，缺线性插值误差 Bh^2/8 与多边形绕数桥。 | S01 |
@@ -247,6 +248,24 @@ proof_shape: `bind-only`; escape_witness: `null`; admission_basis: `not-applicab
 | (11) for all x,y, pi(x)=pi(y) -> pi(Tx)=pi(Ty) | forall x y : X | equality in range reduces to equality of values in Y | right side: forall x y, quotientMap x=quotientMap y -> quotientMap(update x)=quotientMap(update y) | verbatim |
 | exists descent iff fiber preservation | same | hSurjective on range; no surjectivity onto original Y assumed | dynamics_descends_iff is the two-way implication; existence/unique-existence equivalence explained above | equivalent |
 
+## frozen-covered: 8ef6b9257471235dae81e95cd49a82d8589c77b60cfb90cd4d4355ed0ae75092
+
+定理 G3　Gribinski 猜想在 \(m=2\) 处成立
+
+- GID: `D5/S3/Zeros/Convolution/GribinskiDegreeTwo`; statement_id: `sha256:184c298cb6b3a6b32640e84511f41eede52d8d0d29ae2b24a68f14ef5722487e`; [state pin](../../../Golden/Frozen/state/D5/S3/Zeros/Convolution/GribinskiDegreeTwo.lean.json); [Lean source](../../../D5/S3/Zeros/Convolution/GribinskiDegreeTwo.lean).
+- Declarations: `g3_nonnegative_roots`.
+- Scope: alpha a b c d : Real; -1<alpha; 0<=a,b,c,d; exists r,s:Real with 0<=r,s; degree two and corrected product-prefactor boxplus.
+
+Quantifiers/domain: Source QUANTUM-RH.md:60866 and definition at 60821 identify P_2(R>=0) with nonnegative rootPair. Alpha is any real >-1, including (-1,0), not merely natural or >=0; alpha=-1 excluded. Zero and repeated input/output roots allowed. Universal parameters precede existential r,s; no common witness independent of inputs asserted. Operation follows the appended product-prefactor erratum at 61194; old ratio-prefactor transcription excluded.
+
+proof_shape: `bind-only`; escape_witness: `null`; admission_basis: `not-applicable(screening-only; direct projection of frozen statement)`. Direct frozen dependencies are exactly the interfaces listed above. No content claim or escape witness is made.
+
+| Atom clause | Lean binders | Lean assumptions | Lean conclusion | Label |
+| --- | --- | --- | --- | --- |
+| forall alpha>-1, forall a,b,c,d>=0 | alpha a b c d : Real | halpha : -1<alpha; ha,hb,hc,hd : 0<=a,b,c,d | same universal domain; alpha!=-1,-2 follow without added restrictions | verbatim |
+| exists r,s>=0 | r s : Real (existential in conclusion) | halpha,ha,hb,hc,hd | exists r s : Real, 0<=r /\ 0<=s /\ ... | verbatim |
+| p boxplus_2^alpha q=(X-r)(X-s) | p=rootPair a b; q=rootPair c d | same source hypotheses and corrected definition | boxplus alpha (rootPair a b) (rootPair c d)=rootPair r s | verbatim |
+
 ## frozen-partial: 0a350824194cd6312628fc5708116dfece7d0e63fec2a1e2f8c201549d63c707
 
 定理三：每一个连续时间切面的 Schmidt 系数都与 \(\theta\) 无关
@@ -366,6 +385,19 @@ Counts are matching lines including comments in baseline D5 Lean files, unless a
 | S61 | `rg -n --glob '*.lean' '(?i)defect.*(approx\|limit)\|imaginary.*spectr\|spectrum.*imaginary\|spectral.*radius.*limit' D5` | 1 |
 | S62 | `rg -n --glob '*.lean' '(?i)moment.*(recurrence\|recursion)\|recurr.*moment\|theta.*moment' D5` | 27 |
 | S63 | `rg -n --glob '*.lean' '(?i)fixed.*filter\|filter.*stability\|binomial.*(bound\|zeta)\|period.*nonvanish' D5` | 8 |
+| S64 | `rg -n --glob '*.lean' '(?i)schur.*(minimiz\|minimum\|variational)\|minimiz.*(schur\|quadratic)\|endpoint.*energy\|energy.*endpoint' D5` | 1 |
+| S65 | `rg -n --glob '*.lean' '(?i)reflect.*(disk\|disc\|poisson)\|poisson.*pair\|negative.*(disk\|disc)\|mobius.*(circle\|disk)' D5` | 29 |
+| S66 | `rg -n --glob '*.lean' '(?i)gauss.*quadrature\|jacobi.*moment\|moment.*jacobi\|quadrature.*exact' D5` | 19 |
+| S67 | `rg -n --glob '*.lean' '(?i)prime.?only\|pure.?prime\|prime.*limsup\|triangular.*(prime\|zero)\|prime.*square.*(offset\|bias)' D5` | 19 |
+| S68 | `rg -n --glob '*.lean' '(?i)trace.?class.*(trunc\|tail)\|trunc.*trace.?class\|toeplitz.*invert\|hankel.*tail\|supergeometric' D5` | 12 |
+| S69 | `rg -n --glob '*.lean' '(?i)bezout\|be[zé]zout\|negative.*(root\|pair)\|hermite.*inertia' D5` | 93 |
+| S70 | `rg -n --glob '*.lean' '(?i)nevanlinna\|pick.*positive\|kernel.*(rh\|riemann)\|herglotz' D5` | 108 |
+| S71 | `rg -n --glob '*.lean' '(?i)dirichlet.*four\|fourth.*(euler\|dirichlet)\|1\.5125\|log.*alpha.*log' D5` | 35 |
+| S72 | `rg -n --glob '*.lean' '(?i)robin\|7.?smooth\|seven.?smooth\|2357' D5` | 139 |
+| S73 | `rg -n --glob '*.lean' '(?i)parity.*(complement\|reflection)\|complement.*parity\|divisor.*(gamma\|reflect)\|omega.*commut' D5` | 3 |
+| S74 | `rg -n --glob '*.lean' '(?i)blaschke.*(kernel\|rank)\|kernel.*blaschke' D5` | 9 |
+| S75 | `rg -n --glob '*.lean' '(?i)series.*(energy\|resistance)\|weighted.*(path\|chain).*energy\|dirichlet.*(boundary\|schur)\|schur.*(form\|square)' D5` | 8 |
+| S76 | `rg -n --glob '*.lean' '(?i)lambert\|two.?mode.*gauss\|saddle.?point\|tilted.*decreas' D5` | 18 |
 
 Full count collection for streaming receipts: `rg -n ... | node` consumes stdout, splits into matching lines, and emits the count and distinct paths. Final result.json retains collection commands and returned paths. Controls: C+2=1, C+3=4, C-=0, C-2=0.
 
