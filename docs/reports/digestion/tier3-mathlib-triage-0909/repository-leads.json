@@ -1,0 +1,18 @@
+[
+  {
+    "gid": "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering",
+    "statement_id": "sha256:ee43a04a542df25237818cbfeeb29bb1abaed956f90db04822d08e8f413d50b4",
+    "state": "Golden/Frozen/state/D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.lean.json",
+    "declaration": "D5.S3.Zeros.Jensen.NormalizedJensenDegreeLowering.source_jensen_degree_lowering",
+    "source": "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.lean",
+    "line": 136,
+    "affected_indices": [
+      8,
+      20,
+      114
+    ],
+    "scope": "Frozen identity for the fixed theta-density P_d at d>=2 and arbitrary complex v. This is not a q_d reciprocal-coordinate derivative or a real-rootedness theorem.",
+    "used_by_probes": false,
+    "correction": "An initial content search returned zero because state JSON stores only statement_id; filename search and a JSON read confirm the frozen record."
+  }
+]

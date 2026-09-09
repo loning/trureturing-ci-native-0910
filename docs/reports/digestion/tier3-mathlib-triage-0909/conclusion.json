@@ -1,10 +1,10 @@
 {
   "verdict": "propose",
-  "screened_count": 100,
+  "screened_count": 125,
   "by_tier": {
-    "A": 3,
-    "B": 26,
-    "C": 71,
+    "A": 4,
+    "B": 36,
+    "C": 85,
     "D": 0,
     "E": 0
   },
@@ -156,6 +156,45 @@
           "log": "logs/Disk90-v2.log.gz"
         }
       ]
+    },
+    {
+      "atom_id": "b923baf16e3404ffc7143c8258cd778915ab93409a40512c8d156d065ed1f61a",
+      "title": "## 定理：它们是否相容，由总指数奇偶决定",
+      "bytes": 85,
+      "index": 104,
+      "tier": "A",
+      "claim": "一般正整数 N 的因数空间中 Gamma R=(-1)^Omega(N) R Gamma。",
+      "reason": "ArithmeticFunction.cardFactors_mul 直接给 Omega(d)+Omega(N/d)=Omega(N)；pow_add 和 (-1)^2=1 规范化给算子在每个因数坐标的等式。探针量化任意 N,d|N 及任意复波函数，没有枚举 5040。",
+      "mathlib": [
+        {
+          "declaration": "ArithmeticFunction.cardFactors_mul",
+          "file": "Mathlib/NumberTheory/ArithmeticFunction/Misc.lean",
+          "line": 290
+        }
+      ],
+      "source_context": [
+        37738,
+        37807
+      ],
+      "probe": "Parity104",
+      "searches": [
+        "fourth-bindings",
+        "fifth-reweighting"
+      ],
+      "source_line": 37777,
+      "proof_shape": "bind-only",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": true,
+      "probe_exit": 0,
+      "probe_runs": [
+        {
+          "probe": "Parity104",
+          "exit": 0,
+          "log": "logs/Parity104.log.gz"
+        }
+      ]
     }
   ],
   "tierB": [
@@ -188,6 +227,43 @@
         "first-bindings"
       ],
       "source_line": 54939,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "087e3caa7c278b4ea58f06604daa8721ab5258f6c451a25ed8f2d0092d823ca0",
+      "title": "## 定理 B1：精确微分兼容关系",
+      "bytes": 143,
+      "index": 8,
+      "tier": "B",
+      "claim": "实际归一化 Jensen 多项式满足跨阶导数缩放公式 B5。",
+      "reason": "后续按冻结文件路径实查找到 P_d 的 source_jensen_degree_lowering；Mathlib 供应逐系数求导。仍欠 P_d 到 q_d=x^d P_d(-1/x) 的倒数变量/零点处多项式规范化绑定，未声称需要新的降阶数学。",
+      "mathlib": [
+        {
+          "declaration": "Polynomial.coeff_derivative",
+          "file": "Mathlib/Algebra/Polynomial/Derivative.lean",
+          "line": 58
+        }
+      ],
+      "repository_leads": [
+        "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering"
+      ],
+      "source_context": [
+        1440,
+        1535
+      ],
+      "searches": [
+        "special-polynomials",
+        "polynomial-readback",
+        "fifth-reweighting",
+        "frozen-jensen-path"
+      ],
+      "source_line": 1481,
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
@@ -231,7 +307,7 @@
       "index": 20,
       "tier": "B",
       "claim": "q_d 是指定缩放 q_(d-1) 的积分加精确常数 beta_d。",
-      "reason": "FTC 已给积分=端点差；仍缺 B5 的实际跨阶导数与 q_d(0)=(-1)^d*d!/d^d*a_d，不能把未冻结的源文前一结论当作可引用事实。",
+      "reason": "FTC 已给积分=端点差，后续也核实冻结 P_d 降阶；仍欠倒数变量转为 q_d 导数与 q_d(0)=(-1)^d*d!/d^d*a_d 的完整规范化绑定。",
       "mathlib": [
         {
           "declaration": "intervalIntegral.integral_eq_sub_of_hasDerivAt",
@@ -239,9 +315,13 @@
           "line": 1148
         }
       ],
+      "repository_leads": [
+        "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering"
+      ],
       "searches": [
         "special-polynomials",
-        "first-bindings"
+        "first-bindings",
+        "frozen-jensen-path"
       ],
       "source_line": 1542,
       "proof_shape": "not-assessed(no-complete-proof)",
@@ -937,6 +1017,293 @@
       "probe_ran": false,
       "probe_exit": null,
       "probe_runs": []
+    },
+    {
+      "atom_id": "b664d8929116da6563cafcdddb7f6e7dc3b66a6fe434e807422ba82db9b83ee4",
+      "title": "## 定理 E1：在正表示下，这是另一份正谱测度",
+      "bytes": 217,
+      "index": 103,
+      "tier": "B",
+      "claim": "H+ 下锚定 T 是带权正谱 Stieltjes 变换，其 Laurent 系数是重加权矩。",
+      "reason": "积分加法与常数除法支持分式恒等式积分化；缺实际 Delta=-S(-4) 的端点绑定、z=-4 的可去解释及全阶 Laurent 系数/积分交换。",
+      "mathlib": [
+        {
+          "declaration": "MeasureTheory.integral_add",
+          "file": "Mathlib/MeasureTheory/Integral/Bochner/Basic.lean",
+          "line": 237
+        },
+        {
+          "declaration": "MeasureTheory.integral_div",
+          "file": "Mathlib/MeasureTheory/Integral/Bochner/Basic.lean",
+          "line": 295
+        }
+      ],
+      "source_context": [
+        3930,
+        4023
+      ],
+      "searches": [
+        "fifth-reweighting",
+        "theta-analytic"
+      ],
+      "source_line": 3982,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "bc9748938013e4b3c632bfa0e1257a59733df2e1682ed0a8a0d7a0dcc534ab2b",
+      "title": "## 定理 V3：相位修补增加一个正秩一项",
+      "bytes": 253,
+      "index": 105,
+      "tier": "B",
+      "claim": "上半平面 Blaschke 因子乘响应后，Pick 核等于给定正秩一项加原核合同。",
+      "reason": "Complex.sub_conj 提供 2*Im(p) 的精确共轭代数式；待核实全部分母非零及完整有理核恒等式，当前未以形式通分猜测代替验证。",
+      "mathlib": [
+        {
+          "declaration": "Complex.sub_conj",
+          "file": "Mathlib/Data/Complex/Basic.lean",
+          "line": 668
+        }
+      ],
+      "source_context": [
+        33180,
+        33270
+      ],
+      "searches": [
+        "finite-geometry",
+        "toeplitz"
+      ],
+      "source_line": 33218,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "c03c3d51c8caa76b112c4d2b77618edb95c424c724d03c1f4e1b0fe8887986d5",
+      "title": "## 定理四：三周期读数的离散绕行公式",
+      "bytes": 150,
+      "index": 109,
+      "tier": "B",
+      "claim": "实际三周期历史二次绕行差为 -4*pi²*eta*W3*nu²，三次差分为零。",
+      "reason": "Mathlib 多项式最高阶差分/超次数归零可直接处理二次分支；缺实际 H3 对 prime-zeta 分支的系数与绕行增量识别。",
+      "mathlib": [
+        {
+          "declaration": "Polynomial.fwdDiff_iter_degree_eq_factorial",
+          "file": "Mathlib/Algebra/Group/ForwardDiff.lean",
+          "line": 266
+        },
+        {
+          "declaration": "Polynomial.fwdDiff_iter_eq_zero_of_degree_lt",
+          "file": "Mathlib/Algebra/Group/ForwardDiff.lean",
+          "line": 274
+        }
+      ],
+      "searches": [
+        "discrete-winding",
+        "first-bindings"
+      ],
+      "source_line": 62080,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "c0a72a217fb966246fd4a48a809795cdc539435d1e88d1a10d041a9bcd9ed98d",
+      "title": "## 定理 B4：新增耦合总预算",
+      "bytes": 156,
+      "index": 110,
+      "tier": "B",
+      "claim": "B3 设置下全部新增 eta 的和等于指定二阶系数组合并等于四阶累积量倍数。",
+      "reason": "trace 与特征多项式系数的接口已有；缺实际箭头矩阵二次迹/均衡方向到 eta 总和、q_d 前两系数和累积量的完整绑定。",
+      "mathlib": [
+        {
+          "declaration": "Matrix.trace_eq_neg_charpoly_coeff",
+          "file": "Mathlib/LinearAlgebra/Matrix/Charpoly/Coeff.lean",
+          "line": 139
+        }
+      ],
+      "source_context": [
+        2066,
+        2152
+      ],
+      "searches": [
+        "fifth-bindings",
+        "special-polynomials"
+      ],
+      "source_line": 2097,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "c468d943aacd5d85352a7866613f53c2d6b6fd3e5a7c94cf9a5115a718abb0c9",
+      "title": "## 定理 V5：实际全部两点矩阵正半定",
+      "bytes": 169,
+      "index": 112,
+      "tier": "B",
+      "claim": "实际任意 b,c>0 的指定两点 mu 矩阵均正半定。",
+      "reason": "Schur 正性等价可以把两点矩阵降为标量行列式判据；缺实际 mu 正且递增、mu(b)/b 递减的 theta Turan/协方差分析。",
+      "mathlib": [
+        {
+          "declaration": "Matrix.PosDef.fromBlocks₁₁",
+          "file": "Mathlib/LinearAlgebra/Matrix/PosDef.lean",
+          "line": 563
+        }
+      ],
+      "source_context": [
+        33455,
+        33561
+      ],
+      "searches": [
+        "schur",
+        "theta-analytic"
+      ],
+      "source_line": 33522,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "cd2ad7f9986ee06ef6a8ac86aa7834a19d836483eaa1475b57396f3ba7ae536a",
+      "title": "## 推论：实根性向低阶传递",
+      "bytes": 535,
+      "index": 114,
+      "tier": "B",
+      "claim": "实际 Jensen 塔导数缩放使正/负实根性向低阶传递，非实根失败向全部高阶持续。",
+      "reason": "带重数的多项式 Rolle 计数已有，且冻结 P_d 降阶已核；仍缺 q_d 倒数缩放、正根域保存与塔上归纳/最小失败阶的完整绑定。",
+      "mathlib": [
+        {
+          "declaration": "Polynomial.card_roots_le_derivative",
+          "file": "Mathlib/Analysis/Calculus/LocalExtr/Polynomial.lean",
+          "line": 66
+        }
+      ],
+      "repository_leads": [
+        "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering"
+      ],
+      "searches": [
+        "fifth-bindings",
+        "fifth-reweighting",
+        "frozen-jensen-path"
+      ],
+      "source_line": 1030,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "d434181a00c8203a60054490e976fdfcfe0f1b1c1fc42b9a2d58797aa0341a9d",
+      "title": "## 推论：整个历史过程到底消除了多少？",
+      "bytes": 417,
+      "index": 116,
+      "tier": "B",
+      "claim": "实际高斯历史全程交换子平方积分等于初始非正规性总量。",
+      "reason": "半无限 FTC 可把耗散导数积分成端点差；缺实际平方下降律、无穷残差极限和谱平方和识别。",
+      "mathlib": [
+        {
+          "declaration": "MeasureTheory.integral_Ioi_of_hasDerivAt_of_tendsto",
+          "file": "Mathlib/MeasureTheory/Integral/IntegralEqImproper.lean",
+          "line": 787
+        }
+      ],
+      "searches": [
+        "real-calculus",
+        "gaussian-moments"
+      ],
+      "source_line": 6785,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "d9aefe500d926d5c9ec8e40a4997df1371cfe837dc3a11f548b7a2cfcf99b6b7",
+      "title": "## 定理 R1：方差控制低频干涉",
+      "bytes": 156,
+      "index": 119,
+      "tier": "B",
+      "claim": "实际 R_n 满足 1-t²v_n<=R_n(t)<=1，并在 |t|<v_n^-1/2 时正。",
+      "reason": "逐点 cos 下界 1-u²/2 已库有；缺实际条件概率的归一化、二阶矩 v_n 与积分读出绑定，以及 v_n>0 的域条件。",
+      "mathlib": [
+        {
+          "declaration": "Real.one_sub_sq_div_two_le_cos",
+          "file": "Mathlib/Analysis/SpecialFunctions/Trigonometric/Bounds.lean",
+          "line": 123
+        }
+      ],
+      "searches": [
+        "first-bindings",
+        "gaussian-moments"
+      ],
+      "source_line": 21423,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "deaf86853b1217a64e0283dae2f03f6aa847b19a5d16e68a95518b8caef0da80",
+      "title": "### 定理九：最小修正维数与最小修正总量",
+      "bytes": 260,
+      "index": 122,
+      "tier": "B",
+      "claim": "有限 Hermitian K 的最小正修正秩/迹分别为负指标/负部迹，并由 K_- 达到。",
+      "reason": "CFC 的正负部恒等式与非负性供应 K_- 可行修正；缺任意可行修正的秩和迹最优性两条下界，未把可行性当作最优性。",
+      "mathlib": [
+        {
+          "declaration": "CFC.posPart_sub_negPart",
+          "file": "Mathlib/Analysis/SpecialFunctions/ContinuousFunctionalCalculus/PosPart/Basic.lean",
+          "line": 77
+        },
+        {
+          "declaration": "CFC.negPart_nonneg",
+          "file": "Mathlib/Analysis/SpecialFunctions/ContinuousFunctionalCalculus/PosPart/Basic.lean",
+          "line": 147
+        }
+      ],
+      "searches": [
+        "fifth-bindings",
+        "negative-spectrum-refined"
+      ],
+      "source_line": 66523,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     }
   ],
   "tierC": [
@@ -1053,30 +1420,6 @@
         "bandwidth"
       ],
       "source_line": 54441,
-      "proof_shape": "not-assessed(no-complete-proof)",
-      "direct_frozen_dependencies": [],
-      "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)",
-      "probe_ran": false,
-      "probe_exit": null,
-      "probe_runs": []
-    },
-    {
-      "atom_id": "087e3caa7c278b4ea58f06604daa8721ab5258f6c451a25ed8f2d0092d823ca0",
-      "title": "## 定理 B1：精确微分兼容关系",
-      "bytes": 143,
-      "index": 8,
-      "tier": "C",
-      "claim": "实际归一化 Jensen 多项式满足跨阶导数缩放公式 B5。",
-      "reason": "缺实际 q_d 系数与相邻阶缩放的统一导数恒等式；普通 Polynomial.derivative 不给跨阶系数关系。",
-      "source_context": [
-        1440,
-        1535
-      ],
-      "searches": [
-        "special-polynomials"
-      ],
-      "source_line": 1481,
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
@@ -2431,6 +2774,321 @@
       "probe_ran": false,
       "probe_exit": null,
       "probe_runs": []
+    },
+    {
+      "atom_id": "b407682500faaa6d8da43ce0ed7505d8350c1352ad449a548751bce1b62cd783",
+      "title": "## 定理 U2：实际算术核的全局正性判据",
+      "bytes": 108,
+      "index": 101,
+      "tier": "C",
+      "claim": "实际算术 A 的全局 Pick 型核正半定等价于 RH。",
+      "reason": "缺实际 A 的正核表示、解析延拓及从全局正核反推全部零点在线的桥。",
+      "searches": [
+        "theta-analytic",
+        "toeplitz"
+      ],
+      "source_line": 30003,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "b5821e42febe81b45815f8be9802ddafcf7daab5dc4c74e501b0e709ce3e6000",
+      "title": "## 定理五：任意周期的解析分支次数",
+      "bytes": 314,
+      "index": 102,
+      "tier": "C",
+      "claim": "实际全部周期 H_d 在 Re(s)>1/2 是 log zeta 的次数 <=d-1 的解析系数多项式分支。",
+      "reason": "缺 prime-zeta 的 Möbius 延拓、实际占据分类系数 A_dj 的全纯性与路径继续的分支兼容。",
+      "searches": [
+        "discrete-winding",
+        "theta-analytic"
+      ],
+      "source_line": 62723,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "bdbe4b53515757ce5b701ee375409970886fe1274ff51cca53692271e1f924bb",
+      "title": "## 定理 Q4：实际 \\(\\mu_n\\) 在正半轴严格递减",
+      "bytes": 97,
+      "index": 106,
+      "tier": "C",
+      "claim": "实际全部条件密度 mu_n 在正半轴严格递减。",
+      "reason": "缺实际 theta 双模态积分的严格形状不等式与求导交换；普通 log-concavity API 未给该指定核结论。",
+      "searches": [
+        "theta-analytic",
+        "gaussian-moments"
+      ],
+      "source_line": 19535,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "bdc556a362036fbf086d0f5882d47613103ee99fa42cd1bf20d16e264b0b274a",
+      "title": "## 定理 O1：\\(\\mathsf K\\) 是迹类自伴算子",
+      "bytes": 87,
+      "index": 107,
+      "tier": "C",
+      "claim": "实际无限 K 是自伴迹类算子且迹范数 <=B0。",
+      "reason": "缺实际核的可求和秩一展开及迹理想范数控制；本地 TraceClass logging 命中已排除。",
+      "searches": [
+        "negative-spectrum-refined",
+        "theta-analytic"
+      ],
+      "source_line": 14059,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "be67399e40a50efabac4cb3841bc3a3b7bbb408e0954367e9f95efe2f390eede",
+      "title": "## 定理 R2：实际两模态的局部高斯极限",
+      "bytes": 296,
+      "index": 108,
+      "tier": "C",
+      "claim": "实际两模态筛选经 Lambert-W 尺度化后弱收敛为独立双标准高斯且全固定矩收敛。",
+      "reason": "缺双峰 Laplace 方法的统一尾控制、独立极限与矩一致可积性。",
+      "searches": [
+        "gaussian-moments",
+        "theta-analytic"
+      ],
+      "source_line": 21685,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "c24e34de0c01213d2344c494115a947d88276005c94863a848567f7031e10009",
+      "title": "## 引理：实际有限谱有统一界",
+      "bytes": 294,
+      "index": 111,
+      "tier": "C",
+      "claim": "实际全部有限 q_d 的根有无需未知零点输入的统一模界。",
+      "reason": "缺正系数 D 与所有 P_d 在同一小圆盘的统一支配及倒数多项式的根传递；norm<1 推非零只供应末步。",
+      "searches": [
+        "special-polynomials",
+        "theta-analytic"
+      ],
+      "source_line": 8406,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "c600e6828d8eeb65e865c4c7c465be9aa00cb5a30100be45cfcb26542c868b4d",
+      "title": "## 定理 K4：固定宽度序列判据",
+      "bytes": 237,
+      "index": 113,
+      "tier": "C",
+      "claim": "实际 Jensen 塔存在无界次数列且 Z_qd(d^4)<=1 等价于 RH。",
+      "reason": "缺统一小历史行列式下界与离线谱虚部检测在 d^4 窗口内的定量结合。",
+      "searches": [
+        "special-polynomials",
+        "gaussian-moments"
+      ],
+      "source_line": 8382,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "cf00b1802f9e0029835530f6cff45c04fc84ccaa1f13d1eadc540c1dc6259ba3",
+      "title": "## 定理二：金字塔最大熵几何的曲率",
+      "bytes": 269,
+      "index": 115,
+      "tier": "C",
+      "claim": "指定三维最大熵几何的竖直截面曲率为1/4，水平截面为 -rho/(4(1-rho))。",
+      "reason": "缺该统计度量的 Levi-Civita/曲率计算及 warped-product 截面公式接口；不是把已知 f 的两个导数代入即可认证几何。",
+      "searches": [
+        "fifth-bindings",
+        "convex-local"
+      ],
+      "source_line": 39267,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "d46f67d9701bbca5691908d2a1ff2d60f8cc946f10b5a1e91c784b83ad378bde",
+      "title": "## 定理 M2：线性历史窗口的自动通过区域",
+      "bytes": 174,
+      "index": 117,
+      "tier": "C",
+      "claim": "指定维数与线性历史窗口内 Z_d(r)<=exp(-r*S*/4)<1。",
+      "reason": "缺实际 Schur 系数稀释界、S_d 到 S* 的定量控制及明确常数8；标量 exp 单调性不供应窗口。",
+      "searches": [
+        "special-polynomials",
+        "gaussian-moments"
+      ],
+      "source_line": 10499,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "d5fddb4b2a8fa2c2afef4de9faac8e2192fa333bce05b160799f87fefa9c339f",
+      "title": "### 定理八：联合尺度下的定量计数与负总量",
+      "bytes": 419,
+      "index": 118,
+      "tier": "C",
+      "claim": "N,delta 联合尺度下有限负指标/负迹与连续密度之差有指定统一误差。",
+      "reason": "缺随 delta 变化的 Toeplitz 负谱定量计数与迹估计，含 log(1/delta) 阈值及两个不同误差阶。",
+      "searches": [
+        "toeplitz",
+        "negative-spectrum-refined"
+      ],
+      "source_line": 66375,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "daba72e239c5a9bae6419c9ee7873c87de22293ae599a303dd3feeff596ed538",
+      "title": "## 推论：全部标量矩受高斯基准控制",
+      "bytes": 490,
+      "index": 120,
+      "tier": "C",
+      "claim": "实际全部偶矩受高斯矩支配、MGF 受高斯支配且全部二次 Jensen 窗口有负实根。",
+      "reason": "缺从实际全倾斜 Turan 不等式到全矩迭代、指数积分/级数交换及严格二次根域的整组绑定。",
+      "searches": [
+        "gaussian-moments",
+        "special-polynomials"
+      ],
+      "source_line": 19063,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "dd585f94675a53aceed6592da3ad291d31505f93c47ec491c1b9bba0851ef5f7",
+      "title": "## 定理五：一个显式的有限时长负证书",
+      "bytes": 209,
+      "index": 121,
+      "tier": "C",
+      "claim": "实际 Toeplitz 最小特征值有 -eta+pi^4*M_a/(8(N+2)^2) 上界及有限负证书阈值。",
+      "reason": "缺特定平滑试探向量的 Rayleigh 商与二阶符号余项的精确常数估计。",
+      "searches": [
+        "toeplitz",
+        "negative-spectrum-refined"
+      ],
+      "source_line": 60461,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "df8445edb07e25e1e79b9efacc91d4900583fa229efe7706745af103ff1cb3f5",
+      "title": "## 推论：线性尺度上的体积确实趋零",
+      "bytes": 448,
+      "index": 123,
+      "tier": "C",
+      "claim": "S*>0 下线性尺度体积趋零，并有重标极限 F_xi 和每维 log 极限。",
+      "reason": "缺实际 HCIZ 双尺度局部一致极限及 S_d 收敛；指数/对数的极限运算不供应这些实际前置结论。",
+      "searches": [
+        "special-polynomials",
+        "gaussian-moments"
+      ],
+      "source_line": 10722,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "e12105bf8ad122862f6fe04a1b4abe22b29365455992101560012d8a9cdf9f44",
+      "title": "## 定理 T3：Gamma—整数分解",
+      "bytes": 324,
+      "index": 124,
+      "tier": "C",
+      "claim": "实际 X_sigma 密度由独立 Gamma 与 zeta 整数分布的对数差给出。",
+      "reason": "缺实际 theta 密度的换元、混合求和与概率密度识别；上游 Gamma 分布并不直接等于该指定模型。",
+      "searches": [
+        "theta-analytic",
+        "gaussian-moments"
+      ],
+      "source_line": 26586,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "e17855c9db943466019087527afd9e178fa5c465197a1a9de44490e5fa8444b2",
+      "title": "## 定理 J4：残差的精确极限",
+      "bytes": 239,
+      "index": 125,
+      "tier": "C",
+      "claim": "任意矩阵高斯历史残差与谱能量之差介于0和d(d-1)/(4r)，且单调趋于谱能量。",
+      "reason": "缺允许 Jordan 块的统一残差上界与实际高斯流单调性；一般谱定理不覆盖非正规矩阵的这个构造。",
+      "searches": [
+        "negative-spectrum-refined",
+        "gaussian-moments"
+      ],
+      "source_line": 6688,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     }
   ],
   "tierD": [],
@@ -2511,34 +3169,25 @@
       ],
       "archived_probe": "probes/Disk90-v2.lean",
       "log_encoding": "gzip"
+    },
+    {
+      "probe": "Parity104",
+      "command": "make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Parity104.lean'",
+      "exit": 0,
+      "signal": null,
+      "log": "logs/Parity104.log.gz",
+      "started": "2026-09-09T05:23:33.287Z",
+      "atoms": [
+        "b923baf16e3404ffc7143c8258cd778915ab93409a40512c8d156d065ed1f61a"
+      ],
+      "indices": [
+        104
+      ],
+      "archived_probe": "probes/Parity104.lean",
+      "log_encoding": "gzip"
     }
   ],
   "unscreened": [
-    "b407682500faaa6d8da43ce0ed7505d8350c1352ad449a548751bce1b62cd783",
-    "b5821e42febe81b45815f8be9802ddafcf7daab5dc4c74e501b0e709ce3e6000",
-    "b664d8929116da6563cafcdddb7f6e7dc3b66a6fe434e807422ba82db9b83ee4",
-    "b923baf16e3404ffc7143c8258cd778915ab93409a40512c8d156d065ed1f61a",
-    "bc9748938013e4b3c632bfa0e1257a59733df2e1682ed0a8a0d7a0dcc534ab2b",
-    "bdbe4b53515757ce5b701ee375409970886fe1274ff51cca53692271e1f924bb",
-    "bdc556a362036fbf086d0f5882d47613103ee99fa42cd1bf20d16e264b0b274a",
-    "be67399e40a50efabac4cb3841bc3a3b7bbb408e0954367e9f95efe2f390eede",
-    "c03c3d51c8caa76b112c4d2b77618edb95c424c724d03c1f4e1b0fe8887986d5",
-    "c0a72a217fb966246fd4a48a809795cdc539435d1e88d1a10d041a9bcd9ed98d",
-    "c24e34de0c01213d2344c494115a947d88276005c94863a848567f7031e10009",
-    "c468d943aacd5d85352a7866613f53c2d6b6fd3e5a7c94cf9a5115a718abb0c9",
-    "c600e6828d8eeb65e865c4c7c465be9aa00cb5a30100be45cfcb26542c868b4d",
-    "cd2ad7f9986ee06ef6a8ac86aa7834a19d836483eaa1475b57396f3ba7ae536a",
-    "cf00b1802f9e0029835530f6cff45c04fc84ccaa1f13d1eadc540c1dc6259ba3",
-    "d434181a00c8203a60054490e976fdfcfe0f1b1c1fc42b9a2d58797aa0341a9d",
-    "d46f67d9701bbca5691908d2a1ff2d60f8cc946f10b5a1e91c784b83ad378bde",
-    "d5fddb4b2a8fa2c2afef4de9faac8e2192fa333bce05b160799f87fefa9c339f",
-    "d9aefe500d926d5c9ec8e40a4997df1371cfe837dc3a11f548b7a2cfcf99b6b7",
-    "daba72e239c5a9bae6419c9ee7873c87de22293ae599a303dd3feeff596ed538",
-    "dd585f94675a53aceed6592da3ad291d31505f93c47ec491c1b9bba0851ef5f7",
-    "deaf86853b1217a64e0283dae2f03f6aa847b19a5d16e68a95518b8caef0da80",
-    "df8445edb07e25e1e79b9efacc91d4900583fa229efe7706745af103ff1cb3f5",
-    "e12105bf8ad122862f6fe04a1b4abe22b29365455992101560012d8a9cdf9f44",
-    "e17855c9db943466019087527afd9e178fa5c465197a1a9de44490e5fa8444b2",
     "e405a7f40fa7ee5313052263686a73c8b8578d18290d1f429cb1826603f82480",
     "e44ad50e6f818d656b6b3b1318b466ef65b9d4fe363f0d70d2f988ffda11c865",
     "e5d2d285af1f22158b076150c40f53f7d8ce44d2a32dbf3093e84e39ae416c82",
@@ -3397,6 +4046,112 @@
       ],
       "exit": 0,
       "line_match_count": 66
+    },
+    {
+      "id": "fifth-reweighting",
+      "scope": "D5",
+      "program": "rg",
+      "args": [
+        "-n",
+        "-i",
+        "-P",
+        "(integral_div|card_roots_le_derivative|coeff_derivative|schur_complement_eq₂₂|cardFactors_mul)",
+        "D5",
+        "-g",
+        "*.lean"
+      ],
+      "exit": 0,
+      "line_match_count": 46
+    },
+    {
+      "id": "fifth-reweighting",
+      "scope": ".lake/packages/mathlib/Mathlib",
+      "program": "rg",
+      "args": [
+        "-n",
+        "-i",
+        "-P",
+        "(integral_div|card_roots_le_derivative|coeff_derivative|schur_complement_eq₂₂|cardFactors_mul)",
+        ".lake/packages/mathlib/Mathlib",
+        "-g",
+        "*.lean"
+      ],
+      "exit": 0,
+      "line_match_count": 121
+    },
+    {
+      "id": "frozen-content-caveat",
+      "scope": "Golden/Frozen/state",
+      "program": "rg",
+      "args": [
+        "-n",
+        "-P",
+        "NormalizedJensenDegreeLowering",
+        "Golden/Frozen/state"
+      ],
+      "exit": 1,
+      "line_match_count": 0,
+      "interpretation": "Not evidence of absence: registry stores only statement_id, GID is encoded in filename."
+    },
+    {
+      "id": "frozen-path-positive",
+      "scope": "Golden/Frozen/state",
+      "program": "rg",
+      "args": [
+        "--files",
+        "Golden/Frozen/state",
+        "-g",
+        "*MatrixTracePowerSum*"
+      ],
+      "exit": 0,
+      "line_match_count": 1,
+      "interpretation": "Filename search; matches count files."
+    },
+    {
+      "id": "frozen-path-negative",
+      "scope": "Golden/Frozen/state",
+      "program": "rg",
+      "args": [
+        "--files",
+        "Golden/Frozen/state",
+        "-g",
+        "*TriageMissing0909*"
+      ],
+      "exit": 1,
+      "line_match_count": 0,
+      "interpretation": "Filename search; matches count files."
+    },
+    {
+      "id": "frozen-jensen-path",
+      "scope": "Golden/Frozen/state",
+      "program": "rg",
+      "args": [
+        "--files",
+        "Golden/Frozen/state",
+        "-g",
+        "*NormalizedJensenDegreeLowering*"
+      ],
+      "exit": 0,
+      "line_match_count": 1,
+      "interpretation": "Filename search; matches count files."
+    }
+  ],
+  "repository_leads": [
+    {
+      "gid": "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering",
+      "statement_id": "sha256:ee43a04a542df25237818cbfeeb29bb1abaed956f90db04822d08e8f413d50b4",
+      "state": "Golden/Frozen/state/D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.lean.json",
+      "declaration": "D5.S3.Zeros.Jensen.NormalizedJensenDegreeLowering.source_jensen_degree_lowering",
+      "source": "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.lean",
+      "line": 136,
+      "affected_indices": [
+        8,
+        20,
+        114
+      ],
+      "scope": "Frozen identity for the fixed theta-density P_d at d>=2 and arbitrary complex v. This is not a q_d reciprocal-coordinate derivative or a real-rootedness theorem.",
+      "used_by_probes": false,
+      "correction": "An initial content search returned zero because state JSON stores only statement_id; filename search and a JSON read confirm the frozen record."
     }
   ],
   "mathlib_pin": {
@@ -3413,7 +4168,8 @@
       "e77cf4009e6801e994e5bfff59a6b124c61ae292",
       "fcbe1bf4be3d38a2324acb6d7b392c46919c280b",
       "134dc1f58721e6c7555355cc0d7c6e2f29100376",
-      "0bce26792dcc213354e1d279a96e52e44b711c98"
+      "0bce26792dcc213354e1d279a96e52e44b711c98",
+      "43dc167e1f7ccfbb80f9edd18a5ca48bbc94a4d0"
     ],
     "branch": "lane/math/tier3-mathlib-triage-0909",
     "note": "Commits through the preceding checkpoint; final delivery envelope also records its containing report commit."

@@ -74,5 +74,21 @@
     ],
     "archived_probe": "probes/Disk90-v2.lean",
     "log_encoding": "gzip"
+  },
+  {
+    "probe": "Parity104",
+    "command": "make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Parity104.lean'",
+    "exit": 0,
+    "signal": null,
+    "log": "logs/Parity104.log.gz",
+    "started": "2026-09-09T05:23:33.287Z",
+    "atoms": [
+      "b923baf16e3404ffc7143c8258cd778915ab93409a40512c8d156d065ed1f61a"
+    ],
+    "indices": [
+      104
+    ],
+    "archived_probe": "probes/Parity104.lean",
+    "log_encoding": "gzip"
   }
 ]

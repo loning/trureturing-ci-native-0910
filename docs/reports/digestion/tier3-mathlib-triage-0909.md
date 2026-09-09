@@ -54,7 +54,7 @@ pushed immediately, including failures. Report-only delivery: no PR.
 
 ## conclusion
 
-Screened: **100/150**. A=3, B=26, C=71, D=0, E=0.
+Screened: **125/150**. A=4, B=36, C=85, D=0, E=0.
 
 Structured result: [conclusion.json](tier3-mathlib-triage-0909/conclusion.json).
 Complete canonical atom reads (raw and normalized text, command, EXIT) are in `atoms-1.json` through `atoms-6.json` as collected. Reading ahead does not count as screening.
@@ -70,7 +70,7 @@ All Mathlib paths below are relative to `.lake/packages/mathlib/`. Every listed 
 | 5 | `072eca25d260537060a5e1b2b7dada75dbf623eba8eebb4bad8c765d8ebe6749` | 定理 N1：有限负证书 | C | 缺伴随矩阵迹平方的 Hermite 型实根判据；Hermite 正交多项式是同名异题。 | none claimed | not run | special-polynomials |
 | 6 | `0831062a074c8393d5e0d16a4caa4487d783311664ffa661ab52092973475c5b` | 定理一：\(P\) 是一个四棱锥 | C | 缺此指定五点占据凸包的半空间及极点计算；一般凸包 API 不能直接给出这五个顶点。 | none claimed | not run | convex-local |
 | 7 | `083b7658fb28ffb6609e6c46923ebd4e8c9c27dc3813f06187a0aa23c398e7d4` | 定理一：规范加一的最坏局部深度至少与编码跨度成正比 | C | 缺把局部传播半径连接到极端 Fibonacci 编码的算法深度下界；已有局部进位构造不是所有算法的下界。 | none claimed | not run | convex-local, bandwidth |
-| 8 | `087e3caa7c278b4ea58f06604daa8721ab5258f6c451a25ed8f2d0092d823ca0` | 定理 B1：精确微分兼容关系 | C | 缺实际 q_d 系数与相邻阶缩放的统一导数恒等式；普通 Polynomial.derivative 不给跨阶系数关系。 | none claimed | not run | special-polynomials |
+| 8 | `087e3caa7c278b4ea58f06604daa8721ab5258f6c451a25ed8f2d0092d823ca0` | 定理 B1：精确微分兼容关系 | B | 后续按冻结文件路径实查找到 P_d 的 source_jensen_degree_lowering；Mathlib 供应逐系数求导。仍欠 P_d 到 q_d=x^d P_d(-1/x) 的倒数变量/零点处多项式规范化绑定，未声称需要新的降阶数学。 | `Polynomial.coeff_derivative` (Mathlib/Algebra/Polynomial/Derivative.lean:58) | not run | special-polynomials, polynomial-readback, fifth-reweighting, frozen-jensen-path |
 | 9 | `0d2c6e9ed518bfcee93cc1f4b71877666e729b3db0f05d06a2b43bbf53e86984` | 定理 L3：逐阶系数判据 | C | 缺平方级数系数的全阶实根刻画及反向检测非实谱的增长论证。 | none claimed | not run | special-polynomials |
 | 10 | `0e1a7beb490fc5aece3b6e13b10c6523ab64fac627efd6b825dc5c5551af5eab` | 定理 K2：实根的历史体积上限 | C | 缺历史 Gram 行列式的非负 Laplace 表示及任意阶导数符号；指数函数正性不能代替体积表示。 | none claimed | not run | special-polynomials, negative-spectrum-refined |
 | 11 | `0e8d9e20c8a7ec0e0820053dc56a9dae075722a110b78a0ecee60b5cb202f2d8` | 推论：系数增长率直接给出谱缺陷 | C | 缺 b_q,k 的精确指数型/增长率定理，不只是复数平方的代数分解。 | none claimed | not run | special-polynomials |
@@ -82,7 +82,7 @@ All Mathlib paths below are relative to `.lake/packages/mathlib/`. Every listed 
 | 17 | `19d4c054e92739f02edd10bc8c8cade6a616e273f45552e1f9e1da08359a6462` | 定理四：实际正性会在解析性失效之前先碰到边界 | C | 缺实际算术符号在解析半径之前失正的严格阈值证明。 | none claimed | not run | toeplitz, theta-analytic |
 | 18 | `1ad5bec02ef18c7e44f7099ba5b17703e14dbfd047be51ab11ee29d6d17dfa0e` | 定理六：ξ 历史态的统一有效维数界 | C | 缺实际谱权重平方和界与无限支撑推出每一有限 Gram 满秩的结合；不认证小数 28.7548583457。 | none claimed | not run | toeplitz, theta-analytic |
 | 19 | `1ba55c6c1a84a3ff33ceebbcb3a7c7d52c48d18a1823c4354d954afe0d3aee38` | 定理十八：有限历史形成负证书的一个必要条件 | C | 缺有限 Fourier 投影的集中度上界与该符号二次型表示的结合；需保持严格必要条件和 Haar 概率归一化。 | none claimed | not run | toeplitz, negative-spectrum-refined |
-| 20 | `1e414ffb45d7fcaa9536a956298c4e291f91a2e310f112d2cf8419518caefd1a` | 推论 B1.1：高阶延拓是一项带常数的积分问题 | B | FTC 已给积分=端点差；仍缺 B5 的实际跨阶导数与 q_d(0)=(-1)^d*d!/d^d*a_d，不能把未冻结的源文前一结论当作可引用事实。 | `intervalIntegral.integral_eq_sub_of_hasDerivAt` (Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean:1148) | not run | special-polynomials, first-bindings |
+| 20 | `1e414ffb45d7fcaa9536a956298c4e291f91a2e310f112d2cf8419518caefd1a` | 推论 B1.1：高阶延拓是一项带常数的积分问题 | B | FTC 已给积分=端点差，后续也核实冻结 P_d 降阶；仍欠倒数变量转为 q_d 导数与 q_d(0)=(-1)^d*d!/d^d*a_d 的完整规范化绑定。 | `intervalIntegral.integral_eq_sub_of_hasDerivAt` (Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean:1148) | not run | special-polynomials, first-bindings, frozen-jensen-path |
 | 21 | `1e9daffd76d1ac95768ad7e9737ce9069f71ca9d5406430f42768de16be0a86c` | 定理二：局部数据的受控整体拼接 | B | 高阶 Schwarz 引理直接给目标误差形状；仍缺源定义递推的全纯/映盘及前 N+1 阶 Taylor 匹配到 isLittleO 前提的绑定。 | `Complex.dist_le_mul_div_pow_of_mapsTo_ball_of_isLittleO` (Mathlib/Analysis/Complex/Schwarz.lean:146) | not run | toeplitz, first-bindings |
 | 22 | `1eecc9129a67c60825a86b1efaa93284267df6701e12127565d8873086de3021` | 定理三：统一非退化界 | C | 缺特定算术系数 w(m)/D_m 的逐项估计及尾部常数 1/20；一般 zeta 求和不确定该常数。 | none claimed | not run | theta-analytic, discrete-winding |
 | 23 | `207bdea6c00dc779749029d64849d7221c08cad532ac5d38069d8871e87b4d92` | 定理七：固定越界量下的负方向密度 | C | 缺该符号的 Szego 特征值分布与负半轴示性函数逼近，并须保留 N 后 delta 的极限次序。 | none claimed | not run | toeplitz, negative-spectrum-refined |
@@ -163,6 +163,31 @@ All Mathlib paths below are relative to `.lake/packages/mathlib/`. Every listed 
 | 98 | `a7e88754e5bb8b4c30b89baee6fd1fe41153876af182d201b96a9086884d779f` | 推论：存在超几何速度的截断方案 | C | 缺实际 D,D',D'' 的统一增长上界与算子截断常数 M_R 的联动估计；Stirling 的存在不能直接认证该算子界。 | none claimed | not run | theta-analytic, negative-spectrum-refined |
 | 99 | `a86360d87830d173c35426c12b589270e406c6a12dc8dfb241ccdbefb825d0e3` | 定理二：第四阶在绝对收敛域内的全部零点 | C | 缺完整 F4 因子分解、指定代数根 alpha 的唯一性及其他因子的无零性；不认证给出的小数。 | none claimed | not run | discrete-winding, theta-analytic, winding |
 | 100 | `af4b3b2fa8cb484824d83794e63fc48816b6e05c9c0ad32f76e3a360c35e30eb` | 定理 D3：共同正回返表示 | C | 缺 xi 零点到正测度的完整表示与反向唯一性/极点支撑论证。 | none claimed | not run | theta-analytic, toeplitz, negative-spectrum-refined |
+| 101 | `b407682500faaa6d8da43ce0ed7505d8350c1352ad449a548751bce1b62cd783` | 定理 U2：实际算术核的全局正性判据 | C | 缺实际 A 的正核表示、解析延拓及从全局正核反推全部零点在线的桥。 | none claimed | not run | theta-analytic, toeplitz |
+| 102 | `b5821e42febe81b45815f8be9802ddafcf7daab5dc4c74e501b0e709ce3e6000` | 定理五：任意周期的解析分支次数 | C | 缺 prime-zeta 的 Möbius 延拓、实际占据分类系数 A_dj 的全纯性与路径继续的分支兼容。 | none claimed | not run | discrete-winding, theta-analytic |
+| 103 | `b664d8929116da6563cafcdddb7f6e7dc3b66a6fe434e807422ba82db9b83ee4` | 定理 E1：在正表示下，这是另一份正谱测度 | B | 积分加法与常数除法支持分式恒等式积分化；缺实际 Delta=-S(-4) 的端点绑定、z=-4 的可去解释及全阶 Laurent 系数/积分交换。 | `MeasureTheory.integral_add` (Mathlib/MeasureTheory/Integral/Bochner/Basic.lean:237); `MeasureTheory.integral_div` (Mathlib/MeasureTheory/Integral/Bochner/Basic.lean:295) | not run | fifth-reweighting, theta-analytic |
+| 104 | `b923baf16e3404ffc7143c8258cd778915ab93409a40512c8d156d065ed1f61a` | 定理：它们是否相容，由总指数奇偶决定 | A | ArithmeticFunction.cardFactors_mul 直接给 Omega(d)+Omega(N/d)=Omega(N)；pow_add 和 (-1)^2=1 规范化给算子在每个因数坐标的等式。探针量化任意 N,d&#124;N 及任意复波函数，没有枚举 5040。 | `ArithmeticFunction.cardFactors_mul` (Mathlib/NumberTheory/ArithmeticFunction/Misc.lean:290) | Parity104: 0 | fourth-bindings, fifth-reweighting |
+| 105 | `bc9748938013e4b3c632bfa0e1257a59733df2e1682ed0a8a0d7a0dcc534ab2b` | 定理 V3：相位修补增加一个正秩一项 | B | Complex.sub_conj 提供 2*Im(p) 的精确共轭代数式；待核实全部分母非零及完整有理核恒等式，当前未以形式通分猜测代替验证。 | `Complex.sub_conj` (Mathlib/Data/Complex/Basic.lean:668) | not run | finite-geometry, toeplitz |
+| 106 | `bdbe4b53515757ce5b701ee375409970886fe1274ff51cca53692271e1f924bb` | 定理 Q4：实际 \(\mu_n\) 在正半轴严格递减 | C | 缺实际 theta 双模态积分的严格形状不等式与求导交换；普通 log-concavity API 未给该指定核结论。 | none claimed | not run | theta-analytic, gaussian-moments |
+| 107 | `bdc556a362036fbf086d0f5882d47613103ee99fa42cd1bf20d16e264b0b274a` | 定理 O1：\(\mathsf K\) 是迹类自伴算子 | C | 缺实际核的可求和秩一展开及迹理想范数控制；本地 TraceClass logging 命中已排除。 | none claimed | not run | negative-spectrum-refined, theta-analytic |
+| 108 | `be67399e40a50efabac4cb3841bc3a3b7bbb408e0954367e9f95efe2f390eede` | 定理 R2：实际两模态的局部高斯极限 | C | 缺双峰 Laplace 方法的统一尾控制、独立极限与矩一致可积性。 | none claimed | not run | gaussian-moments, theta-analytic |
+| 109 | `c03c3d51c8caa76b112c4d2b77618edb95c424c724d03c1f4e1b0fe8887986d5` | 定理四：三周期读数的离散绕行公式 | B | Mathlib 多项式最高阶差分/超次数归零可直接处理二次分支；缺实际 H3 对 prime-zeta 分支的系数与绕行增量识别。 | `Polynomial.fwdDiff_iter_degree_eq_factorial` (Mathlib/Algebra/Group/ForwardDiff.lean:266); `Polynomial.fwdDiff_iter_eq_zero_of_degree_lt` (Mathlib/Algebra/Group/ForwardDiff.lean:274) | not run | discrete-winding, first-bindings |
+| 110 | `c0a72a217fb966246fd4a48a809795cdc539435d1e88d1a10d041a9bcd9ed98d` | 定理 B4：新增耦合总预算 | B | trace 与特征多项式系数的接口已有；缺实际箭头矩阵二次迹/均衡方向到 eta 总和、q_d 前两系数和累积量的完整绑定。 | `Matrix.trace_eq_neg_charpoly_coeff` (Mathlib/LinearAlgebra/Matrix/Charpoly/Coeff.lean:139) | not run | fifth-bindings, special-polynomials |
+| 111 | `c24e34de0c01213d2344c494115a947d88276005c94863a848567f7031e10009` | 引理：实际有限谱有统一界 | C | 缺正系数 D 与所有 P_d 在同一小圆盘的统一支配及倒数多项式的根传递；norm<1 推非零只供应末步。 | none claimed | not run | special-polynomials, theta-analytic |
+| 112 | `c468d943aacd5d85352a7866613f53c2d6b6fd3e5a7c94cf9a5115a718abb0c9` | 定理 V5：实际全部两点矩阵正半定 | B | Schur 正性等价可以把两点矩阵降为标量行列式判据；缺实际 mu 正且递增、mu(b)/b 递减的 theta Turan/协方差分析。 | `Matrix.PosDef.fromBlocks₁₁` (Mathlib/LinearAlgebra/Matrix/PosDef.lean:563) | not run | schur, theta-analytic |
+| 113 | `c600e6828d8eeb65e865c4c7c465be9aa00cb5a30100be45cfcb26542c868b4d` | 定理 K4：固定宽度序列判据 | C | 缺统一小历史行列式下界与离线谱虚部检测在 d^4 窗口内的定量结合。 | none claimed | not run | special-polynomials, gaussian-moments |
+| 114 | `cd2ad7f9986ee06ef6a8ac86aa7834a19d836483eaa1475b57396f3ba7ae536a` | 推论：实根性向低阶传递 | B | 带重数的多项式 Rolle 计数已有，且冻结 P_d 降阶已核；仍缺 q_d 倒数缩放、正根域保存与塔上归纳/最小失败阶的完整绑定。 | `Polynomial.card_roots_le_derivative` (Mathlib/Analysis/Calculus/LocalExtr/Polynomial.lean:66) | not run | fifth-bindings, fifth-reweighting, frozen-jensen-path |
+| 115 | `cf00b1802f9e0029835530f6cff45c04fc84ccaa1f13d1eadc540c1dc6259ba3` | 定理二：金字塔最大熵几何的曲率 | C | 缺该统计度量的 Levi-Civita/曲率计算及 warped-product 截面公式接口；不是把已知 f 的两个导数代入即可认证几何。 | none claimed | not run | fifth-bindings, convex-local |
+| 116 | `d434181a00c8203a60054490e976fdfcfe0f1b1c1fc42b9a2d58797aa0341a9d` | 推论：整个历史过程到底消除了多少？ | B | 半无限 FTC 可把耗散导数积分成端点差；缺实际平方下降律、无穷残差极限和谱平方和识别。 | `MeasureTheory.integral_Ioi_of_hasDerivAt_of_tendsto` (Mathlib/MeasureTheory/Integral/IntegralEqImproper.lean:787) | not run | real-calculus, gaussian-moments |
+| 117 | `d46f67d9701bbca5691908d2a1ff2d60f8cc946f10b5a1e91c784b83ad378bde` | 定理 M2：线性历史窗口的自动通过区域 | C | 缺实际 Schur 系数稀释界、S_d 到 S* 的定量控制及明确常数8；标量 exp 单调性不供应窗口。 | none claimed | not run | special-polynomials, gaussian-moments |
+| 118 | `d5fddb4b2a8fa2c2afef4de9faac8e2192fa333bce05b160799f87fefa9c339f` | 定理八：联合尺度下的定量计数与负总量 | C | 缺随 delta 变化的 Toeplitz 负谱定量计数与迹估计，含 log(1/delta) 阈值及两个不同误差阶。 | none claimed | not run | toeplitz, negative-spectrum-refined |
+| 119 | `d9aefe500d926d5c9ec8e40a4997df1371cfe837dc3a11f548b7a2cfcf99b6b7` | 定理 R1：方差控制低频干涉 | B | 逐点 cos 下界 1-u²/2 已库有；缺实际条件概率的归一化、二阶矩 v_n 与积分读出绑定，以及 v_n>0 的域条件。 | `Real.one_sub_sq_div_two_le_cos` (Mathlib/Analysis/SpecialFunctions/Trigonometric/Bounds.lean:123) | not run | first-bindings, gaussian-moments |
+| 120 | `daba72e239c5a9bae6419c9ee7873c87de22293ae599a303dd3feeff596ed538` | 推论：全部标量矩受高斯基准控制 | C | 缺从实际全倾斜 Turan 不等式到全矩迭代、指数积分/级数交换及严格二次根域的整组绑定。 | none claimed | not run | gaussian-moments, special-polynomials |
+| 121 | `dd585f94675a53aceed6592da3ad291d31505f93c47ec491c1b9bba0851ef5f7` | 定理五：一个显式的有限时长负证书 | C | 缺特定平滑试探向量的 Rayleigh 商与二阶符号余项的精确常数估计。 | none claimed | not run | toeplitz, negative-spectrum-refined |
+| 122 | `deaf86853b1217a64e0283dae2f03f6aa847b19a5d16e68a95518b8caef0da80` | 定理九：最小修正维数与最小修正总量 | B | CFC 的正负部恒等式与非负性供应 K_- 可行修正；缺任意可行修正的秩和迹最优性两条下界，未把可行性当作最优性。 | `CFC.posPart_sub_negPart` (Mathlib/Analysis/SpecialFunctions/ContinuousFunctionalCalculus/PosPart/Basic.lean:77); `CFC.negPart_nonneg` (Mathlib/Analysis/SpecialFunctions/ContinuousFunctionalCalculus/PosPart/Basic.lean:147) | not run | fifth-bindings, negative-spectrum-refined |
+| 123 | `df8445edb07e25e1e79b9efacc91d4900583fa229efe7706745af103ff1cb3f5` | 推论：线性尺度上的体积确实趋零 | C | 缺实际 HCIZ 双尺度局部一致极限及 S_d 收敛；指数/对数的极限运算不供应这些实际前置结论。 | none claimed | not run | special-polynomials, gaussian-moments |
+| 124 | `e12105bf8ad122862f6fe04a1b4abe22b29365455992101560012d8a9cdf9f44` | 定理 T3：Gamma—整数分解 | C | 缺实际 theta 密度的换元、混合求和与概率密度识别；上游 Gamma 分布并不直接等于该指定模型。 | none claimed | not run | theta-analytic, gaussian-moments |
+| 125 | `e17855c9db943466019087527afd9e178fa5c465197a1a9de44490e5fa8444b2` | 定理 J4：残差的精确极限 | C | 缺允许 Jordan 块的统一残差上界与实际高斯流单调性；一般谱定理不覆盖非正规矩阵的这个构造。 | none claimed | not run | negative-spectrum-refined, gaussian-moments |
 
 ## probe_runs
 
@@ -173,6 +198,7 @@ Logs ending in `.gz` are losslessly compressed complete stdout/stderr, including
 - Disk90: `make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Disk90.lean'`; EXIT=2; [log](tier3-mathlib-triage-0909/logs/Disk90.log.gz); atoms 96902e5b1d0b9ac78c37f6c1f75fd1d5043bfd6c18f5e2451352b6fbc6977b46.
 - Schur89: `make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Schur89.lean'`; EXIT=0; [log](tier3-mathlib-triage-0909/logs/Schur89.log.gz); atoms 937abccd3570503c88aaac8b088e687e6f79db29ca9f67f887b72a028bd4f866.
 - Disk90-v2: `make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Disk90-v2.lean'`; EXIT=0; [log](tier3-mathlib-triage-0909/logs/Disk90-v2.log.gz); atoms 96902e5b1d0b9ac78c37f6c1f75fd1d5043bfd6c18f5e2451352b6fbc6977b46.
+- Parity104: `make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Parity104.lean'`; EXIT=0; [log](tier3-mathlib-triage-0909/logs/Parity104.log.gz); atoms b923baf16e3404ffc7143c8258cd778915ab93409a40512c8d156d065ed1f61a.
 
 ## search_receipts
 
@@ -232,36 +258,23 @@ Full commands and untruncated hits: [search-receipts.json](tier3-mathlib-triage-
 | fourth-bindings | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '(coeff_rescale|rescale_coeff|det_vandermonde_ne_zero_iff|Unitary.star_mul_self|star_mul_self_of_mem|sum_mul_sq_le_sq_mul_sq|sum_mul_sq_le|cardFactors_mul|liouville_apply_mul|normSq_inv)' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 47 | 0 |
 | fifth-bindings | D5 | `rg '-n' '-i' '-P' '(sectionalCurvature|sectional.curvature|warped.product|WarpedProduct|exists_deriv_eq_zero|sum_roots.*sq|sum_roots_eq|coeff.*trace|trace.*coeff|posPart_sub_negPart|negPart_nonneg)' 'D5' '-g' '*.lean'` | 65 | 0 |
 | fifth-bindings | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '(sectionalCurvature|sectional.curvature|warped.product|WarpedProduct|exists_deriv_eq_zero|sum_roots.*sq|sum_roots_eq|coeff.*trace|trace.*coeff|posPart_sub_negPart|negPart_nonneg)' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 66 | 0 |
+| fifth-reweighting | D5 | `rg '-n' '-i' '-P' '(integral_div|card_roots_le_derivative|coeff_derivative|schur_complement_eq₂₂|cardFactors_mul)' 'D5' '-g' '*.lean'` | 46 | 0 |
+| fifth-reweighting | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '(integral_div|card_roots_le_derivative|coeff_derivative|schur_complement_eq₂₂|cardFactors_mul)' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 121 | 0 |
+| frozen-content-caveat | Golden/Frozen/state | `rg '-n' '-P' 'NormalizedJensenDegreeLowering' 'Golden/Frozen/state'` | 0 | 1 |
+| frozen-path-positive | Golden/Frozen/state | `rg '--files' 'Golden/Frozen/state' '-g' '*MatrixTracePowerSum*'` | 1 | 0 |
+| frozen-path-negative | Golden/Frozen/state | `rg '--files' 'Golden/Frozen/state' '-g' '*TriageMissing0909*'` | 0 | 1 |
+| frozen-jensen-path | Golden/Frozen/state | `rg '--files' 'Golden/Frozen/state' '-g' '*NormalizedJensenDegreeLowering*'` | 1 | 0 |
 
 The positive and negative controls share case-insensitivity, alternation, word boundaries and whitespace matching. The initial `negative-spectrum` query matched `registerTraceClass` (logging infrastructure); the refined word-boundary query excludes this false positive. Generic Caratheodory measure hits are not Toeplitz spectral theorems.
 
+Frozen state JSON stores only `statement_id`; module names must be located through filenames. An initial content-only zero hit was invalid for that purpose. The corrected path search, controls and exact registry read are preserved.
+
+## repository_leads
+
+- `D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering`, `sha256:ee43a04a542df25237818cbfeeb29bb1abaed956f90db04822d08e8f413d50b4`: `D5.S3.Zeros.Jensen.NormalizedJensenDegreeLowering.source_jensen_degree_lowering`, D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.lean:136. Frozen identity for the fixed theta-density P_d at d>=2 and arbitrary complex v. This is not a q_d reciprocal-coordinate derivative or a real-rootedness theorem. No probe imports this dependency.
+
 ## unscreened
 
-- `b407682500faaa6d8da43ce0ed7505d8350c1352ad449a548751bce1b62cd783`
-- `b5821e42febe81b45815f8be9802ddafcf7daab5dc4c74e501b0e709ce3e6000`
-- `b664d8929116da6563cafcdddb7f6e7dc3b66a6fe434e807422ba82db9b83ee4`
-- `b923baf16e3404ffc7143c8258cd778915ab93409a40512c8d156d065ed1f61a`
-- `bc9748938013e4b3c632bfa0e1257a59733df2e1682ed0a8a0d7a0dcc534ab2b`
-- `bdbe4b53515757ce5b701ee375409970886fe1274ff51cca53692271e1f924bb`
-- `bdc556a362036fbf086d0f5882d47613103ee99fa42cd1bf20d16e264b0b274a`
-- `be67399e40a50efabac4cb3841bc3a3b7bbb408e0954367e9f95efe2f390eede`
-- `c03c3d51c8caa76b112c4d2b77618edb95c424c724d03c1f4e1b0fe8887986d5`
-- `c0a72a217fb966246fd4a48a809795cdc539435d1e88d1a10d041a9bcd9ed98d`
-- `c24e34de0c01213d2344c494115a947d88276005c94863a848567f7031e10009`
-- `c468d943aacd5d85352a7866613f53c2d6b6fd3e5a7c94cf9a5115a718abb0c9`
-- `c600e6828d8eeb65e865c4c7c465be9aa00cb5a30100be45cfcb26542c868b4d`
-- `cd2ad7f9986ee06ef6a8ac86aa7834a19d836483eaa1475b57396f3ba7ae536a`
-- `cf00b1802f9e0029835530f6cff45c04fc84ccaa1f13d1eadc540c1dc6259ba3`
-- `d434181a00c8203a60054490e976fdfcfe0f1b1c1fc42b9a2d58797aa0341a9d`
-- `d46f67d9701bbca5691908d2a1ff2d60f8cc946f10b5a1e91c784b83ad378bde`
-- `d5fddb4b2a8fa2c2afef4de9faac8e2192fa333bce05b160799f87fefa9c339f`
-- `d9aefe500d926d5c9ec8e40a4997df1371cfe837dc3a11f548b7a2cfcf99b6b7`
-- `daba72e239c5a9bae6419c9ee7873c87de22293ae599a303dd3feeff596ed538`
-- `dd585f94675a53aceed6592da3ad291d31505f93c47ec491c1b9bba0851ef5f7`
-- `deaf86853b1217a64e0283dae2f03f6aa847b19a5d16e68a95518b8caef0da80`
-- `df8445edb07e25e1e79b9efacc91d4900583fa229efe7706745af103ff1cb3f5`
-- `e12105bf8ad122862f6fe04a1b4abe22b29365455992101560012d8a9cdf9f44`
-- `e17855c9db943466019087527afd9e178fa5c465197a1a9de44490e5fa8444b2`
 - `e405a7f40fa7ee5313052263686a73c8b8578d18290d1f429cb1826603f82480`
 - `e44ad50e6f818d656b6b3b1318b466ef65b9d4fe363f0d70d2f988ffda11c865`
 - `e5d2d285af1f22158b076150c40f53f7d8ce44d2a32dbf3093e84e39ae416c82`
@@ -297,6 +310,7 @@ The positive and negative controls share case-insensitivity, alternation, word b
 - `fcbe1bf4be3d38a2324acb6d7b392c46919c280b`
 - `134dc1f58721e6c7555355cc0d7c6e2f29100376`
 - `0bce26792dcc213354e1d279a96e52e44b711c98`
+- `43dc167e1f7ccfbb80f9edd18a5ca48bbc94a4d0`
 
 Every listed checkpoint was pushed successfully. The final runner envelope includes the commit containing this final report (a commit cannot contain its own hash).
 
