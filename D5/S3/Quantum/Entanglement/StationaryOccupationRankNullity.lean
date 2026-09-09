@@ -8,6 +8,7 @@
 
 import Mathlib.Data.Complex.Basic
 import Mathlib.LinearAlgebra.Matrix.Rank
+import Mathlib.LinearAlgebra.Matrix.PosDef
 import D5.S3.Quantum.Entanglement.BoundedProfileCardinality
 
 set_option autoImplicit false
@@ -16,6 +17,7 @@ set_option relaxedAutoImplicit false
 noncomputable section
 
 open scoped BigOperators
+open scoped ComplexOrder
 
 namespace D5.S3.Quantum.Entanglement.StationaryOccupationRankNullity
 
@@ -59,6 +61,20 @@ theorem gram_factor_rank_le_memory_card {ι κ : Type*} [Fintype ι] [Fintype κ
     (C.conjTranspose * C).rank ≤ Fintype.card κ := by
   exact (Matrix.rank_mul_le_left C.conjTranspose C).trans
     (Matrix.rank_le_card_width C.conjTranspose)
+
+/- Complex Gram matrices are Hermitian. Positivity is intentionally left to a
+   future repository-specific real quadratic-form interface. -/
+theorem gram_factor_is_hermitian {ι κ : Type*} [Fintype ι] [Fintype κ]
+    (C : Matrix κ ι ℂ) :
+    (C.conjTranspose * C).IsHermitian := by
+  exact Matrix.isHermitian_conjTranspose_mul_self C
+
+/- With Mathlib's ComplexOrder scope, the standard matrix predicate records
+   the nonnegative Hermitian quadratic form of a finite Gram factor. -/
+theorem gram_factor_pos_semidef {ι κ : Type*} [Fintype ι] [Fintype κ]
+    (C : Matrix κ ι ℂ) :
+    (C.conjTranspose * C).PosSemidef := by
+  exact Matrix.posSemidef_conjTranspose_mul_self C
 
 theorem bounded_profile_memory_ge
     {ι κ : Type*} [Fintype ι] [DecidableEq ι] [Fintype κ]

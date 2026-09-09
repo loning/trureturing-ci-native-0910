@@ -46,6 +46,16 @@ internal sealed class StationaryOccupationRankNullityDocument : IScribeDocumentD
                     All("C", Call("Matrix", K, I, Complex()),
                         Le(Call("rank", Call("mul", Call("conjTranspose", C), C)),
                                         Call("FintypeCard", K))))));
+        Formula factorHermitian = All("I", Id("Type"),
+            All("K", Id("Type"),
+                Imp(And(Call("Fintype", I), Call("Fintype", K)),
+                    All("C", Call("Matrix", K, I, Complex()),
+                        Call("IsHermitian", Call("mul", Call("conjTranspose", C), C))))));
+        Formula factorPsd = All("I", Id("Type"),
+            All("K", Id("Type"),
+                Imp(And(Call("Fintype", I), Call("Fintype", K)),
+                    All("C", Call("Matrix", K, I, Complex()),
+                        Call("PosSemidef", Call("mul", Call("conjTranspose", C), C))))));
         Formula memoryLower = All("I", Id("Type"),
             All("K", Id("Type"),
                 Imp(And(Call("Fintype", I), And(Call("DecidableEq", I), Call("Fintype", K))),
@@ -74,6 +84,10 @@ internal sealed class StationaryOccupationRankNullityDocument : IScribeDocumentD
                     "The profile cardinality theorem supplies the product term; no stationary-minimum claim is included."),
                 Theorem("gram-factor-rank-le-memory-card", "gram_factor_rank_le_memory_card", factorUpper,
                     "A Gram factor through a finite memory carrier has rank at most that carrier's cardinality."),
+                Theorem("gram-factor-is-hermitian", "gram_factor_is_hermitian", factorHermitian,
+                    "A complex Gram factor is Hermitian; positivity remains an explicit real quadratic-form obligation."),
+                Theorem("gram-factor-pos-semidef", "gram_factor_pos_semidef", factorPsd,
+                    "With the ComplexOrder scope, a finite complex Gram factor is positive semidefinite."),
                 Theorem("bounded-profile-memory-ge", "bounded_profile_memory_ge", memoryLower,
                     "Combining the profile lower bound with the factor upper bound yields a conditional memory lower bound."))));
     }
