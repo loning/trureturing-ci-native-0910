@@ -1,0 +1,118 @@
+/- GID: D5/S1/Words/Compositions/ConstantBlocksDistinctRunSums
+   generality: G
+   mirror-B: D5/B/S1/Words/Compositions/ConstantBlocksDistinctRunSums
+   mirror-E: none(waiver:unbounded-symbolic-proof)
+   anchors: []
+   utility: none
+   digest: Constant blocks with distinct sums are realizable as distinct maximal run sums. -/
+
+import Mathlib.Combinatorics.Enumerative.Partition.Basic
+import Mathlib.Data.List.SplitBy
+import Mathlib.Data.Finset.Max
+import Mathlib.Algebra.BigOperators.Group.Finset.Basic
+
+namespace D5.S1.Words.Compositions.ConstantBlocksDistinctRunSums
+
+open scoped BigOperators
+
+/-- A block is encoded by its positive value and positive multiplicity.
+Distinct sums forbid repeated identical blocks, so a finite set is sufficient. -/
+def HasConstantBlocks (m : Multiset ℕ) : Prop :=
+  ∃ s : Finset (ℕ × ℕ), (∀ b ∈ s, 0 < b.1 ∧ 0 < b.2) ∧
+    Set.InjOn (fun b : ℕ × ℕ => b.1 * b.2) s ∧
+    ∑ b ∈ s, Multiset.replicate b.2 b.1 = m
+
+/-- Sums of the maximal constant runs, including the empty list of sums. -/
+def runSums (l : List ℕ) : List ℕ :=
+  (l.splitBy (· == ·)).map List.sum
+
+/-- Some ordering of the multiset has pairwise distinct maximal run sums. -/
+def HasDistinctRunSums (m : Multiset ℕ) : Prop :=
+  ∃ l : List ℕ, (l : Multiset ℕ) = m ∧ (runSums l).Nodup
+
+private theorem fiber_add_le {α : Type*} [DecidableEq α] (s : Finset α)
+    (f : α → ℕ) {c d : ℕ} (h : c ≠ d) :
+    (s.filter (fun x => f x = c)).card + (s.filter (fun x => f x = d)).card ≤
+      s.card := by
+  rw [← Finset.card_union_of_disjoint]
+  · exact Finset.card_le_card (Finset.union_subset (Finset.filter_subset _ _)
+      (Finset.filter_subset _ _))
+  · apply Finset.disjoint_left.mpr
+    intro x hx hy
+    exact h ((Finset.mem_filter.mp hx).2.symm.trans (Finset.mem_filter.mp hy).2)
+
+-- The stronger induction invariant remembers the forbidden first color p.
+private theorem order_colors {α : Type*} [DecidableEq α] (f : α → ℕ)
+    (s : Finset α) (p : ℕ)
+    (h : ∀ c, 2 * (s.filter (fun x => f x = c)).card ≤
+      s.card + if c = p then 0 else 1) :
+    ∃ l : List α, l.Nodup ∧ l.toFinset = s ∧
+      (p :: l.map f).IsChain (· ≠ ·) := by
+  classical
+  induction hn : s.card using Nat.strong_induction_on generalizing s p with
+  | h n ih =>
+    by_cases he : s = ∅
+    · subst s
+      exact ⟨[], by simp⟩
+    have hs : s.Nonempty := Finset.nonempty_iff_ne_empty.mpr he
+    have hel : (s.filter (fun x => f x ≠ p)).Nonempty := by
+      by_contra hem
+      have hz : (s.filter (fun x => f x ≠ p)).card = 0 :=
+        Finset.card_eq_zero.mpr (Finset.not_nonempty_iff_eq_empty.mp hem)
+      have hc := Finset.card_filter_add_card_filter_not (s := s) (fun x => f x = p)
+      change (s.filter (fun x => f x ≠ p)).card = 0 at hz
+      rw [hz, add_zero] at hc
+      have hp := h p
+      simp only [ite_true, add_zero] at hp
+      have hnz := Finset.card_pos.mpr hs
+      omega
+    obtain ⟨x, hx, hmax⟩ := Finset.exists_max_image
+      (s.filter (fun x => f x ≠ p)) (fun x => (s.filter (fun y => f y = f x)).card) hel
+    obtain ⟨hxs, hxp⟩ := Finset.mem_filter.mp hx
+    have hcard := Finset.card_erase_of_mem hxs
+    have hsmall : (s.erase x).card < n := by
+      have := Finset.card_pos.mpr hs
+      omega
+    have hnext : ∀ c, 2 * ((s.erase x).filter (fun y => f y = c)).card ≤
+        (s.erase x).card + if c = f x then 0 else 1 := by
+      intro c
+      rw [Finset.filter_erase]
+      by_cases hcx : c = f x
+      · subst c
+        rw [Finset.card_erase_of_mem (show x ∈ s.filter (fun y => f y = f x) from
+          Finset.mem_filter.mpr ⟨hxs, rfl⟩)]
+        have hc := h (f x)
+        simp only [hxp, ite_false, ite_true, add_zero] at hc ⊢
+        have hp : 0 < (s.filter (fun y => f y = f x)).card :=
+          Finset.card_pos.mpr ⟨x, Finset.mem_filter.mpr ⟨hxs, rfl⟩⟩
+        omega
+      · have hxm : x ∉ s.filter (fun y => f y = c) := by
+          simp only [Finset.mem_filter, not_and]
+          exact fun _ heq => hcx heq.symm
+        rw [Finset.erase_eq_of_notMem hxm]
+        simp only [hcx, ite_false]
+        have hc : 2 * (s.filter (fun y => f y = c)).card ≤ s.card := by
+          by_cases hcp : c = p
+          · subst c
+            simpa using h p
+          by_cases hzero : (s.filter (fun y => f y = c)).card = 0
+          · omega
+          obtain ⟨y, hy⟩ := Finset.card_pos.mp (Nat.pos_of_ne_zero hzero)
+          obtain ⟨hys, hyc⟩ := Finset.mem_filter.mp hy
+          have hym : y ∈ s.filter (fun z => f z ≠ p) :=
+            Finset.mem_filter.mpr ⟨hys, by simpa [hyc] using hcp⟩
+          have hm := hmax y hym
+          rw [hyc] at hm
+          have hd := fiber_add_le s f hcx
+          omega
+        have hnz := Finset.card_pos.mpr hs
+        omega
+    obtain ⟨l, hl, hls, hlc⟩ := ih _ hsmall (s.erase x) (f x) hnext rfl
+    refine ⟨x :: l, ?_, ?_, ?_⟩
+    · simp only [List.nodup_cons]
+      exact ⟨by simpa [← List.mem_toFinset, hls] using Finset.notMem_erase x s, hl⟩
+    · simp [hls, Finset.insert_erase hxs]
+    · simpa only [List.map_cons, List.isChain_cons_cons] using
+        And.intro (Ne.symm hxp) hlc
+
+end D5.S1.Words.Compositions.ConstantBlocksDistinctRunSums
