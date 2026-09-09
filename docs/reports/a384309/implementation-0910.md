@@ -175,3 +175,80 @@ No theory volume or atom is being created for this task.
   Source inspection found production Describe rejects suspected-novel nodes;
   the proved multiplicity is accurately marked repo-derived, with the OEIS
   conjecture acknowledged. No global novelty assertion is needed or made.
+
+## Public theorem accounting
+
+All GIDs below have prefix D5/S3/Arith/CounterSequences/LeadingCounter.
+Direct frozen dependencies for every declaration: [] (no GID/statement_id pairs).
+The Lean semantic audit found no external D5 dependency anywhere in this module.
+
+| Public theorem | proof_shape | escape_witness | admission_basis |
+| --- | --- | --- | --- |
+| a_one | bind-only | null | companion in escape-witness module; source initial-condition API, named consumer KernelAudit.recurrence_echo -> a_one |
+| a_recurrence | content | orbit_count | escape-witness |
+| leading_counter_multiplicity | content | all_digits_infinite | escape-witness |
+
+The generated orbit.eq_def is not an authored mathematical result; it is
+bind-only, escape_witness=null, and a companion equation for the orbit definition.
+Definitions leading10, digit, orbit, a, and counter define the actual process.
+No declaration is primarily bounded enumeration, a checker, numeric reduction,
+or a certified finite instance: computational_content.kind=none throughout.
+Other utility fields: not-applicable(kind=none).
+
+For a_recurrence, the four CLAUDE.md 3.2 conditions are:
+
+1. In the dependency closure: a_recurrence -> term_recurrence -> orbit_count,
+   as read from the elaborated Lean environment.
+2. Not obtained by projection: orbit_count proves a new state invariant by
+   induction over the recursive update, for every time and all nine counters.
+   The imported count lemmas alone do not identify this orbit's counters.
+3. Not definitionally equivalent: orbit_count concerns the complete stored
+   counter function before each step; a_recurrence is a scalar next-term
+   identity expressed using one-based positions and leading10.
+4. On a live path: the next state's current value is a stored counter plus
+   one; orbit_count replaces that stored value by the required prefix count.
+   Removing that invariant leaves no justified equality to the prefix count.
+
+For leading_counter_multiplicity, the four conditions are:
+
+1. In the dependency closure: main -> successor_multiplicity -> successor_bijOn
+   -> all_digits_infinite; the semantic edge audit confirms this chain.
+2. Not obtained by projection: the proof combines a recurrent color, the
+   recurrence's count enumeration, and distinct decimal-power witnesses to
+   force all digit classes to recur. No imported theorem states that dynamic
+   conclusion, and the direct frozen premise set is empty.
+3. Not definitionally equivalent: all_digits_infinite says each digit class
+   has infinitely many visits; the target says each fixed value has finitely
+   many positions with an exact cardinality. Neither is a restatement of the other.
+4. On a live path: all_digits_infinite supplies the k-th visit used for the
+   surjectivity component of successor_bijOn. Without that visit, injectivity
+   only gives an upper bound, not nine occurrences. Finiteness and cardinality
+   then use this actual bijection; no unused conjunction supplies the witness.
+
+These four judgments describe the actual proof; the dependency audit alone
+is not claimed to decide all proof-shape semantics.
+
+question_answered: Does the one-based A384309 recurrence have exact finite
+multiplicity nine for every positive k, with the initial exception for 1?
+Preregistration: Target and preregistration section above, committed before probes.
+dominating_theorem_search: not-found-in-searched-scope; D5 -> pinned mathlib
+-> GitHub Lean / arXiv / OEIS, with failed and unopened requests distinguished above.
+
+## Kernel semantic echo
+
+KernelAudit.lean final file check EXIT=0. Both private decidable echoes pass:
+leading10(0)=0, leading10(1234)=1, leading10(999)=9; and a at positions 0..6
+is [0,1,1,2,1,3,1]. recurrence_echo combines the public initial condition and
+recurrence for all positive times. These are smoke tests, not evidence of the
+unbounded multiplicity statement, and they are not frozen as finite instances.
+#print axioms for all three public theorems returns only
+[propext, Classical.choice, Quot.sound]. Log: attempt-1/kernel-audit.log.
+
+## Canonical public statement identities
+
+| Declaration | statement_id |
+| --- | --- |
+| a_recurrence | sha256:a1dcd1d2f687cf5665701eabddafa3829482cd7bcb1ff7669251866654f650e0 |
+| leading_counter_multiplicity | sha256:80db245f1604b878987fe5451c2ebdde412b1ab9e9efe3f73f727923c8ed850e |
+| a_one | sha256:bd0b2ea1cf0ce25271bda8c4e3597b1271a3985e8e01ae1aaa6db196f8fadd05 |
+| eq_def | sha256:9521ff731d924a2fb48f4d5928018457a62765969a508717b46fa5eacc7a8f89 |
