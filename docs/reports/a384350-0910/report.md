@@ -209,4 +209,15 @@ Added a single Scribe theorem narrative and a citation-only Library note
 The proof provenance is repo-derived. This supersedes the earlier optional
 choice to omit a note: the note gives durable exact source locators, not a
 new theory volume or an atom. Its Verified locator section includes the
-literal frontmatter doi/url lines. Library/ArithSums starts with one file.
+literal frontmatter doi/url lines. Capacity correction from measured base
+`git ls-tree`: Library/ArithSums already had 6 files and now has 7; the prior
+unmeasured "starts with one file" assertion was incorrect. Lean/Blueprint
+ArithSums have 1/1 before markdown emission, respectively.
+
+Before-PR repository recheck: fetched origin/dev
+`fa5ec493a0729f691cd5e453bb4129117ee9bace`; PCRE search for A384350, A384318,
+nontrivial_disjoint_refinement and least_changed_block in that revision's D5
+returned no matches (EXIT 1). `git merge-tree --write-tree HEAD origin/dev`
+returned EXIT 0, tree `100418aa468c235ec37d2eeb6c945eb6d7acb488`, with no
+conflicts. This is a data-only integration preview; the original local gate
+base remains the immutable SHA recorded in preregistration.

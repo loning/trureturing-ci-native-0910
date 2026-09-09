@@ -6,7 +6,8 @@ title: OEIS A384350 and A384318 — disjoint strict partition families
 doi: null
 url: https://oeis.org/A384350
 claim: The entries conjecture that an outside subset sum characterizes nonuniqueness of disjoint strict partition families.
-strata_touched: [S3]
+strata_touched:
+  - D5/S3/ArithSums/DisjointStrictRefinement
 license: citation-only
 triage: anchor
 ---
