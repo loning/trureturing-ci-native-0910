@@ -4,7 +4,7 @@ using System.Text;
 namespace StrataLint.Engine;
 
 internal sealed record LeanSourceToken(
-    string Text, int Line, int Column, ImmutableArray<string> IdentifierParts = default)
+    string Text, int Line, int Column, ImmutableArray<string> IdentifierParts = default, int ByteOffset = 0)
 {
     internal bool IsIdentifier => !IdentifierParts.IsDefaultOrEmpty;
     internal string Identifier => LeanSourceTokenizer.IdentifierText(IdentifierParts);
@@ -12,12 +12,21 @@ internal sealed record LeanSourceToken(
 
 internal static class LeanSourceTokenizer
 {
-    internal static ImmutableArray<LeanSourceToken> Tokenize(string source) =>
-        new Scanner(source, includeInterpolationTerms: false).ReadCode();
+    // The registered alternative can expose a source dependency only when the
+    // suffix starts an identifier. Delimiter and escaped Char literals remain
+    // literal controls during the demand probe; production scanning is unchanged.
+    internal static bool EqualityCanExposeIdentifier(string source, int byteOffset)
+    {
+        var utf8 = Encoding.UTF8.GetBytes(source);
+        var index = Encoding.UTF8.GetCharCount(utf8.AsSpan(0, byteOffset)) + 2;
+        return index < source.Length && IsIdentifierStart(char.ConvertToUtf32(source, index));
+    }
+    internal static ImmutableArray<LeanSourceToken> Tokenize(string source, Func<int, bool>? equalityAt = null) =>
+        new Scanner(source, includeInterpolationTerms: false, equalityAt, null).ReadCode();
 
     // Proposition extraction retains literal spelling; source policies also inspect embedded terms.
-    internal static ImmutableArray<LeanSourceToken> TokenizeIncludingInterpolationTerms(string source) =>
-        new Scanner(source, includeInterpolationTerms: true).ReadCode();
+    internal static ImmutableArray<LeanSourceToken> TokenizeIncludingInterpolationTerms(string source, Func<int, bool>? equalityAt = null, Action<LeanSourceToken>? observe = null) =>
+        new Scanner(source, includeInterpolationTerms: true, equalityAt, observe).ReadCode();
 
     internal static ImmutableArray<string> IdentifierParts(string text)
     {
@@ -32,12 +41,11 @@ internal static class LeanSourceTokenizer
                     ? part
                     : "\u00ab" + part + "\u00bb"));
 
-    private sealed class Scanner(string source, bool includeInterpolationTerms)
+    private sealed class Scanner(string source, bool includeInterpolationTerms, Func<int, bool>? equalityAt, Action<LeanSourceToken>? observe)
     {
         private int index;
         private int line = 1;
         private int column;
-        private readonly EqualityNotationScope equalityScope = new();
 
         internal ImmutableArray<LeanSourceToken> ReadCode(int? interpolationLine = null)
         {
@@ -77,11 +85,6 @@ internal static class LeanSourceTokenizer
                 var tokenLine = line;
                 var tokenColumn = column;
                 var identifierParts = ImmutableArray<string>.Empty;
-                if (interpolationLine is null && brackets.Count == 0)
-                {
-                    equalityScope.BeforeToken(tokenLine, tokenColumn);
-                }
-
                 var rawQuote = RawStringQuote();
                 if (rawQuote >= 0)
                 {
@@ -113,7 +116,7 @@ internal static class LeanSourceTokenizer
                     // Keep the structural delimiter separate for proposition consumers.
                     if (symbol == "]'")
                     {
-                        result.Add(new LeanSourceToken("]", tokenLine, tokenColumn));
+                        result.Add(new LeanSourceToken("]", tokenLine, tokenColumn, ByteOffset: Encoding.UTF8.GetByteCount(source.AsSpan(0, start))));
                         symbol = "]";
                         start++;
                         tokenColumn++;
@@ -133,12 +136,9 @@ internal static class LeanSourceTokenizer
                     }
                 }
 
-                var token = new LeanSourceToken(source[start..index], tokenLine, tokenColumn, identifierParts);
+                var token = new LeanSourceToken(source[start..index], tokenLine, tokenColumn, identifierParts, Encoding.UTF8.GetByteCount(source.AsSpan(0, start)));
                 result.Add(token);
-                if (interpolationLine is null)
-                {
-                    equalityScope.Observe(token);
-                }
+                observe?.Invoke(token);
             }
 
             if (brackets.TryPeek(out var opening))
@@ -177,9 +177,9 @@ internal static class LeanSourceTokenizer
                 return 2;
             }
 
-            // Mathlib's =' token is scoped to FirstOrder. When active, Lean's
-            // longest-token rule applies before any character lookahead at the apostrophe.
-            if (At("='") && equalityScope.IsActive)
+            // Current Lean supplies availability at this byte site. The spelling
+            // projection still owns longest-token selection and literal handling.
+            if (At("='") && (equalityAt?.Invoke(Encoding.UTF8.GetByteCount(source.AsSpan(0, index))) ?? false))
             {
                 return 2;
             }
@@ -406,7 +406,7 @@ internal static class LeanSourceTokenizer
 
         private int CodePointAt(int offset) => char.ConvertToUtf32(source, offset);
 
-        private static LeanSourceExtractionException Error(string message, int atLine) => new(message, atLine);
+        private static LeanSourceExtractionException Error(string message, int atLine) => new(message, atLine, lexical: true);
 
         private void Advance(int count = 1)
         {
@@ -422,121 +422,6 @@ internal static class LeanSourceTokenizer
                     column++;
                 }
             }
-        }
-    }
-
-    // Only the pinned FirstOrder equality token needs environmental disambiguation
-    // from a Char. Track command headers at the same column-zero boundaries used by
-    // LeanSourceCatalog; comments and literals never become commands. This is not
-    // a parser for user-defined notation or arbitrary term-local scope expressions.
-    private sealed class EqualityNotationScope
-    {
-        private readonly List<LeanSourceToken> header = [];
-        private readonly Stack<(string Namespace, bool Active)> scopes = new();
-        private string currentNamespace = string.Empty;
-        private int previousLine;
-        private bool commandStart;
-        private bool localBodyPending;
-        private bool? localRestore;
-
-        internal bool IsActive { get; private set; }
-
-        internal void BeforeToken(int line, int column)
-        {
-            commandStart = column == 0 && line > previousLine;
-            if (!commandStart)
-            {
-                return;
-            }
-
-            FinishHeader(local: false);
-            if (localRestore is { } previous && !localBodyPending)
-            {
-                IsActive = previous;
-                localRestore = null;
-            }
-        }
-
-        internal void Observe(LeanSourceToken token)
-        {
-            previousLine = token.Line;
-            if (localBodyPending)
-            {
-                commandStart = true;
-                localBodyPending = false;
-            }
-
-            if (commandStart)
-            {
-                commandStart = false;
-                if (token.Text is "open" or "namespace" or "section" or "noncomputable" or "end")
-                {
-                    header.Add(token);
-                }
-            }
-            else if (header.Count > 0)
-            {
-                if (header[0].Text == "open" && token.Text == "in")
-                {
-                    localRestore ??= IsActive;
-                    FinishHeader(local: true);
-                    localBodyPending = true;
-                }
-                else
-                {
-                    header.Add(token);
-                }
-            }
-        }
-
-        private void FinishHeader(bool local)
-        {
-            if (header.Count == 0)
-            {
-                return;
-            }
-
-            var command = header[0].Text;
-            if (command == "open")
-            {
-                // Elab.Open activates simple/scoped/hiding opens, but not selective
-                // or renaming opens. Parser.withOpenDeclFnCore additionally leaves
-                // hiding opens inactive while parsing the body of `open ... in`.
-                if (!header.Any(token => token.Text is "(" or "renaming")
-                    && !(local && header.Any(token => token.Text == "hiding")))
-                {
-                    IsActive |= header.Skip(1).TakeWhile(token => token.Text != "hiding")
-                        .Any(token => token.IsIdentifier && token.Identifier is "FirstOrder" or "_root_.FirstOrder");
-                }
-            }
-            else if (command == "end")
-            {
-                var count = header.Count > 1 ? header[1].IdentifierParts.Length : 1;
-                for (var part = 0; part < count && scopes.TryPop(out var previous); part++)
-                {
-                    (currentNamespace, IsActive) = previous;
-                }
-            }
-            else
-            {
-                var section = header.FindIndex(token => token.Text == "section");
-                if (command == "namespace" || section >= 0)
-                {
-                    var nameIndex = command == "namespace" ? 1 : section + 1;
-                    var parts = nameIndex < header.Count ? header[nameIndex].IdentifierParts : [];
-                    foreach (var part in parts.IsDefaultOrEmpty ? ImmutableArray.Create(string.Empty) : parts)
-                    {
-                        scopes.Push((currentNamespace, IsActive));
-                        if (command == "namespace")
-                        {
-                            currentNamespace = currentNamespace.Length == 0 ? part : currentNamespace + "." + part;
-                            IsActive |= currentNamespace == "FirstOrder";
-                        }
-                    }
-                }
-            }
-
-            header.Clear();
         }
     }
 

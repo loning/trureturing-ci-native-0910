@@ -197,6 +197,9 @@ internal interface IRepositoryGateway
 
 internal interface ILeanReportSource
 {
+    LeanSourceContextInput LoadSourceContext(RepositorySnapshot current, RepositorySnapshot protectedBase) =>
+        LeanSourceContextInput.Empty;
+
     LeanAxiomReport Load(RepositorySnapshot snapshot);
 }
 
@@ -348,6 +351,7 @@ internal sealed partial class ProductionCliEnvironment : ICliEnvironment
                 () => RawLeanReportArtifact.ReadFile(
                     options.CandidateLeanReport,
                     current));
+            var sourceContext = LeanSourceContextArtifact.ReadBundle(options.CandidateLeanReport, current, baseline);
             var verifiedScribeEmissions = timing.Measure(
                 "scribe-verify",
                 () => VerifyScribeForAdmission(
@@ -364,7 +368,8 @@ internal sealed partial class ProductionCliEnvironment : ICliEnvironment
                 verifiedScribeEmissions,
                 timing,
                 testMapStore,
-                DeriveTestMap).Outcome;
+                DeriveTestMap,
+                sourceContext).Outcome;
         }
         catch (Exception exception)
         {

@@ -377,7 +377,11 @@ jobs:
           done
           helper="$GITHUB_WORKSPACE/candidate/tools/scripts/report/lean-report-input.sh"
           # 缓存条目对候选树重新验一次地址与报告哈希;不符即整体回落,不静默使用。
-          "$helper" verify --repository "$GITHUB_WORKSPACE/candidate" --report "$source"
+          "$helper" verify --repository "$GITHUB_WORKSPACE/candidate" --report "$source" --base "${{ steps.base.outputs.sha }}"
+          # Verification established that any missing context is unused. Publish
+          # its empty sibling without requiring a Lean installation on this hit.
+          python3 "$GITHUB_WORKSPACE/candidate/tools/lean-inspector/source-context.py" \
+            --repository "$GITHUB_WORKSPACE/candidate" --report "$source" --base "${{ steps.base.outputs.sha }}"
           producer="$(awk -F= '$1 == "producer_sha256" {print $2}' "${source}.input.attestation")"
           sources="${{ steps.lean-input.outputs.sources_sha256 }}"
           config="${{ steps.lean-input.outputs.config_sha256 }}"
@@ -390,7 +394,7 @@ jobs:
               producer_sha256: $producer, repository_inspector_sha256: $producer,
               lean_sources_sha256: $sources, lean_config_sha256: $config, report_sha256: $report}
             and (.[0].mode == "produced" or .[0].mode == "cached"))' "${source}.provenance.json" > /dev/null
-          for suffix in '' .input.attestation .provenance.json .materials.zip; do
+          for suffix in '' .input.attestation .provenance.json .materials.zip .source-context.json; do
             cp "${source}${suffix}" "$reports/candidate-lean-report.json${suffix}"
           done
           printf '%s  %s\n' \
@@ -498,6 +502,7 @@ jobs:
           # 只产受审的 post-merge 侧。base 是同一 merge 对象的 dev 第一父提交,
           # 只参与 admission gate 的 diff 语义,不再为它编译或上传第二份 Lean 报告。
           "$pair_producer" \
+            --base "${{ steps.base.outputs.sha }}" \
             --producer "$producer" \
             --lake-bin "$HOME/.elan/bin/lake" \
             --candidate-root "$GITHUB_WORKSPACE/candidate" \
@@ -509,7 +514,7 @@ jobs:
           source="$RUNNER_TEMP/raw-lean-reports/candidate-lean-report.json"
           target="$GITHUB_WORKSPACE/.canonical-lean-report-cache/raw-lean-report.json"
           mkdir -p "$(dirname "$target")"
-          for suffix in '' .input.attestation .provenance.json .materials.zip; do
+          for suffix in '' .input.attestation .provenance.json .materials.zip .source-context.json; do
             test -s "${source}${suffix}"
             cp "${source}${suffix}" "${target}${suffix}"
           done
@@ -521,7 +526,7 @@ jobs:
           cp -R "${source}.logs" "${target}.logs" 2>/dev/null || true
           "$GITHUB_WORKSPACE/candidate/tools/scripts/report/lean-report-input.sh" verify \
             --repository "$GITHUB_WORKSPACE/candidate" \
-            --report "$target"
+            --report "$target" --base "${{ steps.base.outputs.sha }}"
 
       # pull_request_target runs get a token without cache-write scope, so this save can only ever fail there: run 31389667812 logged "cache write denied: token has no writable scopes". The two saves below already carry this exact guard; this one was missing it, so every PR attempted a write it could not perform. dev-push runs do write it successfully (run 31389340892).
       # 命中报告缓存时 elan/lake 目录未被恢复也未被填充,回存会写入空态并污染下一轮;分层 lake cache exact hit 时对应 key 也已存在。三个 save 只在真正跑过生产路径时执行。

@@ -246,10 +246,62 @@ public sealed class NativeDecideAdmissionTests
             fixture.BaselineReports[RuleFixture.RingPath] = fixture.Reports[RuleFixture.RingPath];
         }
         Assert.Empty(fixture.Reports[Path].Declarations);
-        return fixture.Build(RawChangeSet.CreateWithKinds([(Path, RawChangeKind.Added)]));
+        var context = fixture.Build(RawChangeSet.CreateWithKinds([(Path, RawChangeKind.Added)]));
+        return RuleEvaluationContext.Create(context.Current, context.Baseline, context.Policy, context.Lean,
+            context.Changes, context.MetaEvaluation, context.VerifiedScribeEmissions,
+            sourceContext: SyntheticSourceContext.ForSnapshots(context.Current, context.Baseline));
     }
 
-    private static AdmissionOutcome Admit(RuleEvaluationContext context) => AdmissionPipeline.Evaluate(
+    private static AdmissionOutcome Admit(RuleEvaluationContext context) => AdmissionPipeline.EvaluateWithScribe(
         context.Current, context.Baseline, context.Policy, context.Lean, context.Changes,
-        Assert.IsType<BootstrapOutcome.Clear>(BootstrapGate.Evaluate(context.Changes)).Capability);
+        Assert.IsType<BootstrapOutcome.Clear>(BootstrapGate.Evaluate(context.Changes)).Capability,
+        context.VerifiedScribeEmissions, sourceContext: context.SourceContext);
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Repair7IndentedOpenAcceptsLongerNameThroughCatalog(bool indented)
+    {
+        var source = EqualitySpanSource(qualified: false, spaced: false)
+            .Replace("\nopen scoped", indented ? "\n open scoped" : "\nopen scoped", StringComparison.Ordinal);
+        var context = Candidate("decide", source, sourceImport: "Mathlib.ModelTheory.Syntax");
+        var completed = Assert.IsType<RuleExecutionOutcome.Completed>(RuleCatalog.Default.Execute(context)).Capability;
+        Assert.Contains(completed.ExecutedRules, id => id.Value == "SL-035");
+        Assert.DoesNotContain(completed.Diagnostics, item => item.AdmissionEffect == AdmissionEffect.Block);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Repair7IndentedOpenAcceptsLongerNameThroughAdmission(bool indented)
+    {
+        var source = EqualitySpanSource(qualified: false, spaced: false)
+            .Replace("\nopen scoped", indented ? "\n open scoped" : "\nopen scoped", StringComparison.Ordinal);
+        var context = Candidate("decide", source, sourceImport: "Mathlib.ModelTheory.Syntax");
+        Assert.IsType<AdmissionOutcome.Admitted>(Admit(context));
+    }
+
+    [Theory]
+    [InlineData("FirstOrder")]
+    [InlineData("Ordinary")]
+    public void Repair7InitOnlyCharAcceptsKernelDecideThroughCatalog(string ns)
+    {
+        var source = $"import Init\nnamespace {ns}\ndef g' : Nat := 0\nend {ns}\nopen {ns}\n"
+            + "example : ')' =')' := by decide\n";
+        var context = Candidate("decide", source, sourceImport: "Init");
+        var completed = Assert.IsType<RuleExecutionOutcome.Completed>(RuleCatalog.Default.Execute(context)).Capability;
+        Assert.Contains(completed.ExecutedRules, id => id.Value == "SL-035");
+        Assert.DoesNotContain(completed.Diagnostics, item => item.AdmissionEffect == AdmissionEffect.Block);
+    }
+
+    [Theory]
+    [InlineData("FirstOrder")]
+    [InlineData("Ordinary")]
+    public void Repair7InitOnlyCharAcceptsKernelDecideThroughAdmission(string ns)
+    {
+        var source = $"import Init\nnamespace {ns}\ndef g' : Nat := 0\nend {ns}\nopen {ns}\n"
+            + "example : ')' =')' := by decide\n";
+        var context = Candidate("decide", source, sourceImport: "Init");
+        Assert.IsType<AdmissionOutcome.Admitted>(Admit(context));
+    }
+
 }

@@ -279,7 +279,8 @@ public sealed class LeanSourceTokenizerTests
     }
 
     private static System.Collections.Immutable.ImmutableArray<LeanSourceToken> Scan(string source, bool embedded) =>
-        embedded ? LeanSourceTokenizer.TokenizeIncludingInterpolationTerms(source) : LeanSourceTokenizer.Tokenize(source);
+        embedded ? LeanSourceTokenizer.TokenizeIncludingInterpolationTerms(source, SyntheticSourceContext.Equality(source))
+            : LeanSourceTokenizer.Tokenize(source, SyntheticSourceContext.Equality(source));
 
     [Theory]
     [InlineData("')'")]
@@ -418,4 +419,39 @@ public sealed class LeanSourceTokenizerTests
         var tokens = LeanSourceTokenizer.Tokenize(source);
         Assert.Equal(new[] { "s!", source[2..] }, tokens.Select(static token => token.Text));
     }
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void Repair7IndentedOpenRetainsWholeIdentifierAndLocation(bool embedded, bool indented)
+    {
+        var source = "import Mathlib.ModelTheory.Syntax\n"
+            + (indented ? " " : "") + "open scoped FirstOrder\n"
+            + "example (t g'native_decide : FirstOrder.Language.Term FirstOrder.Language.empty (Sum Nat (Fin 0))) :\n"
+            + "    (t ='g'native_decide) = (t ='g'native_decide) := by rfl\n";
+        var tokens = Scan(source, embedded);
+        Assert.DoesNotContain(tokens, token => token.Text == "native_decide");
+        var references = tokens.Where(token => token.Line == 4 && token.Identifier == "g'native_decide").ToArray();
+        Assert.Equal(2, references.Length);
+        Assert.Equal(9, references[0].Column);
+        Assert.Equal(33, references[1].Column);
+        Assert.Equal(3, LeanSourceCatalog.QualifiedIdentifiers(tokens).Count(name => name == "g'native_decide"));
+    }
+
+    [Theory]
+    [InlineData(false, "FirstOrder")]
+    [InlineData(true, "FirstOrder")]
+    [InlineData(false, "Ordinary")]
+    [InlineData(true, "Ordinary")]
+    public void Repair7InitOnlyScopeKeepsCharactersInert(bool embedded, string ns)
+    {
+        var source = $"import Init\nnamespace {ns}\ndef g' : Nat := 0\nend {ns}\nopen {ns}\n"
+            + "theorem a : 'g' ='g' := by rfl\n";
+        var tokens = Scan(source, embedded).Where(token => token.Line == 6).ToArray();
+        Assert.Equal(2, tokens.Count(token => token.Text == "'g'" && !token.IsIdentifier));
+        Assert.DoesNotContain(tokens, token => token.IsIdentifier && token.Identifier == "g'");
+        Assert.DoesNotContain("g'", LeanSourceCatalog.QualifiedIdentifiers([..tokens]));
+    }
+
 }

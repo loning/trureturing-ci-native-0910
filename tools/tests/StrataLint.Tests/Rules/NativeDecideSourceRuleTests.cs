@@ -256,10 +256,16 @@ public sealed class NativeDecideSourceRuleTests
     [InlineData("\nexample : True := by (native_decide", 2)]
     public void MalformedLexicalInputBlocksWithLocation(string source, int line)
     {
-        var diagnostic = Assert.Single(Evaluate(Source(source), (Path, RawChangeKind.Added)));
+        var findings = Evaluate(Source(source), (Path, RawChangeKind.Added));
+        var diagnostic = Assert.Single(findings, finding => finding.Message.StartsWith("NATIVE_DECIDE_LEXICAL_ERROR", StringComparison.Ordinal));
         Assert.Equal(Path, diagnostic.Path);
         Assert.Equal(AdmissionEffect.Block, diagnostic.AdmissionEffect);
         Assert.StartsWith($"NATIVE_DECIDE_LEXICAL_ERROR line={line}:", diagnostic.Message, StringComparison.Ordinal);
+        var executable = source.Contains("by native_decide", StringComparison.Ordinal)
+            || source.Contains("by (native_decide", StringComparison.Ordinal);
+        Assert.Equal(executable ? 2 : 1, findings.Length);
+        if (executable)
+            Assert.Contains(findings, finding => finding.Message.StartsWith($"NATIVE_DECIDE_SOURCE line={line}:", StringComparison.Ordinal));
     }
 
     [Theory]
@@ -449,11 +455,19 @@ public sealed class NativeDecideSourceRuleTests
     private static ImmutableArray<Diagnostic> Evaluate(RuleFixture fixture, params (string Path, RawChangeKind Kind)[] changes)
     {
         var descriptor = Assert.Single(RuleCatalog.Default.Descriptors, item => item.Id.Value == Rule);
-        return RuleCatalog.Default.EvaluateSingle(descriptor.Id, fixture.Build(RawChangeSet.CreateWithKinds(changes))).Diagnostics;
+        return RuleCatalog.Default.EvaluateSingle(descriptor.Id, Context(fixture, changes)).Diagnostics;
     }
 
     private static CompletedRuleSet Execute(RuleFixture fixture, params (string Path, RawChangeKind Kind)[] changes) =>
-        Assert.IsType<RuleExecutionOutcome.Completed>(RuleCatalog.Default.Execute(fixture.Build(RawChangeSet.CreateWithKinds(changes)))).Capability;
+        Assert.IsType<RuleExecutionOutcome.Completed>(RuleCatalog.Default.Execute(Context(fixture, changes))).Capability;
+
+    private static RuleEvaluationContext Context(RuleFixture fixture, (string Path, RawChangeKind Kind)[] changes)
+    {
+        var context = fixture.Build(RawChangeSet.CreateWithKinds(changes));
+        return RuleEvaluationContext.Create(context.Current, context.Baseline, context.Policy, context.Lean,
+            context.Changes, context.MetaEvaluation, context.VerifiedScribeEmissions,
+            sourceContext: SyntheticSourceContext.ForSnapshots(context.Current, context.Baseline));
+    }
 
     private static void AssertSkipped(RuleFixture fixture, params (string Path, RawChangeKind Kind)[] changes)
     {
