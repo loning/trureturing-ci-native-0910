@@ -7,6 +7,7 @@
    digest: Padding Gram entries are minimum-head multiplicities within each tail block. -/
 
 import D5.S3.Quantum.StationaryPreparation.StationaryOccupationResidualCircuit
+import D5.S3.Quantum.StationaryPreparation.NormalizedGram
 
 set_option autoImplicit false
 set_option relaxedAutoImplicit false
@@ -262,5 +263,70 @@ theorem padding_residual_inner (head : A) (a b c : Multiset A)
         padding_residual_none head a b hb (Nat.pos_of_ne_zero hr)
     · exact padding_residual_inner_positive head a b c hb hc
         (Nat.pos_of_ne_zero hr) (Nat.pos_of_ne_zero hs)
+
+open D5.S3.Quantum.StationaryPreparation.NormalizedResiduals
+
+/-- The actual padding residual normalized by its positive word-count scale. -/
+def normalizedPadding (head : A) (a b : Multiset A) : Space (OccupationMemory a head) :=
+  (residualScale b : ℂ)⁻¹ • paddingResidual head a b
+
+/-- Source moments with the actual common sink, in the source's inner-product order. -/
+def paddingMoment (head : A) (a b : Multiset A) : ℂ :=
+  inner ℂ (normalizedPadding head a b) (basis none)
+
+theorem normalized_padding_norm (head : A) (a b : Multiset A) (hb : b ≤ a) :
+    ‖normalizedPadding head a b‖ = 1 := by
+  have hi := padding_residual_inner head a b b hb hb
+  simp only [ite_true, min_self, head_slice_self] at hi
+  have hn : ‖paddingResidual head a b‖ = residualScale b := by
+    have hh : ‖paddingResidual head a b‖ ^ 2 = (multiplicity b.card b : ℝ) := by
+      rw [← inner_self_eq_norm_sq (𝕜 := ℂ), hi]
+      rfl
+    nlinarith [scale_sq b, scale_pos b, norm_nonneg (paddingResidual head a b)]
+  rw [normalizedPadding, norm_smul, norm_inv, Complex.norm_real, Real.norm_eq_abs,
+    abs_of_pos (scale_pos b), hn, inv_mul_cancel₀ (scale_pos b).ne']
+
+theorem normalized_padding_tail_free (head : A) (a b : Multiset A)
+    (hb : b ≤ a) (hr : tailCount head b = 0) : normalizedPadding head a b = basis none := by
+  have hm : multiplicity b.card b = 1 := by
+    simpa only [head_slice_self] using tail_free_multiplicity head b hr (b.count head)
+  simp [normalizedPadding, padding_residual_tail_free head a b hb hr, residualScale, hm]
+
+@[simp] theorem normalized_padding_zero (head : A) (a : Multiset A) :
+    normalizedPadding head a 0 = basis none := by
+  apply normalized_padding_tail_free head a 0 (Multiset.zero_le _)
+  simp [tailCount]
+
+theorem padding_moment (head : A) (a b : Multiset A) (hb : b ≤ a) :
+    paddingMoment head a b = if tailCount head b = 0 then 1 else 0 := by
+  classical
+  by_cases hr : tailCount head b = 0
+  · simp [paddingMoment, normalized_padding_tail_free head a b hb hr, hr,
+      basis]
+  · rw [paddingMoment, normalizedPadding, inner_smul_left, if_neg hr]
+    have hz : inner ℂ (paddingResidual head a b) (basis none) = 0 := by
+      apply inner_eq_zero_symm.mp
+      simpa only [basis, EuclideanSpace.basisFun_inner] using
+        padding_residual_none head a b hb (Nat.pos_of_ne_zero hr)
+    rw [hz, mul_zero]
+
+theorem normalized_padding_axis (head : A) (a : Multiset A) (j : ℕ)
+    (hj : j ≤ a.count head) :
+    normalizedPadding head a (Multiset.replicate j head) = basis none := by
+  apply normalized_padding_tail_free
+  · apply Multiset.le_iff_count.mpr
+    intro i
+    by_cases hi : head = i
+    · subst i; simpa only [Multiset.count_replicate_self] using hj
+    · simp only [Multiset.count_replicate, if_neg hi]; exact Nat.zero_le _
+  · apply (tail_count_zero_iff head _).mpr
+    intro i hi
+    simp only [Multiset.count_replicate, if_neg (Ne.symm hi)]
+
+theorem padding_moment_axis (head : A) (a : Multiset A) (j : ℕ)
+    (hj : j ≤ a.count head) : paddingMoment head a (Multiset.replicate j head) = 1 := by
+  classical
+  simp [paddingMoment, normalized_padding_axis head a j hj,
+    basis]
 
 end D5.S3.Quantum.StationaryPreparation.PaddingGram

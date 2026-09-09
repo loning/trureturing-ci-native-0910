@@ -52,13 +52,59 @@ internal sealed class PaddingGramDocument : IScribeDocumentDefinition
                 + "If both tails are zero, both vectors are the sink and the pure-head "
                 + "multiplicity is one. A sink and a positive-tail vector are orthogonal. "
                 + "This includes empty occupations and zero head capacity. No maximal-head "
-                + "or positive-head assumption is present."))));
+                + "or positive-head assumption is present."),
+            Paragraph(Text(
+                "residualScale(b) is the existing positive real sqrt(multiplicity(card(b),b)). "
+                + "normalizedPadding(h,a,b) divides the actual padding residual by its complex inclusion. "
+                + "smulC denotes complex scalar multiplication, inv is scalar inverse, castRC is "
+                + "the real-to-complex inclusion, and sink(a,h) is basis(none) in the same "
+                + "Space(OccupationMemory(a,h)). This is the actual terminal padding coordinate: "
+                + "the existing physical memory embedding sends it to physicalFinal(a) for the "
+                + "chosen maximal head. paddingMoment uses this sink in its second operand.")),
+            T("normalized-padding", "normalizedPadding", "Actual normalized padding vectors",
+                Actual(All("b", Multi, Eq(Phi(b), Call("smulC",
+                    Call("inv", Call("castRC", Call("residualScale", b))), Residual(b))))),
+                "The positive real scale fixes one coherent normalization, including phase."),
+            T("padding-moment-definition", "paddingMoment", "Actual source moments",
+                Actual(All("b", Multi, Eq(Z(b), Call("InnerC", Phi(b), Sink)))),
+                "The first argument is conjugated. The common sink is the second argument."),
+            T("normalized-padding-norm", "normalized_padding_norm", "Unit residual vectors",
+                Actual(All("b", Multi, Imp(Le(b,a), Eq(Call("norm", Phi(b)),D(1))))),
+                "The diagonal Gram entry is M(b); dividing by its positive square root gives norm one."),
+            T("normalized-padding-tail-free", "normalized_padding_tail_free", "Pure-head vectors share the sink",
+                Actual(All("b", Multi, Imp(And(Le(b,a), Eq(Call("tailCount",h,b),D(0))),
+                    Eq(Phi(b),Sink)))),
+                "A legal occupation with zero tail has multiplicity one and its actual vector is the sink."),
+            T("normalized-padding-zero", "normalized_padding_zero", "The terminal vector",
+                Actual(Eq(Phi(D(0)),Sink)),
+                "The zero occupation always lies in the capacity box. Its normalized vector is the unit terminal sink."),
+            T("padding-moment-values", "padding_moment", "Every source moment in its actual domain",
+                Actual(All("b", Multi, Imp(Le(b,a), Eq(Z(b),
+                    Call("if",Eq(Call("tailCount",h,b),D(0)),D(1),D(0)))))),
+                "The ternary if(P,x,y) means x when P holds and y otherwise. Thus z(0)=1; "
+                + "all nonzero moments off the head axis vanish. The positive-tail vector has no sink coordinate."),
+            T("normalized-padding-axis", "normalized_padding_axis", "All legal head-axis vectors coincide",
+                Actual(All("j",N,Imp(Le(j,Call("count",h,a)),
+                    Eq(Phi(Call("replicate",j,h)),Sink)))),
+                "This includes j=0 and every 1<=j<=count(h,a). In particular phi(0)=phi(e_h) "
+                + "when count(h,a)>0; no positive-capacity hypothesis is needed for j=0."),
+            T("padding-moment-axis", "padding_moment_axis", "Prescribed head-axis moments",
+                Actual(All("j",N,Imp(Le(j,Call("count",h,a)),
+                    Eq(Z(Call("replicate",j,h)),D(1))))),
+                "All legal pure-head moments are exactly one. The statements hold for any head; "
+                + "choosing a maximal head gives the axis required by the attainment source."))));
+
+    private static Formula Phi(Formula q) => Call("normalizedPadding",h,a,q);
+    private static Formula Z(Formula q) => Call("paddingMoment",h,a,q);
+    private static Formula Sink => Call("sink",a,h);
+    private static Formula Actual(Formula body) => General(All("h",A,All("a",Multi,body)));
 
     private const string Prefix = "D5/S3/Quantum/StationaryPreparation/PaddingGram.";
     private static DocumentBlock T(string id, string name, string title, Formula formula, string text) =>
         Describe.Lean(DescribeId.Create(id), DeclarationHandle.Create(Prefix + name), H(title),
             StatementSource.FromAuthor(Disp(formula)), AssessedProvenance.FromRepo(),
-            Blocks(Paragraph(Text(text))), DescribeRole.Theorem);
+            Blocks(Paragraph(Text(text))),
+            name is "normalizedPadding" or "paddingMoment" ? DescribeRole.Definition : DescribeRole.Theorem);
     private static Formula Id(string name) => F.Id(name);
     private static Formula A => Id("A");
     private static Formula a => Id("a");
