@@ -285,3 +285,37 @@ B3 第四次 [源码](qd-family-triage-0909/attempt-2/b3-04.lean) / [日志](qd-
 B3 第五次 [源码](qd-family-triage-0909/attempt-2/b3-05.lean) / [日志](qd-family-triage-0909/attempt-2/b3-05.log.gz.b64)：**EXIT=0**，38.597842542 秒。通用完整矩阵/留数等价 `b3_full` 与其子引理均仅标准三公理；它仍显式假设 `∀ x≤0, q.eval x≠0`，尚不能冒充原始源 atom 已绑定。后续探针同时检验实际下降阶乘源系数能否消除此假设，以及上游对数导数是否使归纳候选见证失效。一次定向 add 因误用未压缩日志路径失败（实际归档为 `.log.gz.b64`），未执行 commit/push；已改为实存路径后推送，不扫入任何临时文件。
 
 B3 第六次 [源码](qd-family-triage-0909/attempt-2/b3-06.lean) / [日志](qd-family-triage-0909/attempt-2/b3-06.log)：EXIT=2，22.045980792 秒。新的上游路线已产生准确导数等式 `hi`，把 Laguerre 左式除以 `p(x)^2` 识别为负的重数加权倒数平方和。剩余错误为未知除法符号引理名、空 simp、`C_mul` 提前拆开系数和、Nat 强制转换后的分母取消及 `Polynomial.map_sum` 限定名；目标与全部上下文逐字保存在日志。这些仍是绑定/规范化工作，不构成 no 判词。
+
+### Attempt 2 / 推论：有限子句 bind-only，整条 undetermined
+
+`atom_id=cd2ad7f9986ee06ef6a8ac86aa7834a19d836483eaa1475b57396f3ba7ae536a`；整条 `bind_only=null`、`status=undetermined`、`proof_shape=null`、`escape_witness=null`、`admission_if_landed=none`。这不是 no，也不是 content 候选认证。
+
+有限子句的真探针为 `descent-03`，EXIT=0；处理反射附加的零根、导数根域、负根降阶、非实根失败向上传递，以及给定失败存在下的最小阶，全部仅标准三公理。`degree_policy=natDegree≤d`，没有用精确次数假设屏蔽零根。其判形为 bind-only：B1/reflect 继承，Gauss–Lucas 与凸半空间实例化，最后 `antitone_nat_of_succ_le` 与 `Nat.find`。
+
+`remaining_gap`：尚未接出的数学命题是**实际 RiemannHypothesis 与固定 n=0 源 Jensen 塔之间的分析蕴含**；不是根域运输或 Lean 工作量。原文背景确实断言该 Jensen–Pólya 判据，但本席不把未冻结的原文断言当作已冻结前置。没有证明该桥不能 bind-only 得到，也没有数学反例或已 elaborate 的逃逸见证，所以整条保留 undetermined，不因下面的 EXIT=2 升格为 no。
+
+针对实际 RH 子句追加的 [descent-rh-01 源码](qd-family-triage-0909/attempt-2/descent-rh-01.lean) / [日志](qd-family-triage-0909/attempt-2/descent-rh-01.log)：`make lean` EXIT=2，48.733654375 秒。精确未闭合目标为：
+
+```text
+h0 : sourceThetaCoefficient 0 = 1
+hNotRh : ¬RiemannHypothesis
+s : ℂ
+hAll : ∀ (d : ℕ), 1 ≤ d → ∀ (z : ℂ), eval z (sourceJensenPolynomial d) = 0 → z.im = 0
+hs : riemannZeta s = 0
+htrivial : ¬∃ n, s = -2 * (↑n + 1)
+hone : s ≠ 1
+⊢ s.re = 1 / 2
+```
+
+这次探针只对已连接有限接口尝试逻辑/定义归一化，未尝试证明完整 Jensen–Pólya 分析定理；该失败定位接口边界，不能证明上游不存在或数学困难。
+
+`mathlib_hits`：`Polynomial.rootSet_derivative_subset_convexHull_rootSet` — `.lake/packages/mathlib/Mathlib/Analysis/Complex/Polynomial/GaussLucas.lean:97`；`convex_halfSpace_re_gt` / `convex_halfSpace_re_ge` / `convex_halfSpace_im_le` / `convex_halfSpace_im_ge` — `.lake/packages/mathlib/Mathlib/Analysis/Complex/Convex.lean:57` / `:59` / `:63` / `:67`；`antitone_nat_of_succ_le` — `.lake/packages/mathlib/Mathlib/Order/Monotone/Basic.lean:552`；`Nat.find_spec` / `Nat.find_min` — `.lake/packages/mathlib/Mathlib/Data/Nat/Find.lean:75` / `:80`；实际 `RiemannHypothesis` 定义 — `.lake/packages/mathlib/Mathlib/NumberTheory/LSeries/RiemannZeta.lean:185`。引用均实查本地钉版。
+
+`frozen_interfaces`：F1、F2、F3、F4（完整 GID/statement_id/作用域见前文的身份表）；它们只承载有限多项式、降阶及系数非零背景。另实查 `D5/S3/Zeros/Jensen/JensenPolynomialObstruction`：模块 `statement_id=sha256:3176f8464f62de1fa135849a4f3ad9c5b5edae6cff9142369ac4e9f0bf3fd08f`，声明 `jensen_polynomial_obstruction` 的 `statement_id=sha256:ea04044fba0d24c98867f3fe4405682d1e95f38c22b9d4ec51f62003dcd41b39`；该接口显式要求两个分析桥，输出允许任意移位 `∃ d n`，故**不能接成**这里所缺的实际固定源桥。整条未取得三种准入依据中的任何一种。
+
+```sh
+make -f Makefile -f /var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/probe.mk lean PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/DescentProbe.lean
+# EXIT=0 (descent-03)
+make -f Makefile -f /var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/probe.mk lean PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/DescentRH.lean
+# EXIT=2 (descent-rh-01)
+```
