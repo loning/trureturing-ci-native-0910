@@ -51,7 +51,10 @@ public static class ScribeEmitter
         TextWriter output,
         TextWriter error,
         LeanAxiomReport leanReport,
-        bool validateRepository)
+        bool validateRepository,
+        FrozenStateCatalog? frozenState = null,
+        FrozenStatementIndex? frozenStatements = null,
+        BackfillInventoryDocument? inventory = null)
     {
         ArgumentNullException.ThrowIfNull(leanReport);
         return Run(
@@ -62,7 +65,10 @@ public static class ScribeEmitter
             _ => leanReport,
             validateRepository,
             tolerateAbsentDocuments: false,
-            documentsAssembly: documentsAssembly).ExitCode;
+            documentsAssembly: documentsAssembly,
+            frozenState: frozenState,
+            frozenStatements: frozenStatements,
+            inventory: inventory).ExitCode;
     }
 
     internal static int Emit(
@@ -134,7 +140,10 @@ public static class ScribeEmitter
         Assembly documentsAssembly,
         string repositoryRoot,
         TextWriter error,
-        LeanAxiomReport leanReport)
+        LeanAxiomReport leanReport,
+        FrozenStateCatalog? frozenState = null,
+        FrozenStatementIndex? frozenStatements = null,
+        BackfillInventoryDocument? inventory = null)
     {
         ArgumentNullException.ThrowIfNull(leanReport);
         return Run(
@@ -145,7 +154,10 @@ public static class ScribeEmitter
             _ => leanReport,
             validateRepository: true,
             tolerateAbsentDocuments: true,
-            documentsAssembly: documentsAssembly).Verification;
+            documentsAssembly: documentsAssembly,
+            frozenState: frozenState,
+            frozenStatements: frozenStatements,
+            inventory: inventory).Verification;
     }
 
     private static ScribeEmissionRun Run(
@@ -158,7 +170,10 @@ public static class ScribeEmitter
         bool tolerateAbsentDocuments,
         Assembly? documentsAssembly = null,
         IReadOnlyList<DocumentDefinition>? suppliedDefinitions = null,
-        MarkdownFormulaScope? markdownScope = null)
+        MarkdownFormulaScope? markdownScope = null,
+        FrozenStateCatalog? frozenState = null,
+        FrozenStatementIndex? frozenStatements = null,
+        BackfillInventoryDocument? inventory = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(repositoryRoot);
         ArgumentNullException.ThrowIfNull(output);
@@ -236,7 +251,9 @@ public static class ScribeEmitter
                     repositoryRoot,
                     definitions.Select(static definition => definition.Document),
                     leanReport,
-                    declarationCatalog: declarationCatalog);
+                    declarationCatalog: declarationCatalog,
+                    frozenState: frozenState,
+                    frozenStatements: frozenStatements);
                 if (!findings.IsEmpty)
                 {
                     foreach (var finding in findings)
@@ -253,7 +270,8 @@ public static class ScribeEmitter
             var census = ReceiptFreeDocumentCatalog.Load(
                 repositoryRoot,
                 documents,
-                tolerateAbsentDocuments);
+                tolerateAbsentDocuments,
+                inventory);
             var graph = DocumentGraphAssembler.Assemble(
                 documents,
                 declarationCatalog);

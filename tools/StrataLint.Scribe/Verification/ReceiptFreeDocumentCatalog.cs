@@ -12,7 +12,8 @@ internal static class ReceiptFreeDocumentCatalog
     internal static ReceiptFreeDocumentCensus Load(
         string repositoryRoot,
         IEnumerable<ScribeDocument> documents,
-        bool tolerateAbsentDocuments = false)
+        bool tolerateAbsentDocuments = false,
+        BackfillInventoryDocument? inventory = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(repositoryRoot);
         ArgumentNullException.ThrowIfNull(documents);
