@@ -100,3 +100,19 @@ q!=0 forces a(1)=1, and at each higher degree the diagonal cancellation forces
 the new coefficient. All coefficient-weight subtraction is in Z or Q;
 natural subtraction occurs only in bounded indices. The source's q=sqrt(5)
 in its unrelated reversion formula is not our integer weight parameter q=5.
+
+Third proof checkpoint: normalized_mod_eight and residues_q2 compiled with
+standard three-axiom closures. For n>=3 the endpoint contributes
+(2*n*(n-1)-1)*b(2,n-1), and the interior contributes
+2*(n-2)*(n-1)-4 in ZMod(8). The arithmetic step has eight residue cases;
+strong induction covers every index, not just the tested range.
+
+Independent worker numeric probe: for q=1,3,5 all n=0..120 satisfy the parity
+criterion; for q=2 all n=2..120 satisfy both normalized and original modulus-eight
+criteria. Zero failures. Fraction-based successive logarithm coefficients through
+degree 20 match each integer recurrence. The available OEIS data fields for
+q=3,5,2 also match. First six a-values:
+q=1: 1,1,2,15,244,6420;
+q=3: 1,1,6,153,7932,650010;
+q=5: 1,1,10,435,38020,5230600;
+q=2: 1,1,4,66,2248,121690.

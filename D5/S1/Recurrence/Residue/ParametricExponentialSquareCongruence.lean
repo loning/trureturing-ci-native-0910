@@ -208,6 +208,95 @@ theorem odd_parameter_parity (q : ℤ) (hq : Odd q) (n : ℕ) :
   rw [← ZMod.intCast_eq_one_iff_odd, he, ZMod.intCast_eq_one_iff_odd]
   exact ExponentialSquareWeightCatalanParity.hanna_conjecture n
 
+private theorem four_sum (n : ℕ) :
+    (∑ j ∈ range n, (4 : ZMod 8) * j) = 2 * (n : ZMod 8) * ((n : ZMod 8) - 1) := by
+  induction n with
+  | zero => simp
+  | succ n ih =>
+    rw [sum_range_succ, ih]
+    push_cast
+    ring
+
+private theorem interior_sum (n : ℕ) (hn : 3 ≤ n) :
+    (∑ j ∈ Ico 2 (n - 1), (4 : ZMod 8) * (n - j : ℕ)) =
+      2 * ((n : ZMod 8) - 2) * ((n : ZMod 8) - 1) - 4 := by
+  rw [sum_Ico_reflect (fun j => (4 : ZMod 8) * j) 2 (by omega)]
+  rw [show n + 1 - (n - 1) = 2 by omega, show n + 1 - 2 = n - 1 by omega]
+  have hs := sum_range_add_sum_Ico (fun j => (4 : ZMod 8) * j) (show 2 ≤ n - 1 by omega)
+  rw [four_sum, four_sum, Nat.cast_sub (by omega : 1 ≤ n)] at hs
+  norm_num at hs
+  linear_combination hs
+
+private theorem residue_step (n : ℕ) (hn : 3 ≤ n) :
+    (2 * (n : ZMod 8) * ((n : ZMod 8) - 1) - 1) *
+        (if (n - 1) % 4 = 3 then 6 else 2) +
+      (2 * ((n : ZMod 8) - 2) * ((n : ZMod 8) - 1) - 4) =
+        if n % 4 = 3 then 6 else 2 := by
+  have h8 := Nat.mod_lt n (by decide : 0 < 8)
+  rw [← ZMod.natCast_mod n 8]
+  interval_cases h : n % 8 <;>
+    have hp : (n - 1) % 4 = (n % 8 + 3) % 4 := by omega
+  all_goals have hc : n % 4 = (n % 8) % 4 := by omega
+  all_goals simp [h] at hp hc
+  all_goals norm_num [hp, hc] <;> decide
+
+/-- The q=2 normalization is 6 at indices 3 modulo four, and 2 elsewhere after degree one. -/
+theorem normalized_mod_eight (n : ℕ) (hn : 2 ≤ n) :
+    (b 2 n : ZMod 8) = if n % 4 = 3 then 6 else 2 := by
+  induction n using Nat.strong_induction_on with
+  | h n ih =>
+    by_cases hn2 : n = 2
+    · subst n
+      rw [b_recurrence 2 2 (by omega)]
+      norm_num [b_one]
+    have hn3 : 3 ≤ n := by omega
+    have hs (f : ℕ → ZMod 8) : ∑ j ∈ Ico 2 n, f j =
+        (∑ j ∈ Ico 2 (n - 1), f j) + f (n - 1) := by
+      simpa only [Nat.sub_add_cancel (by omega : 1 ≤ n)] using
+        sum_Ico_succ_top (by omega : 2 ≤ n - 1) f
+    have he := congrArg (Int.castRingHom (ZMod 8)) (b_recurrence 2 n hn)
+    simp only [Int.coe_castRingHom] at he
+    push_cast at he
+    rw [hs] at he
+    have hi : (∑ j ∈ Ico 2 (n - 1), ((2 : ZMod 8) * (j : ZMod 8) ^ 2 - 1) *
+        (n - j : ℕ) * (b 2 j : ZMod 8) * (b 2 (n - j) : ZMod 8)) =
+        ∑ j ∈ Ico 2 (n - 1), (4 : ZMod 8) * (n - j : ℕ) := by
+      apply sum_congr rfl
+      intro j hj
+      obtain ⟨hj2, hjn⟩ := mem_Ico.mp hj
+      rw [ih j (by omega) hj2, ih (n - j) (by omega) (by omega)]
+      split_ifs <;> ring_nf
+      all_goals simp only [show (72 : ZMod 8) = 0 by decide,
+        show (24 : ZMod 8) = 0 by decide, show (8 : ZMod 8) = 0 by decide,
+        show (36 : ZMod 8) = 4 by decide, show (12 : ZMod 8) = 4 by decide,
+        mul_zero, zero_sub, ← mul_neg, show (-4 : ZMod 8) = 4 by decide]
+    rw [hi, interior_sum n hn3, show n - (n - 1) = 1 by omega, b_one,
+      Int.cast_one, Nat.cast_one, mul_one, mul_one,
+      ih (n - 1) (by omega) (by omega), Nat.cast_sub (by omega : 1 ≤ n)] at he
+    have ht := residue_step n hn3
+    rw [he]
+    linear_combination ht
+
+/-- OEIS A397346: from n=2 the residues are 4,2,0,2 with period four. -/
+theorem residues_q2 (n : ℕ) (hn : 2 ≤ n) :
+    a 2 n % 8 = if n % 4 = 2 then 4 else if n % 4 = 0 then 0 else 2 := by
+  have he : (a 2 n : ZMod 8) =
+      (if n % 4 = 2 then 4 else if n % 4 = 0 then 0 else 2 : ℤ) := by
+    rw [a_eq 2 n (by omega), Int.cast_mul, Int.cast_natCast, normalized_mod_eight n hn]
+    have h8 := Nat.mod_lt n (by decide : 0 < 8)
+    rw [← ZMod.natCast_mod n 8]
+    interval_cases h : n % 8 <;>
+      have hc : n % 4 = (n % 8) % 4 := by omega
+    all_goals simp [h] at hc
+    all_goals norm_num [hc] <;> decide
+  have hmod := (ZMod.intCast_eq_intCast_iff _ _ 8).mp he
+  change a 2 n % 8 = _ % 8 at hmod
+  split_ifs at hmod ⊢ <;> norm_num at hmod ⊢ <;> exact hmod
+
+#print axioms log_derivative_identity
+#print axioms generating_unique
+#print axioms normalized_mod_eight
+#print axioms residues_q2
 #print axioms normalized_mod_two
 #print axioms odd_parameter_parity
 
