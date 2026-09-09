@@ -77,6 +77,54 @@ hits include `SequentialOccupationHistory` and `OccupationPhysicalPreparation`;
 their relevance to theta is not yet verified. The full Mathlib search and
 bind-only elaboration remain pending at this checkpoint.
 
+## Pinned Mathlib Search Checkpoint
+
+The retry of `make show-atom ATOM_ID=<full id>` exited 0. It printed the
+registered raw and normalized SHA-256, identical to the target ID, and
+`coverage_gids=[]`. The cache preparation exited 0 with `status=seeded`,
+`method=clonefile`, one clone attempt, and both project and Mathlib warm.
+
+Read the source context around equations (20)--(26). The actual phase is
+the inversion statistic A of a chronological word, with
+`B(u,v) = sum_{i>j} u_i v_j`. The state is normalized by sqrt(840), not
+sqrt(5040); 5040 labels the integer with prime exponents (4,2,1,1).
+
+The initial matrix-directory search for
+`\b(?:\w*singularValues\w*|\w*singular_values\w*|\w*svd\w*)\b`
+returned no matches (exit 1). Discovery located and full reading confirmed
+`Mathlib/Analysis/InnerProductSpace/SingularValues.lean`: the interface is
+`LinearMap.singularValues`. It defines singular values through the eigenvalues
+of the adjoint Gram operator, with nonnegativity and support/rank theorems;
+it contains no direct unitary-composition invariance declaration.
+
+Exact usable candidates, read at the pinned version:
+
+| Declaration | Mathlib path | Use at this checkpoint |
+| --- | --- | --- |
+| `Matrix.IsHermitian.eigenvalues_eq_eigenvalues_iff` | `Analysis/Matrix/Spectrum.lean` | Planned: preserve eigenvalues with multiplicity by charpoly equality |
+| `Matrix.charpoly_units_conj` | `LinearAlgebra/Matrix/Charpoly/Basic.lean` | Planned: direct similarity invariance |
+| `Unitary.spectrum_star_right_conjugate` | `Algebra/Star/Unitary.lean` | Read; set-valued spectrum alone does not preserve multiplicity |
+| `Matrix.rank_mul_eq_left_of_isUnit_det` | `LinearAlgebra/Matrix/Rank.lean` | Planned: preserve rank under a right phase factor |
+| `Matrix.rank_mul_eq_right_of_isUnit_det` | `LinearAlgebra/Matrix/Rank.lean` | Planned: preserve rank under a left phase factor |
+| `Complex.norm_exp_ofReal_mul_I` | `Analysis/Complex/Trigonometric.lean` | Planned: modulus one for real theta |
+| `LinearMap.singularValues` | `Analysis/InnerProductSpace/SingularValues.lean` | Read; no direct use yet |
+
+Positive-control search with the same `-n -i -P`, word boundaries,
+noncapturing group, alternation and wildcards found 398 matching lines for
+`\b(?:\w*conjTranspose\w*|\w*unitary\w*)\b` in the same two matrix
+directories. The narrow singular-value search is not an exhaustive library
+search. A first lookup at `LinearAlgebra/Matrix/Spectrum.lean` exited 2;
+the discovered and read correct path is `Analysis/Matrix/Spectrum.lean`.
+Two early repository searches named nonexistent `D5/S2`, `D5/S3/Ledger`, or
+`D5/S3/Algebra`; their exit 2 is recorded and is not evidence of absence.
+Subsequent whole-D5 filename and identifier searches found no inversion-word
+or q-multinomial interface under the searched names. No absence proof is claimed.
+
+The required actual-history connection is still outstanding: a globally
+diagonal unitary need not preserve bipartite Schmidt coefficients. Here the
+fixed occupation permits the cross term to be absorbed into a left factor,
+but the equality with the source's inversion statistic must itself be checked.
+
 ## Current Claims And Limits
 
 No target clause has yet been proved or refuted. No new D5 module or public
