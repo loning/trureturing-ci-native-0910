@@ -285,6 +285,19 @@ inResidual_iff 接到 Upper ∧ LowerFrom 0；signed_residual_sum 无附加假�
 无 sorry、无私 axiom、无 native_decide。该定理还覆盖 n=0，但其 n≥1 特化恰为 S(a)。
 这只是单文件 kernel 结果；“成”的其余门（make lean、正式落点、PR）仍须完成。
 
+## 正式落点与摄入收据
+
+S(a) 的唯一内容模块落在 D5/S1/Words/Compositions/ResidualPermutationSign.lean。
+Words 已在 Meta/domains.yaml 注册于 S1；同域 Library/Words 与既有 G 模块可查。
+头七行采用 A5.1 的 literal `utility: none`。实际新增前目录容量为 D5 6、
+Blueprint 12、theory 43（direct files）；均未挤入已满父桶。
+为本题独立摄入 docs/develop/theory/RESIDUAL_PERMUTATION_SIGN.md，
+`make ingest BASE=25b883dcebf4305950c779111490338639eed3bc SOURCE=docs/develop/theory/RESIDUAL_PERMUTATION_SIGN.md`
+EXIT=0：residual_open_added=1、cas_objects_written=1、coarse_fallbacks=0。
+atom ID 为 `296127e0b63573701297f231e6beb2f0364309aca09386ea44485b4f1b6ea59a`；
+内容只陈述 S(a)，没有原猜想或 Φ(n) 桥。首次 show-atom 错把 source 前缀加入 ID，
+EXIT=2（absent from digestion ledger）；读取 loader 的 ID 规则后改用纯内容 hash。
+
 <!-- lean-checkpoint -->
 ## 当前已编译源码快照
 

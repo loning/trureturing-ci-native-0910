@@ -1,0 +1,5 @@
+source_id = "residual-permutation-sign"
+path = "docs/develop/theory/RESIDUAL_PERMUTATION_SIGN.md"
+atomizer = "generic-v1"
+genre_registry_check = "no-registry"
+unregistered_genres = []
