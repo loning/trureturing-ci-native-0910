@@ -28,7 +28,7 @@ n=0 不进入结论；禁止反向、重复或对角步，n=1 须符合单格路
 - 报告目录创建前直属文件 39 个，低于 48。
 - 钉版 mathlib 与第三方/OEIS/arXiv：待本席检索。
 
-## 当前未主张
+## 开工时的未主张
 
 尚未证明、构建、冻结、开 PR。尚未打开的外部页面全部 ASSUMED-UNVERIFIED。
 不主张全球不存在公开证明，不主张发现优先权，不以用户枚举替代一般证明。
@@ -217,3 +217,23 @@ make emit 最终 EXIT=0，67.168 秒；仅本题 1 个 Blueprint 被修改。已
 - make deposit 入口 require_transaction_arguments 强制 ATOM_ID 且随后 cover；本题无 atom。
   按用户明示及仓内先例，使用该入口同一 canonical deposit-header-check 与
   ledger-align --add，不制造假 atom、不绕过头部/当前 Lean report 预检。
+
+## 无 atom 冻结收据
+
+- canonical ledger-align --add D5/S3/Arith/Paths/MonotoneOnePaths.lean
+  --candidate-lean-report .lake/build/stratalint/raw-lean-report.json EXIT=0，7.075 秒。
+  输出 selectors_considered=3934 changed=0 added=1 unchanged=3933 conflicts=0。
+- Freeze 事件：sha256:0f03576a6020bc4e4650c45e8d23839b2ad21d1b67c16cb343b3030784ddba07。
+- 模块 statement_id：sha256:420ee5ad356e65d21336474f48adb6a383a939430411498c417864bcf40e3b9a。
+- accepted 事件含本模块全部 18 条 included 声明，前置冻结节点为空；
+  state 为 Golden/Frozen/state/D5/S3/Arith/Paths/MonotoneOnePaths.lean.json。
+  以上身份直接读取 canonical producer 输出，不手写账本、不重算历史身份。
+
+## 交付时的未主张
+
+已证用户要求的全正尺寸均值定理，并消除“恰经过 2n−1 个不同格”的
+ASSUMED-UNVERIFIED：访问格注入及基数已由 Lean 内核验证。
+不主张 n=0 的期望约定、完整分布 T(n,k)、反向/重复/对角路径、全球文献无证明或首创性。
+用户的 n=1..4 枚举读数仍归用户；本席只另做私有 n=1、n=2 全矩阵语义回声。
+外链未读部分及受限检索仍按前述 ASSUMED-UNVERIFIED，不由本地形式化补作阅读证明。
+独立评审席为 0，未声称多模型共识；本地检查不替代 PR 的远端 CI 判词。
