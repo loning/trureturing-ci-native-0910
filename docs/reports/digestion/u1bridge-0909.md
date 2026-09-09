@@ -164,3 +164,21 @@ Two exploratory searches exited 2 because guessed obsolete paths
 exist. The actual APIs were opened in `Mathlib/Analysis/RCLike/Basic.lean`
 (`RCLike.nonneg_iff`) and `Mathlib/LinearAlgebra/Span/Basic.lean`
 (`LinearMap.toSpanSingleton`); these errors are not absence evidence.
+
+### First kernel reading
+
+- Root `make lean`: exit 0, `Build completed successfully (12734 jobs)`.
+  The tool output was truncated due to existing replay messages; no claim is
+  made to have read all replayed warnings. This is a baseline build reading.
+- First external-Make probe: exit 2. `blockBridgeStatement : Prop` elaborated.
+  `realification_bind_only` and `scalar_residual_bind_only` each reported
+  exactly `[propext, Classical.choice, Quot.sound]`.
+- `u13_bind_only` did not yet pass: the matrix expression needed explicit
+  `Matrix.sub_apply`; the broad scalar `simp` reached recursion depth.
+  The failed declaration's error-recovery `sorryAx` is not a proof and is
+  not accepted as evidence. Failed source retained as
+  `ATTEMPT/U1BindProbe-01-failed.lean`.
+- Next revision only adds the matrix subtraction rewrite and replaces broad
+  scalar simplification with `RCLike.nonneg_iff`, explicit real/imaginary
+  projections and the upstream zero-imaginary-part theorem. No budget or
+  premise change.
