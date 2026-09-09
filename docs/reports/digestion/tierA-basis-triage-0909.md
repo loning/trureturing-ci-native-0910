@@ -49,7 +49,81 @@ atom judgment is committed and pushed before advancing to the next one.
 
 ## Progress
 
-`screened: 0 / 7`. No atom judgment has yet been made.
+`screened: 1 / 7`. Completed: M4 readback.
+
+## Evidence Coordinates
+
+Original probes and run receipts are read as data from immutable prior commit
+`e12ff7dd3541336028fa60edc684ff8a4fbcd7b4` (prior lane). Below, `prior/` means
+`docs/reports/digestion/tier3-mathlib-triage-0909/` at that commit, accessed by
+`git show <commit>:<path>`. They are not present on this lane's starting tree.
+Prior successful compilation is inherited evidence, not a new run in this seat.
+`lake-manifest.json` pins Mathlib v4.33.0 to the local revision stated above.
+Source coordinates below refer to this seat's pinned starting tree, not a live
+remote branch. `QUANTUM-RH.md` abbreviates `docs/develop/theory/QUANTUM-RH.md`.
+
+## Atom 75: M4 Readback
+
+`atom_id: 7d5d9c72f7ad9abb794dd61d99e68ff5adc1271970f00e4a009b9e334680a0d2`
+
+Complete raw body returned by `make show-atom` (exit 0, hash matches, no coverage):
+
+```text
+## 定理 M4：有限算术关系可以精确回读
+
+$$
+\boxed{
+\mathcal R_{n\leftarrow d}[P_d]=P_n.
+}
+\tag{M25}
+$$
+```
+
+| Source assertion | Original probe counterpart | Status | Domain and boundary check |
+| --- | --- | --- | --- |
+| M25 and the heading's exact-readback assertion | `Triage75.readback`: `recover n d (model a d) = model a n` | equivalent | Universal in `a : Nat -> Real`, `n d : Nat`; `0 < d`, `n <= d`. Source defines layers for `d >= 1` at lines 135-153 and readback for `n <= d` at 11029-11045. Positive `n` is included; probe also allows `n = 0`, so it does not exclude a source case. Equality is equality of polynomials, hence at every argument, with the actual weights `(d)_k/d^k`. |
+
+`fidelity: full`. There is one boxed assertion and no additional assertion in
+this atom. The subsequent error bound in the source is outside these CAS bytes.
+The actual coefficient sequence is an instance of the arbitrary real sequence;
+the probe assumes no extra regularity or positivity of that sequence. Denominators
+are nonzero for every summand `k <= n <= d`, including `k = 0` and `k = d`.
+
+`upstream_declaration: none` (none carries M25). Locally opened ingredients:
+`Polynomial.coeff_monomial`,
+`.lake/packages/mathlib/Mathlib/Algebra/Polynomial/Basic.lean:581`, states only
+`coeff (monomial n a) m = if n = m then a else 0`;
+`Nat.descFactorial_pos`,
+`.lake/packages/mathlib/Mathlib/Data/Nat/Factorial/Basic.lean:374`, states only
+`0 < n.descFactorial k <-> k <= n`.
+
+`wrapper_thinness: not-applicable`. Neither ingredient states a readback
+identity. The probe defines the weighted polynomial and coefficient multiplier,
+extracts each coefficient, and closes by `field_simp`; this is normalization.
+`necessity_citation`: M25 is a real coverage demand, quoted above, but it does
+not make an ingredient into an upstream readback theorem. No explicit bridge
+between independent concepts or preregistered named consumer is supplied.
+`verdict: no-admission-basis`; `admission_basis: none`.
+`proof_shape: bind-only`; `direct_frozen_dependencies: []`; `escape_witness: null`.
+`why_not_escape_witness`: every coefficient equality follows by instantiating
+the two ingredients and cancelling the same nonzero weight; no new live
+intermediate proposition survives the bind-only reconstruction.
+
+Search receipt R75: `rg -n '\b(readback|Readback|coeff_monomial|descFactorial_pos)\b' D5`
+returned 11 lines, including unrelated causal-language readbacks and coefficient
+rewrite uses; this is a lexical candidate search, not a semantic dependency census.
+Positive control with the same `\b` and alternation features:
+`rg -n '\b(coeff_monomial|descFactorial_pos)\b' .lake/packages/mathlib/Mathlib/Algebra/Polynomial/Basic.lean .lake/packages/mathlib/Mathlib/Data/Nat/Factorial/Basic.lean`
+returned 10 lines, including both declarations. The declaration bodies and source
+definition windows (125-160, 11010-11085) were opened, not inferred from titles.
+Probe receipt: `prior/probes/Readback75.lean`, inherited `make lean` exit 0;
+`prior/probe-runs.json` and decoded `prior/logs/Readback75.log.gz` were opened.
+
+## Push Receipts
+
+| Commit | Completed unit | Push result |
+| --- | --- | --- |
+| `6fca6dde2388835a42f0904463b50100e1aa6c36` | Preregistration | exit 0; remote lane created |
 
 ## Nonclaims
 
