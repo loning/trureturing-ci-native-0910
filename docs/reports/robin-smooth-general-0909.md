@@ -106,3 +106,25 @@ Incidental command accounting: querying the nonexistent optional
 Evidence/D5/S3/Arith/Robin directory exited 1; searching for nested AGENTS.md or
 CLAUDE.md in D5/Blueprint/Evidence/tools returned 0 matches (rg exit 1).
 Neither is treated as evidence that a theorem is absent.
+
+## Numerical Witnesses
+
+`node docs/reports/robin-smooth-general-0909-witnesses.mjs` exited 0.
+Integers and sigma values use exact BigInt prime-power formulas; logarithms,
+gamma and exponentials are explicitly IEEE-754 diagnostics, not interval or
+Lean certificates. These are specified witnesses, not enumeration of a range.
+
+| P | n | sigma(n) | C(P)/exp(gamma) | loglog(n) | sigma(n)/n | Robin RHS |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| {2,3} | 1024 | 2047 | 1.6843784507006554 | 1.9360721724123813 | 1.9990234375 | 3.4482847455220553 |
+| {2,3,5,7} | 262144 | 524287 | 2.4563852406051225 | 2.5238588373145 | 1.9999961853027344 | 4.495175362041667 |
+| {2,3,5,7} | 5040 | 19344 | 2.4563852406051225 | 2.1430219509746613 | 3.8380952380952382 | 3.8168772880285116 |
+| empty | 1 | 1 | 0.5614594835668851 | 0 (Lean totalization) | 1 | 0 |
+| {2} | 2 | 3 | 1.1229189671337703 | -0.36651292058166435 | 1.5 | -0.6527860536850343 |
+
+The first witness includes the unused prime 3 and satisfies every premise and
+the conclusion. The second is in the seven-smooth tail. The third satisfies
+positivity, n>e, primality, and smoothness; only the threshold premise fails,
+and the Robin conclusion is false. This supplies the required two-sided check.
+For P={2,3,5,7}, the computed T is 116143.04312771709; no new rational enclosure
+is claimed. The temporary unrestricted-P Lean probe is currently compiling.
