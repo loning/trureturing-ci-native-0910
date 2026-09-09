@@ -226,8 +226,11 @@ private theorem approximation_mod_four (d n : ℕ) :
 
 /-- OEIS A396804's modulo-four conjecture, for the independently constructed natural sequence. -/
 theorem mod_four (n : ℕ) (hn : 1 ≤ n) : Nat.ModEq 4 (a n) n := by
-  apply (ZMod.natCast_eq_natCast_iff _ _ _).mp
-  exact approximation_mod_four (n + 1) n
+  cases n with
+  | zero => omega
+  | succ n =>
+    apply (ZMod.natCast_eq_natCast_iff _ _ _).mp
+    exact approximation_mod_four (n + 2) (n + 1)
 
 /-- All positive-degree nonlinear EGF coefficients of the fourth iterate are multiples of four. -/
 theorem fourth_coeff_divisible (n : ℕ) (hn : 2 ≤ n) :
@@ -253,7 +256,43 @@ theorem fourth_coeff_divisible (n : ℕ) (hn : 2 ≤ n) :
   obtain ⟨k, hk⟩ := (ZMod.natCast_eq_zero_iff (iterate a 4 n) 4).mp hz
   exact ⟨k, by rw [he, hk]; push_cast; rfl⟩
 
+-- Nonempty sanity checks for both sides of the congruence, not bounded substitutes for it.
+private theorem composition_one {R : Type*} [CommSemiring R] (f g : ℕ → R) :
+    composition f g 1 = f 1 * g 1 := by
+  rw [composition, Fin.sum_univ_one]
+  simp [composition]
+
+private theorem composition_two {R : Type*} [CommSemiring R] (f g : ℕ → R) :
+    composition f g 2 = f 1 * g 2 + f 2 * g 1 * g 1 := by
+  rw [composition, Fin.sum_univ_two]
+  simp [composition_one, composition]
+
+private theorem initial_values : a 0 = 0 ∧ a 1 = 1 ∧ a 2 = 2 ∧ a 3 = 27 := by
+  have h1 : a 1 = 1 := by
+    conv_lhs => rw [a_fixed]
+    norm_num [step, composition]
+  have h2 : a 2 = 2 := by
+    conv_lhs => rw [a_fixed]
+    norm_num [step, iterate, composition_one, identity, h1]
+  have h3 : a 3 = 27 := by
+    conv_lhs => rw [a_fixed]
+    norm_num [step, iterate, composition_two, composition_one, identity, h1, h2]
+  exact ⟨a_zero, h1, h2, h3⟩
+
+example : eCoeff A 3 = 27 ∧ (a 3 % 4 = 3) ∧ ((3 : ℕ) % 4 = 3) := by
+  rw [show eCoeff A 3 = (a 3 : ℚ) from (integral_coefficients 3).symm,
+    initial_values.2.2.2]
+  norm_num
+
+example : eCoeff (iterateComp A 4) 2 = 8 ∧ (8 : ℕ) % 4 = 0 := by
+  rw [eCoeff_iterate A_equation.1]
+  have he (n : ℕ) : eCoeff A n = (a n : ℚ) := (integral_coefficients n).symm
+  norm_num [iterate, composition_two, composition_one, identity, he,
+    initial_values.2.1, initial_values.2.2.1]
+
 #print axioms mod_four
 #print axioms fourth_coeff_divisible
+#print axioms unique_solution
+#print axioms integral_coefficients
 
 end D5.S1.Recurrence.Residue.QuarticEGFModFour
