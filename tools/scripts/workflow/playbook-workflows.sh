@@ -83,9 +83,33 @@ step() {
   complete_step passed
 }
 
+# 该 atom id 是否真的解析得到一个账目条目。三处都认,因为账目有三种既有形态:
+# CAS blob、per-atom 的 backfill 分片、以及 Meta/BACKFILL.yaml 单文件。三者皆无即拒。
+#
+# 立条依据 #6676(2026-09-10 实测):require_transaction_arguments 原本**只查字符形状**
+# (`^[a-z0-9-]+$`),不查该 atom 是否存在;而 deposit 分支的次序是
+#   require_transaction_arguments → … → freeze_module_if_needed → cover_row
+# 于是一个凭空杜撰的 id(实例:`ATOM_ID=none`,该串完全满足那个正则)会**先把模块冻掉**,
+# 再在 cover 处失败,留下一个已冻结而无覆盖的模块。冻结不可逆(第 1.3 条),
+# 而不可逆动作排在了唯一能证伪其前提的那一步之前 —— 次序反了(第 7.8 条)。
+atom_id_resolves() {
+  [[ -e "Meta/Digestion/atoms/sha256/$1" ]] && return 0
+  local hit
+  for hit in Meta/Digestion/backfill/*/*/"$1".yaml; do
+    [[ -e "$hit" ]] && return 0
+  done
+  [[ -f Meta/BACKFILL.yaml ]] && grep -q "atom_id: $1\$" Meta/BACKFILL.yaml && return 0
+  return 1
+}
+
 require_transaction_arguments() {
   if [[ ! "$ATOM_ID" =~ ^[a-z0-9-]+$ || "$GID" != D5/*.* || "$GID" == *[[:space:]]* ]]; then
     echo "usage: playbook-workflows.sh $COMMAND BASE ATOM_ID GID" >&2
+    return 2
+  fi
+
+  if ! atom_id_resolves "$ATOM_ID"; then
+    echo "PLAYBOOK_INVALID atom not found in the digestion ledger: $ATOM_ID" >&2
     return 2
   fi
 
