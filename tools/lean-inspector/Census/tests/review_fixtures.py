@@ -9,20 +9,10 @@ import sys
 from unittest.mock import patch
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
-from negative_fixtures import COMMAND, PREFIX, key, lean, lean_env
+from negative_fixtures import COMMAND, PREFIX, key, lean, lean_env, truth_export_identity
 from phases import read, write
 from resources import run
 from streaming import canonical
-
-
-def truth_identity(repository, directory):
-    destination = directory / "identity.json"
-    if not destination.exists():
-        source = directory / "Identity.lean"
-        source.write_text("import LeanInformationAudit.Census.Report\n#eval IO.FS.writeFile " +
-            json.dumps(str(destination)) + " LeanInformationAudit.DispositionCensus.truthExportIdentity.compress\n")
-        run(["lake", "env", "lean", str(source)], directory, "identity", cwd=repository)
-    return read(destination)
 
 
 def collision_setup(repository, directory, label):
@@ -44,7 +34,7 @@ def collision_setup(repository, directory, label):
          folder / "membership-request.json", folder / "membership.json"], "membership", lean_env(repository))
     metadata = read(folder / "membership.json")
     assert metadata["candidate_keys"] == keys and not metadata["errors"], "realMembershipCollisionCandidates"
-    report = dict(truth_identity(repository, directory), source_commit="fixture-head", nodes=[{
+    report = dict(truth_export_identity(repository, directory), source_commit="fixture-head", nodes=[{
         "repo_path": k[0].replace(".", "/") + ".lean", "freeze_status": "frozen", "declarations": [{
             "kind": "theorem", "declaration_name_key": k[1], "statement_id": k[2]}]} for k in keys])
     write(folder / "report.json", report)
@@ -187,7 +177,7 @@ run_cmd liftTermElabM do
 def receipt_sensitivity(repository, directory):
     import receipt_fixtures
     # This is the reviewer's exact mutation: run the fresh scan, skip comparison.
-    with patch.object(receipt_fixtures, "replay", side_effect=lambda scan, expected: scan()):
+    with patch.object(receipt_fixtures, "replay", side_effect=lambda scan, expected: (scan(), "match")[1]):
         try:
             receipt_fixtures.check_receipts(repository, directory)
         except AssertionError as error:

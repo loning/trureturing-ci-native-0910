@@ -102,18 +102,22 @@ def membership_case(repository, directory, label, roots, keys, discovery=None):
     return result
 
 
-def validate_control(repository, directory):
-    import hashlib
-    from resources import run
-    env = lean_env(repository)
+def truth_export_identity(repository, directory):
     identity = directory / "identity.json"
     driver = directory / "Identity.lean"
     driver.write_text("import LeanInformationAudit.Census.Report\n" +
         "#eval IO.FS.writeFile " + json.dumps(str(identity)) +
         " LeanInformationAudit.DispositionCensus.truthExportIdentity.compress\n")
-    run(["lake", "env", "lean", str(driver)], directory, "identity", cwd=repository, env=env)
+    run(["lake", "env", "lean", str(driver)], directory, "identity", cwd=repository, env=lean_env(repository))
+    return read(identity)
+
+
+def validate_control(repository, directory):
+    import hashlib
+    env = lean_env(repository)
+    identity = truth_export_identity(repository, directory)
     target = key("StreamingTarget", "StreamingTarget.target")
-    report = dict(read(identity), source_commit="fixture-head", nodes=[{
+    report = dict(identity, source_commit="fixture-head", nodes=[{
         "repo_path": target[0].replace(".", "/") + ".lean", "freeze_status": "frozen",
         "declarations": [{"kind": "theorem", "declaration_name_key": target[1], "statement_id": target[2]}]}])
     report_path = directory / "control-report.json"
