@@ -97,3 +97,65 @@ raw Lean report 陈旧;正序是 `merge → make lean-report → 再判`(顺带�
 - 它**不替代** CLAUDE.md;凡与 CLAUDE.md 或 issue 判词冲突,**以后者为准**。
 - 第四、五节的状态**会过期**:引用前先对当前 `origin/dev` 复核一次
   (第 2.8 条:记忆是被前一次判断筛过的,只有数据能纠正它)。
+
+---
+
+# 追加(2026-09-09 会话末)—— **第四、五节的更新与两条结构性发现**
+
+按第七节,第四、五节会过期;本节是**追加**,不重写上文。冲突时以本节与 issue 判词为准。
+
+## 八、第五节的更新:CMP 线的当前边界
+
+- `m=2` / `m=3` **均已冻结**;`m=3` 由 #6525 落地、#6533 冻结、独立评审 `approve`;
+- **`m=4` 已判 `blocked-on-cost`**(#6160 第 51 轮):`H23 = s4·s6 − s5²` 展开实测 **152,635** 项,
+  对照 `m=3` 证书 **767** 项(**≈199×**),越过预登记阈值 50,000。
+  **上文第五节写的「下一个未认证的有限情形是 m=4」已不再是可派的靶。**
+  重开条件:出现**换过表述**的证书形态,须①根差坐标真实输入映射 ②可执行有限判别范围 ③失败含义明确。
+- 该轮的**正面资产**:四次「四根全非负」的 **19 条充要条件**(4 条系数符号 + 15 条 Hankel 主子式,
+  Newton 幂和 `s0…s6` 显式,出处 Sylvester 判据)—— **换 Γ 后仍可用**,不必重求。
+
+## 九、发现一:**`make digestion-readiness` 的 `deposit` 队列不是「可覆盖工作」的全集**
+
+**这条纠正了本单第一节兜底分支的默认读法。**
+
+- 那 507 条 `deposit` 之外,还有 **18,175 条 `not-formalizable`**,其中 blocker 恰为
+  `non-assertion-ast-kind:section` 的有 **10,906 条**。该 blocker 说的是 **atom 的 AST kind**,
+  **不是「内容不可形式化 / 不可覆盖」**;
+- 本会话产出的**全部** cover 与 `robin_seven_smooth`,**都来自那个桶,不来自 `deposit` 队列**;
+- 两次预登记的预测钉住了这一点:第一次(以为 cover 会让 `quantum-rh` 60→57)**错**;
+  按修正模型再赌一次(cover 三条 `:section` 应使 `not-formalizable` **恰减 3** 而 `deposit` 不动)**全中**
+  —— 实测 `18,178 → 18,175`。
+- **边界(实测,别推广)**:`:section` 里「标题即定理 ∧ 含 `\boxed`」的候选在 `quantum-rh` 有 **164** 条;
+  **`zeckendorf-euler-5040` 的 537 条中只有 9 条(1%)标题含定理类词,两者皆有 0 条** ——
+  **这条窄缝不延伸到 5040 卷。**
+
+**⟹ 兜底跑 readiness 时,`deposit` 计数不动**不等于**没有可做的活**;要同时看 `:section` 桶。
+
+## 十、发现二:**「该不该建模块」这一维,orchestrator 系统性偏乐观**
+
+第 1 条硬要求(先试 bind-only)本会话**生效 6 次**,**其中 4 次是 orchestrator 判断该建、实测说不该建**:
+
+| 靶 | 实测 |
+| --- | --- |
+| U1 正拼接的 Lean 桥 | `Matrix.…fromBlocks₁₁`(`PosDef.lean:563`)一步 |
+| Schmidt 系数与 θ 无关 | bind-only,**且 orchestrator 给的理由被数值反例打掉**(一般对角酉**不**保持 Schmidt 系数) |
+| Robin 任意有限素数集一般化 | `sigma` 积性 + `geom_sum_eq` + `Finset.prod_*`,`no_enumeration_confirmed: true` |
+| Jensen 定理 B1 与推论 B1.1 | `q_d(x)=x^d P_d(-1/x)` **就是 `Polynomial.reflect`**;两条均 bind-only |
+
+**批量分诊比逐个发现便宜一个数量级**:150 条 `needs-lean` 的 Mathlib 分诊一席 4,436 s 得
+**A=7 / B=41 / C=102**;而单条发现每次约 2,000 s。**遇到同族多条时,先派分诊席,不要逐条派实施席。**
+
+## 十一、两条可复用的落地形态
+
+1. **`rule-11-upstream-wrapper` 是可用的准入路,但两半都要写**:命中的上游声明 + **使包装成为必要的 atom 子句**。
+   本会话据此落了 3 条(#6591):`SchurMinimum` 66 行 / `DivisorParity` 71 行 / `MonitoredReturnConservation` 94 行,
+   **各 1 条公开定理、0 `sorry`**,头部 `anchors: [mathlib/module/…]` 把上游引用做成机器可见字段。
+   **判据**:atom 要的是「取到的最小值」而上游只给分解 ⟹ 需要 `IsLeast` 接口 —— 这类**差**才使包装必要。
+2. **有限枚举必须私有**(第 3.3 条:正向有限实例禁止准入)。`robin_seven_smooth` 的落地形态是
+   **1 条公开 ∀-定理 + 12 条 private**,482 个有限情形全在私有引理里。
+
+## 十二、静默错误:一个会编译绿的假命题实例(照抄,别重犯)
+
+`q_d(x) = x^d P_d(-1/x)` 若按字面用全函数化的 `-1/x`,**在 `x=0` 处给 `0`,而正确值是 `p.coeff d · (-1)^d`**。
+**正解不是「排除 `x=0`」,而是用 `Polynomial.reflect` 定义**,让多项式恒等式全域成立、倒数公式只在 `x≠0` 成立;
+`degree_policy` 用 `natDegree ≤ d`,**不假设次数相等或首系数非零**。
