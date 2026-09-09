@@ -234,5 +234,55 @@ private theorem support_products_lt (F : Finset ℕ) (p : ℕ) (e : ℕ → ℕ)
         (mul_le_mul hpB hB (by positivity) (by norm_num))
     _ < 2 := by have := joint_products_lt F hne hF; linarith
 
+/-- Every Euler-form number from A228058 satisfies the strict inequality
+defining A388986, with the two sums taken over the actual divisors. -/
+theorem euler_form_lt (p a r : ℕ) (hp : p.Prime) (hp4 : p % 4 = 1)
+    (hr : Odd r) (hr1 : 1 < r) (hpr : p.Coprime r) :
+    unitarySum (p ^ (4 * a + 1) * r^2) + squarefreeSum (p ^ (4 * a + 1) * r^2) <
+      2 * (p ^ (4 * a + 1) * r^2) := by
+  let N := p ^ (4 * a + 1) * r^2
+  have hr0 : r ≠ 0 := by omega
+  have hpp0 : p ^ (4 * a + 1) ≠ 0 := pow_ne_zero _ hp.ne_zero
+  have hrp0 : r^2 ≠ 0 := pow_ne_zero _ hr0
+  have hn : N ≠ 0 := mul_ne_zero hpp0 hrp0
+  have hp5 : 5 ≤ p := by have := hp.two_le; omega
+  have hsupport : N.primeFactors = insert p r.primeFactors := by
+    dsimp [N]
+    rw [Nat.primeFactors_mul hpp0 hrp0,
+      Nat.primeFactors_prime_pow (by omega) hp, Nat.primeFactors_pow r (by decide)]
+    simp only [singleton_union]
+  have hpF : p ∉ r.primeFactors := fun h =>
+    (hp.coprime_iff_not_dvd.mp hpr) (Nat.dvd_of_mem_primeFactors h)
+  have hF : ∀ q ∈ r.primeFactors, 3 ≤ q ∧ q ≠ 4 := by
+    intro q hq
+    have hqp := Nat.prime_of_mem_primeFactors hq
+    have hq2 : q ≠ 2 := by
+      rintro rfl
+      exact hr.not_two_dvd_nat (Nat.dvd_of_mem_primeFactors hq)
+    constructor
+    · have := hqp.two_le; omega
+    · rintro rfl; exact (by decide : ¬Nat.Prime 4) hqp
+  have hpe : 1 ≤ N.factorization p := by
+    dsimp [N]
+    rw [Nat.factorization_mul hpp0 hrp0]
+    simp only [Finsupp.add_apply, Nat.factorization_pow_self hp]
+    omega
+  have he : ∀ q ∈ r.primeFactors, 2 ≤ N.factorization q := by
+    intro q hq
+    have hpos := (Nat.prime_of_mem_primeFactors hq).factorization_pos_of_dvd
+      hr0 (Nat.dvd_of_mem_primeFactors hq)
+    dsimp [N]
+    rw [Nat.factorization_mul hpp0 hrp0]
+    simp only [Finsupp.add_apply, Nat.factorization_pow, Finsupp.smul_apply, smul_eq_mul]
+    omega
+  have hb := support_products_lt r.primeFactors p N.factorization hp5 hpe hpF
+    (Nat.nonempty_primeFactors.mpr hr1) hF he
+  rw [← hsupport] at hb
+  have hlt := (normalized_sums_le N hn).trans_lt hb
+  rw [← add_div] at hlt
+  have hn' : (0 : ℚ) < N := by exact_mod_cast Nat.pos_of_ne_zero hn
+  have h := (div_lt_iff₀ hn').mp hlt
+  exact_mod_cast h
+
 end
 end D5.S3.Arith.EulerFormDivisorSum
