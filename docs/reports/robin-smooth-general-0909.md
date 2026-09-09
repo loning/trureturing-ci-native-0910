@@ -126,6 +126,13 @@ Run log: runner attempt directory, `lean-bind-01.log`.
 Cache receipt: status=present, method=none, stamp_miss=null,
 mathlib_olean_state=warm, project_olean_state=warm.
 
+Run 02: `make lean` exited 2. The repaired empty-support diagnostic and the
+seven-tail threshold now both pass with the standard three axioms. The tail
+consumer failed only on concrete primality goals left by `norm_num` and on
+the unevaluated rational product of the four Euler factors. Use `decide` for
+the four fixed primality facts and `norm_num` for the product; no domain,
+bound, or proof budget changes. `lean-bind-02.log` records the full failures.
+
 Incidental command accounting: querying the nonexistent optional
 Evidence/D5/S3/Arith/Robin directory exited 1; searching for nested AGENTS.md or
 CLAUDE.md in D5/Blueprint/Evidence/tools returned 0 matches (rg exit 1).
