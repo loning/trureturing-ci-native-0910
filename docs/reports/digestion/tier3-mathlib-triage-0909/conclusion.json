@@ -1021,7 +1021,19 @@
   ],
   "tierD": [],
   "tierE": [],
-  "probe_runs": [],
+  "probe_runs": [
+    {
+      "probe": "baseline",
+      "command": "make 'lean'",
+      "exit": 0,
+      "signal": null,
+      "log": "logs/baseline.log",
+      "started": "2026-09-09T05:04:06.216Z",
+      "atoms": [],
+      "indices": [],
+      "archived_probe": null
+    }
+  ],
   "unscreened": [
     "51ecbc2e4c8976d219f4c2617007564164468c320acb88918b7ab6d848e61d79",
     "528a07b72b26ab9b7df6f3645a60c76eedd91f4489b30838ea8ccb310c386c9b",
@@ -1732,6 +1744,134 @@
       ],
       "exit": 0,
       "line_match_count": 9
+    },
+    {
+      "id": "third-bindings",
+      "scope": "D5",
+      "program": "rg",
+      "args": [
+        "-n",
+        "-i",
+        "-P",
+        "(norm_charFun_le_one|norm_starProjection_le|norm_orthogonalProjectionOnto_le|norm_sq_eq_add_norm_sq_starProjection|descFactorial_pos|coeff_monomial|sum_involution)",
+        "D5",
+        "-g",
+        "*.lean"
+      ],
+      "exit": 0,
+      "line_match_count": 21
+    },
+    {
+      "id": "third-bindings",
+      "scope": ".lake/packages/mathlib/Mathlib",
+      "program": "rg",
+      "args": [
+        "-n",
+        "-i",
+        "-P",
+        "(norm_charFun_le_one|norm_starProjection_le|norm_orthogonalProjectionOnto_le|norm_sq_eq_add_norm_sq_starProjection|descFactorial_pos|coeff_monomial|sum_involution)",
+        ".lake/packages/mathlib/Mathlib",
+        "-g",
+        "*.lean"
+      ],
+      "exit": 0,
+      "line_match_count": 197
+    },
+    {
+      "id": "trial-division",
+      "scope": "D5",
+      "program": "rg",
+      "args": [
+        "-n",
+        "-i",
+        "-P",
+        "(FRACTRAN|trial.division|trialDivision|divisor.*instruction|instruction.*divisor)",
+        "D5",
+        "-g",
+        "*.lean"
+      ],
+      "exit": 1,
+      "line_match_count": 0
+    },
+    {
+      "id": "trial-division",
+      "scope": ".lake/packages/mathlib/Mathlib",
+      "program": "rg",
+      "args": [
+        "-n",
+        "-i",
+        "-P",
+        "(FRACTRAN|trial.division|trialDivision|divisor.*instruction|instruction.*divisor)",
+        ".lake/packages/mathlib/Mathlib",
+        "-g",
+        "*.lean"
+      ],
+      "exit": 1,
+      "line_match_count": 0
+    },
+    {
+      "id": "polynomial-readback",
+      "scope": "D5",
+      "program": "rg",
+      "args": [
+        "-n",
+        "-i",
+        "-P",
+        "(readback|回读|Jensen.*coeff|coeff.*Jensen|falling.factorial|q.multinomial)",
+        "D5",
+        "-g",
+        "*.lean"
+      ],
+      "exit": 0,
+      "line_match_count": 38
+    },
+    {
+      "id": "polynomial-readback",
+      "scope": ".lake/packages/mathlib/Mathlib",
+      "program": "rg",
+      "args": [
+        "-n",
+        "-i",
+        "-P",
+        "(readback|回读|Jensen.*coeff|coeff.*Jensen|falling.factorial|q.multinomial)",
+        ".lake/packages/mathlib/Mathlib",
+        "-g",
+        "*.lean"
+      ],
+      "exit": 0,
+      "line_match_count": 3
+    },
+    {
+      "id": "logderiv-residue",
+      "scope": "D5",
+      "program": "rg",
+      "args": [
+        "-n",
+        "-i",
+        "-P",
+        "(residue.*logDeriv|logDeriv.*residue|logDeriv.*order|order.*logDeriv)",
+        "D5",
+        "-g",
+        "*.lean"
+      ],
+      "exit": 0,
+      "line_match_count": 27
+    },
+    {
+      "id": "logderiv-residue",
+      "scope": ".lake/packages/mathlib/Mathlib",
+      "program": "rg",
+      "args": [
+        "-n",
+        "-i",
+        "-P",
+        "(residue.*logDeriv|logDeriv.*residue|logDeriv.*order|order.*logDeriv)",
+        ".lake/packages/mathlib/Mathlib",
+        "-g",
+        "*.lean"
+      ],
+      "exit": 0,
+      "line_match_count": 6
     }
   ],
   "mathlib_pin": {
@@ -1743,7 +1883,8 @@
   "pushed": {
     "commits": [
       "c8ba70a54e9b859185515602015f630d89019ae9",
-      "6009dcbe96888c3ca23ad3e331da2efec04b9452"
+      "6009dcbe96888c3ca23ad3e331da2efec04b9452",
+      "dad8e18532ec0063093aad820e8bd4b4c8cf80dc"
     ],
     "branch": "lane/math/tier3-mathlib-triage-0909",
     "note": "Commits through the preceding checkpoint; final delivery envelope also records its containing report commit."

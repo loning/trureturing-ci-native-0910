@@ -1,0 +1,13 @@
+[
+  {
+    "probe": "baseline",
+    "command": "make 'lean'",
+    "exit": 0,
+    "signal": null,
+    "log": "logs/baseline.log",
+    "started": "2026-09-09T05:04:06.216Z",
+    "atoms": [],
+    "indices": [],
+    "archived_probe": null
+  }
+]

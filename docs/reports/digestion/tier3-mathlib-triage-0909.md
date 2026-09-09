@@ -116,7 +116,7 @@ All Mathlib paths below are relative to `.lake/packages/mathlib/`. Every listed 
 
 ## probe_runs
 
-None yet; the five-distinct-A-atom requirement is pending, not satisfied.
+- baseline: `make 'lean'`; EXIT=0; [log](tier3-mathlib-triage-0909/logs/baseline.log); atoms .
 
 ## search_receipts
 
@@ -162,6 +162,14 @@ Full commands and untruncated hits: [search-receipts.json](tier3-mathlib-triage-
 | unitary-involution | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '(IsSelfAdjoint.*(exp|cos|sin)|exp.*(unitary|Unitary)|isUnitary.*(exp|cos|sin)|involuti.*unitary)' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 95 | 0 |
 | second-bindings | D5 | `rg '-n' '-i' '-P' '\b(theorem|lemma)\s+(cos_sq_add_sin_sq|det_mul|exists_rat_btwn|antitoneOn_of_deriv_nonpos|integral_Ioi_of_hasDerivAt_of_tendsto|ConvexOn\.map_integral_le)\b' 'D5' '-g' '*.lean'` | 0 | 1 |
 | second-bindings | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '\b(theorem|lemma)\s+(cos_sq_add_sin_sq|det_mul|exists_rat_btwn|antitoneOn_of_deriv_nonpos|integral_Ioi_of_hasDerivAt_of_tendsto|ConvexOn\.map_integral_le)\b' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 9 | 0 |
+| third-bindings | D5 | `rg '-n' '-i' '-P' '(norm_charFun_le_one|norm_starProjection_le|norm_orthogonalProjectionOnto_le|norm_sq_eq_add_norm_sq_starProjection|descFactorial_pos|coeff_monomial|sum_involution)' 'D5' '-g' '*.lean'` | 21 | 0 |
+| third-bindings | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '(norm_charFun_le_one|norm_starProjection_le|norm_orthogonalProjectionOnto_le|norm_sq_eq_add_norm_sq_starProjection|descFactorial_pos|coeff_monomial|sum_involution)' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 197 | 0 |
+| trial-division | D5 | `rg '-n' '-i' '-P' '(FRACTRAN|trial.division|trialDivision|divisor.*instruction|instruction.*divisor)' 'D5' '-g' '*.lean'` | 0 | 1 |
+| trial-division | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '(FRACTRAN|trial.division|trialDivision|divisor.*instruction|instruction.*divisor)' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 0 | 1 |
+| polynomial-readback | D5 | `rg '-n' '-i' '-P' '(readback|回读|Jensen.*coeff|coeff.*Jensen|falling.factorial|q.multinomial)' 'D5' '-g' '*.lean'` | 38 | 0 |
+| polynomial-readback | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '(readback|回读|Jensen.*coeff|coeff.*Jensen|falling.factorial|q.multinomial)' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 3 | 0 |
+| logderiv-residue | D5 | `rg '-n' '-i' '-P' '(residue.*logDeriv|logDeriv.*residue|logDeriv.*order|order.*logDeriv)' 'D5' '-g' '*.lean'` | 27 | 0 |
+| logderiv-residue | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '(residue.*logDeriv|logDeriv.*residue|logDeriv.*order|order.*logDeriv)' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 6 | 0 |
 
 The positive and negative controls share case-insensitivity, alternation, word boundaries and whitespace matching. The initial `negative-spectrum` query matched `registerTraceClass` (logging infrastructure); the refined word-boundary query excludes this false positive. Generic Caratheodory measure hits are not Toeplitz spectral theorems.
 
@@ -272,6 +280,7 @@ The positive and negative controls share case-insensitivity, alternation, word b
 
 - `c8ba70a54e9b859185515602015f630d89019ae9`
 - `6009dcbe96888c3ca23ad3e331da2efec04b9452`
+- `dad8e18532ec0063093aad820e8bd4b4c8cf80dc`
 
 Every listed checkpoint was pushed successfully. The final runner envelope includes the commit containing this final report (a commit cannot contain its own hash).
 
