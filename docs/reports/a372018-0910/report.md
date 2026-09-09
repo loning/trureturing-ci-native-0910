@@ -34,3 +34,15 @@ Not run yet. Required order: `make lean`, `make lean-report`, `make emit`, Scrib
 ## Not claimed
 
 No formal proof, counterexample, literature novelty, independent review, successful build, freeze, or PR is claimed at this checkpoint. The user supplied Vieta sketch remains unverified here.
+
+## Search and cache checkpoint
+
+- Manifest confirms mathlib `db584cd6d46c92f209a44c0f1c829460d327499d`.
+- `make lean-cache-ensure` EXIT=0: `status=seeded`, `method=clonefile`, donor `/Users/chronoai/trureturing`, `clonefile_attempts=1`, `stamp_miss=null`, project and mathlib both `warm`, missing mathlib oleans=0, archive skipped because project is warm.
+- Targeted D5 lookup found no A372018/A371364. Read public signatures and relevant bodies in `CubicNinthPowerSubstitutionModThree`, `HalfScaledReflectionParity`, `ReflectedQuadraticQuarterParity`, `CompositionalIterateCongruence`, and `ConvolutionRecurrenceOddPowersOfTwo`. In particular `convolution_pairing` is general over f but explicitly in ZMod 2; it supplies a modular convolution identity, not the required rational equality. The public `fixed_unique` in CompositionalIterateCongruence is tied to that module's specific step. Generic coefficient agreement and polynomial contraction helpers in the inspected modules are private.
+- Mathlib inspected Basic/Substitution/Expand and related API search: `coeff_succ_X_mul`, `X_pow_dvd_iff`, `rescale`, `coeff_rescale`, `rescale_neg_one_X`, `expand`, `coeff_expand_mul` are reusable. No target or generic algebraic fixed-point construction found in searched PowerSeries files. A guessed Rescale.lean path does not exist; actual definitions are in Basic.lean. This failed path is not counted as a search hit.
+- External GitHub code searches `A372018 language:Lean` and `A371364 language:Lean` each returned `[]`; arXiv `all:A372018 OR all:A371364` returned totalResults=0. Network capability was actually exercised.
+- Opened both OEIS `/internal` pages (HTTP success; raw HTML in attempt-1/sources). A372018 explicitly says “Conjecture: a(2n+1) = 2*A371364().” A371364 specifies the reversion in the brief and offset 0. These two pages contain no proof of the bisection. One-hop cross-references still pending; no global novelty claim.
+- Capacity: Recurrence root has 24 Lean files and 48 Blueprint files; do not add at that root. A subdirectory must be selected before implementation.
+
+Proof route refinement before coding: compare s=A(x)-A(-x) directly with 4xB(x²). The proposed elimination is `s(1-xs)^2 = 4x-3x²s`. Its difference factor has constant coefficient 1, so uniqueness can use domain cancellation. This is the same proposed Vieta elimination, with the rescaling bridge performed without constructing C or Laurent series. Define A independently via A=1+xH and the polynomial contraction H=2+x(3H-H²/2+3xH²/2+x²H³/2); define B independently via B=1+x(8B²-3B-16xB³). Neither definition uses the odd identity. These statements remain unverified until Lean checks them.
