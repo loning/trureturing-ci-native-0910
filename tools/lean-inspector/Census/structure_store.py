@@ -47,10 +47,12 @@ class Store:
                                   PRIMARY KEY(module,name,uncertain));
             CREATE TEMP TABLE boundary(name TEXT,module TEXT,library TEXT,PRIMARY KEY(name,module));
             CREATE TEMP TABLE tokens(context TEXT,name TEXT,signature TEXT,PRIMARY KEY(context,name));
+            CREATE TEMP TABLE scopes(module TEXT PRIMARY KEY,bits BLOB);
         """)
         self.dirty = set()
         self.frozen = {}
         self.graph = None
+        self.module_indices = {}
         self.scope = functools.lru_cache(maxsize=32)(self._scope)
         self.owners = functools.lru_cache(maxsize=4096)(self._owners)
 
@@ -62,6 +64,7 @@ class Store:
         self.db.execute("INSERT OR REPLACE INTO modules VALUES (?,?,?,?,?)",
                         (name, json.dumps(sorted(set(imports))), library, address, error))
         self.graph = None
+        self.db.execute("DELETE FROM scopes")
         self.scope.cache_clear()
         self.owners.cache_clear()
 
@@ -71,6 +74,7 @@ class Store:
         self.owners.cache_clear()
         self.scope.cache_clear()
         self.graph = None
+        self.db.execute("DELETE FROM scopes")
 
     def declaration(self, module, name, kind, value, types=()):
         value = None if value is None else sorted(set(value))
@@ -107,6 +111,10 @@ class Store:
         if self.graph is None:
             self.graph = {m: json.loads(imports) for m, imports in
                           self.db.execute("SELECT name,imports FROM modules")}
+            self.module_indices = {m: i for i, m in enumerate(sorted(self.graph))}
+        cached = self.db.execute("SELECT bits FROM scopes WHERE module=?", (module,)).fetchone()
+        if cached:
+            return zlib.decompress(cached[0])
         visited, pending = set(), [module]
         while pending:
             owner = pending.pop()
@@ -116,7 +124,15 @@ class Store:
                 raise ValueError("dependency_unresolved")
             visited.add(owner)
             pending.extend(self.graph[owner])
-        return visited
+        # Import closures are disk-backed too. The small resident cache holds
+        # 32 bit vectors, not 32 sets of all imported module names.
+        bits = bytearray((len(self.module_indices) + 7) // 8)
+        for owner in visited:
+            index = self.module_indices[owner]
+            bits[index // 8] |= 1 << (index % 8)
+        encoded = bytes(bits)
+        self.db.execute("INSERT INTO scopes VALUES (?,?)", (module, zlib.compress(encoded)))
+        return encoded
 
     def _owners(self, name):
         return self.db.execute("""SELECT d.module,m.library,d.hash,m.error FROM decl d
@@ -129,7 +145,8 @@ class Store:
             return []
         result = []
         for module, library, hashed, error in self.owners(name):
-            if module not in scope:
+            index = self.module_indices[module]
+            if not scope[index // 8] & (1 << (index % 8)):
                 continue
             frozen = self.frozen_keys(module, name)
             # A frozen target's proof body does not affect a first-hit edge.

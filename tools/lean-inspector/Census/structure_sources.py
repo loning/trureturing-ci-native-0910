@@ -197,6 +197,11 @@ def synchronize(repository, directory, cache, store, measure, mark=lambda _: Non
     libraries.update((module, "repository") for module, _ in project)
     plans = {}
     binary = None
+    new_index = store.db.execute("SELECT 1 FROM decl LIMIT 1").fetchone() is None
+    if new_index:
+        # Bulk construction avoids random writes through a global Name index
+        # for every upstream occurrence. Incremental updates retain the index.
+        store.db.execute("DROP INDEX names")
     for mode, manifest, hashes in [("bodies", project, project_hashes), ("names", external, upstream_hashes)]:
         if any(not pathlib.Path(p).is_file() for _, paths in manifest for p in paths):
             raise ValueError("missing_olean_part")
@@ -222,6 +227,12 @@ def synchronize(repository, directory, cache, store, measure, mark=lambda _: Non
     for key, value in pack(store, plans, libraries).items():
         stats[key] = stats.get(key, 0) + value
     timings["raw_cache_restore"] = time.monotonic() - started
+    if new_index:
+        mark("structure_name_index")
+        started = time.monotonic()
+        store.db.execute("CREATE INDEX names ON decl(name)")
+        store.db.commit()
+        timings["name_index"] = time.monotonic() - started
     for path, stamp in read(directory / "stamps.json").items():
         if file_stamp(path) != stamp:
             raise ValueError("dependency_unresolved")
