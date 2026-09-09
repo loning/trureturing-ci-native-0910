@@ -229,3 +229,75 @@ upper_sum_vanish（上界集合由最小错位值给出的固定交换封闭）�
 拟议公开 S(a)：proof_shape=content，直接冻结依赖=[]（只用 Mathlib），
 escape_witness=lower_cut_removal + upper_sum_vanish，admission_basis=escape-witness。
 最终四项判据须对 elaborate 后的实际声明路径逐条作答。
+
+## Lean 核验批次 1
+
+热树增量 `lake env lean <attempt>/Residual.lean` 最终 EXIT=0。
+已验证 prefixSum、Upper、LowerFrom、signInt 定义，及 prefixSum_zero /
+prefixSum_step / prefixSum_mono / prefixSum_pos。首次 prefix 是 Lean 保留字，
+且一个试查的 sum_filter_add_sum_filter_not_eq 名不存在；修正后无诊断。
+实际 #check 命中 Equiv.sum_comp、Finset.sum_involution、
+Finset.sum_filter_add_sum_filter_not、Equiv.Perm.mul_apply、swap_apply_def。
+没有 S(a) 证明或冻结；当前完整编译源码保存在本报告末尾，随提交推送。
+A5/A5.1 真源已查：utility 位于 anchors 与 digest 之间，无计算性内容时字面 none。
+候选 D5/S1/Words 根递归计数 103、Blueprint 对应根 120，故不在根新增；
+实际落点须另数一个现有子目录容量。
+
+<!-- lean-checkpoint -->
+## 当前已编译源码快照
+
+```lean
+import Mathlib.Algebra.BigOperators.Group.Finset.Basic
+import Mathlib.GroupTheory.Perm.Sign
+import Mathlib.Tactic
+
+open scoped BigOperators
+namespace Residual
+
+def prefixSum {n : ℕ} (p : Equiv.Perm (Fin n)) (k : ℕ) : ℕ :=
+  ∑ i : Fin n with i.val < k, ((p i).val + 1)
+
+def Upper {n : ℕ} (a b : Equiv.Perm (Fin n)) : Prop :=
+  ∀ k : ℕ, k ≤ n → prefixSum b k ≤ prefixSum a k
+
+def LowerFrom {n : ℕ} (a b : Equiv.Perm (Fin n)) (r : ℕ) : Prop :=
+  ∀ i : Fin n, r ≤ i.val → prefixSum a i.val < prefixSum b (i.val + 1)
+
+def signInt {n : ℕ} (p : Equiv.Perm (Fin n)) : ℤ := (Equiv.Perm.sign p : ℤ)
+
+
+@[simp] theorem prefixSum_zero {n} (p : Equiv.Perm (Fin n)) : prefixSum p 0 = 0 := by
+  simp [prefixSum]
+
+theorem prefixSum_step {n} (p : Equiv.Perm (Fin n)) (i : Fin n) :
+    prefixSum p (i.val + 1) = prefixSum p i.val + (p i).val + 1 := by
+  classical
+  have hset : (Finset.univ.filter fun j : Fin n => j.val < i.val + 1) =
+      insert i (Finset.univ.filter fun j : Fin n => j.val < i.val) := by
+    ext j
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_insert]
+    constructor
+    · intro h
+      by_cases hj : j = i
+      · exact Or.inl hj
+      · right; have : j.val ≠ i.val := fun e => hj (Fin.ext e); omega
+    · rintro (rfl | h) <;> omega
+  simp only [prefixSum, hset]
+  rw [Finset.sum_insert (by simp)]
+  omega
+
+theorem prefixSum_mono {n} (p : Equiv.Perm (Fin n)) {k l : ℕ} (h : k ≤ l) :
+    prefixSum p k ≤ prefixSum p l := by
+  classical
+  apply Finset.sum_le_sum_of_subset
+  intro i hi
+  simp only [Finset.mem_filter, Finset.mem_univ, true_and] at *
+  omega
+
+theorem prefixSum_pos {n} (p : Equiv.Perm (Fin n)) (i : Fin n) :
+    0 < prefixSum p (i.val + 1) := by
+  rw [prefixSum_step]
+  omega
+
+end Residual
+```
