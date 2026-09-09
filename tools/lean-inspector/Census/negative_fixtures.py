@@ -24,10 +24,10 @@ def check_manifest_negatives(repository, directory):
     env = dict(os.environ, LEAN_PATH=str(root), LEAN_NUM_THREADS="1")
     outcomes = []
 
-    def rejected(label, expected, *, text=original, transport=None):
+    def rejected(label, expected, *, text=original, transport=None, driver_text=original_driver):
         output = directory / (label + ".json")
         source.write_text(text)
-        driver.write_text(original_driver.replace(string(str(root / "census.json")), string(str(output))))
+        driver.write_text(driver_text.replace(string(str(root / "census.json")), string(str(output))))
         if transport is not None:
             response.write_text(json.dumps(transport) + "\n")
         try:
@@ -72,6 +72,8 @@ def check_manifest_negatives(repository, directory):
     reflexive = original[:start] + (
         "noncomputable def CensusRun.reportKeys : List (Lean.Name × Nat) := CensusRun.manifest.keys\n")
     rejected("reflexiveReportRejected", "component=report_keys_binding", text=reflexive)
+    rejected("reflexiveReportNameRejected", "component=report_keys_binding", driver_text=original_driver.replace(
+        "report_keys CensusRun.reportKeys", "report_keys CensusRun.manifestKeys"))
     relabelled = copy.deepcopy(data)
     certified = next(row for path in responses for row in json.loads(path.read_text())["entries"]
                      if row["class"] != "observed")

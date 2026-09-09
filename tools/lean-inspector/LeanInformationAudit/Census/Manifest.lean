@@ -101,6 +101,7 @@ def bindEmittedManifest (report : FrozenReport) (root : Name) (rows : Array Stat
   ofExcept <| checkKeyCoverage report.headSha report.theorems head rows
   let listName := manifestName.appendAfter "Keys"
   unless args[3]! == mkConst listName do bindingError "manifest_keys"
+  if reportKeysName == listName then bindingError "report_keys_binding"
   let keys ← bindChunkedKeys listName "manifest_keys" rows
   let reportKeys ← bindChunkedKeys reportKeysName "report_keys" report.theorems
   ofExcept <| checkManifestBinding report root rows ⟨head, sha, root, keys⟩ reportKeys
