@@ -143,3 +143,11 @@ Canonical public theorem statement IDs:
 | odd_coeff_identity_of_equations | sha256:e917c0de71127960a2c74e2a18fdf27cf72860c9b4b21bfacd42b4fa19c1c0b6 |
 
 Freeze and PR remain outstanding at this checkpoint. No theory volume, atom, or finite-instance theorem was added.
+
+## Freeze receipt
+
+`make deposit-uncovered GID=D5/S1/Recurrence/Algebraic/CubicOddBisection.odd_coeff_identity BASE=d59adb46d4703e7fdc7ef7569c5c0919247cc87a`: EXIT=0, 96.362377 seconds. It reused the canonical report above, passed deposit-header-check, emitted zero changed Blueprints, and ran `ledger-align --add` with added=1, conflicts=0. Final receipt: `PLAYBOOK_DEPOSIT_FROZEN_UNCOVERED ... reason=NO_ATOM`.
+
+Read back both generated freeze files. Module statement pin: `sha256:2ea92bfb8192b9d99d1f527e7b71c2323eb55698e9a781a9af036f6356ebfabf`; accepted event: `sha256:53528609e1cc3e83dd7ad90ad15d2a68fec6344581bbf294b29eeb8d3bf0874e`; prerequisite frozen node IDs: `[]`. The main theorem's declaration statement ID matches the table above. These two files are committed together. No Lean source changes after freezing.
+
+The implementation PR will target dev and remain open for review, as specified by the user's implementation-stage stopping criterion. No merge or independent review is claimed.
