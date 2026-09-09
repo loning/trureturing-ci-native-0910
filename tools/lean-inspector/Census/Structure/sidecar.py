@@ -171,7 +171,8 @@ def run_sidecar(repository, directory, raw_report):
     from resources import run
 
     def operation():
-        run([sys.executable, "-m", "Structure.sidecar", str(repository), str(directory), str(raw_report)],
+        run([sys.executable, "-m", "Structure.sidecar", str(repository.resolve()),
+             str(directory.resolve()), str(raw_report.resolve())],
             directory / "logs", "structure", cwd=pathlib.Path(__file__).resolve().parents[1],
             budget_gb=3, wall_limit_s=1800,
             phase_path=directory / "structure-phase.txt")
