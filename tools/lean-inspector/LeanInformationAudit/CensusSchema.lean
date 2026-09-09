@@ -22,33 +22,36 @@ structure Counts where
   noFaithfulPrimitiveRealization : Nat := 0
   deriving DecidableEq, Repr
 
+def Counts.addEntry (counts : Counts)
+    (entry : Sigma fun key : StatementKey => CensusAssessment key) : Counts :=
+  let counts := { counts with accounted := counts.accounted + 1 }
+  match entry.2 with
+  | .observed value =>
+    if value.queryCompleted then
+      let counts := { counts with observed := counts.observed + 1 }
+      { counts with observedQueryCompleted := counts.observedQueryCompleted + 1 }
+    else
+      { counts with observedQueryIncomplete := counts.observedQueryIncomplete + 1 }
+  | .certified disposition =>
+    let counts := { counts with certified := counts.certified + 1 }
+    match disposition with
+    | .finiteOccurrence _ => { counts with finiteOccurrence := counts.finiteOccurrence + 1 }
+    | .structuralOccurrence _ =>
+      { counts with structuralOccurrence := counts.structuralOccurrence + 1 }
+    | .boundedFiniteTruncation _ =>
+      { counts with boundedFiniteTruncation := counts.boundedFiniteTruncation + 1 }
+    | .unreachable value =>
+      let counts := { counts with unreachable := counts.unreachable + 1 }
+      match value.reason with
+      | .noCanonicalObjectCarrier =>
+        { counts with noCanonicalObjectCarrier := counts.noCanonicalObjectCarrier + 1 }
+      | .noFinitePrimitiveBundle =>
+        { counts with noFinitePrimitiveBundle := counts.noFinitePrimitiveBundle + 1 }
+      | .noFaithfulPrimitiveRealization =>
+        { counts with noFaithfulPrimitiveRealization := counts.noFaithfulPrimitiveRealization + 1 }
+
 def count (inventory : DispositionInventory) : Counts :=
-  inventory.entries.foldl (init := {}) fun counts entry =>
-    let counts := { counts with accounted := counts.accounted + 1 }
-    match entry.2 with
-    | .observed value =>
-      if value.queryCompleted then
-        let counts := { counts with observed := counts.observed + 1 }
-        { counts with observedQueryCompleted := counts.observedQueryCompleted + 1 }
-      else
-        { counts with observedQueryIncomplete := counts.observedQueryIncomplete + 1 }
-    | .certified disposition =>
-      let counts := { counts with certified := counts.certified + 1 }
-      match disposition with
-      | .finiteOccurrence _ => { counts with finiteOccurrence := counts.finiteOccurrence + 1 }
-      | .structuralOccurrence _ =>
-        { counts with structuralOccurrence := counts.structuralOccurrence + 1 }
-      | .boundedFiniteTruncation _ =>
-        { counts with boundedFiniteTruncation := counts.boundedFiniteTruncation + 1 }
-      | .unreachable value =>
-        let counts := { counts with unreachable := counts.unreachable + 1 }
-        match value.reason with
-        | .noCanonicalObjectCarrier =>
-          { counts with noCanonicalObjectCarrier := counts.noCanonicalObjectCarrier + 1 }
-        | .noFinitePrimitiveBundle =>
-          { counts with noFinitePrimitiveBundle := counts.noFinitePrimitiveBundle + 1 }
-        | .noFaithfulPrimitiveRealization =>
-          { counts with noFaithfulPrimitiveRealization := counts.noFaithfulPrimitiveRealization + 1 }
+  inventory.entries.foldl (init := {}) Counts.addEntry
 
 def Counts.fields (counts : Counts) : List (String × Nat) := [
   ("accounted", counts.accounted),

@@ -8,7 +8,7 @@ run_cmd liftTermElabM do
   let env <- getEnv
   let owner := `LeanInformationAudit.Tests.Census.Query.OwnerSecond
   let name := `LeanInformationAudit.Tests.Census.Query.ownerParent.congr_simp
-  let index <- CensusQuery.buildIndex env.header.mainModule
+  let index <- CensusQuery.indexScope env.header.mainModule
   unless CensusQuery.owningModule env name != owner do
     throwError "ownerMembershipPositive: fixture did not exercise first-import ambiguity"
   unless <- CensusOwnership.recordedModuleContainsTheorem env index.modules owner name do

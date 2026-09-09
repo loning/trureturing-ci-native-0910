@@ -1,75 +1,89 @@
 import LeanInformationAudit.Census.Receipt
+import LeanInformationAudit.Census.Membership
 
 namespace LeanInformationAudit.CensusQuery
 
 open Lean Meta Elab Command DispositionCensus
 
-/-- Discovery visits the complete declared closure, including seals whose
-registration modules are elsewhere. Only discovered module names cross processes. -/
-elab "#census_discover " destination:str : command => do
-  let modules <- liftTermElabM do
-    let env <- getEnv
-    let index <- buildIndex env.header.mainModule
-    let mut modules := #[]
-    for (_, names) in index.named.toList do
-      for name in names do modules := modules.push (owningModule env name)
-    for entry in index.finite do
-      modules := modules ++ #[entry.registrationModuleName]
-    for entry in index.structural do modules := modules.push entry.registrationModule
-    for record in SealRecords.entries env do modules := modules.push record.catalog.rootId
-    return modules.toList.eraseDups.toArray.qsort Name.quickLt
-  IO.FS.writeFile destination.getString ((toJson (modules.map Name.toString)).compress ++ "\n")
-
-/-- Keys are bound to the immutable report before querying. The census emits a
-receipt only after every query succeeds; caller-supplied completion flags reject. -/
-elab "#census_query " requestPath:str " output " destination:str : command => do
-  let (input, _) <- liftTermElabM <| CensusReceipt.readRequest requestPath.getString
-  let head <- ofExcept <| stringField input "head"
-  let requests <- ofExcept <| input.getObjValAs? (Array (Array String)) "keys"
-  let (result, modules) <- liftTermElabM do
-    let env <- getEnv
-    let index <- buildIndex env.header.mainModule
+/-- One Environment imports only candidate owners and discovered evidence. Each
+key retains its original root scope, supplied by the streamed header closure. -/
+elab "#census_validate " requestPath:str " using " membershipPath:str
+    " output " destination:str : command => do
+  let result ← liftTermElabM do
+    let (input, _) ← CensusReceipt.readRequest requestPath.getString
+    let head ← ofExcept <| stringField input "head"
+    let requested ← ofExcept <| input.getObjValAs? (Array (Array String)) "keys"
+    let metadata ← ofExcept <| Json.parse (← IO.FS.readFile membershipPath.getString)
+    let requests ← ofExcept <| metadata.getObjValAs? (Array (Array String)) "candidate_keys"
+    let scopes ← ofExcept <| metadata.getObjValAs? (Array (String × Array String)) "scopes"
+    let assignment ← ofExcept <| metadata.getObjVal? "assignment"
+    let named ← ofExcept <| metadata.getObjValAs? (Array Json) "named"
+    let env ← getEnv
+    let bound ← ofExcept <| metadata.getObjValAs? Nat "batch_module_bound"
+    unless env.header.moduleNames.size ≤ bound do
+      throwError "IE-C044 candidate batch exceeds module bound: {env.header.moduleNames.size} > {bound}"
+    let keyBound ← ofExcept <| metadata.getObjValAs? Nat "batch_key_bound"
+    unless requests.size ≤ keyBound do
+      throwError "IE-C044 candidate batch exceeds key bound: {requests.size} > {keyBound}"
     let mut entries := #[]
-    let mut certifiedRows := #[]
-    let mut certifiedImports := #[]
-    let mut ids : Std.HashSet String := {}
+    let mut sources : Array ProvenanceSource := #[]
+    let mut keySources : Array (String × Array ProvenanceSource) := #[]
     for request in requests do
-      unless request.size == 3 do throwError "census query: expected module/name/identity triple"
-      let key : StatementKey :=
-        StatementKey.mk (<- ofExcept <| parseNameKey request[1]!) request[2]!
-      if ids.contains key.statementId then throwError "census query: duplicate statement identity"
-      ids := ids.insert key.statementId
-      let owner := request[0]!.toName
-      unless <- CensusOwnership.recordedModuleContainsTheorem env index.modules owner key.theoremName do
-        throwError "census query: owning module mismatch: {key.theoremName}"
-      let row <- assess index head key (some owner)
-      if let .certified disposition := row then
-        certifiedRows := certifiedRows.push (Sigma.mk key (.certified disposition))
-        let names := match disposition with
-          | .finiteOccurrence value => #[value.canonicalArena, value.registration,
-              value.realization, value.nondegeneracyCertificate, value.stateEnumerationCertificate] ++
-              (finiteSealInScope? env index.modules key.theoremName value.canonicalArena).toArray
-          | .structuralOccurrence value => #[value.canonicalArena, value.registration,
-              value.realization, value.strictnessCertificate, value.witnessCertificate]
-          | .boundedFiniteTruncation value => #[value.truncationFamily, value.comparisonStatement] ++
-              (match value.certification with | .reportOnly => #[] | .transferred name => #[name])
-          | .unreachable value => #[value.evidence]
-        certifiedImports := certifiedImports.push owner
-        for name in names do
-          certifiedImports := certifiedImports.push (owningModule env name)
-      let json := dispositionRowJson (Sigma.mk key row)
-      let json := match row with
-        | .observed _ => json.setObjVal! "payload"
-            (((json.getObjVal? "payload").toOption.get!).setObjVal! "import_scope" Json.null)
-        | .certified _ => json
-      entries := entries.push json
-    return (Json.mkObj [
-      ("head", toJson head), ("root", nameJson index.root),
-      ("scope", toJson (ImportClosureScope.mk index.modules true)),
-      ("source_inputs", toJson (← validateEvidenceSources index.root ⟨head, certifiedRows⟩)),
-      ("certified_imports", toJson (certifiedImports.toList.eraseDups.toArray.qsort Name.quickLt
-        |>.map Name.toString)),
-      ("entries", Json.arr entries)], index.modules)
-  liftTermElabM <| CensusReceipt.write requestPath.getString destination.getString input result modules
+      unless requested.contains request && request.size == 3 do
+        throwError "IE-C044 candidate key is outside the immutable request"
+      let owner := request[0]!
+      let key := StatementKey.mk (← ofExcept <| parseNameKey request[1]!) request[2]!
+      let root ← ofExcept <| assignment.getObjValAs? String owner
+      let some (_, scope) := scopes.find? (·.1 == root)
+        | throwError "IE-C044 candidate root scope is missing"
+      let modules := scope.map String.toName
+      let members := Std.HashSet.ofArray scope
+      let mut names : Std.HashMap Name (Array Name) := {}
+      for entry in named do
+        unless members.contains (← ofExcept <| stringField entry "module") do continue
+        let name ← ofExcept <| parseNameJson (← ofExcept <| entry.getObjVal? "name")
+        let head := (← ofExcept <| stringField entry "head").toName
+        let some info := env.find? name
+          | throwError "IE-C044 indexed evidence absent from candidate Environment: {name}"
+        unless CensusStream.indexedHead info == some head do
+          throwError "IE-C036 indexed evidence type changed: {name}"
+        names := names.insert head ((names.getD head #[]).push name)
+      for head in CensusStream.evidenceTypes.push CensusStream.approximationHead do
+        names := names.insert head ((names.getD head #[]).toList.eraseDups.toArray.qsort Name.quickLt)
+      let index : Index := {
+        root := root.toName, modules, named := names
+        finite := (InformationRegistry.entries env).filter
+          (fun e => members.contains e.registrationModuleName.toString)
+          |>.qsort (fun a b => Name.quickLt a.unitName b.unitName)
+        structural := (structuralProvenanceEntries env).filter
+          (fun e => members.contains e.registrationModule.toString)
+          |>.qsort (fun a b => Name.quickLt a.unitConst b.unitConst)}
+      let mut rowSources : Array ProvenanceSource := #[]
+      try
+        let row ← assess index head key (some owner.toName)
+        -- assess already validates every certified disposition. Only structural
+        -- occurrences can return source inputs; the other branches return #[]
+        -- and would repeat the same completed validation just to collect it.
+        if let .certified (.structuralOccurrence _) := row then
+          rowSources ← validateEvidenceSources index.root
+            ⟨head, #[⟨key, row⟩]⟩ (some modules)
+        let json := dispositionRowJson ⟨key, row⟩
+        let json := if let .observed _ := row then
+          json.setObjVal! "payload" ((← ofExcept <| json.getObjVal? "payload").setObjVal!
+            "import_scope" Json.null) else json
+        entries := entries.push json
+      catch error =>
+        rowSources := #[]
+        entries := entries.push (CensusStream.observation owner key.theoremName key.statementId
+          root (some (← error.toMessageData.toString)))
+      sources := sources ++ rowSources
+      keySources := keySources.push (key.statementId, rowSources)
+    return Json.mkObj [("head", toJson head),
+      ("report_sha256", ← ofExcept <| input.getObjVal? "report_sha256"), ("entries", Json.arr entries),
+      ("source_inputs", toJson sources),
+      ("key_source_inputs", toJson keySources),
+      ("environment_modules", toJson env.header.moduleNames.size),
+      ("direct_imports", toJson (env.header.imports.map (·.module.toString)))]
+  CensusReceipt.write destination.getString result
 
 end LeanInformationAudit.CensusQuery

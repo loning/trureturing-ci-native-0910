@@ -24,7 +24,7 @@ def aliasedWitness : AliasedEvidence where
   failedObligation := some ``aliasObligation
 
 run_cmd liftTermElabM do
-  let index ← CensusQuery.buildIndex (← getEnv).header.mainModule
+  let index ← CensusQuery.indexScope (← getEnv).header.mainModule
   let privateRow ← CensusQuery.assess index "fixture-head" ⟨``privateTarget, "sha256:0000000000000000000000000000000000000000000000000000000000000043"⟩
   match privateRow with
   | .certified (.unreachable value) =>

@@ -10,7 +10,6 @@ import re
 import signal
 import subprocess
 import sys
-import threading
 import time
 
 
@@ -19,7 +18,9 @@ class ResourceRejected(RuntimeError):
 
 
 def check_budget(free_percent, rss_bytes, budget_bytes):
-    if rss_bytes > budget_bytes:
+    if free_percent < 30:
+        raise ResourceRejected(f"free memory {free_percent}% is below 30% before heavy step")
+    if rss_bytes > 2 * budget_bytes:
         raise ResourceRejected(f"rss={rss_bytes} exceeds budget={budget_bytes}")
 
 
@@ -67,8 +68,13 @@ def kill_tree(pid, known):
             pass
 
 
-def run(command, directory, label, *, cwd=None, env=None, budget_gb=8, phase_path=None, cancel=None):
-    """Bound every descendant, propagate nested rejection, and retain OS/sample peaks."""
+def run(command, directory, label, *, cwd=None, env=None, budget_gb=4, phase_path=None,
+        design_limit_gb=None, wall_limit_s=1200):
+    """Measure per-process RSS. Build scheduling is exempt from the census budget.
+
+    The acceptance reading is 4 GiB; only a design failure (twice the planned
+    phase size) aborts. Heavy census steps run sequentially with 30% free memory.
+    """
     directory = pathlib.Path(directory)
     directory.mkdir(parents=True, exist_ok=True)
     started = time.monotonic()
@@ -79,14 +85,12 @@ def run(command, directory, label, *, cwd=None, env=None, budget_gb=8, phase_pat
     proc = None
     known = set()
     child_env = dict(os.environ if env is None else env)
-    abort_path = pathlib.Path(child_env.setdefault("CENSUS_RESOURCE_ABORT", str(directory / f"{label}.abort.json")))
+    design_limit = (design_limit_gb or 2 * budget_gb) * 1024 ** 3 if budget_gb else None
     timing_path = directory / f"{label}.time.log"
     try:
-        if abort_path.exists():
-            raise ResourceRejected(f"resource abort: {abort_path.read_text()}")
         free = free_memory()
         measurement["memory_readings"].append({"seconds": 0, "free_percent": free})
-        check_budget(free, 0, budget_gb * 1024 ** 3)
+        check_budget(free, 0, (budget_gb or 4) * 1024 ** 3)
         flag = "-l" if sys.platform == "darwin" else "-v"
         with (directory / f"{label}.log").open("w") as output:
             proc = subprocess.Popen(["/usr/bin/time", flag, "-o", str(timing_path), *command],
@@ -111,11 +115,10 @@ def run(command, directory, label, *, cwd=None, env=None, budget_gb=8, phase_pat
                     measurement["memory_readings"].append(
                         {"seconds": round(now - started, 3), "free_percent": free})
                     next_memory_check = now + 5
-                check_budget(free, rss, budget_gb * 1024 ** 3)
-                if abort_path.exists():
-                    raise ResourceRejected(f"resource abort: {abort_path.read_text()}")
-                if cancel is not None and cancel.is_set():
-                    raise RuntimeError(f"{label}: cancelled after another query failed")
+                if design_limit and rss > design_limit:
+                    raise ResourceRejected(f"phase design bound exceeded: {rss} > {design_limit}")
+                if budget_gb and now - started > wall_limit_s:
+                    raise ResourceRejected(f"phase wall design bound exceeded: {now - started:.1f}s")
                 try:
                     result = proc.wait(timeout=0.2)
                     break
@@ -129,24 +132,14 @@ def run(command, directory, label, *, cwd=None, env=None, budget_gb=8, phase_pat
         if match:
             peak = int(match[1]) * (1 if sys.platform == "darwin" else 1024)
             measurement["peak_rss_bytes"] = max(measurement["peak_rss_bytes"], peak)
-        check_budget(free, measurement["peak_rss_bytes"], budget_gb * 1024 ** 3)
+        measurement["within_acceptance_rss"] = (not budget_gb or
+            measurement["peak_rss_bytes"] <= budget_gb * 1024 ** 3)
         if result:
             raise RuntimeError(f"{label}: command exited {result}; see {directory / (label + '.log')}")
         measurement["status"] = "completed"
         return measurement
     except BaseException as error:
         measurement["error"] = str(error)
-        if isinstance(error, ResourceRejected) and not abort_path.exists():
-            temporary = abort_path.with_name(abort_path.name + f".{os.getpid()}.{threading.get_ident()}.tmp")
-            try:
-                with temporary.open("w") as output:
-                    json.dump({"label": label, "phase": current_phase,
-                               "peak_rss_bytes": measurement["peak_rss_bytes"], "error": str(error)}, output)
-                os.link(temporary, abort_path)
-            except FileExistsError:
-                pass
-            finally:
-                temporary.unlink(missing_ok=True)
         if proc is not None and proc.poll() is None:
             kill_tree(proc.pid, known)
             proc.wait()

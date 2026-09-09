@@ -29,7 +29,7 @@ run_cmd do
         registration.realizationName, proofName, registration.arenaName.str "__state_enumeration"⟩⟩
   let inventory : DispositionInventory := ⟨"fixture-head", rows⟩
   liftTermElabM do
-    validateEvidence frozenInformationRootId inventory
+    validateEvidence (← getEnv).header.mainModule inventory
     let report : FrozenReport := ⟨"fixture-head", "fixture-report", inventory.keys.toArray⟩
     let proof ← coverageProof report inventory
     addDecl <| .thmDecl {
