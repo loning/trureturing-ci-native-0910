@@ -6,7 +6,8 @@ title: A392714 round two — the residual signed sum S(a)
 doi: null
 url: https://github.com/the-omega-institute/trureturing
 claim: A general Lean proof of the residual signed sum S(a); the original conjecture bridge is outside scope.
-strata_touched: [S1]
+strata_touched:
+  - S1
 license: citation-only
 triage: anchor
 ---
@@ -321,6 +322,14 @@ EXIT=0，8.518048 秒。实际每条公理闭包均为 propext、Classical.choic
 及 signed_residual_sum → upper_sum_vanish → upper_fixed_prefix / exists_min_move。
 lower_cut_removal → upper_swap_of_short / swap_sum_zero。
 语义活路径将在最终逐声明账中结合证明项的用途核对。
+
+## 发射诊断批次
+
+首轮 `make emit` EXIT=2，16.608403125 秒。具名错误是报告 frontmatter 的
+`strata_touched: [S1]` 不被本仓专用 note parser 接受（要求 block list），
+随后九个 Scribe 来源引用连带报 dangling-literature-reference。
+已改为分行列表 `strata_touched` 加 `- S1`；数学源码及声明未改。
+这不是 S(a) 的证明失败；不隐去门失败，修正后重跑同一发射门。
 
 <!-- lean-checkpoint -->
 ## 当前已编译源码快照
