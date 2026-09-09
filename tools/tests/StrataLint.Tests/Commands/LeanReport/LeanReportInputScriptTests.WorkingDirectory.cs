@@ -91,6 +91,10 @@ public sealed partial class LeanReportInputScriptTests
     public void AddressFromRepositoryMatchesIndependentPrechangeBytes()
     {
         using var fixture = new LeanReportInputFixture();
+        // Keep the declared inputs fixed for the independently enumerated preimage below.
+        fixture.WriteSource(WorkflowPath,
+            $"jobs:\n  lean-inspect:\n    run: {ToolchainInstallerPath} {JudgeContentAddressPath}"
+            + $" {ScribeContentChecksPath} {CiBaselineScriptPath}\n  baseline-admission:\n");
 
         var result = fixture.AddressFromRepository();
 
