@@ -8,10 +8,10 @@ import unittest
 from negative_fixtures import name_key
 from phases import write
 from streaming import digest
-from structure import axiom_readings, header, publish
-from structure_graph import analyse
-from structure_sources import file_digest, pack, part_plan, split_summaries
-from structure_store import Store
+from Structure.sidecar import axiom_readings, header, publish
+from Structure.graph import analyse
+from Structure.sources import file_digest, pack, part_plan, split_summaries
+from Structure.store import Store
 
 
 class StructureSourceTests(unittest.TestCase):

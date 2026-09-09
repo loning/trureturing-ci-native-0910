@@ -17,25 +17,25 @@ def main():
     options = parser.parse_args()
     folder = options.output.resolve()
     folder.mkdir(parents=True, exist_ok=True)
-    root = pathlib.Path(__file__).resolve().parent
+    root = pathlib.Path(__file__).resolve().parents[1]
     cases = [
-        ("folding_skipped", "structure_store.py", "test_structure.StructureTests",
+        ("folding_skipped", "Structure/store.py", "test_structure.StructureTests",
          "test_panel_direct_folded_depth_and_distinct_descendants",
          [('consume(todo[0], (helper[1] or []) + helper[2], uncertain=bool(todo[2]))', 'pass')]),
-        ("failed_extraction_as_empty", "structure_store.py", "test_structure.StructureTests",
+        ("failed_extraction_as_empty", "Structure/store.py", "test_structure.StructureTests",
          "test_failed_extraction_is_unavailable_never_empty",
          [('errors.add("value_unavailable")\n                    entry["unbounded"] = True', 'pass')]),
-        ("name_only_join", "structure_store.py", "test_structure.StructureTests",
+        ("name_only_join", "Structure/store.py", "test_structure.StructureTests",
          "test_collision_uses_full_key_and_import_scope",
          [('candidates = self.signature(context, name)', 'candidates = self.signature(context, name)[:1]')]),
-        ("core_namespace_prefix", "structure_store.py", "test_structure.StructureTests",
+        ("core_namespace_prefix", "Structure/store.py", "test_structure.StructureTests",
          "test_nat_and_core_namespace_are_not_support_whitelists",
          [('if seed and name not in core:', 'if seed and name not in core and parse_name_key(name)[1] not in [parse_name_key(n)[1] for n in core]:')]),
-        ("ignore_frozen_membership", "structure_store.py", "test_structure.StructureTests",
+        ("ignore_frozen_membership", "Structure/store.py", "test_structure.StructureTests",
          "test_newly_frozen_helper_invalidates_unchanged_raw_cache",
          [('if prior != current:', 'if [(c[0], c[1], c[4]) for c in prior] != [(c[0], c[1], c[4]) for c in current]:'),
           ('hasher.update(canonical([context, name, current]))', 'hasher.update(canonical([context, name, prior]))')]),
-        ("sidecar_suppresses_census", "structure.py", "test_structure_sidecar.StructureSidecarTests",
+        ("sidecar_suppresses_census", "Structure/sidecar.py", "test_structure_sidecar.StructureSidecarTests",
          "test_sidecar_failure_keeps_census_bytes_and_success",
          [('except Exception as error:\n        request', 'except Exception as error:\n        (directory / "census.json").write_bytes(b"null\\n")\n        request')]),
     ]

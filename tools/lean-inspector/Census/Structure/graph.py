@@ -12,7 +12,7 @@ import zlib
 from emission import parse_name_key
 from incremental import atomic_json
 from streaming import canonical, digest
-from structure_store import wire_key
+from Structure.store import wire_key
 
 
 def topology(adj):
@@ -120,7 +120,7 @@ def analyse(store, keys, output, core, *, cache=None, axioms=None, mark=lambda _
     # reader caches have their own narrower fingerprint, independent of it.
     policy = digest([sorted(core), "first_frozen_hit_all_repository_declarations_stop_axiom",
                      [(p.name, p.read_text()) for p in [pathlib.Path(__file__),
-                       pathlib.Path(__file__).with_name("structure_store.py")]]])
+                       pathlib.Path(__file__).with_name("store.py")]]])
     snapshot = digest([store.snapshot(), keys, policy, sorted((list(k), v) for k, v in axioms.items())])
     rows_cache = folder / (snapshot[7:] + ".rows.gz")
     summary_cache = folder / (snapshot[7:] + ".summary.json")

@@ -10,8 +10,8 @@ import time
 from incremental import atomic_json
 from phases import read, write
 from streaming import canonical, digest, file_stamp
-from structure_sources import file_digest, fingerprint
-from structure_store import wire_key
+from Structure.sources import file_digest, fingerprint
+from Structure.store import wire_key
 
 
 def core_policy():
@@ -107,7 +107,7 @@ def report_only(directory, operation):
                                          status="unavailable", reason=reason, readings=None,
                                          information="undetermined", escape="undetermined")))
         inputs = {"olean_part_manifest_sha256": digest(read(directory / "olean-hashes.json")),
-                  "reader_fingerprint": fingerprint(pathlib.Path(__file__).resolve().parents[3]),
+                  "reader_fingerprint": fingerprint(pathlib.Path(__file__).resolve().parents[4]),
                   "ownership_fingerprint": None}
         publish(directory, header(directory, inputs), rows)
         receipt = {"status": "unavailable", "error": str(error), "rows": len(request["keys"]),
@@ -119,9 +119,9 @@ def report_only(directory, operation):
 
 def produce(repository, directory, raw_report):
     from resources import run
-    from structure_graph import analyse
-    from structure_sources import synchronize
-    from structure_store import Store
+    from Structure.graph import analyse
+    from Structure.sources import synchronize
+    from Structure.store import Store
     cache = repository / ".lake/build/census/structure"
     cache.mkdir(parents=True, exist_ok=True)
     store = Store(cache / "summaries.sqlite")
@@ -171,8 +171,9 @@ def run_sidecar(repository, directory, raw_report):
     from resources import run
 
     def operation():
-        run([sys.executable, str(pathlib.Path(__file__)), str(repository), str(directory), str(raw_report)],
-            directory / "logs", "structure", cwd=repository, budget_gb=3, wall_limit_s=1800,
+        run([sys.executable, "-m", "Structure.sidecar", str(repository), str(directory), str(raw_report)],
+            directory / "logs", "structure", cwd=pathlib.Path(__file__).resolve().parents[1],
+            budget_gb=3, wall_limit_s=1800,
             phase_path=directory / "structure-phase.txt")
         return read(directory / "structure-summary.json")
     try:

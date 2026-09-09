@@ -248,7 +248,7 @@ def execute(options):
         state["publication"] = {"status": "blocked", "accounted": len(keys),
             "reason": "certificate transport requires per-root receipts; whole-stream integration belongs to the certificate lane"}
         if not options.no_structure:
-            from structure import run_sidecar
+            from Structure.sidecar import run_sidecar
             # Only completed census bytes are inputs. Structural failures have
             # their own closed diagnostics and never change accounting status.
             os.environ.update(env)

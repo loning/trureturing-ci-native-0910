@@ -6,8 +6,8 @@ from native import build
 from negative_fixtures import lean_env, name_key
 from phases import write
 from resources import run
-from structure_graph import analyse
-from structure_store import Store
+from Structure.graph import analyse
+from Structure.store import Store
 
 
 def check_structure(repository, directory):

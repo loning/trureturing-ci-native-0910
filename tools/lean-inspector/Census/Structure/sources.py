@@ -24,7 +24,7 @@ def file_digest(path):
 def fingerprint(repository):
     paths = ["Census/structure.lean", "LeanInformationAudit/Census/StructureReader.lean",
              "LeanInformationAudit/DeclarationDependencies.lean", "LeanInformationAudit/NameWire.lean",
-             "LeanInformationAudit/StatementEncoding.lean", "Census/structure_sources.py"]
+             "LeanInformationAudit/StatementEncoding.lean", "Census/Structure/sources.py"]
     return digest([(p, file_digest(repository / "tools/lean-inspector" / p)) for p in paths] +
                   [("toolchain", (repository / "lean-toolchain").read_text())])
 

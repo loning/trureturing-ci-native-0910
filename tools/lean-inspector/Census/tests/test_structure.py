@@ -14,7 +14,7 @@ def key(name, module="Fixture", identity=None):
 
 class StructureTests(unittest.TestCase):
     def setUp(self):
-        from structure_store import Store
+        from Structure.store import Store
         self.scratch = tempfile.TemporaryDirectory()
         self.addCleanup(self.scratch.cleanup)
         self.path = pathlib.Path(self.scratch.name)
@@ -31,7 +31,7 @@ class StructureTests(unittest.TestCase):
                                [name_key(n) for n in types])
 
     def run_graph(self, keys, core=("True.intro", "Eq.mpr", "Eq.refl"), cache=None):
-        from structure_graph import analyse
+        from Structure.graph import analyse
         result = self.path / "rows.jsonl"
         summary = analyse(self.store, keys, result, [name_key(n) for n in core],
                           cache=cache, axioms={(k[1], k[2]): [] for k in keys})
