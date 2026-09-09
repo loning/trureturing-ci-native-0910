@@ -76,3 +76,25 @@ No theory volume or atom is being created for this task.
 - arXiv web search, all fields, query `A384309`: HTTP 200, explicitly
   "produced no results". Saved page and extracted text in runner attempt directory.
 - GitHub Lean code search is in flight. No globally exhaustive novelty claim.
+
+## Search completion and cache
+
+- GitHub authenticated code search `A384309 language:Lean`: total_count=0.
+  Broader `"leading digit" "counter" language:Lean` returned one file,
+  YijunYuan/TrustworthyKedlaya/Kedlaya/SabcOrderType.lean; source inspection
+  concerns Hahn-series supports and ordinal order types, not this recurrence.
+- curl fallback fetched all three OEIS internal pages successfully; complete
+  extracted texts and HTML are in the runner attempt directory. A000030 gives
+  only the initial digit definition. A248034 counts all digit occurrences and
+  selects the last-digit counter; it is a different process. Its external
+  SeqFan link and A000030's Cobham paper were not opened, ASSUMED-UNVERIFIED.
+- No dominating theorem found in the searched D5, pinned mathlib, GitHub Lean,
+  arXiv identifier, and OEIS scope; retain first-tier classification.
+- make lean-cache-ensure EXIT=0, 19.529 seconds, macOS ARM: status=seeded,
+  method=clonefile, donor=/Users/chronoai/trureturing, clonefile_attempts=1,
+  stamp_miss=null, project_olean_state=warm, mathlib_olean_state=warm,
+  archive_status=not_attempted. Full receipt: attempt-1/lean-cache-ensure.log.
+- Capacity readings before Lean/Scribe/note creation: Arith has 33 immediate
+  Lean files, its Blueprint mirror 56; choose a new CounterSequences subbucket
+  (currently absent, 0 files). Library/Words recursively has 26 files.
+  Report subbucket now contains 1 file (it was absent before creation).
