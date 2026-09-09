@@ -49,8 +49,8 @@ atom judgment is committed and pushed before advancing to the next one.
 
 ## Progress
 
-`screened: 6 / 7`. Completed: M4 readback, Schur minimum, reflected-pair disk,
-divisor parity, Pick update, first-return conservation.
+`screened: 7 / 7`. All seven atom judgments completed. The six-field judgments
+are in the seven sections below; aggregate conclusion follows them.
 
 ## Evidence Coordinates
 
@@ -521,6 +521,69 @@ stay outside the repo. Log:
 `/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tierA-basis-triage-0909/attempt-1/UpstreamSignatures.log`.
 The cache receipt reports `status=present`, project and Mathlib both `warm`.
 
+## Atom 150: Endpoint Minimum
+
+`atom_id: ff41c11de3a485a3451a5788237056c9099133f734e8bf7b75a1240d6746dd85`
+
+Complete raw body returned by `make show-atom` (exit 0, hash matches, no coverage):
+
+```text
+## 定理四：闭环不相容的精确代价
+
+$$
+\boxed{
+\min_y\mathcal E
+=
+\frac{\|(\mathcal U_1-\mathcal U_2)x\|^2}
+{\tau_1+\tau_2}.
+}
+\tag{13}
+$$
+```
+
+| Source assertion | Original probe counterpart | Status | Domain and boundary check |
+| --- | --- | --- | --- |
+| Attained minimum (13), including the heading's exact incompatibility cost | `Triage150.endpoint_minimum`, with `a := U1 x`, `b := U2 x`, `r := tau1`, `s := tau2` | equivalent | For every pair of endpoints in a real inner-product space and positive real `r,s`, `IsLeast` asserts attainment and a lower bound for every `y`. The norm and subtraction match `(U1-U2)x` by evaluation. It includes `a=b`, `x=0`, `U1=U2`, and the zero-dimensional space. |
+| The source's complex-space interpretation of the same norm expression | Instantiate the real-space theorem using `InnerProductSpace.complexToReal` | equivalent | Restriction changes the scalar/inner-product structure, not the carrier, norm, or the set of possible `y`. A minimization over all complex vectors remains over those same vectors, not just real coordinates. |
+
+`fidelity: full`. Source 56043-56058 explicitly defines the reduced energy as
+`norm(y-U1 x)^2/tau1 + norm(y-U2 x)^2/tau2`; 55924-55946 supplies positive time
+costs. Arbitrary `a,b` are more general than propagated endpoints, so unitarity
+is not an added assumption. Zero/negative durations are outside the positive-time
+problem; equal durations are included. The witness is exactly
+`c = (s/(r+s)) a + (r/(r+s)) b`, not the reversed weighting. Earlier elimination
+of path interiors and later relative-holonomy formulae are outside this atom.
+
+`upstream_declaration: none` (none carries this weighted minimum).
+Opened ingredients: `norm_add_sq_real`,
+`.lake/packages/mathlib/Mathlib/Analysis/InnerProductSpace/Basic.lean:409`, and
+`norm_sub_sq_real`, same file at 435. Both are elementary norm-square expansions,
+not weighted minimization statements. The scalar restriction used for fidelity
+was opened in the same file: `InnerProductSpace.rclikeToReal` at 944 and
+`InnerProductSpace.complexToReal` at 971, preserving the original normed group.
+`wrapper_thinness: not-applicable`: the probe introduces the weighted center,
+expands every square using those ingredients, and uses `field_simp`/`ring` to
+establish the entire weighted square completion. Square nonnegativity then
+supplies the lower bound and substitution supplies attainment. Unlike atom 89,
+no upstream square-completion or minimization theorem supplies that identity.
+`necessity_citation`: the exact (13) above is a source demand, but not a reason
+to label normalization an upstream wrapper. No (c) bridge with an explicit
+new typed edge and preregistered named consumer is supplied.
+`verdict: no-admission-basis`; `admission_basis: none`.
+`proof_shape: bind-only`; `direct_frozen_dependencies: []`; `escape_witness: null`.
+`why_not_escape_witness`: after the upstream norm expansions all atoms are
+available; the weighted identity and its nonnegative remainder normalize closed.
+
+Search receipt R150:
+`rg -n '\b(weighted_endpoint|endpoint_minimum|norm_sub_sq_real|norm_add_sq_real)\b' D5/S3/Observer D5/S3/Quantum .lake/packages/mathlib/Mathlib/Analysis/InnerProductSpace/Basic.lean`
+returned 7 lines (3 D5 uses, 4 Mathlib lines); the same regex supplies declaration
+controls at 409 and 435. The full window 399-449 was opened. A supplemental
+`complexToReal|rclikeToReal|restrictScalars|restrictScalar` search located the
+restriction in the same local Mathlib file, followed by opening 928-976.
+Probe receipt: `prior/probes/Endpoint150-v2.lean`; inherited `make lean` exit 0;
+decoded `prior/logs/Endpoint150-v2.log.gz` ends in `EXIT: 0`. Earlier
+`Endpoint150` exit 2 remains in the inherited run ledger, not erased.
+
 ## Push Receipts
 
 | Commit | Completed unit | Push result |
@@ -532,6 +595,7 @@ The cache receipt reports `status=present`, project and Mathlib both `warm`.
 | `3b0ea401d33d72def4731520c7ef7171b5670287` | Atom 104 | exit 0 |
 | `20666941dd35dbc37d825d01a0c431502b61383a` | Atom 105 | exit 0 |
 | `4f3fe9a297` | Atom 126 source/inspection preregistration checkpoint | exit 0 |
+| `820e77f51e162c4a58c31c506fb012ab4d3eb08d` | Atom 126 | exit 0 |
 
 ## Nonclaims
 
