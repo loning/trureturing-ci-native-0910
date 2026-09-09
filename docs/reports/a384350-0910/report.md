@@ -57,3 +57,41 @@ Pending. No Lean proof or gate success claimed at this checkpoint.
 - No counting formula, sequence coefficient computation, or labeled set
   partition count is claimed.
 - Independent review and remote CI success are not yet claimed.
+
+### Worker library and online pass
+
+- Repository broadening: searched D5 for `strict.partition`, `unrefinable`,
+  `disjoint.*refinement`, `distinct.part.*sum`, and `sum id`; reviewed the
+  public theorem signatures in CommonPriorPosteriorAgreement,
+  IcosahedralAxisDecomposition, FiniteCosetPartitionMaximalIndexMultiplicity,
+  ImmutableExtension, LayeredCapture, ObservationEscapeTopology,
+  ResidualPermutationSign, PaddingRatio, TauSigmaPowerBounds, and
+  SamePrimeScaleRedundancy. General APIs concern probability averages, prefix
+  codes, observation kernels, permutation sums, or prime-factor bounds; none
+  supplies the needed positive distinct-sum/least-changed-block lemma.
+- Mathlib commit `db584cd6d46c92f209a44c0f1c829460d327499d` verified from
+  `.lake/packages/mathlib`. Text searches for unrefinable/strict partition/
+  disjoint refinement found no target declaration. Reusable primitives read:
+  `Finset.min'_mem`, `Finset.min'_le`, `Finset.single_le_sum`,
+  `Finset.sum_erase_add`, `Finset.sum_lt_sum_of_subset`.
+- Online HTTP capability measured: all seven requests returned HTTP 200.
+  All fields of A384350, A384318, A384322, A384317 were read at their `/internal`
+  URLs. The first two still explicitly label the family characterization
+  Conjecture; the latter two state the correspondence without a proof.
+  Their retrieved revision dates are respectively 2025-10-20, 2025-06-11,
+  2025-07-27, 2025-05-28. No bibliography/proof field occurs in these responses.
+- GitHub repository API search `unrefinable lean`: total_count 0,
+  incomplete_results false. This is a scoped repository search, not a complete
+  code search. Loogle bare `unrefinable` was rejected as an unknown identifier;
+  that is a query error, not an absence result. A quoted query follows.
+- arXiv API `all:unrefinable`, max_results=15: read returned abstracts.
+  Seven partition papers include the five triage papers plus 2206.04261 and
+  2601.10227. Abstracts discuss classification, generation, normalizer chains,
+  numerical semigroups and Young diagrams; none states this family criterion.
+  Full text follow-up of the additional relevant papers remains pending.
+- Raw responses and `web-receipts.json` are in the runner attempt directory.
+
+Cache receipt: `status=seeded`, `method=clonefile`, donor
+`/Users/chronoai/trureturing`, `clonefile_attempts=1`,
+`project_olean_state=warm`, `mathlib_olean_state=warm`,
+`mathlib_missing_olean_files=0`; `make lean-cache-ensure` EXIT 0.
