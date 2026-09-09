@@ -1446,6 +1446,321 @@ assert push_c({origin:1},function) == {origin:1} != read_pair(wrong_after)[1]
 assert push_c(read_pair(pull_selected)[1],function) == read_pair(wrong_after)[1] == {origin:2}
 assert (reference_checks,affine_checks,space_unit_checks) == (32,128,52)
 print(f"pr2_reference: rich_pairs={reference_checks} affine_transports={affine_checks} space_units={space_unit_checks} noninjective_events={len(transported.e)} direct_image_filter={q(wrong_before)},{q(wrong_after)} pullback_filter={q(wrong_after)}")
+
+# PR3: finite checks only, using the original Rich archive operations.
+import json as pr3_json
+from random import Random as pr3_Random
+from itertools import combinations as pr3_combinations
+
+pr3_counts = {"source_updates": 0, "source_witnesses": 0,
+              "causal_updates": 0, "product_antichains": 0,
+              "bare_probes": 0, "legal_probes": 0,
+              "mobius_profiles": 0, "mobius_coefficients": 0,
+              "bounded_contexts": 0, "redundant_insertions": 0}
+
+def pr3_bytes(value):
+    def canonical(z):
+        if isinstance(z, dict):
+            return sorted([[canonical(k), canonical(v)] for k, v in z.items()],
+                          key=lambda item: pr3_json.dumps(item, sort_keys=True))
+        if isinstance(z, (set, frozenset)):
+            return sorted([canonical(k) for k in z], key=pr3_json.dumps)
+        if isinstance(z, (tuple, list)):
+            return [canonical(k) for k in z]
+        return z
+    return pr3_json.dumps(canonical(value), separators=(",", ":")).encode("utf-8")
+
+def pr3_equal(actual, expected, counter):
+    assert pr3_bytes(actual) == pr3_bytes(expected), (counter, actual, expected)
+    pr3_counts[counter] += 1
+
+def pr3_rho_src(x):
+    return tuple(sparse(c) for c in coarse(x, lambda e: (x.e[e][1], x.e[e][3])))
+
+def pr3_pair_product(c, d):
+    out = {}
+    for (p, r), n in c.items():
+        for (q0, s), m in d.items():
+            key = (tuple(a+b for a, b in zip(p, q0)), ("pair", r, s))
+            out[key] = out.get(key, 0) + n*m
+    return sparse(out)
+
+def pr3_alpha(x, e, timed=False):
+    t0, p, sign, source = x.e[e]
+    return (p, sign, source, t0) if timed else (p, sign, source)
+
+def pr3_U(x, e, timed=False):
+    return frozenset(pr3_alpha(x, d, timed) for d in x.w
+                     if e == d or (e, d) in x.o)
+
+def pr3_profile(x, timed=False):
+    out = {}
+    for e in x.w:
+        key = (pr3_alpha(x, e, timed), int(e in x.a), pr3_U(x, e, timed))
+        out[key] = out.get(key, 0) + x.e[e][2]
+    return sparse(out)
+
+def pr3_V(profile):
+    return frozenset(a for a, b, upper in profile)
+
+def pr3_causal_filter(x, Q, timed=False):
+    # The target domain is Omega = Rich.w, including unselected targets.
+    targets = frozenset(d for d in x.w if pr3_alpha(x, d, timed) in Q)
+    assert targets <= x.w
+    return filt(x, lambda e: any(e == d or (e, d) in x.o for d in targets))
+
+def pr3_diamond(a, b):
+    return (tuple(p+q0 for p, q0 in zip(a[0], b[0])), a[1]*b[1],
+            ("pair", a[2], b[2]))
+
+def pr3_profile_product(c, d):
+    out = {}
+    for (a, b, upper), n in c.items():
+        for (aa, bb, uu), m in d.items():
+            joined = pr3_diamond(a, aa)
+            key = (joined, b*bb, frozenset((joined,)))
+            out[key] = out.get(key, 0) + n*m
+    return sparse(out)
+
+def pr3_subsets(values):
+    values = sorted(values, key=repr)
+    return [frozenset(c) for n in range(len(values)+1)
+            for c in pr3_combinations(values, n)]
+
+pr3_U0 = integer(1)
+assert charge(pr3_U0, pr3_U0.w) == 0 and q(pr3_U0) == 1
+assert len(pr3_U0.w) == 2 and not pr3_U0.o
+
+class pr3_SignTargets:
+    # Membership in the fixed attribute set {a in Attr : sign(a) = eps}.
+    def __init__(self, eps):
+        assert eps in (-1, 1)
+        self.eps = eps
+    def __contains__(self, a):
+        return a[1] == self.eps
+
+def pr3_P_eps(z, eps):
+    return pr3_causal_filter(mul(z, pr3_U0), pr3_SignTargets(eps))
+
+def pr3_probe(x, Q, v0, eta):
+    p, eps, tau = v0
+    selected = x if eta == 1 else neg(x)
+    H = pr3_causal_filter(filt(at(selected, {p}),
+                              lambda e: selected.e[e][3] == tau), Q)
+    target = (p, eps, ("pair", tau, ("leaf", 0)))
+    return q(pr3_causal_filter(mul(H, pr3_U0), {target}))
+
+pr3_rng = pr3_Random(20260910)
+pr3_samples = []
+for pr3_i in range(48):
+    pr3_n = pr3_rng.choice((0, 2, 4))
+    pr3_signs = [1]*(pr3_n//2) + [-1]*(pr3_n//2)
+    pr3_rng.shuffle(pr3_signs)
+    pr3_events = {}
+    for pr3_j, pr3_sign in enumerate(pr3_signs):
+        pr3_p = origin if pr3_i % 2 else pr3_rng.choice((origin, v, h))
+        pr3_r = ("leaf", 0) if pr3_i % 2 else pr3_rng.choice(
+            (("leaf", 0), ("leaf", 7), ("pair", ("leaf", 0), ("leaf", 7))))
+        pr3_events[pr3_j] = (pr3_rng.randrange(-1, 3), pr3_p, pr3_sign, pr3_r)
+    pr3_whole = frozenset(pr3_events)
+    for pr3_j in range(pr3_rng.randrange(3)):
+        pr3_events[("old", pr3_j)] = (pr3_rng.randrange(-2, 4), v, 1, ("leaf", 9))
+    pr3_edges = {(a, b) for a in pr3_events for b in pr3_events
+                 if pr3_events[a][0] < pr3_events[b][0] and pr3_rng.randrange(3) == 0}
+    pr3_chosen = frozenset(e for e in sorted(pr3_whole) if pr3_rng.randrange(2))
+    pr3_samples.append(valid(Rich(pr3_events, closure(pr3_edges), pr3_whole, pr3_chosen)))
+
+for pr3_x in pr3_samples:
+    pr3_y = pr3_rng.choice(pr3_samples)
+    pr3_w, pr3_z = pr3_rho_src(pr3_x)
+    pr3_wy, pr3_zy = pr3_rho_src(pr3_y)
+    pr3_S, pr3_L = {origin, h}, {("leaf", 0), ("leaf", 7)}
+    pr3_equal(pr3_rho_src(add(pr3_x, pr3_y)),
+              (plus_c(pr3_w, pr3_wy), plus_c(pr3_z, pr3_zy)), "source_updates")
+    pr3_mul = mul(pr3_x, pr3_y)
+    pr3_equal(pr3_rho_src(pr3_mul),
+              (pr3_pair_product(pr3_w, pr3_wy), pr3_pair_product(pr3_z, pr3_zy)),
+              "source_updates")
+    assert all(r[0] == "pair" for c in pr3_rho_src(pr3_mul) for p, r in c)
+    pr3_equal(pr3_rho_src(neg(pr3_x)), (pr3_w, plus_c(pr3_w, minus_c(pr3_z))),
+              "source_updates")
+    pr3_equal(pr3_rho_src(at(pr3_x, pr3_S)),
+              (pr3_w, {k: n for k, n in pr3_z.items() if k[0] in pr3_S}), "source_updates")
+    pr3_source_filtered = filt(pr3_x, lambda e: pr3_x.e[e][3] in pr3_L)
+    pr3_equal(pr3_rho_src(pr3_source_filtered),
+              (pr3_w, {k: n for k, n in pr3_z.items() if k[1] in pr3_L}), "source_updates")
+    assert not any(a in pr3_mul.w for a, b in pr3_mul.o)
+    assert not any(a in pr3_mul.w and b in pr3_mul.w for a, b in pr3_mul.o)
+    pr3_counts["product_antichains"] += 1
+    pr3_g, pr3_gy = pr3_profile(pr3_x), pr3_profile(pr3_y)
+    assert pr3_V(pr3_g) == {pr3_alpha(pr3_x, e) for e in pr3_x.w}
+    assert all(pr3_alpha(pr3_x, e) in pr3_U(pr3_x, e) for e in pr3_x.w)
+    pr3_equal(pr3_profile(add(pr3_x, pr3_y)), plus_c(pr3_g, pr3_gy), "causal_updates")
+    pr3_equal(pr3_profile(neg(pr3_x)),
+              push_c(pr3_g, lambda k: (k[0], 1-k[1], k[2])), "causal_updates")
+    pr3_equal(pr3_profile(at(pr3_x, pr3_S)),
+              push_c(pr3_g, lambda k: (k[0], k[1]*int(k[0][0] in pr3_S), k[2])),
+              "causal_updates")
+    pr3_equal(pr3_profile(pr3_source_filtered),
+              push_c(pr3_g, lambda k: (k[0], k[1]*int(k[0][2] in pr3_L), k[2])),
+              "causal_updates")
+    for pr3_Q in pr3_subsets(pr3_V(pr3_g)):
+        pr3_equal(pr3_profile(pr3_causal_filter(pr3_x, pr3_Q)),
+                  push_c(pr3_g, lambda k: (k[0], k[1]*int(bool(k[2] & pr3_Q)), k[2])),
+                  "causal_updates")
+    pr3_equal(pr3_profile(pr3_mul), pr3_profile_product(pr3_g, pr3_gy), "causal_updates")
+    pr3_equal(pr3_profile(time_shift(pr3_x, 3)), pr3_g, "causal_updates")
+    # Exercise both success and failure, then force a legal nonempty timing if needed.
+    assert guard(pr3_x, pr3_y) == theta_guard(theta(pr3_x), theta(pr3_y))
+    pr3_late = time_shift(pr3_y, (theta(pr3_x)[2] or 0) - (theta(pr3_y)[1] or 0) + 1)
+    assert guard(pr3_x, pr3_late)
+    pr3_equal(pr3_profile(temporal(pr3_x, pr3_late)),
+              plus_c(push_c(pr3_g, lambda k: (k[0], k[1], k[2] | pr3_V(pr3_gy))), pr3_gy),
+              "causal_updates")
+
+pr3_l0, pr3_l1 = ("leaf", 0), ("leaf", 1)
+pr3_bracket_left, pr3_bracket_right = mul(mul(u, u), two), mul(u, mul(u, two))
+pr3_expected_left = {(origin, ("pair", ("pair", pr3_l0, pr3_l0), r)): 1
+                     for r in (pr3_l0, pr3_l1)}
+pr3_expected_right = {(origin, ("pair", pr3_l0, ("pair", pr3_l0, r))): 1
+                      for r in (pr3_l0, pr3_l1)}
+for pr3_actual, pr3_expected in (
+        (pr3_rho_src(pr3_bracket_left), ({}, pr3_expected_left)),
+        (pr3_rho_src(pr3_bracket_right), ({}, pr3_expected_right)),
+        (pr3_rho_src(source7), ({}, {(origin, ("leaf", 7)): 1})),
+        (pr3_rho_src(source8), ({}, {(origin, ("leaf", 8)): 1})),
+        (pr3_rho_src(comm_left), ({}, {(origin, ("pair", ("leaf", 7), ("leaf", 8))): 1})),
+        (pr3_rho_src(comm_right), ({}, {(origin, ("pair", ("leaf", 8), ("leaf", 7))): 1}))):
+    pr3_equal(pr3_actual, pr3_expected, "source_witnesses")
+assert set(pr3_expected_left).isdisjoint(pr3_expected_right)
+assert pr3_rho_src(comm_left) != pr3_rho_src(comm_right)
+assert pr3_rho_src(source7)[1] != pr3_rho_src(source8)[1]
+
+# D1: bare probes cancel, including equality after N, but the legal isolation separates.
+pr3_d1e = {e: (t0, origin, sign, pr3_l0)
+           for e, t0, sign in zip("abcd", (0, 1, 2, 2), (1, -1, 1, -1))}
+pr3_d1x = valid(Rich(pr3_d1e, closure({("a", "b"), ("b", "c"), ("b", "d")}),
+                     frozenset(pr3_d1e), frozenset("ab")))
+pr3_d1y = replace(pr3_d1x, a=frozenset())
+pr3_vp, pr3_vm = (origin, 1, pr3_l0), (origin, -1, pr3_l0)
+assert pr3_U(pr3_d1x, "a") == pr3_U(pr3_d1x, "b") == {pr3_vp, pr3_vm}
+for pr3_Q, pr3_S, pr3_L in product(pr3_subsets({pr3_vp, pr3_vm}),
+                                   (set(), {origin}), (set(), {pr3_l0})):
+    pr3_raw, pr3_complements = [], []
+    for pr3_x in (pr3_d1x, pr3_d1y):
+        for pr3_dest, pr3_z0 in ((pr3_raw, pr3_x), (pr3_complements, neg(pr3_x))):
+            pr3_dest.append(q(pr3_causal_filter(filt(at(pr3_z0, pr3_S),
+                                    lambda e: pr3_z0.e[e][3] in pr3_L), pr3_Q)))
+    assert pr3_raw == [0, 0] and pr3_complements[0] == pr3_complements[1]
+    pr3_counts["bare_probes"] += 1
+pr3_isolated = tuple(q(pr3_P_eps(z, 1)) for z in (pr3_d1x, pr3_d1y))
+assert pr3_isolated == (1, 0)
+assert tuple(pr3_probe(z, {pr3_vp, pr3_vm}, pr3_vp, 1) for z in (pr3_d1x, pr3_d1y)) == (1, 0)
+# Complemented bare readings are equal, NOT identically zero.
+assert tuple(q(pr3_causal_filter(neg(z), {pr3_vp})) for z in (pr3_d1x, pr3_d1y)) == (1, 1)
+
+# Targets outside Omega must have no effect, even when archived and reachable.
+pr3_outside = valid(Rich({"a": (0, origin, 1, pr3_l0), "b": (0, origin, -1, pr3_l0),
+                         "old": (1, origin, 1, ("leaf", 9))},
+                        frozenset({("a", "old")}), frozenset("ab"), frozenset("a")))
+assert set(pr3_outside.e) - pr3_outside.w == {"old"}
+assert q(pr3_causal_filter(pr3_outside, {pr3_alpha(pr3_outside, "old")})) == 0
+assert q(past(pr3_outside, {"old"})) == 1
+assert pr3_U(pr3_outside, "a") == {pr3_vp}
+
+# Full finite Boolean inversion through legal carrier-parameter contexts, both selection bits.
+for pr3_x in pr3_samples + [pr3_d1x, pr3_d1y, pr3_outside]:
+    pr3_D = frozenset(pr3_alpha(pr3_x, e) for e in pr3_x.w)
+    pr3_powerset = pr3_subsets(pr3_D)
+    pr3_restored = {}
+    for pr3_v0, pr3_eta in product(sorted(pr3_D, key=repr), (0, 1)):
+        pr3_f = {}
+        for pr3_Q in pr3_powerset:
+            pr3_f[pr3_Q] = pr3_probe(pr3_x, pr3_Q, pr3_v0, pr3_eta)
+            pr3_expected = sum(pr3_x.e[e][2] for e in pr3_x.w
+                               if pr3_alpha(pr3_x, e) == pr3_v0
+                               and int(e in pr3_x.a) == pr3_eta and pr3_U(pr3_x, e) & pr3_Q)
+            assert pr3_f[pr3_Q] == pr3_expected
+            pr3_counts["legal_probes"] += 1
+        pr3_h = {W: pr3_f[pr3_D] - pr3_f[pr3_D-W] for W in pr3_powerset}
+        for pr3_upper in pr3_powerset:
+            pr3_coeff = sum((-1)**(len(pr3_upper)-len(W))*pr3_h[W]
+                            for W in pr3_subsets(pr3_upper))
+            if pr3_coeff:
+                pr3_restored[(pr3_v0, pr3_eta, pr3_upper)] = pr3_coeff
+            pr3_counts["mobius_coefficients"] += 1
+    pr3_equal(pr3_restored, pr3_profile(pr3_x), "mobius_profiles")
+
+# B2: a bounded family of the actual signature; no new primitive is used.
+assert pr3_profile(causal) == pr3_profile(no_causal) == {
+    (pr3_vp, 1, frozenset((pr3_vp,))): 2,
+    (pr3_vm, 0, frozenset((pr3_vm,))): -2}
+pr3_ops = [neg, lambda z: at(z, {origin}), lambda z: at(z, {v}),
+           lambda z: filt(z, lambda e: z.e[e][3] == pr3_l0),
+           lambda z: add(z, u), lambda z: add(u, z),
+           lambda z: mul(z, u), lambda z: mul(u, z),
+           lambda z: temporal(z, unit_at(2)), lambda z: temporal(unit_at(-1), z),
+           lambda z: time_shift(z, 1), lambda z: time_shift(z, -1)]
+pr3_ops += [lambda z, Q=Q: pr3_causal_filter(z, Q)
+            for Q in pr3_subsets({pr3_vp, pr3_vm})]
+for pr3_depth in range(3):
+    for pr3_word in product(pr3_ops, repeat=pr3_depth):
+        assert observe(pr3_word, causal, q) == observe(pr3_word, no_causal, q)
+        pr3_counts["bounded_contexts"] += 1
+pr3_time_reads = tuple(q(pr3_causal_filter(z, {(origin, 1, pr3_l0, 1)}, timed=True))
+                       for z in (causal, no_causal))
+assert pr3_time_reads == (2, 1)
+pr3_J_reads = tuple(q(filt(z, lambda e: any((e, d) in z.o for d in z.w)))
+                    for z in (causal, no_causal))
+assert pr3_J_reads == (1, 0)
+
+# D2: inserting a same-attribute generating edge creates a cross-attribute closure edge.
+pr3_d2e = {e: (t0, origin, sign, pr3_l0)
+           for e, t0, sign in zip("abcd", (0, 1, 2, 0), (1, 1, -1, -1))}
+pr3_d2x = valid(Rich(pr3_d2e, frozenset({("b", "c")}), frozenset(pr3_d2e), frozenset("a")))
+pr3_d2y = valid(replace(pr3_d2x, o=closure(pr3_d2x.o | {("a", "b")})))
+assert pr3_rho_src(pr3_d2x) == pr3_rho_src(pr3_d2y)
+assert theta(pr3_d2x)[1:] == theta(pr3_d2y)[1:]
+pr3_edge_reads = tuple(q(pr3_causal_filter(z, {pr3_vm})) for z in (pr3_d2x, pr3_d2y))
+assert pr3_edge_reads == (0, 1)
+
+# D3: all singleton hitting marginals agree, but a two-attribute query differs.
+pr3_d3e = {"e1": (0, origin, 1, pr3_l0), "e2": (0, origin, 1, pr3_l0),
+           "b": (1, origin, -1, ("leaf", 1)), "c": (1, origin, -1, ("leaf", 2))}
+pr3_d3x = valid(Rich(pr3_d3e, frozenset({("e2", "b"), ("e2", "c")}),
+                     frozenset(pr3_d3e), frozenset(("e1", "e2"))))
+pr3_d3y = valid(replace(pr3_d3x, o=frozenset({("e1", "b"), ("e2", "c")})))
+for pr3_attr in {pr3_alpha(pr3_d3x, e) for e in pr3_d3x.w}:
+    assert q(pr3_causal_filter(pr3_d3x, {pr3_attr})) == q(pr3_causal_filter(pr3_d3y, {pr3_attr}))
+pr3_bc = {pr3_alpha(pr3_d3x, e) for e in ("b", "c")}
+pr3_marginal_reads = tuple(q(pr3_causal_filter(z, pr3_bc)) for z in (pr3_d3x, pr3_d3y))
+assert pr3_marginal_reads == (1, 2)
+
+# A lawful edge insertion with U(f) <= U(e) preserves every current upper set.
+for pr3_x in pr3_samples:
+    for pr3_e, pr3_f0 in product(sorted(pr3_x.w), repeat=2):
+        if (pr3_x.e[pr3_e][0] < pr3_x.e[pr3_f0][0]
+                and (pr3_e, pr3_f0) not in pr3_x.o
+                and pr3_U(pr3_x, pr3_f0) <= pr3_U(pr3_x, pr3_e)):
+            pr3_y = valid(replace(pr3_x, o=closure(pr3_x.o | {(pr3_e, pr3_f0)})))
+            assert all(pr3_U(pr3_x, e) == pr3_U(pr3_y, e) for e in pr3_x.w)
+            assert pr3_profile(pr3_x) == pr3_profile(pr3_y)
+            pr3_counts["redundant_insertions"] += 1
+assert pr3_counts["redundant_insertions"] > 0
+
+# D5: even the time-attribute profile need not recover incidence or history isomorphism.
+pr3_d5e = {e: (t0, origin, 1, pr3_l0)
+           for e, t0 in zip(("a1", "a2", "b1", "b2"), (0, 0, 1, 1))}
+pr3_d5e.update({("n", i): (0, origin, -1, pr3_l0) for i in range(4)})
+pr3_d5x = valid(Rich(pr3_d5e, frozenset({("a1", "b1"), ("a2", "b2")}),
+                     frozenset(pr3_d5e), frozenset(("a1", "a2", "b1", "b2"))))
+pr3_d5y = valid(replace(pr3_d5x, o=frozenset({("a1", "b1"), ("a2", "b1")})))
+assert pr3_profile(pr3_d5x, timed=True) == pr3_profile(pr3_d5y, timed=True)
+pr3_indegrees = tuple(sorted(sum((a, b) in z.o for a in z.e) for b in ("b1", "b2"))
+                      for z in (pr3_d5x, pr3_d5y))
+assert pr3_indegrees == ([1, 1], [0, 2])
+print(f"pr3_source: samples={len(pr3_samples)} updates={pr3_counts['source_updates']} witnesses={pr3_counts['source_witnesses']} brackets={len(pr3_bracket_left.e)},{len(pr3_bracket_right.e)} B1=distinct ordered_pair=distinct")
+print(f"pr3_causal: updates={pr3_counts['causal_updates']} product_antichains={pr3_counts['product_antichains']} targets=Omega bare_probes={pr3_counts['bare_probes']} P_plus={pr3_isolated[0]},{pr3_isolated[1]} legal_probes={pr3_counts['legal_probes']} mobius_profiles={pr3_counts['mobius_profiles']} mobius_coefficients={pr3_counts['mobius_coefficients']} bounded_contexts={pr3_counts['bounded_contexts']} B2_time={pr3_time_reads[0]},{pr3_time_reads[1]} strict_successor={pr3_J_reads[0]},{pr3_J_reads[1]} edge={pr3_edge_reads[0]},{pr3_edge_reads[1]} marginals={pr3_marginal_reads[0]},{pr3_marginal_reads[1]} redundant_insertions={pr3_counts['redundant_insertions']} timed_nonisomorphism=True")
 print("ALL_FINITE_CHECKS_PASSED")
 ```
 
@@ -2219,3 +2534,151 @@ $$
 **证明。** 对两种并集复合，$\rho_{\rm src}$ 都逐分量相加；时间复合只添边，其精确守卫仍为命题 29 的 $M_X<m_Y$。乘法、补集、两种筛选按 (SRC-UP)，$T_k$ 不改联合电荷。端点对并集、乘法、补集、平移复用命题 29；来源筛选与空间筛选一样不改 $E,\Omega,t$，故不改端点。现在对**混合**上下文归纳：基本步骤用同一参数、同一守卫，两侧同步失败，或成功并得到同一四元摘要；复合严格传播失败，成功则继续归纳，终端由 $z^\rho$ 求和。故此核充分，证明没有把两条核定理取交当作混合闭包证明。反向，来源单点探针 (SRC-REC) 仍在；命题 30 的平衡 $U_t$、左右时间守卫与有限右乘放大探针也仍在，分别恢复 $m,M,s$。因此所有四个坐标必要。证毕。
 
 本节的联合分箱沿用 §8，核证明沿用 §14–16 的上下文方法，CSA 专用公式与见证标 `repo-derived`；成熟框架与外部文献的范围在 §26、§28 逐项列明，不主张新颖性或完整来源代数分类。
+
+<a id="pr3-causal"></a>
+
+## 25. PR3 增补 J：去身份因果可观测性
+
+### 25.1 属性、剖面与允许语言
+
+**定义 22（去身份因果筛选与因果剖面）。** 令
+
+$$
+\mathrm{Attr}=\mathbb Z^3\times\{+1,-1\}\times T,\quad
+\alpha(e)=(x(e),\sigma(e),\rho(e)),\quad
+U_X(e)=\{\alpha(d):d\in\Omega_X,\ e=d\ \lor\ e\prec_Xd\}\quad(e\in\Omega_X).
+\tag{CAU-U}
+$$
+
+简写 $e\preceq d$ 为 $e=d$ 或 $e\prec d$。总有 $\alpha(e)\in U_X(e)$，故 $U_X(e)$ 非空；这里是可达后继的**属性集**，不假定 $\mathrm{Attr}$ 自身带偏序，也不计相同属性后继的重数。对任意固定 $Q\subseteq\mathrm{Attr}$ 定义总操作
+
+$$
+F_{\downarrow Q}(C,A)
+=(C,\{e\in A:\exists d\in\Omega_C\ (\alpha(d)\in Q\ \land\ e\preceq d)\}).
+\tag{CAU-F}
+$$
+
+目标 $d$ 严格量化于 $\Omega_C$，**不是 $E_C$**，且不要求目标被选中。定义 13 的身份查询 $F_{\downarrow D}$ 及其依赖域原封保留；(CAU-F) 是新增的属性谓词语言，不替代那个操作。令 $b_X(e)=\mathbf1_{A_X}(e)$，定义有限支撑剖面
+
+$$
+\Gamma_c(X)(a,b,U)
+=\sum_{\substack{e\in\Omega_X\\\alpha(e)=a,\ b_X(e)=b,\ U_X(e)=U}}\sigma(e),
+\quad (a,b,U)\in\mathrm{Attr}\times\{0,1\}\times\mathcal P_{\rm fin}(\mathrm{Attr}).
+\tag{CAU-P}
+$$
+
+未选事件进入 $b=0$ 行，不能只记 $b=1$；下标 $c$ 与 §10 的世界域 $\Gamma$ 区分。指定
+$\Sigma_{\rm cau}=\Sigma_{\rm src}\cup\Sigma_{\rm st}\cup\{F_{\downarrow Q}:Q\subseteq\mathrm{Attr}\}$，仍按定义 16 观察严格终端 $q$。本文对本签名的全部量词只指这个明确的操作集合。
+
+### 25.2 推送更新与充分性
+
+**命题 40（剖面的推送更新与充分性，repo-derived）。** 以下操作把剖面系数沿所列映射推送；多个格合并时将系数相加：
+
+| 操作 | 对剖面格 $(a,b,U)$ 的更新 |
+| --- | --- |
+| $X\boxplus Y$ | 两剖面逐格相加 |
+| $NX$ | $(a,b,U)\mapsto(a,1-b,U)$ |
+| $F_SX$，$a=(p,\epsilon,r)$ | $(a,b,U)\mapsto(a,b\mathbf1_S(p),U)$ |
+| $F_LX$ | $(a,b,U)\mapsto(a,b\mathbf1_L(r),U)$ |
+| $F_{\downarrow Q}X$ | $(a,b,U)\mapsto(a,b\mathbf1_{U\cap Q\ne\varnothing},U)$ |
+| 有定义的 $X\triangleright Y$ | 左侧 $(a,b,U)\mapsto(a,b,U\cup V_Y)$，$V_Y=\alpha[\Omega_Y]$；右侧不变，再相加 |
+| $X\boxtimes Y$ | 输入格对 $((a,b,U),(a',b',U'))\mapsto(a\diamond a',bb',\{a\diamond a'\})$，系数相乘后推送 |
+| $T_kX$ | $\Gamma_c$ 不变 |
+
+其中
+$a\diamond a'=(p+p',\epsilon\epsilon',\operatorname{pair}(r,r'))$。端点 $(m,M,s)$ 的类型、空哨兵、更新与时间守卫 $M_X<m_Y$ 全部引用 §20 命题 29；三个筛选都不改端点。因此 $(\Gamma_c,m,M,s)$ 对 $\Sigma_{\rm cau}$ 充分。
+
+**证明。** 并行不添跨边；补集及三个筛选只改选择位，不改 $U$。时间复合加入全部左档案到右档案的边，恰使每个左当前事件可达全部右当前属性，右侧没有新后继。乘法按定义 6 只用新事件作当前区域：**该次乘法结果的当前区域是由极大事件组成的反链，新事件无出边**，所以每个新当前事件的 $U$ 恰为自身属性的单点集；这不称整个档案为反链，也不声称之后串接仍无后继。新选择位是父选择位之积，新符号是父符号之积；在父剖面格上分组，有限双和即系数相乘。时移不改属性 $\alpha$ 或偏序，故不改剖面。
+
+还须说明 $V$ 可由剖面本身恢复。$\sigma$ 已在 $a$ 中，同一格的所有贡献同号，非空格不会抵消为零。因此
+
+$$
+V_X=\{a:\exists b,U\ \Gamma_c(X)(a,b,U)\ne0\},\qquad
+\ker(\Gamma_c,V,m,M,s)=\ker(\Gamma_c,m,M,s).
+\tag{CAU-V}
+$$
+
+$V$ 不是独立坐标。对 $a=(p,\epsilon,r)$ 的格求和恢复 $w^\rho(p,r)=\sum_{\epsilon,b,U}\Gamma_c(a,b,U)$，只取 $b=1$ 恢复 $z^\rho$，再求和恢复 $q$。对定义 16 的混合上下文归纳：同剖面、同端点在每个基本步骤同步过守卫或失败；成功则按上表和命题 29 得同摘要。复合严格传播失败；成功到终端时 $q$ 相同。这是全部上下文的充分性证明，有限抽样只核对实现。证毕。
+
+### 25.3 自身属性隔离引理
+
+**引理 1（自身属性隔离，repo-derived）。** 固定平衡参数 $U_0=\mathbf i(1)$：当前区域恰有位置 $0$、时刻 $0$、来源 $l_0=\operatorname{leaf}(0)$ 的一正一负两事件，偏序空，只选正事件 $u_+$。对 $v=(p,\epsilon,\tau)$、$\eta\in\{0,1\}$，记 $J_1=\mathrm{id},J_0=N$，以及
+
+$$
+\begin{aligned}
+H_{Q,v,\eta}(X)&=F_{\downarrow Q}(F_{\{p\}}(F_{\{\tau\}}(J_\eta X))),\\
+v^*&=(p,\epsilon,\operatorname{pair}(\tau,l_0)),\\
+f_{v,\eta}^X(Q)&=q\bigl(F_{\downarrow\{v^*\}}(H_{Q,v,\eta}(X)\boxtimes U_0)\bigr).
+\end{aligned}
+\tag{CAU-ISO}
+$$
+
+上式 $F_{\{p\}}$ 是位置筛选，$F_{\{\tau\}}$ 是来源筛选。则
+
+$$
+f_{v,\eta}^X(Q)
+=\sum_{\substack{e\in\Omega_X:\alpha(e)=v,\ b_X(e)=\eta\\U_X(e)\cap Q\ne\varnothing}}\sigma(e).
+\tag{CAU-HIT}
+$$
+
+**证明。** $J_\eta$ 先将原选择位为 $\eta$ 的事件变为所选；接着三个筛选分别检查位置、来源和原来的 $U\cap Q\ne\varnothing$，完整情境不变。$U_0$ 只选 $u_+$，所以新选中事件恰为 $(e,u_+)$，属性为 $(x(e),\sigma(e),\operatorname{pair}(\rho(e),l_0))$，符号仍为 $\sigma(e)$。乘积当前区域为反链，故最后一次因果筛选在这些当前事件上恰等于自身属性筛选。pair 单射与位置、符号坐标一起保证只有 $\alpha(e)=v$ 映到 $v^*$，得 (CAU-HIT)。每个筛选原已在签名内，右乘用的 $U_0\in\mathcal B$ 是定义 16 允许的固定载体参数；所有表达式只有一个孔，不新增原语。证毕。
+
+附录的 $P_\epsilon(Z)$ 简写为 $F_{\downarrow Q_\epsilon}(Z\boxtimes U_0)$，其中固定谓词 $Q_\epsilon=\{(p,\epsilon,r):p\in\mathbb Z^3,r\in T\}$；在该乘积反链上它隔离原选择的符号。它是合法上下文的辅助名称，不是新增操作。不能改用“早时刻单事件参数”：其当前总电荷为 $\pm1$，不在定义 3 的平衡载体中，定义 16 不允许它作参数。
+
+**反例 D1（裸探针抵消，repo-derived）。** 取 $E=\Omega=\{a,b,c,d\}$，位置全 $0$、来源全 $l_0$，符号 $+,-,+,-$，时刻 $0,1,2,2$，严格关系恰为
+$a\prec b,a\prec c,a\prec d,b\prec c,b\prec d$。$X$ 选 $\{a,b\}$，$Y$ 选空集。记 $v_+=(0,+1,l_0),v_-=(0,-1,l_0)$，则 $U(a)=U(b)=\{v_+,v_-\}$。任意 $Q,S,L$ 对 $a,b$ 同取同舍，故
+$q(F_{\downarrow Q}F_SF_LX)=q(F_{\downarrow Q}F_SF_LY)=0$。先取 $N$ 后两侧也相等：原来相差的 $a,b$ 仍抵消；**此时不恒为零**，例如 $Q=\{v_+\},S=\{0\},L=\{l_0\}$ 时两侧均为 $1$。引理 1 用 $v=v_+,\eta=1,Q=\{v_+,v_-\}$ 却分别给 $1,0$；$q(P_+(X)),q(P_+(Y))$ 也为 $1,0$。这些读数由所列四事件逐项求和，附录复核。缺的是裸探针证书的隔离步，**不是核等式被反驳**。
+
+### 25.4 必要性与完整 iff
+
+**命题 41（去身份因果语言的观察核，repo-derived）。**
+
+$$
+\approx_{\Sigma_{\rm cau}}=\ker(\Gamma_c,m,M,s).
+\tag{CAU-EQ}
+$$
+
+**证明。** 充分性已由命题 40 的混合上下文归纳给出。必要性比较 $X,Y$ 时，固定共同有限集合 $D=V_X\cup V_Y$。所有 $U_X(e),U_Y(e)$ 均为 $D$ 的非空子集；$v\notin D$ 的行全零。在这对对象的证明中，$D$ 及下列 $Q$ 是**固定的谓词参数**，并非增加一个随输入变化的原语。对每个 $v\in D,\eta\in\{0,1\}$，引理 1 的全部合法上下文读数相等，所以两对象的全部 $f_{v,\eta}(Q)$ 相等。对 $W\subseteq D$，令
+
+$$
+h_{v,\eta}(W)=f_{v,\eta}(D)-f_{v,\eta}(D\setminus W)
+=\sum_{U\subseteq W}\Gamma_c(v,\eta,U).
+\tag{CAU-ZETA}
+$$
+
+第一项命中每个非空 $U$；第二项恰扣掉不包含于 $W$ 的那些行，故第二个等号逐事件成立。两次观察在证明外作整数相减，未把复制孔或减读数添加到上下文。有限布尔格上的 Möbius 反演给出
+
+$$
+\Gamma_c(v,\eta,U)
+=\sum_{W\subseteq U}(-1)^{|U|-|W|}h_{v,\eta}(W).
+\tag{CAU-MOB}
+$$
+
+反演框架为 `literature-attested`：G.-C. Rota, “On the foundations of combinatorial theory I. Theory of Möbius functions” (1964)，DOI [10.1007/BF00531932](https://doi.org/10.1007/BF00531932)。本式也可直接核对：代入 (CAU-ZETA) 后，每个 $U'\subseteq U$ 的系数为 $\sum_{U'\subseteq W\subseteq U}(-1)^{|U|-|W|}$，即 $U'=U$ 时为 $1$、否则为 $(1-1)^{|U\setminus U'|}=0$。于是两对象逐格剖面相同；空 $D$ 时两剖面直接为空。$V$ 已由 (CAU-V) 决定，不另设恢复 $V$ 的时间串接探针。端点的必要性直接复用 §20 命题 30：那里全是平衡 $U_t$ 参数，属于本签名，分别区分 $m,M,s$。两方向合并得 (CAU-EQ)。证毕。
+
+这是普通 ZFC 内的完整 iff；一般必要性由隔离与有限反演的任意对象证明承担。附录的小样本逐字节恢复不替代这个证明，也不声称 Lean 已验证。
+
+### 25.5 不可观察的精确范围与正面因果分离
+
+在端点相同的前提下，保持 $\Gamma_c$ 的修改在 $\Sigma_{\rm cau}$ 下不可观察；该限定不能丢掉，因为本签名保留时间复合域。仅谈因果关系修改而固定其他数据时，端点自动相同。
+
+**命题 42（同属性关系差的局部不可见性，repo-derived）。** 固定 $E,\Omega,t,x,\sigma,\rho,A$。若两个合法的**传递严格关系**之对称差只含 $\alpha(e)=\alpha(f)$ 的事件对 $(e,f)$，则每个当前事件的 $U$ 不变，故两表示在 $\Sigma_{\rm cau}$ 下不可区分。
+
+**证明。** 对每个 $e\in\Omega$，改变的当前目标 $f$ 都与 $e$ 同属性；这个属性原已由 $e\preceq e$ 在 $U(e)$ 中，添删这些关系不改属性集。指向 $E\setminus\Omega$ 的关系不直接贡献任何当前目标。假设说的是两份完整传递关系，因而不存在另一个未入差集的闭包变化。剖面及端点相同，用命题 41。证毕。
+
+一个可核查的充分插边条件是：对 $e,f\in\Omega$，插入 $e\prec f$ 前已有 $U(f)\subseteq U(e)$，且插入后取闭包仍满足严格时标。任何新增当前可达对的路径都经过这条新边；它从一个原来可达 $e$ 的当前点 $g$，到一个原来可由 $f$ 达到的当前点。目标属性已在 $U(f)\subseteq U(e)\subseteq U(g)$ 中，所以所有 $U$ 不变。这也允许闭包新增跨属性关系，只要没有新增属性可达性。相反，只知道一条**生成边**的端点同属性，不能推断取闭包后仍不可见。
+
+**反例 D2（同属性生成边可造成正面因果分离，repo-derived）。** $E=\Omega=\{a,b,c,d\}$，位置全 $0$、来源 $l_0$，符号 $+,+,-,-$，时刻 $0,1,2,0$，选择 $\{a\}$。$X$ 只有 $b\prec c$；$Y$ 为 $a\prec b,b\prec c,a\prec c$。两者 $\rho_{\rm src}=(0,\delta_{(0,l_0)})$、$(m,M,s)=(0,2,2)$，但对 $Q=\{(0,-1,l_0)\}$ 有 $q(F_{\downarrow Q}X)=0,q(F_{\downarrow Q}Y)=1$。这些值逐事件计算并由附录 `edge=0,1` 复核，证明 $\Sigma_{\rm cau}$ 严格细化 $\Sigma_{\rm src}\cup\Sigma_{\rm st}$。新增生成边 $a\prec b$ 两端同属性，却在闭包中新增 $a\prec c$ 的跨属性关系，故也反驳“插入同属性生成边并取闭包必不可见”的全称断言。
+
+**反例 D3（单点命中边缘不足，repo-derived）。** 取两个选中正事件 $e_1,e_2$，同属性 $a=(0,+1,l_0)$、时刻 $0$；两个未选负事件，分别有属性 $b=(0,-1,\operatorname{leaf}(1))$、$c=(0,-1,\operatorname{leaf}(2))$、时刻 $1$。取 $E=\Omega$ 为这四点。$X$ 中仅 $e_2$ 指向两个负事件；$Y$ 中 $e_1$ 指向属性 $b$ 的负事件、$e_2$ 指向属性 $c$ 的负事件。对所有单属性 $Q$，读数全同：$Q=\{a\}$ 为 $2$，$\{b\},\{c\}$ 各为 $1$，其余为 $0$；但 $Q=\{b,c\}$ 时分别为 $1,2$（逐点命中计数；附录 `marginals=1,2`）。所以 (CAU-MOB) 需要全部有限属性集合的命中信息，不能只存单点边缘。
+
+### 25.6 B2 的签名边界
+
+B2 两对象在本节的 $\Sigma_{\rm cau}$ 下仍同核。确切地，记 $a_+=(0,+1,l_0),a_-=(0,-1,l_0)$，所有正事件的 $U=\{a_+\}$，所有负事件的 $U=\{a_-\}$；二者剖面都只有 $(a_+,1,\{a_+\})\mapsto2$ 与 $(a_-,0,\{a_-\})\mapsto-2$，端点均为 $(0,1,1)$。由命题 41 得全部本签名上下文观察相同。若将时间纳入 $\alpha_t(e)=(x(e),\sigma(e),\rho(e),t(e))$，同样形式的属性查询用 $Q=\{(0,+1,l_0,1)\}$，便分别命中两正点与仅上层正点，读数为 $2,1$。这些 B2 读数来自所列事件与关系，附录另查有界本签名上下文及时间查询；本节不立时间属性因果核定理。
+
+**反例 D4（去身份但不在 $\Sigma_{\rm cau}$ 的筛选，repo-derived）。** 定义
+$J(C,A)=(C,\{e\in A:\exists d\in\Omega_C\ (e\prec d)\})$。该筛选不用事件身份、在重命名下不变，却问是否有**严格**后继。对 B2 两对象，$q(JX)=1,q(JY)=0$（前者只选到 $a$，后者没有严格边；附录 `strict_successor=1,0`）。故“任何去身份签名下 B2 同核”为假；$J$ 不在 $\Sigma_{\rm cau}$ 内，这不反驳命题 41。也不能把 $J$ 当作其已有上下文：若能表达，它就不能分开本签名同核的 B2。
+
+### 25.7 时间属性剖面的历史边界
+
+**反例 D5（时间属性仍不恢复历史，repo-derived）。** 四个选中正点 $a_1,a_2$ 在时刻 $0$，$b_1,b_2$ 在时刻 $1$；四点除时间外全同属性 $(0,+1,l_0)$。一图的严格关系为 $\{a_1\prec b_1,a_2\prec b_2\}$，另一图为 $\{a_1\prec b_1,a_2\prec b_1\}$。各加四个时刻 $0$、位置 $0$、来源 $l_0$ 的孤立未选负点，取 $E=\Omega$ 为全部八点，得到合法平衡表示。以 $\alpha_t$ 代替 $\alpha$ 所算 $\Gamma_t$ 相同：每个下层正点看见时刻 $0,1$ 两个正属性，每个上层正点只看见自己的时刻 $1$ 正属性，负点均只看见自身负属性。上层入度多重集却为 $\{1,1\}$ 与 $\{2,0\}$（由所列两条边计算；附录复核），任何保时间的历史同构都须保存该多重集，故历史不同构。此例只划定剖面遗忘重数与入射关联的边界，不新增关于时间属性签名的核定理。
