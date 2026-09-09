@@ -56,5 +56,5 @@ internal sealed class MonotoneOnePathsDocument : IScribeDocumentDefinition
         Sp, Eq, Sp,
         new Formula.Fraction(
             Call("choose", Seq(D(2), N(), Minus, D(2)), Seq(N(), Minus, D(1))),
-            new Formula.Power(D(2), Seq(D(2), N(), Minus, D(1)))));
+            new Formula.Power(D(2), Seq(D(2), N(), Minus, D(1))))));
 }

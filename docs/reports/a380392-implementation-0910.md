@@ -197,3 +197,5 @@ make emit 首次 EXIT=2，8.073 秒：StatementSource.FromLean 对该新声明�
 missing:D5/S3/Arith/Paths/MonotoneOnePaths.mean_monotone_one_paths。
 阅读 StatementSource.Materialize 后，按其 Unprojectable 分支改用合法 FromAuthor，
 手写与 Lean 同义的正尺寸公式；没有改 Lean 定理、投影器或判官。先前自动投影的计划由此修正。
+
+第二次 make emit EXIT=2，5.628 秒：新增 authored 公式少一个右括号（CS1026）。已修正该语法错误。两次发射失败原因不同；未改变数学、工具或门。
