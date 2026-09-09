@@ -232,3 +232,8 @@ Log: runner attempt `make-lean.log`; structured timing in `make-lean-result.json
 ```text
 LEAN_CACHE {"status":"present","worktree":"/Users/chronoai/trureturing-a384350","donor":null,"method":"none","reason":null,"stamp_miss":null,"pin_sha256":"sha256:6c4c682ffba051b5744fe7a75ccc99d7f3b20227b3b026f392f3315be0adaa4e","clonefile_errno":null,"clonefile_errnos":[],"clonefile_attempts":0,"clonefile_cleanup_error":null,"mathlib_missing_olean_files":0,"mathlib_missing_olean_samples":[],"archive_status":"not_attempted","archive_mode":null,"archive_skip_reason":"project olean state is warm","archive_reason":null,"archive_producer_commit_sha":null,"archive_workflow_run_id":null,"mathlib_olean_state":"warm","mathlib_olean_probe_error":null,"project_olean_state":"warm","project_olean_probe_error":null}
 ```
+
+`make lean-report`: EXIT 0, 68.02 seconds; delta plan recheck=1.
+Canonical report `.lake/build/stratalint/raw-lean-report.json`, SHA-256
+`148186255b81597d45b30c56c5b73803a6aeb43c7dbae7dd8ca144fb70663f0a`.
+Log and timing: runner `make-lean-report.log` / `make-lean-report-result.json`.
