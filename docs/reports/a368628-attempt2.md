@@ -92,3 +92,5 @@ Private `initial_echo` 修复后正式模块编译 EXIT=0、零 warning/error，
 首次 `make lean-report` EXIT=0 / 64.004s；delta recheck=1，report SHA256 `ec96a45d3db40a91bf01d610333751d79bce3d3d512d8fe427e6346e152fc648`。全构建比单文件调用额外启用了风格 linter，新模块有两处 `0<n` 空格 warning（先前“零 warning”只描述单文件读数）；已修为 `0 < n`，按源码变化重新运行 lean/lean-report，不关闭 linter。
 
 最终格式的 `make lean` 再验 **EXIT=0 / 18.629s / 12828 jobs**；新模块无风格 warning。`git diff --check` EXIT=0。此前成功数学构建仍有效，本次重验只因源码空格改变需报告绑定最终字节。
+
+最终源码 `make lean-report` **EXIT=0 / 60.118s**，delta changed=1 / recheck=1。六条公开定理及全部 private 声明的报告公理集合均在标准许可集内；无 sorryAx。声明身份随该空格修改不变。
