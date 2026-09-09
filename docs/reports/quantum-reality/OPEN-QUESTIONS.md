@@ -1,4 +1,44 @@
-## 本轮:**无靶,暂停派席**(第 9 次触发,2026-09-09)
+## 本轮:**仍无待派的靶,但四项候选已定价**(第 10 轮,2026-09-10)
+
+**本文件仍不含待派的问题**,理由与第 9 轮相同:三个原问题都已结算,
+右栏余下四项**全部需要 τ=0 点题**(第 3.6 条:机器不替人选第三档目标)。
+
+**第 10 轮做的不是选题,是定价。** 章程为第三档规定的机器角色是
+「GPT PRO 以 deep research 出文献地图与障碍登记」,本轮即此:
+四项候选**各一份地形图**(A 需要的新输入 / B 文献走到哪一步 / C 最小可形式化切片 /
+D 障碍分「可去项 vs 结构性盲核」两笔账 / E 代价以「要先建多少基础设施」计),
+**不排序、不比较、不推荐**。判词全文见 `round-10-20260909T191620Z.md`,
+该席开篇即自锁「不作选靶建议」。
+
+### 四项的首个 Lean 切片(取自该轮 C 栏,**均未经 bind-only 探针**)
+
+| 候选 | 拟议首切片 | 需要的新输入 |
+|---|---|---|
+| observer→objective 桥 | `orthogonal_record_trace_gives_sbs_consensus`(有限维记录模型) | 记录/环境分片结构;该席明写它**不声称已从 observer axiom 推出** |
+| cross-species principle | `equivariant_selfAdjoint_eq_smul_id_of_irreducible` | 连接不同 species 的额外结构(该席固定了一个示例模型包,明标不表示推荐) |
+| §17.1 / §18 量子统计层 | `thermal_weyl_characteristic_one_mode` | 单模 Fock/Gibbs 模型须先由 owner 指定为物理输入 |
+| Einstein 方程 | `linearized_einstein_symbol_transverse`(`k^μ E_μν(k,h)=0`) | spin-2 模型输入 |
+
+### orchestrator 的一条待验读数(`ASSUMED-UNVERIFIED`)
+
+`equivariant_selfAdjoint_eq_smul_id_of_irreducible` 读着像实自伴版 Schur 引理。
+我查了钉版 mathlib:Schur 在 `RepresentationTheory/FDRep.lean:158` 与
+`CategoryTheory/Preadditive/Schur`,**但都是代数闭域版**;有限维自伴谱定理在
+`Analysis/InnerProductSpace/Spectrum.lean`。所提切片是**实**内积空间 + **正交**作用 + **自伴**;
+实域上 Schur 只给除环(ℝ/ℂ/ℍ),`A = aI` 不自动成立——是「自伴」把它逼出来的。
+**故推测为 content 而非 bind-only,但这是推断不是读数**:
+决定性检验是 `tools/scripts/agent/bindonly-probe.sh`,**尚未跑**(跑它需要第三个 Lean 进程,
+当时两席在飞)。**点题前应先跑它**,免得派一个 bind-only 靶。
+
+### 重启条件(不变)
+
+τ=0 指定右栏四项之一(或给出新的物理输入),把它写成新的 Q1 填进本文件,跑
+`tools/scripts/agent/quantum-reality-round.sh` 即续轮。耐久件都在
+`docs/reports/quantum-reality/`,无需重建任何东西。
+
+---
+
+## 战史:第 9 轮的判定(保留,未被推翻)
 
 **本文件当前不含待派的问题。** 这不是遗漏,是第 8 轮结算的直接后果。
 
