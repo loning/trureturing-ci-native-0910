@@ -46,7 +46,7 @@ def prepare_fixtures(repository, directory):
                    "Query.Coverage", "Query.Publication", "Query.DirectEvidence", "Query.Enumeration", "Query.Ownership",
                    "AssessmentCommand", "Command", "CommandRejection",
                    "InvalidEvidence", "LandedFinite", "Coverage", "Json", "NameIdentity", "Assessment",
-                   "Evidence", "ArchitectureRepair", "ProvenanceUniverses", "RegisteredClosedTruth",
+                   "Evidence", "ArchitectureRepair", "ProvenanceUniverses", "RegisteredClosedTruth", "LawRegistry",
                    "SplitRootCatalog", "UnreachableProofs", "UnreachableRoot",
                    "Manifest.Contract", "Manifest.Environment", "Manifest.Precedence"):
         prepare("LeanInformationAudit.Tests.Census." + module)

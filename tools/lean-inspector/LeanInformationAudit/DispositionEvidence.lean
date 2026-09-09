@@ -375,8 +375,8 @@ private def validateStructuralProvenance (root : Name) (head : String) (modules 
   let entries := (structuralRegistry.getState env).filter (·.theoremName == key.theoremName)
   unless entries.size == 1 do failClass key className "realization.provenance"
   let entry := entries[0]!
-  unless ← CensusOwnership.recordedModuleContainsTheorem env modules
-      entry.registrationModule key.theoremName do
+  unless modules.contains entry.registrationModule &&
+      (← CensusOwnership.nameInScope env modules key.theoremName) do
     throwError (censusError head "root" s!"import-closure-containing:{key.theoremName}" root.toString)
   let info ← getConstInfo key.theoremName
   unless info.levelParams.length == entry.levelParams.length do
