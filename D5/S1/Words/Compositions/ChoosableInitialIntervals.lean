@@ -4,7 +4,7 @@
    mirror-E: none(waiver:unbounded-symbolic-proof)
    anchors: []
    utility: none
-   digest: Initial intervals of increasing parts admit distinct representatives exactly above the diagonal. -/
+   digest: Increasing initial intervals are choosable exactly above the diagonal. -/
 
 import Mathlib.Combinatorics.Enumerative.Partition.Basic
 import Mathlib.Data.Fintype.Card
@@ -64,7 +64,7 @@ private theorem prefix_capacity (l : List ℕ) (hl : l.Pairwise (· ≤ ·))
     fun j => ⟨j.val, lt_of_lt_of_le j.isLt (Nat.succ_le_of_lt i.isLt)⟩
   let g : Fin (i.val + 1) → Fin (l.get i) := fun j =>
     ⟨f (e j) - 1, by
-      have hj : e j ≤ i := by show j.val ≤ i.val; omega
+      have hj : e j ≤ i := by change j.val ≤ i.val; omega
       have hm := hl.sortedLE.monotone_get hj
       have hp := hb (e j)
       omega⟩
