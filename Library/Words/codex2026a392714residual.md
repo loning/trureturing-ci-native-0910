@@ -7,7 +7,7 @@ doi: null
 url: https://github.com/the-omega-institute/trureturing
 claim: A general Lean proof of the residual signed sum S(a); the original conjecture bridge is outside scope.
 strata_touched:
-  - S1
+  - D5/S1/Words/Compositions/ResidualPermutationSign
 license: citation-only
 triage: anchor
 ---
@@ -330,6 +330,13 @@ lower_cut_removal → upper_swap_of_short / swap_sum_zero。
 随后九个 Scribe 来源引用连带报 dangling-literature-reference。
 已改为分行列表 `strata_touched` 加 `- S1`；数学源码及声明未改。
 这不是 S(a) 的证明失败；不隐去门失败，修正后重跑同一发射门。
+
+第二轮发射 EXIT=2，14.475987958 秒：列表元素 `S1` 不是 canonical GID。
+停止猜字段值，读取 LibraryNoteCatalog.cs:218–226 与
+DescribeRepositoryValidator.cs:85–98：元素由 GidRef.Create 解析并核对目标。
+按现有 oeis2026a392707 实例改为完整
+D5/S1/Words/Compositions/ResidualPermutationSign；这是同一元数据错误的精确修正，
+没有换问题、改判官或放宽门。
 
 <!-- lean-checkpoint -->
 ## 当前已编译源码快照
