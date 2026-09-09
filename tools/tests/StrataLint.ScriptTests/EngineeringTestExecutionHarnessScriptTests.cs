@@ -9,7 +9,7 @@ public sealed class EngineeringTestExecutionHarnessScriptTests
     private static readonly UTF8Encoding Utf8 = new(false);
 
     [Fact]
-    public void CanonicalMakeInvocationPassesOnlyCandidateRepository()
+    public void CanonicalMakeInvocationPassesEngineeringTargetAndRepositoryRevisions()
     {
         if (OperatingSystem.IsWindows()) return;
         using var run = RunHarness(new HarnessScenario());
@@ -22,6 +22,8 @@ public sealed class EngineeringTestExecutionHarnessScriptTests
             Path.Combine(run.Repository, "tools"),
             "engineering-tests",
             $"REPOSITORY={run.Repository}",
+            $"HEAD={run.Head}",
+            $"BASE={run.Base}",
         ],
             run.MakeArguments);
     }
@@ -101,13 +103,14 @@ public sealed class EngineeringTestExecutionHarnessScriptTests
     }
 
     [Fact]
-    public void HeadWithoutFirstParentExecutesCurrentTests()
+    public void HeadWithoutFirstParentFailsBeforeMake()
     {
         if (OperatingSystem.IsWindows()) return;
         using var run = RunHarness(new HarnessScenario(HeadHasFirstParent: false));
 
-        Assert.Equal(0, run.Process.ExitCode);
-        Assert.Contains("engineering-tests", run.MakeArguments);
+        Assert.Equal(128, run.Process.ExitCode);
+        Assert.Contains("HEAD^1", run.StandardError, StringComparison.Ordinal);
+        Assert.Empty(run.MakeArguments);
     }
 
     [System.Runtime.Versioning.UnsupportedOSPlatform("windows")]

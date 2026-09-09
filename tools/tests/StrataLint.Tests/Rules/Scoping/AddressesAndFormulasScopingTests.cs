@@ -12,7 +12,7 @@ public sealed class AddressesAndFormulasScopingTests
         15,
         typeof(RepositoryRules),
         nameof(RepositoryRules.FormulaValidation))]
-    public void Sl015FormulaValidationChecksCurrentMalformedFormulaOutsideCandidateDelta()
+    public void Sl015FormulaValidationDoesNotRevalidateMalformedFormulaOutsideCandidateDelta()
     {
         var fixture = new RuleFixture();
         SetOldSnapshotFile(fixture, FormulaPath, "{\"formula\":\"sqrt@5\",\"refs\":{}}\n");
@@ -21,7 +21,7 @@ public sealed class AddressesAndFormulasScopingTests
         var completed = Execute(fixture, UnrelatedPath);
 
         Assert.Contains(RuleId.CreateKnown(15), completed.ExecutedRules);
-        Assert.Contains(completed.Diagnostics, diagnostic => diagnostic.Path == FormulaPath);
+        Assert.DoesNotContain(completed.Diagnostics, diagnostic => diagnostic.Path == FormulaPath);
 
         var changed = new RuleFixture();
         changed.Baseline[FormulaPath] = "{\"formula\":\"5\",\"refs\":{}}\n";
@@ -56,7 +56,7 @@ public sealed class AddressesAndFormulasScopingTests
     }
 
     [Fact]
-    public void Sl015ChecksCurrentDuplicateGidForUnrelatedCandidateDelta()
+    public void Sl015SuppressesHistoricalDuplicateGidForUnrelatedCandidateDelta()
     {
         var fixture = new RuleFixture();
         SetOldSnapshotFile(fixture, RuleFixture.BlueprintPath, fixture.Files[RuleFixture.RingPath]);
@@ -64,13 +64,13 @@ public sealed class AddressesAndFormulasScopingTests
 
         var completed = Execute(fixture, UnrelatedPath);
 
-        Assert.Contains(completed.Diagnostics, diagnostic =>
+        Assert.DoesNotContain(completed.Diagnostics, diagnostic =>
             diagnostic.RuleId == RuleId.CreateKnown(15)
             && diagnostic.Message.Contains("duplicate GID", StringComparison.Ordinal));
     }
 
     [Fact]
-    public void Sl015ChecksCurrentEvidenceSelectorCollisionForUnrelatedCandidateDelta()
+    public void Sl015SuppressesHistoricalEvidenceSelectorCollisionForUnrelatedCandidateDelta()
     {
         const string jsonPath = "Evidence/D5/S0/Carrier/Probe.result.json";
         const string yamlPath = "Evidence/D5/S0/Carrier/Probe.result.yaml";
@@ -81,7 +81,7 @@ public sealed class AddressesAndFormulasScopingTests
 
         var completed = Execute(fixture, UnrelatedPath);
 
-        Assert.Contains(completed.Diagnostics, diagnostic =>
+        Assert.DoesNotContain(completed.Diagnostics, diagnostic =>
             diagnostic.RuleId == RuleId.CreateKnown(15)
             && diagnostic.Message.Contains(
                 "evidence selector has multiple artifact kinds",

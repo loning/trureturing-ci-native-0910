@@ -148,7 +148,6 @@
         "type": "Project",
         "dependencies": {
           "StrataLint.Engine": "[1.0.0, )",
-          "StrataLint.EngineeringScope": "[1.0.0, )",
           "StrataLint.Scribe": "[1.0.0, )",
           "StrataLint.Scribe.Documents": "[1.0.0, )",
           "Tomlyn": "[2.10.1, )",
