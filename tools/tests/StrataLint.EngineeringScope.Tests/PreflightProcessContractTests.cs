@@ -1,11 +1,95 @@
 using System.Diagnostics;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 using StrataLint.TestSupport;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace StrataLint.EngineeringScope.Tests;
 
-public sealed class PreflightProcessContractTests
+public sealed class PreflightProcessContractTests(ITestOutputHelper output)
 {
+    [Theory]
+    [InlineData("candidate-assignment", "HUP")]
+    [InlineData("candidate-assignment", "INT")]
+    [InlineData("candidate-assignment", "TERM")]
+    [InlineData("before-registration", "HUP")]
+    [InlineData("before-registration", "INT")]
+    [InlineData("before-registration", "TERM")]
+    [InlineData("after-registration", "HUP")]
+    [InlineData("after-registration", "INT")]
+    [InlineData("after-registration", "TERM")]
+    public void PrInitializationSignalPreservesLinkedSource(string boundary, string signal)
+    {
+        var script = File.ReadAllText(Path.Combine(TestRepositoryLayout.FindRoot(), "tools/scripts/preflight.sh"));
+        if (boundary == "candidate-assignment")
+        {
+            // Controlled substitution in the fixture copy: pause candidate selection with a
+            // command fake that signals its parent. This tests the inter-command state, not
+            // real signal timing between the two production assignments.
+            script = script.Replace("  CANDIDATE=\"$TEMPORARY/candidate\"",
+                "  git contract-before-candidate\n  CANDIDATE=\"$TEMPORARY/candidate\"", StringComparison.Ordinal);
+        }
+        using var fixture = new Fixture(script);
+        fixture.PrepareLinkedSource();
+        var sourceRoot = fixture.Git("rev-parse", "--show-toplevel").Trim();
+        var head = fixture.Git("rev-parse", "HEAD").Trim();
+        var tree = fixture.Git("write-tree");
+        var inventory = fixture.Git("worktree", "list", "--porcelain", "-z");
+        var gitDirectory = fixture.Git("rev-parse", "--absolute-git-dir").Trim();
+        var before = fixture.SourceHashes(gitDirectory);
+        fixture.FakeGit($$"""
+            if [[ "$command" == status ]]; then
+              "$CONTRACT_REAL_GIT" "${original[@]}" || exit $?
+              printf 'untracked source marker\n' > "$CONTRACT_SOURCE/untracked-marker"
+              exit 0
+            fi
+            if [[ "$command" == contract-before-candidate ]]; then
+              kill -s {{signal}} "$PPID"
+              exit 0
+            fi
+            if [[ "$command" == worktree && "$2" == add ]]; then
+              if [[ {{boundary}} == before-registration ]]; then
+                kill -s {{signal}} "$PPID"
+                exit 0
+              fi
+              if [[ {{boundary}} == after-registration ]]; then
+                "$CONTRACT_REAL_GIT" "${original[@]}" || exit $?
+                kill -s {{signal}} "$PPID"
+                exit 0
+              fi
+            fi
+            """);
+
+        var result = fixture.Preflight("pr", head);
+
+        var after = fixture.SourceHashes(gitDirectory);
+        var removals = fixture.RemovalTargets();
+        var observation = JsonSerializer.Serialize(new { boundary, signal, source = sourceRoot,
+            privateGit = gitDirectory, head, tree, before, after, removals });
+        output.WriteLine(observation);
+        Assert.True(result.Exit == 2, result.Text);
+        Assert.Contains("stage=merge-tree exit=2 raw_exit=2 reason=interrupted", result.Text, StringComparison.Ordinal);
+        Assert.Empty(fixture.Calls());
+        Assert.True(TemporaryFileSystem.Directory.Exists(fixture.Root), $"{result.Text}\n{observation}");
+        // The fake creates this marker only after an actual clean Git status observation.
+        var expected = new Dictionary<string, string>(before)
+        {
+            ["source/untracked-marker"] = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes("untracked source marker\n")))
+        };
+        Assert.Equal(expected.OrderBy(pair => pair.Key), after.OrderBy(pair => pair.Key));
+        Assert.Equal(head, fixture.Git("rev-parse", "HEAD").Trim());
+        Assert.Equal(tree, fixture.Git("write-tree"));
+        Assert.Equal(inventory, fixture.Git("worktree", "list", "--porcelain", "-z"));
+        Assert.Equal("?? untracked-marker\n", fixture.Git("status", "--porcelain", "--untracked-files=all"));
+        Assert.DoesNotContain("PREFLIGHT_ARTIFACT", result.Text, StringComparison.Ordinal);
+        Assert.Empty(fixture.TemporaryCandidates());
+        Assert.DoesNotContain(sourceRoot, removals);
+        if (boundary == "after-registration") Assert.Single(removals);
+        else Assert.Empty(removals);
+    }
+
     [Theory]
     [InlineData(null)]
     [InlineData("")]
@@ -161,8 +245,11 @@ public sealed class PreflightProcessContractTests
     {
         using var fixture = new Fixture(File.ReadAllText(
             Path.Combine(TestRepositoryLayout.FindRoot(), "tools/scripts/preflight.sh")));
+        fixture.PrepareLinkedSource();
         var basis = fixture.Git("rev-parse", "HEAD").Trim();
         var inventory = fixture.Git("worktree", "list", "--porcelain", "-z");
+        var gitDirectory = fixture.Git("rev-parse", "--absolute-git-dir").Trim();
+        var source = fixture.SourceHashes(gitDirectory);
         fixture.FailGit("read-tree", 128);
 
         var result = fixture.Preflight("pr", basis);
@@ -175,6 +262,8 @@ public sealed class PreflightProcessContractTests
         Assert.Empty(fixture.TemporaryCandidates());
         Assert.Equal(inventory, fixture.Git("worktree", "list", "--porcelain", "-z"));
         Assert.Empty(fixture.Git("status", "--porcelain"));
+        Assert.Equal(source.OrderBy(pair => pair.Key), fixture.SourceHashes(gitDirectory).OrderBy(pair => pair.Key));
+        Assert.DoesNotContain(fixture.Root, fixture.RemovalTargets());
     }
 
     [Theory]
@@ -202,8 +291,11 @@ public sealed class PreflightProcessContractTests
             fi
             """);
         fixture.Commit();
+        fixture.PrepareLinkedSource();
         var head = fixture.Git("rev-parse", "HEAD").Trim();
         var inventory = fixture.Git("worktree", "list", "--porcelain", "-z");
+        var gitDirectory = fixture.Git("rev-parse", "--absolute-git-dir").Trim();
+        var source = fixture.SourceHashes(gitDirectory);
 
         var result = fixture.Preflight("pr", head, action);
 
@@ -217,7 +309,7 @@ public sealed class PreflightProcessContractTests
         Assert.Equal(inventory, fixture.Git("worktree", "list", "--porcelain", "-z"));
         Assert.Equal(head, fixture.Git("rev-parse", "HEAD").Trim());
         Assert.Empty(fixture.Git("status", "--porcelain"));
-        Assert.False(TemporaryFileSystem.Directory.Exists(Path.Combine(fixture.Root, ".lake")));
+        Assert.Equal(source.OrderBy(pair => pair.Key), fixture.SourceHashes(gitDirectory).OrderBy(pair => pair.Key));
     }
 
     [Fact]
@@ -263,10 +355,12 @@ public sealed class PreflightProcessContractTests
     private sealed class Fixture : IDisposable
     {
         private readonly string scratch = TemporaryFileSystem.Directory.CreateTempSubdirectory("preflight-contract-").FullName;
-        internal string Root => Path.Combine(scratch, "repository");
+        private string? linkedSource;
+        internal string Root => linkedSource ?? Path.Combine(scratch, "repository");
         private string CallsPath => Path.Combine(scratch, "calls");
         private string GitCallsPath => Path.Combine(scratch, "git-calls");
         private string InventoryPath => Path.Combine(scratch, "candidate-inventory");
+        private string RemovalTargetsPath => Path.Combine(scratch, "removal-targets");
         private string? gitBin;
         private string? realGit;
         internal Fixture(string preflightScript)
@@ -289,13 +383,40 @@ public sealed class PreflightProcessContractTests
             TemporaryFileSystem.File.WriteAllText(full, text);
         }
         internal void Commit() { Git("add", "."); Git("commit", "-qm", "fixture"); }
+        internal void PrepareLinkedSource()
+        {
+            Write(".gitignore", ".lake/\nbuild/\n");
+            Commit();
+            var source = Path.Combine(scratch, "linked source");
+            Git("worktree", "add", "--quiet", "--detach", source, "HEAD");
+            linkedSource = source;
+            Write(".lake/marker", "source cache untouched");
+            Write("build/ci/source-only", "stale source diagnostics");
+            Assert.Empty(Git("status", "--porcelain"));
+        }
+        internal Dictionary<string, string> SourceHashes(string gitDirectory)
+        {
+            var hashes = new Dictionary<string, string>();
+            foreach (var (label, directory) in new[] { ("source", Root), ("git", gitDirectory) })
+                if (Directory.Exists(directory))
+                    foreach (var file in Directory.GetFiles(directory, "*", SearchOption.AllDirectories))
+                        hashes.Add(label + "/" + Path.GetRelativePath(directory, file),
+                            Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(file))));
+            return hashes;
+        }
         internal string AddDonor()
         {
             var donor = Path.Combine(scratch, "warm donor");
             Git("worktree", "add", "--quiet", "--detach", donor, "HEAD");
             return donor;
         }
-        internal void FailGit(string command, int exit)
+        internal void FailGit(string command, int exit) => FakeGit($$"""
+            if [[ "$command" == {{command}} ]]; then
+              printf '%s observation failed\n' "$command" >&2
+              exit {{exit}}
+            fi
+            """);
+        internal void FakeGit(string behavior)
         {
             realGit = Run("/bin/bash", ["-c", "command -v git"]).Text.Trim();
             gitBin = Path.Combine(scratch, "bin");
@@ -303,16 +424,17 @@ public sealed class PreflightProcessContractTests
             var shim = Path.Combine(gitBin, "git");
             TemporaryFileSystem.File.WriteAllText(shim, $$"""
                 #!/bin/bash
+                original=("$@")
+                if [[ "$1" == -C ]]; then shift 2; fi
                 command="$1"
-                if [[ "$command" == -C ]]; then command="$3"; fi
                 case "$command" in
                   status|merge-tree|read-tree) printf '%s\n' "$command" >> "$CONTRACT_GIT_CALLS" ;;
                 esac
-                if [[ "$command" == {{command}} ]]; then
-                  printf '%s observation failed\n' "$command" >&2
-                  exit {{exit}}
+                if [[ "$command" == worktree && "$2" == remove ]]; then
+                  printf '%s\n' "$4" >> "$CONTRACT_REMOVALS"
                 fi
-                exec "$CONTRACT_REAL_GIT" "$@"
+                {{behavior}}
+                exec "$CONTRACT_REAL_GIT" "${original[@]}"
                 """);
             if (!OperatingSystem.IsWindows())
                 File.SetUnixFileMode(shim, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
@@ -336,12 +458,15 @@ public sealed class PreflightProcessContractTests
                 environment["PATH"] = gitBin + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
                 environment["CONTRACT_REAL_GIT"] = realGit!;
                 environment["CONTRACT_GIT_CALLS"] = GitCallsPath;
+                environment["CONTRACT_SOURCE"] = Root;
+                environment["CONTRACT_REMOVALS"] = RemovalTargetsPath;
             }
             return Run("/bin/bash", ["tools/scripts/preflight.sh"], environment);
         }
         internal string[] Calls() => TemporaryFileSystem.File.Exists(CallsPath) ? TemporaryFileSystem.File.ReadAllText(CallsPath).Split('\n', StringSplitOptions.RemoveEmptyEntries) : [];
         internal string[] GitCalls() => TemporaryFileSystem.File.Exists(GitCallsPath) ? TemporaryFileSystem.File.ReadAllText(GitCallsPath).Split('\n', StringSplitOptions.RemoveEmptyEntries) : [];
         internal string CandidateInventory() => TemporaryFileSystem.File.ReadAllText(InventoryPath);
+        internal string[] RemovalTargets() => TemporaryFileSystem.File.Exists(RemovalTargetsPath) ? TemporaryFileSystem.File.ReadAllText(RemovalTargetsPath).Split('\n', StringSplitOptions.RemoveEmptyEntries) : [];
         internal string[] TemporaryCandidates() => Directory.GetDirectories(scratch, "ci-preflight.*");
         private (int Exit, string Text, string Error) Run(string executable, string[] args, Dictionary<string, string>? environment = null)
         {

@@ -15,20 +15,21 @@ finish() {
   local rc=2
   case "$raw" in 0|1|2) rc="$raw" ;; esac
   if [[ -n "$ROOT" ]] && declare -F resource_observe >/dev/null; then resource_observe preflight-finish "$ROOT" || true; fi
-  if [[ -n "$TEMPORARY" && -d "$CANDIDATE/build/ci" ]]; then
+  local owned_candidate="${TEMPORARY:+$TEMPORARY/candidate}"
+  if [[ -n "$owned_candidate" && -d "$owned_candidate/build/ci" ]]; then
     local retained="$ROOT/build/preflight"
     mkdir -p "$retained" || rc=2
     local bundle
     bundle="$(mktemp "$retained/candidate.XXXXXXXX")" || rc=2
-    if [[ -f "$CANDIDATE/build/ci/artifact-paths.nul" ]]; then
-      tar -czf "$bundle" -C "$CANDIDATE" --null -T "$CANDIDATE/build/ci/artifact-paths.nul" || rc=2
+    if [[ -f "$owned_candidate/build/ci/artifact-paths.nul" ]]; then
+      tar -czf "$bundle" -C "$owned_candidate" --null -T "$owned_candidate/build/ci/artifact-paths.nul" || rc=2
     else
-      tar -czf "$bundle" -C "$CANDIDATE" build/ci || rc=2
+      tar -czf "$bundle" -C "$owned_candidate" build/ci || rc=2
     fi
     printf 'PREFLIGHT_ARTIFACT bundle=%s\n' "$bundle"
   fi
-  if [[ -n "$TEMPORARY" ]]; then
-    if [[ -e "$CANDIDATE/.git" ]] && ! git -C "$ROOT" worktree remove --force "$CANDIDATE"; then
+  if [[ -n "$owned_candidate" ]]; then
+    if [[ -e "$owned_candidate/.git" ]] && ! git -C "$ROOT" worktree remove --force "$owned_candidate"; then
       rc=2
     else
       rm -rf -- "$TEMPORARY" || rc=2
