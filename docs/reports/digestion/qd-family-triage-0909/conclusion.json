@@ -1,0 +1,786 @@
+{
+  "verdict": "abstain",
+  "status": "stopped-by-preregistered-midpoint",
+  "requested": 4,
+  "screened": 1,
+  "attempted_atoms": 2,
+  "unscreened": [
+    "2bc63109d666c92a11aa641dbeae45bc08e3f4f939bc5ce4406a75e5d86d03b6",
+    "c0a72a217fb966246fd4a48a809795cdc539435d1e88d1a10d041a9bcd9ed98d",
+    "cd2ad7f9986ee06ef6a8ac86aa7834a19d836483eaa1475b57396f3ba7ae536a"
+  ],
+  "stop": {
+    "criterion": "User stop condition 2: past halfway with fewer than two completed atom verdicts",
+    "work_window_origin": "The brief gave no numerical duration; 60 minutes was worker-preregistered in commit 1a06c7e2cc6a3a9a8d1e47ae0d4893e8bfaa1a95. No repository or runner budget constant was changed.",
+    "started_at": "2026-09-09T08:12:31Z",
+    "work_window_minutes": 60,
+    "midpoint": "2026-09-09T08:42:31Z",
+    "checked_at": "2026-09-09T08:43:16Z",
+    "screened_at_checkpoint": 1,
+    "action": "Stop mathematical work; archive, commit, push and publish the partial result."
+  },
+  "per_atom": [
+    {
+      "atom_id": "1e414ffb45d7fcaa9536a956298c4e291f91a2e310f112d2cf8419518caefd1a",
+      "title": "推论 B1.1：高阶延拓是一项带常数的积分问题",
+      "bind_only": "yes",
+      "proof_shape": "bind-only",
+      "remaining_gap": "none：常数由已冻结 source_jensen_coeff_edges 第四投影 + coeff_reflect + ring；积分由已判 B1 与 FTC 直接实例化。",
+      "probe_statement": "B1BindOnlyProbe.b11_source: ∀ d≥2, ∀ x:ℝ, (Q (sourceJensenPolynomial d) d).eval (x:ℂ) = (∫ u in 0..x, d*alpha(d)^(d-1)*(Q (sourceJensenPolynomial (d-1)) (d-1)).eval ((u:ℂ)/alpha(d))) + (-1)^d*d!/d^d*(sourceThetaCoefficient d:ℂ).",
+      "probe_file": "docs/reports/digestion/qd-family-triage-0909/B11Probe.lean",
+      "probe_run": "b11-01",
+      "mathlib_hits": [
+        {
+          "declaration": "Polynomial.reflect",
+          "file": ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean",
+          "line": 88
+        },
+        {
+          "declaration": "Polynomial.coeff_reflect",
+          "file": ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean",
+          "line": 96
+        },
+        {
+          "declaration": "Polynomial.eval₂_reflect_mul_pow",
+          "file": ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean",
+          "line": 191
+        },
+        {
+          "declaration": "Polynomial.hasDerivAt",
+          "file": ".lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Polynomial.lean",
+          "line": 66
+        },
+        {
+          "declaration": "HasDerivAt.comp_ofReal",
+          "file": ".lake/packages/mathlib/Mathlib/Analysis/Complex/RealDeriv.lean",
+          "line": 97
+        },
+        {
+          "declaration": "intervalIntegral.integral_eq_sub_of_hasDerivAt",
+          "file": ".lake/packages/mathlib/Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean",
+          "line": 1148
+        }
+      ],
+      "frozen_interfaces": [
+        {
+          "ref": "F1",
+          "gid": "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering",
+          "statement_id": "sha256:ee43a04a542df25237818cbfeeb29bb1abaed956f90db04822d08e8f413d50b4",
+          "declaration": "D5.S3.Zeros.Jensen.NormalizedJensenDegreeLowering.normalizedJensen_degree_lowering",
+          "declaration_statement_id": "sha256:f13a2fdd4121c7b170af20e397cf8d9c567ddfcfd4dd8e37d469c21f8603d6bf",
+          "state_path": "Golden/Frozen/state/D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.lean.json",
+          "accepted_event_path": "Golden/Frozen/accepted/afd9189dc663834087e112c1f91417f4f168ac2c96ec35c1fa10631a68a6ea32.json",
+          "scope": "任意实系数序列，d≥2；复多项式降阶恒等式，无根或矩阵结论"
+        },
+        {
+          "ref": "F2",
+          "gid": "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering",
+          "statement_id": "sha256:ee43a04a542df25237818cbfeeb29bb1abaed956f90db04822d08e8f413d50b4",
+          "declaration": "D5.S3.Zeros.Jensen.NormalizedJensenDegreeLowering.normalizedJensen_eq_fallingFactorial_sum",
+          "declaration_statement_id": "sha256:8a2655f8cbb74a3d045256378f01d8c6468e59545dc09fc5446bd390f898c025",
+          "state_path": "Golden/Frozen/state/D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.lean.json",
+          "accepted_event_path": "Golden/Frozen/accepted/afd9189dc663834087e112c1f91417f4f168ac2c96ec35c1fa10631a68a6ea32.json",
+          "scope": "任意实系数序列，d≥1；有限下降阶乘和"
+        },
+        {
+          "ref": "F3",
+          "gid": "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering",
+          "statement_id": "sha256:ee43a04a542df25237818cbfeeb29bb1abaed956f90db04822d08e8f413d50b4",
+          "declaration": "D5.S3.Zeros.Jensen.NormalizedJensenDegreeLowering.sourceJensenPolynomial_eq_normalizedJensen",
+          "declaration_statement_id": "sha256:0c96cec689edaf5a585802b79a9c52b976c6dcedbee0cd259b40d0a7d19ecfa9",
+          "state_path": "Golden/Frozen/state/D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.lean.json",
+          "accepted_event_path": "Golden/Frozen/accepted/afd9189dc663834087e112c1f91417f4f168ac2c96ec35c1fa10631a68a6ea32.json",
+          "scope": "固定 theta 系数，d≥1；源对象到通用归一化对象"
+        },
+        {
+          "ref": "F4",
+          "gid": "D5/S3/Zeros/Jensen/SourceJensenPrincipalBlockObstruction",
+          "statement_id": "sha256:5e43098caa9fb48b4fccd8adc30e337ff93668044d5dcfc06acab33dc8970f3c",
+          "declaration": "D5.S3.Zeros.Jensen.SourceJensenPrincipalBlockObstruction.source_jensen_coeff_edges",
+          "declaration_statement_id": "sha256:adde2bcfe9e6e59415236589839993c3faa03e7cabdaa4276c8a049fc9daae39",
+          "state_path": "Golden/Frozen/state/D5/S3/Zeros/Jensen/SourceJensenPrincipalBlockObstruction.lean.json",
+          "accepted_event_path": "Golden/Frozen/accepted/959fea222a18ba53faa7bfc0e66d64381d53f3b394b55dc6c2cb783855725e07.json",
+          "scope": "固定 theta 系数，d≥1；四系数合取，第四项是顶项 d!/d^d*a_d"
+        }
+      ],
+      "escape_witness": null,
+      "admission_if_landed": {
+        "admission_basis": "rule-11-upstream-wrapper",
+        "reason": "条件性的落地依据：atom B6 明文要求源 Q 的指定积分表示；Mathlib.intervalIntegral.integral_eq_sub_of_hasDerivAt 是精确积分引擎，允许最薄诚实包装。常数单独只是冻结投影，无独立准入依据；本席不实施。",
+        "atom_clause": "docs/develop/theory/QUANTUM-RH.md:1542, equation B6",
+        "upstream_declaration": "intervalIntegral.integral_eq_sub_of_hasDerivAt",
+        "policy": "CLAUDE.md:117"
+      },
+      "status": "screened",
+      "degree_policy": "natDegree ≤ d; no equality of degree and no nonzero leading coefficient assumption",
+      "alpha_definition": "alpha d = ((d - 1 : ℕ) : ℂ) / (d : ℂ)",
+      "zero_policy": "Q is reflect-defined on all arguments; reciprocal identity requires x ≠ 0; b11_source includes x = 0."
+    },
+    {
+      "atom_id": "2bc63109d666c92a11aa641dbeae45bc08e3f4f939bc5ce4406a75e5d86d03b6",
+      "title": "定理 B3：一步正延拓的精确判据",
+      "status": "unscreened",
+      "bind_only": null,
+      "proof_shape": null,
+      "remaining_gap": "undetermined：去掉 Q 后待验证的是 ηᵢ=-d*q(tᵢ)/q″(tᵢ) 的留数符号与严格正根、箭头矩阵 charpoly=q 及正定条件之间的精确等价。未跑探针，不能断言这些是不可由绑定得到的数学缺陷。",
+      "mathlib_hits": [
+        {
+          "declaration": "Matrix.PosDef.fromBlocks₂₂",
+          "file": ".lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/PosDef.lean",
+          "line": 582,
+          "scope": "下右块正定假设下的 Schur 半正定等价；结论是 PosSemidef，不能直接冒充整条严格正定/留数准则。"
+        },
+        {
+          "declaration": "Matrix.det_fromBlocks₁₁",
+          "file": ".lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/SchurComplement.lean",
+          "line": 370,
+          "scope": "给定可逆块的行列式分解；尚未绑定构造的箭头矩阵与 q。"
+        },
+        {
+          "declaration": "Matrix.det_fromBlocks₂₂",
+          "file": ".lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/SchurComplement.lean",
+          "line": 384,
+          "scope": "给定可逆块的行列式分解。"
+        },
+        {
+          "declaration": "Matrix.IsHermitian.posDef_iff_eigenvalues_pos",
+          "file": ".lake/packages/mathlib/Mathlib/Analysis/Matrix/PosDef.lean",
+          "line": 71,
+          "scope": "给定 Hermitian 矩阵：严格正谱 ↔ 正定；未构造目标矩阵或证明 charpoly=q。"
+        },
+        {
+          "declaration": "Matrix.IsHermitian.posSemidef_iff_eigenvalues_nonneg",
+          "file": ".lake/packages/mathlib/Mathlib/Analysis/Matrix/PosDef.lean",
+          "line": 34,
+          "scope": "给定 Hermitian 矩阵：非负谱 ↔ 半正定。"
+        }
+      ],
+      "frozen_interfaces": [
+        {
+          "ref": "F1",
+          "gid": "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering",
+          "statement_id": "sha256:ee43a04a542df25237818cbfeeb29bb1abaed956f90db04822d08e8f413d50b4",
+          "declaration": "D5.S3.Zeros.Jensen.NormalizedJensenDegreeLowering.normalizedJensen_degree_lowering",
+          "declaration_statement_id": "sha256:f13a2fdd4121c7b170af20e397cf8d9c567ddfcfd4dd8e37d469c21f8603d6bf",
+          "state_path": "Golden/Frozen/state/D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.lean.json",
+          "accepted_event_path": "Golden/Frozen/accepted/afd9189dc663834087e112c1f91417f4f168ac2c96ec35c1fa10631a68a6ea32.json",
+          "scope": "任意实系数序列，d≥2；复多项式降阶恒等式，无根或矩阵结论"
+        },
+        {
+          "ref": "F4",
+          "gid": "D5/S3/Zeros/Jensen/SourceJensenPrincipalBlockObstruction",
+          "statement_id": "sha256:5e43098caa9fb48b4fccd8adc30e337ff93668044d5dcfc06acab33dc8970f3c",
+          "declaration": "D5.S3.Zeros.Jensen.SourceJensenPrincipalBlockObstruction.source_jensen_coeff_edges",
+          "declaration_statement_id": "sha256:adde2bcfe9e6e59415236589839993c3faa03e7cabdaa4276c8a049fc9daae39",
+          "state_path": "Golden/Frozen/state/D5/S3/Zeros/Jensen/SourceJensenPrincipalBlockObstruction.lean.json",
+          "accepted_event_path": "Golden/Frozen/accepted/959fea222a18ba53faa7bfc0e66d64381d53f3b394b55dc6c2cb783855725e07.json",
+          "scope": "固定 theta 系数，d≥1；四系数合取，第四项是顶项 d!/d^d*a_d"
+        }
+      ],
+      "frozen_interfaces_usage": "Only available background interfaces; full atom binding was not validated.",
+      "escape_witness": null,
+      "admission_if_landed": {
+        "admission_basis": "none",
+        "reason": "none：没有完整探针或满足四项的逃逸见证，也未为完整 atom 核准薄包装/具名消费者的 bridge 准入。"
+      },
+      "probe_runs": [],
+      "boundary": "No B3 Lean probe was run before the midpoint stop; keyword misses are not a no verdict."
+    },
+    {
+      "atom_id": "c0a72a217fb966246fd4a48a809795cdc539435d1e88d1a10d041a9bcd9ed98d",
+      "title": "定理 B4：新增耦合总预算",
+      "status": "unscreened",
+      "bind_only": null,
+      "proof_shape": null,
+      "remaining_gap": "undetermined：留数总和与前两系数的通用恒等式、实际 source 系数表达式到四阶累积量的算术已 elaborate 且仅标准三公理；qSource_top_three 的实际源二次项归一化仍有未闭合目标。未验证整个 atom，尚未认定任何真实数学缺陷。箭头二次迹不是本次已验证为必要的缺口。",
+      "mathlib_hits": [
+        {
+          "declaration": "Polynomial.eq_of_degree_le_of_eval_index_eq",
+          "file": ".lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean",
+          "line": 117,
+          "scope": "由次数界、首项及节点值识别导数多项式。"
+        },
+        {
+          "declaration": "Lagrange.coeff_eq_sum",
+          "file": ".lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean",
+          "line": 495,
+          "scope": "低于节点数次数的多项式：指定系数等于节点值除节点差积的和。"
+        },
+        {
+          "declaration": "Lagrange.eval_nodal_derivative_eval_node_eq",
+          "file": ".lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean",
+          "line": 605,
+          "scope": "nodal 导数在节点处的值等于去掉该节点的 nodal 值。"
+        },
+        {
+          "declaration": "Polynomial.coeff_reflect",
+          "file": ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean",
+          "line": 96,
+          "scope": "Q 系数的定义绑定。"
+        }
+      ],
+      "frozen_interfaces": [
+        {
+          "ref": "F4",
+          "gid": "D5/S3/Zeros/Jensen/SourceJensenPrincipalBlockObstruction",
+          "statement_id": "sha256:5e43098caa9fb48b4fccd8adc30e337ff93668044d5dcfc06acab33dc8970f3c",
+          "declaration": "D5.S3.Zeros.Jensen.SourceJensenPrincipalBlockObstruction.source_jensen_coeff_edges",
+          "declaration_statement_id": "sha256:adde2bcfe9e6e59415236589839993c3faa03e7cabdaa4276c8a049fc9daae39",
+          "state_path": "Golden/Frozen/state/D5/S3/Zeros/Jensen/SourceJensenPrincipalBlockObstruction.lean.json",
+          "accepted_event_path": "Golden/Frozen/accepted/959fea222a18ba53faa7bfc0e66d64381d53f3b394b55dc6c2cb783855725e07.json",
+          "scope": "固定 theta 系数，d≥1；四系数合取，第四项是顶项 d!/d^d*a_d"
+        }
+      ],
+      "frozen_interfaces_usage": "Only available background interfaces; full atom binding was not validated.",
+      "escape_witness": null,
+      "admission_if_landed": {
+        "admission_basis": "none",
+        "reason": "none：整个源 Q 绑定未验证完成；通过的子引理不能独立为整条提供准入依据。"
+      },
+      "probe_runs": [
+        "b4-01",
+        "b4-02",
+        "b4-03",
+        "b4-04"
+      ],
+      "probe_file": "docs/reports/digestion/qd-family-triage-0909/B4Probe-04.lean",
+      "boundary": {
+        "run": "b4-04",
+        "exit": 2,
+        "declaration": "QdB4Probe.qSource_top_three",
+        "source_line": 129,
+        "residual_goal": "True ∨ sourceThetaCoefficient 2 = 0",
+        "effect": "QdB4Probe.b4_source depends on sorryAx from error recovery; not a verified theorem and not an escape witness."
+      },
+      "verified_components_in_failed_run": [
+        {
+          "declaration": "QdB4Probe.nodal_derivative",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ]
+        },
+        {
+          "declaration": "QdB4Probe.b4_residue_sum",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ]
+        },
+        {
+          "declaration": "QdB4Probe.b4_cumulant",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ]
+        },
+        {
+          "declaration": "QdB4Probe.b4_source_cumulant",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ]
+        }
+      ],
+      "scope_limits": [
+        "Generic residue identity assumes n+1 injective critical nodes, q.natDegree ≤ n+2, and the stated top three coefficients.",
+        "Source wrapper retains sourceThetaCoefficient 0 = 1 as an explicit assumption; it was not discharged. This is not an assumption that P has degree d.",
+        "The exact lower-root-to-critical-node interface and all original B4 side hypotheses were not completely checked."
+      ],
+      "partial_statement": "For d=n+2, q.coeff d=1, q.coeff(d-1)=-a₁, q.coeff(d-2)=(d-1)/d*a₂, deg q≤d, and d-1 distinct critical points tᵢ: ∑ᵢ -d*q(tᵢ)/q″(tᵢ) = (d-1)/d²*(a₁²-2*a₂). This is only a component verified inside an overall EXIT=2 run."
+    },
+    {
+      "atom_id": "cd2ad7f9986ee06ef6a8ac86aa7834a19d836483eaa1475b57396f3ba7ae536a",
+      "title": "推论：实根性向低阶传递",
+      "status": "unscreened",
+      "bind_only": null,
+      "proof_shape": null,
+      "remaining_gap": "undetermined：倒数缩放在含零点/次数不足时的根域运输、导数根域保存、塔上归纳及最小失败阶仍未实测。Gauss–Lucas、凸集与 Nat.find 已命中；没有依据把这些步骤直接判作 content。",
+      "mathlib_hits": [
+        {
+          "declaration": "Polynomial.rootSet_derivative_subset_convexHull_rootSet",
+          "file": ".lake/packages/mathlib/Mathlib/Analysis/Complex/Polynomial/GaussLucas.lean",
+          "line": 97,
+          "scope": "正次数复多项式的导数根属于原根集凸包。"
+        },
+        {
+          "declaration": "convex_halfSpace_re_gt",
+          "file": ".lake/packages/mathlib/Mathlib/Analysis/Complex/Convex.lean",
+          "line": 57,
+          "scope": "严格正实部半空间的凸性。"
+        },
+        {
+          "declaration": "convex_halfSpace_im_le",
+          "file": ".lake/packages/mathlib/Mathlib/Analysis/Complex/Convex.lean",
+          "line": 63,
+          "scope": "虚部 ≤ r 的闭半空间凸性。"
+        },
+        {
+          "declaration": "convex_halfSpace_im_ge",
+          "file": ".lake/packages/mathlib/Mathlib/Analysis/Complex/Convex.lean",
+          "line": 67,
+          "scope": "虚部 ≥ r 的闭半空间凸性。"
+        },
+        {
+          "declaration": "antitone_nat_of_succ_le",
+          "file": ".lake/packages/mathlib/Mathlib/Order/Monotone/Basic.lean",
+          "line": 552,
+          "scope": "相邻层关系推广为 Nat 上反单调。"
+        },
+        {
+          "declaration": "Nat.find_spec",
+          "file": ".lake/packages/mathlib/Mathlib/Data/Nat/Find.lean",
+          "line": 75,
+          "scope": "在已给定失败存在见证后取最小失败。"
+        },
+        {
+          "declaration": "Nat.find_min",
+          "file": ".lake/packages/mathlib/Mathlib/Data/Nat/Find.lean",
+          "line": 80,
+          "scope": "比 Nat.find 更小的阶不满足失败谓词。"
+        }
+      ],
+      "frozen_interfaces": [
+        {
+          "ref": "F1",
+          "gid": "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering",
+          "statement_id": "sha256:ee43a04a542df25237818cbfeeb29bb1abaed956f90db04822d08e8f413d50b4",
+          "declaration": "D5.S3.Zeros.Jensen.NormalizedJensenDegreeLowering.normalizedJensen_degree_lowering",
+          "declaration_statement_id": "sha256:f13a2fdd4121c7b170af20e397cf8d9c567ddfcfd4dd8e37d469c21f8603d6bf",
+          "state_path": "Golden/Frozen/state/D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.lean.json",
+          "accepted_event_path": "Golden/Frozen/accepted/afd9189dc663834087e112c1f91417f4f168ac2c96ec35c1fa10631a68a6ea32.json",
+          "scope": "任意实系数序列，d≥2；复多项式降阶恒等式，无根或矩阵结论"
+        },
+        {
+          "ref": "F2",
+          "gid": "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering",
+          "statement_id": "sha256:ee43a04a542df25237818cbfeeb29bb1abaed956f90db04822d08e8f413d50b4",
+          "declaration": "D5.S3.Zeros.Jensen.NormalizedJensenDegreeLowering.normalizedJensen_eq_fallingFactorial_sum",
+          "declaration_statement_id": "sha256:8a2655f8cbb74a3d045256378f01d8c6468e59545dc09fc5446bd390f898c025",
+          "state_path": "Golden/Frozen/state/D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.lean.json",
+          "accepted_event_path": "Golden/Frozen/accepted/afd9189dc663834087e112c1f91417f4f168ac2c96ec35c1fa10631a68a6ea32.json",
+          "scope": "任意实系数序列，d≥1；有限下降阶乘和"
+        },
+        {
+          "ref": "F3",
+          "gid": "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering",
+          "statement_id": "sha256:ee43a04a542df25237818cbfeeb29bb1abaed956f90db04822d08e8f413d50b4",
+          "declaration": "D5.S3.Zeros.Jensen.NormalizedJensenDegreeLowering.sourceJensenPolynomial_eq_normalizedJensen",
+          "declaration_statement_id": "sha256:0c96cec689edaf5a585802b79a9c52b976c6dcedbee0cd259b40d0a7d19ecfa9",
+          "state_path": "Golden/Frozen/state/D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.lean.json",
+          "accepted_event_path": "Golden/Frozen/accepted/afd9189dc663834087e112c1f91417f4f168ac2c96ec35c1fa10631a68a6ea32.json",
+          "scope": "固定 theta 系数，d≥1；源对象到通用归一化对象"
+        }
+      ],
+      "frozen_interfaces_usage": "Only available background interfaces; full atom binding was not validated.",
+      "escape_witness": null,
+      "admission_if_landed": {
+        "admission_basis": "none",
+        "reason": "none：探针未跑，未判整条，未建立逃逸见证或完整薄包装/具名下游消费者依据。"
+      },
+      "probe_runs": [],
+      "probe_file": "docs/reports/digestion/qd-family-triage-0909/DescentProbe-UNRUN.lean",
+      "boundary": "Source prepared only, never passed to make lean. Negative-root transfer and fixed-source RH-to-failure assertions were not completed.",
+      "scope_limits": [
+        "No negative-root implication (28) is verified.",
+        "No RH-false implication or fixed n=0 Jensen/RH equivalence is verified.",
+        "Do not add P.natDegree=d to hide zero roots arising in Q when P has deficient degree."
+      ]
+    }
+  ],
+  "bind_only_count": 1,
+  "content_candidates": [],
+  "content_candidates_scope": "Only certified content candidates count here. Empty does not imply that the three unscreened atoms are bind-only.",
+  "unverified_candidate_obligations": [
+    {
+      "atom_id": "2bc63109d666c92a11aa641dbeae45bc08e3f4f939bc5ce4406a75e5d86d03b6",
+      "obligation": "undetermined：去掉 Q 后待验证的是 ηᵢ=-d*q(tᵢ)/q″(tᵢ) 的留数符号与严格正根、箭头矩阵 charpoly=q 及正定条件之间的精确等价。未跑探针，不能断言这些是不可由绑定得到的数学缺陷。"
+    },
+    {
+      "atom_id": "c0a72a217fb966246fd4a48a809795cdc539435d1e88d1a10d041a9bcd9ed98d",
+      "obligation": "undetermined：留数总和与前两系数的通用恒等式、实际 source 系数表达式到四阶累积量的算术已 elaborate 且仅标准三公理；qSource_top_three 的实际源二次项归一化仍有未闭合目标。未验证整个 atom，尚未认定任何真实数学缺陷。箭头二次迹不是本次已验证为必要的缺口。"
+    },
+    {
+      "atom_id": "cd2ad7f9986ee06ef6a8ac86aa7834a19d836483eaa1475b57396f3ba7ae536a",
+      "obligation": "undetermined：倒数缩放在含零点/次数不足时的根域运输、导数根域保存、塔上归纳及最小失败阶仍未实测。Gauss–Lucas、凸集与 Nat.find 已命中；没有依据把这些步骤直接判作 content。"
+    }
+  ],
+  "probe_runs": [
+    {
+      "id": "b11-01",
+      "command": "make -f Makefile -f /var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/probe.mk lean PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/B11Probe.lean",
+      "argv": [
+        "make",
+        "-f",
+        "Makefile",
+        "-f",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/probe.mk",
+        "lean",
+        "PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/B11Probe.lean"
+      ],
+      "cwd": "/Users/auricstudio/trureturing-u1bridge-0909",
+      "exit": 0,
+      "seconds": 534.139564708,
+      "log": "docs/reports/digestion/qd-family-triage-0909/b11-01.log.gz",
+      "raw_log": "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/b11-01.log",
+      "probe_snapshot": "docs/reports/digestion/qd-family-triage-0909/B11Probe.lean",
+      "classification": "full probe and original make lean build succeeded",
+      "source_sha256": "aa072a30272001ac09bf3174e2db653db602acc15a7af423ff027a19eb60d3c9",
+      "log_uncompressed_sha256": "b30e71d3d901b666eb5560249769038912385cf7e8c38d7dc8074cbca3104800",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ],
+      "jobs": 12767
+    },
+    {
+      "id": "b4-01",
+      "command": "make -f Makefile -f /var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/probe.mk lean PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/B4Probe.lean",
+      "argv": [
+        "make",
+        "-f",
+        "Makefile",
+        "-f",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/probe.mk",
+        "lean",
+        "PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/B4Probe.lean"
+      ],
+      "cwd": "/Users/auricstudio/trureturing-u1bridge-0909",
+      "exit": 2,
+      "seconds": 30.860718708,
+      "log": "docs/reports/digestion/qd-family-triage-0909/b4-01.log",
+      "raw_log": "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/b4-01.log",
+      "probe_snapshot": "docs/reports/digestion/qd-family-triage-0909/B4Probe-01.lean",
+      "classification": "cache writer busy; Lean mathematical probe did not execute",
+      "source_sha256": "8618017ca89c2c44822287464db40ae1feb27719f7cc329fa7fda8d17c7fe257",
+      "log_uncompressed_sha256": "25c9849a06cb6b8387698bb1238609a548d7a22f623a9966f758c7a533668ffa"
+    },
+    {
+      "id": "b4-02",
+      "command": "make -f Makefile -f /var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/probe.mk lean PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/B4Probe.lean",
+      "argv": [
+        "make",
+        "-f",
+        "Makefile",
+        "-f",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/probe.mk",
+        "lean",
+        "PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/B4Probe.lean"
+      ],
+      "cwd": "/Users/auricstudio/trureturing-u1bridge-0909",
+      "exit": 2,
+      "seconds": 71.597924042,
+      "log": "docs/reports/digestion/qd-family-triage-0909/b4-02.log",
+      "raw_log": "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/b4-02.log",
+      "probe_snapshot": "docs/reports/digestion/qd-family-triage-0909/B4Probe-02.lean",
+      "classification": "Lean API argument/rewrite-direction errors; not a mathematical no verdict",
+      "source_sha256": "8618017ca89c2c44822287464db40ae1feb27719f7cc329fa7fda8d17c7fe257",
+      "log_uncompressed_sha256": "e14b01d333a5fdb4a8e0b9457d009dfb8ae8586091927719e61152a51041d970"
+    },
+    {
+      "id": "b4-03",
+      "command": "make -f Makefile -f /var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/probe.mk lean PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/B4Probe.lean",
+      "argv": [
+        "make",
+        "-f",
+        "Makefile",
+        "-f",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/probe.mk",
+        "lean",
+        "PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/B4Probe.lean"
+      ],
+      "cwd": "/Users/auricstudio/trureturing-u1bridge-0909",
+      "exit": 2,
+      "seconds": 149.225800333,
+      "log": "docs/reports/digestion/qd-family-triage-0909/b4-03.log",
+      "raw_log": "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/b4-03.log",
+      "probe_snapshot": "docs/reports/digestion/qd-family-triage-0909/B4Probe-03.lean",
+      "classification": "coefficient/field normalization errors; not a mathematical no verdict",
+      "source_sha256": "503b62017b610748d16ad9960ac3ace6f9dea3ca7bf3d5d1f576c873f3a9b33c",
+      "log_uncompressed_sha256": "23a9f9f77cb138648cde496d9e706dc04b955174ae26d1fe754a4079598008c4"
+    },
+    {
+      "id": "b4-04",
+      "command": "make -f Makefile -f /var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/probe.mk lean PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/B4Probe.lean",
+      "argv": [
+        "make",
+        "-f",
+        "Makefile",
+        "-f",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/probe.mk",
+        "lean",
+        "PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/B4Probe.lean"
+      ],
+      "cwd": "/Users/auricstudio/trureturing-u1bridge-0909",
+      "exit": 2,
+      "seconds": 217.170564375,
+      "log": "docs/reports/digestion/qd-family-triage-0909/b4-04.log",
+      "raw_log": "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/b4-04.log",
+      "probe_snapshot": "docs/reports/digestion/qd-family-triage-0909/B4Probe-04.lean",
+      "classification": "generic residue and source cumulant components elaborate; qSource_top_three fails and b4_source uses sorryAx",
+      "source_sha256": "854c667fdf915813c0c890418c31f08d1782dab5b6a5b63c95fa56846c5c74d8",
+      "log_uncompressed_sha256": "86889ba9449003d5aca753d46557c9275eb257d09a131ea6449b08047dd49ecd"
+    }
+  ],
+  "search_receipts": [
+    {
+      "file": "docs/reports/digestion/qd-family-triage-0909/search-01.json",
+      "entries": [
+        {
+          "label": "repo-positive",
+          "argv": [
+            "rg",
+            "-n",
+            "\\bsource_jensen_degree_lowering\\b",
+            "D5",
+            "--glob",
+            "*.lean"
+          ],
+          "exit": 0,
+          "matching_lines": 1,
+          "stdout": "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.lean:135:theorem source_jensen_degree_lowering (d : ℕ) (hd : 2 ≤ d) (v : ℂ) :\n",
+          "stderr": ""
+        },
+        {
+          "label": "repo-negative-control",
+          "argv": [
+            "rg",
+            "-n",
+            "\\bqd_triage_nonexistent_control_0909\\b",
+            "D5",
+            "--glob",
+            "*.lean"
+          ],
+          "exit": 1,
+          "matching_lines": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "label": "repo-candidates",
+          "argv": [
+            "rg",
+            "-n",
+            "\\b(arrowhead|Arrowhead|interlacing|Interlacing)\\b",
+            "D5",
+            "--glob",
+            "*.lean"
+          ],
+          "exit": 0,
+          "matching_lines": 3,
+          "stdout": "D5/S3/Constants/NewtonHankelRealRootCriterion.lean:34:     search contain Bezoutian/interlacing criteria but no Hermite or Newton\nD5/S3/Zeros/Convolution/EulerianSquareRow33.lean:7:   digest: Row 33 of the ordinary Eulerian matrix square, via quotient interlacing. -/\nD5/S3/Observer/BlockStructure/ObserverInnovationEquation.lean:19:     directly. No pinned interlacing or packaged innovation-root theorem was found. -/\n",
+          "stderr": ""
+        },
+        {
+          "label": "mathlib-positive",
+          "argv": [
+            "rg",
+            "-n",
+            "\\bcoeff_reflect\\b",
+            ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean"
+          ],
+          "exit": 0,
+          "matching_lines": 5,
+          "stdout": "96:theorem coeff_reflect (N : ℕ) (f : R[X]) (i : ℕ) : coeff (reflect N f) i = f.coeff (revAt N i) := by\n116:  simp only [coeff_add, coeff_reflect]\n121:  simp only [coeff_reflect, coeff_C_mul]\n222:  rw [reverse, coeff_reflect]\n250:    rw [reverse, coeff_reflect, ← revAt_le f.natTrailingDegree_le_natDegree, revAt_invol]\n",
+          "stderr": ""
+        },
+        {
+          "label": "mathlib-negative-control",
+          "argv": [
+            "rg",
+            "-n",
+            "\\bqd_triage_nonexistent_control_0909\\b",
+            ".lake/packages/mathlib/Mathlib"
+          ],
+          "exit": 1,
+          "matching_lines": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "label": "mathlib-arrow",
+          "argv": [
+            "rg",
+            "-n",
+            "\\b(arrowhead|Arrowhead|interlacing|Interlacing)\\b",
+            ".lake/packages/mathlib/Mathlib/LinearAlgebra",
+            ".lake/packages/mathlib/Mathlib/Algebra/Polynomial",
+            ".lake/packages/mathlib/Mathlib/Analysis/Calculus"
+          ],
+          "exit": 1,
+          "matching_lines": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "file": "docs/reports/digestion/qd-family-triage-0909/search-02.json",
+      "entries": [
+        {
+          "label": "lagrange",
+          "argv": [
+            "rg",
+            "-n",
+            "\\b(coeff_eq_sum|eq_of_degree_le_of_eval_index_eq|eval_nodal_derivative_eval_node_eq|leadingCoeff_basis)\\b",
+            ".lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean"
+          ],
+          "exit": 0,
+          "matching_lines": 8,
+          "stdout": "117:theorem eq_of_degree_le_of_eval_index_eq (hvs : Set.InjOn v s)\n279:theorem leadingCoeff_basis (hvs : Set.InjOn v s) (hi : i ∈ s) :\n495:theorem coeff_eq_sum\n500:  rw [coeff_C_mul, ← natDegree_basis hvs hi, ← leadingCoeff, leadingCoeff_basis hvs hi]\n511:  exact coeff_eq_sum hvs (by rw [hdegree]; norm_cast; lia)\n605:theorem eval_nodal_derivative_eval_node_eq [DecidableEq ι] {i : ι} (hi : i ∈ s) :\n615:  apply eq_of_degree_le_of_eval_index_eq (v := ((↑) : Rˣ → R)) (G : Set Rˣ).toFinset\n652:  rw [eval_nodal_derivative_eval_node_eq hi, nodalWeight_eq_eval_nodal_erase_inv]\n",
+          "stderr": ""
+        },
+        {
+          "label": "gauss-lucas",
+          "argv": [
+            "rg",
+            "-n",
+            "\\b(rootSet_derivative_subset_convexHull_rootSet|eq_centerMass_of_eval_derivative_eq_zero)\\b",
+            ".lake/packages/mathlib/Mathlib/Analysis/Complex/Polynomial/GaussLucas.lean"
+          ],
+          "exit": 0,
+          "matching_lines": 5,
+          "stdout": "58:See also `rootSet_derivative_subset_convexHull_rootSet` below.\n60:theorem eq_centerMass_of_eval_derivative_eq_zero (hP : 0 < P.degree)\n94:See also `eq_centerMass_of_eval_derivative_eq_zero`\n97:theorem rootSet_derivative_subset_convexHull_rootSet (h₀ : 0 < P.degree) :\n101:  rw [eq_centerMass_of_eval_derivative_eq_zero h₀ hz.2]\n",
+          "stderr": ""
+        },
+        {
+          "label": "ftc",
+          "argv": [
+            "rg",
+            "-n",
+            "\\b(integral_eq_sub_of_hasDerivAt|comp_ofReal|hasDerivAt)\\b",
+            ".lake/packages/mathlib/Mathlib/Analysis/Complex/RealDeriv.lean",
+            ".lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Polynomial.lean",
+            ".lake/packages/mathlib/Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean"
+          ],
+          "exit": 0,
+          "matching_lines": 22,
+          "stdout": ".lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Polynomial.lean:66:protected theorem hasDerivAt (x : 𝕜) : HasDerivAt (fun x => p.eval x) (p.derivative.eval x) x :=\n.lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Polynomial.lean:67:  (p.hasStrictDerivAt x).hasDerivAt\n.lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Polynomial.lean:71:  (q.hasStrictDerivAt_aeval x).hasDerivAt\n.lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Polynomial.lean:75:  (p.hasDerivAt x).hasDerivWithinAt\n.lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Polynomial.lean:82:  (p.hasDerivAt x).differentiableAt\n.lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Polynomial.lean:108:  (p.hasDerivAt x).deriv\n.lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Polynomial.lean:126:  p.hasDerivAt x\n.lake/packages/mathlib/Mathlib/Analysis/Complex/RealDeriv.lean:54:  simpa using! (C.comp z (B.comp z A)).hasDerivAt\n.lake/packages/mathlib/Mathlib/Analysis/Complex/RealDeriv.lean:97:theorem HasDerivAt.comp_ofReal (hf : HasDerivAt e e' ↑z) : HasDerivAt (fun y : ℝ => e ↑y) e' z := by\n.lake/packages/mathlib/Mathlib/Analysis/Complex/RealDeriv.lean:98:  simpa only [ofRealCLM_apply, ofReal_one, mul_one] using! hf.comp z ofRealCLM.hasDerivAt\n.lake/packages/mathlib/Mathlib/Analysis/Complex/RealDeriv.lean:105:    ofRealCLM.hasDerivAt.scomp z hf\n.lake/packages/mathlib/Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean:91:* `intervalIntegral.integral_eq_sub_of_hasDerivAt` - version for functions with a derivative on\n.lake/packages/mathlib/Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean:666:  (hf.integral_hasStrictDerivAt a b).hasDerivAt.deriv\n.lake/packages/mathlib/Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean:721:  (integral_hasStrictDerivAt_of_tendsto_ae_right hf hmeas hb).hasDerivAt\n.lake/packages/mathlib/Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean:728:  (integral_hasStrictDerivAt_right hf hmeas hb).hasDerivAt\n.lake/packages/mathlib/Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean:749:  (integral_hasStrictDerivAt_of_tendsto_ae_left hf hmeas ha).hasDerivAt\n.lake/packages/mathlib/Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean:756:  (integral_hasStrictDerivAt_left hf hmeas ha).hasDerivAt\n.lake/packages/mathlib/Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean:1148:theorem integral_eq_sub_of_hasDerivAt (hderiv : ∀ x ∈ uIcc a b, HasDerivAt f (f' x) x)\n.lake/packages/mathlib/Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean:1178:  integral_eq_sub_of_hasDerivAt (fun x hx => (hderiv x hx).hasDerivAt) hint\n.lake/packages/mathlib/Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean:1194:    rw [integral_eq_sub_of_hasDerivAt_of_le hab hcont (fun x hx => (hderiv x hx).hasDerivAt) hint]\n.lake/packages/mathlib/Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean:1197:        (fun x hx => (hderiv x hx).hasDerivAt) hint.symm, neg_sub]\n.lake/packages/mathlib/Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean:1212:  convert! (integral_eq_sub_of_hasDerivAt hderiv' hint) using 1\n",
+          "stderr": ""
+        },
+        {
+          "label": "frozen-top",
+          "argv": [
+            "rg",
+            "-n",
+            "\\bsource_jensen_coeff_edges\\b",
+            "D5/S3/Zeros/Jensen/SourceJensenPrincipalBlockObstruction.lean"
+          ],
+          "exit": 0,
+          "matching_lines": 8,
+          "stdout": "31:theorem source_jensen_coeff_edges (d : ℕ) (hd : 1 ≤ d) :\n54:  rw [hmatch, (source_jensen_coeff_edges d hd).1] at hz\n58:  exact (source_jensen_coeff_edges d hd).2.1\n63:  rw [(source_jensen_coeff_edges d hd).2.2.2]\n176:  rw [(source_jensen_coeff_edges d hd).2.2.1] at hcoeff\n203:  rw [coeff_map, hc0, (source_jensen_coeff_edges d hd).1] at hz\n211:  rw [coeff_map, hc1, (source_jensen_coeff_edges d hd).2.1] at h1\n230:  rw [(source_jensen_coeff_edges d hd).2.2.1] at hcoeff\n",
+          "stderr": ""
+        },
+        {
+          "label": "schur",
+          "argv": [
+            "rg",
+            "-n",
+            "\\b(fromBlocks₂₂|fromBlocks₁₁)\\b",
+            ".lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/PosDef.lean"
+          ],
+          "exit": 1,
+          "matching_lines": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "file": "docs/reports/digestion/qd-family-triage-0909/search-03.json",
+      "entries": [
+        {
+          "label": "schur-unicode-boundary-repaired",
+          "argv": [
+            "rg",
+            "-n",
+            "\\btheorem fromBlocks(₁₁|₂₂)",
+            ".lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/PosDef.lean"
+          ],
+          "exit": 0,
+          "matching_lines": 2,
+          "stdout": "563:theorem fromBlocks₁₁ [DecidableEq m] {A : Matrix m m R'}\n582:theorem fromBlocks₂₂ [DecidableEq n] (A : Matrix m m R')\n",
+          "stderr": "",
+          "note": "trailing word boundary after subscript digits did not match; no math absence inferred"
+        },
+        {
+          "label": "positive-same-regex",
+          "argv": [
+            "rg",
+            "-n",
+            "\\btheorem fromBlocks(₁₁|₂₂)",
+            ".lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/PosDef.lean"
+          ],
+          "exit": 0,
+          "matching_lines": 2,
+          "stdout": "563:theorem fromBlocks₁₁ [DecidableEq m] {A : Matrix m m R'}\n582:theorem fromBlocks₂₂ [DecidableEq n] (A : Matrix m m R')\n",
+          "stderr": ""
+        },
+        {
+          "label": "negative-same-regex",
+          "argv": [
+            "rg",
+            "-n",
+            "\\btheorem qd_nonexistent(₁₁|₂₂)",
+            ".lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/PosDef.lean"
+          ],
+          "exit": 1,
+          "matching_lines": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      ]
+    }
+  ],
+  "citation_audit": "docs/reports/digestion/qd-family-triage-0909/citation-audit.json",
+  "frozen_interface_receipts": "docs/reports/digestion/qd-family-triage-0909/frozen-interface-receipts.json",
+  "pin": {
+    "base_commit": "e34699c5198180cee56093ee6995eab47c4698fc",
+    "branch": "lane/math/qd-family-triage-0909",
+    "mathlib_commit": "db584cd6d46c92f209a44c0f1c829460d327499d",
+    "lean_toolchain": "leanprover/lean4:v4.33.0"
+  },
+  "pushed": {
+    "commits": [
+      "1a06c7e2cc6a3a9a8d1e47ae0d4893e8bfaa1a95",
+      "c8fda1425c4c1e66de37d448b9c0e0f9369e4773",
+      "5def57c0bf57a4b39437f77d5026e46e1bcd157b",
+      "38bd4fc9e649c4a1a8b2eb93dea8b0e58d5bcfb9",
+      "bd27cc888919607b4f1f7f13f24e8aaa0a979598",
+      "561983d0bf36c9250a74d411888853e763f23647"
+    ],
+    "scope": "All pushed evidence commits as of report generation; runner result.json is updated after the report commit is pushed.",
+    "remote": "origin",
+    "branch": "lane/math/qd-family-triage-0909"
+  },
+  "assumed_unverified": [
+    "External papers/pages were not opened and carry no conclusion.",
+    "B3 has no make lean probe.",
+    "B4 full source binding is unverified: EXIT=2 and error-recovery sorryAx.",
+    "DescentProbe-UNRUN.lean was not run; negative-root descent and fixed-source RH implication are unverified.",
+    "B4 sourceThetaCoefficient 0 = 1 remains an explicit assumption; its source analytic justification was not tested.",
+    "No independent reviewer or orchestrator re-verification was performed."
+  ],
+  "nonclaims": [
+    "未落地",
+    "未建 D5/ 生产模块",
+    "未 cover",
+    "未 deposit",
+    "未开 PR",
+    "未主张检索穷尽",
+    "“未命中”不是“Mathlib 里不存在”的证明",
+    "未判 B3、B4、降阶推论为 yes 或 no",
+    "未证明三条未判 atom，未主张其可证或含 content",
+    "未主张 RH 的任何蕴含",
+    "未将 refutes 当作第四种 admission_basis",
+    "未把 q_d 倒数变量绑定重新算作缺口",
+    "未假设 P 的次数等于 d 或首系数非零"
+  ],
+  "report": "docs/reports/digestion/qd-family-triage-0909.md",
+  "worker": "Single Codex worker; no delegated or independent review agent; no skill used"
+}

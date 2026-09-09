@@ -1,137 +1,203 @@
-# q_d 家族剩余四条分诊（LANE #6160）
+# q_d 家族分诊：中点停止，完成 1 / 4
 
-产地：runner thinking 席；无 skill，Codex 主循环直接检索、探针与单点自查。零独立评审席；不冒称共识或 orchestrator 亲验。
+`conclusion.verdict=abstain`，`screened=1`，`bind_only_count=1`。**B1.1 判为 bind-only；B3、B4、降阶推论未判。** 未把未完成的探针或检索零命中判成 `no`。完整结构化字段见 [conclusion.json](qd-family-triage-0909/conclusion.json)。
 
-基准 `e34699c5198180cee56093ee6995eab47c4698fc`，分支 `lane/math/qd-family-triage-0909`。先全文读 tracked `tools/scripts/agent/probe-brief-note.txt`、`CLAUDE.md` 和 `agents/CONTEXT.md`。根目录 `family.json`、`candidates.json` 是既有未跟踪输入，不进入提交。
+用户停止条件 2 已触发：开工 `2026-09-09 08:12:31 UTC`，预登记中点 `08:42:31 UTC`，`08:43:16 UTC` 检查时仅一条判完。brief 未给数值总时长，本席在首个提交中登记 60 分钟窗口；这是本席的预登记解释，未改仓内或 runner 预算常数。此后只整理证据、提交推送与发布工件，不再修补证明或跑新探针。
 
-预登记：承认 B1 已判 bind-only；Q 固定采用 `(p.comp (C (-1) * X)).reflect d`，次数政策 `natDegree ≤ d`。全域多项式和非零点倒数公式分开。B1.1 预期仅剩顶项归一化与 FTC。B3 候选逃逸是简单临界点的留数符号与箭头特征多项式/严格正谱的等价；B4 候选是箭头二次迹或留数和到系数的恒等式；降阶推论候选是严格正根域保存（含重根），随后塔上归纳。以上全是待测预测，不是结论。
+产地：单 Codex worker 直接检索、探针和自查；未使用 skill、未派独立评审席，不冒称共识或 orchestrator 亲验。已全文读 tracked `tools/scripts/agent/probe-brief-note.txt`、`CLAUDE.md`、`agents/CONTEXT.md`。
 
-停止：四条全判即结束；不降低逐条证据门槛。brief 未给总时长数值，本席以开工后 60 分钟为工作窗口、30 分钟为中点检查（起点 2026-09-09 08:12:31 UTC）；未改仓内或 runner 预算常数。中点若不足两条即停并列出未判 atom。仅报告与临时探针；禁止生产模块、cover、deposit、PR。
+基准 `e34699c5198180cee56093ee6995eab47c4698fc`；分支 `lane/math/qd-family-triage-0909`；LANE #6160。Mathlib 本地钉版 `db584cd6d46c92f209a44c0f1c829460d327499d`，`leanprover/lean4:v4.33.0`。既有未跟踪输入 `family.json`、`candidates.json` 不进入提交。
 
-第一批检索原始收据：[search-01.json](qd-family-triage-0909/search-01.json)。所有阴阳对照均使用相同的 `\b` 正则特性；未命中不是不存在性证明。
+预登记预测保留：B1.1 仅余归一化；B3/B4/推论至少一条可能有 content。这一预测尚未完成检验，不能从本次部分结果支持或推翻。
 
-已实查：`NormalizedJensenDegreeLowering` 的冻结 state pin 为 `sha256:ee43a04a542df25237818cbfeeb29bb1abaed956f90db04822d08e8f413d50b4`；任意实系数序列、d≥2 的降阶恒等式可接。B1 先席已提交报告读取自 `c58ed1b7d24efea45d8e077197bd284aaa45a534:docs/reports/robin/jensen-b1-0909.md`；其已验部分仅作为当前新增探针的前置，不冒称冻结 API。
+Q 固定为 `(p.comp (C (-1) * X)).reflect d`。`degree_policy` 为 `p.natDegree ≤ d`，不假设次数相等或首系数非零；Q 是全域多项式，倒数表达式仅在 `x ≠ 0` 处使用。零点值是 `p.coeff d * (-1)^d`，不能用朴素全函数化倒数公式代替。
 
-## conclusion（增量）
+## conclusion.per_atom
 
-`screened=0`。四条尚未给判词。
+| atom_id | 判定 | 探针结算 |
+| --- | --- | --- |
+| `1e414ffb45d7fcaa9536a956298c4e291f91a2e310f112d2cf8419518caefd1a` | B1.1：yes | b11-01，EXIT=0，标准三公理 |
+| `2bc63109d666c92a11aa641dbeae45bc08e3f4f939bc5ce4406a75e5d86d03b6` | B3：未判 | 未跑探针 |
+| `c0a72a217fb966246fd4a48a809795cdc539435d1e88d1a10d041a9bcd9ed98d` | B4：未判 | b4-04，EXIT=2，源系数绑定未闭合 |
+| `cd2ad7f9986ee06ef6a8ac86aa7834a19d836483eaa1475b57396f3ba7ae536a` | 降阶推论：未判 | 源码仅准备，未跑探针 |
 
-- `1e414ffb45d7fcaa9536a956298c4e291f91a2e310f112d2cf8419518caefd1a`：待 B1.1 探针。
-- `2bc63109d666c92a11aa641dbeae45bc08e3f4f939bc5ce4406a75e5d86d03b6`：待 B3 探针。
-- `c0a72a217fb966246fd4a48a809795cdc539435d1e88d1a10d041a9bcd9ed98d`：待 B4 探针。
-- `cd2ad7f9986ee06ef6a8ac86aa7834a19d836483eaa1475b57396f3ba7ae536a`：待降阶探针。
+未判条目的 JSON `bind_only`、`proof_shape` 均为 `null`，不伪填 yes/no；`screened` 只计完整判词。
 
-`nonclaims`：未落地；未 cover；未 deposit；未开 PR；未主张检索穷尽；“未命中”不是“Mathlib 里不存在”的证明；未证四条目标；未主张 RH 的任何蕴含。未打开的外部文献为 `ASSUMED-UNVERIFIED`，不承载本判词。
+### B1.1：yes
 
+`bind_only=yes`；`proof_shape=bind-only`；`remaining_gap=none`；`escape_witness=null`。
 
-## B1.1 第一次片段实测（整次 make 尚待退出）
+常数归一化已是冻结 `source_jensen_coeff_edges` 第四投影，接 `coeff_reflect` 与 `ring` 即得；积分接 B1 导数恒等式和 Mathlib FTC。B1 探针前置来自已提交 `c58ed1b7d24efea45d8e077197bd284aaa45a534:docs/reports/robin/jensen-b1-0909.md`，并在本次探针内重验；它本身不冒称新冻结 API。
 
-`B11Probe.lean` 已 elaborate 完整 `b11_source`：对 d≥2、全部 x:ℝ，复多项式 Q 在 x 的值等于指定相邻层积分加 `(-1)^d*d!/d^d*a_d`。`b11_constant` 直接用已冻结 `source_jensen_coeff_edges` 第四投影；`b11_source` 接前席 B1 系数运输和 Mathlib FTC。两者 axioms 都恰为标准三公理。日志 [b11-checkpoint.log](qd-family-triage-0909/b11-checkpoint.log) 尚无 EXIT，不据此提前把整次 make 记为通过；待命令返回后逐条结算。
+实际通过陈述（`alpha d=((d-1:ℕ):ℂ)/(d:ℂ)`；全部实数 x，包括零）：
 
-[search-02.json](qd-family-triage-0909/search-02.json) 记录第二批实查：Lagrange.coeff_eq_sum（497 行）、Gauss–Lucas（97 行）、FTC、real restriction 与 Schur。前述箭头关键词无命中不能遮盖这些语义近邻。B4 新探针检验“余式最高系数等于临界值/节点差积之和”；这是 Lagrange 直接实例化的候选 bind 路线，尚未判定。
+```lean
+theorem b11_constant (d : ℕ) (hd : 1 ≤ d) :
+    (Q (sourceJensenPolynomial d) d).eval 0 =
+      (-1 : ℂ)^d * (d.factorial : ℂ) / (d : ℂ)^d * (sourceThetaCoefficient d : ℂ)
 
+theorem b11_source (d : ℕ) (hd : 2 ≤ d) (x : ℝ) :
+    (Q (sourceJensenPolynomial d) d).eval (x : ℂ) =
+      (∫ u in (0 : ℝ)..x, (d : ℂ) * alpha d ^ (d - 1) *
+        (Q (sourceJensenPolynomial (d - 1)) (d - 1)).eval ((u : ℂ) / alpha d)) +
+      (-1 : ℂ)^d * (d.factorial : ℂ) / (d : ℂ)^d * (sourceThetaCoefficient d : ℂ)
 
-## 第一条结算：B1.1
-
-`bind_only=yes`，`remaining_gap=none`，`escape_witness=null`。整次 make EXIT=0；534.14 秒，12767 jobs，标准三公理。源顶项的归一化已是冻结投影，不再作为缺口。
-
-```json
-{
-  "atom_id": "1e414ffb45d7fcaa9536a956298c4e291f91a2e310f112d2cf8419518caefd1a",
-  "title": "推论 B1.1：高阶延拓是一项带常数的积分问题",
-  "bind_only": "yes",
-  "proof_shape": "bind-only",
-  "remaining_gap": "none：常数由已冻结 source_jensen_coeff_edges 第四投影 + coeff_reflect + ring；积分由已判 B1 与 FTC 直接实例化。",
-  "probe_statement": "B1BindOnlyProbe.b11_source: ∀ d≥2, ∀ x:ℝ, (Q (sourceJensenPolynomial d) d).eval (x:ℂ) = (∫ u in 0..x, d*alpha(d)^(d-1)*(Q (sourceJensenPolynomial (d-1)) (d-1)).eval ((u:ℂ)/alpha(d))) + (-1)^d*d!/d^d*(sourceThetaCoefficient d:ℂ).",
-  "probe_file": "docs/reports/digestion/qd-family-triage-0909/B11Probe.lean",
-  "probe_run": "b11-01",
-  "mathlib_hits": [
-    {
-      "declaration": "Polynomial.reflect",
-      "file": ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean",
-      "line": 88
-    },
-    {
-      "declaration": "Polynomial.coeff_reflect",
-      "file": ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean",
-      "line": 96
-    },
-    {
-      "declaration": "Polynomial.eval₂_reflect_mul_pow",
-      "file": ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean",
-      "line": 191
-    },
-    {
-      "declaration": "Polynomial.hasDerivAt",
-      "file": ".lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Polynomial.lean",
-      "line": 67
-    },
-    {
-      "declaration": "HasDerivAt.comp_ofReal",
-      "file": ".lake/packages/mathlib/Mathlib/Analysis/Complex/RealDeriv.lean",
-      "line": 97
-    },
-    {
-      "declaration": "intervalIntegral.integral_eq_sub_of_hasDerivAt",
-      "file": ".lake/packages/mathlib/Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean",
-      "line": 1148
-    }
-  ],
-  "frozen_interfaces": [
-    {
-      "gid": "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.normalizedJensen_degree_lowering",
-      "statement_id": "sha256:f13a2fdd4121c7b170af20e397cf8d9c567ddfcfd4dd8e37d469c21f8603d6bf",
-      "state_path": "Golden/Frozen/state/D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.lean.json",
-      "module_statement_id": "sha256:ee43a04a542df25237818cbfeeb29bb1abaed956f90db04822d08e8f413d50b4",
-      "scope": "任意实系数序列，d≥2；复多项式降阶恒等式，无根或矩阵结论"
-    },
-    {
-      "gid": "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.normalizedJensen_eq_fallingFactorial_sum",
-      "statement_id": "sha256:8a2655f8cbb74a3d045256378f01d8c6468e59545dc09fc5446bd390f898c025",
-      "state_path": "Golden/Frozen/state/D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.lean.json",
-      "module_statement_id": "sha256:ee43a04a542df25237818cbfeeb29bb1abaed956f90db04822d08e8f413d50b4",
-      "scope": "任意实系数序列，d≥1；有限下降阶乘和"
-    },
-    {
-      "gid": "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.sourceJensenPolynomial_eq_normalizedJensen",
-      "statement_id": "sha256:0c96cec689edaf5a585802b79a9c52b976c6dcedbee0cd259b40d0a7d19ecfa9",
-      "state_path": "Golden/Frozen/state/D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.lean.json",
-      "module_statement_id": "sha256:ee43a04a542df25237818cbfeeb29bb1abaed956f90db04822d08e8f413d50b4",
-      "scope": "固定 theta 系数，d≥1；源对象到通用归一化对象"
-    },
-    {
-      "gid": "D5/S3/Zeros/Jensen/SourceJensenPrincipalBlockObstruction.source_jensen_coeff_edges",
-      "statement_id": "sha256:adde2bcfe9e6e59415236589839993c3faa03e7cabdaa4276c8a049fc9daae39",
-      "state_path": "Golden/Frozen/state/D5/S3/Zeros/Jensen/SourceJensenPrincipalBlockObstruction.lean.json",
-      "module_statement_id": "sha256:5e43098caa9fb48b4fccd8adc30e337ff93668044d5dcfc06acab33dc8970f3c",
-      "scope": "固定 theta 系数，d≥1；四系数合取，第四项是顶项 d!/d^d*a_d"
-    }
-  ],
-  "escape_witness": null,
-  "admission_if_landed": {
-    "admission_basis": "rule-11-upstream-wrapper",
-    "reason": "条件性的落地依据：atom B6 明文要求源 Q 的指定积分表示；Mathlib.intervalIntegral.integral_eq_sub_of_hasDerivAt 是精确积分引擎，允许最薄诚实包装。常数单独只是冻结投影，无独立准入依据；本席不实施。"
-  }
-}
 ```
 
-完整日志：[b11-01.log](qd-family-triage-0909/b11-01.log.gz)。B4 初试 [b4-01.log](qd-family-triage-0909/b4-01.log) 因 canonical cache writer guard busy 返回2，未到 Lean，不能据此判数学不闭合；待释放后重跑。第二批 Schur 的结尾 `\b` 不匹配下标字符，属于正则词界问题，已读到实际声明582行，不拿该0命中主张不存在。
+[探针源码](qd-family-triage-0909/B11Probe.lean)；[运行摘录](qd-family-triage-0909/b11-01-excerpt.txt)；[完整无损日志](qd-family-triage-0909/b11-01.log.gz)。`make lean` 整次 EXIT=0，534.139564708 秒，12767 jobs；`b11_constant` 与 `b11_source` 都仅 `[propext, Classical.choice, Quot.sound]`。
 
+`mathlib_hits`：
 
-## B4 中间片段与检索纠错
+- `Polynomial.reflect` — `.lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean:88`。
+- `Polynomial.coeff_reflect` — `.lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean:96`。
+- `Polynomial.eval₂_reflect_mul_pow` — `.lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean:191`。
+- `Polynomial.hasDerivAt` — `.lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Polynomial.lean:66`。
+- `HasDerivAt.comp_ofReal` — `.lake/packages/mathlib/Mathlib/Analysis/Complex/RealDeriv.lean:97`。
+- `intervalIntegral.integral_eq_sub_of_hasDerivAt` — `.lake/packages/mathlib/Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean:1148`。
 
-第二轮（第一轮真正进入 Lean）`b4-02.log` EXIT=2：`nodal_derivative` 与 `b4_cumulant` 标准三公理；`b4_residue_sum` 尚含错误恢复 sorryAx，不承载结论。报错是 `degree_lt_iff_coeff_zero` 需显式参数、`sum_neg_distrib` 改写方向反了。修复后连同实际源 Q 前三系数的规范化一起重跑，不把部分证明误报为整条通过。
+`frozen_interfaces`：F1、F2、F3、F4，精确 GID、模块与声明身份及作用域见后文身份条目。
 
-B1.1 原始 stdout 61.14 MB（Mathlib/仓库历史警告回放）已在当前树改存无损 gzip；[摘录](qd-family-triage-0909/b11-01-excerpt.txt) 给可读的 command/EXIT/axioms。原始字节仍完整保留，未重写已推历史。
+`admission_if_landed.admission_basis=rule-11-upstream-wrapper`，条件性依据是 Mathlib `intervalIntegral.integral_eq_sub_of_hasDerivAt` 与 atom B6 明文要求的该积分表示（`docs/develop/theory/QUANTUM-RH.md:1542`，`CLAUDE.md:117`）。常数投影单独没有独立准入依据。此次不实施。
 
+### 定理 B3：一步正延拓的精确判据：未判
 
-B4 第三轮 `make lean` EXIT=2（149.23秒）：错误集中在复数域 `n+2 ≠ 0` 未显式交给 `field_simp`，以及宽 `simp` 提前拆开 C 的乘积，导致系数引理无法命中。已改为先 `simp only [finsetSum_coeff, coeff_C_mul_X_pow]` 再规范化，补显式非零分母；仍不把这类语法/规范化失败称为数学 content。原始失败源码与日志已归档。
+`bind_only=null`；`proof_shape=null`；`escape_witness=null`。`remaining_gap`：undetermined：去掉 Q 后待验证的是 ηᵢ=-d*q(tᵢ)/q″(tᵢ) 的留数符号与严格正根、箭头矩阵 charpoly=q 及正定条件之间的精确等价。未跑探针，不能断言这些是不可由绑定得到的数学缺陷。
 
+`卡点/边界`：No B3 Lean probe was run before the midpoint stop; keyword misses are not a no verdict.
 
-## 中点停止：仅一条完成
+`mathlib_hits`（已读近邻的作用域，不等于整条可直接接上）：
 
-2026-09-09 08:43:16 UTC 检查，已超过预登记中点 08:42:31 UTC。`screened=1`、`bind_only_count=1`；B1.1 为 yes。依用户停止条件，停止新增数学检索、证明修补及探针。B3、B4、降阶推论均 **未判**，不填伪造的 no。
+- `Matrix.PosDef.fromBlocks₂₂` — `.lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/PosDef.lean:582`。下右块正定假设下的 Schur 半正定等价；结论是 PosSemidef，不能直接冒充整条严格正定/留数准则。
+- `Matrix.det_fromBlocks₁₁` — `.lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/SchurComplement.lean:370`。给定可逆块的行列式分解；尚未绑定构造的箭头矩阵与 q。
+- `Matrix.det_fromBlocks₂₂` — `.lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/SchurComplement.lean:384`。给定可逆块的行列式分解。
+- `Matrix.IsHermitian.posDef_iff_eigenvalues_pos` — `.lake/packages/mathlib/Mathlib/Analysis/Matrix/PosDef.lean:71`。给定 Hermitian 矩阵：严格正谱 ↔ 正定；未构造目标矩阵或证明 charpoly=q。
+- `Matrix.IsHermitian.posSemidef_iff_eigenvalues_nonneg` — `.lake/packages/mathlib/Mathlib/Analysis/Matrix/PosDef.lean:34`。给定 Hermitian 矩阵：非负谱 ↔ 半正定。
 
-B4 第四轮 [b4-04.log](qd-family-triage-0909/b4-04.log) EXIT=2，217.170564375 秒。`b4_residue_sum`、`nodal_derivative`、`b4_cumulant`、`b4_source_cumulant` 仅标准三公理；`qSource_top_three` 仍有未闭合目标 `True ∨ sourceThetaCoefficient 2 = 0`，`b4_source` 依赖错误恢复 `sorryAx`。这不是数学逃逸见证，整条不得判为 bind-only 或 content。保持失败快照 [B4Probe-04.lean](qd-family-triage-0909/B4Probe-04.lean)，不再修补。
+`frozen_interfaces`：F1、F4，仅可接背景；未验证完整 atom 绑定。B3 不把已假设行列式实现的接口当作该实现的构造。
 
-降阶探针仅准备、未调用 make；归档为 [DescentProbe-UNRUN.lean](qd-family-triage-0909/DescentProbe-UNRUN.lean)。B3 没有探针。完整结构化结算与推送收据随后仅做归档整理。
+`admission_if_landed.admission_basis=none`：没有完整探针或满足四项的逃逸见证，也未为完整 atom 核准薄包装/具名消费者的 bridge 准入。
+
+### 定理 B4：新增耦合总预算：未判
+
+`bind_only=null`；`proof_shape=null`；`escape_witness=null`。`remaining_gap`：undetermined：留数总和与前两系数的通用恒等式、实际 source 系数表达式到四阶累积量的算术已 elaborate 且仅标准三公理；qSource_top_three 的实际源二次项归一化仍有未闭合目标。未验证整个 atom，尚未认定任何真实数学缺陷。箭头二次迹不是本次已验证为必要的缺口。
+
+`卡点/边界`：qSource_top_three（B4Probe-04.lean:129）的二次项归一化留下 True ∨ sourceThetaCoefficient 2 = 0；b4_source 因错误恢复依赖 sorryAx。此处没有数学逃逸见证。
+
+`mathlib_hits`（已读近邻的作用域，不等于整条可直接接上）：
+
+- `Polynomial.eq_of_degree_le_of_eval_index_eq` — `.lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean:117`。由次数界、首项及节点值识别导数多项式。
+- `Lagrange.coeff_eq_sum` — `.lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean:495`。低于节点数次数的多项式：指定系数等于节点值除节点差积的和。
+- `Lagrange.eval_nodal_derivative_eval_node_eq` — `.lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean:605`。nodal 导数在节点处的值等于去掉该节点的 nodal 值。
+- `Polynomial.coeff_reflect` — `.lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean:96`。Q 系数的定义绑定。
+
+`frozen_interfaces`：F4，仅可接背景；未验证完整 atom 绑定。
+
+`admission_if_landed.admission_basis=none`：整个源 Q 绑定未验证完成；通过的子引理不能独立为整条提供准入依据。
+
+[失败快照](qd-family-triage-0909/B4Probe-04.lean) 与 [完整日志](qd-family-triage-0909/b4-04.log)。可保留的部分读数：`nodal_derivative`、`b4_residue_sum`、`b4_cumulant`、`b4_source_cumulant` 都仅标准三公理；整次 EXIT=2。
+
+其中通用留数恒等式为：`d=n+2`，`q.coeff d=1`、`q.coeff(d-1)=-a₁`、`q.coeff(d-2)=(d-1)/d*a₂`、次数不超过 d、d−1 个互异临界点下，`Σᵢ -d*q(tᵢ)/q″(tᵢ)=(d-1)/d²*(a₁²-2*a₂)`。它以 Lagrange 插值的系数和公式为引擎，提供了已验的局部路线；没有验证整条 B4 或判其 proof_shape。
+
+源版本还显式假设 `sourceThetaCoefficient 0 = 1`，未在本席消除此分析前提；这不是 `P.natDegree=d` 假设。前项根到临界节点及原文所有侧条件的整条接口也未完成核验。
+
+### 推论：实根性向低阶传递：未判
+
+`bind_only=null`；`proof_shape=null`；`escape_witness=null`。`remaining_gap`：undetermined：倒数缩放在含零点/次数不足时的根域运输、导数根域保存、塔上归纳及最小失败阶仍未实测。Gauss–Lucas、凸集与 Nat.find 已命中；没有依据把这些步骤直接判作 content。
+
+`卡点/边界`：Source prepared only, never passed to make lean. Negative-root transfer and fixed-source RH-to-failure assertions were not completed.
+
+`mathlib_hits`（已读近邻的作用域，不等于整条可直接接上）：
+
+- `Polynomial.rootSet_derivative_subset_convexHull_rootSet` — `.lake/packages/mathlib/Mathlib/Analysis/Complex/Polynomial/GaussLucas.lean:97`。正次数复多项式的导数根属于原根集凸包。
+- `convex_halfSpace_re_gt` — `.lake/packages/mathlib/Mathlib/Analysis/Complex/Convex.lean:57`。严格正实部半空间的凸性。
+- `convex_halfSpace_im_le` — `.lake/packages/mathlib/Mathlib/Analysis/Complex/Convex.lean:63`。虚部 ≤ r 的闭半空间凸性。
+- `convex_halfSpace_im_ge` — `.lake/packages/mathlib/Mathlib/Analysis/Complex/Convex.lean:67`。虚部 ≥ r 的闭半空间凸性。
+- `antitone_nat_of_succ_le` — `.lake/packages/mathlib/Mathlib/Order/Monotone/Basic.lean:552`。相邻层关系推广为 Nat 上反单调。
+- `Nat.find_spec` — `.lake/packages/mathlib/Mathlib/Data/Nat/Find.lean:75`。在已给定失败存在见证后取最小失败。
+- `Nat.find_min` — `.lake/packages/mathlib/Mathlib/Data/Nat/Find.lean:80`。比 Nat.find 更小的阶不满足失败谓词。
+
+`frozen_interfaces`：F1、F2、F3，仅可接背景；未验证完整 atom 绑定。
+
+`admission_if_landed.admission_basis=none`：探针未跑，未判整条，未建立逃逸见证或完整薄包装/具名下游消费者依据。
+
+[DescentProbe-UNRUN.lean](qd-family-triage-0909/DescentProbe-UNRUN.lean) 只作未跑草稿归档。未证明负根传递式 (28)，未证明 RH 假到固定 n=0 Jensen 塔失败的蕴含。次数不足产生的 Q 零根不能靠添加次数相等假设掩盖。
+
+## frozen_interfaces：身份与作用域
+
+GID 是模块 GID；模块 `statement_id` 从当前 Frozen/state 读取，声明 `statement_id` 从同一已接受 Freeze 事件读取，两者不混写。[逐项读取收据](qd-family-triage-0909/frozen-interface-receipts.json)。
+
+- **F1** GID `D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering`；模块 `statement_id=sha256:ee43a04a542df25237818cbfeeb29bb1abaed956f90db04822d08e8f413d50b4`。声明 `D5.S3.Zeros.Jensen.NormalizedJensenDegreeLowering.normalizedJensen_degree_lowering`；声明 `statement_id=sha256:f13a2fdd4121c7b170af20e397cf8d9c567ddfcfd4dd8e37d469c21f8603d6bf`。作用域：任意实系数序列，d≥2；复多项式降阶恒等式，无根或矩阵结论。
+
+- **F2** GID `D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering`；模块 `statement_id=sha256:ee43a04a542df25237818cbfeeb29bb1abaed956f90db04822d08e8f413d50b4`。声明 `D5.S3.Zeros.Jensen.NormalizedJensenDegreeLowering.normalizedJensen_eq_fallingFactorial_sum`；声明 `statement_id=sha256:8a2655f8cbb74a3d045256378f01d8c6468e59545dc09fc5446bd390f898c025`。作用域：任意实系数序列，d≥1；有限下降阶乘和。
+
+- **F3** GID `D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering`；模块 `statement_id=sha256:ee43a04a542df25237818cbfeeb29bb1abaed956f90db04822d08e8f413d50b4`。声明 `D5.S3.Zeros.Jensen.NormalizedJensenDegreeLowering.sourceJensenPolynomial_eq_normalizedJensen`；声明 `statement_id=sha256:0c96cec689edaf5a585802b79a9c52b976c6dcedbee0cd259b40d0a7d19ecfa9`。作用域：固定 theta 系数，d≥1；源对象到通用归一化对象。
+
+- **F4** GID `D5/S3/Zeros/Jensen/SourceJensenPrincipalBlockObstruction`；模块 `statement_id=sha256:5e43098caa9fb48b4fccd8adc30e337ff93668044d5dcfc06acab33dc8970f3c`。声明 `D5.S3.Zeros.Jensen.SourceJensenPrincipalBlockObstruction.source_jensen_coeff_edges`；声明 `statement_id=sha256:adde2bcfe9e6e59415236589839993c3faa03e7cabdaa4276c8a049fc9daae39`。作用域：固定 theta 系数，d≥1；四系数合取，第四项是顶项 d!/d^d*a_d。
+
+## probe_runs
+
+每次实际命令如下，原始 Makefile 的 lean recipe 保留，临时 makefile 只添加探针 prerequisite，通过仓库 canonical cache wrapper 调用 Lean。无裸 lake、cover 或 deposit 调用。
+
+| run | EXIT | 秒 | 日志 / 源码 |
+| --- | ---: | ---: | --- |
+| b11-01 | 0 | 534.139564708 | [b11-01.log.gz](qd-family-triage-0909/b11-01.log.gz) / [B11Probe.lean](qd-family-triage-0909/B11Probe.lean) |
+| b4-01 | 2 | 30.860718708 | [b4-01.log](qd-family-triage-0909/b4-01.log) / [B4Probe-01.lean](qd-family-triage-0909/B4Probe-01.lean) |
+| b4-02 | 2 | 71.597924042 | [b4-02.log](qd-family-triage-0909/b4-02.log) / [B4Probe-02.lean](qd-family-triage-0909/B4Probe-02.lean) |
+| b4-03 | 2 | 149.225800333 | [b4-03.log](qd-family-triage-0909/b4-03.log) / [B4Probe-03.lean](qd-family-triage-0909/B4Probe-03.lean) |
+| b4-04 | 2 | 217.170564375 | [b4-04.log](qd-family-triage-0909/b4-04.log) / [B4Probe-04.lean](qd-family-triage-0909/B4Probe-04.lean) |
+
+```sh
+# b11-01: EXIT=0
+make -f Makefile -f /var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/probe.mk lean PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/B11Probe.lean
+# b4-01: EXIT=2
+make -f Makefile -f /var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/probe.mk lean PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/B4Probe.lean
+# b4-02: EXIT=2
+make -f Makefile -f /var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/probe.mk lean PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/B4Probe.lean
+# b4-03: EXIT=2
+make -f Makefile -f /var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/probe.mk lean PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/B4Probe.lean
+# b4-04: EXIT=2
+make -f Makefile -f /var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/probe.mk lean PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/B4Probe.lean
+```
+
+B4-01 因缓存 writer busy，未进入 Lean；02 为 API 参数与改写方向错误；03 为系数与非零分母规范化错误；04 的整条源绑定仍失败。失败运行均不产生 no 判词。B1.1 原始日志 64,110,530 字节，当前树存无损 gzip，字节一致性已核对；未重写早先包含原始日志的已推历史。
+
+## search_receipts
+
+[search-01.json](qd-family-triage-0909/search-01.json)、[search-02.json](qd-family-triage-0909/search-02.json)、[search-03.json](qd-family-triage-0909/search-03.json) 保存实际 argv、EXIT、命中行数、stdout/stderr。[citation-audit.json](qd-family-triage-0909/citation-audit.json) 只复核已用引用，不是中点后新增数学筛选。
+
+| 对照 | 命令特征 | 命中行数 | EXIT |
+| --- | --- | ---: | ---: |
+| 仓内阳性 | `rg -n '\bsource_jensen_degree_lowering\b' D5 --glob '*.lean'` | 1 | 0 |
+| 仓内阴性 | 同域 `\bqd_triage_nonexistent_control_0909\b` | 0 | 1 |
+| Mathlib 阳性 | Reverse.lean 中 `\bcoeff_reflect\b` | 5 | 0 |
+| Mathlib 阴性 | Mathlib 中 `\bqd_triage_nonexistent_control_0909\b` | 0 | 1 |
+| Schur 阳性 | `\btheorem fromBlocks(₁₁|₂₂)` | 2 | 0 |
+| Schur 阴性 | `\btheorem qd_nonexistent(₁₁|₂₂)` | 0 | 1 |
+
+所选 Mathlib 子目录的 arrowhead/interlacing 关键词为 0 行、EXIT=1；不是不存在性证明。原 Schur 模式在下标后加 `\b` 得假阴性，已用同正则特性的阴阳对照修复，完整保留错误收据。引用复核中的 spectral `theorem` 字面匹配也已记录为 `lemma` 关键字不符，不能当作定理缺失。初始两个不存在路径的读取只算导航错误。
+
+## pushed.commits
+
+逐批提交推送；以下为本报告提交前已推送快照。runner `result.json` 在报告最终提交推送后补入最终 commit 与远端 HEAD 收据。
+
+- `1a06c7e2cc6a3a9a8d1e47ae0d4893e8bfaa1a95`
+- `c8fda1425c4c1e66de37d448b9c0e0f9369e4773`
+- `5def57c0bf57a4b39437f77d5026e46e1bcd157b`
+- `38bd4fc9e649c4a1a8b2eb93dea8b0e58d5bcfb9`
+- `bd27cc888919607b4f1f7f13f24e8aaa0a979598`
+- `561983d0bf36c9250a74d411888853e763f23647`
+
+## assumed_unverified 与 nonclaims
+
+`content_candidates=[]` 只表示没有认证的 content 候选；三条未判的候选义务见各条 `remaining_gap`，不是断言其无 content。
+
+- ASSUMED-UNVERIFIED / 未测：External papers/pages were not opened and carry no conclusion.
+- ASSUMED-UNVERIFIED / 未测：B3 has no make lean probe.
+- ASSUMED-UNVERIFIED / 未测：B4 full source binding is unverified: EXIT=2 and error-recovery sorryAx.
+- ASSUMED-UNVERIFIED / 未测：DescentProbe-UNRUN.lean was not run; negative-root descent and fixed-source RH implication are unverified.
+- ASSUMED-UNVERIFIED / 未测：B4 sourceThetaCoefficient 0 = 1 remains an explicit assumption; its source analytic justification was not tested.
+- ASSUMED-UNVERIFIED / 未测：No independent reviewer or orchestrator re-verification was performed.
+
+`nonclaims`：未落地；未建 D5/ 生产模块；未 cover；未 deposit；未开 PR；未主张检索穷尽；“未命中”不是“Mathlib 里不存在”的证明；未判 B3、B4、降阶推论为 yes 或 no；未证明三条未判 atom，未主张其可证或含 content；未主张 RH 的任何蕴含；未将 refutes 当作第四种 admission_basis；未把 q_d 倒数变量绑定重新算作缺口；未假设 P 的次数等于 d 或首系数非零。
+
+runner 工件目录：`/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1`。最终 `result.json` 严格只含 `conclusion` 对象和非空 `log_ref`；先写临时文件后原子改名，再以同样方式发布 `completion.sentinel`。

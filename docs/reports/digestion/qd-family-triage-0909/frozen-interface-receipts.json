@@ -1,0 +1,38 @@
+[
+  {
+    "interface_ref": "F1",
+    "gid": "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering",
+    "state_path": "Golden/Frozen/state/D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.lean.json",
+    "state_statement_id": "sha256:ee43a04a542df25237818cbfeeb29bb1abaed956f90db04822d08e8f413d50b4",
+    "accepted_event_path": "Golden/Frozen/accepted/afd9189dc663834087e112c1f91417f4f168ac2c96ec35c1fa10631a68a6ea32.json",
+    "declaration_name_key": "ns(ns(ns(ns(ns(ns(n0,2:D5),2:S3),5:Zeros),6:Jensen),30:NormalizedJensenDegreeLowering),32:normalizedJensen_degree_lowering)",
+    "declaration_statement_id": "sha256:f13a2fdd4121c7b170af20e397cf8d9c567ddfcfd4dd8e37d469c21f8603d6bf"
+  },
+  {
+    "interface_ref": "F2",
+    "gid": "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering",
+    "state_path": "Golden/Frozen/state/D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.lean.json",
+    "state_statement_id": "sha256:ee43a04a542df25237818cbfeeb29bb1abaed956f90db04822d08e8f413d50b4",
+    "accepted_event_path": "Golden/Frozen/accepted/afd9189dc663834087e112c1f91417f4f168ac2c96ec35c1fa10631a68a6ea32.json",
+    "declaration_name_key": "ns(ns(ns(ns(ns(ns(n0,2:D5),2:S3),5:Zeros),6:Jensen),30:NormalizedJensenDegreeLowering),40:normalizedJensen_eq_fallingFactorial_sum)",
+    "declaration_statement_id": "sha256:8a2655f8cbb74a3d045256378f01d8c6468e59545dc09fc5446bd390f898c025"
+  },
+  {
+    "interface_ref": "F3",
+    "gid": "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering",
+    "state_path": "Golden/Frozen/state/D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.lean.json",
+    "state_statement_id": "sha256:ee43a04a542df25237818cbfeeb29bb1abaed956f90db04822d08e8f413d50b4",
+    "accepted_event_path": "Golden/Frozen/accepted/afd9189dc663834087e112c1f91417f4f168ac2c96ec35c1fa10631a68a6ea32.json",
+    "declaration_name_key": "ns(ns(ns(ns(ns(ns(n0,2:D5),2:S3),5:Zeros),6:Jensen),30:NormalizedJensenDegreeLowering),42:sourceJensenPolynomial_eq_normalizedJensen)",
+    "declaration_statement_id": "sha256:0c96cec689edaf5a585802b79a9c52b976c6dcedbee0cd259b40d0a7d19ecfa9"
+  },
+  {
+    "interface_ref": "F4",
+    "gid": "D5/S3/Zeros/Jensen/SourceJensenPrincipalBlockObstruction",
+    "state_path": "Golden/Frozen/state/D5/S3/Zeros/Jensen/SourceJensenPrincipalBlockObstruction.lean.json",
+    "state_statement_id": "sha256:5e43098caa9fb48b4fccd8adc30e337ff93668044d5dcfc06acab33dc8970f3c",
+    "accepted_event_path": "Golden/Frozen/accepted/959fea222a18ba53faa7bfc0e66d64381d53f3b394b55dc6c2cb783855725e07.json",
+    "declaration_name_key": "ns(ns(ns(ns(ns(ns(n0,2:D5),2:S3),5:Zeros),6:Jensen),37:SourceJensenPrincipalBlockObstruction),25:source_jensen_coeff_edges)",
+    "declaration_statement_id": "sha256:adde2bcfe9e6e59415236589839993c3faa03e7cabdaa4276c8a049fc9daae39"
+  }
+]

@@ -1,0 +1,227 @@
+[
+  {
+    "literal": "def reflect",
+    "hits": [
+      {
+        "file": ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean",
+        "line": 88,
+        "declaration_text": "noncomputable def reflect (N : ℕ) : R[X] → R[X]"
+      }
+    ]
+  },
+  {
+    "literal": "theorem coeff_reflect",
+    "hits": [
+      {
+        "file": ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean",
+        "line": 96,
+        "declaration_text": "theorem coeff_reflect (N : ℕ) (f : R[X]) (i : ℕ) : coeff (reflect N f) i = f.coeff (revAt N i) := by"
+      }
+    ]
+  },
+  {
+    "literal": "theorem eval₂_reflect_mul_pow",
+    "hits": [
+      {
+        "file": ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean",
+        "line": 191,
+        "declaration_text": "theorem eval₂_reflect_mul_pow (i : R →+* S) (x : S) [Invertible x] (N : ℕ) (f : R[X])"
+      }
+    ]
+  },
+  {
+    "literal": "protected theorem hasDerivAt (",
+    "hits": [
+      {
+        "file": ".lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Polynomial.lean",
+        "line": 66,
+        "declaration_text": "protected theorem hasDerivAt (x : 𝕜) : HasDerivAt (fun x => p.eval x) (p.derivative.eval x) x :="
+      }
+    ]
+  },
+  {
+    "literal": "theorem HasDerivAt.comp_ofReal",
+    "hits": [
+      {
+        "file": ".lake/packages/mathlib/Mathlib/Analysis/Complex/RealDeriv.lean",
+        "line": 97,
+        "declaration_text": "theorem HasDerivAt.comp_ofReal (hf : HasDerivAt e e' ↑z) : HasDerivAt (fun y : ℝ => e ↑y) e' z := by"
+      }
+    ]
+  },
+  {
+    "literal": "theorem integral_eq_sub_of_hasDerivAt (",
+    "hits": [
+      {
+        "file": ".lake/packages/mathlib/Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean",
+        "line": 1148,
+        "declaration_text": "theorem integral_eq_sub_of_hasDerivAt (hderiv : ∀ x ∈ uIcc a b, HasDerivAt f (f' x) x)"
+      }
+    ]
+  },
+  {
+    "literal": "theorem eq_of_degree_le_of_eval_index_eq",
+    "hits": [
+      {
+        "file": ".lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean",
+        "line": 117,
+        "declaration_text": "theorem eq_of_degree_le_of_eval_index_eq (hvs : Set.InjOn v s)"
+      }
+    ]
+  },
+  {
+    "literal": "theorem coeff_eq_sum",
+    "hits": [
+      {
+        "file": ".lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean",
+        "line": 495,
+        "declaration_text": "theorem coeff_eq_sum"
+      }
+    ]
+  },
+  {
+    "literal": "theorem eval_nodal_derivative_eval_node_eq",
+    "hits": [
+      {
+        "file": ".lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean",
+        "line": 605,
+        "declaration_text": "theorem eval_nodal_derivative_eval_node_eq [DecidableEq ι] {i : ι} (hi : i ∈ s) :"
+      }
+    ]
+  },
+  {
+    "literal": "theorem fromBlocks₂₂",
+    "hits": [
+      {
+        "file": ".lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/PosDef.lean",
+        "line": 582,
+        "declaration_text": "theorem fromBlocks₂₂ [DecidableEq n] (A : Matrix m m R')"
+      }
+    ]
+  },
+  {
+    "literal": "theorem det_fromBlocks₁₁",
+    "hits": [
+      {
+        "file": ".lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/SchurComplement.lean",
+        "line": 370,
+        "declaration_text": "theorem det_fromBlocks₁₁ (A : Matrix m m α) (B : Matrix m n α) (C : Matrix n m α)"
+      }
+    ]
+  },
+  {
+    "literal": "theorem det_fromBlocks₂₂",
+    "hits": [
+      {
+        "file": ".lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/SchurComplement.lean",
+        "line": 384,
+        "declaration_text": "theorem det_fromBlocks₂₂ (A : Matrix m m α) (B : Matrix m n α) (C : Matrix n m α)"
+      }
+    ]
+  },
+  {
+    "literal": "theorem IsHermitian.posDef_iff_eigenvalues_pos",
+    "hits": [],
+    "correction": {
+      "literal": "lemma IsHermitian.posDef_iff_eigenvalues_pos",
+      "hits": [
+        {
+          "file": ".lake/packages/mathlib/Mathlib/Analysis/Matrix/PosDef.lean",
+          "line": 71,
+          "declaration_text": "lemma IsHermitian.posDef_iff_eigenvalues_pos [DecidableEq n] (hA : A.IsHermitian) :"
+        }
+      ]
+    },
+    "note": "This literal declaration-kind mismatch is not mathematical negative evidence."
+  },
+  {
+    "literal": "theorem IsHermitian.posSemidef_iff_eigenvalues_nonneg",
+    "hits": [],
+    "correction": {
+      "literal": "lemma IsHermitian.posSemidef_iff_eigenvalues_nonneg",
+      "hits": [
+        {
+          "file": ".lake/packages/mathlib/Mathlib/Analysis/Matrix/PosDef.lean",
+          "line": 34,
+          "declaration_text": "lemma IsHermitian.posSemidef_iff_eigenvalues_nonneg [DecidableEq n] (hA : IsHermitian A) :"
+        }
+      ]
+    },
+    "note": "This literal declaration-kind mismatch is not mathematical negative evidence."
+  },
+  {
+    "literal": "theorem rootSet_derivative_subset_convexHull_rootSet",
+    "hits": [
+      {
+        "file": ".lake/packages/mathlib/Mathlib/Analysis/Complex/Polynomial/GaussLucas.lean",
+        "line": 97,
+        "declaration_text": "theorem rootSet_derivative_subset_convexHull_rootSet (h₀ : 0 < P.degree) :"
+      }
+    ]
+  },
+  {
+    "literal": "theorem convex_halfSpace_re_gt",
+    "hits": [
+      {
+        "file": ".lake/packages/mathlib/Mathlib/Analysis/Complex/Convex.lean",
+        "line": 57,
+        "declaration_text": "theorem convex_halfSpace_re_gt : Convex ℝ { c : ℂ | r < c.re } :="
+      }
+    ]
+  },
+  {
+    "literal": "theorem convex_halfSpace_im_le",
+    "hits": [
+      {
+        "file": ".lake/packages/mathlib/Mathlib/Analysis/Complex/Convex.lean",
+        "line": 63,
+        "declaration_text": "theorem convex_halfSpace_im_le : Convex ℝ { c : ℂ | c.im ≤ r } :="
+      }
+    ]
+  },
+  {
+    "literal": "theorem convex_halfSpace_im_ge",
+    "hits": [
+      {
+        "file": ".lake/packages/mathlib/Mathlib/Analysis/Complex/Convex.lean",
+        "line": 67,
+        "declaration_text": "theorem convex_halfSpace_im_ge : Convex ℝ { c : ℂ | r ≤ c.im } :="
+      }
+    ]
+  },
+  {
+    "literal": "theorem antitone_nat_of_succ_le",
+    "hits": [
+      {
+        "file": ".lake/packages/mathlib/Mathlib/Order/Monotone/Basic.lean",
+        "line": 552,
+        "declaration_text": "theorem antitone_nat_of_succ_le {f : ℕ → α} (hf : ∀ n, f (n + 1) ≤ f n) : Antitone f :="
+      }
+    ]
+  },
+  {
+    "literal": "theorem find_spec",
+    "hits": [
+      {
+        "file": ".lake/packages/mathlib/Mathlib/Data/Nat/Find.lean",
+        "line": 75,
+        "declaration_text": "protected theorem find_spec : p (Nat.find H) :="
+      }
+    ]
+  },
+  {
+    "literal": "theorem find_min",
+    "hits": [
+      {
+        "file": ".lake/packages/mathlib/Mathlib/Data/Nat/Find.lean",
+        "line": 80,
+        "declaration_text": "protected theorem find_min : ∀ {m : ℕ}, m < Nat.find H → ¬p m :="
+      },
+      {
+        "file": ".lake/packages/mathlib/Mathlib/Data/Nat/Find.lean",
+        "line": 83,
+        "declaration_text": "protected theorem find_min' {m : ℕ} (h : p m) : Nat.find H ≤ m :="
+      }
+    ]
+  }
+]
