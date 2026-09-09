@@ -41,3 +41,27 @@ n=0 不进入结论；禁止反向、重复或对角步，n=1 须符合单格路
   rg 搜 A380392 / monotone.?path / lattice.?path / bernoulli.*path，只命中 DyckWord 文档与无关范畴路径声明；未命中目标。
 - 已实际读取 spec A5.1：utility: none 是合法完整字段，位于 anchors 与 digest 之间。
 - Library/Words/oeis2026triage0910.md 第 302 行含用户分诊记录；不将其当本席外网核验。
+
+## 外部检索与缓存结算
+
+- OEIS search text 接口八次 HTTP 403，arXiv API HTTP 429；这些失败不计阴性证据。
+  改用 curl 读取 OEIS internal，主条目与全部七个直接 xref 均 HTTP 200。
+- A380392 主条目全文已读：revision 16，2025-02-22；John Tyler Rascoe 于 2025-02-21
+  明写平均路径数猜想，未附证明。路径仅 South/East，相邻同排或同列，不含对角。
+- 已读 A001790/A101926/A002416/A086266/A261242/A369285 的 N/C/F/H 字段；
+  中心二项式分子、积分分母与其他矩阵计数均未给出目标期望的证明。
+  A000984 仅下载，尚未细读；xref 的外链论文未打开，ASSUMED-UNVERIFIED。
+- GitHub authenticated code search `A380392 language:Lean` total_count=0。
+  不限语言搜索 total_count=358，首批 30 条只有本仓分诊记录相关，其余为哈希/字符串碰撞；
+  不将未翻页的结果算作全部读完。
+- arXiv 网页 search query=A380392, searchtype=all，HTTP 200，明确 produced no results。
+  Bing HTTP 200 仅取页，尚未核对结果内容，不用于阴性断言。
+- 在已读范围未找到完整证明（not-found-in-searched-scope），维持第一档。
+- make lean-cache-ensure EXIT=0，21.071 秒；status=seeded, method=clonefile,
+  donor=/Users/chronoai/trureturing, clonefile_attempts=1, stamp_miss=null,
+  mathlib_olean_state=warm, project_olean_state=warm, archive_status=not_attempted。
+- 已读 mathlib 的 Finset.card_powersetCard、card_inter_add_card_sdiff、card_sdiff_of_subset、
+  Fintype.card_pi 等前置；将直接使用，不重证其一般陈述。
+- 编码约定：对 (k+1)×(k+1) 矩阵，路径以 range(2*k) 的 k 元子集记录东步位置。
+  时刻 t 的两个坐标为 range(t) 与该子集交集及差集的基数；坐标和=t，故各访问格互异。
+  这是用户已预登记见证的具体实现，不改变数学目标。
