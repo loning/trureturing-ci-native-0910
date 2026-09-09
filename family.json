@@ -1,0 +1,58 @@
+[
+ {
+  "atom_id": "1e414ffb45d7fcaa9536a956298c4e291f91a2e310f112d2cf8419518caefd1a",
+  "title": "## 推论 B1.1：高阶延拓是一项带常数的积分问题",
+  "reason": "FTC 已给积分=端点差，后续也核实冻结 P_d 降阶；仍欠倒数变量转为 q_d 导数与 q_d(0)=(-1)^d*d!/d^d*a_d 的完整规范化绑定。",
+  "mathlib": [
+   {
+    "declaration": "intervalIntegral.integral_eq_sub_of_hasDerivAt",
+    "file": "Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean",
+    "line": 1148
+   }
+  ],
+  "direct_frozen_dependencies": [],
+  "source_line": 1542
+ },
+ {
+  "atom_id": "2bc63109d666c92a11aa641dbeae45bc08e3f4f939bc5ce4406a75e5d86d03b6",
+  "title": "## 定理 B3：一步正延拓的精确判据",
+  "reason": "已有正主块下的 Schur 半正定等价；缺 q_d 与箭头矩阵特征多项式、留数符号和严格正根/正定条件的完整绑定。",
+  "mathlib": [
+   {
+    "declaration": "Matrix.PosDef.fromBlocks₂₂",
+    "file": "Mathlib/LinearAlgebra/Matrix/PosDef.lean",
+    "line": 582
+   }
+  ],
+  "direct_frozen_dependencies": [],
+  "source_line": 1837
+ },
+ {
+  "atom_id": "c0a72a217fb966246fd4a48a809795cdc539435d1e88d1a10d041a9bcd9ed98d",
+  "title": "## 定理 B4：新增耦合总预算",
+  "reason": "trace 与特征多项式系数的接口已有；缺实际箭头矩阵二次迹/均衡方向到 eta 总和、q_d 前两系数和累积量的完整绑定。",
+  "mathlib": [
+   {
+    "declaration": "Matrix.trace_eq_neg_charpoly_coeff",
+    "file": "Mathlib/LinearAlgebra/Matrix/Charpoly/Coeff.lean",
+    "line": 139
+   }
+  ],
+  "direct_frozen_dependencies": [],
+  "source_line": 2097
+ },
+ {
+  "atom_id": "cd2ad7f9986ee06ef6a8ac86aa7834a19d836483eaa1475b57396f3ba7ae536a",
+  "title": "## 推论：实根性向低阶传递",
+  "reason": "带重数的多项式 Rolle 计数已有，且冻结 P_d 降阶已核；仍缺 q_d 倒数缩放、正根域保存与塔上归纳/最小失败阶的完整绑定。",
+  "mathlib": [
+   {
+    "declaration": "Polynomial.card_roots_le_derivative",
+    "file": "Mathlib/Analysis/Calculus/LocalExtr/Polynomial.lean",
+    "line": 63
+   }
+  ],
+  "direct_frozen_dependencies": [],
+  "source_line": 1030
+ }
+]
