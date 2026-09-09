@@ -1,0 +1,32 @@
+**例 F2（完整积上的无限多个一）。** 取 $S=\mathbb N$、$V_n=\{0,1\}$、$\Gamma=\{0,1\}^{\mathbb N}$，定义
+
+$$
+F(\gamma)=
+\begin{cases}
+1,&\{n\in\mathbb N:\gamma(n)=1\}\text{ 无限},\\
+0,&\{n\in\mathbb N:\gamma(n)=1\}\text{ 有限}.
+\end{cases}
+\tag{DEP-INFINITE-ONES}
+$$
+
+其冲突超图恰为
+
+$$
+\mathcal H_F=\{A\subseteq\mathbb N:A\text{ 无限}\}.
+\tag{DEP-INFINITE-EDGES}
+$$
+
+先证每条冲突边无限。若两世界仅在有限集合 $A$ 上不同，其中一个世界的一坐标集合有限，则另一个的一坐标集合包含于这个有限集合与 $A$ 的并，仍有限；交换两世界得到逆向。因此有限坐标变化保持“一的个数有限或无限”，输出冲突不可能只有有限差异。再证每个无限 $A\subseteq\mathbb N$ 都是一条冲突边：全零世界 $\mathbf0$ 的输出为 $0$，指示世界 $\chi_A$ 的输出为 $1$，两者都在完整积内且 $\Delta(\mathbf0,\chi_A)=A$。这完成超图等式的两个方向。
+
+命中全部无限子集的 $D\subseteq\mathbb N$ 恰为余有限集。若 $\mathbb N\setminus D$ 无限，它本身就是与 $D$ 不交的冲突边，所以 $D$ 不充分。若 $\mathbb N\setminus D$ 有限，任一无限边不可能包含于该补集，必与 $D$ 相交，所以 $D$ 充分。因此
+
+$$
+\operatorname{Dep}(F)
+=\{D\subseteq\mathbb N:\mathbb N\setminus D\text{ 有限}\}.
+\tag{DEP-COFINITE}
+$$
+
+每个余有限集都是无限非空的；删去任意一个元素后仍余有限，故每个充分域都有充分真子集，没有任何包含极小充分域。这里没有单点冲突边，$\operatorname{Ess}(F)=\varnothing$；目标又非恒定，空域不充分，命题 52 给出没有最小域。尤其不存在有限充分域。
+
+取 $H=\mathbf i\circ F$，仍有 $q\circ H=F$，每个世界的档案只有零或两个事件。若 $H$ 有有限充分域，该域也会使 $F=q\circ H$ 充分，与刚证结论矛盾。这说明即使逐世界的档案数在这个模型中统一有界，也不能推出有限来源依赖。上述无限结论依靠公开集合论证明，不由任何有限截断的一坐标实验建立。
+

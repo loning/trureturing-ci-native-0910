@@ -1,0 +1,9 @@
+**命题 50（全部可实现的充分域族）。** 对一个固定的任意集合 $S$，当允许取各 $V_s=\{0,1\}$ 并选择非空受约束世界集 $\Gamma$ 及二值总目标时，可实现的 $\operatorname{Dep}(F)$ 恰为所有满足以下两条件的族 $\mathcal U\subseteq\mathcal P(S)$：
+
+$$
+S\in\mathcal U,\qquad
+D\in\mathcal U,\ D\subseteq E\subseteq S
+\Longrightarrow E\in\mathcal U.
+\tag{DEP-UPWARD}
+$$
+

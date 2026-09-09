@@ -1,0 +1,23 @@
+**证明。** 对每个 $s\in S$ 取 $V_s=\{0,1\}$。令 $\mathbf0:S\to\{0,1\}$ 为全零赋值；对 $A\subseteq S$，令 $\chi_A(s)=1$ 当 $s\in A$，其余取 $0$。取
+
+$$
+\Gamma=\{\mathbf0\}\cup\{\chi_A:A\in\mathcal H\},
+\qquad
+F:\Gamma\to\{0,1\},\qquad
+F(\mathbf0)=0,\quad F(\chi_A)=1\ (A\in\mathcal H).
+\tag{DEP-REALIZATION}
+$$
+
+$\mathbf0\in\Gamma$ 保证世界集非空。因每条 $A$ 非空，$\chi_A\ne\mathbf0$；又因 $A=\{s:\chi_A(s)=1\}$，指示赋值相等就有原边相等。因此上述定义没有冲突，确是 $\Gamma$ 上的总函数。相异输出的世界对恰为 $\mathbf0$ 与某个 $\chi_A$，允许交换两者顺序，其差异集合恰为 $A$。任意两个非零指示世界的输出都为 $1$，它们之间没有输出冲突，故不会产生额外边。于是 $\mathcal H_F=\mathcal H$。若 $\mathcal H=\varnothing$，构造退化为单世界 $\Gamma=\{\mathbf0\}$、恒零目标，仍精确实现空超图。
+
+为在 CSA 内实现，使用 §4 定义 8 已有的截面 $\mathbf i:\mathbb Z\to\mathcal B$，置
+
+$$
+H=\mathbf i\circ F:\Gamma\longrightarrow\mathcal B.
+\tag{DEP-CSA}
+$$
+
+$\mathbf i(0),\mathbf i(1)$ 是不同的合法平衡丰富表示，分别满足 $q(\mathbf i(0))=0$、$q(\mathbf i(1))=1$，故 $q\circ H=F$。在这个特定构造中，$H(\gamma)\ne H(\eta)$ 也恰当且仅当 $F(\gamma)\ne F(\eta)$，所以相同的冲突结构在丰富层和所写数值目标中均得到实现。这不是对任意 $H$ 都认同两种目标依赖的断言。
+
+每个 $H(\gamma)$ 的档案都是有限的：这里实际上只用空档案和两事件的 $\mathbf i(1)$。$\Gamma$ 却仍是任意集合来源上的函数模型；逐世界档案有限并没有规定响应函数只使用某个统一的有限来源子集。§31.3 将给出这一差别的明确反例。证毕。
+

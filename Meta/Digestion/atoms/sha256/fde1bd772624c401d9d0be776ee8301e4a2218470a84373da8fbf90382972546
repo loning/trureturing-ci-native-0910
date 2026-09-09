@@ -1,0 +1,4 @@
+**证明（命中集及基本性质）。** $D$ 不充分，当且仅当存在 $\gamma,\eta\in\Gamma$，使 $F(\gamma)\ne F(\eta)$ 且 $\gamma|_D=\eta|_D$；后一等式恰等价于 $D\cap\Delta(\gamma,\eta)=\varnothing$。所以不充分恰为漏掉一条冲突边，取否定即得命中集刻画。若 $D\subseteq E\subseteq S$ 且 $D$ 命中每条边，$E$ 也命中每条边，故域族向上闭。每条冲突边非空且包含于 $S$，故 $S$ 充分。
+
+所有世界在空域上的投影都是唯一空赋值，所以空域充分恰为任意两世界的输出相等。因 $\Gamma\ne\varnothing$，这正是存在一个 $y_0\in Y$ 使 $F(\gamma)=y_0$ 对所有 $\gamma$ 成立，即 $F$ 恒定。没有相异输出的世界对又恰等价于空超图。特别地，恒定目标满足 $\operatorname{Dep}(F)=\mathcal P(S)$。证毕。
+

@@ -1,0 +1,2 @@
+**空超图** $\mathcal H_F=\varnothing$ 表示根本没有输出冲突；**含空边的超图**则会有一条无法被任何集合命中的边。后者不在本模型可能产生的冲突超图之中。称 $D\subseteq S$ 命中一个边族，指 $\forall A\in\mathcal H_F,\ D\cap A\ne\varnothing$；空边族的这一全称条件对每个 $D$ 都成立。
+

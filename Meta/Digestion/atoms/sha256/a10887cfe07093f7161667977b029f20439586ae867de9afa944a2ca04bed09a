@@ -1,0 +1,4 @@
+**证明（交等式的两方向）。** $\operatorname{Dep}(F)$ 包含 $S$，故所交的域族非空。若 $s\in\operatorname{Ess}(F)$，单点边 $\{s\}$ 必被每个充分域命中，所以每个充分域都含 $s$。这给出 $\operatorname{Ess}(F)$ 包含于所写交集。
+
+反向，设 $s\in S\setminus\operatorname{Ess}(F)$，即 $\{s\}$ 不是冲突边。集合 $S\setminus\{s\}$ 命中所有冲突边：若某条非空边 $A$ 与它不交，就有 $\varnothing\ne A\subseteq\{s\}$，只能 $A=\{s\}$，矛盾。所以 $S\setminus\{s\}$ 是一个不含 $s$ 的充分域，$s$ 不属于全部充分域之交。两方向得到 (DEP-INTERSECTION)。
+

@@ -1,0 +1,9 @@
+**证明（有限次交得到必要坐标域）。** 设 $D_0$ 是有限充分域。命题 52 给出 $\operatorname{Ess}(F)\subseteq D_0$，并已证明每个 $s\notin\operatorname{Ess}(F)$ 都有充分域 $S\setminus\{s\}$。将有限集 $D_0\setminus\operatorname{Ess}(F)$ 枚举为 $\{s_1,\ldots,s_k\}$，从 $D_0$ 开始依次与 $S\setminus\{s_j\}$ 相交。每一步的两个输入域充分，故刚证的二元交性质保证结果充分。最终结果为
+
+$$
+D_0\cap\bigcap_{j=1}^{k}(S\setminus\{s_j\})
+=\operatorname{Ess}(F).
+$$
+
+$k=0$ 时结果就是 $D_0=\operatorname{Ess}(F)$，无须作任何删除。因此 $\operatorname{Ess}(F)$ 充分，最小性和唯一包含极小性由命题 52 得到。$S$ 有限时可直接取充分域 $D_0=S$。这里的有限前提用于把二元交应用有限次，没有把它替换为未经证明的任意交封闭。证毕。
+

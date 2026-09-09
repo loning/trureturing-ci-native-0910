@@ -1,0 +1,7 @@
+**空来源与不相容性的边界。** 若 $S=\varnothing$，空索引积由唯一空赋值组成；因 $\Gamma\ne\varnothing$，必有 $\Gamma=\{\varnothing\}$。任意总目标在这个单世界上恒定，故
+$\mathcal H_F=\varnothing$、
+$\operatorname{Dep}(F)=\mathcal P(\varnothing)=\{\varnothing\}$，
+唯一包含极小域和最小域都是 $\varnothing$。这是合法的恒定模型。若 $\Gamma=\varnothing$，则不属于定义 28 及 §10 的合法不确定模型；不以依赖蕴含的空真把不相容世界集冒充普通数值零或合法常值世界。另须保留 §10 的来源边界：同一套来源标签可以伴随恒定或非恒定响应，$\mathcal H_F$ 由实际合法赋值和固定目标的响应共同决定，标签本身不决定它。
+
+<a id="p3a-intersections"></a>
+

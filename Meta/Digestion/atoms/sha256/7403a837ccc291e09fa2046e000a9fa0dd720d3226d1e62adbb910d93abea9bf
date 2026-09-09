@@ -1,0 +1,23 @@
+**定义 29（两种最小性与私人见证）。** 沿用定义 28 的固定模型。称 $D$ 为**包含极小充分域**，指
+
+$$
+D\in\operatorname{Dep}(F),\qquad
+\forall E\subsetneq D,\quad E\notin\operatorname{Dep}(F).
+$$
+
+称 $D$ 为**最小充分域**，指
+
+$$
+D\in\operatorname{Dep}(F),\qquad
+\forall E\in\operatorname{Dep}(F),\quad D\subseteq E.
+$$
+
+前者排除自身内部的充分真子集，后者要求包含于每个充分域；两者均不是最小基数的优化问题。对 $s\in D$，称冲突边 $A\in\mathcal H_F$ 是 $s$ 在 $D$ 中的**私人见证**，若 $A\cap D=\{s\}$。再定义
+
+$$
+\operatorname{Ess}(F)=\{s\in S:\{s\}\in\mathcal H_F\}.
+\tag{DEP-ESS}
+$$
+
+这恰由存在两个响应不同、且只在坐标 $s$ 上不同的合法世界刻画，不是从来源标签推定的“重要坐标”。
+

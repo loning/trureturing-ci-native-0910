@@ -2976,3 +2976,477 @@ Codex 实施席依这一已完成来源组织中文数学表述、适配连续�
 命题 45 的目标严格是 $c\odot d=h$ 的**剖面方程**。即使分别解出 $W$ 与 $Z$ 两个分量的方程，也不能据此断言一个预先指定的完整 $\Xi$ 逆问题有解：输入背景仍须平衡，两个分量必须共同满足命题 37 的实际像与支撑范围条件，所指定的档案端点还必须满足命题 39 的更新式。分别存在剖面解，并未证明这些解能够同时满足同一丰富输入的支撑与端点约束。反例 E2 也说明剖面等式本身不保存完整档案摘要。
 
 这种带同时实际像条件及端点约束的逆问题仍是单独的后续主研究任务。本次 P2 不引入 P3 的依赖结构或 JT 结果。既有 $\mathbb Z/\mathbb Q/\mathbb R$ 接口、丰富默认操作、共同零参考点、背景与端点限制，以及所选数据和完整档案的区别继续有效。本节的普通数学证明与有限例子核对不构成 Lean 内核验证、物理或量子定律、PR 已交付或持续研究总目标完成的声明。
+
+<a id="p3a-domains"></a>
+
+## 30. P3a/R5：充分依赖域、冲突超图与全部可实现域族
+
+§10 定义 15 已用合法来源赋值说明“只依赖一组来源”的含义，但没有刻画全部充分域，也没有保证存在最小域。本节将这一问题直接写成合法世界之间的输出冲突；§31 区分包含极小与最小，§32 则给出受约束世界上允许取交的准确条件。这些结果只使用 §10 的来源模型和普通集合、函数构造，不以 §27–29 的累积卷积结论为前提。
+
+### 30.1 固定目标、实际投影像及冲突边
+
+**定义 28（充分域与冲突超图）。** 固定任意集合 $S$，以及由它索引的非空值域族 $(V_s)_{s\in S}$，取
+
+$$
+\varnothing\ne\Gamma\subseteq\prod_{s\in S}V_s,\qquad
+F:\Gamma\longrightarrow Y,
+$$
+
+其中 $Y$ 为集合，$F$ 是一个固定的总函数。$S$、各 $V_s$ 和 $\Gamma$ 均不要求有限，$\Gamma$ 也不要求为完整积。例如，丰富状态 $H:\Gamma\to\mathcal B$ 和数值目标 $q\circ H:\Gamma\to\mathbb Z$ 都符合这个类型，但它们是不同的目标函数，不能将其依赖混称为同一种依赖。来源标签的重复仍按 §10 使用同一坐标值，不附带概率假设。
+
+对每个 $D\subseteq S$，定义限制映射及其**实际投影像**
+
+$$
+r_D:\Gamma\longrightarrow\Gamma_D,\qquad
+r_D(\gamma)=\gamma|_D,\qquad
+\Gamma_D=r_D[\Gamma]\subseteq\prod_{s\in D}V_s.
+\tag{DEP-PROJECTION}
+$$
+
+定义全部充分依赖域组成的集合
+
+$$
+\operatorname{Dep}(F)=
+\left\{D\subseteq S:
+\forall\gamma,\eta\in\Gamma,\
+\gamma|_D=\eta|_D\Longrightarrow F(\gamma)=F(\eta)
+\right\}.
+\tag{DEP-FAMILY}
+$$
+
+对任意合法世界 $\gamma,\eta$，定义差异集合及目标的冲突超图
+
+$$
+\Delta(\gamma,\eta)=\{s\in S:\gamma(s)\ne\eta(s)\},
+\qquad
+\mathcal H_F=
+\{\Delta(\gamma,\eta):\gamma,\eta\in\Gamma,\ F(\gamma)\ne F(\eta)\}.
+\tag{DEP-CONFLICT}
+$$
+
+这里超图以 $S$ 为顶点集，$\mathcal H_F$ 是它的边族；重复出现的同一差异集合只算一条边。它没有空边：若 $\Delta(\gamma,\eta)=\varnothing$，两个定义在同一 $S$ 上的赋值逐坐标相等，函数外延性给出 $\gamma=\eta$，于是 $F(\gamma)=F(\eta)$。所以
+
+$$
+\mathcal H_F\subseteq\mathcal P(S)\setminus\{\varnothing\}.
+$$
+
+**空超图** $\mathcal H_F=\varnothing$ 表示根本没有输出冲突；**含空边的超图**则会有一条无法被任何集合命中的边。后者不在本模型可能产生的冲突超图之中。称 $D\subseteq S$ 命中一个边族，指 $\forall A\in\mathcal H_F,\ D\cap A\ne\varnothing$；空边族的这一全称条件对每个 $D$ 都成立。
+
+**命题 48（像上唯一分解与命中集刻画）。** 对任意 $D\subseteq S$，以下三个条件等价：
+
+$$
+\begin{aligned}
+&D\in\operatorname{Dep}(F);\\
+&\exists!\,F_D:\Gamma_D\to Y,\qquad F=F_D\circ r_D;\\
+&\forall A\in\mathcal H_F,\qquad D\cap A\ne\varnothing.
+\end{aligned}
+\tag{DEP-FACTOR-HIT}
+$$
+
+此外，$\operatorname{Dep}(F)$ 向上闭且包含 $S$，并且
+
+$$
+\varnothing\in\operatorname{Dep}(F)
+\quad\Longleftrightarrow\quad
+F\text{ 恒定}
+\quad\Longleftrightarrow\quad
+\mathcal H_F=\varnothing.
+\tag{DEP-CONSTANT}
+$$
+
+**证明（实际像上的函数图）。** 假设 $D$ 充分。考虑集合
+
+$$
+G_D=\{(r_D(\gamma),F(\gamma)):\gamma\in\Gamma\}
+\subseteq\Gamma_D\times Y.
+$$
+
+每个 $u\in\Gamma_D$ 至少对应一个值，因为实际像的定义保证存在 $\gamma\in\Gamma$ 使 $r_D(\gamma)=u$。若 $(u,y),(u,y')\in G_D$，则存在合法世界 $\gamma,\eta$ 满足相同的 $D$ 投影且 $F(\gamma)=y,F(\eta)=y'$；充分性使 $y=y'$。因此 $G_D$ 本身就是一个全函数 $F_D:\Gamma_D\to Y$ 的图，且逐世界满足 $F=F_D\circ r_D$。任一满足此式的函数在每个实际像点的值都被强制为相应 $F(\gamma)$，故唯一。整个定义没有为每条纤维挑选代表；存在性与唯一值直接定义函数图。反向，若有这样的分解，相同的 $r_D$ 值经同一函数 $F_D$ 必有相同输出，故 $D$ 充分。这里只在 $\Gamma_D$ 上定义 $F_D$，没有将它延伸到未必可实现的全部 $\prod_{s\in D}V_s$。
+
+**证明（命中集及基本性质）。** $D$ 不充分，当且仅当存在 $\gamma,\eta\in\Gamma$，使 $F(\gamma)\ne F(\eta)$ 且 $\gamma|_D=\eta|_D$；后一等式恰等价于 $D\cap\Delta(\gamma,\eta)=\varnothing$。所以不充分恰为漏掉一条冲突边，取否定即得命中集刻画。若 $D\subseteq E\subseteq S$ 且 $D$ 命中每条边，$E$ 也命中每条边，故域族向上闭。每条冲突边非空且包含于 $S$，故 $S$ 充分。
+
+所有世界在空域上的投影都是唯一空赋值，所以空域充分恰为任意两世界的输出相等。因 $\Gamma\ne\varnothing$，这正是存在一个 $y_0\in Y$ 使 $F(\gamma)=y_0$ 对所有 $\gamma$ 成立，即 $F$ 恒定。没有相异输出的世界对又恰等价于空超图。特别地，恒定目标满足 $\operatorname{Dep}(F)=\mathcal P(S)$。证毕。
+
+### 30.2 任意无空边超图的精确实现
+
+**命题 49（超图实现及 CSA 实现）。** 对任意集合 $S$ 和任意边族
+$\mathcal H\subseteq\mathcal P(S)\setminus\{\varnothing\}$，允许选择二值来源域及受约束的合法世界集时，存在二值总目标 $F$ 恰使 $\mathcal H_F=\mathcal H$。该实现也可作为 §10 的合法不确定丰富状态模型。
+
+**证明。** 对每个 $s\in S$ 取 $V_s=\{0,1\}$。令 $\mathbf0:S\to\{0,1\}$ 为全零赋值；对 $A\subseteq S$，令 $\chi_A(s)=1$ 当 $s\in A$，其余取 $0$。取
+
+$$
+\Gamma=\{\mathbf0\}\cup\{\chi_A:A\in\mathcal H\},
+\qquad
+F:\Gamma\to\{0,1\},\qquad
+F(\mathbf0)=0,\quad F(\chi_A)=1\ (A\in\mathcal H).
+\tag{DEP-REALIZATION}
+$$
+
+$\mathbf0\in\Gamma$ 保证世界集非空。因每条 $A$ 非空，$\chi_A\ne\mathbf0$；又因 $A=\{s:\chi_A(s)=1\}$，指示赋值相等就有原边相等。因此上述定义没有冲突，确是 $\Gamma$ 上的总函数。相异输出的世界对恰为 $\mathbf0$ 与某个 $\chi_A$，允许交换两者顺序，其差异集合恰为 $A$。任意两个非零指示世界的输出都为 $1$，它们之间没有输出冲突，故不会产生额外边。于是 $\mathcal H_F=\mathcal H$。若 $\mathcal H=\varnothing$，构造退化为单世界 $\Gamma=\{\mathbf0\}$、恒零目标，仍精确实现空超图。
+
+为在 CSA 内实现，使用 §4 定义 8 已有的截面 $\mathbf i:\mathbb Z\to\mathcal B$，置
+
+$$
+H=\mathbf i\circ F:\Gamma\longrightarrow\mathcal B.
+\tag{DEP-CSA}
+$$
+
+$\mathbf i(0),\mathbf i(1)$ 是不同的合法平衡丰富表示，分别满足 $q(\mathbf i(0))=0$、$q(\mathbf i(1))=1$，故 $q\circ H=F$。在这个特定构造中，$H(\gamma)\ne H(\eta)$ 也恰当且仅当 $F(\gamma)\ne F(\eta)$，所以相同的冲突结构在丰富层和所写数值目标中均得到实现。这不是对任意 $H$ 都认同两种目标依赖的断言。
+
+每个 $H(\gamma)$ 的档案都是有限的：这里实际上只用空档案和两事件的 $\mathbf i(1)$。$\Gamma$ 却仍是任意集合来源上的函数模型；逐世界档案有限并没有规定响应函数只使用某个统一的有限来源子集。§31.3 将给出这一差别的明确反例。证毕。
+
+**命题 50（全部可实现的充分域族）。** 对一个固定的任意集合 $S$，当允许取各 $V_s=\{0,1\}$ 并选择非空受约束世界集 $\Gamma$ 及二值总目标时，可实现的 $\operatorname{Dep}(F)$ 恰为所有满足以下两条件的族 $\mathcal U\subseteq\mathcal P(S)$：
+
+$$
+S\in\mathcal U,\qquad
+D\in\mathcal U,\ D\subseteq E\subseteq S
+\Longrightarrow E\in\mathcal U.
+\tag{DEP-UPWARD}
+$$
+
+**证明。** 必要性是命题 48。反向，给定这样的 $\mathcal U$，定义
+
+$$
+\mathcal H_{\mathcal U}
+=\{S\setminus D:D\subseteq S,\ D\notin\mathcal U\}.
+$$
+
+$S\in\mathcal U$ 排除了 $D=S$，所以没有空边。若 $E\in\mathcal U$，对任一 $D\notin\mathcal U$，假如 $E\cap(S\setminus D)=\varnothing$，则 $E\subseteq D$，向上闭性会迫使 $D\in\mathcal U$，矛盾。因此 $E$ 命中每条边。若 $E\notin\mathcal U$，则 $S\setminus E$ 是它自己对应的非空边，且 $E\cap(S\setminus E)=\varnothing$，所以 $E$ 不是命中集。这两个方向证明 $\mathcal H_{\mathcal U}$ 的全部命中集恰为 $\mathcal U$。再由命题 49 实现该超图、由命题 48 识别充分域族，即得结论。证毕。
+
+这一定理改变的是可供选择的模型：它允许按 $\mathcal U$ 构造 $\Gamma$，不是声称每个已经固定的 $\Gamma$ 都能实现所有这样的域族。例如各 $V_s$ 全为单点时，完整积只有一个赋值，非空 $\Gamma$ 必为单世界，任意目标都恒定，故只能有 $\operatorname{Dep}(F)=\mathcal P(S)$。受约束模型的一般普适律因而只有上述向上闭性及包含 $S$；交封闭、包含极小元存在或最小元存在均须另查条件，不能无条件追加。
+
+<a id="p3a-minimal"></a>
+
+## 31. P3a/R6：包含极小、最小与无限来源的失败边界
+
+### 31.1 私人见证、必要坐标及最小域判据
+
+**定义 29（两种最小性与私人见证）。** 沿用定义 28 的固定模型。称 $D$ 为**包含极小充分域**，指
+
+$$
+D\in\operatorname{Dep}(F),\qquad
+\forall E\subsetneq D,\quad E\notin\operatorname{Dep}(F).
+$$
+
+称 $D$ 为**最小充分域**，指
+
+$$
+D\in\operatorname{Dep}(F),\qquad
+\forall E\in\operatorname{Dep}(F),\quad D\subseteq E.
+$$
+
+前者排除自身内部的充分真子集，后者要求包含于每个充分域；两者均不是最小基数的优化问题。对 $s\in D$，称冲突边 $A\in\mathcal H_F$ 是 $s$ 在 $D$ 中的**私人见证**，若 $A\cap D=\{s\}$。再定义
+
+$$
+\operatorname{Ess}(F)=\{s\in S:\{s\}\in\mathcal H_F\}.
+\tag{DEP-ESS}
+$$
+
+这恰由存在两个响应不同、且只在坐标 $s$ 上不同的合法世界刻画，不是从来源标签推定的“重要坐标”。
+
+**命题 51（包含极小的完整私人见证判据）。** $D\subseteq S$ 为包含极小充分域，当且仅当它命中全部冲突边，且
+
+$$
+\forall s\in D\ \exists A\in\mathcal H_F,\qquad A\cap D=\{s\}.
+\tag{DEP-PRIVATE}
+$$
+
+**证明。** 若 $D$ 包含极小，它首先充分，即命中全部边。对任意 $s\in D$，真子集 $D\setminus\{s\}$ 不充分，故有一条冲突边 $A$ 与它不交。原 $D$ 仍命中 $A$，唯一可能的交点就是 $s$，所以 $A\cap D=\{s\}$。
+
+反向，设所写两条件成立。由命题 48，$D$ 充分。任取 $E\subsetneq D$，存在 $s\in D\setminus E$，其私人见证 $A$ 满足 $A\cap E=\varnothing$，于是 $E$ 不充分。因此 $D$ 包含极小。$D=\varnothing$ 时，私人见证条件是空全称，且不存在真子集；结论恰退化为空域充分当且仅当它包含极小，覆盖恒定目标的情形。证毕。
+
+**命题 52（全部充分域之交及最小域的充要条件）。** 对任意上述固定模型，
+
+$$
+\bigcap_{D\in\operatorname{Dep}(F)}D=\operatorname{Ess}(F).
+\tag{DEP-INTERSECTION}
+$$
+
+最小充分域存在，当且仅当 $\operatorname{Ess}(F)$ 本身充分，等价地，它命中全部 $\mathcal H_F$。存在时，该最小域就是 $\operatorname{Ess}(F)$，且是唯一包含极小充分域。
+
+**证明（交等式的两方向）。** $\operatorname{Dep}(F)$ 包含 $S$，故所交的域族非空。若 $s\in\operatorname{Ess}(F)$，单点边 $\{s\}$ 必被每个充分域命中，所以每个充分域都含 $s$。这给出 $\operatorname{Ess}(F)$ 包含于所写交集。
+
+反向，设 $s\in S\setminus\operatorname{Ess}(F)$，即 $\{s\}$ 不是冲突边。集合 $S\setminus\{s\}$ 命中所有冲突边：若某条非空边 $A$ 与它不交，就有 $\varnothing\ne A\subseteq\{s\}$，只能 $A=\{s\}$，矛盾。所以 $S\setminus\{s\}$ 是一个不含 $s$ 的充分域，$s$ 不属于全部充分域之交。两方向得到 (DEP-INTERSECTION)。
+
+**证明（最小性）。** 若最小充分域 $L$ 存在，它包含于每个充分域，因而包含于其交；它自己又在被交的族内，所以该交包含于 $L$。故 $L=\operatorname{Ess}(F)$，特别地 $\operatorname{Ess}(F)$ 必充分。若反过来 $\operatorname{Ess}(F)$ 充分，交等式已保证它包含于每个充分域，故它确为最小域。命中集等价来自命题 48。
+
+最小域没有充分真子集，否则它还须包含于那个真子集，矛盾；故它也是包含极小域。任一包含极小充分域都包含这个充分的最小域，只能与之相等。因此最小域存在蕴含包含极小域唯一。这里不反向宣称“唯一包含极小”足以保证最小，§31.3 的第二个无限模型将反驳这一逆命题。证毕。
+
+### 31.2 有限存在保证及对角约束
+
+**命题 53（有限假设下的存在保证）。** 以下三种保证须分别使用其假设：
+
+1. 若 $S$ 有限，则每个充分域 $D$ 都包含一个包含极小充分域。
+2. 即使 $S$ 无限，只要存在一个有限充分域，就至少存在一个包含极小充分域。
+3. 若合法世界集 $\Gamma$ 有限，则存在一个有限充分域，因而至少存在一个包含极小充分域。
+
+各坐标值域 $V_s$ 均不要求有限；第一项也不要求 $\Gamma$ 有限。
+
+**证明。** 对任意有限充分域 $D$，族
+$\{E\subseteq D:E\in\operatorname{Dep}(F)\}$ 非空，因为含有 $D$，并且它是有限集。从中取包含极小成员 $E$；其存在性也可由每次真包含都严格降低有限基数说明。若 $E$ 还有充分真子集，该子集也属于原族，矛盾。因此 $E$ 是全局的包含极小充分域。$S$ 有限时任意充分 $D\subseteq S$ 都有限，得到第一项；存在一个有限充分域时在其中应用同一论证，得到第二项。这个论证允许 $E=\varnothing$，没有排除恒定目标。
+
+若 $\Gamma$ 有限，输出不同的有序世界对构成有限集合
+$P_F=\{(\gamma,\eta)\in\Gamma^2:F(\gamma)\ne F(\eta)\}$。对每个这样的对，从其非空差异集合中选一个坐标 $s_{\gamma,\eta}$。这只需有限次选择。集合
+
+$$
+D_0=\{s_{\gamma,\eta}:(\gamma,\eta)\in P_F\}
+$$
+
+有限，并且命中每条冲突边，因为每条边都来自某个这样的对。故 $D_0$ 充分。若 $P_F=\varnothing$，取 $D_0=\varnothing$ 即可。再用第二项得到第三项。这里没有对无限域作未经证明的无限删减，也没有借用 Zorn 引理取消有限假设。证毕。
+
+**例 F1（两个包含极小域，没有最小域）。** 取
+
+$$
+S=\{a,b\},\qquad V_a=V_b=\{0,1\},\qquad
+\Gamma=\{(0,0),(1,1)\}.
+$$
+
+世界的两个位置按 $a,b$ 排列。目标明确取投影
+
+$$
+F:\Gamma\to\{0,1\},\qquad F(\gamma)=\gamma(a)
+\quad\text{（即 }F(a,b)=a\text{）}.
+$$
+
+它返回合法世界的共同坐标值，具体值表为：
+
+| 合法世界 $(a,b)$ | $F(a,b)$ |
+| --- | --- |
+| $(0,0)$ | $0$ |
+| $(1,1)$ | $1$ |
+
+两个合法世界输出不同，而且恰在两个坐标上都不同，所以
+
+$$
+\mathcal H_F=\{\{a,b\}\},\qquad
+\operatorname{Dep}(F)=\{\{a\},\{b\},\{a,b\}\},
+\qquad \operatorname{Ess}(F)=\varnothing.
+\tag{DEP-DIAGONAL}
+$$
+
+确切地，唯一冲突边的命中集就是 $S$ 的三个非空子集；两个单点集均充分，而它们唯一的真子集 $\varnothing$ 不充分，所以它们恰为两个包含极小充分域。$\{a,b\}$ 含有充分真子集，因而不是包含极小。任何最小域都须同时包含于 $\{a\}$ 和 $\{b\}$，只能为空域，而空域不充分，故没有最小域。不存在单点冲突边，也直接给出 $\operatorname{Ess}(F)=\varnothing$。
+
+若另定义坐标相等的指示函数 $E(a,b)=\mathbf1_{\{a=b\}}$，则在同一 $\Gamma$ 上有 $E(0,0)=E(1,1)=1$。这个不同的目标是恒定函数，故 $\mathcal H_E=\varnothing$，
+$\operatorname{Dep}(E)=\mathcal P(S)=\{\varnothing,\{a\},\{b\},\{a,b\}\}$，其唯一包含极小域和最小域都是 $\varnothing$：每个非空域都含有这个充分真子集。坐标相等这一事实在两个世界都成立，其共同坐标值却分别为 $0,1$，不能把这两个函数混同。
+
+### 31.3 两个无限反模型与空来源边界
+
+**例 F2（完整积上的无限多个一）。** 取 $S=\mathbb N$、$V_n=\{0,1\}$、$\Gamma=\{0,1\}^{\mathbb N}$，定义
+
+$$
+F(\gamma)=
+\begin{cases}
+1,&\{n\in\mathbb N:\gamma(n)=1\}\text{ 无限},\\
+0,&\{n\in\mathbb N:\gamma(n)=1\}\text{ 有限}.
+\end{cases}
+\tag{DEP-INFINITE-ONES}
+$$
+
+其冲突超图恰为
+
+$$
+\mathcal H_F=\{A\subseteq\mathbb N:A\text{ 无限}\}.
+\tag{DEP-INFINITE-EDGES}
+$$
+
+先证每条冲突边无限。若两世界仅在有限集合 $A$ 上不同，其中一个世界的一坐标集合有限，则另一个的一坐标集合包含于这个有限集合与 $A$ 的并，仍有限；交换两世界得到逆向。因此有限坐标变化保持“一的个数有限或无限”，输出冲突不可能只有有限差异。再证每个无限 $A\subseteq\mathbb N$ 都是一条冲突边：全零世界 $\mathbf0$ 的输出为 $0$，指示世界 $\chi_A$ 的输出为 $1$，两者都在完整积内且 $\Delta(\mathbf0,\chi_A)=A$。这完成超图等式的两个方向。
+
+命中全部无限子集的 $D\subseteq\mathbb N$ 恰为余有限集。若 $\mathbb N\setminus D$ 无限，它本身就是与 $D$ 不交的冲突边，所以 $D$ 不充分。若 $\mathbb N\setminus D$ 有限，任一无限边不可能包含于该补集，必与 $D$ 相交，所以 $D$ 充分。因此
+
+$$
+\operatorname{Dep}(F)
+=\{D\subseteq\mathbb N:\mathbb N\setminus D\text{ 有限}\}.
+\tag{DEP-COFINITE}
+$$
+
+每个余有限集都是无限非空的；删去任意一个元素后仍余有限，故每个充分域都有充分真子集，没有任何包含极小充分域。这里没有单点冲突边，$\operatorname{Ess}(F)=\varnothing$；目标又非恒定，空域不充分，命题 52 给出没有最小域。尤其不存在有限充分域。
+
+取 $H=\mathbf i\circ F$，仍有 $q\circ H=F$，每个世界的档案只有零或两个事件。若 $H$ 有有限充分域，该域也会使 $F=q\circ H$ 充分，与刚证结论矛盾。这说明即使逐世界的档案数在这个模型中统一有界，也不能推出有限来源依赖。上述无限结论依靠公开集合论证明，不由任何有限截断的一坐标实验建立。
+
+**例 F3（唯一包含极小域，仍没有最小域）。** 令
+
+$$
+S=\{p\}\sqcup\mathbb N,\qquad V_s=\{0,1\}\ (s\in S),
+\qquad \Gamma=\{\mathbf0\}\cup\{\gamma_n:n\in\mathbb N\},
+$$
+
+其中 $p$ 与自然数坐标不交，$\mathbf0$ 为全零赋值，且
+
+$$
+\gamma_n(p)=1,\qquad
+\gamma_n(k)=
+\begin{cases}1,&k\ge n,\\0,&k<n\end{cases}
+\quad(k\in\mathbb N).
+$$
+
+定义 $F(\mathbf0)=0$、$F(\gamma_n)=1$。每个 $\gamma_n$ 因 $p$ 坐标而不同于 $\mathbf0$；若 $n<m$，两世界在自然数坐标 $n$ 上也不同，所以这些赋值彼此可辨，定义为总函数。不同输出的世界对只有 $\mathbf0$ 与某个 $\gamma_n$，故全部冲突边恰为
+
+$$
+\mathcal H_F=\{A_n:n\in\mathbb N\},\qquad
+A_n=\{p\}\cup\{k\in\mathbb N:k\ge n\}.
+\tag{DEP-TAIL-EDGES}
+$$
+
+因此对任意 $D\subseteq S$，
+
+$$
+D\in\operatorname{Dep}(F)
+\quad\Longleftrightarrow\quad
+p\in D\ \ \text{或}\ \
+\bigl(\forall n\in\mathbb N\ \exists k\in D\cap\mathbb N,\ k\ge n\bigr).
+\tag{DEP-UNBOUNDED}
+$$
+
+证明直接由命中集刻画给出：含 $p$ 的域命中所有 $A_n$；不含 $p$ 时，命中 $A_n$ 恰为含有某个 $k\ge n$，对全部 $n$ 量化就是 $D\cap\mathbb N$ 无界。它不是一个关于某段有限前缀的条件。
+
+$\{p\}$ 充分，空域不充分，所以 $\{p\}$ 包含极小。任何严格包含它的域都因含有这个充分真子集而非极小。若充分域不含 $p$，则其自然数部分无界；删去其中任一元素 $k_0$ 后仍无界，因为对任意阈值 $n$，可在原集合中取 $k\ge\max(n,k_0+1)$。删后仍充分，故这种域也不包含极小。因此 $\{p\}$ 是**唯一**包含极小充分域。
+
+然而 $\mathbb N\subseteq S$ 自身无界，因而充分，却不包含 $\{p\}$。任何最小域必须同时包含于 $\{p\}$ 和 $\mathbb N$，只能为不充分的空集，所以不存在最小域。也可见所有边都非单点，$\operatorname{Ess}(F)=\varnothing$；全部充分域之交为空而不充分。这精确说明命题 52 的单向结论不能无条件反转。
+
+**空来源与不相容性的边界。** 若 $S=\varnothing$，空索引积由唯一空赋值组成；因 $\Gamma\ne\varnothing$，必有 $\Gamma=\{\varnothing\}$。任意总目标在这个单世界上恒定，故
+$\mathcal H_F=\varnothing$、
+$\operatorname{Dep}(F)=\mathcal P(\varnothing)=\{\varnothing\}$，
+唯一包含极小域和最小域都是 $\varnothing$。这是合法的恒定模型。若 $\Gamma=\varnothing$，则不属于定义 28 及 §10 的合法不确定模型；不以依赖蕴含的空真把不相容世界集冒充普通数值零或合法常值世界。另须保留 §10 的来源边界：同一套来源标签可以伴随恒定或非恒定响应，$\mathcal H_F$ 由实际合法赋值和固定目标的响应共同决定，标签本身不决定它。
+
+<a id="p3a-intersections"></a>
+
+## 32. P3a/R7：合法世界连通性与依赖域取交的精确条件
+
+### 32.1 坐标相等关系的等价关系并
+
+**定义 30（合法世界上的关系及连通分量）。** 固定定义 28 的非空 $\Gamma$，对任意 $D\subseteq S$ 定义等价关系
+
+$$
+R_D=\{(\gamma,\eta)\in\Gamma^2:\gamma|_D=\eta|_D\}.
+\tag{DEP-RELATION}
+$$
+
+对 $D,T\subseteq S$，$R_D\vee R_T$ 表示包含 $R_D\cup R_T$ 的最小等价关系。等价地，$(\gamma,\eta)\in R_D\vee R_T$ 当且仅当存在 $m\in\mathbb N$ 和全部在 $\Gamma$ 中的有限链
+
+$$
+\gamma=\gamma_0,\gamma_1,\ldots,\gamma_m=\eta,
+\qquad
+\forall j<m,\quad
+(\gamma_j,\gamma_{j+1})\in R_D\cup R_T.
+\tag{DEP-CHAIN}
+$$
+
+允许 $m=0$。有限链关系自反、可逆且可串接，所以是等价关系；任何含两种边的等价关系都含这些有限链，因此两种定义确实相同。$\vee$ 是**等价关系的并生成运算**，不是坐标集合的并或交；本定义也不引入无限链。
+
+**命题 54（对所有目标成立的二元交判据）。** 对固定的 $\Gamma,D,T$，总有
+
+$$
+R_D\vee R_T\subseteq R_{D\cap T}.
+\tag{DEP-JOIN-INCLUSION}
+$$
+
+以下条件等价：
+
+1. 对每个集合 $Y$ 及每个总函数 $G:\Gamma\to Y$，均有
+   $D,T\in\operatorname{Dep}(G)\Longrightarrow D\cap T\in\operatorname{Dep}(G)$。
+2. $R_D\vee R_T=R_{D\cap T}$。
+3. 对每个 $u\in\Gamma_{D\cap T}$，实际投影纤维
+   $\{\gamma\in\Gamma:r_{D\cap T}(\gamma)=u\}$
+   中任意两个世界，都能由 (DEP-CHAIN) 的有限合法链连接。
+
+条件 1 量化的是该固定 $\Gamma$ 上的**所有目标**。对一个特定的 $F$ 恰好能取这次交，不足以反推出条件 2。
+
+**证明（总包含及纤维表述）。** 每条 $R_D$ 边都保持 $D\cap T$ 的坐标，每条 $R_T$ 边也一样；有限链上的坐标相等逐步传递，得到 (DEP-JOIN-INCLUSION)。特别地，每条这样的链都留在同一个实际投影纤维内。于是等式成立，恰好等价于每对同纤维世界都可连接，即条件 2 与 3 等价。
+
+**证明（关系等式推出所有目标的取交）。** 假设条件 2，取任意集合 $Y$ 及任意总目标 $G:\Gamma\to Y$，并假设 $D,T$ 都充分。$G$ 在每条 $R_D$ 边和每条 $R_T$ 边的两个端点取相同值，因而沿任一有限链恒定。若两世界在 $D\cap T$ 上相同，条件 2 保证它们属于这个有限链关系，所以输出相等。因此 $D\cap T$ 充分，得到条件 1。
+
+**证明（缺少连通性时的二值目标）。** 若条件 2 不成立，总包含给出
+$(\gamma_0,\eta_0)\in R_{D\cap T}\setminus(R_D\vee R_T)$。
+令
+
+$$
+C_0=\{\zeta\in\Gamma:(\gamma_0,\zeta)\in R_D\vee R_T\},
+\qquad
+G(\zeta)=
+\begin{cases}1,&\zeta\in C_0,\\0,&\zeta\notin C_0.\end{cases}
+$$
+
+$C_0$ 是一个连通分量，$G:\Gamma\to\{0,1\}$ 是总函数。任一 $R_D$ 或 $R_T$ 边的两端属于同一分量，故或者都在 $C_0$，或者都不在其中；$G$ 在两种边上均恒定，所以 $D,T$ 充分。但 $\gamma_0,\eta_0$ 在 $D\cap T$ 上相同，且分别有输出 $1,0$，故交不充分。这反驳条件 1，完成逆方向。该二值目标也能依命题 49 的同一截面方式取 $H=\mathbf i\circ G$，满足 $q\circ H=G$，因此反例可在 CSA 来源模型中出现。整个构造只用了 $\Gamma$ 内的合法世界，没有假设坐标拼接后仍合法。证毕。
+
+### 32.2 完整积的两步拼接及有限充分域
+
+**命题 55（完整积的取交与最小域保证）。** 若
+$\Gamma=\prod_{s\in S}V_s\ne\varnothing$，
+则对任意 $D,T\subseteq S$ 都有
+$R_D\vee R_T=R_{D\cap T}$，因而该固定完整积上的每个目标都满足充分域的二元交封闭。对一个固定的 $F:\Gamma\to Y$，若**另外存在有限充分域** $D_0$，则 $\operatorname{Ess}(F)$ 充分，是最小充分域，也是唯一包含极小充分域。特别地，完整积且 $S$ 有限时满足这一结论。
+
+**证明（两步拼接）。** 取在 $D\cap T$ 上相同的 $\gamma,\eta\in\Gamma$，定义整个 $S$ 上的赋值
+
+$$
+\zeta(s)=
+\begin{cases}
+\gamma(s),&s\in D,\\
+\eta(s),&s\in S\setminus D.
+\end{cases}
+\tag{DEP-SPLICE}
+$$
+
+逐坐标有 $\zeta(s)\in V_s$，完整积假设保证 $\zeta\in\Gamma$。它在 $D$ 上等于 $\gamma$，所以 $\gamma R_D\zeta$。对 $s\in T\setminus D$，定义使 $\zeta(s)=\eta(s)$；对 $s\in T\cap D$，则由两原世界在交上的一致性有 $\zeta(s)=\gamma(s)=\eta(s)$。故 $\zeta R_T\eta$，得到
+
+$$
+\gamma\ R_D\ \zeta\ R_T\ \eta.
+$$
+
+这给出反向包含 $R_{D\cap T}\subseteq R_D\vee R_T$，与命题 54 的总包含合并得到等式及二元交性质。在受约束 $\Gamma$ 上，(DEP-SPLICE) 可能不属于合法世界集，这个证明不能直接照搬。
+
+**证明（有限次交得到必要坐标域）。** 设 $D_0$ 是有限充分域。命题 52 给出 $\operatorname{Ess}(F)\subseteq D_0$，并已证明每个 $s\notin\operatorname{Ess}(F)$ 都有充分域 $S\setminus\{s\}$。将有限集 $D_0\setminus\operatorname{Ess}(F)$ 枚举为 $\{s_1,\ldots,s_k\}$，从 $D_0$ 开始依次与 $S\setminus\{s_j\}$ 相交。每一步的两个输入域充分，故刚证的二元交性质保证结果充分。最终结果为
+
+$$
+D_0\cap\bigcap_{j=1}^{k}(S\setminus\{s_j\})
+=\operatorname{Ess}(F).
+$$
+
+$k=0$ 时结果就是 $D_0=\operatorname{Ess}(F)$，无须作任何删除。因此 $\operatorname{Ess}(F)$ 充分，最小性和唯一包含极小性由命题 52 得到。$S$ 有限时可直接取充分域 $D_0=S$。这里的有限前提用于把二元交应用有限次，没有把它替换为未经证明的任意交封闭。证毕。
+
+### 32.3 受约束拼接失败与无限交失败
+
+回到例 F1 的同一个对角世界集，令 $D=\{a\},T=\{b\}$。在任一单坐标上相同的两个合法世界已经是同一世界，故
+
+$$
+R_{\{a\}}=R_{\{b\}}
+=\{(\gamma,\gamma):\gamma\in\Gamma\},
+\qquad
+R_\varnothing=\Gamma^2.
+$$
+
+前两者生成的关系仍只有这两个对角对，而 $R_\varnothing$ 还包含两个不同世界之间的对，所以命题 54 的连通条件确实失败。空投影的唯一纤维有两个互不连通的合法世界；尝试把 $(0,0)$ 的 $a$ 坐标与 $(1,1)$ 的 $b$ 坐标拼接，会得到不在 $\Gamma$ 中的 $(0,1)$。例 F1 已给出的投影目标 $F$ 正好见证交不充分；这是同一反例的结构解释，不是另一次独立发现。对常值目标则取交仍成立，也说明不能把命题 54 的所有目标量词缩成一个特定目标。
+
+再用例 F2，不需重建另一个无限模型：它的 $\Gamma$ 已是完整积，充分域恰为余有限集。两个余有限集的交仍余有限，因为其补集是两个有限补集的并，所以二元交封闭与命题 55 一致。然而每个 $\mathbb N\setminus\{n\}$ 都充分，而
+
+$$
+\bigcap_{n\in\mathbb N}(\mathbb N\setminus\{n\})=\varnothing
+\notin\operatorname{Dep}(F).
+$$
+
+因此二元交封闭不推出任意交封闭，也不单独保证最小域存在。例 F2 没有有限充分域，恰说明命题 55 的附加假设不能从无限完整积情形中删除。
+
+<a id="p3a-sources"></a>
+
+## 33. P3a 的主数学来源、复用与适用边界
+
+### 33.1 完成的主来源与对角目标记号
+
+本次 P3a/R5–R7 的核心定义、命题、公开证明及反例来自实际完成的 GPT PRO 主推理任务 **8a1e6a18-47e3-4d7e-b703-a33b93c4ef87**，模型 **GPT-6 Astra**，模式 **mode:chat**，完成于 **2026-09-09T15:46:54.998+00:00**；对话为 [GPT PRO：CSA 新扩展主推理](https://chatgpt.com/c/6aa175d8-7ae0-83ec-9289-e9fc818fe147)。该主数学来源的原稿 pin 是 **74e9341e5e38615754f82e99430a257a21c5a26c**；本次追加所绑定的后来工程基线是 **70463e7669a120e9fb180fadfb78bbe46ea6eaa1**，二者职责不同。
+
+例 F1 的显式投影定义及值表同时采用已完成的主数学所有者澄清：任务 **b6f44321-d323-47b0-9ef9-8cc00a4a8481**，模型 **GPT-6 Astra**，完成于 **2026-09-09T16:42:30.328+00:00**，对话为 [GPT PRO：对角目标的记号澄清](https://chatgpt.com/c/6aa18b10-838c-83ec-8dbc-5e81dcc4de59)。澄清明确的是原 R5 已给目标 $F(a,b)=a$ 在两世界上的值 $0,1$，属于记号澄清，没有替换目标或作实质数学修复。
+
+Codex 实施席依上述完成来源组织中文表述、衔接实际 EOF 编号并独立核对，没有把核心数学归为 Codex 的新主推理，也不兼任独立评审席。此处作为本稿扩展归类为 repo-derived，不主张全球优先权。直接复用的是 §10 定义 15 的共同来源赋值模型，以及 §4 定义 8 的整数截面；像上分解使用与命题 11 相同的唯一值函数图方法。P3a 的任意集合与无限结论由 §30–32 所写公开证明承担。
+
+### 33.2 有限数据库文献的准确对应
+
+成熟来源为 Thomas Bläsius、Tobias Friedrich、Martin Schirneck，*The Complexity of Dependency Detection and Discovery in Relational Databases*，[arXiv:2103.13331v1](https://arxiv.org/abs/2103.13331v1)，[该版本 HTML](https://arxiv.org/html/2103.13331v1)。主数学来源记录实际核读了 §§2.1–2.2 的有限超图和关系模型，以及 §3.3 Lemma 9 的证明。另据 caller 提供的独立访问收据，其于 2026-09-09 核读完整 §§2.1–2.2、Lemma 9 陈述及证明前两段；本实施席未重新访问该论文，不将这些已有收据冒称本次新作的全文核读。
+
+该文 §2.1 的顶点集非空且有限，允许空边族、空边及孤立顶点；其中 minimal 指包含极小。§2.2 的 schema 非空且有限，关系表是有限记录集，但不要求属性值域有限。§3.3 Lemma 9 的具体结论是：对固定右端属性 $a$，包含于其余属性的极小非平凡函数依赖左端，恰对应于右端值不同的行对之差异集合去掉 $a$ 后形成的超图的极小命中集。这一有限关系对应归于 literature-attested。
+
+在有限 $S$、有限 $\Gamma$ 的本稿模型中，另加一个与来源列区分的输出列存放 $F(\gamma)$；输出不同的两行删掉输出列后，其差异集合正是定义 28 的 $\Delta(\gamma,\eta)$。这说明该文有限结果与命题 48、51 的引用关系。本文的固定总函数还保证没有“来源完全相同而输出不同”的行对，故本稿冲突超图没有空边。该有限文献不直接证明任意集合的超图实现、全部向上闭族实现、空 $S$、两个无限反模型或命题 54 的完整受约束连通判据；这些均依靠本次来源给出的公开证明。不从该文移植任何多项式时间或一般无限模型枚举主张。
+
+### 33.3 三种量化范围与后续工作
+
+§30.1、§31 对一个固定的 $\Gamma,F$ 刻画全部充分域；§30.2 的实现定理固定 $S$ 而允许选择二值域及 $\Gamma,F$；§32 的结构判据固定 $\Gamma,D,T$，量化该世界集上的所有目标。三者不能互换。有限来源、有限充分域与有限世界集的保证也各按命题 53、55 的前提使用；逐世界丰富档案有限不属于这些前提。普通集合论中的存在与唯一性不自动给出可执行的依赖发现或无限枚举程序。
+
+P3a 到 R7 为止。严格联合响应算术及其冲突组合、部分操作守卫分析、以 $\Xi$ 为消费者的依赖桥属于后续 P3b/R8–R9；JT、完整摘要的固定因子逆问题、成本优化、概率及因果动力学也各有独立范围。本单元没有实现这些后续结论，不改变既有数值接口、共同零参考点和默认 $\max+1$。正文没有新增可执行代码或 Lean 证明；公开数学证明不构成 Lean 内核验证、物理或量子定律。canonical ingest、独立评审、required checks 与 PR 交付由 caller 接续，本节不预报其通过、合入或持续研究总目标完成。

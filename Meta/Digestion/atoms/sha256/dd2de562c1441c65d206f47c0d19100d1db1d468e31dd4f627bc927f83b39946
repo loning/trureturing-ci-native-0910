@@ -1,0 +1,13 @@
+**证明。** 必要性是命题 48。反向，给定这样的 $\mathcal U$，定义
+
+$$
+\mathcal H_{\mathcal U}
+=\{S\setminus D:D\subseteq S,\ D\notin\mathcal U\}.
+$$
+
+$S\in\mathcal U$ 排除了 $D=S$，所以没有空边。若 $E\in\mathcal U$，对任一 $D\notin\mathcal U$，假如 $E\cap(S\setminus D)=\varnothing$，则 $E\subseteq D$，向上闭性会迫使 $D\in\mathcal U$，矛盾。因此 $E$ 命中每条边。若 $E\notin\mathcal U$，则 $S\setminus E$ 是它自己对应的非空边，且 $E\cap(S\setminus E)=\varnothing$，所以 $E$ 不是命中集。这两个方向证明 $\mathcal H_{\mathcal U}$ 的全部命中集恰为 $\mathcal U$。再由命题 49 实现该超图、由命题 48 识别充分域族，即得结论。证毕。
+
+这一定理改变的是可供选择的模型：它允许按 $\mathcal U$ 构造 $\Gamma$，不是声称每个已经固定的 $\Gamma$ 都能实现所有这样的域族。例如各 $V_s$ 全为单点时，完整积只有一个赋值，非空 $\Gamma$ 必为单世界，任意目标都恒定，故只能有 $\operatorname{Dep}(F)=\mathcal P(S)$。受约束模型的一般普适律因而只有上述向上闭性及包含 $S$；交封闭、包含极小元存在或最小元存在均须另查条件，不能无条件追加。
+
+<a id="p3a-minimal"></a>
+

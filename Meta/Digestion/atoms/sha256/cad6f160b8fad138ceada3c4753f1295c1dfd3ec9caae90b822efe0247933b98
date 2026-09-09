@@ -1,0 +1,35 @@
+**命题 48（像上唯一分解与命中集刻画）。** 对任意 $D\subseteq S$，以下三个条件等价：
+
+$$
+\begin{aligned}
+&D\in\operatorname{Dep}(F);\\
+&\exists!\,F_D:\Gamma_D\to Y,\qquad F=F_D\circ r_D;\\
+&\forall A\in\mathcal H_F,\qquad D\cap A\ne\varnothing.
+\end{aligned}
+\tag{DEP-FACTOR-HIT}
+$$
+
+此外，$\operatorname{Dep}(F)$ 向上闭且包含 $S$，并且
+
+$$
+\varnothing\in\operatorname{Dep}(F)
+\quad\Longleftrightarrow\quad
+F\text{ 恒定}
+\quad\Longleftrightarrow\quad
+\mathcal H_F=\varnothing.
+\tag{DEP-CONSTANT}
+$$
+
+**证明（实际像上的函数图）。** 假设 $D$ 充分。考虑集合
+
+$$
+G_D=\{(r_D(\gamma),F(\gamma)):\gamma\in\Gamma\}
+\subseteq\Gamma_D\times Y.
+$$
+
+每个 $u\in\Gamma_D$ 至少对应一个值，因为实际像的定义保证存在 $\gamma\in\Gamma$ 使 $r_D(\gamma)=u$。若 $(u,y),(u,y')\in G_D$，则存在合法世界 $\gamma,\eta$ 满足相同的 $D$ 投影且 $F(\gamma)=y,F(\eta)=y'$；充分性使 $y=y'$。因此 $G_D$ 本身就是一个全函数 $F_D:\Gamma_D\to Y$ 的图，且逐世界满足 $F=F_D\circ r_D$。任一满足此式的函数在每个实际像点的值都被强制为相应 $F(\gamma)$，故唯一。整个定义没有为每条纤维挑选代表；存在性与唯一值直接定义函数图。反向，若有这样的分解，相同的 $r_D$ 值经同一函数 $F_D$ 必有相同输出，故 $D$ 充分。这里只在 $\Gamma_D$ 上定义 $F_D$，没有将它延伸到未必可实现的全部 $\prod_{s\in D}V_s$。
+
+**证明（命中集及基本性质）。** $D$ 不充分，当且仅当存在 $\gamma,\eta\in\Gamma$，使 $F(\gamma)\ne F(\eta)$ 且 $\gamma|_D=\eta|_D$；后一等式恰等价于 $D\cap\Delta(\gamma,\eta)=\varnothing$。所以不充分恰为漏掉一条冲突边，取否定即得命中集刻画。若 $D\subseteq E\subseteq S$ 且 $D$ 命中每条边，$E$ 也命中每条边，故域族向上闭。每条冲突边非空且包含于 $S$，故 $S$ 充分。
+
+所有世界在空域上的投影都是唯一空赋值，所以空域充分恰为任意两世界的输出相等。因 $\Gamma\ne\varnothing$，这正是存在一个 $y_0\in Y$ 使 $F(\gamma)=y_0$ 对所有 $\gamma$ 成立，即 $F$ 恒定。没有相异输出的世界对又恰等价于空超图。特别地，恒定目标满足 $\operatorname{Dep}(F)=\mathcal P(S)$。证毕。
+

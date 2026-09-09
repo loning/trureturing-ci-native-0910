@@ -1,0 +1,9 @@
+**命题 52（全部充分域之交及最小域的充要条件）。** 对任意上述固定模型，
+
+$$
+\bigcap_{D\in\operatorname{Dep}(F)}D=\operatorname{Ess}(F).
+\tag{DEP-INTERSECTION}
+$$
+
+最小充分域存在，当且仅当 $\operatorname{Ess}(F)$ 本身充分，等价地，它命中全部 $\mathcal H_F$。存在时，该最小域就是 $\operatorname{Ess}(F)$，且是唯一包含极小充分域。
+

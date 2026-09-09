@@ -1,0 +1,18 @@
+**命题 54（对所有目标成立的二元交判据）。** 对固定的 $\Gamma,D,T$，总有
+
+$$
+R_D\vee R_T\subseteq R_{D\cap T}.
+\tag{DEP-JOIN-INCLUSION}
+$$
+
+以下条件等价：
+
+1. 对每个集合 $Y$ 及每个总函数 $G:\Gamma\to Y$，均有
+   $D,T\in\operatorname{Dep}(G)\Longrightarrow D\cap T\in\operatorname{Dep}(G)$。
+2. $R_D\vee R_T=R_{D\cap T}$。
+3. 对每个 $u\in\Gamma_{D\cap T}$，实际投影纤维
+   $\{\gamma\in\Gamma:r_{D\cap T}(\gamma)=u\}$
+   中任意两个世界，都能由 (DEP-CHAIN) 的有限合法链连接。
+
+条件 1 量化的是该固定 $\Gamma$ 上的**所有目标**。对一个特定的 $F$ 恰好能取这次交，不足以反推出条件 2。
+

@@ -1,0 +1,33 @@
+**命题 55（完整积的取交与最小域保证）。** 若
+$\Gamma=\prod_{s\in S}V_s\ne\varnothing$，
+则对任意 $D,T\subseteq S$ 都有
+$R_D\vee R_T=R_{D\cap T}$，因而该固定完整积上的每个目标都满足充分域的二元交封闭。对一个固定的 $F:\Gamma\to Y$，若**另外存在有限充分域** $D_0$，则 $\operatorname{Ess}(F)$ 充分，是最小充分域，也是唯一包含极小充分域。特别地，完整积且 $S$ 有限时满足这一结论。
+
+**证明（两步拼接）。** 取在 $D\cap T$ 上相同的 $\gamma,\eta\in\Gamma$，定义整个 $S$ 上的赋值
+
+$$
+\zeta(s)=
+\begin{cases}
+\gamma(s),&s\in D,\\
+\eta(s),&s\in S\setminus D.
+\end{cases}
+\tag{DEP-SPLICE}
+$$
+
+逐坐标有 $\zeta(s)\in V_s$，完整积假设保证 $\zeta\in\Gamma$。它在 $D$ 上等于 $\gamma$，所以 $\gamma R_D\zeta$。对 $s\in T\setminus D$，定义使 $\zeta(s)=\eta(s)$；对 $s\in T\cap D$，则由两原世界在交上的一致性有 $\zeta(s)=\gamma(s)=\eta(s)$。故 $\zeta R_T\eta$，得到
+
+$$
+\gamma\ R_D\ \zeta\ R_T\ \eta.
+$$
+
+这给出反向包含 $R_{D\cap T}\subseteq R_D\vee R_T$，与命题 54 的总包含合并得到等式及二元交性质。在受约束 $\Gamma$ 上，(DEP-SPLICE) 可能不属于合法世界集，这个证明不能直接照搬。
+
+**证明（有限次交得到必要坐标域）。** 设 $D_0$ 是有限充分域。命题 52 给出 $\operatorname{Ess}(F)\subseteq D_0$，并已证明每个 $s\notin\operatorname{Ess}(F)$ 都有充分域 $S\setminus\{s\}$。将有限集 $D_0\setminus\operatorname{Ess}(F)$ 枚举为 $\{s_1,\ldots,s_k\}$，从 $D_0$ 开始依次与 $S\setminus\{s_j\}$ 相交。每一步的两个输入域充分，故刚证的二元交性质保证结果充分。最终结果为
+
+$$
+D_0\cap\bigcap_{j=1}^{k}(S\setminus\{s_j\})
+=\operatorname{Ess}(F).
+$$
+
+$k=0$ 时结果就是 $D_0=\operatorname{Ess}(F)$，无须作任何删除。因此 $\operatorname{Ess}(F)$ 充分，最小性和唯一包含极小性由命题 52 得到。$S$ 有限时可直接取充分域 $D_0=S$。这里的有限前提用于把二元交应用有限次，没有把它替换为未经证明的任意交封闭。证毕。
+

@@ -1,0 +1,9 @@
+**证明（实际像上的函数图）。** 假设 $D$ 充分。考虑集合
+
+$$
+G_D=\{(r_D(\gamma),F(\gamma)):\gamma\in\Gamma\}
+\subseteq\Gamma_D\times Y.
+$$
+
+每个 $u\in\Gamma_D$ 至少对应一个值，因为实际像的定义保证存在 $\gamma\in\Gamma$ 使 $r_D(\gamma)=u$。若 $(u,y),(u,y')\in G_D$，则存在合法世界 $\gamma,\eta$ 满足相同的 $D$ 投影且 $F(\gamma)=y,F(\eta)=y'$；充分性使 $y=y'$。因此 $G_D$ 本身就是一个全函数 $F_D:\Gamma_D\to Y$ 的图，且逐世界满足 $F=F_D\circ r_D$。任一满足此式的函数在每个实际像点的值都被强制为相应 $F(\gamma)$，故唯一。整个定义没有为每条纤维挑选代表；存在性与唯一值直接定义函数图。反向，若有这样的分解，相同的 $r_D$ 值经同一函数 $F_D$ 必有相同输出，故 $D$ 充分。这里只在 $\Gamma_D$ 上定义 $F_D$，没有将它延伸到未必可实现的全部 $\prod_{s\in D}V_s$。
+

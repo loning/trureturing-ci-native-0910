@@ -1,0 +1,22 @@
+**命题 48（像上唯一分解与命中集刻画）。** 对任意 $D\subseteq S$，以下三个条件等价：
+
+$$
+\begin{aligned}
+&D\in\operatorname{Dep}(F);\\
+&\exists!\,F_D:\Gamma_D\to Y,\qquad F=F_D\circ r_D;\\
+&\forall A\in\mathcal H_F,\qquad D\cap A\ne\varnothing.
+\end{aligned}
+\tag{DEP-FACTOR-HIT}
+$$
+
+此外，$\operatorname{Dep}(F)$ 向上闭且包含 $S$，并且
+
+$$
+\varnothing\in\operatorname{Dep}(F)
+\quad\Longleftrightarrow\quad
+F\text{ 恒定}
+\quad\Longleftrightarrow\quad
+\mathcal H_F=\varnothing.
+\tag{DEP-CONSTANT}
+$$
+

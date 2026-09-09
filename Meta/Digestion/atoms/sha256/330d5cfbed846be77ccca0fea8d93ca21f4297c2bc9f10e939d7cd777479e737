@@ -1,0 +1,19 @@
+**定义 30（合法世界上的关系及连通分量）。** 固定定义 28 的非空 $\Gamma$，对任意 $D\subseteq S$ 定义等价关系
+
+$$
+R_D=\{(\gamma,\eta)\in\Gamma^2:\gamma|_D=\eta|_D\}.
+\tag{DEP-RELATION}
+$$
+
+对 $D,T\subseteq S$，$R_D\vee R_T$ 表示包含 $R_D\cup R_T$ 的最小等价关系。等价地，$(\gamma,\eta)\in R_D\vee R_T$ 当且仅当存在 $m\in\mathbb N$ 和全部在 $\Gamma$ 中的有限链
+
+$$
+\gamma=\gamma_0,\gamma_1,\ldots,\gamma_m=\eta,
+\qquad
+\forall j<m,\quad
+(\gamma_j,\gamma_{j+1})\in R_D\cup R_T.
+\tag{DEP-CHAIN}
+$$
+
+允许 $m=0$。有限链关系自反、可逆且可串接，所以是等价关系；任何含两种边的等价关系都含这些有限链，因此两种定义确实相同。$\vee$ 是**等价关系的并生成运算**，不是坐标集合的并或交；本定义也不引入无限链。
+

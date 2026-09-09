@@ -1,0 +1,13 @@
+**证明（缺少连通性时的二值目标）。** 若条件 2 不成立，总包含给出
+$(\gamma_0,\eta_0)\in R_{D\cap T}\setminus(R_D\vee R_T)$。
+令
+
+$$
+C_0=\{\zeta\in\Gamma:(\gamma_0,\zeta)\in R_D\vee R_T\},
+\qquad
+G(\zeta)=
+\begin{cases}1,&\zeta\in C_0,\\0,&\zeta\notin C_0.\end{cases}
+$$
+
+$C_0$ 是一个连通分量，$G:\Gamma\to\{0,1\}$ 是总函数。任一 $R_D$ 或 $R_T$ 边的两端属于同一分量，故或者都在 $C_0$，或者都不在其中；$G$ 在两种边上均恒定，所以 $D,T$ 充分。但 $\gamma_0,\eta_0$ 在 $D\cap T$ 上相同，且分别有输出 $1,0$，故交不充分。这反驳条件 1，完成逆方向。该二值目标也能依命题 49 的同一截面方式取 $H=\mathbf i\circ G$，满足 $q\circ H=G$，因此反例可在 CSA 来源模型中出现。整个构造只用了 $\Gamma$ 内的合法世界，没有假设坐标拼接后仍合法。证毕。
+

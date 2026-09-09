@@ -1,0 +1,47 @@
+**定义 28（充分域与冲突超图）。** 固定任意集合 $S$，以及由它索引的非空值域族 $(V_s)_{s\in S}$，取
+
+$$
+\varnothing\ne\Gamma\subseteq\prod_{s\in S}V_s,\qquad
+F:\Gamma\longrightarrow Y,
+$$
+
+其中 $Y$ 为集合，$F$ 是一个固定的总函数。$S$、各 $V_s$ 和 $\Gamma$ 均不要求有限，$\Gamma$ 也不要求为完整积。例如，丰富状态 $H:\Gamma\to\mathcal B$ 和数值目标 $q\circ H:\Gamma\to\mathbb Z$ 都符合这个类型，但它们是不同的目标函数，不能将其依赖混称为同一种依赖。来源标签的重复仍按 §10 使用同一坐标值，不附带概率假设。
+
+对每个 $D\subseteq S$，定义限制映射及其**实际投影像**
+
+$$
+r_D:\Gamma\longrightarrow\Gamma_D,\qquad
+r_D(\gamma)=\gamma|_D,\qquad
+\Gamma_D=r_D[\Gamma]\subseteq\prod_{s\in D}V_s.
+\tag{DEP-PROJECTION}
+$$
+
+定义全部充分依赖域组成的集合
+
+$$
+\operatorname{Dep}(F)=
+\left\{D\subseteq S:
+\forall\gamma,\eta\in\Gamma,\
+\gamma|_D=\eta|_D\Longrightarrow F(\gamma)=F(\eta)
+\right\}.
+\tag{DEP-FAMILY}
+$$
+
+对任意合法世界 $\gamma,\eta$，定义差异集合及目标的冲突超图
+
+$$
+\Delta(\gamma,\eta)=\{s\in S:\gamma(s)\ne\eta(s)\},
+\qquad
+\mathcal H_F=
+\{\Delta(\gamma,\eta):\gamma,\eta\in\Gamma,\ F(\gamma)\ne F(\eta)\}.
+\tag{DEP-CONFLICT}
+$$
+
+这里超图以 $S$ 为顶点集，$\mathcal H_F$ 是它的边族；重复出现的同一差异集合只算一条边。它没有空边：若 $\Delta(\gamma,\eta)=\varnothing$，两个定义在同一 $S$ 上的赋值逐坐标相等，函数外延性给出 $\gamma=\eta$，于是 $F(\gamma)=F(\eta)$。所以
+
+$$
+\mathcal H_F\subseteq\mathcal P(S)\setminus\{\varnothing\}.
+$$
+
+**空超图** $\mathcal H_F=\varnothing$ 表示根本没有输出冲突；**含空边的超图**则会有一条无法被任何集合命中的边。后者不在本模型可能产生的冲突超图之中。称 $D\subseteq S$ 命中一个边族，指 $\forall A\in\mathcal H_F,\ D\cap A\ne\varnothing$；空边族的这一全称条件对每个 $D$ 都成立。
+

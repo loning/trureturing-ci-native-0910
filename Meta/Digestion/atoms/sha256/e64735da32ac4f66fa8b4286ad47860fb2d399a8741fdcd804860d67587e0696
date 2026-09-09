@@ -1,0 +1,19 @@
+**证明（两步拼接）。** 取在 $D\cap T$ 上相同的 $\gamma,\eta\in\Gamma$，定义整个 $S$ 上的赋值
+
+$$
+\zeta(s)=
+\begin{cases}
+\gamma(s),&s\in D,\\
+\eta(s),&s\in S\setminus D.
+\end{cases}
+\tag{DEP-SPLICE}
+$$
+
+逐坐标有 $\zeta(s)\in V_s$，完整积假设保证 $\zeta\in\Gamma$。它在 $D$ 上等于 $\gamma$，所以 $\gamma R_D\zeta$。对 $s\in T\setminus D$，定义使 $\zeta(s)=\eta(s)$；对 $s\in T\cap D$，则由两原世界在交上的一致性有 $\zeta(s)=\gamma(s)=\eta(s)$。故 $\zeta R_T\eta$，得到
+
+$$
+\gamma\ R_D\ \zeta\ R_T\ \eta.
+$$
+
+这给出反向包含 $R_{D\cap T}\subseteq R_D\vee R_T$，与命题 54 的总包含合并得到等式及二元交性质。在受约束 $\Gamma$ 上，(DEP-SPLICE) 可能不属于合法世界集，这个证明不能直接照搬。
+

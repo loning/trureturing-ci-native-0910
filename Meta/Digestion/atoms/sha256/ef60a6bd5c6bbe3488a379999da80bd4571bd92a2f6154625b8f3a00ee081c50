@@ -1,0 +1,35 @@
+**命题 54（对所有目标成立的二元交判据）。** 对固定的 $\Gamma,D,T$，总有
+
+$$
+R_D\vee R_T\subseteq R_{D\cap T}.
+\tag{DEP-JOIN-INCLUSION}
+$$
+
+以下条件等价：
+
+1. 对每个集合 $Y$ 及每个总函数 $G:\Gamma\to Y$，均有
+   $D,T\in\operatorname{Dep}(G)\Longrightarrow D\cap T\in\operatorname{Dep}(G)$。
+2. $R_D\vee R_T=R_{D\cap T}$。
+3. 对每个 $u\in\Gamma_{D\cap T}$，实际投影纤维
+   $\{\gamma\in\Gamma:r_{D\cap T}(\gamma)=u\}$
+   中任意两个世界，都能由 (DEP-CHAIN) 的有限合法链连接。
+
+条件 1 量化的是该固定 $\Gamma$ 上的**所有目标**。对一个特定的 $F$ 恰好能取这次交，不足以反推出条件 2。
+
+**证明（总包含及纤维表述）。** 每条 $R_D$ 边都保持 $D\cap T$ 的坐标，每条 $R_T$ 边也一样；有限链上的坐标相等逐步传递，得到 (DEP-JOIN-INCLUSION)。特别地，每条这样的链都留在同一个实际投影纤维内。于是等式成立，恰好等价于每对同纤维世界都可连接，即条件 2 与 3 等价。
+
+**证明（关系等式推出所有目标的取交）。** 假设条件 2，取任意集合 $Y$ 及任意总目标 $G:\Gamma\to Y$，并假设 $D,T$ 都充分。$G$ 在每条 $R_D$ 边和每条 $R_T$ 边的两个端点取相同值，因而沿任一有限链恒定。若两世界在 $D\cap T$ 上相同，条件 2 保证它们属于这个有限链关系，所以输出相等。因此 $D\cap T$ 充分，得到条件 1。
+
+**证明（缺少连通性时的二值目标）。** 若条件 2 不成立，总包含给出
+$(\gamma_0,\eta_0)\in R_{D\cap T}\setminus(R_D\vee R_T)$。
+令
+
+$$
+C_0=\{\zeta\in\Gamma:(\gamma_0,\zeta)\in R_D\vee R_T\},
+\qquad
+G(\zeta)=
+\begin{cases}1,&\zeta\in C_0,\\0,&\zeta\notin C_0.\end{cases}
+$$
+
+$C_0$ 是一个连通分量，$G:\Gamma\to\{0,1\}$ 是总函数。任一 $R_D$ 或 $R_T$ 边的两端属于同一分量，故或者都在 $C_0$，或者都不在其中；$G$ 在两种边上均恒定，所以 $D,T$ 充分。但 $\gamma_0,\eta_0$ 在 $D\cap T$ 上相同，且分别有输出 $1,0$，故交不充分。这反驳条件 1，完成逆方向。该二值目标也能依命题 49 的同一截面方式取 $H=\mathbf i\circ G$，满足 $q\circ H=G$，因此反例可在 CSA 来源模型中出现。整个构造只用了 $\Gamma$ 内的合法世界，没有假设坐标拼接后仍合法。证毕。
+

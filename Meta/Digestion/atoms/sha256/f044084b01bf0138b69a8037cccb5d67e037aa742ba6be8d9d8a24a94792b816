@@ -1,0 +1,7 @@
+**命题 51（包含极小的完整私人见证判据）。** $D\subseteq S$ 为包含极小充分域，当且仅当它命中全部冲突边，且
+
+$$
+\forall s\in D\ \exists A\in\mathcal H_F,\qquad A\cap D=\{s\}.
+\tag{DEP-PRIVATE}
+$$
+

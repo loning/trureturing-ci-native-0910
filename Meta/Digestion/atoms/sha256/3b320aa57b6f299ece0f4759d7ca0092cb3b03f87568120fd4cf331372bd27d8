@@ -1,0 +1,40 @@
+**例 F3（唯一包含极小域，仍没有最小域）。** 令
+
+$$
+S=\{p\}\sqcup\mathbb N,\qquad V_s=\{0,1\}\ (s\in S),
+\qquad \Gamma=\{\mathbf0\}\cup\{\gamma_n:n\in\mathbb N\},
+$$
+
+其中 $p$ 与自然数坐标不交，$\mathbf0$ 为全零赋值，且
+
+$$
+\gamma_n(p)=1,\qquad
+\gamma_n(k)=
+\begin{cases}1,&k\ge n,\\0,&k<n\end{cases}
+\quad(k\in\mathbb N).
+$$
+
+定义 $F(\mathbf0)=0$、$F(\gamma_n)=1$。每个 $\gamma_n$ 因 $p$ 坐标而不同于 $\mathbf0$；若 $n<m$，两世界在自然数坐标 $n$ 上也不同，所以这些赋值彼此可辨，定义为总函数。不同输出的世界对只有 $\mathbf0$ 与某个 $\gamma_n$，故全部冲突边恰为
+
+$$
+\mathcal H_F=\{A_n:n\in\mathbb N\},\qquad
+A_n=\{p\}\cup\{k\in\mathbb N:k\ge n\}.
+\tag{DEP-TAIL-EDGES}
+$$
+
+因此对任意 $D\subseteq S$，
+
+$$
+D\in\operatorname{Dep}(F)
+\quad\Longleftrightarrow\quad
+p\in D\ \ \text{或}\ \
+\bigl(\forall n\in\mathbb N\ \exists k\in D\cap\mathbb N,\ k\ge n\bigr).
+\tag{DEP-UNBOUNDED}
+$$
+
+证明直接由命中集刻画给出：含 $p$ 的域命中所有 $A_n$；不含 $p$ 时，命中 $A_n$ 恰为含有某个 $k\ge n$，对全部 $n$ 量化就是 $D\cap\mathbb N$ 无界。它不是一个关于某段有限前缀的条件。
+
+$\{p\}$ 充分，空域不充分，所以 $\{p\}$ 包含极小。任何严格包含它的域都因含有这个充分真子集而非极小。若充分域不含 $p$，则其自然数部分无界；删去其中任一元素 $k_0$ 后仍无界，因为对任意阈值 $n$，可在原集合中取 $k\ge\max(n,k_0+1)$。删后仍充分，故这种域也不包含极小。因此 $\{p\}$ 是**唯一**包含极小充分域。
+
+然而 $\mathbb N\subseteq S$ 自身无界，因而充分，却不包含 $\{p\}$。任何最小域必须同时包含于 $\{p\}$ 和 $\mathbb N$，只能为不充分的空集，所以不存在最小域。也可见所有边都非单点，$\operatorname{Ess}(F)=\varnothing$；全部充分域之交为空而不充分。这精确说明命题 52 的单向结论不能无条件反转。
+
