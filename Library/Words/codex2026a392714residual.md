@@ -428,3 +428,13 @@ v1 子集状态递推只作诊断，没有把最大值插入路线展开成证�
 新判词定位 residual-sign-prefixsum：LaTeX 控制词 le 紧接 j 会连成错误宏。
 统一给该文档公式序列的每两个 token 加 FormulaDsl.Sp，避免其它相同宏边界错误；
 Lean 源码不变。此项是公式渲染失败，与前两次 metadata 判词分开登记。
+
+## 正式发射通过
+
+`make emit` 修正后 EXIT=0，61.781491541 秒，生成并人工阅读本模块唯一的
+Blueprint Markdown，三条 theorem 均带作者公式及 std3 kernel 标记。
+未将任何判形/准入用语写入 `.scribe.cs`。本批实际执行
+`find <dir> -type f | wc -l`：D5/S1/Words/Compositions=7、
+Blueprint/D5/S1/Words/Compositions=14、Library/Words=23、
+docs/develop/theory=44，全部低于 48。`git diff --check` EXIT=0。
+已按门序启动独立 S(a) atom 的 make deposit；未创建原猜想 coverage 边。
