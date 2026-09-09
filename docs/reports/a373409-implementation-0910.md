@@ -170,3 +170,19 @@ inspector 的 `include_in_statement=true` 也包括私有声明，不把它误�
 Full 的结构定义和生成构造器是陈述接口，不是额外公开定理。
 主定理的消费者→前置方向：主定理→upper_of_pair→no_neighbors；
 主定理→4/9整除引理。私有九项见证不在全称上界的推导路径上，明确不拿它充当逃逸见证。
+
+## 发射与定义回声
+
+- `make emit` EXIT=0，53.724秒，仅新增本题一个 Blueprint 投影。
+  已亲读投影：Full 三条件、标准三公理、上界证明和九项对照与 Lean 一致。
+- `/tmp/a373409-full-echo.lean` 热树编译 EXIT=0：直接从 Full.full 推出 8 必须属于
+  `[4,16,36,64,100,144,196,256,324,400]`，与成员判定矛盾；没有使用主上界定理。
+  同一片段验证空列表满足 Full。片段复制到 runner attempt-1/full-semantic-echo.lean。
+  该有限回声只检验定义，未作为冻结模块或题目进展交付。
+- `git diff --check` EXIT=0；Blueprint落点文件数40。
+- `git merge-tree --write-tree HEAD origin/dev` EXIT=0，合并树
+  `09bd40288f86864216b81fc8474595d759a18e99`，无冲突。
+- 下一步无 atom 冻结：`make deposit` 的现役签名强制 ATOM_ID 并自动 cover，
+  与任务禁止自造 atom 的要求不相容；遵循任务明定的无 atom 路径，
+  先调用同一 `deposit-header-check`，再调用 canonical `ledger-align --add`。
+  不新建理论卷，不运行 ingest，不制造 coverage。
