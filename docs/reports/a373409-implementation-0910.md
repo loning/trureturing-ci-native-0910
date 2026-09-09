@@ -34,3 +34,33 @@
 
 尚未主张数学论证闭合、Lean 通过、第三方检索完成、冻结成功或 PR 已开。
 尚未亲验的 OEIS 页面与外部文献均为 ASSUMED-UNVERIFIED。
+
+## 有序库检索及缓存读数
+
+1. D5：上述检索无目标精确命中。
+2. 钉版 Mathlib：`rg -n -i 'antirun|A373409|A373573|A373574|A068781|nonsquarefree' .lake/packages/mathlib/Mathlib` 零命中。
+   `Nat.squarefree_iff_prime_squarefree`、`List.pairwise_iff_getElem`、`List.isChain_iff_pairwise`
+   可作基础引理；不是目标全称上界。源文件已打开。
+3. 外部实取：OEIS 四个 `/internal` URL 均 HTTP 200；A373409 原文
+   “Conjecture: The maximum is 9, and there is no antirun of more than 9 nonsquarefree numbers.”
+   A373573/A373574 均问 “Are there only 9 terms?”。
+   A068781 给 `36a+8`/`36a+9` 算术级数，没有九项装填证明。
+   共同链接的 `https://oeis.org/A373403/a373403.txt` 已读，为序列对照表。
+   arXiv Atom API `all:antirun` HTTP 200，totalResults=0。
+   GitHub 仓库搜索 `antirun lean`：0；认证代码搜索 `A373409 language:Lean`、
+   `antirun language:Lean`：各 0。`nonsquarefree language:Lean`：5 文件，进一步核对中；
+   包括多项式分解代码和 LeanTriathlon 的 NonSquareFreeWeird 导入，不能把名称命中当作已有证明。
+   leansearch.net 首页 HTTP 200，仅证明访问能力，不冒充已执行语义查询。
+   所有原始下载保存在 runner attempt 目录。
+4. 缓存：`make lean-cache-ensure` EXIT=0；`status=seeded, method=clonefile`，
+   donor=/Users/chronoai/trureturing，clonefile_attempts=1，stamp_miss=null，
+   mathlib_missing_olean_files=0，project_olean_state=warm，mathlib_olean_state=warm，
+   archive_status=not_attempted，archive_skip_reason="project olean state is warm"。
+5. 候选落点 Arith/Congruence：`find D5/S3/Arith/Congruence -type f | wc -l` = 19；
+   registered domain Arith/S3，普通自然数的整除与模结构，generality=G。
+
+数学路线细化（仍为预登记）：若取前十项 x0…x9，九个 gap 强制 x9≥x0+18。
+令 q=x0/36：x0≤36q+8 时用 8/9 障碍；9≤余数≤27 时用 27/28 障碍；
+28≤余数时用下一周期 44/45 障碍。只有中间情形允许跨度18，迫使
+x0=36q+9、x1=36q+11；Full 强制 36q+12 在列表内，与 x1 相邻矛盾。
+这沿用原拟议见证，仅明确端点，初段也由第一情形统一处理。
