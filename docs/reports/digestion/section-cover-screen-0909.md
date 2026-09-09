@@ -644,7 +644,7 @@ Full count collection for streaming receipts: `rg -n ... | node` consumes stdout
 
 At 2026-09-09T01:23:13Z, the structural audit found 164 unique supplied IDs, 164 classified rows, no unscreened IDs, and 28 tier-1 clause comparisons. Every recorded body matched its read-only CAS file; tier ordering and atom-ID ordering passed. Ten distinct state JSON files matched the reported module pins, and all cited declaration names were found in their modules. This checks report integrity, not mathematical fidelity.
 
-The five title-selected Gribinski/other groups are not new discoveries by count: tier 1 includes the supplied G1/G3/G4 precedents. There are eight full-match candidate atoms in total, not eight newly added coverage edges. Tier 4 is zero because each supplied body contains a truth-valued assertion; this does not certify its truth.
+Tier 1 includes the supplied G1/G3/G4 precedents. There are eight full-match candidate atoms in total, not eight newly added coverage edges. Tier 4 is zero because each supplied body contains a truth-valued assertion; this does not certify its truth.
 
 The baseline-to-report diff contains only this report; git diff --check passed. Report checkpoints were pushed to origin/lane/math/section-cover-screen-0909. Exact pushed hashes, all classified records, pins, restrictions, controls, and search collection commands are published in the worker-owned result.json in the registered attempt directory. R01-R04 are navigation/signature reads, with context lines excluded from their matching counts.
 
