@@ -122,3 +122,24 @@ Final `make lean` on the complete six-theorem module: EXIT=0, 29.370193542 secon
 A separate warm Lean audit imports the built module and inspects `Lean.getEnv`, `ConstantInfo.value? (allowOpaque := true)`, and `Expr.getUsedConstants`. Twelve required direct edges all passed, EXIT=0, log attempt-1/dependencies.log: odd_coeff_identity→odd_series_identity; odd_series_identity→cubic_pair_sum/sum_equation_unique/A_equation/B_equation; A_equation/B_equation→fixed_equation; fixed_equation→fixed_agree→approximation_stable; odd_coeff_identity_of_equations→A_unique/B_unique/odd_coeff_identity. These are elaborated proof-body edges, not textual grep counts. The live-path analysis above additionally checks how those results are consumed; a constant edge alone does not prove liveness.
 
 The canonical report currently plans delta recheck of two added modules relative to the seeded report (`changed=0 added=2 removed=0 recheck=2`), and its cache receipt is `status=present`, both layers warm, `stamp_miss=null`. Final report/emit/Scribe results still pending.
+
+## Canonical report, projection, and content checks
+
+- `make lean-report`: EXIT=0, 62.721623375 seconds. Canonical file `.lake/build/stratalint/raw-lean-report.json`, SHA-256 `0056f8dee33c3e29bf569680964b71f70da28c815bb4202f7618011ac36f917d`; input address `sha256:d4dd224d860b7541ce69d925cf8e1ffcedfed051cc72ebb51733f2d669442fe1`.
+- The extracted target module report contains 47 declarations, including compiler-generated declarations. Every axiom set is a subset of propext/Classical.choice/Quot.sound; nonstandard axiom findings: `[]`.
+- `make emit`: EXIT=0, 56.726954417 seconds. Read the complete generated Blueprint: all eight public declarations and the polynomial proof explanation are present.
+- `bash tools/scripts/workflow/scribe-content-checks.sh .lake/build/stratalint/raw-lean-report.json "" d59adb46d4703e7fdc7ef7569c5c0919247cc87a`: EXIT=0, 23.380623542 seconds. Projections and describe-report checks passed; real KaTeX markdown check: judged=1, formulas=8, red=0. Existing Library notes emitted offline DOI observations, not red findings; this does not claim online verification of those unrelated notes.
+- A follow-up lookup used a nonexistent `tools/make` directory and returned a path error; the actual canonical targets were located in the root Makefile. No missing-path result is counted as evidence of absence.
+
+Canonical public theorem statement IDs:
+
+| Theorem | statement_id |
+| --- | --- |
+| A_equation | sha256:8470bdb33de2978141512b0acc4fe6b40514712775adc8def9f9250519ff3f5b |
+| B_equation | sha256:289e9bdcfda14c30a2532f2aec923c20f20afd9050fa7cf7e71156b00cdc51c7 |
+| A_unique | sha256:1c0955d2f71946554977a61f2f99f70b1713f3f631e9760dccb4ce1ab16b612e |
+| B_unique | sha256:e05106d3de9c53083639ba077dfa36a5663093ad31b8773b3293f7b5ab921099 |
+| odd_coeff_identity | sha256:3e5b90f6904debab2ee97f02d236b8a5b05d83ebd55546acf35867e9d1bbaa49 |
+| odd_coeff_identity_of_equations | sha256:e917c0de71127960a2c74e2a18fdf27cf72860c9b4b21bfacd42b4fa19c1c0b6 |
+
+Freeze and PR remain outstanding at this checkpoint. No theory volume, atom, or finite-instance theorem was added.
