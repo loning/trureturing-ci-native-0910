@@ -11,7 +11,7 @@ import os
 import subprocess
 import sys
 
-PROGRAM = pathlib.Path(__file__).with_name("pipeline.py")
+PROGRAM = pathlib.Path(__file__).resolve().parents[1] / "pipeline.py"
 
 
 def statement_id(value):

@@ -40,15 +40,15 @@ def main():
         ("ignore-import-graph", streaming, "test_receipt_digest_includes_import_graph",
          'def receipt_digest(inputs):\n    return digest(inputs)',
          'def receipt_digest(inputs):\n    return digest({k: v for k, v in inputs.items() if k != "import_graph"})',
-         [sys.executable, "-m", "unittest", "test_streaming.StreamingTests.test_receipt_digest_includes_import_graph"]),
+         [sys.executable, "-m", "unittest", "tests.test_streaming.StreamingTests.test_receipt_digest_includes_import_graph"]),
         ("cache-ignores-olean-digest", incremental, "test_stale_extraction_cache_reextracts_changed_olean_only",
          '    addresses = module_digests(hashes)',
          '    addresses = {module: digest(module) for module, _ in manifest}',
-         [sys.executable, "-m", "unittest", "test_incremental.IncrementalTests.test_stale_extraction_cache_reextracts_changed_olean_only"]),
+         [sys.executable, "-m", "unittest", "tests.test_incremental.IncrementalTests.test_stale_extraction_cache_reextracts_changed_olean_only"]),
         ("ignore-batch-bound", incremental, "test_two_batches_respect_union_closure_bound",
          '            if current_keys and (len(modules | scope) > bound or len(current_keys) + len(chunk) > BATCH_KEY_BOUND):',
          '            if current_keys and len(current_keys) + len(chunk) > BATCH_KEY_BOUND:',
-         [sys.executable, "-m", "unittest", "test_incremental.IncrementalTests.test_two_batches_respect_union_closure_bound"]),
+         [sys.executable, "-m", "unittest", "tests.test_incremental.IncrementalTests.test_two_batches_respect_union_closure_bound"]),
         ("skip-statement-collision-resolution", membership, "streamStatementCollisionPositive",
          '      let matching := resolveCollision occurrences id',
          '      let matching : Array String := #[]',
@@ -56,11 +56,11 @@ def main():
         ("membership-cache-ignores-index", membership_cache, "test_membership_cache_requires_exact_index_request_and_native_reader",
          '    address = digest([file_digest(index), file_digest(request), reader])',
          '    address = digest([file_digest(request), reader])',
-         [sys.executable, "-m", "unittest", "test_incremental.IncrementalTests.test_membership_cache_requires_exact_index_request_and_native_reader"]),
+         [sys.executable, "-m", "unittest", "tests.test_incremental.IncrementalTests.test_membership_cache_requires_exact_index_request_and_native_reader"]),
         ("expanded-cache-ignores-rows", emission_cache, "test_expanded_rows_cache_binds_rows_scopes_and_emitter",
          '    return digest([rows, modules, scopes, emitter])',
          '    return digest([modules, scopes, emitter])',
-         [sys.executable, "-m", "unittest", "test_incremental.IncrementalTests.test_expanded_rows_cache_binds_rows_scopes_and_emitter"]),
+         [sys.executable, "-m", "unittest", "tests.test_incremental.IncrementalTests.test_expanded_rows_cache_binds_rows_scopes_and_emitter"]),
     ]
     outcomes = []
     for label, source, expected, old, new, command in cases:
@@ -103,7 +103,7 @@ def main():
                 target.read_bytes() == compiled and native.read_bytes() == native_bytes)
             (logs / "result.json").write_text(json.dumps(record, indent=2) + "\n")
         outcomes.append(record)
-    run([sys.executable, "-m", "unittest", "test_streaming", "test_incremental"], directory, "restored-python", cwd=python_root)
+    run([sys.executable, "-m", "unittest", "tests.test_streaming", "tests.test_incremental"], directory, "restored-python", cwd=python_root)
     run(["lake", "env", "lean", str(fixture)], directory, "restored-membership", cwd=repository)
     (directory / "mutations.json").write_text(json.dumps(outcomes, indent=2) + "\n")
     print(json.dumps(outcomes), flush=True)
