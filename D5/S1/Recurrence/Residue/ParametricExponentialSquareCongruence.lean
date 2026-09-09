@@ -1,5 +1,5 @@
 /- GID: D5/S1/Recurrence/Residue/ParametricExponentialSquareCongruence
-   generality: G
+   generality: I
    mirror-B: D5/B/S1/Recurrence/Residue/ParametricExponentialSquareCongruence
    mirror-E: none(waiver:unbounded-symbolic-proof)
    anchors: []

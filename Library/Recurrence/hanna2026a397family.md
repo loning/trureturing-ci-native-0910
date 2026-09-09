@@ -295,6 +295,19 @@ The same canonical scribe-content-checks.sh now exits 0 locally with
 DESCRIBE_STATUS red=0; the changed Blueprint's Markdown check also passes.
 The source-bound Lean report remains current because only Library prose changed.
 
+The subsequent complete local admission check found the inherited header
+classification G imported the frozen q=1 module classified I (SL-010).
+The family is therefore classified I as well: its arbitrary integer parameter
+does not remove its dependency on that instance. Only this header comment is
+corrected; declarations, proofs, imports and stored frozen identity are unchanged.
+The current SL-008 state contract hashes declarations and excludes header
+comments (the spec's current frozen-surface clause). A fresh build and report
+are required for the changed source bytes. The separate SL-022 Scribe finding
+is a protected-surface annotation, normalized by the canonical admission flow
+only after all actual checks pass; no exemption is requested.
+The classification-only make lean passed (12782 jobs, EXIT=0); this checkpoint
+is committed and pushed before producing its fresh report.
+
 ## Verified locator
 
 - URL: https://oeis.org/A397345
