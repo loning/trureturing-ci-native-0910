@@ -1,0 +1,41 @@
+COMMAND: ['make', '-f', 'Makefile', '-f', '/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/probe.mk', 'lean', 'PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/B4Probe.lean']
+LEAN_CACHE {"status":"present","worktree":"/Users/auricstudio/trureturing-u1bridge-0909","donor":null,"method":"none","reason":null,"stamp_miss":null,"pin_sha256":"sha256:6c4c682ffba051b5744fe7a75ccc99d7f3b20227b3b026f392f3315be0adaa4e","clonefile_errno":null,"clonefile_errnos":[],"clonefile_attempts":0,"clonefile_cleanup_error":null,"mathlib_missing_olean_files":0,"mathlib_missing_olean_samples":[],"archive_status":"not_attempted","archive_mode":null,"archive_skip_reason":"project olean state is warm","archive_reason":null,"archive_producer_commit_sha":null,"archive_workflow_run_id":null,"mathlib_olean_state":"warm","mathlib_olean_probe_error":null,"project_olean_state":"warm","project_olean_probe_error":null}
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/B4Probe.lean:48:37: error(lean.invalidField): Invalid field `mpr`: The environment does not contain `Function.mpr`, so it is not possible to project the field `mpr` from an expression
+  degree_lt_iff_coeff_zero
+of type
+  ∀ (f : ?m.379[X]) (n : ℕ), f.degree < ↑n ↔ ∀ (m : ℕ), n ≤ m → f.coeff m = 0
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/B4Probe.lean:49:10: error: No goals to be solved
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/B4Probe.lean:85:10: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  ∑ x ∈ ?m.609, -?f x
+in the target expression
+  ∑ i, -↑(n + 2) * eval (t i) q / eval (t i) (derivative (derivative q)) =
+    -∑ i, eval (t i) q / ∏ j ∈ Finset.univ.erase i, (t i - t j)
+
+n : ℕ
+q : ℂ[X]
+t : Fin (n + 1) → ℂ
+a₁ a₂ : ℂ
+ht : Function.Injective t
+hq : q.natDegree ≤ n + 2
+h₀ : q.coeff (n + 2) = 1
+h₁ : q.coeff (n + 1) = -a₁
+h₂ : q.coeff n = ↑(n + 1) / ↑(n + 2) * a₂
+hcrit : ∀ (i : Fin (n + 1)), eval (t i) (derivative q) = 0
+d : ℂ := ↑(n + 2)
+hd : d ≠ 0
+R : ℂ[X] := q - C d⁻¹ * X * derivative q + C (a₁ / d ^ 2) * derivative q
+hc : ∀ (k : ℕ), R.coeff k = q.coeff k - d⁻¹ * (q.coeff k * ↑k) + a₁ / d ^ 2 * (q.coeff (k + 1) * ↑(k + 1))
+hRdeg : R.degree < ↑(n + 1)
+hRc : R.coeff n = -(↑(n + 1) / d ^ 2 * (a₁ ^ 2 - 2 * a₂))
+hRe : ∀ (i : Fin (n + 1)), eval (t i) R = eval (t i) q
+hnodal : derivative q = C ↑(n + 2) * Lagrange.nodal Finset.univ t
+hdd : ∀ (i : Fin (n + 1)), eval (t i) (derivative (derivative q)) = d * ∏ j ∈ Finset.univ.erase i, (t i - t j)
+hLag : R.coeff n = ∑ x, eval (t x) q / ∏ j ∈ Finset.univ.erase x, (t x - t j)
+⊢ ∑ i, -↑(n + 2) * eval (t i) q / eval (t i) (derivative (derivative q)) =
+    -∑ i, eval (t i) q / ∏ j ∈ Finset.univ.erase i, (t i - t j)
+'QdB4Probe.nodal_derivative' depends on axioms: [propext, Classical.choice, Quot.sound]
+'QdB4Probe.b4_residue_sum' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'QdB4Probe.b4_cumulant' depends on axioms: [propext, Classical.choice, Quot.sound]
+make: *** [qd-triage-probe] Error 2
+EXIT=2
+SECONDS=71.597924042

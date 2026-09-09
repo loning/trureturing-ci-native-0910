@@ -115,4 +115,11 @@
 }
 ```
 
-完整日志：[b11-01.log](qd-family-triage-0909/b11-01.log)。B4 初试 [b4-01.log](qd-family-triage-0909/b4-01.log) 因 canonical cache writer guard busy 返回2，未到 Lean，不能据此判数学不闭合；待释放后重跑。第二批 Schur 的结尾 `\b` 不匹配下标字符，属于正则词界问题，已读到实际声明582行，不拿该0命中主张不存在。
+完整日志：[b11-01.log](qd-family-triage-0909/b11-01.log.gz)。B4 初试 [b4-01.log](qd-family-triage-0909/b4-01.log) 因 canonical cache writer guard busy 返回2，未到 Lean，不能据此判数学不闭合；待释放后重跑。第二批 Schur 的结尾 `\b` 不匹配下标字符，属于正则词界问题，已读到实际声明582行，不拿该0命中主张不存在。
+
+
+## B4 中间片段与检索纠错
+
+第二轮（第一轮真正进入 Lean）`b4-02.log` EXIT=2：`nodal_derivative` 与 `b4_cumulant` 标准三公理；`b4_residue_sum` 尚含错误恢复 sorryAx，不承载结论。报错是 `degree_lt_iff_coeff_zero` 需显式参数、`sum_neg_distrib` 改写方向反了。修复后连同实际源 Q 前三系数的规范化一起重跑，不把部分证明误报为整条通过。
+
+B1.1 原始 stdout 61.14 MB（Mathlib/仓库历史警告回放）已在当前树改存无损 gzip；[摘录](qd-family-triage-0909/b11-01-excerpt.txt) 给可读的 command/EXIT/axioms。原始字节仍完整保留，未重写已推历史。

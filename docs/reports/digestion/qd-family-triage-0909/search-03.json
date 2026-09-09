@@ -1,0 +1,42 @@
+[
+  {
+    "label": "schur-unicode-boundary-repaired",
+    "argv": [
+      "rg",
+      "-n",
+      "\\btheorem fromBlocks(₁₁|₂₂)",
+      ".lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/PosDef.lean"
+    ],
+    "exit": 0,
+    "matching_lines": 2,
+    "stdout": "563:theorem fromBlocks₁₁ [DecidableEq m] {A : Matrix m m R'}\n582:theorem fromBlocks₂₂ [DecidableEq n] (A : Matrix m m R')\n",
+    "stderr": "",
+    "note": "trailing word boundary after subscript digits did not match; no math absence inferred"
+  },
+  {
+    "label": "positive-same-regex",
+    "argv": [
+      "rg",
+      "-n",
+      "\\btheorem fromBlocks(₁₁|₂₂)",
+      ".lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/PosDef.lean"
+    ],
+    "exit": 0,
+    "matching_lines": 2,
+    "stdout": "563:theorem fromBlocks₁₁ [DecidableEq m] {A : Matrix m m R'}\n582:theorem fromBlocks₂₂ [DecidableEq n] (A : Matrix m m R')\n",
+    "stderr": ""
+  },
+  {
+    "label": "negative-same-regex",
+    "argv": [
+      "rg",
+      "-n",
+      "\\btheorem qd_nonexistent(₁₁|₂₂)",
+      ".lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/PosDef.lean"
+    ],
+    "exit": 1,
+    "matching_lines": 0,
+    "stdout": "",
+    "stderr": ""
+  }
+]
