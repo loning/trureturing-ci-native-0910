@@ -256,7 +256,7 @@ This is a vector in the same Space(Fin(proposedDimension(a))); no second normali
 
 **Theorem 1.21 (physical_residual_step).**
 
-$$\forall A \in Type,\; \left(Fintype\left(A\right) \land \left(DecidableEq\left(A\right) \land Nonempty\left(A\right)\right)\right) \Rightarrow \left(\forall a \in Multiset\left(A\right),\; \forall r \in Multiset\left(A\right),\; \left(r \le a \land r \ne 0\right) \Rightarrow \left(\forall i \in A,\; \forall k \in Fin\left(proposedDimension\left(a\right)\right),\; physicalGate\left(a\right)\left(blankMemory\left(maximalHead\left(a\right), physicalResidual\left(a, r\right)\right), pair\left(i, k\right)\right) = ite\left(i \in r, physicalResidual\left(a, erase\left(r, i\right)\right)\left(k\right), 0\right)\right)\right)$$
+$$\forall A \in Type,\; \left(Fintype\left(A\right) \land \left(DecidableEq\left(A\right) \land Nonempty\left(A\right)\right)\right) \Rightarrow \left(\forall a \in Multiset\left(A\right),\; \forall r \in Multiset\left(A\right),\; \left(r \le a \land r \ne 0\right) \Rightarrow \left(\forall i \in A,\; \forall k \in Fin\left(proposedDimension\left(a\right)\right),\; physicalGate\left(a\right)\left(blankMemory\left(maximalHead\left(a\right), physicalResidual\left(a, r\right)\right)\right)\left(pair\left(i, k\right)\right) = ite\left(i \in r, physicalResidual\left(a, erase\left(r, i\right)\right)\left(k\right), 0\right)\right)\right)$$
 
 *Proof.* Machine-checked in Lean as `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.physical_residual_step` (`✓ std3`). ∎
 
