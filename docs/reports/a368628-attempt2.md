@@ -97,4 +97,6 @@ Private `initial_echo` 修复后正式模块编译 EXIT=0、零 warning/error，
 
 首次 `make emit` EXIT=2 / 16.341s：Library 的非空 `strata_touched: [S1]` 不被本仓 note parser 接受（`strata_touched must be a list`），连带 literature reference 无法解析。改成既有 block-list 文法 `strata_touched:\n  - S1`，Verified locator 中原样 url/doi 已在；未改 Lean 源码。
 
-第二次 emit EXIT=2 / 15.421s：list 成员须为 GID，`S1` 不是 GID。已读 `LibraryNoteCatalog.cs:218-228` 的实际 parser（`Gid.Parse(RequireString(...))`），将成员改为本模块完整 GID。前次把字段名当语义、只修 YAML 形状不够，此次按真源类型修正。
+第二次 emit EXIT=2 / 15.421s：list 成员须为 GID，`S1` 不是 GID。已读 `LibraryNoteCatalog.cs:218-228` 的实际 parser（`GidRef.Create(gid)`），将成员改为本模块完整 GID。前次把字段名当语义、只修 YAML 形状不够，此次按真源类型修正。
+
+`make emit` **EXIT=0 / 50.659s**，仅发射本模块一个 Blueprint（生成器 run-local manifest 未入索引）。`deposit-header-check --target … --protected-base f838f20236e5a723d0c025ef53a80a07483008fa` **EXIT=0 / 9.658s**。当前进入同一冻结 writer，选择既有直接前置 P 并 add 本模块，避免无关全库对齐；无 atom、无 cover。
