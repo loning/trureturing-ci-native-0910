@@ -33,6 +33,7 @@ def axiom_readings(repository, path, keys):
     missing or unbound closure is a missing field, never an empty axiom set.
     """
     from report_stream import fields
+    repository = pathlib.Path(repository).resolve()
     wanted = set(tuple(k) for k in keys)
     result, seen = {}, set()
     if not path.is_file():
