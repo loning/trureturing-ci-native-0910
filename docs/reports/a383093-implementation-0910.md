@@ -29,3 +29,14 @@
 
 未主张已证明、反驳、冻结、构建通过或开 PR。未主张全球不存在既有证明或首创性。
 未打开的外部页面为 ASSUMED-UNVERIFIED；有限枚举不作为一般定理的部分进展。
+
+## 检索第 2 批
+
+- 完整读 ConstantBlocksDistinctRunSums.lean 的 383 行，包括全部公开面：
+  HasConstantBlocks（正值正重数、块和单射的有限集合）、runSums、HasDistinctRunSums，
+  constantBlocks_iff_distinctRunSums、card_constantBlocks_eq_distinctRunSums。
+  两条定理提供块和互异/极大游程和互异的对应，不给本题等和块的规范化；
+  私有引理的重平衡/排序构造亦不提供 lcm 重数缩放。
+- 扩检 equal.?sum|constant.?block|capable.?partition 与五个 A 号，D5 无新增相关命中。
+  Library/Words/oeis2026triage0910.md 记载用户同一预登记（308 行）；不是新的证明来源。
+- make lean-cache-ensure 已启动；未运行裸 lake。首次报告提交 9dbcc5a3b3 已推远端。
