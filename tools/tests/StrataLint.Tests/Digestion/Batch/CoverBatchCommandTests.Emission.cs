@@ -7,6 +7,26 @@ namespace StrataLint.Tests;
 
 public sealed partial class CoverBatchCommandTests
 {
+    [Fact]
+    public void ProducerRuntimeFilesAreIgnoredWhileTrackedSourcesRequireStrictUtf8()
+    {
+        using var world = new BatchWorld { UseGitReader = true };
+        WriteEmissionInputs(world.Root);
+        const string runtimePath = "tools/scripts/report/__pycache__/dependency.pyc";
+        var runtimeFile = Path.Combine(world.Root, runtimePath);
+        TemporaryFileSystem.Directory.CreateDirectory(Path.GetDirectoryName(runtimeFile)!);
+        TemporaryFileSystem.File.WriteAllBytes(runtimeFile, [0xff]);
+
+        world.WriteReportBundle();
+
+        Assert.DoesNotContain(world.Repository.ReadCurrent().Entries, entry => entry.Path == runtimePath);
+        const string sourcePath = "tools/StrataLint.Cli/Fixture.cs";
+        TemporaryFileSystem.File.WriteAllBytes(Path.Combine(world.Root, sourcePath), [0xff]);
+        var failure = Assert.IsType<SnapshotDecodeOutcome.InfrastructureFailure>(
+            SnapshotDecoder.Decode(world.Repository.ReadCurrent()));
+        Assert.Equal("Repository file must be strict UTF-8: " + sourcePath + ".", failure.Message);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -249,8 +269,9 @@ public sealed partial class CoverBatchCommandTests
     {
         WriteProblem(root);
         WriteScribeFixture(root, "Trureturing.lean", "-- synthetic root module\n");
-        LeanReportInputScriptTests.CopyBatchProducerInputs(root);
-        WriteScribeFixture(root, ".gitignore", ".lake/\nGenerated/\ntools/Generated/scribe-emissions.v1.json\n");
+        ProducerInputFixture.CopyBatchProducerInputs(root);
+        WriteScribeFixture(root, ".gitignore",
+            File.ReadAllText(Path.Combine(TestRepositoryLayout.FindRoot(), ".gitignore")));
         WriteScribeFixture(root, "Blueprint/D5/S0/Carrier/Probe.md", "old blueprint projection\n");
         WriteScribeFixture(root, CanonicalValuesWriter.RelativePath, "old values projection\n");
         foreach (var path in CanonicalValuesWriter.InputPaths)
