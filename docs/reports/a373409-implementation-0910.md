@@ -82,3 +82,16 @@ x0=36q+9、x1=36q+11；Full 强制 36q+12 在列表内，与 x1 相邻矛盾。
   其余三个 hex 文件未打开，明确 ASSUMED-UNVERIFIED，不据文件名宣称完整核验。
 - dominating_theorem_search：在已检索/已打开范围未找到本题的已有证明；
   这不是对全部文献的穷尽保证。Library/Arith 实测 48，不能向该桶新增笔记。
+
+## 无界上界与尖锐性内核检查点
+
+- 全称定理 `antirun_length_le_nine` 首次完整实现即编译成功；
+  `#print axioms` 为 `[propext, Classical.choice, Quot.sound]`。
+- 私有见证经历两次明确失败：`norm_num` 没有化简 Squarefree 常数；默认 `decide`
+  卡在 `Nat.minSqFac` 展开。读取 Mathlib 定义后使用 `decide +kernel`（内核归约，
+  不使用 native_decide），完整文件编译 EXIT=0。见证公理闭包同为标准三公理。
+- `nine_term_witness` 同时验证 Full、全部相邻 gap 与长度=9；不是仅验证九项逐项非平方自由。
+- 初段无需单独枚举：余数≤8 的相邻障碍已覆盖，包括自然数 0；
+  这给出比正整数枚举略强的陈述，不改变题意中的正整数结论。
+- 当前结果不再把障碍/装填论证标为 ASSUMED-UNVERIFIED：它已 kernel 验证。
+  尚待 make lean、报告、发射、冻结与 PR；不提前主张项目门通过。
