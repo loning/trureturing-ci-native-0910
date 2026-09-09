@@ -49,7 +49,7 @@ All have source_id `quantum-rh` and initial directory `residual-open`.
 | --- | --- | --- | --- |
 | A1 | `66fd622e5d54c25826af9d416db18df1d8eecf9c71288d80ff0460237e3e95d2` | residual-open | absorbed-closed; two edges |
 | A2 | `088d882f6a10249e981da5d77bc3bb5e53e75a5ee02313bdd7c879cb21e22413` | residual-open | absorbed-closed; one edge |
-| A3 | `5f5912050d91b5f8998e6799d12c40e766fa4d65798ff890b506a56c3bc0ed3c` | residual-open | pending audit |
+| A3 | `5f5912050d91b5f8998e6799d12c40e766fa4d65798ff890b506a56c3bc0ed3c` | residual-open | full match; writer pending |
 | B1 | `c352d304105e02cbbcb0607e31a1e217adb85d4b344ba0d75c23ba4420dbf0e1` | residual-open | dossier pending; cover prohibited |
 | B2 | `7b2657006891568aa395dfd9fa14bde9d9d23d2ade0c449b00f7cdf5c616baec` | residual-open | dossier pending; cover prohibited |
 
@@ -185,6 +185,45 @@ declaration pin
 The command reused the cached Lean report and changed zero blueprints.
 `git diff --check` returned 0. The full command log is retained in the attempt
 directory as `cover-a2.log`; command success is not a fidelity judgment.
+
+## A3: Ordered positive quadruple
+
+Atom: `5f5912050d91b5f8998e6799d12c40e766fa4d65798ff890b506a56c3bc0ed3c`.
+`make show-atom` returned 0 with the full raw/normalized body and no initial
+coverage. The body explicitly assumes `a >= b >= c >= d >= 1`, boxes the
+hypothesis `abcd = a+b+c+d` as (111), and then boxes the tuple conclusion.
+
+Frozen declaration GID:
+`D5/S3/Arith/GoldenResource/FourFactorSumProductBalance.sorted_positive_sum_product_classification`.
+The actually read state file is
+`Golden/Frozen/state/D5/S3/Arith/GoldenResource/FourFactorSumProductBalance.lean.json`,
+with module pin
+`sha256:1c446108a1b0a50141da4dc8d497c3e770561cfddf55c2d59193e24ee4fe2ea6`.
+The whole module was read with `git show origin/dev:` at that module path,
+including the nominated signature through `:= by` (lines 53-57).
+
+| Source clause | Lean binders | Lean hypotheses / conclusion | Label |
+| --- | --- | --- | --- |
+| Ordered positive integers a >= b >= c >= d >= 1 | `a b c d : Nat` | `hd : 0 < d`, `hdc : d <= c`, `hcb : c <= b`, `hba : b <= a`; on Nat, `0 < d` iff `1 <= d` | equivalent |
+| Box (111), hypothesis abcd = a+b+c+d | the same four naturals | `h : a+b+c+d = a*b*c*d`, by equality symmetry | equivalent |
+| Box, conclusion (a,b,c,d) = (4,2,1,1) | every quadruple satisfying the preceding hypotheses | `a=4 AND b=2 AND c=1 AND d=1`, equivalent by tuple extensionality | equivalent |
+| Title's uniqueness and existence, within the body's ordered domain | ordered positive Nat quadruples | Classification gives uniqueness; the displayed tuple satisfies the ordering and has sum 8 = product 8 | equivalent |
+
+Quantifier and endpoint audit: this is a universal implication over four
+naturals, not an existential or real-valued classification. The three order
+inequalities are non-strict, so equal coordinates remain allowed. Positivity of
+all four entries follows from `0 < d` and the order chain; d=1 is included.
+There is no added hypothesis. Equality of sum and product is exact in both texts.
+Existence of the displayed solution is direct numeral arithmetic; the frozen
+module also contains an explicit inhabited-domain example. No claim that the
+title means literal uniqueness without ordering is made (permutations would
+contradict that reading).
+
+Fidelity verdict: full match. Proposed use `proof_shape: bind-only`,
+`escape_witness: null`,
+`admission_basis: not-applicable(cover of an existing frozen declaration)`.
+The direct frozen dependency is the GID above with its recorded module pin.
+Writer outcome remains pending at this audit checkpoint.
 
 ## Nonclaims
 
