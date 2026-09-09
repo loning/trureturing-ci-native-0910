@@ -104,8 +104,9 @@ theorem engine_census_self_application : SystemStatement := by
 
 /-- The self-application theorem uses the legacy registration interface unchanged. -/
 theorem system_self_application_realization :
-    LegacyPrimitiveRealization arena SystemStatement systemRealization :=
-  ⟨Iff.rfl⟩
+    LegacyPrimitiveRealization arena SystemStatement systemRealization := by
+  have witness : LegacyPrimitiveRealization arena SystemStatement systemRealization := ⟨Iff.rfl⟩
+  exact witness
 
 example : systemReadout false = 0 := by decide
 

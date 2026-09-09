@@ -81,6 +81,30 @@ class IncrementalTests(unittest.TestCase):
             self.assertTrue(reread)
             self.assertEqual(changed["imports"], ["New"])
 
+    def test_membership_cache_requires_exact_index_request_and_native_reader(self):
+        from membership_cache import reuse
+        with tempfile.TemporaryDirectory() as folder:
+            root = pathlib.Path(folder)
+            index, request = root / "index", root / "request"
+            index.write_text("index-a")
+            request.write_text("request-a")
+            calls = []
+            def compute(destination):
+                calls.append(1)
+                destination.write_text(index.read_text()+request.read_text())
+                pathlib.Path(str(destination)+".rows.jsonl").write_text("rows")
+            def run(reader="reader-a"):
+                return reuse(index, request, reader, root / "cache", root / "output", compute)
+            self.assertFalse(run()["hit"])
+            self.assertTrue(run()["hit"])
+            self.assertEqual(len(calls), 1)
+            index.write_text("index-b")
+            self.assertFalse(run()["hit"])
+            request.write_text("request-b")
+            self.assertFalse(run()["hit"])
+            self.assertFalse(run("reader-b")["hit"])
+            self.assertEqual(len(calls), 4)
+
 
 if __name__ == "__main__":
     unittest.main()

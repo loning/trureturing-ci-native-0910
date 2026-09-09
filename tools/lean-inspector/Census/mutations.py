@@ -22,6 +22,7 @@ def main():
     ownership = source_root / "LeanInformationAudit/Census/Ownership.lean"
     membership = source_root / "LeanInformationAudit/Census/Membership.lean"
     incremental = python_root / "incremental.py"
+    membership_cache = python_root / "membership_cache.py"
     fixture = source_root / "LeanInformationAudit/Tests/Census/Query/Ownership.lean"
     cases = [
         ("skip-freshness", streaming, "streamFreshnessGate",
@@ -51,6 +52,10 @@ def main():
          '      let matching := resolveCollision occurrences id',
          '      let matching : Array String := #[]',
          [sys.executable, str(python_root / "negative_fixtures.py"), "--directory", str(options.fixtures), "--case", "statement_collision"]),
+        ("membership-cache-ignores-index", membership_cache, "test_membership_cache_requires_exact_index_request_and_native_reader",
+         '    address = digest([file_digest(index), file_digest(request), reader])',
+         '    address = digest([file_digest(request), reader])',
+         [sys.executable, "-m", "unittest", "test_incremental.IncrementalTests.test_membership_cache_requires_exact_index_request_and_native_reader"]),
     ]
     outcomes = []
     for label, source, expected, old, new, command in cases:

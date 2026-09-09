@@ -133,6 +133,7 @@ def hash_receipt(repository, directory):
               "export_sha256": request["report_sha256"], "domain": read(directory / "domain.json"),
               "scopes": membership["scopes"], "module_names": membership["module_names"],
               "extraction": {k: extraction[k] for k in ["cache_keys", "source_digest", "frozen_names_digest"]},
+              "membership": read(directory / "membership-cache.json")["receipt"],
               "candidate_validation": validation,
               "toolchain": (repository / "lean-toolchain").read_text().strip()}
     from streaming import receipt_digest

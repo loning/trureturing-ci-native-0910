@@ -185,8 +185,8 @@ def execute(options):
         step([sys.executable, str(repository / "tools/lean-inspector/Census/extraction.py"),
               str(repository), str(directory), runtime["scan.lean"]], "streaming_index", budget_gb=1)
         io_phase("graph", "upstream_graph")
-        step([runtime["membership.lean"], str(directory / "index.jsonl"),
-              str(directory / "membership-request.json"), str(directory / "membership.json")],
+        step([sys.executable, str(repository / "tools/lean-inspector/Census/membership_cache.py"),
+              str(repository), str(directory), runtime["membership.lean"]],
              "closure_membership", budget_gb=0.5)
         membership = read(directory / "membership.json")
         from validation import prepare as prepare_validation, run_batches
@@ -215,6 +215,7 @@ def execute(options):
                      candidate_keys=len(membership["candidate_keys"]), tracked_modules=len(domain),
                      artifact_bytes=(directory / "census.json").stat().st_size,
                      extraction_cache=read(directory / "extraction.json"),
+                     membership_cache=read(directory / "membership-cache.json"),
                      validation_cache={k: validation[k] for k in ["hits", "misses", "revalidated_keys"]},
                      batches={"bound": validation["receipt"]["bound"],
                               "key_bound": validation["receipt"]["key_bound"],
