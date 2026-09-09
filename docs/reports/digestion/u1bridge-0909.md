@@ -77,3 +77,58 @@ Direct frozen interface (candidate dependency, not yet used by a probe):
 This checkpoint proves neither the target nor its provability, claims no
 exhaustive search, and claims no implication concerning RH or a larger
 conjecture. It changes no atom status and creates no production Lean module.
+
+## Stage A checkpoint: exact upstream candidate
+
+`make lean-cache-ensure` exited 0: `status=seeded`, `method=clonefile`, donor
+`/Users/auricstudio/trureturing`, one clonefile attempt, project and Mathlib
+olean states both `warm`. The command also built the missing CLI through its
+canonical entry. The subsequent `make show-atom ATOM_ID=...` exited 0 and
+returned the complete U13 raw/normalized body with `coverage_gids=[]`.
+The claimed source locator was checked with bounded numbered output:
+`29588` begins the section, `29595` states `G_N>0`, `29605-29608` defines the
+block matrix, and `29611-29620` is U1/U13. Its proof continues after `29625`.
+
+Repository coarse search (not a semantic completeness claim):
+
+```sh
+rg -n -i '\b(schur|posSemidef|rclikeToReal|re_inner_eq)\b' D5/S3/Weil D5/S3/Observer/Hilbert D5/S3/Constants --glob '*.lean'
+```
+
+This returned nearby matrix positivity and abstract Schur APIs; no exact U13
+statement was established by that textual search. Then pinned Mathlib was
+searched and the following bodies/signatures were actually opened:
+
+- `Mathlib/LinearAlgebra/Matrix/PosDef.lean:564`,
+  `Matrix.PosDef.fromBlocks₁₁`: for positive-definite invertible `A`,
+  `PosSemidef (fromBlocks A B Bᴴ D)` iff
+  `PosSemidef (D - Bᴴ * A⁻¹ * B)`.
+  This is the direct bind-only candidate, with the second index type `Unit`.
+- Same file `:581`, `Matrix.PosDef.fromBlocks₂₂`: the opposite block order is
+  already supported upstream via `Equiv.sumComm`.
+- `Mathlib/Analysis/InnerProductSpace/Basic.lean:932,944,959,972,975`:
+  `Inner.rclikeToReal`, `InnerProductSpace.rclikeToReal`,
+  `real_inner_eq_re_inner`, `InnerProductSpace.complexToReal`, and the real
+  inner-product instance on `Complex`. These are available conversions,
+  not missing analytic prerequisites. The generic conversion is deliberately
+  not a global instance because of scalar and PiLp instance diamonds.
+
+Search/control receipt (readings are line counts, not semantic theorem counts):
+`rg -n '\b(theorem|lemma)\s+(exact_sticky_reduction|real_inner_comm)\b'`
+on the frozen file and Mathlib Basic returned 2 lines, exit 0. A candidate
+pattern with a trailing `\b` after the Unicode subscript in `fromBlocks₁₁`
+returned 0, exit 1, although the declaration is present. That zero is invalid
+absence evidence; the follow-up uses whitespace after the identifier.
+
+The structurally selected #6160 comment mentioning U1 was read completely:
+<https://github.com/the-omega-institute/trureturing/issues/6160#issuecomment-5594751714>.
+It registers a need for a bridge but names no downstream Lean theorem.
+The preceding dossier `section-cover-batch-0909.md:240-322` was also read:
+it describes the entire transport but supplies no checked Lean edge.
+These two sources do not establish a preregistered named consumer (`none`).
+
+Next measurement: a run-local Lean probe of the direct upstream criterion,
+specialized to a single complex added coordinate, before considering any
+production bridge. The external Make extension pattern is already documented
+in `docs/reports/robin/zhao-assumption1-map-0909.md:180-191`; it preserves the
+root `make lean` recipe and invokes the canonical cache wrapper for the probe.
