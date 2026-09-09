@@ -49,7 +49,7 @@ atom judgment is committed and pushed before advancing to the next one.
 
 ## Progress
 
-`screened: 1 / 7`. Completed: M4 readback.
+`screened: 2 / 7`. Completed: M4 readback, Schur minimum.
 
 ## Evidence Coordinates
 
@@ -119,11 +119,80 @@ definition windows (125-160, 11010-11085) were opened, not inferred from titles.
 Probe receipt: `prior/probes/Readback75.lean`, inherited `make lean` exit 0;
 `prior/probe-runs.json` and decoded `prior/logs/Readback75.log.gz` were opened.
 
+## Atom 89: Schur Minimum
+
+`atom_id: 937abccd3570503c88aaac8b088e687e6f79db29ca9f67f887b72a028bd4f866`
+
+Complete raw body returned by `make show-atom` (exit 0, hash matches, no coverage):
+
+```text
+## 定理二：边界有效几何由 Schur 补唯一确定
+
+$$
+\boxed{
+\min_y
+\begin{pmatrix}x\\y\end{pmatrix}^{\!*}
+K
+\begin{pmatrix}x\\y\end{pmatrix}
+=
+x^*Sx,
+\qquad
+S=A-BC^{-1}B^*.
+}
+\tag{8}
+$$
+```
+
+| Source assertion | Original probe counterpart | Status | Domain and boundary check |
+| --- | --- | --- | --- |
+| Attained minimum over every internal vector `y` equals `x^* S x` | `Triage89.schur_minimum`: `IsLeast (Set.range ...) (qform (...) x)` | equivalent | Universal finite complex matrices, boundary vector `x`, and all internal vectors `y`. `C.PosDef` is precisely the source's strict `C > 0`. It supplies invertibility, so no extra inverse hypothesis is imposed. `IsLeast` includes both attainment and the universal lower bound. |
+| `S = A - B C^{-1} B^*` | Exact matrix term `A - B * Inv.inv C * Matrix.conjTranspose B` in the conclusion | equivalent | Adjoint, product order, and the lower-right block inverse agree. No commutation or equal block-dimension assumption. |
+| Heading: boundary effective geometry is uniquely determined by the Schur complement | The displayed minimum fixes the effective quadratic value for each `x`, using the explicit expression for `S` | equivalent | This is the determinacy expressed in (8), not a separate uniqueness-of-minimizer assertion. No second characterization of arbitrary matrices is printed in the atom. |
+
+`fidelity: full`. Source context 55856-55906 specifies a Hermitian block matrix.
+The probe even permits arbitrary `A`; restricting it to the source's Hermitian
+`A` introduces no missing case. Its `ComplexOrder` comparison specializes to
+real-valued Hermitian quadratic forms. It does not require nonempty index types,
+positive `A`, or positive full `K`. Singular `C` is excluded by the source itself.
+
+`upstream_declaration`: `Matrix.schur_complement_eq₂₂`,
+`.lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/Hermitian.lean:378`.
+The opened declaration already states the entire block quadratic form as the
+sum of the translated `C` quadratic form and the precise Schur quadratic form.
+Side-condition declarations, also opened locally: `Matrix.PosDef.isUnit`,
+`.lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/PosDef.lean:507`, and
+`Matrix.PosSemidef.dotProduct_mulVec_nonneg`, same file at line 305.
+
+`wrapper_thinness`: instantiate the upstream coefficient field by `Complex`
+and its lower-right block `D` by `C`; obtain the invertible instance from positive
+definiteness. Rewrite once by the upstream equality. Nonnegativity of its first
+summand gives the lower bound, and `y = -(C^{-1} B^*) x` makes that summand zero.
+Thus the wrapper exposes an attained-minimum interface for the very Schur
+identity supplied upstream; it performs no independent square completion.
+`necessity_citation`: the atom's exact `\min_y ... = x^*Sx` clause above
+requires an attained minimum, whereas upstream presents the decomposition.
+This clause explains precisely the small `IsLeast` wrapper.
+`verdict: wrap-and-cover-eligible`;
+`admission_basis: rule-11-upstream-wrapper`.
+The (c) bridge basis is not used: no preregistered named consumer is supplied.
+`proof_shape: bind-only`; `direct_frozen_dependencies: []`; `escape_witness: null`.
+`why_not_escape_witness`: the live argument is upstream Schur equality plus
+upstream positive-form nonnegativity and substitution of its zero residual.
+
+Search receipt R89:
+`rg -n 'schur_complement_eq|schur_minimum|SchurComplement' D5 .lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/Hermitian.lean`
+returned 12 lines (8 D5 leads, 4 Mathlib lines). The same alternation supplies its
+positive control, including the exact declaration at 378. The full upstream
+declaration window 350-411 and PosDef windows 297-313 and 496-516 were opened.
+Probe receipt: `prior/probes/Schur89.lean`; inherited `make lean` exit 0, decoded
+`prior/logs/Schur89.log.gz` ends with `EXIT: 0`. No new Lean run in this seat.
+
 ## Push Receipts
 
 | Commit | Completed unit | Push result |
 | --- | --- | --- |
 | `6fca6dde2388835a42f0904463b50100e1aa6c36` | Preregistration | exit 0; remote lane created |
+| `b11e3e695343125c81d378db2fe79f5f5677d823` | Atom 75 | exit 0 |
 
 ## Nonclaims
 
