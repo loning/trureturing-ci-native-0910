@@ -54,7 +54,7 @@ basis. No source recompilation or independent theorem is required for screening.
 
 ## Progress
 
-Screened: 60 / 164. frozen-covered: 1; frozen-partial: 2; needs-lean: 57; not-an-assertion: 0; unreadable: 0.
+Screened: 64 / 164. frozen-covered: 5; frozen-partial: 2; needs-lean: 57; not-an-assertion: 0; unreadable: 0.
 
 All screened source bodies were read in full. The theorem-like headings are not treated as evidence by themselves. Source IDs are quantum-rh. Atom links point to immutable CAS bodies. The input bytes field is retained as supplied and is not used as a classifier.
 
@@ -65,6 +65,10 @@ Scope: state pins identify the module statement; theorem selectors are listed se
 | Input # | Atom / title | Tier | Frozen GID or none | Reason / missing scope | Searches |
 | ---: | --- | --- | --- | --- | --- |
 | 9 | [088d882f6a10249e981da5d77bc3bb5e53e75a5ee02313bdd7c879cb21e22413](../../../Meta/Digestion/atoms/sha256/088d882f6a10249e981da5d77bc3bb5e53e75a5ee02313bdd7c879cb21e22413) ## 定理：5040 的共同价格区间 | frozen-covered | `D5/S3/Arith/GoldenResource5040PriceInterval` | 开价格区间、全体正整数、全局最大值和取等唯一性均与冻结陈述相符。 | S09 |
+| 62 | [5f5912050d91b5f8998e6799d12c40e766fa4d65798ff890b506a56c3bc0ed3c](../../../Meta/Digestion/atoms/sha256/5f5912050d91b5f8998e6799d12c40e766fa4d65798ff890b506a56c3bc0ed3c) ### 定理十九：\((4,2,1,1)\) 是唯一的正整数四元组，使“局部自由度总和 = 完全联合自由度” | frozen-covered | `D5/S3/Arith/GoldenResource/FourFactorSumProductBalance` | 冻结件给出完全相同的有序正整数四元组分类；加法等式反向及 0<d 与 1<=d 的转换不改变域。 | S43 |
+| 66 | [66fd622e5d54c25826af9d416db18df1d8eecf9c71288d80ff0460237e3e95d2](../../../Meta/Digestion/atoms/sha256/66fd622e5d54c25826af9d416db18df1d8eecf9c71288d80ff0460237e3e95d2) ## 定理 G2　判别式的下界及其取等情形 | frozen-covered | `D5/S3/Zeros/Convolution/GribinskiDegreeTwo` | 冻结 G2 给出判别式恒等式、非严格下界和双重根输入的取等；输出判别式桥在源文相同 alpha 定义域成立。 | C+3, S48 |
+| 77 | [7901adf784a2db15b73b33751c521fc703f8bbe431efb0304c449cfa3b049907](../../../Meta/Digestion/atoms/sha256/7901adf784a2db15b73b33751c521fc703f8bbe431efb0304c449cfa3b049907) ## 定理 G1　二次矩形卷积的显式系数 | frozen-covered | `D5/S3/Zeros/Convolution/GribinskiDegreeTwo` | G1 的全部二次系数和实参数排除条件与冻结声明一致；卷积含义采用已追加的乘积前因子勘误。 | C+2, C+3, S48 |
+| 80 | [7b2657006891568aa395dfd9fa14bde9d9d23d2ade0c449b00f7cdf5c616baec](../../../Meta/Digestion/atoms/sha256/7b2657006891568aa395dfd9fa14bde9d9d23d2ade0c449b00f7cdf5c616baec) ## 定理二：什么时候投影后的几何能够独立执行？ | frozen-covered | `D5/S0/Rewriting/Quotients/DynamicsDescent` | 将观察的余域限制到 pi(X) 后映射自动满射；冻结的存在唯一下降 iff 保持纤维与源文存在下降 iff 保持纤维等价。 | S44 |
 | 10 | [0a350824194cd6312628fc5708116dfece7d0e63fec2a1e2f8c201549d63c707](../../../Meta/Digestion/atoms/sha256/0a350824194cd6312628fc5708116dfece7d0e63fec2a1e2f8c201549d63c707) ## 定理三：每一个连续时间切面的 Schmidt 系数都与 \(\theta\) 无关 | frozen-partial | `D5/S3/Quantum/Entanglement/CoherentHistorySchmidt` | 冻结件覆盖 theta=0 的分解、权重和中切 rank=12；未覆盖任意 theta 的相位历史。 | S10, S23 |
 | 45 | [3f70bb4b78d38951e5b98029e96abb9e4d697c94e858de86ce861782dfe79bb9](../../../Meta/Digestion/atoms/sha256/3f70bb4b78d38951e5b98029e96abb9e4d697c94e858de86ce861782dfe79bb9) ### 定理十一：消去正的内部块，不丢失任何负方向 | frozen-partial | `D5/S3/Weil/ZetaLinear/ExactStickyReduction` | 实内积空间的 Schur 能量负指数相等已冻；源文复 Hermitian 惯性计数所需域桥未核实。 | S32, S18, S17 |
 | 1 | [028cb6a153eaec67ee356ef9571a406a6d9460c0092fbc031df4abab42884a85](../../../Meta/Digestion/atoms/sha256/028cb6a153eaec67ee356ef9571a406a6d9460c0092fbc031df4abab42884a85) ## 定理十一：有限多边形绕数证书 | needs-lean | none | 若每段严格误差界成立则矩形零点数等于多边形绕数；RoucheZeroCount 只给两个解析函数的零数相等，缺线性插值误差 Bh^2/8 与多边形绕数桥。 | S01 |
@@ -143,6 +147,79 @@ proof_shape: `bind-only`; escape_witness: `null`; admission_basis: `not-applicab
 | (31) lambda < log(31/30)/log2 | {lambda : R} | hupper : lambda < Real.log (31 / 30) / Real.log 2 | hypothesis preserved; neither endpoint admitted | verbatim |
 | boxed 5040 + adjoining predicate: global maximum over all positive integers | {n : Nat} (hn : 1 <= n) | hlower, hupper | goldenResourceObjective lambda n <= goldenResourceObjective lambda 5040 | equivalent |
 | boxed 5040 + adjoining predicate: unique maximum | for every n : Nat with 1 <= n | same open interval | objective lambda n = objective lambda 5040 <-> n = 5040 | verbatim |
+
+## frozen-covered: 5f5912050d91b5f8998e6799d12c40e766fa4d65798ff890b506a56c3bc0ed3c
+
+定理十九：\((4,2,1,1)\) 是唯一的正整数四元组，使“局部自由度总和 = 完全联合自由度”
+
+- GID: `D5/S3/Arith/GoldenResource/FourFactorSumProductBalance`; statement_id: `sha256:1c446108a1b0a50141da4dc8d497c3e770561cfddf55c2d59193e24ee4fe2ea6`; [state pin](../../../Golden/Frozen/state/D5/S3/Arith/GoldenResource/FourFactorSumProductBalance.lean.json); [Lean source](../../../D5/S3/Arith/GoldenResource/FourFactorSumProductBalance.lean).
+- Declarations: `sorted_positive_sum_product_classification`.
+- Scope: a b c d : Nat; 0<d, d<=c<=b<=a; sum=product.
+
+Quantifiers/domain: Source positive integers, decreasing order a>=b>=c>=d>=1. Lean naturals with 0<d are exactly this domain; no zero coordinate admitted. Statement is forall quadruples satisfying the displayed equation, not an unrestricted real classification.
+
+proof_shape: `bind-only`; escape_witness: `null`; admission_basis: `not-applicable(screening-only; direct projection/instantiation of frozen statement)`. Direct frozen dependencies are exactly the interfaces listed above. No content claim or escape witness is made.
+
+| Atom clause | Lean binders | Lean assumptions | Lean conclusion | Label |
+| --- | --- | --- | --- | --- |
+| a>=b>=c>=d>=1 | a b c d : Nat | hd : 0<d; hdc : d<=c; hcb : c<=b; hba : b<=a | same ordered positive integer domain | equivalent |
+| (111) abcd=a+b+c+d | a b c d : Nat | h : a+b+c+d=a*b*c*d | source equality is h.symm | equivalent |
+| (a,b,c,d)=(4,2,1,1) | same universal quadruple | hd,hdc,hcb,hba,h | a=4 /\ b=2 /\ c=1 /\ d=1; tuple extensionality | equivalent |
+
+## frozen-covered: 66fd622e5d54c25826af9d416db18df1d8eecf9c71288d80ff0460237e3e95d2
+
+定理 G2　判别式的下界及其取等情形
+
+- GID: `D5/S3/Zeros/Convolution/GribinskiDegreeTwo`; statement_id: `sha256:184c298cb6b3a6b32640e84511f41eede52d8d0d29ae2b24a68f14ef5722487e`; [state pin](../../../Golden/Frozen/state/D5/S3/Zeros/Convolution/GribinskiDegreeTwo.lean.json); [Lean source](../../../D5/S3/Zeros/Convolution/GribinskiDegreeTwo.lean).
+- Declarations: `g2_discriminant_bound`, `discriminant_eq_output`.
+- Scope: alpha,a,b,c,d : Real; G2 scalar identity/bound unrestricted; actual boxplus discriminant identification requires alpha!=-1 and alpha!=-2; specialize a,b,c,d>=0.
+
+Quantifiers/domain: QUANTUM-RH.md:60801-60821 explicitly restricts all G1-G4 to alpha in R\{-1,-2}. g2_discriminant_bound is stronger on a,b,c,d (all reals), safely restricted to nonnegative values. The lower bound uses <=, equality is sufficient when a=b AND c=d, not an iff. The operation uses the corrected PRODUCT prefactor at QUANTUM-RH.md:61194; the obsolete ratio definition is not covered.
+
+proof_shape: `bind-only`; escape_witness: `null`; admission_basis: `not-applicable(screening-only; direct projection/instantiation of frozen statement)`. Direct frozen dependencies are exactly the interfaces listed above. No content claim or escape witness is made.
+
+| Atom clause | Lean binders | Lean assumptions | Lean conclusion | Label |
+| --- | --- | --- | --- | --- |
+| D is the discriminant of G1 output; P=a+b,Q=c+d | alpha a b c d : Real | alpha!=-1; alpha!=-2 | discriminant_eq_output identifies discriminant with discrim of boxplus coefficients 2,1,0 | equivalent |
+| D=(P+Q)^2-4ab-4cd-4*kappa(alpha)*P*Q | same; kappa=(alpha+1)/(2*(alpha+2)) | no extra assumption; specialize source domain | (g2_discriminant_bound ...).1 gives identical expression after P,Q expansion | equivalent |
+| D>=2*P*Q*(1-2*kappa(alpha)) | same | a,b,c,d>=0 allowed but unnecessary | (g2_discriminant_bound ...).2.1 : 2*(a+b)*(c+d)*(1-2*kappa alpha)<=D | verbatim |
+| if a=b and c=d equality holds (unboxed adjoining clause) | same | a=b; c=d | (g2_discriminant_bound ...).2.2 : a=b -> c=d -> D=2*(a+b)*(c+d)*(1-2*kappa alpha) | verbatim |
+
+## frozen-covered: 7901adf784a2db15b73b33751c521fc703f8bbe431efb0304c449cfa3b049907
+
+定理 G1　二次矩形卷积的显式系数
+
+- GID: `D5/S3/Zeros/Convolution/GribinskiDegreeTwo`; statement_id: `sha256:184c298cb6b3a6b32640e84511f41eede52d8d0d29ae2b24a68f14ef5722487e`; [state pin](../../../Golden/Frozen/state/D5/S3/Zeros/Convolution/GribinskiDegreeTwo.lean.json); [Lean source](../../../D5/S3/Zeros/Convolution/GribinskiDegreeTwo.lean).
+- Declarations: `g1_explicit_coefficients`, `definition_consistency`, `normalized_coefficient_convolution`.
+- Scope: alpha,a,b,c,d : Real; alpha!=-1 and alpha!=-2; arbitrary real roots; degree exactly 2; corrected product-prefactor coefficient convolution.
+
+Quantifiers/domain: All five parameters are real; only alpha=-1,-2 are excluded. No nonnegative-root or alpha>-1 restriction is added to G1. rootPair matches (X-a)(X-b), kappa matches source. Source erratum QUANTUM-RH.md:61194-61232 explicitly corrects Definition 3.10 to the PRODUCT used by weight/convolutionCoeff. The old ratio-prefactor paragraph is not a covered assertion.
+
+proof_shape: `bind-only`; escape_witness: `null`; admission_basis: `not-applicable(screening-only; direct projection/instantiation of frozen statement)`. Direct frozen dependencies are exactly the interfaces listed above. No content claim or escape witness is made.
+
+| Atom clause | Lean binders | Lean assumptions | Lean conclusion | Label |
+| --- | --- | --- | --- | --- |
+| alpha in R\{-1,-2}; a,b,c,d in R; p=(X-a)(X-b),q=(X-c)(X-d) | alpha a b c d : Real | h1 : alpha!=-1; h2 : alpha!=-2 | rootPair a b=(X-C a)*(X-C b); no further binder restrictions | verbatim |
+| p boxplus_2^alpha q = X^2-(a+b+c+d)X+[ab+cd+kappa(alpha)(a+b)(c+d)] | same; p,q specialized rootPair | h1,h2; corrected product-prefactor definition | g1_explicit_coefficients gives polynomial equality with identical leading, linear and constant coefficients | verbatim |
+| meaning of boxplus (context obligation) | k : Nat, k<=2; p q : Real[X] | alpha!=-1,-2 for normalized coefficients | definition_consistency and normalized_coefficient_convolution identify the operation with corrected Definition 3.10 | equivalent |
+
+## frozen-covered: 7b2657006891568aa395dfd9fa14bde9d9d23d2ade0c449b00f7cdf5c616baec
+
+定理二：什么时候投影后的几何能够独立执行？
+
+- GID: `D5/S0/Rewriting/Quotients/DynamicsDescent`; statement_id: `sha256:9b68af3f9f0957494c5bd40f72876714752f0082c0d8ebdd1123463365fc025e`; [state pin](../../../Golden/Frozen/state/D5/S0/Rewriting/Quotients/DynamicsDescent.lean.json); [Lean source](../../../D5/S0/Rewriting/Quotients/DynamicsDescent.lean).
+- Declarations: `dynamics_descends_iff`.
+- Scope: arbitrary types X,B; quotientMap:X->B surjective; update:X->X; instantiate B=Set.range pi and quotientMap x=<pi x,range witness>.
+
+Quantifiers/domain: Source pi:X->Y need not be onto Y; source descended map acts on pi(X). Restrict codomain to B=range pi, giving surjectivity by definition, and take update=T. Equality of subtype values iff equality in Y. ExistsUnique implies Exists; conversely any commuting map through an onto map is unique by evaluating at a preimage, so no source condition is strengthened. Empty X/range also allowed.
+
+proof_shape: `bind-only`; escape_witness: `null`; admission_basis: `not-applicable(screening-only; direct projection/instantiation of frozen statement)`. Direct frozen dependencies are exactly the interfaces listed above. No content claim or escape witness is made.
+
+| Atom clause | Lean binders | Lean assumptions | Lean conclusion | Label |
+| --- | --- | --- | --- | --- |
+| (10) exists Tbar:pi(X)->pi(X), pi o T=Tbar o pi | {X B : Type*}; B=range pi; quotientMap=range restriction of pi; update=T | hSurjective follows from membership in range | left side: ExistsUnique descended, quotientMap o update=descended o quotientMap; uniqueness is automatic on the image | equivalent |
+| (11) for all x,y, pi(x)=pi(y) -> pi(Tx)=pi(Ty) | forall x y : X | equality in range reduces to equality of values in Y | right side: forall x y, quotientMap x=quotientMap y -> quotientMap(update x)=quotientMap(update y) | verbatim |
+| exists descent iff fiber preservation | same | hSurjective on range; no surjectivity onto original Y assumed | dynamics_descends_iff is the two-way implication; existence/unique-existence equivalence explained above | equivalent |
 
 ## frozen-partial: 0a350824194cd6312628fc5708116dfece7d0e63fec2a1e2f8c201549d63c707
 
@@ -254,6 +331,7 @@ Counts are matching lines including comments in baseline D5 Lean files, unless a
 | S52 | `rg -n --glob '*.lean' '(?i)normSq.*(filter\|projection)\|projection.*probability\|invariant.*fock' D5` | 42 |
 | S53 | `rg -n --glob '*.lean' '(?i)laguerre.*(criter\|positiv)\|generalized.*laguerre\|laguerre.*inequal' D5` | 7 |
 | S54 | `rg -n --glob '*.lean' '(?i)f.?star\|positivity.*interval\|critical.*radius\|contact.*threshold' D5` | 92 |
+| S55 | `rg -n --glob '*.lean' '(?i)vectori[sz]\|choi.*(trace\|inner)\|trace.*(pairing\|square)\|schmidt.*(norm\|trace)' D5/S3/Quantum` | 26 |
 
 Full count collection for streaming receipts: `rg -n ... | node` consumes stdout, splits into matching lines, and emits the count and distinct paths. Final result.json retains collection commands and returned paths. Controls: C+2=1, C+3=4, C-=0, C-2=0.
 
