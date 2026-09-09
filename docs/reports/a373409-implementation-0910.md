@@ -130,3 +130,17 @@ x0=36q+9、x1=36q+11；Full 强制 36q+12 在列表内，与 x1 相邻矛盾。
 Scribe 仅陈述数学定义、上界、障碍证明和九项对照，不含治理分类词。
 Library 根桶实测22，新增笔记落根桶；Arith桶48不新增。Blueprint/Congruence 初始38，
 新增源与投影后40，均低于48。已注册域Arith和S3满足普通整数整除/同余内容。
+
+## 最终 Lean 字节与路由
+
+- 最终 `make lean` EXIT=0，27.068秒，日志 attempt-1/make-lean-final.log；
+  proof 与私有对照均标准三公理，无 sorry/私 axiom/native_decide。
+- CLI `route .lake/a373409-manifest.yaml` EXIT=0，返回
+  `D5/S3/Arith/Congruence/NonsquarefreeAntirun.lean`，S3/G，与落点一致。
+  首次以 `/tmp` 绝对路径调用被明确拒绝（manifest must be repository-relative），
+  改用工作树内 ignored `.lake` 相对路径成功，无工具改动。
+- 开PR前重复本仓检索：在 `origin/dev=e6d8bd13c0b517aa7105c30caba9583dc812a876`
+  用 `git grep -n -P 'A373409|antirun_length|NonsquarefreeAntirun' origin/dev -- D5`，零命中。
+- 并发期间共享 origin/dev 引用已前移；本任务 diff 以 immutable 初始base计，
+  当前仅4个新增路径，没有删除他人成果。先前两点式 `git diff origin/dev` 展示的
+  上游新增文件“删除”不是本 lane 的变更，不据此作删除判断。
