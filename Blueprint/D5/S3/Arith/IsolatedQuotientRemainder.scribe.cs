@@ -61,7 +61,7 @@ internal sealed class IsolatedQuotientRemainderDocument : IScribeDocumentDefinit
                 Equality(), Sp, Implies, Sp, Paren(Seq(
                     K(), Sp, Eq, Sp, D(1), Sp, Lor, Sp, K(), Sp, Eq, Sp, T()))))))));
     private static Formula PrimeFormula() => Disp(Seq(
-        Bound("t"), D(24), Sp, Lt, Sp, T(), Sp, Implies, Sp,
+        Bound("t"), D(2, 4), Sp, Lt, Sp, T(), Sp, Implies, Sp,
         Call("P", T()), Sp, Implies, Sp,
         Call("Prime", new Formula.Binary(T(), FormulaBinaryOperator.Add, D(1)))));
 }

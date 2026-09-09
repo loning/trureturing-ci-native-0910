@@ -90,3 +90,35 @@
 | private remainder_of_decomposition | sha256:2aa6f33b8bc1b8a8c700ae4e97dc08e1ff714a98f868229a1b30e87982bcaa45 | Quot.sound, propext |
 
 `make deposit` 的现役入口强制 ATOM_ID 并在冻结后 cover；本题无 atom，按用户明示改走它内部同一 canonical `deposit-header-check` 与 `ledger-align --add`，不传假 atom。protected base 钉为 `b1c34e4ffff0e67321c1ed9ec60b9eea741e239f`。
+
+## 判形与准入逐声明审计
+
+唯一公开定理为 `D5/S3/Arith/IsolatedQuotientRemainder.a375007_prime`。
+`proof_shape: content`; `direct_frozen_dependencies: []`（故无前置 GID/statement_id 对）；
+`escape_witness: [unequal_factor_witness, square_factor_witness]`；
+`admission_basis: escape-witness`。P 是定义，不冒称额外公开定理。
+
+四项逐一回答：
+
+1. **依赖闭包内**：runner `DependencyAudit.lean` 用 Lean 环境查询主定理，遍历
+   `ConstantInfo.type.getUsedConstants` 与 `value? (allowOpaque := true)` 的常量闭包。
+   EXIT=0；命中两个 witness、`remainder_of_decomposition` 及其 tactic 辅助项。
+   全部 D5 依赖均来自本模块，没有任何别的 D5 冻结前置。
+   初次遗漏 allowOpaque 参数仅看见类型依赖；已按 Lean API 修正，该初次读数不用于闭包结论。
+2. **非投影可得**：Mathlib 因子接口只给 a、b 的积和次序，未给商余等式的严格内部解。
+   新构造为 k=b−1 与 k=u−2，加上各自余数界、k<t 与减法商界；单纯实例化因子分解结论不给这些存在命题。
+3. **非定义等价**：两个 helper 的结论是合数分解下内部 k 的存在性，不是 `Nat.Prime(t+1)`，不含 P，也不是主定理的别名。
+4. **活推导路径**：`lt_or_eq_of_le hab` 两分支各返回一个 helper 的存在见证，随后拆出 k、严格上下界和等式，代入 h k 并由两种端点结论推出矛盾。
+   所有分量均被使用；不存在把无关新命题放入合取再投影掉的项。删去任一支见证，该支就缺少传入 h 的内部解。
+   这是对证明的人工语义审计，常量闭包工具本身不声称能机器决定全部四项。
+
+模块内私有引理也逐项说明：`remainder_of_decomposition` 是标准商余改写的辅助组合（bind-only，escape_witness=null）；
+两个 factor_witness 为 content，具名构造即各自 k 及三项边界/等式；全部只是主定理的前置，不独立 deposit。
+方向：a375007_prime → unequal_factor_witness / square_factor_witness → remainder_of_decomposition。
+所有五条 included 声明均为定义或无界符号定理，`computational_content.kind: none`；basis/consumer/instance/premises/result/claim 为 not-applicable(kind=none)。
+
+`question_answered`：预登记 brief 中 t>24 的孤立商余条件是否强制 t+1 素性；答案是。
+`dominating_theorem_search`：本仓 D5 → 钉版 Mathlib → GitHub Lean / arXiv / OEIS；`not-found-in-searched-scope`，失败页面如上不计阴性。
+
+Scribe 初次 `make emit` EXIT=2（9.871 秒）：数字 DSL 按单个十进制数字接参，`D(24)` 非法；已修为 `D(2,4)`。
+没有改 Lean、工具或任何判官来修这条内容错误。
