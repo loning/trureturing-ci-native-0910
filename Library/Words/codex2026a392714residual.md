@@ -14,6 +14,11 @@ triage: anchor
 
 # S(a) 第二轮研究记录
 
+**本轮结算：成。** S(a) 的全称 Lean 证明已通过 make lean，无 sorry、私 axiom 或
+native_decide，且已开 [PR #6689](https://github.com/the-omega-institute/trureturing/pull/6689)。
+证明、发射与冻结/覆盖均通过规定门序。这个“成”按用户本轮的停止判据，
+不表示 PR 已合入 dev，也不表示 A392714 原猜想及其桥已证明。
+
 产地：Codex 主循环，使用 lean4 skill；零独立评审席，单点自查。
 用户给出的 m≤7 读数是输入，未冒充本席亲验。
 起点及本地 origin/dev 均为 `25b883dcebf4305950c779111490338639eed3bc`；
@@ -452,3 +457,15 @@ accepted 记录 f2bc5d6b46621d27ae59e6029c099fa0d3ca3dbf2053d0792f8c2c8b5805a73c
 inspector included=26：六个定义、三个公开定理、十七个私有引理；全体公理闭包之并
 仍仅为标准三公理。主定理不含 sorry/私 axiom/native_decide。
 本轮未运行 make preflight；第一次热树增量之前已完成 make lean-cache-ensure。
+
+## 最终交接
+
+正式落地提交 `2f1c5ff7ce1029b039a357eaa57101e23d594474` 已推送至
+origin/lane/math/a392714r2。随后 fetch 得到 origin/dev
+`f2b448dacf2d8eb3581520f115f2d2619cd6af48`，
+`git merge-tree --write-tree HEAD origin/dev` EXIT=0，无冲突。
+`make pr-open HEAD=lane/math/a392714r2 MESSAGE=<attempt>/pr-message.txt WATCH_TIMEOUT_SECONDS=180`
+已创建 https://github.com/the-omega-institute/trureturing/pull/6689，base=dev。
+创建后的首次 required-CI 观察为 OPEN、pending=2、missing=1，尚不主张 CI 全绿或已合并；
+最终观察记录随 runner result.json 提供。当前为 implementation 席，零独立评审，
+交由调用方后续评审。本报告的过程收据按批次提交推送，未等到终局才一次性落盘。
