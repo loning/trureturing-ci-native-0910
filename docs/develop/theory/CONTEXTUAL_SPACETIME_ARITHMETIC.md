@@ -2074,6 +2074,362 @@ for pr4_x, pr4_y, pr4_f, pr4_c in (
     pr4_equal(pr4_c(pr4_x), pr4_c(pr4_y), "kernel_edges")
 
 print(f"pr4_temporal_causal: random_samples={len(pr4_samples)} cases={len(pr4_cases)} updates={pr4_counts['updates']} endpoint_updates={pr4_counts['endpoint_updates']} earliest_rows={pr4_counts['earliest_rows']} product_antichains={pr4_counts['product_antichains']} guard_success={pr4_counts['guard_success']} strict_failures={pr4_counts['strict_failures']} context_reads={pr4_counts['context_reads']} mobius_profiles={pr4_counts['mobius_profiles']} mobius_coefficients={pr4_counts['mobius_coefficients']} xi_paths={pr4_counts['xi_paths']} forget_paths={pr4_counts['forget_paths']} kernel_edges={pr4_counts['kernel_edges']} D11={pr4_d11_reads[0]},{pr4_d11_reads[1]} D11_Z_times=-2,-1 common_k={pr4_common_k} shifted_probe={pr4_shift_probe[0]},{pr4_shift_probe[1]} fixed_U0={pr4_flat_probe[0]},{pr4_flat_probe[1]} q_expression={pr4_counts['q_expression']} B2={pr4_B2[0]},{pr4_B2[1]} D10_indegrees={pr4_D10_indegrees[0]},{pr4_D10_indegrees[1]} c_then_b={pr4_c_then_b[0]},{pr4_c_then_b[1]}")
+# PR5: mixed closure and expression checks; reuse Rich and timed PR3/PR4 helpers.
+pr5_counts = {name: 0 for name in (
+    "region_updates", "pair_updates", "endpoints", "unselected_parent_pairs",
+    "rejected_parent_pairs", "empty_products", "old_endpoint_products",
+    "negative_time_inputs", "asymmetric_slots", "context_steps", "context_q",
+    "ts_pair_contexts", "mix_contexts", "strict_failures", "rich_equalities",
+    "H_cases", "D13_choices", "D14_choices", "bit_maps", "q_expression", "D14_q")}
+
+def pr5_equal(actual, expected, counter):
+    assert pr3_bytes(actual) == pr3_bytes(expected), (counter, actual, expected)
+    pr5_counts[counter] += 1
+
+class pr5_Set:
+    # Fixed mathematical predicates, including infinite regions; no input X here.
+    def __init__(self, predicate):
+        self.predicate = predicate
+    def __contains__(self, item):
+        return self.predicate(item)
+
+def pr5_cell(x, e):
+    return x.e[e][0], x.e[e][1]
+
+def pr5_region(x, B):
+    return filt(x, lambda e: pr5_cell(x, e) in B)
+
+def pr5_pair(x, y, P):
+    return restricted_mul(x, y, lambda e, f: (pr5_cell(x, e), pr5_cell(y, f)) in P)
+
+def pr5_region_profile(g, B):
+    return push_c(g, lambda row: (row[0], row[1] * int((row[0][3], row[0][0]) in B), row[2]))
+
+def pr5_pair_profile(g, gg, P):
+    out = {}
+    for (a, b, upper), value in g.items():
+        for (aa, bb, uu), other in gg.items():
+            joined = pr4_diamond(a, aa)
+            selected = b * bb * int(((a[3], a[0]), (aa[3], aa[0])) in P)
+            row = (joined, selected, frozenset((joined,)))
+            # Coefficients already carry sign. P only changes the selection bit.
+            out[row] = out.get(row, 0) + value * other
+    return sparse(out)
+
+def pr5_summary(x):
+    return pr4_profile(x), *theta(x)[1:3]
+
+def pr5_summary_q(summary):
+    return sum(value for (a, b, upper), value in summary[0].items() if b)
+
+def pr5_rich_bytes(x):
+    # Complete encoded state, including event IDs, all attributes, order, Omega, A.
+    return x.e, x.o, x.w, x.a
+
+def pr5_summary_step(state, step):
+    if state is FAIL:
+        return FAIL
+    g, m, M = state
+    op, *args = step
+    if op == "N":
+        return push_c(g, lambda row: (row[0], 1-row[1], row[2])), m, M
+    if op in ("FB", "FS", "FL", "FQ"):
+        param, = args
+        if op == "FB":
+            return pr5_region_profile(g, param), m, M
+        def mask(row):
+            if op == "FS":
+                return row[0][0] in param
+            if op == "FL":
+                return row[0][2] in param
+            return any(a in param for a in row[2])
+        return push_c(g, lambda row: (row[0], row[1]*int(mask(row)), row[2])), m, M
+    if op == "T":
+        k, = args
+        return (pr4_shift_profile(g, k), m+k if m is not None else None,
+                M+k if M is not None else None)
+    slot, parameter, *predicate = args
+    left, right = (state, pr5_summary(parameter)) if slot == 0 else (pr5_summary(parameter), state)
+    gl, ml, Ml = left
+    gr, mr, Mr = right
+    if op == "then" and not (Ml is None or mr is None or Ml < mr):
+        return FAIL
+    if op in ("add", "then"):
+        updated_left = gl if op == "add" else push_c(
+            gl, lambda row: (row[0], row[1], row[2] | pr3_V(gr)))
+        return plus_c(updated_left, gr), lo(ml, mr), hi(Ml, Mr)
+    assert op in ("mul", "MP")
+    generated_max = gamma(pr4_support_time(gl), pr4_support_time(gr))
+    updated = pr4_profile_product(gl, gr) if op == "mul" else pr5_pair_profile(gl, gr, predicate[0])
+    return updated, lo(ml, mr), hi(Ml, Mr, generated_max)
+
+def pr5_rich_step(state, step):
+    if state is FAIL:
+        return FAIL
+    op, *args = step
+    if op == "N":
+        return neg(state)
+    if op == "FB":
+        return pr5_region(state, args[0])
+    if op == "FS":
+        return at(state, args[0])
+    if op == "FL":
+        return filt(state, lambda e: state.e[e][3] in args[0])
+    if op == "FQ":
+        return pr3_causal_filter(state, args[0], timed=True)
+    if op == "T":
+        return time_shift(state, args[0])
+    slot, parameter, *predicate = args
+    left, right = (state, parameter) if slot == 0 else (parameter, state)
+    if op == "MP":
+        return pr5_pair(left, right, predicate[0])
+    return attempt(lambda: {"add": add, "mul": mul, "then": temporal}[op](left, right))
+
+pr5_all = pr5_Set(lambda _: True)
+pr5_empty = frozenset()
+pr5_column = pr5_Set(lambda cell: cell[1] in {origin, v})
+pr5_past = pr5_Set(lambda cell: cell[0] <= -2)
+pr5_adjacent = pr5_Set(lambda cell: (cell[1] == origin and cell[0] <= 0)
+                                  or (cell[1] == v and cell[0] <= 1))
+pr5_gap2 = pr5_Set(lambda cell: (cell[1] == origin and cell[0] <= 0)
+                              or (cell[1] == v and cell[0] <= 2))
+pr5_single = frozenset({(1, origin)})
+pr5_checker = pr5_Set(lambda cell: (cell[0] + cell[1][0]) % 2 == 0)
+pr5_regions = (pr5_all, pr5_empty, pr5_column, pr5_past,
+               pr5_adjacent, pr5_gap2, pr5_single, pr5_checker)
+pr5_asymmetric = pr5_Set(lambda pair: pair[0][0] < pair[1][0])
+pr5_position_pair = pr5_Set(lambda pair: pair[0][1] == origin and pair[1][1] == v)
+pr5_predicates = (pr5_empty, pr5_all, pr5_asymmetric, pr5_position_pair)
+pr5_Qpositive = pr5_Set(lambda a: a[1] == 1)
+
+def pr5_Q(B):
+    return pr5_Set(lambda a: (a[3], a[0]) in B)
+
+def pr5_Qstar(B):
+    return pr5_Set(lambda a: (a[3]-1, a[0]) in B)
+
+pr5_rng = pr3_Random(2026091005)
+pr5_samples = []
+for pr5_i in range(64):
+    pr5_n = pr5_rng.choice((0, 2, 4, 6))
+    pr5_signs = [1]*(pr5_n//2) + [-1]*(pr5_n//2)
+    pr5_rng.shuffle(pr5_signs)
+    pr5_events = {j: (pr5_rng.randrange(-8, 6), pr5_rng.choice((origin, v, h)), sign,
+                      pr5_rng.choice((pr3_l0, pr3_l1, ("pair", pr3_l0, pr3_l1))))
+                   for j, sign in enumerate(pr5_signs)}
+    pr5_whole = frozenset(pr5_events)
+    for pr5_j in range(pr5_rng.randrange(3)):
+        pr5_events[("old", pr5_j)] = (pr5_rng.choice((-12, 10)), h, 1, ("leaf", 9))
+    pr5_edges = {(a, b) for a in pr5_events for b in pr5_events
+                 if pr5_events[a][0] < pr5_events[b][0] and pr5_rng.randrange(4) == 0}
+    pr5_chosen = frozenset(e for e in sorted(pr5_whole) if pr5_rng.randrange(2))
+    pr5_samples.append(valid(Rich(pr5_events, closure(pr5_edges), pr5_whole, pr5_chosen)))
+
+# D13 is parameterized, with negative-time instances distinct from the old D12.
+pr5_D13_reads = []
+for pr5_t1, pr5_t2, pr5_p in ((-4, -1, origin), (-2, 3, v), (4, 7, h)):
+    pr5_events = {e: (n, pr5_p, sign, pr3_l0)
+                  for e, n, sign in zip("abcd", (pr5_t1, pr5_t2, pr5_t1, pr5_t1), (1, 1, -1, -1))}
+    pr5_fixed = valid(Rich(pr5_events, frozenset({("a", "b")}), frozenset(pr5_events), frozenset()))
+    pr5_D13_family = [replace(pr5_fixed, a=A) for A in pr3_subsets("ab")]
+    pr5_B = frozenset({(pr5_t2, pr5_p)})
+    pr5_target = frozenset({pr3_alpha(pr5_fixed, "b", timed=True)})
+    pr5_reads = tuple(q(pr5_region(x, pr5_B)) for x in pr5_D13_family)
+    pr5_causal_reads = tuple(q(pr3_causal_filter(x, pr5_target, timed=True)) for x in pr5_D13_family)
+    assert pr5_reads == (0, 0, 1, 1) and pr5_causal_reads == (0, 1, 1, 2)
+    pr5_counts["D13_choices"] += len(pr5_D13_family)
+    pr5_D13_reads.append((pr5_reads, pr5_causal_reads))
+
+# D14: three individually identifiable positive points, plus three isolated negatives.
+pr5_d14_events = {"a": (1, origin, 1, pr3_l0), "b": (2, v, 1, pr3_l0),
+                   "c": (0, origin, 1, pr3_l0)}
+pr5_d14_events.update({e: (0, origin, -1, pr3_l0) for e in "xyz"})
+pr5_d14 = valid(Rich(pr5_d14_events, frozenset({("a", "b")}),
+                     frozenset(pr5_d14_events), frozenset()))
+pr5_D14_family = [replace(pr5_d14, a=A) for A in pr3_subsets("abc")]
+pr5_D14_reads, pr5_D14_causal = [], []
+for pr5_x in pr5_D14_family:
+    pr5_direct = pr5_region(pr5_x, pr5_gap2)
+    pr5_encoded = at(pr3_causal_filter(pr5_x, pr5_Q(pr5_gap2), timed=True), {origin, v})
+    assert pr5_direct.a == pr5_x.a & {"b", "c"}
+    assert pr5_encoded.a == pr5_x.a
+    pr5_D14_reads.append(q(pr5_direct))
+    pr5_D14_causal.append(q(pr5_encoded))
+    pr5_counts["D14_choices"] += 1
+assert pr5_D14_reads == [0, 0, 1, 1, 1, 1, 2, 2]
+assert pr5_D14_causal == [0, 1, 1, 1, 2, 2, 2, 3]
+assert (pr5_D14_reads[1], pr5_D14_causal[1]) == (0, 1)
+
+pr5_cases = pr5_samples + [empty, pr4_archive_only, pr4_cancel, pr3_outside,
+                           pr3_d5x, pr3_d5y, pr3_U0, unit_at(-3)] + pr5_D14_family
+for pr5_i, pr5_x in enumerate(pr5_cases):
+    assert charge(pr5_x, pr5_x.w) == 0
+    pr5_g, pr5_m, pr5_M = pr5_summary(pr5_x)
+    if any(event[0] < 0 for event in pr5_x.e.values()):
+        pr5_counts["negative_time_inputs"] += 1
+    for pr5_B in pr5_regions:
+        pr5_out = pr5_region(pr5_x, pr5_B)
+        pr5_equal(pr4_profile(pr5_out), pr5_region_profile(pr5_g, pr5_B), "region_updates")
+        pr5_equal(theta(pr5_out)[1:], theta(pr5_x)[1:], "endpoints")
+        assert (pr5_out.e, pr5_out.o, pr5_out.w) == (pr5_x.e, pr5_x.o, pr5_x.w)
+    pr5_y = pr5_cases[(pr5_i + 3) % len(pr5_cases)]
+    for pr5_left, pr5_right in ((pr5_x, pr5_y), (pr5_y, pr5_x)):
+        for pr5_P in pr5_predicates:
+            pr5_out = pr5_pair(pr5_left, pr5_right, pr5_P)
+            pr5_expected = pr5_summary_step(pr5_summary(pr5_left), ("MP", 0, pr5_right, pr5_P))
+            pr5_equal(pr4_profile(pr5_out), pr5_expected[0], "pair_updates")
+            pr5_equal(theta(pr5_out)[1:], (*pr5_expected[1:], pr4_support_time(pr5_expected[0])), "endpoints")
+            assert len(pr5_out.w) == len(pr5_left.w)*len(pr5_right.w)
+            assert len(pr5_out.e) == len(pr5_left.e)+len(pr5_right.e)+len(pr5_out.w)
+            assert not any(e in pr5_out.w for e, d in pr5_out.o)
+            assert all(pr3_U(pr5_out, e, timed=True) == {pr3_alpha(pr5_out, e, timed=True)}
+                       for e in pr5_out.w)
+            for pr5_e, pr5_f in product(pr5_left.w, pr5_right.w):
+                pr5_counts["unselected_parent_pairs"] += int(pr5_e not in pr5_left.a or pr5_f not in pr5_right.a)
+                pr5_counts["rejected_parent_pairs"] += int((pr5_cell(pr5_left, pr5_e), pr5_cell(pr5_right, pr5_f)) not in pr5_P)
+            pr5_counts["empty_products"] += int(not pr5_out.w)
+            pr5_counts["old_endpoint_products"] += int(any(
+                z.e[e][0] in theta(z)[1:3] for z in (pr5_left, pr5_right) for e in z.e.keys()-z.w))
+
+# A fixed asymmetric P distinguishes both slots; sources remain ordered as well.
+pr5_early, pr5_late = unit_at(-3), unit_at(2)
+assert (q(pr5_pair(pr5_early, pr5_late, pr5_asymmetric)),
+        q(pr5_pair(pr5_late, pr5_early, pr5_asymmetric))) == (1, 0)
+for pr5_slot in (0, 1):
+    pr5_step = ("MP", pr5_slot, pr5_late, pr5_asymmetric)
+    pr5_equal(pr5_summary(pr5_rich_step(pr5_early, pr5_step)),
+               pr5_summary_step(pr5_summary(pr5_early), pr5_step), "asymmetric_slots")
+
+# P=empty must retain the full background. Deleting rejected rows predicts 0, not 2.
+pr5_empty_pair = pr5_pair(pr3_U0, pr3_U0, pr5_empty)
+pr5_empty_g = pr5_pair_profile(pr4_profile(pr3_U0), pr4_profile(pr3_U0), pr5_empty)
+pr5_pair_negative_control = q(pr3_causal_filter(neg(pr5_empty_pair), pr5_Qpositive, timed=True))
+assert len(pr5_empty_pair.w) == 4 and pr5_empty_g and all(b == 0 for a, b, U in pr5_empty_g)
+assert sum(abs(value) for value in pr5_empty_g.values()) == 4
+assert pr5_pair_negative_control == 2
+pr5_wrong_g = {}  # The deliberately wrong update deletes every rejected pair.
+assert pr5_summary_q(pr5_summary_step(pr5_summary_step((pr5_wrong_g, 0, 1), ("N",)),
+                                     ("FQ", pr5_Qpositive))) == 0
+
+# All words/parameters are fixed before iterating X. Both binary slots are exercised.
+pr5_words = []
+for pr5_param in (pr3_U0, unit_at(-20), unit_at(20), pr4_archive_only, empty):
+    for pr5_slot in (0, 1):
+        pr5_words.append(("ts_pair_contexts", (("FB", pr5_checker), ("MP", pr5_slot, pr5_param, pr5_asymmetric),
+                          ("N",), ("T", -2), ("FB", pr5_past), ("add", 1-pr5_slot, pr3_U0),
+                          ("mul", pr5_slot, pr3_U0), ("then", 0, unit_at(30)))))
+        pr5_words.append(("mix_contexts", (("FQ", pr5_Qpositive), ("FB", pr5_gap2),
+                          ("MP", pr5_slot, pr5_param, pr5_position_pair), ("FL", pr5_all),
+                          ("T", 1), ("N",), ("FS", {origin, v}), ("FQ", pr5_Qpositive),
+                          ("then", pr5_slot, unit_at(30)), ("FB", pr5_empty))))
+for pr5_x in pr5_cases:
+    for pr5_kind, pr5_word in pr5_words:
+        pr5_rich, pr5_state = pr5_x, pr5_summary(pr5_x)
+        for pr5_step in pr5_word:
+            pr5_rich = pr5_rich_step(pr5_rich, pr5_step)
+            pr5_state = pr5_summary_step(pr5_state, pr5_step)
+            assert (pr5_rich is FAIL) == (pr5_state is FAIL)
+            if pr5_state is not FAIL:
+                pr5_equal(pr5_summary(pr5_rich), pr5_state, "context_steps")
+                pr5_equal(q(pr5_rich), pr5_summary_q(pr5_state), "context_q")
+                assert charge(pr5_rich, pr5_rich.w) == 0
+            else:
+                pr5_counts["strict_failures"] += 1
+        pr5_counts[pr5_kind] += 1
+for pr5_slot in (0, 1):
+    pr5_failing = ("then", pr5_slot, pr3_U0)
+    pr5_suffixes = (("N",), ("FB", pr5_empty), ("FQ", pr5_empty), ("mul", 0, empty),
+                    ("mul", 1, empty), ("MP", 0, empty, pr5_empty), ("MP", 1, empty, pr5_empty))
+    for pr5_suffix in pr5_suffixes:
+        pr5_ops = tuple(lambda z, step=step: pr5_rich_step(z, step) for step in (pr5_failing, pr5_suffix))
+        # Also use the original strict evaluator, whose failed temporal raises.
+        pr5_temporal_op = (lambda z: temporal(z, pr3_U0)) if pr5_slot == 0 else (lambda z: temporal(pr3_U0, z))
+        assert observe((pr5_temporal_op, pr5_ops[1]), pr3_U0, q) is FAIL
+        assert pr5_summary_step(pr5_summary_step(pr5_summary(pr3_U0), pr5_failing), pr5_suffix) is FAIL
+        pr5_counts["strict_failures"] += 1
+
+# Proposition 53: full Rich equality, never a profile+cardinality substitute for history.
+pr5_expressible = ((pr5_all, pr5_all), (pr5_empty, pr5_empty),
+                   (pr5_column, {origin, v}), (pr5_past, pr5_all), (pr5_adjacent, {origin, v}))
+for pr5_B, pr5_S in pr5_expressible:
+    for pr5_x in pr5_cases:
+        pr5_out = at(pr3_causal_filter(pr5_x, pr5_Q(pr5_B), timed=True), pr5_S)
+        pr5_equal(pr5_rich_bytes(pr5_out), pr5_rich_bytes(pr5_region(pr5_x, pr5_B)), "rich_equalities")
+
+# Exact small family: two positions, arbitrary membership on seven time blocks
+# (-infinity,-3], {-2}, {-1}, {0}, {1}, {2}, [3,+infinity).
+# Two representatives in each infinite tail expose strict-time witnesses there.
+pr5_times = (-4, -3, -2, -1, 0, 1, 2, 3, 4)
+pr5_blocks = (0, 0, 1, 2, 3, 4, 5, 6, 6)
+def pr5_H(matrix):
+    active = [p for p in range(len(matrix[0])) if any(row[p] for row in matrix)]
+    return all(not any(matrix[j]) or all(matrix[i][p] for p in active)
+               for i in range(len(matrix)) for j in range(i+1, len(matrix)))
+
+pr5_normal_forms = set()
+for pr5_S in pr3_subsets(range(2)):
+    pr5_normal_forms.add(tuple(tuple(p in pr5_S for p in range(2)) for t in pr5_times))
+    for pr5_top in range(-4, 5):
+        for pr5_R in pr3_subsets(pr5_S):
+            if pr5_R:
+                pr5_normal_forms.add(tuple(tuple((t < pr5_top and p in pr5_S) or
+                                      (t == pr5_top and p in pr5_R) for p in range(2)) for t in pr5_times))
+for pr5_bits in product((False, True), repeat=14):
+    pr5_matrix = tuple(tuple(pr5_bits[7*p+block] for p in range(2)) for block in pr5_blocks)
+    assert pr5_H(pr5_matrix) == (pr5_matrix in pr5_normal_forms)
+    pr5_counts["H_cases"] += 1
+for pr5_B, pr5_expected_H in ((pr5_column, True), (pr5_past, True), (pr5_adjacent, True),
+                              (pr5_gap2, False), (pr5_single, False), (pr5_empty, True)):
+    pr5_matrix = tuple(tuple((t, p) in pr5_B for p in (origin, v, h)) for t in pr5_times)
+    assert pr5_H(pr5_matrix) == pr5_expected_H
+
+# Finite bit-map closure is supplementary; the proof excludes arbitrary finite words.
+for pr5_size in (2, 3):
+    pr5_identity = (0, 1)*pr5_size
+    pr5_masks = {mask for mask in product((0, 1), repeat=pr5_size) if mask[0] >= mask[1]}
+    if pr5_size == 3:
+        pr5_masks |= {mask for mask in product((0, 1), repeat=3) if mask[0] == mask[2]}
+    pr5_maps, pr5_pending = {pr5_identity}, [pr5_identity]
+    while pr5_pending:
+        pr5_map = pr5_pending.pop()
+        pr5_next = {tuple(1-z for z in pr5_map)} | {
+            tuple(z*mask[i//2] for i, z in enumerate(pr5_map)) for mask in pr5_masks}
+        for pr5_map1 in pr5_next-pr5_maps:
+            pr5_maps.add(pr5_map1)
+            pr5_pending.append(pr5_map1)
+    assert (0, 0)+(0, 1)*(pr5_size-1) not in pr5_maps
+    assert all(f[:2] == (0, 1) for f in pr5_maps if f[2:] == (0, 1)*(pr5_size-1))
+    pr5_counts["bit_maps"] += len(pr5_maps)
+
+# Proposition 54: fixed lower bounds, no upper-bound or finite-region assumption.
+pr5_bounded_regions = ((pr5_empty, -5), (pr5_single, 1),
+    (frozenset({(-5, origin), (-2, v), (3, h)}), -5),
+    (pr5_Set(lambda cell: cell[0] >= -4 and cell[1] in {origin, v}), -4),
+    (pr5_Set(lambda cell: cell[0] >= -6 and (cell[0]+cell[1][0]) % 2 == 0), -6))
+for pr5_B, pr5_k0 in pr5_bounded_regions:
+    for pr5_k in (pr5_k0-1, pr5_k0-2, pr5_k0-7):
+        pr5_parameter, pr5_target = time_shift(pr3_U0, pr5_k), pr5_Qstar(pr5_B)
+        for pr5_x in pr5_cases:
+            pr5_equal(q(pr3_causal_filter(mul(pr5_x, pr5_parameter), pr5_target, timed=True)),
+                       q(pr5_region(pr5_x, pr5_B)), "q_expression")
+pr5_bad_B = frozenset({(0, origin)})
+pr5_bad_x = unit_at(-1)
+pr5_bad_bound = (q(pr5_region(pr5_bad_x, pr5_bad_B)),
+                 q(pr3_causal_filter(mul(pr5_bad_x, pr3_U0), pr5_Qstar(pr5_bad_B), timed=True)))
+assert pr5_bad_bound == (0, 1)
+
+# D14 is unbounded below, so its positive q expression is a separate direct check.
+pr5_D14_Q = pr5_Set(lambda a: (a[0] == origin and a[3] == 1)
+                              or (a[0] == v and a[3] in {1, 2, 3}))
+for pr5_x in pr5_cases:
+    pr5_equal(q(pr3_causal_filter(mul(pr5_x, pr3_U0), pr5_D14_Q, timed=True)),
+               q(pr5_region(pr5_x, pr5_gap2)), "D14_q")
+assert all(pr5_counts[k] > 0 for k in pr5_counts)
+print("pr5_mixed_closure: " + " ".join(f"{name}={value}" for name, value in pr5_counts.items())
+      + f" seed=2026091005 random_samples={len(pr5_samples)} cases={len(pr5_cases)}"
+      + " P_empty_Omega=4 P_empty_Gamma=nonempty P_empty_N_positive=2 wrong_deleted_rows=0"
+      + " D13=0,0,1,1/0,1,1,2 D14=0,0,1,1,1,1,2,2/0,1,1,1,2,2,2,3 bad_k=0,1")
+
 print("ALL_FINITE_CHECKS_PASSED")
 ```
 
@@ -3933,3 +4289,314 @@ INGEST residual_open_added=57 skipped_existing=217 coarse_fallbacks=0 open_genre
 只追加的字节核对以基线本卷 **248728 字节** 为对象：去掉唯一新增 pr4_ 插入后的前缀逐字节等于基线全文，且只有一个 Python 块。它同时核对顶部导航与 §1–31；不将“未去掉附录插入的整段原始前缀相等”报告为通过。
 
 本节是上述固定检查点之后的正文追加，仍须以同一命令再运行 ingest，使本节产地与收据进入消化账；最终累计计数不以这里的 57／57 代替。正文最后改动之后的摄入、最终 HEAD、逐节提交、推送、试合及干净状态，由 runner 目录 `/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/csa-pr4-impl-0910/attempt-1` 的 `result.json` 与 `implementation.log` 绑定记录。本批按 brief 只交付推送分支，不开 PR；这不是持续研究目标、评审或仓库准入已完成的声明。
+
+<a id="pr5-mixed"></a>
+
+## 34. PR5 增补 N：混合语言闭包与区域筛选的表达性分类
+
+本节接续 §32 的 ARCH-R4-A1：先将定义 23 的区域筛选及定义 24 的配对选择加入含时间因果语言，证明混合闭包；再分类区域筛选在原语言中的丰富输出表达性。载体、单孔上下文、历史同构分别沿用定义 3、16、7。以下新增定义、引理、命题、反例及直接推论均为 `repo-derived`，没有新外部引用，不作 `suspected-novel` 或优先权声明；有限实验只核对所列实例，不替代全称证明。
+
+### 34.1 定义 27：混合语言与表达性量词
+
+**定义 27（混合语言与丰富输出表达性，repo-derived）。** 沿用 $K=\mathbb Z\times\mathbb Z^3$，令
+
+$$
+\Sigma_{\rm mix}=\Sigma_{{\rm cau},t}
+ \cup\{F_B:B\subseteq K\}
+ \cup\{M_P:P\subseteq K\times K\}.
+\tag{MIX-LANG}
+$$
+
+$F_B,M_P$ 分别严格使用定义 23、24 的函数：前者检查事件自身的时间—位置单元，后者只限制完整档案乘积的选择。依 #6684 的命名，$\Sigma_{\rm ts}$ **不含** $M_P$；含全部 $M_P$ 的是 §25.3 的 $\Sigma_{\rm ts}^{\rm pair}$。本节不改动这两个旧签名的名字或定义。
+
+载体仍为全部平衡表示 $\mathcal B$。上下文仍是定义 16 的恒等孔、全部固定丰富参数、每个二元操作的两个槽位及任意有限复合；任何基本步失败都严格向外传播。对一个预先指定的 $B$，称 $F_B$ 在 $\Sigma_{{\rm cau},t}$ 中可作**丰富输出表达**，当且仅当
+
+$$
+\exists\,\text{固定有限单孔上下文 }C_B\in\operatorname{Ctx}_{\Sigma_{{\rm cau},t}}
+\quad\forall X\in\mathcal B:\quad
+ C_B(X)\text{ 有定义且 }C_B(X)\cong_h F_B(X).
+\tag{MIX-HEXPR}
+$$
+
+$B$ 可以决定上下文、平移和全部参数，$X$ 不得决定它们；量词次序是 $\exists C_B\,\forall X$。三个问题分别是：**在 $\Gamma_t$ 上下降**，即存在由输入剖面确定输出剖面的语义算子；**固定上下文至 $\cong_h$ 表达**，即 (MIX-HEXPR)；**仅 $q$ 相等的表达**，即将同一量词中的历史同构换为 $q(C_B(X))=q(F_B(X))$。后两项要求原语言中的一个固定上下文，第一项没有该要求。命题 52、53、54 分别处理这些层次；命题 51／D12 已表明仅 $q$ 相等不能推出历史同构表达。
+
+### 34.2 命题 52：混合语言闭包
+
+**命题 52（混合语言的精确观察核，repo-derived）。** 对 $a=(p,\epsilon,r,n)$、$a'=(p',\epsilon',r',n')$，将下表两行接到命题 48 的八行更新表，仍采用该命题的 $a\diamond_t a'$、同格系数相加和端点约定：
+
+| 新操作 | 剖面格推送 | 推送系数 |
+| --- | --- | --- |
+| $F_BX$ | $(a,b,U)\mapsto(a,b\mathbf1_B(n,p),U)$ | 原系数不变 |
+| $M_P(X,Y)$ | $((a,b,U),(a',b',U'))\mapsto(a\diamond_t a',bb'\mathbf1_P((n,p),(n',p')),\{a\diamond_t a'\})$ | 两输入格的系数之积 |
+
+#### 当前背景、端点与扩签名归纳
+
+$F_B$ 保持完整情境 $C$，包括 $\Omega,U_t,m,M$；它的判据是**自身单元**是否在 $B$ 中，不是 $U\cap Q_B$ 是否非空。拒绝一个已选事件时，该事件进入 $b=0$ 行，不从 $\Gamma_t$ 删除。$M_P$ 对全部 $\Omega_X\times\Omega_Y$ 生成新当前事件，包括未选父事件构成的对和不满足 $P$ 的对；这些对仅有选中位 $0$。$P$ 可不对称，上表中的父单元顺序不能交换。谓词不乘到系数或 $\Omega$ 上，**系数已经含符号，不再乘 $\epsilon\epsilon'$**。
+
+$M_P$ 的完整情境沿定义 6 的乘积：旧档案保留但不进当前剖面；新当前事件无出边，故其 $U_t$ 为自身属性单点集。以支撑按 (TCAU-SUPPORT) 恢复 $s_X,s_Y$，置 $g=\gamma(s_X,s_Y)$，端点为
+
+$$
+(m,M,s)_{M_P(X,Y)}
+=(\min(m_X,m_Y),\max(M_X,M_Y,g),g).
+\tag{MIX-ENDPOINTS}
+$$
+
+这是命题 29 的完整乘积端点，含空区域和旧档案端点，不用被选父事件的最高时刻替代 $s$。结论为
+
+$$
+\approx_{\Sigma_{\rm mix}}=\ker(\Gamma_t,m,M).
+\tag{MIX-KERNEL}
+$$
+
+**证明（两种新增操作）。** $F_B$ 只筛选 $A$，所以总定义且保持 $\Omega$ 的平衡；同一剖面格的自身单元相同，选中位按表更新。多个格碰撞时将原有符号系数相加，恰等于逐事件分组。$M_P$ 使用合法平衡的完整乘积情境，限制选择不改变平衡，故亦总定义。固定两父格后，父属性、父选择位及 $P$ 的真假均固定；全部父对的新符号之和就是两个已带符号格系数的乘积。新点的属性为 $a\diamond_t a'$、选中位为表中乘积，且新点之间无严格边，得到第二行。未选父对及谓词不满足的对也在这个有限双和中。新点晚于父点，旧档案全部保留，所以端点仍为 (MIX-ENDPOINTS)，与定义 24 完全一致。
+
+**证明（扩签名后的逐步归纳）。** 令摘要 $H(X)=(\Gamma_t(X),m_X,M_X)$。$s$ 和 $V_t$ 可由剖面支撑恢复，终端读数为 $q(X)=\sum_{a,U}\Gamma_t(X)(a,1,U)$。命题 48 已给旧原语逐项的更新与 $\triangleright$ 守卫；本表为扩充后的同一张表补上两个基本步。若 $H(X)=H(Y)$，新增的一元步 $F_B$ 由同一 $B$ 推送同一剖面，保持端点；新增二元步 $M_P(\square,Z)$ 和 $M_P(Z,\square)$ 各自在两个输入位置上使用同一个固定参数 $Z\in\mathcal B$，按有序父格对推送，也给相同摘要。不能因 $P$ 不对称而漏掉一个槽位。
+
+现按定义 16 对**全部 $\Sigma_{\rm mix}$ 上下文**归纳。恒等孔保持摘要；任一基本步由上述扩充表决定成功输出摘要，唯一部分原语 $\triangleright$ 的守卫 $M_{\rm left}<m_{\rm right}$ 也由摘要决定，故两侧同步成功或失败。有限复合中，内层失败则两侧都严格失败，后接 $N$、空筛选或零因子不能把它变成正常零；内层成功则输出摘要相同，继续归纳外层。成功到终端时 $q$ 相等，故 $\ker H\subseteq\approx_{\Sigma_{\rm mix}}$。反向由 $\Sigma_{{\rm cau},t}\subseteq\Sigma_{\rm mix}$ 和命题 49 得 $\approx_{\Sigma_{\rm mix}}\subseteq\ker H$。这里消费的是命题 48 的**旧基本更新**并补证新基本步，没有把旧签名充分性直接改称新签名充分性，也没有用两旧核取交代替归纳。证毕。
+
+**推论（较小语言的核仍成立）。** 按定义 23、24、27 有
+
+$$
+\Sigma_{\rm ts}\subseteq\Sigma_{\rm ts}^{\rm pair}\subseteq\Sigma_{\rm mix},
+\qquad
+\approx_{\Sigma_{\rm mix}}=\ker(\Gamma_t,m,M)
+\subsetneq\ker\Xi
+=\approx_{\Sigma_{\rm ts}^{\rm pair}}
+=\approx_{\Sigma_{\rm ts}}.
+\tag{MIX-COMPARISON}
+$$
+
+最后两个核等式分别消费命题 41、40。严格性直接引用 §32.5 的 B2：同 $\Xi$、含时间因果读数 $2,1$；该处 D5 的来源见证也可用，不重新编号。#6684 的命题 40 没有被推翻，它刻画较小语言的较粗核，不能改称 $\Sigma_{\rm mix}$ 的核。ARCH-R4-A1 的“未证混合闭包”由命题 52 闭合。语义下降仍不推出 (MIX-HEXPR)，其失败区域由命题 53 和 D13–D14 给出；$\Gamma_t$ 恢复历史的更强断言仍由 D10 反驳。
+
+### 34.3 引理 3：保历史上下文的归约与位保持原则
+
+**引理 3（保历史归约与位保持，repo-derived）。** 设某固定有限 $\Sigma_{{\rm cau},t}$ 单孔上下文对全部输入满足 (MIX-HEXPR)，则有以下归约；前三步只用 $C_B(X)\cong_hF_B(X)$，对任意 $B$ 都成立。
+
+① 所有原语都不减档案基数。带非空档案固定参数的任一二元步骤，由定义 4–6 严格增加 $|E|$，后续不可减；而 $F_B$ 保持 $|E|$，故这种步骤不出现。空档案参数的 $\boxtimes$ 清空 $\Omega$；排除前类参数后，后续步骤不能恢复非空 $\Omega$，与任一非空当前区域输入的目标不符，故也不出现。空参数的 $\boxplus/\triangleright$ 只加可去标签，后者守卫空真；去身份原语在历史同构下运输，所以模 $\cong_h$ 可删去这些步骤。这里不要求 $B$ 非空：即使 $B=\varnothing$，目标仍保留原 $\Omega$。
+
+② 模历史同构只剩 $N,F_S,F_L,F_{\downarrow Q},T_k$ 的有限复合。总时移必须为 $0$：取非空有限档案，其最小时刻在目标中保持，而总时移 $k$ 会使它增加 $k$；保时间的历史同构迫使 $k=0$。
+
+③ 将每个因果谓词按该步之前的累计平移拉回原坐标：若累计时移为 $j$，把 $Q$ 换成 $\tau_j^{-1}[Q]$。空间和来源掩码不受时移影响。每个筛选掩码只依赖完整情境，不依赖 $A$；同一情境的全部选择输入上，累计平移也相同。因此在固定情境上，每个事件的选择位只经历一个有限词，基本变换恰为
+
+$$
+z\longmapsto1-z,\qquad z\longmapsto h_i z,
+\quad h_i\in\{0,1\},\quad h_i\text{ 与输入选择无关}.
+\tag{MIX-BIT}
+$$
+
+④ **位保持原则：** 若某个由属性唯一标认的事件，其输出位须等于任意输入位，则每个 $h_i=1$。因为任一次 $h_i=0$ 都使两个输入位的后续值相同，其后的取补与固定掩码不能恢复已经失去的依赖。**在排除全部清零掩码之后**，该事件才只经历取补，输出恒等因而迫使 $N$ 次数为偶数。先断言偶数次 $N$ 再排除清零不是本证明的次序。以上逐步论证同时证明全部结论。证毕。
+
+### 34.4 命题 53：区域筛选至历史同构的完整表达判据
+
+对任意 $B\subseteq K$ 记
+
+$$
+S_B=\{p:\exists t\ (t,p)\in B\},\qquad
+Q_B=\{(p,\epsilon,r,t):(t,p)\in B,\ \epsilon\in\{\pm1\},\ r\in T\}.
+$$
+
+定义条件
+
+$$
+H_B:\quad
+\forall p\in S_B\ \forall q\in\mathbb Z^3\ \forall t<s:\quad
+(s,q)\in B\ \Longrightarrow\ (t,p)\in B.
+\tag{MIX-H}
+$$
+
+**命题 53（丰富输出表达性的完整分类，repo-derived）。** 以下三项等价：
+
+1. 存在固定有限 $\Sigma_{{\rm cau},t}$ 单孔上下文，对全部 $X\in\mathcal B$ 有定义且输出与 $F_B(X)$ 历史同构。
+2. $H_B$ 成立。
+3. $B=\mathbb Z\times S$（含 $S=\varnothing$），或存在 $T_B\in\mathbb Z$、$\varnothing\ne R_B\subseteq S_B$ 使
+
+$$
+B=(\{t<T_B\}\times S_B)\cup(\{T_B\}\times R_B).
+\tag{MIX-NORMAL}
+$$
+
+条件成立时有**编码等式**，强于历史同构：
+
+$$
+F_B=F_{S_B}\circ F_{\downarrow Q_B}.
+\tag{MIX-ENCODE}
+$$
+
+**证明（2 ⇒ 1）。** 两个筛选都总定义且保持完整情境，参数只依赖 $B$。若已选事件 $e$ 的自身单元属于 $B$，则 $x(e)\in S_B$，且 $e$ 本身就是 $Q_B$ 中的当前见证，所以保留。反之，若 $e$ 被复合保留，则 $x(e)\in S_B$，并有 $d\in\Omega$ 满足 $e\preceq d$、$(t(d),x(d))\in B$。$d=e$ 时结论直接成立；$e\prec d$ 时由定义 1 有 $t(e)<t(d)$，由 $H_B$ 得 $(t(e),x(e))\in B$。因此两边选择逐事件相同，完整情境又不变，即得 (MIX-ENCODE)。目标 $d$ 可以未选，时刻可以为任意负整数，证明均未排除它们。
+
+**证明（1 ⇒ 2）。** $B=\varnothing$ 时由空间筛选 $F_\varnothing$ 实现，$H_B$ 空真，单列结束。以下设 $B\ne\varnothing$，应用引理 3。对每个 $(t,p)\in B$、每个来源 $r\in T$，取同单元、同来源、相反符号的一正一负平衡反链，$E=\Omega$。正负符号分别唯一标认两个事件；逐个变动目标事件的输入位，目标 $F_B$ 必须保留该位。由位保持原则，该事件在每一步的掩码都为 $1$。
+
+对这些反链逐属性量化，得到同一固定词的约束：每个空间掩码包含 $S_B$；每个来源掩码等于全部 $T$（用 $B$ 中任一单元并遍历全部来源）；每个拉回的因果谓词包含 $Q_B$（反链的 $U_t$ 恰为自身单点，遍历两种符号与全部来源）。全部清零已排除后，任一上述被保留事件还给出 $N$ 总次数为偶数。
+
+若 $H_B$ 失败，取 $p\in S_B$、$t<s$、$(s,q)\in B$ 而 $(t,p)\notin B$。造同来源的正事件 $a@(t,p)\prec b@(s,q)$，另加两个孤立未选负事件使当前区域平衡，取 $E=\Omega$，唯一严格边为 $a\prec b$。跨位置边合法：定义 1 只要求时间严格增加；等时严格边被该定义禁止，所以此处确实使用 $t<s$。$a$ 的每个空间掩码为 $1$，因为 $p\in S_B$；来源掩码全部为 $1$；每个拉回因果谓词都含 $\alpha_t(b)\in Q_B$，而 $U_t(a)$ 含该属性，故其因果掩码也为 $1$。偶数次 $N$ 于是原样保留 $a$ 的输入位。取只选 $a$ 的输入，输出仍选 $a$，但 $F_B$ 恒删它；$a$ 是其时刻唯一正点，总时移为零，历史同构不能换一个事件代它。矛盾。§34.5 的 D14 还给出包含必须保留的第三正点的六事件自足反证，不依赖把单一筛选的失败推广为全语言失败。
+
+**证明（2 ⇔ 3）。** 空集已属于柱集。设 $B\ne\varnothing$ 且 $H_B$ 成立。若时间投影无上界，则对每个 $p\in S_B$ 及每个整数 $t$，可取 $(s,q)\in B$ 且 $s>t$；条件迫使 $(t,p)\in B$，所以 $B=\mathbb Z\times S_B$。若时间投影有上界，它作为非空整数集有最大元 $T_B$。令 $R_B=\{p:(T_B,p)\in B\}\ne\varnothing$；$H_B$ 迫使全部活动位置含全部 $t<T_B$，最大性排除全部 $t>T_B$，恰得 (MIX-NORMAL)。反向，柱集在活动位置含全部时刻；正常形中若 $(s,q)\in B$ 且 $t<s$，则 $t<T_B$，故每个 $p\in S_B$ 都有 $(t,p)\in B$。两种形式均满足 $H_B$。证毕。
+
+**位置相关阈值推论。** 对各非空截面给定 $h(p)\in\mathbb Z\cup\{+\infty\}$，令 $B=\bigcup_p(\{t\le h(p)\}\times\{p\})$，其中 $h(p)=+\infty$ 表示全 $\mathbb Z$。该区域可表达，当且仅当所有非空截面都是全 $\mathbb Z$，或所有非空截面都是有限阈值且只取两个相邻值 $\tau-1,\tau$（可只取其中一个值，最大差 $\le1$）。空区域仍可表达。理由是 (MIX-NORMAL) 中顶层位置阈值为 $T_B$，其余活动位置为 $T_B-1$；反向这些形式直接满足条件。阈值差 $\ge2$ 的不可表达性见 D14；一列全 $\mathbb Z$、另一活动列阈值有限 $h(p)$ 时，取 $t=h(p)+1$，再在全列取 $s>t$，即构成 $H_B$ 的失败见证。不能把“每位置分别时间下闭”当成充分条件。
+
+**旧结论的结算与推论。** 命题 51／D12 的 $B=\{(1,0)\}$ 违反 $H_B$，是同位置特例。柱集的 $F_B=F_S$、全空间过去半轴 $B=\{t\le\tau\}\times\mathbb Z^3$ 的 $F_B=F_{\downarrow Q_\tau}$ 仍为编码等式，其中 $Q_\tau=\{a\in\mathrm{Attr}_t:a\text{ 的时间}\le\tau\}$；任意有限交满足 $F_{B_1\cap B_2}=F_{B_1}\circ F_{B_2}$，因为各筛选保持同一情境并逐位相乘。故这些原充分族保留为本判据的推论。§32.5 与 §32.6 的“一般 $F_B$ 可表达性未测”文字保持原样，其所指固定有限上下文至 $\cong_h$ 的分类**由命题 53 结算**，不重写旧批次的当时记录。
+
+**量化边界。** 本 iff 专指定义 16 的固定有限单孔上下文、定义 26 的 $\Sigma_{{\rm cau},t}$、定义 7 的 $\cong_h$。它不分类一般 $q$ 表达性，不扩张到复制孔、改变 $\Omega$ 的筛选、身份查询、输入自适应参数或未来扩签名；这些扩张不在证明域内，未测。$B$ 可任意无限，ZFC 中的参数存在也不承诺成员判定可计算。
+
+### 34.5 反例 D13、D14：时间逆序与跨位置阈值
+
+**反例 D13（同位置时间逆序的一般见证族，repo-derived）。** 设 $t_1<t_2$，同位置 $p$ 满足 $(t_2,p)\in B$、$(t_1,p)\notin B$。取 $E=\Omega=\{a,b,c,d\}$，来源均为 $r_0$，位置均为 $p$；$a,b$ 为时刻 $t_1,t_2$ 的正事件，$c,d$ 为时刻 $t_1$ 的孤立负事件，唯一严格边 $a\prec b$。只让 $A$ 遍历 $\varnothing,\{a\},\{b\},\{a,b\}$，负事件一直未选。解析读数为
+
+| $A$ | $\varnothing$ | $\{a\}$ | $\{b\}$ | $\{a,b\}$ |
+| --- | --- | --- | --- | --- |
+| $q(F_BX_A)$ | 0 | 0 | 1 | 1 |
+| $q(F_{\downarrow\{\alpha_t(b)\}}X_A)$ | 0 | 1 | 1 | 2 |
+
+#### 四个读数的证明边界
+
+这四个读数本身不证明全语言不可表达；承重的是引理 3 对任意有限词的位保持论证及命题 53。此处给的是任意 $t_1<t_2$ 与任意同位置逆序区域的见证模式，D12 保留旧编号作为其已知特例；附录取 $(-4,-1),(-2,3),(4,7)$ 三组时间，不将旧四事件实例另算一次新发现。
+
+#### 跨位置六事件反证
+
+**反例 D14（跨位置阈值差 2 的六事件自足族，repo-derived）。** 取 $p=(0,0,0)$、$q=(1,0,0)$，
+
+$$
+B=(\{t\le0\}\times\{p\})\cup(\{t\le2\}\times\{q\}).
+\tag{MIX-D14}
+$$
+
+虽然两个非空截面分别向下闭，$H_B$ 仍失败：$(2,q)\in B$、$1<2$，而 $(1,p)\notin B$。取三个同来源正事件 $a@(1,p)\prec b@(2,q)$、$c@(0,p)$，唯一严格边为 $a\prec b$；另加三个时刻 $0$、位置 $p$、同来源的孤立未选负事件，令 $E=\Omega$ 为全部六点。$A$ 遍历 $\{a,b,c\}$ 的全部八个子集。目标删 $a$、保 $b,c$；三个正点的时间—位置属性两两可区分，任何保属性历史同构都固定它们。
+
+假定一个上下文对这个族实现目标且满足全输入保历史要求，用引理 3 归约。保 $c$ 的任意位迫使每个空间掩码在 $p$ 处为 $1$，遂也在 $a$ 处为 $1$。保 $b$ 的任意位迫使每个来源掩码在共同来源处为 $1$，每个拉回因果掩码在 $b$ 处为 $1$；因为 $U_t(b)\subseteq U_t(a)$，后者也在 $a$ 处为 $1$。对被保留位排除清零之后，$N$ 次数为偶数。因此 $a$ 位仍原样保留，取 $A=\{a\}$ 即矛盾。**第三个必须保留的正点 $c$ 正是全上下文反证中强迫空间掩码保留 $p$ 的环节。**
+
+单一 $F_{\downarrow Q_B}$，即使随后接 $F_{S_B}$，会让 $a$ 通过未选的目标 $b$ 而保留。八个读数如下；仅一个筛选失败不能推出所有上下文失败，上段的有限词反证不可省略。
+
+| $A$ | $\varnothing$ | $a$ | $b$ | $c$ | $ab$ | $ac$ | $bc$ | $abc$ |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| $q(F_BX_A)$ | 0 | 0 | 1 | 1 | 1 | 1 | 2 | 2 |
+| $q(F_{S_B}F_{\downarrow Q_B}X_A)$ | 0 | 1 | 1 | 1 | 2 | 2 | 2 | 3 |
+
+#### 相邻阈值的正对照
+
+**正对照：**
+
+$$
+B'=(\{t\le0\}\times\{p\})\cup(\{t\le1\}\times\{q\})
+$$
+
+满足 $H_{B'}$，所以 $F_{B'}=F_{\{p,q\}}\circ F_{\downarrow Q_{B'}}$ 对全部输入精确实现，保持完整情境。整数严格时间下，不存在既在低阈值之外、又严格早于高阈值之内的中间时刻；这说明差 $1$ 与差 $2$ 的分界来自定义 1 的严格整数时标。
+
+### 34.6 命题 54：q 层一致表达的伴随结果
+
+**命题 54（有下界区域的固定 q 表达，repo-derived）。** 精确量词为
+
+$$
+\begin{aligned}
+\forall B\subseteq K\ \forall k_0\in\mathbb Z:\quad
+&\bigl[(\forall(\tau,p)\in B,\ \tau\ge k_0)\ \Longrightarrow\\
+&\quad\forall k\le k_0-1\ \forall X\in\mathcal B:\quad
+q(F_BX)=q\bigl(F_{\downarrow Q^*}(X\boxtimes T_k(U_0))\bigr)\bigr],\\
+Q^*&=\{(p,\epsilon,r,\tau+1):(\tau,p)\in B,
+                 \ \epsilon\in\{\pm1\},\ r\in T\}.
+\end{aligned}
+\tag{MIX-QEXPR}
+$$
+
+$B,k_0,k,Q^*$ 都在 $X$ 之前固定；不要求 $B$ 有限或有上界，也不声称该表达保持历史同构。
+
+**证明。** $T_k(U_0)$ 只选位置 $0$、符号正、时刻 $k$ 的点 $u_+$。乘积的新选中事件恰来自 $(e,u_+)$、$e\in A_X$，位置与符号沿 $e$，时间为 $\max(t(e),k)+1$。该次乘积当前区域为反链，故因果筛选只检查新点自身属性。若 $t(e)\ge k$，新时间为 $t(e)+1$，在这个范围内单射，$Q^*$ 恰检查 $(t(e),x(e))\in B$。若 $t(e)<k$，新时间为 $k+1\le k_0$，不等于任何目标时间 $\tau+1\ge k_0+1$，故被拒；原事件因 $t(e)<k<k_0$ 也不属于 $B$。逐选中事件的有符号有限和相等，空选择及负时刻均包含在内。$k$ 只依赖指定区域的下界，不依赖 $X$ 的最早时刻。证毕。
+
+**坏界反例（不另编号）。** 将条件放宽为 $k\le k_0$ 不成立：取 $B=\{(0,0)\}$、$k=k_0=0$，输入为只选时刻 $-1$ 正点的平衡 $U_{-1}$。目标 $q=0$；乘 $U_0$ 后该点时间成为 $1$，命中 $Q^*$，右式为 $1$。因此原命题的统一界 $k\le k_0-1$ 不能按此方式放宽。
+
+命题 53 判定不可作丰富输出表达的**有下界**区域仍可由本命题作固定 $q$ 表达，例如 D12 的单元区域。**D14 的 $B$ 没有时间下界，不能把它列作命题 54 的适用例。** 它也有固定 $q$ 表达，但由以下单独的直接计算给出：
+
+$$
+\begin{aligned}
+Q_{14}^*={}&\{(p,\epsilon,r,1):\epsilon\in\{\pm1\},r\in T\}\\
+ &\cup\{(q,\epsilon,r,j):\epsilon\in\{\pm1\},r\in T,j\in\{1,2,3\}\},\\
+q(F_BX)={}&q\bigl(F_{\downarrow Q_{14}^*}(X\boxtimes U_0)\bigr)
+\quad\text{对全部 }X\in\mathcal B.
+\end{aligned}
+\tag{MIX-D14-Q}
+$$
+
+这里 $p,q$ 固定为 D14 的两个位置。乘后时间 $\max(t,0)+1=1$ 当且仅当 $t\le0$；它属于 $\{1,2,3\}$ 当且仅当 $t\le2$。在当前反链上逐选中点检查位置与该时间条件，恰给 D14 两个截面，符号保持，故等式成立。这个具名无下界例的 $q$ 表达已结算，丰富输出不可表达性仍由 D14 保持。
+
+**open：** 时间无下界且不属于命题 53 丰富输出可表达族的区域，其**一般** $q$ 层分类（$\exists$ 固定有限 $C\ \forall X$）仍未测，本节没有给出覆盖这整个剩余类的判据。不能将所有无下界 $B$ 一概记为 open：命题 53 的可表达族已给 $q$ 表达，D14 也已由 (MIX-D14-Q) 单独结算。
+
+### 34.7 本批边界
+
+定义 24 的 $M_P$ 之外的其他配对操作**未测**：命题 52 的推送只处理固定有序父时间—位置单元谓词，没有处理任意来源、身份或因果配对。$\Gamma_t$ 的**全部实际像分类未测**：本批在实际丰富输入及其像上证明闭包和核，没有构造任意形式剖面的历史实现。历史恢复的更强结论由 §28.7／D10 反驳；超出定义 16 的上下文扩张及一般剩余区域的 $q$ 分类按 §34.4、§34.6 保留边界。
+
+附录 `pr5_` 段只作有限精确核验：新更新与事件计算逐字节比较，满足 $H_B$ 的编码式比较完整 `Rich` 状态，D13／D14、坏界和配对背景给定向对照；有限位掩码闭包是配套实验，不能替代引理 3 的任意有限词证明。本批没有新增 Lean 证明，不能称为 kernel-verified；普通 ZFC 推导、有限执行、后续评审与仓库准入是分别记账的事项。
+
+<a id="pr5-evidence"></a>
+
+## 35. PR5 产地与核验收据
+
+### 35.1 产地、先验暴露与亲验范围
+
+本批 skill 上下文为 **`consensus-rnd:sshx`**，阶段为 `implementation`。本实施席按 caller 的“六席收敛契约”在工作树 `/Users/auricstudio/trureturing-csa-upgrade-pr5-0910`、分支 `lane/theory/csa-upgrade-pr5-0910` 工作，并实际读取本机该 skill 的 `SKILL.md`、完整 `CLAUDE.md`、指定卷文与附录。没有将自身检查充作六席思考或三席评审。
+
+**思考产地（以下为 caller brief 转述，未读取各席原始判词）：** 六席为 `teleology`、`parsimony`、`fidelity`、`natural-ownership`、`proportional-containment`、`worth`。`fidelity` 载体为 `nyxid-oracle`，brief 记录模型为 **GPT-6 Astra Pro**；其余五席为 `codex-cli`，各自具体模型标识未提供。caller 记录 codex 席遇到 `dispatch.sh` 的负载门 `idle<20%`，因此直接经 runner 派发到分离只读检出；这就是该次旁路理由，不是本实施席对当时宿主负载的实测。六席均暴露 caller 候选计划，**非盲**；codex 席有仓库先验暴露，oracle 的外部先验不可由本席核定，不能据席数宣称先验独立或环境无记忆。各席逐票结果及原始完成工件未向本席提供，本收据只消费 caller 已给的收敛方案。
+
+**实施与评审分工：** 本批实施由一个 `codex-cli` worker 承担，未另派子工作者；它同样看到候选计划和仓库先验，属于 `repo-prior-exposed`。后续三席 `architecture`／`quality`／`tests` 的评审载体、模型、判词及分歧裁决由 caller **另记**；实施交付时未收到这些结果，不预报通过。brief 将 D14 列作有时间下界的例子与其区域公式冲突，本席在改动前指出该点，保留命题 54 原量词，并以 (MIX-D14-Q) 单独证明及核验 D14 的固定 $q$ 表达；其余主数学边界按收敛契约实施。
+
+**caller 亲验范围（仅转述已提供记录）：** brief 记载 2026-09-10 06:35 对 `origin/dev=95442f6d3d` 核对本卷零改动、无在飞 PR 触碰本卷。此后 caller 对本批证明、附录、ingest、提交或评审的亲验结果未向本席提供；本席不代其声明。**本 worker 亲验范围：** 开工 fetch／试合与 fast-forward、卷文 SHA256、原语及证明前提的原文核对、下列附录执行、canonical ingest、只追加字节检查、编号与最终 git 读数。前者为 caller 自报范围，后者为实施自查，二者不合算为独立评审。
+
+原始基线为 `3759149d0ea0884cb8a57fb950e3caddab007a38`。开工实际执行 `git fetch origin dev && git merge-tree --write-tree origin/dev HEAD`，退出 **0**，试合树为 `1d617412f68464c354f309cab594df6790c8e77e`；随后 `git merge origin/dev` 退出 **0**，fast-forward 到 `95442f6d3d6c3bb970029440d4e3a463aaec1993`，作为本批摄入基线。两版本卷字节相同，3935 行、SHA256 `54894115cd9c214a6ba131fe32ca8a2d0109a4c406733394a9060c6780968b04`，故续接定义 27、引理 3、命题 52–54、D13–D14、增补 N 与 §35，没有 rebase 或重编号。
+
+本批形态为 **ingest**；链上一环是 `source_id=contextual-spacetime-arithmetic` 的新增源文 → 新 `atoms/sha256` 对象 → 同源 `residual-open` backfill。新推导为 `repo-derived`，只依赖卷内既有定义与具名结果，没有新增外部引文；未作全球新颖性检索，不作优先权主张。本批未作 deposit／cover，不报告新增冻结或 absorbed；Lean、一般剩余 $q$ 分类、其他配对及全实际像的未测边界见 §34。
+
+### 35.2 附录实际命令与有限核验范围
+
+本席实际执行以下原文命令，退出 **0**，stderr 为空：
+
+```sh
+sed -n '/^```python$/,/^```$/p' docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md | sed '1d;$d' | python3 -
+```
+
+附录仅在原末行打印之前插入 **356 行** `pr5_` 段，复用 `Rich`、既有档案运算、`pr3_` 的 timed 筛选／剖面和 `pr4_` 的含时间辅助。stdout 的新增行和末行原文为：
+
+```text
+pr5_mixed_closure: region_updates=640 pair_updates=640 endpoints=1280 unselected_parent_pairs=7160 rejected_parent_pairs=5316 empty_products=208 old_endpoint_products=512 negative_time_inputs=61 asymmetric_slots=2 context_steps=13608 context_q=13608 ts_pair_contexts=800 mix_contexts=800 strict_failures=806 rich_equalities=400 H_cases=16384 D13_choices=12 D14_choices=8 bit_maps=52 q_expression=1200 D14_q=80 seed=2026091005 random_samples=64 cases=80 P_empty_Omega=4 P_empty_Gamma=nonempty P_empty_N_positive=2 wrong_deleted_rows=0 D13=0,0,1,1/0,1,1,2 D14=0,0,1,1,1,1,2,2/0,1,1,1,2,2,2,3 bad_k=0,1
+ALL_FINITE_CHECKS_PASSED
+```
+
+计数由执行累加。固定种子 `2026091005` 生成 64 份平衡状态，当前区域大小取 0、2、4、6，当前时刻取 −8 至 5，另取 0、1、2 个非当前档案点（时刻 −12 或 10），合法生成边取传递闭包，选择可为任意子集；加空档案、空当前区域、未选／非当前目标、D10、抵消、负时刻和 D14 族等定向输入，共 80 份。`unselected_parent_pairs`、`rejected_parent_pairs` 计的是多次配对实验中的父对出现数，非去重事件数。`old_endpoint_products` 计至少一个父档案有非当前端点的乘积实例；端点检查包含完整档案。非对称谓词在左右两槽位单列对照。$P=\varnothing,X=Y=U_0$ 的反例保留四个当前事件与非空 $\Gamma_t$，后接 $N$ 及正号因果筛选得 2，错误删行模型得 0。
+
+上下文词与全部参数在遍历输入之前固定，800 个 $\Sigma_{\rm ts}^{\rm pair}$、800 个 $\Sigma_{\rm mix}$ 实例将 $F_B,M_P$ 与旧原语交替；成功步独立比较逐事件状态的摘要及其 $q$ 和纯摘要更新路径。806 次严格失败含两个时间槽位及后接 $N$、空区域／因果筛选、左右零因子的定向对照，失败未被正常零吸收。
+
+400 次 (MIX-ENCODE) 检查覆盖全区域、空区域、柱集、过去半轴、D14 正对照的相邻阈值，比较完整 `Rich` 的 $(e,o,w,a)$：事件标识与所有属性、全部严格关系、当前区域、选择均规范序列化后逐字节相等。这里没有把“同剖面 + 同 $|E|$”充作历史同构证据，D10 的入射区别仍在完整字段中。D13 三组参数各查四个选择，D14 查全部八个选择；有限位映射闭包共 52 个映射只是配套检查，任意有限上下文的否定由引理 3 和命题 53 承担。
+
+正常形对照枚举两个位置上七个时间块的全部 $2^{14}=16384$ 个区域：$(-\infty,-3]$、五个单点 $-2,-1,0,1,2$、$[3,+\infty)$；两条无限尾各用两个代表时刻检查尾内严格关系。`pr5_H` 的条件矩阵与独立生成的柱集／单顶层正常形一致。该实验仅针对这个固定分块族，不能当作任意 ZFC 集合的可计算判定器。命题 54 的 1200 次 $q$ 比较含无限且无上界的有下界区域、负时刻和三个固定合法 $k$，坏界 $k=k_0$ 得 $(0,1)$；D14 的无下界区域另作 80 次 (MIX-D14-Q) 比较，不混入命题 54 的适用计数。
+
+### 35.3 摄入与追加边界的固定检查点
+
+以下读数固定在追加本收据之前，不用本节自指自己的最终摘要。两次 canonical ingest 均使用下列完整命令，均退出 **0**，stderr 均为空：
+
+```sh
+BASE=95442f6d3d6c3bb970029440d4e3a463aaec1993 make ingest SOURCE="contextual-spacetime-arithmetic docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md"
+```
+
+首次输入 HEAD 为 `074ea6b6ca60d0013ade8b3efb0e6c1df66be07b`，生成 **30 atoms／30 residual-open**，提交 `31dd372c12077da31ada29983172d103d4bd5053`；stdout 为：
+
+```text
+INGEST residual_open_added=30 skipped_existing=268 coarse_fallbacks=0 open_genres=0 cas_objects_written=30 ledger_changed=true
+```
+
+该次命令成功后，原文核对发现表格后的命题 52 证明、D14 完整反证及正对照没有全部进入 atoms；退出码不代替内容核对。本席只在新增 §34.2、§34.5 补上明确小标题，分别提交 `5b0cb519e83ada291f777f8b19ccbfb31deccd5e`、`113e4c1d6db2255463c716278dcdd6173c1b7c68`，没有手改、删除或修复已经生成的 CAS 对象或账目。
+
+第二次输入 HEAD 为 `113e4c1d6db2255463c716278dcdd6173c1b7c68`，生成 **12 atoms／12 residual-open**，提交 `bae7159e871dc22a57bddb1ba0a2d65518022d1e`；stdout 为：
+
+```text
+INGEST residual_open_added=12 skipped_existing=281 coarse_fallbacks=0 open_genres=0 cas_objects_written=12 ledger_changed=true
+```
+
+此检查点累计新增 **42 atoms／42 residual-open**。逐行核对 §34 至当时 EOF 的 **143 行非空、非标题、非锚点内容**，每行正文、公式或表格单元内容都能在至少一个新增 atom 中找到，遗漏 **0**；表格行仅去除末尾 Markdown `|` 后比较，因为实际 row atom 的字节边界止于该分隔符之前。全部 42 个 atom 的内容 SHA256 与文件名相符，且均有同源 residual-open。核验脚本与逐行 atom 索引位于本次 runner 目录的 `audit_source_ingest.py`、`ingest-2-coverage.json`。原始 CAS 切片保留段落末尾空行，通用 `git diff --check` 对此报 `new blank line at EOF`；没有为消除该诊断改写不可变 blob，正文的空白检查另行通过。
+
+在此期间 `origin/dev` 前进至 `d59adb46d4703e7fdc7ef7569c5c0919247cc87a`；本席再次 fetch／试合，退出均为 **0**，试合树 `8720ddcc8312b9852b5485b7e092963aa58635b6`。相对首次合入的 dev，本卷差异仍为空；`git merge --no-edit origin/dev` 以 merge commit `3ee29f1954874e4797ed72bc10271a22e9c4a9e9` 合入，不 rebase，摄入仍使用上列固定基线。
+
+追加本收据前的 HEAD 为 `bae7159e871dc22a57bddb1ba0a2d65518022d1e`，卷文 **4526 行／336985 字节**，SHA256 `850c525569a165d6fc5a6bc5f795204ea6562f45a6893e2133fd18b79f47023c`。去除附录唯一新增的 356 行后，现文的前 **296025 字节**与 3935 行基线全文逐字节相等；当时 §34 尾部新增 235 行，工作树干净。实际 `git diff -U0 origin/dev..HEAD -- docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md` 的 hunk 行为：
+
+```text
+@@ -2076,0 +2077,356 @@ print(f"pr4_temporal_causal: random_samples={len(pr4_samples)} cases={len(pr4_ca
+@@ -3935,0 +4292,235 @@ INGEST residual_open_added=57 skipped_existing=217 coarse_fallbacks=0 open_genre
+```
+
+本 §35 是固定检查点之后的正文追加，须在它最后一次改动之后再执行同一 ingest 命令并提交，使收据本身也进入上述链路。最终摄入的退出码、计数及提交、完整附录重跑的 `pr5_` 行与末行、逐节 commit SHA、最终两个纯插入 hunk、允许路径范围、同步／推送和干净状态，由 `/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/csa-pr5-impl-0910/attempt-1/result.json` 与 `implementation.log` 绑定记录，不用这里的固定 42／42 代替最终累计数。本批交付推送分支，不开 PR；三席评审、后续准入及未测数学边界不由实施收据预先判定。
