@@ -1,0 +1,54 @@
+COMMAND: ["make", "-f", "Makefile", "-f", "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/probe.mk", "lean", "PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Next.lean"]
+LEAN_CACHE {"status":"present","worktree":"/Users/auricstudio/trureturing-u1bridge-0909","donor":null,"method":"none","reason":null,"stamp_miss":null,"pin_sha256":"sha256:6c4c682ffba051b5744fe7a75ccc99d7f3b20227b3b026f392f3315be0adaa4e","clonefile_errno":null,"clonefile_errnos":[],"clonefile_attempts":0,"clonefile_cleanup_error":null,"mathlib_missing_olean_files":0,"mathlib_missing_olean_samples":[],"archive_status":"not_attempted","archive_mode":null,"archive_skip_reason":"project olean state is warm","archive_reason":null,"archive_producer_commit_sha":null,"archive_workflow_run_id":null,"mathlib_olean_state":"warm","mathlib_olean_probe_error":null,"project_olean_state":"warm","project_olean_probe_error":null}
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Next.lean:29:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Next.lean:33:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Next.lean:55:2: error: `dsimp` made no progress
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Next.lean:140:26: warning: This simp argument is unused:
+  mul_inv
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [div_eq_mul_inv, hd, mul_assoc, mul_left_comm, mul_comm]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Next.lean:160:4: error: `simp` made no progress
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Next.lean:155:72: error: unsolved goals
+case e'_4
+p q : ℝ[X]
+x : ℝ
+hp : 0 ≤ eval x (derivative p) ^ 2 - eval x p * eval x (derivative (derivative p))
+hq : 0 ≤ eval x (derivative q) ^ 2 - eval x q * eval x (derivative (derivative q))
+h :
+  0 ≤
+    eval x q ^ 2 * (eval x (derivative p) ^ 2 - eval x p * eval x (derivative (derivative p))) +
+      eval x p ^ 2 * (eval x (derivative q) ^ 2 - eval x q * eval x (derivative (derivative q)))
+⊢ (eval x (derivative p) * eval x q + eval x p * eval x (derivative q)) ^ 2 -
+      eval x p * eval x q *
+        (eval x (derivative (derivative p)) * eval x q + eval x (derivative p) * eval x (derivative q) +
+          (eval x (derivative p) * eval x (derivative q) + eval x p * eval x (derivative (derivative q)))) =
+    eval x q ^ 2 * (eval x (derivative p) ^ 2 - eval x p * eval x (derivative (derivative p))) +
+      eval x p ^ 2 * (eval x (derivative q) ^ 2 - eval x q * eval x (derivative (derivative q)))
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Next.lean:201:59: error: No goals to be solved
+'QdB3Probe.laguerre_splits' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'QdB3Probe.b3_full' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'QdB3Probe.arrow_hermitian' depends on axioms: [propext, Classical.choice, Quot.sound]
+'QdB3Probe.arrow_schur' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'QdB3Probe.b3_charpoly_target' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'QdB3Probe.b3_residue_sign_target' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+make: *** [qd-triage-probe] Error 2
+
+EXIT=2
+SECONDS=28.406680042

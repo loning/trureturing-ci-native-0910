@@ -1,0 +1,30 @@
+COMMAND: ["make", "-f", "Makefile", "-f", "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/probe.mk", "lean", "PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/DescentProbe.lean"]
+LEAN_CACHE {"status":"present","worktree":"/Users/auricstudio/trureturing-u1bridge-0909","donor":null,"method":"none","reason":null,"stamp_miss":null,"pin_sha256":"sha256:6c4c682ffba051b5744fe7a75ccc99d7f3b20227b3b026f392f3315be0adaa4e","clonefile_errno":null,"clonefile_errnos":[],"clonefile_attempts":0,"clonefile_cleanup_error":null,"mathlib_missing_olean_files":0,"mathlib_missing_olean_samples":[],"archive_status":"not_attempted","archive_mode":null,"archive_skip_reason":"project olean state is warm","archive_reason":null,"archive_producer_commit_sha":null,"archive_workflow_run_id":null,"mathlib_olean_state":"warm","mathlib_olean_probe_error":null,"project_olean_state":"warm","project_olean_probe_error":null}
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/DescentProbe.lean:84:8: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/DescentProbe.lean:86:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/DescentProbe.lean:239:37: warning: `_root_.not_imp` has been deprecated: Use `Classical.not_imp` instead
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/DescentProbe.lean:239:2: error: Type mismatch: After simplification, term
+  hh
+ has type
+  ∃ x, ∃ (_ : eval x (sourceJensenPolynomial d) = 0), ¬x.im = 0
+but is expected to have type
+  ∃ z, eval z (sourceJensenPolynomial d) = 0 ∧ z.im ≠ 0
+'B1BindOnlyProbe.source_negative_descent' depends on axioms: [propext, Classical.choice, Quot.sound]
+'B1BindOnlyProbe.reflect_real_iff' depends on axioms: [propext, Classical.choice, Quot.sound]
+'B1BindOnlyProbe.positive_derivative' depends on axioms: [propext, Classical.choice, Quot.sound]
+'B1BindOnlyProbe.source_real_descent' depends on axioms: [propext, Classical.choice, Quot.sound]
+'B1BindOnlyProbe.source_failure_upward' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'B1BindOnlyProbe.source_minimal_failure' depends on axioms: [propext, Classical.choice, Quot.sound]
+make: *** [qd-triage-probe] Error 2
+
+EXIT=2
+SECONDS=47.390419458

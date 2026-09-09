@@ -269,3 +269,11 @@ hlog : 0 = (Multiset.map (fun z => 1 / (x - z)) q.roots).sum
 这定位了路线 v2 所要解决的目标，尚非 no 判词。此后先顺序运行已准备的推论诊断，再回 B3 装配，未并发构建。
 
 推论首次 [源码](qd-family-triage-0909/attempt-2/descent-01.lean) / [日志](qd-family-triage-0909/attempt-2/descent-01.log)：EXIT=2，82.817306 秒。`reflect_real_iff`、`positive_derivative` 已仅标准三公理；整次错误来自不存在的 `revAt_self`、两个除法符号引理名、Prop 顺序与蕴含转换、`Nat.find` 别名改写，以及未把 `d≥2` 提供给严格正性算术。日志中的 `⊢ 0 ≤ z.re`、`⊢ z.re < 0` 均已有正确符号的非零分母前提；它们是工作量，不能据此判数学缺陷。所有错误恢复的 `sorryAx` 声明均排除。
+
+### Attempt 2 / 中点结算及后续诊断
+
+中点时 B4 已有明确 yes，故“过半而零判定”停止条件不触发；总截止仍为 `10:25:30 UTC`。
+
+B3 第三次 [源码](qd-family-triage-0909/attempt-2/b3-03.lean) / [日志](qd-family-triage-0909/attempt-2/b3-03.log)：EXIT=2，28.406680042 秒。`q_ratio_formula` 的插值等式已闭合；错误为 `dsimp made no progress`、乘法 Laguerre 恒等式的 `simp made no progress` 及 `No goals to be solved`。日志给出的未闭合恒等式是 `(p′q+pq′)^2-pq*(p″q+p′q′+(p′q′+pq″))=q^2*(p′^2-pp″)+p^2*(q′^2-qq″)`（完整 Lean 原文在日志）；它是 ring 规范化，不是数学缺陷。整条仍未判形。
+
+推论第二次 [源码](qd-family-triage-0909/attempt-2/descent-02.lean) / [日志](qd-family-triage-0909/attempt-2/descent-02.log)：EXIT=2，47.390419458 秒。负根降阶、实根降阶和条件最小失败阶声明均仅标准三公理。唯一剩余错误是逻辑归一化：`hh` 归约后为 `∃ x, ∃ (_ : eval x (sourceJensenPolynomial d) = 0), ¬x.im = 0`，目标为 `∃ z, eval z (sourceJensenPolynomial d) = 0 ∧ z.im ≠ 0`。改用 `push_neg`，不增加数学前提。尚未证明 RH 假给出固定源塔的失败见证。
