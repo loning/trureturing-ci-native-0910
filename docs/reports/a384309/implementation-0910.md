@@ -136,3 +136,14 @@ No theory volume or atom is being created for this task.
 - Proof repair addressed dependent DecidablePred rewriting with simp,
   explicit beta reduction for index arithmetic, and equality orientation.
   No target was weakened. Full make lean and semantic axiom audit still pending.
+
+## Full Lean build
+
+- `make lean` EXIT=0, 46.477 seconds, 12828 jobs; the new LeadingCounter
+  module was built in 3.9 seconds. Log: attempt-1/make-lean.log.
+- LEAN_CACHE: status=present, method=none, stamp_miss=null,
+  project_olean_state=warm, mathlib_olean_state=warm,
+  archive_status=not_attempted. This is macOS ARM local timing, not CI timing.
+- Source length 181 lines; no sorry, axiom declaration, or native_decide.
+  Existing project warnings were replayed by Lake; the new module's file
+  check has no warnings. Canonical Lean report and semantic audit are running.
