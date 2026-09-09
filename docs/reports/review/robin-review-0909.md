@@ -10,7 +10,7 @@
 - Read first: tracked `tools/scripts/agent/probe-brief-note.txt`, then all of `CLAUDE.md` and `agents/CONTEXT.md`.
 - Scope: review only; no edits to `D5/**` or `Blueprint/**`, no freeze/deposit/cover/merge action.
 - Worker artifacts: `/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/robin-review-0909/attempt-1` (called `ATTEMPT` below).
-- Checkpoints: Q1-Q3 complete; Q4-Q6 pending. Overall verdict is pending until all six questions are reviewed.
+- Checkpoints: Q1-Q4 complete; Q5-Q6 pending. Overall verdict is pending until all six questions are reviewed.
 
 ## Q1. Mathematical correctness
 
@@ -199,6 +199,45 @@ The patch explicitly names private `small_values` and all three final ratio boun
 
 Push receipt for Q2: `9b7f11119f`, EXIT 0. Q3 is recorded in the next checkpoint commit.
 
+## Q4. Utility classification and visibility
+
+Result: `utility: none` is appropriate for the delivered public theorem, under the brief's explicit public/private distinction. No public positive bounded-enumeration or certified-instance declaration was found. This is not an assertion that no computation occurs in its private proof.
+
+Own declaration count: **1 public theorem + 12 private theorems + 3 private definitions = 16 authored declarations**. There are no authored public definitions, instances, structures, opaque declarations, or axioms. Thus the supplied `1 + 12` count is correct for theorems only; total private authored declarations are **15**, not 12.
+
+| Declaration(s) | Visibility | Delivered semantics / classification |
+| --- | --- | --- |
+| `robin_seven_smooth` (`:170`) | Public theorem | Unbounded natural exponents; actual Robin inequality, all numeric obligations discharged; `none` |
+| `smooth`, `geometric`, `divisorSum` (`:16,18,21`) | Private definitions | Product/sum notation for the proof; no public checker API or certified-instance claim |
+| `sigma_smooth`, `geometric_bound`, `sigma_uniform_bound` (`:24,40,49`) | Private theorems | General factorization and estimates with arbitrary exponents |
+| `small_values` (`:70`) | Private theorem | Bounded enumeration inside the proof; not publicly delivered as a finite result |
+| `exponent_bounds` (`:80`) | Private theorem | Coverage of the box from a bound on n; no exported enumeration result |
+| `exp_gamma_lower`, `loglog_5040`, `loglog_10000`, `loglog_20000`, `loglog_tail` (`:109,123,132,141,150`) | Private theorems | Numeric proof ingredients for the single unbounded result |
+| `log_lower`, `rhs_lower` (`:116,159`) | Private theorems | Analytic transfer helpers; their hypotheses are fulfilled at each call |
+
+The public theorem is not a checker, not a finite instance, and not a numerical reduction awaiting an external certificate. The finite segment and an independently proved unbounded tail jointly prove all permitted inputs. Section 3.3's warning that bounded enumeration cannot prove an unbounded universal by itself is respected. Exposing the table as a public positive computational theorem would require verified `refutes` and would be blocking; that exposure does not occur. Compiler-generated `_proof_*` implementation details are accounted for separately in Q5; source-level public API and canonical `include_in_statement` are distinct concepts.
+
+The A5.1 syntax at `SevenSmooth.lean:5-7` is exactly `anchors: []`, `utility: none`, `digest: ...`, in that order. `none` requires no `basis`, `consumer`, `instance`, `premises`, `result`, or `claim` keys. Those fields are `not-applicable(kind=none)` in this report, not extra header syntax. `generality: I` is orthogonal to utility. The numeric lower bounds in the final proof are discharged, not assumptions in the public signature. No downstream-consumer claim is being used to evade the ordinary-instance prohibition.
+
+Own source inventory receipts (matching lines; all EXIT 0):
+
+```
+rg -n '^(private )?(noncomputable )?(theorem|lemma|def|opaque|axiom|abbrev|instance|structure|inductive)\b' D5/S3/Arith/Robin/SevenSmooth.lean
+# 16; inspected all matched declarations and the complete module
+rg -n '^private theorem\b' D5/S3/Arith/Robin/SevenSmooth.lean
+# 12
+rg -n '^theorem\b' D5/S3/Arith/Robin/SevenSmooth.lean
+# 1; positive control for anchored word-boundary declaration matching
+rg -n '^private def\b' D5/S3/Arith/Robin/SevenSmooth.lean
+# 3
+rg -n '^   (anchors|utility|digest):' D5/S3/Arith/Robin/SevenSmooth.lean
+# 3, at lines 5, 6, 7
+```
+
+The private witness's generated Lean name was also confirmed through the compiler environment in Q3. The meaning of the classification is reviewed here; no claim is made that `UTILITY-OBSERVED` alone establishes it.
+
+Push receipt for Q3: `c8bdef184b`, EXIT 0. Q4 is recorded in the next checkpoint commit.
+
 ## Pending checks and nonclaims
 
-At this checkpoint Q4-Q6 have not been concluded. The canonical report/axiom audit, classification, and mirrors remain pending. `make lean` has independently returned EXIT 0 in 16.224060833 s; its scope and the report command are recorded under Q5 when that check completes. No claim of general Robin, RH, novelty, search exhaustiveness, successful freeze, or remote CI/merge is made. No external literature page has been opened or used as evidence.
+At this checkpoint Q5-Q6 have not been concluded. The canonical report/axiom audit and mirrors remain pending. `make lean` has independently returned EXIT 0 in 16.224060833 s; its scope and the report command are recorded under Q5 when that check completes. No claim of general Robin, RH, novelty, search exhaustiveness, successful freeze, or remote CI/merge is made. No external literature page has been opened or used as evidence.
