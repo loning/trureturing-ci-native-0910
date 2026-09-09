@@ -120,8 +120,7 @@ private unsafe def registryRecords (data : ModuleData) : Json := Id.run do
   for info in data.constants do
     if keys.contains info.name then
       owners := owners.push <| Json.mkObj [("name", nameJson info.name),
-        ("matches", toJson (CensusOwnership.moduleContainsTheorem data info)),
-        ("type", toJson (toString info.type)), ("levels", toJson (info.levelParams.map nameJson))]
+        ("matches", toJson (CensusOwnership.moduleContainsTheorem data info))]
     if let some head := indexedHead info then named := named.push (namedRecord info head)
   let imports := data.imports.map fun entry => Json.mkObj [
     ("module", toJson entry.module.toString), ("all", toJson entry.importAll),
