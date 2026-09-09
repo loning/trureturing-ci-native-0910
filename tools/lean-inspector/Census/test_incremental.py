@@ -53,6 +53,13 @@ class IncrementalTests(unittest.TestCase):
             self.assertNotEqual(baseline, validation_key(*changed))
         self.assertEqual(baseline, validation_key(*args))
 
+    def test_one_large_owner_is_split_by_key_bound(self):
+        from incremental import candidate_batches
+        keys = [["A", str(i), str(i)] for i in range(257)]
+        batches = candidate_batches(keys, {"A": ["A"]}, {"A": []}, 1)
+        self.assertEqual([len(batch["keys"]) for batch in batches], [128, 128, 1])
+        self.assertEqual([key for batch in batches for key in batch["keys"]], keys)
+
 
 if __name__ == "__main__":
     unittest.main()

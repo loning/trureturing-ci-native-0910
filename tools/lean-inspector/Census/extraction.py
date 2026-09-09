@@ -13,14 +13,25 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 from materials import declaration_statement_id
 
 
-def finish_record(record, source_path):
-    for owner in record["owners"]:
-        # Reuse the report producer; no second encoding, JSON canonicalizer or
-        # statement-domain hasher exists in the census.
-        material = owner.pop("statement_material")
-        owner["statement_id"] = declaration_statement_id(
-            source_path, owner["kind"], owner.pop("name_key"), material)
-    return record
+def detached_records(lines, source_path):
+    record = None
+    for line in lines:
+        value = json.loads(line)
+        if "owner" in value:
+            if record is None or any(value[k] != record[k] for k in ["module", "part"]):
+                raise ValueError("IE-C044 owner outside its module part")
+            owner = value["owner"]
+            # The producer consumes one constant's transient material. Only its
+            # compact kind/membership/address entry survives to the next one.
+            owner["statement_id"] = declaration_statement_id(source_path(value["module"]),
+                owner["kind"], owner.pop("name_key"), owner.pop("statement_material"))
+            record["owners"].append(owner)
+        else:
+            if record is not None:
+                yield record
+            record = value
+    if record is not None:
+        yield record
 
 
 def source_digest(repository):
@@ -48,14 +59,13 @@ def scan(repository, directory, binary):
                                 cwd=repository, stdout=subprocess.PIPE, text=True)
         try:
             current, records = None, []
-            for line in proc.stdout:
-                data = json.loads(line)
+            for data in detached_records(proc.stdout, domain.__getitem__):
                 module = data["module"]
                 if current is not None and module != current:
                     save_extraction(plan, current, records)
                     records = []
                 current = module
-                records.append(finish_record(data, domain[module]))
+                records.append(data)
             if proc.wait():
                 raise ValueError("IE-C044 olean extraction failed")
             if current is not None:

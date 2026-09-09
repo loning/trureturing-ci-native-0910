@@ -42,15 +42,14 @@ def lean(repository, directory, program, args, label, env):
         result = run([str(native), *map(str, args)], directory, label, cwd=repository, env=env,
                      budget_gb=1 if program == "scan.lean" else 0.5)
         if program == "scan.lean":
-            from extraction import finish_record
+            from extraction import detached_records
             path = pathlib.Path(args[2])
             temporary = path.with_suffix(".finished")
             with path.open() as source, temporary.open("wb") as out:
                 from streaming import canonical
-                for line in source:
-                    row = json.loads(line)
-                    out.write(canonical(finish_record(row, "tools/lean-inspector/" +
-                        row["module"].replace(".", "/") + ".lean")))
+                for row in detached_records(source, lambda module: "tools/lean-inspector/" +
+                        module.replace(".", "/") + ".lean"):
+                    out.write(canonical(row))
             os.replace(temporary, path)
         return result
     return run([binary, "-DmaxRecDepth=100000", "-DmaxHeartbeats=0", "--run",
@@ -92,8 +91,9 @@ def membership_case(repository, directory, label, roots, keys, discovery=None):
     result = read(output_path)
     result["rows"] = [json.loads(line) for line in pathlib.Path(str(output_path) + ".rows.jsonl").open()]
     result["scopes"] = [[root, [result["module_names"][i] for i in indices]] for root, indices in result["scopes"]]
-    from incremental import BATCH_MODULE_BOUND
+    from incremental import BATCH_KEY_BOUND, BATCH_MODULE_BOUND
     result["batch_module_bound"] = BATCH_MODULE_BOUND
+    result["batch_key_bound"] = BATCH_KEY_BOUND
     # This small fixture view also serves the independent candidate command.
     write(output_path, result)
     return result

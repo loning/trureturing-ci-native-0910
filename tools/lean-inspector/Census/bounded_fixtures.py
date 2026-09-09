@@ -30,13 +30,12 @@ def main (args : List String) : IO Unit := do
     constNames := constants.map (·.name), constants }
   saveModuleData path `Fixture.Noise data
 ''')
-    # Both arms include the same real maximum-size module. The envelope is the
-    # largest active olean plus retained hits, not the sum of scanned constants.
+    # Both arms scan the same real domain. File size alone is not a proxy for
+    # the reader's maximum active working set; measure the actual index peak.
     manifest = read(directory / "manifest.json")
-    largest = max(manifest, key=lambda m: sum(pathlib.Path(p).stat().st_size for p in m[1]))
     ballast = folder / "Noise.olean"
     write(folder / "request.json", {"keys": []})
-    write(folder / "manifest.json", [largest, ["Fixture.Noise", [str(ballast)]]])
+    write(folder / "manifest.json", manifest + [["Fixture.Noise", [str(ballast)]]])
     measurements = []
     for count in [0, 50000]:
         label = f"constants-{count}"
@@ -51,7 +50,7 @@ def main (args : List String) : IO Unit := do
                              "wall_seconds": measurement["wall_seconds"], "index_bytes": output.stat().st_size})
     assert (folder / "constants-0.jsonl").read_bytes() == (folder / "constants-50000.jsonl").read_bytes(), "streamNonEvidenceConstantBound"
     result = {"name": "non_evidence_constants", "check": "streamNonEvidenceConstantBound", "status": "passed",
-              "largest_module": largest[0], "measurements": measurements, "retained_bytes_identical": True}
+              "baseline_modules": len(manifest), "measurements": measurements, "retained_bytes_identical": True}
     write(folder / "result.json", result)
     return result
 

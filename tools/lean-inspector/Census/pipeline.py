@@ -72,6 +72,21 @@ def read_keys(data):
     return value
 
 
+def read_inventory(path):
+    from report_stream import fields
+    metadata, modules = {}, []
+
+    def nodes():
+        for field, value in fields(path):
+            if field == "nodes":
+                modules.append(value["repo_path"].removesuffix(".lean").replace("/", "."))
+                yield value
+            else:
+                metadata[field] = value
+    keys = frozen_keys({"nodes": nodes()})
+    return metadata, keys, sorted(modules)
+
+
 def exported_path(log):
     receipts = [line for line in log.splitlines() if line.startswith("TRUTH_EXPORT ")]
     if len(receipts) != 1 or not receipts[0].partition(" out=")[2]:
@@ -139,18 +154,18 @@ def execute(options):
             step(["make", "truth-export", f"OUT={directory / 'truth'}", f"LEAN_REPORT={options.lean_report}"],
                  "truth_export", build=True)
             report_path = exported_path((directory / "logs/truth_export.log").read_text())
-        report_bytes = report_path.read_bytes()
-        report = json.loads(report_bytes)
+        report, all_keys, report_modules = read_inventory(report_path)
         head = report["source_commit"]
         if not options.fixture_truth_export and head != subprocess.check_output(
                 ["git", "rev-parse", "HEAD"], cwd=repository, text=True).strip():
             raise ValueError("IE-C044 export revision differs from environment HEAD")
-        all_keys = frozen_keys(report)
         keys = [key for key in all_keys if key[0] == options.prefix or key[0].startswith(options.prefix + ".")]
         if not keys:
             raise ValueError("no frozen theorem keys selected")
+        with report_path.open("rb") as source:
+            report_digest = "sha256:" + hashlib.file_digest(source, "sha256").hexdigest()
         request = {"head": head, "keys": keys, "report": str(report_path),
-                   "report_sha256": "sha256:" + hashlib.sha256(report_bytes).hexdigest()}
+                   "report_sha256": report_digest}
         write(directory / "request.json", request)
         step([sys.executable, str(repository / "tools/lean-inspector/Census/phases.py"),
               "native", str(repository), str(directory)], "native_build", build=True)
@@ -158,7 +173,7 @@ def execute(options):
         io_phase("enumerate", "tracked_domain")
         domain = read(directory / "domain.json")
         if options.fixture_truth_export:
-            modules = sorted(node["repo_path"].removesuffix(".lean").replace("/", ".") for node in report["nodes"])
+            modules = report_modules
         else:
             modules = [m for m in domain if m == options.prefix or m.startswith(options.prefix + ".")]
         roots, assignment = root_definitions(modules, keys, [])
@@ -199,6 +214,7 @@ def execute(options):
                      extraction_cache=read(directory / "extraction.json"),
                      validation_cache={k: validation[k] for k in ["hits", "misses", "revalidated_keys"]},
                      batches={"bound": validation["receipt"]["bound"],
+                              "key_bound": validation["receipt"]["key_bound"],
                               "count": len(validation["receipt"]["batches"]),
                               "executed": len(validation["executions"])},
                      collisions={"total": len(membership["collisions"]),

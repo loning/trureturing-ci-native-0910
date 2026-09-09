@@ -5,7 +5,7 @@ import json
 import pathlib
 import subprocess
 
-from incremental import BATCH_MODULE_BOUND, atomic_json, candidate_batches, module_digests, validation_key
+from incremental import BATCH_KEY_BOUND, BATCH_MODULE_BOUND, atomic_json, candidate_batches, module_digests, validation_key
 from streaming import canonical, closure, digest
 
 COMMAND = "LeanInformationAudit.Census.Command"
@@ -63,24 +63,28 @@ def prepare(repository, directory, membership, request, *, bound=BATCH_MODULE_BO
         else:
             missing.append(key)
     return {"planned": planned, "execute": candidate_batches(missing, imports, graph, bound), "bound": bound,
+            "key_bound": BATCH_KEY_BOUND,
             "hits": hits, "misses": missing, "entries": entries, "source_inputs": source_inputs,
             "addresses": addresses, "inputs": used_inputs, "cache": cache, "scopes": scopes}
 
 
 def run_batches(repository, directory, membership, request, plan, step, lean_binary):
+    from report_stream import fields
     executions = []
-    full_report = json.loads(pathlib.Path(request["report"]).read_bytes())
     for number, batch in enumerate(plan["execute"]):
         folder = directory / "batches" / f"{number:04d}"
         folder.mkdir(parents=True)
         owners = {key[0] for key in batch["keys"]}
         wanted = {key[2] for key in batch["keys"]}
-        selected = []
-        for node in full_report["nodes"]:
+        selected, report = [], {}
+        for field, node in fields(request["report"]):
+            if field != "nodes":
+                report[field] = node
+                continue
             declarations = [d for d in node["declarations"] if d["statement_id"] in wanted]
             if declarations:
                 selected.append(dict(node, declarations=declarations))
-        report = dict(full_report, nodes=selected)
+        report["nodes"] = selected
         report_path = folder / "report.json"
         atomic_json(report_path, report)
         batch_request = dict(request, keys=batch["keys"], report=str(report_path),
@@ -90,7 +94,7 @@ def run_batches(repository, directory, membership, request, plan, step, lean_bin
         atomic_json(folder / "index.json", {"candidate_keys": batch["keys"], "named": membership["named"],
             "assignment": {owner: membership["assignment"][owner] for owner in owners},
             "scopes": [[root, plan["scopes"][root]] for root in sorted(roots)],
-            "batch_module_bound": plan["bound"]})
+            "batch_module_bound": plan["bound"], "batch_key_bound": plan["key_bound"]})
         output = folder / "candidates.json"
         driver = folder / "Candidates.lean"
         driver.write_text("".join("import " + module + "\n" for module in batch["imports"]) +
@@ -103,14 +107,18 @@ def run_batches(repository, directory, membership, request, plan, step, lean_bin
         if (receipt["rows_sha256"] != "sha256:" + hashlib.sha256(output.read_bytes()).hexdigest()
                 or receipt["head"] != request["head"]
                 or receipt["report_sha256"] != batch_request["report_sha256"]
-                or value["environment_modules"] > plan["bound"]):
+                or value["environment_modules"] > plan["bound"]
+                or len(value["entries"]) > plan["key_bound"]):
             raise ValueError("IE-C044 candidate batch receipt mismatch or module bound exceeded")
         if sorted(row["statement_id"] for row in value["entries"]) != sorted(wanted):
             raise ValueError("IE-C044 candidate batch does not cover its requested keys")
+        keyed_sources = dict(value["key_source_inputs"])
+        if set(keyed_sources) != wanted:
+            raise ValueError("IE-C044 candidate provenance does not cover its requested keys")
         for row in value["entries"]:
             identity = row["statement_id"]
             atomic_json(plan["cache"] / (plan["addresses"][identity][7:] + ".json"), {
-                "inputs": plan["inputs"][identity], "row": row, "source_inputs": value["source_inputs"]})
+                "inputs": plan["inputs"][identity], "row": row, "source_inputs": keyed_sources[identity]})
         plan["entries"].extend(value["entries"])
         plan["source_inputs"].extend(value["source_inputs"])
         executions.append({"keys": batch["keys"], "receipt": receipt})
@@ -120,7 +128,7 @@ def run_batches(repository, directory, membership, request, plan, step, lean_bin
     atomic_json(directory / "candidates.json", result)
     record = {"hits": len(plan["hits"]), "misses": len(plan["misses"]),
               "revalidated_keys": plan["misses"], "executions": executions,
-              "receipt": {"bound": plan["bound"], "batches": plan["planned"],
+              "receipt": {"bound": plan["bound"], "key_bound": plan["key_bound"], "batches": plan["planned"],
                 "cache_keys": sorted(plan["addresses"].items()),
                 "result_sha256": digest(result)}}
     atomic_json(directory / "validation.json", record)

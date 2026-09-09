@@ -10,6 +10,7 @@ from streaming import canonical, closure, digest
 # Fixed module-count safety bound; remeasure at a toolchain/evidence-domain change.
 # The run receipt records both this bound and each actual Environment peak.
 BATCH_MODULE_BOUND = 5600
+BATCH_KEY_BOUND = 128
 
 
 def atomic_json(path, value):
@@ -60,12 +61,14 @@ def candidate_batches(keys, owner_imports, graph, bound=BATCH_MODULE_BOUND):
         scope = set(closure(graph, required))
         if len(scope) > bound:
             raise ValueError(f"IE-C044 candidate batch owner={owner} modules={len(scope)} bound={bound}")
-        if current_keys and len(modules | scope) > bound:
-            batches.append({"keys": current_keys, "imports": sorted(imports), "modules": sorted(modules)})
-            current_keys, imports, modules = [], set(), set()
-        current_keys.extend(grouped[owner])
-        imports.update(required)
-        modules.update(scope)
+        for start in range(0, len(grouped[owner]), BATCH_KEY_BOUND):
+            chunk = grouped[owner][start:start + BATCH_KEY_BOUND]
+            if current_keys and (len(modules | scope) > bound or len(current_keys) + len(chunk) > BATCH_KEY_BOUND):
+                batches.append({"keys": current_keys, "imports": sorted(imports), "modules": sorted(modules)})
+                current_keys, imports, modules = [], set(), set()
+            current_keys.extend(chunk)
+            imports.update(required)
+            modules.update(scope)
     if current_keys:
         batches.append({"keys": current_keys, "imports": sorted(imports), "modules": sorted(modules)})
     return batches

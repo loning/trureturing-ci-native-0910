@@ -117,22 +117,27 @@ private unsafe def registryRecords (data : ModuleData) : Json := Id.run do
 @[noinline] private unsafe def emitData (moduleName part : String) (data : ModuleData)
     (keys : Std.HashSet Name) (out : IO.FS.Stream) : IO Unit := do
   let mut named := #[]
-  let mut owners := #[]
   for info in data.constants do
-    if keys.contains info.name then
-      owners := owners.push <| Json.mkObj [("name", nameJson info.name),
-        ("matches", toJson (CensusOwnership.moduleContainsTheorem data info)),
-        ("kind", toJson (if info.isTheorem then "theorem" else "other")),
-        ("name_key", toJson (encodeName info.name)),
-        ("statement_material", toJson (encodeStatement info))]
     if let some head := indexedHead info then named := named.push (namedRecord info head)
   let imports := data.imports.map fun entry => Json.mkObj [
     ("module", toJson entry.module.toString), ("all", toJson entry.importAll),
     ("exported", toJson entry.isExported), ("meta", toJson entry.isMeta)]
   out.putStrLn (Json.mkObj [("module", toJson moduleName), ("part", toJson part),
     ("is_module", toJson data.isModule), ("imports", Json.arr imports),
-    ("owners", Json.arr owners), ("named", Json.arr named),
+    ("owners", Json.arr #[]), ("named", Json.arr named),
     ("registries", registryRecords data)]).compress
+
+  -- Statement material is transient for ONE frozen constant. In particular,
+  -- never collect a module's statement strings before hashing them downstream.
+  for info in data.constants do
+    unless keys.contains info.name do continue
+    let owner := Json.mkObj [("name", nameJson info.name),
+      ("matches", toJson (CensusOwnership.moduleContainsTheorem data info)),
+      ("kind", toJson (if info.isTheorem then "theorem" else "other")),
+      ("name_key", toJson (encodeName info.name)),
+      ("statement_material", toJson (encodeStatement info))]
+    out.putStrLn (Json.mkObj [("module", toJson moduleName), ("part", toJson part),
+      ("owner", owner)]).compress
 
 /-- A noinline boundary releases all region-backed Name/Expr/JSON references
 before freeing parts in reverse dependency order. Parts are never loaded alone.
