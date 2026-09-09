@@ -56,3 +56,44 @@ No claim about primes congruent to 2 modulo 3, repetition formulas, arbitrary
 chains, OEIS column sequences, or the coefficient-2 circle equation A390583.
 No claim that the supplied enumeration proves an unbounded statement. No claim
 of completed proof, library exhaustiveness, build success or freeze yet.
+
+## Search batch 2 and cache receipt
+
+- `make lean-cache-ensure` EXIT=0: status=seeded, method=clonefile,
+  donor=/Users/chronoai/trureturing, clonefile_attempts=1, stamp_miss=null,
+  project_olean_state=warm, mathlib_olean_state=warm, missing mathlib oleans=0.
+  Toolchain is v4.33.0; mathlib HEAD is
+  db584cd6d46c92f209a44c0f1c829460d327499d.
+- Read the public statements of the five candidate D5 modules above: finite CRT
+  gluing, rational recovery from all valuations, deeply-composite rank bounds,
+  totient LCM jumps and two-squares classification do not supply the primitive
+  reciprocal-denominator identity or the coefficient-3 congruence. Their general
+  public results were inspected, not excluded by topic name.
+- Mathlib search for Descartes/Soddy/Gosset found only the polynomial rule of signs.
+  Read the full public Finset gcd/lcm API, including lcm_dvd, dvd_lcm, gcd_dvd,
+  dvd_gcd, lcm_ne_zero_iff, extract_gcd and gcd_div_eq_one. Read padicValNat.mul,
+  div_of_dvd, pow, and divisibility/valuation equivalences. Also found binary
+  Nat.div_lcm_eq_div_gcd; it is the opposite quotient identity and does not
+  directly establish primitivity of L/r. We will use the general divisibility API.
+- Opened https://oeis.org/A390148/internal, revision 23 (2025-11-17), and read all
+  fields. The coefficient-3 equation matches exactly. The main comment still
+  states the 3-adic clause as observed for 1000 rows and conjectured for infinity.
+  Author Charles L. Hohn, 2025-10-26. Its listed links/columns are data or the
+  other excluded clauses; their full inspection remains supplied triage evidence,
+  not claimed as this worker's independent reading.
+- GitHub code search `A390148 language:Lean` and `Descartes sphere language:Lean`
+  both returned []. Broader `Descartes language:Lean` returned polynomial rule of
+  signs and Apollonian circle-packing files, not the sphere theorem. No third-party
+  file is imported or claimed verified on the basis of search snippets.
+- Opened https://arxiv.org/search/?query=A390148&searchtype=all : explicitly
+  produced no results. Google HTML queries returned only a JavaScript redirect
+  page; Bing RSS returned unrelated results and is discarded as search evidence.
+  Search capability is available via GitHub, arXiv and direct OEIS inspection;
+  generic web-engine searches are not claimed complete.
+- dominating_theorem_search: not-found-in-searched-scope. No direct existing
+  proof found in these inspected sources; retain first tier, without claiming
+  global priority or exhaustive absence.
+- Directory counts before Lean creation: D5/S3/Arith has 34 direct files,
+  Blueprint/D5/S3/Arith has 58 including projections. Use a new Descartes child
+  bucket (0 prior files). docs/reports has 47 direct files including this report.
+  No lower AGENTS.md/CLAUDE.md was found under the edited content directories.
