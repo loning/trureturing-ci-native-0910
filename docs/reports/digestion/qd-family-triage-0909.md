@@ -254,3 +254,18 @@ make -f Makefile -f /var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-r
 [b3-01 源码](qd-family-triage-0909/attempt-2/b3-01.lean)、[全部日志](qd-family-triage-0909/attempt-2/b3-01.log)：`make lean` EXIT=2，104.06240925 秒。失败已定位为 `Matrix` 与裸函数的透明度/显式 `Matrix.of` 绑定、四块展开、`Set.Infinite.mono` 参数方向；例如原文 `The target expression is not type-correct under the implicit transparency level`，并点名 `Fin 1 → Fin 1 → ℝ` 与 `Matrix (Fin 1) (Fin 1) ℝ`。这些是 API/工作量问题，不能判 no。留数目标的尾部空 `simp` 只报 `simp made no progress`，也不是数学缺陷。四条错误恢复声明含 `sorryAx`，一律不算成功证据。
 
 预登记 B3 路线 v2（在继续证明前）：行列式路线仍为 Lagrange + Schur。符号路线改查一般 Laguerre 不等式 `q′(x)²−q(x)q″(x)≥0`：若必须通过实线性因子的乘法闭包/归纳建立，它是拟议逃逸见证；若被上游直接实例化或规范化吞掉，则撤销该候选并判 bind-only。只在完整公开 B3 的 elaborate 活依赖闭包满足四项时才允许判 content；当前候选未认证。
+
+B3 第二次 [源码](qd-family-triage-0909/attempt-2/b3-02.lean) / [日志](qd-family-triage-0909/attempt-2/b3-02.log)：EXIT=2，80.672692042 秒；矩阵块已展开，余下 `⊢ (if i = j then t i else 0) = if i = j then t j else 0`、`sub_apply` 重名和集合成员展开仍属规范化。对数导数接口留下的真实符号目标为：
+
+```text
+hsplit : q.Splits
+hcrit : eval x (derivative q) = 0
+hsecond : eval x (derivative (derivative q)) ≠ 0
+hx : ¬eval x q = 0
+hlog : 0 = (Multiset.map (fun z => 1 / (x - z)) q.roots).sum
+⊢ 0 ≤ -↑(n + 2) * eval x q / eval x (derivative (derivative q))
+```
+
+这定位了路线 v2 所要解决的目标，尚非 no 判词。此后先顺序运行已准备的推论诊断，再回 B3 装配，未并发构建。
+
+推论首次 [源码](qd-family-triage-0909/attempt-2/descent-01.lean) / [日志](qd-family-triage-0909/attempt-2/descent-01.log)：EXIT=2，82.817306 秒。`reflect_real_iff`、`positive_derivative` 已仅标准三公理；整次错误来自不存在的 `revAt_self`、两个除法符号引理名、Prop 顺序与蕴含转换、`Nat.find` 别名改写，以及未把 `d≥2` 提供给严格正性算术。日志中的 `⊢ 0 ≤ z.re`、`⊢ z.re < 0` 均已有正确符号的非零分母前提；它们是工作量，不能据此判数学缺陷。所有错误恢复的 `sorryAx` 声明均排除。

@@ -1,0 +1,86 @@
+COMMAND: ["make", "-f", "Makefile", "-f", "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/probe.mk", "lean", "PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean"]
+LEAN_CACHE {"status":"present","worktree":"/Users/auricstudio/trureturing-u1bridge-0909","donor":null,"method":"none","reason":null,"stamp_miss":null,"pin_sha256":"sha256:6c4c682ffba051b5744fe7a75ccc99d7f3b20227b3b026f392f3315be0adaa4e","clonefile_errno":null,"clonefile_errnos":[],"clonefile_attempts":0,"clonefile_cleanup_error":null,"mathlib_missing_olean_files":0,"mathlib_missing_olean_samples":[],"archive_status":"not_attempted","archive_mode":null,"archive_skip_reason":"project olean state is warm","archive_reason":null,"archive_producer_commit_sha":null,"archive_workflow_run_id":null,"mathlib_olean_state":"warm","mathlib_olean_probe_error":null,"project_olean_state":"warm","project_olean_probe_error":null}
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:18:37: error: unsolved goals
+case inr.inr
+n : ℕ
+a : ℝ
+t eta : Fin (n + 1) → ℝ
+i j : Fin (n + 1)
+⊢ (if i = j then t i else 0) = if i = j then t j else 0
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:26:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:30:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:46:13: error: Ambiguous term
+  sub_apply
+Possible interpretations:
+  _root_.sub_apply : ∀ (f g : ?m.361) (x : ?m.362), (f - g) x = f x - g x
+  
+  Matrix.sub_apply : ∀ (A B : Matrix ?m.361 ?m.362 ?m.363) (i : ?m.361) (j : ?m.362), (A - B) i j = A i j - B i j
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:46:2: error: `simp` made no progress
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:72:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  eval x (arrow n a t fun i => -↑(n + 2) * eval (t i) q / eval (t i) (derivative (derivative q))).charpoly
+in the target expression
+  x ∈
+    {x |
+      eval x (arrow n a t fun i => -↑(n + 2) * eval (t i) q / eval (t i) (derivative (derivative q))).charpoly =
+        eval x q}
+
+n : ℕ
+q : ℝ[X]
+a : ℝ
+t : Fin (n + 1) → ℝ
+ht : Function.Injective t
+hdeg : q.natDegree ≤ n + 2
+hmonic : q.coeff (n + 2) = 1
+hlinear : q.coeff (n + 1) = -a
+hcrit : ∀ (i : Fin (n + 1)), eval (t i) (derivative q) = 0
+heta : ∀ (i : Fin (n + 1)), 0 ≤ -↑(n + 2) * eval (t i) q / eval (t i) (derivative (derivative q))
+x : ℝ
+hx : x ∈ Set.univ \ Set.range t
+hxt : ∀ (i : Fin (n + 1)), x ≠ t i
+⊢ x ∈
+    {x |
+      eval x (arrow n a t fun i => -↑(n + 2) * eval (t i) q / eval (t i) (derivative (derivative q))).charpoly =
+        eval x q}
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:86:2: error: unsolved goals
+case neg
+n : ℕ
+q : ℝ[X]
+x : ℝ
+hsplit : q.Splits
+hcrit : eval x (derivative q) = 0
+hsecond : eval x (derivative (derivative q)) ≠ 0
+hx : ¬eval x q = 0
+hlog : 0 = (Multiset.map (fun z => 1 / (x - z)) q.roots).sum
+⊢ 0 ≤ -↑(n + 2) * eval x q / eval x (derivative (derivative q))
+case neg
+n : ℕ
+q : ℝ[X]
+x : ℝ
+hsplit : q.Splits
+hcrit : eval x (derivative q) = 0
+hsecond : eval x (derivative (derivative q)) ≠ 0
+hx : ¬eval x q = 0
+hlog : 0 = (Multiset.map (fun z => 1 / (x - z)) q.roots).sum
+⊢ 0 ≤ -↑(n + 2) * eval x q / eval x (derivative (derivative q))
+'QdB3Probe.arrow_hermitian' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'QdB3Probe.arrow_schur' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'QdB3Probe.b3_charpoly_target' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'QdB3Probe.b3_residue_sign_target' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+make: *** [qd-triage-probe] Error 2
+
+EXIT=2
+SECONDS=80.67269204200001
