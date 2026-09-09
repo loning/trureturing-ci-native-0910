@@ -49,7 +49,8 @@ atom judgment is committed and pushed before advancing to the next one.
 
 ## Progress
 
-`screened: 3 / 7`. Completed: M4 readback, Schur minimum, reflected-pair disk.
+`screened: 4 / 7`. Completed: M4 readback, Schur minimum, reflected-pair disk,
+divisor parity.
 
 ## Evidence Coordinates
 
@@ -280,6 +281,71 @@ Probe receipt: `prior/probes/Disk90-v2.lean`, inherited `make lean` exit 0;
 decoded `prior/logs/Disk90-v2.log.gz` confirms `EXIT: 0`. Earlier `Disk90` exit 2
 is retained in the inherited run ledger and does not certify a statement.
 
+## Atom 104: Divisor Parity
+
+`atom_id: b923baf16e3404ffc7143c8258cd778915ab93409a40512c8d156d065ed1f61a`
+
+Complete raw body returned by `make show-atom` (exit 0, hash matches, no coverage):
+
+```text
+## 定理：它们是否相容，由总指数奇偶决定
+
+$$
+\boxed{
+\Gamma R
+=
+(-1)^{\Omega(N)}R\Gamma.
+}
+\tag{14}
+$$
+```
+
+| Source assertion | Original probe counterpart | Status | Domain and boundary check |
+| --- | --- | --- | --- |
+| Operator commutation law (14) on the divisor space | `Triage104.complement_parity`: `Gamma (reflect N f) d = (-1)^cardFactors N * reflect N (Gamma f) d` for every `f` and `d` dividing `N` | equivalent | `N : Nat`, `N != 0` is the source's positive prime-factor product. All divisors and all complex wavefunctions are quantified, not just `N = 5040` or one basis state. `d != 0` and `N/d != 0` are derived, not added. `N = 1`, `d = 1`, `d = N`, and square-root divisors are included. |
+| Heading: the sign is determined by total-exponent parity | The coefficient is exactly `(-1)^cardFactors N` | equivalent | Multiplicity count agrees with `sum_p v_p(N)`, not distinct-prime count and not integer parity of `N`. Even/odd sign is the usual value of this character. |
+
+`fidelity: full`. Source definitions (37738-37775) are diagonal multiplication
+by `(-1)^Omega(d)` and complementary-divisor permutation. Since the divisor
+complement is an involution (`N = d*(N/d)` with nonzero factors), its action on
+wavefunction coordinates is pullback by the same map. Every function on the
+finite divisor subtype extends to `Nat` (arbitrary values off the divisors), so
+the probe's equality for all `f,d` gives the operator identity by extensionality.
+The source's earlier involution/adjoint assertions and later separate (15) are
+outside these CAS bytes; this atom does not assert them as additional clauses.
+
+`upstream_declaration`: `ArithmeticFunction.cardFactors_mul`,
+`.lake/packages/mathlib/Mathlib/NumberTheory/ArithmeticFunction/Misc.lean:290`,
+states `Omega (m*n) = Omega m + Omega n` for both factors nonzero.
+The definition at 257 and the locally opened
+`ArithmeticFunction.cardFactors_eq_sum_factorization` at 318 in the same file
+identify the exact source notion of total exponent.
+`wrapper_thinness`: instantiate the multiplication theorem at `d` and `N/d`,
+rewrite their product to `N`, apply the parity character using `pow_add`, and
+cancel its square `((-1)^k)^2 = 1`. Evaluating the two named operators produces
+exactly these scalar factors and the same coordinate `f(N/d)`. The upstream
+arithmetic theorem supplies the entire relation between distinct arguments;
+the wrapper changes its presentation to the source's parity-operator interface.
+`necessity_citation`: the exact boxed `\Gamma R = (-1)^{\Omega(N)}R\Gamma`
+above requires the operator presentation, which is not the upstream arithmetic
+function's native API. No new independent arithmetic lemma is needed.
+`verdict: wrap-and-cover-eligible`;
+`admission_basis: rule-11-upstream-wrapper`. No (c) bridge basis is asserted.
+`proof_shape: bind-only`; `direct_frozen_dependencies: []`; `escape_witness: null`.
+`why_not_escape_witness`: complementary-factor additivity is supplied directly
+by Mathlib; parity normalization and coordinate extensionality add no witness.
+
+Search receipt R104:
+`rg -n '\b(cardFactors_mul|total_exponent|grading_reflection|parity_commutation)\b' D5 .lake/packages/mathlib/Mathlib/NumberTheory/ArithmeticFunction/Misc.lean`
+returned 10 lines (7 D5 uses, 3 Mathlib lines); the same regex finds the positive
+control declaration at 290. Full local windows 250-305 and 305-350 were read.
+A supplemental `theorem div_div_self|lemma div_div_self|cardFactors.*sum|sum.*cardFactors`
+search in Mathlib's `Data/Nat` and `NumberTheory/ArithmeticFunction` returned
+2 lines for the sum-factorization identification; no declaration named
+`div_div_self` was asserted from that limited search.
+Probe receipt: `prior/probes/Parity104.lean`; inherited `make lean` exit 0;
+decoded `prior/logs/Parity104.log.gz` ends in `EXIT: 0`.
+
 ## Push Receipts
 
 | Commit | Completed unit | Push result |
@@ -287,6 +353,7 @@ is retained in the inherited run ledger and does not certify a statement.
 | `6fca6dde2388835a42f0904463b50100e1aa6c36` | Preregistration | exit 0; remote lane created |
 | `b11e3e695343125c81d378db2fe79f5f5677d823` | Atom 75 | exit 0 |
 | `5f6b525177589b4fe361303687ba4a99932e0595` | Atom 89 | exit 0 |
+| `8a48ad8068a6e8abd3a237daf18e1542a7d3116b` | Atom 90 | exit 0 |
 
 ## Nonclaims
 
