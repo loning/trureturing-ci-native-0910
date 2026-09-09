@@ -74,10 +74,12 @@ implementation result as they become available.
 Caller-provided reading: independently enumerated every k=1..3000, with
 zero differences between Coincides and the classification. Triage-worker
 report: independently enumerated k=1..5000 with zero differences.
-This implementation worker independently enumerated k=0..5000 using a
+The first implementation worker independently enumerated k=0..5000 using a
 prime sieve and the original cross product, with zero differences. It also
 tested the divisor/quotient criterion for all 2≤t≤k/3, with zero differences.
-These three reports have separate provenance; only the last was run here.
+These three reports have separate provenance. The continuation worker
+independently repeated k=0..5000 with trial-division primality and checked
+4,160,835 eligible divisor pairs: zero differences on both checks.
 
 Nonempty positive example: k=14, m=12 gives (28 mod 12)/12=4/12=1/3,
 and (28 mod 3)/3=1/3. Both Coincides and the classification are true.
@@ -104,6 +106,12 @@ priority, independent review, or multi-model consensus is claimed. The
 Anderson--Frazier paper was blocked and not read; the full reference graph
 of doubled primes was not traversed. The caller and triage enumeration
 ranges above are attributed reports, not this worker's execution receipts.
+The inherited Lean proof and documentation are explicitly distinguished
+from the continuation's own source reading, binding probe, exact-fraction
+controls, and numerical checks in the Library note. Prior fragment-log
+success is inherited evidence; fresh kernel and repository gate receipts
+are reported separately there. Neither implementation worker constitutes
+an independent review of its own work.
 The source's separate first-coincidence observation and A343311 equality
 conjecture are not claimed proved. Full local preflight and unrelated
 tool tests are not claimed run. Source-to-definition fidelity and the
