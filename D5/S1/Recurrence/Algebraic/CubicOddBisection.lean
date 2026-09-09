@@ -50,4 +50,39 @@ private theorem fixed_equation (c : PS) (p : Polynomial PS) :
   exact (fixed_agree c p (n + 2) n (by omega)).trans
     (step_agree c p (fixed_agree c p (n + 1)) n (by omega)).symm
 
+private noncomputable def pA : Polynomial PS :=
+  3 * Polynomial.X - Polynomial.X ^ 2 +
+    Polynomial.C (3 * X) * Polynomial.X ^ 2 +
+    Polynomial.C (2 * X ^ 2) * Polynomial.X ^ 3
+private noncomputable def pB : Polynomial PS :=
+  8 * Polynomial.X ^ 2 - 3 * Polynomial.X - Polynomial.C (16 * X) * Polynomial.X ^ 3
+
+private theorem pA_eval (f : PS) :
+    pA.eval f = 3 * f - f ^ 2 + 3 * X * f ^ 2 + 2 * X ^ 2 * f ^ 3 := by
+  simp [pA]
+private theorem pB_eval (f : PS) :
+    pB.eval f = 8 * f ^ 2 - 3 * f - 16 * X * f ^ 3 := by
+  simp [pB]
+
+/-- The branch at 1 of xA³-A²+3xA+1=0, constructed by coefficient iteration. -/
+noncomputable def A : PowerSeries ℚ := 1 + 2 * X * fixedSeries 1 pA
+/-- The normalized inverse series, constructed independently by its own equation. -/
+noncomputable def B : PowerSeries ℚ := fixedSeries 1 pB
+
+theorem A_equation : constantCoeff A = 1 ∧ X * A ^ 3 - A ^ 2 + 3 * X * A + 1 = 0 := by
+  refine ⟨by simp [A], ?_⟩
+  have h := fixed_equation 1 pA
+  rw [pA_eval] at h
+  dsimp only [A]
+  linear_combination -4 * X * h
+
+theorem B_equation : constantCoeff B = 1 ∧ B * (1 - 4 * X * B) ^ 2 = 1 - 3 * X * B := by
+  have h := fixed_equation 1 pB
+  rw [pB_eval] at h
+  change B = 1 + X * (8 * B ^ 2 - 3 * B - 16 * X * B ^ 3) at h
+  refine ⟨?_, ?_⟩
+  · have hc := congrArg constantCoeff h
+    simpa using hc
+  · linear_combination h
+
 end D5.S1.Recurrence.Algebraic.CubicOddBisection
