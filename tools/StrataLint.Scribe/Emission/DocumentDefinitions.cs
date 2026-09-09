@@ -99,6 +99,16 @@ public static class DocumentDefinitions
                 $"Assembly {assembly.GetName().Name} contains no Scribe document definitions.");
         }
 
+        return RequireDistinctEmissionTargets(definitions);
+    }
+
+    /// Two definition classes in one `.scribe.cs` file necessarily carry the same GID, because
+    /// the GID is derived from `[CallerFilePath]` — and both then satisfy the path bijection,
+    /// which is why that bijection cannot catch them. This is where that state is rejected.
+    /// Extracted from the discovery body so the judgement can be pinned directly (#6337).
+    internal static ImmutableArray<DocumentDefinition> RequireDistinctEmissionTargets(
+        ImmutableArray<DocumentDefinition> definitions)
+    {
         var duplicate = definitions
             .GroupBy(static definition => definition.RelativePath.Value, StringComparer.Ordinal)
             .FirstOrDefault(static group => group.Count() > 1);

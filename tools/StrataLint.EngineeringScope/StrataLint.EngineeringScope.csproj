@@ -6,5 +6,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../StrataLint.Engine/StrataLint.Engine.csproj" />
+    <Compile Include="../StrataLint.Cli/Runtime/LeanCacheBudgetPolicy.cs" Link="LeanCacheBudgetPolicy.cs" />
   </ItemGroup>
 </Project>

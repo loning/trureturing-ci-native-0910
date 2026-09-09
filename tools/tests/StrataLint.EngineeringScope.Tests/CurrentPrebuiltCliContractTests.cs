@@ -8,15 +8,18 @@ namespace StrataLint.EngineeringScope.Tests;
 public sealed class CurrentPrebuiltCliContractTests
 {
     [Theory]
-    [InlineData("bound")]
-    [InlineData("changed-dll")]
-    [InlineData("changed-source")]
-    public void CurrentHandsOnlyValidatedCliToProducerWithoutRepeatingEngineering(string scenario)
+    [InlineData("bound", null, null)]
+    [InlineData("bound", "321", "654")]
+    [InlineData("changed-dll", null, null)]
+    [InlineData("changed-source", null, null)]
+    public void CurrentHandsOnlyValidatedCliToProducerWithoutRepeatingEngineering(string scenario, string? buildBudget, string? lockBudget)
     {
         if (OperatingSystem.IsWindows()) return;
         var root = TemporaryFileSystem.Directory.CreateTempSubdirectory("current-prebuilt-").FullName;
         var originalPath = Environment.GetEnvironmentVariable("PATH");
         var originalDeadline = Environment.GetEnvironmentVariable("PREFLIGHT_DEADLINE_AT");
+        var originalBuildBudget = Environment.GetEnvironmentVariable("STRATALINT_BUILD_TIMEOUT_SECONDS");
+        var originalLockBudget = Environment.GetEnvironmentVariable("STRATALINT_LOCK_TIMEOUT_SECONDS");
         try
         {
             const string project = "tools/tests/Probe/Probe.csproj";
@@ -33,11 +36,16 @@ public sealed class CurrentPrebuiltCliContractTests
                 [[ "${STRATALINT_LEAN_CLI_DLL:-}" -ef "$PWD/tools/StrataLint.Cli/bin/Release/net10.0/StrataLint.dll" ]] || exit 92
                 [[ -f "$STRATALINT_LEAN_CLI_DLL" ]] || exit 93
                 printf 'validated-cli\n' > build/producer.log
+                printf '%s\n' "${STRATALINT_BUILD_TIMEOUT_SECONDS:-unset}" > build/producer-budget
+                printf '%s\n' "${STRATALINT_LOCK_TIMEOUT_SECONDS:-unset}" > build/producer-lock-budget
+                printf '%s\n' "${STRATALINT_LEAN_REPORT_LOG_DIR:-unset}" > build/producer-log-dir
                 exit 23
                 """);
             WriteExecutable("build/bin/dotnet", "printf 'unexpected-common-work\n' >> build/repeated.log\nexit 94");
             Environment.SetEnvironmentVariable("PATH", Path.Combine(root, "build/bin") + Path.PathSeparator + originalPath);
             Environment.SetEnvironmentVariable("PREFLIGHT_DEADLINE_AT", null);
+            Environment.SetEnvironmentVariable("STRATALINT_BUILD_TIMEOUT_SECONDS", buildBudget);
+            Environment.SetEnvironmentVariable("STRATALINT_LOCK_TIMEOUT_SECONDS", lockBudget);
             var binaries = new[] { CommonExecutionEvidence.CliPath, CommonExecutionEvidence.ScribePath,
                 "tools/StrataLint.EngineeringScope/bin/Release/net10.0/StrataLint.EngineeringScope.dll" };
             foreach (var binary in binaries) Write(binary, "synthetic candidate binary");
@@ -56,6 +64,7 @@ public sealed class CurrentPrebuiltCliContractTests
             CommonExecutionEvidence.SealEngineering(root, binaries, CommonExecutionEvidence.EngineeringSteps
                 .Select(name => new StageStep(name, 0, 0, "executed", "build/engineering.log")).ToArray());
             var before = CommonExecutionEvidence.Hash(Path.Combine(root, CommonExecutionEvidence.EngineeringPath));
+            Write("build/ci/logs/current/lean-inspector/stale.exit.log", "0\n");
             if (scenario == "changed-dll") Write(CommonExecutionEvidence.CliPath, "changed binary");
             if (scenario == "changed-source") Write(project, "<Project />");
 
@@ -70,6 +79,11 @@ public sealed class CurrentPrebuiltCliContractTests
                 Assert.Equal("lean-report", step.GetProperty("name").GetString());
                 Assert.Equal(23, step.GetProperty("raw_exit").GetInt32());
                 Assert.Equal("validated-cli\n", TemporaryFileSystem.File.ReadAllText(Path.Combine(root, "build/producer.log")));
+                Assert.Equal((buildBudget ?? "21600") + "\n", TemporaryFileSystem.File.ReadAllText(Path.Combine(root, "build/producer-budget")));
+                Assert.Equal((lockBudget ?? "21600") + "\n", TemporaryFileSystem.File.ReadAllText(Path.Combine(root, "build/producer-lock-budget")));
+                Assert.Equal(Path.Combine(root, "build/ci/logs/current/lean-inspector") + "\n",
+                    TemporaryFileSystem.File.ReadAllText(Path.Combine(root, "build/producer-log-dir")));
+                Assert.False(TemporaryFileSystem.File.Exists(Path.Combine(root, "build/ci/logs/current/lean-inspector/stale.exit.log")));
             }
             else
             {
@@ -97,6 +111,8 @@ public sealed class CurrentPrebuiltCliContractTests
         {
             Environment.SetEnvironmentVariable("PATH", originalPath);
             Environment.SetEnvironmentVariable("PREFLIGHT_DEADLINE_AT", originalDeadline);
+            Environment.SetEnvironmentVariable("STRATALINT_BUILD_TIMEOUT_SECONDS", originalBuildBudget);
+            Environment.SetEnvironmentVariable("STRATALINT_LOCK_TIMEOUT_SECONDS", originalLockBudget);
             TemporaryFileSystem.Directory.Delete(root, recursive: true);
         }
     }

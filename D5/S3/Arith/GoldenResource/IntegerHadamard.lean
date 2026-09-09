@@ -65,6 +65,30 @@ private theorem complex_hadamard {A : Matrix n n ℂ} (hA : A.PosDef) :
     exact ⟨fun h => congrArg Real.log h.symm,
       fun h => (Real.log_injOn_pos hprod hA.det_pos.1 h).symm⟩
 
+/-- Hadamard's determinant inequality over the reals, together with its equality case. -/
+theorem real_posDef_hadamard {A : Matrix n n ℝ} (hA : A.PosDef) :
+    A.det ≤ ∏ i, A i i ∧ (A.det = ∏ i, A i i ↔ A = diagonal A.diag) := by
+  obtain ⟨hle, heq⟩ := complex_hadamard (complex_posDef hA)
+  have hdet : (A.map Complex.ofReal).det.re = A.det := by
+    have h : (A.map Complex.ofReal).det = (A.det : ℂ) := by
+      simpa [Complex.ofRealHom] using (Complex.ofRealHom.map_det A).symm
+    rw [h]
+    simp
+  have hprod : (∏ i, ((A.map Complex.ofReal) i i).re) = ∏ i, A i i := by simp
+  rw [hdet, hprod] at hle heq
+  refine ⟨hle, ?_, ?_⟩
+  · intro h
+    have hc := heq.mp h
+    ext i j
+    have hij := congrArg (fun M : Matrix n n ℂ => M i j) hc
+    by_cases h' : i = j
+    · subst j
+      simp
+    · simpa [Matrix.diagonal_apply, h', Complex.ofReal_eq_zero] using hij
+  · intro h
+    conv_lhs => rw [h]
+    simp only [Matrix.det_diagonal, Matrix.diag]
+
 /-- A real positive definite integer matrix has positive integer diagonal and determinant.
 Its determinant is bounded by the diagonal product, with equality exactly for a diagonal matrix. -/
 theorem integer_posDef_hadamard (T : Matrix n n ℤ)

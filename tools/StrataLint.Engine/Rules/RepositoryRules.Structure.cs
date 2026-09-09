@@ -62,7 +62,7 @@ internal static partial class RepositoryRules
 
     internal const int ArtifactSoftLineLimit = 600;
 
-    internal const int DirectoryFileLimit = 24;
+    internal const int DirectoryFileLimit = 48;
 
     // The repository-wide capacity net tolerates a band above the admission limit.
     // Capacity is pressure, not correctness: an overfull bucket is a signal to split
@@ -77,7 +77,11 @@ internal static partial class RepositoryRules
     // Thresholds raised 12/24 -> 24/48 by the owner on 2026-08-30 (wave-71 readings: nine
     // Weil/Analytic/Observer buckets at 12 and Weil/Budget at 13 within one day; the band
     // stays one admission limit wide).
-    internal const int DirectoryToleranceLimit = 48;
+    // Raised again 24/48 -> 48/96 by the owner on 2026-09-08 (issue #6405: D5/S3/Arith and
+    // D5/S1/Digit both sat exactly at 24, so three atoms whose text assigns a module to one of
+    // them had no path the rule would admit, and three lanes were rejected on placement with no
+    // available fix. The band still stays one admission limit wide).
+    internal const int DirectoryToleranceLimit = 96;
 
     // SL-003 capacity exclusions: theory inputs, the Lake manifest, the backfill
     // inventory, atomizer dialect registry, canonical CAS blobs, and generated Blueprint
@@ -102,6 +106,14 @@ internal static partial class RepositoryRules
         || (path.StartsWith("Blueprint/", StringComparison.Ordinal)
             && path.EndsWith(".md", StringComparison.Ordinal));
 
+    // The literature problem pool (spec §11.20.3) is a flat slug-addressed pool of registered
+    // candidates that grows one file per registered candidate. As the spec states, pool
+    // membership conveys no resolution status; it is never navigated as a content bucket.
+    // Spec line 83: "容量只约束骨骼". This exclusion applies to DIRECTORY occupancy only;
+    // dossiers stay bounded by the artifact line limits.
+    internal static bool IsDirectoryCapacityExcluded(string path) =>
+        IsCapacityExcluded(path) || ProblemPoolPaths.IsCanonicalPath(path);
+
     // The canonical artifact line count: newline-delimited lines, not counting a
     // trailing terminator. Shared with RepositoryCapacityAudit so both tiers agree exactly.
     internal static int CountArtifactLines(string text) =>
@@ -113,7 +125,7 @@ internal static partial class RepositoryRules
         var directories = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
         foreach (var path in paths)
         {
-            if (IsCapacityExcluded(path.Value))
+            if (IsDirectoryCapacityExcluded(path.Value))
             {
                 continue;
             }

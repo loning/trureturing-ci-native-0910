@@ -275,7 +275,9 @@ public static class QuestPdfWriter
         }
 
         return $"{label}. {citation.Authors} ({citation.Year}). {citation.Title}. "
-            + $"DOI: https://doi.org/{citation.Doi.Value}.";
+            + (citation.Doi is { } doi
+                ? $"DOI: https://doi.org/{doi.Value}."
+                : $"URL: {citation.Url!.AbsoluteUri}.");
     }
 
     private static bool IsTheoremClass(DescribeKind kind) =>

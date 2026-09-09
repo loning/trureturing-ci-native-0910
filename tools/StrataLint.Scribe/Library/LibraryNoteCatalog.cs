@@ -11,6 +11,7 @@ internal sealed record LibraryNote(
     int Year,
     string Title,
     Doi? Doi,
+    Uri? Url,
     string Claim,
     ImmutableArray<GidRef> StrataTouched,
     string License,
@@ -64,9 +65,8 @@ internal sealed class LibraryNoteCatalog
                 note.Authors,
                 note.Year,
                 note.Title,
-                note.Doi?.Value
-                    ?? throw new FormatException(
-                        $"{note.RelativePath} requires a DOI for academic citation")),
+                note.Doi?.Value,
+                note.Url?.AbsoluteUri),
             StringComparer.Ordinal);
 
     internal static LibraryNoteCatalog Load(string repositoryRoot)
@@ -178,7 +178,8 @@ internal sealed class LibraryNoteCatalog
 
         var metadata = (Dictionary<string, object?>)YamlSubsetParser.Parse(
             text[opening.Length..end]);
-        if (!metadata.Keys.ToHashSet(StringComparer.Ordinal).SetEquals(RequiredKeys))
+        if (!metadata.Keys.Where(static key => key != "url")
+                .ToHashSet(StringComparer.Ordinal).SetEquals(RequiredKeys))
         {
             throw new FormatException($"{relativePath} has missing or unknown metadata fields");
         }
@@ -207,6 +208,13 @@ internal sealed class LibraryNoteCatalog
             string value when Doi.TryCreate(value, out var parsed) => parsed,
             _ => throw new FormatException($"{relativePath} has a malformed DOI"),
         };
+        var url = metadata.ContainsKey("url")
+            ? LiteratureCitation.ParseStableUrl(RequiredLine(metadata, "url", relativePath))
+            : null;
+        if (doi is not null && url is not null)
+        {
+            throw new FormatException($"{relativePath} must select DOI or URL, not both");
+        }
         if (metadata["strata_touched"] is not List<object?> rawStrata)
         {
             throw new FormatException($"{relativePath} strata_touched must be a list");
@@ -223,6 +231,7 @@ internal sealed class LibraryNoteCatalog
             year,
             title,
             doi,
+            url,
             claim,
             strata,
             license,

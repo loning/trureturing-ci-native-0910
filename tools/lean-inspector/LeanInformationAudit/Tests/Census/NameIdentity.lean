@@ -5,8 +5,8 @@ open Lean.Meta Lean.Elab.Command
 
 namespace LeanInformationAudit.Tests.Census.NameIdentity
 
-def rowFor (name : Name) (id : String) : Sigma fun key : StatementKey => AnalysisDisposition key :=
-  ⟨⟨name, id⟩, .boundedFiniteTruncation {
+def rowFor (name : Name) (id : String) : Sigma fun key : StatementKey => CensusAssessment key :=
+  ⟨⟨name, id⟩, .certified <| .boundedFiniteTruncation {
     truncationFamily := ``Evidence.truncation
     bound := 12
     comparisonStatement := ``Evidence.comparison
@@ -48,11 +48,11 @@ run_cmd liftTermElabM do
 #eval [Name.mkSimple "#a.b", Name.str (Name.mkSimple "#a") "b",
     Name.num `A 3, Name.str `A "3", Name.anonymous].all fun name =>
   let key : StatementKey := ⟨`T, "id"⟩
-  let rows : Array (Sigma fun key : StatementKey => AnalysisDisposition key) := #[
-    ⟨key, .finiteOccurrence ⟨name, name, name, name, name⟩⟩,
-    ⟨key, .structuralOccurrence ⟨name, name, name, name, name⟩⟩,
-    ⟨key, .boundedFiniteTruncation ⟨name, 1, name, .transferred name⟩⟩,
-    ⟨key, .unreachable ⟨.noFinitePrimitiveBundle, name⟩⟩]
+  let rows : Array (Sigma fun key : StatementKey => CensusAssessment key) := #[
+    ⟨key, .certified <| .finiteOccurrence ⟨name, name, name, name, name⟩⟩,
+    ⟨key, .certified <| .structuralOccurrence ⟨name, name, name, name, name⟩⟩,
+    ⟨key, .certified <| .boundedFiniteTruncation ⟨name, 1, name, .transferred name⟩⟩,
+    ⟨key, .certified <| .unreachable ⟨.noFinitePrimitiveBundle, name⟩⟩]
   rows.all fun row => parseRow (dispositionRowJson row) == .ok row
 
 end LeanInformationAudit.Tests.Census.NameIdentity
