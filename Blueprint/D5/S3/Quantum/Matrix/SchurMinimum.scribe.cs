@@ -31,14 +31,16 @@ internal sealed class SchurMinimumDocument : IScribeDocumentDefinition
         Formula b = F.Id("B");
         Formula c = F.Id("C");
         Formula adjointB = Seq(b, Caret, Grp(Star));
-        Formula schur = Grp(a, Minus, b, Seq(c, Caret, Grp(Minus, D(1))), adjointB);
-        Formula pair = Seq(Open, x, Comma, y, Close);
+        Formula schur = Seq(Open, a, Minus, b,
+            Seq(c, Caret, Grp(Minus, D(1))), adjointB, Close);
+        Formula pair = Seq(Begin, Grp(F.Id("pmatrix")), x, RowBreak, y,
+            End, Grp(F.Id("pmatrix")));
         Formula block = Seq(Begin, Grp(F.Id("pmatrix")), a, Amp, b, RowBreak,
             adjointB, Amp, c, End, Grp(F.Id("pmatrix")));
         Formula energy = Seq(pair, Caret, Grp(Star), block, pair);
         Formula minimum = Seq(x, Caret, Grp(Star), schur, x);
         return Disp(Seq(Operatorname, Grp(F.Id("IsLeast")), Open,
-            OpenBrace, energy, Mid, y, InMacro,
+            OpenBrace, energy, Sp, Mid, Sp, y, Sp, InMacro, Sp,
             Seq(Mathbb, Grp(F.Id("C")), Caret, Grp(F.Id("n"))),
             CloseBrace, Comma, Sp, minimum, Close));
     }
