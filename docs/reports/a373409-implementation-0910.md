@@ -186,3 +186,26 @@ Full 的结构定义和生成构造器是陈述接口，不是额外公开定理
   与任务禁止自造 atom 的要求不相容；遵循任务明定的无 atom 路径，
   先调用同一 `deposit-header-check`，再调用 canonical `ledger-align --add`。
   不新建理论卷，不运行 ingest，不制造 coverage。
+
+## 无 atom 冻结收据
+
+- `deposit-header-check --target D5/S3/Arith/Congruence/NonsquarefreeAntirun.lean
+  --protected-base b1c34e4ffff0e67321c1ed9ec60b9eea741e239f` EXIT=0，
+  `DEPOSIT_HEADER_CHECKED SL-012`。
+- `ledger-align --add ... --candidate-lean-report .lake/build/stratalint/raw-lean-report.json`
+  EXIT=0，12.099秒，`selectors_considered=3922 changed=0 added=1 unchanged=3921 conflicts=0`。
+- Freeze event：`sha256:cbbedd981ae1435385ae7aad90134d1d1a84dcb6173d5e4ca3f238a01f880922`。
+- 模块 statement_id：`sha256:d158a0355abecd8b90f95edbb61931fe1599b28c0046dfe771064abbbe146b3a`。
+- 真值 DAG 直接冻结依赖 `prerequisite_frozen_node_ids=[]`，与上面的逐定理登记一致。
+- 最终形态为 deposit（无 atom），没有 ingest/cover，没有改动理论卷、atom 或消化账；
+  仅本题 Lean、Scribe及投影、文献笔记、报告与两个冻结工件，共7个新增文件。
+
+## 最终未主张栏
+
+不主张任意选出的非平方自由子列也有上界9；不主张九项对照是准入依据；
+不主张用有限筛查证明全称结论；不主张OEIS已更新，也未向OEIS发送消息；
+不主张已穷尽第三方文献或世界首次证明；未打开的hex文件、arXiv之外的广泛文献、
+OEIS所链接的论文及Google文档均为 ASSUMED-UNVERIFIED。
+不主张有独立评审票或多模型共识，不主张本席重跑了上游2,000,000平方筛；
+不主张本地通过等于CI三门通过。PR身份与其机器判词在runner最终工件中记录。
+任务止点按用户明确要求为PR开出；本报告不声称PR已合入dev。
