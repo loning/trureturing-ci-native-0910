@@ -182,3 +182,16 @@ exist. The actual APIs were opened in `Mathlib/Analysis/RCLike/Basic.lean`
   scalar simplification with `RCLike.nonneg_iff`, explicit real/imaginary
   projections and the upstream zero-imaginary-part theorem. No budget or
   premise change.
+
+### Second kernel reading
+
+The second external-Make probe exited 2 (`ATTEMPT/bind-only-02.log`). The
+explicit real/imaginary-part reduction passed. The matrix equality remained;
+both `Matrix.sub_apply` and `Matrix.mul_apply` were unused simp arguments.
+Thus the previous proposed `sub_apply` fix was not sufficient; no claim of
+success is retained. The actual goal compares two presentations of the same
+finite sums after `Matrix.mul_assoc`. The next test is definitional reduction
+(`rfl` after the two Unit cases), avoiding simplifier matching on unfolded
+matrix abbreviations. Failed second source is
+`ATTEMPT/U1BindProbe-02-failed.lean`. No content witness or missing mathematical
+prerequisite has been established by these elaboration failures.
