@@ -79,3 +79,26 @@ ReflectedSpectrum/ParityConditionedMoments，均需自供配对，不是 S(a)。
 Perm.sign 与 LGV 零命中；sign/prefix 的宽筛含注释及不相关含义，
 这些计数只证明搜索执行，不证明语义穷尽。
 完整 stdout、命令及退出码保存在 runner attempt 的 `d5-search.json` 和对应 txt。
+
+## 检索批次 2：钉版 Mathlib 与缓存
+
+`make lean-cache-ensure` EXIT=0：status=seeded，method=clonefile，
+clonefile_attempts=1，donor=/Users/chronoai/trureturing，stamp_miss=null，
+mathlib_missing_olean_files=0，project_olean_state=warm，mathlib_olean_state=warm；
+archive_status=not_attempted，archive_skip_reason=project olean state is warm。
+未设置 LAKE_JOBS；warm 收据不代替 make lean。
+
+命令模板 `rg -n '<pattern>' .lake/packages/mathlib/Mathlib`。
+匹配行数（不是声明数）：`\bsum_involution\b` 7；
+`\b(theorem|lemma) sign_[A-Za-z_]+` 115；`\bdet_apply\b` 53；
+`\bsum_comm\b` 95；`Lindström|Lindstrom|Gessel|Viennot|\bLGV\b` 0；
+`non.?intersecting|nonintersecting` 0；阳性对照 `\btheorem\b` 130789。
+零命中 exit=1，其余 exit=0，全部 stderr 为空。
+完整收据在 attempt 的 mathlib-search.json 与对应 txt。
+
+精确接口位于 GroupTheory/Perm/Sign.lean 的 sign_mul、sign_one、sign_swap，
+LinearAlgebra/Matrix/Determinant/Basic.lean 的 det_apply 与 det_apply'。
+后者逐位乘积的展开本身不处理依赖整个前缀的约束。
+sum_involution 由 to_additive 生成，文本计数不含它的生成声明头；
+后续编译 #check 才核对 elaborated 类型。
+此范围未命中目标；不主张整个数学文献中不存在等价定理。
