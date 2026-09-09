@@ -227,4 +227,81 @@ private theorem firstOddEquiv_sum (y : {y : List ℕ // IsZeroPrependedFirstSums
   simp only [firstOddEquiv, Equiv.trans_apply, Equiv.symm_apply_apply]
   exact row_weight r
 
+private theorem qualifying_sorted {y : List ℕ} (hy : IsZeroPrependedFirstSums y) :
+    y.Pairwise (· ≤ ·) := by
+  obtain ⟨s, hs, _, rfl⟩ := hy
+  exact firstSums_sorted 0 s (List.pairwise_cons.mpr ⟨by simp, hs⟩)
+
+private theorem qualifying_pos {y : List ℕ} (hy : IsZeroPrependedFirstSums y) :
+    ∀ x ∈ y, 0 < x := by
+  obtain ⟨s, _, hp, rfl⟩ := hy
+  exact firstSums_pos 0 s hp
+
+private noncomputable def firstListEquiv (n : ℕ) :
+    {p : Nat.Partition n // IsZeroPrependedFirstSums (p.parts.sort (· ≤ ·))} ≃
+      {y : {y : List ℕ // IsZeroPrependedFirstSums y} // y.val.sum = n} where
+  toFun p := ⟨⟨p.val.parts.sort (· ≤ ·), p.property⟩, by
+    have h := p.val.parts_sum
+    rw [← Multiset.sort_eq p.val.parts (· ≤ ·), Multiset.sum_coe] at h
+    exact h⟩
+  invFun y := ⟨⟨y.val.val, fun hx => qualifying_pos y.val.property _ hx,
+    by simpa using y.property⟩, by
+    simpa only [Multiset.coe_sort, List.mergeSort_eq_self _
+      (qualifying_sorted y.val.property)] using y.val.property⟩
+  left_inv p := by
+    apply Subtype.ext
+    exact Nat.Partition.ext (Multiset.sort_eq _ _)
+  right_inv y := by
+    apply Subtype.ext
+    apply Subtype.ext
+    exact (Multiset.coe_sort _ _).trans
+      (List.mergeSort_eq_self _ (qualifying_sorted y.val.property))
+
+private noncomputable def oddListEquiv (n : ℕ) :
+    {p : Nat.Partition n // ∀ x ∈ p.parts, ¬ Even x} ≃
+      {r : OddRows // r.val.val.sum = n} where
+  toFun p := ⟨⟨⟨p.val.parts.sort (· ≥ ·),
+    (Multiset.pairwise_sort _ _).sortedGE, by
+      intro x hx
+      exact p.val.parts_pos ((Multiset.mem_sort _).mp hx)⟩, by
+        intro x hx
+        exact p.property x ((Multiset.mem_sort _).mp hx)⟩, by
+          have h := p.val.parts_sum
+          rw [← Multiset.sort_eq p.val.parts (· ≥ ·), Multiset.sum_coe] at h
+          exact h⟩
+  invFun r := ⟨⟨r.val.val.val, fun hx => r.val.val.property.2 _ hx,
+    by simpa using r.property⟩,
+    r.val.property⟩
+  left_inv p := by
+    apply Subtype.ext
+    exact Nat.Partition.ext (Multiset.sort_eq _ _)
+  right_inv r := by
+    apply Subtype.ext
+    apply Subtype.ext
+    apply Subtype.ext
+    exact (Multiset.coe_sort _ _).trans
+      (List.mergeSort_eq_self _ r.val.val.property.1.pairwise)
+
+open scoped Classical in
+/-- Qualifying reversed partitions are equinumerous with odd-part partitions. -/
+theorem card_zeroPrependedFirstSums_eq_odds (n : ℕ) :
+    ((Finset.univ : Finset (Nat.Partition n)).filter
+      (fun p => IsZeroPrependedFirstSums (p.parts.sort (· ≤ ·)))).card =
+      (Nat.Partition.odds n).card := by
+  classical
+  let e := (firstListEquiv n).trans
+    ((firstOddEquiv.subtypeEquiv (fun y => by rw [firstOddEquiv_sum])).trans
+      (oddListEquiv n).symm)
+  simpa only [Fintype.card_subtype, Nat.Partition.odds, Nat.Partition.restricted]
+    using Fintype.card_congr e
+
+open scoped Classical in
+/-- The A392694 reversed-partition count is A000009, with no shift. -/
+theorem card_zeroPrependedFirstSums_eq_distincts (n : ℕ) :
+    ((Finset.univ : Finset (Nat.Partition n)).filter
+      (fun p => IsZeroPrependedFirstSums (p.parts.sort (· ≤ ·)))).card =
+      (Nat.Partition.distincts n).card :=
+  (card_zeroPrependedFirstSums_eq_odds n).trans
+    (Nat.Partition.card_odds_eq_card_distincts n)
+
 end D5.S1.Words.Compositions.ZeroPrependedFirstSumsOddParts
