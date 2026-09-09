@@ -95,3 +95,32 @@ Cache receipt: `status=seeded`, `method=clonefile`, donor
 `/Users/chronoai/trureturing`, `clonefile_attempts=1`,
 `project_olean_state=warm`, `mathlib_olean_state=warm`,
 `mathlib_missing_olean_files=0`; `make lean-cache-ensure` EXIT 0.
+
+### Follow-up before local proof
+
+Quoted Loogle query `"unrefinable"` returned count 0; positive control
+`"Finset.min'_mem"` returned count 1 with the expected type. This repairs the
+bare-query error above. The online API is therefore available and responsive.
+
+Retrieved 2601.10227 (15 pages) and 2206.04261 (28 pages), extracted every page
+with pypdf, and searched `disjoint`, `unique`, `family`, `families`, `decompos`,
+`least`, and `refinement`, reading the returned contexts. No disjoint-family
+uniqueness result occurred in those contexts. A relevant distinction:
+2601.10227, p.3, Proposition 1 proves that the smallest *refinable part* has a
+refinement into two missing parts; 2206.04261, p.2, attributes that reduction
+to ACCL23 Proposition 4. These start with an outside-sum refinement, not an
+arbitrary simultaneously chosen disjoint block family. They do not establish
+the forward implication sought here. We do not reproach or reprove that
+binary-refinement reduction. Full page-by-page reading is not claimed.
+
+`dominating_theorem_search: not-found-in-searched-scope`. The stopping condition
+has not been triggered by these searches. Proceed with the preregistered proof.
+
+Routing measurements: Arith direct Lean files 33, Arith Blueprint direct files
+56, Library/Arith total files 48. Use the already registered ArithSums domain
+(S3; finite sums over integer indices) for this new actual module. Its Lean
+and Blueprint directories do not yet exist (initial files 0). No Library note
+is required for the repository-derived proof; the report retains the OEIS
+statement locators and bounded literature assessment. First route invocation
+with an absolute manifest path was rejected (`manifest path must be
+repository-relative`); the manifest is moved to a relative run-local path.
