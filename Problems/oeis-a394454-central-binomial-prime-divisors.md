@@ -26,7 +26,8 @@ argument is a direct corollary of Kummer's carry criterion.
 
 The first required test is bind-only reconstruction from pinned Mathlib and
 frozen projections. A successful reconstruction ends this lane without a new
-Lean module or freeze. This test is pending at this checkpoint.
+Lean module or freeze. A shorter candidate route has now been found through
+Catalan integrality; its compiler check is pending at this checkpoint.
 
 ## Route
 
@@ -34,6 +35,14 @@ The proposed family is `n = (p-1)*p^k`. The preregistered candidate escape
 witness is its remainder at `p^(k+1)` together with the non-strict carry bound.
 This is a proposal, not an accepted classification. Existing central-binomial
 divisibility results and the Catalan identity will be checked first.
+
+The alternate bind path is now explicit: `Nat.frequently_modEq hp.ne_zero
+(p-1)` supplies an infinite residue class; `Nat.eventually_pos` removes zero;
+`Nat.ModEq.add_right` and `Nat.sub_add_cancel hp.one_le` give `p` dividing
+`n+1`; divisibility transitivity with `Nat.succ_dvd_centralBinom n` gives
+the requested conclusion. `Nat.frequently_atTop_iff_infinite` converts to
+the exact `Set.Infinite` form. No novel intermediate proposition is proposed
+for this path.
 
 ## Falsifier
 
@@ -62,6 +71,33 @@ observed no `.lake` directory. `make lean-cache-ensure` was started before any
 Lean command. The toolchain is Lean 4.33.0; Mathlib is pinned to
 `db584cd6d46c92f209a44c0f1c829460d327499d`.
 
+Cache ensure completed with exit zero: `status=seeded`, `method=clonefile`,
+`clonefile_attempts=1`, both project and Mathlib olean states warm, zero missing
+Mathlib oleans. The actual Mathlib checkout SHA matches the manifest.
+
+The worker opened the OEIS JSON endpoint
+`https://oeis.org/search?q=id:A394454&fmt=json`; it returned both quoted
+comments verbatim, revision 29, author Vincenzo Librandi, March 21, 2026.
+Authenticated GitHub code searches for `"A394454" language:Lean` and
+`"centralBinom" "Infinite" language:Lean` returned empty result arrays.
+These are bounded searches, not an exhaustive literature survey.
+
+The public signatures in pinned `Data/Nat/Multiplicity.lean`,
+`Data/Nat/Choose/Lucas.lean`, and `Data/Nat/Choose/Factorization.lean` were
+read. The brief's Kummer location/name is inaccurate at this pin:
+the declaration is `Nat.factorization_choose` in `Choose/Factorization.lean`,
+not `Nat.Prime.factorization_choose` in `Multiplicity.lean`.
+`Nat.Prime.emultiplicity_choose` is in `Multiplicity.lean`.
+`Nat.Prime.dvd_iff_one_le_factorization` requires the binomial coefficient
+to be nonzero. The carry predicate is non-strict, as the brief states.
+
+The decisive additional hit is `Nat.succ_dvd_centralBinom` in
+`Data/Nat/Choose/Central.lean`. Searches for `dvd_centralBinom` and
+`centralBinom.*dvd` in all pinned Mathlib also found the two-divisibility
+specializations and their uses in the Catalan file. The `frequently_modEq`
+and `frequently_atTop_iff_infinite` declarations were located in
+`Order/Filter/AtTopBot/ModEq.lean` and `Order/Filter/Cofinite.lean`.
+
 ## Triage
 
 Investigation in progress. No theorem is claimed proved at this checkpoint.
@@ -76,7 +112,7 @@ are not reported as this worker's measurements.
 
 ## ASSUMED-UNVERIFIED
 
-The OEIS page and targeted literature search have not yet been independently
-opened. First-publication priority, exhaustive absence of a published proof,
+The OEIS page was independently opened; a targeted published-literature survey
+has not been completed. First-publication priority, absence of a published proof,
 and novelty are not claimed. Neither the consequent about the sequence's
 limsup nor any relationship to a larger open problem is currently formalized.
