@@ -16,6 +16,7 @@ internal sealed class ProducerInputFixture : IDisposable
     private const string Revision = "0123456789abcdef0123456789abcdef01234567";
     private readonly TemporaryDirectory temporary = new();
     private readonly string repository;
+    private readonly string physicalRepository;
     private readonly Dictionary<string, string> properties = new(StringComparer.Ordinal)
     {
         ["NETCoreSdkVersion"] = "fixture-sdk",
@@ -40,7 +41,8 @@ internal sealed class ProducerInputFixture : IDisposable
         var physical = TestProcessRunner.Run("pwd", ["-P"], repository,
             TestBudgets.ScriptProcessHangGuard, 4096);
         Assert.Equal(0, physical.ExitCode);
-        repository = Encoding.UTF8.GetString(physical.StandardOutput).Trim();
+        // Fixture IO retains the temporary root's spelling; producer identities use the physical path.
+        physicalRepository = Encoding.UTF8.GetString(physical.StandardOutput).Trim();
         ScriptHarnessScratch.CopyScriptInto(
             Path.Combine(TestRepositoryLayout.FindRoot(), InputHelperPath), Path.Combine(repository, InputHelperPath));
         ScriptHarnessScratch.CopyScriptInto(
@@ -85,15 +87,15 @@ internal sealed class ProducerInputFixture : IDisposable
         Write("lake-manifest.json", "{\"packages\":[{\"name\":\"mathlib\",\"rev\":\"" + Revision + "\"}]}\n");
     }
 
-    internal string CliProject => Path.Combine(repository, CliProjectPath);
+    internal string CliProject => Path.Combine(physicalRepository, CliProjectPath);
 
     internal void UsePrebuiltEntrypoint() => Write("tools/lean-inspector/inspect.sh",
         "#!/bin/bash\ndotnet \"$ROOT/tools/StrataLint.Cli/bin/Release/net10.0/StrataLint.dll\" worktree with-cache-writer --\n");
 
     internal ProcessOutput Run(string command, string? workingDirectory = null) => TestProcessRunner.Run(
         "/usr/bin/env", ["-u", "PYTHONDONTWRITEBYTECODE", "-u", "PYTHONPYCACHEPREFIX",
-            "/bin/bash", Path.Combine(repository, InputHelperPath), command, "--repository", repository],
-        workingDirectory ?? repository, TestBudgets.WorkflowProcessHangGuard, 1024 * 1024);
+            "/bin/bash", Path.Combine(physicalRepository, InputHelperPath), command, "--repository", physicalRepository],
+        workingDirectory ?? physicalRepository, TestBudgets.WorkflowProcessHangGuard, 1024 * 1024);
 
     internal string[] ProducerSourceImage() => Directory.EnumerateFiles(
             Path.Combine(repository, "tools"), "*", SearchOption.AllDirectories)
@@ -118,7 +120,7 @@ internal sealed class ProducerInputFixture : IDisposable
     internal ProcessOutput EvaluateCliProject() => TestProcessRunner.Run("dotnet",
         ["msbuild", CliProject, "-nologo", "-noAutoResponse", "-nodeReuse:false", "-verbosity:quiet",
             "-property:Configuration=Release", "-getItem:Compile"],
-        repository, TestBudgets.ScriptProcessHangGuard, 1024 * 1024);
+        physicalRepository, TestBudgets.ScriptProcessHangGuard, 1024 * 1024);
 
     internal void Write(string relativePath, string contents)
     {
