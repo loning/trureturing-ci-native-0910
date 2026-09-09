@@ -92,7 +92,7 @@ internal sealed class CubicOddBisectionDocument : IScribeDocumentDefinition
     private static Formula Add(Formula a, Formula b) => new Formula.Binary(a, FormulaBinaryOperator.Add, b);
     private static Formula Sub(Formula a, Formula b) => new Formula.Binary(a, FormulaBinaryOperator.Subtract, b);
     private static Formula Mul(Formula a, Formula b) => new Formula.Binary(a, FormulaBinaryOperator.Multiply, b);
-    private static Formula Pow(Formula a, int k) => new Formula.Power(a, D(k));
+    private static Formula Pow(Formula a, byte k) => new Formula.Power(a, D(k));
     private static Formula AndF(Formula a, Formula b) => Seq(Par(a), Sp, Land, Sp, Par(b));
     private static Formula ImpliesF(Formula a, Formula b) => Seq(Par(a), Sp, Implies, Sp, Par(b));
     private static Formula Bound(string name, Formula type) =>

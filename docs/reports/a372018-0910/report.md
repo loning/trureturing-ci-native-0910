@@ -74,3 +74,43 @@ Project make gates, Scribe, freeze, and PR remain outstanding; this checkpoint d
 - Scribe source now describes all eight public declarations and the polynomial elimination in mathematical terms. Two Library notes attribute each independent equation and the conjecture. Both include `## Verified locator` with the exact frontmatter URL and `doi: null`; no source is credited with the new proof.
 - Library/Recurrence capacity before addition: 37 files, after addition 39. Algebraic has one Lean file and will have two Blueprint files after emit. `generality: I` records the particular two OEIS series within the existing Recurrence/S1 domain, consistent with the route result.
 - Opened the reversion index linked directly from A371364. It is an index rather than a bisection proof. The previously read four sequence references also contain no such proof; papers linked by A059231 are second-hop and not read. Search conclusion: not-found-in-searched-scope, not a claim of global priority.
+
+## Per-theorem accounting
+
+Module prefix: `D5/S1/Recurrence/Algebraic/CubicOddBisection`.
+Direct frozen dependencies (GID + statement_id) are `[]` for every declaration: this module imports only pinned Mathlib modules, no D5 module. The incoming Mathlib theorem `Polynomial.sub_dvd_eval_sub` is used directly, not reimplemented. Local declarations below are candidate-module dependencies, not pre-existing frozen nodes.
+
+| Public theorem | proof_shape | escape_witness | admission_basis | Live local dependencies / obligation |
+| --- | --- | --- | --- | --- |
+| A_equation | content | fixed_equation, supported by approximation_stable | escape-witness | odd_coeff_identity → odd_series_identity → A_equation; realizes the original normalized cubic |
+| B_equation | content | fixed_equation, supported by approximation_stable | escape-witness | odd_coeff_identity → odd_series_identity → B_equation; realizes the original normalized reversion equation |
+| A_unique | bind-only | null | escape-witness (module companion, not independent admission) | odd_coeff_identity_of_equations → A_unique; original unique-branch obligation |
+| B_unique | bind-only | null | escape-witness (module companion, not independent admission) | odd_coeff_identity_of_equations → B_unique; original unique-reversion obligation |
+| odd_coeff_identity | content | cubic_pair_sum | escape-witness | odd_coeff_identity → odd_series_identity → cubic_pair_sum; the requested unbounded equality |
+| odd_coeff_identity_of_equations | bind-only | null | escape-witness (module companion, not independent admission) | odd_coeff_identity_of_equations → A_unique, B_unique, odd_coeff_identity; the same equality for arbitrary equation witnesses |
+
+The two definitions A and B are constructions, not public theorems. No definition relates their coefficients. The companion proof explicitly consumes both uniqueness results on its live rewrite path; they are not inserted as unused proof terms.
+
+For A_equation and B_equation, the four witness conditions are:
+
+1. Closure: each directly calls fixed_equation; that proof uses fixed_agree, step_agree, and the induction in approximation_stable.
+2. Not a frozen projection: no frozen D5 theorem supplies these series or their equations. The new diagonal construction proves stabilization for arbitrary degree using polynomial divisibility and induction. The direct Mathlib divisibility instance supplies only the contraction step, not a fixed point.
+3. Not definitionally equivalent: fixed_equation is a general fixed-point statement for arbitrary c and polynomial p, whereas A_equation is a cubic branch equation and B_equation is a normalized reversion equation. approximation_stable compares two finite iterations at arbitrary degree; it is neither final equation nor an alias of it.
+4. Live: the equality for the constructed series is multiplied into each original equation. Without stabilization/fixed_equation the definitions alone do not yield those equations. No discarded conjunction component is used as a witness.
+
+For odd_coeff_identity, the four witness conditions are:
+
+1. Closure: odd_coeff_identity uses odd_series_identity, which directly calls cubic_pair_sum. The eliminated equation supplies the first input of sum_equation_unique.
+2. Not a frozen projection: the two original equations do not supply a relation between the odd part and the other series. cubic_pair_sum compares distinct roots, cancels their nonzero difference, derives the product relation, and eliminates the product to lower the problem to a unique sum equation. No inspected frozen or Mathlib theorem provides this elimination or the bisection.
+3. Not definitionally equivalent: cubic_pair_sum concerns the sum of two arbitrary roots with nonzero constant difference. It has no odd coefficient, no B, and no index n; it is not a restatement of the coefficient equality.
+4. Live: the eliminated equation is necessary to identify A(X)-A(-X) with 4XB(X²). Removing it leaves no first equation for sum_equation_unique. The comparison equation from B and the coefficient maps cannot alone identify the reflected A series. All nonzero factors are proved by their constant coefficients; none is assumed.
+
+`computational_content.kind: none`: all six public results are unbounded algebraic series statements or their uniqueness/parameterized companions. Iteration is an infinite coefficientwise construction with a proof for arbitrary degree; there is no bounded enumeration, finite certificate, numeric reduction, or checker. Other utility fields are not-applicable(kind=none). Header is exactly `utility: none`.
+
+`question_answered`: the corrected A372018 conjecture in the user's brief and this report's opening preregistration. `dominating_theorem_search`: not-found-in-searched-scope; ordered D5, pinned Mathlib, GitHub/Lean and arXiv/OEIS receipts above. No theorem is reported novel merely because the name has not appeared.
+
+## Final-gate repair checkpoint
+
+The next `make lean` returned EXIT=2 after 11.503860209 seconds: Scribe C# helper `D(k)` expects byte, but Pow accepted int (CS1503, line 95). This occurred before the Lean report step; that step did not run. Changed the helper's parameter type to byte; literal exponents 2 and 3 remain unchanged. No mathematical statement or proof changed. Re-run the ordered gates on the repaired documentation.
+
+Pre-PR duplicate lookup against `origin/dev=d59adb46d4703e7fdc7ef7569c5c0919247cc87a`: `git grep -P 'A372018|A371364|odd_coeff_identity|CubicOddBisection' origin/dev -- D5` had no matches (exit 1). Separate `git merge-tree --write-tree HEAD origin/dev` EXIT=0, tree `8fd353645fedccbeb1beec5ce838175b31c05a87`; no conflicts or deleted target paths.
