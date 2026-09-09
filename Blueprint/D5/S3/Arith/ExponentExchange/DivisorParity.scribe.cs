@@ -15,7 +15,7 @@ internal sealed class DivisorParityDocument : IScribeDocumentDefinition
             H("Divisor-operator commutation sign"),
             StatementSource.FromAuthor(Disp(Seq(
                 Gamma, Sp, F.Id("R"), Eq, Open, Minus, D(1), Close,
-                Caret, Grp(Omega, Open, F.Id("N"), Close),
+                Caret, Grp(Operatorname, Grp(F.Id("cardFactors")), Open, F.Id("N"), Close),
                 F.Id("R"), Gamma))),
             AssessedProvenance.FromRepo(),
             Blocks(Paragraph(Text(
