@@ -294,3 +294,30 @@ unbounded multiplicity statement, and they are not frozen as finite instances.
 - This freezes the module only; no source_id, atom_id, or coverage transition is claimed.
 - Freeze log: attempt-1/freeze.log. All identity values above are read from
   the canonical writer output, not manually invented or recomputed historical data.
+
+## Delivery checkpoint
+
+- Outcome under this task's stopping criterion: **成**. The full requested
+  theorem is proved, make lean exited zero, the public theorem axiom audit
+  contains no sorry or private axiom, the module is frozen, and the PR is open.
+- PR: https://github.com/the-omega-institute/trureturing/pull/6716, base dev.
+  Implementation commit: 8d3fddd79647c9fac3d8752a37224f5191f2f7c0, pushed to
+  lane/math/a384309. This final report update is committed separately.
+- Actual GitHub snapshot at that implementation commit: state OPEN,
+  autoMergeRequest=null; Candidate harness engineering checks and Canonical
+  Lean report production IN_PROGRESS; the downstream admission check has
+  not appeared yet. This is not a claim that remote checks have passed.
+- make pr-open created the PR successfully and is synchronously watching
+  required checks. Its terminal exit, the final pushed HEAD and the checks
+  for that exact HEAD will be recorded in the runner-owned result.json and
+  accompanying report, avoiding a further report-only CI cycle.
+
+## Final unclaimed scope / 未主张
+
+The earlier sections preserve their checkpoint-time observations; this section
+supersedes their then-pending completion status. No finite probe is offered as
+proof of the universal result. No globally exhaustive literature search,
+discovery priority, independent review, atom ingestion or coverage, or proof
+of the separate last-k-digit-position conjecture is claimed. The external
+Cobham paper and SeqFan page remain ASSUMED-UNVERIFIED. Local build timings
+are macOS ARM measurements, not CI predictions. The PR has not been merged.
