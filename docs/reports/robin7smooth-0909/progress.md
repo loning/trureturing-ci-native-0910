@@ -30,7 +30,49 @@ No deposit, cover, freezing, budget changes, new domain, or auto-merge authorize
 - git status --short --branch: clean; branch tracks origin/dev.
 - make show-atom ATOM_ID=<full atom>: exit 2, CLI executable absent in this tree.
 - make -C tools build: exit 2, no such target. Correct canonical target is dotnet.
-- make -C tools dotnet: started; result pending.
+- make -C tools dotnet: exit 0, zero warnings/errors.
+- Canonical show-atom retry: exit 0; coverage_gids=[]; the raw text states
+  sigma(n)/n < exp(gamma_E) log log n for n=2^a 3^b 5^c 7^d>5040,
+  and explicitly permits arbitrarily large exponents. No brief/body discrepancy.
+- make lean-cache-ensure: exit 0, seeded by clonefile from the main checkout,
+  project and Mathlib states warm; no bare lake invocation.
+
+## Library searches and the first proof attempt
+
+Pinned Lean v4.33.0; Mathlib db584cd6d46c92f209a44c0f1c829460d327499d.
+Read RobinRationalBasis.lean in full and its frozen state:
+D5/S3/Arith/GoldenResource/RobinRationalBasis,
+statement_id sha256:6dcafd483a23c78180a3518807013e46c0dccfcb211d2d5f442207eb1ee621c2.
+Its robin_delta_10080_pos applies only to 10080; robinPositiveJudge_sound
+requires a certificate and analytic brackets for the same individual n.
+
+Search receipts (textual candidate discovery, not exhaustive semantic claims):
+
+- rg -n '\b(robin|Robin|robinDelta|RobinPositiveJudge)\w*\b|7.smooth'
+  D5 --glob '*.lean' --glob '!SevenSmoothBindProbe.lean': 112 matching lines.
+- Same word-boundary/alternation features, positive control:
+  rg -n '\b(robin_delta_10080_pos|robinPositiveJudge_sound)\b'
+  D5/S3/Arith/GoldenResource/RobinRationalBasis.lean: 6 matching lines.
+- rg -n '\b(robin|Robin)\w*\b|7.smooth'
+  .lake/packages/mathlib/Mathlib/NumberTheory --glob '*.lean': 0, exit 1.
+  Whole Mathlib matches include author names; they are not Robin inequalities.
+- Mathlib positive control with the same word boundaries found
+  sigma_one_apply_prime_pow, isMultiplicative_sigma and Euler constant bounds.
+- gh search code '5040 sigma language:Lean' --limit 50: six files. Opened
+  project-numina/LeanTriathlon at 2aede4209c203ae9901eff870744e4b77dc6173f,
+  LiveLeanTriathlonSorry/RobinTheorem/All.lean: RH equivalence ends in sorry.
+  Opened the other number-theory candidate, open_problems at
+  ae68b78aab261523b3c6af2c415d39a3501b9a8e,
+  math/riemann_hypothesis/lean/CertificateEquivalence.lean: Robin is an axiom.
+  Neither supplies an admissible proof. Other four search hits not opened.
+- gh search code '"smooth" "5040" language:Lean' --limit 30: one algebraic
+  geometry path, not opened. Search service is available; completeness unclaimed.
+
+A temporary example-only Lean probe is running through make lean. It attempts
+direct single-point reuse, normalization and linarith only with sq_nonneg,
+then attempts the frozen checker at the universal product. No public theorem
+or admitted proof has been introduced. The probe will be removed after reading
+the actual diagnostics. Its log is attempt-1/bind-only-build.log.
 
 ## Current nonclaims
 
