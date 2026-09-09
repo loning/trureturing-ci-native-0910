@@ -130,20 +130,40 @@ internal sealed class CommonStages(string root, TextWriter output, CancellationT
     private string Step(string name, string executable, string[] arguments, Func<int, string, bool>? proof = null,
         bool allowAnnotation = false, TimeSpan? defaultTimeout = null)
     {
-        var result = Capture(executable, arguments, defaultTimeout);
         var log = $"{CommonExecutionEvidence.RootPath}/logs/{stage}/{name}.log";
         var full = Path.Combine(root, log);
         Directory.CreateDirectory(Path.GetDirectoryName(full)!);
+        (int Exit, string Text) result;
+        var forwardingGate = new object();
+        using (var liveLog = new StreamWriter(full, append: false, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false)))
+        {
+            liveLog.AutoFlush = true;
+            void Forward(ReadOnlyMemory<char> chunk)
+            {
+                lock (forwardingGate)
+                {
+                    liveLog.Write(chunk.Span);
+                    liveLog.Flush();
+                    output.Write(chunk.Span);
+                }
+            }
+
+            result = Capture(executable, arguments, defaultTimeout, Forward);
+        }
+        // Capture keeps stdout and stderr separately for proof/selftest consumers;
+        // retain the historical stdout-then-stderr log representation after the
+        // live stream has completed.
         File.WriteAllText(full, result.Text);
         var exit = proof is null ? Normalize(result.Exit, allowAnnotation)
             : result.Exit is not (0 or 1) ? 2 : proof(result.Exit, result.Text) ? 0 : 1;
         steps.Add(new(name, result.Exit, exit, exit == 0 ? "executed" : "failed", log));
-        output.WriteLine(result.Text);
+        output.WriteLine();
         if (exit != 0) throw new StageFailure(exit, $"{name} failed: raw_exit={result.Exit}; log={log}");
         return result.Text;
     }
 
-    private (int Exit, string Text) Capture(string executable, string[] arguments, TimeSpan? defaultTimeout = null)
+    private (int Exit, string Text) Capture(string executable, string[] arguments, TimeSpan? defaultTimeout = null,
+        Action<ReadOnlyMemory<char>>? forward = null)
     {
         var clock = timeProvider ?? TimeProvider.System;
         if (deadlineCancellation.IsCancellationRequested) throw new TimeoutException("PREFLIGHT_BUDGET_EXHAUSTED owner=outer-deadline");
@@ -164,8 +184,8 @@ internal sealed class CommonStages(string root, TextWriter output, CancellationT
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(deadlineCancellation, timer.Token);
         var stdoutText = new StringBuilder();
         var stderrText = new StringBuilder();
-        var stdout = Drain(process.StandardOutput, stdoutText, cancellation.Token);
-        var stderr = Drain(process.StandardError, stderrText, cancellation.Token);
+        var stdout = Drain(process.StandardOutput, stdoutText, cancellation.Token, forward);
+        var stderr = Drain(process.StandardError, stderrText, cancellation.Token, forward);
         try
         {
             process.WaitForExitAsync(cancellation.Token).GetAwaiter().GetResult();
@@ -191,13 +211,15 @@ internal sealed class CommonStages(string root, TextWriter output, CancellationT
         }
     }
 
-    private static async Task Drain(StreamReader reader, StringBuilder text, CancellationToken cancellation)
+    private static async Task Drain(StreamReader reader, StringBuilder text, CancellationToken cancellation,
+        Action<ReadOnlyMemory<char>>? forward)
     {
         var buffer = new char[4096];
         int count;
         while ((count = await reader.ReadAsync(buffer.AsMemory(), cancellation).ConfigureAwait(false)) != 0)
         {
             lock (text) text.Append(buffer, 0, count);
+            forward?.Invoke(buffer.AsMemory(0, count));
         }
     }
 

@@ -1,3 +1,4 @@
+using System.Text;
 using StrataLint.TestSupport;
 using Xunit;
 
@@ -31,6 +32,53 @@ public sealed class CommonStageContractTests
         if (commandExit == 0) Assert.Equal(captured, log);
         else Assert.StartsWith(captured, log, StringComparison.Ordinal);
         Assert.DoesNotContain("stage deadline exceeded", log, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task StageOutputAndLogAreVisibleBeforeChildExit()
+    {
+        using var fixture = new CurrentExecutionContractTests.CandidateFixture();
+        PrepareCurrent(fixture);
+        var waitPath = Path.Combine(fixture.Root, "build/producer-wait");
+        var makeFifoStart = new System.Diagnostics.ProcessStartInfo("mkfifo")
+        {
+            WorkingDirectory = fixture.Root,
+            RedirectStandardError = true,
+        };
+        makeFifoStart.ArgumentList.Add(waitPath);
+        using (var makeFifo = System.Diagnostics.Process.Start(makeFifoStart))
+        {
+            Assert.NotNull(makeFifo);
+            makeFifo.WaitForExit();
+            Assert.True(makeFifo.ExitCode == 0, makeFifo.StandardError.ReadToEnd());
+        }
+
+        TemporaryFileSystem.File.WriteAllText(Path.Combine(fixture.Root, "build/producer.sh"), """
+            set -euo pipefail
+            printf 'live-stdout-marker\n'
+            printf 'live-stderr-marker\n' >&2
+            read -r release < build/producer-wait
+            """);
+        using var output = new MarkerTextWriter("live-stdout-marker", "live-stderr-marker");
+        var run = Task.Run(() => new CommonStages(fixture.Root, output).Run("current", null));
+        try
+        {
+            await output.MarkersSeen.WaitAsync(TestBudgets.ScriptProcessHangGuard);
+            var logPath = Path.Combine(fixture.Root, CommonExecutionEvidence.RootPath,
+                "logs/current/lean-report.log");
+            Assert.True(TemporaryFileSystem.File.Exists(logPath));
+            var liveLog = TemporaryFileSystem.File.ReadAllText(logPath);
+            Assert.Contains("live-stdout-marker", liveLog, StringComparison.Ordinal);
+            Assert.Contains("live-stderr-marker", liveLog, StringComparison.Ordinal);
+            Assert.Contains("live-stdout-marker", output.Snapshot, StringComparison.Ordinal);
+            Assert.Contains("live-stderr-marker", output.Snapshot, StringComparison.Ordinal);
+        }
+        finally
+        {
+            if (!run.IsCompleted)
+                TemporaryFileSystem.File.WriteAllText(waitPath, "release\n");
+            await run.WaitAsync(TestBudgets.ScriptProcessHangGuard);
+        }
     }
 
     [Fact]
@@ -408,5 +456,32 @@ public sealed class CommonStageContractTests
         }
         Assert.ThrowsAny<Exception>(() => CommonExecutionEvidence.ValidateCurrent(target.Root,
             scenario == "missing-base-project" ? ["tools/tests/Removed/Removed.csproj"] : []));
+    }
+
+    private sealed class MarkerTextWriter(string stdoutMarker, string stderrMarker) : TextWriter
+    {
+        private readonly object gate = new();
+        private readonly StringBuilder text = new();
+        private readonly TaskCompletionSource markersSeen = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public override Encoding Encoding => Encoding.UTF8;
+        internal Task MarkersSeen => markersSeen.Task;
+        internal string Snapshot { get { lock (gate) return text.ToString(); } }
+
+        public override void Write(ReadOnlySpan<char> value) => Append(value.ToString());
+        public override void Write(string? value) { if (value is not null) Append(value); }
+        public override void Write(char[] buffer, int index, int count) => Append(new string(buffer, index, count));
+        public override void WriteLine() => Append(NewLine);
+
+        private void Append(string value)
+        {
+            lock (gate)
+            {
+                text.Append(value);
+                if (text.ToString().Contains(stdoutMarker, StringComparison.Ordinal)
+                    && text.ToString().Contains(stderrMarker, StringComparison.Ordinal))
+                    markersSeen.TrySetResult();
+            }
+        }
     }
 }
