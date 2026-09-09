@@ -337,22 +337,25 @@ def merge(args: argparse.Namespace) -> int:
                     compresslevel=6, allowZip64=True) as destination:
                 for address in addresses:
                     name = "sha256/" + address[7:]
-                    material = None
+                    source_info = None
                     for source in sources:
                         if source is None:
                             continue
                         try:
-                            material = source.read(name)
+                            source_info = source.getinfo(name)
                             break
                         except KeyError:
                             continue
-                    if material is None:
+                    if source_info is None:
                         raise ValueError(f"statement material is missing for {address}")
                     info = zipfile.ZipInfo(name, ARCHIVE_TIMESTAMP)
+                    # Known size lets zipfile choose ZIP64 before writing the header.
+                    info.file_size = source_info.file_size
                     info.compress_type = zipfile.ZIP_DEFLATED
                     info.create_system = 3
                     info.external_attr = (stat.S_IFREG | 0o644) << 16
-                    destination.writestr(info, material)
+                    with source.open(source_info) as material, destination.open(info, "w") as target:
+                        shutil.copyfileobj(material, target)
         finally:
             for source in sources:
                 if source is not None:
