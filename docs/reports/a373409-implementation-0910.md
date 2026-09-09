@@ -209,3 +209,17 @@ OEIS所链接的论文及Google文档均为 ASSUMED-UNVERIFIED。
 不主张有独立评审票或多模型共识，不主张本席重跑了上游2,000,000平方筛；
 不主张本地通过等于CI三门通过。PR身份与其机器判词在runner最终工件中记录。
 任务止点按用户明确要求为PR开出；本报告不声称PR已合入dev。
+
+## PR与编译后依赖读数
+
+PR：<https://github.com/the-omega-institute/trureturing/pull/6699>，base=dev，未启用自动合并。
+
+为核对第3.2条闭包条件，热树片段读取编译器 `getConstInfo` 的主 theorem，
+再以 `ConstantInfo.value? (allowOpaque := true)` 和 `Expr.getUsedConstants` 检查证明项，
+EXIT=0。主证明直接引用四个私有常量 `upper_of_pair`、`no_neighbors`、
+`not_squarefree_of_four_dvd`、`not_squarefree_of_nine_dvd`，以及公开投影
+`FullNonsquarefreeInterval.full`。这不是rg字面匹配推断的依赖。
+源码与可复算API片段在runner attempt-1/proof-dependencies.lean。
+首次读取默认 `value?` 返回none，因为该API默认排除opaque/theorem；
+读取 Lean/Declaration.lean 的API定义后显式允许opaque成功，未改动库内证明。
+九项见证不被主证明引用；它还在主 theorem及全部私有前置之后声明，故不存在向它的前向依赖。
