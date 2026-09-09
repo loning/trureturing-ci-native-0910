@@ -1761,6 +1761,319 @@ pr3_indegrees = tuple(sorted(sum((a, b) in z.o for a in z.e) for b in ("b1", "b2
 assert pr3_indegrees == ([1, 1], [0, 2])
 print(f"pr3_source: samples={len(pr3_samples)} updates={pr3_counts['source_updates']} witnesses={pr3_counts['source_witnesses']} brackets={len(pr3_bracket_left.e)},{len(pr3_bracket_right.e)} B1=distinct ordered_pair=distinct")
 print(f"pr3_causal: updates={pr3_counts['causal_updates']} product_antichains={pr3_counts['product_antichains']} targets=Omega bare_probes={pr3_counts['bare_probes']} P_plus={pr3_isolated[0]},{pr3_isolated[1]} legal_probes={pr3_counts['legal_probes']} mobius_profiles={pr3_counts['mobius_profiles']} mobius_coefficients={pr3_counts['mobius_coefficients']} bounded_contexts={pr3_counts['bounded_contexts']} B2_time={pr3_time_reads[0]},{pr3_time_reads[1]} strict_successor={pr3_J_reads[0]},{pr3_J_reads[1]} edge={pr3_edge_reads[0]},{pr3_edge_reads[1]} marginals={pr3_marginal_reads[0]},{pr3_marginal_reads[1]} redundant_insertions={pr3_counts['redundant_insertions']} timed_nonisomorphism=True")
+
+# PR4: temporal causal checks; PR1--PR3 and the Rich operations remain unchanged.
+pr4_counts = {name: 0 for name in (
+    "updates", "endpoint_updates", "earliest_rows", "product_antichains",
+    "guard_success", "strict_failures", "context_reads", "mobius_coefficients",
+    "mobius_profiles", "xi_paths", "forget_paths", "q_expression", "kernel_edges")}
+
+def pr4_equal(actual, expected, counter):
+    assert pr3_bytes(actual) == pr3_bytes(expected), (counter, actual, expected)
+    pr4_counts[counter] += 1
+
+def pr4_profile(x):
+    return pr3_profile(x, timed=True)
+
+def pr4_earliest(upper):
+    earliest_time = min(a[3] for a in upper)
+    first = [a for a in upper if a[3] == earliest_time]
+    assert len(first) == 1, upper
+    return first[0]
+
+def pr4_support_time(g):
+    return max((a[3] for a, b, upper in g), default=None)
+
+def pr4_shift_attr(a, k):
+    return (*a[:3], a[3] + k)
+
+def pr4_shift_profile(g, k):
+    return push_c(g, lambda row: (pr4_shift_attr(row[0], k), row[1],
+                  frozenset(pr4_shift_attr(a, k) for a in row[2])))
+
+def pr4_diamond(a, aa):
+    return (*pr3_diamond(a[:3], aa[:3]), max(a[3], aa[3]) + 1)
+
+def pr4_profile_product(g, gg):
+    result = {}
+    for (a, b, upper), value in g.items():
+        for (aa, bb, uu), other in gg.items():
+            joined = pr4_diamond(a, aa)
+            row = (joined, b * bb, frozenset((joined,)))
+            result[row] = result.get(row, 0) + value * other
+    return sparse(result)
+
+def pr4_xi_direct(x):
+    # Definition 22: independent traversal of Omega and A, not of a profile.
+    background, chosen = {}, {}
+    for e in x.w:
+        time, position, sign, source = x.e[e]
+        cell = (time, position)
+        background[cell] = background.get(cell, 0) + sign
+    for e in x.a:
+        time, position, sign, source = x.e[e]
+        cell = (time, position)
+        chosen[cell] = chosen.get(cell, 0) + sign
+    return (sparse(background), sparse(chosen),
+            min((event[0] for event in x.e.values()), default=None),
+            max((event[0] for event in x.e.values()), default=None),
+            max((x.e[e][0] for e in x.w), default=None))
+
+def pr4_xi_from_profile(g, m, M):
+    # The coefficient already includes sign; do not multiply it by a[1].
+    background, chosen = {}, {}
+    for (a, b, upper), value in g.items():
+        cell = (a[3], a[0])
+        background[cell] = background.get(cell, 0) + value
+        if b == 1:
+            chosen[cell] = chosen.get(cell, 0) + value
+    return sparse(background), sparse(chosen), m, M, pr4_support_time(g)
+
+def pr4_forget_time(g):
+    return push_c(g, lambda row: (row[0][:3], row[1],
+                                 frozenset(a[:3] for a in row[2])))
+
+def pr4_read_table(x, D):
+    readings = {}
+    for eta in (0, 1):
+        selected = x if eta == 1 else neg(x)
+        for Q in pr3_subsets(D):
+            readings[(eta, Q)] = q(pr3_causal_filter(selected, Q, timed=True))
+            pr4_counts["context_reads"] += 1
+    return readings
+
+def pr4_restore(D, readings):
+    # Inputs are the fixed finite query vocabulary and terminal context readings.
+    # No Rich state, profile function, own-attribute probe or product is consumed.
+    restored = {}
+    subsets = pr3_subsets(D)
+    for eta in (0, 1):
+        h0 = {W: readings[(eta, D)] - readings[(eta, D - W)] for W in subsets}
+        for upper in subsets:
+            coefficient = sum((-1) ** (len(upper) - len(W)) * h0[W]
+                              for W in pr3_subsets(upper))
+            if coefficient:
+                assert upper
+                a = pr4_earliest(upper)
+                assert coefficient * a[1] > 0
+                restored[(a, eta, upper)] = coefficient
+            pr4_counts["mobius_coefficients"] += 1
+    return restored
+
+pr4_rng = pr3_Random(2026091004)
+pr4_samples = []
+for pr4_i in range(64):
+    pr4_n = pr4_rng.choice((0, 2, 4, 6))
+    pr4_signs = [1] * (pr4_n // 2) + [-1] * (pr4_n // 2)
+    pr4_rng.shuffle(pr4_signs)
+    pr4_events = {j: (pr4_rng.randrange(-5, 5),
+                        pr4_rng.choice((origin, v, h)), sign,
+                        pr4_rng.choice((pr3_l0, pr3_l1, ("pair", pr3_l0, pr3_l1))))
+                  for j, sign in enumerate(pr4_signs)}
+    pr4_whole = frozenset(pr4_events)
+    for pr4_j in range(pr4_rng.randrange(3)):
+        pr4_events[("old", pr4_j)] = (pr4_rng.randrange(-7, 7), v, 1, ("leaf", 9))
+    pr4_edges = {(e, d) for e in pr4_events for d in pr4_events
+                 if pr4_events[e][0] < pr4_events[d][0] and pr4_rng.randrange(4) == 0}
+    pr4_chosen = frozenset(e for e in sorted(pr4_whole) if pr4_rng.randrange(2))
+    pr4_samples.append(valid(Rich(pr4_events, closure(pr4_edges), pr4_whole, pr4_chosen)))
+
+# Directed boundaries: empty archive; nonempty archive with empty Omega;
+# highest current time cancels in W and Z but is visible in Gamma_t support.
+pr4_archive_only = valid(Rich({"old": (-4, origin, 1, pr3_l0)},
+                              frozenset(), frozenset(), frozenset()))
+pr4_cancel_events = {"p": (-3, origin, 1, pr3_l0), "n": (-3, origin, -1, pr3_l0),
+                     "top+": (4, origin, 1, pr3_l0), "top-": (4, origin, -1, pr3_l0),
+                     "old_min": (-9, v, 1, pr3_l0), "old_max": (8, v, 1, pr3_l0)}
+pr4_cancel = valid(Rich(pr4_cancel_events, frozenset(),
+                        frozenset(("p", "n", "top+", "top-")), frozenset(("p",))))
+assert pr4_xi_direct(pr4_cancel) == ({}, {(-3, origin): 1}, -9, 8, 4)
+assert pr4_support_time(pr4_profile(pr4_cancel)) == 4
+
+# D11: one fixed context, different selections at negative own times.
+pr4_d11e = {e: (t0, origin, sign, pr3_l0)
+            for e, t0, sign in zip("abcd", (-2, -1, 0, 0), (1, 1, -1, -1))}
+pr4_d11x = valid(Rich(pr4_d11e, frozenset({("a", "b")}),
+                      frozenset(pr4_d11e), frozenset("a")))
+pr4_d11y = replace(pr4_d11x, a=frozenset("b"))
+pr4_d11_c = {(pr3_vp, 1, frozenset((pr3_vp,))): 1,
+             (pr3_vp, 0, frozenset((pr3_vp,))): 1,
+             (pr3_vm, 0, frozenset((pr3_vm,))): -2}
+assert pr3_profile(pr4_d11x) == pr3_profile(pr4_d11y) == pr4_d11_c
+assert pr3_rho_src(pr4_d11x) == pr3_rho_src(pr4_d11y) == ({}, {(origin, pr3_l0): 1})
+assert theta(pr4_d11x)[1:] == theta(pr4_d11y)[1:] == (-2, 0, 0)
+pr4_d11_W = {(-2, origin): 1, (-1, origin): 1, (0, origin): -2}
+assert pr4_xi_direct(pr4_d11x) == (pr4_d11_W, {(-2, origin): 1}, -2, 0, 0)
+assert pr4_xi_direct(pr4_d11y) == (pr4_d11_W, {(-1, origin): 1}, -2, 0, 0)
+assert pr4_profile(pr4_d11x) != pr4_profile(pr4_d11y)
+pr4_d11_reads = tuple(q(pr3_causal_filter(z, {(origin, 1, pr3_l0, -2)}, timed=True))
+                      for z in (pr4_d11x, pr4_d11y))
+assert pr4_d11_reads == (1, 0)
+pr4_common_k = min(theta(z)[1] for z in (pr4_d11x, pr4_d11y)) - 1
+pr4_shift_probe = tuple(q(pr3_causal_filter(mul(z, time_shift(pr3_U0, pr4_common_k)),
+                         {(origin, 1, ("pair", pr3_l0, pr3_l0), -1)}, timed=True))
+                        for z in (pr4_d11x, pr4_d11y))
+pr4_flat_probe = tuple(q(pr3_causal_filter(mul(z, pr3_U0),
+                        {(origin, 1, ("pair", pr3_l0, pr3_l0), 1)}, timed=True))
+                       for z in (pr4_d11x, pr4_d11y))
+assert pr4_shift_probe == (1, 0) and pr4_flat_probe == (1, 1)
+assert pr4_profile(mul(pr4_d11x, pr3_U0)) == pr4_profile(mul(pr4_d11y, pr3_U0))
+
+# D12: four input selections on the same balanced context; q expression below.
+pr4_d12 = valid(Rich({e: (t0, origin, sign, pr3_l0)
+                      for e, t0, sign in zip("abcd", (0, 1, 0, 0), (1, 1, -1, -1))},
+                     frozenset({("a", "b")}), frozenset("abcd"), frozenset("ab")))
+pr4_d12_family = [replace(pr4_d12, a=A) for A in pr3_subsets("ab")]
+
+# D1 and D5 retain their section 26 numbering; check both incomparability directions.
+pr4_d1e = {j: (t0, p, sign, pr3_l0) for j, (t0, p, sign) in enumerate(
+            ((0, origin, 1), (0, origin, -1), (1, v, 1), (1, v, -1)))}
+pr4_d1x = valid(Rich(pr4_d1e, frozenset(), frozenset(pr4_d1e), frozenset((0, 2))))
+pr4_d1y = valid(replace(pr4_d1x, e={j: (t0, v if p == origin else origin, sign, r)
+                                    for j, (t0, p, sign, r) in pr4_d1e.items()}))
+pr4_d5x = pr3_U0
+pr4_d5y = valid(replace(pr4_d5x, e={e: (t0, p, sign, pr3_l1 if e in pr4_d5x.a else r)
+                                    for e, (t0, p, sign, r) in pr4_d5x.e.items()}))
+pr4_cases = pr4_samples + [empty, pr4_archive_only, pr4_cancel, pr4_d11x, pr4_d11y,
+                           pr3_outside, pr3_d2y, causal, no_causal, pr3_d5x, pr3_d5y,
+                           pr4_d1x, pr4_d1y, pr4_d5x, pr4_d5y] + pr4_d12_family
+pr4_xi_cases = list(pr4_cases)
+
+def pr4_check_update(x, expected_g, expected_endpoints):
+    pr4_equal(pr4_profile(x), expected_g, "updates")
+    pr4_equal(theta(x)[1:], expected_endpoints, "endpoint_updates")
+    assert pr4_support_time(expected_g) == expected_endpoints[2]
+    pr4_xi_cases.append(x)
+
+for pr4_i, pr4_x in enumerate(pr4_cases):
+    assert charge(pr4_x, pr4_x.w) == 0
+    pr4_g = pr4_profile(pr4_x)
+    pr4_tx = theta(pr4_x)
+    pr4_D = frozenset(pr3_alpha(pr4_x, e, timed=True) for e in pr4_x.w)
+    assert pr3_V(pr4_g) == pr4_D
+    assert pr4_support_time(pr4_g) == pr4_tx[3]
+    for (pr4_a, pr4_b, pr4_upper), pr4_value in pr4_g.items():
+        assert pr4_a == pr4_earliest(pr4_upper) and pr4_value * pr4_a[1] > 0
+        pr4_counts["earliest_rows"] += 1
+    pr4_equal(pr4_restore(pr4_D, pr4_read_table(pr4_x, pr4_D)), pr4_g, "mobius_profiles")
+    pr4_S, pr4_L = {origin, h}, {pr3_l0, pr3_l1}
+    pr4_check_update(neg(pr4_x), push_c(pr4_g, lambda k: (k[0], 1-k[1], k[2])), pr4_tx[1:])
+    pr4_check_update(at(pr4_x, pr4_S),
+                     push_c(pr4_g, lambda k: (k[0], k[1]*int(k[0][0] in pr4_S), k[2])),
+                     pr4_tx[1:])
+    pr4_check_update(filt(pr4_x, lambda e: pr4_x.e[e][3] in pr4_L),
+                     push_c(pr4_g, lambda k: (k[0], k[1]*int(k[0][2] in pr4_L), k[2])),
+                     pr4_tx[1:])
+    for pr4_Q in pr3_subsets(pr4_D):
+        pr4_check_update(pr3_causal_filter(pr4_x, pr4_Q, timed=True),
+                         push_c(pr4_g, lambda k: (k[0], k[1]*int(bool(k[2] & pr4_Q)), k[2])),
+                         pr4_tx[1:])
+    for pr4_k in (-7, 0, 3):
+        pr4_check_update(time_shift(pr4_x, pr4_k), pr4_shift_profile(pr4_g, pr4_k),
+                         tuple(a+pr4_k if a is not None else None for a in pr4_tx[1:]))
+    pr4_y = pr4_cases[(pr4_i + 1) % len(pr4_cases)]
+    pr4_gy, pr4_ty = pr4_profile(pr4_y), theta(pr4_y)
+    for pr4_left, pr4_right in ((pr4_x, pr4_y), (pr4_y, pr4_x)):
+        pr4_gl, pr4_gr = pr4_profile(pr4_left), pr4_profile(pr4_right)
+        pr4_tl, pr4_tr = theta(pr4_left), theta(pr4_right)
+        pr4_check_update(add(pr4_left, pr4_right), plus_c(pr4_gl, pr4_gr),
+                         theta_add(pr4_tl, pr4_tr)[1:])
+        pr4_product = mul(pr4_left, pr4_right)
+        pr4_check_update(pr4_product, pr4_profile_product(pr4_gl, pr4_gr),
+                         theta_mul(pr4_tl, pr4_tr)[1:])
+        assert not any(e in pr4_product.w for e, d in pr4_product.o)
+        assert all(pr3_U(pr4_product, e, timed=True) ==
+                   {pr3_alpha(pr4_product, e, timed=True)} for e in pr4_product.w)
+        pr4_counts["product_antichains"] += 1
+        pr4_success = theta_guard(pr4_tl, pr4_tr)
+        pr4_out = attempt(lambda: temporal(pr4_left, pr4_right))
+        assert (pr4_out is not FAIL) == pr4_success
+        pr4_strict = observe((lambda z: temporal(z, pr4_right), neg,
+                               lambda z: pr3_causal_filter(z, set(), timed=True)), pr4_left, q)
+        if pr4_success:
+            pr4_check_update(pr4_out,
+                             plus_c(push_c(pr4_gl, lambda k: (k[0], k[1], k[2] | pr3_V(pr4_gr))),
+                                    pr4_gr), theta_add(pr4_tl, pr4_tr)[1:])
+            assert pr4_strict == ("ok", 0)
+            pr4_counts["guard_success"] += 1
+        else:
+            assert pr4_strict is FAIL
+            pr4_counts["strict_failures"] += 1
+    # A successful temporal step using the shifted target attributes on the right.
+    pr4_delay = 0 if pr4_tx[2] is None or pr4_ty[1] is None else pr4_tx[2] - pr4_ty[1] + 1
+    pr4_late = time_shift(pr4_y, pr4_delay)
+    pr4_glate = pr4_shift_profile(pr4_gy, pr4_delay)
+    pr4_check_update(temporal(pr4_x, pr4_late),
+                     plus_c(push_c(pr4_g, lambda k: (k[0], k[1], k[2] | pr3_V(pr4_glate))),
+                            pr4_glate), theta_add(pr4_tx, theta(pr4_late))[1:])
+    pr4_counts["guard_success"] += 1
+assert pr4_counts["guard_success"] > 0 and pr4_counts["strict_failures"] > 0
+
+# A common D can include attributes absent on either side, as in the pairwise proof.
+for pr4_left, pr4_right in ((pr4_d11x, pr4_d11y), (pr4_d1x, pr4_d1y), (empty, pr4_d5y)):
+    pr4_D = frozenset(pr3_alpha(z, e, timed=True) for z in (pr4_left, pr4_right) for e in z.w)
+    for pr4_x in (pr4_left, pr4_right):
+        pr4_equal(pr4_restore(pr4_D, pr4_read_table(pr4_x, pr4_D)),
+                   pr4_profile(pr4_x), "mobius_profiles")
+
+assert q(pr3_causal_filter(pr3_outside, {pr3_alpha(pr3_outside, "old", timed=True)}, timed=True)) == 0
+assert "c" not in pr3_d2y.a
+assert q(pr3_causal_filter(pr3_d2y, {pr3_alpha(pr3_d2y, "c", timed=True)}, timed=True)) == 1
+pr4_B2 = tuple(q(pr3_causal_filter(z, {(origin, 1, pr3_l0, 1)}, timed=True))
+                for z in (causal, no_causal))
+assert pr4_B2 == (2, 1)
+assert (pr4_profile(pr3_d5x), theta(pr3_d5x)[1:3]) == (pr4_profile(pr3_d5y), theta(pr3_d5y)[1:3])
+pr4_D10_indegrees = tuple(sorted(sum((e, b) in z.o for e in z.e) for b in ("b1", "b2"))
+                           for z in (pr3_d5x, pr3_d5y))
+assert pr4_D10_indegrees == ([1, 1], [0, 2])
+pr4_c_then_b = tuple(q(pr3_causal_filter(pr3_causal_filter(z, {pr3_alpha(z, "c")}),
+                                       {pr3_alpha(z, "b")})) for z in (pr3_d3x, pr3_d3y))
+assert pr4_c_then_b == (1, 0)
+
+class pr4_Qstar:
+    def __contains__(self, a):
+        return a[0] == origin and a[3] == 2
+
+for pr4_x in pr4_cases:
+    pr4_direct_q = q(filt(pr4_x, lambda e: (pr4_x.e[e][0], pr4_x.e[e][1]) == (1, origin)))
+    pr4_context_q = q(pr3_causal_filter(mul(pr4_x, pr3_U0), pr4_Qstar(), timed=True))
+    pr4_equal(pr4_context_q, pr4_direct_q, "q_expression")
+
+for pr4_x in pr4_xi_cases:
+    pr4_g = pr4_profile(pr4_x)
+    pr4_m, pr4_M = theta(pr4_x)[1:3]
+    pr4_equal(pr4_xi_from_profile(pr4_g, pr4_m, pr4_M), pr4_xi_direct(pr4_x), "xi_paths")
+    pr4_equal(pr4_forget_time(pr4_g), pr3_profile(pr4_x), "forget_paths")
+assert sum(pr4_xi_from_profile(pr4_profile(pr3_U0), 0, 0)[0].values()) == 0
+assert sum(a[1] * value for (a, b, upper), value in pr4_profile(pr3_U0).items()) == 2
+
+# Each tuple certifies a strict kernel edge: fine differs, coarse agrees.
+pr4_fine = lambda x: (pr4_profile(x), theta(x)[1:3])
+pr4_cau = lambda x: (pr3_profile(x), theta(x)[1:])
+pr4_src_time = lambda x: (pr3_rho_src(x), theta(x)[1:])
+pr4_zero_background = realize({origin: 1, v: -1}, {})
+for pr4_x, pr4_y, pr4_f, pr4_c in (
+        (causal, no_causal, pr4_fine, pr4_cau),
+        (pr3_d2x, pr3_d2y, pr4_cau, pr4_src_time),
+        (source7, source8, pr4_src_time, theta),
+        (pr3_U0, time_shift(pr3_U0, 1), theta, read_pair),
+        (empty, pr4_zero_background, read_pair, lambda x: read_pair(x)[1]),
+        (pr3_U0, spatial(pr3_U0, offset=1), lambda x: read_pair(x)[1], q),
+        (causal, no_causal, pr4_fine, pr4_xi_direct),
+        (pr4_d5x, pr4_d5y, pr4_fine, pr4_xi_direct),
+        (pr4_d1x, pr4_d1y, pr4_xi_direct, theta),
+        (pr3_U0, time_shift(pr3_U0, 1), pr4_src_time, pr3_rho_src),
+        (source7, source8, pr3_rho_src, read_pair),
+        (pr4_d1x, pr4_d1y, pr4_xi_direct, pr4_cau),
+        (pr4_d1x, pr4_d1y, pr4_xi_direct, pr4_src_time),
+        (pr4_d5x, pr4_d5y, pr4_cau, pr4_xi_direct),
+        (pr4_d5x, pr4_d5y, pr4_src_time, pr4_xi_direct),
+        (pr3_U0, time_shift(pr3_U0, 1), theta, pr3_rho_src),
+        (source7, source8, pr3_rho_src, theta)):
+    assert pr3_bytes(pr4_f(pr4_x)) != pr3_bytes(pr4_f(pr4_y))
+    pr4_equal(pr4_c(pr4_x), pr4_c(pr4_y), "kernel_edges")
+
+print(f"pr4_temporal_causal: random_samples={len(pr4_samples)} cases={len(pr4_cases)} updates={pr4_counts['updates']} endpoint_updates={pr4_counts['endpoint_updates']} earliest_rows={pr4_counts['earliest_rows']} product_antichains={pr4_counts['product_antichains']} guard_success={pr4_counts['guard_success']} strict_failures={pr4_counts['strict_failures']} context_reads={pr4_counts['context_reads']} mobius_profiles={pr4_counts['mobius_profiles']} mobius_coefficients={pr4_counts['mobius_coefficients']} xi_paths={pr4_counts['xi_paths']} forget_paths={pr4_counts['forget_paths']} kernel_edges={pr4_counts['kernel_edges']} D11={pr4_d11_reads[0]},{pr4_d11_reads[1]} D11_Z_times=-2,-1 common_k={pr4_common_k} shifted_probe={pr4_shift_probe[0]},{pr4_shift_probe[1]} fixed_U0={pr4_flat_probe[0]},{pr4_flat_probe[1]} q_expression={pr4_counts['q_expression']} B2={pr4_B2[0]},{pr4_B2[1]} D10_indegrees={pr4_D10_indegrees[0]},{pr4_D10_indegrees[1]} c_then_b={pr4_c_then_b[0]},{pr4_c_then_b[1]}")
 print("ALL_FINITE_CHECKS_PASSED")
 ```
 
