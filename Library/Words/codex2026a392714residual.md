@@ -469,3 +469,10 @@ origin/lane/math/a392714r2。随后 fetch 得到 origin/dev
 创建后的首次 required-CI 观察为 OPEN、pending=2、missing=1，尚不主张 CI 全绿或已合并；
 最终观察记录随 runner result.json 提供。当前为 implementation 席，零独立评审，
 交由调用方后续评审。本报告的过程收据按批次提交推送，未等到终局才一次性落盘。
+
+PR watcher 的有界收据：`make pr-open` 创建成功后等待 180 秒，最终
+PR_WATCH_RESULT pr=6689 outcome=timeout pending=2 missing=1；make EXIT=2，
+全调用墙钟 183.0515595 秒。这是远端检查尚未完结的超时，不是 Lean/发射/冻结门失败。
+快照 head=5c3873454bbaa94b2c2bf242605c20702e51bf12，state=OPEN，mergeable=MERGEABLE。
+本轮按“make lean 通过且 PR 开出”的用户判据结算成；不主张 required-CI 全绿，
+不主张 PR 已合并。最终报告追记未改变已核验的 Lean 源码。
