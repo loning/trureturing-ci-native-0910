@@ -1,0 +1,54 @@
+[
+  {
+    "command": [
+      "rg",
+      "-n",
+      "\\bsource_jensen_coeff_edges\\b",
+      "D5/S3/Zeros/Jensen",
+      "--glob",
+      "*.lean"
+    ],
+    "exit": 0,
+    "matched_lines": 8,
+    "stdout": "D5/S3/Zeros/Jensen/SourceJensenPrincipalBlockObstruction.lean:31:theorem source_jensen_coeff_edges (d : ℕ) (hd : 1 ≤ d) :\nD5/S3/Zeros/Jensen/SourceJensenPrincipalBlockObstruction.lean:54:  rw [hmatch, (source_jensen_coeff_edges d hd).1] at hz\nD5/S3/Zeros/Jensen/SourceJensenPrincipalBlockObstruction.lean:58:  exact (source_jensen_coeff_edges d hd).2.1\nD5/S3/Zeros/Jensen/SourceJensenPrincipalBlockObstruction.lean:63:  rw [(source_jensen_coeff_edges d hd).2.2.2]\nD5/S3/Zeros/Jensen/SourceJensenPrincipalBlockObstruction.lean:176:  rw [(source_jensen_coeff_edges d hd).2.2.1] at hcoeff\nD5/S3/Zeros/Jensen/SourceJensenPrincipalBlockObstruction.lean:203:  rw [coeff_map, hc0, (source_jensen_coeff_edges d hd).1] at hz\nD5/S3/Zeros/Jensen/SourceJensenPrincipalBlockObstruction.lean:211:  rw [coeff_map, hc1, (source_jensen_coeff_edges d hd).2.1] at h1\nD5/S3/Zeros/Jensen/SourceJensenPrincipalBlockObstruction.lean:230:  rw [(source_jensen_coeff_edges d hd).2.2.1] at hcoeff\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "rg",
+      "-n",
+      "\\bqd_attempt2_nonexistent_control\\b",
+      "D5/S3/Zeros/Jensen",
+      "--glob",
+      "*.lean"
+    ],
+    "exit": 1,
+    "matched_lines": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "rg",
+      "-n",
+      "\\b(coeff_eq_sum|eq_of_degree_le_of_eval_index_eq|eval_nodal_derivative_eval_node_eq)\\b",
+      ".lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean"
+    ],
+    "exit": 0,
+    "matched_lines": 6,
+    "stdout": "117:theorem eq_of_degree_le_of_eval_index_eq (hvs : Set.InjOn v s)\n495:theorem coeff_eq_sum\n511:  exact coeff_eq_sum hvs (by rw [hdegree]; norm_cast; lia)\n605:theorem eval_nodal_derivative_eval_node_eq [DecidableEq ι] {i : ι} (hi : i ∈ s) :\n615:  apply eq_of_degree_le_of_eval_index_eq (v := ((↑) : Rˣ → R)) (G : Set Rˣ).toFinset\n652:  rw [eval_nodal_derivative_eval_node_eq hi, nodalWeight_eq_eval_nodal_erase_inv]\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "rg",
+      "-n",
+      "\\bqd_attempt2_nonexistent_control\\b",
+      ".lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean"
+    ],
+    "exit": 1,
+    "matched_lines": 0,
+    "stdout": "",
+    "stderr": ""
+  }
+]

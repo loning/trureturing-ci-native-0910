@@ -201,3 +201,17 @@ B4-01 因缓存 writer busy，未进入 Lean；02 为 API 参数与改写方向�
 `nonclaims`：未落地；未建 D5/ 生产模块；未 cover；未 deposit；未开 PR；未主张检索穷尽；“未命中”不是“Mathlib 里不存在”的证明；未判 B3、B4、降阶推论为 yes 或 no；未证明三条未判 atom，未主张其可证或含 content；未主张 RH 的任何蕴含；未将 refutes 当作第四种 admission_basis；未把 q_d 倒数变量绑定重新算作缺口；未假设 P 的次数等于 d 或首系数非零。
 
 runner 工件目录：`/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1`。最终 `result.json` 严格只含 `conclusion` 对象和非空 `log_ref`；先写临时文件后原子改名，再以同样方式发布 `completion.sentinel`。
+
+## Attempt 2：预登记与接续（2026-09-09）
+
+产地：单 Codex worker，无 skill、无子席、单点自查；交付仅为判词。基底 `18f70e6ee6b809110f9bef3214a4cd51688b6c57`；分支 `lane/math/qd-family-triage2-0909`。B1、B1.1 与 Q/reflect 的既判结果直接继承，不重新判形。
+
+开工 `09:25:30 UTC`。brief 未给数值总时长，沿用上一席的 60 分钟审理窗口解释：中点 `09:55:30 UTC`，截止 `10:25:30 UTC`；中点若三条中仍无一条明确 yes/no 即停止数学筛选。此为席位预登记，不改仓内或 runner 预算。只有用户给的非方向性期望：至少一条可明确判定；不续下注至少一条 content。
+
+全文已读本树 `CLAUDE.md`、`probe-brief-note.txt`、上一席报告及 `agents/CONTEXT.md`。本树 standing 文件止于七节；八至十二节已从本地 `origin/dev` 对象 `7547debb97761296d4d934b9c87ada4b90729cea` 读取，[原文收据](qd-family-triage-0909/attempt-2/standing-sections-8-12.txt)。不把较新 dev 状态搬入基底。
+
+顺序：B4 → B3 → 推论。B4 复用上一席 Lagrange 留数恒等式，首先闭合原文目标 `⊢ True ∨ sourceThetaCoefficient 2 = 0`；该目标有左支 `True`，是证明收尾工作量，零数学缺陷证据。B3 拟探针检验箭头行列式识别、留数符号及严格正性等价；若确有新中间构造，候选见证限定为一般箭头多项式重建及其活路径，不先判 content。推论拟检验零点/次数不足运输、导数根域保存和最小失败阶；RH 到固定源塔失败的源识别与 Jensen–Pólya 桥单列检验，不用条件版本冒充无条件结果。
+
+[B4 检索收据及同正则阴阳对照](qd-family-triage-0909/attempt-2/search-01.json)。源上下文明列 `a₀=1`，有限假设列互异正根，B1 给其缩放为全部临界点；探针的这些前提须逐一对齐，不把任意加强的前提当绑定。
+
+`candidates.json`、`family.json` 为本席开工前已有未跟踪文件，不纳入提交。仅定向 add；每批读数和探针边做边推。
