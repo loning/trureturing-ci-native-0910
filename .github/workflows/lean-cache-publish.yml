@@ -4,6 +4,38 @@ on:
   pull_request:
     branches: [integration-ci-current-stability-0909-tests]
     types: [opened, synchronize, reopened]
+  # Temporary probe-branch path. Exclude from dev delivery and all native-event,
+  # stability and performance qualification; remove with the probe sources.
+  workflow_dispatch:
+    inputs:
+      candidate_sha:
+        description: 'Immutable incident merge M (40 hex)'
+        required: true
+        type: string
+      base_sha:
+        description: 'Immutable first parent B of M (40 hex)'
+        required: true
+        type: string
+      upstream_run:
+        description: 'Run that produced the successful current bundle'
+        required: true
+        type: string
+      upstream_attempt:
+        description: 'Original producing attempt, not the delta retry attempt'
+        required: true
+        type: string
+      current_artifact_id:
+        description: 'Immutable current artifact ID from that run and attempt'
+        required: true
+        type: string
+      workflow_sha:
+        description: 'Reviewed probe workflow commit (40 hex); must match dispatch ref'
+        required: true
+        type: string
+      probe_sha256:
+        description: 'Reviewed delta-signal-probe.py SHA-256 (64 hex)'
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -13,11 +45,12 @@ env:
   STRATALINT_CACHE_WRITES: 'false'
 
 concurrency:
-  group: ci-current-arm-integration-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+  group: ci-current-arm-integration-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   resolve:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04-arm
     outputs:
       candidate_sha: ${{ steps.resolve.outputs.candidate_sha }}
@@ -34,6 +67,7 @@ jobs:
         run: python3 tools/scripts/workflow/ci.py resolve --repository "$GITHUB_WORKSPACE" --head "$PR_HEAD"
 
   push:
+    if: github.event_name == 'pull_request'
     name: push
     needs: resolve
     uses: ./.github/workflows/ci-push.yml
@@ -41,6 +75,7 @@ jobs:
       candidate_sha: ${{ needs.resolve.outputs.candidate_sha }}
 
   delta:
+    if: github.event_name == 'pull_request'
     name: delta
     needs: [resolve, push]
     runs-on: ubuntu-24.04-arm
@@ -75,3 +110,87 @@ jobs:
         run: python3 tools/scripts/workflow/ci.py advisory --repository "$GITHUB_WORKSPACE" --head "$PR_HEAD_BRANCH"
       - if: always()
         run: python3 tools/scripts/workflow/ci.py summary --repository "$GITHUB_WORKSPACE" --stage delta
+
+  delta-signal-probe:
+    if: github.event_name == 'workflow_dispatch'
+    name: integration-only delta signal probe
+    runs-on: ubuntu-24.04-arm
+    # Same envelope as the existing delta job; instrumentation adds no budget.
+    timeout-minutes: 60
+    env:
+      CANDIDATE_SHA: ${{ inputs.candidate_sha }}
+      BASE_SHA: ${{ inputs.base_sha }}
+      UPSTREAM_RUN: ${{ inputs.upstream_run }}
+      UPSTREAM_ATTEMPT: ${{ inputs.upstream_attempt }}
+      CURRENT_ARTIFACT_ID: ${{ inputs.current_artifact_id }}
+      PROBE_WORKFLOW_SHA: ${{ inputs.workflow_sha }}
+      PROBE_SHA256: ${{ inputs.probe_sha256 }}
+      CI_WORKFLOW_INPUTS: ${{ toJSON(inputs) }}
+      LC_ALL: C
+      TZ: UTC
+    steps:
+      - name: Check out the workflow revision to retain the observer
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+      - name: Validate probe identity and copy outside the candidate
+        shell: bash
+        run: |
+          [[ "$CANDIDATE_SHA" =~ ^[0-9a-f]{40}$ && "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$PROBE_WORKFLOW_SHA" =~ ^[0-9a-f]{40}$ && "$PROBE_SHA256" =~ ^[0-9a-f]{64}$ ]]
+          for value in "$UPSTREAM_RUN" "$UPSTREAM_ATTEMPT" "$CURRENT_ARTIFACT_ID"; do
+            [[ "$value" =~ ^[1-9][0-9]*$ ]]
+          done
+          test "$GITHUB_WORKFLOW_SHA" = "$PROBE_WORKFLOW_SHA"
+          test "$(git rev-parse HEAD)" = "$PROBE_WORKFLOW_SHA"
+          sha256sum .github/workflows/lean-cache-publish.yml tools/scripts/workflow/delta-signal-probe.py
+          cp tools/scripts/workflow/delta-signal-probe.py "$RUNNER_TEMP/delta-signal-probe.py"
+          printf '%s  %s\n' "$PROBE_SHA256" "$RUNNER_TEMP/delta-signal-probe.py" | sha256sum --check
+          printf 'DELTA_PROBE_IDENTITY workflow=%s probe_sha256=%s candidate=%s base=%s upstream_run=%s upstream_attempt=%s artifact_id=%s\n' \
+            "$PROBE_WORKFLOW_SHA" "$PROBE_SHA256" "$CANDIDATE_SHA" "$BASE_SHA" "$UPSTREAM_RUN" "$UPSTREAM_ATTEMPT" "$CURRENT_ARTIFACT_ID"
+      - name: Check out exactly M at the normal workspace root
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.CANDIDATE_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate candidate checkout and first parent
+        run: |
+          python3 tools/scripts/workflow/ci.py checkout --repository "$GITHUB_WORKSPACE" --commit "$CANDIDATE_SHA"
+          test "$(git rev-parse HEAD^1)" = "$BASE_SHA"
+          test -z "$(git status --porcelain)"
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: ${{ inputs.upstream_run }}
+          artifact-ids: ${{ inputs.current_artifact_id }}
+          path: ${{ runner.temp }}/delta-probe-current
+          merge-multiple: true
+      - name: Validate original upstream current bundle using M
+        run: python3 tools/scripts/workflow/ci.py restore --repository "$GITHUB_WORKSPACE" --stage current --commit "$CANDIDATE_SHA" --run-id "$UPSTREAM_RUN" --run-attempt "$UPSTREAM_ATTEMPT" --archive "$RUNNER_TEMP/delta-probe-current/ci-current.tar.gz"
+      - name: Prepare standard Linux diagnostic tools on this runner
+        run: |
+          if ! command -v strace >/dev/null || ! command -v vmstat >/dev/null || ! command -v stdbuf >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install --no-install-recommends -y strace procps coreutils
+          fi
+          strace -V
+          vmstat -V
+          strace -I 1 -e trace=execve /bin/true
+      - name: Trace delta processes and signals with live resource samples
+        # Both streams go directly to the job log. No post step is needed to
+        # recover emitted evidence if runner shutdown skips always()/uploads.
+        run: |
+          test "$(git rev-parse HEAD)" = "$CANDIDATE_SHA"
+          test -z "$(git status --porcelain)"
+          printf '%s  %s\n' "$PROBE_SHA256" "$RUNNER_TEMP/delta-signal-probe.py" | sha256sum --check
+          # Map an external sender PID without dumping process arguments/env.
+          ps -eo pid,ppid,pgid,sid,comm
+          exec strace -I 1 -f -ttt -s 160 \
+            -e trace=%process,kill,tkill,tgkill,rt_sigqueueinfo,rt_tgsigqueueinfo \
+            -e signal=SIGHUP,SIGINT,SIGTERM,SIGKILL \
+            python3 -u "$RUNNER_TEMP/delta-signal-probe.py" "$BASE_SHA"
