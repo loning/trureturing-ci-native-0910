@@ -67,8 +67,11 @@ The empty search intervals at k=0 and k=1 are explicitly covered.
 
 The sole public theorem is `MultipleOfThreeCoincidence.classify` in
 `D5/S3/Arith/Congruence/MultipleOfThreeCoincidence.lean`. The complete
-module compiled without diagnostics in fragment-2b.log. Repository-wide
-gate and frozen-identity receipts are recorded in the Library note and
+module compiled without diagnostics in the prior fragment-2b.log and in
+the continuation's fresh-module.log. The continuation's `make lean` also
+passed after serial cache completion. Its symbol audit confirms the
+criterion dependencies and the standard three-axiom closure. Canonical
+report and frozen-identity receipts are recorded in the Library note and
 implementation result as they become available.
 
 Caller-provided reading: independently enumerated every k=1..3000, with
