@@ -31,3 +31,9 @@
 ## 未主张
 
 未主张全世界无已有证明、未主张不同 Hanna 序列相同、未主张数值探针等于证明、未主张独立评审或 CI 已通过。
+
+### 编译尝试 1
+
+热树 `lake env lean /tmp/a368628-probe.lean`：原卷积 well-founded 定义、`seq_zero`、`seq_recurrence`、一般 `pow_coeff_congr` 均成功 elaborate。退出1仅因探索用 `#check` 三个不存在的 interval 引理；具体 `Unknown identifier sum_Icc_succ_bot / sum_Icc_eq_sum_range / Finset.sum_Ico_zero_bot`。这些查询已从正式文件移除。序列不包含模二支撑规律。
+
+钉版 Mathlib 检索命中 `PowerSeries.coeff_mul`、`coeff_expand_mul`、`coeff_expand_of_not_dvd`、`MvPowerSeries.map_frobenius_expand`；直接复用。arXiv API `all:A368628` HTTP 200，totalResults=0。
