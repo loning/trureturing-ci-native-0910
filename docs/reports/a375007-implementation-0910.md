@@ -54,3 +54,12 @@
 - `make lean-cache-ensure` EXIT=0：`status=seeded, method=clonefile, donor=/Users/chronoai/trureturing, clonefile_attempts=1, stamp_miss=null, mathlib_olean_state=warm, project_olean_state=warm, archive_status=not_attempted`。
   完整 HTTP 响应与收据保留在 runner attempt 目录；报告为随提交保存的可移植检索结论。
 - 落点选 `D5/S3/Arith/IsolatedQuotientRemainder.lean`；创建前 Arith 直属文件 30 个、Blueprint 对应 scribe 25 个，均低于 48。七行头遵循同域已冻实例。
+
+## Lean 文件检查 1
+
+- 实际打开 GitHub 的 `Maxima-enthusiast/OEISSnippets/A375/A375007.wxm`：仅 OEIS 同款 Maxima 枚举程序，无无限证明。
+- 热树增量命令 `lake env lean D5/S3/Arith/IsolatedQuotientRemainder.lean` EXIT=0。
+  首次检查暴露两处：`nlinarith` 不自动处理 `t-k` 的截断，以及最后一层 `r%k` 需继续化简。
+  修复为在 `t=q*k+r` 内先展开 q=(q−1)+1 与乘法，再由 `omega` 推导截断减法等式；最后用 `simp only` 归约标准余数引理。
+- 两个私有构造及主定理均已核验；尚未执行 make lean/lean-report，不能以文件检查代替完整门。
+- route 调用曾因绝对路径、缺键、null/空 artifact 被拒；阅读 RouteTests 的字符串型 manifest 后修正为 artifact=lean。所有失败为调用数据错误，未修改工具。
