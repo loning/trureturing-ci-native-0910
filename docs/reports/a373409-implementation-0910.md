@@ -223,3 +223,18 @@ EXIT=0。主证明直接引用四个私有常量 `upper_of_pair`、`no_neighbors
 首次读取默认 `value?` 返回none，因为该API默认排除opaque/theorem；
 读取 Lean/Declaration.lean 的API定义后显式允许opaque成功，未改动库内证明。
 九项见证不被主证明引用；它还在主 theorem及全部私有前置之后声明，故不存在向它的前向依赖。
+
+## CI 文献定位修正
+
+PR watcher 在 run 34394662325 / head 8d5409db0f8d42a74e92ef0ba4722bba17325b9f
+返回 EXIT=2，失败步骤为 `Run complete mathematical content checks`。
+本地单独执行同一 `scribe-content-checks.sh`（不是 preflight）返回 EXIT=1，
+唯一 RED 为本题 Library note 的 `incomplete-library-locator`。
+读取 `DescribeContentGovernance.cs` 后确认：元数据 URL 之外还必须有
+`## Verified locator` 或 `## Locator` 正文小节，并绑定同一来源 URL。
+已补入亲验的 OEIS internal 字段与 canonical 地址；未改 Lean、Scribe 或冻结内容。
+补充后以绝对 report 路径重跑同一脚本 EXIT=0：`red=0`，
+`markdown: judged=1 formula(s)=0 red=0`。
+脚本的 describe-report 输出仍含大量 OPEN 投影读数（包括本题）；绝对路径没有消除它们，
+因此不把路径猜测当作根因，也不把此散文检查冒充 Lean 语义验证。
+继续核对下载中的完整 CI 日志；Lean 语义收据仍由前述 make lean-report 与编译器 API 承担。

@@ -19,3 +19,12 @@ a conjecture, reports confirmation to 100,000,000, and displays the nine-term
 antirun beginning at 6345. Its computational report is not a proof of the
 universal bound. The associated Lean module supplies an independent proof
 using adjacent pairs forced by divisibility by four and nine.
+
+## Verified locator
+
+Canonical entry: https://oeis.org/A373409. Its internal text at
+https://oeis.org/A373409/internal was retrieved on 2026-09-10:
+the NAME field defines the sequence, the COMMENTS field states the
+maximum-nine conjecture, and the EXAMPLE field gives the antirun beginning
+at 6345. These passages attest the question and the reported example;
+they do not supply the universal proof in this repository.
