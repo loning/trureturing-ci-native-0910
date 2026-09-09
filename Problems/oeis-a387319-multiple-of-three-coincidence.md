@@ -70,9 +70,11 @@ The sole public theorem is `MultipleOfThreeCoincidence.classify` in
 module compiled without diagnostics in the prior fragment-2b.log and in
 the continuation's fresh-module.log. The continuation's `make lean` also
 passed after serial cache completion. Its symbol audit confirms the
-criterion dependencies and the standard three-axiom closure. Canonical
-report and frozen-identity receipts are recorded in the Library note and
-implementation result as they become available.
+criterion dependencies and the standard three-axiom closure. The canonical
+report passed with one added/rechecked module; ledger alignment added one
+frozen module with zero conflicts. Scribe emission passed after repairing
+an inherited formula-token spacing error. Exact report and frozen identities
+are recorded in the Library note and implementation result.
 
 Caller-provided reading: independently enumerated every k=1..3000, with
 zero differences between Coincides and the classification. Triage-worker

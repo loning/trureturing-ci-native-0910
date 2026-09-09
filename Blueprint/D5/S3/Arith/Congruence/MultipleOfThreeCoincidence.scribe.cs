@@ -48,7 +48,7 @@ internal sealed class MultipleOfThreeCoincidenceDocument : IScribeDocumentDefini
         new Formula.Apply(Seq(Operatorname, Grp(V(name))), [.. args]);
     private static Formula All(Formula body) =>
         Seq(Forall, Sp, V("k"), Colon, Sp, Nat(), Comma, Sp, body);
-    private static Formula TwiceK() => Seq(D(2), Cdot, V("k"));
+    private static Formula TwiceK() => Seq(D(2), Cdot, Sp, V("k"));
     private static Formula PredicateFormula() => Disp(All(Seq(
         Call("Coincides", V("k")), Sp, Iff, Sp,
         Par(Seq(Exists, Sp, V("m"), Colon, Sp, Nat(), Comma, Sp,
