@@ -51,7 +51,7 @@ All have source_id `quantum-rh` and initial directory `residual-open`.
 | A2 | `088d882f6a10249e981da5d77bc3bb5e53e75a5ee02313bdd7c879cb21e22413` | residual-open | absorbed-closed; one edge |
 | A3 | `5f5912050d91b5f8998e6799d12c40e766fa4d65798ff890b506a56c3bc0ed3c` | residual-open | absorbed-closed; one edge |
 | B1 | `c352d304105e02cbbcb0607e31a1e217adb85d4b344ba0d75c23ba4420dbf0e1` | residual-open | residual-open; dossier only; needs a Lean bridge |
-| B2 | `7b2657006891568aa395dfd9fa14bde9d9d23d2ade0c449b00f7cdf5c616baec` | residual-open | dossier pending; cover prohibited |
+| B2 | `7b2657006891568aa395dfd9fa14bde9d9d23d2ade0c449b00f7cdf5c616baec` | residual-open | residual-open; dossier only; needs a Lean bridge |
 
 ## A1: G2 discriminant
 
@@ -326,6 +326,88 @@ No coverage operation was executed for this atom. Its migration is
 singular/pseudoinverse variant, complex inertia count, or global arithmetic/RH
 criterion is covered by this dossier.
 
+## B2: Projected dynamics, dossier only
+
+Atom: `7b2657006891568aa395dfd9fa14bde9d9d23d2ade0c449b00f7cdf5c616baec`.
+`make show-atom` returned 0 with the complete raw/normalized body and empty
+coverage. The source has arbitrary `T:X->X` and `pi:X->Y`, and asks whether a
+map `Tbar:pi(X)->pi(X)` exists satisfying box (10), `pi o T = Tbar o pi`,
+iff box (11), `pi(x)=pi(y) -> pi(Tx)=pi(Ty)`, holds for all x,y.
+
+Frozen candidate GID:
+`D5/S0/Rewriting/Quotients/DynamicsDescent.dynamics_descends_iff`.
+The actually read state file is
+`Golden/Frozen/state/D5/S0/Rewriting/Quotients/DynamicsDescent.lean.json`, pin
+`sha256:9b68af3f9f0957494c5bd40f72876714752f0082c0d8ebdd1123463365fc025e`.
+The whole frozen module was read with `git show origin/dev:`, including this
+signature through its `:= by`:
+
+```text
+{X B : Type*} (quotientMap : X -> B) (update : X -> X)
+(hSurjective : Function.Surjective quotientMap) :
+(ExistsUnique fun descended : B -> B =>
+  quotientMap o update = descended o quotientMap) <->
+  forall x y, quotientMap x = quotientMap y ->
+    quotientMap (update x) = quotientMap (update y)
+```
+
+The required transport, in order:
+
+1. Retain arbitrary source carriers X,Y and both maps T,pi. Neither boxed
+   formula imposes a metric, inner product, smoothness, linearity, invertibility,
+   finite-state restriction or rewriting rule. The S0 module namespace does
+   not add any such premise to its actual binders.
+2. Set `B=Set.range pi`, the subtype `{y:Y | exists x:X, pi x=y}`, and
+   `q:X->B` by `q(x)=(pi(x), witness x)`. This represents precisely the source
+   codomain pi(X); X is not restricted.
+3. For any b:B, its range-membership witness gives x with `pi(x)=b.val`.
+   Subtype extensionality gives `q(x)=b`, so q is surjective. This does not
+   require pi to be onto all Y and does not assume X is nonempty.
+4. Identify `q(x)=q(y)` iff `pi(x)=pi(y)`: apply `Subtype.val` for one direction,
+   subtype extensionality for the other. Apply the same identification to
+   T(x),T(y). Thus box (11) is exactly the frozen right-hand side for q,T,
+   with universal x,y and implication direction unchanged.
+5. Instantiate `dynamics_descends_iff` with `quotientMap=q`, `update=T`, and
+   the surjectivity proof above. No inner product is introduced. Unlike B1,
+   this statement is an iff, not a conjunction with an unused second member.
+6. Make box (10) well typed. For `f:B->B`, the equality in B is
+   `q o T = f o q`. Its Y-valued form is
+   `pi o T = Subtype.val o f o q`. Function extensionality and subtype
+   extensionality identify these equalities. The source's informal use of pi
+   at both codomains has to be made explicit; replacing B by all Y would be
+   a different claim.
+7. From frozen `ExistsUnique` obtain the source `Exists` by retaining the
+   map and commuting equality. Conversely, suppose f commutes. If g also
+   commutes, every b:B has b=q(x), hence
+   `g(b)=g(q(x))=q(Tx)=f(q(x))=f(b)`. Surjectivity and function extensionality
+   prove g=f, so the source existence assertion implies existence and
+   uniqueness on exactly this codomain.
+8. Both directions of the frozen iff now yield both directions of the source
+   iff. Empty X and empty range remain allowed; no point outside an existing
+   range witness is needed. The frozen proof chooses representatives using
+   `Classical.choose`; it establishes existence and is not an executable
+   geometric algorithm.
+
+| Box | Frozen component after transport | Label |
+| --- | --- | --- |
+| (10), existence of a commuting Tbar on pi(X) | Left side, `ExistsUnique`, after range restriction, coercion identification and automatic uniqueness | equivalent |
+| (11), preservation of every pi-fiber under T | Right side, all x,y with equality of q-values, after subtype extensionality | equivalent |
+
+Recommendation: **needs a Lean bridge**. The written transport exposes no
+mathematical mismatch in (10)-(11), but the range/coercion and
+Exists-to-ExistsUnique identifications have not been elaborated. Both directions
+of the frozen iff are used; uniqueness is discarded for the source existence
+reading and shown automatic for the converse identification. There is no
+separate unused conjunct. No geometric regularity, distance preservation or
+computability follows from these equations alone.
+
+Proposed reuse is `proof_shape: bind-only`, `escape_witness: null`, with the
+candidate GID and module pin above as the direct frozen dependency;
+`admission_basis: not-applicable(dossier only)`. No coverage operation was
+executed for this atom. Its migration is `residual-open -> residual-open`, with
+`coverage_gids: []`. The unelaborated bridge and any stronger interpretation of
+the title's "independently execute" wording remain uncovered.
+
 ## Nonclaims
 
 - No claim that `make cover` judges fidelity.
@@ -333,4 +415,4 @@ criterion is covered by this dossier.
 - No new theorem, proof, deposit, freeze, or implication to RH is claimed.
 - No exhaustive repository or literature search is claimed.
 - No independent review or multi-model consensus is claimed.
-- Not yet measured at this checkpoint: writer outcomes and PR checks.
+- PR checks have not yet been measured at this dossier checkpoint.
