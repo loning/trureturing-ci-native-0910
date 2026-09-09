@@ -1,0 +1,12 @@
+COMMAND: ["make", "-f", "Makefile", "-f", "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/probe.mk", "lean", "PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B4Probe.lean"]
+LEAN_CACHE {"status":"present","worktree":"/Users/auricstudio/trureturing-u1bridge-0909","donor":null,"method":"none","reason":null,"stamp_miss":null,"pin_sha256":"sha256:6c4c682ffba051b5744fe7a75ccc99d7f3b20227b3b026f392f3315be0adaa4e","clonefile_errno":null,"clonefile_errnos":[],"clonefile_attempts":0,"clonefile_cleanup_error":null,"mathlib_missing_olean_files":0,"mathlib_missing_olean_samples":[],"archive_status":"not_attempted","archive_mode":null,"archive_skip_reason":"project olean state is warm","archive_reason":null,"archive_producer_commit_sha":null,"archive_workflow_run_id":null,"mathlib_olean_state":"warm","mathlib_olean_probe_error":null,"project_olean_state":"warm","project_olean_probe_error":null}
+'QdB4Probe.b4_source_full' depends on axioms: [propext, Classical.choice, Quot.sound]
+'QdB4Probe.b4_source' depends on axioms: [propext, Classical.choice, Quot.sound]
+'QdB4Probe.b4_source_cumulant' depends on axioms: [propext, Classical.choice, Quot.sound]
+'QdB4Probe.nodal_derivative' depends on axioms: [propext, Classical.choice, Quot.sound]
+'QdB4Probe.b4_residue_sum' depends on axioms: [propext, Classical.choice, Quot.sound]
+'QdB4Probe.b4_cumulant' depends on axioms: [propext, Classical.choice, Quot.sound]
+LEAN_CACHE {"status":"present","worktree":"/Users/auricstudio/trureturing-u1bridge-0909","donor":null,"method":"none","reason":null,"stamp_miss":null,"pin_sha256":"sha256:6c4c682ffba051b5744fe7a75ccc99d7f3b20227b3b026f392f3315be0adaa4e","clonefile_errno":null,"clonefile_errnos":[],"clonefile_attempts":0,"clonefile_cleanup_error":null,"mathlib_missing_olean_files":0,"mathlib_missing_olean_samples":[],"archive_status":"not_attempted","archive_mode":null,"archive_skip_reason":"project olean state is warm","archive_reason":null,"archive_producer_commit_sha":null,"archive_workflow_run_id":null,"mathlib_olean_state":"warm","mathlib_olean_probe_error":null,"project_olean_state":"warm","project_olean_probe_error":null}
+Build completed successfully (12767 jobs).
+EXIT=0
+SECONDS=248.4600485

@@ -215,3 +215,28 @@ runner 工件目录：`/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensu
 [B4 检索收据及同正则阴阳对照](qd-family-triage-0909/attempt-2/search-01.json)。源上下文明列 `a₀=1`，有限假设列互异正根，B1 给其缩放为全部临界点；探针的这些前提须逐一对齐，不把任意加强的前提当绑定。
 
 `candidates.json`、`family.json` 为本席开工前已有未跟踪文件，不纳入提交。仅定向 add；每批读数和探针边做边推。
+
+### Attempt 2 / B4：bind-only = yes
+
+`atom_id=c0a72a217fb966246fd4a48a809795cdc539435d1e88d1a10d041a9bcd9ed98d`；`proof_shape=bind-only`；`escape_witness=null`；`remaining_gap=none`（原文有限设置内）。
+
+[完整探针](qd-family-triage-0909/attempt-2/b4-01.lean) 已把 B18 两段等式合成 `b4_source_full`。`make lean` 整次 **EXIT=0**，248.4600485 秒；该定理及所用留数恒等式均只依赖 `[propext, Classical.choice, Quot.sound]`。[运行摘录](qd-family-triage-0909/attempt-2/b4-01-excerpt.txt)；[完整日志的无损 ASCII 归档](qd-family-triage-0909/attempt-2/b4-01.log.gz.b64)。解码为 base64 后解 gzip 即原始日志；原始日志也保存在 runner attempt-2 中。
+
+判形依据：内联 `R=q−d⁻¹Xq′+(a₁/d²)q′` 后，次数界、节点值、最高系数全是系数改写及域归一化；`q′=d·nodal` 直接应用上游多项式唯一性；留数和就是 `Lagrange.coeff_eq_sum` 的实例。源二次项来自有限和定义，`χ₄` 换元来自 `a₁=m₂/2`、`a₂=m₄/24`，以 `ring` 收尾。没有满足逃逸见证四项的新中间命题。
+
+上一席的 `⊢ True ∨ sourceThetaCoefficient 2 = 0` 改用 `ring_nf` 后 `simp` 闭合；新目标没有增加前提。B3 设置的 `d≥2` 写成 `d=n+2`，`a₀=1` 为源卷明文固定规范，`t` 的互异性来自有限假设，临界性由既判 B1 提供；不额外假设 `P_d.natDegree=d`。这不证明实际 theta 密度与 ξ 的归一化分析桥，该共同背景仍按原文假设使用。
+
+`mathlib_hits`（本地钉版实读）：`Polynomial.eq_of_degree_le_of_eval_index_eq` — `.lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean:117`；`Lagrange.coeff_eq_sum` — 同文件 `:495`；`Lagrange.eval_nodal_derivative_eval_node_eq` — 同文件 `:605`；`Polynomial.coeff_reflect` — `.lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean:96`。
+
+`frozen_interfaces`：F4，GID `D5/S3/Zeros/Jensen/SourceJensenPrincipalBlockObstruction`；模块 `statement_id=sha256:5e43098caa9fb48b4fccd8adc30e337ff93668044d5dcfc06acab33dc8970f3c`；直接声明 `source_jensen_coeff_edges`，声明 `statement_id=sha256:adde2bcfe9e6e59415236589839993c3faa03e7cabdaa4276c8a049fc9daae39`。作用域：固定源、d≥1、四系数合取；仅投影其常数与线性系数。F1 的既判 B1 接口负责将前层根变成当前临界点，不冒称 B1 已有独立冻结模块。
+
+`admission_if_landed=rule-11-upstream-wrapper`：命中 `Lagrange.coeff_eq_sum`；必要性是 atom B18 明文要求实际 η 与 θ 系数/χ₄ 的预算式，上游仅给节点插值的系数和，需此忠实专门化。不据可证性单独授予准入；本席不落地。
+
+实际命令：
+
+```sh
+make -f Makefile -f /var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/probe.mk lean PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B4Probe.lean
+# EXIT=0
+```
+
+读 atom 的工具异常另记：三条首轮 `make show-atom` 均 EXIT=2，原文为 `SHOW_ATOM_INVALID Repository file must be strict UTF-8: docs/reports/digestion/qd-family-triage-0909/b11-01.log.gz.`，无 Lean 未闭合目标。临时把继承的二进制归档移出当前树重读，完成后原样恢复；本席新日志用 ASCII 无损归档，避免重复此触发。该异常不支持任何数学 no/content 判词。
