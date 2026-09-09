@@ -87,7 +87,7 @@ B1.1 `make lean` 第三次 EXIT=0（27.901 秒）；前两次 EXIT=2 是 map/ref
 
 ASSUMED-UNVERIFIED：源规范 a₀=1 的分析证明不在本席；未打开外部论文网页；无独立评审；前席日志不重放。nonclaims：不证明 RH，不主张新数学内容，不以编译绿代替忠实性，不把 rule-11 的必要性等同于可证性，不以 refutes 新造准入依据。
 
-B1.1 积分公式子 atom `ae0bab9f…`：`make cover` EXIT=0（174.578 秒），`ledger_changed=true`，已迁入 absorbed-closed；本次提交携带首次冻结、镜像和这条 coverage。父 atom 和散文子 atom 尚未计为完成。
+B1.1 积分公式子 atom `ae0bab9f…`：`make cover` EXIT=0（174.578 秒），`ledger_changed=true`，已迁入 absorbed-closed；本次提交携带首次冻结、镜像和这条 coverage。该子 atom 已提交推送 `347db77617`。散文子 atom `2ddc6236…` 随后 `make cover` EXIT=0（175.723 秒），`ledger_changed=true`，同样迁入 absorbed-closed。其难易评语在 Scribe 保留为不作复杂度推论的边界，不伪造复杂度谓词或估计；它的数学断言对应上表后三行。父 atom 将单独重试 cover。
 
 ## 必要性原文（CAS 字节，不缩写矩阵）
 
