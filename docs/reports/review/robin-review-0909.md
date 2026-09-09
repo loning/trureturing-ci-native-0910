@@ -10,7 +10,7 @@
 - Read first: tracked `tools/scripts/agent/probe-brief-note.txt`, then all of `CLAUDE.md` and `agents/CONTEXT.md`.
 - Scope: review only; no edits to `D5/**` or `Blueprint/**`, no freeze/deposit/cover/merge action.
 - Worker artifacts: `/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/robin-review-0909/attempt-1` (called `ATTEMPT` below).
-- Checkpoints: Q1 complete; Q2-Q6 pending. Overall verdict is pending until all six questions are reviewed.
+- Checkpoints: Q1-Q2 complete; Q3-Q6 pending. Overall verdict is pending until all six questions are reviewed.
 
 ## Q1. Mathematical correctness
 
@@ -114,6 +114,30 @@ All eight rational `log_lower` certificates in `:123-157` were independently che
 
 Reproduction: `python3 "$ATTEMPT/math_check.py"`, EXIT 0, output `math_check.json`. The script and full rational results are worker-owned artifacts. It uses only standard-library exact integers and `fractions.Fraction`; decimal displays are non-authoritative. Its integer-scan criterion is independent of the submitted exponent-box enumeration.
 
+## Q2. Totalization and degenerate points
+
+Result: pass, no blocking degenerate point in the quantified domain.
+
+- Denominator: natural powers of 2, 3, 5 and 7 are strictly positive for every exponent. In the actual public proof, `SevenSmooth.lean:178` obtains real positivity from `hn` by `omega` and `exact_mod_cast`. Each quotient comparison uses that same proof (`:187`, `:199`, `:209`, `:217`). The denominator and sigma cast are real-valued; this is not natural-number truncating division.
+- Inner logarithm: `n > 5040` ensures a positive input. The proof of `loglog_5040` actually establishes `341/40 < log 5040` at `:124-126`, a stronger lower bound than 1. At the other anchors it establishes `921/100`, `99/10`, and `589/50` as lower bounds on the inner logarithm, all greater than 1.
+- Outer logarithm: `rhs_lower` at `:163-166` converts `1 < m` and `m <= n` to real inequalities, uses `Real.log_pos hmR` to supply positivity of `log m`, and uses two positive-domain `Real.log_le_log` applications. Its `hlogn` is explicitly `l < log(log n)`, and its input `hl` is `0 < l`. All four public branches instantiate positive `l` and proved anchor bounds. Thus `log(log n)>0` is on the Lean proof path. The public theorem has no separately named `1 < log n` local; this intermediate estimate is distributed across the anchor proof and monotonicity, not omitted mathematically.
+- Auxiliary fractions: `geometric_bound` proves `p-1>0` at `:45`. The atanh parameter has `y+1>=2` because `hy:1<=y`; the imported analytic theorem is used within its `1<=y<2` domain. Fixed ratio denominators 100, 50, and 8 are nonzero.
+- `sqrt` and `sInf`: absent from this module's statement and source proof; no such totalization is used to establish the submitted inequality. This is a source-level scope claim, not a claim that these constants never occur in all imported infrastructure.
+- Boundary checks: `n=0` is unattainable by the product; `n=1` is attainable but excluded by `hn`, and the full conclusion there is false (`1<0`), not accidentally true. The ordinary true auxiliary bound `1<35/8` at `n=1` is harmless. `n=5040` is also excluded; the upper finite cut `131072` is included in the tail. No permitted exponent tuple produces an invalid logarithm input.
+
+Correction to the brief's generic warning: this pinned Mathlib has `Real.log 0 = 0` and `Real.log 1 = 0` (`Mathlib/Analysis/SpecialFunctions/Log/Basic.lean:103,107`), but negative arguments are extended by `log(-x)=log x` (`:121`), not uniformly mapped to zero. The actual target excludes both zero and negative logarithm inputs, so this correction does not weaken the check.
+
+Literal search receipt (counts are matching lines; these searches only support literal presence/absence, not semantic dependency claims):
+
+```
+rg -n '\b(sqrt|sInf)\b' D5/S3/Arith/Robin/SevenSmooth.lean
+# EXIT 1, 0 matching lines
+rg -n '\b(log|exp)\b' D5/S3/Arith/Robin/SevenSmooth.lean
+# EXIT 0, 13 matching lines; positive control uses the same word-boundary and alternation features
+```
+
+Push receipt for Q1: `7766d95416`, successful creation of `origin/lane/math/robin-review-0909`, EXIT 0. Q2 is recorded in the next checkpoint commit.
+
 ## Pending checks and nonclaims
 
-At this checkpoint Q2-Q6 have not been concluded. Own Make exits, canonical axiom closure, elaborated witness use, preregistration, classification, and mirrors remain pending, not inferred from implementation reports. No claim of general Robin, RH, novelty, search exhaustiveness, successful freeze, or remote CI/merge is made. No external literature page has been opened or used as evidence.
+At this checkpoint Q3-Q6 have not been concluded. Own Make exits, canonical axiom closure, elaborated witness use, preregistration, classification, and mirrors remain pending, not inferred from implementation reports. No claim of general Robin, RH, novelty, search exhaustiveness, successful freeze, or remote CI/merge is made. No external literature page has been opened or used as evidence.
