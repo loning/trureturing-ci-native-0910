@@ -29,3 +29,90 @@
 `B11Probe.lean` 已 elaborate 完整 `b11_source`：对 d≥2、全部 x:ℝ，复多项式 Q 在 x 的值等于指定相邻层积分加 `(-1)^d*d!/d^d*a_d`。`b11_constant` 直接用已冻结 `source_jensen_coeff_edges` 第四投影；`b11_source` 接前席 B1 系数运输和 Mathlib FTC。两者 axioms 都恰为标准三公理。日志 [b11-checkpoint.log](qd-family-triage-0909/b11-checkpoint.log) 尚无 EXIT，不据此提前把整次 make 记为通过；待命令返回后逐条结算。
 
 [search-02.json](qd-family-triage-0909/search-02.json) 记录第二批实查：Lagrange.coeff_eq_sum（497 行）、Gauss–Lucas（97 行）、FTC、real restriction 与 Schur。前述箭头关键词无命中不能遮盖这些语义近邻。B4 新探针检验“余式最高系数等于临界值/节点差积之和”；这是 Lagrange 直接实例化的候选 bind 路线，尚未判定。
+
+
+## 第一条结算：B1.1
+
+`bind_only=yes`，`remaining_gap=none`，`escape_witness=null`。整次 make EXIT=0；534.14 秒，12767 jobs，标准三公理。源顶项的归一化已是冻结投影，不再作为缺口。
+
+```json
+{
+  "atom_id": "1e414ffb45d7fcaa9536a956298c4e291f91a2e310f112d2cf8419518caefd1a",
+  "title": "推论 B1.1：高阶延拓是一项带常数的积分问题",
+  "bind_only": "yes",
+  "proof_shape": "bind-only",
+  "remaining_gap": "none：常数由已冻结 source_jensen_coeff_edges 第四投影 + coeff_reflect + ring；积分由已判 B1 与 FTC 直接实例化。",
+  "probe_statement": "B1BindOnlyProbe.b11_source: ∀ d≥2, ∀ x:ℝ, (Q (sourceJensenPolynomial d) d).eval (x:ℂ) = (∫ u in 0..x, d*alpha(d)^(d-1)*(Q (sourceJensenPolynomial (d-1)) (d-1)).eval ((u:ℂ)/alpha(d))) + (-1)^d*d!/d^d*(sourceThetaCoefficient d:ℂ).",
+  "probe_file": "docs/reports/digestion/qd-family-triage-0909/B11Probe.lean",
+  "probe_run": "b11-01",
+  "mathlib_hits": [
+    {
+      "declaration": "Polynomial.reflect",
+      "file": ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean",
+      "line": 88
+    },
+    {
+      "declaration": "Polynomial.coeff_reflect",
+      "file": ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean",
+      "line": 96
+    },
+    {
+      "declaration": "Polynomial.eval₂_reflect_mul_pow",
+      "file": ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean",
+      "line": 191
+    },
+    {
+      "declaration": "Polynomial.hasDerivAt",
+      "file": ".lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Polynomial.lean",
+      "line": 67
+    },
+    {
+      "declaration": "HasDerivAt.comp_ofReal",
+      "file": ".lake/packages/mathlib/Mathlib/Analysis/Complex/RealDeriv.lean",
+      "line": 97
+    },
+    {
+      "declaration": "intervalIntegral.integral_eq_sub_of_hasDerivAt",
+      "file": ".lake/packages/mathlib/Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean",
+      "line": 1148
+    }
+  ],
+  "frozen_interfaces": [
+    {
+      "gid": "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.normalizedJensen_degree_lowering",
+      "statement_id": "sha256:f13a2fdd4121c7b170af20e397cf8d9c567ddfcfd4dd8e37d469c21f8603d6bf",
+      "state_path": "Golden/Frozen/state/D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.lean.json",
+      "module_statement_id": "sha256:ee43a04a542df25237818cbfeeb29bb1abaed956f90db04822d08e8f413d50b4",
+      "scope": "任意实系数序列，d≥2；复多项式降阶恒等式，无根或矩阵结论"
+    },
+    {
+      "gid": "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.normalizedJensen_eq_fallingFactorial_sum",
+      "statement_id": "sha256:8a2655f8cbb74a3d045256378f01d8c6468e59545dc09fc5446bd390f898c025",
+      "state_path": "Golden/Frozen/state/D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.lean.json",
+      "module_statement_id": "sha256:ee43a04a542df25237818cbfeeb29bb1abaed956f90db04822d08e8f413d50b4",
+      "scope": "任意实系数序列，d≥1；有限下降阶乘和"
+    },
+    {
+      "gid": "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.sourceJensenPolynomial_eq_normalizedJensen",
+      "statement_id": "sha256:0c96cec689edaf5a585802b79a9c52b976c6dcedbee0cd259b40d0a7d19ecfa9",
+      "state_path": "Golden/Frozen/state/D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.lean.json",
+      "module_statement_id": "sha256:ee43a04a542df25237818cbfeeb29bb1abaed956f90db04822d08e8f413d50b4",
+      "scope": "固定 theta 系数，d≥1；源对象到通用归一化对象"
+    },
+    {
+      "gid": "D5/S3/Zeros/Jensen/SourceJensenPrincipalBlockObstruction.source_jensen_coeff_edges",
+      "statement_id": "sha256:adde2bcfe9e6e59415236589839993c3faa03e7cabdaa4276c8a049fc9daae39",
+      "state_path": "Golden/Frozen/state/D5/S3/Zeros/Jensen/SourceJensenPrincipalBlockObstruction.lean.json",
+      "module_statement_id": "sha256:5e43098caa9fb48b4fccd8adc30e337ff93668044d5dcfc06acab33dc8970f3c",
+      "scope": "固定 theta 系数，d≥1；四系数合取，第四项是顶项 d!/d^d*a_d"
+    }
+  ],
+  "escape_witness": null,
+  "admission_if_landed": {
+    "admission_basis": "rule-11-upstream-wrapper",
+    "reason": "条件性的落地依据：atom B6 明文要求源 Q 的指定积分表示；Mathlib.intervalIntegral.integral_eq_sub_of_hasDerivAt 是精确积分引擎，允许最薄诚实包装。常数单独只是冻结投影，无独立准入依据；本席不实施。"
+  }
+}
+```
+
+完整日志：[b11-01.log](qd-family-triage-0909/b11-01.log)。B4 初试 [b4-01.log](qd-family-triage-0909/b4-01.log) 因 canonical cache writer guard busy 返回2，未到 Lean，不能据此判数学不闭合；待释放后重跑。第二批 Schur 的结尾 `\b` 不匹配下标字符，属于正则词界问题，已读到实际声明582行，不拿该0命中主张不存在。

@@ -1,0 +1,5 @@
+COMMAND: ['make', '-f', 'Makefile', '-f', '/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/probe.mk', 'lean', 'PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-1/B4Probe.lean']
+LEAN_CACHE {"status":"busy","worktree":"/Users/auricstudio/trureturing-u1bridge-0909","donor":null,"method":"none","reason":"canonical cache writer guard is busy","stamp_miss":null,"pin_sha256":"sha256:6c4c682ffba051b5744fe7a75ccc99d7f3b20227b3b026f392f3315be0adaa4e","clonefile_errno":null,"clonefile_errnos":[],"clonefile_attempts":0,"clonefile_cleanup_error":null,"mathlib_missing_olean_files":null,"mathlib_missing_olean_samples":[],"archive_status":"not_attempted","archive_mode":null,"archive_skip_reason":null,"archive_reason":null,"archive_producer_commit_sha":null,"archive_workflow_run_id":null}
+make: *** [qd-triage-probe] Error 2
+EXIT=2
+SECONDS=30.860718708
