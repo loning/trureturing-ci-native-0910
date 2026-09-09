@@ -145,7 +145,7 @@ jobs:
         run: make -C candidate/tools dotnet
       - name: Stage judge binaries for the shared cache (integration push only)
         id: stage-judge
-        if: github.event_name == 'push' && github.ref == 'refs/heads/integration-ci-lean-report-cache-restored-tests'
+        if: steps.build-candidate.outcome == 'success' && github.event_name == 'push' && github.ref == 'refs/heads/integration-ci-lean-report-cache-restored-tests'
         shell: bash
         run: |
           set -euo pipefail
@@ -305,6 +305,7 @@ jobs:
             candidate/tools/**/obj
           key: stratalint-judge-binaries-v2-${{ runner.os }}-${{ steps.judge-address.outputs.runtime }}-${{ steps.judge-address.outputs.address }}
       - name: Build candidate tools before Lean report production
+        if: steps.judge-cache.outputs.cache-hit != 'true'
         shell: bash
         run: make -C candidate/tools dotnet
       - name: Resolve checked merge result's protected parent
