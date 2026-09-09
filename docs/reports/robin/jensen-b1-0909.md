@@ -28,3 +28,5 @@ LANE #6160；atom `087e3caa7c278b4ea58f06604daa8721ab5258f6c451a25ed8f2d0092d823
 第二次探针退出 2（`A/probe-02.log`）：`pow_sub₀` 的实际结论已经是乘逆式，后续多余 `rw [div_eq_mul_inv]` 无目标可改写；删去该步即可继续。冻结系数等式到目标的代数闭合未另报错。补入非零点倒数求值绑定、零点系数取值、固定源 B1 与两侧数值检查，仍只用库引理和规范化；没有改变目标或加入数学假设。
 
 第三次探针总退出 2（`A/probe-03.log`），但 `b1_polynomial`、`reciprocal_binding`、`source_binding` 均已通过，闭包仅 `[propext, Classical.choice, Quot.sound]`。剩余失败在零点求值缺显式 `coeff_zero_eq_eval_zero` 改写、求值包装与 sample_q2 的宽 `simp` 达默认递归深度；不提高预算，改为指定公式分步规范化。尚未把总失败报为整体验证通过。
+
+第四次探针总退出 2（`A/probe-04.log`），B1 的全部一般性声明 `b1_polynomial`、`b1_eval`、固定源 `b1_source` 与两种绑定均已通过，六条公理闭包全部只有标准三公理。唯一剩余报错是具体 sample_q2 的 `reflect 2 X` 与 `revAt 2 2` 化简遗漏。**停止判据 1 已触发：B1 整体判 `bind-only`，停止模块实施，不创建 D5 模块、不 deposit、不寻准入依据。** 后续仅完成 brief 必需的数值/退化诊断与报告交付。
