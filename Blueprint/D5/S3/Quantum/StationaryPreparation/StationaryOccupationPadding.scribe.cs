@@ -10,7 +10,7 @@ internal sealed class StationaryOccupationPaddingDocument : IScribeDocumentDefin
         "Finite padding isometries and the physical stationary occupation gate.",
         H("Stationary Occupation Padding"),
         Blocks(
-            Paragraph(Text("For a finite tail alphabet I and natural capacities c, PaddingMemory(H,c) consists of a sink and pairs of a nonzero bounded tail with a head index in Fin(H+1). Each legal emission has the square root of its probability as its amplitude. The matrix maps each memory basis vector into the joint letter and memory space.")),
+            Paragraph(Text("For a finite tail alphabet I and natural capacities c, PaddingMemory(H,c) consists of a sink and pairs of a nonzero bounded tail with a head index in Fin(H+1). Each legal emission has the square root of its probability as its amplitude. The matrix maps each memory basis vector into the joint letter and memory space. Here coefficient(U,v,p)=(U v)(p) denotes the p coordinate of U(v).")),
             Theorem("padding-probability", "padding_probability_sum", "Padding transition probabilities sum to one", PaddingProbabilityFormula,
                 "The sink, head predecessor and positive tail predecessors partition the legal emissions, including the one-tail boundary."),
             Theorem("padding-matrix", "padding_matrix_gram", "The padding matrix has orthonormal columns", PaddingMatrixFormula,
@@ -41,16 +41,16 @@ internal sealed class StationaryOccupationPaddingDocument : IScribeDocumentDefin
     private static Formula PaddingUnitaryFormula => IndexDecidableContext(
         All("H", N, All("c", Function(I, N), Exists("U", Call("Unitary", Call("Prod", Call("Option", I), Call("PaddingMemory", Id("H"), Id("c")))),
             All("j", Call("PaddingMemory", Id("H"), Id("c")), All("i", Call("Option", I), All("k", Call("PaddingMemory", Id("H"), Id("c")),
-                Eq(Call("coefficient", Id("U"), Pair(Call("basis", Pair(Call("none"), Id("j"))), Pair(Id("i"), Id("k")))),
+                Eq(Call("coefficient", Id("U"), Call("basis", Pair(Call("none"), Id("j"))), Pair(Id("i"), Id("k"))),
                     Call("paddingMatrix", Id("H"), Id("c"), Pair(Id("i"), Id("k")), Id("j"))))))))));
     private static Formula PhysicalCoefficientFormula => AlphabetContext(
         All("a", Multi, CoefficientsForA()));
     private static Formula CoefficientsForA()
     {
         var d = Call("Fin", Call("proposedDimension", Id("a")));
-        var input = Pair(Call("basis", Pair(Call("maximalHead", Id("a")), Id("j"))),
-            Pair(Id("i"), Id("k")));
-        var equation = Eq(Call("coefficient", Call("physicalGate", Id("a")), input),
+        var input = Call("basis", Pair(Call("maximalHead", Id("a")), Id("j")));
+        var equation = Eq(Call("coefficient", Call("physicalGate", Id("a")), input,
+            Pair(Id("i"), Id("k"))),
             Call("physicalMatrix", Id("a"), Pair(Id("i"), Id("k")), Id("j")));
         return All("j", d, All("i", A, All("k", d, equation)));
     }
