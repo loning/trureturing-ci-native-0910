@@ -4,7 +4,7 @@
    mirror-E: none(waiver:unbounded-symbolic-proof)
    anchors: []
    utility: none
-   digest: Parameter congruence transports binary support; endpoint separation gives residues modulo eight. -/
+   digest: Parameter congruence transports parity; endpoint separation gives residues modulo eight. -/
 
 import D5.S1.Recurrence.Residue.ExponentialSquareWeightCatalanParity
 import Mathlib.Algebra.BigOperators.Intervals
@@ -253,7 +253,6 @@ theorem source_iff (q : ℤ) (hq : q ≠ 0) (f : ℕ → ℚ) :
       rw [← heq, ← coeff_zero_eq_constantCoeff_apply, coeff_mk] at hz
       exact hz
     apply generating_unique q hq f N hf0 hN0 hN1 hNshape
-    change C (q : ℚ) * (X * derivative ℚ (mk f)) = N * mk f
     have hd : derivative ℚ (mk f) = derivative ℚ L * mk f := by
       simpa only [heq] using hE
     rw [hd]
@@ -401,7 +400,7 @@ theorem family_conjectures :
       ∃ k : ℕ, n + 1 = 2 ^ k) ∧
     (∀ n : ℕ, 2 ≤ n →
       a 2 n % 8 = if n % 4 = 2 then 4 else if n % 4 = 0 then 0 else 2) :=
-  ⟨odd_parameter_parity 5 (by norm_num), odd_parameter_parity 3 (by norm_num),
+  ⟨odd_parameter_parity 5 ⟨2, rfl⟩, odd_parameter_parity 3 ⟨1, rfl⟩,
     ExponentialSquareWeightCatalanParity.hanna_conjecture, residues_q2⟩
 
 #print axioms family_conjectures

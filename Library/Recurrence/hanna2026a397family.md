@@ -116,3 +116,61 @@ q=1: 1,1,2,15,244,6420;
 q=3: 1,1,6,153,7932,650010;
 q=5: 1,1,10,435,38020,5230600;
 q=2: 1,1,4,66,2248,121690.
+
+## Continuation verification (attempt 3)
+
+The continuation worker read all five inherited commits, starting at
+bb412c5f7e and ending at rescue commit 3ee13b7551. The checkpoints above are
+the predecessor's reports, not independent continuation measurements.
+No additional worker or independent review seat was started.
+
+Own cache receipt: make lean-cache-ensure exited 0; status=present,
+project_olean_state=warm, mathlib_olean_state=warm, missing Mathlib oleans=0,
+with the same pin_sha256 recorded above. Before continuation additions the
+registered Residue directories had 8 Lean files and 14 Blueprint files;
+Library/Recurrence had 33 files. No domain directory is created.
+
+The first full make lean (LAKE_JOBS=1) exited 2. Its only failing target was
+this module: the two `by norm_num` terms in family_conjectures left Odd 5
+and Odd 3 unsolved. All seven other printed theorem closures, including the
+rescued source_iff, were the standard three axioms. The repair supplies
+the explicit witnesses 2 and 1, removes one unused tactic, and shortens the
+header digest. LEAN_NUM_THREADS=1 is also supplied on subsequent runs:
+the pinned Lake/repository source search found no LAKE_JOBS consumer, so
+LAKE_JOBS=1 alone is not claimed to impose a process concurrency limit.
+
+Own online recheck on 2026-09-09: OEIS JSON revisions A397345=16,
+A397348=10, A397242=23, A397346=10; every target comment still says
+Conjecture. Also read the NAME, COMMENT, FORMULA, REFERENCE, LINK and XREF
+fields of all direct A references in the dispatch: A397245=22, A397347=7,
+A397349=14, A038464=17, A397241=12 and A397243=9. Those fields supply no
+proof of the targeted parity or modulus-eight assertions. The formula (6)
+errors in A397348/A397346 are confirmed by comparison with formula (3)
+of A397349/A397347 respectively and are not used. Initial urllib requests
+returned HTTP 403; curl with the encoded id query succeeded. These are
+bounded source checks, not a certification that no proof exists anywhere.
+
+Own pinned-library reads: Catalan/Basic.lean:61,102 and
+PowerSeries/Exp.lean:55,70,88 plus PowerSeries/Derivative.lean:140.
+exp_unique_of_derivative_eq_self only treats F'=F; it does not directly
+solve the source equation with variable logarithmic derivative. The new
+source_iff uses derivative_subst and derivative_exp plus coefficient
+induction for the linear ODE. Authenticated GitHub code search for
+`A397345 OR A397348 OR A397346 language:Lean` returned an empty list.
+The earlier general-web/jOEIS searches above remain predecessor reports.
+
+Continuation logs and downloaded JSON are in the worker artifact directory
+`/var/folders/wv/ht3wzsj138b4sxl3q4t0xdr40000gn/T/consensus-rnd/sshx/a397family-cont-0909/attempt-3`.
+The failed build is lean-inherited.log (EXIT=2); repaired build results,
+numeric rechecks and remaining gates are recorded below as they finish.
+
+Continuation checkpoint: lean-repaired.log ends in "Build completed
+successfully (12782 jobs)" and EXIT=0. The repaired module has no warnings,
+no sorryAx and standard-three-axiom closures for all eight printed theorems.
+Thus the predecessor's parity and modulus-eight results, and the rescued
+literal exponential equivalence, are now personally reverified.
+Own exact numeric.json: all four integer recurrences checked through n=200,
+all four independent Fraction/logarithm reconstructions through n=30, all
+available source data (19,18,17,18 terms for q=1,3,5,2), and odd-parameter
+Catalan parity through m=99 agree, with zero failures. Finite checks are
+supporting evidence only; the Lean inductions prove the universal results.
