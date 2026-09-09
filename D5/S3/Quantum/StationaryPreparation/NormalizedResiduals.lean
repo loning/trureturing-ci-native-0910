@@ -157,3 +157,138 @@ theorem normalized_letter_of_not_mem (r : Multiset A) (hr : r ≤ a)
   simp [normalizedResidual, residual_letter_of_not_mem a blank U x f hout r hr hr0 i hi]
 
 end D5.S3.Quantum.StationaryPreparation.NormalizedResiduals
+
+namespace D5.S3.Quantum.StationaryPreparation.NormalizedResiduals
+
+open D5.S3.Quantum.Entanglement.SequentialRegisterCircuit
+open D5.S3.Quantum.Entanglement.OccupancyWordSectors
+open D5.S3.Quantum.StationaryPreparation.PhysicalGram
+open D5.S3.Quantum.StationaryPreparation.ResidualCalculus
+open D5.S3.Quantum.StationaryPreparation.StationaryOccupationPadding
+open D5.S3.Quantum.StationaryPreparation.StationaryOccupationResidualCircuit
+open D5.S3.Quantum.StationaryPreparation.StationaryOccupationResidualStep
+
+variable {A : Type*} [Fintype A] [DecidableEq A] [Nonempty A]
+
+/-- The initial vector already used by the concrete padding circuit. -/
+def physicalInitial (a : Multiset A) : Space (Fin (proposedDimension a)) :=
+  (residualScale a : ℂ)⁻¹ • physicalResidual a a
+
+theorem physical_residual_step (a : Multiset A) : ResidualStep a := by
+  intro r hr hr0 i k
+  by_cases ht : 0 < tailCount (maximalHead a) r
+  · by_cases hi : i ∈ r
+    · rw [if_pos hi]
+      exact positive_residual_step a r hr ht i hi k
+    · rw [if_neg hi]
+      exact physical_residual_step_absent a r hr hr0 i hi k
+  · exact physical_residual_step_tail_free a r hr hr0 (by omega) i k
+
+theorem physical_initial_output (a : Multiset A) :
+    ∀ (w : Fin a.card → A) (k : Fin (proposedDimension a)),
+      circuit (fun _ => physicalGate a) a.card 0
+        (initialized (maximalHead a) a.card (physicalInitial a)) (w, k) =
+          sectorVector a.card a w * physicalFinal a k :=
+  physical_residual_output a (physical_residual_step a)
+
+theorem physical_scaled_initial (a : Multiset A) :
+    scaledInitial a (physicalInitial a) = physicalResidual a a := by
+  change (residualScale a : ℂ) •
+    ((residualScale a : ℂ)⁻¹ • physicalResidual a a) = _
+  rw [smul_smul, mul_inv_cancel₀ (scale_ne_zero a), one_smul]
+
+/-- Suffix injectivity identifies B's actual prefix memory with C's chosen vector. -/
+theorem physical_residual_identification (a r : Multiset A) (hr : r ≤ a) :
+    residualMemory a (maximalHead a) (physicalGate a) (physicalInitial a) r =
+      physicalResidual a r := by
+  apply suffix_injective (maximalHead a) (physicalGate a) r.card
+  intro w
+  rw [residual_output a (maximalHead a) (physicalGate a) (physicalInitial a)
+    (physicalFinal a) (physical_initial_output a) r hr _ List.length_ofFn]
+  ext k
+  have h := circuit_output_of_residuals (maximalHead a) (physicalGate a) a
+    (physicalResidual a) (physicalFinal a) (physical_residual_zero a)
+    (physical_residual_step a) r.card 0 r rfl hr w k
+  rw [circuit_fixed_coefficients] at h
+  by_cases hw : (List.ofFn w : Multiset A) = r <;>
+    simpa [occupation, hw] using h.symm
+
+theorem physical_normalized_identification (a r : Multiset A) (hr : r ≤ a) :
+    normalizedResidual a (maximalHead a) (physicalGate a) (physicalInitial a) r =
+      (residualScale r : ℂ)⁻¹ • physicalResidual a r := by
+  rw [normalizedResidual, physical_residual_identification a r hr]
+
+theorem physical_prefix_identification (a r : Multiset A) (hr : r ≤ a)
+    (u : List A) (hu : (u : Multiset A) = a - r) :
+    prefixMemory (maximalHead a) (physicalGate a) u (physicalResidual a a) =
+      physicalResidual a r := by
+  rw [← physical_scaled_initial a, residual_representative_independent a
+    (maximalHead a) (physicalGate a) (physicalInitial a) (physicalFinal a)
+    (physical_initial_output a) r hr u hu, physical_residual_identification a r hr]
+
+theorem physical_prefix_normalized (a r : Multiset A) (hr : r ≤ a)
+    (u : List A) (hu : (u : Multiset A) = a - r) :
+    prefixMemory (maximalHead a) (physicalGate a) u (physicalInitial a) =
+      (Real.sqrt ((multiplicity r.card r : ℝ) / (multiplicity a.card a : ℝ)) : ℂ) •
+        ((residualScale r : ℂ)⁻¹ • physicalResidual a r) := by
+  rw [prefix_normalized a (maximalHead a) (physicalGate a) (physicalInitial a)
+    (physicalFinal a) (physical_initial_output a) r hr u hu,
+    physical_normalized_identification a r hr]
+
+theorem physical_normalized_norm (a r : Multiset A) (hr : r ≤ a) :
+    ‖(residualScale r : ℂ)⁻¹ • physicalResidual a r‖ = 1 := by
+  rw [← physical_normalized_identification a r hr]
+  exact normalized_norm a (maximalHead a) (physicalGate a) (physicalInitial a)
+    (physicalFinal a) (physical_initial_output a) r hr (physical_final_norm a)
+
+theorem physical_initial_norm (a : Multiset A) : ‖physicalInitial a‖ = 1 :=
+  physical_normalized_norm a a le_rfl
+
+theorem physical_normalized_zero (a : Multiset A) :
+    normalizedResidual a (maximalHead a) (physicalGate a) (physicalInitial a) 0 =
+      physicalFinal a := by
+  rw [physical_normalized_identification a 0 zero_le, physical_residual_zero]
+  simp
+
+theorem physical_head_singleton_le (a : Multiset A)
+    (hA : 0 < Finset.univ.sup a.count) : ({maximalHead a} : Multiset A) ≤ a := by
+  apply Multiset.singleton_le.mpr
+  apply Multiset.count_pos.mp
+  rwa [maximal_head_spec]
+
+theorem physical_normalized_head (a : Multiset A)
+    (hA : 0 < Finset.univ.sup a.count) :
+    normalizedResidual a (maximalHead a) (physicalGate a) (physicalInitial a) 0 =
+      normalizedResidual a (maximalHead a) (physicalGate a) (physicalInitial a)
+        ({maximalHead a} : Multiset A) := by
+  have ht : tailCount (maximalHead a) ({maximalHead a} : Multiset A) = 0 := by
+    simpa using head_add_tail_count (maximalHead a) ({maximalHead a} : Multiset A)
+  have hm : residualScale ({maximalHead a} : Multiset A) = 1 := by
+    rw [residualScale, multiplicity_eq_factorial _ rfl]
+    have hp : (∏ i : A, (({maximalHead a} : Multiset A).count i).factorial) = 1 := by
+      apply Finset.prod_eq_one
+      intro i _
+      by_cases hi : i = maximalHead a <;> simp [hi]
+    simp [hp]
+  rw [physical_normalized_zero, physical_normalized_identification a _
+    (physical_head_singleton_le a hA), physical_residual_tail_free a _
+    (physical_head_singleton_le a hA) ht, hm]
+  simp
+
+theorem physical_normalized_letter (a r : Multiset A) (hr : r ≤ a)
+    (hr0 : r ≠ 0) (i : A) :
+    letter (maximalHead a) (physicalGate a) i
+      ((residualScale r : ℂ)⁻¹ • physicalResidual a r) =
+        if i ∈ r then (Real.sqrt ((r.count i : ℝ) / (r.card : ℝ)) : ℂ) •
+          ((residualScale (r.erase i) : ℂ)⁻¹ • physicalResidual a (r.erase i)) else 0 := by
+  rw [← physical_normalized_identification a r hr]
+  by_cases hi : i ∈ r
+  · rw [if_pos hi, ← physical_normalized_identification a (r.erase i)
+      ((Multiset.erase_le _ _).trans hr)]
+    exact normalized_letter_of_mem a (maximalHead a) (physicalGate a) (physicalInitial a)
+      (physicalFinal a) (physical_initial_output a) r hr hr0 i hi
+  · rw [if_neg hi]
+    exact normalized_letter_of_not_mem a (maximalHead a) (physicalGate a) (physicalInitial a)
+      (physicalFinal a) (physical_initial_output a) r hr hr0 i hi
+
+end D5.S3.Quantum.StationaryPreparation.NormalizedResiduals

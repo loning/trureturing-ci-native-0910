@@ -7,6 +7,8 @@
    digest: Source entries and positive diagonal equivalence for the actual stationary Gram. -/
 
 import D5.S3.Quantum.StationaryPreparation.NormalizedResiduals
+import Mathlib.Analysis.InnerProductSpace.TensorProduct
+import Mathlib.LinearAlgebra.Finsupp.LinearCombination
 
 set_option autoImplicit false
 set_option relaxedAutoImplicit false
@@ -177,5 +179,166 @@ theorem normalized_gram_psd : (normalizedGram a blank U x).PosSemidef :=
 theorem normalized_gram_rank_le : (normalizedGram a blank U x).rank ≤ Fintype.card K := by
   rw [← occupation_gram_rank_eq]
   exact occupation_gram_rank_le a blank U x
+
+end D5.S3.Quantum.StationaryPreparation.NormalizedGram
+
+namespace D5.S3.Quantum.StationaryPreparation.NormalizedGram
+
+open D5.S3.Quantum.Entanglement.SequentialRegisterCircuit
+open D5.S3.Quantum.StationaryPreparation.PhysicalGram
+open D5.S3.Quantum.StationaryPreparation.NormalizedResiduals
+open D5.S3.Quantum.StationaryPreparation.StationaryOccupationPadding
+open D5.S3.Quantum.StationaryPreparation.StationaryOccupationResidualCircuit
+open D5.S3.Quantum.StationaryGram.StationaryOccupationRankNullity
+open scoped TensorProduct
+
+variable {A : Type*} [Fintype A] [DecidableEq A] [Nonempty A]
+
+/-- C's actual blank-input isometry in alphabet-first tensor coordinates. -/
+def physicalTensorEmission (a : Multiset A) :
+    Space (Fin (proposedDimension a)) →ₗᵢ[ℂ]
+      Space A ⊗[ℂ] Space (Fin (proposedDimension a)) :=
+  ((EuclideanSpace.basisFun A ℂ).tensorProduct
+    (EuclideanSpace.basisFun (Fin (proposedDimension a)) ℂ)).repr.symm.toLinearIsometry.comp
+      (emission (maximalHead a) (physicalGate a))
+
+theorem physical_tensor_coordinates (a : Multiset A)
+    (x : Space (Fin (proposedDimension a))) :
+    ((EuclideanSpace.basisFun A ℂ).tensorProduct
+      (EuclideanSpace.basisFun (Fin (proposedDimension a)) ℂ)).repr
+        (physicalTensorEmission a x) = emission (maximalHead a) (physicalGate a) x := by
+  simp [physicalTensorEmission]
+
+variable (a : Multiset A)
+local notation "φ" => (fun r : Multiset A => (residualScale r : ℂ)⁻¹ • physicalResidual a r)
+
+/-- The source's tensor equation for the identified actual family, including zero absent terms. -/
+theorem physical_tensor_emission (r : Multiset A) (hr : r ≤ a) (hr0 : r ≠ 0) :
+    physicalTensorEmission a (φ r) =
+      ∑ i : A, (Real.sqrt ((r.count i : ℝ) / (r.card : ℝ)) : ℂ) •
+        ((basis i : Space A) ⊗ₜ[ℂ] φ (r.erase i)) := by
+  apply ((EuclideanSpace.basisFun A ℂ).tensorProduct
+    (EuclideanSpace.basisFun (Fin (proposedDimension a)) ℂ)).repr.injective
+  rw [physical_tensor_coordinates]
+  ext ⟨i, k⟩
+  simp only [map_sum, map_smul, WithLp.ofLp_sum, Finset.sum_apply, PiLp.smul_apply,
+    smul_eq_mul, OrthonormalBasis.tensorProduct_repr_tmul_apply,
+    EuclideanSpace.basisFun_repr, basis_apply, mul_ite, mul_one, mul_zero]
+  simp only [Finset.sum_ite_eq, Finset.mem_univ, if_true]
+  have h := congrArg (fun v : Space (Fin (proposedDimension a)) => v k)
+    (physical_normalized_letter a r hr hr0 i)
+  by_cases hi : i ∈ r <;> simpa [hi, letter_apply] using h
+
+theorem physical_emission_linearCombination {I : Type*} (r : I → Multiset A)
+    (hr : ∀ j, r j ≤ a) (hr0 : ∀ j, r j ≠ 0) (c : I →₀ ℂ) :
+    physicalTensorEmission a (Finsupp.linearCombination ℂ (fun j => φ (r j)) c) =
+      Finsupp.linearCombination ℂ (fun j =>
+        ∑ i : A, (Real.sqrt (((r j).count i : ℝ) / ((r j).card : ℝ)) : ℂ) •
+          ((basis i : Space A) ⊗ₜ[ℂ] φ ((r j).erase i))) c := by
+  change (physicalTensorEmission a).toLinearMap
+    (Finsupp.linearCombination ℂ (fun j => φ (r j)) c) = _
+  rw [Finsupp.apply_linearCombination ℂ (physicalTensorEmission a).toLinearMap]
+  congr 2
+  funext j
+  exact physical_tensor_emission a (r j) (hr j) (hr0 j)
+
+
+/-- The actual isometry preserves every finite dependency, including terminal vectors. -/
+theorem physical_image_dependency_iff {I : Type*} (r : I → Multiset A) (c : I →₀ ℂ) :
+    Finsupp.linearCombination ℂ (fun j => φ (r j)) c = 0 ↔
+      Finsupp.linearCombination ℂ (fun j => physicalTensorEmission a (φ (r j))) c = 0 := by
+  have hmap : physicalTensorEmission a (Finsupp.linearCombination ℂ (fun j => φ (r j)) c) =
+      Finsupp.linearCombination ℂ (fun j => physicalTensorEmission a (φ (r j))) c :=
+    Finsupp.apply_linearCombination ℂ (physicalTensorEmission a).toLinearMap _ _
+  rw [← hmap, ← map_zero (physicalTensorEmission a)]
+  exact (physicalTensorEmission a).injective.eq_iff.symm
+
+theorem physical_dependency_iff {I : Type*} (r : I → Multiset A)
+    (hr : ∀ j, r j ≤ a) (hr0 : ∀ j, r j ≠ 0) (c : I →₀ ℂ) :
+    Finsupp.linearCombination ℂ (fun j => φ (r j)) c = 0 ↔
+      Finsupp.linearCombination ℂ (fun j =>
+        ∑ i : A, (Real.sqrt (((r j).count i : ℝ) / ((r j).card : ℝ)) : ℂ) •
+          ((basis i : Space A) ⊗ₜ[ℂ] φ ((r j).erase i))) c = 0 := by
+  have h := physical_image_dependency_iff a r c
+  have hmap : physicalTensorEmission a (Finsupp.linearCombination ℂ (fun j => φ (r j)) c) =
+      Finsupp.linearCombination ℂ (fun j => physicalTensorEmission a (φ (r j))) c :=
+    Finsupp.apply_linearCombination ℂ (physicalTensorEmission a).toLinearMap _ _
+  rw [← hmap, physical_emission_linearCombination a r hr hr0 c] at h
+  exact h
+
+/-- Removing the terminal vector preserves the actual generated subspace. -/
+theorem physical_nonterminal_span_eq (hA : 0 < Finset.univ.sup a.count) :
+    Submodule.span ℂ {v | ∃ r : Multiset A, r ≤ a ∧ r ≠ 0 ∧ φ r = v} =
+      Submodule.span ℂ {v | ∃ r : Multiset A, r ≤ a ∧ φ r = v} := by
+  apply le_antisymm
+  · apply Submodule.span_mono
+    rintro v ⟨r, hr, _, hv⟩
+    exact ⟨r, hr, hv⟩
+  · apply Submodule.span_le.mpr
+    rintro v ⟨r, hr, rfl⟩
+    apply Submodule.subset_span
+    by_cases hr0 : r = 0
+    · subst r
+      refine ⟨{maximalHead a}, physical_head_singleton_le a hA, by simp, ?_⟩
+      dsimp only
+      rw [← physical_normalized_identification a _ (physical_head_singleton_le a hA),
+        ← physical_normalized_identification a 0 zero_le]
+      exact (physical_normalized_head a hA).symm
+    · exact ⟨r, hr, hr0, rfl⟩
+
+set_option maxHeartbeats 800000 in
+-- Elaborating the actual box Gram and its generated-subspace coordinate basis needs this budget.
+/-- The identified actual family fills the physical memory, by its Gram rank in its own span. -/
+theorem physical_generated_span_top :
+    Submodule.span ℂ {v | ∃ r : Multiset A, r ≤ a ∧ φ r = v} = ⊤ := by
+  classical
+  let S := Submodule.span ℂ {v | ∃ r : Multiset A, r ≤ a ∧ φ r = v}
+  let v : D5.S1.Ledger.BoundedTimeSlice.TailBox a.count → S := fun r =>
+    ⟨φ (boxOccupation a r),
+      Submodule.subset_span ⟨boxOccupation a r, box_occupation_le a r, rfl⟩⟩
+  have hg : Matrix.gram ℂ v =
+      normalizedGram a (maximalHead a) (physicalGate a) (physicalInitial a) := by
+    ext r s
+    change inner ℂ (φ (boxOccupation a r)) (φ (boxOccupation a s)) =
+      inner ℂ (normalizedResidual a (maximalHead a) (physicalGate a) (physicalInitial a)
+        (boxOccupation a r))
+        (normalizedResidual a (maximalHead a) (physicalGate a) (physicalInitial a)
+          (boxOccupation a s))
+    rw [physical_normalized_identification a _ (box_occupation_le a r),
+      physical_normalized_identification a _ (box_occupation_le a s)]
+  have hlow := stationary_gram_rank_lower_bound
+    a.count (occupationGram a (maximalHead a) (physicalGate a) (physicalInitial a))
+    (occupation_gram_psd a _ _ _)
+    (occupation_gram_zero a _ _ _ (physicalFinal a) (physical_initial_output a)
+      (physical_final_norm a))
+    (occupation_gram_recurrence a _ _ _ (physicalFinal a) (physical_initial_output a))
+  let m : Matrix (Fin (Module.finrank ℂ S))
+      (D5.S1.Ledger.BoundedTimeSlice.TailBox a.count) ℂ :=
+    fun i r => (stdOrthonormalBasis ℂ S).repr (v r) i
+  have hupper : (occupationGram a (maximalHead a) (physicalGate a) (physicalInitial a)).rank ≤
+      Module.finrank ℂ S := by
+    rw [occupation_gram_rank_eq, ← hg,
+      Matrix.gram_eq_conjTranspose_mul (stdOrthonormalBasis ℂ S)]
+    change (m.conjTranspose * m).rank ≤ _
+    exact (Matrix.rank_mul_le_right m.conjTranspose m).trans
+      (by simpa using Matrix.rank_le_card_height m)
+  let q0 : Fintype (D5.S1.Ledger.BoundedTimeSlice.TailBox a.count) := inferInstance
+  have hupp : ∀ q : Fintype (D5.S1.Ledger.BoundedTimeSlice.TailBox a.count),
+      @Matrix.rank _ _ ℂ q _
+        (occupationGram a (maximalHead a) (physicalGate a) (physicalInitial a)) ≤
+          Module.finrank ℂ S := by
+    intro q
+    have hq : q = q0 := Subsingleton.elim _ _
+    subst q
+    exact hupper
+  have hdim : proposedDimension a ≤ Module.finrank ℂ S := hlow.trans (hupp _)
+  change S = ⊤
+  apply Submodule.eq_top_of_finrank_eq
+  apply le_antisymm (Submodule.finrank_le _)
+  simpa [Space] using hdim
+
+theorem physical_nonterminal_span_top (hA : 0 < Finset.univ.sup a.count) :
+    Submodule.span ℂ {v | ∃ r : Multiset A, r ≤ a ∧ r ≠ 0 ∧ φ r = v} = ⊤ := by
+  rw [physical_nonterminal_span_eq a hA, physical_generated_span_top a]
 
 end D5.S3.Quantum.StationaryPreparation.NormalizedGram

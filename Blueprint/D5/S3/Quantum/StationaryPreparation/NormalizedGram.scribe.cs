@@ -98,8 +98,114 @@ internal sealed class NormalizedGramDocument : IScribeDocumentDefinition
                 Theorem("normalized_gram_psd", Context(Call("PosSemidef", g)),
                     "A complex Gram matrix is positive semidefinite."),
                 Theorem("normalized_gram_rank_le", Context(Leq(Call("rank", g), Call("FintypeCard", Id("K")))),
-                    "The existing rank bound for the actual occupationGram transfers through the diagonal rank equality."))));
+                    "The existing rank bound for the actual occupationGram transfers through the diagonal rank equality."),
+                PhysicalCompanions())));
     }
+
+
+    private static DocumentBlock PhysicalCompanions()
+    {
+        Formula r = Id("r"), x = Id("x");
+        Formula positive = Lt(D(0), Call("sup", Id("univ"), Call("count", Id("a"))));
+        Formula left = PhysicalCombination(false), right = PhysicalCombination(true);
+        return new DocumentBlock.Section(H("The actual normalized fixed tensor isometry"), Blocks(
+            Paragraph(Text(
+                "Here A is finite and nonempty with decidable equality and a is any occupation multiset. " +
+                "K is exactly Fin(proposedDimension(a)), head is maximalHead(a), U is physicalGate(a), " +
+                "and x is physicalInitial(a) as identified in NormalizedResiduals. Every phi below is " +
+                "inverse sqrt(M(r)) times C's actual physicalResidual(a,r), proved exactly equal to the " +
+                "existing normalizedResidual(a,head,U,x,r). The output and unit final vector are proved for these data.")),
+            Paragraph(Text(
+                "The orthonormal tensor basis uses the alphabet factor first and the same memory factor second. " +
+                "R is the repr equivalence of tensorProduct(basisFun(A,Complex),basisFun(K,Complex)); " +
+                "it sends a pure tensor z tensor y to the joint coordinate (i,k) equal to y(k) times z(i). " +
+                "basis(i) is the alphabet coordinate basis. tmul(Complex,z,y) denotes this ordered complex " +
+                "tensor product, smul is complex scalar multiplication, and comp means composition with " +
+                "the rightmost map applied first. No additional circuit or normalized family is constructed.")),
+            Theorem("physicalTensorEmission", PhysicalContext(Eq(PhysicalV,
+                Call("comp", Call("toLinearIsometry", Call("symm", PhysicalRepr)), PhysicalEmission))),
+                "This is a complex linear isometry from Space(K) to Space(A) tensor Space(K), obtained from the actual blank-input emission."),
+            Theorem("physical_tensor_coordinates", PhysicalContext(All("x", PhysicalSpace,
+                Eq(At(PhysicalRepr, At(PhysicalV, x)), At(PhysicalEmission, x)))),
+                "The exact coordinate equivalence identifies the tensor map with PhysicalGram.emission for C's fixed gate and blank."),
+            Theorem("physical_tensor_emission", PhysicalContext(All("r", Occupation,
+                Imp(And(Leq(r, Id("a")), Ne(r, D(0))), Eq(At(PhysicalV, PhysicalPhi(r)), PhysicalSum(r))))),
+                "For each legal nonterminal residual, the actual map has the source's sqrt(count/card) tensor expansion. " +
+                "The scalar is embedded from the reals into the complex numbers. Absent symbols have count zero " +
+                "and therefore contribute zero, while the erased residual stays legal."),
+            Theorem("physical_emission_linearCombination", PhysicalFinite(
+                Eq(At(PhysicalV, left), right)),
+                "For any index type I, any family r(j) of legal nonzero residuals, and any finitely supported " +
+                "complex coefficients c, applying the same isometry commutes with the finite linear combination " +
+                "and substitutes the displayed normalized tensor expansion."),
+            Theorem("physical_image_dependency_iff", PhysicalAllFinite(
+                new Formula.Logic(Eq(left, D(0)), FormulaLogicOperator.Iff,
+                    Eq(PhysicalImageCombination(), D(0)))),
+                "The actual isometry preserves all finite dependencies of the total concrete vector family, " +
+                "including terminal zero occupation. This image statement has no nonterminal restriction; " +
+                "identification with B applies on the legal box. The following source expansion retains its own domain."),
+            Theorem("physical_dependency_iff", PhysicalFinite(
+                new Formula.Logic(Eq(left, D(0)), FormulaLogicOperator.Iff, Eq(right, D(0)))),
+                "Injectivity and linearity give both directions: every finite dependency of this actual family " +
+                "is exactly a dependency of its prescribed emission images. This is not restricted to a conditional kernel recurrence."),
+            Theorem("physical_nonterminal_span_eq", PhysicalContext(Imp(positive,
+                Eq(PhysicalSpan(true), PhysicalSpan(false)))),
+                "The actual normalized terminal vector equals the legal nonzero head-singleton vector when " +
+                "the maximum capacity is positive. Removing the terminal index therefore preserves the generated subspace."),
+            Theorem("physical_generated_span_top", PhysicalContext(Eq(PhysicalSpan(false), Id("top"))),
+                "Put the actual legal normalized vectors in their own generated subspace S. Their Gram equals " +
+                "the actual normalizedGram by the proved C/B identification. The existing stationary Gram lower " +
+                "bound and diagonal rank equality give proposedDimension(a) at most its rank. Coordinates in an " +
+                "orthonormal basis of S bound that rank by dim(S), so S is the whole physical memory."),
+            Theorem("physical_nonterminal_span_top", PhysicalContext(Imp(positive,
+                Eq(PhysicalSpan(true), Id("top")))),
+                "Full generation and the terminal/head-singleton equality prove that the nonterminal vectors " +
+                "span the actual memory whenever the maximum capacity is positive."),
+            Paragraph(Text(
+                "linearCombination(Complex,v,c) means the finite sum of c(j) times v(j); Finsupp(I,Complex) " +
+                "is its finitely supported coefficient type. The displayed sets are setOf predicates over the same " +
+                "Space(K), span is the complex linear span, and top is the whole physical memory subspace. " +
+                "Zero and mixed capacities remain allowed. The all-zero dimension-one branch is separate; " +
+                "no nonterminal span assertion is made there. Actual padding moments, block factorization, block " +
+                "and aggregate ranks remain separate source obligations."))));
+    }
+
+    private static Formula PhysicalContext(Formula body) => All("A", Id("Type"),
+        Imp(And(Call("Fintype", Id("A")), And(Call("DecidableEq", Id("A")), Call("Nonempty", Id("A")))),
+            All("a", Occupation, body)));
+    private static Formula PhysicalAllFinite(Formula body) => PhysicalContext(All("I", Id("Type"),
+        All("r", Arrow(Id("I"), Occupation),
+            All("c", Call("Finsupp", Id("I"), Id("Complex")), body))));
+    private static Formula PhysicalImageCombination() => Call("linearCombination", Id("Complex"),
+        LambdaAt("j", Id("I"), At(PhysicalV, PhysicalPhi(At(Id("r"), Id("j"))))), Id("c"));
+    private static Formula PhysicalFinite(Formula body) => PhysicalContext(All("I", Id("Type"),
+        All("r", Arrow(Id("I"), Occupation), Imp(All("j", Id("I"),
+            And(Leq(At(Id("r"), Id("j")), Id("a")), Ne(At(Id("r"), Id("j")), D(0)))),
+            All("c", Call("Finsupp", Id("I"), Id("Complex")), body)))));
+    private static Formula PhysicalCombination(bool images) => Call("linearCombination", Id("Complex"),
+        LambdaAt("j", Id("I"), images ? PhysicalSum(At(Id("r"), Id("j"))) :
+            PhysicalPhi(At(Id("r"), Id("j")))), Id("c"));
+    private static Formula PhysicalSpan(bool nonterminal)
+    {
+        Formula r = Id("r");
+        Formula belongs = And(Leq(r, Id("a")), nonterminal ?
+            And(Ne(r, D(0)), Eq(PhysicalPhi(r), Id("v"))) : Eq(PhysicalPhi(r), Id("v")));
+        return Call("span", Id("Complex"), Call("setOf", LambdaAt("v", PhysicalSpace,
+            new Formula.Bind(FormulaQuantifier.Exists, FormulaIdentifier.Create("r"), Occupation, belongs))));
+    }
+    private static Formula PhysicalSum(Formula r) => SumAt("i", Id("A"),
+        Call("smul", CastC(SqrtAt(Div(CastR(Call("count", r, Id("i"))), CastR(Card(r))))),
+            Call("tmul", Id("Complex"), Call("basis", Id("i")), PhysicalPhi(Call("erase", r, Id("i"))))));
+    private static Formula PhysicalPhi(Formula r) => Call("smul", Call("inv", CastC(Scale(r))),
+        Call("physicalResidual", Id("a"), r));
+    private static Formula PhysicalK => Call("Fin", Call("proposedDimension", Id("a")));
+    private static Formula PhysicalSpace => Call("Space", PhysicalK);
+    private static Formula PhysicalV => Call("physicalTensorEmission", Id("a"));
+    private static Formula PhysicalEmission => Call("emission", Call("maximalHead", Id("a")), Call("physicalGate", Id("a")));
+    private static Formula PhysicalRepr => Call("repr", Call("tensorProduct",
+        Call("basisFun", Id("A"), Id("Complex")), Call("basisFun", PhysicalK, Id("Complex"))));
+    private static Formula SumAt(string name, Formula domain, Formula body) =>
+        Seq(new Formula.Subscript(Sum, Seq(Id(name), Colon, domain)), Grp(body));
 
     private static Formula Setup(Formula body) => Context(All("f", Space, Imp(Output(), body)));
     private static Formula Context(Formula body) => Types(All("a", Occupation,
