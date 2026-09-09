@@ -174,6 +174,11 @@ run_cmd liftTermElabM do
     return result
 
 
+def receipt_controls(repository, directory):
+    from receipt_fixtures import check_receipts
+    return {"controls": check_receipts(repository, directory)}
+
+
 def receipt_sensitivity(repository, directory):
     import receipt_fixtures
     # This is the reviewer's exact mutation: run the fresh scan, skip comparison.
@@ -191,7 +196,7 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--directory", type=pathlib.Path, required=True)
-    parser.add_argument("--case", required=True, choices=["colliding_owners", "named_ballast", "nested_scope", "receipt_sensitivity"])
+    parser.add_argument("--case", required=True, choices=["colliding_owners", "named_ballast", "nested_scope", "receipt_sensitivity", "receipt_controls"])
     args = parser.parse_args()
     repository = pathlib.Path(__file__).resolve().parents[4]
     print(json.dumps(globals()[args.case](repository, args.directory)))
