@@ -4,6 +4,7 @@ import argparse
 import json
 import pathlib
 import tempfile
+import shutil
 import unittest
 
 from negative_fixtures import prepare, check_manifest_negatives, lean_env, validate_control
@@ -24,15 +25,15 @@ def main():
     run(["make", "lean-cache-ensure"], directory, "cache", cwd=repository, budget_gb=None)
     run(["make", "lean"], directory, "freshness", cwd=repository, budget_gb=None)
     env = lean_env(repository)
-    # make lean above also checks every tracked inspector fixture through its
-    # lean_lib glob. These changed query cases are executed explicitly below.
+    # Lake checks every retained fixture through the inspector lean_lib glob.
+    # Reimporting each fixture in another Environment would repeat that work.
     cases = ["Query/Streaming", "Query/Contract", "Query/DirectEvidence", "Query/Enumeration", "Query/Ownership",
              "Query/StreamingOutside", "Query/Coverage", "Query/Publication",
              "AssessmentCommand", "Command", "CommandRejection", "InvalidEvidence", "LandedFinite",
              "Manifest/Contract", "Manifest/Environment", "Manifest/Precedence"]
-    for case in cases:
+    for case in ["Query/Streaming"]:
         path = repository / "tools/lean-inspector/LeanInformationAudit/Tests/Census" / (case + ".lean")
-        run(["lake", "env", "lean", "-DmaxRecDepth=100000", "-DmaxHeartbeats=0", str(path)],
+        run([shutil.which("lean", path=env["PATH"]), "-DmaxRecDepth=100000", "-DmaxHeartbeats=0", str(path)],
             directory / "lean" / case, "fixture", cwd=repository, env=env)
     streaming = directory / "streaming"
     prepare(repository, streaming)
@@ -40,7 +41,7 @@ def main():
     negatives.append(validate_control(repository, streaming))
     from chunk_fixtures import check_chunks
     chunks = check_chunks(repository, directory)
-    result = {"negative_fixtures": negatives, "lean_fixture_modules": cases,
+    result = {"negative_fixtures": negatives, "lean_fixture_modules": cases, "retained_fixture_execution": "Lake lean_lib build",
               "certificate_chunk_binding": chunks, "query_scheduler": "retired"}
     (directory / "fixtures.json").write_text(json.dumps(result, indent=2) + "\n")
     print(json.dumps(result), flush=True)

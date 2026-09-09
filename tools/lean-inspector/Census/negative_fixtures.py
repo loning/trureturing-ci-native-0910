@@ -134,15 +134,15 @@ def check_case(repository, directory, case):
     elif case == "stale_olean":
         folder = directory / "stale"
         folder.mkdir(exist_ok=True)
-        source, olean = folder / "Fresh.lean", folder / "Fresh.olean"
+        source, olean = folder / "Fresh.lean", folder / ".lake/build/lib/lean/Fresh.olean"
         env = lean_env(repository)
-        binary = shutil.which("lean", path=env["PATH"])
+        (folder / "lean-toolchain").write_bytes((repository / "lean-toolchain").read_bytes())
+        (folder / "lakefile.toml").write_text('name = "census_stale_fixture"\ndefaultTargets = ["Fresh"]\n[[lean_lib]]\nname = "Fresh"\n')
+        (folder / "Makefile").write_text("lean:\n\tlake build\n")
         source.write_text("theorem fresh : True := True.intro\n")
-        run([binary, "-o", str(olean), str(source)], folder, "valid", cwd=folder, env=env)
+        run(["make", "lean"], folder, "valid", cwd=folder, env=env, budget_gb=None)
         original = olean.read_bytes()
         source.write_text('def fresh : Nat := "edited without rebuilding"\n')
-        import shlex
-        (folder / "Makefile").write_text("lean:\n\t" + shlex.join([binary, "-o", str(olean), str(source)]) + "\n")
         try:
             freshness(lambda command, label: run(command, folder, label, cwd=folder, env=env, budget_gb=None))
         except RuntimeError:

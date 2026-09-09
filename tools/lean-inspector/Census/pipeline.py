@@ -91,7 +91,7 @@ def execute(options):
     started = time.monotonic()
     state = {"status": "running", "rss_budget_gib": 4, "concurrency": 1, "phases": {},
              "replay": "not-run", "assumed_unverified": []}
-    env = dict(os.environ, LEAN_NUM_THREADS="1")
+    env = dict(os.environ)
 
     def save():
         state["wall_seconds"] = round(time.monotonic() - started, 3)
@@ -129,6 +129,7 @@ def execute(options):
         env = json.loads(subprocess.check_output(["lake", "env", sys.executable, "-c",
             "import os,json;print(json.dumps(dict(os.environ)))"], cwd=repository, env=env))
         lean_binary = shutil.which("lean", path=env["PATH"])
+        env["LEAN_NUM_THREADS"] = "1"
         env["LEAN_SRC_PATH"] = str(repository / "tools/lean-inspector") + os.pathsep + str(repository)
         if options.fixture_truth_export:
             report_path = pathlib.Path(options.fixture_truth_export).resolve()
