@@ -52,12 +52,224 @@ pushed immediately, including failures. Report-only delivery: no PR.
 - `git -C .lake/packages/mathlib rev-parse HEAD` returned that exact revision.
 - `git -C .lake/packages/mathlib status --short` returned no changed paths.
 
-## Progress
+## conclusion
 
-Preregistration checkpoint: `screened_count=0`, all five tier counts zero.
-The entire input is currently unscreened. Structured per-atom decisions,
-search receipts, probe runs, and pushed commit identities will be appended
-as each batch closes. No tier A outcome has yet been asserted.
+Screened: **25/150**. A=0, B=5, C=20, D=0, E=0.
+
+Structured result: [conclusion.json](tier3-mathlib-triage-0909/conclusion.json).
+Complete canonical atom reads (raw and normalized text, command, EXIT) are in `atoms-1.json` through `atoms-6.json` as collected. Reading ahead does not count as screening.
+
+All Mathlib paths below are relative to `.lake/packages/mathlib/`. Every listed declaration was opened locally. Full per-atom claims and decisions are in `decisions-*.json`.
+
+| # | atom_id | Title | Tier | Criterion / remaining mathematics | Local Mathlib declaration | Searches |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | `028cb6a153eaec67ee356ef9571a406a6d9460c0092fbc031df4abab42884a85` | 定理十一：有限多边形绕数证书 | C | 缺带二阶导数/顶点误差预算的轮廓同伦和零点计数证书；通用路径理论不提供这条带常数的接口。 | none claimed | winding |
+| 2 | `04174c1260762c6fb3fe24cd51b93eea78714592b4cd71e927db335d5edf8b77` | 定理 S2：实际 theta 条件读数存在负区 | C | 缺实际 theta 核的负点存在性及其非零概率窗口；Jacobi theta 定义与变换不推出此符号结论。 | none claimed | theta-analytic |
+| 3 | `062d6f5a910eed117ab7596a2e34f1a6a0728de5e8599136b47689b29d2870c9` | 定理二十：交互阶数具有离散因果锥 | C | 缺完整交互投影分解下的幂带宽传播定理；需证明非零块路径满足阶数三角界，正文 t 是离散自然数。 | none claimed | bandwidth |
+| 4 | `0715d2f9078c88ee013814d101b0c36bdb33c5cf5ce76d58239e51cc6485df25` | 定理四：Toeplitz 矩阵是历史态的时钟约化密度矩阵 | B | 已具备酉搬运消去共同时间步的内积恒等式；缺本源历史态的偏迹、归一化和 r(i-j)=r(j-i) 的完整类型化连接。未将 Gram 子结论当作全偏迹证明。 | `LinearIsometryEquiv.inner_map_map` (Mathlib/Analysis/InnerProductSpace/LinearMap.lean:120); `LinearIsometryEquiv.inner_map_eq_flip` (Mathlib/Analysis/InnerProductSpace/LinearMap.lean:124) | partial-trace, first-bindings |
+| 5 | `072eca25d260537060a5e1b2b7dada75dbf623eba8eebb4bad8c765d8ebe6749` | 定理 N1：有限负证书 | C | 缺伴随矩阵迹平方的 Hermite 型实根判据；Hermite 正交多项式是同名异题。 | none claimed | special-polynomials |
+| 6 | `0831062a074c8393d5e0d16a4caa4487d783311664ffa661ab52092973475c5b` | 定理一：\(P\) 是一个四棱锥 | C | 缺此指定五点占据凸包的半空间及极点计算；一般凸包 API 不能直接给出这五个顶点。 | none claimed | convex-local |
+| 7 | `083b7658fb28ffb6609e6c46923ebd4e8c9c27dc3813f06187a0aa23c398e7d4` | 定理一：规范加一的最坏局部深度至少与编码跨度成正比 | C | 缺把局部传播半径连接到极端 Fibonacci 编码的算法深度下界；已有局部进位构造不是所有算法的下界。 | none claimed | convex-local, bandwidth |
+| 8 | `087e3caa7c278b4ea58f06604daa8721ab5258f6c451a25ed8f2d0092d823ca0` | 定理 B1：精确微分兼容关系 | C | 缺实际 q_d 系数与相邻阶缩放的统一导数恒等式；普通 Polynomial.derivative 不给跨阶系数关系。 | none claimed | special-polynomials |
+| 9 | `0d2c6e9ed518bfcee93cc1f4b71877666e729b3db0f05d06a2b43bbf53e86984` | 定理 L3：逐阶系数判据 | C | 缺平方级数系数的全阶实根刻画及反向检测非实谱的增长论证。 | none claimed | special-polynomials |
+| 10 | `0e1a7beb490fc5aece3b6e13b10c6523ab64fac627efd6b825dc5c5551af5eab` | 定理 K2：实根的历史体积上限 | C | 缺历史 Gram 行列式的非负 Laplace 表示及任意阶导数符号；指数函数正性不能代替体积表示。 | none claimed | special-polynomials, negative-spectrum-refined |
+| 11 | `0e8d9e20c8a7ec0e0820053dc56a9dae075722a110b78a0ecee60b5cb202f2d8` | 推论：系数增长率直接给出谱缺陷 | C | 缺 b_q,k 的精确指数型/增长率定理，不只是复数平方的代数分解。 | none claimed | special-polynomials |
+| 12 | `1033c98f6c47c1c95ba84c013ed594e604e96b5061d49672f6a3333ff411cb3a` | 定理 R5：筛选能量的精确公式 | C | 缺实际筛选态导数、动能形式和 theta 归一化常数之间的恒等式。 | none claimed | theta-analytic, gaussian-moments |
+| 13 | `10f086b0306c55830d4a16268948883d503cc3e347c5ebb45d89be2a6927fe3a` | 定理 P5：形状前件推出全部标量高斯矩上界 | C | 缺由本源形状前件到矩比较递推的积分不等式；上游 subGaussian 以另一种 MGF 前件起步。 | none claimed | gaussian-moments |
+| 14 | `15eb12aed71ec186edbcd3e877571bdd32780f55e1539a8ff1211975db8f51c3` | 定理一：前三阶在全局绝对收敛域内无零 | C | 缺此 F_r 的实际因子分解和各因子的无零界；riemannZeta 的无零定理只覆盖 zeta 因子。 | none claimed | theta-analytic, discrete-winding |
+| 15 | `16ee2a6dfb3840e47529bdbd48187c9167a2230d63a5ac51826e62a979baf1ff` | 定理五：固定分离度需要足够长的时间 | B | 已具备逐项 1-cos(x)<=x^2/2；缺对归一复相位平均的模平方展开和精确 N(N+2)/12 求和绑定，故未直接升级整条。 | `Real.one_sub_sq_div_two_le_cos` (Mathlib/Analysis/SpecialFunctions/Trigonometric/Bounds.lean:123) | gaussian-moments, first-bindings |
+| 16 | `183d1842d5f7033b150a150210195c78562694a2c239a984aea1f5b7f86ec009` | 定理 P1：有限尺度变化保留负方向，但可以任意压低其数值 | C | 缺无限负子空间由有限支撑逼近的指标等式及迹理想不等式；上文收缩界用 0<q<1，正文单独的 q>0 不足以支持全部范数句。 | none claimed | negative-spectrum, negative-spectrum-refined |
+| 17 | `19d4c054e92739f02edd10bc8c8cade6a616e273f45552e1f9e1da08359a6462` | 定理四：实际正性会在解析性失效之前先碰到边界 | C | 缺实际算术符号在解析半径之前失正的严格阈值证明。 | none claimed | toeplitz, theta-analytic |
+| 18 | `1ad5bec02ef18c7e44f7099ba5b17703e14dbfd047be51ab11ee29d6d17dfa0e` | 定理六：ξ 历史态的统一有效维数界 | C | 缺实际谱权重平方和界与无限支撑推出每一有限 Gram 满秩的结合；不认证小数 28.7548583457。 | none claimed | toeplitz, theta-analytic |
+| 19 | `1ba55c6c1a84a3ff33ceebbcb3a7c7d52c48d18a1823c4354d954afe0d3aee38` | 定理十八：有限历史形成负证书的一个必要条件 | C | 缺有限 Fourier 投影的集中度上界与该符号二次型表示的结合；需保持严格必要条件和 Haar 概率归一化。 | none claimed | toeplitz, negative-spectrum-refined |
+| 20 | `1e414ffb45d7fcaa9536a956298c4e291f91a2e310f112d2cf8419518caefd1a` | 推论 B1.1：高阶延拓是一项带常数的积分问题 | B | FTC 已给积分=端点差；仍缺 B5 的实际跨阶导数与 q_d(0)=(-1)^d*d!/d^d*a_d，不能把未冻结的源文前一结论当作可引用事实。 | `intervalIntegral.integral_eq_sub_of_hasDerivAt` (Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean:1148) | special-polynomials, first-bindings |
+| 21 | `1e9daffd76d1ac95768ad7e9737ce9069f71ca9d5406430f42768de16be0a86c` | 定理二：局部数据的受控整体拼接 | B | 高阶 Schwarz 引理直接给目标误差形状；仍缺源定义递推的全纯/映盘及前 N+1 阶 Taylor 匹配到 isLittleO 前提的绑定。 | `Complex.dist_le_mul_div_pow_of_mapsTo_ball_of_isLittleO` (Mathlib/Analysis/Complex/Schwarz.lean:146) | toeplitz, first-bindings |
+| 22 | `1eecc9129a67c60825a86b1efaa93284267df6701e12127565d8873086de3021` | 定理三：统一非退化界 | C | 缺特定算术系数 w(m)/D_m 的逐项估计及尾部常数 1/20；一般 zeta 求和不确定该常数。 | none claimed | theta-analytic, discrete-winding |
+| 23 | `207bdea6c00dc779749029d64849d7221c08cad532ac5d38069d8871e87b4d92` | 定理七：固定越界量下的负方向密度 | C | 缺该符号的 Szego 特征值分布与负半轴示性函数逼近，并须保留 N 后 delta 的极限次序。 | none claimed | toeplitz, negative-spectrum-refined |
+| 24 | `224b9dc2f29a8182291ff077025c0f1cf83c02aeb844e2893366013f04898914` | 定理 D2：正实现的最低读数失配 | C | 缺正谱回返到 Pick 核正性、采样误差到算子扰动范数的完整定量桥；通用谱理论不等于该读数界。 | none claimed | negative-spectrum-refined, toeplitz |
+| 25 | `23e85e40204222cb3bee95c5c9072bd75f3796b82d41f908f8629d8a201137b9` | 定理七：任意周期的离散绕行公式 | B | 多项式最高阶有限差分和超过次数归零已库有；缺 H_d 关于 prime-zeta 分支的多项式展开、最高系数 Theta_d W_d 及绕行步长的类型化识别。 | `Polynomial.fwdDiff_iter_degree_eq_factorial` (Mathlib/Algebra/Group/ForwardDiff.lean:266); `Polynomial.fwdDiff_iter_eq_zero_of_degree_lt` (Mathlib/Algebra/Group/ForwardDiff.lean:274) | discrete-winding, first-bindings |
+
+## probe_runs
+
+None yet; the five-distinct-A-atom requirement is pending, not satisfied.
+
+## search_receipts
+
+Full commands and untruncated hits: [search-receipts.json](tier3-mathlib-triage-0909/search-receipts.json). Counts are matching lines, including comments and imports, not distinct theorems.
+
+| ID | Scope | Command | Matching lines | EXIT |
+| --- | --- | --- | --- | --- |
+| control-positive | D5 | `rg '-n' '-i' '-P' '\b(theorem|lemma)\s+(g2_discriminant_bound|sq_nonneg)\b' 'D5' '-g' '*.lean'` | 1 | 0 |
+| control-positive | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '\b(theorem|lemma)\s+(g2_discriminant_bound|sq_nonneg)\b' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 1 | 0 |
+| control-negative | D5 | `rg '-n' '-i' '-P' '\b(theorem|lemma)\s+(triage_absent_0909|triage_missing_0909)\b' 'D5' '-g' '*.lean'` | 0 | 1 |
+| control-negative | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '\b(theorem|lemma)\s+(triage_absent_0909|triage_missing_0909)\b' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 0 | 1 |
+| winding | D5 | `rg '-n' '-i' '-P' '(winding|argument.?principle|rouch)' 'D5' '-g' '*.lean'` | 293 | 0 |
+| winding | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '(winding|argument.?principle|rouch)' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 0 | 1 |
+| special-polynomials | D5 | `rg '-n' '-i' '-P' '(Jensen.polynomial|real.rooted|all.*roots.*real|Laguerre|Hermite|companion.*trace|trace.*companion)' 'D5' '-g' '*.lean'` | 270 | 0 |
+| special-polynomials | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '(Jensen.polynomial|real.rooted|all.*roots.*real|Laguerre|Hermite|companion.*trace|trace.*companion)' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 89 | 0 |
+| negative-spectrum | D5 | `rg '-n' '-i' '-P' '(negativeIndex|negative.index|negative.part.*trace|trace.*negative.part|trace.norm|TraceClass|Schatten|nuclear.norm)' 'D5' '-g' '*.lean'` | 94 | 0 |
+| negative-spectrum | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '(negativeIndex|negative.index|negative.part.*trace|trace.*negative.part|trace.norm|TraceClass|Schatten|nuclear.norm)' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 53 | 0 |
+| bandwidth | D5 | `rg '-n' '-i' '-P' '(bandwidth|banded|causal.cone|finite.propagation|interaction.order)' 'D5' '-g' '*.lean'` | 0 | 1 |
+| bandwidth | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '(bandwidth|banded|causal.cone|finite.propagation|interaction.order)' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 0 | 1 |
+| theta-analytic | D5 | `rg '-n' '-i' '-P' '(RiemannHypothesis|riemannXi|riemann.xi|Bessel|jacobiTheta|log.deriv.*zeta)' 'D5' '-g' '*.lean'` | 140 | 0 |
+| theta-analytic | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '(RiemannHypothesis|riemannXi|riemann.xi|Bessel|jacobiTheta|log.deriv.*zeta)' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 321 | 0 |
+| toeplitz | D5 | `rg '-n' '-i' '-P' '(Toeplitz|Szego|Szegő|trigonometric.polynomial|Fejer|Fejér|Carath[eé]odory|Schwarz.lemma)' 'D5' '-g' '*.lean'` | 588 | 0 |
+| toeplitz | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '(Toeplitz|Szego|Szegő|trigonometric.polynomial|Fejer|Fejér|Carath[eé]odory|Schwarz.lemma)' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 273 | 0 |
+| convex-local | D5 | `rg '-n' '-i' '-P' '(pyramid|four.pyramid|Zeckendorf.*(depth|local)|local.*(increment|successor)|convexHull.*(fin|insert))' 'D5' '-g' '*.lean'` | 17 | 0 |
+| convex-local | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '(pyramid|four.pyramid|Zeckendorf.*(depth|local)|local.*(increment|successor)|convexHull.*(fin|insert))' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 85 | 0 |
+| partial-trace | D5 | `rg '-n' '-i' '-P' '(partialTrace|partial.trace|clock.*(density|reduced)|history.*(Gram|Toeplitz))' 'D5' '-g' '*.lean'` | 85 | 0 |
+| partial-trace | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '(partialTrace|partial.trace|clock.*(density|reduced)|history.*(Gram|Toeplitz))' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 0 | 1 |
+| gaussian-moments | D5 | `rg '-n' '-i' '-P' '(gaussian.*moment|moment.*gaussian|subGaussian|moment_le|cos.*sq.*two|integral_eq_sub_of_hasDerivAt)' 'D5' '-g' '*.lean'` | 31 | 0 |
+| gaussian-moments | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '(gaussian.*moment|moment.*gaussian|subGaussian|moment_le|cos.*sq.*two|integral_eq_sub_of_hasDerivAt)' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 221 | 0 |
+| discrete-winding | D5 | `rg '-n' '-i' '-P' '(finite.difference|forwardDiff|iteratedFwdDiff|monodromy|cycle.*zeta|period.*winding)' 'D5' '-g' '*.lean'` | 111 | 0 |
+| discrete-winding | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '(finite.difference|forwardDiff|iteratedFwdDiff|monodromy|cycle.*zeta|period.*winding)' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 102 | 0 |
+| negative-spectrum-refined | D5 | `rg '-n' '-i' '-P' '(\bTraceClass\b|\bSchatten\b|negative.part.*trace|trace.*negative.part|traceNorm|trace_norm)' 'D5' '-g' '*.lean'` | 94 | 0 |
+| negative-spectrum-refined | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '(\bTraceClass\b|\bSchatten\b|negative.part.*trace|trace.*negative.part|traceNorm|trace_norm)' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 0 | 1 |
+| first-bindings | D5 | `rg '-n' '-i' '-P' '\b(theorem|lemma)\s+(inner_map_map|one_sub_sq_div_two_le_cos|integral_eq_sub_of_hasDerivAt|dist_le_mul_div_pow_of_mapsTo_ball_of_isLittleO|fwdDiff_iter_degree_eq_factorial|fwdDiff_iter_eq_zero_of_degree_lt)\b' 'D5' '-g' '*.lean'` | 0 | 1 |
+| first-bindings | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '\b(theorem|lemma)\s+(inner_map_map|one_sub_sq_div_two_le_cos|integral_eq_sub_of_hasDerivAt|dist_le_mul_div_pow_of_mapsTo_ball_of_isLittleO|fwdDiff_iter_degree_eq_factorial|fwdDiff_iter_eq_zero_of_degree_lt)\b' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 5 | 0 |
+
+The positive and negative controls share case-insensitivity, alternation, word boundaries and whitespace matching. The initial `negative-spectrum` query matched `registerTraceClass` (logging infrastructure); the refined word-boundary query excludes this false positive. Generic Caratheodory measure hits are not Toeplitz spectral theorems.
+
+## unscreened
+
+- `247c5740e6ce2838bb73fce435941602825eace40b67c44c62f23f45796e0b04`
+- `24e7f65c67cec1074a6af47cd138dda33f014adcc2b6d569e14823c62aadc6ea`
+- `2664266b147343a4836824aae0348abd88a5ef821e178a073f2b6e8b8fe91a0d`
+- `27065ff2e7fd688eaed358a1953fc8fec5b4a98870cdeee7317e43e4c228d6e6`
+- `2bc63109d666c92a11aa641dbeae45bc08e3f4f939bc5ce4406a75e5d86d03b6`
+- `2bcdc03e5777fcc1c396e5b07b17101c3f52508fb80a62a55e3b96a0b66158f2`
+- `2c37bff2d8f941ea92b5c037c21e6d179a2ab8fe3a67836b6ecb5b2e766793e7`
+- `2f9a49afd3fffe7f7744822c6adea7f922e808404a7654ca0c8fd4f80195d788`
+- `2fa59f238e0c5dfb86c347ac26b274ce1ed355e030ffbc580a98779ceef61e6a`
+- `2fbed82e07d243d1005a8a1c09923c3aaa3d8b0a414ff7a9210cd5c6f2ed26e2`
+- `3342849ebfebb0ba8cd5217fe1a75e542e800c394bc9e9478978e025363fa770`
+- `33bd332c5190b7fb8bf6b6fde4e8863e2cbc32878b35713e4e42abc4c4582e8b`
+- `34f85f5ef0ec8521296d78b1a195aa9330397b316945d3dae5f77744c60587eb`
+- `352958cfd6f933764581834a39a2547c32c91c2871dfc88c0e6d915af186b804`
+- `3b96c202fb8567eb58151de0b72315414794aa9b0003e2aecba521121fa0a819`
+- `3cefd6e75bf3146ba90cf7614b16b286751f3a36029a22cbba8e97a49ba911d3`
+- `3ea6f6f717cf3b008eb7110a832936a14b2d2a332b6ee2abe42cb1146455f049`
+- `409c425f66ec18a504f4d6304af1f43493cb5a92225344c4f79b342fd0f5eacd`
+- `4104d8727c10869ec5ae256646c45c0bc72bcb83febed83f36c94488bbd5a763`
+- `42a6721fabfa0a316cd60251fdff5e3997dec865d18964539f6241a7c2dba3f9`
+- `4ad8c850dca051f69ac5f8fc65592b377d32fca0fac5d5347fcc3c0ea2b7c153`
+- `4bf0743f24ceefdab6eae275b611c01646e5bf795de46dc68456a1d7ed269bf6`
+- `4dea51c9bf2a5ec929da7acfdeb7d4694ddb3effba5083d8d5e0519ebed7bfd6`
+- `4f1af385073cf374adf2837dcb61d6f03822ba385a3f589dacb3087c8b867246`
+- `506ba2fa80720ba43ca7d89d6b8d9c39455747237809df8fd552367fc064f22c`
+- `51ecbc2e4c8976d219f4c2617007564164468c320acb88918b7ab6d848e61d79`
+- `528a07b72b26ab9b7df6f3645a60c76eedd91f4489b30838ea8ccb310c386c9b`
+- `578c45143001f9f9929455e22deef3c7cba964c4389ba0b9d79dd9371ed8f806`
+- `5918f6bd5a66f8b7eb15b4b1c505d54dfdf3b73d884b537a42b153c9270e3d4c`
+- `594f93cbc27b15032549c9271c41b100f049b61736e5e5d1fdbb8c90fb3cdda4`
+- `59626bffd526d065fe29b4f63e40a4367886e380208787d0cf0fe4df9e169a9b`
+- `5a2c25fc480f079e01ab62c81849c0487bae747b3674423d9bdd62f45ba8ae2f`
+- `5f07081bda1ac55ca035fd26826575c18e003849d50ee64a715d99ee9c802999`
+- `62ee996f8ec3b4c0ff8b4d9d182f2785eed2515aa9b326c2e160705c7abdef3f`
+- `62f3d7a538f73aad17058c82235f1c1b82a07a089f54ad53aa27094677675f61`
+- `63092dbf1c6ca5601c3853ad32183d153a5ba60589f537fa409f0581ade1df64`
+- `692393217ace683f2485ba9cf02961c2290a83cb594513880aed0c55acd62466`
+- `69ae4d23bd64324ec6c5efe11686945d726482b842c45097e2e0e9360599cdb1`
+- `72307ef5e33caa0d618146ecef4ad819f3ee4ebe2e55ebe5a6c226f5cd5a34e1`
+- `72f167014dbb653f2eec31560ed015c7e2c0d4140cb398121ad04c898e8b066f`
+- `74c15d92cd745276176c9d4c66c4cdd5b7bf59fae5b937ae1e1a07186deca95b`
+- `7721167db127aee2407282ad63f0739c5d953cd1720752a4d67089f562f7f10b`
+- `77c2008257f3b60bc946f7a241541d17e94ffbd08b19325833bb0612dc5b1af0`
+- `781219f95a1fdbea17a70a99cd34033d8dcc9569251b578580b4da952a19bbfd`
+- `783d413d2f102a6149222de31f25d081389f7d601c08e27fec9e339cf2f22c4c`
+- `78f6a2108eaba02cfbe8c76ca6e12034335c4c1e4129bde2a2affd123bf56568`
+- `7a359a1aa118ffc5f3423e85e46ce5f615806e4b8c0a16998ec49691a0215817`
+- `7afafe5a6e3e8435ddf051d6cf49c1c6ca223fa4c95dfe286f19c8f391ec33d5`
+- `7bc4a56b9299f55e209695fa3689db283e8328893508c0a4473ed32dea18b33b`
+- `7d5d9c72f7ad9abb794dd61d99e68ff5adc1271970f00e4a009b9e334680a0d2`
+- `8062498ed2ea8f74ddd34c3c2dec295a44f3074797e0634b52cbd2630b51459e`
+- `87852ef96970dd58409cceccafe2fa235ed951e6c39b41869e0fca5ecb677246`
+- `88517388478e9834b20004960ece45e5026828dc5fbb0a58206c141a37529a4b`
+- `887786649b4338a76547a05ce2a7b0347b65b5fbe737f69ec247188f3214a077`
+- `88b85ee6e765d6cc5180d029dfdce4cb39fa51093abb321682813ff46a09f58c`
+- `8a1900b281e35bf99c03af2be822b3b0f7a042c7b2a5f8d9ee837df2ca1de391`
+- `8b768726d3b3963e9b9e1a11bc7f33a04a657642db42c63fbdaaff28bf0456b0`
+- `8c8a536d7244072e5e39acc9ab7d2fdf7d874b16349959336f6450a8aad7d74d`
+- `8df09af617ce850c0ed67805688f8fc4f3a0073576a33701fa752ca4ea9ca08a`
+- `8f9277771081db94f2cbe4d55fe4075fdde7edc0a9ecf4e443ae45717b8c0dcb`
+- `8fa3ec47d77910a7c979444b92779fa3031a487901bebfcdf8f8e10d56ce54d4`
+- `90382ec6571adc1e9f8248f72b7b7a2bb916d5ade3bdbfc99e99b6477c208b34`
+- `92536bbe2b763233c6c90f6e32152612b3a4c8316395ce3895a27051104157cb`
+- `937abccd3570503c88aaac8b088e687e6f79db29ca9f67f887b72a028bd4f866`
+- `96902e5b1d0b9ac78c37f6c1f75fd1d5043bfd6c18f5e2451352b6fbc6977b46`
+- `983c804dbd8a847852de8910fac6e9702a31040ec86415def14516a225851762`
+- `9877043750157f00197144b87542162e34a7242d56d6533a857d4cb5822fd169`
+- `9907b45db0455394c6e8a00a5cd8ff4254b92dddb711777a18a6ab48d070c176`
+- `9a5d07eae55d326165113eae65bcedf131f3abfb57916fd7c08913609d7adbab`
+- `9a6bf4e79560e0d3df31fbe2a177f290ec07ec71218e71eb89e322dc2f039635`
+- `a5b558f46722070fb3661959014acf45a036f4013ac27541c95454f998a44da2`
+- `a7dc27aa3ded303f19a0085dc10e7521c4f0e9984b5970c109e3a572b1c30f11`
+- `a7e88754e5bb8b4c30b89baee6fd1fe41153876af182d201b96a9086884d779f`
+- `a86360d87830d173c35426c12b589270e406c6a12dc8dfb241ccdbefb825d0e3`
+- `af4b3b2fa8cb484824d83794e63fc48816b6e05c9c0ad32f76e3a360c35e30eb`
+- `b407682500faaa6d8da43ce0ed7505d8350c1352ad449a548751bce1b62cd783`
+- `b5821e42febe81b45815f8be9802ddafcf7daab5dc4c74e501b0e709ce3e6000`
+- `b664d8929116da6563cafcdddb7f6e7dc3b66a6fe434e807422ba82db9b83ee4`
+- `b923baf16e3404ffc7143c8258cd778915ab93409a40512c8d156d065ed1f61a`
+- `bc9748938013e4b3c632bfa0e1257a59733df2e1682ed0a8a0d7a0dcc534ab2b`
+- `bdbe4b53515757ce5b701ee375409970886fe1274ff51cca53692271e1f924bb`
+- `bdc556a362036fbf086d0f5882d47613103ee99fa42cd1bf20d16e264b0b274a`
+- `be67399e40a50efabac4cb3841bc3a3b7bbb408e0954367e9f95efe2f390eede`
+- `c03c3d51c8caa76b112c4d2b77618edb95c424c724d03c1f4e1b0fe8887986d5`
+- `c0a72a217fb966246fd4a48a809795cdc539435d1e88d1a10d041a9bcd9ed98d`
+- `c24e34de0c01213d2344c494115a947d88276005c94863a848567f7031e10009`
+- `c468d943aacd5d85352a7866613f53c2d6b6fd3e5a7c94cf9a5115a718abb0c9`
+- `c600e6828d8eeb65e865c4c7c465be9aa00cb5a30100be45cfcb26542c868b4d`
+- `cd2ad7f9986ee06ef6a8ac86aa7834a19d836483eaa1475b57396f3ba7ae536a`
+- `cf00b1802f9e0029835530f6cff45c04fc84ccaa1f13d1eadc540c1dc6259ba3`
+- `d434181a00c8203a60054490e976fdfcfe0f1b1c1fc42b9a2d58797aa0341a9d`
+- `d46f67d9701bbca5691908d2a1ff2d60f8cc946f10b5a1e91c784b83ad378bde`
+- `d5fddb4b2a8fa2c2afef4de9faac8e2192fa333bce05b160799f87fefa9c339f`
+- `d9aefe500d926d5c9ec8e40a4997df1371cfe837dc3a11f548b7a2cfcf99b6b7`
+- `daba72e239c5a9bae6419c9ee7873c87de22293ae599a303dd3feeff596ed538`
+- `dd585f94675a53aceed6592da3ad291d31505f93c47ec491c1b9bba0851ef5f7`
+- `deaf86853b1217a64e0283dae2f03f6aa847b19a5d16e68a95518b8caef0da80`
+- `df8445edb07e25e1e79b9efacc91d4900583fa229efe7706745af103ff1cb3f5`
+- `e12105bf8ad122862f6fe04a1b4abe22b29365455992101560012d8a9cdf9f44`
+- `e17855c9db943466019087527afd9e178fa5c465197a1a9de44490e5fa8444b2`
+- `e405a7f40fa7ee5313052263686a73c8b8578d18290d1f429cb1826603f82480`
+- `e44ad50e6f818d656b6b3b1318b466ef65b9d4fe363f0d70d2f988ffda11c865`
+- `e5d2d285af1f22158b076150c40f53f7d8ce44d2a32dbf3093e84e39ae416c82`
+- `e608f6dc2b3e96087ebd63bf03573113e4862368d4ca9073b2e7e18b62f93d6a`
+- `e6b6fecddb5eee0812a0243c4df590974799c2c4403225694671db7205f1e6a0`
+- `e9720c882324b7c79f984b3a679f76fadc56b24259982372cfb13ef034c4860a`
+- `ee425ea06616fd0f316f4ec675f08c194f1a322c66490006b88f876689118d41`
+- `eeec54732cd5164f183f001e2f20aca1e7c3d82f7e60e2ae713bb6be62891335`
+- `ef6f54cb65d0244d86eb6429a06d130952605ede928d46583fdd5558ae1c0b90`
+- `efc75726d17ed8663b268d9d47e0616c4b92a0383da0261cb7c4c6c7f3b819d2`
+- `f19c5a47126f834bc6db65cd85562ee9c8c64fbe0f5db7868a89cc9f8713412b`
+- `f4f9b0a4df470ba2b4bf10beee83d880ad7f4b3f0386116c90457ebb5d0fe984`
+- `f62752ed0e3bef8ecf2a83bb81efd8d286d810248bbeb79696cb3710c0c3b1e5`
+- `f7638bdcf1e35350eda1b731d962c04911ac25c6a52343035a7db2a5bb04e456`
+- `f7ca82eaa0b6663d12c0bfd1a9ddf79bed9767d3db424fab41f9fc1bf4da0364`
+- `f94e72b42f9e6da0084b96b95d047cefcf3467c62f9875897dd6b2e40f6d2e97`
+- `fa8b4b6196fcba7e8ebb4dd83eb2eef163a13a0db12bf2d3c4701126f37ade22`
+- `fad0a54d7c08517061dd72156313f2d20793a832d69377d4b2c6ccafb4a15a71`
+- `fb1c38b64efe553d45ac383d0721cd76c7b64279dcff96cd63865be615fbdfb5`
+- `fb59b24ac5caf7f843daafe640a109f5656d2c90a088f47e404bc07f5425aefc`
+- `fc7df336d8009cc2fb6b17b81726c35280f4a7c87df6b80aeb2ab2ed62148dc1`
+- `fe2435c31f17b225da1fc23447f6bc697da4eab605315d6d8611f1370db9369d`
+- `fe32fa800185d6c61117be686cf2b1eca3bb051f168159cfafd23edb452fb19f`
+- `fed862d04754e331ffe1254aa2d4f4f01ae3fb08ffb349002952eee303bf8a3e`
+- `ff41c11de3a485a3451a5788237056c9099133f734e8bf7b75a1240d6746dd85`
+
+## pushed.commits
+
+- `c8ba70a54e9b859185515602015f630d89019ae9`
+
+Every listed checkpoint was pushed successfully. The final runner envelope includes the commit containing this final report (a commit cannot contain its own hash).
+
+## assumed_unverified
+
+- No unprobed source assertion is kernel certified.
+- No third-party online search or independent review was performed.
+- C is bounded-search formalization-gap evidence, not proof of library-wide absence.
+- The total duration was not supplied; 120 minutes is an explicitly disclosed working assumption.
 
 ## Nonclaims
 
