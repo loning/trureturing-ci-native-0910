@@ -95,3 +95,38 @@ x0=36q+9、x1=36q+11；Full 强制 36q+12 在列表内，与 x1 相邻矛盾。
   这给出比正整数枚举略强的陈述，不改变题意中的正整数结论。
 - 当前结果不再把障碍/装填论证标为 ASSUMED-UNVERIFIED：它已 kernel 验证。
   尚待 make lean、报告、发射、冻结与 PR；不提前主张项目门通过。
+
+## 项目构建与逐定理判形
+
+首次 `make lean`：EXIT=0，34.817 秒，12808 jobs，macOS 本机 clonefile 热缓存。
+日志：runner attempt-1/make-lean.log；读到一条头部 digest 超100列风格警告，已缩短散文头，
+将对最终字节再跑门。没有改动数学陈述或证明。
+
+唯一手写公开 theorem：
+`D5/S3/Arith/Congruence/NonsquarefreeAntirun.antirun_length_le_nine`。
+
+- proof_shape: content。
+- 直接冻结依赖（GID + statement_id）：`[]`。没有 import 任何 D5 模块；
+  直接基础来自上述钉版 Mathlib，按第3.2条不计作冻结前置。
+- escape_witness: 私有 `upper_of_pair`（相邻非平方自由数对构成障碍），
+  与主证明中中间区间的装填等式 `hx1 : x 1 = 36*q+11` 共同承重。
+- 第3.2条四项：
+  1. 依赖闭包内：主 theorem 的三个分支直接调用 upper_of_pair；hx1 在其证明项内构造。
+  2. 非投影可得：此前无冻结前置提供障碍或装填结论；证明结合 Full、列表索引顺序、
+     两个平方整除族与九条 gap，建立新的无界限制，不是已有上界的实例化。
+  3. 非定义等价：upper_of_pair 断言一般端点 b≤k；hx1 给出特定第二项的坐标；
+     二者都不是 length≤9 的定义展开、别名或重述。
+  4. 活推导路径：各分支从 upper_of_pair 取得末项上界；中间分支用它推出 hx1，
+     再将 Full 强制的12与第二项11交给 no_neighbors。去掉障碍就没有末项上界，
+     去掉装填坐标就无法识别强制项的相邻项；无被投影丢弃的分量或死项。
+- admission_basis: escape-witness。
+- computational_content.kind: none（公开内容是对任意有限列表和任意自然数位置的无界定理；
+  常数36与9来自一般同余/装填论证，不是把一段有限搜索外推到无穷）。
+  private nine_term_witness 只作题目要求的尖锐性对照，不是公开实例或独立 deposit 理由。
+- question_answered：本报告开头预登记的 OEIS A373409 最大 antirun 长度问题。
+- source provenance：本仓推导，引用 wiseman2024antiruns 致谢原问题；
+  不主张已穷尽文献或全世界首次证明。
+
+Scribe 仅陈述数学定义、上界、障碍证明和九项对照，不含治理分类词。
+Library 根桶实测22，新增笔记落根桶；Arith桶48不新增。Blueprint/Congruence 初始38，
+新增源与投影后40，均低于48。已注册域Arith和S3满足普通整数整除/同余内容。

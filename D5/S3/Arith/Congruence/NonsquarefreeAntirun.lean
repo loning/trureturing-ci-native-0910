@@ -4,7 +4,7 @@
    mirror-E: none(waiver:universal-bound-with-private-sharpness-example)
    anchors: [mathlib/module/Mathlib.Data.Nat.Squarefree]
    utility: none
-   digest: Every full interval of nonsquarefree numbers with successive gaps greater than one has at most nine terms. -/
+   digest: Full nonsquarefree antiruns have at most nine entries. -/
 
 import Mathlib.Data.Nat.Squarefree
 import Mathlib.Data.List.Pairwise
