@@ -24,3 +24,5 @@ LANE #6160；atom `087e3caa7c278b4ea58f06604daa8721ab5258f6c451a25ed8f2d0092d823
 第一批推送已成功：`db143f851f`。本机 `make lean` 已启动。误探路径 `tools/scripts/lean.sh`、Mathlib `Algebra/GroupWithZero/Power.lean` 不存在，均记录为命令路径错误，不解释为数学库缺口。
 
 第一次探针编译 `make -f Makefile -f A/probe.mk lean PROBE=A/B1Probe.lean` 退出 2（`A` 为任务指定 attempt 目录）。失败点是 `pow_sub₀` 的显式底数参数漏传，以及交换环乘积的括号重写未命中；系数范围两分支及次数界未报错。保留 `A/probe-01.log` 与 `A/B1Probe-01.lean`。失败版本的 `#print axioms` 含错误恢复用 `sorryAx`，不计为证明。初始原生 `make lean` 退出 0，12766 jobs，project/mathlib 均 warm。
+
+第二次探针退出 2（`A/probe-02.log`）：`pow_sub₀` 的实际结论已经是乘逆式，后续多余 `rw [div_eq_mul_inv]` 无目标可改写；删去该步即可继续。冻结系数等式到目标的代数闭合未另报错。补入非零点倒数求值绑定、零点系数取值、固定源 B1 与两侧数值检查，仍只用库引理和规范化；没有改变目标或加入数学假设。
