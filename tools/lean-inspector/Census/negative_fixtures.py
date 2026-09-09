@@ -13,6 +13,8 @@ def check_manifest_negatives(repository, directory):
     root = directory / "first"
     source = root / "CensusRun/Root.lean"
     original = source.read_text()
+    driver = root / "CensusPublish/Root.lean"
+    original_driver = driver.read_text()
     responses = [pathlib.Path(path) for path in json.loads((root / "query-outputs.json").read_text())]
     response = next(path for path in responses
                     if any(row["class"] == "observed" for row in json.loads(path.read_text())["entries"]))
@@ -24,12 +26,13 @@ def check_manifest_negatives(repository, directory):
 
     def rejected(label, expected, *, text=original, transport=None):
         output = directory / (label + ".json")
-        source.write_text(text.replace(string(str(root / "census.json")), string(str(output))))
+        source.write_text(text)
+        driver.write_text(original_driver.replace(string(str(root / "census.json")), string(str(output))))
         if transport is not None:
             response.write_text(json.dumps(transport) + "\n")
         try:
             run(["lake", "env", "lean", "-DmaxRecDepth=100000", "-DmaxHeartbeats=0",
-                 "-R", str(root), str(source)], directory / label, "process", cwd=repository, env=env)
+                 "-R", str(root), str(driver)], directory / label, "process", cwd=repository, env=env)
         except RuntimeError:
             log = (directory / label / "process.log").read_text()
             assert expected in log, log
@@ -39,6 +42,7 @@ def check_manifest_negatives(repository, directory):
             raise AssertionError(label + " was accepted")
         finally:
             source.write_text(original)
+            driver.write_text(original_driver)
             response.write_bytes(pristine)
 
     rejected("manifestDetachedFromRows", "component=manifest_keys",
@@ -64,10 +68,9 @@ def check_manifest_negatives(repository, directory):
         malformed = copy.deepcopy(data)
         malformed["entries"][observed_index]["statement_id"] = wire
         rejected(label, "component=statement_id_format", transport=malformed)
-    start = original.index("def CensusRun.reportKeys")
-    end = original.index("#disposition_census", start)
+    start = original.index("noncomputable def CensusRun.reportKeys.")
     reflexive = original[:start] + (
-        "def CensusRun.reportKeys : List (Lean.Name × Nat) := CensusRun.manifest.keys\n") + original[end:]
+        "noncomputable def CensusRun.reportKeys : List (Lean.Name × Nat) := CensusRun.manifest.keys\n")
     rejected("reflexiveReportRejected", "component=report_keys_binding", text=reflexive)
     relabelled = copy.deepcopy(data)
     certified = next(row for path in responses for row in json.loads(path.read_text())["entries"]
@@ -83,5 +86,11 @@ def check_manifest_negatives(repository, directory):
     artifact = json.loads((root / "census.json").read_text())
     assert any(row["statement_id"] == "sha256:" + "0" * 64 for row in artifact["rows"])
     outcomes.append({"name": "leadingZeroIdentity", "status": "preserved"})
+    outcomes.append({"name": "noncomputableDataBound", "status": "accepted"})
+    rejected("chunkMovedBetweenSides", "component=report_keys_binding", text=original.replace(
+        "List.flatten [CensusRun.reportKeys.chunk0]", "List.flatten [CensusRun.manifestKeys.chunk0]"))
+    rejected("chunkDuplicatedBetweenSides", "component=report_keys_binding", text=original.replace(
+        "List.flatten [CensusRun.reportKeys.chunk0]",
+        "List.flatten [CensusRun.reportKeys.chunk0, CensusRun.manifestKeys.chunk0]"))
     (directory / "negative-fixtures.json").write_text(json.dumps(outcomes, indent=2) + "\n")
     return outcomes

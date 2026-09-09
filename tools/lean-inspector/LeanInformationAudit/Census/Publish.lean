@@ -7,17 +7,19 @@ open Lean Meta Elab Command DispositionCensus CensusManifest
 
 /-- The publication environment contains generic code and data types only. -/
 def checkFinalEnvironment (env : Environment) : CoreM Unit := do
-  unless (env.header.imports.map (·.module)).filter (· != `Init) == #[`LeanInformationAudit.Census.Publish] do
-    throwError "finalEnvironmentImports: final source must import only Census.Publish"
-  let allowed := #[`LeanInformationAudit.AnalysisDisposition, `LeanInformationAudit.CensusSchema,
-    `LeanInformationAudit.Sha256, `LeanInformationAudit.Census.Codec,
-    `LeanInformationAudit.Census.Report, `LeanInformationAudit.Census.Coverage,
-    `LeanInformationAudit.Census.Manifest, `LeanInformationAudit.Census.Transport,
-    `LeanInformationAudit.Census.Publish]
+  unless (env.header.imports.map (·.module)).filter (· != `Init) == #[`LeanInformationAudit.Census.Certificate] do
+    throwError "finalEnvironmentImports: final source must import only Census.Certificate"
   for module in env.header.moduleNames do
-    if module.getRoot == `D5 ||
-        (module.getRoot == `LeanInformationAudit && !allowed.contains module) then
+    if module.getRoot != `Init && module != `LeanInformationAudit.Census.Certificate then
       throwError "finalEnvironmentImports: payload import {module}"
+
+/-- The frontend starts from the source's imports, independently of this IO driver. -/
+def elaborateFinalSource (input : String) (fileName : String) (root : Name)
+    (options : Options) : IO Environment := do
+  unsafe enableInitializersExecution
+  let some env ← Elab.runFrontend input options fileName root
+    | throw <| IO.userError "census certificate: final source failed elaboration"
+  return env
 
 private def phase (destination label : String) : IO Unit :=
   IO.FS.writeFile (destination ++ ".phase") label
@@ -102,58 +104,59 @@ private def streamArtifact (path : String) (fields : List (String × Json))
 
 /-- Independent data-only publication. Lean replays each bounded query before
 accepting its rows; the kernel sees only full keys and immutable report metadata. -/
-elab "#disposition_census" &"projection" &"root" root:ident &"report" reportPath:str
+elab "#disposition_census" &"projection" &"root" root:ident &"source" sourcePath:str &"report" reportPath:str
     &"head" head:str &"report_sha256" reportSha:str &"prefix" selectionPrefix:str
     &"manifest" manifestName:ident &"report_keys" reportKeysName:ident &"receipts" receiptsPath:str
     &"certificate" certificate:ident " output " outputPath:str : command => do
   let destination := outputPath.getString
-  liftTermElabM <| checkFinalEnvironment (← getEnv)
-  let imports := (← getEnv).header.imports.map (·.module.toString)
-  let closure := (← getEnv).header.moduleNames.map Name.toString
-  IO.FS.writeFile (destination ++ ".environment.json") ((Json.mkObj [
-    ("imports", toJson imports), ("transitive_imports", toJson closure)]).pretty ++ "\n")
   phase destination "manifest_binding"
   let bytes ← IO.FS.readFile reportPath.getString
   let report ← ofExcept <| parseReportData bytes
   let selected ← ofExcept <| selectReport report bytes selectionPrefix.getString
   let paths ← ofExcept <| fromJson? (α := Array String) (← ofExcept <| Json.parse
     (← IO.FS.readFile receiptsPath.getString))
-  let manifestName ← liftTermElabM <| realizeGlobalConstNoOverloadWithInfo manifestName
-  let reportKeysName ← liftTermElabM <| realizeGlobalConstNoOverloadWithInfo reportKeysName
+  let manifestName := manifestName.getId.eraseMacroScopes
+  let reportKeysName := reportKeysName.getId.eraseMacroScopes
   let (inventory, sources) ← liftTermElabM <| readRows paths selected head.getString reportSha.getString
+  phase destination "manifest_compile"
+  let options := ((← getOptions).erase `maxRecDepth).setBool `Elab.async false
+  let finalEnv ← elaborateFinalSource (← IO.FS.readFile sourcePath.getString)
+    sourcePath.getString root.getId options
+  liftTermElabM <| checkFinalEnvironment finalEnv
+  let imports := finalEnv.header.imports.map (·.module.toString)
+  let closure := finalEnv.header.moduleNames.map Name.toString
+  IO.FS.writeFile (destination ++ ".environment.json") ((Json.mkObj [
+    ("imports", toJson imports), ("transitive_imports", toJson closure)]).pretty ++ "\n")
+  phase destination "manifest_binding"
   let value := mkConst manifestName
   let reportKeysExpr := mkConst reportKeysName
-  liftTermElabM do
-    let keyManifest ← do unsafe evalExpr CensusKeyManifest (mkConst ``CensusKeyManifest) value
-    let reportKeys ← do unsafe evalExpr (List (Name × Nat)) (toTypeExpr (List (Name × Nat))) reportKeysExpr
-    unless (← getConstInfoDefn reportKeysName).value == keysLiteralExpr reportKeys do
-      throwError "{identityError .anonymous "report_keys_binding" "independent canonical literal" "alias or expression"}"
-    ofExcept <| checkManifestBinding selected root.getId (inventory.entries.map (·.1)) keyManifest reportKeys
+  withEnv finalEnv <| liftTermElabM <| withOptions (fun _ => options) do
+    bindEmittedManifest selected root.getId (inventory.entries.map (·.1)) manifestName reportKeysName
   phase destination "receipt_verification"
   liftTermElabM do
     for path in paths do discard <| CensusReceipt.verify path report
   phase destination "certificate_compile_kernel"
   let certificateName := (← getCurrNamespace) ++ certificate.getId.eraseMacroScopes
-  let (proof, proposition) ← liftTermElabM do
+  let (proof, proposition) ← withEnv finalEnv <| liftTermElabM <| withOptions (fun _ => options) do
     let proof ← certificateProof value report.headSha report.reportSha256 root.getId reportKeysExpr
     let proposition ← mkAppM ``CensusKeyManifest.Certificate
       #[value, toExpr report.headSha, toExpr report.reportSha256, toExpr root.getId, reportKeysExpr]
     return (proof, proposition)
   let declaration := Declaration.thmDecl {
     name := certificateName, levelParams := [], type := proposition, value := proof }
-  let options ← getOptions
-  let staged ← match (← getEnv).addDeclCore (Core.getMaxHeartbeats options).toUSize
+  let staged ← match finalEnv.addDeclCore (Core.getMaxHeartbeats options).toUSize
       (maxRecDepth.get options).toUSize declaration none true with
     | .ok env => pure env
     | .error error => throwError "{error.toMessageData options}"
   let axioms ← withEnv staged <| collectAxioms certificateName
   unless axioms.all (#[`propext, `Classical.choice, `Quot.sound].contains ·) do
     throwError "census certificate: unapproved axioms {axioms}"
-  let typeText ← liftTermElabM <| return toString (← ppExpr proposition)
+  let typeText ← withEnv staged <| liftTermElabM <| return toString (← ppExpr proposition)
   let certificateJson := Json.mkObj [("name", toJson certificateName.toString),
     ("type", toJson typeText), ("axioms", toJson (axioms.map Name.toString))]
   let fields := summaryFields report inventory sources ++ [("certificate", certificateJson)]
   ofExcept <| checkCounts inventory (count inventory)
+  Lean.writeModule staged ((System.FilePath.mk sourcePath.getString).withExtension "olean")
   if ← (System.FilePath.mk destination).pathExists then
     let same ← IO.Process.output { cmd := "/bin/test", args := #[reportPath.getString, "-ef", destination] }
     unless same.exitCode == 1 do throwError "census projection: output aliases report"
@@ -163,8 +166,7 @@ elab "#disposition_census" &"projection" &"root" root:ident &"report" reportPath
   IO.FS.writeFile (temporary ++ ".summary.json") ((Json.mkObj fields).pretty ++ "\n")
   IO.FS.rename temporary destination
   IO.FS.rename (temporary ++ ".summary.json") (destination ++ ".summary.json")
-  setEnv staged
   phase destination "certificate_compile_kernel"
-  elabCommand (← `(command| #print axioms $(mkIdent certificateName)))
+  withEnv staged <| elabCommand (← `(command| #print axioms $(mkIdent certificateName)))
 
 end LeanInformationAudit.CensusProjection

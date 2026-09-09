@@ -12,6 +12,8 @@ def check_receipts(repository, directory, report_path):
     root = directory / "first"
     source = root / "CensusRun/Root.lean"
     original = source.read_text()
+    driver = root / "CensusPublish/Root.lean"
+    original_driver = driver.read_text()
     manifest = root / "query-outputs.json"
     responses = json.loads(manifest.read_text())
     response = pathlib.Path(responses[0])
@@ -21,9 +23,10 @@ def check_receipts(repository, directory, report_path):
 
     def rejected(label, expected, text=None):
         output = directory / (label + ".json")
-        source.write_text((text or original).replace(string(str(root / "census.json")), string(str(output))))
+        source.write_text(text or original)
+        driver.write_text(original_driver.replace(string(str(root / "census.json")), string(str(output))))
         try:
-            run(["lake", "env", "lean", "-R", str(root), str(source)],
+            run(["lake", "env", "lean", "-R", str(root), str(driver)],
                 directory / label, "process", cwd=repository, env=env)
         except RuntimeError:
             log = (directory / label / "process.log").read_text()
@@ -34,6 +37,7 @@ def check_receipts(repository, directory, report_path):
             raise AssertionError(label + " was accepted")
         finally:
             source.write_text(original)
+            driver.write_text(original_driver)
 
     receipt_bytes = receipt.read_bytes()
     response_bytes = response.read_bytes()

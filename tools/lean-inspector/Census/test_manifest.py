@@ -31,7 +31,7 @@ class ManifestTests(unittest.TestCase):
         rows = [{"theorem_name": ["str", ["anonymous"], "Inventory"], "statement_id": wire}]
         report_keys = [("Fixture", "ns(n0,6:Report)", wire)]
         source = emission.manifest_source(rows, report_keys, "head", "digest", "Root")
-        before, after = source.split("def CensusRun.reportKeys", 1)
+        before, after = source.split("def CensusRun.reportKeys.chunk", 1)
         self.assertIn('"Inventory"', before)
         self.assertNotIn('"Report"', before)
         self.assertIn('"Report"', after)
@@ -47,6 +47,21 @@ class ManifestTests(unittest.TestCase):
         self.assertEqual(first, emission.manifest_source(rows[::-1], keys[::-1], "head", "digest", "Root"))
         self.assertNotIn("CensusRun.Rows", first)
         self.assertNotIn("DispositionCensus", first)
+
+    def test_noncomputable_independent_chunks_are_bounded(self):
+        keys = [("Fixture", "ns(n0,1:T)", "sha256:" + format(n, "064x")) for n in range(205)]
+        rows = [{"theorem_name": emission.parse_name_key(key), "statement_id": wire}
+                for _, key, wire in keys]
+        source = emission.manifest_source(rows, keys, "head", "digest", "Root")
+        self.assertEqual(source.count("noncomputable def"), 9)
+        self.assertEqual(source.count("List.flatten"), 2)
+        self.assertIn("import LeanInformationAudit.Census.Certificate\n", source)
+        self.assertNotIn("Census.Publish", source)
+        for side in ("manifestKeys", "reportKeys"):
+            for number, expected in enumerate((100, 100, 5)):
+                body = source.split(f"def CensusRun.{side}.chunk{number} :", 1)[1].split(
+                    "noncomputable def", 1)[0]
+                self.assertEqual(body.count("Lean.Name.str"), expected)
 
 
 if __name__ == "__main__":

@@ -136,7 +136,7 @@ def main():
         assert projection["certified_complete"] is False
         results.append(hashlib.sha256(artifact).hexdigest())
         probe = run_directory / "Absent.lean"
-        probe.write_text("import CensusRun.Root\nopen Lean Elab Command\n"
+        probe.write_text("import Lean\nimport CensusRun.Root\nopen Lean Elab Command\n"
                          "run_cmd do\n"
                          "  if (<- getEnv).contains\n"
                          "      `LeanInformationAudit.Tests.Census.Query.Observed.independent then\n"
@@ -177,6 +177,8 @@ def main():
     receipt_negatives = check_receipts(repository, directory, report_path)
     from negative_fixtures import check_manifest_negatives
     manifest_negatives = check_manifest_negatives(repository, directory)
+    from chunk_fixtures import check_chunks
+    manifest_negatives.extend(check_chunks(repository, directory))
     result = {"query_contract": "passed", "coverage": "passed", "artifact_determinism": results[0],
               "manifest_negatives": manifest_negatives,
               "query_receipt_negatives": receipt_negatives,

@@ -33,7 +33,11 @@ def main():
          lambda text: text.replace(
              '  unless (← renderStatementId value) == wire do throw <| formatError name wire\n', '')),
         ("payload-import", publisher, environment, "finalEnvironmentImports",
-         lambda text: 'import LeanInformationAudit.DispositionCensus\n' + text),
+         lambda text: text.replace('Elab.runFrontend input options',
+             'Elab.runFrontend ("import LeanInformationAudit.DispositionCensus\\n" ++ input) options')),
+        ("publisher-import", publisher, environment, "finalEnvironmentImports",
+         lambda text: text.replace('Elab.runFrontend input options',
+             'Elab.runFrontend ("import LeanInformationAudit.Census.Publish\\n" ++ input) options')),
     ]
     outcomes = []
     for label, source, fixture, expected, transform in cases:

@@ -21,12 +21,16 @@ def emit(directory, report_path, receipts_path, prefix):
         rows.extend({field: row[field] for field in ("theorem_name", "statement_id")}
                     for row in result["entries"])
     source = manifest_source(rows, keys, head, digest, "CensusRun.Root")
-    source += (f"#disposition_census projection root CensusRun.Root report {string(str(report_path))}\n"
+    path = write_module(directory, "CensusRun.Root", source)
+    driver = ("import LeanInformationAudit.Census.Publish\n"
+               f"#disposition_census projection root CensusRun.Root source {string(str(path))} "
+               f"report {string(str(report_path))}\n"
                f"  head {string(head)} report_sha256 {string(digest)}\n"
                f"  prefix {string(prefix)} manifest CensusRun.manifest report_keys CensusRun.reportKeys\n"
                f"  receipts {string(str(receipts_path))} certificate CensusRun.accountingCertificate "
                f"output {string(str(directory / 'census.json'))}\n")
-    return write_module(directory, "CensusRun.Root", source)
+    write_module(directory, "CensusPublish.Root", driver)
+    return path
 
 
 if __name__ == "__main__":

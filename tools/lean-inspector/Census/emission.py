@@ -63,17 +63,31 @@ def key_list(keys):
     return "[\n" + ",\n".join(f"  ({name(key)}, {value})" for key, value in ordered) + "]"
 
 
+def chunked_keys(declaration, keys):
+    ordered = sorted(keys, key=lambda item: statement_nat(item[1]))
+    chunks = []
+    definitions = []
+    for start in range(0, len(ordered), 100):
+        chunk = f"{declaration}.chunk{start // 100}"
+        chunks.append(chunk)
+        definitions.append(f"noncomputable def {chunk} : List (Lean.Name × Nat) := "
+                           + key_list(ordered[start:start + 100]) + "\n")
+    definitions.append(f"noncomputable def {declaration} : List (Lean.Name × Nat) := "
+                       + "List.flatten [" + ", ".join(chunks) + "]\n")
+    return "".join(definitions)
+
+
 def manifest_source(rows, report_keys, head, digest, root):
     root_name = ["anonymous"]
     for part in root.split("."):
         root_name = ["str", root_name, part]
-    inventory = key_list((row["theorem_name"], row["statement_id"]) for row in rows)
-    report = key_list((parse_name_key(key), wire) for _, key, wire in report_keys)
-    return ("import LeanInformationAudit.Census.Publish\nopen LeanInformationAudit\n"
-            "def CensusRun.manifest : CensusKeyManifest :=\n"
+    inventory = chunked_keys("CensusRun.manifestKeys",
+                             ((row["theorem_name"], row["statement_id"]) for row in rows))
+    report = chunked_keys("CensusRun.reportKeys", ((parse_name_key(key), wire) for _, key, wire in report_keys))
+    return ("import LeanInformationAudit.Census.Certificate\nopen LeanInformationAudit\n"
+            + inventory + "noncomputable def CensusRun.manifest : CensusKeyManifest :=\n"
             f"  {{ headSha := {string(head)}, reportSha256 := {string(digest)},\n"
-            f"    censusRoot := {name(root_name)}, keys := {inventory} }}\n"
-            f"def CensusRun.reportKeys : List (Lean.Name × Nat) := {report}\n")
+            f"    censusRoot := {name(root_name)}, keys := CensusRun.manifestKeys }}\n" + report)
 
 
 def write_module(directory, module, contents):

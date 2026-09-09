@@ -166,7 +166,7 @@ def execute(options):
         if options.fixture_truth_export:
             validate_fixture_export(json.loads(pathlib.Path(options.fixture_truth_export).read_bytes()))
         step(["make", "lean-cache-ensure"], "cache")
-        for module in ["Census.Codec", "CensusSchema", "Census.Coverage", "Census.Report", "Census.Ownership",
+        for module in ["Census.Certificate", "Census.Codec", "CensusSchema", "Census.Coverage", "Census.Report", "Census.Ownership",
                        "Census.Manifest", "Census.Transport", "DispositionEvidence", "DispositionCensus",
                        "Census.Query", "Census.Receipt", "Census.Command", "Census.Publish"]:
             source = repository / "tools/lean-inspector/LeanInformationAudit" / (module.replace(".", "/") + ".lean")
@@ -273,7 +273,7 @@ def execute(options):
               "--receipts", str(receipts), "--prefix", options.prefix], "manifest_emission")
         path = directory / "CensusRun/Root.lean"
         state["manifest_bytes"] = path.stat().st_size
-        publication = lean(path, "publication", True, directory / "census.json.phase")
+        publication = lean(directory / "CensusPublish/Root.lean", "publication", False, directory / "census.json.phase")
         state["publication_phases"] = publication["phases"]
         state["final_environment"] = json.loads((directory / "census.json.environment.json").read_text())
         summary = json.loads((directory / "census.json.summary.json").read_text())

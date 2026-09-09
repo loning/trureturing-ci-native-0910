@@ -45,6 +45,66 @@ def checkManifestBinding (report : FrozenReport) (root : Name) (rows : Array Sta
   bindKeys "manifest_keys" rows m.keys
   bindKeys "report_keys" report.theorems reportKeys
 
+private def bindingError (component : String) : MetaM α :=
+  throwError "{identityError .anonymous component "independent canonical chunks" "alias or expression"}"
+
+/-- Compare constructor trees without evaluating definitions or requiring their IR.
+Each side has its own names and is rendered from its own validated wire authority. -/
+def bindChunkedKeys (listName : Name) (component : String)
+    (wire : Array StatementKey) : MetaM (List (Name × Nat)) := do
+  let keys ← ofExcept <| canonicalKeys wire
+  let keyArray := keys.toArray
+  let ordered := wire.qsort (fun a b => a.statementId < b.statementId)
+  let chunkCount := (wire.size + 99) / 100
+  let names := (List.range chunkCount).map (fun n => listName ++ .mkSimple ("chunk" ++ toString n))
+  let keyType := toTypeExpr (Name × Nat)
+  let chunks ← mkListLit (mkApp (mkConst ``List [.zero]) keyType) (names.map mkConst)
+  let expected ← mkAppM ``List.flatten #[chunks]
+  -- Lean's list notation inserts local lets. Only substitute those lets;
+  -- global definitions (including aliases to the other side) stay opaque.
+  let joined ← zetaReduce (← getConstInfoDefn listName).value (zetaDelta := false) (beta := false)
+  unless joined == expected do
+    bindingError (component ++ "_binding")
+  for n in [:chunkCount] do
+    let chunkName := names[n]!
+    let actual ← zetaReduce (← getConstInfoDefn chunkName).value (zetaDelta := false) (beta := false)
+    let chunk := keyArray.extract (n * 100) ((n + 1) * 100) |>.toList
+    unless actual == keysLiteralExpr chunk do
+      -- Preserve row/name/Nat diagnostics, even when the canonical tree is wrong.
+      let mut tail := actual
+      for key in ordered.extract (n * 100) ((n + 1) * 100) do
+        unless tail.isAppOfArity ``List.cons 3 do bindingError component
+        let pair := tail.getAppArgs[1]!
+        unless pair.isAppOfArity ``Prod.mk 4 &&
+            pair.getAppArgs[2]! == literalNameExpr key.theoremName do bindingError component
+        let numeral := pair.getAppArgs[3]!
+        unless numeral.isAppOfArity ``OfNat.ofNat 3 do bindingError component
+        let some value := numeral.getAppArgs[1]!.rawNatLit? | bindingError component
+        unless numeral == mkNatLit value do bindingError component
+        ofExcept <| bindStatementIdNat key.theoremName key.statementId value
+        tail := tail.getAppArgs[2]!
+      bindingError component
+  return keys
+
+def bindEmittedManifest (report : FrozenReport) (root : Name) (rows : Array StatementKey)
+    (manifestName reportKeysName : Name) : MetaM Unit := do
+  ofExcept <| checkFrozenKeys report.headSha report.theorems
+  ofExcept <| checkInventoryDuplicates rows
+  let value := (← getConstInfoDefn manifestName).value
+  unless value.isAppOfArity ``CensusKeyManifest.mk 4 do bindingError "manifest_keys"
+  let args := value.getAppArgs
+  let .lit (.strVal head) := args[0]! | bindingError "head"
+  let .lit (.strVal sha) := args[1]! | bindingError "report_sha256"
+  unless sha == report.reportSha256 do
+    throwError "{identityError .anonymous "report_sha256" report.reportSha256 sha}"
+  unless args[2]! == literalNameExpr root do bindingError "census_root"
+  ofExcept <| checkKeyCoverage report.headSha report.theorems head rows
+  let listName := manifestName.appendAfter "Keys"
+  unless args[3]! == mkConst listName do bindingError "manifest_keys"
+  let keys ← bindChunkedKeys listName "manifest_keys" rows
+  let reportKeys ← bindChunkedKeys reportKeysName "report_keys" report.theorems
+  ofExcept <| checkManifestBinding report root rows ⟨head, sha, root, keys⟩ reportKeys
+
 /-- Build only adjacent Nat decisions. Every other conjunct is reflexivity on
 canonical literals, then checked against the independently constructed full type. -/
 def certificateProof (manifest : Expr) (head sha : String) (root : Name)
