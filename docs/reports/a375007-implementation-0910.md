@@ -35,3 +35,22 @@
 - 尚未打开 OEIS/arXiv/第三方检索页；关于那些页面的输入均为 `ASSUMED-UNVERIFIED`。
 - 未主张世界文献不存在证明，未主张另一条 Fortunate 型猜想，未主张序号枚举接口的形式化。
 - 尚无独立模型评审或 CI 判词。
+
+## 检索结算与热树收据
+
+- 钉版 mathlib 实际 checkout SHA 与 manifest 一致。`rg` 搜 A375007/a375007/isolated remainder/quotient 无命中。
+  已读 `Mathlib/Data/Nat/Prime/Defs.lean` 的 `Nat.minFac_prime`、`minFac_dvd`、`minFac_le_div`、`minFac_sq_le_self`、`not_prime_iff_minFac_lt`。
+  命中的是分解前置，不是目标定理；将直接应用这些接口。
+- 当场 GET `https://oeis.org/A375007/internal` 和 `https://oeis.org/search?q=id:A375007&fmt=text` 均 HTTP 200。
+  全文 text 2417 bytes，SHA256 `3d8d2d858c9f49465c64987abf1c110a288e1c8e66d1e3c77ec02867db20b0a0`；读到版本 #9，2024-08-18。
+  原句：`Conjecture: a(n) + 1 is prime for n > 6. Verified for all terms < 10^8.`
+  全文未附此猜想证明；前六项确为 1,2,3,4,8,24。
+- GitHub 未认证 code search 返回 401；改用已有 gh 认证后 `search/code?q=A375007 language:Lean` 成功，`total_count=0`。
+  `search/repositories?q=A375007` 为 0。不限语言检索有 Maxima-enthusiast/OEISSnippets 的 `A375/A375007.wxm`，本席随后打开核对；大量其余命中只是十六进制子串，未作为相关证据。
+- arXiv API `search_query=all:A375007` HTTP 200，totalResults=0。
+- Bing `"A375007" proof` 返回 YouTube 无关结果；Google `"A375007" Lean proof` 返回重定向壳；DuckDuckGo 返回 HTTP 202 验证页。这三项不算有效阴性检索。
+- OEIS 四个 xref 的文本均已下载，仅粗筛名称与 A375007/Conjecture 相关行；未全文细读。其外链页面一律 `ASSUMED-UNVERIFIED`。
+- **判据结算**：在已读 OEIS 完整主条目、钉版 mathlib、GitHub Lean 精确检索、arXiv 精确检索范围内未找到公开完整证明（`not-found-in-searched-scope`）。维持第一档，绝不升级成世界性无证明声明。
+- `make lean-cache-ensure` EXIT=0：`status=seeded, method=clonefile, donor=/Users/chronoai/trureturing, clonefile_attempts=1, stamp_miss=null, mathlib_olean_state=warm, project_olean_state=warm, archive_status=not_attempted`。
+  完整 HTTP 响应与收据保留在 runner attempt 目录；报告为随提交保存的可移植检索结论。
+- 落点选 `D5/S3/Arith/IsolatedQuotientRemainder.lean`；创建前 Arith 直属文件 30 个、Blueprint 对应 scribe 25 个，均低于 48。七行头遵循同域已冻实例。
