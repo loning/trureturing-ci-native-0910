@@ -190,6 +190,122 @@ $$\forall A \in Type,\; \forall K \in Type,\; \left(\left(Fintype\left(A\right) 
 
 The existing rank bound for the actual occupationGram transfers through the diagonal rank equality.
 
+## The actual normalized fixed tensor isometry
+
+Here A is finite and nonempty with decidable equality and a is any occupation multiset. K is exactly Fin(proposedDimension(a)), head is maximalHead(a), U is physicalGate(a), and x is physicalInitial(a) as identified in NormalizedResiduals. Every phi below is inverse sqrt(M(r)) times C's actual physicalResidual(a,r), proved exactly equal to the existing normalizedResidual(a,head,U,x,r). The output and unit final vector are proved for these data.
+
+The orthonormal tensor basis uses the alphabet factor first and the same memory factor second. R is the repr equivalence of tensorProduct(basisFun(A,Complex),basisFun(K,Complex)); it sends a pure tensor z tensor y to the joint coordinate (i,k) equal to y(k) times z(i). basis(i) is the alphabet coordinate basis. tmul(Complex,z,y) denotes this ordered complex tensor product, smul is complex scalar multiplication, and comp means composition with the rightmost map applied first. No additional circuit or normalized family is constructed.
+
+**Definition 1.16 (physicalTensorEmission).**
+
+$$\forall A \in Type,\; \left(Fintype\left(A\right) \land \left(DecidableEq\left(A\right) \land Nonempty\left(A\right)\right)\right) \Rightarrow \left(\forall a \in Multiset\left(A\right),\; physicalTensorEmission\left(a\right) = comp\left(toLinearIsometry\left(symm\left(repr\left(tensorProduct\left(basisFun\left(A, Complex\right), basisFun\left(Fin\left(proposedDimension\left(a\right)\right), Complex\right)\right)\right)\right)\right), emission\left(maximalHead\left(a\right), physicalGate\left(a\right)\right)\right)\right)$$
+
+*Formalization.* `D5/S3/Quantum/StationaryPreparation/NormalizedGram.physicalTensorEmission` (`✓ std3`).
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+This is a complex linear isometry from Space(K) to Space(A) tensor Space(K), obtained from the actual blank-input emission.
+
+**Theorem 1.17 (physical_tensor_coordinates).**
+
+$$\forall A \in Type,\; \left(Fintype\left(A\right) \land \left(DecidableEq\left(A\right) \land Nonempty\left(A\right)\right)\right) \Rightarrow \left(\forall a \in Multiset\left(A\right),\; \forall x \in Space\left(Fin\left(proposedDimension\left(a\right)\right)\right),\; repr\left(tensorProduct\left(basisFun\left(A, Complex\right), basisFun\left(Fin\left(proposedDimension\left(a\right)\right), Complex\right)\right)\right)\left(physicalTensorEmission\left(a\right)\left(x\right)\right) = emission\left(maximalHead\left(a\right), physicalGate\left(a\right)\right)\left(x\right)\right)$$
+
+*Proof.* Machine-checked in Lean as `D5/S3/Quantum/StationaryPreparation/NormalizedGram.physical_tensor_coordinates` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+The exact coordinate equivalence identifies the tensor map with PhysicalGram.emission for C's fixed gate and blank.
+
+**Theorem 1.18 (physical_tensor_emission).**
+
+$$\forall A \in Type,\; \left(Fintype\left(A\right) \land \left(DecidableEq\left(A\right) \land Nonempty\left(A\right)\right)\right) \Rightarrow \left(\forall a \in Multiset\left(A\right),\; \forall r \in Multiset\left(A\right),\; \left(r \le a \land r \ne 0\right) \Rightarrow physicalTensorEmission\left(a\right)\left(smul\left(inv\left(ofReal\left(residualScale\left(r\right)\right)\right), physicalResidual\left(a, r\right)\right)\right) = \sum_{i:A}{smul\left(ofReal\left(\sqrt{\frac{NatToReal\left(count\left(r, i\right)\right)}{NatToReal\left(card\left(r\right)\right)}}\right), tmul\left(Complex, basis\left(i\right), smul\left(inv\left(ofReal\left(residualScale\left(erase\left(r, i\right)\right)\right)\right), physicalResidual\left(a, erase\left(r, i\right)\right)\right)\right)\right)}\right)$$
+
+*Proof.* Machine-checked in Lean as `D5/S3/Quantum/StationaryPreparation/NormalizedGram.physical_tensor_emission` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+For each legal nonterminal residual, the actual map has the source's sqrt(count/card) tensor expansion. The scalar is embedded from the reals into the complex numbers. Absent symbols have count zero and therefore contribute zero, while the erased residual stays legal.
+
+**Theorem 1.19 (physical_emission_linearCombination).**
+
+$$\forall A \in Type,\; \left(Fintype\left(A\right) \land \left(DecidableEq\left(A\right) \land Nonempty\left(A\right)\right)\right) \Rightarrow \left(\forall a \in Multiset\left(A\right),\; \forall I \in Type,\; \forall r \in I \to Multiset\left(A\right),\; \left(\forall j \in I,\; r\left(j\right) \le a \land r\left(j\right) \ne 0\right) \Rightarrow \left(\forall c \in Finsupp\left(I, Complex\right),\; physicalTensorEmission\left(a\right)\left(linearCombination\left(Complex, j:I \mapsto smul\left(inv\left(ofReal\left(residualScale\left(r\left(j\right)\right)\right)\right), physicalResidual\left(a, r\left(j\right)\right)\right), c\right)\right) = linearCombination\left(Complex, j:I \mapsto \sum_{i:A}{smul\left(ofReal\left(\sqrt{\frac{NatToReal\left(count\left(r\left(j\right), i\right)\right)}{NatToReal\left(card\left(r\left(j\right)\right)\right)}}\right), tmul\left(Complex, basis\left(i\right), smul\left(inv\left(ofReal\left(residualScale\left(erase\left(r\left(j\right), i\right)\right)\right)\right), physicalResidual\left(a, erase\left(r\left(j\right), i\right)\right)\right)\right)\right)}, c\right)\right)\right)$$
+
+*Proof.* Machine-checked in Lean as `D5/S3/Quantum/StationaryPreparation/NormalizedGram.physical_emission_linearCombination` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+For any index type I, any family r(j) of legal nonzero residuals, and any finitely supported complex coefficients c, applying the same isometry commutes with the finite linear combination and substitutes the displayed normalized tensor expansion.
+
+**Theorem 1.20 (physical_image_dependency_iff).**
+
+$$\forall A \in Type,\; \left(Fintype\left(A\right) \land \left(DecidableEq\left(A\right) \land Nonempty\left(A\right)\right)\right) \Rightarrow \left(\forall a \in Multiset\left(A\right),\; \forall I \in Type,\; \forall r \in I \to Multiset\left(A\right),\; \forall c \in Finsupp\left(I, Complex\right),\; linearCombination\left(Complex, j:I \mapsto smul\left(inv\left(ofReal\left(residualScale\left(r\left(j\right)\right)\right)\right), physicalResidual\left(a, r\left(j\right)\right)\right), c\right) = 0 \Leftrightarrow linearCombination\left(Complex, j:I \mapsto physicalTensorEmission\left(a\right)\left(smul\left(inv\left(ofReal\left(residualScale\left(r\left(j\right)\right)\right)\right), physicalResidual\left(a, r\left(j\right)\right)\right)\right), c\right) = 0\right)$$
+
+*Proof.* Machine-checked in Lean as `D5/S3/Quantum/StationaryPreparation/NormalizedGram.physical_image_dependency_iff` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+The actual isometry preserves all finite dependencies of the total concrete vector family, including terminal zero occupation. This image statement has no nonterminal restriction; identification with B applies on the legal box. The following source expansion retains its own domain.
+
+**Theorem 1.21 (physical_dependency_iff).**
+
+$$\forall A \in Type,\; \left(Fintype\left(A\right) \land \left(DecidableEq\left(A\right) \land Nonempty\left(A\right)\right)\right) \Rightarrow \left(\forall a \in Multiset\left(A\right),\; \forall I \in Type,\; \forall r \in I \to Multiset\left(A\right),\; \left(\forall j \in I,\; r\left(j\right) \le a \land r\left(j\right) \ne 0\right) \Rightarrow \left(\forall c \in Finsupp\left(I, Complex\right),\; linearCombination\left(Complex, j:I \mapsto smul\left(inv\left(ofReal\left(residualScale\left(r\left(j\right)\right)\right)\right), physicalResidual\left(a, r\left(j\right)\right)\right), c\right) = 0 \Leftrightarrow linearCombination\left(Complex, j:I \mapsto \sum_{i:A}{smul\left(ofReal\left(\sqrt{\frac{NatToReal\left(count\left(r\left(j\right), i\right)\right)}{NatToReal\left(card\left(r\left(j\right)\right)\right)}}\right), tmul\left(Complex, basis\left(i\right), smul\left(inv\left(ofReal\left(residualScale\left(erase\left(r\left(j\right), i\right)\right)\right)\right), physicalResidual\left(a, erase\left(r\left(j\right), i\right)\right)\right)\right)\right)}, c\right) = 0\right)\right)$$
+
+*Proof.* Machine-checked in Lean as `D5/S3/Quantum/StationaryPreparation/NormalizedGram.physical_dependency_iff` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+Injectivity and linearity give both directions: every finite dependency of this actual family is exactly a dependency of its prescribed emission images. This is not restricted to a conditional kernel recurrence.
+
+**Theorem 1.22 (physical_nonterminal_span_eq).**
+
+$$\forall A \in Type,\; \left(Fintype\left(A\right) \land \left(DecidableEq\left(A\right) \land Nonempty\left(A\right)\right)\right) \Rightarrow \left(\forall a \in Multiset\left(A\right),\; 0 < sup\left(univ, count\left(a\right)\right) \Rightarrow span\left(Complex, setOf\left(v:Space\left(Fin\left(proposedDimension\left(a\right)\right)\right) \mapsto \exists r \in Multiset\left(A\right),\; r \le a \land \left(r \ne 0 \land smul\left(inv\left(ofReal\left(residualScale\left(r\right)\right)\right), physicalResidual\left(a, r\right)\right) = v\right)\right)\right) = span\left(Complex, setOf\left(v:Space\left(Fin\left(proposedDimension\left(a\right)\right)\right) \mapsto \exists r \in Multiset\left(A\right),\; r \le a \land smul\left(inv\left(ofReal\left(residualScale\left(r\right)\right)\right), physicalResidual\left(a, r\right)\right) = v\right)\right)\right)$$
+
+*Proof.* Machine-checked in Lean as `D5/S3/Quantum/StationaryPreparation/NormalizedGram.physical_nonterminal_span_eq` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+The actual normalized terminal vector equals the legal nonzero head-singleton vector when the maximum capacity is positive. Removing the terminal index therefore preserves the generated subspace.
+
+**Theorem 1.23 (physical_generated_span_top).**
+
+$$\forall A \in Type,\; \left(Fintype\left(A\right) \land \left(DecidableEq\left(A\right) \land Nonempty\left(A\right)\right)\right) \Rightarrow \left(\forall a \in Multiset\left(A\right),\; span\left(Complex, setOf\left(v:Space\left(Fin\left(proposedDimension\left(a\right)\right)\right) \mapsto \exists r \in Multiset\left(A\right),\; r \le a \land smul\left(inv\left(ofReal\left(residualScale\left(r\right)\right)\right), physicalResidual\left(a, r\right)\right) = v\right)\right) = top\right)$$
+
+*Proof.* Machine-checked in Lean as `D5/S3/Quantum/StationaryPreparation/NormalizedGram.physical_generated_span_top` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+Put the actual legal normalized vectors in their own generated subspace S. Their Gram equals the actual normalizedGram by the proved C/B identification. The existing stationary Gram lower bound and diagonal rank equality give proposedDimension(a) at most its rank. Coordinates in an orthonormal basis of S bound that rank by dim(S), so S is the whole physical memory.
+
+**Theorem 1.24 (physical_nonterminal_span_top).**
+
+$$\forall A \in Type,\; \left(Fintype\left(A\right) \land \left(DecidableEq\left(A\right) \land Nonempty\left(A\right)\right)\right) \Rightarrow \left(\forall a \in Multiset\left(A\right),\; 0 < sup\left(univ, count\left(a\right)\right) \Rightarrow span\left(Complex, setOf\left(v:Space\left(Fin\left(proposedDimension\left(a\right)\right)\right) \mapsto \exists r \in Multiset\left(A\right),\; r \le a \land \left(r \ne 0 \land smul\left(inv\left(ofReal\left(residualScale\left(r\right)\right)\right), physicalResidual\left(a, r\right)\right) = v\right)\right)\right) = top\right)$$
+
+*Proof.* Machine-checked in Lean as `D5/S3/Quantum/StationaryPreparation/NormalizedGram.physical_nonterminal_span_top` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+Full generation and the terminal/head-singleton equality prove that the nonterminal vectors span the actual memory whenever the maximum capacity is positive.
+
+linearCombination(Complex,v,c) means the finite sum of c(j) times v(j); Finsupp(I,Complex) is its finitely supported coefficient type. The displayed sets are setOf predicates over the same Space(K), span is the complex linear span, and top is the whole physical memory subspace. Zero and mixed capacities remain allowed. The all-zero dimension-one branch is separate; no nonterminal span assertion is made there. Actual padding moments, block factorization, block and aggregate ranks remain separate source obligations.
+
 ## References
 
 - Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedGram.diagonal_det_ne_zero`
@@ -204,6 +320,15 @@ The existing rank bound for the actual occupationGram transfers through the diag
 - Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedGram.normalized_inner_of_le`
 - Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedGram.occupation_gram_eq_diagonal`
 - Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedGram.occupation_gram_rank_eq`
+- Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedGram.physicalTensorEmission`
+- Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedGram.physical_dependency_iff`
+- Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedGram.physical_emission_linearCombination`
+- Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedGram.physical_generated_span_top`
+- Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedGram.physical_image_dependency_iff`
+- Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedGram.physical_nonterminal_span_eq`
+- Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedGram.physical_nonterminal_span_top`
+- Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedGram.physical_tensor_coordinates`
+- Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedGram.physical_tensor_emission`
 - Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedGram.residual_inner_of_le`
 - Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedGram.residual_inner_of_not_le`
 - Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedGram.residual_prefix`

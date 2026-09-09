@@ -236,6 +236,182 @@ $$\forall A \in Type,\; \forall K \in Type,\; \left(\left(Fintype\left(A\right) 
 
 For a nonzero remaining occupation, an absent symbol has zero image. No emission rule is imposed at the terminal residual.
 
+## Identification with the concrete padding circuit
+
+In this section A is finite and nonempty with decidable equality, and a is any multiset on A. The head is maximalHead(a), whose capacity is the maximum of a.count. The actual memory index is Fin(proposedDimension(a)); proposedDimension is the product of (a.count(i)+1) minus the maximum count. physicalResidual(a,r) is C's existing paddingResidual embedded by physicalMemoryEquiv(a), physicalGate(a) is C's fixed unitary, and physicalFinal(a) is its sink basis vector of norm one. These are the existing concrete vectors and gate.
+
+physicalInitial(a) names exactly the inverse sqrt(M(a)) times physicalResidual(a,a) already used by C's output theorem. The formulas below use no output or vector-identity hypothesis. The output is proved from C's positive-tail, absent-letter and tail-free steps. The identification compares actual suffix outputs and uses the existing isometric suffix injectivity, so it fixes phase as well as norm.
+
+**Definition 1.20 (physicalInitial).**
+
+$$\forall A \in Type,\; \left(Fintype\left(A\right) \land \left(DecidableEq\left(A\right) \land Nonempty\left(A\right)\right)\right) \Rightarrow \left(\forall a \in Multiset\left(A\right),\; physicalInitial\left(a\right) = smul\left(inv\left(ofReal\left(residualScale\left(a\right)\right)\right), physicalResidual\left(a, a\right)\right)\right)$$
+
+*Formalization.* `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.physicalInitial` (`✓ std3`).
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+This is a vector in the same Space(Fin(proposedDimension(a))); no second normalized family is defined.
+
+**Theorem 1.21 (physical_residual_step).**
+
+$$\forall A \in Type,\; \left(Fintype\left(A\right) \land \left(DecidableEq\left(A\right) \land Nonempty\left(A\right)\right)\right) \Rightarrow \left(\forall a \in Multiset\left(A\right),\; \forall r \in Multiset\left(A\right),\; \left(r \le a \land r \ne 0\right) \Rightarrow \left(\forall i \in A,\; \forall k \in Fin\left(proposedDimension\left(a\right)\right),\; physicalGate\left(a\right)\left(blankMemory\left(maximalHead\left(a\right), physicalResidual\left(a, r\right)\right), pair\left(i, k\right)\right) = ite\left(i \in r, physicalResidual\left(a, erase\left(r, i\right)\right)\left(k\right), 0\right)\right)\right)$$
+
+*Proof.* Machine-checked in Lean as `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.physical_residual_step` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+Assemble the already-proved step branches for every legal nonterminal residual.
+
+**Theorem 1.22 (physical_initial_output).**
+
+$$\forall A \in Type,\; \left(Fintype\left(A\right) \land \left(DecidableEq\left(A\right) \land Nonempty\left(A\right)\right)\right) \Rightarrow \left(\forall a \in Multiset\left(A\right),\; \forall w \in Fin\left(card\left(a\right)\right) \to A,\; \forall k \in Fin\left(proposedDimension\left(a\right)\right),\; circuit\left(t:\mathbb{N} \mapsto physicalGate\left(a\right), card\left(a\right), 0, initialized\left(maximalHead\left(a\right), card\left(a\right), physicalInitial\left(a\right)\right), pair\left(w, k\right)\right) = sectorVector\left(card\left(a\right), a, w\right) \cdot physicalFinal\left(a\right)\left(k\right)\right)$$
+
+*Proof.* Machine-checked in Lean as `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.physical_initial_output` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+C's genuine all-word circuit output supplies the physical hypothesis used by B's residual theory.
+
+**Theorem 1.23 (physical_scaled_initial).**
+
+$$\forall A \in Type,\; \left(Fintype\left(A\right) \land \left(DecidableEq\left(A\right) \land Nonempty\left(A\right)\right)\right) \Rightarrow \left(\forall a \in Multiset\left(A\right),\; scaledInitial\left(a, physicalInitial\left(a\right)\right) = physicalResidual\left(a, a\right)\right)$$
+
+*Proof.* Machine-checked in Lean as `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.physical_scaled_initial` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+The positive scale cancels its inverse, including the all-zero occupation.
+
+**Theorem 1.24 (physical_residual_identification).**
+
+$$\forall A \in Type,\; \left(Fintype\left(A\right) \land \left(DecidableEq\left(A\right) \land Nonempty\left(A\right)\right)\right) \Rightarrow \left(\forall a \in Multiset\left(A\right),\; \forall r \in Multiset\left(A\right),\; r \le a \Rightarrow residualMemory\left(a, maximalHead\left(a\right), physicalGate\left(a\right), physicalInitial\left(a\right), r\right) = physicalResidual\left(a, r\right)\right)$$
+
+*Proof.* Machine-checked in Lean as `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.physical_residual_identification` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+B's prefix-derived residual is exactly C's chosen physicalResidual for every r less than or equal to a.
+
+**Theorem 1.25 (physical_normalized_identification).**
+
+$$\forall A \in Type,\; \left(Fintype\left(A\right) \land \left(DecidableEq\left(A\right) \land Nonempty\left(A\right)\right)\right) \Rightarrow \left(\forall a \in Multiset\left(A\right),\; \forall r \in Multiset\left(A\right),\; r \le a \Rightarrow normalizedResidual\left(a, maximalHead\left(a\right), physicalGate\left(a\right), physicalInitial\left(a\right), r\right) = smul\left(inv\left(ofReal\left(residualScale\left(r\right)\right)\right), physicalResidual\left(a, r\right)\right)\right)$$
+
+*Proof.* Machine-checked in Lean as `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.physical_normalized_identification` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+The existing B normalizedResidual at these concrete parameters equals the scalar-normalized C vector.
+
+**Theorem 1.26 (physical_prefix_identification).**
+
+$$\forall A \in Type,\; \left(Fintype\left(A\right) \land \left(DecidableEq\left(A\right) \land Nonempty\left(A\right)\right)\right) \Rightarrow \left(\forall a \in Multiset\left(A\right),\; \forall r \in Multiset\left(A\right),\; r \le a \Rightarrow \left(\forall u \in List\left(A\right),\; toMultiset\left(u\right) = a - r \Rightarrow prefixMemory\left(maximalHead\left(a\right), physicalGate\left(a\right), u, physicalResidual\left(a, a\right)\right) = physicalResidual\left(a, r\right)\right)\right)$$
+
+*Proof.* Machine-checked in Lean as `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.physical_prefix_identification` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+Every ordered prefix of occupation a minus r has the same actual residual, with the unscaled C initial.
+
+**Theorem 1.27 (physical_prefix_normalized).**
+
+$$\forall A \in Type,\; \left(Fintype\left(A\right) \land \left(DecidableEq\left(A\right) \land Nonempty\left(A\right)\right)\right) \Rightarrow \left(\forall a \in Multiset\left(A\right),\; \forall r \in Multiset\left(A\right),\; r \le a \Rightarrow \left(\forall u \in List\left(A\right),\; toMultiset\left(u\right) = a - r \Rightarrow prefixMemory\left(maximalHead\left(a\right), physicalGate\left(a\right), u, physicalInitial\left(a\right)\right) = smul\left(ofReal\left(\sqrt{\frac{NatToReal\left(multiplicity\left(card\left(r\right), r\right)\right)}{NatToReal\left(multiplicity\left(card\left(a\right), a\right)\right)}}\right), smul\left(inv\left(ofReal\left(residualScale\left(r\right)\right)\right), physicalResidual\left(a, r\right)\right)\right)\right)\right)$$
+
+*Proof.* Machine-checked in Lean as `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.physical_prefix_normalized` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+For the unit initial, the exact prefix multiplier is sqrt(M(r)/M(a)), embedded in the complex numbers.
+
+**Theorem 1.28 (physical_normalized_norm).**
+
+$$\forall A \in Type,\; \left(Fintype\left(A\right) \land \left(DecidableEq\left(A\right) \land Nonempty\left(A\right)\right)\right) \Rightarrow \left(\forall a \in Multiset\left(A\right),\; \forall r \in Multiset\left(A\right),\; r \le a \Rightarrow norm\left(smul\left(inv\left(ofReal\left(residualScale\left(r\right)\right)\right), physicalResidual\left(a, r\right)\right)\right) = 1\right)$$
+
+*Proof.* Machine-checked in Lean as `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.physical_normalized_norm` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+Identification transfers B's norm theorem using the proved output and C's unit final memory.
+
+**Theorem 1.29 (physical_initial_norm).**
+
+$$\forall A \in Type,\; \left(Fintype\left(A\right) \land \left(DecidableEq\left(A\right) \land Nonempty\left(A\right)\right)\right) \Rightarrow \left(\forall a \in Multiset\left(A\right),\; norm\left(physicalInitial\left(a\right)\right) = 1\right)$$
+
+*Proof.* Machine-checked in Lean as `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.physical_initial_norm` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+Specialize the preceding actual-vector norm at r equal to a.
+
+**Theorem 1.30 (physical_normalized_zero).**
+
+$$\forall A \in Type,\; \left(Fintype\left(A\right) \land \left(DecidableEq\left(A\right) \land Nonempty\left(A\right)\right)\right) \Rightarrow \left(\forall a \in Multiset\left(A\right),\; normalizedResidual\left(a, maximalHead\left(a\right), physicalGate\left(a\right), physicalInitial\left(a\right), 0\right) = physicalFinal\left(a\right)\right)$$
+
+*Proof.* Machine-checked in Lean as `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.physical_normalized_zero` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+The terminal scale is one and the identified terminal residual is exactly the common final memory.
+
+**Theorem 1.31 (physical_head_singleton_le).**
+
+$$\forall A \in Type,\; \left(Fintype\left(A\right) \land \left(DecidableEq\left(A\right) \land Nonempty\left(A\right)\right)\right) \Rightarrow \left(\forall a \in Multiset\left(A\right),\; 0 < sup\left(univ, count\left(a\right)\right) \Rightarrow singleton\left(maximalHead\left(a\right)\right) \le a\right)$$
+
+*Proof.* Machine-checked in Lean as `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.physical_head_singleton_le` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+Positive maximum capacity implies head membership via maximal_head_spec; it is not assumed.
+
+**Theorem 1.32 (physical_normalized_head).**
+
+$$\forall A \in Type,\; \left(Fintype\left(A\right) \land \left(DecidableEq\left(A\right) \land Nonempty\left(A\right)\right)\right) \Rightarrow \left(\forall a \in Multiset\left(A\right),\; 0 < sup\left(univ, count\left(a\right)\right) \Rightarrow normalizedResidual\left(a, maximalHead\left(a\right), physicalGate\left(a\right), physicalInitial\left(a\right), 0\right) = normalizedResidual\left(a, maximalHead\left(a\right), physicalGate\left(a\right), physicalInitial\left(a\right), singleton\left(maximalHead\left(a\right)\right)\right)\right)$$
+
+*Proof.* Machine-checked in Lean as `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.physical_normalized_head` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+The legal head singleton has zero tail and multiplicity one. Both normalized vectors equal physicalFinal(a).
+
+**Theorem 1.33 (physical_normalized_letter).**
+
+$$\forall A \in Type,\; \left(Fintype\left(A\right) \land \left(DecidableEq\left(A\right) \land Nonempty\left(A\right)\right)\right) \Rightarrow \left(\forall a \in Multiset\left(A\right),\; \forall r \in Multiset\left(A\right),\; \left(r \le a \land r \ne 0\right) \Rightarrow \left(\forall i \in A,\; letter\left(maximalHead\left(a\right), physicalGate\left(a\right), i, smul\left(inv\left(ofReal\left(residualScale\left(r\right)\right)\right), physicalResidual\left(a, r\right)\right)\right) = ite\left(i \in r, smul\left(ofReal\left(\sqrt{\frac{NatToReal\left(count\left(r, i\right)\right)}{NatToReal\left(card\left(r\right)\right)}}\right), smul\left(inv\left(ofReal\left(residualScale\left(erase\left(r, i\right)\right)\right)\right), physicalResidual\left(a, erase\left(r, i\right)\right)\right)\right), 0\right)\right)\right)$$
+
+*Proof.* Machine-checked in Lean as `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.physical_normalized_letter` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+Rewrite the identified actual family and directly reuse B's existing square-root coefficient and absent-letter theorems.
+
+All statements retain zero and mixed capacities. The all-zero initial equals the unit final vector in C's existing dimension-one branch. The emission equation requires r nonzero; the head-singleton equation requires positive maximum capacity. NormalizedGram uses this exact identified family to prove full generated span and positive-maximum nonterminal span in the physical memory.
+
 ## References
 
 - Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.multiplicity_ne_zero`
@@ -245,6 +421,20 @@ For a nonzero remaining occupation, an absent symbol has zero image. No emission
 - Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.normalized_letter_of_not_mem`
 - Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.normalized_norm`
 - Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.normalized_zero`
+- Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.physicalInitial`
+- Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.physical_head_singleton_le`
+- Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.physical_initial_norm`
+- Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.physical_initial_output`
+- Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.physical_normalized_head`
+- Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.physical_normalized_identification`
+- Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.physical_normalized_letter`
+- Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.physical_normalized_norm`
+- Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.physical_normalized_zero`
+- Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.physical_prefix_identification`
+- Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.physical_prefix_normalized`
+- Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.physical_residual_identification`
+- Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.physical_residual_step`
+- Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.physical_scaled_initial`
 - Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.prefix_inner_sum`
 - Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.prefix_normalized`
 - Truth anchor: `D5/S3/Quantum/StationaryPreparation/NormalizedResiduals.residualScale`
