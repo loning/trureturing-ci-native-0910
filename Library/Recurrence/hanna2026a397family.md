@@ -92,3 +92,11 @@ without diagnostics; each axiom closure is exactly propext, Classical.choice,
 Quot.sound. The new strong induction transports coefficients to the frozen
 q=1 series, so Catalan pairing is reused. Source correspondence remains to be
 verified for the new parameters; no original-source resolution is claimed yet.
+
+Second proof checkpoint: the generic integer logarithmic derivative identity,
+exact rational coefficient shape, and uniqueness for every nonzero integer q
+compiled. The formal source reading is q*X*A'=M*A with M=q*X*L'; at degree one
+q!=0 forces a(1)=1, and at each higher degree the diagonal cancellation forces
+the new coefficient. All coefficient-weight subtraction is in Z or Q;
+natural subtraction occurs only in bounded indices. The source's q=sqrt(5)
+in its unrelated reversion formula is not our integer weight parameter q=5.
