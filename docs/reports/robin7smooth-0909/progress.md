@@ -15,7 +15,7 @@ Otherwise measure the threshold and the finite 7-smooth interval before writing
 a proof. More than 5,000 interval members means blocked-on-cost. A counterexample
 means immediate stop and report. The intended target quantifies over all four
 natural exponents, with product strictly greater than 5040; a single certificate
-does not discharge it. Atom bytes still await successful canonical reading.
+does not discharge it. The initial atom-read failure was resolved below.
 
 Proposed escape witness, conditional on a failed bind-only attempt: a uniform
 strict divisor-sum bound for all products of powers of 2, 3, 5, 7, combined with
@@ -116,8 +116,44 @@ handles exponent zero: that factor equals 1 and remains strictly below p/(p-1).
 Log(log x) is strictly increasing for x>1 because log x>0; therefore all lower
 thresholds transfer in the forward direction. No reversed inequality is used.
 
+## Universal implementation
+
+The complete theorem is now proved in D5/S3/Arith/Robin/SevenSmooth.lean:
+D5.S3.Arith.Robin.SevenSmooth.robin_seven_smooth. Its four natural exponents
+have no upper bounds, and its only hypothesis is that their product exceeds
+5040. The conclusion is the atom's strict sigma(n)/n Robin inequality.
+
+The first implementation build exited 2 on integration typing mistakes. The
+second make lean exited 0 (12735 jobs; new module 11 seconds). The finite
+arithmetic and analytic bounds passed at the unchanged default budgets.
+The printed axiom closure is exactly propext, Classical.choice, Quot.sound.
+Logs: attempt-1/implementation-build-1.log and implementation-build-2.log.
+An unused tactic warning in the second build was removed before final checks.
+The subsequent make lean also exited 0 (12735 jobs; new module 11 seconds),
+with no warning from SevenSmooth and the same standard axiom closure; log:
+attempt-1/implementation-build-final.log.
+
+All helper definitions and theorems are private. The finite proof uses
+fin_cases and decide +kernel on the exponent box. Its three branches contain
+71, 89 and 322 actual smooth numbers, respectively. Beyond 131072 the strict
+35/8 divisor-sum bound and monotone log-log lower bound cover every exponent.
+The tail's simpler Lean rational certificate is
+(89/50)*(123/50) = 10947/2500 > 35/8; it does not rely on the displayed decimal
+crossing estimate or on the Python experiment.
+
+Per public declaration (only robin_seven_smooth): proof_shape=content;
+admission_basis=escape-witness; utility=none. The preregistered private
+small_values is in the dependency closure (the live hv fact), supplies new
+integer inequalities absent from the frozen predecessors, is not definitionally
+equivalent to the Robin conclusion (no exp/log/gamma), and is consumed in all
+three finite branches. The general geometric estimate is not claimed as the
+escape witness. These are author assessments, not machine classification.
+
 ## Current nonclaims
 
-The target is not yet proved. No claim of provability, exhaustive search,
-certified threshold, finite-range count, admission, or implication to/from RH.
-External pages and the atom body have not yet been successfully opened.
+No claim of mathematical novelty, exhaustive library/web search, a Lean proof
+of the exact crossing interval or the count 482, independent review, machine
+validation of proof_shape, or implication to/from RH. The family theorem itself
+is kernel-checked; count and crossing diagnostics use exact rational experiments.
+The unopened external search hits remain ASSUMED-UNVERIFIED. No deposit, cover,
+freeze, merge, or final admission has occurred.
