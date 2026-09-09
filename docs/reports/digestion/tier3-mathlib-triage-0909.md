@@ -200,6 +200,7 @@ Logs ending in `.gz` are losslessly compressed complete stdout/stderr, including
 - Disk90-v2: `make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Disk90-v2.lean'`; EXIT=0; [log](tier3-mathlib-triage-0909/logs/Disk90-v2.log.gz); atoms 96902e5b1d0b9ac78c37f6c1f75fd1d5043bfd6c18f5e2451352b6fbc6977b46.
 - Parity104: `make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Parity104.lean'`; EXIT=0; [log](tier3-mathlib-triage-0909/logs/Parity104.log.gz); atoms b923baf16e3404ffc7143c8258cd778915ab93409a40512c8d156d065ed1f61a.
 - Pick105: `make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Pick105.lean'`; EXIT=0; [log](tier3-mathlib-triage-0909/logs/Pick105.log.gz); atoms bc9748938013e4b3c632bfa0e1257a59733df2e1682ed0a8a0d7a0dcc534ab2b.
+- Endpoint150: `make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Endpoint150.lean'`; EXIT=2; [log](tier3-mathlib-triage-0909/logs/Endpoint150.log.gz); atoms ff41c11de3a485a3451a5788237056c9099133f734e8bf7b75a1240d6746dd85.
 
 ## search_receipts
 
@@ -315,6 +316,7 @@ Frozen state JSON stores only `statement_id`; module names must be located throu
 - `0bce26792dcc213354e1d279a96e52e44b711c98`
 - `43dc167e1f7ccfbb80f9edd18a5ca48bbc94a4d0`
 - `f9334cdd41556baa415a2d3ccb369c7f248fee87`
+- `047b934232c4af2ade19c4c4c2aeba52bf60edb2`
 
 Every listed checkpoint was pushed successfully. The final runner envelope includes the commit containing this final report (a commit cannot contain its own hash).
 
