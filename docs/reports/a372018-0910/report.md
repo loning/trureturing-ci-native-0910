@@ -66,3 +66,11 @@ The Vieta route is now kernel-verified without Laurent series: subtract the cubi
 Two local proof errors were repaired before the successful check: an expansive `neg_pow` simp expression exceeded recursion depth (replaced by map simplification and ring-based linear combination), and a no-progress `simp` became `simp only [map_ofNat]`. These were elaboration errors; the final printed axiom sets have no sorryAx.
 
 Project make gates, Scribe, freeze, and PR remain outstanding; this checkpoint does not claim them complete.
+
+## Documentation and companion API checkpoint
+
+- Added `odd_coeff_identity_of_equations`, the direct API for arbitrary witnesses of the original equations. It consumes A_unique, B_unique, and odd_coeff_identity; the definitions and all six public theorems pass the warm file check with only standard axioms.
+- First project `make lean` EXIT=0, 47.264812708 seconds, 12832 jobs. Log and JSON receipt: attempt-1/make-lean.log and make-lean.receipt.json. The arbitrary-witness companion was added after the target module compiled in that run, so a final project build is still required.
+- Scribe source now describes all eight public declarations and the polynomial elimination in mathematical terms. Two Library notes attribute each independent equation and the conjecture. Both include `## Verified locator` with the exact frontmatter URL and `doi: null`; no source is credited with the new proof.
+- Library/Recurrence capacity before addition: 37 files, after addition 39. Algebraic has one Lean file and will have two Blueprint files after emit. `generality: I` records the particular two OEIS series within the existing Recurrence/S1 domain, consistent with the route result.
+- Opened the reversion index linked directly from A371364. It is an index rather than a bisection proof. The previously read four sequence references also contain no such proof; papers linked by A059231 are second-hop and not read. Search conclusion: not-found-in-searched-scope, not a claim of global priority.

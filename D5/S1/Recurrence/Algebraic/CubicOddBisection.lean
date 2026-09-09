@@ -166,6 +166,17 @@ theorem odd_coeff_identity (n : ℕ) : coeff (2 * n + 1) A = 2 * coeff n B := by
   rw [hn] at h
   linear_combination h / 2
 
+/-- The identity also holds for any witnesses of the two original equations. -/
+theorem odd_coeff_identity_of_equations (f g : PowerSeries ℚ)
+    (hf0 : constantCoeff f = 1)
+    (hf : X * f ^ 3 - f ^ 2 + 3 * X * f + 1 = 0)
+    (hg : g * (1 - 4 * X * g) ^ 2 = 1 - 3 * X * g) (n : ℕ) :
+    coeff (2 * n + 1) f = 2 * coeff n g := by
+  rw [A_unique f hf0 hf, B_unique g hg]
+  exact odd_coeff_identity n
+
+#print axioms odd_coeff_identity_of_equations
+
 #print axioms A_equation
 #print axioms B_equation
 #print axioms A_unique
