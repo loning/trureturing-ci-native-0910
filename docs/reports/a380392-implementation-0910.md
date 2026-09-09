@@ -77,3 +77,13 @@ n=0 不进入结论；禁止反向、重复或对角步，n=1 须符合单格路
   首次检查因 sdiff_subset_sdiff_left 的显式参数次序错误失败，读源码签名后修正。
 - pathCount 实际过滤路径，要求每个访问格为 true；零维分支仅使定义总化，不在主定理范围内。
 - 主均值定理尚未实现，此片段检查不等于完整构建。
+
+## Lean 片段 2：一般均值公式
+
+- 热树 lake env lean D5/S3/Arith/Paths/MonotoneOnePaths.lean EXIT=0。
+  主定理 mean_monotone_one_paths 已按 brief 原式闭合；仅一个 unusedSimpArgs 风格警告待清理。
+- freeCellsEquiv 将满足路径所需格全真的矩阵限制到补集，逆映射对所需格填 true；
+  Lean 核验双侧逆，再由 Fintype.card_congr 求得 2^(总格数−所需格数)。
+- fixed_path_count 消去重复格风险，给每条路径贡献 2^(k*k)；total_path_count
+  交换有限求和并直接应用 card_powersetCard，最后在 ℚ 中消去非零的 2 的幂。
+- 无 sorry、无自加 axiom、无 native_decide。完整 make lean 及公理闭包检查待执行。

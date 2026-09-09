@@ -41,7 +41,7 @@ def pathCell {k : ℕ} (p : Path k) (t : Fin (2 * k + 1)) : Fin (k + 1) × Fin (
 
 private theorem pathCell_rank {k : ℕ} (p : Path k) (t : Fin (2 * k + 1)) :
     (pathCell p t).1.val + (pathCell p t).2.val = t.val := by
-  simpa [pathCell] using card_inter_add_card_sdiff (range t.val) p.val
+  simp [pathCell]
 
 private theorem pathCell_injective {k : ℕ} (p : Path k) :
     Function.Injective (pathCell p) := by
@@ -62,5 +62,61 @@ The empty matrix branch is outside the positive-size mean theorem. -/
 def pathCount : {n : ℕ} → (Fin n × Fin n → Bool) → ℕ
   | 0, _ => 0
   | k + 1, M => (univ.filter fun p : Path k => ∀ c ∈ pathCells p, M c = true).card
+
+private def freeCellsEquiv {α : Type*} [Fintype α] [DecidableEq α] (s : Finset α) :
+    {M : α → Bool // ∀ c ∈ s, M c = true} ≃ (↥sᶜ → Bool) where
+  toFun M c := M.val c.val
+  invFun f := ⟨fun c => if h : c ∈ s then true else f ⟨c, mem_compl.mpr h⟩,
+    by intro c hc; simp [hc]⟩
+  left_inv M := by
+    apply Subtype.ext
+    funext c
+    dsimp
+    split_ifs with hc
+    · exact (M.property c hc).symm
+    · rfl
+  right_inv f := by
+    funext c
+    simp [mem_compl.mp c.property]
+
+private theorem fixed_cells_count {α : Type*} [Fintype α] [DecidableEq α]
+    (s : Finset α) :
+    (univ.filter fun M : α → Bool => ∀ c ∈ s, M c = true).card =
+      2 ^ (Fintype.card α - s.card) := by
+  rw [← Fintype.card_subtype]
+  rw [Fintype.card_congr (freeCellsEquiv s)]
+  simp
+
+private theorem fixed_path_count {k : ℕ} (p : Path k) :
+    (univ.filter fun M : Fin (k + 1) × Fin (k + 1) → Bool =>
+      ∀ c ∈ pathCells p, M c = true).card = 2 ^ (k * k) := by
+  rw [fixed_cells_count, pathCells_card]
+  simp only [Fintype.card_prod, Fintype.card_fin]
+  congr 1
+  have : (k + 1) * (k + 1) = k * k + (2 * k + 1) := by ring
+  omega
+
+private theorem total_path_count (k : ℕ) :
+    (∑ M : (Fin (k + 1) × Fin (k + 1) → Bool), pathCount M) =
+      Nat.choose (2 * k) k * 2 ^ (k * k) := by
+  simp only [pathCount, card_eq_sum_ones, sum_filter]
+  rw [sum_comm]
+  simp only [← sum_filter, ← card_eq_sum_ones, fixed_path_count]
+  simp [Fintype.card_coe, card_powersetCard, card_range]
+
+/-- The exact mean over all binary n-square matrices, for positive n. -/
+theorem mean_monotone_one_paths (n : ℕ) (hn : 1 ≤ n) :
+    (∑ M : (Fin n × Fin n → Bool), (pathCount M : ℚ)) / (2 : ℚ) ^ (n * n) =
+      (Nat.choose (2 * n - 2) (n - 1) : ℚ) / (2 : ℚ) ^ (2 * n - 1) := by
+  obtain ⟨k, rfl⟩ : ∃ k, n = k + 1 := ⟨n - 1, by omega⟩
+  have htotal : (∑ M : (Fin (k + 1) × Fin (k + 1) → Bool), (pathCount M : ℚ)) =
+      (Nat.choose (2 * k) k : ℚ) * (2 : ℚ) ^ (k * k) := by
+    exact_mod_cast total_path_count k
+  rw [htotal]
+  have hsq : (k + 1) * (k + 1) = k * k + (2 * k + 1) := by ring
+  have hsteps : 2 * (k + 1) - 2 = 2 * k := by omega
+  have hcells : 2 * (k + 1) - 1 = 2 * k + 1 := by omega
+  rw [hsq, hsteps, hcells, Nat.add_sub_cancel, pow_add]
+  field_simp
 
 end D5.S3.Arith.Paths.MonotoneOnePaths
