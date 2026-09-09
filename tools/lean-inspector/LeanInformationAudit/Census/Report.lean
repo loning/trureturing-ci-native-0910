@@ -9,14 +9,19 @@ open Lean
 
 namespace DispositionCensus
 
-def checkFrozenKeys (head : String) (keys : Array StatementKey) : Except String Unit := do
+def checkFrozenUniqueness (head : String) (keys : Array StatementKey) : Except String Unit := do
   let mut ids : Std.HashSet String := {}
   for key in keys do
     if ids.contains key.statementId then
       throw <| censusError head "frozen_keys" "unique" (toJson key).compress
     ids := ids.insert key.statementId
-  for key in keys do
-    discard <| decodeStatementId key.theoremName key.statementId
+
+def checkStatementIds (keys : Array StatementKey) : Except String Unit := do
+  for key in keys do discard <| decodeStatementId key.theoremName key.statementId
+
+def checkFrozenKeys (head : String) (keys : Array StatementKey) : Except String Unit := do
+  checkFrozenUniqueness head keys
+  checkStatementIds keys
 
 def checkInventoryDuplicates (rows : Array StatementKey) : Except String Unit := do
   let mut records : Std.HashMap String (Array Nat) := {}
@@ -28,35 +33,49 @@ def checkInventoryDuplicates (rows : Array StatementKey) : Except String Unit :=
     if duplicates.size > 1 then
       throw s!"IE-C035 DuplicateAnalysisDisposition theorem={key.theoremName} statement_id={key.statementId} records={(toJson duplicates).compress}"
 
-/-- Duplicate statement IDs are checked before identity and missing-row diagnostics. -/
-def checkKeyCoverage (head : String) (frozen : Array StatementKey)
+/-- All callers share IE-C044 > IE-C035 > IE-C036. Report parsing must
+defer the codec until inventory duplicates have had their turn. -/
+def checkIdentityInputs (head : String) (frozen rows : Array StatementKey) : Except String Unit := do
+  checkFrozenUniqueness head frozen
+  checkInventoryDuplicates rows
+  checkStatementIds frozen
+  checkStatementIds rows
+
+/-- Identity binding only; absence is checked after the manifest's Nat binding. -/
+def checkKeyIdentity (head : String) (frozen : Array StatementKey)
     (inventoryHead : String) (rows : Array StatementKey) : Except String Unit := do
   let expected := frozen.qsort StatementKey.lt
-  checkFrozenKeys head expected
-  checkInventoryDuplicates rows
-  let records := rows.foldl (init := ({} : Std.HashSet String)) fun ids row => ids.insert row.statementId
-  for key in rows do
-    discard <| decodeStatementId key.theoremName key.statementId
   for key in expected do
     unless inventoryHead == head do
       throw <| identityError key.theoremName "head" head inventoryHead
   unless inventoryHead == head do
     throw <| identityError .anonymous "head" head inventoryHead
-  let names : Std.HashMap Name (Array String) :=
+  let names : Std.HashMap Name String :=
     expected.foldl (init := {}) fun result key =>
-      result.insert key.theoremName ((result.getD key.theoremName #[]).push key.statementId)
+      if result.contains key.theoremName then result else result.insert key.theoremName key.statementId
+  let idNames : Std.HashMap String Name :=
+    expected.foldl (init := {}) fun result key => result.insert key.statementId key.theoremName
   for key in rows.qsort StatementKey.lt do
     match names[key.theoremName]? with
-    | some ids =>
-      unless ids.contains key.statementId do
-        throw <| identityError key.theoremName "statement_id" ids[0]! key.statementId
+    | some firstId =>
+      unless idNames[key.statementId]? == some key.theoremName do
+        throw <| identityError key.theoremName "statement_id" firstId key.statementId
     | none =>
-      let expectedName := (expected.find? (·.statementId == key.statementId)).map
-        (·.theoremName.toString) |>.getD "absent"
+      let expectedName := idNames[key.statementId]?.map Name.toString |>.getD "absent"
       throw <| identityError key.theoremName "theorem_name" expectedName key.theoremName.toString
-  for key in expected do
+
+def checkMissingKeys (head : String) (frozen rows : Array StatementKey) : Except String Unit := do
+  let records := rows.foldl (init := ({} : Std.HashSet String)) fun ids row => ids.insert row.statementId
+  for key in frozen.qsort StatementKey.lt do
     unless records.contains key.statementId do
       throw s!"IE-C034 MissingAnalysisDisposition theorem={key.theoremName} statement_id={key.statementId} head={head}"
+
+/-- IE-C034 is last, after every identity obligation supplied by this API. -/
+def checkKeyCoverage (head : String) (frozen : Array StatementKey)
+    (inventoryHead : String) (rows : Array StatementKey) : Except String Unit := do
+  checkIdentityInputs head frozen rows
+  checkKeyIdentity head frozen inventoryHead rows
+  checkMissingKeys head frozen rows
 
 def checkCoverage (head : String) (frozen : Array StatementKey)
     (inventory : DispositionInventory) : Except String Unit :=
@@ -135,7 +154,7 @@ private def parseReportCore (bytes actualSha256 : String) : Except String Frozen
         keys := keys.push ⟨← parseNameKey (← stringField declaration "declaration_name_key"),
           ← stringField declaration "statement_id"⟩
   let sorted := keys.qsort StatementKey.lt
-  checkFrozenKeys head sorted
+  checkFrozenUniqueness head sorted
   return { headSha := head, reportSha256 := actualSha256, theorems := sorted }
 
 private def parseReportHashed (bytes sha256 : String) : Except String FrozenReport :=
@@ -165,6 +184,7 @@ def checkReportBinding (expectedHead expectedSha256 : String) (report : FrozenRe
 
 def parseReport (expectedHead expectedSha256 bytes : String) : Except String FrozenReport := do
   let report ← parseReportData bytes
+  checkFrozenKeys report.headSha report.theorems
   checkReportBinding expectedHead expectedSha256 report
   return report
 

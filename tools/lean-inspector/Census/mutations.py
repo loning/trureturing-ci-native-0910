@@ -17,6 +17,7 @@ def main():
     source_root = repository / "tools/lean-inspector"
     manifest = source_root / "LeanInformationAudit/Census/Manifest.lean"
     publisher = source_root / "LeanInformationAudit/Census/Publish.lean"
+    report = source_root / "LeanInformationAudit/Census/Report.lean"
     contract = source_root / "LeanInformationAudit/Tests/Census/Manifest/Contract.lean"
     environment = contract.with_name("Environment.lean")
     cases = [
@@ -39,6 +40,19 @@ def main():
         ("payload-import", publisher, environment, "finalEnvironmentImports",
          lambda text: text.replace('  let input := input',
              '  let input := "import LeanInformationAudit.DispositionCensus\\n" ++ input')),
+        ("report-codec-before-inventory-duplicates", report, contract.with_name("Precedence.lean"),
+         "inventoryDuplicateBeforeMalformedReport", lambda text: text.replace(
+             "  checkInventoryDuplicates rows\n  checkStatementIds frozen",
+             "  checkStatementIds frozen\n  checkInventoryDuplicates rows")),
+        ("missing-before-nat-binding", manifest, contract.with_name("Precedence.lean"),
+         "manifestNatBeforeMissingRow", lambda text: text.replace(
+             "  checkMissingKeys report.headSha report.theorems rows\n", "").replace(
+             "  ofExcept <| checkMissingKeys report.headSha report.theorems rows\n", "").replace(
+             '  bindKeys "manifest_keys" rows m.keys',
+             '  checkMissingKeys report.headSha report.theorems rows\n  bindKeys "manifest_keys" rows m.keys').replace(
+             '  let listName := manifestName.appendAfter "Keys"',
+             '  ofExcept <| checkMissingKeys report.headSha report.theorems rows\n' +
+             '  let listName := manifestName.appendAfter "Keys"')),
     ]
     outcomes = []
     for label, source, fixture, expected, transform in cases:

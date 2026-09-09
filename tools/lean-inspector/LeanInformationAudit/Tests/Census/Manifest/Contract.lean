@@ -39,7 +39,8 @@ run_cmd do
     match checkManifestBinding report `Root keys candidate reportKeys with
     | .error _ => pure ()
     | .ok _ => throwError "{label}: detached certificate accepted"
-  match checkManifestBinding report `Root (keys.extract 0 1) manifest manifest.keys with
+  match checkManifestBinding report `Root (keys.extract 0 1)
+      { manifest with keys := [0] } manifest.keys with
   | .error error => unless error.startsWith "IE-C034" do throwError error
   | .ok _ => throwError "deletedManifestRow: deleted row accepted"
 

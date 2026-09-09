@@ -105,7 +105,7 @@ private def readRows (paths : Array String) (report : FrozenReport) (head sha : 
   let keys ← wireRows.mapM fun (row, _) => do
     return StatementKey.mk (← ofExcept <| parseNameJson (← ofExcept <| row.getObjVal? "theorem_name"))
       (← ofExcept <| stringField row "statement_id")
-  ofExcept <| checkInventoryDuplicates keys
+  ofExcept <| checkIdentityInputs report.headSha report.theorems keys
   ofExcept <| checkReportBinding head sha report
   for (row, scope) in wireRows do
     let parsed ← ofExcept <| parseRow row (some scope)
@@ -160,7 +160,7 @@ elab "#disposition_census" &"projection" &"root" root:ident &"source" sourcePath
     (← IO.FS.readFile receiptsPath.getString))
   let manifestName := manifestName.getId.eraseMacroScopes
   let reportKeysName := reportKeysName.getId.eraseMacroScopes
-  let (inventory, sources) ← liftTermElabM <| readRows paths selected head.getString reportSha.getString
+  let (inventory, sources) ← liftTermElabM <| readRows paths report head.getString reportSha.getString
   phase destination "manifest_compile"
   let options := ((← getOptions).erase `maxRecDepth).setBool `Elab.async false
   let input ← IO.FS.readFile sourcePath.getString

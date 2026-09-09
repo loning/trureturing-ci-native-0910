@@ -12,6 +12,7 @@ elab "#census_certificate_benchmark" &"report" reportPath:str &"head" head:str
   phase "emission"
   let report ← parseReportDataIO (← IO.FS.readFile reportPath.getString)
   ofExcept <| checkReportBinding head.getString sha.getString report
+  ofExcept <| checkFrozenKeys report.headSha report.theorems
   let bindings := destination / "bindings.json"
   IO.FS.writeFile bindings (toJson report.theorems).compress
   let repository ← IO.currentDir

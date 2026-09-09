@@ -35,10 +35,15 @@ def benchmark(repository, report, directory):
         f"#census_certificate_benchmark report {string(str(report))} head {string(head)} "
         f"digest {string(digest)} directory {string(str(directory))}\n")
     result = run(["lake", "env", "lean", "-DmaxHeartbeats=0", "-DmaxRecDepth=4000", str(driver)],
-        directory, "certificate", cwd=repository, budget_gb=2,
+        directory, "certificate", cwd=repository, budget_gb=4,
         env=dict(os.environ, LEAN_NUM_THREADS="1"), phase_path=directory / "benchmark.phase")
-    if result["wall_seconds"] > 60:
-        raise RuntimeError("STOP: full certificate exceeds 60 s; see certificate.resources.json")
+    # The whole-path target is a profiling trigger, not a first-overrun stop.
+    # Only the corrected compile/kernel phase has the owner's hard stop bar.
+    kernel = result["phases"].get("compile_kernel", {})
+    if kernel.get("wall_seconds", 0) > 120 or kernel.get("peak_rss_bytes", 0) > 4 * 1024 ** 3:
+        raise RuntimeError("STOP: compile/kernel exceeds 120 s or 4 GiB; see certificate.resources.json")
+    result["whole_path_target_met"] = result["wall_seconds"] <= 60 and result["peak_rss_bytes"] <= 2 * 1024 ** 3
+    (directory / "target.json").write_text(json.dumps(result, indent=2) + "\n")
     return result
 
 

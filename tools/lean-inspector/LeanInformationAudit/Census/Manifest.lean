@@ -28,15 +28,15 @@ private def bindKeys (component : String) (wire : Array StatementKey)
 This checks metadata and Name-level binding; the kernel claims only an id set. -/
 def checkManifestBinding (report : FrozenReport) (root : Name) (rows : Array StatementKey)
     (m : CensusKeyManifest) (reportKeys : List Nat) : Except String Unit := do
-  checkFrozenKeys report.headSha report.theorems
-  checkInventoryDuplicates rows
+  checkIdentityInputs report.headSha report.theorems rows
   unless m.reportSha256 == report.reportSha256 do
     throw <| identityError .anonymous "report_sha256" report.reportSha256 m.reportSha256
   unless m.censusRoot == root do
     throw <| identityError .anonymous "census_root" (nameJson root).compress (nameJson m.censusRoot).compress
-  checkKeyCoverage report.headSha report.theorems m.headSha rows
+  checkKeyIdentity report.headSha report.theorems m.headSha rows
   bindKeys "manifest_keys" rows m.keys
   bindKeys "report_keys" report.theorems reportKeys
+  checkMissingKeys report.headSha report.theorems rows
 
 private def bindingError (component : String) : MetaM α :=
   throwError "{identityError .anonymous component "independent canonical chunks" "alias or expression"}"
@@ -80,8 +80,7 @@ def bindChunkedKeys (listName : Name) (component : String)
 
 def bindEmittedManifest (report : FrozenReport) (root : Name) (rows : Array StatementKey)
     (manifestName reportKeysName : Name) : MetaM Unit := do
-  ofExcept <| checkFrozenKeys report.headSha report.theorems
-  ofExcept <| checkInventoryDuplicates rows
+  ofExcept <| checkIdentityInputs report.headSha report.theorems rows
   let value := (← getConstInfoDefn manifestName).value
   unless value.isAppOfArity ``CensusKeyManifest.mk 4 do bindingError "manifest_keys"
   let args := value.getAppArgs
@@ -90,13 +89,13 @@ def bindEmittedManifest (report : FrozenReport) (root : Name) (rows : Array Stat
   unless sha == report.reportSha256 do
     throwError "{identityError .anonymous "report_sha256" report.reportSha256 sha}"
   unless args[2]! == literalNameExpr root do bindingError "census_root"
-  ofExcept <| checkKeyCoverage report.headSha report.theorems head rows
+  ofExcept <| checkKeyIdentity report.headSha report.theorems head rows
   let listName := manifestName.appendAfter "Keys"
   unless args[3]! == mkConst listName do bindingError "manifest_keys"
   if reportKeysName == listName then bindingError "report_keys_binding"
-  let keys ← bindChunkedKeys listName "manifest_keys" rows
-  let reportKeys ← bindChunkedKeys reportKeysName "report_keys" report.theorems
-  ofExcept <| checkManifestBinding report root rows ⟨head, sha, root, keys⟩ reportKeys
+  discard <| bindChunkedKeys listName "manifest_keys" rows
+  discard <| bindChunkedKeys reportKeysName "report_keys" report.theorems
+  ofExcept <| checkMissingKeys report.headSha report.theorems rows
 
 /-- Decide only linear order and length. Reflexivity compares the independently
 bound chunk graphs for equality without deciding quadratic Nodup/Finset goals. -/
