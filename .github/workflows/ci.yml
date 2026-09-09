@@ -356,8 +356,8 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: .canonical-lean-report-cache
-          key: stratalint-canonical-lean-report-v2-${{ steps.lean-report-input.outputs.address }}
-          restore-keys: stratalint-canonical-lean-report-v2-
+          key: stratalint-canonical-lean-report-reportcache0909-restored-v1-${{ steps.lean-report-input.outputs.address }}
+          restore-keys: stratalint-canonical-lean-report-reportcache0909-restored-v1-
       - name: Serve candidate canonical Lean report from the cached address
         id: report-reuse
         if: steps.report-cache.outcome == 'success' && steps.report-cache.outputs.cache-hit == 'true'
@@ -486,8 +486,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          export STRATALINT_REPORT_CACHE_ROOT="$("$GITHUB_WORKSPACE/candidate/tools/scripts/report/lean-report-ci-baseline.sh" \
-            --bundle "$GITHUB_WORKSPACE/.canonical-lean-report-cache/raw-lean-report.json" --cache-root "$RUNNER_TEMP/canonical-lean-report-delta-cache" || true)"
+          export STRATALINT_REPORT_CACHE_ROOT="$RUNNER_TEMP/canonical-lean-report-delta-cache"
+          export STRATALINT_REPORT_CACHE_REMOTE=1
+          "$GITHUB_WORKSPACE/candidate/tools/scripts/report/lean-report-ci-baseline.sh" \
+            --bundle "$GITHUB_WORKSPACE/.canonical-lean-report-cache/raw-lean-report.json" \
+            --cache-root "$STRATALINT_REPORT_CACHE_ROOT" >/dev/null || true
           producer="$GITHUB_WORKSPACE/candidate/tools/lean-inspector/inspect.sh"
           pair_producer="$GITHUB_WORKSPACE/candidate/tools/scripts/lean-report-pair.sh"
           test -x "$producer"
@@ -503,12 +506,15 @@ jobs:
             --candidate-root "$GITHUB_WORKSPACE/candidate" \
             --candidate-output "$reports/candidate-lean-report.json"
       - name: Stage candidate canonical Lean report cache
+        id: report-cache-stage
+        continue-on-error: true
         shell: bash
         run: |
           set -euo pipefail
           source="$RUNNER_TEMP/raw-lean-reports/candidate-lean-report.json"
           target="$GITHUB_WORKSPACE/.canonical-lean-report-cache/raw-lean-report.json"
           mkdir -p "$(dirname "$target")"
+          rm -rf -- "${target}.logs"
           for suffix in '' .input.attestation .provenance.json .materials.zip; do
             test -s "${source}${suffix}"
             cp "${source}${suffix}" "${target}${suffix}"
@@ -518,7 +524,6 @@ jobs:
           test "$declaredSha256" = "$reportSha256"
           test "$declaredName" = "$(basename "$source")"
           printf '%s  %s\n' "$reportSha256" "$(basename "$target")" > "${target}.sha256"
-          cp -R "${source}.logs" "${target}.logs" 2>/dev/null || true
           "$GITHUB_WORKSPACE/candidate/tools/scripts/report/lean-report-input.sh" verify \
             --repository "$GITHUB_WORKSPACE/candidate" \
             --report "$target"
@@ -526,11 +531,12 @@ jobs:
       # pull_request_target runs get a token without cache-write scope, so this save can only ever fail there: run 31389667812 logged "cache write denied: token has no writable scopes". The two saves below already carry this exact guard; this one was missing it, so every PR attempted a write it could not perform. dev-push runs do write it successfully (run 31389340892).
       # 命中报告缓存时 elan/lake 目录未被恢复也未被填充,回存会写入空态并污染下一轮;分层 lake cache exact hit 时对应 key 也已存在。三个 save 只在真正跑过生产路径时执行。
       - name: Save candidate canonical Lean report (dev push only)
-        if: success() && steps.lean-report-input.outputs.address != '' && steps.report-reuse.outcome != 'success' && github.event_name == 'push' && github.ref == 'refs/heads/dev'
+        if: success() && steps.report-cache-stage.outcome == 'success' && steps.lean-report-input.outputs.address != '' && steps.report-reuse.outcome != 'success' && github.event_name == 'push' && github.ref == 'refs/heads/dev'
+        continue-on-error: true
         uses: actions/cache/save@v4
         with:
           path: .canonical-lean-report-cache
-          key: stratalint-canonical-lean-report-v2-${{ steps.lean-report-input.outputs.address }}
+          key: stratalint-canonical-lean-report-reportcache0909-restored-v1-${{ steps.lean-report-input.outputs.address }}
       - name: Run complete mathematical content checks
         shell: bash
         env:
@@ -744,3 +750,34 @@ jobs:
           path: ${{ runner.temp }}/gate-timing.jsonl
           if-no-files-found: warn
           retention-days: 7
+
+  publish-lean-report-cache:
+    name: Publish reusable Lean report cache
+    needs: [candidate-engineering, lean-inspect, baseline-admission]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 10
+    continue-on-error: true
+    permissions: { contents: write }
+    steps:
+      - name: Check out the successful report producer
+        id: checkout-producer
+        uses: actions/checkout@v4
+        with: { ref: "${{ github.sha }}", fetch-depth: 2, persist-credentials: false }
+      - name: Strip checkout remote state
+        if: steps.checkout-producer.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git remote remove origin
+          git for-each-ref --format='delete %(refname)' refs/remotes/ | git update-ref --stdin
+          test -z "$(git remote)"
+          test -z "$(git for-each-ref refs/remotes/)"
+          git rev-parse HEAD HEAD^1 >/dev/null
+      - uses: actions/setup-dotnet@v4
+        with: { global-json-file: global.json }
+      - uses: actions/download-artifact@v4
+        with: { name: raw-lean-reports, path: "${{ runner.temp }}/raw-lean-reports" }
+      - name: Publish the verified report bundle without a Lean build
+        env: { GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }
+        run: make lean-report-cache-to-github LEAN_REPORT="$RUNNER_TEMP/raw-lean-reports/candidate-lean-report.json"
