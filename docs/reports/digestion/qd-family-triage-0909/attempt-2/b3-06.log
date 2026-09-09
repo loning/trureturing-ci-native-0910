@@ -1,0 +1,151 @@
+COMMAND: ["make", "-f", "Makefile", "-f", "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/probe.mk", "lean", "PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean"]
+LEAN_CACHE {"status":"present","worktree":"/Users/auricstudio/trureturing-u1bridge-0909","donor":null,"method":"none","reason":null,"stamp_miss":null,"pin_sha256":"sha256:6c4c682ffba051b5744fe7a75ccc99d7f3b20227b3b026f392f3315be0adaa4e","clonefile_errno":null,"clonefile_errnos":[],"clonefile_attempts":0,"clonefile_cleanup_error":null,"mathlib_missing_olean_files":0,"mathlib_missing_olean_samples":[],"archive_status":"not_attempted","archive_mode":null,"archive_skip_reason":"project olean state is warm","archive_reason":null,"archive_producer_commit_sha":null,"archive_workflow_run_id":null,"mathlib_olean_state":"warm","mathlib_olean_probe_error":null,"project_olean_state":"warm","project_olean_probe_error":null}
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:32:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:36:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:144:26: warning: This simp argument is unused:
+  mul_inv
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [div_eq_mul_inv, hd, mul_assoc, mul_left_comm, mul_comm]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:188:54: error: `simp` made no progress
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:197:45: error: not a positivity goal
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:200:16: error(lean.unknownIdentifier): Unknown identifier `div_nonpos_iff_of_pos`
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:166:79: error: unsolved goals
+case neg
+p : ℝ[X]
+hp : p.Splits
+x : ℝ
+hx : ¬eval x p = 0
+hp0 : p ≠ 0
+hsum :
+  ∀ (y : ℝ),
+    (Multiset.map (fun z => 1 / (y - z)) p.roots).sum = ∑ z ∈ p.roots.toFinset, ↑(Multiset.count z p.roots) / (y - z)
+hf :
+  HasDerivAt (fun y => eval y (derivative p) / eval y p)
+    ((eval x (derivative (derivative p)) * eval x p - eval x (derivative p) * eval x (derivative p)) / eval x p ^ 2) x
+hg :
+  HasDerivAt (fun y => ∑ z ∈ p.roots.toFinset, ↑(Multiset.count z p.roots) / (y - z))
+    (∑ z ∈ p.roots.toFinset, -↑(Multiset.count z p.roots) / (x - z) ^ 2) x
+heq :
+  (fun y => eval y (derivative p) / eval y p) =ᶠ[nhds x] fun y =>
+    ∑ z ∈ p.roots.toFinset, ↑(Multiset.count z p.roots) / (y - z)
+hi :
+  (eval x (derivative (derivative p)) * eval x p - eval x (derivative p) * eval x (derivative p)) / eval x p ^ 2 =
+    ∑ z ∈ p.roots.toFinset, -↑(Multiset.count z p.roots) / (x - z) ^ 2
+hn : ∑ z ∈ p.roots.toFinset, -↑(Multiset.count z p.roots) / (x - z) ^ 2 ≤ 0
+hfrac :
+  (eval x (derivative (derivative p)) * eval x p - eval x (derivative p) * eval x (derivative p)) / eval x p ^ 2 ≤ 0
+⊢ LaguerreAt p x
+'QdB3Probe.laguerre_splits' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'QdB3Probe.b3_full' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'QdB3Probe.arrow_hermitian' depends on axioms: [propext, Classical.choice, Quot.sound]
+'QdB3Probe.arrow_schur' depends on axioms: [propext, Classical.choice, Quot.sound]
+'QdB3Probe.b3_charpoly_target' depends on axioms: [propext, Classical.choice, Quot.sound]
+'QdB3Probe.b3_residue_sign_target' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:293:63: error: unsolved goals
+a : ℕ → ℝ
+d k : ℕ
+hk : k ≤ d
+⊢ ∑ b ∈ Finset.range (d + 1), (C (↑(d.descFactorial b) / ↑d ^ b) * C (a b) * X ^ b).coeff k =
+    ↑(d.descFactorial k) / ↑d ^ k * a k
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:294:28: warning: This simp argument is unused:
+  coeff_C_mul_X_pow
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [P, finsetSum_coeff, Finset.mem_range, show k < d + 1 by omega]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:294:47: warning: This simp argument is unused:
+  Finset.mem_range
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [P, finsetSum_coeff, coeff_C_mul_X_pow, show k < d + 1 by omega]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:294:65: warning: This simp argument is unused:
+  show k < d + 1 by omega
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [P, finsetSum_coeff, coeff_C_mul_X_pow, Finset.mem_range]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:324:26: error(lean.unknownIdentifier): Unknown identifier `div_nonneg_of_nonpos_of_nonpos`
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:325:18: warning: `Polynomial.eval_finset_sum` has been deprecated: Use `Polynomial.eval_finsetSum` instead
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:336:8: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:338:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:360:2: error: unsolved goals
+case hlinear
+a : ℕ → ℝ
+n : ℕ
+h0 : a 0 = 1
+ha : ∀ (k : ℕ), 0 < a k
+t : Fin (n + 1) → ℝ
+ht : Function.Injective t
+hcrit : ∀ (i : Fin (n + 1)), eval (t i) (derivative (Q a (n + 2))) = 0
+hd : ↑(n + 2) ≠ 0
+⊢ (↑n + 2) / (↑n + 2) * a 1 = a 1
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:363:29: warning: This simp argument is unused:
+  hd
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [Nat.descFactorial]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:369:59: error: unsolved goals
+a : ℕ → ℝ
+d : ℕ
+hd : 1 ≤ d
+⊢ Polynomial.map (algebraMap ℝ ℂ) (∑ x ∈ Finset.range (d + 1), C (↑(d.descFactorial x) / ↑d ^ x) * C (a x) * X ^ x) =
+    ∑ x ∈ Finset.range (d + 1), C (↑(d.descFactorial x) / ↑d ^ x) * C ↑(a x) * X ^ x
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:371:11: warning: This simp argument is unused:
+  map_sum
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [P, Polynomial.map_mul, Polynomial.map_pow]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:371:20: warning: This simp argument is unused:
+  Polynomial.map_mul
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [P, map_sum, Polynomial.map_pow]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:371:40: warning: This simp argument is unused:
+  Polynomial.map_pow
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [P, map_sum, Polynomial.map_mul]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+'QdB3Probe.b3_normalized_full' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'QdB3Probe.p_map_normalized' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+make: *** [qd-triage-probe] Error 2
+
+EXIT=2
+SECONDS=22.045980792

@@ -283,3 +283,5 @@ B3 第三次 [源码](qd-family-triage-0909/attempt-2/b3-03.lean) / [日志](qd-
 B3 第四次 [源码](qd-family-triage-0909/attempt-2/b3-04.lean) / [日志](qd-family-triage-0909/attempt-2/b3-04.log)：EXIT=2，25.687206042 秒。箭头 Schur 收尾误用 `nlinarith`，留下 `hs : √(eta i)^2=eta i` 下 `-√(eta i)*(x-t i)⁻¹*-√(eta i)=eta i*(x-t i)⁻¹`；正确处理是先 ring 重排再 `rw [hs]`。Laguerre 乘法恒等式的空 `ring_nf` 也只属 tactic 收尾。下一路线将实查上游对数导数的求导唯一性与平方和非负是否直接吞掉候选见证；不会因自行选择归纳证明而判 content。
 
 B3 第五次 [源码](qd-family-triage-0909/attempt-2/b3-05.lean) / [日志](qd-family-triage-0909/attempt-2/b3-05.log.gz.b64)：**EXIT=0**，38.597842542 秒。通用完整矩阵/留数等价 `b3_full` 与其子引理均仅标准三公理；它仍显式假设 `∀ x≤0, q.eval x≠0`，尚不能冒充原始源 atom 已绑定。后续探针同时检验实际下降阶乘源系数能否消除此假设，以及上游对数导数是否使归纳候选见证失效。一次定向 add 因误用未压缩日志路径失败（实际归档为 `.log.gz.b64`），未执行 commit/push；已改为实存路径后推送，不扫入任何临时文件。
+
+B3 第六次 [源码](qd-family-triage-0909/attempt-2/b3-06.lean) / [日志](qd-family-triage-0909/attempt-2/b3-06.log)：EXIT=2，22.045980792 秒。新的上游路线已产生准确导数等式 `hi`，把 Laguerre 左式除以 `p(x)^2` 识别为负的重数加权倒数平方和。剩余错误为未知除法符号引理名、空 simp、`C_mul` 提前拆开系数和、Nat 强制转换后的分母取消及 `Polynomial.map_sum` 限定名；目标与全部上下文逐字保存在日志。这些仍是绑定/规范化工作，不构成 no 判词。
