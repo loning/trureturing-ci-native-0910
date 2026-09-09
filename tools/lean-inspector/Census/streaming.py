@@ -151,7 +151,7 @@ def select_candidates(key, scope, registrations, named):
 
 def file_stamp(path):
     stat = pathlib.Path(path).stat()
-    return [stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns, stat.st_ino]
+    return [stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns, stat.st_dev, stat.st_ino]
 
 
 def hash_inputs(inputs, stamps=None):
