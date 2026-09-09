@@ -3240,6 +3240,22 @@
       ],
       "archived_probe": "probes/Endpoint150-v2.lean",
       "log_encoding": "gzip"
+    },
+    {
+      "probe": "Return126",
+      "command": "make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Return126.lean'",
+      "exit": 0,
+      "signal": null,
+      "log": "logs/Return126.log.gz",
+      "started": "2026-09-09T05:40:52.885Z",
+      "atoms": [
+        "e405a7f40fa7ee5313052263686a73c8b8578d18290d1f429cb1826603f82480"
+      ],
+      "indices": [
+        126
+      ],
+      "archived_probe": "probes/Return126.lean",
+      "log_encoding": "gzip"
     }
   ],
   "unscreened": [
@@ -4291,7 +4307,8 @@
       "43dc167e1f7ccfbb80f9edd18a5ca48bbc94a4d0",
       "f9334cdd41556baa415a2d3ccb369c7f248fee87",
       "047b934232c4af2ade19c4c4c2aeba52bf60edb2",
-      "04be1e7a603eeca9c364c70bd8c17be0530256d6"
+      "04be1e7a603eeca9c364c70bd8c17be0530256d6",
+      "5408df1bd556f4426487cce03b82b5b239b82454"
     ],
     "branch": "lane/math/tier3-mathlib-triage-0909",
     "note": "Commits through the preceding checkpoint; final delivery envelope also records its containing report commit."

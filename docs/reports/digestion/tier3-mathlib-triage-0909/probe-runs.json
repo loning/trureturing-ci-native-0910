@@ -138,5 +138,21 @@
     ],
     "archived_probe": "probes/Endpoint150-v2.lean",
     "log_encoding": "gzip"
+  },
+  {
+    "probe": "Return126",
+    "command": "make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Return126.lean'",
+    "exit": 0,
+    "signal": null,
+    "log": "logs/Return126.log.gz",
+    "started": "2026-09-09T05:40:52.885Z",
+    "atoms": [
+      "e405a7f40fa7ee5313052263686a73c8b8578d18290d1f429cb1826603f82480"
+    ],
+    "indices": [
+      126
+    ],
+    "archived_probe": "probes/Return126.lean",
+    "log_encoding": "gzip"
   }
 ]
