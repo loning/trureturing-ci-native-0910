@@ -2,11 +2,12 @@
    generality: G
    mirror-B: D5/B/S3/Quantum/Matrix/SchurMinimum
    mirror-E: none(waiver:algebraically-proved)
-   anchors: [mathlib/module/Mathlib.LinearAlgebra.Matrix.Hermitian, mathlib/module/Mathlib.LinearAlgebra.Matrix.PosDef]
+   anchors: [mathlib/module/Mathlib.LinearAlgebra.Matrix.Hermitian]
    utility: none
    digest: The Schur quadratic form is the attained minimum over the internal block. -/
 
 import Mathlib.LinearAlgebra.Matrix.PosDef
+import Mathlib.Analysis.Complex.Basic
 
 /-!
 Admission basis: rule-11-upstream-wrapper; proof_shape: bind-only.
@@ -40,7 +41,7 @@ open scoped Matrix ComplexOrder
 namespace D5.S3.Quantum.Matrix.SchurMinimum
 
 /-- Positive definiteness of the internal block gives an attained boundary minimum. -/
-theorem schur_quadratic_isLeast
+theorem schur_quadratic_is_least
     {m n : Type*} [Fintype m] [Fintype n] [DecidableEq n]
     (A : Matrix m m ℂ) (B : Matrix m n ℂ) (C : Matrix n n ℂ)
     (_hA : A.IsHermitian) (hC : C.PosDef) (x : m → ℂ) :
@@ -48,16 +49,18 @@ theorem schur_quadratic_isLeast
     IsLeast (Set.range fun y : n → ℂ =>
       star (x ⊕ᵥ y) ᵥ* Matrix.fromBlocks A B Bᴴ C ⬝ᵥ (x ⊕ᵥ y))
       (star x ᵥ* S ⬝ᵥ x) := by
-  letI := hC.isUnit.invertible
+  let := hC.isUnit.invertible
   refine ⟨⟨-((C⁻¹ * Bᴴ) *ᵥ x), ?_⟩, ?_⟩
-  · rw [schur_complement_eq₂₂ A B x _ hC.isHermitian]
+  · dsimp only
+    rw [schur_complement_eq₂₂ A B x _ hC.isHermitian]
     simp
   · rintro z ⟨y, rfl⟩
+    dsimp only
     rw [schur_complement_eq₂₂ A B x y hC.isHermitian]
     exact le_add_of_nonneg_left (by
       simpa only [dotProduct_mulVec] using
         hC.posSemidef.dotProduct_mulVec_nonneg ((C⁻¹ * Bᴴ) *ᵥ x + y))
 
-#print axioms schur_quadratic_isLeast
+#print axioms schur_quadratic_is_least
 
 end D5.S3.Quantum.Matrix.SchurMinimum
