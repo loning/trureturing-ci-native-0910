@@ -163,3 +163,31 @@ per-declaration utility are not yet applicable. No hypotheses have been added.
 Numerical witnesses and axiom checks remain pending. No completeness of the
 search, provability of the target, or implication concerning RH is claimed.
 Unopened external pages and unseen reviews are ASSUMED-UNVERIFIED.
+
+## Probe Run 03
+
+`make lean` exited 2 (`lean-bind-03.log`). With the original all-real-theta
+statements retained, equation (27), both phased sector Gram identities,
+inversion concatenation, and normalization positivity passed with exactly
+`propext`, `Classical.choice`, and `Quot.sound`. The matrix factorization and
+spectral/rank consumers still failed: overly broad simplification hit recursion
+depth; matrix inverse coercion hit the unchanged heartbeat limit; a negative
+support branch needed `occupation_append`; the concrete Option alphabet needs
+the source order `none < some 0 < some 1 < some 2`. No budgets were changed.
+
+The repaired Node diagnostic exited 0 (`numerical-witnesses.json`). The positive
+two-letter witness has occupation (1,1), cut 1|1, two legal words, spectrum
+(1/2,1/2), rank 2, and entropy log(2) = 0.6931471805599453 at theta 0 and pi.
+The negative witness has occupation (1,0), cut 1|1, no legal words, and
+cardinality 1 != 2: totalized matrix rank 0 differs from boundary count 1.
+No division or logarithm is evaluated at invalid normalization in the diagnostic.
+
+Additional API readings: `Matrix.charpoly_units_conj'` uses the matrix inverse
+of the unit's value, so direct elaboration is not definitional at the adjoint.
+The next attempt uses `Matrix.charpoly_mul_comm` and the existing unitary
+cancellation instead. `Matrix.toEuclideanLin_eq_toLin_orthonormal`,
+`Matrix.toLin_mul`, and `Matrix.toEuclideanLin_conjTranspose_eq_adjoint` give
+the matrix-to-operator route to actual `LinearMap.singularValues`.
+Two incidental searches exited 2 (a malformed Makefile regexp and a quoted
+WithBot wildcard); corrected searches returned the actual definitions above.
+Neither error is treated as a negative search result.
