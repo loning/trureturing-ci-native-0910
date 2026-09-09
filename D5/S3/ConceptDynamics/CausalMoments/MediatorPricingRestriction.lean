@@ -55,7 +55,7 @@ def absorbPair (K : Finset M) (pair : M × M) : M × M :=
   if pair.1 ∉ K ∧ pair.2 ∉ K then pair else (pair.1, pair.1)
 
 /-- A normalized computational law on the unchanged mediator-pair carrier. -/
-def residualCoupling (coupling : FiniteResponseLaw (M × M)) (K : Finset M) :
+noncomputable def residualCoupling (coupling : FiniteResponseLaw (M × M)) (K : Finset M) :
     FiniteResponseLaw (M × M) :=
   pushforwardResponseLaw coupling (absorbPair K)
 
@@ -95,7 +95,8 @@ theorem residualCoupling_bipartite_iff (coupling : FiniteResponseLaw (M × M))
   constructor
   · intro h i j hi hj different active
     apply h i j different
-    simpa only [residualCoupling_offDiagonal coupling K i j different, if_pos ⟨hi, hj⟩] using active
+    rw [residualCoupling_offDiagonal coupling K i j different, if_pos (And.intro hi hj)]
+    exact active
   · intro h i j different active
     rw [residualCoupling_offDiagonal coupling K i j different] at active
     by_cases free : i ∉ K ∧ j ∉ K

@@ -67,11 +67,10 @@ private theorem transition_bounds (r s : ℚ) (hr : 0 ≤ r ∧ r ≤ 1)
     0 ≤ bitTransition r s b ∧ bitTransition r s b ≤ 1 := by
   by_cases increasing : r ≤ s
   · cases b
-    · change 0 ≤ (if r ≤ s then (s-r)/(1-r) else 0) ∧ _
-      simp only [if_pos increasing]
+    · simp only [bitTransition, if_pos increasing, Bool.false_eq_true, if_false]
       by_cases boundary : r = 1
       · simp [boundary]
-      · have positive : 0 < 1-r := by have := hr.2; have := hr.1; linarith
+      · have positive : 0 < 1-r := sub_pos.mpr (lt_of_le_of_ne hr.2 boundary)
         exact ⟨div_nonneg (sub_nonneg.mpr increasing) positive.le,
           (div_le_one positive).mpr (by linarith [hs.2])⟩
     · simp [bitTransition, increasing]

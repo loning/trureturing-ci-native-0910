@@ -43,7 +43,7 @@ private theorem source_mass_zero (law : FiniteResponseLaw X) (f : X → A) (x : 
         · exact law.nonnegative t
         · exact le_rfl)
       (Finset.mem_univ x)
-    simpa only [if_pos rfl] using h
+    exact (if_pos rfl).symm.trans_le h
   rw [zero] at bound
   exact le_antisymm bound (law.nonnegative x)
 
@@ -81,7 +81,7 @@ private theorem sum_fiber_div (law : FiniteResponseLaw X) (f : X → A) (value :
 
 /-- Explicit original-carrier weights from a compatible coarse coupling.
 Division is total in Q; the theorems below separately justify all null fibers. -/
-def liftedCouplingMass (left : FiniteResponseLaw X) (right : FiniteResponseLaw Y)
+noncomputable def liftedCouplingMass (left : FiniteResponseLaw X) (right : FiniteResponseLaw Y)
     (f : X → A) (g : Y → B) (joint : FiniteResponseLaw (A × B)) (pair : X × Y) : ℚ :=
   joint.mass (f pair.1, g pair.2) *
     (left.mass pair.1 / (pushforwardResponseLaw left f).mass (f pair.1)) *
@@ -103,7 +103,7 @@ private theorem lifted_left (left : FiniteResponseLaw X) (right : FiniteResponse
       intro y _
       ring
     _ = (left.mass x / (pushforwardResponseLaw left f).mass (f x)) *
-        leftResponseMarginal joint.mass (f x) := by rw [cancel]
+        leftResponseMarginal joint.mass (f x) := by rw [cancel, leftResponseMarginal]
     _ = left.mass x := by
       rw [hl]
       by_cases zero : (pushforwardResponseLaw left f).mass (f x) = 0
@@ -126,7 +126,7 @@ private theorem lifted_right (left : FiniteResponseLaw X) (right : FiniteRespons
       intro x _
       ring
     _ = (right.mass y / (pushforwardResponseLaw right g).mass (g y)) *
-        rightResponseMarginal joint.mass (g y) := by rw [cancel]
+        rightResponseMarginal joint.mass (g y) := by rw [cancel, rightResponseMarginal]
     _ = right.mass y := by
       rw [hr]
       by_cases zero : (pushforwardResponseLaw right g).mass (g y) = 0
@@ -135,7 +135,7 @@ private theorem lifted_right (left : FiniteResponseLaw X) (right : FiniteRespons
 
 /-- Normalize the explicit lift using the original laws, without changing either
 original marginal or introducing a new law semantics. -/
-def liftCoarseCoupling (left : FiniteResponseLaw X) (right : FiniteResponseLaw Y)
+noncomputable def liftCoarseCoupling (left : FiniteResponseLaw X) (right : FiniteResponseLaw Y)
     (f : X → A) (g : Y → B) (joint : FiniteResponseLaw (A × B))
     (hl : ∀ a, leftResponseMarginal joint.mass a = (pushforwardResponseLaw left f).mass a)
     (hr : ∀ b, rightResponseMarginal joint.mass b = (pushforwardResponseLaw right g).mass b) :

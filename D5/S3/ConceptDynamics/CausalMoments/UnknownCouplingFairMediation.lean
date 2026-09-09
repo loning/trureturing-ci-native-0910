@@ -65,7 +65,7 @@ private theorem marginal_partition_identity
     (marginals : HasMediatorMarginals coupling control treated) (table : M → Bool) :
     linearObjective (fun pair => (if table pair.1 then (1 : ℚ) else 0) +
       (if table pair.2 then 1 else 0)) coupling.mass = partitionWeight control treated table := by
-  unfold linearObjective partitionWeight
+  unfold partitionWeight linearObjective
   simp only [Fintype.sum_prod_type, add_mul, Finset.sum_add_distrib]
   have left_eq : (∑ i, ∑ j, (if table i then (1 : ℚ) else 0) * coupling.mass (i, j)) =
       ∑ i, (if table i then (1 : ℚ) else 0) * control.mass i := by

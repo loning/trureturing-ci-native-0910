@@ -45,7 +45,7 @@ structure SeparatorPricingCertificate (M : Type*) (K : Finset M) where
   winner : K → Bool
 
 /-- Original-scale value of one branch, including its fixed-coordinate offset. -/
-def branchValue (coupling : FiniteResponseLaw (M × M)) (K : Finset M)
+noncomputable def branchValue (coupling : FiniteResponseLaw (M × M)) (K : Finset M)
     (multiplier : M → ℚ) (certificate : SeparatorPricingCertificate M K)
     (branch : K → Bool) : ℚ :=
   branchOffset coupling K branch multiplier +
@@ -53,7 +53,7 @@ def branchValue (coupling : FiniteResponseLaw (M × M)) (K : Finset M)
       (branchMultiplier coupling K branch multiplier) (certificate.flows branch)
 
 /-- Validate every full branch and compare the proposed winner with every value. -/
-def checkSeparatorPricing (coupling : FiniteResponseLaw (M × M)) (K : Finset M)
+noncomputable def checkSeparatorPricing (coupling : FiniteResponseLaw (M × M)) (K : Finset M)
     (multiplier : M → ℚ) (certificate : SeparatorPricingCertificate M K) : Bool :=
   @decide
     ((∀ branch : K → Bool,
@@ -84,7 +84,7 @@ theorem checkSeparatorPricing_sound (coupling : FiniteResponseLaw (M × M))
           (branchMultiplier coupling K branch multiplier) (certificate.flows branch) = true) ∧
       (∀ branch : K → Bool, branchValue coupling K multiplier certificate branch ≤
         branchValue coupling K multiplier certificate certificate.winner) := by
-    simpa only [checkSeparatorPricing, decide_eq_true_eq] using accepted
+    exact of_decide_eq_true accepted
   have each (branch : K → Bool) :=
     checked_pricing_isGreatest (residualCoupling coupling K) certificate.color
       (branchMultiplier coupling K branch multiplier) (certificate.flows branch) (checks.1 branch)
@@ -105,7 +105,7 @@ theorem checkSeparatorPricing_sound (coupling : FiniteResponseLaw (M × M))
       exact (congrArg (completeMediatorPricingScore coupling multiplier) covered).symm.trans
         (pricing_restriction_identity coupling K branch multiplier table)
     _ ≤ branchValue coupling K multiplier certificate branch :=
-      add_le_add_left localBound _
+      add_le_add le_rfl localBound
     _ ≤ branchValue coupling K multiplier certificate certificate.winner := checks.2 branch
 
 /-- Exact no-improving-column condition over the full canonical response family. -/
@@ -157,7 +157,7 @@ theorem checked_separator_master_isGreatest (coupling : FiniteResponseLaw (M × 
     have bound := checked_separator_causal_bound coupling K multiplier probability certificate
       accepted law means
     rw [contact]
-    exact bound.trans (add_le_add_right stopped _)
+    exact bound.trans (add_le_add stopped le_rfl)
 
 #print axioms checkSeparatorPricing_sound
 #print axioms checked_separator_causal_bound

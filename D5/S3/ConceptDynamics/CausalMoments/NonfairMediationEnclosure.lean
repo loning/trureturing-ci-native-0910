@@ -83,7 +83,7 @@ theorem attained_kernel_optima_stability (control treated : FiniteResponseLaw M)
 private theorem half_drift (control treated : FiniteResponseLaw M) (kernel : M → ℚ) :
     kernelDrift control treated (fun _ => 1/2) kernel =
       (∑ i, (treated.mass i-control.mass i)*kernel i)/2 := by
-  have total : (∑ i, treated.mass i-control.mass i) = 0 := by
+  have total : (∑ i, (treated.mass i - control.mass i)) = 0 := by
     rw [Finset.sum_sub_distrib, treated.total, control.total, sub_self]
   unfold kernelDrift
   simp only [mul_sub, Finset.sum_sub_distrib]
