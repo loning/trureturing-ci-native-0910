@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Factorization/MarkovEquationMutation.markov_equation_mutation
     target_statement_id: sha256:186570f9f6350dad09e43b147057586bf5e0ea26cd4536265608a0e0c4cbabec
 receipts:
-  scribe:
-    - gid: D5/S3/Factorization/MarkovEquationMutation.markov_equation_mutation
-      definition_sha256: sha256:7a538c487876f273bd57cdd55609f5025910979b3b8013878c6a7ffcfbab464d
-      emission_sha256: sha256:a84f6d0d490d6b14a05514bef463276cfcf9737f1a2582e4f88adf6a33a46261
   unresolved_subitems: []

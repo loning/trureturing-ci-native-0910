@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Analytic/PrimeProducts/PrimePrecisionMarginalGain.prime_precision_marginal_gain
     target_statement_id: sha256:9c139d03d83be9a3aa4fcaedb0bb128a159f7f92fd9075400d6ae168773b68cc
 receipts:
-  scribe:
-    - gid: D5/S3/Analytic/PrimeProducts/PrimePrecisionMarginalGain.prime_precision_marginal_gain
-      definition_sha256: sha256:e0b2caee70ec8a2012ee8562a5ce9174442e86774047439c229c3fc3709679e9
-      emission_sha256: sha256:b3562eabde9b1f9c191a8d6283be6f99e134c301fcb3b06e5d86ef17f3be396b
   unresolved_subitems: []

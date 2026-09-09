@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Weil/ZetaBridge/WeilPrimeThresholdParity
    mirror-E: none(waiver:scaled-Fourier-and-full-space-Schur-identification)
    anchors: []
+   utility: none
    digest: Preserve the actual even/odd arithmetic columns and prove cubic prime-activation energy on finite odd Fourier profiles. -/
 
 import D5.S3.Weil.ZetaBridge.WeilEvenDualStencil
@@ -95,9 +96,9 @@ private theorem profile_bound (S : Finset ℕ) (v : ℕ → ℂ) (t : ℝ) :
       simp only [norm_mul, Complex.norm_real, Real.norm_eq_abs]
     _ ≤ ∑ n ∈ S, ‖v n‖ * |Real.pi * (n : ℝ) * t| :=
       Finset.sum_le_sum (fun n _ => mul_le_mul_of_nonneg_left
-        (Real.abs_sin_le_abs _) (norm_nonneg _))
+        Real.abs_sin_le_abs (norm_nonneg _))
     _ = _ := by
-      simp only [abs_mul, abs_of_pos Real.pi_pos, abs_of_nonneg (Nat.cast_nonneg _)]
+      simp only [abs_mul, abs_of_pos Real.pi_pos, Nat.abs_cast]
       unfold moment
       rw [Finset.mul_sum, Finset.sum_mul]
       apply Finset.sum_congr rfl

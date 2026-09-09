@@ -68,7 +68,7 @@ internal sealed class WeilArithmeticFourierDualTailDocument : IScribeDocumentDef
                         Call("And", Call("AtLeast", c, D(2)), Call("Less", n, M),
                             Call("Positive", beta), Call("AllWeightsAtLeast", e, beta),
                             Call("LessEqual", Call("norm", w), Call("div", M, D(2)))),
-                        Rightarrow,
+                        Rightarrow, Sp,
                         Call("And", Call("SummableNorm", term),
                             Call("LessEqual", Call("norm", Call("tsum", term)), bound))))),
                     AssessedProvenance.FromRepo(),

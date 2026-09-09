@@ -29,11 +29,11 @@ internal sealed class WeilInfiniteComplementLeakageDocument : IScribeDocumentDef
         Formula mass = Seq(Call("SquareMass", u), Plus, Call("SquareMass", v));
         Formula right = Seq(Call("div", D(4), Seq(D(3), Sp, Sq(pi))), Sp, mass);
         Formula statement = Seq(
-            Call("Positive", N), Land, Call("Positive", L), Land,
-            Call("SquareSummable", u), Land, Call("SquareSummable", v),
-            Rightarrow,
-            Call("IntervalIntegrableOnQuarterBand", L, N, u, v), Land,
-            Call("NormalizedQuarterBandIntegral", L, N, u, v), Leq, right);
+            Call("Positive", N), Land, Sp, Call("Positive", L), Land, Sp,
+            Call("SquareSummable", u), Land, Sp, Call("SquareSummable", v),
+            Rightarrow, Sp,
+            Call("IntervalIntegrableOnQuarterBand", L, N, u, v), Land, Sp,
+            Call("NormalizedQuarterBandIntegral", L, N, u, v), Leq, Sp, right);
         return DocumentDefinition.Create(ScribeNode.Create(
             "A convergent infinite exterior Fourier tail has quantitatively little "
                 + "mass in the low-frequency quarter band, without an upper mode cutoff.",
@@ -62,7 +62,7 @@ internal sealed class WeilInfiniteComplementLeakageDocument : IScribeDocumentDef
                         "The formula is evaluated on |s|<=N/4, away from every denominator "
                         + "zero. Physical frequency is t=2*pi*s/L. The identification with "
                         + "the Fourier transform of a general L2 exterior mode expansion "
-                        + "is proved on paper in the existing theory volume; it has not "
+                        + "is proved on paper in the existing source analysis; it has not "
                         + "been imported as an extra Lean theorem or axiom."))),
                     DescribeRole.Definition),
                 Describe.Lean(

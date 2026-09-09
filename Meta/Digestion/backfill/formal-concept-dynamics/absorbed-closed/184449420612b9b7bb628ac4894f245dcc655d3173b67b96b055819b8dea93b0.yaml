@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S1/FixedPoints/FiniteMonotoneTermination.finite_monotone_termination_and_nonunique_example
     target_statement_id: sha256:dd1026a0b6143414144cf6fa9542a32d8665982a4df74786ff83e717efc993c1
 receipts:
-  scribe:
-    - gid: D5/S1/FixedPoints/FiniteMonotoneTermination.finite_monotone_termination_and_nonunique_example
-      definition_sha256: sha256:9c496578cf097bbc96c439691cda32ce9113e6d55e7375f806e626e6418e3885
-      emission_sha256: sha256:e38ee63efa584462f1b96b7a0dc3f598d52ec2256c42e54fc89d5ff36d65a644
   unresolved_subitems: []

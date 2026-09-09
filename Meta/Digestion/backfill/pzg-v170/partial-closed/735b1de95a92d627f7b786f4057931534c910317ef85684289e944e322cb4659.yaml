@@ -20,10 +20,6 @@ coverage_gids:
   - gid: D5/S3/Zeros/CompletedZeta.zero_quartet_scaling_spec
     target_statement_id: sha256:54194a5ed453f9739fa911583246728277b4fa9d97b031a0c37dbfb7e7d82e0d
 receipts:
-  scribe:
-    - gid: D5/S3/Weil/EulerProduct.finite_euler_zero_free_and_pole_locus
-      definition_sha256: sha256:7c42f364cffc731328d1c66c59da12ca61ccf5d6797838678b81eda30edf196f
-      emission_sha256: sha256:58246a826a1958e8f0839acfd952a24e91ba52d5babac98f92e567a76417226c
   unresolved_subitems:
     - bragg-peaks-invariant-under-finite-modification
     - dirichlet-l-functions-silence-ramified-primes

@@ -10,10 +10,12 @@ internal static class DigestionBackfillValidation
         RepositorySnapshot baseline,
         ValidatedPolicy policy,
         AcceptedLeanClosure lean,
-        VerifiedScribeEmissions verifiedScribeEmissions,
         RawChangeSet? changes = null,
         RawChangeSet? casChanges = null,
-        RawChangeSet? projectedStatusChanges = null)
+        RawChangeSet? projectedStatusChanges = null,
+        BackfillInventoryDocument? baselineDocument = null,
+        FrozenStatementIndex? frozenStatementIndex = null,
+        IReadOnlyDictionary<RepoPath, TruthState>? truthStates = null)
     {
         var findings = BackfillInventoryRule.EvaluateDocument(
             new BackfillInventoryValidationContext(
@@ -21,29 +23,13 @@ internal static class DigestionBackfillValidation
                 baseline,
                 policy,
                 lean,
-                verifiedScribeEmissions,
                 changes,
                 CasChanges: casChanges,
-                ProjectedStatusChanges: projectedStatusChanges),
+                ProjectedStatusChanges: projectedStatusChanges,
+                BaselineDocument: baselineDocument,
+                FrozenStatementIndex: frozenStatementIndex,
+                TruthStates: truthStates),
             document);
-        return RenderOrThrow(findings);
-    }
-
-    internal static string RequireValidBackfillWithoutTruthAlignment(
-        BackfillInventoryDocument document,
-        RepositorySnapshot current,
-        RepositorySnapshot baseline,
-        ValidatedPolicy policy,
-        RawChangeSet? changes = null,
-        RawChangeSet? casChanges = null)
-    {
-        var findings = BackfillInventoryRule.EvaluateDocumentWithoutTruthAlignment(
-            current,
-            baseline,
-            policy,
-            document,
-            changes,
-            casChanges: casChanges);
         return RenderOrThrow(findings);
     }
 

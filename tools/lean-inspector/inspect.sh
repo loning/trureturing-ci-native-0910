@@ -164,9 +164,15 @@ invoke_inspector() {
     append_module "$module" "$path"
   done < "$MODULE_TABLE"
   [[ "${#inspector_arguments[@]}" -gt 0 ]] || return 2
+  run_phase utility-input-build dotnet build \
+    "$INSPECTOR_DIR/../StrataLint.Cli/StrataLint.Cli.csproj" --configuration Release --nologo --verbosity quiet
+  run_phase utility-input dotnet run \
+    --project "$INSPECTOR_DIR/../StrataLint.Cli/StrataLint.Cli.csproj" \
+    --configuration Release --no-build --no-restore --no-launch-profile -- lean-utility-input
   run_phase inspect \
     "$CACHE_RUN" "$LAKE" env lean --run "$INSPECTOR" \
     --output "$SPOOL_REPORT" --material-spool "$MATERIAL_SPOOL" \
+    --utility-input "$LOG_DIR/utility-input.stdout.log" \
     "${inspector_arguments[@]}"
   run_phase compact python3 "$compactor" compact \
     "$SPOOL_REPORT" "$MATERIAL_SPOOL" "$output"
@@ -190,30 +196,28 @@ if [[ ! "$current_input_address" =~ ^[0-9a-f]{64}$ \
    || ! "$current_config_sha256" =~ ^[0-9a-f]{64}$ ]]; then
   input_address_output="$("$INPUT_HELPER" address --repository "$REPOSITORY" \
     --producer "$INSPECTOR_DIR/inspect.sh" --inspector "$INSPECTOR")" \
-    || input_address_output=""
+    || { echo "inspect.sh: repository input address is unavailable" >&2; exit 2; }
+  address_pattern='^([0-9a-f]{64} ){3}[0-9a-f]{64}$'
+  [[ "$input_address_output" =~ $address_pattern ]] \
+    || { echo "inspect.sh: repository input address is malformed" >&2; exit 2; }
   current_sources_sha256=""
-  read -r current_repository_sha256 current_resident_sha256 current_sources_sha256 current_config_sha256 \
+  IFS=' ' read -r current_repository_sha256 current_resident_sha256 current_sources_sha256 current_config_sha256 \
     <<< "$input_address_output"
   current_producer_sha256="$current_resident_sha256"
-  if [[ "$current_repository_sha256" =~ ^[0-9a-f]{64}$ \
-     && "$current_producer_sha256" =~ ^[0-9a-f]{64}$ \
-     && "$current_sources_sha256" =~ ^[0-9a-f]{64}$ \
-     && "$current_config_sha256" =~ ^[0-9a-f]{64}$ ]]; then
-    if command -v sha256sum >/dev/null 2>&1; then
-      current_input_address="$(printf '%s\n' \
-        'schema=stratalint-lean-report-input-v1' \
-        "producer_sha256=$current_producer_sha256" \
-        "repository_inspector_sha256=$current_resident_sha256" \
-        "lean_sources_sha256=$current_sources_sha256" \
-        "lean_config_sha256=$current_config_sha256" | sha256sum | awk '{print $1}')"
-    else
-      current_input_address="$(printf '%s\n' \
-        'schema=stratalint-lean-report-input-v1' \
-        "producer_sha256=$current_producer_sha256" \
-        "repository_inspector_sha256=$current_resident_sha256" \
-        "lean_sources_sha256=$current_sources_sha256" \
-        "lean_config_sha256=$current_config_sha256" | shasum -a 256 | awk '{print $1}')"
-    fi
+  if command -v sha256sum >/dev/null 2>&1; then
+    current_input_address="$(printf '%s\n' \
+      'schema=stratalint-lean-report-input-v1' \
+      "producer_sha256=$current_producer_sha256" \
+      "repository_inspector_sha256=$current_resident_sha256" \
+      "lean_sources_sha256=$current_sources_sha256" \
+      "lean_config_sha256=$current_config_sha256" | sha256sum | awk '{print $1}')"
+  else
+    current_input_address="$(printf '%s\n' \
+      'schema=stratalint-lean-report-input-v1' \
+      "producer_sha256=$current_producer_sha256" \
+      "repository_inspector_sha256=$current_resident_sha256" \
+      "lean_sources_sha256=$current_sources_sha256" \
+      "lean_config_sha256=$current_config_sha256" | shasum -a 256 | awk '{print $1}')"
   fi
 fi
 

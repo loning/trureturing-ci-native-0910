@@ -26,7 +26,7 @@ public sealed class WorkflowTestProhibitionTests
 {
     // 扫描面是 "tools/tests";**每处都直接写字面量,不抽成常量**——
     // ScribeTestMapDeriver 只静态折叠字面量实参,传标识符会 fail-closed 记 VariablePath,
-    // 于是这些 [Fact] 变成 "conservative unknown test method introduced after fork point"
+    // 于是这些 [Fact] 变成 "conservative unknown test method introduced after protected baseline"
     // 而被 SL-003 拒绝(2026-08-29 实测,PR #4021 首轮 admission rc=1,三条全中)。
 
     /// <summary>
@@ -46,6 +46,26 @@ public sealed class WorkflowTestProhibitionTests
 
     private static readonly Regex WorkflowReference = new(
         @"\.github/workflows|""\.github""\s*,\s*""workflows""",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
+    /// <summary>
+    /// 窄谓词:**同一行**同时出现真实仓根 accessor 与 workflow 路径,即「读本仓真实 workflow」。
+    /// 这才是器律⑦′ 的实质判据——该律禁的是断言**真实** workflow 的内容,不禁止在夹具仓里
+    /// 合成一份 workflow 喂给被测的生产逻辑(后者正是既有豁免集两项的理由原文)。
+    ///
+    /// **为什么禁令不能用宽正则 <see cref="WorkflowReference"/>**:实测 dev 上 11 个测试源命中
+    /// 宽正则,其中 9 个是合成夹具、Assert.DoesNotContain、或本判官自己的正则字面量(自指
+    /// 假阳);拿宽正则立禁令会当场判红 9 处,即 CLAUDE.md 第 20 条所禁的反序。窄谓词的对照:
+    /// dev 全树命中 **0**(阴性),对 issue #6104 记录的三个真违规文件各命中 **1**(阳性)。
+    ///
+    /// **反例集合(两维,写不出就不能用「保证」二字)**:①绕过——跨行(FindRoot 与读取分两行)、
+    /// 变量中转、Path.Combine(root, ".github", "workflows", ...) 分段形、从文件或环境变量读
+    /// 路径、非 C# 载体;②检查被跳过——本项目不编译或不跑、本 [Fact] 被删、EnumerateDeclared
+    /// 前缀写错(由 TheScanSurfaceActuallyEnumeratesTheTestTree 钉住)。故本条是**早反馈**,
+    /// 不得声称「树上不存在读真实 workflow 的测试」。
+    /// </summary>
+    private static readonly Regex RealWorkflowRead = new(
+        @"(Test)?RepositoryLayout\.FindRoot\(\)[^;]*\.github/workflows",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
     /// <summary>
@@ -74,6 +94,87 @@ public sealed class WorkflowTestProhibitionTests
             .Where(static file => file.RelativePath.EndsWith(".cs", StringComparison.Ordinal))
             .Select(static file => file.RelativePath)
             .ToArray();
+
+    /// <summary>
+    /// 主禁令(器律⑦′「永久禁止对 workflow 写测试」)。**这条此前不存在**:ScanAll() 的唯一
+    /// 消费者是上面那条豁免反腐测试,它只问「豁免项是否仍需豁免」,从不问「非豁免项是否
+    /// 违规」,于是该禁令长期零执法——机制在,检测不在(issue #6104;CLAUDE.md 第Ⅵ节
+    /// 「检测是否存在,只能由变异判定」)。
+    /// </summary>
+    [Fact]
+    public void NoTestSourceReadsTheRealWorkflow()
+    {
+        var hits = ScanRealWorkflowReads();
+
+        Assert.True(
+            hits.Count == 0,
+            "器律⑦′:测试不得读本仓真实 workflow —— 它只校验 workflow「长什么样」,校验不了"
+                + "它「会不会执行」,给出的绿是假绿。正确性由真跑判(器律⑦)。\n"
+                + string.Join("\n", hits.Select(static hit => $"  {hit.Path}:{hit.Line}")));
+    }
+
+    /// <summary>
+    /// 放行侧钉子。第Ⅵ节:「一个『什么都拒绝』的坏门能通过一整套只测拒绝的用例」——把窄谓词
+    /// 误写宽(退化回 WorkflowReference)会把这些**合法的合成夹具**一并判红,而只测拒绝的
+    /// 用例结构上看不见这一点。
+    /// </summary>
+    [Fact]
+    public void SyntheticWorkflowFixturesAreNotFlagged()
+    {
+        var flagged = ScanRealWorkflowReads()
+            .Select(static hit => hit.Path)
+            .ToHashSet(StringComparer.Ordinal);
+
+        Assert.DoesNotContain(
+            "tools/tests/StrataLint.ArchitectureTests/RepositoryIo/ScriptTestGateClosureTests.Fixture.cs",
+            flagged);
+        Assert.DoesNotContain(
+            "tools/tests/StrataLint.Tests/Commands/LeanReport/LeanReportCacheTests.cs",
+            flagged);
+        Assert.DoesNotContain(
+            "tools/tests/StrataLint.Tests/Rules/JudgeSurfaceRevisionRuleTests.cs",
+            flagged);
+    }
+
+    /// <summary>
+    /// 防「扫描前缀写错而恒绿」:枚举面必须真的选中测试树。没有这一条,把 "tools/tests"
+    /// 打成任何不存在的前缀都会让上面两条永远绿。
+    /// </summary>
+    [Fact]
+    public void TheScanSurfaceActuallyEnumeratesTheTestTree()
+    {
+        var tracked = TrackedTestSources();
+
+        Assert.NotEmpty(tracked);
+        Assert.Contains(
+            "tools/tests/StrataLint.ArchitectureTests/RepositoryIo/WorkflowTestProhibitionTests.cs",
+            tracked);
+    }
+
+    private static IReadOnlyList<(string Path, int Line)> ScanRealWorkflowReads()
+    {
+        var root = RepositoryLayout.FindRoot();
+        var hits = new List<(string, int)>();
+
+        foreach (var file in GitIndexRepositoryFiles.EnumerateDeclared(root, "tools/tests"))
+        {
+            if (!file.RelativePath.EndsWith(".cs", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            var lines = File.ReadAllLines(file.FullPath);
+            for (var index = 0; index < lines.Length; index++)
+            {
+                if (RealWorkflowRead.IsMatch(lines[index]))
+                {
+                    hits.Add((file.RelativePath, index + 1));
+                }
+            }
+        }
+
+        return hits;
+    }
 
     private static IReadOnlyList<(string Path, int Line)> ScanAll()
     {

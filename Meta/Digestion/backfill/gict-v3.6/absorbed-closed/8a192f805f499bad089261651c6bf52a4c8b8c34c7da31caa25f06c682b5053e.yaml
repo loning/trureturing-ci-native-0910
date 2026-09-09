@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S0/Asymptotics/MetallicFamily.metallic_family_value
     target_statement_id: sha256:3b0abd7299849ff0bc39e2ec76d3ebebc00c82180300925a2f24bfc79d1345a9
 receipts:
-  scribe:
-    - gid: D5/S0/Asymptotics/MetallicFamily.metallic_family_value
-      definition_sha256: sha256:28eac7e6d6c785e18b80df591840df98b2ed9c78ed88abd017f04573a56ac7c4
-      emission_sha256: sha256:2b9ade349ef23e95d4de524fe469c28a17fa49618aafca506dd7e9c865df0644
   unresolved_subitems: []

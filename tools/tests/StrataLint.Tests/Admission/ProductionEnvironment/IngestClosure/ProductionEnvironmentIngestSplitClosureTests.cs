@@ -231,96 +231,6 @@ public sealed partial class ProductionEnvironmentTests
     }
 
     [Theory]
-    [InlineData(false, "covered entry closure-entry disappeared from plan")]
-    [InlineData(true, "covered entry closure-entry coverage was cleared in plan")]
-    public void ClassifyPlannedIdentifiesCoveredEntryLoss(bool retainEntry, string expectedWitness)
-    {
-        var entry = StatusAuthorityClosureEntry();
-        var current = DigestionTestSupport.Document(
-            entry.Atomizer,
-            [entry],
-            sourceId: entry.SourceId,
-            sourcePath: entry.SourcePath);
-        var source = Assert.Single(current.RequireDigestionSources());
-        var planned = current.WithDigestionSources([
-            source with
-            {
-                Entries = retainEntry ? [entry with { Coverage = [] }] : [],
-            },
-        ]);
-        var alignment = new DigestionLedgerAlignment(
-            ImmutableDictionary.CreateRange(StringComparer.Ordinal,
-            [
-                KeyValuePair.Create(entry.AtomId, DigestionReceiptAlignment.Seen),
-            ]),
-            ImmutableDictionary<string, DigestionAtom>.Empty,
-            ImmutableDictionary<string, ImmutableHashSet<string>>.Empty,
-            ImmutableDictionary<string, GenreRegistryCheck>.Empty,
-            [],
-            [],
-            ImmutableHashSet<string>.Empty,
-            ImmutableHashSet<string>.Empty,
-            [],
-            [],
-            []);
-
-        var classification = IngestTruthAlignmentClassifier.ClassifyPlanned(
-            current,
-            current,
-            planned,
-            alignment,
-            DigestionEvaluationScope.ChangedSet,
-            RawChangeSet.Create([]));
-
-        Assert.False(classification.IsUncoveredOnly);
-        Assert.Equal(expectedWitness, classification.Witness);
-    }
-
-    [Fact]
-    public void ClassifyCurrentAcceptsChainAtomReceiptsOnResidualOpenNewEntry()
-    {
-        var entry = StatusAuthorityClosureEntry() with
-        {
-            Coverage = [],
-            Receipts = new DigestionReceipts([], [], ["chain-child"], null),
-        };
-
-        var classification = ClassifyCurrentOnlyNewEntry(entry);
-
-        Assert.True(classification.IsUncoveredOnly);
-        Assert.Null(classification.Witness);
-    }
-
-    [Fact]
-    public void ClassifyCurrentRejectsCoverageBearingNewEntry()
-    {
-        var classification = ClassifyCurrentOnlyNewEntry(StatusAuthorityClosureEntry());
-
-        Assert.False(classification.IsUncoveredOnly);
-        Assert.Equal("new entry closure-entry is coverage-bearing", classification.Witness);
-    }
-
-    [Fact]
-    public void ClassifyCurrentRejectsNonResidualOpenNewEntry()
-    {
-        var entry = StatusAuthorityClosureEntry() with
-        {
-            Coverage = [],
-            Receipts = new DigestionReceipts([], [], [], null),
-            ProjectedStatus = new DigestionStatus(
-                DigestionMigrationState.Partial,
-                DigestionTruthState.Open),
-        };
-
-        var classification = ClassifyCurrentOnlyNewEntry(entry);
-
-        Assert.False(classification.IsUncoveredOnly);
-        Assert.Equal(
-            "new entry closure-entry projected status is not residual-open",
-            classification.Witness);
-    }
-
-    [Theory]
     [InlineData("entry")]
     [InlineData("source-metadata")]
     [InlineData("accepted-event")]
@@ -428,12 +338,12 @@ public sealed partial class ProductionEnvironmentTests
         {
             AtomId = "closure-child",
             Coverage = [],
-            Receipts = new DigestionReceipts([], [], [], null),
+            Receipts = new DigestionReceipts([], [], null),
         };
         var parent = StatusAuthorityClosureEntry() with
         {
             AtomId = "closure-parent",
-            Receipts = new DigestionReceipts([], [], [child.AtomId], null),
+            Receipts = new DigestionReceipts([], [child.AtomId], null),
         };
         var document = DigestionTestSupport.Document(
             parent.Atomizer,
@@ -480,9 +390,7 @@ public sealed partial class ProductionEnvironmentTests
             "closure-entry",
             SyntheticNumberedAtomizer.Id,
             coverageGids: [coverageGid],
-            receipts: new DigestionReceipts(
-                [],
-                [],
+            receipts: new DigestionReceipts([],
                 [],
                 new DigestionExternalReceipt(
                     "Evidence/tail.txt",
@@ -491,22 +399,4 @@ public sealed partial class ProductionEnvironmentTests
             sourcePath: RuleFixture.FixtureDigestionSourcePath);
     }
 
-    private static IngestTruthAlignmentClassification ClassifyCurrentOnlyNewEntry(
-        DigestionLedgerEntry entry)
-    {
-        var current = DigestionTestSupport.Document(
-            entry.Atomizer,
-            [entry],
-            sourceId: entry.SourceId,
-            sourcePath: entry.SourcePath);
-        var baseline = DigestionTestSupport.Document(
-            entry.Atomizer,
-            [],
-            sourceId: entry.SourceId,
-            sourcePath: entry.SourcePath);
-        return IngestTruthAlignmentClassifier.ClassifyCurrent(
-            LeanReportInputState.Unchanged,
-            current,
-            baseline);
-    }
 }

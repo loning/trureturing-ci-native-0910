@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Text;
+using System.Text.Json;
 using StrataLint.Engine;
 
 namespace StrataLint.Scribe;
@@ -221,6 +222,27 @@ public static class CanonicalMarkdownWriter
                 throw new UnreachableException("Unknown Describe statement.");
         }
 
+        if (describe.OpenProblemResolutionClaim is { } claim)
+        {
+            var declarationGid = ((DescribeStatement.LeanDeclaration)describe.Statement).Value.Value;
+            var resolutionKind = DescribeVocabulary.CanonicalName(claim.ResolutionKind);
+            var marker = JsonSerializer.Serialize(new
+            {
+                problem_slug = claim.ProblemSlug.Value,
+                declaration_gid = declarationGid,
+                resolution_kind = resolutionKind,
+            });
+            builder.Append("\n\n*Resolves.* `Problems/")
+                .Append(claim.ProblemSlug.Value)
+                .Append("` (")
+                .Append(resolutionKind)
+                .Append(") by `")
+                .Append(declarationGid)
+                .Append("`.\n\n<!-- scribe-open-problem-resolution-v1 ")
+                .Append(marker)
+                .Append(" -->");
+        }
+
         if (describe.LiteratureReference is { } literature)
         {
             AppendAcademicReference(builder, "Citation", literature, citations);
@@ -277,11 +299,16 @@ public static class CanonicalMarkdownWriter
             .Append(citation.Year)
             .Append("). *")
             .Append(citation.Title)
-            .Append("*. DOI: [")
-            .Append(citation.Doi.Value)
-            .Append("](https://doi.org/")
-            .Append(citation.Doi.Value)
-            .Append(").");
+            .Append("*. ");
+        if (citation.Doi is { } doi)
+        {
+            builder.Append("DOI: [").Append(doi.Value)
+                .Append("](https://doi.org/").Append(doi.Value).Append(").");
+        }
+        else
+        {
+            builder.Append("URL: <").Append(citation.Url!.AbsoluteUri).Append(">.");
+        }
     }
 
     private static IReadOnlySet<string> ReferencedDescribeIds(

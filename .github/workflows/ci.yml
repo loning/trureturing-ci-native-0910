@@ -13,7 +13,7 @@ permissions:
 # PR 侧按 PR 号分组并取消在途:同一 PR 连续推送时,旧 run 的结论已无意义。
 #
 # dev push 侧不同:它的必查早已在 PR 上跑过,这一趟**存在的理由就是把缓存写进去**
-# (elan、lake build artifacts、canonical Lean report),而三个 save 都在 job 末尾。
+# (elan、Lean dependencies、canonical Lean report),而三个 save 都在 job 末尾。
 # 用 github.ref 分组意味着所有 dev push 共用一个组,于是下一次合并会取消上一次。
 #
 # 【2026-08-11 勘误】本注释原引「近 30 次 dev push 23 次 cancelled、仅 6 次 success(20%)」
@@ -36,7 +36,7 @@ concurrency:
 jobs:
   candidate-engineering:
     name: Candidate harness engineering checks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     # 20 分钟对本 job 已结构性不足:凡改动命中 tools/** 者,EngineeringScope 的测试选择器
     # 选中 0 个、回退 full,跑满全部测试套件,实测 20–21 分钟(#3940)。
     # 证据:PR #3943(生产 +4/-4、新增测试实测 221ms)连续五次 CANCELLED
@@ -45,9 +45,6 @@ jobs:
     # 30 分钟给 full scope 留约 50% 余量;同文件的 Lean report job 预算已是 45 分钟。
     timeout-minutes: 30
     steps:
-      - name: Wait for the GitHub merge ref
-        if: github.event_name == 'pull_request_target'
-        run: "set -euo pipefail\nfor attempt in {1..25}; do\n  timestamp=\"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\"\n  printf '%s poll=%s/25\\n' \"$timestamp\" \"$attempt\"\n  if git ls-remote --exit-code \"https://github.com/${{ github.repository }}.git\" \"refs/pull/${{ github.event.pull_request.number }}/merge\" >/dev/null 2>&1; then exit 0; fi\n  sleep 5\ndone\nprintf '%s\\n' \"merge ref absent after 125s (conflicted PR or still computing)\"\nexit 0"
       - name: Check out candidate
         id: checkout-merge
         continue-on-error: ${{ github.event_name == 'pull_request_target' }}
@@ -94,9 +91,7 @@ jobs:
         run: |
           set -euo pipefail
           source_address="${{ hashFiles('candidate/tools/**', 'candidate/Blueprint/**/*.scribe.cs', 'candidate/Directory.*', 'candidate/.editorconfig', 'candidate/global.json') }}"
-          workflow_ref=HEAD
-          if [[ "$GITHUB_EVENT_NAME" == "pull_request_target" ]]; then workflow_ref=HEAD^1; fi
-          workflow_address="$(git -C candidate rev-parse "${workflow_ref}:.github/workflows/ci.yml")"
+          workflow_address="$(git -C candidate rev-parse HEAD:.github/workflows)"
           source_address="$(printf 'sources=%s\nworkflow=%s\n' "$source_address" "$workflow_address" | sha256sum | cut -d ' ' -f 1)"
           candidate/tools/scripts/workflow/judge-content-address.sh "$source_address" >> "$GITHUB_OUTPUT"
       - name: Restore judge binaries and candidate build outputs
@@ -145,6 +140,28 @@ jobs:
         id: build-candidate
         if: steps.judge-cache.outputs.cache-hit != 'true' && github.event_name != 'schedule'
         run: make -C candidate/tools dotnet
+      - name: Stage judge binaries for the shared cache (dev push only)
+        id: stage-judge
+        if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .judge-binaries/cli .judge-binaries/scribe
+          dotnet publish candidate/tools/StrataLint.Cli/StrataLint.Cli.csproj \
+            --configuration Release --output .judge-binaries/cli
+          dotnet publish candidate/tools/StrataLint.Scribe.Documents/StrataLint.Scribe.Documents.csproj \
+            --configuration Release --output .judge-binaries/scribe
+          test -s .judge-binaries/cli/StrataLint.dll
+          test -s .judge-binaries/scribe/StrataLint.Scribe.Documents.dll
+      - name: Save judge binaries and candidate build outputs by content address (dev push only)
+        if: steps.build-candidate.outcome == 'success' && steps.stage-judge.outcome == 'success' && github.event_name == 'push' && github.ref == 'refs/heads/dev'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            .judge-binaries
+            candidate/tools/**/bin
+            candidate/tools/**/obj
+          key: stratalint-judge-binaries-v2-${{ runner.os }}-${{ steps.judge-address.outputs.runtime }}-${{ steps.judge-address.outputs.address }}
       - name: Signal PR head branch grammar
         if: github.event_name == 'pull_request_target' && github.event.pull_request.base.ref == 'dev'
         shell: bash
@@ -199,28 +216,6 @@ jobs:
             test "${actual_lines[$index]}" = "$expected_line"
             ((index += 1))
           done
-      - name: Stage judge binaries for the shared cache (dev push only)
-        id: stage-judge
-        if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p .judge-binaries/cli .judge-binaries/scribe
-          dotnet publish candidate/tools/StrataLint.Cli/StrataLint.Cli.csproj \
-            --configuration Release --output .judge-binaries/cli
-          dotnet publish candidate/tools/StrataLint.Scribe.Documents/StrataLint.Scribe.Documents.csproj \
-            --configuration Release --output .judge-binaries/scribe
-          test -s .judge-binaries/cli/StrataLint.dll
-          test -s .judge-binaries/scribe/StrataLint.Scribe.Documents.dll
-      - name: Save judge binaries and candidate build outputs by content address (dev push only)
-        if: steps.build-candidate.outcome == 'success' && steps.stage-judge.outcome == 'success' && github.event_name == 'push' && github.ref == 'refs/heads/dev'
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            .judge-binaries
-            candidate/tools/**/bin
-            candidate/tools/**/obj
-          key: stratalint-judge-binaries-v2-${{ runner.os }}-${{ steps.judge-address.outputs.runtime }}-${{ steps.judge-address.outputs.address }}
       - name: Save elan toolchain for engineering checks (dev push only)
         if: always() && steps.install-elan.outcome == 'success' && github.event_name == 'push' && github.ref == 'refs/heads/dev'
         uses: actions/cache/save@v4
@@ -248,9 +243,6 @@ jobs:
     outputs:
       baseline_sha: ${{ steps.base.outputs.sha }}
     steps:
-      - name: Wait for the GitHub merge ref
-        if: github.event_name == 'pull_request_target'
-        run: "set -euo pipefail\nfor attempt in {1..25}; do\n  timestamp=\"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\"\n  printf '%s poll=%s/25\\n' \"$timestamp\" \"$attempt\"\n  if git ls-remote --exit-code \"https://github.com/${{ github.repository }}.git\" \"refs/pull/${{ github.event.pull_request.number }}/merge\" >/dev/null 2>&1; then exit 0; fi\n  sleep 5\ndone\nprintf '%s\\n' \"merge ref absent after 125s (conflicted PR or still computing)\"\nexit 0"
       - name: Check out candidate with history
         id: checkout-merge
         continue-on-error: ${{ github.event_name == 'pull_request_target' }}
@@ -297,9 +289,7 @@ jobs:
         run: |
           set -euo pipefail
           source_address="${{ hashFiles('candidate/tools/**', 'candidate/Blueprint/**/*.scribe.cs', 'candidate/Directory.*', 'candidate/.editorconfig', 'candidate/global.json') }}"
-          workflow_ref=HEAD
-          if [[ "$GITHUB_EVENT_NAME" == "pull_request_target" ]]; then workflow_ref=HEAD^1; fi
-          workflow_address="$(git -C candidate rev-parse "${workflow_ref}:.github/workflows/ci.yml")"
+          workflow_address="$(git -C candidate rev-parse HEAD:.github/workflows)"
           source_address="$(printf 'sources=%s\nworkflow=%s\n' "$source_address" "$workflow_address" | sha256sum | cut -d ' ' -f 1)"
           candidate/tools/scripts/workflow/judge-content-address.sh "$source_address" >> "$GITHUB_OUTPUT"
       - name: Restore judge binaries and candidate build outputs
@@ -311,6 +301,9 @@ jobs:
             candidate/tools/**/bin
             candidate/tools/**/obj
           key: stratalint-judge-binaries-v2-${{ runner.os }}-${{ steps.judge-address.outputs.runtime }}-${{ steps.judge-address.outputs.address }}
+      - name: Build candidate tools before Lean report production
+        shell: bash
+        run: make -C candidate/tools dotnet
       - name: Resolve checked merge result's dev parent
         id: base
         shell: bash
@@ -324,30 +317,42 @@ jobs:
             exit 1
           fi
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
-      - name: Resolve candidate canonical Lean report address
+      - name: Resolve candidate Lean build input addresses
+        id: lean-input
+        shell: bash
+        run: |
+          set -euo pipefail
+          helper="$GITHUB_WORKSPACE/candidate/tools/scripts/worktree/lean-cache-input.sh"
+          test -x "$helper"
+          input_address="$("$helper" address --repository "$GITHUB_WORKSPACE/candidate")"
+          [[ "$input_address" =~ ^[0-9a-f]{64}\ [0-9a-f]{64}$ ]]
+          read -r sources_sha256 config_sha256 <<< "$input_address"
+          echo "sources_sha256=$sources_sha256" >> "$GITHUB_OUTPUT"
+          echo "config_sha256=$config_sha256" >> "$GITHUB_OUTPUT"
+          dependency_sha256="$("$helper" dependency-address --repository "$GITHUB_WORKSPACE/candidate")"
+          [[ "$dependency_sha256" =~ ^[0-9a-f]{64}$ ]]
+          echo "dependency_sha256=$dependency_sha256" >> "$GITHUB_OUTPUT"
+      - name: Probe candidate canonical Lean report address
         id: lean-report-input
         shell: bash
         run: |
           set -euo pipefail
           helper="$GITHUB_WORKSPACE/candidate/tools/scripts/report/lean-report-input.sh"
-          test -x "$helper"
-          read -r address producer_sha256 sources_sha256 config_sha256 \
-            <<< "$("$helper" address --repository "$GITHUB_WORKSPACE/candidate")"
-          [[ "$address" =~ ^[0-9a-f]{64}$ ]]
-          [[ "$producer_sha256" =~ ^[0-9a-f]{64}$ ]]
-          [[ "$sources_sha256" =~ ^[0-9a-f]{64}$ ]]
-          [[ "$config_sha256" =~ ^[0-9a-f]{64}$ ]]
-          echo "address=$address" >> "$GITHUB_OUTPUT"
-          echo "sources_sha256=$sources_sha256" >> "$GITHUB_OUTPUT"
-          echo "config_sha256=$config_sha256" >> "$GITHUB_OUTPUT"
-          # 报告地址的原像是 producer(MSBuild 求值的 Cli/Engine Compile 集 + 声明的
-          # project/build/lock/global 输入 + inspector)、Lean 源(Trureturing.lean +
-          # D5/**/*.lean)与 config(toolchain/lake-manifest/lakefile)三者的清单哈希。
+          address_pattern='^([0-9a-f]{64} ){3}[0-9a-f]{64}$'
+          if test -x "$helper" \
+            && address_output="$("$helper" address --repository "$GITHUB_WORKSPACE/candidate")" \
+            && [[ "$address_output" =~ $address_pattern ]]; then
+            echo "address=${address_output%% *}" >> "$GITHUB_OUTPUT"
+          else
+            printf '%s\n' '::warning::Report address unavailable; treating report cache as a miss'
+          fi
 
       # 精确 key 命中仍直接复用;prefix restore 只提供陈旧 delta 基线,不算 cache hit。adapter 与现行 delta 机器重验报告、provenance、materials 与 producer logs;
       # 任一项不可信就不给 cache root,沿原路径全量生产。下游仍逐模块核对 source_sha256,故陈旧报告不能被静默接受。
       - name: Restore canonical Lean report by input address
         id: report-cache
+        if: steps.lean-report-input.outputs.address != ''
+        continue-on-error: true
         uses: actions/cache/restore@v4
         with:
           path: .canonical-lean-report-cache
@@ -355,10 +360,11 @@ jobs:
           restore-keys: stratalint-canonical-lean-report-v2-
       - name: Serve candidate canonical Lean report from the cached address
         id: report-reuse
-        if: steps.report-cache.outputs.cache-hit == 'true'
+        if: steps.report-cache.outcome == 'success' && steps.report-cache.outputs.cache-hit == 'true'
         # 这一步失败必须**回落**到完整生产路径,而不是让整个 job 红:缓存是加速,不是权威。
         # 下面四个重活步骤的守卫是 `outcome != 'success'`,故失败与跳过都会走原路。
         continue-on-error: true
+        timeout-minutes: 2
         shell: bash
         run: |
           set -euo pipefail
@@ -372,6 +378,18 @@ jobs:
           helper="$GITHUB_WORKSPACE/candidate/tools/scripts/report/lean-report-input.sh"
           # 缓存条目对候选树重新验一次地址与报告哈希;不符即整体回落,不静默使用。
           "$helper" verify --repository "$GITHUB_WORKSPACE/candidate" --report "$source"
+          producer="$(awk -F= '$1 == "producer_sha256" {print $2}' "${source}.input.attestation")"
+          sources="${{ steps.lean-input.outputs.sources_sha256 }}"
+          config="${{ steps.lean-input.outputs.config_sha256 }}"
+          input="$(printf 'schema=stratalint-lean-report-input-v1\nproducer_sha256=%s\nrepository_inspector_sha256=%s\nlean_sources_sha256=%s\nlean_config_sha256=%s\n' \
+            "$producer" "$producer" "$sources" "$config" | sha256sum | cut -d ' ' -f 1)"
+          jq -e -s --arg producer "$producer" --arg sources "$sources" --arg config "$config" \
+            --arg input "sha256:$input" --arg report "$(sha256sum "$source" | cut -d ' ' -f 1)" '
+            length == 1 and (.[0] == {schema: "stratalint-lean-report-provenance-v1", side: "candidate",
+              mode: .[0].mode, source_side: "candidate", input_address: $input,
+              producer_sha256: $producer, repository_inspector_sha256: $producer,
+              lean_sources_sha256: $sources, lean_config_sha256: $config, report_sha256: $report}
+            and (.[0].mode == "produced" or .[0].mode == "cached"))' "${source}.provenance.json" > /dev/null
           for suffix in '' .input.attestation .provenance.json .materials.zip; do
             cp "${source}${suffix}" "$reports/candidate-lean-report.json${suffix}"
           done
@@ -397,15 +415,12 @@ jobs:
             exit 1
           fi
           "$GITHUB_WORKSPACE/candidate/tools/scripts/workflow/install-lean-toolchain.sh" candidate/lean-toolchain
-      - name: Build Scribe binary on judge cache miss
-        if: steps.judge-cache.outputs.cache-hit != 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p .judge-binaries/scribe
-          dotnet build candidate/tools/StrataLint.Scribe.Documents/StrataLint.Scribe.Documents.csproj \
-            --configuration Release \
-            --output .judge-binaries/scribe
+      # Dependency olean compatibility follows lean-toolchain + pinned lake-manifest.json.
+      # The lakefile only shapes the project layer, whose config_sha256 key stays broader.
+      # Prefix restore may cross manifest/toolchain versions; it is a best-effort seed.
+      # Lake traces determine validity; the prefix alone guarantees neither correctness
+      # nor a warm build within 45 minutes. Normal Lean build, report, and check
+      # failures remain terminal.
       - name: Restore candidate Lean dependency artifacts
         id: lake-deps-cache
         if: steps.report-reuse.outcome != 'success'
@@ -416,26 +431,55 @@ jobs:
             candidate/.lake/config
             candidate/.lake/.stratalint-lean-cache-stamp.json
             ~/.cache/mathlib
-          key: ${{ runner.os }}-${{ runner.arch }}-lake-deps-v1-${{ steps.lean-report-input.outputs.config_sha256 }}
+          key: ${{ runner.os }}-${{ runner.arch }}-lake-deps-v2-${{ steps.lean-input.outputs.dependency_sha256 }}
           restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-lake-deps-v1-${{ steps.lean-report-input.outputs.config_sha256 }}
+            ${{ runner.os }}-${{ runner.arch }}-lake-deps-v2-
+      # project 层优先取 Actions cache:它每次 dev push 写一份(约 8 分钟一份),
+      # 而 Release 是 `cron: 0 */6 * * *` 且只许 schedule(实测间隔可达 7h05m)。
+      # 精确命中结构上不可能(key 含 sources_sha256,每个改 Lean 的候选都不同),
+      # 故这里靠 restore-keys 前缀回退取「最近一次 dev push 的 project 层」。
       - name: Restore candidate Lean project build artifacts
         id: lake-build-cache
         if: steps.report-reuse.outcome != 'success'
         uses: actions/cache/restore@v4
         with:
           path: candidate/.lake/build
-          key: ${{ runner.os }}-${{ runner.arch }}-lake-build-v1-${{ steps.lean-report-input.outputs.config_sha256 }}-${{ steps.lean-report-input.outputs.sources_sha256 }}
+          key: ${{ runner.os }}-${{ runner.arch }}-lake-build-v1-${{ steps.lean-input.outputs.config_sha256 }}-${{ steps.lean-input.outputs.sources_sha256 }}
           restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-lake-build-v1-${{ steps.lean-report-input.outputs.config_sha256 }}-
-      - name: Fetch required Lean release cache when the project layer is absent
-        if: steps.report-reuse.outcome != 'success' && steps.lake-build-cache.outputs.cache-hit != 'true'
-        env: { GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }
+            ${{ runner.os }}-${{ runner.arch }}-lake-build-v1-${{ steps.lean-input.outputs.config_sha256 }}-
+      # make lean owns optional Release fallback and its transaction budget.
+      - name: Build candidate Lean project
+        id: lean-build
+        if: steps.report-reuse.outcome != 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STRATALINT_ACCEPT_COLD_BUILD: '1'
         shell: bash
         run: |
           set -euo pipefail
-          printf '%s\n' '集成分支要求使用 release cache;取回失败即失败,不回落编译'
-          PATH="$HOME/.elan/bin:$PATH" candidate/tools/scripts/worktree/lean-cache-publish.sh fetch --repository "$GITHUB_WORKSPACE/candidate"
+          PATH="$HOME/.elan/bin:$PATH" make -C candidate lean
+      # Only a successful build materializes Lean artifacts. A report hit skips
+      # that build; later report failures cannot revoke its completed cache supply.
+      - name: Save Lean project build artifacts (dev push only)
+        if: always() && steps.lean-build.outcome == 'success' && steps.lake-build-cache.outputs.cache-hit != 'true' && github.event_name == 'push' && github.ref == 'refs/heads/dev'
+        continue-on-error: true
+        timeout-minutes: 12
+        uses: actions/cache/save@v4
+        with:
+          path: candidate/.lake/build
+          key: ${{ runner.os }}-${{ runner.arch }}-lake-build-v1-${{ steps.lean-input.outputs.config_sha256 }}-${{ steps.lean-input.outputs.sources_sha256 }}
+      - name: Save Lean dependency artifacts (dev push only)
+        if: always() && steps.lean-build.outcome == 'success' && steps.lake-deps-cache.outputs.cache-hit != 'true' && github.event_name == 'push' && github.ref == 'refs/heads/dev'
+        continue-on-error: true
+        timeout-minutes: 12
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            candidate/.lake/packages
+            candidate/.lake/config
+            candidate/.lake/.stratalint-lean-cache-stamp.json
+            ~/.cache/mathlib
+          key: ${{ runner.os }}-${{ runner.arch }}-lake-deps-v2-${{ steps.lean-input.outputs.dependency_sha256 }}
       - name: Produce source-bound canonical Lean reports
         if: steps.report-reuse.outcome != 'success'
         env: { GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }
@@ -458,17 +502,6 @@ jobs:
             --lake-bin "$HOME/.elan/bin/lake" \
             --candidate-root "$GITHUB_WORKSPACE/candidate" \
             --candidate-output "$reports/candidate-lean-report.json"
-      - name: Run complete mathematical content checks
-        shell: bash
-        run: |
-          set -euo pipefail
-          report="$RUNNER_TEMP/raw-lean-reports/candidate-lean-report.json"
-          scribe="$GITHUB_WORKSPACE/.judge-binaries/scribe/StrataLint.Scribe.Documents.dll"
-          test -s "$report"
-          test -s "$scribe"
-          base="${{ steps.base.outputs.sha }}"
-          /bin/bash "$GITHUB_WORKSPACE/candidate/tools/scripts/workflow/scribe-content-checks.sh" \
-            "$report" "$scribe" "$base"
       - name: Stage candidate canonical Lean report cache
         shell: bash
         run: |
@@ -491,13 +524,25 @@ jobs:
             --report "$target"
 
       # pull_request_target runs get a token without cache-write scope, so this save can only ever fail there: run 31389667812 logged "cache write denied: token has no writable scopes". The two saves below already carry this exact guard; this one was missing it, so every PR attempted a write it could not perform. dev-push runs do write it successfully (run 31389340892).
-      # 命中报告缓存时 elan/lake 目录未被恢复也未被填充,回存会写入空态并污染下一轮;分层 lake cache exact hit 时对应 key 也已存在。四个 save 只在真正跑过生产路径时执行。
+      # 命中报告缓存时 elan/lake 目录未被恢复也未被填充,回存会写入空态并污染下一轮;分层 lake cache exact hit 时对应 key 也已存在。三个 save 只在真正跑过生产路径时执行。
       - name: Save candidate canonical Lean report (dev push only)
-        if: success() && steps.report-reuse.outcome != 'success' && github.event_name == 'push' && github.ref == 'refs/heads/dev'
+        if: success() && steps.lean-report-input.outputs.address != '' && steps.report-reuse.outcome != 'success' && github.event_name == 'push' && github.ref == 'refs/heads/dev'
         uses: actions/cache/save@v4
         with:
           path: .canonical-lean-report-cache
           key: stratalint-canonical-lean-report-v2-${{ steps.lean-report-input.outputs.address }}
+      - name: Run complete mathematical content checks
+        shell: bash
+        env:
+          STRATALINT_SCRIBE_BASE: ${{ steps.base.outputs.sha }}
+        run: |
+          set -euo pipefail
+          report="$RUNNER_TEMP/raw-lean-reports/candidate-lean-report.json"
+          scribe="$GITHUB_WORKSPACE/candidate/tools/StrataLint.Scribe.Documents/bin/Release/net10.0/StrataLint.Scribe.Documents.dll"
+          test -s "$report"
+          test -s "$scribe"
+          /bin/bash "$GITHUB_WORKSPACE/candidate/tools/scripts/workflow/scribe-content-checks.sh" \
+            "$report" "$scribe"
       - name: Upload raw Lean reports and producer logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -507,7 +552,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
-      # 命中报告缓存时 elan/lake 目录未被恢复也未被填充,回存会写入空态并污染下一轮;分层 lake cache exact hit 时对应 key 也已存在。四个 save 只在真正跑过生产路径时执行。
+      # 命中报告缓存时 elan/lake 目录未被恢复也未被填充,回存会写入空态并污染下一轮;分层 lake cache exact hit 时对应 key 也已存在。三个 save 只在真正跑过生产路径时执行。
       - name: Save elan toolchains (dev push only)
         # 不挂在 success() 上:elan 装成功就该存。否则一次下载失败会让 job 红、缓存不写、
         # 下次继续 miss,故障自我延续。
@@ -517,39 +562,14 @@ jobs:
           path: ~/.elan
           key: ${{ runner.os }}-${{ runner.arch }}-elan-${{ hashFiles('candidate/lean-toolchain') }}
 
-      # 命中报告缓存时 elan/lake 目录未被恢复也未被填充,回存会写入空态并污染下一轮;分层 lake cache exact hit 时对应 key 也已存在。四个 save 只在真正跑过生产路径时执行。
-      - name: Save Lean dependency artifacts (dev push only)
-        if: success() && steps.report-reuse.outcome != 'success' && steps.lake-deps-cache.outputs.cache-hit != 'true' && github.event_name == 'push' && github.ref == 'refs/heads/dev'
-        continue-on-error: true
-        timeout-minutes: 12
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            candidate/.lake/packages
-            candidate/.lake/config
-            candidate/.lake/.stratalint-lean-cache-stamp.json
-            ~/.cache/mathlib
-          key: ${{ runner.os }}-${{ runner.arch }}-lake-deps-v1-${{ steps.lean-report-input.outputs.config_sha256 }}
-      - name: Save Lean project build artifacts (dev push only)
-        if: success() && steps.report-reuse.outcome != 'success' && steps.lake-build-cache.outputs.cache-hit != 'true' && github.event_name == 'push' && github.ref == 'refs/heads/dev'
-        continue-on-error: true
-        timeout-minutes: 12
-        uses: actions/cache/save@v4
-        with:
-          path: candidate/.lake/build
-          key: ${{ runner.os }}-${{ runner.arch }}-lake-build-v1-${{ steps.lean-report-input.outputs.config_sha256 }}-${{ steps.lean-report-input.outputs.sources_sha256 }}
-
   baseline-admission:
     name: Content-addressed dev baseline admission
     needs: lean-inspect
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     timeout-minutes: 20
     env:
       DEV_BASELINE_SHA: ${{ needs.lean-inspect.outputs.baseline_sha }}
     steps:
-      - name: Wait for the GitHub merge ref
-        if: github.event_name == 'pull_request_target'
-        run: "set -euo pipefail\nfor attempt in {1..25}; do\n  timestamp=\"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\"\n  printf '%s poll=%s/25\\n' \"$timestamp\" \"$attempt\"\n  if git ls-remote --exit-code \"https://github.com/${{ github.repository }}.git\" \"refs/pull/${{ github.event.pull_request.number }}/merge\" >/dev/null 2>&1; then exit 0; fi\n  sleep 5\ndone\nprintf '%s\\n' \"merge ref absent after 125s (conflicted PR or still computing)\"\nexit 0"
       - name: Check out candidate with history
         id: checkout-merge
         continue-on-error: ${{ github.event_name == 'pull_request_target' }}
@@ -596,9 +616,7 @@ jobs:
         run: |
           set -euo pipefail
           source_address="${{ hashFiles('candidate/tools/**', 'candidate/Blueprint/**/*.scribe.cs', 'candidate/Directory.*', 'candidate/.editorconfig', 'candidate/global.json') }}"
-          workflow_ref=HEAD
-          if [[ "$GITHUB_EVENT_NAME" == "pull_request_target" ]]; then workflow_ref=HEAD^1; fi
-          workflow_address="$(git -C candidate rev-parse "${workflow_ref}:.github/workflows/ci.yml")"
+          workflow_address="$(git -C candidate rev-parse HEAD:.github/workflows)"
           source_address="$(printf 'sources=%s\nworkflow=%s\n' "$source_address" "$workflow_address" | sha256sum | cut -d ' ' -f 1)"
           candidate/tools/scripts/workflow/judge-content-address.sh "$source_address" >> "$GITHUB_OUTPUT"
       - name: Restore judge binaries and candidate build outputs
@@ -610,6 +628,24 @@ jobs:
             candidate/tools/**/bin
             candidate/tools/**/obj
           key: stratalint-judge-binaries-v2-${{ runner.os }}-${{ steps.judge-address.outputs.runtime }}-${{ steps.judge-address.outputs.address }}
+      # Since 2025-12-08, pull_request_target evaluates github.sha as the repository default branch (dev) tip S for every PR regardless of its base.
+      # The primary key K(S) is therefore tried first for all PRs; it hits when a dev push run has already saved K(S)
+      # (a dev push saves only when the entry set changed). restore-keys prefix fallback selects the most recently saved cache otherwise;
+      # for PRs whose base is an integration-** branch the entries may not correspond to that base and then miss at the Engine (fail-closed).
+      - name: Restore base-side unknown-debt test maps
+        id: test-map-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: .stratalint-test-map-cache
+          key: stratalint-test-map-v1-${{ runner.os }}-${{ github.sha }}
+          restore-keys: stratalint-test-map-v1-${{ runner.os }}-
+      - name: Snapshot test map cache before the gate
+        id: test-map-before
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .stratalint-test-map-cache
+          find .stratalint-test-map-cache -maxdepth 1 -type f -name '*.json' -exec sha256sum {} + | sort | sha256sum | cut -d ' ' -f 1 > "$RUNNER_TEMP/test-map-before.sha"
       - name: Download canonical Lean reports
         uses: actions/download-artifact@v4
         with:
@@ -640,6 +676,17 @@ jobs:
             printf '%s\n' "candidate gate cannot consume canonical Lean reports" >&2
             exit 1
           fi
+          # expand 阶段;contract 义务:当 `git branch -r --list 'origin/integration-*'` 中
+          # 不再有 base 早于 d4f14b1a4d 的分支时,改回 fail-closed(与 `--candidate-lean-report` 同形);
+          # 2025-12-08 起 pull_request_target 取默认分支 workflow,故不存在无窗口。
+          # This is a bounded migration obligation with the stated exit condition;
+          # it must not become a second judge path or a permanent compatibility branch.
+          cache_args=()
+          if grep -qF -- '--test-map-cache-root' "$gate"; then
+            cache_args=(--test-map-cache-root "$GITHUB_WORKSPACE/.stratalint-test-map-cache")
+          else
+            printf '%s\n' "candidate gate predates the test map cache; running without it" >&2
+          fi
           judge_args=()
           if [[ "${{ steps.judge-cache.outputs.cache-hit }}" == "true" ]]; then
             judge="$GITHUB_WORKSPACE/.judge-binaries/cli/StrataLint.dll"
@@ -651,6 +698,7 @@ jobs:
             --candidate "$GITHUB_WORKSPACE/candidate" \
             --base "$DEV_BASELINE_SHA" \
             --candidate-lean-report "$RUNNER_TEMP/raw-lean-reports/candidate-lean-report.json" \
+            ${cache_args[@]+"${cache_args[@]}"} \
             "${judge_args[@]}" \
             2>&1 | tee "$RUNNER_TEMP/gate.log"
           rc="${PIPESTATUS[0]}"
@@ -664,6 +712,30 @@ jobs:
             printf '%s\n' "### protected-surface change (SL-022); content checks passed" >> "$GITHUB_STEP_SUMMARY"
           fi
           exit 0
+      - name: Prune and fingerprint test map cache after the gate (push only)
+        id: test-map-after
+        if: always() && github.event_name == 'push'
+        shell: bash
+        run: |
+          set -euo pipefail
+          # keep the 16 newest by mtime(not LRU): fork-point age of the last 40 dev merges was p50<1h / p90 2h / max 3h
+          # (2026-09-06, git merge-base age), and dev merges touching derivation inputs ran at
+          # 112 per 24h; 16 entries cover the observed maximum. Policy constant, not a capacity
+          # derivation; revisit when either reading moves.
+          # readings: issue #5458 comment 2026-09-06 (sshx transcript jp0905c); fork-point age via `git merge-base` over the last 40 first-parent dev merges
+          find .stratalint-test-map-cache -maxdepth 1 -type f -name '*.json' -printf '%T@ %f\n' | sort -rn | tail -n +17 | cut -d ' ' -f 2- | while read -r stale; do rm -f -- ".stratalint-test-map-cache/$stale"; done
+          after="$(find .stratalint-test-map-cache -maxdepth 1 -type f -name '*.json' -exec sha256sum {} + | sort | sha256sum | cut -d ' ' -f 1)"
+          before="$(cat "$RUNNER_TEMP/test-map-before.sha")"
+          changed=false
+          if [[ "$after" != "$before" ]]; then changed=true; fi
+          printf 'changed=%s\n' "$changed" >> "$GITHUB_OUTPUT"
+          printf 'test-map-cache entries=%s changed=%s\n' "$(find .stratalint-test-map-cache -maxdepth 1 -type f -name '*.json' | wc -l)" "$changed"
+      - name: Save test map cache by push SHA (push only, when changed)
+        if: always() && github.event_name == 'push' && steps.test-map-after.outputs.changed == 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .stratalint-test-map-cache
+          key: stratalint-test-map-v1-${{ runner.os }}-${{ github.sha }}
       - name: Upload gate timing
         if: always()
         uses: actions/upload-artifact@v4

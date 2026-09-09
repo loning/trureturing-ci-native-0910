@@ -22,7 +22,10 @@ internal static class TestProcessRunner
                 standardInput),
             fileName);
 
-    internal static ProcessOutput Classify(Func<ProcessOutput> run, string command)
+    internal static ProcessOutput Classify(Func<ProcessOutput> run, string command) =>
+        Classify<ProcessOutput>(run, command);
+
+    internal static T Classify<T>(Func<T> run, string command)
     {
         try
         {

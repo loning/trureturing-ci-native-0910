@@ -19,14 +19,13 @@ internal static class ResidualFrontierAssembler
         ArgumentNullException.ThrowIfNull(scribeEmissionVerifier);
         ArgumentNullException.ThrowIfNull(truthStates);
 
-        var verifiedScribeEmissions = scribeEmissionVerifier.Verify(snapshot, report);
+        scribeEmissionVerifier.Verify(snapshot, report);
         var document = BackfillInventoryLoader.Load(snapshot);
         var evaluation = DigestionStatusEvaluator.Evaluate(
             DigestionEvaluationScope.FullScan,
             document,
             snapshot,
             lean,
-            verifiedScribeEmissions,
             baselineDocument: document,
             truthStates: truthStates);
         if (evaluation.HasReceiptIntegrityFailure)
@@ -36,7 +35,12 @@ internal static class ResidualFrontierAssembler
                 + string.Join("; ", evaluation.ReceiptIntegrityFailureReasons));
         }
 
-        var summary = DigestResidualSummary.Render(evaluation);
+        var frontier = DigestionFrontierProjection.Create(
+            document,
+            evaluation,
+            DigestionContentKindResolver.Resolve(snapshot, document),
+            retryDispositions: false);
+        var summary = DigestResidualSummary.Render(evaluation, frontier);
         return ImmutableArray.CreateRange(Encoding.UTF8.GetBytes(EchoResidualBlock.Render(summary)));
     }
 }

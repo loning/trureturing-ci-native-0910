@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Weil/ZetaBridge/WeilArithmeticCouplingParityGram
    mirror-E: none(waiver:separate-interval-and-form-domain-bridges)
    anchors: []
+   utility: none
    digest: The actual odd arithmetic symbol splits the paired second-jet energy into two moment Gram blocks. -/
 
 import D5.S3.Weil.ZetaBridge.WeilArithmeticCouplingSecondJet

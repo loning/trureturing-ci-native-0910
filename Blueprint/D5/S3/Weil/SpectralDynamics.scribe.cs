@@ -14,6 +14,20 @@ internal sealed class SpectralDynamicsDocument : IScribeDocumentDefinition
         H("Spectral Dynamics Toward Weil Positivity"),
         Blocks(
             Describe.Lean(
+                DescribeId.Create("each-vertical-phase-has-unit-modulus"),
+                DeclarationHandle.Create("D5/S3/Weil/SpectralDynamics.verticalPhase_norm"),
+                H("Each vertical phase has unit modulus"),
+                StatementSource.FromAuthor(Disp(Seq(
+                    Vert, Operatorname, Grp(F.Id("verticalPhase")),
+                    Open, F.Id("t"), Comma, F.Id("a"), Close, Vert, Eq, D(1)))),
+                AssessedProvenance.FromLiterature(HedenmalmHilbert),
+                Blocks(Paragraph(Text(
+                    "For every real time t and prime-axis address a, the vertical phase "
+                        + "has norm one. Its base is the positive integer encoded by a and "
+                        + "its exponent is purely imaginary. This is the coordinate identity "
+                        + "underlying norm preservation of vertical evolution."))),
+                DescribeRole.Theorem),
+            Describe.Lean(
                 DescribeId.Create("vertical-evolution-is-a-norm-preserving-group"),
                 DeclarationHandle.Create("D5/S3/Weil/SpectralDynamics.vertical_evolution_unitary_group"),
                 H("Vertical evolution is a norm-preserving group"),
@@ -50,7 +64,7 @@ internal sealed class SpectralDynamicsDocument : IScribeDocumentDefinition
                 StatementSource.FromAuthor(Disp(Seq(Forall, Sp, F.Id("Z"), Colon, Operatorname, Grp(F.Id("ZeroData")), Comma, Esc, Forall, Sp, F.Id("n"), InMacro, Mathbb, Grp(F.Id("N")), Comma, Esc, F.Id("Z"), Underscore, Grp(F.Id("C"), Open, F.Id("R"), Open, F.Id("n"), Close, Close), Eq, D(1), Minus, Overline, Grp(F.Id("Z"), Underscore, Grp(F.Id("n"))), Sp, Land, Sp, Operatorname, Grp(F.Id("KernelResonant")), Open, F.Id("Z"), Underscore, Grp(F.Id("n")), Comma, F.Id("Z"), Underscore, Grp(F.Id("C"), Open, F.Id("R"), Open, F.Id("n"), Close, Close), Close, Sp, Land, Sp, Operatorname, Grp(F.Id("KernelResonant")), Open, F.Id("Z"), Underscore, Grp(F.Id("C"), Open, F.Id("n"), Close), Comma, F.Id("Z"), Underscore, Grp(F.Id("R"), Open, F.Id("n"), Close), Close, Sp, Land, Sp, Open, Forall, Sp, F.Id("w"), Comma, Esc, Operatorname, Grp(F.Id("KernelResonant")), Open, F.Id("Z"), Underscore, Grp(F.Id("n")), Comma, F.Id("w"), Close, Sp, Leftrightarrow, Sp, F.Id("w"), Eq, F.Id("Z"), Underscore, Grp(F.Id("C"), Open, F.Id("R"), Open, F.Id("n"), Close, Close), Close))),
                 AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
-                                    "The existing reflection and conjugation permutations send every enumerated nontrivial zero to its unique partner for the equation s plus conjugate w equals one, and the two cross-pairs satisfy that equation. The declaration is conditional on a supplied ZeroData value. The repository does not prove that ZeroData is inhabited: no instance or example exists. Accordingly this conditional theorem does not close the source corollary unconditionally; that source obligation remains open. This strengthens the conditional conclusion from off-line zeros to all enumerated zeros, so it permits degenerate critical-line configurations and asserts no pairwise distinct quartet. Resonance here is only the kernel equation, not a new analytic pole or continuation theorem."))),
+                                    "The existing reflection and conjugation permutations send every enumerated nontrivial zero to its unique partner for the equation s plus conjugate w equals one, and the two cross-pairs satisfy that equation. The declaration takes ZeroData as a parameter. An unconditional instance is supplied by UnconditionalCanonicalZeroData, whose nonempty_zeroData witness is zetaZeroData; instantiating with it adds no Riemann hypothesis conclusion, so this conditional theorem still does not close the source corollary unconditionally. This strengthens the conditional conclusion from off-line zeros to all enumerated zeros, so it permits degenerate critical-line configurations and asserts no pairwise distinct quartet. Resonance here is only the kernel equation, not a new analytic pole or continuation theorem."))),
                 DescribeRole.Theorem
             ),
             Describe.Lean(

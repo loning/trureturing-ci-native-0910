@@ -7,6 +7,151 @@ internal static class WorktreeCreationSafety
 {
     private static readonly UTF8Encoding StrictUtf8 = new(false, true);
 
+    internal static void CleanupCreatedBranch(
+        WorktreeOptions options,
+        string creationLock,
+        string branchOid,
+        bool branchCreated,
+        IWorktreeProcessRunner runner)
+    {
+        var reference = $"refs/heads/{options.Branch}";
+        var lookup = RunGit(options.Source,
+            ["for-each-ref", "--format=%(refname)%09%(objectname)%09%(symref)", "--", reference],
+            runner, "could not inspect initialization branch");
+        var branch = StrictUtf8.GetString(lookup.StandardOutput)
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Select(line => line.TrimEnd('\r').Split('\t'))
+            .SingleOrDefault(fields => string.Equals(fields[0], reference, StringComparison.Ordinal));
+        if (branch is null) return;
+
+        if (branch.Length != 3 || branch[2].Length != 0
+            || !string.Equals(branch[1], branchOid, StringComparison.Ordinal))
+            throw new InvalidOperationException("initialization branch changed; refusing cleanup");
+
+        // Creation acknowledgements become stale if the ref is deleted and recreated.
+        var receipt = RunGit(options.Source,
+            ["reflog", "show", "-1", "--format=%H%x09%gs", "--fixed-strings",
+                $"--grep-reflog={creationLock}", reference, "--"],
+            runner, "could not inspect initialization branch receipt");
+        if (!string.Equals(StrictUtf8.GetString(receipt.StandardOutput).TrimEnd('\r', '\n'),
+            $"{branchOid}\t{creationLock}", StringComparison.Ordinal))
+        {
+            if (branchCreated)
+                throw new InvalidOperationException("initialization branch ownership changed; refusing cleanup");
+            return;
+        }
+
+        ValidateBranchIsUnused(options, runner);
+        _ = RunGit(options.Source, ["update-ref", "--no-deref", "-d", reference, branchOid],
+            runner, "git branch cleanup failed");
+    }
+
+    private static void ValidateBranchIsUnused(WorktreeOptions options, IWorktreeProcessRunner runner)
+    {
+        var inventory = RunGit(options.Source, ["worktree", "list", "--porcelain", "-z"],
+            runner, "could not inspect registered worktrees before branch cleanup");
+        var expectedPath = PhysicalPathAllowMissing(options.Path);
+        foreach (var record in StrictUtf8.GetString(inventory.StandardOutput)
+            .Split("\0\0", StringSplitOptions.RemoveEmptyEntries))
+        {
+            var fields = record.Split('\0', StringSplitOptions.RemoveEmptyEntries);
+            var path = fields.FirstOrDefault(field => field.StartsWith("worktree ", StringComparison.Ordinal));
+            var branch = fields.FirstOrDefault(field => field.StartsWith("branch ", StringComparison.Ordinal));
+            var head = fields.FirstOrDefault(field => field.StartsWith("HEAD ", StringComparison.Ordinal));
+            // A partial registration can have neither a branch nor a usable HEAD yet.
+            var partial = !fields.Contains("bare", StringComparer.Ordinal) && branch is null
+                && (head is null || head["HEAD ".Length..].All(character => character == '0'));
+            if (partial || string.Equals(branch, $"branch refs/heads/{options.Branch}", StringComparison.Ordinal)
+                || (path is not null && PathsEqual(expectedPath, PhysicalPathAllowMissing(path["worktree ".Length..]))))
+                throw new InvalidOperationException("initialization branch may be in use by a registered worktree; refusing cleanup");
+        }
+    }
+
+    internal static string? FindCreationMetadata(
+        WorktreeOptions options,
+        string creationLock,
+        IWorktreeProcessRunner runner)
+    {
+        var commonDirectory = ReadCommonDirectory(options, runner);
+        var registry = Path.Combine(commonDirectory, "worktrees");
+        if (!Directory.Exists(registry)) return null;
+        if (File.GetAttributes(registry).HasFlag(FileAttributes.ReparsePoint))
+            throw new InvalidOperationException("could not inspect initialization ownership through a linked registry");
+
+        var expected = PhysicalPathAllowMissing(Path.Combine(options.Path, ".git"));
+        string? owned = null;
+        foreach (var metadata in Directory.EnumerateDirectories(registry))
+        {
+            try
+            {
+                if (File.GetAttributes(metadata).HasFlag(FileAttributes.ReparsePoint)
+                    || !string.Equals(ReadMetadataValue(metadata, "locked"), creationLock, StringComparison.Ordinal))
+                    continue;
+            }
+            catch (Exception exception) when (exception is FileNotFoundException or DirectoryNotFoundException)
+            {
+                // Another cleanup can remove an unrelated registration during enumeration.
+                continue;
+            }
+
+            // Git writes the lock and linking files before HEAD. The backlink also survives a corrupt .git pointer.
+            var gitdir = ReadMetadataValue(metadata, "gitdir");
+            var commondir = ReadMetadataValue(metadata, "commondir");
+            if (gitdir is null || commondir is null
+                || !PathsEqual(expected, PhysicalPathAllowMissing(Path.GetFullPath(gitdir, metadata)))
+                || !PathsEqual(commonDirectory, PhysicalPathAllowMissing(Path.GetFullPath(commondir, metadata)))
+                || owned is not null)
+                throw new InvalidOperationException("could not validate initialization metadata ownership");
+            owned = metadata;
+        }
+        return owned;
+    }
+
+    internal static void ValidateCleanupOwnership(
+        WorktreeOptions options,
+        string creationLock,
+        string? metadata,
+        IWorktreeProcessRunner runner)
+    {
+        var current = FindCreationMetadata(options, creationLock, runner);
+        if (metadata is not null && PathEntryExists(metadata))
+        {
+            if (current is not null && PathsEqual(metadata, current)) return;
+        }
+        else if (current is null && !IsRegisteredWorktree(options, runner))
+        {
+            return;
+        }
+        throw new InvalidOperationException("initialization ownership changed; refusing cleanup");
+    }
+
+    private static string? ReadMetadataValue(string metadata, string name)
+    {
+        var path = Path.Combine(metadata, name);
+        try
+        {
+            if (!File.Exists(path) || File.GetAttributes(path).HasFlag(FileAttributes.ReparsePoint)) return null;
+            var value = File.ReadAllText(path, StrictUtf8).TrimEnd('\r', '\n');
+            return value.Length > 0 && value.AsSpan().IndexOfAny('\r', '\n') < 0 ? value : null;
+        }
+        catch (Exception exception) when (exception is FileNotFoundException or DirectoryNotFoundException)
+        {
+            return null;
+        }
+    }
+
+    internal static void CheckoutCreatedWorktree(WorktreeOptions options, IWorktreeProcessRunner runner)
+    {
+        _ = RunGit(options.Path, ["reset", "--hard", "--no-recurse-submodules", "HEAD"],
+            runner, "git worktree checkout failed");
+        var head = StrictUtf8.GetString(RunGit(options.Path, ["rev-parse", "--verify", "HEAD"],
+            runner, "could not inspect created HEAD").StandardOutput).Trim();
+        // Match worktree add's initialization event, including the repository's object ID width.
+        _ = RunGit(options.Path,
+            ["hook", "run", "--ignore-missing", "post-checkout", "--", new string('0', head.Length), head, "1"],
+            runner, "git worktree post-checkout hook failed");
+    }
+
     internal static bool RecoverHalfBuiltWorktree(
         WorktreeOptions options,
         IWorktreeProcessRunner runner)
@@ -104,25 +249,25 @@ internal static class WorktreeCreationSafety
                 : Path.Combine(options.Path, rawMetadataPath));
         if (PathEntryExists(metadataPath)) return false;
 
+        var expectedParent = PhysicalPathAllowMissing(Path.Combine(ReadCommonDirectory(options, runner), "worktrees"));
+        var actualParent = Path.GetDirectoryName(metadataPath);
+        return actualParent is not null
+            && PathsEqual(expectedParent, PhysicalPathAllowMissing(actualParent));
+    }
+
+    private static string ReadCommonDirectory(WorktreeOptions options, IWorktreeProcessRunner runner)
+    {
         var commonDirectoryResult = RunGit(
             options.Source,
             ["rev-parse", "--git-common-dir"],
             runner,
             "could not inspect git common directory");
-        var commonDirectory = StrictUtf8.GetString(commonDirectoryResult.StandardOutput).Trim();
+        var commonDirectory = StrictUtf8.GetString(commonDirectoryResult.StandardOutput).TrimEnd('\r', '\n');
         if (commonDirectory.Length == 0)
         {
             throw new InvalidOperationException("could not inspect git common directory");
         }
-        if (!Path.IsPathFullyQualified(commonDirectory))
-        {
-            commonDirectory = Path.Combine(options.Source, commonDirectory);
-        }
-
-        var expectedParent = PhysicalPathAllowMissing(Path.Combine(commonDirectory, "worktrees"));
-        var actualParent = Path.GetDirectoryName(metadataPath);
-        return actualParent is not null
-            && PathsEqual(expectedParent, PhysicalPathAllowMissing(actualParent));
+        return PhysicalPathAllowMissing(Path.GetFullPath(commonDirectory, options.Source));
     }
 
     private static bool IsRegisteredWorktree(

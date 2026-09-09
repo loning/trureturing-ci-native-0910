@@ -333,7 +333,7 @@ internal sealed partial class TransactionFixture
               exit 96
             fi
             if [[ ${PLAYBOOK_REJECT_DEPOSIT_HEADER:-0} == 1 ]]; then
-              printf 'SL-012 %s: expected the exact six-line header at byte zero\n' \
+              printf 'SL-012 %s: expected the canonical Lean header at byte zero (six-line legacy header or seven-line header with utility)\n' \
                 "${parts[2]}"
               exit 1
             fi
@@ -379,21 +379,21 @@ internal sealed partial class TransactionFixture
               exit 75
             fi
             ;;
+          cover-batch)
+            exit "${PLAYBOOK_COVER_DISPOSITION_FAILURE:-0}"
+            ;;
           cover-atom)
             atom=''
             gid=''
-            align=0
             for ((index=1; index<${#parts[@]}; index+=2)); do
               case "${parts[index]}" in
                 --cover-atom) atom=${parts[index+1]} ;;
                 --gid) gid=${parts[index+1]} ;;
-                --align-scribe-receipt) align=1 ;;
               esac
             done
             if [[ ${PLAYBOOK_COVER_DISPOSITION_FAILURE:-0} == 1 ]]; then
               printf 'atom_id: %s\ncoverage: false\naligned: false\ncover_disposition: synthetic\n' "$atom" \
                 > Meta/BACKFILL.yaml
-              [[ $align -eq 0 ]] || echo 'COVER_ATOM_ALIGNED cover=failed' >&2
               echo 'COVER_INVALID synthetic disposition' >&2
               exit 1
             fi
@@ -401,62 +401,11 @@ internal sealed partial class TransactionFixture
             existing_atom=$(sed -n 's/^atom_id: //p' Meta/BACKFILL.yaml)
             if [[ $existing_atom == "$atom" ]] \
                 && grep -q '^coverage: true$' Meta/BACKFILL.yaml; then
-              [[ $gid == D5/S3/Observer/WindowRegisterCRT.window_register_crt_decomposition ]] || {
-                echo 'COVER_INVALID hosted cover omitted the selected secondary GID' >&2
-                exit 1
-              }
-              secondary='secondary: true'
+              echo "COVER_INVALID cover atom $atom already has coverage: $gid" >&2
+              exit 1
             fi
             printf 'atom_id: %s\ncoverage: true\naligned: false\n%s\n' \
               "$atom" "$secondary" > Meta/BACKFILL.yaml
-            if [[ $align -eq 1 ]]; then
-              definition_path="Blueprint/${gid%.*}.scribe.cs"
-              verified_emission=''
-              if [[ -s $definition_path ]] \
-                  && grep -q "^atom_id: ${atom}$" Meta/BACKFILL.yaml \
-                  && grep -q '^coverage: true$' Meta/BACKFILL.yaml; then
-                verified_emission='emission: covered'
-              fi
-              [[ $verified_emission == 'emission: covered' ]] || {
-                echo 'COVER_ATOM_ALIGNED cover=passed align=failed' >&2
-                echo 'ALIGN_SCRIBE_RECEIPT_INVALID no verified in-process Scribe emission' >&2
-                exit 1
-              }
-              printf 'atom_id: %s\ncoverage: true\naligned: covered\n%s\n' \
-                "$atom" "$secondary" > Meta/BACKFILL.yaml
-              echo 'COVER_ATOM_ALIGNED cover=passed align=passed'
-              echo 'ALIGN_SCRIBE_RECEIPT ledger_changed=true'
-            fi
-            ;;
-          align-scribe-receipt)
-            atom=''
-            gid=''
-            for ((index=1; index<${#parts[@]}; index+=2)); do
-              case "${parts[index]}" in
-                --atom-id) atom=${parts[index+1]} ;;
-                --gid) gid=${parts[index+1]} ;;
-              esac
-            done
-            definition_path="Blueprint/${gid%.*}.scribe.cs"
-            verified_emission=''
-            if [[ -s $definition_path ]] \
-                && grep -q "^atom_id: ${atom}$" Meta/BACKFILL.yaml \
-                && grep -q '^coverage: true$' Meta/BACKFILL.yaml; then
-              verified_emission='emission: covered'
-            fi
-            [[ $verified_emission == 'emission: covered' ]] || {
-              echo 'ALIGN_SCRIBE_RECEIPT_INVALID no verified in-process Scribe emission' >&2
-              exit 1
-            }
-            secondary=''
-            grep -q '^secondary: true$' Meta/BACKFILL.yaml && secondary='secondary: true'
-            if grep -q '^aligned: covered$' Meta/BACKFILL.yaml; then
-              echo 'ALIGN_SCRIBE_RECEIPT ledger_changed=false'
-            else
-              printf 'atom_id: %s\ncoverage: true\naligned: covered\n%s\n' \
-                "$atom" "$secondary" > Meta/BACKFILL.yaml
-              echo 'ALIGN_SCRIBE_RECEIPT ledger_changed=true'
-            fi
             ;;
         esac
         """);

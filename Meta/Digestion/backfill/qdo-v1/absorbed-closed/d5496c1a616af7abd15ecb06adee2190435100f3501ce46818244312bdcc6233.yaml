@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Quantum/Entanglement/BellPureStateMixedMarginal.bell_pure_state_has_maximally_mixed_marginal
     target_statement_id: sha256:1852b851afdab783a70de9ace3043539b2e971391762da4b9ce2cab933c3ccea
 receipts:
-  scribe:
-    - gid: D5/S3/Quantum/Entanglement/BellPureStateMixedMarginal.bell_pure_state_has_maximally_mixed_marginal
-      definition_sha256: sha256:030583f6e14442d4c2bb999f272eb49bdbf68525e5064eb07ba712d18a8ea737
-      emission_sha256: sha256:d59df51d84961d0f57454e735d26906b78e91535d995af2d483a16c624d803b5
   unresolved_subitems: []

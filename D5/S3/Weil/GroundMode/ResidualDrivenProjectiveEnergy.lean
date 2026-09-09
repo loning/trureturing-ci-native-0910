@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Weil/GroundMode/ResidualDrivenProjectiveEnergy
    mirror-E: none(waiver:actual-inverse-energy-Schur-and-sector-domain-certificate)
    anchors: []
+   utility: none
    digest: Bound the actual projective eigenvector energy from the candidate residual's complete dual energy, without an absolute lower eigenvalue premise. -/
 
 import Mathlib.Analysis.InnerProductSpace.Basic
@@ -38,7 +39,7 @@ noncomputable section
 
 namespace D5.S3.Weil.GroundMode.ResidualDrivenProjectiveEnergy
 
-open scoped ComplexInnerProductSpace
+open scoped InnerProductSpace
 
 variable {H D : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
   [AddCommGroup D] [Module ℂ D]
@@ -64,7 +65,7 @@ theorem residual_driven_projective_energy
       (⟪ι w, M w⟫_ℂ).re ≤ E ∧ ‖ι w‖ ^ 2 ≤ E / kap := by
   have heigen : (⟪ι u, M u⟫_ℂ).re = lam * ‖ι u‖ ^ 2 := by
     rw [hMu, inner_smul_right, inner_self_eq_norm_sq_to_K]
-    simp [Complex.mul_re]
+    simp [← Complex.ofReal_pow, Complex.mul_re]
   have hn : 0 < ‖ι u‖ ^ 2 := sq_pos_of_pos (norm_pos_iff.mpr hu)
   have ha : ⟪ι k, ι u⟫_ℂ ≠ 0 := by
     intro hz
@@ -89,10 +90,10 @@ theorem residual_driven_projective_energy
       lam * ‖ι w‖ ^ 2 - (⟪ι w, M k⟫_ℂ).re := by
     rw [haction, inner_sub_right, inner_sub_right, inner_smul_right,
       inner_smul_right, hok, inner_self_eq_norm_sq_to_K]
-    simp [Complex.mul_re]
+    simp [← Complex.ofReal_pow, Complex.mul_re]
   have hpair :
       ⟪ι w, M k - ((⟪ι k, M k⟫_ℂ).re : ℂ) • ι k⟫_ℂ = ⟪ι w, M k⟫_ℂ := by
-    simp [inner_sub_right, inner_smul_right, hok]
+    rw [inner_sub_right, inner_smul_right, hok, mul_zero, sub_zero]
   have hr := hresidual w ho
   rw [hpair] at hr
   have hg := hcoercive w ho

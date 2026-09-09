@@ -12,7 +12,6 @@ coverage_gids:
   - gid: D5/S1/Phase/SeatTowerConsequences.dominant_term_gap_bound
     target_statement_id: sha256:b969234b2c95a486e0f6869810c37f2027feafa3cfc5c4f176b30701c181d425
 receipts:
-  scribe: []
   unresolved_subitems:
     - cosecant-peak-equation-from-pin-data
     - dominant-partial-quotient-identification

@@ -1,4 +1,4 @@
-using StrataLint.Engine;
+using System.Collections.Immutable;
 
 namespace StrataLint.Scribe.Tests;
 
@@ -13,66 +13,39 @@ public sealed class CensusDerivationTests
         Assert.Contains("document corpus must not be empty", exception.Message, StringComparison.Ordinal);
     }
 
+    // The receipt census is gone with the field it classified (#6349). Its one non-constant
+    // clause compared a set of document GIDs against the document count, which reads as a
+    // uniqueness judgement — but a trigger PR showed that state is unreachable here: document
+    // discovery throws first, and with a better message. This pins the judge that actually
+    // fires, so the census can be deleted without losing the judgement.
     [Fact]
-    public void SyntheticDirectoryLedgerDeterminesCensusDirection()
+    public void DistinctEmissionTargetsAreAccepted()
     {
-        const string receiptBoundGid = "D5/S0/Test/ReceiptBound";
-        const string receiptFreeGid = "D5/S0/Test/ReceiptFree";
-        var repositoryRoot = Path.Combine(
-            Path.GetTempPath(),
-            "stratalint-census-" + Guid.NewGuid().ToString("N"));
-        var sourceRoot = Path.Combine(
-            repositoryRoot,
-            "Meta", "Digestion", "backfill", "synthetic-source");
-        TemporaryFileSystem.Directory.CreateDirectory(Path.Combine(sourceRoot, "absorbed-closed"));
-        try
-        {
-            TemporaryFileSystem.File.WriteAllText(
-                Path.Combine(sourceRoot, "source.toml"),
-                """
-                source_id = "synthetic-source"
-                path = "docs/synthetic.md"
-                atomizer = "synthetic-v1"
-                genre_registry_check = "collected"
-                unregistered_genres = []
+        var first = DocumentDefinition.Create(
+            Document("D5/S0/Test/DistinctOne"), "Blueprint/D5/S0/Test/DistinctOne.scribe.cs");
+        var second = DocumentDefinition.Create(
+            Document("D5/S0/Test/DistinctTwo"), "Blueprint/D5/S0/Test/DistinctTwo.scribe.cs");
 
-                """.Replace("\r\n", "\n", StringComparison.Ordinal));
-            TemporaryFileSystem.File.WriteAllText(
-                Path.Combine(
-                    sourceRoot,
-                    "absorbed-closed",
-                    "0000000000000000000000000000000000000000000000000000000000000000.yaml"),
-                $$"""
-                fingerprints:
-                  raw_sha256: sha256:0000000000000000000000000000000000000000000000000000000000000000
-                  normalized_sha256: sha256:0000000000000000000000000000000000000000000000000000000000000000
-                cas_ref: sha256:0000000000000000000000000000000000000000000000000000000000000000
-                coverage_gids: []
-                receipts:
-                  scribe:
-                    - gid: {{receiptBoundGid}}.formalized
-                      definition_sha256: sha256:1111111111111111111111111111111111111111111111111111111111111111
-                      emission_sha256: sha256:2222222222222222222222222222222222222222222222222222222222222222
-                  unresolved_subitems: []
-                  chain_atoms: []
-                  tail_authorization: null
-                """);
-            var census = ReceiptFreeDocumentCatalog.Load(
-                repositoryRoot,
-                [Document(receiptBoundGid), Document(receiptFreeGid)]);
+        Assert.Equal(2, DocumentDefinitions.RequireDistinctEmissionTargets([first, second]).Length);
+    }
 
-            Assert.Equal([receiptBoundGid], census.ReceiptBoundDocumentGids);
-            Assert.Equal([receiptFreeGid], census.ReceiptFreeDocumentGids);
-        }
-        finally
-        {
-            TemporaryFileSystem.Directory.Delete(repositoryRoot, recursive: true);
-        }
+    [Fact]
+    public void DocumentDiscoveryRejectsTwoDefinitionsTargetingOneEmission()
+    {
+        var definition = DocumentDefinition.Create(
+            Document("D5/S0/Test/DiscoveryDuplicate"),
+            "Blueprint/D5/S0/Test/DiscoveryDuplicate.scribe.cs");
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            DocumentDefinitions.RequireDistinctEmissionTargets([definition, definition]));
+
+        Assert.Contains("Multiple Scribe definitions target", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("D5/S0/Test/DiscoveryDuplicate", exception.Message, StringComparison.Ordinal);
     }
 
     private static ScribeDocument Document(string gid) =>
         ScribeDocument.Create(
-            DefinitionDsl.Header(gid, "Receipt census fixture."),
+            DefinitionDsl.Header(gid, "Document discovery fixture."),
             DefinitionDsl.H(gid),
             DefinitionDsl.Blocks(DefinitionDsl.Paragraph(DefinitionDsl.Text("fixture"))));
 }

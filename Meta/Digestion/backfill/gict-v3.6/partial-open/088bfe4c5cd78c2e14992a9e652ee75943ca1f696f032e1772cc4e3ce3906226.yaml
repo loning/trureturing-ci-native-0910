@@ -32,10 +32,6 @@ coverage_gids:
   - gid: D5/S1/Phase/SeatTowerConsequences.three_split_primes_have_three_singleton_choices
     target_statement_id: sha256:38fe3a77dcf59dd28a73d24e9308519f04188987facfefc13b458f03aeb140e7
 receipts:
-  scribe:
-    - gid: D5/S1/Phase/SeatTowerCombinatorics.full_exponent_stationing_count
-      definition_sha256: sha256:466422dc735d4dc550e46a2cb24f7f1cacd0880c37ff6e8bf96af19a36db1939
-      emission_sha256: sha256:9a28c917c561da19f1a7d8b046c2201da93faf93d1133789e991d3b6efa0c4c2
   unresolved_subitems:
     - direction-law-counterexamples
     - full-exponent-encoding-clause

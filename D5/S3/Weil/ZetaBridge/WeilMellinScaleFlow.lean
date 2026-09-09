@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Weil/ZetaBridge/WeilMellinScaleFlow
    mirror-E: none(waiver:uniform-prolate-spectrum-and-scale-derivative-paper-bridges)
    anchors: []
+   utility: none
    digest: Reuse the actual polynomial Mellin window to eliminate its moving upper endpoint and prove an exact centered Fourier scale difference. -/
 
 import D5.S3.Weil.ZetaBridge.WeilPolynomialMellinWindow

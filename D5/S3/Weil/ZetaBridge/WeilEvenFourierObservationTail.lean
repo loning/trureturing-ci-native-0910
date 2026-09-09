@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Weil/ZetaBridge/WeilEvenFourierObservationTail
    mirror-E: none(waiver:analytic-bound-with-paper-Fourier-identification)
    anchors: []
+   utility: none
    digest: Control the complete complex-frequency observation of an even Fourier tail, with absolute convergence and cubic cutoff decay. -/
 
 import D5.S3.Weil.ZetaBridge.WeilInfiniteComplementLeakage
@@ -123,7 +124,7 @@ private theorem term_norm_le {N : ℕ} (hN : 0 < N)
     calc
       _ = 1 / ‖(n : ℂ) ^ 2 - w ^ 2‖ := by rw [norm_inv, one_div]
       _ ≤ 1 / ((3 / 4 : ℝ) * n ^ 2) := one_div_le_one_div_of_le hsmall hden
-      _ = _ := by field_simp [hn.ne']; ring
+      _ = _ := by field_simp [hn.ne']
   change ‖v j / ((n : ℂ) ^ 2 - w ^ 2)‖ ≤ ‖v j‖ * (4 / (3 * n ^ 2))
   rw [div_eq_mul_inv, norm_mul]
   exact mul_le_mul_of_nonneg_left hinv (norm_nonneg _)

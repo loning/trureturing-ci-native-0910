@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Constants/COneExactValue.c_one_exact_value
     target_statement_id: sha256:d193b0cc9b34b690cd6c53e21160e25f2855cf988748b4716c2719763e26b621
 receipts:
-  scribe:
-    - gid: D5/S3/Constants/COneExactValue.c_one_exact_value
-      definition_sha256: sha256:22e23f82b3610952d3d2e30f1283689d429e2ee115b186fa4dc701068125baeb
-      emission_sha256: sha256:c6bc0f2732257a34196d4ba45d9c04cf2ebcd9106d878e0c83ea0195f0917a31
   unresolved_subitems: []

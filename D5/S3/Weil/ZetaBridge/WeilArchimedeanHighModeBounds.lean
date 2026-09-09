@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Weil/ZetaBridge/WeilArchimedeanHighModeBounds
    mirror-E: none(waiver:operator-identification-and-Hilbert-transform-bridge)
    anchors: []
+   utility: none
    digest: Frequency-decaying bounds for the actual arithmetic Gamma symbol and its diagonal correction, with absolute convergence. -/
 
 import D5.S3.Weil.ZetaBridge.WeilArithmeticCouplingJet
@@ -99,7 +100,7 @@ private theorem partial_bound {w : ℝ} (hw : 0 < w) (M : ℕ) :
         exact (div_le_one (by positivity)).mpr (by linarith)
       have hlast : 0 ≤ w * (w + 1 / 2 + 2 * (M : ℝ))⁻¹ := by positivity
       have h0 : majorant w 0 ≤ 1 / w := by
-        change w / ((1 / 2 : ℝ) ^ 2 + w ^ 2) ≤ 1 / w
+        simp only [majorant, rate, Nat.cast_zero, mul_zero, zero_add]
         apply (div_le_div_iff₀ (by positivity) hw).mpr
         nlinarith
       simp only [mul_sub] at ht

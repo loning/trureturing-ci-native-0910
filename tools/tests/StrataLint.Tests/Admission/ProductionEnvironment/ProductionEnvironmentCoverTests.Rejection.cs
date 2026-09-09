@@ -121,20 +121,6 @@ public sealed partial class ProductionEnvironmentTests
                                         ? mismatchStatementId
                                         : targetStatementId),
                             ],
-                            Receipts = entry.Receipts with
-                            {
-                                Scribe =
-                                [
-                                    new DigestionScribeReceipt(
-                                        siblingGid,
-                                        mismatchCode == "scribe-definition-mismatch"
-                                            ? mismatchStatementId
-                                            : verified.DefinitionSha256,
-                                        mismatchCode == "scribe-emission-mismatch"
-                                            ? mismatchStatementId
-                                            : verified.EmissionSha256),
-                                ],
-                            },
                         }
                         : entry).ToImmutableArray(),
                 })
@@ -156,7 +142,7 @@ public sealed partial class ProductionEnvironmentTests
         };
     }
 
-    private static CoverInputs WithReceiptMismatchAtForkPoint(
+    private static CoverInputs WithReceiptMismatchAtBaseline(
         CoverInputs inputs,
         string mismatchCode,
         bool byteIdenticalBaseline = false)
@@ -171,43 +157,6 @@ public sealed partial class ProductionEnvironmentTests
         }
 
         return current with { Baseline = baseline };
-    }
-
-    private static CoverInputs WithSiblingDuplicateCoverageReceipt(CoverInputs inputs)
-    {
-        var siblingAtomId = CoverWorld.OtherAtomId;
-        var documentGid = inputs.Gid[..inputs.Gid.LastIndexOf('.')];
-        Assert.True(inputs.VerifiedEmissions!.TryGet(documentGid, out var verified));
-        var targetStatementId = FrozenStatementReceiptTestData.Resolve(inputs.Files, inputs.Gid);
-        var document = inputs.Document.WithDigestionSources(
-            inputs.Document.RequireDigestionSources()
-                .Select(source => source with
-                {
-                    Entries = source.Entries.Select(entry => entry.AtomId == siblingAtomId
-                        ? entry with
-                        {
-                            Coverage =
-                            [
-                                new DigestionCoverageEdge(inputs.Gid, targetStatementId),
-                                new DigestionCoverageEdge(inputs.Gid, targetStatementId),
-                            ],
-                            Receipts = entry.Receipts with
-                            {
-                                Scribe =
-                                [
-                                    new DigestionScribeReceipt(
-                                        inputs.Gid,
-                                        verified.DefinitionSha256,
-                                        verified.EmissionSha256),
-                                ],
-                            },
-                        }
-                        : entry).ToImmutableArray(),
-                })
-                .ToImmutableArray());
-        var files = new Dictionary<string, string>(inputs.Files, StringComparer.Ordinal);
-        DirectoryLedgerTestSupport.ReplaceWithProjection(files, document);
-        return inputs with { Files = files, Document = document };
     }
 
     private static ProductionCliEnvironment BuildCoverEnvironment(
@@ -254,7 +203,7 @@ public sealed partial class ProductionEnvironmentTests
                 Path.Combine(repositoryRoot, path.Replace('/', Path.DirectorySeparatorChar)),
                 Encoding.UTF8));
         }).ToArray();
-        var declarations = ImmutableArray.CreateBuilder<LeanDeclaration>();
+        var declarations = new List<(string SourcePath, LeanDeclaration Declaration)>();
         foreach (var fixture in fixtureFiles)
         {
             using var document = JsonDocument.Parse(fixture.Content);
@@ -262,11 +211,13 @@ public sealed partial class ProductionEnvironmentTests
                          .GetProperty("declarations")
                          .EnumerateArray())
             {
-                declarations.Add(new LeanDeclaration(
-                    declaration.GetProperty("name").GetString()!,
-                    declaration.GetProperty("kind").GetString()!,
-                    declaration.GetProperty("type").GetString()!,
-                    []));
+                declarations.Add((
+                    declaration.GetProperty("source_path").GetString()!,
+                    new LeanDeclaration(
+                        declaration.GetProperty("name").GetString()!,
+                        declaration.GetProperty("kind").GetString()!,
+                        declaration.GetProperty("type").GetString()!,
+                        [])));
             }
         }
         var snapshotEntries = new List<RawRepositoryEntry>
@@ -278,11 +229,14 @@ public sealed partial class ProductionEnvironmentTests
         var snapshot = Assert.IsType<SnapshotDecodeOutcome.Decoded>(SnapshotDecoder.Decode(
             RawRepositorySnapshot.Create(snapshotEntries))).Snapshot;
 
+        // Canonical reports keep declarations in the module owning their source path.
         var actual = verifier.Verify(snapshot, LeanAxiomReport.Create(
-            new Dictionary<string, LeanFileReport>
-            {
-                ["D5/ProjectionFixture.lean"] = new([], declarations.ToImmutable()),
-            }));
+            declarations.GroupBy(static item => item.SourcePath, StringComparer.Ordinal)
+                .ToDictionary(
+                    static module => module.Key,
+                    static module => new LeanFileReport(
+                        [], module.Select(static item => item.Declaration).ToImmutableArray()),
+                    StringComparer.Ordinal)));
 
         Assert.Same(verification, actual);
         Assert.Equal("captured bytes\n", observed);

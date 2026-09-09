@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Weil/ZetaBridge/WeilGammaLogarithmicSeed
    mirror-E: none(waiver:Gamma-realization-and-form-domain-transport)
    anchors: []
+   utility: none
    digest: Evaluate the actual cutoff polynomial seed's singular Gamma remainder by finite endpoint powers, proving integrability and removing the lower-endpoint singularity. -/
 
 import D5.S3.Weil.ZetaBridge.WeilMellinPrimeIntertwining
@@ -55,7 +56,7 @@ private theorem monomial_quotient (r : ℕ) {u t : ℝ} (hu : 0 < u) (hut : u < 
       (t : ℂ) ^ (2 * j) * (u : ℂ) ^ (2 * (r - 1 - j))) *
       ((t : ℂ) ^ 2 - (u : ℂ) ^ 2) =
       (t : ℂ) ^ (2 * r) - (u : ℂ) ^ (2 * r) := by
-    simpa only [← pow_mul] using
+    simpa only [pow_mul] using
       (Commute.all ((t : ℂ) ^ 2) ((u : ℂ) ^ 2)).geom_sum₂_mul r
   calc
     _ = (t : ℂ) * ∑ j ∈ Finset.range r,
@@ -88,7 +89,8 @@ private theorem integrand_eq_regular (a : ℝ) (d : ℕ) (A : ℕ → ℂ)
 private theorem integral_complex_nat_power (u v : ℝ) (n : ℕ) :
     (∫ t : ℝ in u..v, (t : ℂ) ^ n) =
       ((v : ℂ) ^ (n + 1) - (u : ℂ) ^ (n + 1)) / ((n + 1 : ℕ) : ℂ) := by
-  simp only [← Complex.ofReal_pow, RCLike.intervalIntegral_ofReal, integral_pow]
+  simp_rw [← Complex.ofReal_pow]
+  rw [intervalIntegral.integral_ofReal, integral_pow]
   push_cast
   <;> rfl
 
@@ -110,7 +112,7 @@ theorem gamma_logarithmic_seed_remainder (a : ℝ) (d : ℕ) (A : ℕ → ℂ)
   have hc : Continuous (regularRemainder d A u) := by
     unfold regularRemainder
     fun_prop
-  have hi := hc.intervalIntegrable u (Real.exp a)
+  have hi := hc.intervalIntegrable (μ := volume) u (Real.exp a)
   have hae : regularRemainder d A u =ᵐ[volume.restrict (uIoc u (Real.exp a))]
       (fun t : ℝ => (t : ℂ) *
         (cutPolynomialSeed a d A t - cutPolynomialSeed a d A u) /

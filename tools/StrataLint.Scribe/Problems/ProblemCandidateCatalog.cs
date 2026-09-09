@@ -1,6 +1,5 @@
 using System.Collections.Immutable;
 using System.Text;
-using System.Text.RegularExpressions;
 using StrataLint.Engine;
 using Trureturing.Truth;
 
@@ -16,7 +15,8 @@ internal enum ProblemTriage
 internal sealed record ProblemCandidate(
     string Slug,
     BibKey BibKey,
-    string ArxivId,
+    Doi? Doi,
+    Uri? Url,
     ProblemTriage Triage,
     ImmutableArray<GidRef> MotivationGids,
     string RelativePath);
@@ -32,9 +32,9 @@ internal sealed record ProblemCandidateCatalogInspection(
 
 /// <summary>
 /// Loads the literature-sourced open problem pool defined by spec 11.20.3. Every
-/// tracked file under <c>Problems/</c> must be one candidate dossier; a file that
-/// is not one — an index, a summary, any aggregate — fails to parse and is
-/// reported, which is how the one-problem-one-file partition is enforced.
+/// Markdown dossier has closed metadata and nonempty required sections. These
+/// structural checks do not establish proposition atomicity; a machine-checked
+/// explicit-anchor identity contract remains pending.
 /// </summary>
 internal sealed class ProblemCandidateCatalog
 {
@@ -44,7 +44,7 @@ internal sealed class ProblemCandidateCatalog
     [
         "slug",
         "bibkey",
-        "arxiv_id",
+        "doi",
         "triage",
         "motivation_gids",
     ];
@@ -63,13 +63,6 @@ internal sealed class ProblemCandidateCatalog
         "Triage",
         "ASSUMED-UNVERIFIED",
     ];
-
-    // arXiv identifiers are the bare YYMM.NNNNN form. A version suffix is
-    // deliberately rejected: the note owns the version-specific locator, and two
-    // spellings of one paper would be two addresses for one thing.
-    private static readonly Regex ArxivIdPattern = new(
-        "^[0-9]{4}\\.[0-9]{4,5}$",
-        RegexOptions.CultureInvariant);
 
     private ProblemCandidateCatalog(ImmutableArray<ProblemCandidate> candidates) =>
         Candidates = candidates;
@@ -137,7 +130,11 @@ internal sealed class ProblemCandidateCatalog
             throw new FormatException("problem candidate must be strict UTF-8.", exception);
         }
 
-        var relativePath = RelativePath(repositoryRoot, path);
+        return ParseText(RelativePath(repositoryRoot, path), text);
+    }
+
+    private static ProblemCandidate ParseText(string relativePath, string text)
+    {
         if (text.StartsWith('﻿') || text.Contains('\r'))
         {
             throw new FormatException($"{relativePath} must be UTF-8 without BOM or CR characters");
@@ -157,7 +154,8 @@ internal sealed class ProblemCandidateCatalog
         }
 
         var metadata = (Dictionary<string, object?>)YamlSubsetParser.Parse(text[opening.Length..end]);
-        if (!metadata.Keys.ToHashSet(StringComparer.Ordinal).SetEquals(RequiredKeys))
+        var keys = metadata.Keys.Where(static key => key != "url").ToHashSet(StringComparer.Ordinal);
+        if (!keys.SetEquals(RequiredKeys))
         {
             throw new FormatException($"{relativePath} has missing or unknown metadata fields");
         }
@@ -168,17 +166,25 @@ internal sealed class ProblemCandidateCatalog
             throw new FormatException($"{relativePath} has a noncanonical slug");
         }
 
-        if (!string.Equals(slug, Path.GetFileNameWithoutExtension(path), StringComparison.Ordinal))
+        if (!string.Equals(slug, Path.GetFileNameWithoutExtension(relativePath), StringComparison.Ordinal))
         {
             throw new FormatException($"{relativePath} slug disagrees with its path");
         }
 
         var bibKey = BibKey.TryCreate(RequiredLine(metadata, "bibkey", relativePath))
             ?? throw new FormatException($"{relativePath} has a noncanonical bibkey");
-        var arxivId = RequiredLine(metadata, "arxiv_id", relativePath);
-        if (!ArxivIdPattern.IsMatch(arxivId))
+        Doi? doi = metadata["doi"] switch
         {
-            throw new FormatException($"{relativePath} has a noncanonical arxiv_id");
+            null => null,
+            string value when Doi.TryCreate(value, out var parsed) => parsed,
+            _ => throw new FormatException($"{relativePath} has a malformed doi"),
+        };
+        var url = metadata.ContainsKey("url")
+            ? LiteratureCitation.ParseStableUrl(RequiredLine(metadata, "url", relativePath))
+            : null;
+        if ((doi is null) == (url is null))
+        {
+            throw new FormatException($"{relativePath} requires exactly one DOI or URL");
         }
 
         var triage = RequiredLine(metadata, "triage", relativePath) switch
@@ -209,7 +215,7 @@ internal sealed class ProblemCandidateCatalog
         }
 
         ValidateSections(text[(end + closing.Length)..], relativePath);
-        return new ProblemCandidate(slug, bibKey, arxivId, triage, motivation, relativePath);
+        return new ProblemCandidate(slug, bibKey, doi, url, triage, motivation, relativePath);
     }
 
     private static void ValidateSections(string body, string relativePath)

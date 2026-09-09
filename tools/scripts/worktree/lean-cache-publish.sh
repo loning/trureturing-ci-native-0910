@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# 把当前 .lake/build 发布为一个不可变的、内容寻址的 GitHub Release 资产。
+# 把当前 .lake/build 发布为内容寻址的 GitHub Release 资产,大归档分片上传。
 #
 # 命名空间与 spec A14 的 `E<n>` 发布 tag 严格分开：这些 tag 是构建缓存，不是版本发布。
-# tag 绑定 (toolchain, os, arch, config_sha256, sources_sha256) 五元组；同一元组只发一次。
+# tag 绑定 (toolchain, config_sha256, sources_sha256) 三元组；同一元组只发一次。
+# tag = <TAG_PREFIX>-<toolchain-slug>-<config16>-<sources16>.
 #
 # 这个归档**不是权威**：它是一个加速器，不构成独立的 admission 证据。消费侧 (`fetch`)
-# 对**依赖层身份** (`toolchain`/`config_sha256`)、归档完整性与摘要一律 fail-closed;
-# 唯独 `sources_sha256` 允许回退到同 config 的最近一份,差量交给 `lake build` 补——
-# 那是加速器该有的形状,不是把关。
+# 对 toolchain、归档完整性与摘要一律 fail-closed;默认只允许 sources 回退到同 config
+# 的最近一份。fetch --allow-seed 另允许同工具链的 project 种子,差量交给 lake build。
 #
 # 【勘误：这里曾写「永远不进 admission 信任链」，那句话是假的】
 #
@@ -46,6 +46,15 @@ export LC_ALL=C
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd -P)"
 REPO="${STRATALINT_CACHE_REPO:-the-omega-institute/trureturing}"
+TAG_PREFIX="lean-cache-v1"
+# Issue #6194: publisher run 34119746844 failed at `gh release upload` with
+# "HTTP 422: Validation Failed ... size must be less than 2147483648".
+# The 2 GiB per-asset limit is exclusive. The six preceding successful archive
+# sizes were 1,948,811,751; 2,010,523,084; 2,062,929,966; 2,066,721,511;
+# 2,097,463,138; 2,114,121,660 bytes. That run's archive crossed the limit.
+# Use 1.5 GiB chunks for headroom. Two-digit suffixes allow 100 parts x 1.5 GiB
+# (150 GiB total); split fails closed on exhaustion before release creation.
+CHUNK_BYTES=1610612736
 VERB="${1:-}"
 
 die() { printf 'lean-cache-publish: %s\n' "$1" >&2; exit 1; }
@@ -70,20 +79,23 @@ sha256_of() {
 
 usage() {
   cat >&2 <<'USAGE'
-usage: lean-cache-publish.sh <address|publish|fetch> [--repository DIR]
+usage: lean-cache-publish.sh <address|publish|fetch> [--repository DIR] [--allow-seed]
 
-  address   打印当前工作树对应的缓存 tag 与其五元组，不做任何网络访问
+  address   打印当前工作树对应的缓存 tag 与其三元组，不做任何网络访问
   publish   若该 tag 尚不存在，打包 .lake/build 并发布为该 tag 的资产
-  fetch     取回与当前工作树完全匹配的归档并解包；任何不匹配即 fail-closed
+  fetch     精确地址优先,其次同 config 前缀;校验失败即 fail-closed
+  --allow-seed  仅供 fetch:两级均无层时,允许同工具链最近的 project 层作种子
 USAGE
   exit 2
 }
 
 repository="$ROOT"
+allow_seed=0
 shift || true
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --repository) repository="${2:?--repository needs a value}"; shift 2 ;;
+    --allow-seed) [[ "$VERB" == fetch ]] || usage; allow_seed=1; shift ;;
     *) usage ;;
   esac
 done
@@ -106,10 +118,12 @@ fi
 
 # ── 身份 ──────────────────────────────────────────────────────────────────────
 # 两个哈希来自本仓既有的唯一真源，不另算一套。
-helper="${repository}/tools/scripts/report/lean-report-input.sh"
+helper="${repository}/tools/scripts/worktree/lean-cache-input.sh"
 [[ -x "$helper" ]] || die "input helper is absent: $helper"
-read -r _address _producer sources_sha256 config_sha256 \
-  < <("$helper" address --repository "$repository")
+input_address="$("$helper" address --repository "$repository")" \
+  || die "Lean input address is unavailable"
+[[ "$input_address" =~ ^[0-9a-f]{64}\ [0-9a-f]{64}$ ]] || die "Lean input address is malformed"
+read -r sources_sha256 config_sha256 <<< "$input_address"
 [[ "$sources_sha256" =~ ^[0-9a-f]{64}$ ]] || die "sources address is malformed"
 [[ "$config_sha256" =~ ^[0-9a-f]{64}$ ]] || die "config address is malformed"
 
@@ -131,7 +145,7 @@ slug="${toolchain//[^A-Za-z0-9]/-}"
 # slug（toolchain）必须保留：不同 Lean 版本的 olean 确实不兼容。
 # 加上平台维度的后果是把主检出（darwin-arm64）挡在 CI 产物（linux-aarch64）之外，
 # 而 owner 的目标恰恰是「主 checkout 不用从 0 开始 build 热缓存」。
-tag="lean-cache-v1-${slug}-${config_sha256:0:16}-${sources_sha256:0:16}"
+tag="${TAG_PREFIX}-${slug}-${config_sha256:0:16}-${sources_sha256:0:16}"
 asset="lean-build.tgz"
 
 emit_address() {
@@ -160,10 +174,22 @@ case "$VERB" in
     ( cd "$repository" && lake pack "$staged/$asset" >/dev/null )
     bytes="$(wc -c < "$staged/$asset" | tr -d ' ')"
     digest="$(sha256_of "$staged/$asset")"
+    archives=("$staged/$asset")
+    if (( bytes > CHUNK_BYTES )); then
+      split -b "$CHUNK_BYTES" -d -a 2 "$staged/$asset" "$staged/$asset.part-"
+      archives=("$staged/$asset.part-"*)
+    fi
     emit_address > "$staged/manifest.txt"
     {
       printf 'archive_sha256=%s\n' "$digest"
       printf 'archive_bytes=%s\n' "$bytes"
+      printf 'parts=%s\n' "${#archives[@]}"
+      if (( ${#archives[@]} > 1 )); then
+        for i in "${!archives[@]}"; do
+          part_digest="$(sha256_of "${archives[$i]}")"
+          printf 'part_sha256_%s=%s\n' "$i" "$part_digest"
+        done
+      fi
       printf 'producer_commit_sha=%s\n' "$producer_commit_sha"
       printf 'workflow_run_id=%s\n' "$workflow_run_id"
     } >> "$staged/manifest.txt"
@@ -189,7 +215,7 @@ case "$VERB" in
       --target "$producer_commit_sha" \
       --title "Lean build cache ${config_sha256:0:8}/${sources_sha256:0:8} (${os}-${arch})" \
       --notes "Lean build cache produced from ${toolchain} on ${os}-${arch} at ${producer_commit_sha} by run ${workflow_run_id}. An accelerator, not independent admission evidence." \
-      "$staged/$asset" "$staged/manifest.txt" >/dev/null
+      "${archives[@]}" "$staged/manifest.txt" >/dev/null
     # 剪枝：稳态只留一份。fetch 的前缀回落是 `grep "^${prefix}" | head -1`，只取最新的
     # 一份，故同 config 的旧份边际收益为零；而 GitHub Releases **没有** Actions Cache 那样
     # 的 LRU 兜底，不剪就是无上界累积（案号 #2896：实测 9 份 13.1 GiB、5.8 GiB/日）。
@@ -205,7 +231,7 @@ case "$VERB" in
     pruned=0
     prune_error=""
     if gh release view "$tag" --repo "$REPO" --json tagName --jq .tagName >/dev/null 2>&1; then
-      prefix="lean-cache-v1-${slug}-${config_sha256:0:16}-"
+      prefix="${TAG_PREFIX}-${slug}-${config_sha256:0:16}-"
       # 保留窗口:同 config 前缀下最近 RETAIN 份(含刚发的这份)不剪。
       # 只留一份时,任何仍在飞、其 sources 尚未换代的消费者会在 prefix 回退上落空;
       # 保留几份让它们仍能取回一份可用的近邻,代价是有界的存量而非无界累积。
@@ -249,33 +275,78 @@ case "$VERB" in
     # 回退是安全的:`toolchain` 与 `config_sha256` 仍严格相等(依赖层不容将就),
     # 只放宽 `sources_sha256`,差量由 `lake build` 补齐——lake 按 depHash 判 stale,
     # 旧基底里过期的模块会被重编译。这正是 mathlib `lake exe cache get` 的模型。
-    resolved="$tag"
-    mode="exact"
-    if ! gh release download "$tag" --repo "$REPO" --dir "$staged" --pattern "$asset" --pattern 'manifest.txt' >/dev/null 2>&1; then
-      prefix="lean-cache-v1-${slug}-${config_sha256:0:16}-"
-      resolved="$(gh release list --repo "$REPO" --limit 100 --json tagName --jq '.[].tagName' 2>/dev/null \
-                    | grep "^${prefix}" | head -1)"
-      [[ -n "$resolved" ]] \
-        || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"no release for this address nor its config prefix"}\n' "$tag"; exit 1; }
-      mode="prefix"
-      gh release download "$resolved" --repo "$REPO" --dir "$staged" --pattern "$asset" --pattern 'manifest.txt' >/dev/null 2>&1 \
-        || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"prefix candidate %s could not be downloaded"}\n' "$tag" "$resolved"; exit 1; }
+    # Each attempt has its own staging directory and exit status. A corrupt release
+    # must not prevent trying the next exact/config-prefix/same-toolchain candidate.
+    try_fetch() (
+    resolved="$1"
+    mode="$2"
+    candidate_dir="$(mktemp -d "$staged/candidate.XXXXXX")" || exit 1
+    staged="$candidate_dir"
+    trap 'rm -rf "$staged"' EXIT
+    seed_config=""
+    if [[ "$mode" == seed ]]; then
+      seed_config="${resolved#"${TAG_PREFIX}-${slug}-"}"
+      seed_config="${seed_config%%-*}"
+      [[ "$seed_config" =~ ^[0-9a-f]{16}$ ]] \
+        || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"seed tag has a malformed config address"}\n' "$resolved"; exit 1; }
     fi
-    [[ -f "$staged/$asset" && -f "$staged/manifest.txt" ]] \
-      || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"release is missing the archive or its manifest"}\n' "$tag"; exit 1; }
+    gh release download "$resolved" --repo "$REPO" --dir "$staged" --pattern 'manifest.txt' >/dev/null 2>&1 \
+      && [[ -f "$staged/manifest.txt" ]] \
+      || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"release is missing the archive or its manifest"}\n' "$resolved"; exit 1; }
+    parts="$(sed -n 's/^parts=//p' "$staged/manifest.txt")"
+    # Releases predating chunking have no parts field. All new writes declare it.
+    if [[ -z "$parts" ]] && ! grep -q '^parts=' "$staged/manifest.txt"; then parts=1; fi
+    [[ "$parts" =~ ^([1-9][0-9]?|100)$ ]] \
+      || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"invalid parts count"}\n' "$resolved"; exit 1; }
+    archive_assets=()
+    archive_digests=()
+    if (( parts > 1 )); then
+      gh release download "$resolved" --repo "$REPO" --dir "$staged" --pattern "$asset.part-*" >/dev/null 2>&1 \
+        || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"parts could not be downloaded"}\n' "$resolved"; exit 1; }
+      for ((i=0; i<parts; i++)); do
+        printf -v part '%s.part-%02d' "$asset" "$i"
+        [[ -f "$staged/$part" ]] \
+          || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"missing part %s"}\n' "$resolved" "$part"; exit 1; }
+        part_declared="$(sed -n "s/^part_sha256_${i}=//p" "$staged/manifest.txt")"
+        part_actual="$(sha256_of "$staged/$part")" \
+          || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"could not hash part %s"}\n' "$resolved" "$part"; exit 1; }
+        [[ "$part_declared" == "$part_actual" ]] \
+          || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"part checksum mismatch for %s"}\n' "$resolved" "$part"; exit 1; }
+        archive_assets+=("$part")
+        archive_digests+=("$part_actual")
+        cat "$staged/$part" >> "$staged/$asset" \
+          || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"could not assemble archive"}\n' "$resolved"; exit 1; }
+      done
+    else
+      gh release download "$resolved" --repo "$REPO" --dir "$staged" --pattern "$asset" >/dev/null 2>&1 \
+        && [[ -f "$staged/$asset" ]] \
+        || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"single archive could not be downloaded"}\n' "$resolved"; exit 1; }
+      archive_assets=("$asset")
+    fi
     # 声明的摘要必须与取到的字节相符；不符即丢弃，绝不静默使用。
     declared="$(sed -n 's/^archive_sha256=//p' "$staged/manifest.txt")"
-    actual="$(sha256_of "$staged/$asset")"
+    actual="$(sha256_of "$staged/$asset")" \
+      || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"could not hash archive"}\n' "$resolved"; exit 1; }
     [[ -n "$declared" ]] \
-      || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"manifest declares no digest"}\n' "$tag"; exit 1; }
+      || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"manifest declares no digest"}\n' "$resolved"; exit 1; }
     [[ "$declared" == "$actual" ]] \
-      || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"digest mismatch"}\n' "$tag"; exit 1; }
-    # 严格相等的只有依赖层身份。`os`/`arch` 不承重(olean 无平台相关二进制,
-    # mathlib 亦对所有平台发同一份);`sources_sha256` 在前缀回退下必然不同,
-    # 那正是回退的用途,由 lake 补差量兜底。
+      || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"digest mismatch"}\n' "$resolved"; exit 1; }
+    if (( parts == 1 )); then archive_digests=("$actual"); fi
+    # Seed safety (#5994): mathlib is restored separately, keyed by the candidate's
+    # manifest and toolchain; lakefile changes affect only the project cache key.
+    # This archive supplies only the project layer. For an honestly produced cache,
+    # each module's content-addressed .trace depHash makes lake build rebuild what
+    # config/source changes invalidate, so stale oleans are not reused as current.
+    # This is build invalidation, not output authentication; the trust limit above
+    # still applies. Exact/prefix keep full config equality; seed binds its own tag.
     for field in toolchain config_sha256; do
       want="$(emit_address | sed -n "s/^${field}=//p")"
       got="$(sed -n "s/^${field}=//p" "$staged/manifest.txt")"
+      if [[ "$mode" == seed && "$field" == config_sha256 ]]; then
+        [[ "$got" =~ ^[0-9a-f]{64}$ && "${got:0:16}" == "$seed_config" ]] \
+          || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"seed config does not match its release tag"}\n' "$tag"; exit 1; }
+        continue
+      fi
       [[ "$want" == "$got" ]] \
         || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"%s mismatch"}\n' "$tag" "$field"; exit 1; }
     done
@@ -301,7 +372,7 @@ case "$VERB" in
 # 保留的(全是内容与结构类):
 #   producer_commit_sha 与 workflow_run_id 的**形状**
 #   release target_commitish == 声明的 producer commit
-#   asset 恰好两份、名字恰好是 lean-build.tgz 与 manifest.txt
+#   asset 恰好为 manifest.txt 与它声明的单归档或全部分片
 #   GitHub 自己记录的 asset digest == 实际下载字节的 sha256(独立第二侧)
 #   以及取回后按 sources_sha256 的内容比对
 #
@@ -337,28 +408,35 @@ fail_provenance() {
       || fail_provenance "jq is required to read release provenance and is absent"
     release_json="$(gh api "repos/${REPO}/releases/tags/${resolved}" 2>/dev/null)" \
       || fail_provenance "release metadata is unreadable"
-    release_target="$(printf '%s' "$release_json" | jq -r '.target_commitish // ""')"
+    release_target="$(printf '%s' "$release_json" | jq -r '.target_commitish // ""')" \
+      || fail_provenance "release metadata is malformed"
     [[ "$release_target" == "$producer_commit_sha" ]] \
       || fail_provenance "release target ${release_target:-<absent>} does not match the declared producer commit"
 
-    # 资产必须**恰好**是这两份。多一份就意味着有人往这个 release 里加过东西，
+    # 资产必须恰好是声明的归档或分片与 manifest。多一份说明 release 被追加过，
     # 而逐份比对摘要并不排除「另外还多了一份」这种情形。
-    for expected in "$asset" manifest.txt; do
-      count="$(printf '%s' "$release_json" | jq --arg n "$expected" '[.assets[]? | select(.name == $n)] | length')"
+    for expected in "${archive_assets[@]}" manifest.txt; do
+      count="$(printf '%s' "$release_json" | jq --arg n "$expected" '[.assets[]? | select(.name == $n)] | length')" \
+        || fail_provenance "release asset inventory is malformed"
       [[ "$count" == "1" ]] \
         || fail_provenance "release carries ${count:-<absent>} assets named ${expected}, expected exactly 1"
     done
-    total_assets="$(printf '%s' "$release_json" | jq '[.assets[]?] | length')"
-    [[ "$total_assets" == "2" ]] \
-      || fail_provenance "release carries ${total_assets:-<absent>} assets, expected exactly 2"
+    total_assets="$(printf '%s' "$release_json" | jq '[.assets[]?] | length')" \
+      || fail_provenance "release asset inventory is malformed"
+    [[ "$total_assets" == "$((parts + 1))" ]] \
+      || fail_provenance "release carries ${total_assets:-<absent>} assets, expected exactly $((parts + 1))"
     # 进程替换里的失败不会被 `set -e` 捕获，故先把结果取进变量并查状态：解析失败
 
     # 把**手里的字节**绑到**被验产地的那个资产**上。此前只比 manifest 声明的摘要，而
     # manifest 与 payload 同处一个发布面；GitHub 自己记的 asset digest 是独立的第二侧。
-    github_digest="$(printf '%s' "$release_json" \
-      | jq -r --arg n "$asset" '.assets[]? | select(.name == $n) | .digest // ""')"
-    [[ "$github_digest" == "sha256:${actual}" ]] \
-      || fail_provenance "archive bytes do not match the digest GitHub recorded for ${asset} (${github_digest:-<absent>})"
+    for i in "${!archive_assets[@]}"; do
+      expected="${archive_assets[$i]}"
+      github_digest="$(printf '%s' "$release_json" \
+        | jq -r --arg n "$expected" '.assets[]? | select(.name == $n) | .digest // ""')" \
+        || fail_provenance "release asset digest is malformed"
+      [[ "$github_digest" == "sha256:${archive_digests[$i]}" ]] \
+        || fail_provenance "archive bytes do not match the digest GitHub recorded for ${expected} (${github_digest:-<absent>})"
+    done
 
     # `head_branch=dev` + `event=schedule` + 该 run 成功，合起来说明该 commit 当时
     # 就是默认分支的 tip。**残余**：dev 若被 force-push，历史上的 tip 可能已不在
@@ -371,10 +449,38 @@ fail_provenance() {
     consume_verified_archive() {
       ( cd "$repository" && lake unpack "$staged/$asset" >/dev/null )
     }
-    consume_verified_archive
+    consume_verified_archive \
+      || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"archive could not be unpacked"}\n' "$resolved"; exit 1; }
     got_sources="$(sed -n 's/^sources_sha256=//p' "$staged/manifest.txt")"
-    printf 'LEAN_CACHE_FETCH {"status":"unpacked","mode":"%s","tag":"%s","resolved":"%s","fetched_sources_sha256":"%s","sha256":"%s","producer_commit_sha":"%s","workflow_run_id":"%s"}\n' \
-      "$mode" "$tag" "$resolved" "$got_sources" "$actual" "$producer_commit_sha" "$archive_run_id"
+    seed_fields=""
+    if [[ "$mode" == seed ]]; then
+      seed_fields=",\"seed_config\":\"${seed_config}\",\"candidate_config\":\"${config_sha256}\""
+    fi
+    printf 'LEAN_CACHE_FETCH {"status":"unpacked","mode":"%s","tag":"%s","resolved":"%s","fetched_sources_sha256":"%s","sha256":"%s","producer_commit_sha":"%s","workflow_run_id":"%s"%s}\n' \
+      "$mode" "$tag" "$resolved" "$got_sources" "$actual" "$producer_commit_sha" "$archive_run_id" "$seed_fields"
+    )
+
+    if try_fetch "$tag" exact; then exit 0; fi
+    releases="$(gh release list --repo "$REPO" --limit 100 --json tagName,createdAt \
+      --jq 'sort_by(.createdAt) | reverse | .[].tagName' 2>/dev/null)" \
+      || { printf 'LEAN_CACHE_FETCH {"status":"miss","tag":"%s","reason":"could not list releases"}\n' "$tag"; exit 1; }
+    prefix="${TAG_PREFIX}-${slug}-${config_sha256:0:16}-"
+    # Newest first within each tier; exhaust the config tier before allowing seeds.
+    for mode in prefix seed; do
+      [[ "$mode" != seed || "$allow_seed" == 1 ]] || continue
+      while IFS= read -r release_tag; do
+        [[ "$release_tag" != "$tag" ]] || continue
+        if [[ "$mode" == prefix ]]; then
+          [[ "$release_tag" == "$prefix"* ]] || continue
+        else
+          [[ "$release_tag" == "${TAG_PREFIX}-${slug}-"* && "$release_tag" != "$prefix"* ]] || continue
+        fi
+        if try_fetch "$release_tag" "$mode"; then exit 0; fi
+      done <<< "$releases"
+    done
+    # Keep the last candidate's receipt as the terminal, specific failure reason.
+    printf 'lean-cache-publish: no release for this address nor its config prefix or an allowed same-toolchain seed passed validation\n' >&2
+    exit 1
     ;;
 
   *) usage ;;

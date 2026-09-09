@@ -92,7 +92,7 @@ internal sealed class WeilMellinPrimeIntertwiningDocument : IScribeDocumentDefin
                     DescribeRole.Definition),
                 Describe.Lean(DescribeId.Create("polynomial-window-agreement"),
                     DeclarationHandle.Create(Owner + "polynomial_window_agreement"), H("Agreement with the existing canonical polynomial model"),
-                    StatementSource.FromAuthor(Disp(Seq(Call("NotEqual", x, Seq(Minus, a)), Rightarrow,
+                    StatementSource.FromAuthor(Disp(Seq(Call("NotEqual", x, Seq(Minus, a)), Rightarrow, Sp,
                         Call("windowMellinSum", a, M, Call("cutPolynomialSeed", a, d, A), x), Eq,
                         Call("polynomialMellinWindow", a, M, d, A, x)))),
                     AssessedProvenance.FromRepo(),
@@ -104,7 +104,7 @@ internal sealed class WeilMellinPrimeIntertwiningDocument : IScribeDocumentDefin
                     DescribeRole.Theorem),
                 Describe.Lean(DescribeId.Create("prime-forward-mellin-identity"),
                     DeclarationHandle.Create(Owner + "prime_forward_mellin_identity"), H("Exact all-scale arithmetic intertwining"),
-                    StatementSource.FromAuthor(Disp(Seq(hypotheses, Rightarrow,
+                    StatementSource.FromAuthor(Disp(Seq(hypotheses, Rightarrow, Sp,
                         Call("primeForward", a, M, p, x), Eq,
                         Seq(Call("apply", q, x), Minus, Call("mul", x, Call("apply", p, x)))))),
                     AssessedProvenance.FromRepo(),
@@ -120,7 +120,7 @@ internal sealed class WeilMellinPrimeIntertwiningDocument : IScribeDocumentDefin
                     DescribeRole.Theorem),
                 Describe.Lean(DescribeId.Create("prime-even-mellin-identity"),
                     DeclarationHandle.Create(Owner + "prime_even_mellin_identity"), H("Full prime action after evenization"),
-                    StatementSource.FromAuthor(Disp(Seq(hypotheses, Rightarrow,
+                    StatementSource.FromAuthor(Disp(Seq(hypotheses, Rightarrow, Sp,
                         Call("primeSymmetric", a, M, Call("EvenPart", p), x), Eq,
                         Seq(Call("apply", q, x), Plus, Call("apply", q, Seq(Minus, x)), Minus,
                             Call("mul", D(2), x, Call("apply", r, x)), Minus,
@@ -134,7 +134,7 @@ internal sealed class WeilMellinPrimeIntertwiningDocument : IScribeDocumentDefin
                         + "paper L2 consequence bounds this correction by "
                         + "2*(a+sum Lambda(n)/sqrt(n))*norm(r). This bound requires the "
                         + "actual L2 realization and does not claim a sufficiently small "
-                        + "Weil residual along an unbounded scale sequence. The theory volume "
+                        + "Weil residual along an unbounded scale sequence. The source analysis "
                         + "records the independently checked fixed-prolate parity budget. "
                         + "Lean elaboration, Scribe emission and the transitive axiom audit "
                         + "have not been run in this research continuation."))),

@@ -95,13 +95,17 @@ theorem cosine_prime_edge_remainder (u v h : ℝ) (hh : 0 ≤ h) :
         ((hf.sub continuous_const).abs.intervalIntegrable _ _)
         ((by fun_prop : Continuous (fun t : ℝ => ((u * t) ^ 2 + (v * (h - t)) ^ 2) / 2)).intervalIntegrable _ _)
       intro t _
+      simp only [Pi.sub_apply]
       have hx := cos_defect (u * t)
       have hy := cos_defect (v * (h - t))
       calc
         _ = |(Real.cos (u * t) - 1) * Real.cos (v * (h - t)) +
             (Real.cos (v * (h - t)) - 1)| := by congr 1; ring
         _ ≤ |Real.cos (u * t) - 1| * |Real.cos (v * (h - t))| +
-            |Real.cos (v * (h - t)) - 1| := by simpa only [abs_mul] using abs_add _ _
+            |Real.cos (v * (h - t)) - 1| := by
+              simpa only [abs_mul] using
+                abs_add_le ((Real.cos (u * t) - 1) * Real.cos (v * (h - t)))
+                  (Real.cos (v * (h - t)) - 1)
         _ ≤ ((u * t) ^ 2 / 2) * 1 + (v * (h - t)) ^ 2 / 2 :=
           add_le_add (mul_le_mul hx (Real.abs_cos_le_one _) (abs_nonneg _) (by positivity)) hy
         _ = _ := by ring

@@ -49,7 +49,7 @@ internal sealed class WeilArchimedeanHighModeBoundsDocument : IScribeDocumentDef
                     H("Frequency-sensitive arithmetic Gamma bounds"),
                     StatementSource.FromAuthor(Disp(Seq(
                         Call("And", Call("AtLeast", c, D(2)), Call("Nonzero", n)),
-                        Rightarrow,
+                        Rightarrow, Sp,
                         Call("And",
                             Call("LessEqual", Call("abs", Call("GammaPart", c, n)), symbolBound),
                             Call("SummableNorm", R),
@@ -79,7 +79,7 @@ internal sealed class WeilArchimedeanHighModeBoundsDocument : IScribeDocumentDef
                             + "resulting simultaneous logarithmic form lower bound, "
                             + "weighted Schur completion and executed c=3 interval "
                             + "certificate are proved separately in the existing RH "
-                            + "theory volume. They are not conclusions of this Lean "
+                            + "source analysis. They are not conclusions of this Lean "
                             + "declaration. Lean and Scribe compilation were not run "
                             + "in this research session."))),
                     DescribeRole.Theorem))));

@@ -16,7 +16,8 @@ public sealed record RuleDescriptor(
 
 internal sealed record RuleRegistration(
     RuleDescriptor Descriptor,
-    IRepositoryRule Rule);
+    IRepositoryRule Rule,
+    bool RecheckOnImplementationChange = true);
 
 public sealed class RuleCatalog
 {
@@ -35,6 +36,7 @@ public sealed class RuleCatalog
         RuleId.CreateKnown(2),
         RuleId.CreateKnown(18),
         RuleId.CreateKnown(12),
+        RuleId.CreateKnown(31),
         RuleId.CreateKnown(26),
         RuleId.CreateKnown(6),
         RuleId.CreateKnown(25),
@@ -51,6 +53,15 @@ public sealed class RuleCatalog
         RuleId.CreateKnown(17),
         RuleId.CreateKnown(16),
         RuleId.CreateKnown(3),
+        // SL-030 (added 2026-09-05) has no timing measurement yet: it is a per-line text scan over
+        // the few judge-surface files in the delta, so it runs last until a measurement window exists.
+        RuleId.CreateKnown(30),
+        // SL-032 has no timing measurement: scan Scribe text in the delta last.
+        RuleId.CreateKnown(32),
+        // SL-033 checks only selectors reached by the frozen pair delta.
+        RuleId.CreateKnown(33),
+        // SL-034 checks only newly added D5 Lean modules.
+        RuleId.CreateKnown(34),
     ];
 
     private readonly ImmutableArray<RuleRegistration> registrations;
@@ -152,6 +163,11 @@ public sealed class RuleCatalog
                 .Append(25)
                 .Append(26)
                 .Append(28)
+                .Append(30)
+                .Append(31)
+                .Append(32)
+                .Append(33)
+                .Append(34)
                 .Select(RuleId.CreateKnown)
                 .ToImmutableArray();
             var registeredIds = Descriptors.Select(static item => item.Id).ToImmutableArray();
@@ -209,7 +225,7 @@ public sealed class RuleCatalog
             {
                 var registration = RegistrationFor(ruleId);
                 var descriptor = registration.Descriptor;
-                var isAffected = context.RuleImplementationChanged
+                var isAffected = registration.RecheckOnImplementationChange && context.RuleImplementationChanged
                     || (measureApplicability is null
                         ? registration.Rule.IsAffectedBy(context)
                         : measureApplicability(() => registration.Rule.IsAffectedBy(context)));

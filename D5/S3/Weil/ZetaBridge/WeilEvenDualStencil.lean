@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Weil/ZetaBridge/WeilEvenDualStencil
    mirror-E: none(waiver:actual-Fourier-domain-and-interval-dual-consumer)
    anchors: []
+   utility: none
    digest: Evaluate and bound the actual arithmetic column of a zero-trace even Fourier stencil, with all prime, pole and Gamma terms retained. -/
 
 import D5.S3.Weil.ZetaBridge.WeilArithmeticCouplingJet

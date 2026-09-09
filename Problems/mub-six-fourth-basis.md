@@ -1,7 +1,7 @@
 ---
 slug: mub-six-fourth-basis
 bibkey: mcnultyweigert2024mutually
-arxiv_id: 2410.23997
+doi: 10.48550/arXiv.2410.23997
 triage: wall
 motivation_gids:
   - D5/S3/Quantum/Tomography/RankOneContextCommutator

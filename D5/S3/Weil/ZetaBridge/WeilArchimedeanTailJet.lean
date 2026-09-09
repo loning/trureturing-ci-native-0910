@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Weil/ZetaBridge/WeilArchimedeanTailJet
    mirror-E: none(waiver:analytic-bound-without-floating-point-certificate)
    anchors: []
+   utility: none
    digest: Bound every even Galerkin direction of the canonical Gamma tail by a finite boundary-moment jet. -/
 
 import D5.S3.Weil.ZetaCore.ExplicitFormula

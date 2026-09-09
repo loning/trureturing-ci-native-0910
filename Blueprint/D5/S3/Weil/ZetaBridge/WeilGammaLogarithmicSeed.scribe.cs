@@ -11,7 +11,7 @@ internal sealed class WeilGammaLogarithmicSeedDocument : IScribeDocumentDefiniti
             Describe.Lean(DescribeId.Create("gamma-logarithmic-seed-remainder"),
                 DeclarationHandle.Create("D5/S3/Weil/ZetaBridge/WeilGammaLogarithmicSeed.gamma_logarithmic_seed_remainder"),
                 H("Integrable arithmetic seed remainder and exact endpoint formula"),
-                StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                StatementSource.WithoutFormula(), AssessedProvenance.FromRepo(),
                 Blocks(
                     Paragraph(Text("Use the already-owned cutPolynomialSeed(a,d,A), with complex coefficients, upper support exp(a), and 0<u<=exp(a). The actual integrand is t*(h(t)-h(u))/(t^2-u^2). Its numerator is combined before division. No boundary moment is set to zero and no quadrature or desired integral value is assumed.")),
                     Paragraph(Text("The standard difference-of-powers formula identifies the quotient on (u,exp(a)] with sum_r A_r sum_{j<r} t^(2j+1)u^(2(r-1-j)). This is a continuous polynomial. Almost-everywhere equality on the interval proves integrability of the original singular expression, including degree zero and the degenerate interval. Finite integral linearity and the existing power-integral theorem give the complete endpoint sum.")),

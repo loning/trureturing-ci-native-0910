@@ -168,7 +168,6 @@ public sealed partial class DigestionLedgerTests
         Assert.Equal(originalEntry.CasRef, preserved.CasRef);
         Assert.Empty(preserved.CoverageGids);
         Assert.Empty(preserved.Coverage);
-        Assert.Empty(preserved.Receipts.Scribe);
         Assert.Empty(preserved.Receipts.UnresolvedSubitems);
         Assert.Empty(preserved.Receipts.ChainAtoms);
         Assert.Null(preserved.Receipts.TailAuthorization);
@@ -302,7 +301,6 @@ public sealed partial class DigestionLedgerTests
             new DigestionCoverageEdge(
                 gid,
                 TestModuleStatementId),
-            new DigestionScribeReceipt(gid, definitionHash, emissionHash),
             atomizer: AtomizerRegistry.NoAtomizerId);
         var source = Assert.Single(template.RequireDigestionSources());
         var entry = Assert.Single(source.Entries);
@@ -350,7 +348,6 @@ public sealed partial class DigestionLedgerTests
             chained,
             snapshot,
             AcceptedLean(targetPath),
-            VerifiedScribeEmissions.Create([record]),
             baselineDocument: chained);
 
         Assert.Equal(3, evaluation.Entries.Length);

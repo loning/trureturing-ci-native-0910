@@ -11,7 +11,7 @@ internal sealed class ResidualDrivenProjectiveEnergyDocument : IScribeDocumentDe
             Describe.Lean(DescribeId.Create("residual-driven-projective-energy"),
                 DeclarationHandle.Create("D5/S3/Weil/GroundMode/ResidualDrivenProjectiveEnergy.residual_driven_projective_energy"),
                 H("Candidate residual controls the same projective eigenvector"),
-                StatementSource.FromLean(), AssessedProvenance.FromRepo(),
+                StatementSource.WithoutFormula(), AssessedProvenance.FromRepo(),
                 Blocks(
                     Paragraph(Text("The embedding and shifted action are linear on the same complex domain. The candidate is unit; the target is a nonzero embedded eigenvector of a real nonpositive shifted eigenvalue. Positive real-part coercivity is required on the candidate complement. A separate full dual-energy estimate concerns the actual residual M(k)-Re<k,M(k)>k, not the unknown eigenvector error.")),
                     Paragraph(Text("The proof first derives nonzero candidate overlap from the eigen-equation and complement coercivity. For the exactly normalized error w, the eigen-equation gives q_M(w)=lambda*norm(w)^2-Re<w,M(k)>. Orthogonality identifies the residual pairing. Since lambda<=0, q_M(w)^2<=E*q_M(w), so 0<=q_M(w)<=E and norm(w)^2<=E/kappa. No absolute spectral lower endpoint is supplied.")),

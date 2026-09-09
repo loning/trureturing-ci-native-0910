@@ -20,7 +20,17 @@ if [ "${1:-}" = "--selftest" ]; then T=--selftest; N=0; else
     root="${common%/.git}"
     [ -n "$root" ] && CLAUDE_PROJECT_DIR="$HOME/.claude/projects/$(printf '%s' "$root" | sed 's|/|-|g')"
   fi
-  T="$(ls -t "${CLAUDE_PROJECT_DIR:-/nonexistent}"/*.jsonl 2>/dev/null | head -1)"
+  # 显式传入的转录路径优先(#5832:此前恒取最新会话,多会话机上会审到别人的转录);
+  # 传了却不存在即红,不回退——回退会把「我传错了」读成「别人的 0 命中」。
+  if [ -n "${1:-}" ]; then
+    T="$1"
+    if [ ! -f "$T" ]; then
+      echo "SELFAUDIT_TRANSCRIPT_NOT_FOUND path=$T" >&2
+      exit 2
+    fi
+  else
+    T="$(ls -t "${CLAUDE_PROJECT_DIR:-/nonexistent}"/*.jsonl 2>/dev/null | head -1)"
+  fi
   # fail-closed:找不到转录就红,不得让一次崩溃被读成「0 命中」。
   if [ -z "$T" ]; then
     echo "SELFAUDIT_TRANSCRIPT_NOT_FOUND dir=${CLAUDE_PROJECT_DIR:-<未解析>}" >&2
@@ -35,7 +45,7 @@ path,n=sys.argv[1],int(sys.argv[2])
 # ---- 唯一真源:三种违规形的判据 ------------------------------------------
 LONG=r'(^|;|&&|\|\s*)\s*(bash [^\n]*(land\.sh|run-codex-worker\.sh)'\
      r'|make (lean|preflight|gate|ingest|cover|deposit|emit|test)\b'\
-     r'|nyxid oracle ask|dotnet test)'
+     r'|nyxid oracle ask(?![^\n;|&]*--help)|dotnet test(?![^\n;|&]*--help))'
 
 def normalize(cmd):
     """剥 heredoc 体与引号字面量,只留命令位置的字节。
@@ -71,6 +81,7 @@ if path=='--selftest':
       ("负 后台长任务",        "make lean-report > x.log",             True,  (False,False,False)),
       ("负 引号内(grep模式)",  "grep -n 'x\\|make lean' ci.yml",        False, (False,False,False)),
       ("负 引号内(命令位置)",  'echo "step 1; make lean; step 2"',      False, (False,False,False)),
+      ("负 --help 不是长任务",   "nyxid oracle ask --help 2>&1 | grep -E usage | head -3", False, (False,False,False)),
       ("负 引号内(py -c体)",   'python3 -c "x=1; make test"',           False, (False,False,False)),
       # ---- (iii) 叠第二条等待通道:阳性 ----
       ("真iii sleep 后读任务输出", "sleep 90; cat /tmp/p/tasks/babc.output",              False, (False,False,True)),

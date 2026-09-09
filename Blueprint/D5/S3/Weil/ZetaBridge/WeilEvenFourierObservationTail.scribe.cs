@@ -37,7 +37,7 @@ internal sealed class WeilEvenFourierObservationTailDocument : IScribeDocumentDe
                     + "phase-adjusted cosine basis (-1)^n*sqrt(2/L)*cos(2*pi*n*x/L), "
                     + "zero extended outside that interval, with Fourier kernel exp(i*z*x). "
                     + "The coefficient sequence v_j refers to n=N+j+1. The Fourier "
-                    + "identification is a paper bridge in the existing RH theory volume.")),
+                    + "identification is a paper bridge in the existing RH source analysis.")),
                 Describe.Lean(
                     DescribeId.Create("even-exterior-response"),
                     DeclarationHandle.Create(Owner + "evenExteriorResponse"),
@@ -62,7 +62,7 @@ internal sealed class WeilEvenFourierObservationTailDocument : IScribeDocumentDe
                             Call("SquareSummable", v),
                             Call("LessEqual", Call("mul", L, Call("norm", z)),
                                 Call("mul", F.Id("pi"), N))),
-                        Rightarrow,
+                        Rightarrow, Sp,
                         Call("And", Call("AbsolutelySummable", Call("CauchyTerms", L, N, v, z)),
                             Call("LessEqual", Call("normSq", response),
                                 Call("mul", coefficient,
@@ -87,7 +87,7 @@ internal sealed class WeilEvenFourierObservationTailDocument : IScribeDocumentDe
                             + "If its arithmetic energy dominates beta*norm(v)^2, "
                             + "the squared observation budget is divided by beta.")),
                         Paragraph(Text(
-                            "The existing theory volume applies this estimate to the "
+                            "The existing source analysis applies this estimate to the "
                             + "explicit, suitably normalized prolate model of "
                             + "Connes-Consani-Moscovici. It constructs an evenized, "
                             + "finite dyadic candidate family with the same Xi limit. "

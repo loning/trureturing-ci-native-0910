@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Arith/Congruence/OddSquareModuloEight.eight_dvd_odd_square_sub_one
     target_statement_id: sha256:49fa998f7605b80dd5e9156a4c962163b3e6034f3bba0e4471e234e7e5667c34
 receipts:
-  scribe:
-    - gid: D5/S3/Arith/Congruence/OddSquareModuloEight.eight_dvd_odd_square_sub_one
-      definition_sha256: sha256:ed1044d4a42623cfd980910e37862f348f68062f3a47ad5c3bc88ef16a8dcb97
-      emission_sha256: sha256:88232af62021683f1b70536bbc63889a2de52bc14a17c4594c02dbc879b17c5f
   unresolved_subitems: []

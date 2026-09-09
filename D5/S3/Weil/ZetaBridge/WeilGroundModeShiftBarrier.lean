@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Weil/ZetaBridge/WeilGroundModeShiftBarrier
    mirror-E: none(waiver:analytic-obstruction-without-numerical-evidence)
    anchors: []
+   utility: none
    digest: Transfer symmetric translations through the actual Weil correlation and bound the residual required by a candidate gap. -/
 
 import D5.S3.Weil.ZetaCore.ExplicitFormula
@@ -81,7 +82,9 @@ private theorem shifted_cross (f g : ℝ → ℂ) (t x : ℝ) :
       apply integral_congr_ae
       filter_upwards with y
       rw [show y - t - (x - t) = y - x by ring]
-    _ = _ := integral_sub_right_eq_self _ t
+    _ = _ := by
+      convert! integral_sub_right_eq_self (μ := volume)
+        (fun v => f v * conj (g (v - (x - t)))) t
 
 private theorem transfer_left {f g : ℝ → ℂ}
     (hf : Continuous f) (hg : Continuous g) (hfs : HasCompactSupport f)
@@ -89,9 +92,11 @@ private theorem transfer_left {f g : ℝ → ℂ}
     weilTest (symmetricShiftDefect t c f) g x =
       weilTest f g (x - t) + weilTest f g (x + t) -
         (c : ℂ) * weilTest f g x := by
-  have hm := cross_integrable (hf.comp (continuous_id.sub continuous_const)) hg
+  have hm := cross_integrable (f := fun y => f (y - t))
+    (hf.comp (continuous_id.sub continuous_const)) hg
     (compact_shift hfs t) x
-  have hp := cross_integrable (hf.comp (continuous_id.add continuous_const)) hg
+  have hp := cross_integrable (f := fun y => f (y + t))
+    (hf.comp (continuous_id.add continuous_const)) hg
     (by simpa only [sub_neg_eq_add] using compact_shift hfs (-t)) x
   have h0 := cross_integrable hf hg hfs x
   rw [weilTest_apply]
@@ -103,7 +108,7 @@ private theorem transfer_left {f g : ℝ → ℂ}
     funext y
     dsimp [symmetricShiftDefect]
     ring
-  rw [hexpand, integral_sub (hm.add hp) (h0.const_mul (c : ℂ)),
+  rw [hexpand, integral_sub (hm.fun_add hp) (h0.const_mul (c : ℂ)),
     integral_add hm hp, cintegral_const_mul, shifted_cross]
   have hp' := shifted_cross f g (-t) x
   simp only [sub_neg_eq_add] at hp'
@@ -130,7 +135,7 @@ private theorem transfer_right {f g : ℝ → ℂ}
       show y - x + t = y - (x - t) by ring]
     simp only [map_sub, map_add, map_mul, Complex.conj_ofReal]
     ring
-  rw [hexpand, integral_sub (hm.add hp) (h0.const_mul (c : ℂ)),
+  rw [hexpand, integral_sub (hm.fun_add hp) (h0.const_mul (c : ℂ)),
     integral_add hm hp, cintegral_const_mul]
   rw [← weilTest_apply, ← weilTest_apply, ← weilTest_apply]
 
@@ -208,7 +213,10 @@ private theorem correlation_zero {f : ℝ → ℂ}
   simp only [sub_zero]
   have hi : Integrable (fun x => f x * conj (f x)) := by
     simpa only [sub_zero] using cross_integrable hf hf hfs 0
-  rw [← integral_re hi]
+  have hre := integral_re hi
+  change (∫ x : ℝ, (f x * conj (f x)).re) =
+    (∫ x : ℝ, f x * conj (f x)).re at hre
+  rw [← hre]
   apply integral_congr_ae
   filter_upwards with x
   simp [Complex.mul_conj]
@@ -228,9 +236,11 @@ private theorem mass_defect_le {f : ℝ → ℂ}
     (∫ x : ℝ, Complex.normSq (symmetricShiftDefect t c f x)) ≤
       3 * (2 + c ^ 2) * ∫ x : ℝ, Complex.normSq (f x) := by
   have h0 := mass_integrable hf hfs
-  have hm := mass_integrable (hf.comp (continuous_id.sub continuous_const))
+  have hm := mass_integrable (f := fun x => f (x - t))
+    (hf.comp (continuous_id.sub continuous_const))
     (compact_shift hfs t)
-  have hp := mass_integrable (hf.comp (continuous_id.add continuous_const))
+  have hp := mass_integrable (f := fun x => f (x + t))
+    (hf.comp (continuous_id.add continuous_const))
     (by simpa only [sub_neg_eq_add] using compact_shift hfs (-t))
   have hb := mass_integrable (continuous_defect hf t c) (compact_defect hfs t c)
   calc
@@ -240,9 +250,10 @@ private theorem mass_defect_le {f : ℝ → ℂ}
       intro x
       exact normSq_three (f (x - t)) (f (x + t)) (f x) c
     _ = 3 * (2 + c ^ 2) * ∫ x : ℝ, Complex.normSq (f x) := by
-      rw [integral_const_mul, integral_add (hm.add hp) (h0.const_mul (c ^ 2)),
-        integral_add hm hp, integral_const_mul, integral_sub_right_eq_self,
-        integral_add_right_eq_self]
+      rw [integral_const_mul, integral_add (hm.fun_add hp) (h0.const_mul (c ^ 2)),
+        integral_add hm hp, integral_const_mul,
+        integral_sub_right_eq_self (μ := volume) (fun x => Complex.normSq (f x)) t,
+        integral_add_right_eq_self (μ := volume) (fun x => Complex.normSq (f x)) t]
       ring
 
 /-- Necessary residual cost of a candidate complement gap, for the concrete
@@ -308,7 +319,7 @@ theorem weil_symmetric_shift_residual_barrier {f : ℝ → ℂ}
     positivity
   · have hmpos : 0 < m := lt_of_le_of_ne hm (Ne.symm hz)
     change delta ^ 2 * m ≤ _
-    apply (mul_le_mul_right hmpos).mp
+    apply (mul_le_mul_iff_left₀ hmpos).mp
     calc
       delta ^ 2 * m * m = delta ^ 2 * m ^ 2 := by ring
       _ ≤ r ^ 2 * (3 * (2 + c ^ 2) * m) := hfinal

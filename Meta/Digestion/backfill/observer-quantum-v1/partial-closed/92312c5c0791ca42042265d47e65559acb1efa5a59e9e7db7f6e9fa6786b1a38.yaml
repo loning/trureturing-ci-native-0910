@@ -24,7 +24,6 @@ coverage_gids:
   - gid: D5/S3/QuantumBounds/RobertsonSchrodinger.robertson_schrodinger
     target_statement_id: sha256:87657bf82c7f0b5219b0f6a5c640131cdfe10480d25dde1ea38424c886afc975
 receipts:
-  scribe: []
   unresolved_subitems:
     - noncommutative-algebra-bundle-over-torus
     - universal-c-star-crossed-product-identification

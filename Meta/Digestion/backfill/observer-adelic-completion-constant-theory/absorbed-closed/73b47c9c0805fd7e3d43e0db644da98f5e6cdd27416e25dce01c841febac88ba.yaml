@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Zeros/CountableNormalJetCriterion.countable_normal_jet_criterion
     target_statement_id: sha256:fbaedfd8065a304a3e9023d7c30762b762736e8cc140285e0d167eb650c1e139
 receipts:
-  scribe:
-    - gid: D5/S3/Zeros/CountableNormalJetCriterion.countable_normal_jet_criterion
-      definition_sha256: sha256:cf802ceb669630feaa2e1edd8558dd3a92fb6a39a0c178a531c0173f4798aa31
-      emission_sha256: sha256:87c6fcf071a10545516b9662b4e80e077c5a8877c5fd7a0c20a96ee6cd302340
   unresolved_subitems: []

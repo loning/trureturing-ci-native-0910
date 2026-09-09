@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Trust/ReputationSufficiencyCriterion.reputation_sufficiency_criterion
     target_statement_id: sha256:d07d869772ab43ce1c73f7ad25d3465f525b5c76d1434e67868e522276ee8044
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Trust/ReputationSufficiencyCriterion.reputation_sufficiency_criterion
-      definition_sha256: sha256:a0a00b3e8db331a6e7ef806e0e6c8f7d9acd541733cf0032dee1236d53983b95
-      emission_sha256: sha256:943e7a94b9180a2e8cce8c4171378f7706b11adc28d391147420290fbaef7f92
   unresolved_subitems: []

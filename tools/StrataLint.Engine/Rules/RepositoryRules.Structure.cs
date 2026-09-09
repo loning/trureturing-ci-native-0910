@@ -65,7 +65,7 @@ internal static partial class RepositoryRules
 
     internal const int ArtifactSoftLineLimit = 600;
 
-    internal const int DirectoryFileLimit = 24;
+    internal const int DirectoryFileLimit = 48;
 
     // The repository-wide capacity net tolerates a band above the admission limit.
     // Capacity is pressure, not correctness: an overfull bucket is a signal to split
@@ -75,12 +75,16 @@ internal static partial class RepositoryRules
     // of limit+1 turns the repository-wide scan red - blocking every unrelated PR until
     // someone splits. That is what made strict (now forbidden, 19) load-bearing. The
     // admission rule keeps the unbanded limit, so the next change that introduces a
-    // capacity-counted path absent from its ForkPoint is still refused and the split
+    // capacity-counted path absent from its protected baseline is still refused and the split
     // pressure lands exactly where it belongs.
     // Thresholds raised 12/24 -> 24/48 by the owner on 2026-08-30 (wave-71 readings: nine
     // Weil/Analytic/Observer buckets at 12 and Weil/Budget at 13 within one day; the band
     // stays one admission limit wide).
-    internal const int DirectoryToleranceLimit = 48;
+    // Raised again 24/48 -> 48/96 by the owner on 2026-09-08 (issue #6405: D5/S3/Arith and
+    // D5/S1/Digit both sat exactly at 24, so three atoms whose text assigns a module to one of
+    // them had no path the rule would admit, and three lanes were rejected on placement with no
+    // available fix. The band still stays one admission limit wide).
+    internal const int DirectoryToleranceLimit = 96;
 
     // SL-003 capacity exclusions: theory inputs, the Lake manifest, the backfill
     // inventory, atomizer dialect registry, canonical CAS blobs, and generated Blueprint
@@ -105,6 +109,14 @@ internal static partial class RepositoryRules
         || (path.StartsWith("Blueprint/", StringComparison.Ordinal)
             && path.EndsWith(".md", StringComparison.Ordinal));
 
+    // The literature problem pool (spec §11.20.3) is a flat slug-addressed pool of registered
+    // candidates that grows one file per registered candidate. As the spec states, pool
+    // membership conveys no resolution status; it is never navigated as a content bucket.
+    // Spec line 83: "容量只约束骨骼". This exclusion applies to DIRECTORY occupancy only;
+    // dossiers stay bounded by the artifact line limits.
+    internal static bool IsDirectoryCapacityExcluded(string path) =>
+        IsCapacityExcluded(path) || ProblemPoolPaths.IsCanonicalPath(path);
+
     // The canonical artifact line count: newline-delimited lines, not counting a
     // trailing terminator. Shared with RepositoryCapacityAudit so both tiers agree exactly.
     internal static int CountArtifactLines(string text) =>
@@ -116,7 +128,7 @@ internal static partial class RepositoryRules
         var directories = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
         foreach (var path in paths)
         {
-            if (IsCapacityExcluded(path.Value))
+            if (IsDirectoryCapacityExcluded(path.Value))
             {
                 continue;
             }
@@ -135,19 +147,66 @@ internal static partial class RepositoryRules
     }
 
     private static ImmutableArray<RuleFinding> Capacity(RuleEvaluationContext context)
-        => EvaluateCapacity(context, ScribeTestMapDeriver.DeriveSnapshot);
+        => EvaluateCapacity(context, context.DeriveTestMap);
 
     internal static ImmutableArray<RuleFinding> EvaluateCapacity(
         RuleEvaluationContext context,
         Func<RepositorySnapshot, ScribeTestMap> deriveSnapshot)
     {
-        var findings = ImmutableArray.CreateBuilder<RuleFinding>();
+        // Wrap both snapshot derivations here so cache outcomes remain observational to capacity findings.
+        ScribeTestMap GetMap(RepositorySnapshot snapshot) => context.TestMapStore is null
+            ? deriveSnapshot(snapshot)
+            : context.TestMapStore.GetOrDerive(snapshot);
         if (context.Changes.Paths.Any(static path =>
                 ScribeTestMapDeriver.IsDerivationInput(path.Value)))
         {
-            findings.AddRange(ScribeUnknownDebtPolicy.Evaluate(
-                    deriveSnapshot(context.Current),
-                    deriveSnapshot(context.ForkPoint))
+            var currentDerivation = Task.Run(() => GetMap(context.Current));
+            var baselineDerivation = ReferenceEquals(context.Current, context.Baseline)
+                ? currentDerivation
+                : Task.Run(() => GetMap(context.Baseline));
+            return EvaluateCapacityAsync(context, currentDerivation, baselineDerivation)
+                .GetAwaiter()
+                .GetResult();
+        }
+
+        return EvaluateCapacityCore(context, derivedMaps: null);
+    }
+
+    internal static async Task<ImmutableArray<RuleFinding>> EvaluateCapacityAsync(
+        RuleEvaluationContext context,
+        Task<ScribeTestMap> currentDerivation,
+        Task<ScribeTestMap> baselineDerivation)
+    {
+        var bothDerivations = Task.WhenAll(currentDerivation, baselineDerivation);
+        try
+        {
+            await bothDerivations.ConfigureAwait(false);
+        }
+        catch
+        {
+            _ = bothDerivations.Exception;
+            if (!currentDerivation.IsCompletedSuccessfully)
+            {
+                await currentDerivation.ConfigureAwait(false);
+            }
+
+            await baselineDerivation.ConfigureAwait(false);
+            throw;
+        }
+
+        return EvaluateCapacityCore(
+            context,
+            (currentDerivation.Result, baselineDerivation.Result));
+    }
+
+    private static ImmutableArray<RuleFinding> EvaluateCapacityCore(
+        RuleEvaluationContext context,
+        (ScribeTestMap Current, ScribeTestMap Baseline)? derivedMaps)
+    {
+        var findings = ImmutableArray.CreateBuilder<RuleFinding>();
+        if (derivedMaps is { } maps)
+        {
+            findings.AddRange(ScribeUnknownDebtPolicy.Evaluate(maps.Current, maps.Baseline)
                 .Select(static finding => new RuleFinding(
                     finding.Path,
                     finding.Message,
@@ -164,8 +223,8 @@ internal static partial class RepositoryRules
             var lineCount = CountArtifactLines(file.Text);
             if (lineCount > ArtifactHardLineLimit)
             {
-                // 阻断落在把它推过线的那个候选身上,不落在无辜候选身上。判据取自分叉点:
-                // 本次改动有没有让它变长。与目录轴同构(带内候选只有引入了分叉点上不存在的
+                // 阻断落在把它推过线的那个候选身上,不落在无辜候选身上。判据取自受保护基线:
+                // 本次改动有没有让它变长。与目录轴同构(带内候选只有引入了基线上不存在的
                 // 路径才阻断,见下方 DirectoryToleranceLimit 注释与 2026-08-13 判例)。
                 //
                 // 案由(2026-08-15):dev 上 DigestionLedgerAligner.cs 因两个 PR 的**并集**
@@ -176,10 +235,10 @@ internal static partial class RepositoryRules
                 //
                 // 检测不降级:超线仍然出 finding,无辜者那条是 Observe;全仓检测由 push
                 // 侧的 capacity-audit 承担。第20条要的正是这个形状:窄化阻断须以加强检测为对价。
-                var forkPointLineCount = context.ForkPoint.Files.TryGetValue(path, out var forkFile)
-                    ? CountArtifactLines(forkFile.Text)
+                var baselineLineCount = context.Baseline.Files.TryGetValue(path, out var baselineFile)
+                    ? CountArtifactLines(baselineFile.Text)
                     : 0;
-                findings.Add(lineCount > forkPointLineCount
+                findings.Add(lineCount > baselineLineCount
                     ? new RuleFinding(path.Value, "artifact exceeds 800 lines")
                     : new RuleFinding(
                         path.Value,
@@ -200,7 +259,7 @@ internal static partial class RepositoryRules
         }
 
         var directories = CapacityPathsByDirectory(context.Current.Files.Keys);
-        var forkPointDirectories = CapacityPathsByDirectory(context.ForkPoint.Files.Keys);
+        var baselineDirectories = CapacityPathsByDirectory(context.Baseline.Files.Keys);
 
         // Occupancy is counted over the whole tree so the number reported is the real one, but
         // only buckets this change touches are reported. DirectoryToleranceLimit above was added
@@ -211,13 +270,14 @@ internal static partial class RepositoryRules
         // D5/S3/Constants, deposits f2296a0 and eb759dc each saw twelve and admitted, and union
         // 0ba924d held thirteen and stopped dev and every unrelated branch. Every member of that
         // bucket is frozen, so moving one out is not an available split. Admission therefore
-        // compares capacity-counted path membership with the ForkPoint: an overfull candidate blocks
-        // if any current path is absent there, and otherwise emits a non-blocking Observe.
+        // compares capacity-counted path membership with the protected baseline: an overfull
+        // candidate blocks if any current path is absent there, and otherwise emits a non-blocking
+        // Observe.
         //
-        // Closure: for each admitted overfull candidate C, relative to its own merge base F,
-        // Added_C(d) = C(d) \ F(d) is empty because CurrentPaths_C(d) is a subset of
-        // MergeBasePaths_C(d). A git three-way merge can introduce only paths in Added_C(d), so
-        // every such merge is non-growing in d; the candidates need not share a fork point.
+        // Closure: for each admitted overfull candidate C relative to protected baseline B,
+        // Added_C(d) = C(d) \ B(d) is empty because CurrentPaths_C(d) is a subset of
+        // BaselinePaths_C(d). A git three-way merge can introduce only paths in Added_C(d), so
+        // every such merge is non-growing in d.
         //
         // Residual: candidates at or below DirectoryFileLimit are not constrained by this
         // predicate. The 2026-08-13 union mechanism in that regime is unchanged by this change;
@@ -237,8 +297,8 @@ internal static partial class RepositoryRules
         foreach (var item in directories.Where(item => item.Value.Count > DirectoryFileLimit
             && touched.Contains(item.Key)))
         {
-            var forkPointPaths = forkPointDirectories.GetValueOrDefault(item.Key);
-            if (forkPointPaths is null || !item.Value.IsSubsetOf(forkPointPaths))
+            var baselinePaths = baselineDirectories.GetValueOrDefault(item.Key);
+            if (baselinePaths is null || !item.Value.IsSubsetOf(baselinePaths))
             {
                 findings.Add(new RuleFinding(
                     item.Key,
@@ -253,7 +313,7 @@ internal static partial class RepositoryRules
                     $"directory is overfull at {item.Value.Count} files (admission limit "
                     + $"{DirectoryFileLimit}, repository tolerance "
                     + $"{DirectoryToleranceLimit}), but this change introduced no capacity-counted "
-                    + "path absent from its fork point; split per CLAUDE.md 8",
+                    + "path absent from the protected baseline; split per CLAUDE.md 8",
                     AdmissionEffect.Observe));
             }
         }
@@ -440,7 +500,8 @@ internal static partial class RepositoryRules
                 {
                     findings.Add(new RuleFinding(
                         path.Value,
-                        "expected the exact six-line header at byte zero"));
+                        "expected the canonical Lean header at byte zero "
+                        + "(six-line legacy header or seven-line header with utility)"));
                 }
 
                 continue;

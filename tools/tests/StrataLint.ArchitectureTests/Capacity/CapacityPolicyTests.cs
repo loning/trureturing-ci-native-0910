@@ -4,6 +4,30 @@ namespace StrataLint.ArchitectureTests;
 
 public sealed class CapacityPolicyTests
 {
+    [Fact]
+    public void CapacityExcludesOnlyCanonicalProblemPoolPaths()
+    {
+        Assert.True(RepositoryRules.IsDirectoryCapacityExcluded(
+            "Problems/oeis-a363560-cubic-ninth-power-substitution-mod-three.md"));
+        Assert.False(RepositoryRules.IsDirectoryCapacityExcluded("Problems/sub/x.md"));
+        Assert.False(RepositoryRules.IsDirectoryCapacityExcluded("Problems/Foo.md"));
+        Assert.False(RepositoryRules.IsCapacityExcluded(
+            "Problems/oeis-a363560-cubic-ninth-power-substitution-mod-three.md"));
+    }
+
+    [Fact]
+    public void CapacityAuditExcludesCanonicalProblemPoolOccupancyButBoundsDossierLength()
+    {
+        var files = Enumerable.Range(0, RepositoryRules.DirectoryToleranceLimit + 1)
+            .Select(static i => ($"Problems/oeis-a000001-sample-slug-{i:0000}.md",
+                i == 0 ? string.Concat(Enumerable.Repeat("pad\n", 900)) : "fixture\n"));
+
+        var finding = Assert.Single(RepositoryCapacityAudit.InspectFiles(files));
+
+        Assert.Equal("Problems/oeis-a000001-sample-slug-0000.md", finding.Path);
+        Assert.Equal("artifact spans 900 lines (hard limit 800)", finding.Message);
+    }
+
     // RED: an artifact one line past the hard limit must be flagged.
     [Fact]
     public void OversizeArtifactIsRejectedByRedFixture()
@@ -39,7 +63,7 @@ public sealed class CapacityPolicyTests
     // concurrent additions - which admission cannot see, because strict is forbidden (19)
     // and each PR judges its own tree - does not turn the whole repository red and block
     // every unrelated PR. Inside the band the bucket is over pressure and must be split,
-    // and the next change introducing a capacity-counted path absent from its ForkPoint
+    // and the next change introducing a capacity-counted path absent from its Baseline
     // is refused at admission, which is where the split pressure belongs.
     [Fact]
     public void DirectoryPastToleranceIsRejectedByRedFixture()
@@ -147,7 +171,7 @@ public sealed class CapacityPolicyTests
     private const string BackfillInventoryRelativePath = "Meta/BACKFILL.yaml";
 
     // Pinned by the owner's 2026-08-30 ruling (放宽到 24、48): admission limit 24, repository
-    // tolerance 48. The tolerance band stays exactly one admission limit wide so that two PRs
+    // tolerance 96. The tolerance band stays exactly one admission limit wide so that two PRs
     // branched from the same base can each fill a bucket to the limit and their union still
     // clears the repository-wide net (see DirectoryToleranceLimit in RepositoryRules.Structure.cs). The tolerance band stays exactly one admission limit wide so that two PRs
     // branched from the same base can each fill a bucket to the limit and their union still
@@ -155,8 +179,8 @@ public sealed class CapacityPolicyTests
     [Fact]
     public void DirectoryCapacityThresholdsArePinnedToTheAdjudicatedValues()
     {
-        Assert.Equal(24, RepositoryRules.DirectoryFileLimit);
-        Assert.Equal(48, RepositoryRules.DirectoryToleranceLimit);
+        Assert.Equal(48, RepositoryRules.DirectoryFileLimit);
+        Assert.Equal(96, RepositoryRules.DirectoryToleranceLimit);
         Assert.Equal(2 * RepositoryRules.DirectoryFileLimit, RepositoryRules.DirectoryToleranceLimit);
     }
 }

@@ -39,7 +39,6 @@ internal sealed partial class RuleFixture
                   - gid: D5/S0/Carrier/BackfillTarget
                     target_statement_id: null
                 receipts:
-                  scribe: []
                   unresolved_subitems: []
                   chain_atoms: []
                   tail_authorization: null
@@ -63,7 +62,6 @@ internal sealed partial class RuleFixture
           - gid: D5/S0/Carrier/BackfillTarget
             target_statement_id: null
         receipts:
-          scribe: []
           unresolved_subitems: []
           chain_atoms: []
           tail_authorization: null
@@ -156,15 +154,12 @@ internal sealed partial class RuleFixture
             """ + "\n";
         BaselineReports = new Dictionary<string, LeanFileReport>(Reports, StringComparer.Ordinal);
         Baseline[ValuesKernelBindingValidator.RelativePath] = Files[ValuesKernelBindingValidator.RelativePath];
-        ForkPoint = new Dictionary<string, string>(Baseline, StringComparer.Ordinal);
         Changes = new List<string> { BlueprintPath };
     }
 
     internal Dictionary<string, string> Files { get; }
 
     internal Dictionary<string, string> Baseline { get; }
-
-    internal Dictionary<string, string> ForkPoint { get; }
 
     internal Dictionary<string, LeanFileReport> Reports { get; }
 
@@ -195,7 +190,6 @@ internal sealed partial class RuleFixture
             cas_ref: sha256:0000000000000000000000000000000000000000000000000000000000000000
             coverage_gids: []
             receipts:
-              scribe: []
               unresolved_subitems: []
               chain_atoms: []
               tail_authorization: null
@@ -218,13 +212,12 @@ internal sealed partial class RuleFixture
               - gid: D5/S0/Carrier/BackfillTarget
                 target_statement_id: null
             receipts:
-              scribe: []
               unresolved_subitems: []
               chain_atoms: []
               tail_authorization: null
             """ + "\n";
 
-        foreach (var files in new[] { Files, Baseline, ForkPoint })
+        foreach (var files in new[] { Files, Baseline })
         {
             RemoveDigestionLedger(files);
             files[BackfillInventoryLoader.RootPath + sourcePath] = source;
@@ -270,6 +263,12 @@ internal sealed partial class RuleFixture
                 Changes.Clear();
                 Changes.Add(BlueprintSourcePath);
                 break;
+            case "base-judge":
+                Files[HarnessGatePath] =
+                    "git -C candidate worktree add --detach \"$RUNNER_TEMP/base\" \"$ENGINEERING_BASE\"\n";
+                Changes.Clear();
+                Changes.Add(HarnessGatePath);
+                break;
             default: throw new ArgumentOutOfRangeException(nameof(mutation));
         }
     }
@@ -287,6 +286,7 @@ internal sealed partial class RuleFixture
         "anomaly" => "Evidence/D5/S0/Carrier/Result.run.json",
         "future" => "D8/S0/Carrier/Ring.lean",
         "blueprint-skeleton" or "legacy-scribe" => BlueprintSourcePath,
+        "base-judge" => HarnessGatePath,
         _ => throw new ArgumentOutOfRangeException(nameof(mutation)),
     };
 
@@ -318,7 +318,6 @@ internal sealed partial class RuleFixture
     {
         var current = Decode(Files, includeProjectFiles);
         var baseline = Decode(Baseline, includeProjectFiles);
-        var forkPoint = Decode(ForkPoint, includeProjectFiles);
         var policy = suppliedPolicy;
         if (policy is null)
         {
@@ -345,15 +344,13 @@ internal sealed partial class RuleFixture
             lean,
             changes,
             meta,
-            verifiedScribeEmissions,
-            forkPoint);
+            verifiedScribeEmissions);
     }
 
     internal RuleEvaluationContext BuildForRuleCompatibility()
     {
         var current = Decode(Files);
         var baseline = Decode(Baseline);
-        var forkPoint = Decode(ForkPoint);
         var policyOutcome = RegistryLoader.Load(
             Encoding.UTF8.GetBytes(TestRegistry.Canonical),
             Encoding.UTF8.GetBytes(TestRegistry.Domains));
@@ -367,14 +364,39 @@ internal sealed partial class RuleFixture
             AcceptedLeanClosure.Create(LeanAxiomReport.Create(Reports)),
             RawChangeSet.Create(Changes),
             meta,
-            forkPoint: forkPoint);
+            null);
+    }
+
+    internal RuleEvaluationContext BuildForRuleCompatibility(RawChangeSet changes)
+    {
+        var current = Decode(Files);
+        var baseline = Decode(Baseline);
+        var policyOutcome = RegistryLoader.Load(
+            Encoding.UTF8.GetBytes(TestRegistry.Canonical),
+            Encoding.UTF8.GetBytes(TestRegistry.Domains));
+        var policy = RegistryLoadAssert.Accepted(policyOutcome).Policy;
+        var bootstrap = BootstrapGate.Evaluate(changes);
+        var meta = bootstrap switch
+        {
+            BootstrapOutcome.Clear clear => MetaEvaluationProfile.ForClear(clear.Capability),
+            BootstrapOutcome.ProtectedSurfaceVerificationRequired protectedSurface =>
+                MetaEvaluationProfile.ForProtectedSurface(protectedSurface.ChangeSet),
+            _ => throw new InvalidOperationException("unexpected bootstrap outcome"),
+        };
+        return RuleEvaluationContext.Create(
+            current,
+            baseline,
+            policy,
+            AcceptedLeanClosure.Create(LeanAxiomReport.Create(Reports)),
+            changes,
+            meta,
+            null);
     }
 
     internal RuleEvaluationContext BuildForProtectedRuleCompatibility()
     {
         var current = Decode(Files);
         var baseline = Decode(Baseline);
-        var forkPoint = Decode(ForkPoint);
         var policyOutcome = RegistryLoader.Load(
             Encoding.UTF8.GetBytes(TestRegistry.Canonical),
             Encoding.UTF8.GetBytes(TestRegistry.Domains));
@@ -388,7 +410,7 @@ internal sealed partial class RuleFixture
             AcceptedLeanClosure.Create(LeanAxiomReport.Create(Reports)),
             RawChangeSet.Create(Changes),
             MetaEvaluationProfile.ForProtectedSurface(meta),
-            forkPoint: forkPoint);
+            null);
     }
 
     internal void AddUpwardImport()
@@ -437,7 +459,6 @@ internal sealed partial class RuleFixture
         Changes.Add(path);
         var baselineText = HeaderFor("D5/X_Frontier/Hearts", "E") + "theorem heart : True := by sorry\n";
         Baseline[path] = baselineText;
-        ForkPoint[path] = baselineText;
         Files[path] = HeaderFor("D5/X_Frontier/Hearts", "E") + "theorem heart : False := by sorry\n";
         BaselineReports[path] = Report(declarations: new[]
         {
@@ -563,7 +584,6 @@ internal sealed partial class RuleFixture
             if (path == HeartsPath)
             {
                 Baseline[path] = text;
-                ForkPoint[path] = text;
                 BaselineReports[path] = Reports[path];
             }
         }

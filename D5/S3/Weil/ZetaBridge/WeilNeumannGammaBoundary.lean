@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Weil/ZetaBridge/WeilNeumannGammaBoundary
    mirror-E: none(waiver:resolvent-kernel-and-canonical-Gamma-mixture)
    anchors: []
+   utility: none
    digest: The actual Neumann-minus-free Laplace resolvent kernel has a positive rank-two boundary completion, including every finite canonical Gamma mixture. -/
 
 import D5.S3.Weil.ZetaBridge.WeilArithmeticCouplingJet
@@ -76,7 +77,8 @@ private theorem scalar_green_completion
   have hd : E ^ 2 - (E⁻¹) ^ 2 ≠ 0 := by
     rw [hdid]
     exact ne_of_gt (div_pos (mul_pos hs hp) (pow_pos hEp 2))
-  field_simp [hE0, hu, hv, hd, ne_of_gt hs, ne_of_gt hp]
+  rw [hdid]
+  field_simp [hE0, hu, hv, ne_of_gt hs, ne_of_gt hp]
   <;> ring
 
 /-- The independently specified two Green kernels differ by an explicit
@@ -130,7 +132,7 @@ private theorem finite_rank_one_energy
     _ = (∑ i ∈ S, (v i * h i) * (∑ j ∈ S, v j * h j)) * D⁻¹ := by
       simp only [Finset.sum_mul, Finset.mul_sum]
     _ = ((∑ i ∈ S, v i * h i) * (∑ j ∈ S, v j * h j)) * D⁻¹ := by
-      rw [Finset.sum_mul]
+      simp only [Finset.sum_mul]
     _ = _ := by ring
 
 /-- Full finite quadratic identity. Both boundary directions remain present;

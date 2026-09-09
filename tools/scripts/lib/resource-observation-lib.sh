@@ -356,7 +356,20 @@ resource_observation_handle_signal() {
 
 resource_observe_run_periodic() {
   local sampler_pid=""
-  local sampler_status=0
+  local sampler_status=""
+  local sampler_status_root=""
+  local sampler_status_candidate=""
+  local sampler_status_directory=""
+  local sampler_status_file=""
+  local sampler_publication_enabled=0
+  local sampler_publication_succeeded=0
+  local sampler_published_status=""
+  local sampler_publication_extra=""
+  local sampler_publication_read_status=0
+  local sampler_publication_extra_status=0
+  local sampler_wait_status=0
+  local sampler_is_job=0
+  local job_pid=""
   local command_status=0
   local had_errexit=0
   local previous_hup=""
@@ -376,12 +389,56 @@ resource_observe_run_periodic() {
   trap 'resource_observation_handle_signal HUP "$?" "$root_pid" "$workspace" "$runner_temp" "$sampler_pid"' HUP
   trap 'resource_observation_handle_signal INT "$?" "$root_pid" "$workspace" "$runner_temp" "$sampler_pid"' INT
   trap 'resource_observation_handle_signal TERM "$?" "$root_pid" "$workspace" "$runner_temp" "$sampler_pid"' TERM
-  resource_observe_periodically \
-    "$root_pid" \
-    "$workspace" \
-    "$runner_temp" \
-    "${RESOURCE_OBSERVATION_INTERVAL_SECONDS:-30}" &
-  sampler_pid=$!
+  for sampler_status_candidate in "$runner_temp" "$workspace" "${PWD:-}"; do
+    if [[ -n "$sampler_status_candidate" && -d "$sampler_status_candidate" && -w "$sampler_status_candidate" ]]; then
+      sampler_status_root="$sampler_status_candidate"
+      break
+    fi
+  done
+  if [[ -n "$sampler_status_root" ]]; then
+    if sampler_status_directory="$(mktemp -d "$sampler_status_root/.resource-observation.XXXXXXXX" 2>/dev/null)"; then
+      sampler_status_file="$sampler_status_directory/sampler.status"
+      sampler_publication_enabled=1
+      (
+        set +e
+        resource_observe_periodically \
+          "$root_pid" \
+          "$workspace" \
+          "$runner_temp" \
+          "${RESOURCE_OBSERVATION_INTERVAL_SECONDS:-30}"
+        sampler_status=$?
+        sampler_publication_succeeded=0
+        # Ignore wrapper signals throughout the verified publication critical section.
+        # Only a successful write of the intended decimal line followed by a successful
+        # rename publishes; any write, verification, or rename failure publishes nothing.
+        trap '' TERM HUP INT
+        if printf '%s\n' "$sampler_status" > "$sampler_status_file.tmp" &&
+          {
+            sampler_published_status=""
+            sampler_publication_extra=""
+            IFS= read -r sampler_published_status
+            sampler_publication_read_status=$?
+            IFS= read -r sampler_publication_extra
+            sampler_publication_extra_status=$?
+            [[ "$sampler_publication_read_status" -eq 0 &&
+              "$sampler_publication_extra_status" -ne 0 &&
+              -z "$sampler_publication_extra" ]]
+          } < "$sampler_status_file.tmp" &&
+          [[ "$sampler_published_status" =~ ^[0-9]+$ ]] &&
+          [[ "$sampler_published_status" == "$sampler_status" ]] &&
+          mv "$sampler_status_file.tmp" "$sampler_status_file"; then
+          sampler_publication_succeeded=1
+        else
+          rm -f "$sampler_status_file" "$sampler_status_file.tmp" 2>/dev/null || true
+        fi
+        trap - TERM HUP INT
+        exit "$((1 - sampler_publication_succeeded))"
+      ) &
+      sampler_pid=$!
+    else
+      sampler_status_directory=""
+    fi
+  fi
   if [[ $- == *e* ]]; then
     had_errexit=1
     set +e
@@ -395,14 +452,35 @@ resource_observe_run_periodic() {
     command_status=$?
   fi
 
-  kill "$sampler_pid" 2>/dev/null || true
-  if wait "$sampler_pid" 2>/dev/null; then
-    sampler_status=0
-  else
-    sampler_status=$?
-  fi
-  if [[ "$sampler_status" -ne 0 ]]; then
-    printf 'RESOURCE_OBSERVATION_SAMPLER status=UNAVAILABLE exit=%s\n' "$sampler_status"
+  if [[ "$sampler_publication_enabled" -eq 1 ]]; then
+    if [[ ! -f "$sampler_status_file" ]]; then
+      kill "$sampler_pid" 2>/dev/null || true
+    fi
+    while true; do
+      wait "$sampler_pid" 2>/dev/null
+      sampler_wait_status=$?
+      if [[ "$sampler_wait_status" -le 128 ]]; then
+        break
+      fi
+      sampler_is_job=0
+      while IFS= read -r job_pid; do
+        if [[ "$job_pid" == "$sampler_pid" ]]; then
+          sampler_is_job=1
+          break
+        fi
+      done <<< "$(jobs -p)"
+      if [[ "$sampler_is_job" -eq 0 ]]; then
+        break
+      fi
+    done
+    if [[ "$sampler_wait_status" -eq 0 && -f "$sampler_status_file" ]]; then
+      IFS= read -r sampler_status < "$sampler_status_file" || true
+      if [[ "$sampler_status" =~ ^[1-9][0-9]*$ ]]; then
+        printf 'RESOURCE_OBSERVATION_SAMPLER status=UNAVAILABLE exit=%s\n' "$sampler_status"
+      fi
+    fi
+    rm -f "$sampler_status_file" "$sampler_status_file.tmp"
+    rmdir "$sampler_status_directory" 2>/dev/null || true
   fi
   resource_observe_sample 0 "$root_pid" "$workspace" "$runner_temp" final "" "$command_status" "$resource_observation_last_signal" || true
   trap - HUP INT TERM

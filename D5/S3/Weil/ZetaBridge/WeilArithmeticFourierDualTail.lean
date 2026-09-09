@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Weil/ZetaBridge/WeilArithmeticFourierDualTail
    mirror-E: none(waiver:analytic-dual-tail-with-separate-interval-realization)
    anchors: []
+   utility: none
    digest: Absolutely convergent arithmetic dual Fourier tails with a quadratic truncation rate, from the actual prime-pole-Gamma symbol. -/
 
 import D5.S3.Weil.ZetaBridge.WeilArithmeticCouplingJet
@@ -116,7 +117,7 @@ private theorem fourier_inverse_bound {m : ℝ} (hm : 0 < m)
     _ = 1 / ‖(m : ℂ) ^ 2 - w ^ 2‖ := by rw [norm_inv, one_div]
     _ ≤ 1 / ((3 / 4 : ℝ) * m ^ 2) :=
       one_div_le_one_div_of_le (by positivity) hd
-    _ = _ := by field_simp [hm.ne']; ring
+    _ = _ := by field_simp [hm.ne']
 
 private theorem dual_term_bound {c : ℕ} (hc : 2 ≤ c)
     {n M : ℕ} (hnM : n < M) {β : ℝ} (hβ : 0 < β)
@@ -135,7 +136,7 @@ private theorem dual_term_bound {c : ℕ} (hc : 2 ≤ c)
   have hMm : (M : ℝ) ≤ m := by
     dsimp [m, tailIndex]
     push_cast
-    linarith [Nat.cast_nonneg j]
+    linarith [Nat.cast_nonneg (α := ℝ) j]
   have hnm : (n : ℝ) < m := lt_of_lt_of_le hnMr hMm
   have hm0 : 0 < m := lt_of_lt_of_le hM0 hMm
   have hb : 0 ≤ B := (abs_nonneg _).trans (arithmetic_boundary_symbol_bound hc (n : ℤ)).2

@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Weil/ZetaBridge/WeilArithmeticCouplingSecondJet
    mirror-E: none(waiver:analytic-remainder-for-concrete-Weil-symbol)
    anchors: []
+   utility: none
    digest: A second exterior divided-difference jet gains a further N/|m| factor for the actual arithmetic Weil boundary symbol. -/
 
 import D5.S3.Weil.ZetaBridge.WeilArithmeticCouplingJet
@@ -150,7 +151,6 @@ theorem arithmetic_coupling_second_jet_error
         exact mul_le_mul_of_nonneg_right (hab n hn) (norm_nonneg _))
     _ = _ := by
       rw [Finset.mul_sum]
-      rfl
 
 #print axioms arithmetic_coupling_second_jet_error
 

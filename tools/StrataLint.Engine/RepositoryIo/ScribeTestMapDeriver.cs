@@ -56,17 +56,28 @@ internal static class ScribeTestMapDeriver
             || path.EndsWith("packages.lock.json", StringComparison.Ordinal);
     }
 
-    internal static ScribeTestMap DeriveSnapshot(RepositorySnapshot snapshot)
+    internal static ScribeTestMap DeriveSnapshot(RepositorySnapshot snapshot) =>
+        DeriveSnapshot(snapshot, null);
+
+    internal static ScribeTestMap DeriveSnapshot(
+        RepositorySnapshot snapshot,
+        Func<IEnumerable<ScribeCompilationProject>, IReadOnlyList<string>>? describeInputPaths,
+        Func<RepositorySnapshot, ScribeTestMap>? derive = null)
     {
-        var key = SnapshotDerivationKey(snapshot);
+        var metadataDigest = ScribeTestMapStore.ComputeMetadataDigest(snapshot, describeInputPaths);
+        var key = SnapshotDerivationKey(snapshot, metadataDigest);
         var candidate = new Lazy<ScribeTestMap>(
-            () => DeriveSnapshotUncached(snapshot),
+            () => (derive ?? DeriveSnapshotUncached)(snapshot),
             LazyThreadSafetyMode.ExecutionAndPublication);
         var derivation = SnapshotDerivations.GetOrAdd(key, candidate);
         try
         {
             var map = derivation.Value;
             if (map.CompileQueryFindings.Count != 0)
+            {
+                RemoveSnapshotDerivation(key, derivation);
+            }
+            if (!ScribeTestMapStore.MetadataDigestMatches(snapshot, metadataDigest, describeInputPaths))
             {
                 RemoveSnapshotDerivation(key, derivation);
             }
@@ -79,7 +90,12 @@ internal static class ScribeTestMapDeriver
         }
     }
 
-    private static ScribeTestMap DeriveSnapshotUncached(RepositorySnapshot snapshot)
+    private static ScribeTestMap DeriveSnapshotUncached(RepositorySnapshot snapshot) =>
+        DeriveSnapshotUncached(snapshot, null);
+
+    internal static ScribeTestMap DeriveSnapshotUncached(
+        RepositorySnapshot snapshot,
+        BoundedProcessRunner.ProcessRunner? run)
     {
         var tracked = snapshot.Files.Values
             .Where(static file => IsTrackedInput(file.Path.Value))
@@ -98,8 +114,8 @@ internal static class ScribeTestMapDeriver
 
         try
         {
-            using var checkout = MsBuildCompileOracle.Materialize(snapshot);
-            return DeriveTracked(tracked, MsBuildCompileOracle.Query(checkout.Root, projects));
+            using var checkout = MsBuildCompileOracle.Materialize(snapshot, IsDerivationInput);
+            return DeriveTracked(tracked, MsBuildCompileOracle.Query(checkout.Root, projects, run: run));
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
@@ -112,7 +128,12 @@ internal static class ScribeTestMapDeriver
         }
     }
 
-    private static string SnapshotDerivationKey(RepositorySnapshot snapshot)
+    internal static string SnapshotDerivationKey(
+        RepositorySnapshot snapshot,
+        Func<IEnumerable<ScribeCompilationProject>, IReadOnlyList<string>>? describeInputPaths = null) =>
+        SnapshotDerivationKey(snapshot, ScribeTestMapStore.ComputeMetadataDigest(snapshot, describeInputPaths));
+
+    private static string SnapshotDerivationKey(RepositorySnapshot snapshot, string metadataDigest)
     {
         using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         AppendHashString(hash, "snapshot-files");
@@ -125,8 +146,7 @@ internal static class ScribeTestMapDeriver
             AppendHashBytes(hash, file.RawBytes.AsSpan());
         }
 
-        // MSBuild inherits every process environment variable, including its executable,
-        // SDK, NuGet, and temporary-directory selectors.
+        // Parent selectors also affect snapshot materialization and metadata resolution.
         var environment = Environment.GetEnvironmentVariables()
             .Cast<DictionaryEntry>()
             .OrderBy(static entry => (string)entry.Key, StringComparer.Ordinal)
@@ -142,6 +162,8 @@ internal static class ScribeTestMapDeriver
         AppendHashString(hash, Path.GetTempPath());
         AppendHashString(hash, "resolved-user-profile");
         AppendHashString(hash, Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
+        AppendHashString(hash, "metadata-digest");
+        AppendHashString(hash, metadataDigest);
 
         return Convert.ToHexStringLower(hash.GetHashAndReset());
     }
@@ -298,7 +320,9 @@ internal static class ScribeTestMapDeriver
 
     internal static ScribeTestMap DeriveTracked(
         IReadOnlyList<ScribeTrackedSource> tracked,
-        MsBuildCompileMap compileMap)
+        MsBuildCompileMap compileMap,
+        ScribeBindingStrategy bindingStrategy = ScribeBindingStrategy.Demand,
+        IScribeBindingRecorder? recorder = null)
     {
         var projectFiles = tracked
             .Where(static file => file.Path.EndsWith(".csproj", StringComparison.Ordinal))
@@ -334,7 +358,9 @@ internal static class ScribeTestMapDeriver
                 projectFiles.Select(static project => project.Path)),
             compileMap.Findings,
             compilationContext.ProductionAssemblies,
-            compilationContext);
+            compilationContext,
+            bindingStrategy,
+            recorder);
     }
 
     internal static ScribeTestMap DeriveSources(
@@ -345,12 +371,16 @@ internal static class ScribeTestMapDeriver
         IReadOnlyList<string>? danglingCompileFailProofProjectExemptionPaths = null,
         IReadOnlyList<MsBuildCompileFinding>? compileQueryFindings = null,
         IReadOnlySet<string>? productionAssemblies = null,
-        ScribeProjectCompilationContext? compilationContext = null)
+        ScribeProjectCompilationContext? compilationContext = null,
+        ScribeBindingStrategy bindingStrategy = ScribeBindingStrategy.Demand,
+        IScribeBindingRecorder? recorder = null)
     {
         var parsed = ScribeTestSymbolBinder.Bind(
             sourceFiles,
+            bindingStrategy,
             productionAssemblies,
-            compilationContext).ToArray();
+            compilationContext,
+            recorder).ToArray();
         var discoveryCriteria = ExtractDiscoveryCriteria(parsed);
         var methods = parsed.SelectMany(static source => source.Callables).ToArray();
         var indirect = indirectProductionSites.ToArray();
@@ -439,7 +469,7 @@ internal static class ScribeTestMapDeriver
                     continue;
                 }
                 reasons.Add(TestMapUnknownReason.DirectoryEnumeration);
-                InspectRepositoryPath(enumerationArgument, model, reasons);
+                InspectRepositoryPath(enumerationArgument, model, method.SemanticModels, reasons);
                 continue;
             }
 
@@ -469,7 +499,7 @@ internal static class ScribeTestMapDeriver
                 continue;
             }
 
-            InspectRepositoryPath(argument, model, reasons);
+            InspectRepositoryPath(argument, model, method.SemanticModels, reasons);
         }
     }
 
@@ -538,6 +568,7 @@ internal static class ScribeTestMapDeriver
     private static void InspectRepositoryPath(
         ExpressionSyntax? argument,
         SemanticModel model,
+        ScribeSemanticModelProvider semanticModels,
         HashSet<TestMapUnknownReason> reasons)
     {
         var create = argument
@@ -554,7 +585,7 @@ internal static class ScribeTestMapDeriver
             return;
         }
 
-        if (IsLiteralCombinedRepositoryPath(argument, model))
+        if (IsLiteralCombinedRepositoryPath(argument, model, semanticModels))
         {
             return;
         }
@@ -564,7 +595,8 @@ internal static class ScribeTestMapDeriver
 
     private static bool IsLiteralCombinedRepositoryPath(
         ExpressionSyntax? expression,
-        SemanticModel model)
+        SemanticModel model,
+        ScribeSemanticModelProvider semanticModels)
     {
         if (expression is InvocationExpressionSyntax combine
             && model.GetSymbolInfo(combine).Symbol is IMethodSymbol
@@ -574,7 +606,8 @@ internal static class ScribeTestMapDeriver
             }
             && pathType.ToDisplayString() == "System.IO.Path"
             && combine.ArgumentList.Arguments is { Count: >= 2 } arguments
-            && ScribeTestSymbolBinder.IsRepositoryRootExpression(arguments[0].Expression, model))
+            && ScribeTestSymbolBinder.IsRepositoryRootExpression(
+                arguments[0].Expression, model, semanticModels))
         {
             foreach (var argument in arguments.Skip(1))
             {

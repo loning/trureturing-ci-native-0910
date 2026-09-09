@@ -68,7 +68,7 @@ public sealed partial class CleanLanesCommandTests
             AssertProbeInvocation(
                 invocation,
                 "lsof",
-                ["-nP", "-F0pfn"],
+                ["-nP", "-F0pftn"],
                 Path.GetTempPath()));
     }
 

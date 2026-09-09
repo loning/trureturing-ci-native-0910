@@ -23,7 +23,6 @@ public sealed class ResidualFrontierAssemblerTests
             fixture.Document,
             fixture.Snapshot,
             fixture.Lean,
-            fixture.VerifiedScribeEmissions,
             baselineDocument: fixture.Document,
             truthStates: fixture.TruthStates);
 
@@ -50,8 +49,13 @@ public sealed class ResidualFrontierAssemblerTests
             fixture.Lean.Report,
             new FakeScribeEmissionVerifier(fixture.VerifiedScribeEmissions),
             fixture.TruthStates);
+        var canonicalFrontier = DigestionFrontierProjection.Create(
+            fixture.Document,
+            canonical,
+            DigestionContentKindResolver.Resolve(fixture.Snapshot, fixture.Document),
+            retryDispositions: false);
         var expected = Encoding.UTF8.GetBytes(
-            EchoResidualBlock.Render(DigestResidualSummary.Render(canonical)));
+            EchoResidualBlock.Render(DigestResidualSummary.Render(canonical, canonicalFrontier)));
 
         Assert.Equal(expected, actual.ToArray());
     }
@@ -100,6 +104,7 @@ public sealed class ResidualFrontierAssemblerTests
             DigestionMigrationState.Partial,
             DigestionTruthState.Closed,
             [],
+            receipts: new DigestionReceipts(["uncovered-control-clause"], [], null),
             sourceId: SourceId,
             sourcePath: SourcePath) with
         {
@@ -182,7 +187,6 @@ public sealed class ResidualFrontierAssemblerTests
         DigestionTruthState.Closed,
         [],
         new DigestionReceipts(
-            [new DigestionScribeReceipt(TargetGid, definitionHash, emissionHash)],
             [],
             [],
             null),

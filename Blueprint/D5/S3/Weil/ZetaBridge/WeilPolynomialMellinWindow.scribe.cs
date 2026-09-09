@@ -42,7 +42,7 @@ internal sealed class WeilPolynomialMellinWindowDocument : IScribeDocumentDefini
                     + "on [-a,a], with zero extension. The chosen Ioc endpoints "
                     + "give the same Lebesgue Fourier transform. The finite polynomial "
                     + "is a concrete approximation of the regular prolate modes, "
-                    + "whose independent spectral certification is explained in the theory volume.")),
+                    + "whose independent spectral certification is explained in the source analysis.")),
                 Describe.Lean(DescribeId.Create("mellin-rate"),
                     DeclarationHandle.Create(Owner + "mellinRate"), H("Fourier-shifted monomial rate"),
                     StatementSource.FromAuthor(Disp(Seq(rate, Eq,
@@ -84,11 +84,11 @@ internal sealed class WeilPolynomialMellinWindowDocument : IScribeDocumentDefini
                     AssessedProvenance.FromRepo(),
                     Blocks(Paragraph(Text("For every real a, natural M,d, complex coefficient family A and complex z, the actual Fourier integrand is integrable. Compact interval continuity proves each summand integrable, followed by finite linearity. This excludes totalized nonintegrable Fourier values."))),
                     DescribeRole.Theorem),
-                Describe.Lean(DescribeId.Create("polynomial-mellin-window-paperFT"),
+                Describe.Lean(DescribeId.Create("polynomial-mellin-window-paper-ft"),
                     DeclarationHandle.Create(Owner + "polynomial_mellin_window_paperFT"), H("Quadrature-free Fourier evaluation"),
                     StatementSource.FromAuthor(Disp(Seq(
                         Call("And", Call("ForAllIcc", D(1), M, Call("LessEqual", Call("log", m), Call("mul", D(2), a))),
-                            Call("Less", Call("Im", z), Call("div", D(1), D(2)))), Rightarrow,
+                            Call("Less", Call("Im", z), Call("div", D(1), D(2)))), Rightarrow, Sp,
                         Call("paperFT", window, z), Eq,
                         Call("mul", D(4), Call("SumIcc", D(1), M, Call("SumRange", d,
                             Call("mul", Call("apply", A, r), Call("pow", m, Call("mul", D(2), r)), endpoint))))))),

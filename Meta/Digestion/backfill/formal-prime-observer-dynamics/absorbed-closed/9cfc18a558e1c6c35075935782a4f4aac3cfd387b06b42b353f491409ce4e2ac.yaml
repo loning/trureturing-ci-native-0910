@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Factorization/PrimePowers/PrimeExponentLanguageComplete.prime_exponent_language_complete
     target_statement_id: sha256:8102369cd1bde6ea08ba929deef874f5b4e7698f337a971e2c31d89e6511edc7
 receipts:
-  scribe:
-    - gid: D5/S3/Factorization/PrimePowers/PrimeExponentLanguageComplete.prime_exponent_language_complete
-      definition_sha256: sha256:45a4f8a37166ee287b054d8b36dddcd0f55277402f5723277bc25543b808c48c
-      emission_sha256: sha256:88fd940cc6439d95fb6bdb9e2704e2ea0e7be260e12c1f40c66c27193ca9cfdd
   unresolved_subitems: []

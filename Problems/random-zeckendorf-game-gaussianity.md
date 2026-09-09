@@ -1,7 +1,7 @@
 ---
 slug: random-zeckendorf-game-gaussianity
 bibkey: cheigh2022towards
-arxiv_id: 2210.11038
+doi: 10.48550/arXiv.2210.11038
 triage: window
 motivation_gids:
   - D5/S1/Digit/Raw

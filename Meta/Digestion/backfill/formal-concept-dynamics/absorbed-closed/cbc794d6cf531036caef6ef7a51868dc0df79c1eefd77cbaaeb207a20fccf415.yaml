@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Identity/StrictIdentityBranchImpossibility.strict_identity_branch_impossible
     target_statement_id: sha256:aef2d630a8cb7f744c569e3a701b2b68837a222d9e4bdaee655fae9266744501
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Identity/StrictIdentityBranchImpossibility.strict_identity_branch_impossible
-      definition_sha256: sha256:bc2ce3e643cbf672e5439e9af41b83e1a3d6b4bf953943867fcaeea2c7b1fd37
-      emission_sha256: sha256:4e9bb90a48d131c0d2178a4efb8053e6ae3c039362fc33a68e65dd45c24c44a3
   unresolved_subitems: []

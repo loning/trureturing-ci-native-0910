@@ -5,6 +5,152 @@ namespace StrataLint.Tests;
 public sealed partial class BackfillInventoryLoaderTests
 {
     [Fact]
+    public void WriteAtomSortsCoverageGidsOrdinally()
+    {
+        var written = System.Text.Encoding.UTF8.GetString(
+            BackfillInventoryWriter.WriteAtom(CoverageOrderEntry()).AsSpan());
+
+        Assert.Contains("coverage_gids:\n" + ExpectedOrderedCoverage("  "), written, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void WriteEntrySortsCoverageGidsOrdinally()
+    {
+        var written = System.Text.Encoding.UTF8.GetString(
+            BackfillInventoryWriter.WriteEntry(CoverageOrderEntry()).AsSpan());
+
+        Assert.Contains("        coverage_gids:\n" + ExpectedOrderedCoverage("          "), written, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void StatusAuthorityIdentityIgnoresCoverageOrder()
+    {
+        var entry = CoverageOrderEntry();
+        var source = CoverageOrderSource(entry);
+        var reordered = entry with { Coverage = [entry.Coverage[1], entry.Coverage[0]] };
+
+        Assert.Equal(
+            BackfillInventoryWriter.WriteStatusAuthorityIdentity(source, entry).ToArray(),
+            BackfillInventoryWriter.WriteStatusAuthorityIdentity(source, reordered).ToArray());
+    }
+
+    [Fact]
+    public void StatusAuthorityIdentityRejectsChangedCoverageTarget()
+    {
+        var entry = CoverageOrderEntry();
+        var source = CoverageOrderSource(entry);
+        var changed = entry with
+        {
+            Coverage = [entry.Coverage[0] with { TargetStatementId = null }, entry.Coverage[1]],
+        };
+
+        Assert.False(BackfillInventoryWriter.WriteStatusAuthorityIdentity(source, entry).AsSpan()
+            .SequenceEqual(BackfillInventoryWriter.WriteStatusAuthorityIdentity(source, changed).AsSpan()));
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void CoverageWriterRejectsDuplicateGid(bool fullEntry, bool conflictingTarget)
+    {
+        var entry = CoverageOrderEntry();
+        var duplicate = entry.Coverage[0] with
+        {
+            TargetStatementId = conflictingTarget ? "sha256:" + new string('b', 64) : entry.Coverage[0].TargetStatementId,
+        };
+        entry = entry with { Coverage = entry.Coverage.Add(duplicate) };
+
+        var exception = Assert.Throws<InvalidOperationException>(() => fullEntry
+            ? BackfillInventoryWriter.WriteEntry(entry)
+            : BackfillInventoryWriter.WriteAtom(entry));
+
+        Assert.Contains("BACKFILL_COVERAGE_DUPLICATE_GID", exception.Message, StringComparison.Ordinal);
+        Assert.Contains(duplicate.Gid, exception.Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CoverageLoaderRejectsNonOrdinalGidOrder(bool baseline)
+    {
+        var atom = CanonicalCoverageAtom("coverage_gids:\n"
+            + "  - gid: D5/S0/Carrier/Probe.alpha\n    target_statement_id: null\n"
+            + "  - gid: D5/S0/Carrier/Probe.Zeta\n    target_statement_id: null");
+        var snapshot = Snapshot(Source("delta-v0.1", "docs/delta.md", "none"), atom);
+
+        var exception = Assert.Throws<FormatException>(() => baseline
+            ? BackfillInventoryLoader.LoadBaseline(snapshot)
+            : BackfillInventoryLoader.Load(snapshot));
+
+        Assert.Equal(
+            $"BACKFILL_COVERAGE_ORDER: entry {FixtureAtomId("theorem/canonical-coverage")} coverage_gids must have unique gids in ordinal order",
+            exception.Message);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CoverageLoaderAcceptsOrdinalGidOrder(bool baseline)
+    {
+        var atom = CanonicalCoverageAtom("coverage_gids:\n" + ExpectedOrderedCoverage("  ").TrimEnd('\n'));
+        var snapshot = Snapshot(Source("delta-v0.1", "docs/delta.md", "none"), atom);
+
+        var document = baseline
+            ? BackfillInventoryLoader.LoadBaseline(snapshot)
+            : BackfillInventoryLoader.Load(snapshot);
+
+        var entry = Assert.Single(document.RequireDigestionEntries());
+        Assert.Equal(["D5/S0/Carrier/Probe.Zeta", "D5/S0/Carrier/Probe.alpha"], entry.CoverageGids.ToArray());
+        Assert.Null(entry.Coverage[0].TargetStatementId);
+        Assert.Equal("sha256:" + new string('a', 64), entry.Coverage[1].TargetStatementId);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void CoverageLoaderRejectsDuplicateGid(bool baseline, bool conflictingTarget)
+    {
+        var target = conflictingTarget ? "sha256:" + new string('a', 64) : "null";
+        var atom = CanonicalCoverageAtom("coverage_gids:\n"
+            + "  - gid: D5/S0/Carrier/Probe.alpha\n    target_statement_id: null\n"
+            + $"  - gid: D5/S0/Carrier/Probe.alpha\n    target_statement_id: {target}");
+        var snapshot = Snapshot(Source("delta-v0.1", "docs/delta.md", "none"), atom);
+
+        var exception = Assert.Throws<FormatException>(() => baseline
+            ? BackfillInventoryLoader.LoadBaseline(snapshot)
+            : BackfillInventoryLoader.Load(snapshot));
+
+        Assert.Contains("BACKFILL_COVERAGE_ORDER", exception.Message, StringComparison.Ordinal);
+    }
+
+    private static DigestionLedgerSource CoverageOrderSource(DigestionLedgerEntry entry) => new(
+        entry.SourceId, entry.SourcePath, entry.Atomizer, [],
+        GenreRegistryProjection.Available(GenreRegistryCheck.NoGenreRegistry), [entry]);
+
+    private static DigestionLedgerEntry CoverageOrderEntry()
+    {
+        var atom = CanonicalCoverageAtom("coverage_gids: []");
+        var entry = Assert.Single(BackfillInventoryLoader.Load(Snapshot(
+            Source("delta-v0.1", "docs/delta.md", "none"), atom)).RequireDigestionEntries());
+        return entry with
+        {
+            Coverage =
+            [
+                new DigestionCoverageEdge("D5/S0/Carrier/Probe.alpha", "sha256:" + new string('a', 64)),
+                new DigestionCoverageEdge("D5/S0/Carrier/Probe.Zeta", null),
+            ],
+        };
+    }
+
+    private static string ExpectedOrderedCoverage(string indent) =>
+        $"{indent}- gid: D5/S0/Carrier/Probe.Zeta\n{indent}  target_statement_id: null\n"
+        + $"{indent}- gid: D5/S0/Carrier/Probe.alpha\n{indent}  target_statement_id: sha256:{new string('a', 64)}\n";
+
+    [Fact]
     public void DirectoryAtomAcceptsCanonicalCoverageEdgesAndDerivesCoverageGids()
     {
         const string gid = "D5/S0/Carrier/Probe.probe";
@@ -142,7 +288,8 @@ public sealed partial class BackfillInventoryLoaderTests
             "  tail_authorization: null\n"
             + "  quarantine:\n"
             + "    justification: \"source's theorem: missing\"\n"
-            + "    reentry_condition: retry\n",
+            + "    reentry_condition: retry\n"
+            + "    blocker_class: missing-prerequisite\n",
             StringComparison.Ordinal);
         var entry = Assert.Single(BackfillInventoryLoader.Load(Snapshot(
             Source("delta-v0.1", "docs/delta.md", "none"),
@@ -168,7 +315,6 @@ public sealed partial class BackfillInventoryLoaderTests
             cas_ref: {{fingerprint}}
             {{coverage}}
             receipts:
-              scribe: []
               unresolved_subitems: []
             """ + "\n");
     }

@@ -24,6 +24,7 @@ internal interface ICliEnvironment
     CommandResult DigestStatus(IReadOnlyList<string> arguments);
 
     CommandResult ShowAtom(IReadOnlyList<string> arguments);
+    CommandResult AtomContext(IReadOnlyList<string> arguments);
 
     ExplicitCommandResult EchoVerify(IReadOnlyList<string> arguments);
 
@@ -33,6 +34,8 @@ internal interface ICliEnvironment
 
     ExplicitCommandResult DepositHeaderCheck(IReadOnlyList<string> arguments);
 
+    ExplicitCommandResult LeanUtilityInput(IReadOnlyList<string> arguments);
+
     ExplicitCommandResult LedgerFrozen(IReadOnlyList<string> arguments);
 
     CommandResult Ingest(IReadOnlyList<string> arguments);
@@ -41,7 +44,13 @@ internal interface ICliEnvironment
 
     CommandResult CoverAtom(IReadOnlyList<string> arguments);
 
-    CommandResult AlignScribeReceipt(IReadOnlyList<string> arguments);
+    CommandResult CoverBatch(IReadOnlyList<string> arguments);
+
+    CommandResult QuarantineAtom(IReadOnlyList<string> arguments);
+    CommandResult SettleAtom(IReadOnlyList<string> arguments);
+
+    CommandResult DecomposeAtom(IReadOnlyList<string> arguments);
+
 
     CommandResult Route(IReadOnlyList<string> arguments);
 
@@ -93,8 +102,6 @@ internal static class CliApplication
         {
             ["align-digestion-status"] = static (environment, tail, console) =>
                 RenderCommand(environment.AlignDigestionStatus(tail), console),
-            ["align-scribe-receipt"] = static (environment, tail, console) =>
-                RenderCommand(environment.AlignScribeReceipt(tail), console),
             ["capacity-audit"] = static (environment, tail, console) =>
                 RenderExplicit(environment.CapacityAudit(tail), console),
             ["check"] = static (environment, tail, console) =>
@@ -105,10 +112,20 @@ internal static class CliApplication
                 RenderCommand(environment.Coverage(tail), console),
             ["cover-atom"] = static (environment, tail, console) =>
                 RenderCommand(environment.CoverAtom(tail), console),
+            ["cover-batch"] = static (environment, tail, console) =>
+                RenderCommand(environment.CoverBatch(tail), console),
+            ["quarantine-atom"] = static (environment, tail, console) =>
+                RenderCommand(environment.QuarantineAtom(tail), console),
+            ["settle-atom"] = static (environment, tail, console) =>
+                RenderCommand(environment.SettleAtom(tail), console),
+            ["decompose-atom"] = static (environment, tail, console) =>
+                RenderCommand(environment.DecomposeAtom(tail), console),
             ["dag-render"] = static (environment, tail, console) =>
                 RenderCommand(environment.RenderDag(tail), console),
             ["deposit-header-check"] = static (environment, tail, console) =>
                 RenderExplicit(environment.DepositHeaderCheck(tail), console),
+            ["lean-utility-input"] = static (environment, tail, console) =>
+                RenderExplicit(environment.LeanUtilityInput(tail), console),
             ["digest-status"] = static (environment, tail, console) =>
                 RenderCommand(environment.DigestStatus(tail), console),
             ["echo-verify"] = static (environment, tail, console) =>
@@ -135,6 +152,8 @@ internal static class CliApplication
                 RenderCommand(environment.SelfTest(tail), console),
             ["show-atom"] = static (environment, tail, console) =>
                 RenderCommand(environment.ShowAtom(tail), console),
+            ["atom-context"] = static (environment, tail, console) =>
+                RenderCommand(environment.AtomContext(tail), console),
             ["topology"] = static (environment, tail, console) =>
                 RenderTopology(environment.Topology(tail), console),
             ["truth-export"] = static (environment, tail, console) =>

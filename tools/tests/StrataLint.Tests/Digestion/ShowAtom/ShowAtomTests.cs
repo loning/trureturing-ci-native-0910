@@ -547,7 +547,7 @@ public sealed partial class ShowAtomTests
             atomId,
             fingerprints,
             [],
-            new DigestionReceipts([], [], [], null),
+            new DigestionReceipts([], [], null),
             new DigestionStatus(DigestionMigrationState.Partial, DigestionTruthState.Open),
             fingerprints.RawSha256);
 

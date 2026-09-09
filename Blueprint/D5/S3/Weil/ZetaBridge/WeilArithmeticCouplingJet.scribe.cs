@@ -43,7 +43,7 @@ internal sealed class WeilArithmeticCouplingJetDocument : IScribeDocumentDefinit
                     + "These are the actual boundary terms of the canonical arithmetic form. "
                     + "Their identification with its Fourier matrix follows the explicit "
                     + "calculations in Connes, Consani and Moscovici, arXiv:2511.22755, "
-                    + "Lemma 2.3 and Section 4, and is a paper bridge in the existing theory volume.")),
+                    + "Lemma 2.3 and Section 4, and is a paper bridge in the existing source analysis.")),
                 Describe.Lean(
                     DescribeId.Create("arithmetic-boundary-symbol"),
                     DeclarationHandle.Create(Owner + "arithmeticBoundarySymbol"),
@@ -74,9 +74,9 @@ internal sealed class WeilArithmeticCouplingJetDocument : IScribeDocumentDefinit
                     DescribeId.Create("arithmetic-boundary-symbol-bound"),
                     DeclarationHandle.Create(Owner + "arithmetic_boundary_symbol_bound"),
                     H("Convergence and an unconditional arithmetic symbol bound"),
-                    StatementSource.FromAuthor(Disp(Seq(Call("AtLeastTwo", c), Rightarrow,
-                        Call("AbsoluteGammaSineSummability", c, n), Land,
-                        Call("abs", symbol), Leq, budget))),
+                    StatementSource.FromAuthor(Disp(Seq(Call("AtLeastTwo", c), Rightarrow, Sp,
+                        Call("AbsoluteGammaSineSummability", c, n), Land, Sp,
+                        Call("abs", symbol), Leq, Sp, budget))),
                     AssessedProvenance.FromRepo(),
                     Blocks(Paragraph(Text(
                         "n is any integer. The Gamma sine series is absolutely convergent "
@@ -117,9 +117,9 @@ internal sealed class WeilArithmeticCouplingJetDocument : IScribeDocumentDefinit
                     DeclarationHandle.Create(Owner + "arithmetic_coupling_first_jet_error"),
                     H("An all-scale exterior coupling remainder"),
                     StatementSource.FromAuthor(Disp(Seq(
-                        Call("AtLeastTwo", c), Land, Call("Nonnegative", N), Land,
-                        Call("InteriorIndicesBounded", S, N), Land, Call("Exterior", m, N),
-                        Rightarrow, Call("norm", Seq(col, Minus, jet)), Leq, bound))),
+                        Call("AtLeastTwo", c), Land, Sp, Call("Nonnegative", N), Land, Sp,
+                        Call("InteriorIndicesBounded", S, N), Land, Sp, Call("Exterior", m, N),
+                        Rightarrow, Sp, Call("norm", Seq(col, Minus, jet)), Leq, Sp, bound))),
                     AssessedProvenance.FromRepo(),
                     Blocks(Paragraph(Text(
                         "N is real and nonnegative, every n in S satisfies |n|<=N, "

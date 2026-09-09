@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Constants/Characterizations/ConnectionCoefficientComposition.connection_coefficient_composition
     target_statement_id: sha256:fbbc9932e8734bdf7ddc24683a990dc8d86452f3b336ff503f550a3f143ed1cc
 receipts:
-  scribe:
-    - gid: D5/S3/Constants/Characterizations/ConnectionCoefficientComposition.connection_coefficient_composition
-      definition_sha256: sha256:8ff61ae6ecfade852e188b26705d243a49cba979a121dadaebf5d52f5372fa89
-      emission_sha256: sha256:44f360e096044028cbfc13afeddf1a5645f9cdb1868fdfb7bb5dc37f7bcb078b
   unresolved_subitems: []

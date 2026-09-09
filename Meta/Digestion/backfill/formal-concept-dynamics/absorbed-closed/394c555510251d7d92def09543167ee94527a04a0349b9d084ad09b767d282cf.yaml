@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Experiment/ExperimentIdentifiability.identifiable_tfae
     target_statement_id: sha256:d4c526b963648aaff050c0e42deb6d46baeee95aedfea9def506ee621fefded8
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Experiment/ExperimentIdentifiability.identifiable_tfae
-      definition_sha256: sha256:b4f2e1e43882892200cc33a2eed69bcb42950ef64d577ebe326a1eb16fbe352f
-      emission_sha256: sha256:590156a92d539d8ebd685dbb534b8fc3f899837e1ee0271f4d6b8b2d2f2580e2
   unresolved_subitems: []

@@ -24,10 +24,11 @@ internal sealed class WeilArithmeticCouplingSecondJetDocument : IScribeDocumentD
     public DocumentDefinition Create()
     {
         Formula c = F.Id("c"), N = F.Id("N"), m = F.Id("m"), v = F.Id("v");
-        Formula budget = Call("B_arith", c);
+        Formula budget = Call("BArith", c);
         Formula rhs = Seq(
-            Frac(Seq(D(2), Sp, budget, Sp, Pow(N, D(2))),
-                Seq(Pi, Sp, Pow(Call("abs", m), D(2)), Sp,
+            new Formula.Fraction(
+                Seq(D(2), Sp, budget, Sp, new Formula.Power(N, Grp(D(2)))),
+                Seq(Pi, Sp, new Formula.Power(Call("abs", m), Grp(D(2))), Sp,
                     Grp(Call("abs", m), Minus, N))),
             Sp, Call("l1", v));
 
@@ -46,11 +47,11 @@ internal sealed class WeilArithmeticCouplingSecondJetDocument : IScribeDocumentD
                     DeclarationHandle.Create(Owner + "arithmetic_coupling_second_jet_error"),
                     H("Second exterior jet for the actual arithmetic coupling"),
                     StatementSource.FromAuthor(Disp(Seq(
-                        Call("interiorBand", N), Land, Call("outside", m, N),
-                        Rightarrow,
+                        Call("interiorBand", N), Land, Sp, Call("outside", m, N),
+                        Rightarrow, Sp,
                         Call("norm", Seq(Call("column", c, v, m), Minus,
                             Call("secondJet", c, v, m))),
-                        Leq, rhs))),
+                        Leq, Sp, rhs))),
                     AssessedProvenance.FromRepo(),
                     Blocks(Paragraph(Text(
                         "The exact scalar identity is 1/(m-n)=1/m+n/m^2+"
