@@ -11,7 +11,7 @@ from streaming import canonical, closure, digest
 COMMAND = "LeanInformationAudit.Census.Command"
 
 
-def prepare(repository, directory, membership, request):
+def prepare(repository, directory, membership, request, *, bound=BATCH_MODULE_BOUND, cache=None):
     def read(name):
         return json.loads((directory / name).read_bytes())
     graph = dict(membership["external_graph"])
@@ -28,7 +28,7 @@ def prepare(repository, directory, membership, request):
     toolchain = digest([(repository / "lean-toolchain").read_text(),
                         (repository / "lake-manifest.json").read_text()])
     imports, addresses, used_inputs = {}, {}, {}
-    cache = repository / ".lake/build/census/validation"
+    cache = cache or repository / ".lake/build/census/validation"
     for key in membership["candidate_keys"]:
         owner, _, identity = key
         root = membership["assignment"][owner]
@@ -49,7 +49,7 @@ def prepare(repository, directory, membership, request):
             "evidence_inputs": evidence_inputs, "toolchain": toolchain, "query_source": query_digest,
             "scope": input_scope, "source_inputs": source_inputs}
     # The receipt's logical batches cover every key, independent of cache warmth.
-    planned = candidate_batches(membership["candidate_keys"], imports, graph)
+    planned = candidate_batches(membership["candidate_keys"], imports, graph, bound)
     hits, missing, entries, source_inputs = [], [], [], []
     for key in membership["candidate_keys"]:
         path = cache / (addresses[key[2]][7:] + ".json")
@@ -62,7 +62,7 @@ def prepare(repository, directory, membership, request):
             source_inputs.extend(value["source_inputs"])
         else:
             missing.append(key)
-    return {"planned": planned, "execute": candidate_batches(missing, imports, graph),
+    return {"planned": planned, "execute": candidate_batches(missing, imports, graph, bound), "bound": bound,
             "hits": hits, "misses": missing, "entries": entries, "source_inputs": source_inputs,
             "addresses": addresses, "inputs": used_inputs, "cache": cache, "scopes": scopes}
 
@@ -90,7 +90,7 @@ def run_batches(repository, directory, membership, request, plan, step, lean_bin
         atomic_json(folder / "index.json", {"candidate_keys": batch["keys"], "named": membership["named"],
             "assignment": {owner: membership["assignment"][owner] for owner in owners},
             "scopes": [[root, plan["scopes"][root]] for root in sorted(roots)],
-            "batch_module_bound": BATCH_MODULE_BOUND})
+            "batch_module_bound": plan["bound"]})
         output = folder / "candidates.json"
         driver = folder / "Candidates.lean"
         driver.write_text("".join("import " + module + "\n" for module in batch["imports"]) +
@@ -103,7 +103,7 @@ def run_batches(repository, directory, membership, request, plan, step, lean_bin
         if (receipt["rows_sha256"] != "sha256:" + hashlib.sha256(output.read_bytes()).hexdigest()
                 or receipt["head"] != request["head"]
                 or receipt["report_sha256"] != batch_request["report_sha256"]
-                or value["environment_modules"] > BATCH_MODULE_BOUND):
+                or value["environment_modules"] > plan["bound"]):
             raise ValueError("IE-C044 candidate batch receipt mismatch or module bound exceeded")
         if sorted(row["statement_id"] for row in value["entries"]) != sorted(wanted):
             raise ValueError("IE-C044 candidate batch does not cover its requested keys")
@@ -120,7 +120,7 @@ def run_batches(repository, directory, membership, request, plan, step, lean_bin
     atomic_json(directory / "candidates.json", result)
     record = {"hits": len(plan["hits"]), "misses": len(plan["misses"]),
               "revalidated_keys": plan["misses"], "executions": executions,
-              "receipt": {"bound": BATCH_MODULE_BOUND, "batches": plan["planned"],
+              "receipt": {"bound": plan["bound"], "batches": plan["planned"],
                 "cache_keys": sorted(plan["addresses"].items()),
                 "result_sha256": digest(result)}}
     atomic_json(directory / "validation.json", record)

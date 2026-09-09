@@ -52,6 +52,9 @@ def external_graph(directory):
     prefix = subprocess.check_output(["lean", "--print-prefix"], text=True).strip()
     search.append(pathlib.Path(prefix) / "lib/lean")
     result = {}
+    from incremental import atomic_json
+    cache = repository / ".lake/build/census/upstream"
+    hits = misses = 0
     while pending:
         module = pending.pop()
         if module in result:
@@ -60,10 +63,22 @@ def external_graph(directory):
         path = next((root / relative for root in search if (root / relative).is_file()), None)
         if path is None:
             raise ValueError("IE-C044 missing upstream compiler import metadata: " + module)
-        data = read(path)
-        if data["module"] != module:
+        encoded = path.read_bytes()
+        address = hashlib.sha256(encoded).hexdigest()
+        cached = cache / (address + ".json")
+        if cached.is_file():
+            header = read(cached)
+            hits += 1
+        else:
+            data = json.loads(encoded)
+            header = {"module": data["module"], "imports": sorted(set(e[0] for e in data["directImports"]))}
+            del data
+            atomic_json(cached, header)
+            misses += 1
+        del encoded
+        if header["module"] != module:
             raise ValueError("IE-C044 mismatched compiler import metadata: " + module)
-        imports = sorted(set(entry[0] for entry in data["directImports"]))
+        imports = header["imports"]
         if domain_names.intersection(imports):
             raise ValueError("IE-C044 upstream evidence boundary violated: " + module)
         result[module] = imports
@@ -71,6 +86,7 @@ def external_graph(directory):
     request = read(directory / "membership-request.json")
     request["external_graph"] = sorted(result.items())
     write(directory / "membership-request.json", request)
+    write(directory / "upstream-cache.json", {"hits": hits, "misses": misses})
 
 
 def hash_receipt(repository, directory):
