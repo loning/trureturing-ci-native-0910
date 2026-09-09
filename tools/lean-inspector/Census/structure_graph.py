@@ -211,10 +211,13 @@ def analyse(store, keys, output, core, *, cache=None, axioms=None, mark=lambda _
               "empty_core_support_positive": empty_positive, "frontier_incidences": frontier_count,
               "direct_depths": {keys[i][2]: direct_depth[i] for i in direct_order},
               "self_edges": [keys[i][2] for i, targets in enumerate(adj) if i in targets],
-              "collisions": {"keys": len(collision_keys), "resolved": sum(i not in failures for i in collision_keys),
-                             "ambiguous": sum(e["reason"] == "frozen_key_ambiguous" for e in entries),
+              "collisions": {"keys": len(collision_keys), "groups": sum(n > 1 for n in names.values()),
+                             "keys_readable": sum(i not in failures for i in collision_keys),
+                             "resolved": sum(e["scope_resolved_direct_references"] for e in entries),
+                             "ambiguous": sum(e["ambiguous_direct_references"] for e in entries),
                              "ambiguous_rows": [list(keys[i]) for i, e in enumerate(entries) if e["reason"] == "frozen_key_ambiguous"]},
               "cache": {"snapshot_hit": False, "fold_hits": hits, "fold_misses": len(keys) - hits},
+              "helper_visits": sum(e["helper_visits"] for e in entries),
               "timings_s": timings, "projection_key": snapshot}
     if cache:
         mark("structure_snapshot_save")

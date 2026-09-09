@@ -21,7 +21,7 @@ def main():
     cases = [
         ("folding_skipped", "structure_store.py", "test_structure.StructureTests",
          "test_panel_direct_folded_depth_and_distinct_descendants",
-         [('consume(todo[0], (helper[1] or []) + helper[2])', 'pass')]),
+         [('consume(todo[0], (helper[1] or []) + helper[2], uncertain=bool(todo[2]))', 'pass')]),
         ("failed_extraction_as_empty", "structure_store.py", "test_structure.StructureTests",
          "test_failed_extraction_is_unavailable_never_empty",
          [('errors.add("value_unavailable")\n                    entry["unbounded"] = True', 'pass')]),

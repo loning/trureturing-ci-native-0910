@@ -5,6 +5,7 @@ including SCC visited state and boundary provenance, lives in SQLite.
 """
 
 import functools
+import collections
 import gzip
 import hashlib
 import json
@@ -42,7 +43,8 @@ class Store:
               (module TEXT, name TEXT, kind TEXT, value BLOB, types BLOB, hash TEXT,
                PRIMARY KEY(module,name));
             CREATE INDEX IF NOT EXISTS names ON decl(name);
-            CREATE TEMP TABLE todo(module TEXT,name TEXT,done INTEGER DEFAULT 0,PRIMARY KEY(module,name));
+            CREATE TEMP TABLE todo(module TEXT,name TEXT,uncertain INTEGER,done INTEGER DEFAULT 0,
+                                  PRIMARY KEY(module,name,uncertain));
             CREATE TEMP TABLE boundary(name TEXT,module TEXT,library TEXT,PRIMARY KEY(name,module));
             CREATE TEMP TABLE tokens(context TEXT,name TEXT,signature TEXT,PRIMARY KEY(context,name));
         """)
@@ -96,6 +98,7 @@ class Store:
         self.frozen = {}
         for key in keys:
             self.frozen.setdefault((key[0], key[1]), []).append(tuple(key))
+        self.collision_names = {name for name, count in collections.Counter(k[1] for k in keys).items() if count > 1}
 
     def frozen_keys(self, module, name):
         return self.frozen.get((module, name), [])
@@ -169,7 +172,8 @@ class Store:
         entry = {"root": list(key), "root_hash": root_hash, "policy": policy,
                  "direct": [], "folded": [], "potential": [], "unbounded": False,
                  "value_constant_count": None, "core_or_frozen_support": "undetermined",
-                 "empty_core_support": "undetermined", "reason": None}
+                 "empty_core_support": "undetermined", "reason": None,
+                 "scope_resolved_direct_references": 0, "ambiguous_direct_references": 0}
         errors, direct, folded, potential = set(), set(), set(), set()
         for table in ("todo", "boundary", "tokens"):
             self.db.execute("DELETE FROM " + table)
@@ -185,7 +189,7 @@ class Store:
         elif len(self.frozen_keys(key[0], key[1])) != 1:
             errors.add("frozen_key_ambiguous")
 
-        def consume(context, refs, seed=False):
+        def consume(context, refs, seed=False, uncertain=False):
             supported = True
             for name in sorted(set(refs)):
                 candidates = self.signature(context, name)
@@ -194,9 +198,10 @@ class Store:
                 frozen_candidates = [(m, name, identity) for m, _, ids, _, _ in candidates for identity in ids]
                 if len(candidates) == 1 and len(frozen_candidates) == 1 and not candidates[0][4]:
                     target = frozen_candidates[0][2]
-                    folded.add(target)
+                    (potential if uncertain else folded).add(target)
                     if seed:
                         direct.add(target)
+                        entry["scope_resolved_direct_references"] += name in self.collision_names
                     continue
                 if seed and name not in core:
                     supported = False
@@ -206,19 +211,28 @@ class Store:
                 elif frozen_candidates:
                     errors.add("frozen_key_ambiguous")
                     potential.update(k[2] for k in frozen_candidates)
-                    if len(frozen_candidates) != len(candidates):
-                        entry["unbounded"] = True
+                    entry["ambiguous_direct_references"] += seed
+                    for module, library, ids, _, _ in candidates:
+                        if library == "repository" and not ids:
+                            self.db.execute("INSERT OR IGNORE INTO todo(module,name,uncertain) VALUES (?,?,1)",
+                                            (module, name))
                 elif all(c[1] != "repository" for c in candidates):
                     # A reserved upstream constant can be realized in several
                     # modules. Preserve ALL in-scope provenance, never pick one.
                     self.db.executemany("INSERT OR IGNORE INTO boundary VALUES (?,?,?)",
                                         [(name, c[0], c[1]) for c in candidates])
                 elif len(candidates) == 1:
-                    self.db.execute("INSERT OR IGNORE INTO todo(module,name) VALUES (?,?)",
-                                    (candidates[0][0], name))
+                    self.db.execute("INSERT OR IGNORE INTO todo(module,name,uncertain) VALUES (?,?,?)",
+                                    (candidates[0][0], name, int(uncertain)))
                 else:
                     errors.add("dependency_unresolved")
-                    entry["unbounded"] = True
+                    # Keep the root unavailable, but bound its unknown edges
+                    # by all readable candidate bodies. Never select an owner
+                    # or present their union as an exact prerequisite set.
+                    for module, library, _, _, _ in candidates:
+                        if library == "repository":
+                            self.db.execute("INSERT OR IGNORE INTO todo(module,name,uncertain) VALUES (?,?,1)",
+                                            (module, name))
             return supported
 
         if not errors:
@@ -227,11 +241,11 @@ class Store:
             entry["core_or_frozen_support"] = True if support else "undetermined"
             entry["empty_core_support"] = True if root[1] and len(direct) == len(root[1]) else "undetermined"
             while True:
-                todo = self.db.execute("SELECT module,name FROM todo WHERE done=0 LIMIT 1").fetchone()
+                todo = self.db.execute("SELECT module,name,uncertain FROM todo WHERE done=0 LIMIT 1").fetchone()
                 if todo is None:
                     break
-                self.db.execute("UPDATE todo SET done=1 WHERE module=? AND name=?", todo)
-                helper = self.raw(*todo)
+                self.db.execute("UPDATE todo SET done=1 WHERE module=? AND name=? AND uncertain=?", todo)
+                helper = self.raw(*todo[:2])
                 if helper is None:
                     errors.add("dependency_unresolved")
                     entry["unbounded"] = True
@@ -243,7 +257,7 @@ class Store:
                 else:
                     # Same dependency definition as Inspector; SCCs terminate
                     # through the disk visited set and all members are closed.
-                    consume(todo[0], (helper[1] or []) + helper[2])
+                    consume(todo[0], (helper[1] or []) + helper[2], uncertain=bool(todo[2]))
         else:
             entry["unbounded"] = True
         entry.update(direct=sorted(direct), folded=sorted(folded), potential=sorted(potential),

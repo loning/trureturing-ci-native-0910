@@ -205,6 +205,27 @@ class StructureTests(unittest.TestCase):
             {"declaring_module": "Core", "library": "Init"},
             {"declaring_module": "OtherCore", "library": "Init"}])
 
+    def test_ambiguous_helpers_bound_only_their_possible_descendants(self):
+        self.store.module("Base", ["Core"], "repository")
+        for name in "ab":
+            self.decl(name, [], module="Base")
+        for module, target in [("Left", "a"), ("Right", "b")]:
+            self.store.module(module, ["Base"], "repository")
+            self.decl("h", [target], module=module, kind="def")
+        self.store.module("Fixture", ["Left", "Right"], "repository")
+        self.decl("c", ["h"])
+        self.decl("d", [])
+        self.decl("e", ["c"])
+        keys = [key(n, "Base") for n in "ab"] + [key(n) for n in "cde"]
+        rows, _ = self.run_graph(keys)
+        self.assertIsNone(rows[key("c")[2]]["readings"])
+        self.assertEqual(rows[key("c")[2]]["reason"], "dependency_unresolved")
+        self.assertEqual(rows[key("d")[2]]["status"], "complete")
+        self.assertEqual(self.reading(rows, "d")["descendant_subgraph_size"], 0)
+        for n in "ab":
+            self.assertIsNone(self.reading(rows, n, "Base")["descendant_subgraph_size"])
+        self.assertIsNone(self.reading(rows, "e")["frozen_dag_depth"])
+
 
 if __name__ == "__main__":
     unittest.main()
