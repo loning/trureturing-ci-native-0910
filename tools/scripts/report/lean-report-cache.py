@@ -189,9 +189,24 @@ def unpack(archive, directory):
     delta_owner().parse_json_modules(report)
 
 
-def select_assets(path, exact):
+def asset_inventory(path):
     pages = json.loads(path.read_text(encoding="utf-8"))
-    assets = {asset["name"]: asset for page in pages for asset in page if asset.get("state") == "uploaded"}
+    return {asset["name"]: asset for page in pages for asset in page}
+
+
+def publication_state(path, exact):
+    assets = asset_inventory(path)
+    members = [assets.get(name) for name in (exact, exact + ".sha256")]
+    if any(item is not None and item.get("state") != "uploaded" for item in members):
+        # An upload in progress is unavailable, not confirmed damaged content.
+        return "unavailable"
+    if all(item is not None for item in members):
+        return "complete"
+    return "partial" if any(item is not None for item in members) else "absent"
+
+
+def select_assets(path, exact):
+    assets = {name: asset for name, asset in asset_inventory(path).items() if asset.get("state") == "uploaded"}
     prefix = exact.rsplit("-", 1)[0] + "-"
     compatible = sorted((asset for name, asset in assets.items()
                          if re.fullmatch(re.escape(prefix) + r"[0-9a-f]{64}\.zip", name)
@@ -232,6 +247,8 @@ def main():
             unpack(*map(pathlib.Path, values))
         elif command == "select":
             select_assets(pathlib.Path(values[0]), values[1])
+        elif command == "publication-state":
+            print(publication_state(pathlib.Path(values[0]), values[1]))
         elif command == "local-seed":
             return local_seed(pathlib.Path(values[0]), *values[1:])
         elif command == "root":

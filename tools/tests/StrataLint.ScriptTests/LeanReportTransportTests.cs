@@ -7,6 +7,115 @@ namespace StrataLint.Tests;
 public sealed class LeanReportTransportTests
 {
     [Theory]
+    [InlineData(null, 1800)]
+    [InlineData("75", 75)]
+    public void BulkTransferDeadlineIsSeparateFromMetadata(string? configured, int expected)
+    {
+        if (OperatingSystem.IsWindows()) return;
+        using var fixture = new LeanReportTransportFixture();
+        fixture.SimulateTransferDuration();
+        var environment = new[] { "FIXTURE_TRANSFER_SECONDS=31" }
+            .Concat(configured is null ? [] : new[] { "STRATALINT_REPORT_CACHE_TRANSFER_TIMEOUT_SECONDS=" + configured }).ToArray();
+        fixture.Success(fixture.Publish(fixture.Bundle(), environment));
+        fixture.Success(fixture.Fetch(environment));
+        Assert.Contains($"release upload timeout={expected}", fixture.DeadlineCalls);
+        Assert.Contains($"release download timeout={expected}", fixture.DeadlineCalls);
+        Assert.Contains("api timeout=30", fixture.DeadlineCalls);
+        Assert.All(fixture.DeadlineCalls.Where(value => value.StartsWith("api ", StringComparison.Ordinal)),
+            value => Assert.Equal("api timeout=30", value));
+    }
+
+    [Theory]
+    [InlineData("upload", "0.5", true)]
+    [InlineData("upload", "1.25", false)]
+    [InlineData("download", "0.5", true)]
+    [InlineData("download", "1.25", false)]
+    public void BulkTransferDeadlineBoundaryIsAnOptionalFailure(string operation, string duration, bool succeeds)
+    {
+        if (OperatingSystem.IsWindows()) return;
+        using var fixture = new LeanReportTransportFixture();
+        var bundle = fixture.Bundle();
+        if (operation == "download") fixture.Success(fixture.Publish(bundle));
+        fixture.SimulateTransferDuration();
+        var environment = new[] { "STRATALINT_REPORT_CACHE_TRANSFER_TIMEOUT_SECONDS=1",
+            "FIXTURE_TRANSFER_OPERATION=" + operation, "FIXTURE_TRANSFER_SECONDS=" + duration };
+        var result = operation == "upload" ? fixture.Publish(bundle, environment) : fixture.Fetch(environment);
+        Assert.Equal(succeeds, result.ExitCode == 0);
+        if (succeeds) return;
+        Assert.Contains("timeout_seconds=1", result.Text, StringComparison.Ordinal);
+        Assert.Contains("LEAN_REPORT_CACHE status=miss", result.Text, StringComparison.Ordinal);
+        Assert.Empty(fixture.CacheEntries);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("0")]
+    [InlineData("-1")]
+    [InlineData("+1")]
+    [InlineData("1.5")]
+    [InlineData("nan")]
+    [InlineData("inf")]
+    [InlineData("1\n")]
+    [InlineData("86401")]
+    [InlineData("999999999999999999999999999999")]
+    public void InvalidBulkTransferDeadlinePreventsRemoteIo(string value)
+    {
+        if (OperatingSystem.IsWindows()) return;
+        using var fixture = new LeanReportTransportFixture();
+        var result = fixture.Publish(fixture.Bundle(), "STRATALINT_REPORT_CACHE_TRANSFER_TIMEOUT_SECONDS=" + value);
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.Contains("STRATALINT_REPORT_CACHE_TRANSFER_TIMEOUT_SECONDS", result.Text, StringComparison.Ordinal);
+        Assert.Empty(fixture.ReleaseCalls);
+    }
+
+    [Theory]
+    [InlineData("FIXTURE_GH_DOWNLOAD_FAIL=existing")]
+    [InlineData("FIXTURE_GH_ASSETS_FAIL=1")]
+    public void UnavailablePublicationReadPreservesOriginalPairEvenWhenProspectiveUploadFails(string failure)
+    {
+        if (OperatingSystem.IsWindows()) return;
+        using var fixture = new LeanReportTransportFixture();
+        var bundle = fixture.Bundle();
+        fixture.Success(fixture.Publish(bundle));
+        var before = fixture.ReleaseSnapshot();
+        var uploads = fixture.UploadCount;
+        var result = fixture.Publish(bundle, failure, "FIXTURE_GH_UPLOAD_FAIL=1");
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.Equal(before, fixture.ReleaseSnapshot());
+        Assert.Equal(uploads, fixture.UploadCount);
+        Assert.Contains("reason=publication-unavailable", result.Text, StringComparison.Ordinal);
+        Assert.DoesNotContain("status=published", result.Text, StringComparison.Ordinal);
+        fixture.Success(fixture.Fetch());
+    }
+
+    [Fact]
+    public void UnavailablePostUploadVerificationDoesNotClaimPublicationSuccess()
+    {
+        if (OperatingSystem.IsWindows()) return;
+        using var fixture = new LeanReportTransportFixture();
+        var result = fixture.Publish(fixture.Bundle(), "FIXTURE_GH_DOWNLOAD_FAIL=published");
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.Contains("reason=publication-unavailable", result.Text, StringComparison.Ordinal);
+        Assert.DoesNotContain("status=published", result.Text, StringComparison.Ordinal);
+        Assert.Equal(2, fixture.Assets.Length);
+        fixture.Success(fixture.Fetch());
+    }
+
+    [Fact]
+    public void SameKeyUploadConflictAcceptsVerifiedWinnerWithoutClobber()
+    {
+        if (OperatingSystem.IsWindows()) return;
+        using var fixture = new LeanReportTransportFixture();
+        var result = fixture.Publish(fixture.Bundle(), "FIXTURE_GH_UPLOAD_RACE=1");
+        fixture.Success(result);
+        Assert.Contains("mode=existing", result.Text, StringComparison.Ordinal);
+        Assert.Equal(1, fixture.UploadCount);
+        Assert.DoesNotContain("--clobber", fixture.ReleaseCalls.Single(value => value.StartsWith("release upload ", StringComparison.Ordinal)),
+            StringComparison.Ordinal);
+        fixture.Success(fixture.Fetch());
+    }
+
+    [Theory]
     [InlineData("raw-lean-report.json")]
     [InlineData("candidate-lean-report.json")]
     public void RoundTripNormalizesAllFiveMembersAndImportsUnderPairAddress(string basename)

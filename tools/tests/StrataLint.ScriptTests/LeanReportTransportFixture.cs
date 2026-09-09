@@ -25,6 +25,7 @@ internal sealed class LeanReportTransportFixture : IDisposable
         + $"lean_sources_sha256={Address[2]}\nlean_config_sha256={Address[3]}\n"));
     internal string CachedReport => Path.Combine(CacheRoot, PairAddress, "raw-lean-report.json");
     internal string[] ReleaseCalls => Calls("gh.log");
+    internal string[] DeadlineCalls => Calls("deadline.log");
     internal string[] EnsureCalls => Calls("ensure.log");
     internal string[] ProducerCalls => Calls("producer.log");
     internal string[] SlotCalls => Calls("slot.log");
@@ -116,8 +117,8 @@ internal sealed class LeanReportTransportFixture : IDisposable
         return bundle;
     }
 
-    internal Attempt Publish(string bundle) => Run(["make", "lean-report-cache-to-github", $"LEAN_REPORT={bundle}"]);
-    internal Attempt Fetch() => Run(["make", "lean-report-cache-from-github"]);
+    internal Attempt Publish(string bundle, params string[] environment) => Run(["make", "lean-report-cache-to-github", $"LEAN_REPORT={bundle}"], environment);
+    internal Attempt Fetch(params string[] environment) => Run(["make", "lean-report-cache-from-github"], environment);
     internal Attempt MakeReport(params string[] environment) => Run(["make", "lean-report"], environment);
     internal Attempt Pair(bool remote, params string[] environment) => Run(["/bin/bash",
         Path.Combine(Repository, "tools/scripts/lean-report-pair.sh"), "--producer", Path.Combine(Repository, "tools/lean-inspector/inspect.sh"),
@@ -145,6 +146,8 @@ internal sealed class LeanReportTransportFixture : IDisposable
     internal string[] LiveSnapshot() => Suffixes.Select(suffix => Digest(File.ReadAllBytes(Output + suffix)))
         .Append(Digest(File.ReadAllBytes(Output + ".logs/producer.log"))).ToArray();
     internal string[] CacheSnapshot() => Suffixes.Select(suffix => Digest(File.ReadAllBytes(CachedReport + suffix))).ToArray();
+    internal string[] ReleaseSnapshot() => Assets.Select(path => Path.GetFileName(path) + "=" + Digest(File.ReadAllBytes(path))).ToArray();
+    internal void SimulateTransferDuration() => File.WriteAllText(Path.Combine(Bin, "sitecustomize.py"), TransferClockStub);
     internal void RemoveDigestAsset() => File.Delete(CurrentArchive + ".sha256");
     private string CurrentArchive => Assets.Single(value => value.EndsWith("-" + RepositoryAddress + ".zip", StringComparison.Ordinal));
 
@@ -216,17 +219,47 @@ internal sealed class LeanReportTransportFixture : IDisposable
     }
     private Attempt Run(string[] command, params string[] environment)
     {
-        var arguments = new[] { "-u", "STRATALINT_REPORT_CACHE_REMOTE", $"PATH={Bin}:{Environment.GetEnvironmentVariable("PATH")}", $"REPORT_FIXTURE={temporary.Path}",
+        var arguments = new[] { "-u", "STRATALINT_REPORT_CACHE_REMOTE", "-u", "STRATALINT_REPORT_CACHE_TRANSFER_TIMEOUT_SECONDS",
+            $"PYTHONPATH={Bin}", $"PATH={Bin}:{Environment.GetEnvironmentVariable("PATH")}", $"REPORT_FIXTURE={temporary.Path}",
             $"REPORT_REPOSITORY={Repository}", $"STRATALINT_REPORT_CACHE_ROOT={CacheRoot}", "STRATALINT_REPORT_CACHE_REPO=fixture/cache",
             "GH_TOKEN=synthetic-fixture-token", "GITHUB_TOKEN=synthetic-fixture-token",
             "LAKE_BIN=/bin/echo", "CI=true", "GITHUB_ACTIONS=true", "GITHUB_EVENT_NAME=push",
             "GITHUB_REF=refs/heads/dev", "GITHUB_SHA=0123456789abcdef0123456789abcdef01234567", "GITHUB_RUN_ID=42" }
             .Concat(environment).Concat(command).ToArray();
-        var result = TestProcessRunner.Run("env", arguments, Repository, TestBudgets.ScriptProcessHangGuard, 1024 * 1024);
-        return new Attempt(result.ExitCode, Encoding.UTF8.GetString(result.StandardOutput), Encoding.UTF8.GetString(result.StandardError));
+        try
+        {
+            var result = TestProcessRunner.Run("env", arguments, Repository, TestBudgets.ScriptProcessHangGuard, 1024 * 1024);
+            return new Attempt(result.ExitCode, Encoding.UTF8.GetString(result.StandardOutput), Encoding.UTF8.GetString(result.StandardError));
+        }
+        catch (SkipException exception)
+        {
+            throw new SkipException(exception.Message + "; command=" + string.Join(' ', command)
+                + "; observed-gh-calls=" + string.Join(" | ", ReleaseCalls));
+        }
     }
     public void Dispose() => temporary.Dispose();
     internal sealed record Attempt(int ExitCode, string Stdout, string Stderr) { internal string Text => Stdout + Stderr; }
+
+    // Inject elapsed IO time at subprocess.run's deadline boundary. The command
+    // still executes the real fake-gh transport on success; no wall clock or
+    // machine performance decides these tests, and production has no clock hook.
+    private const string TransferClockStub = """
+        import os, pathlib, subprocess
+        original_run = subprocess.run
+        def run(args, *positional, **keywords):
+            if pathlib.Path(args[0]).name == 'gh':
+                operation = ' '.join(args[1:3]) if args[1] == 'release' else args[1]
+                deadline = keywords.get('timeout')
+                with (pathlib.Path(os.environ['REPORT_FIXTURE']) / 'deadline.log').open('a') as log:
+                    log.write(f'{operation} timeout={deadline}\n')
+                selected = os.environ.get('FIXTURE_TRANSFER_OPERATION')
+                if operation in ('release upload', 'release download') and (not selected or operation == 'release ' + selected):
+                    duration = float(os.environ['FIXTURE_TRANSFER_SECONDS'])
+                    if deadline is not None and duration >= deadline:
+                        raise subprocess.TimeoutExpired(args, deadline)
+            return original_run(args, *positional, **keywords)
+        subprocess.run = run
+        """;
 
     private const string ProducerStub = """
         printf 'produce\n' >> "$REPORT_FIXTURE/producer.log"
@@ -254,7 +287,7 @@ internal sealed class LeanReportTransportFixture : IDisposable
         printf '%s\n' "$*" >> "$REPORT_FIXTURE/gh.log"
         [[ "${FIXTURE_GH_FAIL:-0}" == 0 ]] || exit 69
         python3 - "$@" <<'PY'
-        import fnmatch, hashlib, json, os, pathlib, shutil, sys
+        import fnmatch, hashlib, json, os, pathlib, shutil, sys, zipfile
         args = sys.argv[1:]
         root = pathlib.Path(os.environ['REPORT_FIXTURE']) / 'release'
         def value(flag): return args[args.index(flag)+1]
@@ -266,6 +299,7 @@ internal sealed class LeanReportTransportFixture : IDisposable
                 print(42 if '--jq' in args else json.dumps(dict(id=42)))
             else:
                 assert '/releases/42/assets' in endpoint
+                if os.environ.get('FIXTURE_GH_ASSETS_FAIL') == '1': raise SystemExit(69)
                 assets = [dict(name=p.name, digest='sha256:'+hashlib.sha256(p.read_bytes()).hexdigest(), state='uploaded', updated_at='2026-09-09T00:00:00Z') for p in root.iterdir()]
                 print(json.dumps([assets] if '--slurp' in args else assets))
         elif args[:2] == ['release', 'create']:
@@ -273,11 +307,25 @@ internal sealed class LeanReportTransportFixture : IDisposable
             root.mkdir()
         elif args[:2] == ['release', 'upload']:
             assert args[2] == 'lean-report-cache-v1'
-            for a in args[3:]:
-                if a.startswith('/') and pathlib.Path(a).is_file(): shutil.copyfile(a, root/pathlib.Path(a).name)
+            sources = [pathlib.Path(a) for a in args[3:] if a.startswith('/') and pathlib.Path(a).is_file()]
+            if os.environ.get('FIXTURE_GH_UPLOAD_RACE') == '1':
+                archive = next(p for p in sources if p.suffix == '.zip')
+                target = root / archive.name
+                shutil.copyfile(archive, target)
+                with zipfile.ZipFile(target, 'a') as z: z.comment = b'independent successful publisher'
+                (root / (target.name + '.sha256')).write_text(hashlib.sha256(target.read_bytes()).hexdigest() + '  ' + target.name + '\n')
+                raise SystemExit(1)
+            for source in sources:
+                target = root / source.name
+                if target.exists():
+                    if '--clobber' not in args: raise SystemExit(1)
+                    target.unlink()
+                if os.environ.get('FIXTURE_GH_UPLOAD_FAIL') == '1': raise SystemExit(69)
+                shutil.copyfile(source, target)
         elif args[:2] == ['release', 'download']:
             assert args[2] == 'lean-report-cache-v1'
             destination = pathlib.Path(value('--dir'))
+            if os.environ.get('FIXTURE_GH_DOWNLOAD_FAIL') in ('any', destination.name): raise SystemExit(69)
             for pattern in [args[i+1] for i,a in enumerate(args) if a == '--pattern']:
                 matches = [p for p in root.iterdir() if fnmatch.fnmatchcase(p.name, pattern)]
                 if not matches: raise SystemExit(1)

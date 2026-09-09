@@ -36,6 +36,15 @@ done
 [[ "$COMMAND" == fetch || "$COMMAND" == publish ]] \
   || { echo 'usage: lean-report-cache.sh fetch|publish [--repository DIR] [--bundle FILE]' >&2; exit 2; }
 [[ "$ROOT" == /* && -d "$ROOT" ]] || exit 2
+# Bulk IO deadline in integer seconds, separate from the 30-second metadata
+# deadline. Bound optional transfers to at most one day; this is not a resource
+# estimate or a report correctness budget. An explicitly empty override is bad.
+TRANSFER_TIMEOUT_SECONDS="${STRATALINT_REPORT_CACHE_TRANSFER_TIMEOUT_SECONDS-1800}"
+if [[ ! "$TRANSFER_TIMEOUT_SECONDS" =~ ^[1-9][0-9]{0,4}$ ]] \
+  || (( TRANSFER_TIMEOUT_SECONDS > 86400 )); then
+  echo 'lean-report-cache: STRATALINT_REPORT_CACHE_TRANSFER_TIMEOUT_SECONDS must be an integer from 1 to 86400' >&2
+  exit 2
+fi
 CACHE_ROOT="$(report_cache_root)"
 [[ "$CACHE_ROOT" == /* ]] || { echo 'lean-report-cache: cache root must be absolute' >&2; exit 2; }
 TMP_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/lean-report-cache.XXXXXXXX")"
@@ -48,13 +57,18 @@ miss() { printf 'LEAN_REPORT_CACHE status=miss reason=%s\n' "$1" >&2; exit 1; }
 # Network deadline, not a capacity estimate. Each gh request is bounded; fetch
 # reads one container, all paginated asset metadata, then at most two bundles.
 gh_io() {
-  python3 - "$(command -v gh)" "$@" <<'PY'
+  local timeout=30
+  if [[ "$1" == release && ( "$2" == upload || "$2" == download ) ]]; then
+    timeout="$TRANSFER_TIMEOUT_SECONDS"
+  fi
+  python3 - "$timeout" "$(command -v gh)" "$@" <<'PY'
 import subprocess
 import sys
+timeout = int(sys.argv[1])
 try:
-    raise SystemExit(subprocess.run(sys.argv[1:], timeout=30).returncode)
+    raise SystemExit(subprocess.run(sys.argv[2:], timeout=timeout).returncode)
 except (OSError, subprocess.TimeoutExpired) as error:
-    print(f"lean-report-cache: GitHub unavailable: {error}", file=sys.stderr)
+    print(f"lean-report-cache: GitHub unavailable timeout_seconds={timeout}: {error}", file=sys.stderr)
     raise SystemExit(1)
 PY
 }
@@ -69,10 +83,12 @@ asset="$(python3 "$HELPER" name "$repository" "$producer" "$producer" "$config")
 
 download_verified() {
   local name="$1" destination="$2"
-  mkdir -p "$destination"
+  # 0 = verified; 1 = downloaded but invalid; 2 = unavailable read. Only a
+  # successful download can establish corruption; a failed read cannot.
+  mkdir -p "$destination" || return 2
   gh_io release download "$TAG" --repo "$REPO" --dir "$destination" \
-    --pattern "$name" --pattern "$name.sha256" \
-    && python3 "$HELPER" unpack "$destination/$name" "$destination/bundle"
+    --pattern "$name" --pattern "$name.sha256" || return 2
+  python3 "$HELPER" unpack "$destination/$name" "$destination/bundle" || return 1
 }
 
 if [[ "$COMMAND" == fetch ]]; then
@@ -113,15 +129,43 @@ python3 "$HELPER" pack "$staged" "$TMP_ROOT/$asset"
 release_id="$(gh_io api "repos/$REPO/releases/tags/$TAG" --jq .id)" || release_id=""
 if [[ -z "$release_id" ]]; then
   commit="${GITHUB_SHA:-$(git -C "$ROOT" rev-parse HEAD)}"
-  gh_io release create "$TAG" --repo "$REPO" --target "$commit" --latest=false \
-    --title 'Lean report cache v1' --notes 'Optional content-addressed Lean reports; full input and bundle validation is required on reuse.' \
-    || gh_io api "repos/$REPO/releases/tags/$TAG" --jq .id >/dev/null
-elif download_verified "$asset" "$TMP_ROOT/existing"; then
-  printf 'LEAN_REPORT_CACHE status=published mode=existing asset=%s\n' "$asset" >&2
-  exit 0
+  if ! gh_io release create "$TAG" --repo "$REPO" --target "$commit" --latest=false \
+    --title 'Lean report cache v1' --notes 'Optional content-addressed Lean reports; full input and bundle validation is required on reuse.'; then
+    release_id="$(gh_io api "repos/$REPO/releases/tags/$TAG" --jq .id)" || miss release-unavailable
+    [[ "$release_id" =~ ^[0-9]+$ ]] || miss invalid-release
+  fi
 fi
-# Repair a partial/corrupt publication as a unit; readers reject either window
-# until the matching ZIP and transport digest are both available and verified.
-gh_io release upload "$TAG" "$TMP_ROOT/$asset" "$TMP_ROOT/$asset.sha256" --repo "$REPO" --clobber
-download_verified "$asset" "$TMP_ROOT/published" || miss publication-incomplete
-printf 'LEAN_REPORT_CACHE status=published mode=uploaded asset=%s\n' "$asset" >&2
+upload_options=()
+if [[ -n "$release_id" ]]; then
+  [[ "$release_id" =~ ^[0-9]+$ ]] || miss invalid-release
+  gh_io api --paginate --slurp "repos/$REPO/releases/$release_id/assets?per_page=100" > "$TMP_ROOT/assets.json" \
+    || miss publication-unavailable
+  state="$(python3 "$HELPER" publication-state "$TMP_ROOT/assets.json" "$asset")" || miss publication-unavailable
+  case "$state" in
+    complete)
+      verification=0
+      download_verified "$asset" "$TMP_ROOT/existing" || verification=$?
+      case "$verification" in
+        0) printf 'LEAN_REPORT_CACHE status=published mode=existing asset=%s\n' "$asset" >&2; exit 0 ;;
+        1) upload_options=(--clobber) ;;
+        *) miss publication-unavailable ;;
+      esac ;;
+    partial) upload_options=(--clobber) ;;
+    absent) ;;
+    *) miss publication-unavailable ;;
+  esac
+fi
+# Only confirmed partial/corrupt pairs permit replacement. A fresh upload never
+# clobbers a concurrent publisher; on conflict verify that winner once. Either
+# path requires a complete validated pair before reporting publication success.
+mode=uploaded
+gh_io release upload "$TAG" "$TMP_ROOT/$asset" "$TMP_ROOT/$asset.sha256" --repo "$REPO" \
+  ${upload_options[@]+"${upload_options[@]}"} || mode=existing
+verification=0
+download_verified "$asset" "$TMP_ROOT/published" || verification=$?
+case "$verification" in
+  0) ;;
+  1) miss publication-incomplete ;;
+  *) miss publication-unavailable ;;
+esac
+printf 'LEAN_REPORT_CACHE status=published mode=%s asset=%s\n' "$mode" "$asset" >&2
