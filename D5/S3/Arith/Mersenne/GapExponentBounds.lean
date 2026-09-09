@@ -41,6 +41,7 @@ private theorem six_mul_le_pow_add_eight (k r m : ℕ)
   have hsquare := Nat.pow_le_pow_left hs 2
   nlinarith
 
+set_option linter.unusedVariables false in
 /-- The exponent interval conjectured in OEIS A390871 for non-power-of-two terms. -/
 theorem mersenne_gap_exponent_bounds (k r m : ℕ)
     (hk : 8 < k) (hnp : ∀ t, k ≠ 2 ^ t) (hr : r < k) (hm : m ≤ k)

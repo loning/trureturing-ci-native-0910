@@ -86,3 +86,15 @@ blocked = 实际 Lean 尝试的 goal/错误、路线与最锐剩余子命题。
   查询源码后改为 Nat.pow_lt_pow_iff_right，未增公理、未改目标。
 - hm:m≤k 原样保留，证明 clear hm：这些估计本身不需要该搜索限制。
   尚未执行全项目 make lean、语义依赖审计或冻结。
+
+## 完整构建与叙事工件
+
+- make lean EXIT=0，45.444 秒，12830 jobs；macOS ARM、donor 热树，非 CI 时长。
+  完整日志为 runner attempt-1/make-lean.log。新模块成功构建；其它已有模块的风格警告不属本题。
+- 上节“无警告”更正：最后一条单文件输出实际仍有 hm 未显式引用警告；clear hm 不算显式引用。
+  为保留用户要求的逐字签名，在该定理局部关闭 unusedVariables 风格提示，未改任何数学门。
+  随后上述 make lean 已验证这一最终源码；不添加无用前置或死项来掩盖未使用假设。
+- Library/Arith 创建前已有 48 文件；Library/Words 为 27，故来源 note 置于 Words，新增后 28。
+  zizka2025a390871 符合 bibkey 文法；Verified locator 正文含 canonical URL 与 doi:null 说明。
+- Scribe 使用 FromAuthor 投影原签名的完整公式；FromRepo 标记本仓推导并引用 OEIS 猜想来源。
+  未放治理判形词汇；未手改 Blueprint md。make lean-report 进行中，尚未 emit/deposit。
