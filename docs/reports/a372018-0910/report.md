@@ -1,5 +1,7 @@
 # A372018 odd coefficient identity — implementation record
 
+Current implementation result: **成** under the user's stated criterion (unbounded proof, `make lean` EXIT=0, no sorry/private axioms, PR opened). PR: https://github.com/the-omega-institute/trureturing/pull/6733. The theorem is frozen without an atom. Merge and independent review are not claimed. The sections below preserve chronological checkpoints, including earlier pending states and repaired failures.
+
 ## Origin and scope
 
 - Skill: `lean4`; implementation by the Codex worker in the supplied worktree. No independent review has been performed by this worker.
@@ -151,3 +153,9 @@ Freeze and PR remain outstanding at this checkpoint. No theory volume, atom, or 
 Read back both generated freeze files. Module statement pin: `sha256:2ea92bfb8192b9d99d1f527e7b71c2323eb55698e9a781a9af036f6356ebfabf`; accepted event: `sha256:53528609e1cc3e83dd7ad90ad15d2a68fec6344581bbf294b29eeb8d3bf0874e`; prerequisite frozen node IDs: `[]`. The main theorem's declaration statement ID matches the table above. These two files are committed together. No Lean source changes after freezing.
 
 The implementation PR will target dev and remain open for review, as specified by the user's implementation-stage stopping criterion. No merge or independent review is claimed.
+
+## PR delivery checkpoint
+
+Canonical `make pr-open HEAD=lane/math/a372018 MESSAGE=<attempt-1/pr-message.md>` created PR **#6733** against dev. Implementation and freeze commit `96e0eb106d` was pushed successfully before creation. The canonical watcher initially observed OPEN with three required checks not yet registered; this is a pending observation, not a red result or a claim of green CI. The worker continues tracking the required verdict and records the final observed head/check states in the runner-owned result envelope. The PR body contains the full provenance disclosure and links to this report.
+
+Local final gates all passed in the prescribed order; no new Lean changes followed them. No global novelty, finite-prefix proof, independent review, atom coverage, or merged status is claimed. Final worker-owned artifacts are `result.json` and `completion.sentinel` under the exact attempt directory specified by the user, published by temporary-file rename after final verification.
