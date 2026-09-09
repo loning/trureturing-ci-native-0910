@@ -111,4 +111,47 @@ theorem nontrivial_disjoint_refinement_iff (S : Finset ℕ) (hS : ∀ s ∈ S, 0
 
 #print axioms nontrivial_disjoint_refinement_iff
 
+private lemma no_refinement_of_bounded_check (S : Finset ℕ) (hS : ∀ s ∈ S, 0 < s)
+    (hcheck : ¬∃ s ∈ S, ∃ T ∈ (Finset.range (s + 1)).powerset,
+      (∀ t ∈ T, 0 < t) ∧ Disjoint T S ∧ T.sum id = s) :
+    ¬NontrivialDisjointRefinement S := by
+  intro h
+  obtain ⟨s, hs, T, hp, hd, hsum⟩ := (nontrivial_disjoint_refinement_iff S hS).mp h
+  apply hcheck
+  refine ⟨s, hs, T, Finset.mem_powerset.mpr ?_, hp, hd, hsum⟩
+  intro t ht
+  have hle : t ≤ s :=
+    (Finset.single_le_sum (f := id) (fun u _ => Nat.zero_le u) ht).trans hsum.le
+  exact Finset.mem_range.mpr (by omega)
+
+private theorem positive_controls :
+    NontrivialDisjointRefinement {3} ∧ NontrivialDisjointRefinement {4} ∧
+      NontrivialDisjointRefinement {5} ∧ NontrivialDisjointRefinement {6} ∧
+      NontrivialDisjointRefinement {1, 5} := by
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
+  · apply (nontrivial_disjoint_refinement_iff {3} (by decide)).mpr
+    exact ⟨3, by decide, {1, 2}, by decide, by decide, by decide⟩
+  · apply (nontrivial_disjoint_refinement_iff {4} (by decide)).mpr
+    exact ⟨4, by decide, {1, 3}, by decide, by decide, by decide⟩
+  · apply (nontrivial_disjoint_refinement_iff {5} (by decide)).mpr
+    exact ⟨5, by decide, {2, 3}, by decide, by decide, by decide⟩
+  · apply (nontrivial_disjoint_refinement_iff {6} (by decide)).mpr
+    exact ⟨6, by decide, {1, 5}, by decide, by decide, by decide⟩
+  · apply (nontrivial_disjoint_refinement_iff {1, 5} (by decide)).mpr
+    exact ⟨5, by decide, {2, 3}, by decide, by decide, by decide⟩
+
+private theorem negative_controls :
+    ¬NontrivialDisjointRefinement {1} ∧ ¬NontrivialDisjointRefinement {2} ∧
+      ¬NontrivialDisjointRefinement {1, 2} ∧ ¬NontrivialDisjointRefinement {1, 3} ∧
+      ¬NontrivialDisjointRefinement {1, 4} := by
+  exact ⟨no_refinement_of_bounded_check {1} (by decide) (by decide),
+    no_refinement_of_bounded_check {2} (by decide) (by decide),
+    no_refinement_of_bounded_check {1, 2} (by decide) (by decide),
+    no_refinement_of_bounded_check {1, 3} (by decide) (by decide),
+    no_refinement_of_bounded_check {1, 4} (by decide) (by decide)⟩
+
+private theorem empty_control : ¬NontrivialDisjointRefinement ∅ := by
+  rintro ⟨_, _, s, hs, _⟩
+  exact Finset.notMem_empty s hs
+
 end D5.S3.ArithSums.DisjointStrictRefinement

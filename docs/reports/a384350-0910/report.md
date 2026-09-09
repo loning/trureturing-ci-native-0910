@@ -191,3 +191,22 @@ The only public theorem is
 
 Definitions `IsDisjointStrictRefinement` and `NontrivialDisjointRefinement`
 only encode the semantic contract; they are not claimed as independent results.
+
+### Semantic controls and narrative
+
+The complete module, including private controls, passed hot-cache Lean, EXIT 0.
+All five assigned positives ({3}, {4}, {5}, {6}, {1,5}), all five assigned
+negatives ({1}, {2}, {1,2}, {1,3}, {1,4}), and the empty case are kernel checked.
+The positives give explicit outside blocks. For the negatives, the private
+helper derives a bound on every possible part from its sum before finite
+`decide`; it proves absence of the unbounded witness, not just failure within
+an assumed search limit. No native_decide is used. These controls are private
+and provide no new independently frozen public finite-instance result.
+They are semantic checks, not additional research progress.
+
+Added a single Scribe theorem narrative and a citation-only Library note
+`D5/L/ArithSums/wiseman2025disjoint` acknowledging the OEIS conjectures.
+The proof provenance is repo-derived. This supersedes the earlier optional
+choice to omit a note: the note gives durable exact source locators, not a
+new theory volume or an atom. Its Verified locator section includes the
+literal frontmatter doi/url lines. Library/ArithSums starts with one file.
