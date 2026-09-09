@@ -30,7 +30,7 @@ internal sealed class BilateralQuarterDoubleShiftThetaModFourDocument : IScribeD
                 + "bilateralTerm is an integer. The function toNat sends negative "
                 + "integers to zero. Subtraction after toNat is natural truncated "
                 + "subtraction; the window endpoints and -n-2 use integer arithmetic. "
-                + "The operations div and mod are integer division and remainder. "
+                + "The operations div and mod are integer division and remainder on the integers; on natural-number arguments, as in n div 2, they are natural division and remainder. "
                 + "The operator mk builds a series from coefficients, and invOfUnit "
                 + "is the formal unit inverse. The symbols positiveTerm, negativeTerm, "
                 + "R, and P below are the private auxiliary definitions.")),
