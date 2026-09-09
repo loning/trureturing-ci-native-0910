@@ -4,11 +4,11 @@
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
    utility: none
-   digest: A finite Gram matrix turns an explicit kernel-dimension bound into a rank lower bound.
-   -/
+   digest: A finite Gram matrix turns an explicit kernel-dimension bound into a rank lower bound. -/
 
 import Mathlib.Data.Complex.Basic
 import Mathlib.LinearAlgebra.Matrix.Rank
+import D5.S3.Quantum.Entanglement.BoundedProfileCardinality
 
 set_option autoImplicit false
 set_option relaxedAutoImplicit false
@@ -19,28 +19,7 @@ open scoped BigOperators
 
 namespace D5.S3.Quantum.Entanglement.StationaryOccupationRankNullity
 
-/- A bounded occupation profile is a choice of one coordinate in each finite
-   interval.  The same type is used for the finite index set of the source's
-   Gram matrix; no numerical rank is hidden in this definition. -/
-def BoundedProfile (ι : Type*) [Fintype ι] [DecidableEq ι] (a : ι → Nat) :=
-  ∀ i, Fin (a i + 1)
-
-instance boundedProfileFintype {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (a : ι → Nat) : Fintype (BoundedProfile ι a) := by
-  dsimp [BoundedProfile]
-  infer_instance
-
-instance boundedProfileDecidableEq {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (a : ι → Nat) : DecidableEq (BoundedProfile ι a) := by
-  dsimp [BoundedProfile]
-  infer_instance
-
-theorem bounded_profile_card {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (a : ι → Nat) :
-    Fintype.card (BoundedProfile ι a) = ∏ i : ι, (a i + 1) := by
-  change Fintype.card ((i : ι) → Fin (a i + 1)) = _
-  rw [Fintype.card_pi]
-  simp only [Fintype.card_fin]
+open D5.S3.Quantum.Entanglement.BoundedProfileCardinality
 
 /- `Matrix.rank` is definitionally the finrank of the range of `mulVecLin`.
    This spelling keeps the source-facing rank/nullity bridge independent of
@@ -64,11 +43,12 @@ theorem gram_rank_ge_card_sub_nullity {ι κ : Type*} [Fintype ι] [Fintype κ]
 theorem bounded_profile_rank_ge
     {ι : Type*} [Fintype ι] [DecidableEq ι]
     (a : ι → Nat)
-    (G : Matrix (BoundedProfile ι a) (BoundedProfile ι a) ℂ)
+    (G : Matrix (D5.S3.Quantum.Entanglement.BoundedProfileCardinality.Profile a)
+      (D5.S3.Quantum.Entanglement.BoundedProfileCardinality.Profile a) ℂ)
     (q : Nat)
     (hker : Module.finrank ℂ (LinearMap.ker G.mulVecLin) ≤ q) :
     (∏ i : ι, (a i + 1)) - q ≤ G.rank := by
-  rw [← bounded_profile_card a]
+  rw [← card_bounded_profiles a]
   exact gram_rank_ge_card_sub_nullity G q hker
 
 end D5.S3.Quantum.Entanglement.StationaryOccupationRankNullity
