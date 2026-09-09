@@ -54,7 +54,7 @@ basis. No source recompilation or independent theorem is required for screening.
 
 ## Progress
 
-Screened: 120 / 164. frozen-covered: 6; frozen-partial: 3; needs-lean: 111; not-an-assertion: 0; unreadable: 0.
+Screened: 140 / 164. frozen-covered: 7; frozen-partial: 4; needs-lean: 129; not-an-assertion: 0; unreadable: 0.
 
 All screened source bodies were read in full. The theorem-like headings are not treated as evidence by themselves. Source IDs are quantum-rh. Atom links point to immutable CAS bodies. The input bytes field is retained as supplied and is not used as a classifier.
 
@@ -70,9 +70,11 @@ Scope: state pins identify the module statement; theorem selectors are listed se
 | 77 | [7901adf784a2db15b73b33751c521fc703f8bbe431efb0304c449cfa3b049907](../../../Meta/Digestion/atoms/sha256/7901adf784a2db15b73b33751c521fc703f8bbe431efb0304c449cfa3b049907) ## 定理 G1　二次矩形卷积的显式系数 | frozen-covered | `D5/S3/Zeros/Convolution/GribinskiDegreeTwo` | G1 的全部二次系数和实参数排除条件与冻结声明一致；卷积含义采用已追加的乘积前因子勘误。 | C+2, C+3, S48 |
 | 80 | [7b2657006891568aa395dfd9fa14bde9d9d23d2ade0c449b00f7cdf5c616baec](../../../Meta/Digestion/atoms/sha256/7b2657006891568aa395dfd9fa14bde9d9d23d2ade0c449b00f7cdf5c616baec) ## 定理二：什么时候投影后的几何能够独立执行？ | frozen-covered | `D5/S0/Rewriting/Quotients/DynamicsDescent` | 将观察的余域限制到 pi(X) 后映射自动满射；冻结的存在唯一下降 iff 保持纤维与源文存在下降 iff 保持纤维等价。 | S44 |
 | 92 | [8ef6b9257471235dae81e95cd49a82d8589c77b60cfb90cd4d4355ed0ae75092](../../../Meta/Digestion/atoms/sha256/8ef6b9257471235dae81e95cd49a82d8589c77b60cfb90cd4d4355ed0ae75092) ## 定理 G3　Gribinski 猜想在 \(m=2\) 处成立 | frozen-covered | `D5/S3/Zeros/Convolution/GribinskiDegreeTwo` | 冻结 G3 的五个全称实参数、严格 alpha>-1 和两个存在非负实根与 boxed 断言一致。 | C+3, S48 |
+| 121 | [c352d304105e02cbbcb0607e31a1e217adb85d4b344ba0d75c23ba4420dbf0e1](../../../Meta/Digestion/atoms/sha256/c352d304105e02cbbcb0607e31a1e217adb85d4b344ba0d75c23ba4420dbf0e1) ## 定理 U1：正拼接的必要充分条件 | frozen-covered | `D5/S3/Weil/ZetaLinear/ExactStickyReduction` | 冻结 Schur 能量正性等价式经复空间的实内积表达、交换块顺序和一维剩余能量 delta_N*\|z\|^2，恰为源 U1。 | S18, S32, S82 |
 | 10 | [0a350824194cd6312628fc5708116dfece7d0e63fec2a1e2f8c201549d63c707](../../../Meta/Digestion/atoms/sha256/0a350824194cd6312628fc5708116dfece7d0e63fec2a1e2f8c201549d63c707) ## 定理三：每一个连续时间切面的 Schmidt 系数都与 \(\theta\) 无关 | frozen-partial | `D5/S3/Quantum/Entanglement/CoherentHistorySchmidt` | 冻结件覆盖 theta=0 的分解、权重和中切 rank=12；未覆盖任意 theta 的相位历史。 | S10, S23 |
 | 45 | [3f70bb4b78d38951e5b98029e96abb9e4d697c94e858de86ce861782dfe79bb9](../../../Meta/Digestion/atoms/sha256/3f70bb4b78d38951e5b98029e96abb9e4d697c94e858de86ce861782dfe79bb9) ### 定理十一：消去正的内部块，不丢失任何负方向 | frozen-partial | `D5/S3/Weil/ZetaLinear/ExactStickyReduction` | 实内积空间的 Schur 能量负指数相等已冻；源文复 Hermitian 惯性计数所需域桥未核实。 | S32, S18, S17 |
 | 120 | [c3316916b643d8cf28de3e1b451f7f3ba61d1337f85a87b7eb42cc1568f9621f](../../../Meta/Digestion/atoms/sha256/c3316916b643d8cf28de3e1b451f7f3ba61d1337f85a87b7eb42cc1568f9621f) ## 定理：只使用 \(2,3,5,7\)，在 5040 之后不会产生 Robin 反例 | frozen-partial | `D5/S3/Arith/GoldenResource/RobinRationalBasis` | 只找到 n=10080=2^5*3^2*5*7>5040 的无条件严格 Robin 特例；无对所有非负指数的全族声明。 | S09, S72 |
+| 129 | [d7dadd8de7fc5350a23612b4039fb0d44648a89b5231db1d0178b194dc965484](../../../Meta/Digestion/atoms/sha256/d7dadd8de7fc5350a23612b4039fb0d44648a89b5231db1d0178b194dc965484) ## 定理 T2：原函数的实际 Mellin 读数 | frozen-partial | `D5/S3/Analytic/CompletedZetaMellinReconstruction`; `D5/S3/Zeros/CompletedZeta` | 冻结 completed-zeta 的 Gamma 乘积式覆盖 boxed 链的右侧 xi/Gamma/zeta 等式；原函数积分 Z_+ 的识别未接上。 | S35, S88 |
 | 1 | [028cb6a153eaec67ee356ef9571a406a6d9460c0092fbc031df4abab42884a85](../../../Meta/Digestion/atoms/sha256/028cb6a153eaec67ee356ef9571a406a6d9460c0092fbc031df4abab42884a85) ## 定理十一：有限多边形绕数证书 | needs-lean | none | 若每段严格误差界成立则矩形零点数等于多边形绕数；RoucheZeroCount 只给两个解析函数的零数相等，缺线性插值误差 Bh^2/8 与多边形绕数桥。 | S01 |
 | 2 | [04174c1260762c6fb3fe24cd51b93eea78714592b4cd71e927db335d5edf8b77](../../../Meta/Digestion/atoms/sha256/04174c1260762c6fb3fe24cd51b93eea78714592b4cd71e927db335d5edf8b77) ## 定理 S2：实际 theta 条件读数存在负区 | needs-lean | none | 断言实际 theta-Wigner 读数存在严格负点及非零成功概率窗口；命中的有限离散 Wigner 接口不涉及此连续核。 | S02, S22 |
 | 3 | [062d6f5a910eed117ab7596a2e34f1a6a0728de5e8599136b47689b29d2870c9](../../../Meta/Digestion/atoms/sha256/062d6f5a910eed117ab7596a2e34f1a6a0728de5e8599136b47689b29d2870c9) ### 定理二十：交互阶数具有离散因果锥 | needs-lean | none | 对所有离散 t>=0 和 \|r-s\|>Jt 的投影传播恒零；未找到这一交互阶数分级或带宽幂传播断言。 | S03, S25 |
@@ -184,6 +186,24 @@ Scope: state pins identify the module statement; theorem selectors are listed se
 | 117 | [c03c3d51c8caa76b112c4d2b77618edb95c424c724d03c1f4e1b0fe8887986d5](../../../Meta/Digestion/atoms/sha256/c03c3d51c8caa76b112c4d2b77618edb95c424c724d03c1f4e1b0fe8887986d5) ## 定理四：三周期读数的离散绕行公式 | needs-lean | none | 三周期解析延拓的二阶离散差分等于指定系数乘绕数平方，三阶为零；现有绕数/monodromy 邻件未连接同一 H3 和 W3。 | S15, S20, S38 |
 | 118 | [c0a72a217fb966246fd4a48a809795cdc539435d1e88d1a10d041a9bcd9ed98d](../../../Meta/Digestion/atoms/sha256/c0a72a217fb966246fd4a48a809795cdc539435d1e88d1a10d041a9bcd9ed98d) ## 定理 B4：新增耦合总预算 | needs-lean | none | B3 设置下所有新增耦合 eta 之和有 (d-1)/d^2*(a1^2-2a2) 和 chi4 两个精确表达；冻结 Jensen 降阶未定义这些耦合或四阶累积量桥。 | S08, S28, S56, S62 |
 | 119 | [c24e34de0c01213d2344c494115a947d88276005c94863a848567f7031e10009](../../../Meta/Digestion/atoms/sha256/c24e34de0c01213d2344c494115a947d88276005c94863a848567f7031e10009) ## 引理：实际有限谱有统一界 | needs-lean | none | 存在与 d无关的 M，使所有实际有限 q_d 的根模<=M，源文用 D(rho*)<2 的统一无零圆盘；SourceJensen 的已读系数/正主块障碍不含这个全阶无零估计。 | S08, S56, S77 |
+| 122 | [c468d943aacd5d85352a7866613f53c2d6b6fd3e5a7c94cf9a5115a718abb0c9](../../../Meta/Digestion/atoms/sha256/c468d943aacd5d85352a7866613f53c2d6b6fd3e5a7c94cf9a5115a718abb0c9) ## 定理 V5：实际全部两点矩阵正半定 | needs-lean | none | 对所有 b,c>0 的实际 mu 两点矩阵正半定；已检索接口未给实际 theta 矩 Turan 到 mu(b)/b 单调性的桥，通用 2x2 判据不能替代它。 | S14, S70, S81, S90 |
+| 123 | [c600e6828d8eeb65e865c4c7c465be9aa00cb5a30100be45cfcb26542c868b4d](../../../Meta/Digestion/atoms/sha256/c600e6828d8eeb65e865c4c7c465be9aa00cb5a30100be45cfcb26542c868b4d) ## 定理 K4：固定宽度序列判据 | needs-lean | none | RH iff 存在无界次数列使指定宽度 d_j^4 的实际历史体积<=1；未找到该宽度序列、统一小宽度行列式下界与反向检测桥。 | S08, S11, S27, S77 |
+| 124 | [cd2ad7f9986ee06ef6a8ac86aa7834a19d836483eaa1475b57396f3ba7ae536a](../../../Meta/Digestion/atoms/sha256/cd2ad7f9986ee06ef6a8ac86aa7834a19d836483eaa1475b57396f3ba7ae536a) ## 推论：实根性向低阶传递 | needs-lean | none | 包括反转 q 的精确导数、负实根向低阶传播和非实根失败向所有高阶传播；已读 Jensen 微分降阶仅给 P 的关系，未建立 reciprocal q、全负根性及失败传递的同一声明。 | S08, S56, S84, S89 |
+| 125 | [cf00b1802f9e0029835530f6cff45c04fc84ccaa1f13d1eadc540c1dc6259ba3](../../../Meta/Digestion/atoms/sha256/cf00b1802f9e0029835530f6cff45c04fc84ccaa1f13d1eadc540c1dc6259ba3) ## 定理二：金字塔最大熵几何的曲率 | needs-lean | none | 在源最大熵金字塔流形上，竖向曲率1/4、水平曲率-rho/(4(1-rho)) 为真断言；按几何对象及 warped-product/曲率内容检索均无对应冻结件。 | S06, S26, S85 |
+| 126 | [d434181a00c8203a60054490e976fdfcfe0f1b1c1fc42b9a2d58797aa0341a9d](../../../Meta/Digestion/atoms/sha256/d434181a00c8203a60054490e976fdfcfe0f1b1c1fc42b9a2d58797aa0341a9d) ## 推论：整个历史过程到底消除了多少？ | needs-lean | none | 高斯历史的无穷积分耗散量恰等于初始残差减谱残差，并等于两倍非正规性；未找到该实际矩阵流、可积性和精确端点极限。 | S11, S27, S37, S61 |
+| 127 | [d46f67d9701bbca5691908d2a1ff2d60f8cc946f10b5a1e91c784b83ad378bde](../../../Meta/Digestion/atoms/sha256/d46f67d9701bbca5691908d2a1ff2d60f8cc946f10b5a1e91c784b83ad378bde) ## 定理 M2：线性历史窗口的自动通过区域 | needs-lean | none | 在给定 d下界与 0<r<=d/(2L^2) 下有 Z_d(r)<=exp(-r*S_*/4)<1；未找到该实际酉平均体积的统一参数估计。 | S11, S48 |
+| 128 | [d5fddb4b2a8fa2c2afef4de9faac8e2192fa333bce05b160799f87fefa9c339f](../../../Meta/Digestion/atoms/sha256/d5fddb4b2a8fa2c2afef4de9faac8e2192fa333bce05b160799f87fefa9c339f) ### 定理八：联合尺度下的定量计数与负总量 | needs-lean | none | 对联合 N、delta 区域给负方向计数和负总量两个显式误差式，常数独立于两尺度；现有 Toeplitz 有限地板与惯性稳定性未陈述这套接触点渐近。 | S17, S19, S31, S41 |
+| 130 | [d9aefe500d926d5c9ec8e40a4997df1371cfe837dc3a11f548b7a2cfcf99b6b7](../../../Meta/Digestion/atoms/sha256/d9aefe500d926d5c9ec8e40a4997df1371cfe837dc3a11f548b7a2cfcf99b6b7) ## 定理 R1：方差控制低频干涉 | needs-lean | none | 全部实 t 满足 1-t^2*v_n<=R_n(t)<=1，且严格低频窗口正；未找到实际两模态筛选分布的此方差-余弦界。 | S02, S14, S39, S87, S91 |
+| 131 | [daba72e239c5a9bae6419c9ee7873c87de22293ae599a303dd3feeff596ed538](../../../Meta/Digestion/atoms/sha256/daba72e239c5a9bae6419c9ee7873c87de22293ae599a303dd3feeff596ed538) ## 推论：全部标量矩受高斯基准控制 | needs-lean | none | boxed 同时断言全部偶矩高斯界、所有实 b 的 MGF 界和严格相邻 alpha 对数凹性；theta 偶矩正性或 Karp 二次截断 Turan 不是这套实际全阶/全倾斜结果。 | S14, S53, S88, S90 |
+| 132 | [dd585f94675a53aceed6592da3ad291d31505f93c47ec491c1b9bba0851ef5f7](../../../Meta/Digestion/atoms/sha256/dd585f94675a53aceed6592da3ad291d31505f93c47ec491c1b9bba0851ef5f7) ## 定理五：一个显式的有限时长负证书 | needs-lean | none | 负符号谷深 eta 给 Toeplitz 最小特征值的明确 pi^4*M_a/(8(N+2)^2) 上界和严格时长阈值；未找到该局部负点的定量有限证书。 | S19, S31, S54 |
+| 133 | [deaf86853b1217a64e0283dae2f03f6aa847b19a5d16e68a95518b8caef0da80](../../../Meta/Digestion/atoms/sha256/deaf86853b1217a64e0283dae2f03f6aa847b19a5d16e68a95518b8caef0da80) ### 定理九：最小修正维数与最小修正总量 | needs-lean | none | 任意有限 Hermitian K 的最小修正秩、最小迹及共同达到者 K_-；MinimalPositiveRepair 只给特定实2x2 Fibonacci 矩阵的算子范数最优，未给这两个普遍最小值。 | S17, S41, S83 |
+| 134 | [df8445edb07e25e1e79b9efacc91d4900583fa229efe7706745af103ff1cb3f5](../../../Meta/Digestion/atoms/sha256/df8445edb07e25e1e79b9efacc91d4900583fa229efe7706745af103ff1cb3f5) ## 推论：线性尺度上的体积确实趋零 | needs-lean | none | S_*>0、0<theta<L^-2 时给重标定体积正极限、体积趋零和归一化 log 极限；未找到同一实际 Jensen/Haar 体积的三个极限。 | S11, S12, S48 |
+| 135 | [e12105bf8ad122862f6fe04a1b4abe22b29365455992101560012d8a9cdf9f44](../../../Meta/Digestion/atoms/sha256/e12105bf8ad122862f6fe04a1b4abe22b29365455992101560012d8a9cdf9f44) ## 定理 T3：Gamma—整数分解 | needs-lean | none | sigma>1 下实际密度 r_sigma 等于独立 Gamma 随机变量和 zeta 整数变量的对数差分布；Mellin/Gamma 乘积关系未给概率分布相等或独立乘积构造。 | S29, S35, S88 |
+| 136 | [e17855c9db943466019087527afd9e178fa5c465197a1a9de44490e5fa8444b2](../../../Meta/Digestion/atoms/sha256/e17855c9db943466019087527afd9e178fa5c465197a1a9de44490e5fa8444b2) ## 定理 J4：残差的精确极限 | needs-lean | none | 全部 r>0 给残差超谱量的 d(d-1)/(4r) 上界及单调下降极限，允许不可对角化和重根；未找到高斯历史的这一强结论。 | S12, S27, S37, S61 |
+| 137 | [e405a7f40fa7ee5313052263686a73c8b8578d18290d1f429cb1826603f82480](../../../Meta/Digestion/atoms/sha256/e405a7f40fa7ee5313052263686a73c8b8578d18290d1f429cb1826603f82480) ## 定理一：首次返回概率具有精确的逐步守恒账目 | needs-lean | none | 首次返回每一步有 p_n=s_(n-1)-s_n，所有有限 N 概率守恒；首次返回检索仅旋转词/实链邻件，未发现反复 QU 的幺正监测概率恒等式。 | S49, S52, S86, S91 |
+| 138 | [e44ad50e6f818d656b6b3b1318b466ef65b9d4fe363f0d70d2f988ffda11c865](../../../Meta/Digestion/atoms/sha256/e44ad50e6f818d656b6b3b1318b466ef65b9d4fe363f0d70d2f988ffda11c865) ## 定理二：RH 等价于这个实际边界函数的收缩性 | needs-lean | none | 实际 S_xi 在全单位圆盘解析收缩 iff RH，且合法时 \|S_xi(z)\|<=\|z\|；通用 Cayley/Herglotz 变换没有连接该实际函数和 RH，未找到相应冻件。 | S18, S19, S34, S70, S87 |
+| 139 | [e5d2d285af1f22158b076150c40f53f7d8ce44d2a32dbf3093e84e39ae416c82](../../../Meta/Digestion/atoms/sha256/e5d2d285af1f22158b076150c40f53f7d8ce44d2a32dbf3093e84e39ae416c82) ## 定理 M3：双尺度极限 | needs-lean | none | \|theta\|L^2<1 的复域上 H_d(d*theta) 局部一致趋于指定指数级数 F_xi；未找到统一 Haar 积分极限及实际 rho_m 的对应式。 | S11, S12, S48 |
+| 140 | [e608f6dc2b3e96087ebd63bf03573113e4862368d4ca9073b2e7e18b62f93d6a](../../../Meta/Digestion/atoms/sha256/e608f6dc2b3e96087ebd63bf03573113e4862368d4ca9073b2e7e18b62f93d6a) ### 定理十七：假设存在失稳时，有严格夹逼 | needs-lean | none | 假设失稳时四个不同阈值满足严格链 0<a_geom<a_*<R0<1；实际负圆盘几何、正性阈值和解析半径的严格分离未找到冻结声明。 | S18, S34, S54, S65 |
 
 ## frozen-covered: 088d882f6a10249e981da5d77bc3bb5e53e75a5ee02313bdd7c879cb21e22413
 
@@ -295,6 +315,25 @@ proof_shape: `bind-only`; escape_witness: `null`; admission_basis: `not-applicab
 | exists r,s>=0 | r s : Real (existential in conclusion) | halpha,ha,hb,hc,hd | exists r s : Real, 0<=r /\ 0<=s /\ ... | verbatim |
 | p boxplus_2^alpha q=(X-r)(X-s) | p=rootPair a b; q=rootPair c d | same source hypotheses and corrected definition | boxplus alpha (rootPair a b) (rootPair c d)=rootPair r s | verbatim |
 
+## frozen-covered: c352d304105e02cbbcb0607e31a1e217adb85d4b344ba0d75c23ba4420dbf0e1
+
+定理 U1：正拼接的必要充分条件
+
+- GID: `D5/S3/Weil/ZetaLinear/ExactStickyReduction`; statement_id: `sha256:311ed2863e85f005429c5613aacc27d7980b6ceba46355745055ba29b96d7984`; [state pin](../../../Golden/Frozen/state/D5/S3/Weil/ZetaLinear/ExactStickyReduction.lean.json); [Lean source](../../../D5/S3/Weil/ZetaLinear/ExactStickyReduction.lean).
+- Declarations: `exact_sticky_reduction (first conjunct only)`.
+- Scope: real inner-product spaces and real-linear blocks with nonnegative symmetric AQQ and right inverse; instantiate HP=Complex as real space, HQ=Complex^N as real space, APP=d, AQP(z)=b*z, AQQ=G_N, AQQInv=G_N^-1.
+
+Quantifiers/domain: Source context QUANTUM-RH.md:29588-29625 assumes G_N>0 and Hermitian extension [G_N,b;b*,d], so d is real. Take the underlying real spaces, with inner_R(u,v)=Re(inner_C(u,v)); G_N remains symmetric/nonnegative and its complex inverse is also a real-linear right inverse. All complex vectors remain in the carrier, so no real-only restriction is imposed. The theorem's positivity conjunct involves no dimension or inertia count; that second conjunct is not used. Delta is real. Quantification over z in C of delta*|z|^2>=0 is equivalent to delta>=0 by z=1 and norm-square nonnegativity.
+
+proof_shape: `bind-only`; escape_witness: `null`; admission_basis: `not-applicable(screening-only; frozen projection with explicit carrier/normalization equivalence)`. Direct frozen dependencies are exactly the interfaces listed above. No content claim or escape witness is made.
+
+| Atom clause | Lean binders | Lean assumptions | Lean conclusion | Label |
+| --- | --- | --- | --- | --- |
+| context G_N>0; G_(N+1)=[G_N,b;b*,d] | HP=C and HQ=C^N as real inner-product spaces; APP(z)=d*z; AQP(z)=b*z; AQQ(x)=G_N*x; AQQInv(x)=G_N^-1*x | hQQNonneg and hQQSymm from G_N>0; hQQInv from its inverse | hypotheses are satisfied with no extra restrictions; ordering is (z,x) instead of (x,z) | equivalent |
+| G_(N+1) positive semidefinite | forall z:C, x:C^N | source Hermitian block and G_N>0 | forall w, 0<=blockEnergy APP AQP AQQ w; energy = d\|z\|^2+2Re(conj(z)*b* x)+x*G_N x | equivalent |
+| delta_N:=d-b*G_N^-1*b >=0 | forall z:C in the reduced space | same; r=G_N^-1*(b*z) | schurEnergy(z)=d\|z\|^2-Re(r*G_N r)=(d-b*G_N^-1*b)\|z\|^2; all z nonnegative iff delta_N>=0 | equivalent |
+| (U13) both directions of iff | same blocks and all source vectors | hQQNonneg,hQQSymm,hQQInv already discharged by source G_N>0 | (exact_sticky_reduction ...).1 : (forall full vectors, energy>=0) iff (forall reduced vectors, energy>=0) | equivalent |
+
 ## frozen-partial: 0a350824194cd6312628fc5708116dfece7d0e63fec2a1e2f8c201549d63c707
 
 定理三：每一个连续时间切面的 Schmidt 系数都与 \(\theta\) 无关
@@ -360,6 +399,29 @@ Missing:
 
 - The universal quantifier over all a,b,c,d in Nat with 2^a*3^b*5^c*7^d>5040, beyond the single point (5,2,1,1), remains uncovered.
 - robinPositiveJudge_sound is conditional on an individual rational certificate and does not supply certificates for the entire infinite family.
+
+## frozen-partial: d7dadd8de7fc5350a23612b4039fb0d44648a89b5231db1d0178b194dc965484
+
+定理 T2：原函数的实际 Mellin 读数
+
+- GID: `D5/S3/Analytic/CompletedZetaMellinReconstruction`; statement_id: `sha256:556642d5e8e85422b0991454c2978840a07d8294c7f6ecd9bb37d8826d94e992`; [state pin](../../../Golden/Frozen/state/D5/S3/Analytic/CompletedZetaMellinReconstruction.lean.json); [Lean source](../../../D5/S3/Analytic/CompletedZetaMellinReconstruction.lean).
+- Declarations: `completed_zeta_mellin_reconstruction (first conjunct)`.
+- Scope: s:Complex, Re(s)>1; completedZetaReading s=pi^(-s/2)*Gamma(s/2)*classicalZeta s; specialize s=sigma:Real>1.
+- GID: `D5/S3/Zeros/CompletedZeta`; statement_id: `sha256:afb6048255268029776bca0ff66c9e659d5a2a22c3a4a42c454cac48761d8971`; [state pin](../../../Golden/Frozen/state/D5/S3/Zeros/CompletedZeta.lean.json); [Lean source](../../../D5/S3/Zeros/CompletedZeta.lean).
+- Declarations: `xi_reading_eq_completed_zeta`.
+- Scope: s:Complex, s!=0 and s!=1; xiReading s=(1/2)*s*(s-1)*completedZetaReading s.
+
+Quantifiers/domain: Source T6 context QUANTUM-RH.md:26503 requires real sigma>1, matching the frozen Re(s)>1 domain. It implies sigma!=0,1 and sigma/2!=0; no pole or endpoint cancellation is assumed at sigma=1. Real/complex embedding and positive pi powers preserve the displayed normalization.
+
+proof_shape: `bind-only`; escape_witness: `null`; admission_basis: `not-applicable(screening-only; frozen projection with explicit carrier/normalization equivalence)`. Direct frozen dependencies are exactly the interfaces listed above. No content claim or escape witness is made.
+
+Covered:
+
+- For real sigma>1, xi(sigma)/(2*pi*(sigma-1))=(1/2)*pi^(-1-sigma/2)*Gamma(1+sigma/2)*zeta(sigma). Project the first Mellin reconstruction conjunct, rewrite xi_reading_eq_completed_zeta, cancel sigma-1, and use Complex.Gamma_add_one at sigma/2 (Mathlib/Analysis/SpecialFunctions/Gamma/Basic.lean:312).
+
+Missing:
+
+- Z_+(sigma)=xi(sigma)/(2*pi*(sigma-1)): the full-real-axis integral of g_+ at source T6 is not the frozen symmetric theta-tail integral over t>1. Its change of variables, termwise integration and primitive-kernel bridge remain missing.
 
 ## Search Receipts
 
@@ -452,6 +514,17 @@ Counts are matching lines including comments in baseline D5 Lean files, unless a
 | S78 | `rg -n --glob '*.lean' '(?i)(defect\|de.?branges\|pick).*product\|product.*(defect\|de.?branges)\|rank.?one.*kernel' D5` | 19 |
 | S79 | `rg -n --glob '*.lean' '(?i)divisor.*(complement\|operator\|parity)\|total.?exponent.*parity\|factorization.*even' D5/S3` | 7 |
 | S80 | `rg -n --glob '*.lean' '(?i)trace.?class\|traceClass\|nuclear.*operator\|summable.*matrix' D5/S3` | 17 |
+| S81 | `rg -n --glob '*.lean' '(?i)two.?point.*(pos\|xi)\|xi.*(monoton\|positive\|inequal)\|log.?deriv.*(monoton\|quotient)' D5` | 278 |
+| S82 | `rg -n --glob '*.lean' '(?i)schur.*pos\|pos.*schur' D5` | 11 |
+| S83 | `rg -n --glob '*.lean' '(?i)minimal.*(repair\|trace)\|repair.*(rank\|trace)\|negative.*(minimal\|correction)' D5` | 68 |
+| S84 | `rg -n --glob '*.lean' '(?i)jensen.*(real.?root\|hyperbol\|lower)\|rolle\|positive.*roots.*deriv' D5` | 883 |
+| S85 | `rg -n --glob '*.lean' '(?i)warped\|sectional.*curvature\|pyramid\|fisher.*curvature' D5` | 0 |
+| S86 | `rg -n --glob '*.lean' '(?i)survival.*(prob\|norm)\|prob.*survival\|return.*conserv\|telescop.*probab\|monitor.*unitary' D5` | 0 |
+| S87 | `rg -n --glob '*.lean' '(?i)variance.*(cos\|characteristic\|interference)\|cos.*variance\|schwarz.?lemma' D5` | 6 |
+| S88 | `rg -n --glob '*.lean' '(?i)gamma.*(integer\|zeta\|random)\|mellin.*(primitive\|xi)\|subgaussian\|sub.?gaussian' D5` | 38 |
+| S89 | `rg -n --glob '*.lean' '(?i)jensen.*(real.?root\|hyperbol\|lower)\|\brolle\b\|positive.*roots.*deriv' D5` | 15 |
+| S90 | `rg -n --glob '*.lean' '(?i)\bxi\w*.*(monoton\|positive\|inequal)\|two.?point.*pos\|turan\|log.?concav.*moment' D5` | 27 |
+| S91 | `rg -n --glob '*.lean' '(?i)cos.*(integral\|expect)\|characteristic.*quadratic\|norm.*projection.*sum\|projection.*pythag' D5` | 16 |
 
 Full count collection for streaming receipts: `rg -n ... | node` consumes stdout, splits into matching lines, and emits the count and distinct paths. Final result.json retains collection commands and returned paths. Controls: C+2=1, C+3=4, C-=0, C-2=0.
 
