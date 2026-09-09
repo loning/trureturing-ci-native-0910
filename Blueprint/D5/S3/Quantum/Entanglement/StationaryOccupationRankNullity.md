@@ -78,7 +78,19 @@ $$\forall I \in Type,\; \forall K \in Type,\; \left(Fintype\left(I\right) \land 
 
 With the ComplexOrder scope, a finite complex Gram factor is positive semidefinite.
 
-**Theorem 1.7 (bounded_profile_memory_ge).**
+**Theorem 1.7 (gram_factor_kernel_eq).**
+
+$$\forall I \in Type,\; \forall K \in Type,\; \left(Fintype\left(I\right) \land Fintype\left(K\right)\right) \Rightarrow \left(\forall C \in Matrix\left(K, I, \mathbb{C}\right),\; ker\left(mulVecLin\left(mul\left(conjTranspose\left(C\right), C\right)\right)\right) = ker\left(mulVecLin\left(C\right)\right)\right)$$
+
+*Proof.* Machine-checked in Lean as `D5/S3/Quantum/Entanglement/StationaryOccupationRankNullity.gram_factor_kernel_eq` (`✓ std3`). ∎
+
+*Source.* Repository-derived.
+
+*Commentary.*
+
+The Gram factor and its coefficient matrix have the same linear kernel, so kernel estimates transport exactly.
+
+**Theorem 1.8 (bounded_profile_memory_ge).**
 
 $$\forall I \in Type,\; \forall K \in Type,\; \left(Fintype\left(I\right) \land \left(DecidableEq\left(I\right) \land Fintype\left(K\right)\right)\right) \Rightarrow \left(\forall a \in Function\left(I, \mathbb{N}\right),\; \forall C \in Matrix\left(K, Profile\left(a\right), \mathbb{C}\right),\; \forall q \in \mathbb{N},\; finrank\left(\mathbb{C}, ker\left(mulVecLin\left(mul\left(conjTranspose\left(C\right), C\right)\right)\right)\right) \le q \Rightarrow \prod_{i:I}{a\left(i\right) + 1} - q \le FintypeCard\left(K\right)\right)$$
 
@@ -95,6 +107,7 @@ Combining the profile lower bound with the factor upper bound yields a condition
 - Truth anchor: `D5/S3/Quantum/Entanglement/StationaryOccupationRankNullity.bounded_profile_memory_ge`
 - Truth anchor: `D5/S3/Quantum/Entanglement/StationaryOccupationRankNullity.bounded_profile_rank_ge`
 - Truth anchor: `D5/S3/Quantum/Entanglement/StationaryOccupationRankNullity.gram_factor_is_hermitian`
+- Truth anchor: `D5/S3/Quantum/Entanglement/StationaryOccupationRankNullity.gram_factor_kernel_eq`
 - Truth anchor: `D5/S3/Quantum/Entanglement/StationaryOccupationRankNullity.gram_factor_pos_semidef`
 - Truth anchor: `D5/S3/Quantum/Entanglement/StationaryOccupationRankNullity.gram_factor_rank_le_memory_card`
 - Truth anchor: `D5/S3/Quantum/Entanglement/StationaryOccupationRankNullity.gram_rank_add_nullity`

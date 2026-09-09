@@ -56,6 +56,12 @@ internal sealed class StationaryOccupationRankNullityDocument : IScribeDocumentD
                 Imp(And(Call("Fintype", I), Call("Fintype", K)),
                     All("C", Call("Matrix", K, I, Complex()),
                         Call("PosSemidef", Call("mul", Call("conjTranspose", C), C))))));
+        Formula factorKernel = All("I", Id("Type"),
+            All("K", Id("Type"),
+                Imp(And(Call("Fintype", I), Call("Fintype", K)),
+                    All("C", Call("Matrix", K, I, Complex()),
+                        Eq(Call("ker", Call("mulVecLin", Call("mul", Call("conjTranspose", C), C))),
+                            Call("ker", Call("mulVecLin", C)))))));
         Formula memoryLower = All("I", Id("Type"),
             All("K", Id("Type"),
                 Imp(And(Call("Fintype", I), And(Call("DecidableEq", I), Call("Fintype", K))),
@@ -88,6 +94,8 @@ internal sealed class StationaryOccupationRankNullityDocument : IScribeDocumentD
                     "A complex Gram factor is Hermitian; positivity of the physical stationary factor remains a separate obligation."),
                 Theorem("gram-factor-pos-semidef", "gram_factor_pos_semidef", factorPsd,
                     "With the ComplexOrder scope, a finite complex Gram factor is positive semidefinite."),
+                Theorem("gram-factor-kernel-eq", "gram_factor_kernel_eq", factorKernel,
+                    "The Gram factor and its coefficient matrix have the same linear kernel, so kernel estimates transport exactly."),
                 Theorem("bounded-profile-memory-ge", "bounded_profile_memory_ge", memoryLower,
                     "Combining the profile lower bound with the factor upper bound yields a conditional memory lower bound."))));
     }

@@ -76,6 +76,13 @@ theorem gram_factor_pos_semidef {ι κ : Type*} [Fintype ι] [Fintype κ]
     (C.conjTranspose * C).PosSemidef := by
   exact Matrix.posSemidef_conjTranspose_mul_self C
 
+/- Kernel estimates may be proved on the factor itself and transported to its
+   Gram matrix without changing the nullspace. -/
+theorem gram_factor_kernel_eq {ι κ : Type*} [Fintype ι] [Fintype κ]
+    (C : Matrix κ ι ℂ) :
+    (C.conjTranspose * C).mulVecLin.ker = C.mulVecLin.ker := by
+  exact Matrix.ker_mulVecLin_conjTranspose_mul_self C
+
 theorem bounded_profile_memory_ge
     {ι κ : Type*} [Fintype ι] [DecidableEq ι] [Fintype κ]
     (a : ι → Nat) (C : Matrix κ (Profile a) ℂ) (q : Nat)
