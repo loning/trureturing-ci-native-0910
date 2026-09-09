@@ -102,3 +102,27 @@ LinearAlgebra/Matrix/Determinant/Basic.lean 的 det_apply 与 det_apply'。
 sum_involution 由 to_additive 生成，文本计数不含它的生成声明头；
 后续编译 #check 才核对 elaborated 类型。
 此范围未命中目标；不主张整个数学文献中不存在等价定理。
+
+## 检索批次 3：第三方与公开数学检索
+
+实际出网方式为本地 authenticated gh 与 Python urllib（未用任何未开放的搜索工具）。
+命令 `gh api -X GET search/code -f 'q="partial sums" "sign" language:Lean'`
+返回 total_count=97，读取默认第一页；`"interlacing" "permutation" language:Lean`
+返回 2（PerAlexandersson/RealRooted 的 Tactic/Targets.lean、
+afflom/emporous 的 UorAtlas/Scales.lean）。查询是词面粗筛，未宣称全部 97 个文件已读。
+
+已打开 arXiv API：`all:"permutations" AND all:"partial sums" AND all:"sign"`，
+max_results=10，totalResults=2。摘要分别为 2608.16752v1（随机游走凸包吸收概率的
+signed permutations，符号为步长正负选择）及 1703.08830v2（signed Young modules
+和整除限制的 compositions）；摘要没有本题双排列交错区间的逐 a 奇偶差定理。
+两篇全文目前 ASSUMED-UNVERIFIED，不从摘要推断全文没有等价结果。
+
+OEIS 搜索 `"permutations" "partial sums" "sign"` 的 text 响应已打开，首批十项为
+A316292、A316293、A214663、A316294、A282864、A282840、A282865、A130472、
+A058884、A137501；未命中 S(a) 陈述。不重查上一轮已核对的原序列全文。
+Reservoir `/packages?q=permutation` 返回普通 829 项目录及 No results found 混合页面，
+未把它认作有效的精确包检索。
+Google 的查询 `permutation "partial sums" "signed sum"` 返回重定向/challenge；
+Bing 的查询 `permutation "interlacing" "partial sums" sign` 页面标题保留查询，
+正文却全为 API design 结果（10 条），语义不相干，判无有效读数。
+以上失败不当作零命中或检索穷尽。原始响应与解析文本均保存在 attempt。
