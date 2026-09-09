@@ -5,13 +5,13 @@ namespace StrataLint.Engine;
 // SL-031. Changed unfrozen content and first-freeze utility admission.
 internal static class UtilityAdmissionRule
 {
-    internal static bool IsAffectedBy(DeltaRuleContext context) =>
+    internal static bool IsAffectedBy(RuleEvaluationContext context) =>
         context.RuleImplementationChanged
         || SelectedPaths(context).Any()
         || context.Changes.Paths.Any(path => IsBaselineFrozen(context, path)
             && IsChangedUtilityHeader(context, path));
 
-    internal static ImmutableArray<RuleFinding> Evaluate(DeltaRuleContext context)
+    internal static ImmutableArray<RuleFinding> Evaluate(RuleEvaluationContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
         var findings = ImmutableArray.CreateBuilder<RuleFinding>();
@@ -69,7 +69,7 @@ internal static class UtilityAdmissionRule
         return findings.ToImmutable();
     }
 
-    private static IEnumerable<RepoPath> SelectedPaths(DeltaRuleContext context) =>
+    private static IEnumerable<RepoPath> SelectedPaths(RuleEvaluationContext context) =>
         context.Changes.Paths.Where(path =>
             context.Current.Files.TryGetValue(path, out var current)
             && (FrozenStatePath.IsUnderRoot(path.Value)
@@ -79,13 +79,13 @@ internal static class UtilityAdmissionRule
                     && (!context.Baseline.Files.TryGetValue(path, out var baseline)
                         || !current.RawBytes.AsSpan().SequenceEqual(baseline.RawBytes.AsSpan()))));
 
-    private static bool IsBaselineFrozen(DeltaRuleContext context, RepoPath path) =>
+    private static bool IsBaselineFrozen(RuleEvaluationContext context, RepoPath path) =>
         IsD5Lean(path.Value)
         && FrozenStatePath.TryFromModulePath(path, out var statePath)
         && context.Baseline.Files.ContainsKey(statePath);
 
     private static void AddClassificationFindings(
-        DeltaRuleContext context,
+        RuleEvaluationContext context,
         RepoPath path,
         ImmutableArray<RuleFinding>.Builder findings)
     {
@@ -136,7 +136,7 @@ internal static class UtilityAdmissionRule
     }
 
     private static void AddRatchetFindings(
-        DeltaRuleContext context,
+        RuleEvaluationContext context,
         ImmutableArray<RuleFinding>.Builder findings)
     {
         foreach (var path in context.Changes.Paths
@@ -156,7 +156,7 @@ internal static class UtilityAdmissionRule
         }
     }
 
-    private static bool IsChangedUtilityHeader(DeltaRuleContext context, RepoPath path)
+    private static bool IsChangedUtilityHeader(RuleEvaluationContext context, RepoPath path)
     {
         if (!IsD5Lean(path.Value))
         {

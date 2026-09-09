@@ -557,7 +557,6 @@ internal static class LeanCacheProvisioner
         Action<string> removePartial)
     {
         var lake = Path.Combine(worktreeRoot, ".lake");
-        MathlibOleanInventory mathlibOleans;
         try
         {
             ProcessOutput result;
@@ -584,7 +583,19 @@ internal static class LeanCacheProvisioner
             }
 
             VerifyPrivateDirectory(lake);
-            mathlibOleans = InspectMathlibOleans(lake);
+            var mathlibOleans = InspectMathlibOleans(lake);
+
+            try
+            {
+                LeanCacheStamp.Write(lake, pins);
+            }
+            catch (Exception exception)
+            {
+                throw new LeanCacheProvisionException(
+                    $"cache producer stamp publication failed: {exception.Message}",
+                    exception);
+            }
+            return mathlibOleans;
         }
         catch (Exception exception)
         {
@@ -613,21 +624,6 @@ internal static class LeanCacheProvisioner
                 exception.Message,
                 exception);
         }
-
-        // The private cache is usable now. Stamp persistence must not discard it
-        // or prevent Lake from validating it during the requested build.
-        try
-        {
-            LeanCacheStamp.Write(lake, pins);
-        }
-        catch (Exception exception)
-        {
-            throw new LeanCacheProvisionException(
-                $"cache producer stamp publication failed: {exception.Message}",
-                exception,
-                safeToContinueToBuild: true);
-        }
-        return mathlibOleans;
     }
 
     private static void EnsureAbsent(string target)

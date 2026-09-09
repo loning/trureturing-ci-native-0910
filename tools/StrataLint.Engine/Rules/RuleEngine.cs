@@ -109,7 +109,7 @@ internal sealed record RegisteredFindingEdge(
 }
 
 internal sealed record FindingEdgeDefinition(
-    Func<CurrentRuleContext, ImmutableArray<RuleFinding>> Evaluate,
+    Func<RuleEvaluationContext, ImmutableArray<RuleFinding>> Evaluate,
     FindingEdgeKind Kind)
 {
     internal FindingEdgeDescriptor Descriptor => FindingEdgeDescriptor.From(Evaluate, Kind);
@@ -117,35 +117,16 @@ internal sealed record FindingEdgeDefinition(
 
 internal interface IRepositoryRule
 {
-    bool HasCurrentPredicate => true;
-    bool HasDeltaPredicate => false;
     ImmutableArray<FindingEdgeDescriptor> FindingEdges => [];
 
     bool AppliesTo(RepositoryFile artifact, RuleApplicabilityContext context);
 
-    bool IsAffectedBy(DeltaRuleContext context) => true;
+    bool IsAffectedBy(RuleEvaluationContext context) => true;
 
-    ImmutableArray<RuleFinding> EvaluateCurrent(CurrentRuleContext context) => [];
+    ImmutableArray<RuleFinding> Evaluate(RuleEvaluationContext context);
 
-    ImmutableArray<RuleFinding> EvaluateDelta(DeltaRuleContext context) => [];
-}
-
-public sealed class CurrentRuleContext
-{
-    private CurrentRuleContext(RepositorySnapshot current, ValidatedPolicy policy, AcceptedLeanClosure lean, VerifiedScribeEmissions? emissions)
-    {
-        Current = current;
-        Policy = policy;
-        Lean = lean;
-        VerifiedScribeEmissions = emissions;
-    }
-
-    internal RepositorySnapshot Current { get; }
-    internal ValidatedPolicy Policy { get; }
-    internal AcceptedLeanClosure Lean { get; }
-    internal VerifiedScribeEmissions? VerifiedScribeEmissions { get; }
-    internal static CurrentRuleContext Create(RepositorySnapshot current, ValidatedPolicy policy, AcceptedLeanClosure lean, VerifiedScribeEmissions? emissions = null) =>
-        new(current, policy, lean, emissions);
+    ImmutableArray<RuleFinding> EvaluateCandidateDelta(RuleEvaluationContext context) =>
+        Evaluate(context);
 }
 
 internal sealed class RuleApplicabilityContext
@@ -214,11 +195,9 @@ public partial record RuleExecutionOutcome
     public partial record InfrastructureFailure(string Message);
 }
 
-internal sealed record CandidateCommonResults(string Candidate, string Round);
-
-public sealed class DeltaRuleContext
+internal sealed class RuleEvaluationContext
 {
-    private DeltaRuleContext(
+    private RuleEvaluationContext(
         RepositorySnapshot current,
         RepositorySnapshot baseline,
         ValidatedPolicy policy,
@@ -227,8 +206,7 @@ public sealed class DeltaRuleContext
         MetaEvaluationProfile metaEvaluation,
         VerifiedScribeEmissions? verifiedScribeEmissions,
         ScribeTestMapStore? testMapStore,
-        Func<RepositorySnapshot, ScribeTestMap>? deriveTestMap,
-        CandidateCommonResults? commonResults)
+        Func<RepositorySnapshot, ScribeTestMap>? deriveTestMap)
     {
         Current = current;
         Baseline = baseline;
@@ -244,17 +222,13 @@ public sealed class DeltaRuleContext
         VerifiedScribeEmissions = verifiedScribeEmissions;
         TestMapStore = testMapStore;
         DeriveTestMap = deriveTestMap ?? ScribeTestMapDeriver.DeriveSnapshot;
-        CommonResults = commonResults;
     }
 
     internal RepositorySnapshot Current { get; }
 
-    internal CurrentRuleContext CurrentFacts => CurrentRuleContext.Create(Current, Policy, Lean, VerifiedScribeEmissions);
-
-    // Base is read as data by the candidate judge.
+    // Baseline is the protected state extended by the candidate. In CI it is HEAD^1 of the
+    // pull-request merge object, so it is an ancestor of the candidate HEAD.
     internal RepositorySnapshot Baseline { get; }
-
-    internal CandidateCommonResults? CommonResults { get; }
 
     internal ValidatedPolicy Policy { get; }
 
@@ -281,7 +255,7 @@ public sealed class DeltaRuleContext
 
     internal Func<RepositorySnapshot, ScribeTestMap> DeriveTestMap { get; }
 
-    internal static DeltaRuleContext Create(
+    internal static RuleEvaluationContext Create(
         RepositorySnapshot current,
         RepositorySnapshot baseline,
         ValidatedPolicy policy,
@@ -302,7 +276,7 @@ public sealed class DeltaRuleContext
             testMapStore,
             deriveTestMap);
 
-    internal static DeltaRuleContext Create(
+    internal static RuleEvaluationContext Create(
         RepositorySnapshot current,
         RepositorySnapshot baseline,
         ValidatedPolicy policy,
@@ -311,8 +285,7 @@ public sealed class DeltaRuleContext
         MetaEvaluationProfile metaEvaluation,
         VerifiedScribeEmissions? verifiedScribeEmissions = null,
         ScribeTestMapStore? testMapStore = null,
-        Func<RepositorySnapshot, ScribeTestMap>? deriveTestMap = null,
-        CandidateCommonResults? commonResults = null) =>
+        Func<RepositorySnapshot, ScribeTestMap>? deriveTestMap = null) =>
         new(
             current,
             baseline,
@@ -322,63 +295,61 @@ public sealed class DeltaRuleContext
             metaEvaluation,
             verifiedScribeEmissions,
             testMapStore,
-            deriveTestMap,
-            commonResults);
+            deriveTestMap);
 }
 
 internal sealed class RepositoryRule(
     Func<RepositoryFile, RuleApplicabilityContext, bool> appliesTo,
-    Func<CurrentRuleContext, ImmutableArray<RuleFinding>>? evaluate = null,
-    Func<DeltaRuleContext, bool>? isAffectedBy = null,
-    Func<DeltaRuleContext, ImmutableArray<RuleFinding>>? evaluateDelta = null,
+    Func<RuleEvaluationContext, ImmutableArray<RuleFinding>> evaluate,
+    Func<RuleEvaluationContext, bool>? isAffectedBy = null,
+    Func<RuleEvaluationContext, ImmutableArray<RuleFinding>>? evaluateCandidateDelta = null,
     ImmutableArray<FindingEdgeDefinition> findingEdges = default) : IRepositoryRule
 {
-    public bool HasCurrentPredicate => evaluate is not null;
-    public bool HasDeltaPredicate => evaluateDelta is not null;
-    private readonly ImmutableArray<FindingEdgeDescriptor> edges =
+    private readonly ImmutableArray<FindingEdgeDefinition> edges =
         findingEdges.IsDefaultOrEmpty
-            ? evaluate is not null ? [FindingEdgeDescriptor.From(evaluate, FindingEdgeKind.Local)]
-                : evaluateDelta is not null ? [FindingEdgeDescriptor.From(evaluateDelta, FindingEdgeKind.Local)] : []
-            : findingEdges.Select(static edge => edge.Descriptor).ToImmutableArray();
+            ? [new(evaluate, FindingEdgeKind.Local)]
+            : findingEdges;
 
     public ImmutableArray<FindingEdgeDescriptor> FindingEdges =>
-        edges;
+        edges.Select(static edge => edge.Descriptor).ToImmutableArray();
 
     public bool AppliesTo(RepositoryFile artifact, RuleApplicabilityContext context) =>
         appliesTo(artifact, context);
 
-    public bool IsAffectedBy(DeltaRuleContext context) =>
+    public bool IsAffectedBy(RuleEvaluationContext context) =>
         isAffectedBy?.Invoke(context) ?? true;
 
-    public ImmutableArray<RuleFinding> EvaluateCurrent(CurrentRuleContext context) =>
-        evaluate?.Invoke(context) ?? [];
+    public ImmutableArray<RuleFinding> Evaluate(RuleEvaluationContext context) =>
+        evaluate(context);
 
-    public ImmutableArray<RuleFinding> EvaluateDelta(DeltaRuleContext context) =>
-        evaluateDelta?.Invoke(context) ?? [];
+    public ImmutableArray<RuleFinding> EvaluateCandidateDelta(RuleEvaluationContext context) =>
+        (evaluateCandidateDelta ?? evaluate)(context);
 
     internal static RepositoryRule FromEdges(
         ImmutableArray<FindingEdgeDefinition> findingEdges,
         Func<RepositoryFile, RuleApplicabilityContext, bool> appliesTo,
-        Func<DeltaRuleContext, bool>? isAffectedBy = null) =>
+        Func<RuleEvaluationContext, bool>? isAffectedBy = null) =>
         new(
             appliesTo,
             context => findingEdges
                 .SelectMany(edge => edge.Evaluate(context))
                 .ToImmutableArray(),
             isAffectedBy,
-            null,
+            context => findingEdges
+                .SelectMany(edge => edge.Evaluate(context))
+                .ToImmutableArray(),
             findingEdges);
 
     internal static RepositoryRule FromDiscoveredEdges(
         Type ownerType,
         Func<RepositoryFile, RuleApplicabilityContext, bool> appliesTo,
-        Func<DeltaRuleContext, bool>? isAffectedBy = null)
+        Func<RuleEvaluationContext, bool>? isAffectedBy = null)
     {
         var findingEdges = FindingEdgeDescriptor.Discover(ownerType)
             .Select(edge => new FindingEdgeDefinition(
-                (Func<CurrentRuleContext, ImmutableArray<RuleFinding>>)ownerType
+                (Func<RuleEvaluationContext, ImmutableArray<RuleFinding>>)ownerType
                     .GetMethod(edge.MemberName, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)!
-                    .CreateDelegate(typeof(Func<CurrentRuleContext, ImmutableArray<RuleFinding>>)),
+                    .CreateDelegate(typeof(Func<RuleEvaluationContext, ImmutableArray<RuleFinding>>)),
                 edge.Kind))
             .ToImmutableArray();
         if (findingEdges.IsDefaultOrEmpty)

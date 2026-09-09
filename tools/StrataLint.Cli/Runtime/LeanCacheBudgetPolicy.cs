@@ -45,11 +45,7 @@ internal static class LeanCacheBudgetPolicy
     /// 首次保存后归档大小基本不变(约 1.217 GB;该读数我未复验)——即跨轮**没有可累计的进度**。故这条链
     /// **不产生任何耗时下界或倍数**(#4122 曾据它写过下界与倍数,已全部撤回,不再复述);它只说明 ARM 上该
     /// 集成树的冷建在检查点制度下未能完成,原因未查(记 open,归 #3769 集成流)。**本值的取值依据只用 ④。**
-    /// These measurements predate the shared current workflow. After run 34184656783
-    /// hit CommonStages' shorter default, shared current uses this existing envelope
-    /// for report capture and its supervisor. This is a bounded report allowance,
-    /// not a measured CI duration or a sum of nested command budgets. Explicit
-    /// PREFLIGHT_DEADLINE_AT and caller cancellation still take precedence.
+    /// 且 `lean-inspect` job 自身 `timeout-minutes: 45`,故本预算在 CI 上从不承重。
     /// ⑥(2026-08-30,#4122 四轮评审;**披露,非解决**)**嵌套 deadline 取最小**:本机 `make lean-report`
     /// 的 worker `tools/lean-inspector/inspect.sh` 最坏顺序跑 3 条 Lake 阶段,每条之前的 ensure 前导可进入
     /// provisioning(`cp -R` / `lake exe cache get` / 归档取回,各有自己的预算),阶段之间还有非 Lake 工作;
@@ -149,9 +145,11 @@ internal static class LeanCacheBudgetPolicy
     internal const int MinimumConfigurableBudgetSeconds = 300;
 
     /// <summary>
-    /// Historical envelope retained for the optional archive attempt budget.
-    /// The shared current stage has a larger workflow deadline; this value is
-    /// not a projection of that YAML or a reason to skip normal production.
+    /// 归档取回所在 job 的预算上限。取自 `.github/workflows/ci.yml` 的 `lean-inspect`
+    /// job：`timeout-minutes: 45`。**这是那个值的投影，不是一个独立的选择**。
+    /// 〔2026-08-30 勘注(#4122 第 4 轮 architecture 席):此处曾称由 `LeanInspectJobBudgetMatchesTheWorkflow`
+    /// 钉住相等——该测试已随 `350ab86be`(器律⑦′ 禁 workflow 测试)删除;现为**手工复制值,无机器钉子**,
+    /// workflow 改了这里不会红。今日实测 ci.yml 仍为 45。〕
     /// </summary>
     internal const int LeanInspectJobBudgetMinutes = 45;
 
@@ -160,8 +158,9 @@ internal static class LeanCacheBudgetPolicy
     /// Lean 报告。取自本仓已有的冷跑读数 —— 归档命中时 `lean-reports` 约 18s
     /// （记忆 `lean-cache-worth-190x` 的热态读数），向上取整到分钟并留一倍余量。
     ///
-    /// This reserve is retained from warm production measurements. Cold production
-    /// still runs through the normal producer under the enclosing stage deadline.
+    /// 它**不是**冷编译那一路的预留：那一路根本不该由本预算兜底，冷编译是小时量级
+    /// （实测 run 32493250519 内容层编译 >62 min），任何 job 内预算都装不下它，
+    /// 故那条路的正解是 #2814 的 fail-closed 门，不是把预算调大。
     /// </summary>
     internal const int PostArchiveReserveMinutes = 2;
 }

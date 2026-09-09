@@ -1,4 +1,3 @@
-using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -65,7 +64,7 @@ internal static class LeanReportCiBaselineScriptContract
         var cache = Path.Combine(temporary.Path, "cache");
         WriteBundle(bundle);
         Assert.Equal(0, Run(bundle, cache).ExitCode);
-        var entry = SeedReport(cache);
+        var entry = Path.Combine(cache, Address, "raw-lean-report.json");
         Directory.CreateDirectory(entry + ".logs");
         File.WriteAllText(
             Path.Combine(entry + ".logs", "producer.log"),
@@ -85,7 +84,7 @@ internal static class LeanReportCiBaselineScriptContract
         var cache = Path.Combine(temporary.Path, "cache");
         WriteBundle(bundle);
         Assert.Equal(0, Run(bundle, cache).ExitCode);
-        var entry = SeedReport(cache);
+        var entry = Path.Combine(cache, Address, "raw-lean-report.json");
         File.CreateSymbolicLink(
             entry + ".logs",
             Path.Combine(cache, Address, "missing-producer-logs"));
@@ -111,7 +110,7 @@ internal static class LeanReportCiBaselineScriptContract
         var result = Run(bundle, cache);
 
         Assert.Equal(0, result.ExitCode);
-        var entry = SeedReport(cache);
+        var entry = Path.Combine(cache, Address, "raw-lean-report.json");
         Assert.False(Directory.Exists(entry + ".logs"));
         Assert.Contains(
             "LEAN_REPORT_CI_BASELINE status=ready",
@@ -221,7 +220,7 @@ internal static class LeanReportCiBaselineScriptContract
 
         Assert.Equal(0, result.ExitCode);
         Assert.Equal(cache, Encoding.UTF8.GetString(result.StandardOutput).Trim());
-        var entry = SeedReport(cache);
+        var entry = Path.Combine(cache, Address, "raw-lean-report.json");
         foreach (var suffix in new[]
                  {
                      "", ".sha256", ".input.attestation", ".provenance.json", ".materials.zip",
@@ -242,7 +241,7 @@ internal static class LeanReportCiBaselineScriptContract
         var delta = TestProcessRunner.Run(
             "python3",
             [Path.Combine(TestRepositoryLayout.FindRoot(), "tools/lean-inspector/delta.py"), "plan",
-                temporaryPath, Path.GetDirectoryName(Path.GetDirectoryName(SeedReport(cache)))!, new string('b', 64), Producer, Resident, Config, modules, plan],
+                temporaryPath, cache, new string('b', 64), Producer, Resident, Config, modules, plan],
             temporaryPath, BoundedProcessRunner.HangDetectionBudget, 1024 * 1024);
         Assert.Equal(0, delta.ExitCode);
         return plan;
@@ -332,9 +331,6 @@ internal static class LeanReportCiBaselineScriptContract
         Assert.False(Directory.Exists(Path.Combine(cache, Address)));
     }
 
-    private static string SeedReport(string cache) => Directory.EnumerateFiles(
-        cache, "raw-lean-report.json", SearchOption.AllDirectories).Single();
-
     private static ProcessOutput Run(string bundle, string cache)
     {
         var root = TestRepositoryLayout.FindRoot();
@@ -365,14 +361,6 @@ internal static class LeanReportCiBaselineScriptContract
             report + ".provenance.json",
             $"{{\"schema\":\"stratalint-lean-report-provenance-v1\",\"side\":\"candidate\",\"mode\":\"produced\",\"source_side\":\"candidate\",\"input_address\":\"sha256:{Address}\",\"producer_sha256\":\"{Producer}\",\"repository_inspector_sha256\":\"{Resident}\",\"lean_sources_sha256\":\"{sources}\",\"lean_config_sha256\":\"{Config}\",\"report_sha256\":\"{reportSha}\"}}\n",
             new UTF8Encoding(false));
-        using (var archive = ZipFile.Open(report + ".materials.zip", ZipArchiveMode.Create)) { }
-        File.WriteAllText(report + ".seed.json", JsonSerializer.Serialize(new
-        {
-            schema = "lean-report-seed-v1",
-            partition = new string('a', 40) + "/linux-x64",
-            runtime_sha256 = new string('c', 64),
-            report_sha256 = reportSha,
-            materials_sha256 = Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(report + ".materials.zip"))),
-        }) + "\n");
+        File.WriteAllText(report + ".materials.zip", "materials\n", new UTF8Encoding(false));
     }
 }

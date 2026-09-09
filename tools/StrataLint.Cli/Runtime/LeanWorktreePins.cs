@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -7,11 +8,9 @@ using StrataLint.Engine;
 
 namespace StrataLint.Cli;
 
-internal sealed record LeanPinSet(string MathlibRevision)
+internal sealed record LeanPinSet(byte[] LeanToolchain, byte[] LakeManifest, string Sha256)
 {
     private static readonly UTF8Encoding StrictUtf8 = new(false, true);
-    internal string Sha256 => "sha256:" + Convert.ToHexStringLower(
-        SHA256.HashData(Encoding.ASCII.GetBytes(MathlibRevision)));
 
     internal static LeanPinSet ReadBase(
         string repositoryRoot,
@@ -38,32 +37,39 @@ internal sealed record LeanPinSet(string MathlibRevision)
             reason = null;
             return Create(File.ReadAllBytes(toolchainPath), File.ReadAllBytes(manifestPath));
         }
-        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException
-            or JsonException or InvalidOperationException or KeyNotFoundException)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
             reason = $"pin files are unreadable: {exception.Message}";
             return null;
         }
     }
 
-    internal bool SamePartition(LeanPinSet other) => MathlibRevision == other.MathlibRevision;
+    internal bool HasSameBytes(LeanPinSet other) =>
+        LeanToolchain.AsSpan().SequenceEqual(other.LeanToolchain)
+        && LakeManifest.AsSpan().SequenceEqual(other.LakeManifest);
 
     internal static LeanPinSet Create(byte[] toolchain, byte[] manifest)
     {
-        using var document = JsonDocument.Parse(manifest);
-        var packages = document.RootElement.GetProperty("packages");
-        var mathlib = packages.EnumerateArray().Where(static package =>
-            package.TryGetProperty("name", out var name) && name.GetString() == "mathlib").ToArray();
-        if (mathlib.Length != 1
-            || !mathlib[0].TryGetProperty("rev", out var revision)
-            || revision.ValueKind != JsonValueKind.String
-            || !ValidRevision(revision.GetString()))
-            throw new InvalidOperationException("manifest requires exactly one mathlib package with a resolved 40-hex revision");
-        return new LeanPinSet(revision.GetString()!);
+        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        AppendField(hash, "lean-toolchain", toolchain);
+        AppendField(hash, "lake-manifest.json", manifest);
+        return new LeanPinSet(
+            toolchain,
+            manifest,
+            "sha256:" + Convert.ToHexStringLower(hash.GetHashAndReset()));
     }
 
-    internal static bool ValidRevision(string? revision) => revision is { Length: 40 }
-        && revision.All(static character => character is >= '0' and <= '9' or >= 'a' and <= 'f');
+    private static void AppendField(IncrementalHash hash, string name, byte[] value)
+    {
+        var nameBytes = Encoding.ASCII.GetBytes(name);
+        Span<byte> length = stackalloc byte[4];
+        BinaryPrimitives.WriteInt32BigEndian(length, nameBytes.Length);
+        hash.AppendData(length);
+        hash.AppendData(nameBytes);
+        BinaryPrimitives.WriteInt32BigEndian(length, value.Length);
+        hash.AppendData(length);
+        hash.AppendData(value);
+    }
 
     private static byte[] ReadRevisionFile(
         string repositoryRoot,
@@ -100,11 +106,8 @@ internal static class LeanCacheStamp
 {
     // The stamp records pin identity only. Cache completeness is live state and is checked on
     // every ensure/writer admission instead of being inferred from this durable identity record.
-    private const string Schema = "stratalint-lean-cache-v2";
+    private const string Schema = "stratalint-lean-cache-v1";
     private const string FileName = ".stratalint-lean-cache-stamp.json";
-    private static string Os => OperatingSystem.IsMacOS() ? "darwin"
-        : OperatingSystem.IsWindows() ? "windows" : "linux";
-    private static string Arch => RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant();
 
     internal static string PathFor(string lake) => Path.Combine(lake, FileName);
 
@@ -130,9 +133,9 @@ internal static class LeanCacheStamp
                 JsonSerializer.Serialize(new
                 {
                     schema = Schema,
-                    mathlib_revision = pins.MathlibRevision,
-                    os = Os,
-                    arch = Arch,
+                    pin_sha256 = pins.Sha256,
+                    lean_toolchain_base64 = Convert.ToBase64String(pins.LeanToolchain),
+                    lake_manifest_base64 = Convert.ToBase64String(pins.LakeManifest),
                 }) + "\n",
                 new UTF8Encoding(false));
             File.Move(temporary, path, overwrite);
@@ -165,25 +168,33 @@ internal static class LeanCacheStamp
                 || !root.TryGetProperty("schema", out var schema)
                 || schema.ValueKind != JsonValueKind.String
                 || schema.GetString() != Schema
-                || !root.TryGetProperty("mathlib_revision", out var revision)
-                || revision.ValueKind != JsonValueKind.String
-                || !LeanPinSet.ValidRevision(revision.GetString())
-                || !root.TryGetProperty("os", out var os)
-                || os.ValueKind != JsonValueKind.String
-                || !root.TryGetProperty("arch", out var arch)
-                || arch.ValueKind != JsonValueKind.String)
+                || !root.TryGetProperty("pin_sha256", out var sha256)
+                || sha256.ValueKind != JsonValueKind.String
+                || !root.TryGetProperty("lean_toolchain_base64", out var toolchain)
+                || toolchain.ValueKind != JsonValueKind.String
+                || !root.TryGetProperty("lake_manifest_base64", out var manifest)
+                || manifest.ValueKind != JsonValueKind.String)
             {
                 return new LeanCacheStampInspection(
                     LeanCacheStampState.Corrupt,
                     "cache producer stamp has an unknown or invalid schema");
             }
 
-            if (revision.GetString() != pins.MathlibRevision
-                || os.GetString() != Os || arch.GetString() != Arch)
+            var toolchainBytes = Convert.FromBase64String(toolchain.GetString()!);
+            var manifestBytes = Convert.FromBase64String(manifest.GetString()!);
+            var embeddedPins = LeanPinSet.Create(toolchainBytes, manifestBytes);
+            if (sha256.GetString() != embeddedPins.Sha256)
+            {
+                return new LeanCacheStampInspection(
+                    LeanCacheStampState.Corrupt,
+                    "cache producer stamp pin hash is inconsistent with its embedded pin bytes");
+            }
+
+            if (sha256.GetString() != pins.Sha256 || !embeddedPins.HasSameBytes(pins))
             {
                 return new LeanCacheStampInspection(
                     LeanCacheStampState.Mismatch,
-                    "cache producer stamp mathlib partition or platform does not match");
+                    "cache producer stamp pin bytes do not match the requested pins");
             }
 
             return new LeanCacheStampInspection(LeanCacheStampState.Match, null);
@@ -254,11 +265,7 @@ internal sealed class LeanCacheGuard : IDisposable
 
     private static LeanCacheGuard? TryAcquire(string lake, bool shared)
     {
-        // The report supervisor changes TMPDIR for each child. Cache ownership
-        // must stay the same across those invocations and ordinary make lean.
-        var directory = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-            ".cache", "stratalint-lean-cache-guards");
+        var directory = Path.Combine(Path.GetTempPath(), "stratalint-lean-cache-guards");
         Directory.CreateDirectory(directory);
         var address = Convert.ToHexStringLower(SHA256.HashData(
             Encoding.UTF8.GetBytes(PhysicalPath(lake))));
@@ -489,12 +496,7 @@ internal static class GitWorktreeInventory
     {
         ArgumentNullException.ThrowIfNull(stateProbe);
         var targetRoot = LeanCacheGuard.PhysicalPath(repositoryRoot);
-        var explicitDonors = Environment.GetEnvironmentVariable("STRATALINT_LEAN_CACHE_DONORS");
-        var roots = explicitDonors is null ? ReadRoots(repositoryRoot, runner)
-            : explicitDonors.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
-        if (explicitDonors is not null && roots.Any(static path => !Path.IsPathFullyQualified(path)))
-            throw new InvalidOperationException("STRATALINT_LEAN_CACHE_DONORS requires absolute paths");
-        var ordered = roots
+        var ordered = ReadRoots(repositoryRoot, runner)
             .Select(LeanCacheGuard.PhysicalPath)
             .Where(root => !string.Equals(root, targetRoot, StringComparison.Ordinal))
             .Distinct(StringComparer.Ordinal);
@@ -533,7 +535,7 @@ internal static class GitWorktreeInventory
                 continue;
             }
 
-            if (!basePins.SamePartition(pins))
+            if (!basePins.HasSameBytes(pins))
             {
                 sawMismatch = true;
                 continue;
@@ -555,7 +557,7 @@ internal static class GitWorktreeInventory
 
             var verifiedPins = LeanPinSet.TryReadWorktree(root, out _);
             if (verifiedPins is null
-                || !basePins.SamePartition(verifiedPins)
+                || !basePins.HasSameBytes(verifiedPins)
                 || !LeanCacheStamp.Matches(cache, basePins, out _)
                 || LeanCacheBusyProbe.IsBusy(root, runner))
             {
@@ -582,7 +584,7 @@ internal static class GitWorktreeInventory
         }
 
         var notice = sawMismatch
-            ? "existing .lake donor mathlib partition does not match the requested base"
+            ? "existing .lake donor pin bytes do not match the requested base"
             : sawInvalidStamp
                 ? $"existing .lake donor producer stamp is unusable ({string.Join("; ", unreadable)})"
                 : sawProjectProbeFailure

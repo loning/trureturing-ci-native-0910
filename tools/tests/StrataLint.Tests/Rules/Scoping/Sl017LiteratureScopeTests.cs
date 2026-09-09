@@ -12,7 +12,7 @@ public sealed class Sl017LiteratureScopeTests
         """;
 
     [Fact]
-    public void Sl017ChecksCurrentInvalidLiteratureWhenOnlyUnrelatedManagedLeanChanges()
+    public void Sl017SkipsInvalidLiteratureWhenOnlyUnrelatedManagedLeanChanges()
     {
         var fixture = Fixture();
         var changedPath = RuleFixture.ValuesBindingPath;
@@ -20,8 +20,8 @@ public sealed class Sl017LiteratureScopeTests
         var completed = Assert.IsType<RuleExecutionOutcome.Completed>(
             RuleCatalog.Default.Execute(fixture.Build(RawChangeSet.Create([changedPath])))).Capability;
 
-        Assert.Contains(RuleId.CreateKnown(17), completed.ExecutedRules);
-        Assert.Contains(
+        Assert.DoesNotContain(RuleId.CreateKnown(17), completed.ExecutedRules);
+        Assert.DoesNotContain(
             completed.Diagnostics,
             diagnostic => diagnostic.RuleId == RuleId.CreateKnown(17));
     }

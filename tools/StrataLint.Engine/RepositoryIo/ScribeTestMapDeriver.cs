@@ -67,7 +67,7 @@ internal static class ScribeTestMapDeriver
         var metadataDigest = ScribeTestMapStore.ComputeMetadataDigest(snapshot, describeInputPaths);
         var key = SnapshotDerivationKey(snapshot, metadataDigest);
         var candidate = new Lazy<ScribeTestMap>(
-            () => derive is null ? DeriveSnapshotUncached(snapshot, null, describeInputPaths) : derive(snapshot),
+            () => (derive ?? DeriveSnapshotUncached)(snapshot),
             LazyThreadSafetyMode.ExecutionAndPublication);
         var derivation = SnapshotDerivations.GetOrAdd(key, candidate);
         try
@@ -90,10 +90,12 @@ internal static class ScribeTestMapDeriver
         }
     }
 
+    private static ScribeTestMap DeriveSnapshotUncached(RepositorySnapshot snapshot) =>
+        DeriveSnapshotUncached(snapshot, null);
+
     internal static ScribeTestMap DeriveSnapshotUncached(
         RepositorySnapshot snapshot,
-        BoundedProcessRunner.ProcessRunner? run,
-        Func<IEnumerable<ScribeCompilationProject>, IReadOnlyList<string>>? describeInputPaths = null)
+        BoundedProcessRunner.ProcessRunner? run)
     {
         var tracked = snapshot.Files.Values
             .Where(static file => IsTrackedInput(file.Path.Value))
@@ -107,14 +109,13 @@ internal static class ScribeTestMapDeriver
         {
             return DeriveTracked(tracked, new MsBuildCompileMap(
                 new Dictionary<string, string>(StringComparer.Ordinal),
-                []), describeInputPaths: describeInputPaths);
+                []));
         }
 
         try
         {
             using var checkout = MsBuildCompileOracle.Materialize(snapshot, IsDerivationInput);
-            return DeriveTracked(tracked, MsBuildCompileOracle.Query(checkout.Root, projects, run: run),
-                describeInputPaths: describeInputPaths);
+            return DeriveTracked(tracked, MsBuildCompileOracle.Query(checkout.Root, projects, run: run));
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
@@ -123,7 +124,7 @@ internal static class ScribeTestMapDeriver
                 projects.Select(project => new MsBuildCompileFinding(
                     project,
                     $"MSBuild snapshot materialization failed closed: {exception.Message}"))
-                    .ToArray()), describeInputPaths: describeInputPaths);
+                    .ToArray()));
         }
     }
 
@@ -321,8 +322,7 @@ internal static class ScribeTestMapDeriver
         IReadOnlyList<ScribeTrackedSource> tracked,
         MsBuildCompileMap compileMap,
         ScribeBindingStrategy bindingStrategy = ScribeBindingStrategy.Demand,
-        IScribeBindingRecorder? recorder = null,
-        Func<IEnumerable<ScribeCompilationProject>, IReadOnlyList<string>>? describeInputPaths = null)
+        IScribeBindingRecorder? recorder = null)
     {
         var projectFiles = tracked
             .Where(static file => file.Path.EndsWith(".csproj", StringComparison.Ordinal))
@@ -344,7 +344,7 @@ internal static class ScribeTestMapDeriver
         var compilationContext = ScribeProjectCompilationContext.Create(
             tracked,
             compileMap.ProjectBySourcePath,
-            testProjects.Keys.ToHashSet(StringComparer.Ordinal)) with { DescribeMetadataInputs = describeInputPaths };
+            testProjects.Keys.ToHashSet(StringComparer.Ordinal));
         return DeriveSources(
             testSources,
             [],
