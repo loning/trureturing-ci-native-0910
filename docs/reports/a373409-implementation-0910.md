@@ -238,3 +238,14 @@ PR watcher 在 run 34394662325 / head 8d5409db0f8d42a74e92ef0ba4722bba17325b9f
 脚本的 describe-report 输出仍含大量 OPEN 投影读数（包括本题）；绝对路径没有消除它们，
 因此不把路径猜测当作根因，也不把此散文检查冒充 Lean 语义验证。
 继续核对下载中的完整 CI 日志；Lean 语义收据仍由前述 make lean-report 与编译器 API 承担。
+
+上一轮结束后 `gh run view 34394662325 --log-failed` 取得失败步骤全文，
+其唯一 RED 同样为本题 `incomplete-library-locator`，与本地复现一致；
+该轮工程门 SUCCESS、Lean report 门 FAILURE、admission SKIPPED。
+原始大日志的两次流式下载已停止；完整失败步骤保存为 attempt-1/ci-failed-step.log。
+进一步读取 `StatementProjection.LoadStatements`：OPEN projection 的查找来源是
+`Golden/Projection` 下两份固定的公式投影夹具，不是 canonical raw Lean report；
+本题用 `StatementSource.WithoutFormula()`，因此此 OPEN 不表示声明缺失。
+`DescribeReport.Build` 另从 raw report 创建 DeclarationCatalog 并解析声明；
+这一检查与发射的 `✓ std3`、主定理 statement_id 收据均已通过。
+后续 CI 最终判词由 runner result.json 绑定最终 head 记录，不冒领本轮失败为绿。
