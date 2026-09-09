@@ -106,11 +106,14 @@ def membership (stream request destination : String) : IO Unit := do
   let indexedNamed ← allNamed.mapM fun entry => do
     let mode ← str entry "mode"
     let identity ← if mode == "key" then str entry "identity" else pure ""
-    return ({ moduleName := ← str entry "module", key := (← field entry "key").compress,
-      mode, identity, name := (← field entry "name").compress } : Candidate)
+    let moduleName ← str entry "module"
+    let key := (← field entry "key").compress
+    let name := (← field entry "name").compress
+    return ({ moduleName, key, mode, identity, name } : Candidate)
   let allRegistrations ← registrations.toArray.mapM fun (_, entry) => do
-    return ({ moduleName := ← str entry "module", key := (← field entry "key").compress,
-      mode := "name" } : Candidate)
+    let moduleName ← str entry "module"
+    let key := (← field entry "key").compress
+    return ({ moduleName, key, mode := "name" } : Candidate)
   for key in keys do
     unless key.size == 3 do throw <| IO.userError "IE-C044 invalid request triple"
     let owner := key[0]!

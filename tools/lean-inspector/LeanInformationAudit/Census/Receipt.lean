@@ -10,10 +10,10 @@ Report hashing is run-local IO; the pure SHA implementation remains available
 to the certificate layer. Interpreting its rounds over a full export dominated
 the candidate pass, while the native digest preserves the same byte binding. -/
 def hashReportBytes (bytes : String) : IO String := do
-  let output ← IO.Process.output { cmd := "python3", args := #["-c",
+  let digestProcess ← IO.Process.output { cmd := "python3", args := #["-c",
     "import hashlib,sys;print(hashlib.sha256(sys.stdin.buffer.read()).hexdigest())"] } (some bytes)
-  let hash := output.stdout.trimAscii.toString
-  unless output.exitCode == 0 && hash.length == 64 &&
+  let hash := digestProcess.stdout.trimAscii.toString
+  unless digestProcess.exitCode == 0 && hash.length == 64 &&
       hash.toList.all (fun c => c.isDigit || ('a' ≤ c && c ≤ 'f')) do
     throw <| IO.userError "IE-C044 native report digest failed"
   return "sha256:" ++ hash
