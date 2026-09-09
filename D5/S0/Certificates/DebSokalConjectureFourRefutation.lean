@@ -49,13 +49,13 @@ restricted range; this module makes no claim that it is false.
 -/
 
 /-- Higher-order Stirling subset numbers, via (1.14) and its initial conditions. -/
-def stirlingSubset (r : ℕ) : ℕ → ℕ → ℕ
-  | 0, 0 => 1
-  | 0, _ + 1 => 0
-  | _ + 1, 0 => 0
-  | n + 1, k + 1 =>
-      (n + (r - 1) * (k + 1)).choose (r - 1) * stirlingSubset r n k +
-        (k + 1) * stirlingSubset r n (k + 1)
+def stirlingSubset (r : ℕ) : ℕ → ℕ → ℕ :=
+  Nat.rec (fun k => if k = 0 then 1 else 0) (fun n previous k =>
+    match k with
+    | 0 => 0
+    | k + 1 =>
+        (n + (r - 1) * (k + 1)).choose (r - 1) * previous k +
+          (k + 1) * previous (k + 1))
 
 /-- The row-generating polynomial s_(r,n) of equation (1.18), over the complex numbers. -/
 noncomputable def rowPolynomial (r n : ℕ) : ℂ[X] :=
