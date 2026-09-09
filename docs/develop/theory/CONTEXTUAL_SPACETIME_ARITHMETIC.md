@@ -8,6 +8,8 @@
 
 产地与证明状态：本稿由 `consensus-rnd:sshx` 流程的一个隔离 codex-cli 实施席按调用方批准的综合方案编写。实际 GPT PRO 思考输入及本稿采取的修正见第 12 节。本文给出 ZFC 内的普通数学证明及附录中的有限精确核验；**本稿没有新增 Lean 证明，不能称为 kernel-verified**。最终独立评审、仓库准入与 PR 生命周期由调用方接续，本文不预报其结果。
 
+> **PR1 增补导航与阅读时序（2026-09-09）。** §1–13、命题 1–15 和附录的原运行记录保留为基线叙述；其中“本次”及 §12 的 PRO task 均指原稿那次工作。当前增补由 Codex 实施：[§14 观察同余](#pr1-observation)扩充 §9 的下降判据，[§15 精确空间读数](#pr1-spatial)将 §8 定义 12／命题 9 特化到共同位置，[§16 明确语言下的充分性](#pr1-languages)接通 §8/9，[§17 反例、来源与本轮核验](#pr1-boundaries)说明适用边界。附录仍只有一个 Python 核验块，已在其中追加 PR1 检查。本轮调用与评审状态单列于 §17，不沿用原稿 PRO 成功记录。
+
 ## 1. 有限情境、整体与类型
 
 固定空间维数 $d=3$。一般结论对任一预先固定的有限 $d\geq1$ 同样成立。令 $HF=V_\omega$ 为遗传有限集合的集合，自然数取有限 von Neumann 序数，有序对取 Kuratowski 编码，有限元组由有序对编码。为保证整数坐标也是有限编码，取 $\mathbb Z_{\rm code}=(\{0\}\times\mathbb N)\cup(\{1\}\times\mathbb N_{>0})$，其中 $(0,m)$ 表示 $m$，$(1,m)$ 表示 $-m$。它与通常整数显式双射，序和算术沿此双射运输；全文把这份实现简记为 $\mathbb Z$。不把通常整数的无限等价类表示直接塞入 $HF$。来源树集合 $T\subset HF$ 由下列有限构造生成：
@@ -837,8 +839,288 @@ chain = {("e","f")}
 assert all(b not in {"e"} or a in {"e"} for a,b in chain)
 assert not all(b not in {"f"} or a in {"f"} for a,b in chain)
 print("sources: shared_difference={0} shared_square={1,4}; independent_difference={-1,0,1} independent_product={1,2,4}")
+
+# PR1: verification helpers only; Rich/add/mul/neg above remain the archive model.
+# Rich.w is Omega (an event set), whereas the first read_pair component is w(p).
+def sparse(c):
+    return {p: a for p, a in c.items() if a}
+
+def read_pair(x):
+    return tuple(sparse(c) for c in coarse(x, lambda k: x.e[k][1]))
+
+def plus_c(c, d):
+    return sparse({p: c.get(p, 0) + d.get(p, 0) for p in c.keys() | d.keys()})
+
+def minus_c(c):
+    return {p: -a for p, a in c.items()}
+
+def conv(c, d, keep=lambda p, q: True):
+    out = {}
+    for p, a in c.items():
+        for q0, b in d.items():
+            if keep(p, q0):
+                r = tuple(i + j for i, j in zip(p, q0))
+                out[r] = out.get(r, 0) + a*b
+    return sparse(out)
+
+def pair_add(x, y):
+    return tuple(plus_c(c, d) for c, d in zip(x, y))
+
+def pair_mul(x, y):
+    return tuple(conv(c, d) for c, d in zip(x, y))
+
+def flip_signs(x):
+    return valid(replace(x, e={k: (t, p, -s, r)
+                               for k, (t, p, s, r) in x.e.items()}))
+
+def at(x, points):
+    return filt(x, lambda k: x.e[k][1] in points)
+
+def realize(w, z):
+    assert sum(w.values()) == 0
+    events, chosen = {}, set()
+    for p in sorted(w.keys() | z.keys()):
+        for selected, value in ((True, z.get(p, 0)),
+                                (False, w.get(p, 0) - z.get(p, 0))):
+            for i in range(abs(value)):
+                k = (p, selected, i)
+                events[k] = (0, p, 1 if value > 0 else -1, ("leaf", 0))
+                if selected:
+                    chosen.add(k)
+    return valid(Rich(events, frozenset(), frozenset(events), frozenset(chosen)))
+
+def restricted_mul(x, y, keep):
+    full = mul(x, y)
+    return replace(full, a=frozenset(k for k in full.a if keep(*k[1])))
+
+origin, v, h = (0,0,0), (1,0,0), (0,1,-1)
+delta = {origin: 1}
+alpha = {origin: 1, v: -1}
+recovery_checks = 0
+for state in states:
+    bg, selected = read_pair(state)
+    for point in ((i,0,0) for i in range(4)):
+        z_at = q(at(state, {point}))
+        n_at = q(at(neg(state), {point}))
+        assert z_at == selected.get(point, 0)
+        assert z_at + n_at == bg.get(point, 0)
+        assert read_pair(at(state, {point}))[0] == bg
+        recovery_checks += 1
+assert recovery_checks == 420
+background_only = realize(alpha, {})
+assert read_pair(background_only) == (alpha, {})
+assert q(at(neg(background_only), {origin})) == 1
+assert q(at(neg(integer(0)), {origin})) == 0
+assert read_pair(at(background_only, set()))[0] == alpha
+assert read_pair(neg(background_only)) == (alpha, alpha)
+assert read_pair(flip_signs(background_only)) == (minus_c(alpha), {})
+shifted_u = spatial(u, offset=1)
+assert q(u) == q(shifted_u) == 1
+assert (q(at(u, {origin})), q(at(shifted_u, {origin}))) == (1, 0)
+print("pr1_recovery: singleton_checks=420 background_after_filter=preserved kernels_strict=True")
+
+image_cases = 0
+for a0, a1 in product((-1,0,1), repeat=2):
+    bg = sparse(dict(zip((origin,v,h), (a0,a1,-a0-a1))))
+    for zs in product((-1,0,1), repeat=3):
+        selected = sparse(dict(zip((origin,v,h), zs)))
+        state = realize(bg, selected)
+        assert read_pair(state) == (bg, selected)
+        bound = sum(abs(selected.get(p,0)) + abs(bg.get(p,0)-selected.get(p,0))
+                    for p in bg.keys() | selected.keys())
+        assert len(state.w) == len(state.e) == bound
+        assert charge(state, state.w) == 0 and not state.o
+        assert all(event[0] == 0 for event in state.e.values())
+        image_cases += 1
+assert image_cases == 243
+
+capacity_cases, selection_cases = 0, 0
+for pp0, pm0, pp1, pm1 in product(range(3), repeat=4):
+    if pp0 + pp1 != pm0 + pm1:
+        continue
+    counts = {origin: (pp0,pm0), v: (pp1,pm1)}
+    events = {(p,s,i): (0,p,s,("leaf",0)) for p, ns in counts.items()
+              for s,n in zip((1,-1),ns) for i in range(n)}
+    fixed = valid(Rich(events, frozenset(), frozenset(events), frozenset()))
+    seen = set()
+    for bits in product((False,True), repeat=len(events)):
+        chosen = frozenset(k for k,yes in zip(events,bits) if yes)
+        bg, selected = read_pair(replace(fixed, a=chosen))
+        assert bg == sparse({origin:pp0-pm0, v:pp1-pm1})
+        seen.add(tuple(selected.get(p,0) for p in (origin,v)))
+        selection_cases += 1
+    expected = set(product(range(-pm0,pp0+1), range(-pm1,pp1+1)))
+    assert seen == expected
+    capacity_cases += 1
+assert (capacity_cases, selection_cases) == (19,673)
+empty_u, empty_two = replace(u,a=frozenset()), replace(two,a=frozenset())
+assert read_pair(empty_u) == read_pair(empty_two) == ({},{})
+capacities = []
+for fixed in (empty_u, empty_two):
+    capacities.append({q(replace(fixed,a=frozenset(k for k,b in zip(fixed.w,bits) if b)))
+                       for bits in product((False,True),repeat=len(fixed.w))})
+assert capacities == [{-1,0,1},{-2,-1,0,1,2}]
+print("pr1_image_capacity: image_cases=243 fixed_contexts=19 choices=673 capacities=[-1,1],[-2,2]")
+
+# Explicit coefficients come from the delta expansions in section 17.3.
+sx = realize(alpha, {origin:2, v:-1})
+sy = realize({h:1, origin:-1}, {v:1, h:1})
+vh, vv = (1,1,-1), (2,0,0)
+expected_bg = {h:1, origin:-1, vh:-1, v:1}
+expected_z = {v:2, h:2, vv:-1, vh:-1}
+full = mul(sx, sy)
+assert read_pair(full) == (expected_bg, expected_z)
+assert (len(full.e), len(full.w), q(full)) == (24,16,2)
+assert read_pair(neg(sx)) == (alpha, {origin:-1})
+kept = restricted_mul(sx, sy, lambda a,b: sx.e[a][1] == sy.e[b][1])
+assert read_pair(kept) == (expected_bg, {vv:-1})
+assert q(kept) == -1 and q(full) == 2
+assert conv(read_pair(sx)[1], read_pair(sy)[1], lambda p,q0:p == q0) == {vv:-1}
+assert q(restricted_mul(u, shifted_u, lambda a,b:u.e[a][1] == shifted_u.e[b][1])) == 0
+assert q(restricted_mul(u, u, lambda a,b:u.e[a][1] == u.e[b][1])) == 1
+
+space_states = [realize(sparse({origin:c, v:-c}), z0)
+                for c in (-1,0,1) for z0 in ({h:-1},{},{v:1,h:1})]
+space_pairs = 0
+for xx in space_states:
+    bx,zx = read_pair(xx)
+    assert read_pair(neg(xx)) == (bx,plus_c(bx,minus_c(zx)))
+    assert read_pair(add(xx,flip_signs(xx))) == ({},{})
+    for yy in space_states:
+        px,py = read_pair(xx),read_pair(yy)
+        assert read_pair(add(xx,yy)) == pair_add(px,py)
+        assert read_pair(mul(xx,yy)) == pair_mul(px,py)
+        assert sum(conv(px[0],py[0]).values()) == 0
+        assert sum(conv(px[1],py[1]).values()) == q(xx)*q(yy)
+        assert pair_mul(px,py) == pair_mul(py,px)
+        space_pairs += 1
+space_triples = 0
+pair_samples = [read_pair(xx) for xx in space_states]
+for px,py,pz in product(pair_samples, repeat=3):
+    assert pair_mul(pair_mul(px,py),pz) == pair_mul(px,pair_mul(py,pz))
+    assert pair_mul(px,pair_add(py,pz)) == pair_add(pair_mul(px,py),pair_mul(px,pz))
+    space_triples += 1
+assert (space_pairs,space_triples) == (81,729)
+assert read_pair(left) == read_pair(right) == ({},{origin:2})
+assert (len(left.e),len(right.e)) == (28,32)
+print("pr1_convolution: sparse_states=9 rich_pairs=81 pair_triples=729 explicit_full_q=2 restricted_q=-1 archives=28,32")
+
+FAIL = object()
+def observe(ops, state, read):
+    try:
+        for operation in ops:
+            state = operation(state)
+    except (KeyError, ValueError):
+        return FAIL
+    return ("ok", read(state))
+
+only_a = {"a":"a"}.__getitem__
+rd0 = lambda _: 0
+common_words = [(),(only_a,),(only_a,only_a)]
+for word in common_words:
+    oa,ob = observe(word,"a",rd0),observe(word,"b",rd0)
+    assert oa is FAIL or ob is FAIL or oa == ob  # The wrong rule misses the defect.
+assert observe((only_a,),"a",rd0) == ("ok",0)
+assert observe((only_a,),"b",rd0) is FAIL
+assert observe((only_a,),"b",rd0) != ("ok",0)
+depth_cases = 0
+for depth in range(5):
+    advance = lambda x, k=depth: (x[0],min(x[1]+1,k+1))
+    read = lambda x, k=depth: int(x == ("a",k+1))
+    for j in range(depth+1):
+        assert observe((advance,)*j,("a",0),read) == observe((advance,)*j,("b",0),read)
+    assert (observe((advance,)*(depth+1),("a",0),read),
+            observe((advance,)*(depth+1),("b",0),read)) == (("ok",1),("ok",0))
+    assert observe((advance,)*depth,advance(("a",0)),read) != observe((advance,)*depth,advance(("b",0)),read)
+    depth_cases += 1
+f = lambda s,t: 2 if (s,t) == (1,2) else 0
+read012 = lambda x: int(x == 2)
+second_only = [lambda x,a=a:f(a,x) for a in (0,1,2)]
+params01 = [lambda x,a=a:f(a,x) for a in (0,1)] + [lambda x,a=a:f(x,a) for a in (0,1)]
+restricted_words = 0
+for family in (second_only,params01):
+    for depth in range(4):
+        for word in product(family,repeat=depth):
+            assert observe(word,0,read012) == observe(word,1,read012)
+            restricted_words += 1
+assert observe((lambda x:f(x,2),),0,read012) == ("ok",0)
+assert observe((lambda x:f(x,2),),1,read012) == ("ok",1)
+g = lambda x: 0 if x == 0 else 2
+assert observe((),0,read012) == observe((),1,read012)
+assert observe((g,),0,read012) != observe((g,),1,read012)
+assert (depth_cases,restricted_words) == (5,125)
+print("pr1_contexts: common_domain_miss=1 depth_counterexamples=5 restricted_word_checks=125 slot_parameter_and_extra_probe=distinguished")
+
+source7 = valid(Rich({"a":(0,origin,1,("leaf",7)), "b":(0,origin,-1,("leaf",7))},
+                    frozenset(),frozenset(("a","b")),frozenset(("a",))))
+source8 = replace(source7,e={k:(t,p,s,("leaf",8)) for k,(t,p,s,r) in source7.e.items()})
+assert read_pair(source7) == read_pair(source8) == ({},delta)
+source_reads = tuple(q(filt(xx,lambda k,xx=xx:xx.e[k][3] == ("leaf",7)))
+                     for xx in (source7,source8))
+assert source_reads == (1,0)
+source_products = tuple(q(restricted_mul(xx,source7,
+                        lambda a,b,xx=xx:xx.e[a][3] == source7.e[b][3]))
+                        for xx in (source7,source8))
+assert source_products == (1,0)
+ce = {k:(t,origin,s,("leaf",0)) for k,t,s in zip("abcd",(0,1,0,1),(1,1,-1,-1))}
+causal = valid(Rich(ce,frozenset({("a","b")}),frozenset(ce),frozenset("ab")))
+no_causal = valid(replace(causal,o=frozenset()))
+def past(x, targets):
+    if not targets <= x.e.keys():
+        raise ValueError("dependent causal query domain")
+    return filt(x,lambda e:any(e == d or (e,d) in x.o for d in targets))
+assert read_pair(causal) == read_pair(no_causal) == ({},{origin:2})
+assert (q(past(causal,{"b"})),q(past(no_causal,{"b"}))) == (2,1)
+assert tuple(q(restricted_mul(xx,u,lambda a,b,xx=xx:a in past(xx,{"b"}).a))
+             for xx in (causal,no_causal)) == (2,1)
+old = valid(replace(u,e={**u.e,("old",0):(2,origin,1,("leaf",9))}))
+assert read_pair(old) == read_pair(u) == ({},delta)
+after = time_shift(u,1)
+assert observe((lambda xx:temporal(xx,after),),u,q) == ("ok",2)
+assert observe((lambda xx:temporal(xx,after),),old,q) is FAIL
+renamed = valid(Rich({"a2":source7.e["a"],"b2":source7.e["b"]},frozenset(),
+                    frozenset(("a2","b2")),frozenset(("a2",))))
+assert read_pair(renamed) == read_pair(source7)
+assert (q(filt(source7,lambda k:k == "a")),q(filt(renamed,lambda k:k == "a"))) == (1,0)
+assert tuple(q(restricted_mul(xx,u,lambda a,b:a == "a")) for xx in (source7,renamed)) == (1,0)
+assert observe((lambda xx:past(xx,{"a"}),),source7,q) == ("ok",1)
+assert observe((lambda xx:past(xx,{"a"}),),renamed,q) is FAIL
+print("pr1_boundaries: same_pair_source=1,0 causal=2,1 time_domain=defined,undefined identity=1,0 dependent_D=defined,undefined")
+
+a0 = read_pair(background_only)
+e0 = read_pair(u)
+zero_pair = ({},{})
+assert a0 != zero_pair and e0 != zero_pair
+assert read_pair(mul(background_only,u)) == zero_pair
+assert read_pair(mul(u,source7)) == read_pair(source7)
+assert read_pair(neg(mul(u,u))) == ({},{origin:-1})
+assert read_pair(mul(neg(u),neg(u))) == e0
+assert read_pair(neg(u)) == read_pair(flip_signs(u))
+for xx in space_states:
+    bg,_ = read_pair(xx)
+    assert (read_pair(neg(xx)) == read_pair(flip_signs(xx))) == (bg == {})
+unit_candidates = 0
+for coeffs in product(range(-2,3),repeat=3):
+    if sum(coeffs) != 0:
+        continue
+    candidate_a = sparse(dict(zip((origin,v,h),coeffs)))
+    # This detects finite examples of c(r-v) != c(r); the unbounded proof is prose.
+    c = plus_c(candidate_a,{origin:-1})
+    assert conv(c,{v:1,origin:-1}) != {}
+    for b_coeffs in product((-1,0,1),repeat=3):
+        candidate_b = sparse(dict(zip((origin,v,h),b_coeffs)))
+        candidate = (candidate_a,candidate_b)
+        if candidate_b != delta:
+            assert pair_mul(candidate,e0) != e0
+        else:
+            assert pair_mul(candidate,a0) != a0
+        unit_candidates += 1
+assert unit_candidates == 513
+print("pr1_rng: zero_divisors=confirmed N_not_J=confirmed N_not_multiplicative=confirmed P0_unit_only=True finite_unit_candidates_rejected=513")
 print("ALL_FINITE_CHECKS_PASSED")
 ```
+
+**原基线收据说明（PR1 追加）。** 紧接的“本次运行”及其输出是原版本的历史记录；扩充后的实际重跑与新增计数见 §17 的 PR1 核验收据，不以这份旧输出代替本轮运行。
 
 本次运行退出码为 `0`，实际标准输出如下：
 
@@ -858,3 +1140,326 @@ ALL_FINITE_CHECKS_PASSED
 ```
 
 核验解释：这些读数仅覆盖上述有限域及具名例子。它们不证明任意图、任意 Cauchy 序列或 ZFC 的一致性，也不是 Lean 内核检查。新文档之外未改动任何仓库文件；完整仓库准入检查、独立数学评审和 PR 交付是调用方的后续步骤。
+
+<a id="pr1-observation"></a>
+
+## 14. PR1 增补 A：严格观察与最大保域同余
+
+本节为 §9 命题 11 增加“允许哪些后续操作”的参数。原命题 1–15 不改；一般结论不把档案历史压成数值，也不预设历史同构与任意新观察之间的包含关系。
+
+**定义 16（部分签名与全部一孔上下文）。** 固定一个集合 $X$、一个集合签名 $\Sigma$。每个符号 $f\in\Sigma$ 指定一个有限元数 $n_f\in\mathbb N$ 和一个确定部分函数 $f:D_f\subseteq X^{n_f}\to X$。固定总读数 $q:X\to Q$，其中 $Q$ 是集合，**不要求 $q$ 满射**。上下文族 $\operatorname{Ctx}_\Sigma$ 恰由以下生成元及有限复合生成：恒等孔 $\square$；对每个 $n_f\ge1$、每个槽位 $1\le i\le n_f$ 和任意固定参数 $a_j\in X\ (j\ne i)$，基本一孔部分函数
+
+$$
+x\longmapsto f(a_1,\ldots,a_{i-1},x,a_{i+1},\ldots,a_{n_f}).
+$$
+
+复合 $C\circ B$ 仅在 $B(x)$ 有定义且 $C(B(x))$ 有定义时求值；失败严格传播，不把失败当作 $X$ 的元素供后续操作处理。零元符号没有可放孔的槽位，也不增加一孔生成元。这里的固定参数是**全部 $X$ 中的参数**，不限于常数符号可命名的值；上下文不含额外探针、不截断复合深度，不自动增加复制孔或检查语法编码的机制。每个上下文本身仍是有限的。因为签名、参数空间及有限字符串空间都是集合，这个上下文族也是集合。
+
+观察值域取不交并 $Q_\bot=(\{1\}\times Q)\sqcup\{\bot\}$；即使 $Q$ 自己包含一个名为“失败”的值，它也不等于新标签 $\bot$。定义
+
+$$
+\operatorname{obs}_C(x)=
+\begin{cases}(1,q(C(x))),&C(x)\text{ 有定义},\\ \bot,&C(x)\text{ 无定义},\end{cases}
+\qquad
+x\approx_\Sigma y\ \Longleftrightarrow\quad
+\forall C\in\operatorname{Ctx}_\Sigma,\quad
+\operatorname{obs}_C(x)=\operatorname{obs}_C(y).
+$$
+
+**定义 17（强保域同余）。** $\theta$ 是 $X$ 上的等价关系；对任意 $f\in\Sigma$ 及逐坐标 $x_j\mathrel\theta y_j$ 的两元组 $\boldsymbol x,\boldsymbol y\in X^{n_f}$，要求
+
+$$
+\boldsymbol x\in D_f\iff\boldsymbol y\in D_f,
+\qquad
+\boldsymbol x,\boldsymbol y\in D_f\Longrightarrow
+f(\boldsymbol x)\mathrel\theta f(\boldsymbol y).
+\tag{SC}
+$$
+
+第一项保留整个定义域，不能删成“共同有定义时比较”。零元情形只有同一个空元组，条件自动成立。记 $\ker q=\{(x,y):q(x)=q(y)\}$；关系按集合包含排序，“最大”指包含所有符合条件的关系。
+
+**命题 16（观察等价的最大性，repo-derived）。** $\approx_\Sigma$ 是 $\ker q$ 内最大的强保域同余。
+
+**证明。** 它是各总函数 $\operatorname{obs}_C:X\to Q_\bot$ 的核的交，故是等价关系；恒等孔使它包含于 $\ker q$。先只替换一个槽位，写基本上下文为 $B$。若 $x\approx_\Sigma y$，则 $\operatorname{obs}_B(x)=\operatorname{obs}_B(y)$。严格失败与所有正常值分离，故 $B(x),B(y)$ 同时有定义或同时无定义。若二者有定义，对任意 $C\in\operatorname{Ctx}_\Sigma$，$C\circ B$ 仍属该族，于是
+$\operatorname{obs}_C(B(x))=\operatorname{obs}_C(B(y))$，即 $B(x)\approx_\Sigma B(y)$。
+
+对逐坐标等价的 $n_f$ 元输入，从 $\boldsymbol x$ 到 $\boldsymbol y$ 每次只替换一个坐标，其余坐标取这一步实际的固定参数。上段使定义性沿有限链相同；有定义时输出也沿链等价，传递性给出 (SC)。这一步正是需要所有槽位与全部固定参数的地方。
+
+反之，设 $\theta\subseteq\ker q$ 满足 (SC)。对上下文的生成作归纳：恒等孔保持 $\theta$；基本上下文由 (SC) 保域，并在域内保持 $\theta$。复合时，若内层失败，两侧均严格失败；否则内层输出相关，外层由归纳假设同域且在域内输出相关。最后用 $\theta\subseteq\ker q$，两侧正常读数也相同。因此 $x\mathrel\theta y$ 蕴含每个上下文的观察相同，即 $\theta\subseteq\approx_\Sigma$。全过程没有使用满射或挑选 $Q$ 中未被命中的值。证毕。
+
+**命题 17（扩签名只能细化）。** 在同一 $X,q$ 上，若 $\Sigma\subseteq\Sigma'$ 且旧符号的函数和定义域保持原样，则 $\approx_{\Sigma'}\subseteq\approx_\Sigma$。
+
+**证明。** 原基本上下文及其有限复合全在扩充族内。对较大族全部观察相等，当然对原族相等。只需此集合包含，不涉及计算能力的比较。证毕。
+
+**反例 A1（只比较共同有定义的上下文）。** 取 $X=\{a,b\}$，$Q=\{0,1\}$，$q$ 恒为 $0$，$f$ 仅在 $a$ 有定义且 $f(a)=a$。如果忽略单侧失败，$a,b$ 在每个共同有效上下文中的读数都为 $0$，错误关系把它们识别；但 $f$ 的定义域 $\{a\}$ 不饱和。正确观察在 $f(\square)$ 上是 $(1,0)$ 与 $\bot$。这也同时示范非满射读数完全合法。若再将失败与正常的 $0$ 混同，这个区别又会消失。
+
+**反例 A2（任何固定有限深度都可能不足）。** 给任意 $k\ge0$，取两条互异状态链 $a_0,\ldots,a_{k+1}$ 和 $b_0,\ldots,b_{k+1}$，一个总一元操作 $f$ 各自向下一项移动、在终点停留。令 $q(a_{k+1})=1$，其余读数为 $0$。深度至多 $k$ 的上下文恰为 $\square,f,\ldots,f^k$，均不能区别 $a_0,b_0$；$f^{k+1}$ 却给 $1,0$。而 $f(a_0),f(b_0)$ 已可被深度 $k$ 区别，所以截断关系还可能不保运算。无限量化的是任意有限深度，并非允许一个无限复合上下文。
+
+**反例 A3（遗漏槽位、参数或偷加探针）。** 取 $X=\{0,1,2\}$，$q(0)=q(1)=0,q(2)=1$，总二元操作 $f(s,t)$ 仅在 $(s,t)=(1,2)$ 时取 $2$，其余取 $0$。若只允许孔在第二槽，$0,1$ 的任何非空复合第一步都输出 $0$，永远不可区分；合法的第一槽上下文 $f(\square,2)$ 却给 $0,2$，观察为 $0,1$。即使开放两个槽位，若只许固定参数 $0,1$，仍有同样漏判：首次作用于 $0,1$ 的结果均为 $0$，不能形成区分。另取同一 $X,q$ 但空签名，此时 $0\approx_\varnothing1$。额外操作 $g(0)=0,g(1)=g(2)=2$ 可用 $q\circ g$ 区别它们，却不是原签名上下文；把 $g$ **正式加入**才得到命题 17 的严格细化。这不是原语言充分性被反驳。
+
+**历史同构与依赖参数的勘界。** §4 的“编码相等 $\Rightarrow$ 历史同构 $\Rightarrow\ker q$”仍成立；它不自动插入任意 $\approx_\Sigma$。例如把总操作 $H_e(C,A)=(C,A\cap\{e\})$ 加入签名，$e\in HF$ 是一个固定出现标识。将一份两事件平衡表示中的所选正事件 $e$ 重命名为新标识 $e'$，保持全部属性，则两份表示历史同构，$q\circ H_e$ 却分别为 $1,0$。对一个具体签名若要证明历史同构蕴含观察等价，须证明该关系满足 (SC)、读数保持，并核对固定参数的作用；将参数一起运输所得的自然性，不等于固定同一参数的观察不变性。§16 的空间语言会满足所需条件。
+
+定义 13 的因果查询还有类型依赖：$D$ 原本满足 $D\subseteq E_C$。在全载体上谈同一个查询时，可固定有限 $D\subset HF$ 并把 $F_{\downarrow D}$ 视为域 $\{(C,A):D\subseteq E_C\}$ 上的部分操作；或明确只比较两档案都包含 $D$ 的输入。重命名时需运输 $D$ 为 $h[D]$，不能悄悄把不同查询当作同一个。§17 的因果反例使用两侧共同有效的原事件集 $D$。
+
+<a id="pr1-spatial"></a>
+
+## 15. PR1 增补 B：可实现的精确空间读数及其代数
+
+### 15.1 共同位置、全局像与固定情境容量
+
+沿用 $d=3$，以下证明对任一固定有限 $d\ge1$ 成立。令
+
+$$
+R=\mathbb Z^{(\mathbb Z^d)}
+=\{c:\mathbb Z^d\to\mathbb Z:\operatorname{supp}(c)\text{ 有限}\},
+\quad \varepsilon(c)=\sum_p c(p),\quad I=\ker\varepsilon.
+$$
+
+括号上标表示有限支撑，绝非全部函数的无穷求和。记 $\delta_p(r)=1$ 当 $r=p$，其余为零。位置始终使用原稿同一坐标系。
+
+**定义 18（双空间读数）。** 对 $X=(C,A)\in\mathcal B$ 定义
+
+$$
+\pi(X)=(w_X,z_X),\qquad
+w_X(p)=\sum_{e\in\Omega_C,\ x(e)=p}\sigma(e),\qquad
+z_X(p)=\sum_{e\in A,\ x(e)=p}\sigma(e).
+\tag{SP}
+$$
+
+这是定义 12／命题 9 的共同位置特化：先取含全部当前位置的有限 bin 集合，令 $f=x|_{\Omega_C}$，再将 $w,z$ 向全格点补零。增添空 bin 不改变这个有限支撑函数，比较两对象时可取两个有限 bin 集的并。因此不是另造一种符号计数。总有 $w_X\in I,z_X\in R$，且 $q(X)=\varepsilon(z_X)$；旧档案 $E_C\setminus\Omega_C$ 不计入任一分量。
+
+**命题 18（全局像及最小当前事件数，repo-derived）。**
+
+$$
+\pi[\mathcal B]=P:=I\times R.
+\qquad
+\min_{X:\pi(X)=(w,z)}|\Omega_X|
+=\sum_p\bigl(|z(p)|+|w(p)-z(p)|\bigr).
+\tag{IMAGE}
+$$
+
+**证明。** 包含于 $P$ 已由平衡及有限性说明。反向给定 $(w,z)\in P$，只需处理 $\operatorname{supp}(w)\cup\operatorname{supp}(z)$ 中有限个点。在每点 $p$ 放 $|z(p)|$ 个**选中**事件，符号为 $z(p)$ 的符号；再放 $|w(p)-z(p)|$ 个**未选**事件，符号为 $w(p)-z(p)$ 的符号。某项为零便放零个，无须定义零的事件符号。出现标识用 $(p,\mathrm{selected},i)$ 与 $(p,\mathrm{unselected},i)$ 的不同有限编码，故彼此不同；来源可全部取 leaf(0)，时间全部为零，偏序为空，取 $E=\Omega$。于是这是合法有限情境，逐点所选电荷恰为 $z$、全部当前电荷恰为 $z+(w-z)=w$，总背景为 $\varepsilon w=0$。这证明满像并达到所写事件数。
+
+对任何实现，点 $p$ 的选中事件数至少为 $|z(p)|$，因为每个符号绝对值是 $1$；未选事件电荷为 $w(p)-z(p)$，其数量至少为该数绝对值。这两类互不相交，逐点求和即得下界。构造达到下界，故最小值存在且等于该式。若同时最小化整个档案数，下界仍由 $|E|\ge|\Omega|$ 给出，并由上述 $E=\Omega$ 的构造达到。证毕。
+
+**命题 19（固定 $C$ 的选择像）。** 固定合法平衡情境 $C$，记当前位置 $p$ 的正、负事件数为 $n_+(p),n_-(p)$，则 $w(p)=n_+(p)-n_-(p)$ 固定，而可选分布恰为
+
+$$
+\{z\in R:\ \forall p,\quad -n_-(p)\le z(p)\le n_+(p)\}.
+\tag{CAP}
+$$
+
+区间指逐点**整数**区间，非实区间。**证明。** 任何选择给出 $z(p)=a_+(p)-a_-(p)$，其中 $0\le a_\pm(p)\le n_\pm(p)$，故有界。反向每个非负 $z(p)$ 选恰好 $z(p)$ 个正事件、不选负事件；每个负 $z(p)$ 选恰好 $-z(p)$ 个负事件、不选正事件。区间保证数量够，各位置的选择互不干扰；当前位置以外两容量均为零，必有 $z(p)=0$，故得到一个有限合法选择。证毕。
+
+(IMAGE) 允许随 $(w,z)$ **更换情境**，(CAP) 则固定完整 $C$。例如原代表 $\mathbf i(1)$ 与 $\mathbf i(2)$ 都有 $w=0$，在零点的选择容量分别是 $[-1,1]$ 与 $[-2,2]$。两者若取空选择甚至同为 $\pi=(0,0)$；从第一个固定情境却选不出 $2\delta_0$。不能把全局像 $I\times R$ 当作每一个 $C$ 的选择像。
+
+### 15.2 闭包、空间筛选与位置限制的配对
+
+在 $R$ 上定义逐点加法及有限卷积
+
+$$
+(c*d)(r)=\sum_{p+q=r}c(p)d(q).
+\tag{CONV}
+$$
+
+求和只含两个有限支撑的 Cartesian 积；支撑包含于 $\operatorname{supp}(c)+\operatorname{supp}(d)$，故仍有限。
+
+**命题 20（精确更新式）。** 原稿的并行加法、档案乘法、补集和任意固定空间筛选均在 $\mathcal B$ 上总定义，且
+
+$$
+\begin{aligned}
+\pi(X\boxplus Y)&=(w_X+w_Y,z_X+z_Y),\\
+\pi(X\boxtimes Y)&=(w_X*w_Y,z_X*z_Y),\\
+\pi(NX)&=(w_X,w_X-z_X),\\
+\pi(F_SX)&=(w_X,\mathbf1_S z_X).
+\end{aligned}
+\tag{UP}
+$$
+
+此外 $\varepsilon(c+d)=\varepsilon c+\varepsilon d$，$\varepsilon(c*d)=(\varepsilon c)(\varepsilon d)$，所以 $I$ 对加法、负号封闭，且 $I*R\subseteq I$。
+
+**证明。** 并行时同一位置的两份带标签电荷相加。乘法只数新当前事件 $p_{ab}$：其位置为 $x(a)+x(b)$，符号为 $\sigma(a)\sigma(b)$；对父位置 $p,q$ 分组，每组有限双和为 $w_X(p)w_Y(q)$，所选组同理为 $z_X(p)z_Y(q)$，再按 $p+q=r$ 合组即得卷积。旧档案仍保留，但不在当前区域，故没有额外线性项。补集逐点是未选电荷，即 $w-z$；筛选只从 $A$ 中删点，背景 $\Omega$ 不动，故必须保留完整 $w$，**不能同时筛掉 $w$**。对有限和换序得到
+
+$$
+\sum_r\sum_{p+q=r}c(p)d(q)
+=\sum_p\sum_q c(p)d(q)
+=\Bigl(\sum_pc(p)\Bigr)\Bigl(\sum_qd(q)\Bigr).
+$$
+
+加法和负号下的增广公式逐项成立。由此各式背景都仍属 $I$，也给出 §2/3 的标量读数公式。证毕。
+
+**位置限制扩展的精确范围。** 固定一个谓词 $K\subseteq\mathbb Z^d\times\mathbb Z^d$；定义 14 中对每对输入取 $R_{X,Y}=\{(a,b):K(x_X(a),x_Y(b))\}$，记所得总操作为 $M_K$。仍使用完整乘积情境，因此
+
+$$
+w_{M_K(X,Y)}=w_X*w_Y,\qquad
+z_{M_K(X,Y)}(r)=\sum_{p+q=r}\mathbf1_K(p,q)z_X(p)z_Y(q).
+\tag{K}
+$$
+
+**证明。** 每个位置对 $(p,q)$ 中的事件对或者全部保留或者全部排除，故该组电荷为 $\mathbf1_K(p,q)z_X(p)z_Y(q)$；背景没有被限制，仍按 (UP)。有限分组即得式。证毕。这只依赖位置的前提不能换成任意来源、因果或出现身份关系；同位置组中的那些关系不必恒定。
+
+(K) 不恢复已被命题 12 否定的标量乘法：取非零 $v$，输入 $\mathbf i(1)$ 及其空间平移 $v$，二者读数均为 $1$；若 $K(p,q)$ 为 $p=q$，所选对被排除，结果读数为 $0$，而完整乘积为 $1$。第二个输入若不平移，受限读数又为 $1$。任意 $K$ 也不自动继承卷积的交换、结合律；本批只证明所写更新式及 §16 的语言充分性。
+
+### 15.3 带补集运算的交换无单位环
+
+**定义 19。** 在 $P=I\times R$ 上以 (UP) 定义逐分量加法和卷积乘法，零元为 $(0,0)$；另记
+
+$$
+J(w,z)=(-w,-z),\qquad N(w,z)=(w,w-z).
+$$
+
+$J$ 由 §2 已列的**全档案符号翻转**实现：对每个 $e\in E$ 将 $\sigma(e)$ 换成 $-\sigma(e)$，其余数据及选择不动。时间约束、偏序和有限性仍合法，平衡仍为零；两个空间分量各自取负。这与保持情境、仅改选择的 $N$ 是不同操作。
+
+**命题 21（$P$ 的完整本批类型）。** $P$ 是交换无单位环（rng），$J$ 是其加法逆；$N$ 是额外的加法群自同构及对合，通常不是加法逆、也不是乘法同态。对任一点 $(w,z)\in P$，
+
+$$
+N(w,z)=J(w,z)\iff w=0.
+\tag{NJ}
+$$
+
+**证明（群与卷积定律）。** 逐点整数加法给出 $R$ 的阿贝尔群；$\varepsilon$ 保加，故 $I$ 是子群，$P$ 的逐分量加法也是阿贝尔群，逆为 $J$。卷积有限支撑保证其类型闭合，命题 20 保证 $I$ 分量闭合。对任意 $c,d,e\in R$ 和位置 $r$，
+
+$$
+((c*d)*e)(r)=\sum_{p+q+s=r}c(p)d(q)e(s)
+=(c*(d*e))(r).
+$$
+
+这是同一个有限三重和按不同顺序分组；整数乘法结合且格点加法结合。交换变量 $p,q$ 并用整数乘法交换得 $c*d=d*c$。逐项用整数分配律得 $c*(d+e)=c*d+c*e$，另一边同理。因此这些定律逐分量传到 $P$，零乘积也逐点为零；这是 rng 所需的全部环定律，尚未假设单位存在。
+
+**证明（没有乘法单位，独立于单位分类）。** 反设 $(a,b)\in P$ 对全部 $P$ 元素为单位。乘 $(0,\delta_0)$ 得 $(0,b)=(0,\delta_0)$，故 $b=\delta_0$。因 $d\ge1$，可取非零格点 $v$；$\delta_v-\delta_0\in I$。对 $(\delta_v-\delta_0,0)$ 的单位条件给出
+
+$$
+(a-\delta_0)*(\delta_v-\delta_0)=0.
+$$
+
+令 $c=a-\delta_0$，逐点评价为 $c(r-v)=c(r)$。若某点 $c(r_0)\ne0$，沿 $r_0+nv\ (n\in\mathbb Z)$ 值恒相同；非零整数向量无加法挠元，这些点两两不同，与有限支撑矛盾。因此 $c=0$，迫使 $a=\delta_0$；但 $\varepsilon(a)=0$ 而 $\varepsilon(\delta_0)=1$，矛盾。这个证明没有借用 $R$ 的整性或完整单位分类。$d\ge1$ 在此必要：$d=0$ 时格点群只有零点，$I=0$，$P\cong\mathbb Z$ 反而有单位。
+
+**证明（$N$ 的角色）。** 直接展开得到 $N(x+y)=N(x)+N(y)$ 及 $N^2=\mathrm{id}$，故是加法群自同构。若 $N(w,z)=J(w,z)$，第一分量要求 $w=-w$，逐点整数无二挠元，故 $w=0$；反向 $w=0$ 时两式均为 $(0,-z)$。例如 $\alpha=\delta_0-\delta_v\ne0$，$N(\alpha,0)=(\alpha,\alpha)$ 而 $J(\alpha,0)=(-\alpha,0)$，所以不是一般负号。令 $e_0=(0,\delta_0)$，则
+
+$$
+N(e_0e_0)=(0,-\delta_0),\qquad
+N(e_0)N(e_0)=(0,\delta_0),
+$$
+
+两者不同，故 $N$ 不是乘法同态。证毕。
+
+**零因子与局部单位。** $a_0=(\alpha,0)$ 和 $e_0=(0,\delta_0)$ 都非零，$a_0e_0=(0,0)$，给出 $P$ 的零因子。子 rng $P_0=\{0\}\times R$ 有自己的单位 $e_0$，因为 $\delta_0*c=c$；它不是 $P$ 的单位，刚才的 $a_0e_0=0\ne a_0$ 已反驳。$P_0$ 上 $N=J$；一般 $z$ 空间层 $R$ 的抽象负号为 $z\mapsto-z$，可由全档案符号翻转诱导，不能与一般背景下的 $N$ 混同。以上类型论断只属于空间商；§4 的 $28/32$ 档案反例继续有效。
+
+<a id="pr1-languages"></a>
+
+## 16. PR1 增补 C：三种明确语言与最粗充分性
+
+本节统一取 $X=\mathcal B$、终端观察 $q:\mathcal B\to\mathbb Z$，上下文严格按定义 16 取全槽位、全部固定丰富参数及任意有限复合。固定空间区域作为操作的名字，不因当前输入改规则。定义
+
+$$
+\begin{aligned}
+\Sigma_{\rm arith}&=\{\boxplus,\boxtimes,N\},\\
+\Sigma_z&=\{\boxplus,\boxtimes\}\cup\{F_S:S\subseteq\mathbb Z^d\},\\
+\Sigma_{\rm sp}&=\Sigma_z\cup\{N\}.
+\end{aligned}
+$$
+
+在 $\Sigma_z,\Sigma_{\rm sp}$ 中也可以只保留全部单点筛选 $F_p:=F_{\{p\}}$，以下同一结论仍成立。$\Sigma_{\rm arith}$ 与 $\Sigma_z$ 作为符号集合**互不包含**，不能从命题 17 直接比较这两个签名；各自都是 $\Sigma_{\rm sp}$ 的子签名。
+
+**命题 22（语言决定观察核，repo-derived）。**
+
+$$
+\approx_{\Sigma_{\rm arith}}=\ker q,\qquad
+\approx_{\Sigma_z}=\ker z,\qquad
+\approx_{\Sigma_{\rm sp}}=\ker\pi.
+\tag{LANG}
+$$
+
+**证明（充分性须对上下文归纳）。** 算术语言在 $q$ 上的更新分别为整数加、乘、负；空间语言在 $z$ 上的更新分别为加、卷积、$\mathbf1_Sz$；加入 $N$ 后在 $\pi$ 上的全部更新为 (UP)。三种情况下终端 $q$ 都由相应读数决定（空间两种为 $\varepsilon z$）。所有这些丰富操作均为总函数，故不会藏有未保存的部分域。
+
+取一对相应读数相等的输入。恒等孔仍等；基本上下文的固定参数在两侧是同一对象，故上述更新式给出相等的输出读数；有限复合时对子上下文应用归纳假设，再用外层更新式。由此每个合法上下文的终端 $q$ 相同，得到相应核包含于观察等价。该归纳也可直接视为命题 16 的同余充分方向，不能用测试了有限几个上下文替代。
+
+**证明（必要性）。** 算术语言有恒等孔，故观察等价必须在 $\ker q$ 内。空间语言含每个单点筛选，而
+
+$$
+q(F_pX)=z_X(p),\qquad
+q(F_pNX)=w_X(p)-z_X(p).
+\tag{REC}
+$$
+
+第一式使 $\Sigma_z$ 观察等价必有全部 $z$ 坐标相同。空间加补集语言中第二式也可观察；结合第一式，逐点相加恢复 $w_X(p)$。所以 $\Sigma_{\rm sp}$ 观察等价必有全部 $w,z$ 相同，即属于 $\ker\pi$。这与充分性合并证明 (LANG)，且只用了单点筛选。证毕。
+
+这些核的严格关系可用具体对象验证。令 $v\ne0$，$U=\mathbf i(1)$，$U_v$ 为其空间平移 $v$；二者读数均为 $1$，但 $z_U=\delta_0,z_{U_v}=\delta_v$，单点筛选在零点给 $1,0$。另令 $B_\alpha$ 为命题 18 对 $(\alpha,0)$ 的实现，$\alpha=\delta_0-\delta_v$，即两个未选事件 $+@0,-@v$；空档案与它都有 $z=0$，而 $q(F_0N0_\varnothing)=0$、$q(F_0NB_\alpha)=1$。故
+$\ker\pi\subsetneq\ker z\subsetneq\ker q$；这个关系由证明与见证给出，不来自前两个签名的包含。具体这些语言还满足历史同构 $\Rightarrow\ker\pi$（逐位置重索引即可），因此可以在此特定情形插入观察关系；不能把该结论外推到出现身份探针语言。
+
+**命题 23（任意充分读数恢复 $\pi$）。** 设 $h:\mathcal B\to H$ 是任意总读数，且对 $\Sigma_{\rm sp}$ **充分**，即 $h(X)=h(Y)$ 蕴含所有该签名上下文的严格终端观察相同。则存在唯一函数
+
+$$
+\kappa:h[\mathcal B]\longrightarrow P,
+\qquad \kappa(h(X))=\pi(X).
+\tag{FACTOR}
+$$
+
+**证明。** 命题 22 的必要性给出 $\ker h\subseteq\ker\pi$。因此对每个实际出现的 $u\in h[\mathcal B]$，关系“存在 $X$ 使 $h(X)=u$ 且 $\pi(X)=p$”定义唯一的 $p$；存在性来自像的定义，唯一性来自核包含。该关系的图就是 $\kappa$，不必为每条纤维选代表。任意满足等式的函数在每个像点都被强制定值，故唯一。无需假设 $h$ 对整个 $H$ 满射，也不要求在未命中点定义恢复函数。命题 22 的充分方向则表明 $\pi$ 本身可用，故它在核包含意义下是最粗充分读数。证毕。
+
+若先给 $h$ 上的每个操作更新式与保域条件，并给终端 $q$ 的恢复式，上下文归纳会推出命题 23 所用的充分性。这是信息可辨识性的精确结论，**不是字节数最优**、不是对任意观察的可计算性承诺，也不恢复档案历史。任意集合 $S,K$ 的数学定义不意味着其成员测试有算法。
+
+可将任意预先固定的纯位置操作 $M_K$ 加入 $\Sigma_z$ 或 $\Sigma_{\rm sp}$：由 (K) 相应读数仍可更新，且原来的单点探针仍在，故 (LANG) 的这两项及 (FACTOR) 不变。**不能同样宣称 $\Sigma_{\rm arith}$ 加入任意 $M_K$ 后仍为 $\ker q$**；§15.2 的 $p=q$ 例子已给同输入数值、不同受限输出数值。完整卷积与位置受限配对须分清。
+
+<a id="pr1-boundaries"></a>
+
+## 17. PR1 的分离反例、来源边界与核验收据
+
+### 17.1 同空间读数仍不能回答的查询
+
+**反例 B1（同 $\pi$、异来源）。** 两份档案都取 $E=\Omega=\{a,b\}$，符号分别为 $+,-$，时间和位置为零，偏序为空，选择 $\{a\}$。第一份全部来源为 leaf(7)，第二份全部为 leaf(8)。两者 $\pi=(0,\delta_0)$，但来源筛选 $L=\{\operatorname{leaf}(7)\}$ 后 $q$ 分别为 $1,0$。因而来源查询不被 $\Sigma_{\rm sp}$ 覆盖。若定义 14 的关系改为“两父来源相等”，固定另一个所选正事件来源为 leaf(7) 的因子，两份输入的受限输出也分别为 $1,0$，虽空间输入对相同；这说明 (K) 的位置假设有实质内容。
+
+**反例 B2（同 $\pi$、异因果，且 $D$ 共同有效）。** 取两份相同的 $E=\Omega=\{a,b,c,d\}$、零位置、来源 leaf(0)，符号按序为 $+,+,-,-$，时间为 $0,1,0,1$，选择 $\{a,b\}$。第一份唯一严格边为 $a\prec b$，第二份偏序为空，二者都合法，且 $\pi=(0,2\delta_0)$。固定原事件集 $D=\{b\}$，两档案确实都包含它。因果过去筛选在第一份选到 $a,b$、第二份仅选到 $b$，读数为 $2,1$。不以重命名后的无效 $D$ 伪造这个反例。若用“左父在左档案的 $\downarrow D$ 中”限制配对，与一个所选正贡献相乘，同样给 $2,1$；任意因果关系不由位置公式覆盖。
+
+**反例 B3（同 $\pi$、异时间复合域）。** 取 $U=\mathbf i(1)$，再构造 $U^{\rm old}$：保留 $U$ 的当前区域、选择及全部当前属性，只向 $E\setminus\Omega$ 加一个新出现标识、时间为 $2$、位置为零、符号为正、来源 leaf(9) 的旧事件，仍取空偏序。二者皆平衡，$\pi=(0,\delta_0)$。固定 $Y=T_1(U)$，则 $U\triangleright Y$ 合法且读数为 $2$，$U^{\rm old}\triangleright Y$ 因 $2<1$ 为假而无定义。即使保留当前事件的全部时间也漏掉这个域差。PR1 的时间操作继续回到完整档案检查 (T)，不声称 $\pi$ 保存时间守卫；时间摘要属于下一独立批次。
+
+**反例 B4（同 $w$、异固定情境容量）。** §15.1 的 $\mathbf i(1),\mathbf i(2)$ 是已给的见证：在零点分别只有一对与两对正负候选，$w=0$ 相同，空选择还给相同 $\pi$，但允许重选的区间为 $[-1,1]$ 与 $[-2,2]$。这个性质涉及固定 $C$ 中的可能选择族，不是当前选择的单次读数，命题 23 不承诺恢复它。
+
+出现身份关系也越过 (K)：对历史同构但把所选事件 $a$ 换成 $a'$ 的 B1 型表示，固定关系“左父出现标识为 $a$”只在前者保留所选对，输出为 $1,0$。最后，§4 两种括号的档案数 $28,32$ 仍不同；它们的双空间读数却均为 $(0,2\delta_0)$，卷积结合律只识别这个商，不能向上推回历史同构。
+
+### 17.2 成熟来源与本轮产地
+
+本轮采用以下已实际核读的来源收据（调用方在派工中提供），无需把元数据检索冒称逐页证明核读。其适用边界分别为：
+
+| 来源与可定位落点 | 已有内容与本稿使用边界 |
+| --- | --- |
+| Stanley Burris、H. P. Sankappanavar, *A Course in Universal Algebra*, 作者公开 2012 版，[II §5 定义 5.1 与 II §10](https://www.math.uwaterloo.ca/~snburris/htdocs/UALG/univ-algebra2012.pdf) | `literature-attested`：总代数同余及项运算保持同余。本文 (SC) 额外保留部分域，其最大性是命题 16 的自给证明，未声称原书给出同一部分操作定理。 |
+| Andrew M. Pitts, “Operational Semantics and Program Equivalence”, *Applied Semantics*, LNCS 2395 (2002)，[§3 定义 3.1／备注 3.2](https://www.cl.cam.ac.uk/~amp12/papers/opespe/opespe-lncs.pdf) | `literature-attested`：用上下文及终止观察刻画程序等价的成熟方法。这里采用确定部分函数与带标签失败观察，未把程序语言语义或其定理无条件搬到本载体。 |
+| Mathlib 在线文档 [Algebra.MonoidAlgebra.Defs 的 mul_def](https://leanprover-community.github.io/mathlib4_docs/Mathlib/Algebra/MonoidAlgebra/Defs.html) | `literature-attested`：有限支撑系数的卷积乘法。这里只作成熟结构来源；在线文档不是本仓 pin 的核对，也不是本稿的 Lean 验证。 |
+
+强保域最大性、双读数可实现像及最小事件数、固定情境容量、特定语言充分性和本稿 rng 的结论归为 `repo-derived`，证明已在 §14–16 给全。不主张首创；有限和、同余和群代数结构均有成熟背景。辅助 `/tmp/csa-upgrade-20260909/literature-intake.json` 仅消费其 `conclusion`：Milne 的群代数例子是域系数，Gallier 是实仿射空间，二者不作为本批整数系数结论或单位分类的证明。任何 `log_ref` 内容均未消费。
+
+本轮实施是在 `consensus-rnd:sshx` 下由唯一 Codex 实施席完成，输入暴露为 `repo-prior-exposed`（完整派工 GoalArtifact、批准计划、CLAUDE.md、agents/CONTEXT.md、基线文稿及上述来源收据），不称先验独立。按本轮调用方派工记录，两次 NyxID 思考调用均失败，teleology 由 Codex 回退完成；company 默认池的连通性 probe 只返回模型标识 GPT-6 Astra，没有数学内容，**不计 S1 的实质 PRO 意见**。§12 的旧 task 属原稿历史，不算本轮成功调用。当前数学工件的真实网页数学评审、architecture/quality/tests 三席、仓库 required checks 及 PR 生命周期均由 caller 接续，尚不宣称通过或合入。PR2 的时间摘要、完整单位分类、律表和参考点族不属于本批完成主张。
+
+### 17.3 PR1 定向精确核验的范围与预期
+
+附录唯一 Python 块复用原有 `Rich/add/mul/neg`，新增函数仅服务本页的核验。预期值来自正文命题、展开式及反例，未用被检查输出反过来生成预期。一般命题的证明是 §14–16 的证明；脚本对如下明确有限窗口检查实现与这些结论是否一致。
+
+背景恢复在原 105 个表示上逐个探测第一坐标 $0,1,2,3$，共预期 $420$ 次；另用 $(\alpha,0)$ 与空档案检出漏存背景的错误，并检查筛选之后背景仍在。像构造取 $p\in\{0,v,h\}$，$v=(1,0,0),h=(0,1,-1)$，$w$ 的系数为 $(a,b,-a-b)$、$a,b\in\{-1,0,1\}$，$z$ 三个系数各取 $\{-1,0,1\}$，预期 $9\cdot27=243$ 个实现都达到 (IMAGE) 的事件数。固定容量枚举两个位置各自的 $n_+,n_-\in\{0,1,2\}$ 且全局平衡，预期 $19$ 个固定情境、$673$ 个选择；其读数像与 (CAP) 的逐点整数区间逐一比较。
+
+小量稀疏卷积另用显式例子
+
+$$
+\pi(X)=(\delta_0-\delta_v,2\delta_0-\delta_v),\qquad
+\pi(Y)=(\delta_h-\delta_0,\delta_v+\delta_h).
+$$
+
+普通展开给出背景 $\delta_h-\delta_0-\delta_{v+h}+\delta_v$、选择 $2\delta_v+2\delta_h-\delta_{2v}-\delta_{v+h}$，读数为 $2$；$K(p,q)\equiv(p=q)$ 只留下选择 $-\delta_{2v}$，读数为 $-1$，背景不变。这两个最小实现各有四事件，完整乘积档案数 $4+4+4\cdot4=24$。另取 $w=c\alpha\ (c\in\{-1,0,1\})$ 与 $z\in\{-\delta_h,0,\delta_v+\delta_h\}$ 的 $9$ 个状态，检查 $81$ 个丰富输入对的更新式和 $729$ 个空间读数三元组的卷积结合、分配式；仍单独保留 $28/32$ 的丰富层非结合见证。
+
+错误上下文族定向执行反例 A1、A2 的 $k=0,\ldots,4$、A3 的缺槽位与缺参数族（深度 $0$ 至 $3$ 分别 $40,85$ 个词），并区别额外非签名探针。来源、因果、时间域和出现身份使用 B1–B3 及共同有效 $D$ 的具名样本，预期读数分别为 $1/0$、$2/1$、有定义/无定义、$1/0$；另检查重命名后原 $D$ 的依赖域确实可能失效。
+
+零因子、$N\ne J$、$N$ 非乘法同态和 $P_0$ 的自身单位各执行正文见证。有限无单位探针仅枚举 $a$ 支撑在 $\{0,v,h\}$、系数在 $[-2,2]$ 且总和零的 $19$ 种背景，与同支撑、系数在 $\{-1,0,1\}$ 的 $27$ 种 $b$，共 $513$ 个候选；对 $b\ne\delta_0$ 用 $e_0$，对 $b=\delta_0$ 用 $(\alpha,0)$ 检出不满足单位律。这个有限排除**不证明所有格点、所有系数上不存在单位**，后者只由命题 21 的有限支撑周期性证明承担；同样，有限上下文测试不证明全部上下文的最大性或充分性。
+
+**本轮实际运行收据（2026-09-09）。** 在指定工作树、基线 `4ee990c9cb7eb3c8692f0c3f6e5be53cf28f9c85` 上，按附录原 `sed ... | sed ... | python3 -` 命令执行扩充后的唯一代码块，进程实际退出码为 `0`。原 $105/11025$ 检查也在这次执行中运行；本次增加的实际标准输出为：
+
+```text
+pr1_recovery: singleton_checks=420 background_after_filter=preserved kernels_strict=True
+pr1_image_capacity: image_cases=243 fixed_contexts=19 choices=673 capacities=[-1,1],[-2,2]
+pr1_convolution: sparse_states=9 rich_pairs=81 pair_triples=729 explicit_full_q=2 restricted_q=-1 archives=28,32
+pr1_contexts: common_domain_miss=1 depth_counterexamples=5 restricted_word_checks=125 slot_parameter_and_extra_probe=distinguished
+pr1_boundaries: same_pair_source=1,0 causal=2,1 time_domain=defined,undefined identity=1,0 dependent_D=defined,undefined
+pr1_rng: zero_divisors=confirmed N_not_J=confirmed N_not_multiplicative=confirmed P0_unit_only=True finite_unit_candidates_rejected=513
+ALL_FINITE_CHECKS_PASSED
+```
+
+输出中的 `confirmed/True` 仅报告上述有限例子的断言；一般结论由正文证明。原附录末句“新文档之外未改动任何仓库文件”只描述基线工作；本轮交付范围为本源正文及本源 canonical ingest 新产物，不新增 Lean 或生产算术模块。
