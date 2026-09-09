@@ -10,7 +10,7 @@
 - Read first: tracked `tools/scripts/agent/probe-brief-note.txt`, then all of `CLAUDE.md` and `agents/CONTEXT.md`.
 - Scope: review only; no edits to `D5/**` or `Blueprint/**`, no freeze/deposit/cover/merge action.
 - Worker artifacts: `/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/robin-review-0909/attempt-1` (called `ATTEMPT` below).
-- Checkpoints: Q1-Q2 complete; Q3-Q6 pending. Overall verdict is pending until all six questions are reviewed.
+- Checkpoints: Q1-Q3 complete; Q4-Q6 pending. Overall verdict is pending until all six questions are reviewed.
 
 ## Q1. Mathematical correctness
 
@@ -138,6 +138,67 @@ rg -n '\b(log|exp)\b' D5/S3/Arith/Robin/SevenSmooth.lean
 
 Push receipt for Q1: `7766d95416`, successful creation of `origin/lane/math/robin-review-0909`, EXIT 0. Q2 is recorded in the next checkpoint commit.
 
+## Q3. Independent proof shape and escape witness
+
+Result: `proof_shape: content`; `admission_basis: escape-witness`; witness `small_values`. This is a semantic quality judgment, not a claim that SL-031 mechanically classifies proof shape.
+
+### Frozen predecessor and restricted binding attempt
+
+The sole direct D5 import is `D5/S3/Arith/GoldenResource/RobinRationalBasis`. Its frozen state exists with module `statement_id` `sha256:6dcafd483a23c78180a3518807013e46c0dccfcb211d2d5f442207eb1ee621c2`. The reviewed module itself has no state pin (`git ls-tree HEAD Golden/Frozen/state/D5/S3/Arith/Robin/SevenSmooth.lean.json`: EXIT 0, empty output).
+
+After following the local helpers, the semantic D5 frontier contains these public predecessor declarations (prefix of each GID is `D5/S3/Arith/GoldenResource/RobinRationalBasis.`):
+
+| Selector | Declaration statement_id | Scope / limitation |
+| --- | --- | --- |
+| `atanhPartial` | `sha256:6dde04c7f9c9c84a9e0d10d75e9709f0b78c512961eb7eb9144a9b41611c89ba` | Definition of a truncated series, not any finite Robin clearance |
+| `log_pow_two_mul_bounds` | `sha256:396e0fccb254940f3d4c0dcd52b362909e7974c8de4516750fbc720d9f774066` | Requires `k>=1` and `1<=y<2`; supplies analytic bounds, not bounds on sigma |
+| `eulerMascheroni_decimal_bounds` | `sha256:cfeea459eef282e115525208dc385f15423187fbddf8597482a6478ebabd2d42` | Bounds gamma only |
+
+The raw compiler frontier also contains `atanhPartial._proof_1`, an internal auxiliary, `include_in_statement=false`, statement ID `sha256:139c88329085efe6909c3edaa366510de2da7e3f9172d956a745deaca4b194ac`. It is not an additional public theorem. Identities were read from the canonical JSON, whose basis source hash `3fbf5d63fd009f7ff61eccc54eb775c2176bc9340495097b4035998243024713` matches the reviewed source; Q5 refreshes the canonical report. Pinned Mathlib declarations are not frozen D5 predecessor GIDs.
+
+Own restricted Lean attempts, in a worker-only example, were required to fail: direct `robin_delta_10080_pos`, `norm_num only`, and `linarith only [sq_nonneg ...]`. Each failed to close the arbitrary-exponent target, as asserted by `fail_if_success`; the test example then closes with the already submitted theorem so the probe introduces no admitted result. Reading `robinPositiveJudge_sound` shows why binding that checker also leaves a new obligation: its same-n certificate and same-n analytic brackets must be supplied. A theorem about 10080 has the wrong argument. Gronwall's epsilon envelopes and the fixed-prime-valuation eventual bounds do not give the explicit all-n threshold 5040.
+
+Own candidate search receipts (matching lines, including documentation hits):
+
+```
+rg -n '\b(robin|Robin|robinDelta|RobinPositiveJudge)\w*\b|7.smooth' D5 --glob '*.lean'
+# EXIT 0; 122 lines, including this module; candidates inspected in RobinRationalBasis,
+# Robin/PaddingRatio, Weil/GronwallLowerEnvelope, and Weil/PrimeValuationGap
+rg -n '\b(robin|Robin)\w*\b|7.smooth' .lake/packages/mathlib/Mathlib/NumberTheory --glob '*.lean'
+# EXIT 1; 0 lines
+rg -n '\b(sigma_one_apply_prime_pow|isMultiplicative_sigma)\b' .lake/packages/mathlib/Mathlib/NumberTheory/ArithmeticFunction
+# EXIT 0; 8 lines; positive word-boundary/alternation control
+```
+
+This is `not-found-in-searched-scope`, not exhaustive nonexistence of another proof or third-party theorem. No external page from the implementation report is adopted as independently verified evidence.
+
+### Four witness tests
+
+1. **Elaborated closure: pass.** Own Lean compiler probe queries `Environment`/`ConstantInfo`, not source-name matching. Exact symbol: `_private.D5.S3.Arith.Robin.SevenSmooth.0.D5.S3.Arith.Robin.SevenSmooth.small_values`. `RAW_DIRECT_USE=true` in the public theorem's proof value, and membership is true in its transitive type/value constant-reference traversal (42239 names including the root). Direct use already proves the required closure membership.
+2. **Not supplied by frozen binding/projection/normalization: pass.** The predecessor frontier supplies logarithm and gamma facts; it has no interval-wide divisor-sum inequalities at 381/100, 197/50, or 407/100. Multiplicativity supplies a formula but not these bounds. `fin_cases a; decide +kernel` establishes new finite arithmetic facts over the remaining exponents. Recomputing them by `decide` elsewhere would still establish new content under section 3.2, not normalize facts already provided by a predecessor.
+3. **Not definitionally equal or an alias: pass.** The witness is a predicate over four finite exponent domains and three integer cross-product bounds. It has no log, exp, or gamma. The public conclusion quantifies unbounded natural exponents and asserts a real Robin inequality. Own `Meta.isDefEq` with full transparency returns false for their types.
+4. **Live path and counterfactual: pass.** `SevenSmooth.lean:181` instantiates the witness; `:182-211` transports its output to the real ratio bound in each finite branch; `:193`, `:205`, `:215` consume that bound in the final strict transitivity step. The tail branch is independent of this witness. After exposing `And.left/right` wrappers and Lean beta/zeta/iota and reducible reductions, the witness remains a direct used constant. The control `(And.intro witness True.intro).2` has a raw dependency but none after reduction; `.1` retains it. Thus this check rejects the dead-projection example in section 3.2. Without the witness, the existing uniform cap `35/8` cannot close the lower finite intervals against RHS bounds near 3.81-4.08; the remaining frozen checker still needs fresh certificates. Another proof may replace the witness with new estimates, but that is not bind-only reuse.
+
+Probe entry: `make -f "$ATTEMPT/Review.mk" semantic-probe`, delegating to the canonical cache-writer wrapper; no bare lake and no D5 edits. Final probe EXIT 0 in 6.156255833 s (`semantic-probe-final.log`). This is a bounded expression-reduction check plus inspection of the actual inference chain, not a general machine proof of the absence of all bind-only alternatives.
+
+Probe failure recorded: initial basic semantic query passed (EXIT 0, 7.661873583 s). Adding the dead-projection control exposed that reducible transparency alone leaves `And.right` opaque (EXIT 2, 7.8885225 s, `live/dead projection controls failed`). The final query explicitly exposes those logical projections and passes both controls. This failure belonged to the review probe, not the submitted theorem; no target file was changed.
+
+### Preregistration
+
+`preregistration_verified: true` for the named v2 registration before implementation. Own `git show adb94f9668 --stat` returned EXIT 0:
+
+```
+adb94f9668d1d2da28de6fc96a440f807969193c
+2026-09-09 10:29:48 +0800
+docs: measure 482 smooth inputs and preregister private arithmetic witness
+measure.py: 2 lines changed; progress.md: 35 lines added
+2 files changed, 36 insertions(+), 1 deletion(-)
+```
+
+The patch explicitly names private `small_values` and all three final ratio bounds, says the generic uniform bound is not the witness, and commits to only the unrestricted final theorem being public. The first commit of `SevenSmooth.lean` is `ca3b0e95c3` at 10:41:18 +0800. `git merge-base --is-ancestor adb94f9668 ca3b0e95c3` returned EXIT 0. This verifies chronology from Git objects, not just a prose claim. The initial v1 (`b20c258620`, 10:20:37) already proposed private handling of the finite interval; v2 explicitly refines that proposal after the exploratory binding/measurement work. It is not represented here as preceding all exploration or as an unchanged v1 registration.
+
+Push receipt for Q2: `9b7f11119f`, EXIT 0. Q3 is recorded in the next checkpoint commit.
+
 ## Pending checks and nonclaims
 
-At this checkpoint Q3-Q6 have not been concluded. Own Make exits, canonical axiom closure, elaborated witness use, preregistration, classification, and mirrors remain pending, not inferred from implementation reports. No claim of general Robin, RH, novelty, search exhaustiveness, successful freeze, or remote CI/merge is made. No external literature page has been opened or used as evidence.
+At this checkpoint Q4-Q6 have not been concluded. The canonical report/axiom audit, classification, and mirrors remain pending. `make lean` has independently returned EXIT 0 in 16.224060833 s; its scope and the report command are recorded under Q5 when that check completes. No claim of general Robin, RH, novelty, search exhaustiveness, successful freeze, or remote CI/merge is made. No external literature page has been opened or used as evidence.
