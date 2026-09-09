@@ -243,3 +243,29 @@ The generated theorem states the required positive-set quantified iff.
 A supplemental compiler dependency diagnostic initially used the reserved
 word `prefix` as a local identifier and failed to parse; renamed the local
 identifier. This diagnostic does not alter the proved module.
+
+### Scribe and elaborated dependency checks
+
+`bash tools/scripts/workflow/scribe-content-checks.sh
+.lake/build/stratalint/raw-lean-report.json ""
+5d6a244a852db7cf66e3d9a78f4ec885b9f0a55c`: EXIT 0, 23.94 seconds.
+Describe and real-KaTeX markdown checks passed; markdown reported
+`judged=1 formula(s)=1 red=0`. Existing offline DOI observations were not RED.
+The wrapper conditionally skips projections for this delta; a separate explicit
+projection check is recorded below. Log/timing: runner
+`scribe-content-checks.log` / `scribe-content-checks-result.json`.
+
+The repaired hot-cache compiler diagnostic passed (EXIT 0). Its inspection of
+elaborated theorem values with `getUsedConstants` reports the actual edges
+`nontrivial_disjoint_refinement_iff → least_changed_block_disjoint →
+part_lt_of_nontrivial`. Private controls depend on the main theorem; the main
+theorem does not depend on those controls. Log: runner
+`elaborated-dependencies.log`. This directly supports the dependency-closure
+and live-path accounting above.
+
+Canonical declaration identities from the Lean report:
+
+- Public theorem: `sha256:0c87ce641e5dbb2ea1460f9718efe00f24908e519e8dd215cd64b90b6a323736`.
+- Private escape witness: `sha256:ebf9271d79b19ab3e5471802cb117ec8096f5d39f684c79bff02695c491fb9c7`.
+- `IsDisjointStrictRefinement`: `sha256:45cb643497a80430d7c39f92f368f3f8a095b7d5ae9593ae1c9ddb434640f136`.
+- `NontrivialDisjointRefinement`: `sha256:d0eedc4448afe0f6ec075f5dfae34431cb01f2f0af059892991ea18325713832`.
