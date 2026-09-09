@@ -100,7 +100,7 @@ internal sealed class NormalizedResidualsDocument : IScribeDocumentDefinition
         Formula erased = Call("erase", r, i), single = Call("singleton", Head);
         Formula step = All("r", Occupation, Imp(And(Leq(r, a), Ne(r, D(0))),
             All("i", Id("A"), All("k", PhysicalK, Eq(
-                At(Gate, Call("blankMemory", Head, PhysicalRho(r)), Call("pair", i, k)),
+                At(At(Gate, Call("blankMemory", Head, PhysicalRho(r))), Call("pair", i, k)),
                 Call("ite", Mem(i, r), At(PhysicalRho(erased), k), D(0)))))));
         return new DocumentBlock.Section(H("Identification with the concrete padding circuit"), Blocks(
             Paragraph(Text(
