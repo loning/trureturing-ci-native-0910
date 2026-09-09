@@ -40,3 +40,19 @@
 - 扩检 equal.?sum|constant.?block|capable.?partition 与五个 A 号，D5 无新增相关命中。
   Library/Words/oeis2026triage0910.md 记载用户同一预登记（308 行）；不是新的证明来源。
 - make lean-cache-ensure 已启动；未运行裸 lake。首次报告提交 9dbcc5a3b3 已推远端。
+
+## 检索第 3 批与缓存
+
+- make lean-cache-ensure EXIT=0：status=seeded, donor=/Users/chronoai/trureturing,
+  method=clonefile, clonefile_attempts=1, stamp_miss=null, project_olean_state=warm,
+  mathlib_olean_state=warm, archive_status=not_attempted。
+- 实测 lean-toolchain=leanprover/lean4:v4.33.0；Mathlib HEAD=db584cd6d46c92f209a44c0f1c829460d327499d。
+- Mathlib Combinatorics/NumberTheory 搜 capable|constant.?block|equal.?sum|383093|323774 无命中。
+  已读 Nat.Partition 的结构、正性/重量/有穷性、计数编码 API，以及 Finset.lcm 的
+  lcm_dvd_iff、dvd_lcm、lcm_ne_zero_iff 等签名；这些是可直接复用的基础设施，未见目标桥。
+- 扩大 D5 公开面检查：FirstSumsPartitionCharacterization 全文，
+  TrimmedAlternatingPartitions 两公开定理及定义，PowerfulDivisorTransform 全部公开面。
+  前两者分别是相邻和重建及排序尾严格性；后者是 powerful 指示函数的卷积，
+  其一般参数 f 不提供本题两种对象的计数等价。未发现可消费的规范化声明。
+- 已打开 OEIS A383093/internal（HTTP 成功，13917 字节）；外部文献核查继续。
+- spec A5.1 确认 utility: none 文法与七行头位置；Meta/domains.yaml 已读。
