@@ -1,4 +1,5 @@
 import LeanInformationAudit.Projection.ProjectionSchema
+import LeanInformationAudit.CensusSchema
 
 namespace LeanInformationAudit
 open Lean
@@ -13,9 +14,42 @@ def validateAnalysisKeySet (root catalog : Name) (component : String) (expected 
     throw s!"IE-C028 AnalysisCertificateMismatch root={root} catalog={catalog} \
 component={component}-key-set expected={(toJson expected).compress} actual={(toJson actual).compress}"
 
-/-- CIRPT-41's closed containers, checked on the final JSON value before emission.
-Role signatures and certificate labels are maps; their contents are bound separately. -/
-def validateAnalysisInventory (root : Name) (artifact : Json) : Except String Unit := do
+private def validateCensusInventory (artifact : Json) : Except String Unit := do
+  let head ← artifact.getObjValAs? String "head_sha"
+  let keys (component : String) (expected : Array String) (value : Json) := do
+    let actual := match value.getObj? with
+      | .ok object => object.toArray.map (·.1) |>.qsort (· < ·)
+      | .error _ => #[]
+    let expected := expected.qsort (· < ·)
+    unless actual == expected do
+      throw <| DispositionCensus.censusError head s!"{component}-key-set"
+        (toJson expected).compress (toJson actual).compress
+  keys "root" DispositionCensus.censusArtifactFields artifact
+  let inventory ← DispositionCensus.parseInventory <| Json.mkObj [
+    ("head_sha", toJson head), ("entries", ← artifact.getObjVal? "rows")]
+  let counts ← artifact.getObjVal? "counts"
+  let expectedCounts := DispositionCensus.count inventory
+  keys "counts" (expectedCounts.fields.map (·.1)).toArray counts
+  DispositionCensus.checkCounts inventory expectedCounts
+  for (field, expected) in expectedCounts.fields do
+    let actual ← counts.getObjValAs? Nat field
+    unless actual == expected do
+      throw <| DispositionCensus.censusError head field (toString expected) (toString actual)
+  let complete ← artifact.getObjValAs? Bool "certified_complete"
+  unless complete == (expectedCounts.observed == 0) do
+    throw <| DispositionCensus.censusError head "certified_complete"
+      (toString (expectedCounts.observed == 0)) (toString complete)
+  let theoremCount ← artifact.getObjValAs? Nat "theorem_count"
+  unless theoremCount == inventory.entries.size do
+    throw <| DispositionCensus.censusError head "theorem_count"
+      (toString inventory.entries.size) (toString theoremCount)
+  discard <| artifact.getObjValAs? String "report_sha256"
+  for source in ← artifact.getObjValAs? (Array Json) "source_inputs" do
+    keys "source-input" #["module", "path", "sha256"] source
+    for field in ["module", "path", "sha256"] do
+      discard <| source.getObjValAs? String field
+
+private def validateCatalogInventory (root : Name) (artifact : Json) : Except String Unit := do
   let keys := validateAnalysisKeySet root `system
   let field (value : Json) (key : String) := value.getObjVal? key |>.mapError fun _ =>
     s!"IE-C028 AnalysisCertificateMismatch root={root} catalog=system \
@@ -96,5 +130,13 @@ component={key} expected=array actual=invalid"
     for row in ← rows projection "certified_chains" do
       keys "certified-schedule" #["chain_id", "nodes", "generators", "step_classes", "increments",
         "step_certificates", "terminal_escape_count", "partition_certificate"] row
+
+/-- CIRPT-41's closed containers, checked on the final JSON value before emission.
+Role signatures and certificate labels are maps; their contents are bound separately. -/
+def validateAnalysisInventory (root : Name) (artifact : Json) : Except String Unit := do
+  if (← artifact.getObjValAs? String "schema") == "lean-information-disposition-census" then
+    validateCensusInventory artifact
+  else
+    validateCatalogInventory root artifact
 
 end LeanInformationAudit

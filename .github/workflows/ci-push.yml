@@ -76,7 +76,9 @@ jobs:
     name: current
     needs: engineering
     runs-on: ubuntu-24.04-arm
-    timeout-minutes: 150
+    # Match the existing six-hour normal Lean envelope at the hosted job ceiling.
+    # Setup, checks and transport also consume this job's time.
+    timeout-minutes: 360
     outputs:
       artifact_id: ${{ steps.upload.outputs.artifact-id }}
       artifact_name: ${{ steps.pack.outputs.artifact_name }}
@@ -187,3 +189,13 @@ jobs:
           key: ${{ steps.keys.outputs.elan_key }}
       - if: always()
         run: python3 tools/scripts/workflow/ci.py summary --repository "$GITHUB_WORKSPACE" --stage current
+      - name: Retain current failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-current-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            build/ci/current-result.json
+            build/ci/logs/current
+          if-no-files-found: warn
+          retention-days: 7

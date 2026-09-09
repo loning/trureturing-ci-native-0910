@@ -199,6 +199,9 @@ public sealed class CommonStageContractTests
         var log = TemporaryFileSystem.File.ReadAllText(Path.Combine(fixture.Root, step.GetProperty("log").GetString()!));
         Assert.Contains("producer-started", log, StringComparison.Ordinal);
         Assert.Contains("producer-stderr", log, StringComparison.Ordinal);
+        var diagnostics = Path.Combine(fixture.Root, "build/ci/logs/current/lean-inspector");
+        Assert.Equal("raw build progress\n", TemporaryFileSystem.File.ReadAllText(Path.Combine(diagnostics, "build.stdout.log")));
+        Assert.Equal("raw inspector diagnostic\n", TemporaryFileSystem.File.ReadAllText(Path.Combine(diagnostics, "inspect.stderr.log")));
         Assert.Equal(new[] { "scribe", "filemap", "check-current" }, summary.RootElement.GetProperty("not_executed")
             .EnumerateArray().Select(value => value.GetString()));
         Assert.False(TemporaryFileSystem.File.Exists(Path.Combine(fixture.Root, CommonExecutionEvidence.CurrentPath)));
@@ -244,12 +247,17 @@ public sealed class CommonStageContractTests
         Assert.False(TemporaryFileSystem.File.Exists(Path.Combine(fixture.Root, CommonExecutionEvidence.CurrentPath)));
     }
 
-    private static void PrepareCurrent(CurrentExecutionContractTests.CandidateFixture fixture)
+    internal static void PrepareCurrent(CurrentExecutionContractTests.CandidateFixture fixture)
     {
         TemporaryFileSystem.File.WriteAllText(Path.Combine(fixture.Root, "Makefile"), "lean-report:\n\t@/bin/bash build/producer.sh\n");
         TemporaryFileSystem.Directory.CreateDirectory(Path.Combine(fixture.Root, "build"));
         TemporaryFileSystem.File.WriteAllText(Path.Combine(fixture.Root, "build/producer.sh"), """
             set -euo pipefail
+            if [[ -n "${STRATALINT_LEAN_REPORT_LOG_DIR:-}" ]]; then
+              mkdir -p "$STRATALINT_LEAN_REPORT_LOG_DIR"
+              printf 'raw build progress\n' > "$STRATALINT_LEAN_REPORT_LOG_DIR/build.stdout.log"
+              printf 'raw inspector diagnostic\n' > "$STRATALINT_LEAN_REPORT_LOG_DIR/inspect.stderr.log"
+            fi
             mkfifo build/producer-wait
             printf 'producer-started\n'
             printf 'producer-stderr\n' >&2

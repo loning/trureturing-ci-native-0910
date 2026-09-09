@@ -17,7 +17,7 @@ public sealed partial class ProblemCandidateTests
                 var candidate = Assert.Single(ProblemCandidateCatalog.Load(root).Candidates);
                 Assert.Equal("sample-open-problem", candidate.Slug);
                 Assert.Equal("sos1957threegap", candidate.BibKey.Value);
-                Assert.Equal("10.48550/arXiv.2305.08349", candidate.Doi.Value);
+                Assert.Equal("10.48550/arXiv.2305.08349", candidate.Doi!.Value);
                 Assert.Equal(ProblemTriage.Theorem, candidate.Triage);
                 Assert.Equal(
                     "D5/S1/Phase/Basic",

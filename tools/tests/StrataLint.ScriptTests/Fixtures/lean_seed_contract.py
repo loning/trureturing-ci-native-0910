@@ -261,6 +261,45 @@ shutil.copyfile = copy
                 "PUBLICATION_BOUNDARY": boundary, "PUBLICATION_DAMAGE": damage}
 
 class PairTests(PairFixture, unittest.TestCase):
+    def test_phase_diagnostics_survive_failed_staging_without_becoming_report_evidence(self):
+        diagnostics = self.root / "build/ci/logs/current/lean-inspector"
+        write(self.producer, '''#!/bin/bash
+set -euo pipefail
+output="" logs=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in --output) output="$2" ;; --log-dir) logs="$2" ;; esac
+  shift 2
+done
+logs="${logs:-$output.logs}"
+mkdir -p "$logs"
+printf 'lake build\\n' > "$logs/build.command.log"
+printf 'raw build output\\n' > "$logs/build.stdout.log"
+printf 'raw inspector error\\n' > "$logs/inspect.stderr.log"
+printf '19\\n' > "$logs/inspect.exit.log"
+exit 19
+''')
+        result = self.pair(STRATALINT_LEAN_REPORT_LOG_DIR=str(diagnostics),
+                           STRATALINT_SUPERVISOR_ROOT=str(self.root / "supervisor-state"))
+        self.assertEqual(19, result.returncode, result.stdout + result.stderr)
+        self.assertEqual([], list(self.root.glob(".lean-report-bundle.*")))
+        self.assertFalse(self.output.exists())
+        self.assertFalse(pathlib.Path(str(self.output) + ".provenance.json").exists())
+        self.assertEqual([], self.seeds())
+        self.assertEqual("lake build\n", (diagnostics / "build.command.log").read_text())
+        self.assertEqual("raw build output\n", (diagnostics / "build.stdout.log").read_text())
+        self.assertEqual("raw inspector error\n", (diagnostics / "inspect.stderr.log").read_text())
+        self.assertEqual("19\n", (diagnostics / "inspect.exit.log").read_text())
+
+    def test_external_diagnostics_allow_successful_validated_publication(self):
+        diagnostics = self.root / "build/ci/logs/current/lean-inspector"
+        result = self.pair(STRATALINT_LEAN_REPORT_LOG_DIR=str(diagnostics),
+                           STRATALINT_SUPERVISOR_ROOT=str(self.root / "supervisor-state"))
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertEqual(0, self.report_input("verify").returncode)
+        self.assertEqual("produced\n", (diagnostics / "producer.log").read_text())
+        self.assertEqual(b"diagnostic\x00bytes\n", (diagnostics / "subprocess/stderr.log").read_bytes())
+        self.assertEqual("produced\n", pathlib.Path(str(self.output) + ".logs/producer.log").read_text())
+
     def test_exact_hit_always_enters_producer_and_rebinds_candidate(self):
         first = self.pair()
         self.assertEqual(0, first.returncode, first.stdout + first.stderr)

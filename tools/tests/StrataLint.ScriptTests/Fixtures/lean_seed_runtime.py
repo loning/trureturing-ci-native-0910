@@ -35,7 +35,8 @@ output.write_text(json.dumps({"modules": modules, "schema": "stratalint-raw-lean
 with zipfile.ZipFile(str(output)+".materials.zip", "w"): pass
 pathlib.Path(str(output)+".sha256").write_text(hashlib.sha256(output.read_bytes()).hexdigest()+"  "+output.name+"\\n")
 pathlib.Path(str(output)+".seed.json").write_text(json.dumps({"runtime_sha256":"c"*64}))
-logs = pathlib.Path(str(output)+".logs"); logs.mkdir()
+logs = pathlib.Path(args[args.index("--log-dir")+1] if "--log-dir" in args else str(output)+".logs")
+logs.mkdir(parents=True)
 (logs/"producer.log").write_text("produced\\n")
 (logs/"subprocess").mkdir()
 (logs/"subprocess/stderr.log").write_bytes(b"diagnostic\\x00bytes\\n")
