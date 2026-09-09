@@ -74,3 +74,15 @@ blocked = 实际 Lean 尝试的 goal/错误、路线与最锐剩余子命题。
 - r=0 未被额外排除；m=0 的不可解性由平方严格递增得到。主指数界下一步完成。
 - 当前 Makefile 已提供 make deposit-uncovered，内部调用同一 ledger-align --add 与
   deposit 预检。后续使用此 canonical 无 atom 门，取代手工复制配方。
+
+## Lean 片段 2：双边指数界
+
+- 原签名 mersenne_gap_exponent_bounds 已完整闭合，热树单文件检查 EXIT=0，无警告。
+- 下界：2^t≤k 与 6k≤2^m+8、k>8 推出 4*2^t<2^m；幂严格单调性给 t+3≤m。
+  因此无需另开 t≥3 的边界分支，仍是预登记的因子下界路线。
+- 上界：k<2^(t+1) 给 (k+1)²≤(2^(t+1))²，再由 k>8 得
+  k²+1<2^(2t+2)；原等式给 2^m≤k²+1，推出 m≤2t+1。
+- 第一次主定理编译报 MulLeftStrictMono Nat：误选无零乘法单调性接口；
+  查询源码后改为 Nat.pow_lt_pow_iff_right，未增公理、未改目标。
+- hm:m≤k 原样保留，证明 clear hm：这些估计本身不需要该搜索限制。
+  尚未执行全项目 make lean、语义依赖审计或冻结。
