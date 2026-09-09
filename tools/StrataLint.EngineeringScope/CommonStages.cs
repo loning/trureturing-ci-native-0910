@@ -6,11 +6,12 @@ using StrataLint.Engine;
 namespace StrataLint.EngineeringScope;
 
 internal sealed class CommonStages(string root, TextWriter output, CancellationToken deadlineCancellation = default,
-    Action<Process>? processExited = null, TimeProvider? timeProvider = null)
+    Action<Process>? processExited = null, TimeProvider? timeProvider = null, Func<string, StreamWriter>? createLog = null)
 {
     private readonly List<StageStep> steps = [];
     private string stage = "input";
     private string? candidate;
+    private bool outputFailed;
 
     internal static int Normalize(int raw, bool allowProtectedAnnotation = false) => raw switch
     {
@@ -55,7 +56,7 @@ internal sealed class CommonStages(string root, TextWriter output, CancellationT
                 current_evidence = CommonExecutionEvidence.CurrentPath, report = CommonExecutionEvidence.ReportPath };
             try { CommonExecutionEvidence.Write(root, CommonExecutionEvidence.RootPath + "/" + stage + "-result.json", Summary()); }
             catch (Exception exception) { exit = 2; failure = $"{failure}; summary write failed: {exception.Message}"; }
-            output.WriteLine(JsonSerializer.Serialize(Summary()));
+            if (!outputFailed) output.WriteLine(JsonSerializer.Serialize(Summary()));
         }
         return exit;
     }
@@ -134,31 +135,50 @@ internal sealed class CommonStages(string root, TextWriter output, CancellationT
         var full = Path.Combine(root, log);
         Directory.CreateDirectory(Path.GetDirectoryName(full)!);
         (int Exit, string Text) result;
-        var forwardingGate = new object();
-        using (var liveLog = new StreamWriter(full, append: false, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false)))
+        Exception? sinkFailure = null;
+        bool Observe(Action write)
         {
-            liveLog.AutoFlush = true;
+            try { write(); return true; }
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or ObjectDisposedException)
+            {
+                sinkFailure ??= exception;
+                return false;
+            }
+        }
+        var forwardingGate = new object();
+        var logHealthy = true;
+        var liveLog = createLog?.Invoke(full)
+            ?? new StreamWriter(full, append: false, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+        try
+        {
             void Forward(ReadOnlyMemory<char> chunk)
             {
                 lock (forwardingGate)
                 {
-                    liveLog.Write(chunk.Span);
-                    liveLog.Flush();
-                    output.Write(chunk.Span);
+                    // A failed observation sink must not stop either pipe reader.
+                    if (logHealthy) logHealthy = Observe(() => { liveLog.Write(chunk.Span); liveLog.Flush(); });
+                    if (!outputFailed) outputFailed = !Observe(() => output.Write(chunk.Span));
                 }
             }
-
             result = Capture(executable, arguments, defaultTimeout, Forward);
+        }
+        finally
+        {
+            // A failed writer may still hold buffered text; close its stream without
+            // retrying that text. A healthy writer must also report close failures.
+            var closed = Observe(logHealthy ? liveLog.Dispose : liveLog.BaseStream.Dispose);
+            logHealthy &= closed;
         }
         // Capture keeps stdout and stderr separately for proof/selftest consumers;
         // retain the historical stdout-then-stderr log representation after the
         // live stream has completed.
-        File.WriteAllText(full, result.Text);
-        var exit = proof is null ? Normalize(result.Exit, allowAnnotation)
+        if (logHealthy) _ = Observe(() => File.WriteAllText(full, result.Text));
+        if (!outputFailed) outputFailed = !Observe(output.WriteLine);
+        var exit = sinkFailure is not null ? 2 : proof is null ? Normalize(result.Exit, allowAnnotation)
             : result.Exit is not (0 or 1) ? 2 : proof(result.Exit, result.Text) ? 0 : 1;
         steps.Add(new(name, result.Exit, exit, exit == 0 ? "executed" : "failed", log));
-        output.WriteLine();
-        if (exit != 0) throw new StageFailure(exit, $"{name} failed: raw_exit={result.Exit}; log={log}");
+        if (exit != 0) throw new StageFailure(exit, $"{name} failed: raw_exit={result.Exit}; log={log}"
+            + (sinkFailure is null ? "" : $"; output/log failure: {sinkFailure.Message}"));
         return result.Text;
     }
 

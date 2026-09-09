@@ -4,7 +4,7 @@ using Xunit;
 
 namespace StrataLint.EngineeringScope.Tests;
 
-public sealed class CommonStageContractTests
+public sealed class CommonStageContractTests(Xunit.Abstractions.ITestOutputHelper diagnostics)
 {
     [Theory]
     [InlineData(0, 0, "executed")]
@@ -34,6 +34,79 @@ public sealed class CommonStageContractTests
         Assert.DoesNotContain("stage deadline exceeded", log, StringComparison.Ordinal);
     }
 
+    [Theory]
+    [InlineData(false, false, false)]
+    [InlineData(true, false, false)]
+    [InlineData(false, true, false)]
+    [InlineData(true, true, true)]
+    public async Task ForwardingFailureDrainsFiniteChildAndRecordsFailedStep(bool standardError, bool failLog, bool failOnFlush)
+    {
+        using var fixture = new CurrentExecutionContractTests.CandidateFixture();
+        PrepareCurrent(fixture);
+        var stdout = new string('o', 1024 * 1024) + "stdout-complete\n";
+        var stderr = new string('e', 1024 * 1024) + "stderr-complete\n";
+        TemporaryFileSystem.File.WriteAllText(Path.Combine(fixture.Root, "build/stdout"), stdout);
+        TemporaryFileSystem.File.WriteAllText(Path.Combine(fixture.Root, "build/stderr"), stderr);
+        TemporaryFileSystem.File.WriteAllText(Path.Combine(fixture.Root, "build/producer.sh"), $$"""
+            set -euo pipefail
+            cat build/{{(standardError ? "stderr >&2" : "stdout")}}
+            cat build/{{(standardError ? "stdout" : "stderr >&2")}}
+            : > build/producer-completed
+            """);
+        using var deadline = new CancellationTokenSource();
+        using var failedSink = new OneShotThrowingWriter(failOnFlush);
+        using var healthyOutput = new StringWriter();
+        var output = failLog ? (TextWriter)healthyOutput : failedSink;
+        var childExit = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var run = Task.Run(() => new CommonStages(fixture.Root, output, deadline.Token,
+            process => childExit.TrySetResult(process.ExitCode),
+            createLog: failLog ? _ => failedSink : null).Run("current", null));
+        try
+        {
+            Assert.Equal(2, await run.WaitAsync(TestBudgets.ScriptProcessHangGuard));
+            Assert.True(childExit.Task.IsCompletedSuccessfully);
+            Assert.Equal(0, await childExit.Task);
+            Assert.True(TemporaryFileSystem.File.Exists(Path.Combine(fixture.Root, "build/producer-completed")));
+            using var summary = System.Text.Json.JsonDocument.Parse(TemporaryFileSystem.File.ReadAllText(
+                Path.Combine(fixture.Root, "build/ci/current-result.json")));
+            var step = Assert.Single(summary.RootElement.GetProperty("steps").EnumerateArray());
+            Assert.Equal("lean-report", step.GetProperty("name").GetString());
+            Assert.Equal(0, step.GetProperty("raw_exit").GetInt32());
+            Assert.Equal(2, step.GetProperty("exit").GetInt32());
+            Assert.Equal("failed", step.GetProperty("status").GetString());
+            Assert.Contains(failedSink.Failure.Message, summary.RootElement.GetProperty("error").GetString(), StringComparison.Ordinal);
+            Assert.Equal(new[] { "scribe", "filemap", "check-current" }, summary.RootElement.GetProperty("not_executed")
+                .EnumerateArray().Select(value => value.GetString()));
+            if (failLog)
+            {
+                var text = healthyOutput.ToString();
+                var live = text[..text.LastIndexOf("\n{", StringComparison.Ordinal)];
+                // Live streams may interleave; every payload character must survive.
+                Assert.Equal((stdout + stderr).GroupBy(character => character).OrderBy(group => group.Key)
+                        .Select(group => (group.Key, group.Count())),
+                    live.GroupBy(character => character).OrderBy(group => group.Key).Select(group => (group.Key, group.Count())));
+            }
+            else
+                Assert.Equal(stdout + stderr, TemporaryFileSystem.File.ReadAllText(Path.Combine(fixture.Root, step.GetProperty("log").GetString()!)));
+            Assert.True(failedSink.Failed);
+            Assert.Equal(0, failedSink.CallsAfterFailure);
+            Assert.False(TemporaryFileSystem.File.Exists(Path.Combine(fixture.Root, CommonExecutionEvidence.CurrentPath)));
+        }
+        catch (TimeoutException exception)
+        {
+            throw new SkipException("infrastructure-hang-guard expired for throwing-sink fixture: " + exception.Message);
+        }
+        finally
+        {
+            deadline.Cancel();
+            await run.WaitAsync(TestBudgets.ScriptProcessHangGuard);
+            diagnostics.WriteLine(TemporaryFileSystem.File.ReadAllText(Path.Combine(fixture.Root, "build/ci/current-result.json")));
+            var surviving = failLog ? healthyOutput.ToString() : TemporaryFileSystem.File.ReadAllText(
+                Path.Combine(fixture.Root, "build/ci/logs/current/lean-report.log"));
+            diagnostics.WriteLine($"surviving_length={surviving.Length}; payload_length={stdout.Length + stderr.Length}; calls_after_failure={failedSink.CallsAfterFailure}; child_exit_observed={childExit.Task.IsCompletedSuccessfully}");
+        }
+    }
+
     [Fact]
     public async Task StageOutputAndLogAreVisibleBeforeChildExit()
     {
@@ -55,15 +128,23 @@ public sealed class CommonStageContractTests
 
         TemporaryFileSystem.File.WriteAllText(Path.Combine(fixture.Root, "build/producer.sh"), """
             set -euo pipefail
+            printf '%s\n' "$$" > build/producer-pid
             printf 'live-stdout-marker\n'
             printf 'live-stderr-marker\n' >&2
             read -r release < build/producer-wait
             """);
         using var output = new MarkerTextWriter("live-stdout-marker", "live-stderr-marker");
-        var run = Task.Run(() => new CommonStages(fixture.Root, output).Run("current", null));
+        using var deadline = new CancellationTokenSource();
+        System.Diagnostics.Process? producer = null;
+        var run = Task.Run(() => new CommonStages(fixture.Root, output, deadline.Token).Run("current", null));
         try
         {
             await output.MarkersSeen.WaitAsync(TestBudgets.ScriptProcessHangGuard);
+            producer = System.Diagnostics.Process.GetProcessById(int.Parse(TemporaryFileSystem.File.ReadAllText(
+                Path.Combine(fixture.Root, "build/producer-pid")), System.Globalization.CultureInfo.InvariantCulture));
+            Assert.False(producer.HasExited);
+            Assert.False(run.IsCompleted);
+            Assert.False(TemporaryFileSystem.File.Exists(Path.Combine(fixture.Root, "build/ci/current-result.json")));
             var logPath = Path.Combine(fixture.Root, CommonExecutionEvidence.RootPath,
                 "logs/current/lean-report.log");
             Assert.True(TemporaryFileSystem.File.Exists(logPath));
@@ -73,12 +154,35 @@ public sealed class CommonStageContractTests
             Assert.Contains("live-stdout-marker", output.Snapshot, StringComparison.Ordinal);
             Assert.Contains("live-stderr-marker", output.Snapshot, StringComparison.Ordinal);
         }
+        catch (TimeoutException exception)
+        {
+            throw new SkipException("infrastructure-hang-guard expired for live-output fixture: " + exception.Message);
+        }
         finally
         {
-            if (!run.IsCompleted)
-                TemporaryFileSystem.File.WriteAllText(waitPath, "release\n");
-            await run.WaitAsync(TestBudgets.ScriptProcessHangGuard);
+            deadline.Cancel();
+            try
+            {
+                Assert.Equal(2, await run.WaitAsync(TestBudgets.ScriptProcessHangGuard));
+                if (producer is not null) Assert.True(producer.HasExited);
+                diagnostics.WriteLine(TemporaryFileSystem.File.ReadAllText(Path.Combine(fixture.Root, "build/ci/current-result.json")));
+            }
+            catch (TimeoutException exception)
+            {
+                throw new SkipException("infrastructure-hang-guard expired during live-output fixture cleanup: " + exception.Message);
+            }
+            finally { producer?.Dispose(); }
         }
+        using var summary = System.Text.Json.JsonDocument.Parse(TemporaryFileSystem.File.ReadAllText(
+            Path.Combine(fixture.Root, "build/ci/current-result.json")));
+        var step = Assert.Single(summary.RootElement.GetProperty("steps").EnumerateArray());
+        Assert.Equal("lean-report", step.GetProperty("name").GetString());
+        Assert.Equal(124, step.GetProperty("raw_exit").GetInt32());
+        Assert.Equal(2, step.GetProperty("exit").GetInt32());
+        Assert.Equal("failed", step.GetProperty("status").GetString());
+        Assert.Equal(new[] { "scribe", "filemap", "check-current" }, summary.RootElement.GetProperty("not_executed")
+            .EnumerateArray().Select(value => value.GetString()));
+        Assert.False(TemporaryFileSystem.File.Exists(Path.Combine(fixture.Root, CommonExecutionEvidence.CurrentPath)));
     }
 
     [Fact]
@@ -456,6 +560,26 @@ public sealed class CommonStageContractTests
         }
         Assert.ThrowsAny<Exception>(() => CommonExecutionEvidence.ValidateCurrent(target.Root,
             scenario == "missing-base-project" ? ["tools/tests/Removed/Removed.csproj"] : []));
+    }
+
+    private sealed class OneShotThrowingWriter(bool failOnFlush = false) : StreamWriter(new MemoryStream())
+    {
+        internal IOException Failure { get; } = new("injected live output failure");
+        internal bool Failed { get; private set; }
+        internal int CallsAfterFailure { get; private set; }
+        public override void Write(ReadOnlySpan<char> value) => Observe(flush: false);
+        public override void Write(string? value) => Observe(flush: false);
+        public override void WriteLine() => Observe(flush: false);
+        public override void Flush() => Observe(flush: true);
+        private void Observe(bool flush)
+        {
+            if (Failed) CallsAfterFailure++;
+            else if (flush == failOnFlush)
+            {
+                Failed = true;
+                throw Failure;
+            }
+        }
     }
 
     private sealed class MarkerTextWriter(string stdoutMarker, string stderrMarker) : TextWriter
