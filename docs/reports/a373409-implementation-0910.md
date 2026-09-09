@@ -144,3 +144,29 @@ Library 根桶实测22，新增笔记落根桶；Arith桶48不新增。Blueprint
 - 并发期间共享 origin/dev 引用已前移；本任务 diff 以 immutable 初始base计，
   当前仅4个新增路径，没有删除他人成果。先前两点式 `git diff origin/dev` 展示的
   上游新增文件“删除”不是本 lane 的变更，不据此作删除判断。
+
+## Lean report 收据
+
+`make lean-report` EXIT=0，66.435秒；delta计划 `changed=0 added=1 removed=1 recheck=1`
+（相对播种报告的缓存差量，不是git删除）。report SHA-256：
+`6f64ece6355090401a7da368824b85fa665eae0aa09fe7e880aeb02a1315133d`。
+目标模块 source SHA-256：`c8d6032c061a71c4233d33ead247cd392d951a22170a19f5fe99c3e895b9ca9b`。
+主定理 statement_id：`sha256:d30f60ee3206ee9c5c098349b4ffa714e0f514b49e608886d0b62b02e6bf1c10`。
+Full 定义 statement_id：`sha256:0e27b4a2b0ab46b15543f9c7c5dc079a90b9519faaac9d86651db28f1cb1faf6`。
+所有声明（含生成 helper）公理集合减标准三公理为空。
+完整本模块 included 声明收据保存为 runner attempt-1/declaration-receipt.json。
+
+inspector 的 `include_in_statement=true` 也包括私有声明，不把它误报成公开 API。
+补记这些声明的角色（直接冻结依赖均为[]）：
+
+| 私有声明 | proof_shape | 角色 / admission_basis |
+|---|---|---|
+| no_neighbors | content | upper_of_pair 的列表顺序前置；随主定理 escape-witness |
+| upper_of_pair | content | 主定理的具名障碍见证；escape-witness |
+| not_squarefree_of_four_dvd | bind-only | Nat.squarefree_iff_prime_squarefree 的薄应用；主定理前置 |
+| not_squarefree_of_nine_dvd | bind-only | 同上，素数3；主定理前置 |
+| nine_term_witness | content（有限核验） | 仅按任务明示许可保留的private尖锐性对照，无独立准入依据 |
+
+Full 的结构定义和生成构造器是陈述接口，不是额外公开定理。
+主定理的消费者→前置方向：主定理→upper_of_pair→no_neighbors；
+主定理→4/9整除引理。私有九项见证不在全称上界的推导路径上，明确不拿它充当逃逸见证。
