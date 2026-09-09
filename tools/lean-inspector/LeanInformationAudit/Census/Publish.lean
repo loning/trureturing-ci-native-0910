@@ -36,13 +36,21 @@ def elaborateFinalSource (input : String) (fileName : String) (root : Name)
   IO.FS.createDirAll compiledSource.parent.get!
   IO.FS.writeFile compiledSource input
   let target := compiledSource.withExtension "olean"
+  -- The checked header permits exactly Init and Certificate. Resolve that
+  -- module once, then avoid probing every Mathlib/package path for each Init
+  -- import in both the compiler and the serialized-environment reader.
+  let certificateModule := `LeanInformationAudit.Census.Certificate
+  let mut certificateDirectory ← findOLean certificateModule
+  for _ in certificateModule.components do
+    certificateDirectory := certificateDirectory.parent.get!
+  let finalSearchPath : SearchPath := [← getLibDir (← getBuildDir), certificateDirectory]
   -- The invoking Lean process already has the warm toolchain and LEAN_PATH.
   -- Its child needs only the compiler, not a second Lake environment startup.
   let result ← IO.Process.output {
     cmd := "lean"
     args := #["-DmaxHeartbeats=0", "-DmaxRecDepth=4000",
       "-R", directory.toString, "-o", target.toString, compiledSource.toString]
-    env := #[("LEAN_NUM_THREADS", some "1")] }
+    env := #[("LEAN_NUM_THREADS", some "1"), ("LEAN_PATH", some finalSearchPath.toString)] }
   IO.FS.writeFile (source.withExtension "compiler.log") (result.stdout ++ result.stderr)
   unless result.exitCode == 0 do
     throw <| IO.userError s!"census certificate: final source failed elaboration: {result.stdout}{result.stderr}"
@@ -53,7 +61,7 @@ def elaborateFinalSource (input : String) (fileName : String) (root : Name)
   IO.FS.writeBinFile (source.withExtension "olean") (← IO.FS.readBinFile target)
   let previous ← searchPathRef.get
   try
-    searchPathRef.set (directory :: previous)
+    searchPathRef.set (directory :: finalSearchPath)
     importModules #[{ module := root }] options
   finally
     searchPathRef.set previous

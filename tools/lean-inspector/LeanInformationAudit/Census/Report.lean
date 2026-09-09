@@ -9,6 +9,12 @@ open Lean
 
 namespace DispositionCensus
 
+/-- Cache each display name once instead of rebuilding it in every comparison.
+The ordering is exactly StatementKey.lt, including its wire-id tie breaker. -/
+private def sortKeys (keys : Array StatementKey) : Array StatementKey :=
+  ((keys.map fun key => (key.theoremName.toString, key)).qsort fun a b =>
+    a.1 < b.1 || (a.1 == b.1 && a.2.statementId < b.2.statementId)).map (·.2)
+
 def checkFrozenUniqueness (head : String) (keys : Array StatementKey) : Except String Unit := do
   let mut ids : Std.HashSet String := {}
   for key in keys do
@@ -44,7 +50,7 @@ def checkIdentityInputs (head : String) (frozen rows : Array StatementKey) : Exc
 /-- Identity binding only; absence is checked after the manifest's Nat binding. -/
 def checkKeyIdentity (head : String) (frozen : Array StatementKey)
     (inventoryHead : String) (rows : Array StatementKey) : Except String Unit := do
-  let expected := frozen.qsort StatementKey.lt
+  let expected := sortKeys frozen
   for key in expected do
     unless inventoryHead == head do
       throw <| identityError key.theoremName "head" head inventoryHead
@@ -55,7 +61,7 @@ def checkKeyIdentity (head : String) (frozen : Array StatementKey)
       if result.contains key.theoremName then result else result.insert key.theoremName key.statementId
   let idNames : Std.HashMap String Name :=
     expected.foldl (init := {}) fun result key => result.insert key.statementId key.theoremName
-  for key in rows.qsort StatementKey.lt do
+  for key in sortKeys rows do
     match names[key.theoremName]? with
     | some firstId =>
       unless idNames[key.statementId]? == some key.theoremName do
@@ -66,7 +72,7 @@ def checkKeyIdentity (head : String) (frozen : Array StatementKey)
 
 def checkMissingKeys (head : String) (frozen rows : Array StatementKey) : Except String Unit := do
   let records := rows.foldl (init := ({} : Std.HashSet String)) fun ids row => ids.insert row.statementId
-  for key in frozen.qsort StatementKey.lt do
+  for key in sortKeys frozen do
     unless records.contains key.statementId do
       throw s!"IE-C034 MissingAnalysisDisposition theorem={key.theoremName} statement_id={key.statementId} head={head}"
 
@@ -153,7 +159,7 @@ private def parseReportCore (bytes actualSha256 : String) : Except String Frozen
       if (← stringField declaration "kind") == "theorem" then
         keys := keys.push ⟨← parseNameKey (← stringField declaration "declaration_name_key"),
           ← stringField declaration "statement_id"⟩
-  let sorted := keys.qsort StatementKey.lt
+  let sorted := sortKeys keys
   checkFrozenUniqueness head sorted
   return { headSha := head, reportSha256 := actualSha256, theorems := sorted }
 
