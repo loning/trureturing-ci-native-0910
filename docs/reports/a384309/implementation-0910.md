@@ -267,3 +267,18 @@ unbounded multiplicity statement, and they are not frozen as finite instances.
   f838f20236e5a723d0c025ef53a80a07483008fa. Also run projections --check
   explicitly, because this content-only change does not awaken that branch
   of the script. The remaining Describe and real KaTeX checks are not skipped.
+
+## Scribe content checks and freeze precheck
+
+- Explicit projections --check EXIT=0, 12.125 seconds.
+- Required scribe-content-checks.sh with the canonical report and immutable
+  base EXIT=0, 24.421 seconds. Describe and Library locator checks pass.
+  Real KaTeX result: markdown: judged=1 formula(s)=3 red=0.
+  Existing online-doi-title-check lines are nonblocking offline-gate
+  observations, not claims of online DOI verification.
+- deposit-header-check EXIT=0, 9.312 seconds;
+  DEPOSIT_HEADER_CHECKED SL-012 D5/S3/Arith/CounterSequences/LeadingCounter.lean.
+- make deposit requires a real ATOM_ID and performs coverage after freezing.
+  This task has no atom. As authorized in the brief, use its same canonical
+  deposit-header-check and ledger-align --add writer, after make lean,
+  make lean-report, and make emit. No fake atom or theory ingestion is used.
