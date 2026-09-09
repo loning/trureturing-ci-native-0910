@@ -87,3 +87,11 @@ n=0 不进入结论；禁止反向、重复或对角步，n=1 须符合单格路
 - fixed_path_count 消去重复格风险，给每条路径贡献 2^(k*k)；total_path_count
   交换有限求和并直接应用 card_powersetCard，最后在 ℚ 中消去非零的 2 的幂。
 - 无 sorry、无自加 axiom、无 native_decide。完整 make lean 及公理闭包检查待执行。
+
+## Lean 片段 3：端点与每步方向
+
+- pathCell_endpoints 证明起点 (0,0)、终点 (k,k)；pathCell_step 证明第 t 步
+  在编码子集中时恰东移 1，否则恰南移 1，另一坐标不动。两者为 private 语义引理。
+- 删除总括 Mathlib.Tactic，改为具体 FieldSimp/NormNum/Ring imports。
+  精简暴露 Nat.cast_sum 未导入；查其源码后显式导入 Algebra.BigOperators.Ring.Finset。
+- 最终该文件增量检查 EXIT=0，无警告。主定理仍为 brief 原式。

@@ -9,7 +9,10 @@
 import Mathlib.Data.Finset.Powerset
 import Mathlib.Data.Fintype.BigOperators
 import Mathlib.Data.Rat.Cast.Order
-import Mathlib.Tactic
+import Mathlib.Algebra.BigOperators.Ring.Finset
+import Mathlib.Tactic.FieldSimp
+import Mathlib.Tactic.NormNum
+import Mathlib.Tactic.Ring
 
 set_option autoImplicit false
 set_option relaxedAutoImplicit false
@@ -48,6 +51,26 @@ private theorem pathCell_injective {k : ℕ} (p : Path k) :
   intro t u h
   apply Fin.ext
   rw [← pathCell_rank p t, ← pathCell_rank p u, h]
+
+private theorem pathCell_endpoints {k : ℕ} (p : Path k) :
+    pathCell p ⟨0, by omega⟩ = (0, 0) ∧
+      pathCell p ⟨2 * k, by omega⟩ = (⟨k, by omega⟩, ⟨k, by omega⟩) := by
+  constructor
+  · ext <;> simp [pathCell]
+  · ext <;> simp [pathCell, inter_eq_right.mpr (path_subset p),
+      card_sdiff_of_subset (path_subset p), path_card]
+    omega
+
+private theorem pathCell_step {k : ℕ} (p : Path k) (t : Fin (2 * k)) :
+    if t.val ∈ p.val then
+      (pathCell p t.succ).1.val = (pathCell p t.castSucc).1.val + 1 ∧
+        (pathCell p t.succ).2.val = (pathCell p t.castSucc).2.val
+    else
+      (pathCell p t.succ).1.val = (pathCell p t.castSucc).1.val ∧
+        (pathCell p t.succ).2.val = (pathCell p t.castSucc).2.val + 1 := by
+  split_ifs with h
+  · simp [pathCell, range_add_one, insert_inter_of_mem h, insert_sdiff_of_mem _ h]
+  · simp [pathCell, range_add_one, insert_inter_of_notMem h, insert_sdiff_of_notMem _ h]
 
 /-- The set of cells actually visited by the path, including both endpoints. -/
 def pathCells {k : ℕ} (p : Path k) : Finset (Fin (k + 1) × Fin (k + 1)) :=
@@ -102,7 +125,7 @@ private theorem total_path_count (k : ℕ) :
   simp only [pathCount, card_eq_sum_ones, sum_filter]
   rw [sum_comm]
   simp only [← sum_filter, ← card_eq_sum_ones, fixed_path_count]
-  simp [Fintype.card_coe, card_powersetCard, card_range]
+  simp
 
 /-- The exact mean over all binary n-square matrices, for positive n. -/
 theorem mean_monotone_one_paths (n : ℕ) (hn : 1 ≤ n) :
