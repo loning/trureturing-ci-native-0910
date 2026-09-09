@@ -1,5 +1,5 @@
 ---
-bibkey: oeis-triage-20260909
+bibkey: oeis2026triage0909
 authors: OEIS Foundation Inc.; Codex triage workers
 year: 2026
 title: 93 OEIS candidates — statement and proof triage, 2026-09-09
