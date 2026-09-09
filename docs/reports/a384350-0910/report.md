@@ -221,3 +221,14 @@ returned no matches (EXIT 1). `git merge-tree --write-tree HEAD origin/dev`
 returned EXIT 0, tree `100418aa468c235ec37d2eeb6c945eb6d7acb488`, with no
 conflicts. This is a data-only integration preview; the original local gate
 base remains the immutable SHA recorded in preregistration.
+
+### Mandatory project build
+
+`make lean`: EXIT 0, 60.71 seconds on this macOS ARM worktree.
+Build completed successfully (12830 jobs); the target module built in 8.7s.
+Unrelated base modules emitted style warnings; the target emitted no warning.
+Log: runner attempt `make-lean.log`; structured timing in `make-lean-result.json`.
+
+```text
+LEAN_CACHE {"status":"present","worktree":"/Users/chronoai/trureturing-a384350","donor":null,"method":"none","reason":null,"stamp_miss":null,"pin_sha256":"sha256:6c4c682ffba051b5744fe7a75ccc99d7f3b20227b3b026f392f3315be0adaa4e","clonefile_errno":null,"clonefile_errnos":[],"clonefile_attempts":0,"clonefile_cleanup_error":null,"mathlib_missing_olean_files":0,"mathlib_missing_olean_samples":[],"archive_status":"not_attempted","archive_mode":null,"archive_skip_reason":"project olean state is warm","archive_reason":null,"archive_producer_commit_sha":null,"archive_workflow_run_id":null,"mathlib_olean_state":"warm","mathlib_olean_probe_error":null,"project_olean_state":"warm","project_olean_probe_error":null}
+```
