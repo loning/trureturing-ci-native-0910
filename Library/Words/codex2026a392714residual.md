@@ -126,3 +126,56 @@ Google 的查询 `permutation "partial sums" "signed sum"` 返回重定向/chall
 Bing 的查询 `permutation "interlacing" "partial sums" sign` 页面标题保留查询，
 正文却全为 API design 结果（10 条），语义不相干，判无有效读数。
 以上失败不当作零命中或检索穷尽。原始响应与解析文本均保存在 attempt。
+
+### 第三方跟进与第一批状态探针
+
+已下载并读相关命中上下文：TauCeti 的 Dominance.lean 是 James dominance lemma
+（Young tabloids / column antisymmetrizer）；RealRooted 的 Targets.lean 是实根多项式
+tactic 目标目录；UorAtlas/Scales.lean 的 interlacing 是 Cauchy 特征值交错。
+它们均不是所查 S(a) 的精确陈述，未加入依赖。
+arXiv 另查 `all:"permutation" AND all:"interlacing" AND all:"sum"` 得 4 摘要：
+2602.04390v2、1505.08010v1、1312.0665v2、2505.05873v1；分别是彩色交错三角形、
+Ramanujan 图、Hardy–Littlewood–Pólya 序列和 Baxter 多项式实根。
+`all:"permutation" AND all:"partial sums" AND all:"cancellation"` 得 0。
+四篇全文未读，ASSUMED-UNVERIFIED。以上是有限检索范围中的 not-found-in-searched-scope。
+
+先定义子集状态，避免把前缀和相同但已用值不同的历史混在一起：
+F₀(∅)=1，其余零；令 w(T)=Σₓ∈T x，则
+Fᵢ(T)=[Aᵢ₋₁<w(T)≤Aᵢ] Σₓ∈T (−1)^{#{y∈T:y>x}} Fᵢ₋₁(T\{x})。
+末态 Fₘ({1,…,m}) 是目标交替和；这一步的纸面理由是按末字母分组，
+新增逆序恰为前缀中大于 x 的字母数，尚未声称 Lean 证明。
+
+以该状态算法诊断更强的任意正权重版本：权重集 (1,2,3,4)、(1,2,4,8)、
+(1,3,4,9)、(2,3,5,6) 各查全部 24 个 a，均仅递增 a 的末态为 1。
+原目标 m=8 查 40320 个 a：一个 1、40319 个 0、反例零。
+这批只用于检查状态表述及决定是否研究权重一般化；不是证明，也不报为未知范围进展。
+首次脚本因本机 Python 不支持 int.bit_count 退出 1，改为 bin(...).count("1")
+后退出 0；未隐去工具失败。完整代码和结果如下，另存 attempt/states.py 与 states-results.json。
+
+```python
+from itertools import permutations,combinations
+from collections import defaultdict
+import json
+from pathlib import Path
+
+def signed_states(weights,a):
+ n=len(a); states={0:1}; layers=[]; low=0
+ for y in a:
+  high=low+y; nxt=defaultdict(int)
+  for mask,v in states.items():
+   h=sum(w for j,w in enumerate(weights) if mask>>j&1)
+   for j,x in enumerate(weights):
+    if not mask>>j&1 and low<h+x<=high:
+     nxt[mask|1<<j]+=v*(-1 if bin(mask>>(j+1)).count("1")%2 else 1)
+  states={k:v for k,v in nxt.items() if v};layers.append(states);low=high
+ return states.get((1<<n)-1,0),layers
+
+rows=[]
+for weights in [(1,2,3,4),(1,2,4,8),(1,3,4,9),(2,3,5,6),(1,2,3,4,5,6,7,8)]:
+ bad=None;count=0;hist=defaultdict(int)
+ for a in permutations(weights):
+  val,_=signed_states(weights,a);count+=1;hist[val]+=1
+  if val!=int(a==weights):bad={'a':a,'sum':val};break
+ row={'weights':weights,'checked':count,'bad':bad,'hist':dict(hist)};rows.append(row);print(json.dumps(row),flush=True)
+Path(__file__).with_name('states-results.json').write_text(json.dumps(rows,indent=2)+'\n')
+```
