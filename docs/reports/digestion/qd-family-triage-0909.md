@@ -248,3 +248,9 @@ make -f Makefile -f /var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-r
 [B3 检索](qd-family-triage-0909/attempt-2/search-b3.json) 进一步命中 `Matrix.IsHermitian.charpoly_eq`（谱分解）、`Matrix.PosSemidef.posDef_iff_det_ne_zero`（严格性）、`Lagrange.eval_interpolate_not_at_node`（有理分式）及 `Polynomial.Splits.eval_derivative_div_eval_of_ne_zero`（对数导数）。这些上游接口须经实际装配才能判断 B3；关键词零命中不构成缺失证明。
 
 [推论检索](qd-family-triage-0909/attempt-2/search-descent.json) 与 [新读取的冻结 Jensen 接口](qd-family-triage-0909/attempt-2/frozen-jensen-obstruction.json)：`jensen_polynomial_obstruction` 显式要求 `hRhToHyperbolic`、`hNonnegativeHyperbolicToRh`；其失败见证为 `∃ d n`，不是固定 `n=0`。因此不会以 `.2` 投影冒充 atom 最后一句的无条件源断言。零点/次数不足的负根运输采用 `P` 的负根 → `Q` 的**非负**根 → 导数非负根 → `P` 的负根；在反射引入零根时仍忠实，不增加 `natDegree=d` 前提。
+
+### Attempt 2 / B3 首次探针：仅诊断，尚未判形
+
+[b3-01 源码](qd-family-triage-0909/attempt-2/b3-01.lean)、[全部日志](qd-family-triage-0909/attempt-2/b3-01.log)：`make lean` EXIT=2，104.06240925 秒。失败已定位为 `Matrix` 与裸函数的透明度/显式 `Matrix.of` 绑定、四块展开、`Set.Infinite.mono` 参数方向；例如原文 `The target expression is not type-correct under the implicit transparency level`，并点名 `Fin 1 → Fin 1 → ℝ` 与 `Matrix (Fin 1) (Fin 1) ℝ`。这些是 API/工作量问题，不能判 no。留数目标的尾部空 `simp` 只报 `simp made no progress`，也不是数学缺陷。四条错误恢复声明含 `sorryAx`，一律不算成功证据。
+
+预登记 B3 路线 v2（在继续证明前）：行列式路线仍为 Lagrange + Schur。符号路线改查一般 Laguerre 不等式 `q′(x)²−q(x)q″(x)≥0`：若必须通过实线性因子的乘法闭包/归纳建立，它是拟议逃逸见证；若被上游直接实例化或规范化吞掉，则撤销该候选并判 bind-only。只在完整公开 B3 的 elaborate 活依赖闭包满足四项时才允许判 content；当前候选未认证。

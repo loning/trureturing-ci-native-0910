@@ -1,0 +1,209 @@
+COMMAND: ["make", "-f", "Makefile", "-f", "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/probe.mk", "lean", "PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean"]
+LEAN_CACHE {"status":"present","worktree":"/Users/auricstudio/trureturing-u1bridge-0909","donor":null,"method":"none","reason":null,"stamp_miss":null,"pin_sha256":"sha256:6c4c682ffba051b5744fe7a75ccc99d7f3b20227b3b026f392f3315be0adaa4e","clonefile_errno":null,"clonefile_errnos":[],"clonefile_attempts":0,"clonefile_cleanup_error":null,"mathlib_missing_olean_files":0,"mathlib_missing_olean_samples":[],"archive_status":"not_attempted","archive_mode":null,"archive_skip_reason":"project olean state is warm","archive_reason":null,"archive_producer_commit_sha":null,"archive_workflow_run_id":null,"mathlib_olean_state":"warm","mathlib_olean_probe_error":null,"project_olean_state":"warm","project_olean_probe_error":null}
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:18:37: error: unsolved goals
+case inl.inl
+n : ℕ
+a : ℝ
+t eta : Fin (n + 1) → ℝ
+i j : Fin 1
+⊢ fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))
+      (of fun i j => if i = j then t i else 0) (Sum.inl i) (Sum.inl j) =
+    fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))
+      (of fun i j => if i = j then t i else 0) (Sum.inl j) (Sum.inl i)
+
+case inl.inr
+n : ℕ
+a : ℝ
+t eta : Fin (n + 1) → ℝ
+i : Fin 1
+j : Fin (n + 1)
+⊢ fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))
+      (of fun i j => if i = j then t i else 0) (Sum.inl i) (Sum.inr j) =
+    fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))
+      (of fun i j => if i = j then t i else 0) (Sum.inr j) (Sum.inl i)
+
+case inr.inl
+n : ℕ
+a : ℝ
+t eta : Fin (n + 1) → ℝ
+i : Fin (n + 1)
+j : Fin 1
+⊢ fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))
+      (of fun i j => if i = j then t i else 0) (Sum.inl j) (Sum.inr i) =
+    fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))
+      (of fun i j => if i = j then t i else 0) (Sum.inr i) (Sum.inl j)
+
+case inr.inr
+n : ℕ
+a : ℝ
+t eta : Fin (n + 1) → ℝ
+i j : Fin (n + 1)
+⊢ fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))
+      (of fun i j => if i = j then t i else 0) (Sum.inr i) (Sum.inr j) =
+    fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))
+      (of fun i j => if i = j then t i else 0) (Sum.inr j) (Sum.inr i)
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:26:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:30:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:39:82: error: Application type mismatch: The argument
+  j
+has type
+  Fin (n + 1)
+but is expected to have type
+  Fin 1
+in the application
+  Subsingleton.elim i j
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:39:82: error: Application type mismatch: The argument
+  j
+has type
+  Fin 1
+but is expected to have type
+  Fin (n + 1)
+in the application
+  Subsingleton.elim i j
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:39:62: error(lean.synthInstanceFailed): failed to synthesize instance of type class
+  Subsingleton (Fin (n + 1))
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:39:62: error(lean.synthInstanceFailed): failed to synthesize instance of type class
+  Subsingleton (Fin (n + 1))
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:38:66: error: unsolved goals
+case inl.inl
+n : ℕ
+a : ℝ
+t eta : Fin (n + 1) → ℝ
+heta : ∀ (i : Fin (n + 1)), 0 ≤ eta i
+x : ℝ
+hx : ∀ (i : Fin (n + 1)), x ≠ t i
+v : Fin (n + 1) → ℝ := fun i => x - t i
+this✝ : Invertible v := { invOf := fun i => (x - t i)⁻¹, invOf_mul_self := ⋯, mul_invOf_self := ⋯ }
+this : Invertible (diagonal v) := diagonalInvertible v
+hinv : ⅟(diagonal v) = diagonal fun i => (x - t i)⁻¹
+i j : Fin 1
+⊢ x -
+      fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))
+        (of fun i j => if i = j then t i else 0) (Sum.inl j) (Sum.inl j) =
+    fromBlocks (fun x_1 x_2 => x - a / (↑n + 2)) (fun x i => -√(eta i)) (fun i x => -√(eta i))
+      (of fun i j => if i = j then x - t i else 0) (Sum.inl j) (Sum.inl j)
+
+case inl.inr
+n : ℕ
+a : ℝ
+t eta : Fin (n + 1) → ℝ
+heta : ∀ (i : Fin (n + 1)), 0 ≤ eta i
+x : ℝ
+hx : ∀ (i : Fin (n + 1)), x ≠ t i
+v : Fin (n + 1) → ℝ := fun i => x - t i
+this✝ : Invertible v := { invOf := fun i => (x - t i)⁻¹, invOf_mul_self := ⋯, mul_invOf_self := ⋯ }
+this : Invertible (diagonal v) := diagonalInvertible v
+hinv : ⅟(diagonal v) = diagonal fun i => (x - t i)⁻¹
+i : Fin 1
+j : Fin (n + 1)
+⊢ -fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))
+        (of fun i j => if i = j then t i else 0) (Sum.inl i) (Sum.inr j) =
+    fromBlocks (fun x_1 x_2 => x - a / (↑n + 2)) (fun x i => -√(eta i)) (fun i x => -√(eta i))
+      (of fun i j => if i = j then x - t i else 0) (Sum.inl i) (Sum.inr j)
+
+case inr.inl
+n : ℕ
+a : ℝ
+t eta : Fin (n + 1) → ℝ
+heta : ∀ (i : Fin (n + 1)), 0 ≤ eta i
+x : ℝ
+hx : ∀ (i : Fin (n + 1)), x ≠ t i
+v : Fin (n + 1) → ℝ := fun i => x - t i
+this✝ : Invertible v := { invOf := fun i => (x - t i)⁻¹, invOf_mul_self := ⋯, mul_invOf_self := ⋯ }
+this : Invertible (diagonal v) := diagonalInvertible v
+hinv : ⅟(diagonal v) = diagonal fun i => (x - t i)⁻¹
+i : Fin (n + 1)
+j : Fin 1
+⊢ -fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))
+        (of fun i j => if i = j then t i else 0) (Sum.inr i) (Sum.inl j) =
+    fromBlocks (fun x_1 x_2 => x - a / (↑n + 2)) (fun x i => -√(eta i)) (fun i x => -√(eta i))
+      (of fun i j => if i = j then x - t i else 0) (Sum.inr i) (Sum.inl j)
+
+case inr.inr
+n : ℕ
+a : ℝ
+t eta : Fin (n + 1) → ℝ
+heta : ∀ (i : Fin (n + 1)), 0 ≤ eta i
+x : ℝ
+hx : ∀ (i : Fin (n + 1)), x ≠ t i
+v : Fin (n + 1) → ℝ := fun i => x - t i
+this✝ : Invertible v := { invOf := fun i => (x - t i)⁻¹, invOf_mul_self := ⋯, mul_invOf_self := ⋯ }
+this : Invertible (diagonal v) := diagonalInvertible v
+hinv : ⅟(diagonal v) = diagonal fun i => (x - t i)⁻¹
+i j : Fin (n + 1)
+⊢ (if i = j then x else 0) -
+      fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))
+        (of fun i j => if i = j then t i else 0) (Sum.inr i) (Sum.inr j) =
+    fromBlocks (fun x_1 x_2 => x - a / (↑n + 2)) (fun x i => -√(eta i)) (fun i x => -√(eta i))
+      (of fun i j => if i = j then x - t i else 0) (Sum.inr i) (Sum.inr j)
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:40:10: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  (fromBlocks ?A ?B ?C ?D).det
+in the target expression
+  (fromBlocks (fun x_1 x_2 => x - a / ↑(n + 2)) (fun x i => -√(eta i)) (fun i x => -√(eta i)) (diagonal v)).det =
+    (∏ i, (x - t i)) * (x - a / ↑(n + 2) - ∑ i, eta i / (x - t i))
+
+n : ℕ
+a : ℝ
+t eta : Fin (n + 1) → ℝ
+heta : ∀ (i : Fin (n + 1)), 0 ≤ eta i
+x : ℝ
+hx : ∀ (i : Fin (n + 1)), x ≠ t i
+v : Fin (n + 1) → ℝ := fun i => x - t i
+this✝ : Invertible v := { invOf := fun i => (x - t i)⁻¹, invOf_mul_self := ⋯, mul_invOf_self := ⋯ }
+this : Invertible (diagonal v) := diagonalInvertible v
+hinv : ⅟(diagonal v) = diagonal fun i => (x - t i)⁻¹
+hm :
+  (scalar (Fin 1 ⊕ Fin (n + 1))) x - arrow n a t eta =
+    fromBlocks (fun x_1 x_2 => x - a / ↑(n + 2)) (fun x i => -√(eta i)) (fun i x => -√(eta i)) (diagonal v)
+⊢ (fromBlocks (fun x_1 x_2 => x - a / ↑(n + 2)) (fun x i => -√(eta i)) (fun i x => -√(eta i)) (diagonal v)).det =
+    (∏ i, (x - t i)) * (x - a / ↑(n + 2) - ∑ i, eta i / (x - t i))
+
+Note: The target expression is not type-correct under the `implicit` transparency level, which may have triggered the failure. This is usually caused by unfolding of semireducible definitions in prior tactic steps. Use `set_option linter.tacticCheckInstances true` to investigate the source of the issue.
+Full error:
+  Application type mismatch: The argument
+    fun x_1 x_2 => x - a / ↑(n + 2)
+  has type
+    Fin 1 → Fin 1 → ℝ
+  but is expected to have type
+    Matrix (Fin 1) (Fin 1) ℝ
+  in the application
+    fromBlocks fun x_1 x_2 => x - a / ↑(n + 2)
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:63:45: warning: `Set.Infinite.diff` has been deprecated: Use `Set.Infinite.sdiff` instead
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:63:26: error: Application type mismatch: The argument
+  Set.Infinite.diff Set.infinite_univ (Set.finite_range t)
+has type
+  (Set.univ \ Set.range t).Infinite
+but is expected to have type
+  ?m.123 ⊆
+    {x |
+      eval x (arrow n a t fun i => -↑(n + 2) * eval (t i) q / eval (t i) (derivative (derivative q))).charpoly =
+        eval x q}
+in the application
+  Set.Infinite.mono (Set.Infinite.diff Set.infinite_univ (Set.finite_range t))
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:81:2: error: `simp` made no progress
+'QdB3Probe.arrow_hermitian' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'QdB3Probe.arrow_schur' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'QdB3Probe.b3_charpoly_target' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'QdB3Probe.b3_residue_sign_target' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+make: *** [qd-triage-probe] Error 2
+
+EXIT=2
+SECONDS=104.06240925
