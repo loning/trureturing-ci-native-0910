@@ -553,6 +553,11 @@ Counts are matching lines including comments in baseline D5 Lean files, unless a
 | S97 | `rg -n --glob '*.lean' '(?i)confluent.*(pick\|gram)\|jet.*curvature\|curvature.*slack\|phase.*second.*deriv' D5` | 11 |
 | S98 | `rg -n --glob '*.lean' '(?i)negative.*polynomial.*test\|polynomial.*negative.*witness\|rational.*negative.*(square\|test)\|reflected.*moment' D5` | 7 |
 | S99 | `rg -n --glob '*.lean' '(?i)adjacent.*orthogon\|neighbou?r.*orthogon\|two.?mode\|double.*copy.*kernel' D5` | 21 |
+| S100 | `rg -n --glob '*.lean' '(?i)(even\|odd\|parity\|involution).*orthogon\|orthogon.*(parity\|involution)\|self.?adjoint.*eigen' D5` | 6 |
+| S101 | `rg -n --glob '*.lean' '(?i)observability.*(kernel\|full\|rank)\|observ.*(exponential\|krylov)\|krylov.*(observ\|basis)' D5` | 110 |
+| S102 | `rg -n --glob '*.lean' '(?i)norm.*resolvent\|resolvent.*norm\|schur.*remainder\|effective.*mass' D5` | 16 |
+| S103 | `rg -n --glob '*.lean' '(?i)poissonKernel\|poisson_kernel\|smooth.*toeplitz' D5/S3/Weil` | 9 |
+| S104 | `rg -n --glob '*.lean' '(?i)negative.*index.*(pair\|mirror)\|nonreal.*pair\|negative.*square.*interpol' D5` | 3 |
 
 Full count collection for streaming receipts: `rg -n ... | node` consumes stdout, splits into matching lines, and emits the count and distinct paths. Final result.json retains collection commands and returned paths. Controls: C+2=1, C+3=4, C-=0, C-2=0.
 
