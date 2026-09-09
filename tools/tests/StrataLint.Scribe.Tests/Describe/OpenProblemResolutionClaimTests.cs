@@ -434,18 +434,87 @@ public sealed class OpenProblemResolutionClaimTests
     [Fact]
     public void CanonicalMarkdownWriterEmitsClosedVersionedResolutionMarker()
     {
-        var document = CreateDocument(ClaimDescribe());
+        var describe = ClaimDescribe();
+        var declarationGid = Assert.IsType<DescribeStatement.LeanDeclaration>(describe.Statement).Value.Value;
+        var document = CreateDocument(describe);
         var catalog = DeclarationCatalog.Create(Report((TheoremGid, "theorem")));
 
         var markdown = Encoding.UTF8.GetString(
             CanonicalMarkdownWriter.Write(document, catalog).AsSpan());
 
+        using var parsed = ParseResolutionMarker(markdown);
+        var resolution = parsed.RootElement;
+        Assert.Equal(
+            ["declaration_gid", "problem_slug", "resolution_kind"],
+            resolution.EnumerateObject().Select(static property => property.Name).Order(StringComparer.Ordinal));
+        Assert.Equal(ProblemSlug, resolution.GetProperty("problem_slug").GetString());
+        Assert.Equal(declarationGid, resolution.GetProperty("declaration_gid").GetString());
+        Assert.Equal("proved", resolution.GetProperty("resolution_kind").GetString());
         Assert.Contains(
-            "*Resolves.* `Problems/sample-open-problem` (proved).\n\n"
+            $"*Resolves.* `Problems/sample-open-problem` (proved) by `{TheoremGid}`.\n\n"
             + "<!-- scribe-open-problem-resolution-v1 "
-            + "{\"problem_slug\":\"sample-open-problem\",\"resolution_kind\":\"proved\"} -->",
+            + "{\"problem_slug\":\"sample-open-problem\","
+            + $"\"declaration_gid\":\"{TheoremGid}\",\"resolution_kind\":\"proved\"}} -->",
             markdown,
             StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void CanonicalMarkdownWriterResolutionEmissionIsByteStable()
+    {
+        var document = CreateDocument(ClaimDescribe());
+        var catalog = DeclarationCatalog.Create(Report((TheoremGid, "theorem")));
+
+        var first = CanonicalMarkdownWriter.Write(document, catalog);
+        var second = CanonicalMarkdownWriter.Write(document, catalog);
+
+        Assert.NotEmpty(first);
+        Assert.Equal(first.ToArray(), second.ToArray());
+    }
+
+    [Fact]
+    public void CanonicalMarkdownWriterEmitsNoResolutionMarkerWithoutClaim()
+    {
+        var describe = Describe.Lean(
+            DescribeId.Create("without-resolution"),
+            DeclarationHandle.Create(TheoremGid),
+            Heading.Create("Without resolution"),
+            StatementSource.FromAuthor(InlineIdentity()),
+            AssessedProvenance.FromRepo(),
+            DefinitionDsl.Blocks(
+                DefinitionDsl.Paragraph(DefinitionDsl.Text("No resolution claim."))),
+            DescribeRole.Theorem);
+        var catalog = DeclarationCatalog.Create(Report((TheoremGid, "theorem")));
+
+        var markdown = Encoding.UTF8.GetString(
+            CanonicalMarkdownWriter.Write(CreateDocument(describe), catalog).AsSpan());
+
+        Assert.Null(describe.OpenProblemResolutionClaim);
+        Assert.Contains(TheoremGid, markdown, StringComparison.Ordinal);
+        Assert.DoesNotContain("scribe-open-problem-resolution", markdown, StringComparison.Ordinal);
+        Assert.DoesNotContain("*Resolves.*", markdown, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void CanonicalMarkdownWriterResolutionProseAndMarkerNameTheSameDeclaration()
+    {
+        const string refutationGid = ModuleGid + ".refutation_theorem";
+        var describe = ClaimDescribe(
+            declarationGid: refutationGid,
+            resolutionKind: ResolutionKind.Refuted);
+        var declarationGid = Assert.IsType<DescribeStatement.LeanDeclaration>(describe.Statement).Value.Value;
+        var catalog = DeclarationCatalog.Create(Report((refutationGid, "theorem")));
+
+        var markdown = Encoding.UTF8.GetString(
+            CanonicalMarkdownWriter.Write(CreateDocument(Nest(describe)), catalog).AsSpan());
+
+        using var parsed = ParseResolutionMarker(markdown);
+        Assert.Equal(declarationGid, parsed.RootElement.GetProperty("declaration_gid").GetString());
+        Assert.Equal(ProblemSlug, parsed.RootElement.GetProperty("problem_slug").GetString());
+        Assert.Equal("refuted", parsed.RootElement.GetProperty("resolution_kind").GetString());
+        var prose = Assert.Single(markdown.Split('\n'), static line =>
+            line.StartsWith("*Resolves.*", StringComparison.Ordinal));
+        Assert.Equal($"*Resolves.* `Problems/{ProblemSlug}` (refuted) by `{declarationGid}`.", prose);
     }
 
     [Fact]
@@ -460,6 +529,17 @@ public sealed class OpenProblemResolutionClaimTests
 
             Assert.Empty(findings);
         });
+    }
+
+    private static JsonDocument ParseResolutionMarker(string markdown)
+    {
+        const string prefix = "<!-- scribe-open-problem-resolution-v1 ";
+        const string suffix = " -->";
+        var marker = Assert.Single(markdown.Split('\n'), static line =>
+            line.StartsWith("<!-- scribe-open-problem-resolution", StringComparison.Ordinal));
+        Assert.StartsWith(prefix, marker, StringComparison.Ordinal);
+        Assert.EndsWith(suffix, marker, StringComparison.Ordinal);
+        return JsonDocument.Parse(marker[prefix.Length..^suffix.Length]);
     }
 
     private static bool HasResolutionClaimParameter(IMethodSymbol method, INamedTypeSymbol claim) =>
@@ -641,7 +721,7 @@ public sealed class OpenProblemResolutionClaimTests
         "---\n"
         + $"slug: {ProblemSlug}\n"
         + "bibkey: sos1957threegap\n"
-        + "arxiv_id: 2305.08349\n"
+        + "doi: 10.48550/arXiv.2305.08349\n"
         + "triage: theorem\n"
         + "motivation_gids:\n"
         + $"  - {ModuleGid}\n"

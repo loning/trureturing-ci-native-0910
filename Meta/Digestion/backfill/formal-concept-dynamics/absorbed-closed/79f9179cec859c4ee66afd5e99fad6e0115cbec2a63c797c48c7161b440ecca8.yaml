@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Audits/MinimumAuditSetCover.minimum_audit_set_is_set_cover
     target_statement_id: sha256:14e12650ccb5a9f2c7dbd5d141a4a3c4b7225e6b189e7025a9b014e3e407553d
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Audits/MinimumAuditSetCover.minimum_audit_set_is_set_cover
-      definition_sha256: sha256:600ce52276b0471ae9b0332fdcf68cce2d588b5cb50f5c3081b89630eeb94b58
-      emission_sha256: sha256:edd8adc33cbce47a30ca827e23995660c2f2a3bbaeb00c79e226777365bd8c9d
   unresolved_subitems: []

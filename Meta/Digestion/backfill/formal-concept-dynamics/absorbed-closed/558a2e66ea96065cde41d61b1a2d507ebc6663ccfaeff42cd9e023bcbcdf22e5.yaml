@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S1/FixedPoints/FiniteRepairTermination.finite_repair_termination_and_infinite_tower
     target_statement_id: sha256:845db6bb2f1a0e332427735ea2c6294ce3cd99b9501cad3bbbf751e3ce705023
 receipts:
-  scribe:
-    - gid: D5/S1/FixedPoints/FiniteRepairTermination.finite_repair_termination_and_infinite_tower
-      definition_sha256: sha256:d07c8cf2df3d59854021c7dbbb6fa179042850154d5dfac1416d572a34170684
-      emission_sha256: sha256:ac725d1875bc86133badbf952dc749ebb08da3eff067b0fde5080cca8a4d4546
   unresolved_subitems: []

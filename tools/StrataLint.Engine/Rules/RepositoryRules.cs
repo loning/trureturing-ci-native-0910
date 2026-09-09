@@ -170,6 +170,28 @@ internal static partial class RepositoryRules
                 UtilityAdmissionRule.Evaluate,
                 UtilityAdmissionRule.IsAffectedBy,
                 UtilityAdmissionRule.Evaluate)),
+        Register(
+            32,
+            "Scribe narrative provenance",
+            new RepositoryRule(ScribeDefinitionScoped, ScribeNarrativeProvenance, ScribeSourceAffected)),
+        Register(
+            33,
+            "Frozen state and accepted Freeze pairing",
+            new RepositoryRule(
+                (artifact, _) => FrozenPairRule.IsPairPath(artifact.Path.Value),
+                FrozenPairRule.Evaluate,
+                FrozenPairRule.IsAffectedBy,
+                FrozenPairRule.Evaluate)),
+        Register(
+            34,
+            "Closed Lean modules missing frozen state",
+            new RepositoryRule(
+                ModuleStateGateRule.IsApplicable,
+                ModuleStateGateRule.Evaluate,
+                ModuleStateGateRule.IsAffectedBy,
+                ModuleStateGateRule.Evaluate),
+            AdmissionEffect.Observe,
+            recheckOnImplementationChange: false),
     ];
 
     private static RuleRegistration Register(
@@ -178,7 +200,8 @@ internal static partial class RepositoryRules
         IRepositoryRule rule,
         AdmissionEffect effect = AdmissionEffect.Block,
         CaseId? deferredCase = null,
-        string category = "repository") =>
+        string category = "repository",
+        bool recheckOnImplementationChange = true) =>
         new(
             new RuleDescriptor(
                 RuleId.CreateKnown(number),
@@ -188,7 +211,8 @@ internal static partial class RepositoryRules
                 effect,
                 deferredCase is null ? RuleLifecycle.Active : RuleLifecycle.Deferred,
                 deferredCase),
-            rule);
+            rule,
+            recheckOnImplementationChange);
 
     private static ImmutableArray<RuleFinding> DescribeLatex(RuleEvaluationContext context) =>
         context.VerifiedScribeEmissions is null

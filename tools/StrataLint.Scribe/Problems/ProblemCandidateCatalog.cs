@@ -1,6 +1,5 @@
 using System.Collections.Immutable;
 using System.Text;
-using System.Text.RegularExpressions;
 using StrataLint.Engine;
 using Trureturing.Truth;
 
@@ -16,8 +15,8 @@ internal enum ProblemTriage
 internal sealed record ProblemCandidate(
     string Slug,
     BibKey BibKey,
-    Doi Doi,
-    string? ArxivId,
+    Doi? Doi,
+    Uri? Url,
     ProblemTriage Triage,
     ImmutableArray<GidRef> MotivationGids,
     string RelativePath);
@@ -50,12 +49,6 @@ internal sealed class ProblemCandidateCatalog
         "motivation_gids",
     ];
 
-    // J2a expansion only. C1a migrates the dossiers; J2b must remove this key set,
-    // ArxivIdPattern, and the legacy branch after that content-only migration.
-    private static readonly HashSet<string> LegacyRequiredKeys =
-        RequiredKeys.Where(static key => key != "doi")
-            .Append("arxiv_id").ToHashSet(StringComparer.Ordinal);
-
     // The section set is closed and mirrors the six Theorist charter outputs
     // (motivation, exact statement, falsifier, evidence, source search, triage)
     // plus the gap and route a not-yet-stated problem still owes its reader.
@@ -71,44 +64,10 @@ internal sealed class ProblemCandidateCatalog
         "ASSUMED-UNVERIFIED",
     ];
 
-    // arXiv identifiers are the bare YYMM.NNNNN form. A version suffix is
-    // deliberately rejected: the note owns the version-specific locator, and two
-    // spellings of one paper would be two addresses for one thing.
-    private static readonly Regex ArxivIdPattern = new(
-        "^[0-9]{4}\\.[0-9]{4,5}$",
-        RegexOptions.CultureInvariant);
-
     private ProblemCandidateCatalog(ImmutableArray<ProblemCandidate> candidates) =>
         Candidates = candidates;
 
     internal ImmutableArray<ProblemCandidate> Candidates { get; }
-
-    internal static void RequireDoiForChangedDossiers(
-        RepositorySnapshot current,
-        RepositorySnapshot protectedBase)
-    {
-        ArgumentNullException.ThrowIfNull(current);
-        ArgumentNullException.ThrowIfNull(protectedBase);
-        foreach (var file in current.Files.Values
-                     .Where(static file => ProblemPoolPaths.IsCanonicalPath(file.Path.Value))
-                     .OrderBy(static file => file.Path.Value, StringComparer.Ordinal))
-        {
-            // Compare bytes at the same address, not a caller's change hint or
-            // a list of old slugs. Renames and prose-only edits must migrate too.
-            if (protectedBase.TryGetFile(file.Path.Value, out var previous)
-                && file.RawBytes.AsSpan().SequenceEqual(previous.RawBytes.AsSpan()))
-            {
-                continue;
-            }
-
-            if (ParseText(file.Path.Value, file.Text).ArxivId is not null)
-            {
-                throw new FormatException(
-                    $"problem-doi-required {file.Path.Value}: added or modified dossiers "
-                    + "must use doi instead of arxiv_id (J2a migration)");
-            }
-        }
-    }
 
     internal static ProblemCandidateCatalog Load(string repositoryRoot)
     {
@@ -195,9 +154,8 @@ internal sealed class ProblemCandidateCatalog
         }
 
         var metadata = (Dictionary<string, object?>)YamlSubsetParser.Parse(text[opening.Length..end]);
-        var keys = metadata.Keys.ToHashSet(StringComparer.Ordinal);
-        var isLegacy = keys.SetEquals(LegacyRequiredKeys);
-        if (!isLegacy && !keys.SetEquals(RequiredKeys))
+        var keys = metadata.Keys.Where(static key => key != "url").ToHashSet(StringComparer.Ordinal);
+        if (!keys.SetEquals(RequiredKeys))
         {
             throw new FormatException($"{relativePath} has missing or unknown metadata fields");
         }
@@ -215,18 +173,18 @@ internal sealed class ProblemCandidateCatalog
 
         var bibKey = BibKey.TryCreate(RequiredLine(metadata, "bibkey", relativePath))
             ?? throw new FormatException($"{relativePath} has a noncanonical bibkey");
-        var arxivId = isLegacy ? RequiredLine(metadata, "arxiv_id", relativePath) : null;
-        if (arxivId is not null && !ArxivIdPattern.IsMatch(arxivId))
+        Doi? doi = metadata["doi"] switch
         {
-            throw new FormatException($"{relativePath} has a noncanonical arxiv_id");
-        }
-
-        var source = arxivId is null
-            ? RequiredLine(metadata, "doi", relativePath)
-            : "10.48550/arXiv." + arxivId;
-        if (!Doi.TryCreate(source, out var doi))
+            null => null,
+            string value when Doi.TryCreate(value, out var parsed) => parsed,
+            _ => throw new FormatException($"{relativePath} has a malformed doi"),
+        };
+        var url = metadata.ContainsKey("url")
+            ? LiteratureCitation.ParseStableUrl(RequiredLine(metadata, "url", relativePath))
+            : null;
+        if ((doi is null) == (url is null))
         {
-            throw new FormatException($"{relativePath} has a malformed doi");
+            throw new FormatException($"{relativePath} requires exactly one DOI or URL");
         }
 
         var triage = RequiredLine(metadata, "triage", relativePath) switch
@@ -257,7 +215,7 @@ internal sealed class ProblemCandidateCatalog
         }
 
         ValidateSections(text[(end + closing.Length)..], relativePath);
-        return new ProblemCandidate(slug, bibKey, doi, arxivId, triage, motivation, relativePath);
+        return new ProblemCandidate(slug, bibKey, doi, url, triage, motivation, relativePath);
     }
 
     private static void ValidateSections(string body, string relativePath)

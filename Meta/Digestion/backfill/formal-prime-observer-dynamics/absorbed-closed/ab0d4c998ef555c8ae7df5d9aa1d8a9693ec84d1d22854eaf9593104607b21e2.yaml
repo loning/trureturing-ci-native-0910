@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Causal/RecursiveInterventionComposition.recursive_intervention_composition
     target_statement_id: sha256:b0f8aeb95f479fd84dee2199a6b9fddacc2f9a504e491c41dc15d77caada8eae
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Causal/RecursiveInterventionComposition.recursive_intervention_composition
-      definition_sha256: sha256:7205f81589e083eaa2b0ffac9327e47a396e6c3dd60ec07bf12c5607085466ed
-      emission_sha256: sha256:2bd06030f3db6e0aa76ea6357d80dcf7924e425a0d9d41bdda056df8c798610e
   unresolved_subitems: []

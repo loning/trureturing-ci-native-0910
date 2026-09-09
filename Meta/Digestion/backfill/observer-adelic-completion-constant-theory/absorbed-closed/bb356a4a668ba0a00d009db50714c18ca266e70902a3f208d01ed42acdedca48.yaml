@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Weil/ZetaBridge/PoleRankOneDecomposition.pole_rank_one_decomposition
     target_statement_id: sha256:f6627fae6f282b08bb5a7e688780c90791c8ff9890c700d42729e4e30654bebb
 receipts:
-  scribe:
-    - gid: D5/S3/Weil/ZetaBridge/PoleRankOneDecomposition.pole_rank_one_decomposition
-      definition_sha256: sha256:47b1f55e59f527b51cef0d64dcbd0022e1f9b6f01f4f89cc8ab98239d082f137
-      emission_sha256: sha256:49ea26151b397eac37573c5f6bc33410b8714dbfbd65df76d77bedd54fd8dee2
   unresolved_subitems: []

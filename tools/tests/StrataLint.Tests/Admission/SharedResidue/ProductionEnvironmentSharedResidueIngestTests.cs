@@ -86,9 +86,7 @@ public sealed partial class ProductionEnvironmentTests
                 AtomId(atom),
                 atom.Fingerprints,
                 [],
-                new DigestionReceipts(
-                    [],
-                    clear ? [] : ["shared-residue"],
+                new DigestionReceipts(clear ? [] : ["shared-residue"],
                     [],
                     null),
                 new DigestionStatus(

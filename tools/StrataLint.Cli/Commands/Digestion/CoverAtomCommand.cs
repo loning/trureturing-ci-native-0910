@@ -4,8 +4,8 @@ using StrataLint.Engine;
 namespace StrataLint.Cli;
 
 // Phase 1 cover transaction: bind one or more already-proven Lean declarations to an
-// existing open residual atom by writing a coverage edge plus its Scribe receipt
-// receipts. cover is the narrow sibling of ingest — it reuses
+// existing open residual atom by writing a coverage edge.
+// cover is the narrow sibling of ingest — it reuses
 // DigestionStatusEvaluator for the structural gates and never adds residual
 // atoms or rebinds boundaries. The write is all-or-nothing with a fail-closed
 // check-then-act guard: every gate must pass and the on-disk ledger must still
@@ -21,7 +21,7 @@ internal static partial class CoverAtomCommand
     private const string ImplementationPath =
         "tools/StrataLint.Cli/Commands/Digestion/CoverAtomCommand.cs";
 
-    private static CommandResult RunSingle(
+    internal static CommandResult Run(
         string repositoryRoot,
         IRepositoryGateway repository,
         ILeanReportSource leanReportSource,
@@ -37,14 +37,27 @@ internal static partial class CoverAtomCommand
         try
         {
             var options = ParseArguments(arguments);
-            var currentRaw = repository.ReadCurrent();
-            var baselineRaw = repository.ReadRevision(options.BaselineRevision);
-            var current = Decode(currentRaw);
-            var baseline = Decode(baselineRaw);
-            var document = LoadDocument(current);
-            var baselineDocument = BackfillInventoryLoader.LoadBaseline(baseline);
-            var report = leanReportSource.Load(current);
-            var lean = ValidateLean(current, report);
+            var session = new Session(repositoryRoot, repository, leanReportSource,
+                scribeEmissionVerifier, recordedAtUtc, options.BaselineRevision, options.Gids[0]);
+            return Apply(session, options, allowAlreadyApplied: false);
+        }
+        catch (Exception exception) when (exception is not OutOfMemoryException)
+        {
+            return new CommandResult(false, string.Empty, $"COVER_INVALID {exception.Message}\n");
+        }
+    }
+
+    private static CommandResult Apply(Session session, CoverArguments options, bool allowAlreadyApplied)
+    {
+        try
+        {
+            var currentRaw = session.CurrentRaw;
+            var current = session.Current;
+            var baseline = session.Baseline;
+            var document = session.Document;
+            var baselineDocument = session.BaselineDocument;
+            var report = session.Report;
+            var lean = session.Lean;
 
             // Gate ②(a): every cover GID must select a Lean declaration, not just a
             // module (module-level coverage is ingest's residual boundary, not a
@@ -60,17 +73,7 @@ internal static partial class CoverAtomCommand
 
                 return gid;
             }).ToImmutableArray();
-            FrozenStateCatalog frozenState;
-            try
-            {
-                frozenState = FrozenStateCatalog.Load(current);
-            }
-            catch (Exception exception) when (exception is FormatException or InvalidOperationException)
-            {
-                throw new InvalidOperationException(
-                    $"cover target module {gids[0].Path.Value} is not frozen; "
-                    + "run make deposit before cover");
-            }
+            var frozenState = session.FrozenState;
 
             foreach (var gid in gids)
             {
@@ -81,16 +84,16 @@ internal static partial class CoverAtomCommand
                         + "run make deposit before cover");
                 }
             }
-            var frozenStatements = FrozenStatementIndex.Create(frozenState, report);
+            var frozenStatements = session.FrozenStatements;
 
             // Gate ①: locate the single target atom. An initial cover requires an
             // open atom; a hosted extension adds at least one declaration while
             // retaining all existing coverage.
             var sources = document.RequireDigestionSources();
-            var target = LocateTarget(sources, options.AtomId, options.Gids);
+            var target = LocateTarget(sources, options.AtomId, options.Gids, allowAlreadyApplied);
             var existingGids = target.CoverageGids.ToImmutableHashSet(StringComparer.Ordinal);
             var addedGids = options.Gids.Where(gid => !existingGids.Contains(gid)).ToImmutableArray();
-            var repositoryChanges = repository.ReadChanges(options.BaselineRevision);
+            var repositoryChanges = session.Changes;
             var inputPaths = new HashSet<string>(StringComparer.Ordinal);
             var authorityEntryPaths = new HashSet<string>(StringComparer.Ordinal);
             var entriesByAtomId = document.RequireDigestionEntries()
@@ -159,14 +162,6 @@ internal static partial class CoverAtomCommand
             var repositoryPaths = repositoryChanges.Entries
                 .Select(static entry => entry.Path.Value)
                 .ToHashSet(StringComparer.Ordinal);
-            var coverChanges = RawChangeSet.CreateWithKinds(
-                repositoryChanges.Entries
-                    .Select(static entry => (Path: entry.Path.Value, Kind: entry.Kind))
-                    .Concat(inputPaths
-                        .Where(path => RepoPath.TryCreate(path, out _)
-                            && !repositoryPaths.Contains(path))
-                        .Select(static path => (Path: path, Kind: RawChangeKind.Modified)))
-                    .OrderBy(static entry => entry.Path, StringComparer.Ordinal));
             var authorityChanges = RawChangeSet.CreateWithKinds(
                 repositoryChanges.Entries
                     .Select(static entry => (Path: entry.Path.Value, Kind: entry.Kind))
@@ -179,7 +174,9 @@ internal static partial class CoverAtomCommand
                 baseline,
                 report,
                 document,
-                authorityChanges);
+                authorityChanges,
+                frozenState: frozenState,
+                frozenStatements: frozenStatements);
             var authorityPaths = authorityChanges.Paths
                 .Select(static path => path.Value)
                 .ToHashSet(StringComparer.Ordinal);
@@ -195,7 +192,9 @@ internal static partial class CoverAtomCommand
                 baseline,
                 report,
                 document,
-                receiptSeedChanges);
+                receiptSeedChanges,
+                frozenState: frozenState,
+                frozenStatements: frozenStatements);
             var evaluationChanges = authorityImpact.EvaluationChanges;
             var receiptVerificationChanges = receiptImpact.ReceiptVerificationChanges;
             var evaluationScope = DigestionEvaluationScopes.ForChanges(
@@ -211,7 +210,8 @@ internal static partial class CoverAtomCommand
                     && !currentFile!.RawBytes.AsSpan().SequenceEqual(
                         baselineFile!.RawBytes.AsSpan());
             }
-            var truthStates = LeanTruthStates.Resolve(current, lean);
+            var truthStates = session.TruthStates;
+            var addedCoverage = ImmutableArray.CreateBuilder<DigestionCoverageEdge>();
             foreach (var gid in gids)
             {
                 var edge = CurrentEdgeValidator.Validate(
@@ -224,9 +224,20 @@ internal static partial class CoverAtomCommand
                 {
                     throw new InvalidOperationException(edge.Diagnostic);
                 }
+
+                if (!existingGids.Contains(gid.Value))
+                {
+                    addedCoverage.Add(new DigestionCoverageEdge(gid.Value, edge.TargetStatementId));
+                }
+                else if (allowAlreadyApplied && !string.Equals(
+                             target.Coverage.Single(coverage => coverage.Gid == gid.Value).TargetStatementId,
+                             edge.TargetStatementId, StringComparison.Ordinal))
+                {
+                    throw new InvalidOperationException($"coverage-target-mismatch: {gid.Value}");
+                }
             }
 
-            var verifiedScribeEmissions = scribeEmissionVerifier.Verify(
+            session.Scribe.Verify(
                 current,
                 report,
                 receiptVerificationChanges);
@@ -239,25 +250,22 @@ internal static partial class CoverAtomCommand
                 baselineSnapshot: baseline,
                 changes: receiptVerificationChanges,
                 projectedStatusChanges: evaluationChanges,
-                truthStates: truthStates);
+                truthStates: truthStates,
+                frozenStatementIndex: frozenStatements);
             IngestCommand.RequireNoReceiptIntegrityFailure(beforeEvaluation);
 
-            var addedReceipts = gids
-                .Where(gid => !existingGids.Contains(gid.Value))
-                .Select(gid => DigestionReceiptBuilder.Build(
-                    gid,
-                    current,
-                    frozenStatements,
-                    verifiedScribeEmissions))
-                .ToImmutableArray();
+            if (allowAlreadyApplied && addedGids.Length == 0)
+            {
+                session.RequireUnchanged();
+                return new CommandResult(true,
+                    $"COVER atom_id={options.AtomId} ledger_changed=false\n", string.Empty);
+            }
+
             var covered = target with
             {
-                Coverage = target.Coverage.AddRange(
-                    addedReceipts.Select(static receipt => receipt.Coverage)),
+                Coverage = target.Coverage.AddRange(addedCoverage),
                 Receipts = target.Receipts with
                 {
-                    Scribe = target.Receipts.Scribe.AddRange(
-                        addedReceipts.Select(static receipt => receipt.Scribe)),
                     CoverDisposition = null,
                 },
             };
@@ -273,7 +281,8 @@ internal static partial class CoverAtomCommand
                 baselineSnapshot: baseline,
                 changes: receiptVerificationChanges,
                 projectedStatusChanges: evaluationChanges,
-                truthStates: truthStates);
+                truthStates: truthStates,
+                frozenStatementIndex: frozenStatements);
             IngestCommand.RequireNoReceiptIntegrityFailure(derived);
 
             var statusByAtomId = derived.Entries.ToDictionary(
@@ -309,20 +318,24 @@ internal static partial class CoverAtomCommand
                 baselineSnapshot: baseline,
                 changes: receiptVerificationChanges,
                 projectedStatusChanges: evaluationChanges,
-                truthStates: truthStates);
+                truthStates: truthStates,
+                frozenStatementIndex: frozenStatements);
             IngestCommand.RequireNoReceiptIntegrityFailure(evaluation);
             var backfillObservations = DigestionBackfillValidation.RequireValidBackfill(
                 finalDocument,
                 finalSnapshot,
                 baseline,
-                LoadPolicy(finalSnapshot),
+                session.Policy,
                 lean,
                 DigestionEvaluationScopes.ResolveChanges(
                     evaluationScope,
                     receiptVerificationChanges),
                 projectedStatusChanges: DigestionEvaluationScopes.ResolveChanges(
                     evaluationScope,
-                    evaluationChanges));
+                    evaluationChanges),
+                baselineDocument: baselineDocument,
+                frozenStatementIndex: frozenStatements,
+                truthStates: truthStates);
 
             var finalTarget = EvaluationFor(evaluation, options.AtomId);
             if (target.CoverageGids.Length == 0)
@@ -332,13 +345,10 @@ internal static partial class CoverAtomCommand
                 if (!IsClosedDeletable(finalTarget))
                 {
                     RecordCoverDisposition(
-                        repositoryRoot,
-                        currentRaw,
-                        document,
+                        session,
                         target,
                         finalTarget,
-                        options.Gids,
-                        recordedAtUtc);
+                        options.Gids);
                 }
 
                 RequireClosedDeletable(finalTarget);
@@ -358,14 +368,14 @@ internal static partial class CoverAtomCommand
 
             var ledgerUpdates = IngestCommand.LedgerUpdates(currentRaw, finalRaw);
             var changed = ledgerUpdates.Length > 0;
-            IngestCommand.ApplyLedgerUpdatesAtomically(repositoryRoot, currentRaw, ledgerUpdates);
+            session.Commit(finalRaw, finalSnapshot, finalDocument, ledgerUpdates);
 
             return new CommandResult(
                 true,
                 $"COVER atom_id={options.AtomId} gid={string.Join(',', options.Gids)} "
                 + $"ledger_changed={changed.ToString().ToLowerInvariant()}\n"
                 + backfillObservations
-                + DigestStatusCommand.RenderText(evaluation),
+                + (allowAlreadyApplied ? string.Empty : DigestStatusCommand.RenderText(evaluation)),
                 string.Empty);
         }
         catch (Exception exception) when (exception is not OutOfMemoryException)
@@ -377,7 +387,8 @@ internal static partial class CoverAtomCommand
     private static DigestionLedgerEntry LocateTarget(
         ImmutableArray<DigestionLedgerSource> sources,
         string atomId,
-        ImmutableArray<string> requestedGids)
+        ImmutableArray<string> requestedGids,
+        bool allowAlreadyApplied)
     {
         var matches = sources
             .SelectMany(static source => source.Entries)
@@ -403,7 +414,7 @@ internal static partial class CoverAtomCommand
         }
 
         var existing = entry.CoverageGids.ToImmutableHashSet(StringComparer.Ordinal);
-        if (entry.CoverageGids.Length > 0 && requestedGids.All(existing.Contains))
+        if (!allowAlreadyApplied && entry.CoverageGids.Length > 0 && requestedGids.All(existing.Contains))
         {
             throw new InvalidOperationException(
                 $"cover atom {atomId} already has coverage: "
@@ -454,13 +465,10 @@ internal static partial class CoverAtomCommand
         covered.Deletable && covered.DerivedStatus.Truth == DigestionTruthState.Closed;
 
     private static void RecordCoverDisposition(
-        string repositoryRoot,
-        RawRepositorySnapshot currentRaw,
-        BackfillInventoryDocument document,
+        Session session,
         DigestionLedgerEntry target,
         DigestionEntryEvaluation outcome,
-        ImmutableArray<string> gids,
-        DateTimeOffset recordedAtUtc)
+        ImmutableArray<string> gids)
     {
         var disposition = new DigestionCoverDisposition(
             outcome.DerivedStatus,
@@ -471,26 +479,21 @@ internal static partial class CoverAtomCommand
                 .ThenBy(static gap => gap.Detail, StringComparer.Ordinal)
                 .ToImmutableArray());
         var dispositionDocument = ReplaceEntry(
-            document,
+            session.Document,
             target.AtomId,
             target with
             {
                 Receipts = target.Receipts with { CoverDisposition = disposition },
             });
-        var dispositionRaw = IngestCommand.ReplaceLedger(currentRaw, document, dispositionDocument);
-        var ledgerUpdates = IngestCommand.LedgerUpdates(currentRaw, dispositionRaw);
-        IngestCommand.ApplyLedgerUpdatesAtomically(repositoryRoot, currentRaw, ledgerUpdates);
+        var dispositionRaw = IngestCommand.ReplaceLedger(session.CurrentRaw, session.Document, dispositionDocument);
+        var dispositionSnapshot = Decode(dispositionRaw);
+        var ledgerUpdates = IngestCommand.LedgerUpdates(session.CurrentRaw, dispositionRaw);
+        session.Commit(dispositionRaw, dispositionSnapshot, LoadDocument(dispositionSnapshot), ledgerUpdates);
     }
 
     private sealed record CoverArguments(
         string AtomId,
         ImmutableArray<string> Gids,
-        string BaselineRevision);
-
-    private sealed record AlignPair(string AtomId, string Gid);
-
-    private sealed record AlignArguments(
-        ImmutableArray<AlignPair> Pairs,
         string BaselineRevision);
 
     private static CoverArguments ParseArguments(IReadOnlyList<string> arguments)

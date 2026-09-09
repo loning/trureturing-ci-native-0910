@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Factorization/PrimePowers/PrimeBudgetReadoutDichotomy.horizontal_vertical_dichotomy
     target_statement_id: sha256:d73e98abc61cffe2034561dfbbcb2606de0436b134404cc75c28c0121a19b415
 receipts:
-  scribe:
-    - gid: D5/S3/Factorization/PrimePowers/PrimeBudgetReadoutDichotomy.horizontal_vertical_dichotomy
-      definition_sha256: sha256:1bdebb18c68f3f4ccb53a6ad0864ca009c2e93b8b22a54a7f03f3c9b7909825f
-      emission_sha256: sha256:0a0e78a7f9c0953fd5095d217da3f7418a033c90976a3d219ca8000c79ec03b8
   unresolved_subitems: []

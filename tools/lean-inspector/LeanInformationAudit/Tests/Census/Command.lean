@@ -8,15 +8,26 @@ namespace LeanInformationAudit.Tests.Census.Command
 
 def inputBytes : String := (Json.mkObj [
   ("schema", toJson "stratalint.truth-export"),
-  ("schema_version", toJson (1 : Nat)),
-  ("dialect", toJson "stratalint.truth-export.v1"),
+  ("schema_version", toJson (2 : Nat)),
+  ("dialect", toJson "stratalint.truth-export.v2"),
   ("producer", toJson "TruthExportCommand"),
   ("source_commit", toJson Evidence.inventory.headSha),
-  ("nodes", Json.arr #[Json.mkObj [("declarations", Json.arr <|
+  ("nodes", Json.arr #[Json.mkObj [("freeze_status", toJson "frozen"),
+    ("declarations", Json.arr <|
     Evidence.inventory.entries.map fun entry => Json.mkObj [
       ("kind", toJson "theorem"),
       ("declaration_name_key", toJson (encodeNameKey entry.1.theoremName)),
-      ("statement_id", toJson entry.1.statementId)])]])]).compress
+      ("statement_id", toJson entry.1.statementId)])],
+    Json.mkObj [("freeze_status", toJson "proven-not-yet-frozen"),
+      ("declarations", Json.arr #[Json.mkObj [
+        ("kind", toJson "theorem"),
+        ("declaration_name_key", toJson (encodeNameKey `Fixture.pending)),
+        ("statement_id", toJson "id-pending")]])]])]).compress
+
+/-- info: Except.ok 4 -/
+#guard_msgs in
+#eval (parseReport "fixture-head" ("sha256:" ++ Sha256.hex inputBytes.toUTF8) inputBytes).map
+  (·.theorems.size)
 
 run_cmd IO.FS.withTempDir fun dir => do
   let reportPath := dir / "report.json"
@@ -42,6 +53,12 @@ run_cmd IO.FS.withTempDir fun dir => do
   unless (← IO.FS.readFile firstPath) == (← IO.FS.readFile repeatPath) do
     throwError "census output is not byte-identical"
   let projection ← ofExcept <| Json.parse (← IO.FS.readFile firstPath)
+  unless (← ofExcept <| projection.getObjValAs? Nat "theorem_count") == 4 do
+    throwError "non-frozen theorem was counted"
+  let rows ← ofExcept <| projection.getObjValAs? (Array Json) "rows"
+  unless rows.size == 4 && rows.all (fun row =>
+      row.getObjValAs? String "statement_id" != .ok "id-pending") do
+    throwError "non-frozen theorem was published"
   let counts ← ofExcept <| projection.getObjVal? "counts"
   unless (← ofExcept <| counts.getObjValAs? Nat "structural_occurrence") == 1 do
     throwError "generated parity theorem was not counted"

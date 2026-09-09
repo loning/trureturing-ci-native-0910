@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Arith/Congruence/ObserverCollisionOrder.observer_collision_order_eq_padic_valuation_and_exists
     target_statement_id: sha256:c1917e0ed287b4abe1e7a3dc461843fe71ea063824922e4bf490966251f2bee4
 receipts:
-  scribe:
-    - gid: D5/S3/Arith/Congruence/ObserverCollisionOrder.observer_collision_order_eq_padic_valuation_and_exists
-      definition_sha256: sha256:8d8977f7e040d0063b81e3bb8a3ffc5df9c9ccf0db15db604dd8b37b7cc76655
-      emission_sha256: sha256:cc96ee4a8eabf3cc2c854403c82671c041bcc7339d1d017ec63676fc8783cfba
   unresolved_subitems: []

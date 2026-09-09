@@ -67,7 +67,6 @@ public sealed partial class MakeWorkflowTests
         "cover",
         "cover-batch",
         "decompose",
-        "scribe-seed",
         "quarantine",
         "quarantine-clear",
         "settle",
@@ -91,6 +90,8 @@ public sealed partial class MakeWorkflowTests
         "capacity-audit",
         "update-renderer-contract",
         "clean-lanes",
+        "xi-quantization",
+        "xi-quantization-test",
     ];
 
     [Fact]

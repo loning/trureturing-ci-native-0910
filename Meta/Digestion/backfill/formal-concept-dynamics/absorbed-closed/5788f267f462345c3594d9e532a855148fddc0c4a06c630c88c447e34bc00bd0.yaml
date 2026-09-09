@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Reversibility/WorldChangeValueReversal.world_change_can_reverse_waiting_value
     target_statement_id: sha256:e2cd26e0ff42d23d211915d51705b016663f24a24ff4299bee8b64161c7f844e
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Reversibility/WorldChangeValueReversal.world_change_can_reverse_waiting_value
-      definition_sha256: sha256:f05434d40d413a02a6f52ddbea76d0473d1a11422cb0f023d2f58de059b2b933
-      emission_sha256: sha256:7073c348f09cd5ac5844d894e04f5a25004f43a9dd15ef4599e558001dce7076
   unresolved_subitems: []

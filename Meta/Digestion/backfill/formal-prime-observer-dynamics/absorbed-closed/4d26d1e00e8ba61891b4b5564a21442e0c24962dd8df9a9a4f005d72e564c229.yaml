@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Observer/MeasureSeparation/RobustMinimaxKernelBound.robustBeliefUpdate
     target_statement_id: sha256:abf41a1f74859c89e9bc6e340c425e73ab0c079e6fcd6c5b7220f13f46e7ab5e
 receipts:
-  scribe:
-    - gid: D5/S3/Observer/MeasureSeparation/RobustMinimaxKernelBound.robustBeliefUpdate
-      definition_sha256: sha256:2af98d39d1ebfdf9ecb6341c7b77c8ab72dcd2727e69b6d85c60426d9692de54
-      emission_sha256: sha256:317da6a4b1ce88e2e03c89045cf5609e8a2a959c74b018c9ad5a961343254c11
   unresolved_subitems: []

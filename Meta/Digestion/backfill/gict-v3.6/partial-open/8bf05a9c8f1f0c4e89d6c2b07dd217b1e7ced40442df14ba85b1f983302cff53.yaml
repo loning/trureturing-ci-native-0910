@@ -8,5 +8,4 @@ coverage_gids:
   - gid: D5/S3/Constants/Values.kappa
     target_statement_id: sha256:1c94a31d76371ee2b66be64e6dda4ad20f48cba85479a89ce0924309d9ec0dbe
 receipts:
-  scribe: []
   unresolved_subitems: []

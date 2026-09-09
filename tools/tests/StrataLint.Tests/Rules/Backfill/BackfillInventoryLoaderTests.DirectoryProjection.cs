@@ -164,7 +164,6 @@ public sealed partial class BackfillInventoryLoaderTests
 
             Assert.Empty(entry.CoverageGids);
             Assert.Empty(entry.Coverage);
-            Assert.Empty(entry.Receipts.Scribe);
             Assert.NotEmpty(entry.Receipts.UnresolvedSubitems);
             Assert.Equal(DigestionMigrationState.Residual, entry.ProjectedStatus.Migration);
             Assert.Equal(DigestionTruthState.Open, entry.ProjectedStatus.Truth);

@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Arith/Coding/ArbitraryErrorCorrectionCapacity.arbitrary_error_correction_capacity_bound
     target_statement_id: sha256:b605c3212ee50336dc087426e136dedae5b6122dfc21bd07899179f104169025
 receipts:
-  scribe:
-    - gid: D5/S3/Arith/Coding/ArbitraryErrorCorrectionCapacity.arbitrary_error_correction_capacity_bound
-      definition_sha256: sha256:43dfd204466de70541a9fd86435e728395edff3cd97ad9b0a3299b2a29da2127
-      emission_sha256: sha256:75ac5a8ffae092351f495466cd81691cacd406ac3ccbaf211e5a7a3c7d39584c
   unresolved_subitems: []

@@ -17,7 +17,6 @@ public sealed partial class DigestionLedgerTests
         Assert.Equal(DigestionTruthState.Closed, status.DerivedStatus.Truth);
         Assert.True(status.Deletable);
         Assert.Empty(status.Gaps);
-        Assert.Empty(status.Entry.Receipts.Scribe);
     }
 
     [Fact]
@@ -32,7 +31,6 @@ public sealed partial class DigestionLedgerTests
         Assert.Equal(DigestionTruthState.Closed, status.DerivedStatus.Truth);
         Assert.True(status.Deletable);
         Assert.Empty(status.Gaps);
-        Assert.Empty(status.Entry.Receipts.Scribe);
     }
 
     [Fact]
@@ -68,8 +66,7 @@ public sealed partial class DigestionLedgerTests
             gid,
             new DigestionCoverageEdge(
                 gid,
-                TestModuleStatementId),
-            new DigestionScribeReceipt(gid, staleDefinitionHash, staleEmissionHash));
+                TestModuleStatementId));
         var record = new ScribeEmissionRecord(
             gid,
             ScribeEmissionAttestation.DefinitionPath(gid),

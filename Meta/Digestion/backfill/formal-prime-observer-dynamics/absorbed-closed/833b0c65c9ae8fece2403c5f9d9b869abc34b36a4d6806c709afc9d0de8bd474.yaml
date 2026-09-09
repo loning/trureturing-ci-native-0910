@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Identifiability/IdentifiabilityEstimabilityComputation.Computable
     target_statement_id: sha256:a6645d4d4b7398ba55f04fb121838aff5f9d17cbe0aac0de6300340ff120a5c3
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Identifiability/IdentifiabilityEstimabilityComputation.Computable
-      definition_sha256: sha256:871a06a6748c3dfed069b16495c710c6c26f327968a7bdc906cdfb3a0b900818
-      emission_sha256: sha256:4d46fcb83278c84143360644309aaf2f58e79d1cc4961619e93702ad9a02c00b
   unresolved_subitems: []

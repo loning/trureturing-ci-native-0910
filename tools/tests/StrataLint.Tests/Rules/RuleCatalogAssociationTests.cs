@@ -99,7 +99,7 @@ public sealed class RuleCatalogAssociationTests
     {
         var uniqueFinding = new RuleFinding("unique/path.txt", "finding from rule seventeen");
         var registrations = Enumerable.Range(1, 23).Except([5])
-            .Append(25).Append(26).Append(28).Append(30).Append(31)
+            .Append(25).Append(26).Append(28).Append(30).Append(31).Append(32).Append(33).Append(34)
             .Select(number => new RuleRegistration(
                 Descriptor(
                     number,
@@ -145,8 +145,14 @@ public sealed class RuleCatalogAssociationTests
     public void MeasureRuleObservesTheDefinedExecutionOrder()
     {
         var measured = ImmutableArray.CreateBuilder<RuleId>();
-        var context = new RuleFixture().Build(RawChangeSet.Create(
-            ["tools/StrataLint.Engine/Rules/RepositoryRules.cs"]));
+        var fixture = new RuleFixture();
+        fixture.Baseline.Remove(RuleFixture.RingPath);
+        fixture.BaselineReports.Remove(RuleFixture.RingPath);
+        var context = fixture.Build(RawChangeSet.CreateWithKinds(
+        [
+            ("tools/StrataLint.Engine/Rules/RepositoryRules.cs", RawChangeKind.Modified),
+            (RuleFixture.RingPath, RawChangeKind.Added),
+        ]));
 
         var outcome = RuleCatalog.Default.Execute(
             context,
@@ -215,7 +221,7 @@ public sealed class RuleCatalogAssociationTests
         var setterId = RuleId.CreateKnown(1);
         var finderId = RuleId.CreateKnown(2);
         var remainingIds = Enumerable.Range(1, 23).Except([5, 7, 9, 13, 14])
-            .Append(25).Append(26).Append(28).Append(30).Append(31)
+            .Append(25).Append(26).Append(28).Append(30).Append(31).Append(32).Append(33).Append(34)
             .Select(RuleId.CreateKnown)
             .Where(id => id != setterId && id != finderId)
             .ToImmutableArray();
@@ -259,7 +265,7 @@ public sealed class RuleCatalogAssociationTests
     {
         var rule = new CountingUnaffectedRule();
         var registrations = Enumerable.Range(1, 23).Except([5])
-            .Append(25).Append(26).Append(28).Append(30).Append(31)
+            .Append(25).Append(26).Append(28).Append(30).Append(31).Append(32).Append(33).Append(34)
             .Select(number => Registration(
                 Descriptor(
                     number,
@@ -292,7 +298,7 @@ public sealed class RuleCatalogAssociationTests
     [InlineData("tools/StrataLint.Engine/Revocation/TrustedRevocationReceipts.cs")]
     [InlineData("tools/StrataLint.Engine/StrataLint.Engine.csproj")]
     [InlineData("Directory.Build.targets")]
-    public void EveryActiveRuleWakesWhenSharedRuleImplementationChanges(string changedPath)
+    public void SharedRuleImplementationChangesRespectDeltaOnlyRuleScoping(string changedPath)
     {
         var context = new RuleFixture().Build(RawChangeSet.Create([changedPath]));
 
@@ -301,9 +307,10 @@ public sealed class RuleCatalogAssociationTests
         var completed = Assert.IsType<RuleExecutionOutcome.Completed>(outcome).Capability;
         var active = RuleCatalog.Default.Descriptors
             .Where(static descriptor => descriptor.Lifecycle == RuleLifecycle.Active)
-            .Select(static descriptor => descriptor.Id);
+            .Select(static descriptor => descriptor.Id)
+            .Where(static id => id != RuleId.CreateKnown(34));
         Assert.Equal(active, completed.ExecutedRules);
-        Assert.Empty(completed.SkippedRules);
+        Assert.Equal(RuleId.CreateKnown(34), Assert.Single(completed.SkippedRules));
     }
 
     [Fact]
@@ -414,10 +421,10 @@ public sealed class RuleCatalogAssociationTests
     [Fact]
     public void DefaultCatalogRootMatchesCharacterizedRegressionValue()
     {
-        // Recharacterized 2026-09-06 with SL-030 (judge surface) and SL-031 (utility admission).
-        // The dev-only root was sha256:83f97af38a0d45542b2e5d2ec6171e50b519adb684542d85b6def8592d29fd9f.
+        // Recharacterized 2026-09-08 with SL-034 Observe; independently computed with Ruby SHA-256.
+        // Previous root: sha256:b276eef4632135feff663e5a4fe2d4d4b073767522cf2defff3f145895602af1.
         Assert.Equal(
-            "sha256:b4e098cea888de68e804c8883d030ffeba598419261e961c97726613371fe48e",
+            "sha256:4374fde9e5d66d5d918bd942d29ccc2d1c1988f554a6f0d869f637e484d6ebb7",
             RuleCatalog.Default.RootSha256);
     }
 
@@ -455,7 +462,7 @@ public sealed class RuleCatalogAssociationTests
     {
         var state = new OrderDependentState();
         var registrations = Enumerable.Range(1, 23).Except([5])
-            .Append(25).Append(26).Append(28).Append(30).Append(31)
+            .Append(25).Append(26).Append(28).Append(30).Append(31).Append(32).Append(33).Append(34)
             .Select(number => new RuleRegistration(
                 Descriptor(number, $"descriptor {number}", DisplaySeverity.Error, AdmissionEffect.Block),
                 number switch

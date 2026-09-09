@@ -58,10 +58,10 @@ def noRealization : UnreachableElaborationEvidence (∀ n : Nat, n % 2 < 2) wher
 
 def inventory : DispositionInventory := ⟨"reasons", #[
   ⟨⟨``Evidence.closedNumerical, "1"⟩,
-    .unreachable ⟨.noCanonicalObjectCarrier, ``Evidence.noCarrier⟩⟩,
-  ⟨⟨``familyReflexive, "2"⟩, .unreachable ⟨.noFinitePrimitiveBundle, ``noBundle⟩⟩,
+    .certified <| .unreachable ⟨.noCanonicalObjectCarrier, ``Evidence.noCarrier⟩⟩,
+  ⟨⟨``familyReflexive, "2"⟩, .certified <| .unreachable ⟨.noFinitePrimitiveBundle, ``noBundle⟩⟩,
   ⟨⟨``boundedParity, "3"⟩,
-    .unreachable ⟨.noFaithfulPrimitiveRealization, ``noRealization⟩⟩]⟩
+    .certified <| .unreachable ⟨.noFaithfulPrimitiveRealization, ``noRealization⟩⟩]⟩
 
 /-- info: all-reasons-validated -/
 #guard_msgs in
@@ -83,7 +83,7 @@ theorem otherParity : ∀ n : Nat, n % 2 < 2 := boundedParity
 run_cmd liftTermElabM do
   validateEvidence (← getEnv).header.mainModule ⟨"reasons", #[
     ⟨⟨``otherParity, "other"⟩,
-      .unreachable ⟨.noFaithfulPrimitiveRealization, ``noRealization⟩⟩]⟩
+      .certified <| .unreachable ⟨.noFaithfulPrimitiveRealization, ``noRealization⟩⟩]⟩
 
 #print axioms infiniteObligation
 #print axioms unfaithfulObligation

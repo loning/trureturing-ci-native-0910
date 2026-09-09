@@ -15,12 +15,6 @@ public sealed class BackfillInventoryWriterTests
     private const string ZetaGid = "D5/S0/Carrier/Zeta.zeta";
     private const string AlphaTargetHash = "sha256:1111111111111111111111111111111111111111111111111111111111111111";
     private const string ZetaTargetHash = "sha256:2222222222222222222222222222222222222222222222222222222222222222";
-    private const string AlphaDefinitionHash = "sha256:3333333333333333333333333333333333333333333333333333333333333333";
-    private const string AlphaEmissionHash = "sha256:4444444444444444444444444444444444444444444444444444444444444444";
-    private const string AlphaSecondDefinitionHash = "sha256:5555555555555555555555555555555555555555555555555555555555555555";
-    private const string AlphaSecondEmissionHash = "sha256:6666666666666666666666666666666666666666666666666666666666666666";
-    private const string ZetaDefinitionHash = "sha256:7777777777777777777777777777777777777777777777777777777777777777";
-    private const string ZetaEmissionHash = "sha256:8888888888888888888888888888888888888888888888888888888888888888";
 
     [Fact]
     public void BackfillInventoryWriter_WritesCoverageGidsInOrdinalOrder()
@@ -29,26 +23,6 @@ public sealed class BackfillInventoryWriterTests
             [
                 new DigestionCoverageEdge(ZetaGid, ZetaTargetHash),
                 new DigestionCoverageEdge(AlphaGid, AlphaTargetHash),
-            ],
-            CanonicalScribeReceipts());
-
-        var written = Encoding.UTF8.GetString(BackfillInventoryWriter.WriteAtom(entry).AsSpan());
-
-        Assert.Equal(CanonicalAtomText(), written);
-    }
-
-    [Fact]
-    public void BackfillInventoryWriter_WritesScribeReceiptsInOrdinalOrder()
-    {
-        var entry = Entry(
-            CanonicalCoverage(),
-            [
-                new DigestionScribeReceipt(ZetaGid, ZetaDefinitionHash, ZetaEmissionHash),
-                new DigestionScribeReceipt(AlphaGid, AlphaDefinitionHash, AlphaEmissionHash),
-                new DigestionScribeReceipt(
-                    AlphaGid,
-                    AlphaSecondDefinitionHash,
-                    AlphaSecondEmissionHash),
             ]);
 
         var written = Encoding.UTF8.GetString(BackfillInventoryWriter.WriteAtom(entry).AsSpan());
@@ -77,19 +51,11 @@ public sealed class BackfillInventoryWriterTests
     [Fact]
     public void StatusAuthorityIdentity_IsOrderInsensitive()
     {
-        var canonical = Entry(CanonicalCoverage(), CanonicalScribeReceipts());
+        var canonical = Entry(CanonicalCoverage());
         var reordered = Entry(
             [
                 new DigestionCoverageEdge(ZetaGid, ZetaTargetHash),
                 new DigestionCoverageEdge(AlphaGid, AlphaTargetHash),
-            ],
-            [
-                new DigestionScribeReceipt(ZetaGid, ZetaDefinitionHash, ZetaEmissionHash),
-                new DigestionScribeReceipt(AlphaGid, AlphaDefinitionHash, AlphaEmissionHash),
-                new DigestionScribeReceipt(
-                    AlphaGid,
-                    AlphaSecondDefinitionHash,
-                    AlphaSecondEmissionHash),
             ]);
         var source = new DigestionLedgerSource(
             SourceId,
@@ -106,8 +72,7 @@ public sealed class BackfillInventoryWriterTests
     }
 
     private static DigestionLedgerEntry Entry(
-        ImmutableArray<DigestionCoverageEdge> coverage,
-        ImmutableArray<DigestionScribeReceipt> scribe) =>
+        ImmutableArray<DigestionCoverageEdge> coverage) =>
         new(
             SourceId,
             SourcePath,
@@ -115,7 +80,7 @@ public sealed class BackfillInventoryWriterTests
             AtomId,
             new DigestionFingerprints(RawHash, NormalizedHash),
             coverage,
-            new DigestionReceipts(scribe, [], [], null),
+            new DigestionReceipts([], [], null),
             new DigestionStatus(DigestionMigrationState.Absorbed, DigestionTruthState.Closed),
             RawHash);
 
@@ -123,16 +88,6 @@ public sealed class BackfillInventoryWriterTests
     [
         new DigestionCoverageEdge(AlphaGid, AlphaTargetHash),
         new DigestionCoverageEdge(ZetaGid, ZetaTargetHash),
-    ];
-
-    private static ImmutableArray<DigestionScribeReceipt> CanonicalScribeReceipts() =>
-    [
-        new DigestionScribeReceipt(AlphaGid, AlphaDefinitionHash, AlphaEmissionHash),
-        new DigestionScribeReceipt(
-            AlphaGid,
-            AlphaSecondDefinitionHash,
-            AlphaSecondEmissionHash),
-        new DigestionScribeReceipt(ZetaGid, ZetaDefinitionHash, ZetaEmissionHash),
     ];
 
     private static string CanonicalSourceMetadataText() => $$"""
@@ -154,16 +109,6 @@ public sealed class BackfillInventoryWriterTests
           - gid: {{ZetaGid}}
             target_statement_id: {{ZetaTargetHash}}
         receipts:
-          scribe:
-            - gid: {{AlphaGid}}
-              definition_sha256: {{AlphaDefinitionHash}}
-              emission_sha256: {{AlphaEmissionHash}}
-            - gid: {{AlphaGid}}
-              definition_sha256: {{AlphaSecondDefinitionHash}}
-              emission_sha256: {{AlphaSecondEmissionHash}}
-            - gid: {{ZetaGid}}
-              definition_sha256: {{ZetaDefinitionHash}}
-              emission_sha256: {{ZetaEmissionHash}}
           unresolved_subitems: []
         """ + "\n";
 }

@@ -155,10 +155,6 @@ public sealed partial class IngestScopeTests
         entry = entry with
         {
             Coverage = [new("D5/S0/Carrier/Zeta.z", hashes), new("D5/S0/Carrier/Alpha.a", hashes)],
-            Receipts = entry.Receipts with
-            {
-                Scribe = [new("D5/S0/Carrier/Zeta.z", hashes, hashes), new("D5/S0/Carrier/Alpha.a", hashes, hashes)],
-            },
         };
         alpha = alpha with { Entries = [entry], AcknowledgedStale = [entry.AtomId] };
         document = document.WithDigestionSources([alpha, document.RequireDigestionSources()[1]]);
@@ -166,12 +162,10 @@ public sealed partial class IngestScopeTests
         foreach (var files in new[] { fixture.Files, fixture.Baseline })
         {
             var text = files[AtomPath(entry)];
-            var suffix = $"\n      definition_sha256: {hashes}\n      emission_sha256: {hashes}\n";
-            var first = $"    - gid: D5/S0/Carrier/Alpha.a{suffix}";
-            var second = $"    - gid: D5/S0/Carrier/Zeta.z{suffix}";
-            Assert.Contains(first + second, text, StringComparison.Ordinal);
-            text = text.Replace(first + second, second + first, StringComparison.Ordinal);
-            Assert.True(text.IndexOf(second, StringComparison.Ordinal) < text.IndexOf(first, StringComparison.Ordinal));
+            // The layout the canonical writer would never produce: a leading comment and CRLF
+            // line endings. (This used to inject a historical `receipts.scribe` block; that key
+            // is now rejected outright, so the non-canonical marker has to be one that loads.)
+            Assert.DoesNotContain("scribe:", text, StringComparison.Ordinal);
             files[AtomPath(entry)] = "# preserve entry layout\r\n\r\n"
                 + text.Replace("\n", "\r\n", StringComparison.Ordinal);
         }

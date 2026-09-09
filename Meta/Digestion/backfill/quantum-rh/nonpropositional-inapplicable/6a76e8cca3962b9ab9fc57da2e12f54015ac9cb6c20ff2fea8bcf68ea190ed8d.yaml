@@ -4,7 +4,6 @@ fingerprints:
 cas_ref: sha256:6a76e8cca3962b9ab9fc57da2e12f54015ac9cb6c20ff2fea8bcf68ea190ed8d
 coverage_gids: []
 receipts:
-  scribe: []
   unresolved_subitems: []
   nonpropositional:
     justification: 'Scope commentary on the preceding explicit third-order matrix construction: it contrasts that construction with unproved higher-order continuation and adds no claim beyond atom 3216d4784784c462e895c7f777e05b5188c46c8dfdd7606c62eb48adfe893650.'

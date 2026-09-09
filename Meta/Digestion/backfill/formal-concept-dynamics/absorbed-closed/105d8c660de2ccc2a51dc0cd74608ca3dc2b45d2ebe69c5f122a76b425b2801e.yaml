@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Evidence/PositiveSupportNonexplosion.positive_support_nonexplosion
     target_statement_id: sha256:5194b77db80090747bcfd216a2c2ee64c00b657bddb8d11d2c18edc71f21cd21
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Evidence/PositiveSupportNonexplosion.positive_support_nonexplosion
-      definition_sha256: sha256:fc60247fa2bddcbba5fb6c7103137882f7e18c9d20991a81741f97d82c880e83
-      emission_sha256: sha256:3d9f90d5b22d7d505ed1b33d1d1d654fa74a56b96f3197f61181b5cd62ba7f7d
   unresolved_subitems: []

@@ -133,7 +133,7 @@ internal static class DigestionDecomposition
             }
             objects.Add(captured);
             children.Add(new DigestionLedgerEntry(parent.SourceId, parent.SourcePath, parent.Atomizer,
-                id, child.Fingerprints, [], new DigestionReceipts([], [], [], null),
+                id, child.Fingerprints, [], new DigestionReceipts([], [], null),
                 new DigestionStatus(DigestionMigrationState.Residual, DigestionTruthState.Open), captured.Reference));
         }
         var chain = ids.ToImmutable();

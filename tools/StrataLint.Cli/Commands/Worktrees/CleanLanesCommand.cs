@@ -637,7 +637,8 @@ internal static partial class CleanLanesCommand
 
     private static IReadOnlyList<RegisteredWorktree> ReadWorktrees(
         string repositoryRoot,
-        IWorktreeProcessRunner runner)
+        IWorktreeProcessRunner runner,
+        bool resolveGitDirectories = true)
     {
         var result = RunGit(
             repositoryRoot,
@@ -678,7 +679,7 @@ internal static partial class CleanLanesCommand
                     path,
                     head,
                     branch,
-                    TryResolveRegisteredGitDirectory(path, runner),
+                    resolveGitDirectories ? TryResolveRegisteredGitDirectory(path, runner) : null,
                     locked));
                 path = null;
                 head = null;

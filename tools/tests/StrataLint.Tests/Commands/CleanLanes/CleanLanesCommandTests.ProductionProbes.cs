@@ -763,6 +763,6 @@ public sealed partial class CleanLanesCommandTests
     private static ProcessOutput LsofOutput(string path) =>
         new(
             0,
-            Encoding.UTF8.GetBytes($"p123\0fcwd\0n{path}\0"),
+            Encoding.UTF8.GetBytes($"p123\0fcwd\0tDIR\0n{path}\0"),
             []);
 }

@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/ConceptDynamics/Trust/TypedTrustComposition.typed_trust_composes_iff_interfaces_align
     target_statement_id: sha256:278a521dca40b5e59ba4e3347239286e70b51b241a11f10c46563a2c82694e9d
 receipts:
-  scribe:
-    - gid: D5/S3/ConceptDynamics/Trust/TypedTrustComposition.typed_trust_composes_iff_interfaces_align
-      definition_sha256: sha256:e7c19e2fc67cdcc7bd46f5a0fa78ec25e9543528ef71ed32dc0d9cc9374cc4ce
-      emission_sha256: sha256:c5b165e06df88f1f39995acb66394d1ec7182863fe7d332be9f763bb91fb4e61
   unresolved_subitems: []

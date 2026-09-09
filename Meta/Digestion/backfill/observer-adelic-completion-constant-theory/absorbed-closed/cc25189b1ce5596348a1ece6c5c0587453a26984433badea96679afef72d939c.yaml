@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Weil/Szego/CanonicalTransfer.canonical_szego_su11_transfer
     target_statement_id: sha256:e4f104cc1d7fc912618c814398db00cd3fbb066df026926528fb06e69b004ae3
 receipts:
-  scribe:
-    - gid: D5/S3/Weil/Szego/CanonicalTransfer.canonical_szego_su11_transfer
-      definition_sha256: sha256:ad13c4cddac9f15bc4296de7462d10d91abefbb73cc2551202f8974851428ee9
-      emission_sha256: sha256:7a0a288d86fb342e8df7e80f7995ef83d86e24064e5f63c885311cd4c6f24087
   unresolved_subitems: []

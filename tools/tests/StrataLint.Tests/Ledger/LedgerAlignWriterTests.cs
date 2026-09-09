@@ -315,15 +315,17 @@ public sealed partial class LedgerAlignWriterTests
         public ExplicitCommandResult GateAuthority(IReadOnlyList<string> arguments) => throw Unsupported();
         public ExplicitCommandResult FileMapConform(IReadOnlyList<string> arguments) => throw Unsupported();
         public ExplicitCommandResult DepositHeaderCheck(IReadOnlyList<string> arguments) => throw Unsupported();
+        public ExplicitCommandResult LeanUtilityInput(IReadOnlyList<string> arguments) => throw Unsupported();
         public ExplicitCommandResult LedgerFrozen(IReadOnlyList<string> arguments) => throw Unsupported();
         public CommandResult Ingest(IReadOnlyList<string> arguments) => throw Unsupported();
         public CommandResult AlignDigestionStatus(IReadOnlyList<string> arguments) => throw Unsupported();
         public CommandResult CoverAtom(IReadOnlyList<string> arguments) => throw Unsupported();
+        public CommandResult CoverBatch(IReadOnlyList<string> arguments) => throw Unsupported();
 
         public CommandResult QuarantineAtom(IReadOnlyList<string> arguments) => throw Unsupported();
         public CommandResult SettleAtom(IReadOnlyList<string> arguments) => throw Unsupported();
         public CommandResult DecomposeAtom(IReadOnlyList<string> arguments) => throw Unsupported();
-        public CommandResult AlignScribeReceipt(IReadOnlyList<string> arguments) => throw Unsupported();
+        public CommandResult StripScribeReceipts(IReadOnlyList<string> arguments) => throw Unsupported();
         public CommandResult Route(IReadOnlyList<string> arguments) => throw Unsupported();
         public CommandResult SelfTest(IReadOnlyList<string> arguments) => throw Unsupported();
         public CommandResult RenderDag(IReadOnlyList<string> arguments) => throw Unsupported();

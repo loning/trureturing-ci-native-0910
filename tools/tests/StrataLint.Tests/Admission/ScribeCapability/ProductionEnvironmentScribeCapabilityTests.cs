@@ -99,16 +99,6 @@ public sealed partial class ProductionEnvironmentTests
         var ledger = MapOnlyEntry(IngestLedger(atomizerId, atom), entry => entry with
         {
             Coverage = [new DigestionCoverageEdge(coveredGid, targetStatementId)],
-            Receipts = entry.Receipts with
-            {
-                Scribe =
-                [
-                    new DigestionScribeReceipt(
-                        coveredGid,
-                        definitionHash,
-                        emissionHash),
-                ],
-            },
             ProjectedStatus = new DigestionStatus(
                 DigestionMigrationState.Absorbed,
                 DigestionTruthState.Closed),
@@ -196,16 +186,7 @@ public sealed partial class ProductionEnvironmentTests
         const string changedEmission = "# Candidate changed a previously verified emission\n";
         var changedEmissionHash = DigestionFingerprint.Compute(
             Encoding.UTF8.GetBytes(changedEmission)).RawSha256;
-        var changedLedger = MapOnlyEntry(ledger, entry => entry with
-        {
-            Receipts = entry.Receipts with
-            {
-                Scribe = entry.Receipts.Scribe.Select(receipt => receipt with
-                {
-                    EmissionSha256 = changedEmissionHash,
-                }).ToImmutableArray(),
-            },
-        });
+        var changedLedger = ledger;
         var changedFiles = new Dictionary<string, string>(fixture.Files, StringComparer.Ordinal)
         {
             [emissionPath] = changedEmission,
@@ -387,16 +368,6 @@ public sealed partial class ProductionEnvironmentTests
                         coverageGid,
                         FrozenStatementReceiptTestData.Id('b')),
                 ],
-                Receipts = entry.Receipts with
-                {
-                    Scribe =
-                    [
-                        new DigestionScribeReceipt(
-                            coverageGid,
-                            definitionSha256,
-                            stockEmissionSha256),
-                    ],
-                },
             });
             DirectoryLedgerTestSupport.ReplaceWithProjection(files, document);
         }

@@ -3,6 +3,7 @@
    mirror-B: D5/B/S3/Weil/Budget/CirclePrimalEquivalence
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
+   utility: none
    digest: The circle primal equals the maximal Haar floor and its residual formulation. -/
 
 import D5.S3.Weil.Budget.FullCirclePrimalAttainment

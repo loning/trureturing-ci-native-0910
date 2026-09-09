@@ -49,6 +49,9 @@ internal sealed class StubCliEnvironment(
     public ExplicitCommandResult FileMapConform(IReadOnlyList<string> arguments) =>
         fileMapConform ?? new(2, string.Empty, "filemap conformance is not configured in this fixture");
 
+    public ExplicitCommandResult LeanUtilityInput(IReadOnlyList<string> arguments) =>
+        new(0, "[]\n", string.Empty);
+
     public ExplicitCommandResult DepositHeaderCheck(IReadOnlyList<string> arguments) =>
         new(2, string.Empty, "deposit header check is not configured in this fixture");
 
@@ -64,6 +67,9 @@ internal sealed class StubCliEnvironment(
     public CommandResult CoverAtom(IReadOnlyList<string> arguments) =>
         new(false, string.Empty, "cover-atom is not configured in this fixture");
 
+    public CommandResult CoverBatch(IReadOnlyList<string> arguments) =>
+        new(false, string.Empty, "cover-batch is not configured in this fixture");
+
     public CommandResult QuarantineAtom(IReadOnlyList<string> arguments) =>
         new(false, string.Empty, "quarantine-atom is not configured in this fixture");
 
@@ -73,8 +79,6 @@ internal sealed class StubCliEnvironment(
     public CommandResult DecomposeAtom(IReadOnlyList<string> arguments) =>
         new(false, string.Empty, "decompose-atom is not configured in this fixture");
 
-    public CommandResult AlignScribeReceipt(IReadOnlyList<string> arguments) =>
-        new(false, string.Empty, "align-scribe-receipt is not configured in this fixture");
 
     public CommandResult Route(IReadOnlyList<string> arguments) =>
         new(false, string.Empty, "route is not configured in this fixture");

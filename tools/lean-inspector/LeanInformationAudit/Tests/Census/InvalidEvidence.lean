@@ -9,7 +9,7 @@ private def alterFinite (f : {key : StatementKey} → FiniteOccurrenceDispositio
     FiniteOccurrenceDisposition key) : DispositionInventory :=
   { inventory with entries := inventory.entries.map fun ⟨key, disposition⟩ =>
       ⟨key, match disposition with
-        | .finiteOccurrence value => .finiteOccurrence (f value)
+        | .certified (.finiteOccurrence value) => .certified (.finiteOccurrence (f value))
         | value => value⟩ }
 
 /-- error: IE-C037 DispositionClassMismatch theorem=LeanInformationAudit.Tests.SealSuccess.idTheorem class=finite_occurrence invalid=state_enumeration_certificate -/
@@ -28,7 +28,8 @@ private def alterStructural (f : {key : StatementKey} → StructuralOccurrenceDi
     StructuralOccurrenceDisposition key) : DispositionInventory :=
   { inventory with entries := inventory.entries.map fun ⟨key, disposition⟩ =>
       ⟨key, match disposition with
-        | .structuralOccurrence value => .structuralOccurrence (f value)
+        | .certified (.structuralOccurrence value) =>
+          .certified (.structuralOccurrence (f value))
         | value => value⟩ }
 
 /-- error: IE-C038 MissingStructuralWitness theorem=LeanInformationAudit.Tests.Census.Evidence.structuralTheorem arena=LeanInformationAudit.Tests.Census.Evidence.infiniteArena missing=witness_certificate -/
@@ -55,7 +56,8 @@ private def alterBounded (f : {key : StatementKey} → BoundedFiniteTruncationDi
     BoundedFiniteTruncationDisposition key) : DispositionInventory :=
   { inventory with entries := inventory.entries.map fun ⟨key, disposition⟩ =>
       ⟨key, match disposition with
-        | .boundedFiniteTruncation value => .boundedFiniteTruncation (f value)
+        | .certified (.boundedFiniteTruncation value) =>
+          .certified (.boundedFiniteTruncation (f value))
         | value => value⟩ }
 
 /-- error: IE-C037 DispositionClassMismatch theorem=LeanInformationAudit.Tests.Census.Evidence.boundedTheorem class=bounded_finite_truncation invalid=comparison_statement -/
@@ -80,7 +82,8 @@ run_cmd liftTermElabM do
   validateEvidence `LeanInformationAudit.Tests.Census.Evidence {
     inventory with entries := inventory.entries.map fun ⟨key, disposition⟩ =>
       ⟨key, match disposition with
-        | .unreachable value => .unreachable { value with reason := .noFinitePrimitiveBundle }
+        | .certified (.unreachable value) =>
+          .certified (.unreachable { value with reason := .noFinitePrimitiveBundle })
         | value => value⟩ }
 
 #print axioms aliasArena
@@ -92,7 +95,7 @@ theorem structuralAlias : ∀ n : Nat, n % 2 < 2 := structuralTheorem
 run_cmd liftTermElabM do
   let key : StatementKey := ⟨``structuralAlias, "alias-id"⟩
   let rows := inventory.entries.filterMap fun entry => match entry.2 with
-    | .structuralOccurrence value => some ⟨key, AnalysisDisposition.structuralOccurrence {
+    | .certified (.structuralOccurrence value) => some ⟨key, .certified <| AnalysisDisposition.structuralOccurrence {
         canonicalArena := value.canonicalArena
         registration := value.registration
         «realization» := value.realization

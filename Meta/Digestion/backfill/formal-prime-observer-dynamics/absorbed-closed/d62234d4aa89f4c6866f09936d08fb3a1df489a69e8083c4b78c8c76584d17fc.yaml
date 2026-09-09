@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Factorization/Galois/ClassFunctionSeparationRate.finite_group_success_rate_eq_conjugacy_class_count
     target_statement_id: sha256:15b7d63df0552a3ab65b68f4d06747436b6a2abff2eece40a3a24c46dd00208d
 receipts:
-  scribe:
-    - gid: D5/S3/Factorization/Galois/ClassFunctionSeparationRate.finite_group_success_rate_eq_conjugacy_class_count
-      definition_sha256: sha256:218808fc036027cab2dd156d4b4addcd56edba0a9cfaeb8a539c6511d78fe0ef
-      emission_sha256: sha256:d2d68a816e3e2e2ac35af07689fc62d435f9c607091857503d4752eeb377701c
   unresolved_subitems: []

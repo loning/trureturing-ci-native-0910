@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S3/Arith/Congruence/QuarticThirtySix.thirtySix_dvd_m
     target_statement_id: sha256:de8a0a63d15fb7da7cf05150b0837994eb7705cc6b6e23f6b441c6a4ae811aea
 receipts:
-  scribe:
-    - gid: D5/S3/Arith/Congruence/QuarticThirtySix.thirtySix_dvd_m
-      definition_sha256: sha256:5835d798ffda82d999188cca695c455526bc6df38aef9240c13dc3f8fa4bad6f
-      emission_sha256: sha256:da0dcac5f3165485a2d41668412cbf78a6385114e34157654d0eff93f3b8559a
   unresolved_subitems: []

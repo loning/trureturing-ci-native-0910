@@ -87,7 +87,7 @@ public sealed class CoverageStatementReceiptTests
                 new DigestionCoverageEdge(DeclarationGid, targetStatementId),
                 new DigestionCoverageEdge(unresolvedGid, null),
             ],
-            new DigestionReceipts([], [], [], null),
+            new DigestionReceipts([], [], null),
             new DigestionStatus(DigestionMigrationState.Partial, DigestionTruthState.Closed),
             fingerprints.RawSha256);
         var document = Document(AtomizerRegistry.NoAtomizerId, [entry]);
@@ -418,7 +418,7 @@ public sealed class CoverageStatementReceiptTests
             DigestionMigrationState.Absorbed,
             DigestionTruthState.Closed,
             [],
-            new DigestionReceipts([], [], [], null)) with
+            new DigestionReceipts([], [], null)) with
         {
             Coverage = [receipt],
         };

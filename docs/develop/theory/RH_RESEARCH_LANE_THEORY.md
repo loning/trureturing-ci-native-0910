@@ -6397,6 +6397,1904 @@ RH
 \rightarrow
 \texttt{OfflineZeroPickIndexLowerBound}.
 }
+
+---
+
+## [PR #5065] CANONICAL_ZERO_DATA_NONVACUITY
+
+# Canonical `ZeroData` inhabitant 与全称命题非空洞性
+
+**候选 GID：**
+
+- `D5/S3/Weil/ZetaBridge/RiemannVonMangoldtCountGrowth`
+- `D5/S3/Weil/ZetaBridge/CanonicalZeroDataFromRiemannVonMangoldt`
+- `D5/S3/Weil/ZetaBridge/ZeroDataSemanticNonvacuity`
+- `D5/S3/Weil/ZetaBridge/CanonicalZeroDataProvider`
+- `D5/S3/Weil/ZetaBridge/CanonicalZeroDataNonvacuityAssembly`
+
+## 1. 语义空洞位于 `ZeroData` 的外层类型
+
+仓库的 `ZeroData` 使用固定索引类型 `ℕ`。一旦存在一个值
+
+```lean
+Z : ZeroData
+```
+
+则 `Z.zero 0` 已经是由结构字段证明的非平凡 zeta 零点。因此本路线中的语义空洞风险不来自单个 `ZeroData` 的索引集为空，而来自类型 `ZeroData` 本身可能没有 inhabitant。
+
+此时一个命题
+
+\[
+\forall Z:\operatorname{ZeroData},\;P(Z)
+\]
+
+可以在没有任何零点枚举被实例化时成立。
+
+新节点定义：
+
+\[
+\boxed{
+\operatorname{RealizedZeroDataClaim}(P)
+\iff
+\exists Z:\operatorname{ZeroData},\;P(Z).
+}
+\]
+
+并形式化两条逻辑边：
+
+\[
+\neg\operatorname{Nonempty}(\operatorname{ZeroData})
+\Longrightarrow
+\forall Z:\operatorname{ZeroData},\;P(Z),
+\]
+
+\[
+\operatorname{Nonempty}(\operatorname{ZeroData})
+\land
+\bigl(\forall Z:\operatorname{ZeroData},\;P(Z)\bigr)
+\Longrightarrow
+\exists Z:\operatorname{ZeroData},\;P(Z).
+\]
+
+所以后续审计必须区分“全称条件定理已经证明”和“该定理已经在真实 zeta 零点枚举上实现”。
+
+## 2. Riemann–von Mangoldt 关闭非空洞链
+
+`RiemannVonMangoldtCountGrowth` 从仓库已有结构字段中抽取：
+
+\[
+N_Z(T,2T)
+=
+\frac{T}{2\pi}\ell_1(T)+O(\log T),
+\]
+
+并证明：
+
+\[
+\boxed{
+N_Z(T,2T)\longrightarrow+\infty.
+}
+\]
+
+将其应用于 set-level canonical source `Zeta23.zetaZeroConfig`，得到：
+
+\[
+\boxed{
+\begin{aligned}
+&\operatorname{RiemannVonMangoldt}
+  (\operatorname{zetaZeroConfig})
+\\
+&\Longrightarrow
+N(T,2T)\to\infty
+\\
+&\Longrightarrow
+\operatorname{zetaZeroConfig.carrier}\text{ infinite}
+\\
+&\Longrightarrow
+\{\rho:\operatorname{IsNontrivialZero}(\rho)\}\text{ infinite}
+\\
+&\Longrightarrow
+\operatorname{Nonempty}(\operatorname{ZeroData}).
+\end{aligned}
+}
+\]
+
+最后一箭头直接复用仓库已有的精确定理：
+
+\[
+\operatorname{Nonempty}(\operatorname{ZeroData})
+\iff
+\{\rho:\operatorname{IsNontrivialZero}(\rho)\}\text{ infinite}.
+\]
+
+因此新节点没有再次构造可数性、枚举、解析重数、反射、共轭或局部有限性证明。
+
+## 3. Canonical provider 的含义
+
+定义：
+
+```lean
+structure CanonicalZeroDataSource : Prop where
+  riemannVonMangoldt :
+    Zeta23.RiemannVonMangoldt Zeta23.zetaZeroConfig
+```
+
+由该 source 选择：
+
+\[
+\operatorname{canonicalZeroData}(S)
+:
+\operatorname{ZeroData}.
+\]
+
+该值满足：
+
+1. 每个枚举项都是真实非平凡 zeta 零点；
+2. 每个真实非平凡 zeta 零点恰有一个自然数索引；
+3. 存储的解析重数严格为正；
+4. `ρ ↦ 1 - ρ` 的函数方程反射在索引上忠实实现并保持重数；
+5. 复共轭在索引上忠实实现并保持重数；
+6. 每个对称谱半径截断是有限集。
+
+“canonical”在此表示 canonical zeta-zero object 及其不依赖枚举的观察量。自然数排序由 classical choice 选出，不声称是可计算或唯一的顺序。
+
+仓库已有枚举不变性定理被直接复用。对任何另一份 `Z : ZeroData`：
+
+\[
+\operatorname{truncatedZeroSum}
+(\operatorname{canonicalZeroData}(S),g,T)
+=
+\operatorname{truncatedZeroSum}(Z,g,T),
+\]
+
+对应的 `SymmetricConvergent` 命题等价，收敛后的 `zeroSum` 值相等。
+
+## 4. 最终 certificate 与闭合主定理
+
+`CanonicalZeroDataCertificate` 将下游消费者所需义务显式打包：
+
+```text
+actual ZeroData value
+exact representation
+unique exhaustive index
+positive analytic multiplicity
+reflection fidelity
+conjugation fidelity
+finite symmetric cutoffs
+```
+
+其精确表示定理为：
+
+\[
+\boxed{
+\operatorname{IsNontrivialZero}(\rho)
+\iff
+\exists!n\in\mathbb N,\ C.data.zero(n)=\rho.
+}
+\]
+
+主装配定理：
+
+```lean
+canonical_zeroData_closed_chain
+```
+
+证明：
+
+\[
+\boxed{
+\operatorname{RvM}(\mathcal Z_\zeta)
+\Longrightarrow
+\left[
+\mathcal Z_\zeta\text{ infinite}
+\land
+\operatorname{Nonempty}(\operatorname{ZeroData})
+\land
+\exists C:\operatorname{CanonicalZeroDataCertificate}
+\right].
+}
+\]
+
+扩展定理 `exists_faithful_zeroData_of_riemannVonMangoldt` 直接返回一个实际 `ZeroData`，以及全部表示、重数、对称和局部有限保证。
+
+## 5. 全称命题的语义实现
+
+对任意谓词：
+
+```lean
+P : ZeroData → Prop
+```
+
+如果已经证明：
+
+```lean
+h : ∀ Z : ZeroData, P Z
+```
+
+则 canonical source 给出：
+
+\[
+\boxed{
+\exists C:\operatorname{CanonicalZeroDataCertificate},
+\quad
+P(C.data)
+\land
+\exists\rho:\mathbb C,
+\operatorname{IsNontrivialZero}(\rho).
+}
+\]
+
+因此围绕 `ZeroData` 的全称定理可以被实例化到一个真实、穷尽、重数忠实的 zeta 零点枚举上。外层类型为空导致的语义空洞由该 certificate 消除。
+
+## 6. 当前 claim boundary
+
+本 PR 关闭的是以下完整逻辑链：
+
+\[
+\boxed{
+\begin{aligned}
+\operatorname{RiemannVonMangoldt}
+  (\operatorname{zetaZeroConfig})
+&\Longrightarrow
+N(T,2T)\to\infty
+\\
+&\Longrightarrow
+\text{nontrivial-zero set infinite}
+\\
+&\Longrightarrow
+\operatorname{Nonempty}(\operatorname{ZeroData})
+\\
+&\Longrightarrow
+\text{actual exhaustive multiplicity-aware enumeration}
+\\
+&\Longrightarrow
+\text{canonical provider and certificate}
+\\
+&\Longrightarrow
+\text{universal ZeroData claims are realized}.
+\end{aligned}
+}
+\]
+
+`RiemannVonMangoldt zetaZeroConfig` 在本 PR 中仍作为显式 source。把 provider 进一步升级为 hypothesis-free 常量，需要将仓库中的 global Riemann–von Mangoldt assembly 独立接入该 source。该剩余步骤属于解析数论 owner 的实例化，不再是 `ZeroData` 的枚举、重数、对称或语义逻辑缺口。
+
+本节不声明 RH，不使用 RH，也不把尚未经过 admission 的 Candidate 描述为 Frozen。
+
+---
+
+## [PR #5065] UNCONDITIONAL_CANONICAL_ZERO_DATA_CLOSURE
+
+# 无参数 `zetaZeroData` 与解析来源闭合
+
+本增补恢复本 PR 误删的历史理论段，并把此前显式接收 `RiemannVonMangoldt zetaZeroConfig` 的条件链升级为无参数机器构造。
+
+新增 proof-complete 路径为：
+
+\[
+\boxed{
+\begin{aligned}
+\texttt{GammaStirlingVert.mu\_stirling}
+&\Longrightarrow \texttt{GammaFacts},\\
+\texttt{GammaFacts}
+&\Longrightarrow \texttt{RiemannVonMangoldt(zetaZeroConfig)},\\
+\texttt{RiemannVonMangoldt}
+&\Longrightarrow N(T,2T)\to\infty,\\
+&\Longrightarrow \mathcal Z_\zeta\text{ infinite},\\
+&\Longrightarrow \operatorname{Nonempty}(\texttt{ZeroData}),\\
+&\Longrightarrow \texttt{zetaZeroData : ZeroData}.
+\end{aligned}
+}
+\]
+
+机器 owner 为：
+
+```text
+D5/S3/Weil/ZetaGamma/GammaIntMu.lean
+D5/S3/Weil/ZetaGamma/GammaFactsComplete.lean
+D5/S3/Weil/ZetaPntBase/ZetaConj.lean
+D5/S3/Weil/ZetaRvm/Defs.lean
+D5/S3/Weil/ZetaRvm/NcountWindow.lean
+D5/S3/Weil/ZetaRvm/GammaSide.lean
+D5/S3/Weil/ZetaRvm/BacklundDefs.lean
+D5/S3/Weil/ZetaRvm/ReZeroCount.lean
+D5/S3/Weil/ZetaRvm/Backlund.lean
+D5/S3/Weil/ZetaRvm/Fold.lean
+D5/S3/Weil/ZetaRvm/MainTerm.lean
+D5/S3/Weil/ZetaRvm/Statement.lean
+D5/S3/Weil/ZetaBridge/UnconditionalCanonicalZeroData.lean
+```
+
+`zetaZeroData` 是一个固定的自然数索引 presentation。其顺序由 `Classical.choice` 选出。canonical 内容位于它穷尽表示的真实非平凡零点集合、解析重数、反射与共轭作用，以及已经证明为枚举不变的零点观察量。
+
+无参数接口闭合以下事实：
+
+1. `ZeroData` 确实有 inhabitant；
+2. 每个 `zetaZeroData.zero n` 都是真实非平凡 zeta 零点；
+3. 每个真实非平凡零点恰有一个索引；
+4. 存储重数是严格正的解析零点阶；
+5. 函数方程反射与复共轭由索引置换忠实实现，并保持重数；
+6. 每个对称谱半径截断有限；
+7. 枚举上的全称命题与真实非平凡零点上的全称命题等价；
+8. 围绕 `ZeroData` 的任意全称结构定理都可以直接实例化到 `zetaZeroData`。
+
+本增补没有为自然数编号赋予高度排序、可计算性或内在意义，也没有使用 RH。它关闭的是实际零点对象进入既有 `ZeroData` consumer DAG 的语义入口。
+
+
+---
+
+## [PR #5065] MIRROR_KREIN_OPERATOR_GEOMETRY
+
+# 无参数 zeta 零点的镜像 Krein 算子几何
+
+**候选 GID：**
+
+```text
+D5/S3/Weil/ZetaBridge/ZeroDataPresentationEquiv
+D5/S3/Midline/Cayley/CanonicalZetaMirrorFundamentalSymmetry
+D5/S3/Midline/Cayley/CanonicalZetaCayleyJUnitary
+D5/S3/Midline/Cayley/FiniteMirrorKreinIndex
+```
+
+本节建立在同一 PR 的无参数对象 `zetaZeroData : ZeroData` 之上。全部陈述在 admission 完成以前属于 Candidate，Lean 声明承担唯一承重角色。
+
+### 1. presentation 选择与 canonical 内容
+
+任意两个 `ZeroData` 值之间存在唯一的零点保持重标号：
+
+\[
+e_{Z,Z'}:\mathbb N\simeq\mathbb N,
+\qquad
+Z'.\operatorname{zero}(e_{Z,Z'}n)=Z.\operatorname{zero}(n).
+\]
+
+该等价同时保持解析重数、谱参数、函数方程反射、复共轭和同高度镜像，并满足恒等、逆与复合律。因此自然数编号仍是 choice-based presentation，零点、重数、对称作用以及沿唯一重标号运输的观察量具有 presentation-independent 内容。
+
+### 2. 同高度镜像与固定点
+
+定义 \(M_Z=C_Z\circ R_Z\)，其中 \(R_Z\) 是函数方程反射，\(C_Z\) 是复共轭。机器节点证明：
+
+\[
+Z.\operatorname{zero}(M_Zn)=1-\overline{Z.\operatorname{zero}(n)},
+\]
+
+\[
+M_Z^2=I,
+\qquad
+m_{M_Zn}=m_n,
+\qquad
+\gamma_{M_Zn}=\overline{\gamma_n},
+\]
+
+以及：
+
+\[
+\boxed{M_Zn=n\iff\operatorname{Re}\rho_n=\frac12.}
+\]
+
+所以临界线是由函数方程与实结构预先确定的 involution 固定集。
+
+### 3. fundamental symmetry 与严格负方向
+
+镜像通过解析重数提升到：
+
+\[
+\mathcal I_Z=\sum_{n:\mathbb N}\operatorname{Fin}(m_n),
+\]
+
+并在 \(\mathcal H_Z=\ell^2(\mathcal I_Z)\) 上给出 involutive linear isometry \(J_Z\)。机器节点证明：
+
+\[
+J_Z^2=I,
+\qquad
+\langle J_Z\psi,\phi\rangle=\langle\psi,J_Z\phi\rangle.
+\]
+
+定义：
+
+\[
+[\psi,\phi]_{J_Z}=\langle\psi,J_Z\phi\rangle.
+\]
+
+每个被镜像移动的坐标 \(v\) 给出奇向量 \(v_-=e_v-J_Ze_v\)，并满足：
+
+\[
+J_Zv_-=-v_-,
+\qquad
+[v_-,v_-]_{J_Z}=-\|v_-\|^2<0.
+\]
+
+### 4. Cayley 算子无条件 J-unitary
+
+对 \(c(\rho)=(\rho-1)/\rho\)，镜像坐标满足：
+
+\[
+c(1-\overline\rho)=\overline{c(\rho)}^{-1}.
+\]
+
+因此 multiplicity-expanded 对角 Cayley 算子 \(U_Z\) 满足：
+
+\[
+\boxed{U_Z^*J_ZU_Z=J_Z.}
+\]
+
+该结论只使用函数方程与复共轭对称，不使用 RH。普通 Hilbert 酉性是更强的临界线条件。
+
+### 5. 有限镜像 Krein 指数
+
+在有限对称谱窗口 \(S_T\) 中，从每个非固定二元镜像轨道选一个代表，并按解析重数展开。定义：
+
+\[
+\kappa_T=\sum_{\substack{n\in S_T\\n<M_Zn}}m_n.
+\]
+
+机器节点证明有限奇坐标空间的基数为 \(\kappa_T\)，其标准负型在每个非零向量上严格为负，并且：
+
+\[
+\boxed{\kappa_T=0\iff\forall n\in S_T,\ \operatorname{Re}\rho_n=\frac12.}
+\]
+
+---
+
+## [PR #5065] MIRROR_KREIN_SECOND_LAYER_CLOSURE
+
+# 换枚举不变性、正交偶奇分解、Krein 逆与真实 Gram 惯性
+
+**候选 GID：**
+
+```text
+D5/S3/Midline/Cayley/ZeroDataHilbertPresentationTransport
+D5/S3/Midline/Cayley/CanonicalZetaMirrorEvenOddDecomposition
+D5/S3/Midline/Cayley/CanonicalZetaCayleyKreinInverse
+D5/S3/Midline/Cayley/FiniteMirrorKreinGramInertia
+```
+
+### 1. 整个 Hilbert 算子系统与 presentation 无关
+
+唯一零点保持重标号提升为 unitary：
+
+\[
+T_{Z,Z'}:\mathcal H_Z\simeq_u\mathcal H_{Z'}.
+\]
+
+它同时满足：
+
+\[
+TJ_Z=J_{Z'}T,
+\qquad
+TU_Z=U_{Z'}T,
+\qquad
+[T\psi,T\phi]_{J_{Z'}}=[\psi,\phi]_{J_Z}.
+\]
+
+因此镜像、Cayley 动力学和不定内积不依赖 choice-based 自然数编号。
+
+### 2. 规范化偶奇投影
+
+定义：
+
+\[
+P_+=\frac{I+J}{2},
+\qquad
+P_-=\frac{I-J}{2}.
+\]
+
+机器节点证明幂等性、互相湮灭、精确重建、\(\pm1\) 镜像本征律和 Hilbert 正交性。Krein 能量精确分解为：
+
+\[
+\boxed{\operatorname{Re}[\psi,\psi]_J=\|P_+\psi\|^2-\|P_-\psi\|^2.}
+\]
+
+所以负扇区是实际 mirror-odd spectral range。
+
+### 3. 显式有界 Krein 逆
+
+镜像互反使倒数 Cayley 系数可以由已有有界系数经镜像置换和共轭获得。由此构造有界双侧逆，并证明：
+
+\[
+\boxed{U^{-1}=JU^*J,}
+\qquad
+UJU^*=J.
+\]
+
+这一步不需要普通酉性或 RH。
+
+### 4. 真实有限奇向量 Gram 惯性
+
+对每个有限镜像轨道代表和每个重数副本，取实际 Hilbert 奇向量 \(v_i^-=e_i-Je_i\)。机器节点计算：
+
+\[
+[v_i^-,v_j^-]_J=-2\delta_{ij}.
+\]
+
+因此实际 Gram 矩阵是 \(G_T^-=-2I\)，并由仓库统一惯性接口证明：
+
+\[
+\boxed{\operatorname{negIndex}(G_T^-)=\kappa_T.}
+\]
+
+该定理确认零点目标几何本身拥有 \(\kappa_T\) 维负空间。它不意味着指定的标量 Weil 观察器能覆盖该完整 multiplicity-expanded 空间。
+
+---
+
+## [PR #5065] REDUCED_WEIL_OBSERVER_AND_MULTI_ORBIT_NEGATIVITY
+
+# 标量偶 Weil 观察器的可达空间、约化因子分解与多轨道负证书
+
+**候选 GID：**
+
+```text
+D5/S3/Weil/ZetaBridge/WeilEvaluationObservableSubspace
+D5/S3/Weil/ZetaBridge/FiniteMirrorReducedWeilFactorization
+D5/S3/Weil/ZetaBridge/FiniteEvenWeilOddInterpolation
+D5/S3/Weil/ZetaBridge/QuantitativeMultiOrbitWeilNegativeCertificate
+```
+
+本增补修正“标量偶 Weil 测试满秩覆盖完整 multiplicity-expanded mirror-odd 空间”的过强目标。真实观察器只访问一个约化空间。所有新陈述在 admission 完成以前属于 Candidate。
+
+### 1. 两个真实秩障碍
+
+对有限窗口 \(I_T\)，标量评价为：
+
+\[
+E_T(g)(n)=\widehat g(\gamma_n),
+\qquad
+\widetilde E_T(g)(n,k)=\widehat g(\gamma_n).
+\]
+
+所以评价在每个解析重数纤维上常值，不能区分同一零点的不同副本。
+
+同时，`WeilTestFunction` 的偶性给出 \(\widehat g(-z)=\widehat g(z)\)，而 \(\gamma_{R(n)}=-\gamma_n\)。因此：
+
+\[
+E_T(g)(R(n))=E_T(g)(n).
+\]
+
+新节点构造显式目标向量并证明：
+
+\[
+m_n\ge2\Longrightarrow\widetilde E_T\text{ 不满射},
+\]
+
+以及窗口中存在移动的反射对时：
+
+\[
+E_T\text{ 不满射到全部 distinct-zero vectors}.
+\]
+
+这说明 ambient Krein 负空间和 observer-reachable 负空间必须分开计算。
+
+### 2. 约化有限镜像形式
+
+定义 `FiniteReflectionEvenVector Z T` 为满足反射偶约束的 distinct-zero 向量。解析重数作为形式中的正权重保留，不再被重复解释为独立标量观察坐标。
+
+对 \(v_g(n)=\widehat g(\gamma_n)\)，定义：
+
+\[
+B_T(v,w)=\sum_{n\in I_T}m_n v(n)\overline{w(M(n))}.
+\]
+
+机器节点证明实际有限卷积平方零点和满足：
+
+\[
+\boxed{\operatorname{truncatedZeroSum}(Z,\operatorname{convolutionSquare}(g),T)=B_T(v_g,v_g).}
+\]
+
+对任意有限选择的非实离线四点轨道块，已有单轨道公式被聚合为：
+
+\[
+\boxed{Q_{\mathrm{block}}=E_{\mathrm{even}}-E_{\mathrm{odd}},\qquad E_{\mathrm{even}},E_{\mathrm{odd}}\ge0.}
+\]
+
+### 3. 约化奇空间上的显式线性插值
+
+`FiniteEvenWeilOrbitFrame` 记录有限个离线非实轨道通道及其两组节点 \(\gamma_i,\overline{\gamma_i}\)，并显式携带仓库有限偶插值定理所需的 sign-separation 条件。
+
+对任意 \(a:\iota\to\mathbb C\)，机器节点构造偶 Weil 测试函数，使：
+
+\[
+\widehat g(\gamma_i)=a_i,
+\qquad
+\widehat g(\overline{\gamma_i})=-a_i.
+\]
+
+约化奇读数：
+
+\[
+O_i(g)=\frac{\widehat g(\gamma_i)-\widehat g(\overline{\gamma_i})}{2}
+\]
+
+于是满足 \(O_i(g)=a_i\)。节点进一步选择坐标测试函数 \(g_i\)，定义显式有限线性合成：
+
+\[
+S(a)=\sum_i a_i g_i,
+\]
+
+并证明：
+
+\[
+\boxed{O_j(S(a))=a_j.}
+\]
+
+因此 \(S\) 是约化奇读数的右逆，并且是单射。
+
+### 4. 可观察奇 Gram 的精确负指数
+
+定义约化奇形式：
+
+\[
+B^-(g,h)=-4\sum_i m_i\overline{O_i(g)}O_i(h).
+\]
+
+坐标插值基满足 \(B^-(g_i,g_j)=-4m_i\delta_{ij}\)。所以真实可观察奇 Gram 为：
+
+\[
+\boxed{G_{\mathrm{obs}}^-=-4\operatorname{diag}(m_i).}
+\]
+
+解析重数严格为正，因此：
+
+\[
+\boxed{\operatorname{negIndex}(G_{\mathrm{obs}}^-)=|\iota|.}
+\]
+
+每个 independently interpolated orbit channel 贡献一个负方向。重数决定权重与稳定裕量，不增加标量观察器维数。
+
+### 5. 整个负子空间的定量稳定性
+
+对一般有限权重 \(w_i\ge m>0\)，定义 \(Q_0(a)=-\sum_iw_i|a_i|^2\)。若完整形式满足：
+
+\[
+Q(a)=Q_0(a)+R(a),
+\]
+
+并且存在统一二次余项界：
+
+\[
+|R(a)|\le\varepsilon\sum_i|a_i|^2\quad\text{对所有 }a,
+\]
+
+且 \(\varepsilon<m\)，则新通用定理证明：
+
+\[
+\boxed{a\ne0\Longrightarrow Q(a)<0.}
+\]
+
+这是整个有限维负子空间的稳定性结论。仅逐基向量控制余项不足，因为交叉项仍可能破坏线性组合上的负定性。
+
+在 Weil 特化中：
+
+\[
+Q_{\mathrm{target}}(a)=-4\sum_i m_i|a_i|^2,
+\]
+
+\[
+Q_{\mathrm{full}}(a)=\operatorname{Re}\operatorname{zeroSum}\left(Z,S(a)*\widetilde{S(a)}\right),
+\]
+
+并精确定义 \(R(a)=Q_{\mathrm{full}}(a)-Q_{\mathrm{target}}(a)\)。`QuantitativeMultiOrbitCertificate` 只要求一个正重数下界 \(m_*\)、统一余项界和 \(\varepsilon<4m_*\)。随后得到：
+
+\[
+\boxed{a\ne0\Longrightarrow Q_{\mathrm{full}}(a)<0,}
+\]
+
+且合成映射 \(S\) 单射。这给出一整个有限维、彼此独立的严格负完整 Weil 测试族。
+
+### 6. 与现有单轨道 separator 的关系
+
+仓库已有 `OffLineNonrealZeroNegativeWeilSquare` 使用 finite even interpolation、closed-strip Fourier–Laplace decay、convolution-power amplification 和 absolute zero summability，将一个指定离线轨道的负贡献压过其余零点尾项。
+
+新多轨道链没有重复该单轨道构造。它抽取了多维推广所需的正确接口：
+
+\[
+\boxed{\text{统一余项的 operator-norm 型二次界}}
+\]
+
+而不是每个坐标单独的标量尾界。
+
+下一解析节点应从已有 Burnol powering 与 closed-strip decay 中构造 `HasUniformMultiOrbitRemainderBound F epsilon`，并证明其 \(\varepsilon\) 可低于 \(4m_*\)。
+
+### 7. 当前严格边界
+
+本轮已经形式化：
+
+1. scalar even Weil evaluation 的 multiplicity-fiber constancy；
+2. functional-equation reflection evenness；
+3. 对 ambient expanded space 和 unrestricted distinct-zero space 的显式非满射证书；
+4. 有限实际卷积平方零点和的约化镜像因子分解；
+5. 有限 orbit block 的 even-minus-odd 聚合；
+6. sign-separated 多轨道约化奇读数的同时插值；
+7. 显式有限线性 right inverse；
+8. 可观察奇 Gram \( -4\operatorname{diag}(m_i) \)；
+9. 其负指数等于独立可观察轨道数；
+10. 统一二次余项小于最小负裕量时，整个有限维负子空间保持严格负定；
+11. 对真实 `zeroSum` 的条件性多轨道负测试族。
+
+本轮没有证明任意未经筛选的有限轨道集合自动满足 frame 的 sign-separation，也没有从 zeta 尾项具体构造 uniform multi-orbit remainder bound。它没有把 observer negative index 与完整 multiplicity-expanded ambient Krein index混同，也没有证明无限维负指数稳定、prime-side coercivity 或 RH。
+
+### 8. 下一承重方向
+
+下一条分析真源应为：
+
+```text
+MultiOrbitBurnolUniformRemainder
+```
+
+目标是从已有 closed-strip decay、convolution power 和绝对零点可和性，给有限 frame 构造共同 peak packet 与共同 exception killer，并证明：
+
+\[
+|R_N(a)|\le\varepsilon_N\|a\|_2^2,
+\qquad
+\varepsilon_N\to0.
+\]
+
+关键义务包括全部选定轨道上的目标读数同时保持、其余有限异常零点同时消去、远端零点统一几何衰减、交叉项按 Gram/operator norm 共同控制，以及常数随 frame 大小与最小节点分离显式记账。
+
+
+---
+
+## [PR #5065] UNIFORM_MULTI_ORBIT_BURNOL_REMAINDER
+
+Candidate formalization, 2026-09-05. No successful Lean compilation or axiom audit is claimed by this source-write operation. The reviewed development baseline was `a2412c6c5cbfdcf38145b6386ac54a3cdc536408`; the existing candidate frame APIs were read at `fcfc744126d37ede7750dbecc4b840b5a8923bd7`. This increment stays on the existing draft PR, without merge or rebase.
+
+### Correction and library-first reuse
+
+Scalar even Weil tests remain constant on multiplicity copies and under functional-equation reflection. The result concerns independently observable four-point orbit channels. Multiplicity sets a weight and margin, not extra scalar rank.
+
+The earlier basis constructor chose a witness after forgetting its full signed values. It is now selected from `exists_even_weil_frame_interpolant`. The public `frameOddBasisTest_target_values` and `frameOddSynthesis_target_values` retain the exact +a/-a values and hence zero target even channel.
+
+Eight previously private helper declarations in the existing single-orbit Burnol owner are made public with unchanged proof bodies. These supply the reflection quotient, gamma injectivity, sign separation, actual zero summability, geometric-depth choice, and equality of the symmetric zero sum with its ordinary tsum. They are reused rather than independently redefined.
+
+### Closed finite-frame chain
+
+The four owners below construct a common peak, a common finite exceptional ball, simultaneous signed killers, an absolutely summable majorant for ALL mixed terms, and finally a single common power depth at which every nonzero coefficient vector gives a negative FULL Weil zero sum.
+
+For E(a)=sum_i |a_i|^2, the actual target union contributes -4 sum_i m_i |a_i|^2. The actual complement satisfies
+
+`|R_N(a)| <= (1/4)^(N+1) C_basis E(a)`.
+
+C_basis is the sum of the absolute mixed-convolution majorants. Its finiteness is proved from existing zeta summability. It depends on the fixed finite basis, but not on a or N. The power factor tends to zero. Since each analytic multiplicity is at least one, one common finite N suffices for strict negativity on the whole nonzero coefficient space.
+
+This constructs a jointly localized basis. It does not assert that the older arbitrarily chosen fixed synthesis already had the full remainder estimate.
+
+### Source-level details
+
+#### `FiniteReflectionCompatibleWeilInterpolation`
+
+Status: Candidate source and author projection. Kernel and Scribe reconciliation remain separate checks.
+
+For actual zero data Z, a finite set E of indices, and complex values a satisfying a(R j)=a(j), the module constructs a compact smooth even Weil test g with FT(g)(gamma_j)=a(j) for every j in E.
+
+The construction reuses the reflection representative and frequency-injectivity lemmas from the existing single-orbit separator. It invokes `even_weilTestFunction_finite_interpolation` on the sign quotient. It does not reconstruct the Fourier-Laplace interpolation theorem.
+
+The constant assignment gives a simultaneous unit peak on any finite union of zero orbits.
+
+Main declarations:
+
+- `even_weil_interpolation_on_finite_indices`
+- `exists_even_weil_finite_unit_peak`
+
+#### `FiniteOrbitBurnolPacket`
+
+Status: Candidate source and author projection.
+
+For a valid `FiniteEvenWeilOrbitFrame`, the module first proves that the actual four-point zero orbits are pairwise disjoint. It then constructs one peak b, a finite exceptional spectral ball E, and tests k_i satisfying:
+
+1. FT(b)=1 at both selected conjugate spectral nodes of every channel.
+2. FT(k_i)(gamma_j)=delta_ij and FT(k_i)(conj gamma_j)=-delta_ij.
+3. Every k_i vanishes at all exceptional zero indices outside the target union.
+4. Outside E, both conjugate evaluations of b have norm at most 1/2.
+
+Existence follows from finite compatible interpolation and the existing closed-strip decay estimate. The simultaneous exceptional set is essential: multiplying separately chosen single-orbit packets would not automatically preserve the other target values.
+
+Main declarations: `frame_orbits_pairwise_disjoint`, `exists_common_exceptional_ball`, `exists_orbitBurnolPacket`.
+
+#### `FiniteMixedWeilMajorant`
+
+Status: Candidate source and author projection.
+
+For a finite basis k_i define the actual mixed terms
+
+`M_ij(n) = zeroSummand Z (convolve (k_i) (involution (k_j))) n`.
+
+Every M_ij is absolutely summable by the existing zeta summability theorem. The complete coefficient expansion is
+
+`s_n(a) = sum_ij a_i conjugate(a_j) M_ij(n)`.
+
+With `E(a)=sum_i |a_i|^2` and `B(n)=sum_ij |M_ij(n)|`, the module proves
+
+`|s_n(a)| <= E(a) B(n)` and `sum_n |s_n(a)| <= E(a) C`, where `C=sum_n B(n)`.
+
+B is proved summable. C depends on the fixed basis and includes every mixed term. It is not postulated as an operator-norm hypothesis.
+
+Main declarations: `mixedWeilSummand_summable`, `zeroSummand_finite_synthesis_expansion`, `finiteMixedMajorant_summable`, `finite_synthesis_absolute_sum_le`.
+
+#### `MultiOrbitBurnolUniformRemainder`
+
+Status: Candidate source and author projection. No successful Lean compilation is claimed by this document.
+
+The actual synthesized tests are
+
+`f_N,a = sum_i a_i (b^{*(N+1)} * k_i)`.
+
+Both target signs are preserved at every N. In particular the selected even channels vanish. The exact selected-orbit union contributes
+
+`-4 sum_i m_i |a_i|^2`.
+
+Writing the complete, absolutely convergent Weil zero sum as that contribution plus R_N(a), the module derives
+
+`|R_N(a)| <= (1/4)^(N+1) C_basis sum_i |a_i|^2`.
+
+The factor tends to zero independently of a. Positive integral analytic multiplicities give the target margin 4, so one finite common N makes the full form strictly negative on every nonzero coefficient vector. Reduced odd evaluation remains a right inverse, proving synthesis injective.
+
+This closes the finite-frame remainder obligation that was previously an input to `QuantitativeMultiOrbitWeilNegativeCertificate`. It does not instantiate that older certificate for its arbitrary fixed basis; it constructs a new, jointly localized basis with proved estimates.
+
+The valid frame is the only orbit assumption. Neither existence of off-line zeros nor a uniform estimate over all moving frames is asserted. Empty frames give the zero-dimensional case; a nonempty frame is required to extract an actual negative test.
+
+Main declarations: `burnolSynthesis_target_union_value`, `multiOrbitBurnol_uniform_remainder`, `multiOrbitBurnol_error_tendsto_zero`, `exists_common_depth_strictly_negative`, `finite_multiOrbit_full_weil_negative_family`.
+
+### Boundaries and next quantitative problems
+
+A valid finite frame of nonreal off-line orbits is an input; existence of an off-line zero is never asserted. An empty frame is zero-dimensional. A nonempty frame is required for an actual negative test.
+
+The constant and selected depth are classical and frame dependent. No computable estimate in minimum node separation, frame size, support radius, or height is established. Convolution depth may enlarge support. No uniform support window over all frames, infinite negative-index stability, prime-side coercivity, RH, or stronger zero-density theorem is claimed.
+
+Next load-bearing goals are to package the actual full mixed Gram as a Hermitian matrix and identify its negative inertia with the realized test dimension, then derive explicit interpolation-conditioning and support-growth bounds and independently verifiable prime/Archimedean margins.
+
+
+## [PR #5065] EXACT_OBSERVABLE_RANGE_AND_FULL_WEIL_GRAM_INERTIA
+
+[PR #5065] Status: Candidate formalization. This section records the mathematical source increment, not an admission verdict. A source-write workflow, a targeted Lean replay, transitive axiom auditing and the repository required checks are different pieces of evidence. No merge or ready transition is authorized by this appendix.
+
+### [PR #5065] Exact image of the original scalar even observer
+
+[PR #5065] For a fixed ZeroData presentation Z and symmetric finite window T, write I_T for its distinct-zero indices and C_T for the dependent sum of the actual multiplicity copies. The original state space remains all WeilTestFunction values. The new owner `WeilEvaluationExactObservableRange` proves that an index vector v is a genuine Fourier-Laplace evaluation of an actual compact smooth even test if and only if v is invariant under the existing reflection permutation. The proof extends v by zero outside the window and reuses `even_weil_interpolation_on_finite_indices`. Symmetric-window closure proves that the extension remains compatible.
+
+[PR #5065] At the expanded-coordinate level the exact characterization is: w is reachable if and only if w is constant on each multiplicity fiber and its collapsed index vector is reflection even. Every actual analytic multiplicity is positive, so collapse can read its zeroth genuine copy. Expansion and collapse are inverse on the fiber-constant subspace. The previously defined `finiteWeilReducedEvaluation` is consequently surjective onto its specified reduced codomain. These statements supply the converse missing from the earlier necessary-constraint package.
+
+### [PR #5065] Intrinsic-information interpretation on the unchanged arena
+
+[PR #5065] The same new owner proves, for arbitrary original test states g and h, that equality of multiplicity-expanded readouts is equivalent to equality of distinct-zero readouts. Adding the expanded readout as a joint observer also leaves the kernel unchanged. Therefore no pair of original states can witness strict fiber separation by multiplicity replication. This is a semantic zero-gain theorem. Multiplicity still changes the quadratic weight and negative margin, while repeated copies contribute no additional scalar information.
+
+[PR #5065] This interpretation follows `docs/develop/spec/lean_single_compile_intrinsic_information_escape_theory_and_spec.md`: no truth-conditioned State subtype, certificate label or compilation status is used as an observable. The arena is infinite and complex-valued, so this increment does not apply finite pair-count probabilities to it, invent a normalized measure, or claim a new PrimLawSpec/admission. The observable subtype is a codomain characterization, never a restricted state arena. Host-side source delivery and diagnostics supply no Lean theorem assumptions.
+
+### [PR #5065] Mixed finite factorization on the exact range
+
+[PR #5065] `truncatedZeroSum_mixed_eq_reducedMirrorForm` extends the earlier convolution-square identity to arbitrary actual tests g and h. The finite zero sum of convolve(g, involution(h)) is exactly the existing mirror sesquilinear form evaluated on their reduced readouts. This identifies all off-diagonal finite Gram entries and preserves one analytic multiplicity weight per distinct zero. It reuses the existing mirror permutation and form instead of rebuilding them.
+
+### [PR #5065] The actual complete Gram matrix
+
+[PR #5065] The new owner `WeilFullGramInertia` defines W(g,h) as the complete absolutely convergent sum of the actual mixed summands, and sets G_ij = W(b_j,b_i). The index order gives the standard conjugate-linear row convention. Mirror reindexing preserves multiplicity and conjugates the spectral parameter, proving conjugate(W(g,h)) = W(h,g), hence G is Hermitian. Mixed absolute summability permits both finite coefficient sums to commute with the complete zero sum. The resulting exact identity is
+
+```math
+a^*G a = Z\!\left(\left(\sum_i a_i b_i\right)*
+  \left(\sum_i a_i b_i\right)^*\right).
+```
+
+[PR #5065] Here Z denotes the actual full Weil zero functional, not a finite target-only replacement. Every infinite-tail cross term remains in G. In particular this appendix does not assert that the full Gram equals the finite target diagonal -4 diag(m_i).
+
+### [PR #5065] Exact spectral inertia of the realized family
+
+[PR #5065] The existing `finite_multiOrbit_full_weil_negative_family` constructs an injective finite linear synthesis whose complete Weil square has strictly negative real part on every nonzero complex coefficient vector. The new Gram identity transports this result to Matrix.PosDef(-G). Hermitian reality justifies passing from the real-part inequality to the complex star order. The existing RHLinalg negative-index implementation and the standard positive-definite eigenvalue theorem then give
+
+```math
+\boxed{\operatorname{negIndex}(G)=\#\{\text{independent observable orbit channels}\}.}
+```
+
+[PR #5065] The final declaration is `exists_actual_full_weil_gram_with_exact_negative_index`. Its matrix is built from actual tests and the complete zero sum. No assumed uniform remainder remains beyond the already constructed common Burnol packet. The theorem retains a valid finite separated nonreal off-line orbit frame as input; it does not assert existence of an off-line zero. Empty frames give dimension zero. It does not equate this observable index with the multiplicity-expanded ambient index, prove RH or prime-side coercivity, or supply computable support and conditioning bounds uniform over moving frames.
+
+### [PR #5065] Source interfaces and next quantitative obligation
+
+[PR #5065] Both owners have Scribe sources, author Markdown projections and explicit #print axioms requests for their main declarations. The full-Gram module imports the exact-range owner and the existing common Burnol owner, so it is a single dependency-closure replay root for this increment. Matrix interfaces were checked against the repository-pinned Mathlib v4.33.0 source, including `Matrix.PosDef.of_dotProduct_mulVec_pos`, `Matrix.IsHermitian.im_star_dotProduct_mulVec_self` and `Complex.pos_iff`. The eigenvalue-to-index step reuses the repository pattern in `FiniteMirrorKreinGramInertia`. Provenance of the integration is repo-derived; no independent novelty claim for classical interpolation or spectral inertia is made.
+
+[PR #5065] The next quantitative work is to bound interpolation conditioning and convolution support growth for specified frames, then transport an explicit remaining negative margin through the prime/Archimedean explicit-formula interface. A finite full negative-index realization alone supplies no prime-side positive coercivity and no contradiction to a hypothesized off-line frame.
+
+
+## [PR #5065] FINITE_OBSERVABLE_TO_FULL_FORM_LIMIT_AND_REPLAY_CORRECTIONS
+
+[PR #5065] The full-Gram owner now includes `reducedMirrorForm_tendsto_fullMixedWeilForm`: for each actual pair of Weil tests, the multiplicity-weighted reduced mirror forms on growing symmetric windows converge to the actual complete mixed Weil form. The proof uses `truncatedZeroSum_tendsto` from the existing ZeroSum owner and the exact mixed factorization. This is a genuine finite-to-full mathematical dependency on the exact observable range layer.
+
+[PR #5065] Pinned root observations 33969082693 and 33969495413 both failed. The first exposed obsolete finite-sum syntax and an unclosed mirror inverse simplification. The second verified the repaired mirror inverse with only standard axioms, then exposed a finite-window unfolding mismatch and a accidentally omitted second ZeroData binder introduced during the source repair. This revision explicitly unfolds `ZeroConfig.window` and restores that binder, without changing the intended theorem statements or admitting a placeholder. Compiler error recovery containing `sorryAx` is rejected as validation evidence. The new frozen source revision still requires its own observed successful root replay and independent required checks before any admission claim.
+
+
+---
+
+## RH_EQUIVALENCE_ATLAS_20260908
+
+### RH 等价形式图谱：规范对象、跨领域证明与形式化路线
+
+资料核查日期：2026-09-08。项目：`the-omega-institute/trureturing`。
+
+本节在现有 RH 理论卷中建立一个可逐项实现的等价判据图谱。第一版包含 **18 个判据族、64 个规格节点**：A001 是标准 RH，另外 63 个是经典判据或有用的派生表达。这些节点共享若干重大解析定理，不能解释成 63 项彼此独立的新发现，也不声称穷尽文献中一切重参数化的 RH 表述。后续新增判据进入相应判据族，并保留其原始对象、量词和证明来源。
+
+数学目标是同时获得两种成果：对每个具体命题证明 `RiemannHypothesis ↔ P`；对不同领域之间的转换，进一步构造实际函数、矩阵、测度、残差和失败见证。后者使图谱能够承担新的定量研究。
+
+本节给出文献中的数学定理、项目现状、若干完整纸面推导和待实现的接口。**本次增补没有新增 Lean 证明，也没有执行 Lean 编译或核验传递公理闭包。** 表中的“经典”指数学文献中的等价定理，“派生”指从注明的桥梁得到的数学表达；两者都不自动表示对应 Lean 端点已经完成。
+
+### 1. 当前 dev 与所有开放 PR 的接入位置
+
+主要数学源读取固定在 dev `aee1eaff34f997e44f04147cee1010bb482c4c1b`。提交前再次捕获 dev `3a8854105ef7bc1a480c4473cdc50b16d6993146`，树为 `717a3fee18b949f40ce178b595cb7d109fb24981`；本卷 blob 仍为 `1e9316d22d780b370a70aa340009ab0a5604819d`，原文未变。下表的开放 PR head 已再次刷新；这些快照日期不表示执行了全库编译。下列路径均相对仓库根目录；固定版本可用 `https://github.com/the-omega-institute/trureturing/blob/<commit>/<path>` 读取。
+
+#### 1.1 应复用的数学真源
+
+| 现有真源 | 本次读到的数学内容 | 图谱中的使用方式 |
+| --- | --- | --- |
+| `D5/S3/Weil/ZeroData/UnconditionalCanonicalZeroData.lean` | 无外部解析参数的 `zetaZeroData`，实际非平凡零点的穷尽性、唯一索引、正解析重数、反射与共轭；blob `a5ef2be4da1c3a6cf361b911d447bacc22be622f` | 所有零点判据共用这一实际对象。旧文档中“尚无 ZeroData 实例”的说法不再适用。 |
+| `D5/S3/Zeros/Endpoints/CanonicalLiLocalExpansion.lean` | 从 `xiReading` 导数定义的 Li 系数、全部阶数的 Taylor 系数恒等式、局部生成展开及第一系数正性；blob `0fb04eb79f87389016b51af25cdf6078d5616b7c` | 不另定义替代 Li 序列。局部展开与全单位圆盘展开分开登记。 |
+| `D5/S3/Weil/Separator/ExplicitFormulaWeilCriterion.lean` | 实际零点和与 pole-minus-prime-plus-Archimedean 表达的运输；签名仍有每个卷积平方的 Archimedean 收敛输入 | 固定 canonical ZeroData 后，继续从相应解析真源构造收敛证明。不要删除该输入而不提供证明。 |
+| `D5/S3/Weil/TestFunctions/LiCurvatureCriterion.lean` | 有限 Toeplitz Gram 恒等式、几何多项式能量、二阶差分重建；blob `b509cde8c62c3ed60756cfc9264b98cf357102d2` | 主等价定理目前仍接收 Li 判据、RH 下 Fourier 表示和无限 Herglotz 表示。第 6 节给出更短的反向证明。 |
+| `D5/S3/Observer/Hilbert/NymanBeurlingFiniteGramDistance.lean` | 实际复数半直线 L² 载体、分数部分向量、目标指示函数、有限 Gram 与伪逆距离公式；blob `0bec9ac0ed53094607b7e34a7555aac7a3ebd6c8` | 在真实算术函数上完成 Nyman–Beurling 解析桥，直接消费已有有限距离。 |
+| `D5/S3/Observer/Hilbert/NymanBeurlingTargetQuotientCriterion.lean` | 闭包成员、商类为零、正交残差为零和有限距离趋零的 Hilbert 等价；blob `a9518c6af492f2cae3dd8d4df58eeb7920a71581` | 当前 RH 连接仍作为 `nymanBeurling` 参数传入；它是待补的解析边。 |
+| `D5/S3/Zeros/Jensen/JensenPolynomialObstruction.lean` | Jensen 多项式定义与有限失败见证的逻辑；blob `cb40a8e7c32caa84b36e1d86730fc2d45e903157` | 当前两个 Jensen–Pólya 桥仍是参数，且 RH 参数可为任意命题。最终端点必须使用实际 ξ 系数与标准 RH。 |
+| `D5/S3/Constants/NewtonHankelRealRootCriterion.lean` | 共轭稳定有限根族的实根性与 Newton–Hankel 半正定双向证明；blob `1b30a277e90ec2fdca2e10712bdc543c37acc195` | 复用其插值负方向；为实际 Jensen 多项式构造根枚举或 companion-trace 适配器。 |
+
+本卷已有 #5065 的共同 Burnol packet、多轨道完整 Weil 负子空间、实际 Gram 负指数和有限观察形式到完整混合形式的极限。图谱承接这些成果。新的任务是显式的支撑增长、插值条件数和误差运输，不能把已经写出的共同余项构造重新列为完全空白。
+
+当前 `JensenPolynomialObstruction.PolynomialHyperbolic` 的实际定义要求每个复根为实，因此零多项式不满足它。注释中“包含零多项式”应在后续源维护中修正。本节使用严格正的规范系数，保证需要的 Jensen 多项式非零；次数零的正常数另行处理。
+
+#### 1.2 开放 PR 全量筛选及相关源读取
+
+本次使用无作者过滤的开放 PR 集合，第一页容量 100，第二页返回空集，得到以下 **14 个开放 PR**。全部读取了元数据和正文，并对与图谱直接有关的选定真源作进一步读取；这不是对所有历史 PR、所有文件或所有证明的完整重编译。已经合入的其他作者成果通过当前 dev 接入。表中记录实际 head，避免把正文中的旧 head 当成当前版本。
+
+| PR | 捕获的实际 head | 与本图谱的关系 |
+| --- | --- | --- |
+| [#5236](https://github.com/the-omega-institute/trureturing/pull/5236) | `f65251d3d85ad5fe7f1e254291e3e56bc3b0ec1a` | PrimeGaps186。正文保留实际积分义务；不能用有限算术检查代替解析定理，不作为 RH 等价边。 |
+| [#5284](https://github.com/the-omega-institute/trureturing/pull/5284) | `9adf54557f6ce3aecac3ae09c567e38379e8ca00` | 黄金自动机的有限样本运输。没有加入 RH 数学依赖。 |
+| [#5405](https://github.com/the-omega-institute/trureturing/pull/5405) | `aaee9b75616627192369518e786fde83c06e4dc0` | 黄金四次幂状态下界。有限前缀与全指标结论的区别适用于本图谱，具体定理不构成 RH 判据。 |
+| [#5602](https://github.com/the-omega-institute/trureturing/pull/5602) | `7d01130cfc3ce2d7c3d0c4d99a44843ce70c636f` | 实际 Weil/prolate 模型、完整余项与尺度运输。读取最新 `WeilGroundModeShiftBarrier.lean`，blob `2ab192cdf8db9f892a69606367b3bb986f34b846`；支撑边界及完整形式必须保留。 |
+| [#5895](https://github.com/the-omega-institute/trureturing/pull/5895) | `023e6d1eccb223a563939590d301085a220b38f2` | 偶不变子空间的全尾界与归一化读数。偶扇区阈值不能自动替换全空间阈值。 |
+| [#5897](https://github.com/the-omega-institute/trureturing/pull/5897) | `b6653823add96ea81c6f3c8cec3dd3db47029cd6` | 方格 hard-core 零点自由区域；未把其图递归定理转称 RH 定理。 |
+| [#6029](https://github.com/the-omega-institute/trureturing/pull/6029) | `7e1a8c9b33d28d778d80392da5bb06bdcc966f7f` | 实际相对 Gamma 对角线的正项级数、完整尾界和频率一致窗口修正；对角线正性不足以控制混合项。 |
+| [#6033](https://github.com/the-omega-institute/trureturing/pull/6033) | `d54250a5bd1ae4764dc15d876926e8a28b2a2881` | 因果耦合与最优界。没有加入 RH 数学依赖。 |
+| [#6038](https://github.com/the-omega-institute/trureturing/pull/6038) | `608ebf0929b708832c268e9a5954f58bfb36574a` | 临时 MUB 文本拼接分支，不登记为数学结果。 |
+| [#6114](https://github.com/the-omega-institute/trureturing/pull/6114) | `a65f9130d7f17c3bd6dcf7e450d1d53588ab92d2` | Li 曲率到 Herglotz、负型、Schoenberg 和实际圆周概率半群；读取 `LiCurvatureSchoenbergSemigroup.lean`，blob `d616bc1fc8a8f6176883f942809900136f92d577`。 |
+| [#6143](https://github.com/the-omega-institute/trureturing/pull/6143) | `7abe3cf91cbf071d025c4dedef773e69dfbc6602` | MUB 区间证书与覆盖。没有加入 RH 数学依赖。 |
+| [#6219](https://github.com/the-omega-institute/trureturing/pull/6219) | `8e3982e87642ba3987239f2a4623e6d7ef4b8e55` | 规范 Li 圆盘等价与零点半径增长障碍；读取 `CanonicalLiDiskEquivalence.lean`，blob `251c989b6312a577d24e87950a267cdefcdaae3f`。 |
+| [#6221](https://github.com/the-omega-institute/trureturing/pull/6221) | `b1e737aa90c6a3d0f08e39fe481092b68a0d128a` | Scribe 的真实声明标识输出；有助于定位证明，不充当数学前提。 |
+| [#6254](https://github.com/the-omega-institute/trureturing/pull/6254) | `34a2c0fe82403b5028456d02b99f9b2d3b11e320` | 临时 prolate 理论拼接分支，不重复计为独立成果。 |
+
+#6114、#6219 及相关新谱源保留其候选、未执行编译的状态。#6219 已经使用规范导数系数，通过解析方程 `F'=GF` 的延拓与零点阶数排除，给出全圆盘判据的候选双向证明。它没有借用一个作为参数传入的 Li 判据。这是应保留的实质性进展。
+
+### 2. 共同对象与变换约定
+
+#### 2.1 ξ、Ξ、实际零点与 Möbius 圆盘
+
+采用经典归一化
+
+\[
+\xi(s)=\frac12s(s-1)\pi^{-s/2}\Gamma(s/2)\zeta(s),
+\qquad \xi(0)=\xi(1)=\frac12,
+\qquad \Xi(z)=\xi\!\left(\frac12+iz\right).
+\]
+
+在 Lean 中消费现有 `xiReading` 与其端点、整性、函数方程、共轭性质。记 \(\mathcal Z\) 为实际非平凡零点集合，\(m_\rho\) 为解析重数；枚举变化不改变带重数的规范和。
+
+定义
+
+\[
+w_\rho=1-\rho^{-1},\qquad
+D=\{z\in\mathbb C:|z|<1\},\qquad
+F(z)=\xi((1-z)^{-1}),
+\]
+
+\[
+G(z)=(1-z)^{-2}\frac{\xi'}{\xi}((1-z)^{-1}).
+\]
+
+\(G\) 的解析性是需要证明的性质，定义它时不能预先要求整个圆盘零点自由。Lean 对除法的全函数约定也不能把分母零点变成解析延拓证明。
+
+直接代数给出
+
+\[
+|w_\rho|^2-1=\frac{1-2\Re\rho}{|\rho|^2},\qquad
+w_{1-\rho}=w_\rho^{-1},\qquad
+w_{\bar\rho}=\overline{w_\rho}.
+\tag{E1}
+\]
+
+故临界线对应单位圆，右半临界带的零点对应圆盘内部。若使用 Suzuki 的谱坐标，本节固定 \(\gamma_\rho=i(\rho-\tfrac12)\)，即 \(\xi(\tfrac12-i\gamma_\rho)=0\)。它与惯用正虚部 ordinate 的符号差异必须通过现有坐标适配器处理。[L02, L03]
+
+#### 2.2 规范 Li 系数、曲率及正定性的量词
+
+\[
+\lambda_0=0,\qquad
+\lambda_n=\frac1{(n-1)!}
+\left.\frac{d^n}{ds^n}\bigl(s^{n-1}\log\xi(s)\bigr)\right|_{s=1}
+\quad(n\ge1).
+\]
+
+局部对数由 \(\xi(1)=1/2\) 选定，所得系数为实数。复用现有第一系数
+
+\[
+L=\lambda_1=1+\frac{\gamma_{\!E}}2-\log(2\sqrt\pi)>0.
+\]
+
+其中 \(\gamma_E\) 专指 Euler–Mascheroni 常数。定义规范实偶曲率
+
+\[
+c_0=1,\qquad
+c_k=\frac{\lambda_{|k|+1}-2\lambda_{|k|}+\lambda_{|k|-1}}{2L}
+\quad(k\ne0),\qquad \psi(k)=\lambda_{|k|}.
+\]
+
+\(T^{(n)}=(c_{j-k})_{0\le j,k<n}\)。仓库 `toeplitzMatrix c N` 的大小为 \(N+1\)，因此 \(n\ge1\) 时它对应参数 \(N=n-1\)。圆周 Fourier 约定沿用
+
+\[
+\widehat\sigma(k)=\int_{\mathbb T}z^{-k}\,d\sigma(z).
+\]
+
+正定函数 \(h\) 表示：任意有限索引组 \(x_i\) 和任意复系数 \(a_i\) 都满足
+\(\sum_{i,j}\overline{a_i}a_jh(x_i-x_j)\ge0\)。条件负定的量词相同，但要求 \(\sum_i a_i=0\)，不等式反向。所有概率测度均为正测度且总质量为一。[L02–L04]
+
+#### 2.3 Jensen 的正偶阶系数
+
+定义
+
+\[
+a_n=\frac{n!}{(2n)!}\xi^{(2n)}\!\left(\frac12\right)>0,
+\qquad
+\xi\!\left(\frac12+z\right)=\sum_{n\ge0}\frac{a_n}{n!}z^{2n}.
+\]
+
+严格正性由实际 theta 积分的偶矩给出，应独立形式化。用级数定义整函数
+\(\Psi(u)=\sum_{n\ge0}a_nu^n/n!\)，避免依赖平方根分支；有 \(\Psi(-z^2)=\Xi(z)\)。定义
+
+\[
+J_{d,m}(X)=\sum_{j=0}^d\binom dj a_{m+j}X^j.
+\]
+
+[L05] 的系数归一化为 \(\gamma_n=8a_n\)。这个共同正因子不改变多项式根，但必须先证明与本项目导数定义一致。不能直接拿 \(\Xi\) 的交错 Taylor 系数，或包含恒零奇阶项的序列，替代这里的 \(a_n\)。
+
+#### 2.4 Nyman–Beurling 的两个真实载体
+
+在 \(L^2(0,1)\) 中，令 \(B_0\) 为所有有限复线性组合
+
+\[
+\sum_{j=1}^r u_j\{\theta_j/x\},\qquad
+0<\theta_j\le1,\qquad \sum_j u_j\theta_j=0.
+\]
+
+在 \(H=L^2((0,\infty),dx;\mathbb C)\) 中，定义
+
+\[
+\chi=\mathbf1_{(0,1)},\quad v_a(x)=\{1/(ax)\}\ (a\ge1),\quad
+S_N=\operatorname{span}\{v_1,\ldots,v_N\},\quad d_N=\operatorname{dist}(\chi,S_N).
+\]
+
+\(G_N\) 和 \(b_N\) 分别是这些实际向量的 Gram 矩阵与目标内积列，\(G_N^\dagger\) 是 Moore–Penrose 伪逆。已有真源给出
+
+\[
+d_N^2=1-b_N^*G_N^\dagger b_N.
+\tag{E2}
+\]
+
+Gram 矩阵的半正定性在这里无条件成立；RH 所要求的是完整逼近残差趋零。[L07]
+
+#### 2.5 Weil 的完整形式与有限窗口算子
+
+令 \(Q_W\) 为现有显式公式对应的完整 Weil 二次型，测试函数取复值 \(C_c^\infty(\mathbb R)\)。在与谱坐标匹配的 Fourier 约定下，它的零点侧为
+
+\[
+Q_W(f)=\Re\sum_{\rho\in\mathcal Z}m_\rho\,
+\widehat f(\gamma_\rho)\overline{\widehat f(\overline{\gamma_\rho})}.
+\]
+
+测试函数的固定带衰减、零点计数与绝对可和性需来自真实解析真源。混合形式由同一对象极化；不能把交叉项改成逐零点的模平方。
+
+在窗口 \((-a,a)\) 上，令
+
+\[
+\ell(a)=\inf_{0\ne f\in C_c^\infty(-a,a)}\frac{Q_W(f)}{\|f\|_2^2}.
+\]
+
+\(A_a\) 专指该实际下半有界形式的 Friedrichs 实现。使用谱判据前，必须构造闭形式、证明核心与算子对应，不能从任意自伴算子出发重新命名。仓库的偶测试函数版本、`Zeta23.EF.weilTest` 的非受限版本和 [L01] 的形式之间分别需要精确适配。记 \(E(g)\) 为现有 `poleTerm - primeTerm + archimedeanTerm` 在实际卷积平方上的实部。[L01, L03]
+
+### 3. 64 个规格节点及其数学等价关系
+
+标签：**R** 为标准根命题，**C** 为文献中的经典判据，**D** 为由本节指明桥梁得到的派生表达。每行都是未来具体端点的目标陈述；实现进度由第 1、10 节的真源与解析义务决定。
+
+所有大 O 都在趋于无穷时使用，\(O_\varepsilon\) 明确表示
+\(\forall\varepsilon>0\;\exists C_\varepsilon,X_\varepsilon\;\forall x\ge X_\varepsilon\)，常数允许依赖 \(\varepsilon\)。复数表达的非负性按实 Hermitian 二次型解释。
+
+#### F01. 零点几何与圆盘（A001–A005）
+
+| ID | 类别 | 精确目标 |
+| --- | --- | --- |
+| A001 | R | 每个实际非平凡零点 \(\rho\) 满足 \(\Re\rho=1/2\)，使用 Mathlib 的标准 `RiemannHypothesis`。 |
+| A002 | D | \(\Xi\) 的每个复零点均为实数。 |
+| A003 | D | \(\xi(s)\ne0\) 对全部 \(\Re s>1/2\) 成立。 |
+| A004 | D | 对每个实际非平凡零点，\(\vert 1-1/\rho\vert =1\)。 |
+| A005 | D | \(F(z)\ne0\) 对全部 \(z\in D\) 成立。 |
+
+依赖：端点填值、真实零点对应、函数方程与 (E1)。A003 的反向使用反射；省略反射只能排除半边零点。
+
+#### F02. Li 系数与解析半径（A006–A013）
+
+| ID | 类别 | 精确目标 |
+| --- | --- | --- |
+| A006 | C | \(\lambda_n\ge0\) 对所有整数 \(n\ge1\)。 |
+| A007 | D | \(\lambda_n>0\) 对所有整数 \(n\ge1\)。 |
+| A008 | D | 实际 \(G\) 在整个 \(D\) 上解析。 |
+| A009 | D | 对每个 \(z\in D\)，\(\sum_{n\ge0}\lambda_{n+1}z^n\) 收敛且和为实际 \(G(z)\)。 |
+| A010 | D | 对每个 \(0\le r<1\)，\(\sum_{n\ge0}\vert \lambda_{n+1}\vert r^n<\infty\)。 |
+| A011 | D | 对每个 \(0<R<1\)，存在 \(C_R\ge0\)，使所有 \(n\ge0\) 满足 \(\vert \lambda_{n+1}\vert R^n\le C_R\)。 |
+| A012 | D | \(\limsup_{n\to\infty}\vert \lambda_{n+1}\vert ^{1/n}\le1\)，根指数从 \(n\ge1\) 起。 |
+| A013 | D | 对全部 \(n\ge0\)，\(\vert \lambda_n\vert \le L n^2\)。 |
+
+A006 用 Li 定理 [L02, L03]。A007 的严格性由 RH 下正零点贡献和无穷零点得到，\(n=0\) 不包含在严格式中。A008–A012 使用实际 Taylor 恒等式、Cauchy–Hadamard 与 `F'=GF` 的零点阶数论证；A013 的正向见第 6 节，反向通过 A010。#6219 已有其中若干候选端点，不应平行重写。
+
+#### F03. 圆周测度、负型与概率演化（A014–A020）
+
+| ID | 类别 | 精确目标 |
+| --- | --- | --- |
+| A014 | D | 规范 \(c\) 的所有 \(T^{(n)}\) 半正定，\(n\ge1\)。 |
+| A015 | D | 存在圆周概率测度 \(\sigma\)，使 \(\widehat\sigma(k)=c_k\) 对所有 \(k\in\mathbb Z\)。 |
+| A016 | D | 存在圆周概率测度 \(\sigma\)，使 \(\lambda_n=L\int\vert \sum_{j<n}z^j\vert ^2d\sigma\) 对所有 \(n\ge0\)。 |
+| A017 | D | 实际 \(\psi(k)=\lambda_{\vert k\vert }\) 在 \(\mathbb Z\) 上条件负定。 |
+| A018 | D | 对每个实数 \(t\ge0\)，\(k\mapsto e^{-t\psi(k)}\) 在 \(\mathbb Z\) 上正定。 |
+| A019 | D | 存在弱连续圆周概率卷积半群 \((\rho_t)_{t\ge0}\)，\(\rho_0=\delta_1\)，且全部 Fourier 系数为 \(e^{-t\psi(k)}\)。 |
+| A020 | D | 存在实 Hilbert 空间、\(\mathbb Z\) 的正交表示 \(U\) 和 cocycle \(b(n+m)=b(n)+U(n)b(m)\)，满足 \(\Vert b(n)\Vert ^2=\psi(n)\)。 |
+
+这里同时需要 Herglotz、Schoenberg 与 cocycle 表示的实际构造。A016 到 A015 可先将测度与共轭推前平均，以获得实偶 Fourier 矩，再应用二阶差分唯一性。A020 不能削弱成任意有指定范数的向量族。#6114 已提供通用构造的候选源；真正的 RH 连接仍要识别规范算术曲率。[L02–L04；第 6 节]
+
+#### F04. Weil 正性、矩阵与实际窗口谱（A021–A026）
+
+| ID | 类别 | 精确目标 |
+| --- | --- | --- |
+| A021 | C | \(Q_W(f)\ge0\) 对每个复值 \(f\in C_c^\infty(\mathbb R)\)。 |
+| A022 | D | 在现有偶 `WeilTestFunction` 载体上，固定 `zetaZeroData` 的每个完整卷积平方零点和的实部非负。 |
+| A023 | D | 每个相同测试函数上的实际 \(E(g)\ge0\)，收敛项与显式公式齐备。 |
+| A024 | D | 任意有限实际测试函数组的完整混合 Weil Gram 矩阵半正定。 |
+| A025 | D | 对每个 \(a>0\)，\(\ell(a)\ge0\)。 |
+| A026 | D | 对每个 \(a>0\)，实际 \(A_a\) 的谱包含于 \([0,\infty)\)。 |
+
+A021–A024 需要两个测试函数载体的完整适配和现有 separator。A025 使用所有支撑窗口的穷尽；A026 使用闭形式与谱定理。有限截断矩阵的正性只有在全尾控制和核心证明完成后才能进入这些端点。[L01, L03]
+
+#### F05. 整函数、Jensen 与 Newton–Hankel（A027–A032）
+
+| ID | 类别 | 精确目标 |
+| --- | --- | --- |
+| A027 | C | \(\Xi\) 属于 Laguerre–Pólya 类。 |
+| A028 | D | 存在非零、仅有实根的实多项式序列，在每个复紧集上一致收敛到 \(\Xi\)。 |
+| A029 | C | 每个 \(J_{d,0}\) 仅有实根，\(d\ge0\)。 |
+| A030 | C | 每个 \(J_{d,m}\) 仅有实根，\(d,m\ge0\)。 |
+| A031 | D | 对每个 \(d\ge1,m\ge0\)，实际反转多项式 \(x^dJ_{d,m}(-1/x)\) 的带重数根所构成的 Newton–Hankel 矩阵半正定。 |
+| A032 | D | A031 中每一个有限矩阵的所有主子式均非负。 |
+
+这里使用 \(\Psi(-z^2)=\Xi(z)\)、正系数和 Jensen–Pólya 定理，再消费现有有限根定理。[L05, L06] 的“固定次数、充分大 shift”结果只覆盖量词的一部分，不能取代 A030。
+
+#### F06. Nyman–Beurling 与最佳逼近（A033–A040）
+
+| ID | 类别 | 精确目标 |
+| --- | --- | --- |
+| A033 | C | \(B_0\) 在 \(L^2(0,1)\) 中稠密。 |
+| A034 | C | 常数函数 \(1\) 属于 \(\overline{B_0}\)。 |
+| A035 | C | \(\chi\in\overline{\operatorname{span}\{v_a:a\in\mathbb R,a\ge1\}}\subset H\)。 |
+| A036 | C | \(\chi\in\overline{\operatorname{span}\{v_n:n\in\mathbb N,n\ge1\}}\subset H\)。 |
+| A037 | D | \(d_N\to0\)。 |
+| A038 | D | \(b_N^*G_N^\dagger b_N\to1\)，按其已证明的实值理解。 |
+| A039 | D | 每个 \(h\in H\) 若与全部整数 \(v_n\) 正交，则与 \(\chi\) 正交。 |
+| A040 | D | \(\chi\) 在 \(H/\overline{\operatorname{span}\{v_n:n\ge1\}}\) 中的商类为零。 |
+
+A036 的整数限制是 Báez-Duarte 的强化定理 [L07]，不能仅靠 Hilbert 抽象几何推出。A037–A040 的几何大部分已有真源。第 7 节给出实际离线零点在两个原始载体中的连续分离泛函。
+
+#### F07. Möbius 抵消与素数分布误差（A041–A044）
+
+记 \(M(x)=\sum_{n\le x}\mu(n)\)，\(\psi_{\rm vM}(x)=\sum_{n\le x}\Lambda(n)\)，\(\vartheta(x)=\sum_{p\le x}\log p\)，\(\operatorname{li}_2(x)=\int_2^xdt/\log t\)，\(x\ge2\)。
+
+| ID | 类别 | 精确目标 |
+| --- | --- | --- |
+| A041 | C | 对每个 \(\varepsilon>0\)，\(M(x)=O_\varepsilon(x^{1/2+\varepsilon})\)。 |
+| A042 | C | \(\psi_{\rm vM}(x)-x=O(x^{1/2}\log^2x)\)。 |
+| A043 | D | \(\vartheta(x)-x=O(x^{1/2}\log^2x)\)。 |
+| A044 | C | \(\pi(x)-\operatorname{li}_2(x)=O(x^{1/2}\log x)\)。 |
+
+依赖实际 Dirichlet 级数、Perron/显式公式、部分求和及 prime-power 余项。[L08]。无条件已有 Mertens 或 Gronwall 极限不能取代这里的 RH 级误差。
+
+#### F08. Robin、Lagarias 与 Nicolas 的整数不等式（A045–A047）
+
+记 \(\sigma(n)=\sum_{d\mid n}d\)，\(H_n=\sum_{j=1}^n1/j\)，\(P_k\) 为前 \(k\) 个素数的乘积，\(\varphi\) 为 Euler 函数。
+
+| ID | 类别 | 精确目标 |
+| --- | --- | --- |
+| A045 | C | 对每个整数 \(n\ge5041\)，\(\sigma(n)<e^{\gamma_E}n\log\log n\)。 |
+| A046 | C | 对每个整数 \(n\ge1\)，\(\sigma(n)\le H_n+e^{H_n}\log H_n\)。 |
+| A047 | C | 对每个整数 \(k\ge1\)，\(P_k/\varphi(P_k)>e^{\gamma_E}\log\log P_k\)。 |
+
+A045 的阈值与严格号、A046 的 \(n=1\) 等号以及 A047 的 primorial 输入必须保留。[L09, L10]。项目已有 Robin 单元证书、素指数重排和 Gronwall 上下包络可复用；它们不自动提供以上全称等价定理。
+
+#### F09. Riesz 与离散 Báez-Duarte 变换（A048–A049）
+
+定义
+
+\[
+R(x)=x\sum_{j\ge0}\frac{(-1)^jx^j}{j!\zeta(2j+2)},\qquad
+b_k=\sum_{j=0}^k(-1)^j\binom kj\frac1{\zeta(2j+2)}.
+\]
+
+| ID | 类别 | 精确目标 |
+| --- | --- | --- |
+| A048 | C | 对每个 \(\varepsilon>0\)，\(R(x)=O_\varepsilon(x^{1/4+\varepsilon})\)，\(x\to+\infty\)。 |
+| A049 | C | 对每个 \(\varepsilon>0\)，\(b_k=O_\varepsilon(k^{-3/4+\varepsilon})\)，整数 \(k\to\infty\)。 |
+
+这里 \(b_k\) 与 Li 曲率 \(c_k\) 是不同对象。不得把 \(\varepsilon=0\) 的更强界当作等价式。[L11]。第 8 节给出精确变换与误差义务。
+
+#### F10. 导数零点（A050）
+
+**A050，C，Speiser：** \(\zeta'(s)\) 在 \(0<\Re s<1/2\) 内没有零点。对象是实际解析导数；开带边界、平凡导数零点和极点需分别处理。[L12]
+
+#### F11. Balazard–Saias–Yor 对数积分（A051）
+
+**A051，C：**
+
+\[
+I_{\rm BSY}=\int_{\mathbb R}\frac{\log|\zeta(1/2+it)|}{1/4+t^2}\,dt=0.
+\]
+
+必须证明对数奇点与无穷尾的积分意义；孤立零点处的取值只能按已证明的几乎处处等价处理。[L13]。截断积分趋零是该积分结论的一个实现方式，有限截断的小值不构成等价定理。
+
+#### F12. Farey 分数的偏差（A052–A053）
+
+Farey 阶数为整数 \(N\)，列出分母不超过 \(N\) 的既约分数 \(0<r_1<\cdots<r_{m_N}=1\)，其中 \(m_N=\sum_{q=1}^N\varphi(q)\)。令 \(\delta_j=r_j-j/m_N\)。
+
+| ID | 类别 | 精确目标 |
+| --- | --- | --- |
+| A052 | C | 对每个 \(\varepsilon>0\)，\(\sum_{j=1}^{m_N}\delta_j^2=O_\varepsilon(N^{-1+\varepsilon})\)。 |
+| A053 | C | 对每个 \(\varepsilon>0\)，\(\sum_{j=1}^{m_N}\vert \delta_j\vert =O_\varepsilon(N^{1/2+\varepsilon})\)。 |
+
+规模变量为分母上界 \(N\)，不是项数 \(m_N\)。[L14] 的引言准确重述 Franel–Landau 判据；其新的同余类、k-free 分母问题含有更强 L-function/GRH 范围，不能自动纳入普通 RH。
+
+#### F13. Redheffer 算术矩阵（A054）
+
+令 \(A_N\) 的行列为 \(1,\ldots,N\)，当 \(j=1\) 或 \(i\mid j\) 时元素为一，其余为零。
+
+**A054，C：** 对每个 \(\varepsilon>0\)，\(\vert \det A_N\vert =O_\varepsilon(N^{1/2+\varepsilon})\)。精确桥为 \(\det A_N=M(N)\)，见第 8 节。[L15, L16]
+
+#### F14. de Bruijn–Newman 热形变（A055–A056）
+
+定义
+
+\[
+\Phi(u)=\sum_{n\ge1}(2\pi^2n^4e^{9u}-3\pi n^2e^{5u})e^{-\pi n^2e^{4u}},
+\qquad
+H_t(z)=\int_0^\infty e^{tu^2}\Phi(u)\cos(zu)\,du.
+\]
+
+该约定满足 \(H_0(z)=\xi(1/2+iz/2)/8\)。令 \(\Lambda_{\rm dBN}\) 为“\(H_t\) 全部零点实当且仅当 \(t\ge\Lambda_{\rm dBN}\)”的实阈值。
+
+| ID | 类别 | 精确目标 |
+| --- | --- | --- |
+| A055 | C | \(\Lambda_{\rm dBN}\le0\)。 |
+| A056 | D | \(\Lambda_{\rm dBN}=0\)。 |
+
+A056 还消费 Rodgers–Tao 的无条件 \(\Lambda_{\rm dBN}\ge0\) 深定理。[L17]。阈值存在性、热积分与 ξ 的尺度恒等式和这条下界都要独立形式化。
+
+#### F15. 全正函数与双边 Laplace 变换（A057–A058）
+
+\(PF_\infty(k)\) 表示 \(k\) 是非零可积实函数，且对所有严格递增实数列 \(x_1<\cdots<x_r\)、\(y_1<\cdots<y_r\)，所有阶数 \(r\ge1\) 都有 \(\det[k(x_i-y_j)]\ge0\)。
+
+| ID | 类别 | 精确目标 |
+| --- | --- | --- |
+| A057 | C | 明确函数 \(K(x)=(2\pi)^{-1}\int_{\mathbb R}e^{-ix\tau}/\xi(1/2+\tau)\,d\tau\) 满足 \(PF_\infty(K)\)。 |
+| A058 | D | 存在 \(PF_\infty(k)\) 和 \(a>0\)，使 \(\int_{\mathbb R}k(x)e^{-sx}dx=1/\Xi(s)\) 在整个 \(\vert \Re s\vert <a\) 内绝对收敛并成立。 |
+
+这里 A057 分母使用 **实轴方向的 \(\xi(1/2+\tau)\)**。不能换成经过临界线零点的 \(\Xi(\tau)\)。全正性要求独立的两组有序节点，强于只检验相同节点的 Gram 主子式。A058 是 [L06] 的 Schoenberg 表示的局部条带版本；解析恒等与唯一性将它接回相同的 Ξ。
+
+#### F16. 真实 zeta screw function 与实线概率（A059–A062）
+
+为使对象独立于 RH，先用 [L04] 的原始算术公式定义 \(g_\zeta\)。对 \(t\ge0\)，
+
+\[
+\begin{aligned}
+g_\zeta(t)={}&-4(e^{t/2}+e^{-t/2}-2)
++\sum_{n\le e^t}\frac{\Lambda(n)}{\sqrt n}(t-\log n)\\
+&-\frac t2\left(\frac{\Gamma'}\Gamma(1/4)-\log\pi\right)\\
+&+\frac14\left[e^{-t/2}\operatorname{LerchPhi}(e^{-2t},2,1/4)
+-\operatorname{LerchPhi}(1,2,1/4)\right].
+\end{aligned}
+\]
+
+向负数作偶延拓，\(g_\zeta(0)=0\)。完整无条件显式公式给出
+
+\[
+g_\zeta(t)=\sum_{\rho\in\mathcal Z}m_\rho
+\frac{e^{-i\gamma_\rho t}-1}{\gamma_\rho^2}.
+\tag{E3}
+\]
+
+须先证明实际算术公式、实值连续性及紧集上一致绝对收敛，不能在定义中假定 \(\gamma_\rho\) 都为实数。
+
+| ID | 类别 | 精确目标 |
+| --- | --- | --- |
+| A059 | C | \(K_g(t,u)=g_\zeta(t-u)-g_\zeta(t)-g_\zeta(-u)+g_\zeta(0)\) 的每个有限复 Gram 矩阵半正定。 |
+| A060 | C | \(e^{g_\zeta}\) 是某个实线无穷可分概率分布的特征函数。 |
+| A061 | D | 对每个 \(v\ge0\)，\(t\mapsto e^{v g_\zeta(t)}\) 在实加法群上正定。 |
+| A062 | D | 存在弱连续实线概率卷积半群，其每个时刻 \(v\) 的特征函数恰为 \(e^{v g_\zeta(t)}\)。 |
+
+这是 [L01, L04] 的实际 zeta 概率方向。它与 A019 的圆周概率半群具有相似结构，但载体、频率及 Lévy 测度不同，不能直接识别为同一个半群。
+
+#### F17. 模型空间中的实际范数公式（A063）
+
+取 \(s=1/2-it\)，用 [L03] Proposition 2.1 的实际零点级数定义
+
+\[
+G_n^{\rm Suz}(t)=\frac{\xi(s)}{\xi(s)+\xi'(s)}
+\sum_{\rho\in\mathcal Z}m_\rho\frac{1-w_\rho^n}{s-\rho},\qquad n\ge1,
+\]
+
+并在可去奇点处取解析延拓值。该定义的级数收敛、连续性和实线 L² 性质，以及它与 [L03] 原始对数导数公式的相等，都是需要构造的无条件前置。
+
+**A063，C：** 对每个 \(n\ge1\)，
+\(\lambda_n=(2\pi)^{-1}\Vert G_n^{\rm Suz}\Vert _{L^2(\mathbb R)}^2\)。
+
+必须使用这个固定的原始函数族。任意选择范数为 \(\sqrt{2\pi\lambda_n}\) 的向量，既没有定义负系数情形，也没有得到模型空间判据。
+
+#### F18. Volchkov 的嵌套对数积分（A064）
+
+**A064，C：**
+
+\[
+\int_0^\infty\frac{1-12t^2}{(1+4t^2)^3}
+\left(\int_{1/2}^\infty\log|\zeta(\sigma+it)|\,d\sigma\right)dt
+=\frac{\pi(3-\gamma_E)}{32}.
+\]
+
+采用 [L18] Eq. (2.1) 所列 Volchkov 表达，避免未规定路径的 `arg zeta`。对极点、零点的对数奇性和两层无穷积分分别证明合法性，不能只用截断数值代替等式。
+
+### 4. 跨领域证明的共同骨架
+
+在标准 RH 根之外，最重要的几条可复用解析链为
+
+```text
+actual xi / actual ZeroData / functional equation
+  |-- Mobius disk -- canonical Li generator -- coefficient growth
+  |                         |-- Li curvature -- circle moments
+  |                         |                    |-- negative type / cocycle
+  |                         |                    `-- probability semigroup
+  |-- explicit formula -- full Weil form -- finite windows / actual spectrum
+  |-- even xi coefficients -- Jensen / Laguerre-Polya -- Newton-Hankel
+  |-- Mellin transform -- Nyman-Beurling -- original Gram distances
+  |-- reciprocal zeta / Mobius sums -- Riesz / discrete transform / Redheffer
+  |-- prime error terms -- divisor extrema / Farey discrepancy
+  |-- logarithmic integrals -- BSY / Volchkov
+  `-- heat deformation / total positivity / actual zeta probability
+```
+
+箭头代表要构造的数学映射及其定理，不保证所有箭头已经在仓库完成。已知两条 `RH ↔ P` 可以导出 `P ↔ Q`，但这类命题传递性不会自动产生误差界、矩阵大小、有效截断、测度对应或恢复算法。
+
+同理，RH 等价命题之间的逻辑等价不表示项目中两个观察映射的不可区分核相同。后者必须固定同一原始状态空间并证明实际读出之间的恢复关系。不能凭 64 个闭命题构造新的信息逃逸分数或宣称全体读出有相同内核。
+
+### 5. 当前文献对谱主线的具体修订
+
+Suzuki 的 *Weil's quadratic form via the screw function* 已从 2026-06-08 的 v1 修订为 **2026-08-17 的 v2**。[L01] Theorem 1.1 提供实际 Friedrichs 实现，Theorem 1.3 研究最低谱值的连续性，Theorem 1.4 的正性、单性、偶性及渐近适用于充分小的窗口参数。其最终无穷窗口谱解释仍包含明确提出的猜想。
+
+因此，A025–A026 的全部 \(a>0\) 量词不能由小窗口定理替代。对 #5602、#5895、#6029 的具体接入应保持同一个算术形式、同一个实际模型和完整混合余项。#5602 最新 shift barrier 消费的平移测试还要求物理支撑余量；两次平移使用 \(2t\) 余量，尖锐边界裁剪不自动满足这一条件。
+
+[L19] 的 zeta spectral triples 与 [L20] 的 2026 综述为该路线提供背景。由明确模型得到的函数极限、由真实最低模态得到同一极限、以及将极限连到 RH 是不同定理。当前理论图谱没有将这些尚待完成的比较猜想计作已证明的 RH 等价判据。
+
+Farey 工作 [L14] 已于 2026-09-02 修订到 v3；它与 2025 的 Redheffer 工作 [L16] 提供另外两条现代接口：前者要求区别普通 RH 和带同余类的 GRH，后者要求区别行列式中的 Möbius 抵消与最大奇异向量行为。跨领域联系保留被研究的实际量。
+
+### 6. 完整纸面推导一：有限 Li–Toeplitz 重建
+
+#### 6.1 双重望远镜求和
+
+先不使用 RH。设实序列 \(u_0=0,u_1=L\ge0\)，Hermitian 序列 \(c\) 满足 \(c_0=1\)，并有
+
+\[
+u_{n+1}-2u_n+u_{n-1}=2L\Re c_n\quad(n\ge1).
+\]
+
+写 \(d_n=u_n-u_{n-1}\)，则 \(d_1=L\)，\(d_{n+1}-d_n=2L\Re c_n\)。先对差分求和，再对 \(d_n\) 求和，得到
+
+\[
+u_n=L\left[n+2\sum_{k=1}^{n-1}(n-k)\Re c_k\right].
+\tag{E4}
+\]
+
+令 \(e_n=(1,\ldots,1)^T\in\mathbb C^n\)。按 Toeplitz 对角线逐条计数，距离 \(k\) 的两条对角线各含 \(n-k\) 项，因而
+
+\[
+e_n^*T^{(n)}e_n=nc_0+\sum_{k=1}^{n-1}(n-k)(c_k+c_{-k}).
+\]
+
+与 (E4) 比较可得精确恒等式
+
+\[
+\boxed{u_n=L\Re(e_n^*T^{(n)}e_n).}
+\tag{E5}
+\]
+
+因此所有 Toeplitz 矩阵半正定立即推出所有 \(u_n\ge0\)，无需先构造一个无限 Herglotz 测度。删除原反向证明的 Herglotz 前提时，必须显式保留 \(c_0=1\)；旧概率表示曾隐含提供它。
+
+#### 6.2 定量负方向与二次增长
+
+若 \(L>0,u_n<0\)，由于 \(\Vert e_n\Vert ^2=n\)，Rayleigh 商给出
+
+\[
+\lambda_{\min}(T^{(n)})\le\frac{u_n}{nL}<0.
+\tag{E6}
+\]
+
+这是指定矩阵大小和指定见证向量的运输。另一方面，所有两点主压缩半正定给出 \(\vert c_k\vert \le c_0=1\)。由 (E4)
+
+\[
+|u_n|\le L\left[n+2\sum_{k=1}^{n-1}(n-k)\right]=Ln^2.
+\tag{E7}
+\]
+
+对规范 Li 系数，这给出
+
+\[
+\text{A014}\Longrightarrow\text{A013}\Longrightarrow\text{A010}
+\Longrightarrow\text{A005}\Longrightarrow\mathrm{RH}.
+\]
+
+最后两步应复用 #6219 的实际解析延拓候选源，并完成所需编译检查。该反向路线不需要把 Li 判据本身作为参数传入。
+
+#### 6.3 正向使用实际零点的概率测度
+
+在 RH 下，对每个上半平面实际零点 \(\rho\)，写 \(w_\rho=e^{i\theta_\rho}\)。规范零点求和给出
+
+\[
+\lambda_n=2\sum_{\Im\rho>0}m_\rho(1-\cos n\theta_\rho).
+\]
+
+在 \(w_\rho\) 和 \(\bar w_\rho\) 各放置质量
+\(m_\rho(1-\cos\theta_\rho)/L\)。总质量等于一；权重的完整可和性来自实际零点的平方倒数可和性。有限几何级数恒等式给出
+
+\[
+\lambda_n=L\int_{\mathbb T}\left|\sum_{j=0}^{n-1}z^j\right|^2d\sigma(z).
+\tag{E8}
+\]
+
+由此得到规范曲率的圆周表示和 A014。解析重点是将导数定义的 \(\lambda_n\) 与带重数的实际零点和相等，并证明所有交换与尾界；任意抽象 Li-type 序列不够。
+
+#6114 的几何 cocycle、Schoenberg 和概率半群可以在这个实际输入上接通。圆周恒等点处的原子与二次增长项应完整保留，直到针对规范测度给出排除证明。
+
+### 7. 完整纸面推导二：同一离线零点的三种定量见证
+
+设 \(\rho\) 是实际非平凡零点，\(\beta=\Re\rho>1/2\)，并记 \(r=\vert w_\rho\vert \in(0,1)\)。这些推导以存在这样的零点为条件，不断言其存在。
+
+#### 7.1 原始 Nyman Mellin 恒等式
+
+对 \(0<\theta\le1\)、\(0<\Re s<1\)，
+
+\[
+\int_0^1\{\theta/x\}x^{s-1}dx
+=\frac\theta{s-1}-\frac{\theta^s\zeta(s)}s.
+\tag{E9}
+\]
+
+可先在 \(\Re s>1\) 将 floor 写为指示函数和并逐项积分，再用左侧在 \(\Re s>0\) 的解析性作延拓，处理 \(s=1\) 的可去抵消。复幂使用正实数的实对数。
+
+在 \(L^2(0,1)\) 上，\(\mathcal L_\rho f=\int_0^1f(x)x^{\rho-1}dx\) 的范数为 \((2\beta-1)^{-1/2}\)。由 (E9) 及 \(B_0\) 的约束，\(\mathcal L_\rho\) 消去整个 \(B_0\)，而 \(\mathcal L_\rho1=1/\rho\)。故
+
+\[
+\operatorname{dist}(1,\overline{B_0})\ge\frac{\sqrt{2\beta-1}}{|\rho|}.
+\tag{E10}
+\]
+
+#### 7.2 直接作用于项目半直线载体的分离泛函
+
+为避免把 (E10) 的范数常数未经证明转移到另一个载体，在原始 \(H=L^2(0,\infty)\) 上直接构造
+
+\[
+\mathcal J_\rho f=
+\int_0^1f(x)x^{\rho-1}dx
+-\frac1{\rho-1}\int_1^\infty\frac{f(x)}x\,dx.
+\]
+
+两项的 Riesz 向量支撑不交，故
+
+\[
+\|\mathcal J_\rho\|^2=\frac1{2\beta-1}+\frac1{|\rho-1|^2}.
+\]
+
+由于 \(v_a(x)=1/(ax)\) 在 \(x>1\) 上成立，(E9) 在 \(s=\rho\) 给出 \(\mathcal J_\rho v_a=0\) 对所有实 \(a\ge1\)；同时 \(\mathcal J_\rho\chi=1/\rho\)。因此对项目中的每个有限整数空间都有
+
+\[
+\begin{aligned}
+d_N^2&\ge\frac{1}{|\rho|^2\left((2\beta-1)^{-1}+|\rho-1|^{-2}\right)}\\
+&=\frac{(2\beta-1)|\rho-1|^2}{|\rho|^4}
+=\boxed{r^2(1-r^2)}>0.
+\end{aligned}
+\tag{E11}
+\]
+
+同一界也适用于完整闭包的距离。这是实际半直线函数的连续分离证明，不依赖 Gram 矩阵可逆或有限数值条件数。它应复用仓库的实际 `target`、`sourceVector` 和 `distance` 定义。
+
+#### 7.3 BSY 的同一半径读数
+
+[L13] 的无条件恒等式为
+
+\[
+I_{\rm BSY}=2\pi\sum_{\Re\alpha>1/2}m_\alpha
+\log\left|\frac\alpha{1-\alpha}\right|.
+\]
+
+右侧每项为正，因此给定零点 \(\rho\) 产生
+
+\[
+\boxed{I_{\rm BSY}\ge-2\pi m_\rho\log r>0.}
+\tag{E12}
+\]
+
+这里按全部实际零点带重数计数，不再额外重复乘一个共轭对因子。
+
+#### 7.4 Li 生成函数的同一半径障碍
+
+该零点对应 \(F(w_\rho)=0\)。一旦在半径大于 \(r\) 的圆盘内有实际解析函数 \(G\) 满足 \(F'=GF\)，零点阶数比较就产生矛盾。#6219 的候选 `CanonicalLiRadiusObstruction` 将其量化为：对 \(r<R\le1\)，
+
+\[
+\forall N\;\forall C\;\exists n\ge N,
+\qquad |\lambda_{n+1}|R^n>C.
+\tag{E13}
+\]
+
+(E11)–(E13) 使用同一个实际 \(w_\rho\)：它在逼近论中给出正距离，在对数积分中给出正缺陷，在系数空间中排除每一个指定指数包络。由此可以研究转换中的显式常数，而非只依赖命题传递性。
+
+这不提供最早失败指标，也不证明每个充分大的 Li 系数均超过包络。有限 Weil 负方向另由现有 separator 和共同 Burnol packet 构造；将其支撑半径与这里的 \(r\) 定量比较仍是新的研究任务。
+
+### 8. 两条独立的算术变换桥
+
+#### 8.1 Riesz 与二项式离散化
+
+记 \(a_j^\zeta=1/\zeta(2j+2)\)，它与 Jensen 的 \(a_j\) 无关。对 \(x>0\)，完整指数生成关系为
+
+\[
+\frac{R(x)}x=e^{-x}\sum_{k\ge0}b_k\frac{x^k}{k!}.
+\tag{E14}
+\]
+
+证明从有限二项式变换展开，交换绝对收敛级数，再求 \(\sum_{k\ge j}\binom kjx^k/k!=x^je^x/j!\)。实际 Möbius 展开进一步给出
+
+\[
+R(x)=x\sum_{n\ge1}\frac{\mu(n)}{n^2}e^{-x/n^2},\qquad
+b_k=\sum_{n\ge1}\frac{\mu(n)}{n^2}(1-n^{-2})^k.
+\tag{E15}
+\]
+
+[L11] 的完整误差比较 \(R(k)/k-b_k=O(k^{-3/2})\) 连同整数之间的控制，将两种增长界接通。形式化必须保留全部 \(n\) 尾部，证明从整数到实变量的运输；只验证有限项的二项式恒等式没有完成 A048–A049。
+
+#### 8.2 Redheffer 行列式精确等于 Möbius 部分和
+
+令 \(D_{ij}=1_{i\mid j}\)，\(1\le i,j\le N\)。它是单位上三角矩阵，且
+
+\[
+(D^{-1})_{ij}=\begin{cases}\mu(j/i),&i\mid j,\\0,&\text{其他}.\end{cases}
+\]
+
+令 \(u=(0,1,\ldots,1)^T\)，则 \(A_N=D+u e_1^T\)。矩阵行列式引理给出
+
+\[
+\boxed{\det A_N=\det D\,(1+e_1^TD^{-1}u)=\sum_{n=1}^N\mu(n)=M(N).}
+\tag{E16}
+\]
+
+所需核心是除数卷积 \(\mu*1=\varepsilon\)，可以消费已有算术函数库。A054 的有限对象与 A041 的完整渐近完全一致。[L15, L16] 的奇异值研究不替代这一行列式身份。
+
+### 9. Jensen、Weil 与正性的必要区分
+
+对有限共轭稳定根族 \(z_1,\ldots,z_d\)，现有 Newton–Hankel 恒等式是
+
+\[
+a^THa=\frac1d\Re\sum_{j=1}^d q_a(z_j)^2.
+\]
+
+发现非实共轭根时，实系数插值可令 \(q_a(z)=i,q_a(\bar z)=-i\)，其余不同根取零，得到负方向。这个机制消费 **平方**；替换成 \(\vert q_a(z_j)\vert ^2\) 会使表达自动非负，从而失去检测能力。
+
+Weil 的离线轨道同样通过交叉配对产生不定性，但把有限插值推广到完整零点和，还要控制全部其余零点。项目已有单轨道与多轨道 Burnol 机制负责这一分析层。Jensen 的有限矩阵结果也不能越过实际 ξ 系数与整函数极限。
+
+[L06] 同时指出，某些倒数函数 Taylor 系数构成的矩 Hankel 正性只是 Laguerre–Pólya 的必要条件。它与本项目“给定有限多项式全部根的 Newton–Hankel 判据”是不同命题。不得凭 Hankel 同名把必要条件升级成 RH 等价。
+
+另外，半正定判据要求所有主子式；只有全部顺序领先主子式的弱非负通常不足。严格正定的 Sylvester 判据、半正定判据和全正核的任意两组节点行列式，应各用其实际定理。
+
+### 10. 按共享解析义务推进形式化
+
+以下是实现单元，不是新建 64 个相互独立模块。最终每个公开端点必须以现有标准 `RiemannHypothesis` 和本节实际对象表达，且不接收一个同等困难的 `RH ↔ P` 作为未证明参数。通用引理仍可以参数化，只需与规范算术端点分开。
+
+| 阶段 | 主要工作及复用点 | 完成时应得到的具体成果 |
+| --- | --- | --- |
+| P0：规范对象 | 复用 canonical ZeroData、xiReading、Li 导数；固定坐标、重数、Fourier 号和 Jensen 偶阶归一化 | A001–A005 的真实几何连接；每个定义与文献对象的对应定理。 |
+| P1：Li 与概率 | 在现有曲率真源增加 (E4)–(E7)；接入 #6219 的圆盘分析和 #6114 的概率构造；证明实际导数系数等于规范零点和 | A006–A020 的共享解析闭环；显式有限负方向和指数包络障碍。 |
+| P2：整函数与有限矩阵 | 证明实际偶阶系数严格正、Ψ 与 Ξ 的关系、Jensen–Pólya 定理；复用 NewtonHankelRealRootCriterion | A027–A032；实际多项式到矩阵与根失败见证的双向运输。 |
+| P3：Nyman 解析桥 | 证明 (E9)、两个连续分离泛函、Beurling 稠密性与整数强化；复用实际 Gram、伪逆和闭包模块 | A033–A040，并得到 (E11) 的原始载体距离下界。 |
+| P4：算术与误差 | 复用 Möbius、除数卷积、Mertens 和 prime-power 所有者；补 Perron、部分求和、极值整数及 Farey 运输；证明 (E14)–(E16) | A041–A049、A052–A054。每个 epsilon、阈值和尾部都有实际证明。 |
+| P5：完整谱与函数空间 | 接合实际 Weil 载体及 Friedrichs 实现；证明全窗口/核心/谱对应；补 Speiser、BSY、Volchkov、Schoenberg PF、实际 zeta 概率、模型空间与热形变 | A021–A026、A050–A051、A055–A064；较重的共享分析定理可以再分解为有独立用途的子项目。 |
+
+P1 与 P3 的有限恒等式和显式分离泛函可优先推进。P2 具有可直接消费的现有有限根定理。Rodgers–Tao 下界、Nyman 整数强化以及完整显式公式等大型前置按各自原定理实现，不以接口包装计作已解决。
+
+每个最终端点的必要检查包括：两个方向均有证明；原函数和原序列没有被替代；实/复域与全部测试向量正确；重数与截断顺序正确；除法、对数和逆矩阵的定义域正确；无限和及积分换序合法；量词为全阶数、全尺度或全 epsilon；真源与 Scribe 指向同一声明。核验执行后再记录相应版本的编译与公理闭包，文档中的纸面推导不充当机器回执。
+
+### 11. 可以进一步产生研究价值的定量问题
+
+本图谱把“证明等价”与“利用等价”接在一起。近期可以提出以下直接面对原始对象的问题。
+
+第一，给定实际离线零点位置、重数及一个有效邻域，将 (E11)、(E12) 与已有 Burnol 负测试统一为可检查的证书，显式控制测试支撑、次数、矩阵维度和尾误差。现有 (E13) 只保证每条指数包络在任意尾部失败；有效首次失败指标需要新的估计。
+
+第二，将 Jensen 根分离裕量转成 Newton–Hankel 的负特征值裕量，再控制 ξ 系数的有限精度误差。插值条件数、根碰撞与矩阵大小会影响稳定性，不能把多项式根保持定理视为均匀鲁棒性结论。
+
+第三，在 Nyman 原始 Gram 系统中同时控制计算误差和最佳逼近误差。伪逆公式容许奇异矩阵，却不会消除接近奇异时的数值敏感性。若使用正则化，应证明实际残差和正则化残差之间的定量关系。
+
+第四，将 #5602/#5895/#6029 的完整算术余项与 [L01] 的实际形式域接合，研究随窗口无界增长的一致估计。固定窗口和固定扇区的进步保留其价值，但对 A025–A026 的全称命题还需要真正的尺度控制。
+
+后续可扩展到广义 Li/Bombieri–Lagarias 参数族、完整广义 Laguerre 不等式塔、乘子序列、变差递减以及更细的算术极值判据。新条目必须先固定原定理、范围和量词。单个 Turán 不等式、弱 Mertens 加零点单性、某个有限样本成功、或尚未证明的 Hilbert–Pólya 模型，都不能直接加进已知 RH 等价清单。
+
+### 12. 原始文献与精确定位
+
+以下文献按本节用途引用。2026 新稿使用实际版本记录；引文支持指定数学陈述，不表示本次独立重证了每篇全文。经典结果的完整移植仍按第 10 节推进。
+
+- **[L01]** Masatoshi Suzuki, *Weil's quadratic form via the screw function*, [arXiv:2606.09096v2](https://arxiv.org/abs/2606.09096v2), revised 2026-08-17. Theorems 1.1, 1.3, 1.4，形式核心与最终谱极限猜想。相关 PR 中 v1 引用应在实际采用新定理时更新。
+- **[L02]** Jeffrey C. Lagarias, *Li Coefficients for Automorphic L-Functions*, [arXiv:math/0404394](https://arxiv.org/abs/math/0404394), Annales de l'Institut Fourier 57 (2007), 1689–1740. Li 导数、零点表达与增长判据的经典来源。
+- **[L03]** Masatoshi Suzuki, *Li coefficients as norms of functions in a model space*, [arXiv:2301.05779v2](https://arxiv.org/html/2301.05779v2), 2023. Theorem 1.1；Propositions 2.1–2.2；Li–Weil 特殊测试函数恒等式。该特殊测试函数不属于原始光滑紧支撑类，使用时另证正则化和尾部运输。
+- **[L04]** Takashi Nakamura and Masatoshi Suzuki, *On infinitely divisible distributions related to the Riemann hypothesis*, [arXiv:2306.08317v1](https://arxiv.org/html/2306.08317v1), 2023. Theorem 1.1、算术 screw function、实际零点展开及实线无穷可分分布。
+- **[L05]** Michael Griffin, Ken Ono, Larry Rolen and Don Zagier, *Jensen polynomials for the Riemann zeta function and other sequences*, [arXiv:1902.07321v2](https://arxiv.org/html/1902.07321v2), 2019. 系数归一化、Jensen 实根塔及固定次数的大 shift 定理。
+- **[L06]** Karlheinz Gröchenig, *Schoenberg's Theory of Totally Positive Functions and the Riemann Zeta Function*, [arXiv:2007.12889v1](https://arxiv.org/html/2007.12889v1), 2020. Theorems 1, 3, 4, 8；倒数矩 Hankel 必要条件与充分性的区别。
+- **[L07]** Luis Báez-Duarte, *A strengthening of the Nyman-Beurling criterion for the Riemann hypothesis*, [arXiv:math/0202141](https://arxiv.org/abs/math/0202141), 2002. 实际半直线 L² 载体与整数 dilation 强化。
+- **[L08]** J. Brian Conrey, *Riemann's Hypothesis*, [author-hosted text](https://aimath.org/~kaur/publications/90.pdf), 2019. 素数计数、Chebyshev 误差与 Möbius 部分和的等价表述；不采用其发表时的有限零点计算数量作为当前数据。
+- **[L09]** Jeffrey C. Lagarias, *An Elementary Problem Equivalent to the Riemann Hypothesis*, [arXiv:math/0008177v2](https://arxiv.org/html/math/0008177v2). Main theorem；Robin 判据、Gronwall 与约数和极值背景。
+- **[L10]** YoungJu Choie, Michel Planat and Patrick Solé, *On Nicolas criterion for the Riemann Hypothesis*, [arXiv:1012.3613v2](https://arxiv.org/abs/1012.3613v2). Primorial 输入与正反两种 RH 情况下的符号结论。
+- **[L11]** Jan Cisło and Marek Wolf, *On the Riesz and Baez-Duarte criteria for the Riemann Hypothesis*, [arXiv:0807.2971v1](https://arxiv.org/abs/0807.2971v1), 2008. 指数生成恒等式、Möbius 表达、Lemma 3 与 Theorem 1 的完整误差运输。
+- **[L12]** Farr and Pauli, *Zeros of the derivatives of the Riemann zeta function on the left half plane*, [author-hosted text](https://mat112.uncg.edu/pauli/publications/farr-pauli_zeta-deriv-left-half-plane.pdf). Theorem 1 重述 Speiser 等价；这里只使用该经典零点带判据。
+- **[L13]** H. M. Bui, S. J. Lester and M. B. Milinovich, *On Balazard, Saias, and Yor's equivalence to the Riemann Hypothesis*, [arXiv:1306.0856v1](https://arxiv.org/html/1306.0856v1), 2013. Eqs. (1.1)–(1.2)；Theorem 1.2 给出带全部尾项的截断关系。其结果亦说明不能任意假定更强截断衰减率。
+- **[L14]** Bittu Chahal, Tapas Chatterjee and Sneha Chaubey, *Distribution of Farey fractions with k-free denominators*, [arXiv:2507.00228v3](https://arxiv.org/html/2507.00228v3), revised 2026-09-02. 本节只消费引言准确列出的普通 Franel–Landau 判据；其带同余类推广不混作普通 RH。
+- **[L15]** Herbert S. Wilf, *The Redheffer matrix of a partially ordered set*, [arXiv:math/0408263v1](https://arxiv.org/abs/math/0408263v1), 2004. 算术 incidence 结构与行列式。
+- **[L16]** François Clément and Stefan Steinerberger, *On the largest singular vector of the Redheffer matrix*, [arXiv:2502.09489v1](https://arxiv.org/html/2502.09489v1), 2025. 原始矩阵定义、Möbius 行列式背景与独立的奇异向量问题。
+- **[L17]** Brad Rodgers and Terence Tao, *The de Bruijn-Newman constant is non-negative*, [arXiv:1801.05914v5](https://arxiv.org/abs/1801.05914v5), revised 2021-07-03. 热核归一化、阈值与无条件下界。
+- **[L18]** Yang-Hui He, Vishnu Jejjala and Djordje Minic, *From Veneziano to Riemann: A String Theory Statement of the Riemann Hypothesis*, [arXiv:1501.01975v2](https://arxiv.org/html/1501.01975v2), 2015. Eq. (2.1) 重述 Volchkov 的嵌套对数积分。本文不消费其中推测性的物理解释。
+- **[L19]** Alain Connes, Caterina Consani and Henri Moscovici, *Zeta Spectral Triples*, [arXiv:2511.22755v1](https://arxiv.org/abs/2511.22755v1), 2025. 真实谱模型与极限研究背景。
+- **[L20]** Alain Connes, *The Riemann Hypothesis*, [arXiv:2602.04022v1](https://arxiv.org/abs/2602.04022v1), 2026. 当前谱路线与算术结构的综述背景。
+
+本图谱的下一步是逐条补齐真实解析边并消费已有真源。完成一个判据族的端到端证明，就将该族的规范对象、双向定理和见证运输接回这里的共同图谱，保留全部尚未完成的量词与分析义务。
+
+
+---
+
+## RH_PUBLIC_COVERAGE_AUDIT_20260908
+
+### 13. 公开覆盖目标与本轮计数
+
+第一版是 18 个判据族、64 个规格节点，其中 A001 为标准 RH，其余 63 个为替代或派生表述。**这一范围没有覆盖全部公开判据。** 本次新增 A065–A093 共 29 条规格，累计 **93 个节点、92 个替代表述规格、21 个判据族**。三个新增族为 F19 自逼近、F20 Salem 积分方程、F21 置换最大阶；其他条目扩展已有族。这里的条目数包含参数族和派生表达，不能解释为 92 项独立数学发现或 92 项已完成的 Lean 定理。
+
+目标是公开文献逐项覆盖，不以 40、50、64 或 93 为上限。完整参数定理只建一个参数化规格，不把每个数值代入另算一个发现。已发表定理、公开预印本、仅有单向证明和需要额外假设的命题分别标注。
+
+审查入口是 Broughan 三卷、AIM 专家纲要及原始论文，同时补检 2024–2026 年文献。**这几个来源集合的逐定理核对尚未完成，故本次仍不宣称全部公开等价形式已经覆盖。** Q01–Q10 明列剩余缺口，未计入新增规格。原始 PR 起点为 `8265370d41979f8659b97f6249f9a9e3530f57f4`，完整理论 blob 为 `5899285d185d0b5b288e84b400f3523d8bed99d7`；前文 dev/PR 审查保留其原有时间和提交范围。
+
+### 14. 自逼近、Hardy 空间和 Salem 方程
+
+#### F19：自逼近
+
+令 \(S=\{s:1/2<\Re s<1\}\)。对补集连通的非空紧集 \(K\subset S\)，定义
+
+\[
+d_{K,\epsilon}(T)=T^{-1}\operatorname{meas}\{\tau\in[0,T]:
+\sup_{s\in K}|\zeta(s+i\tau)-\zeta(s)|<\epsilon\}.
+\]
+
+**A065，Bagchi：** 对所有上述 \(K\) 及所有 \(\epsilon>0\)，\(\liminf_{T\to\infty}d_{K,\epsilon}(T)>0\)。[E01, Theorem 2]
+
+**A066，Laurinčikas：** 对每个上述 \(K\)，存在至多可数 \(E_K\subset(0,\infty)\)，使每个正数 \(\epsilon\notin E_K\) 对应的 \(\lim_{T\to\infty}d_{K,\epsilon}(T)\) 存在且严格为正。[E01, Theorem 4]
+
+两条分别与 RH 等价。可数例外集合、密度归一化和全部紧集的量词必须保留；其他平移比例的自逼近可能无条件成立。
+
+#### 扩展 F06：两个实际 Hardy 载体
+
+半平面空间采用
+\(\|f\|^2=\sup_{x>1/2}(2\pi)^{-1}\int_{\mathbb R}|f(x+it)|^2dt\)。
+
+**A067，Bagchi：** \(E(s)=1/s\) 属于 \(G_k(s)=(k^{-s}-k^{-1})\zeta(s)/s\)、\(k\ge2\) 在 \(H^2(\Re s>1/2)\) 中的闭复线性包。\(s=1\) 处构造可去延拓。[E02, Theorem 2.2]
+
+**A068，Noor：** 在标准单位圆盘 \(H^2\) 中，常数 \(1\) 属于下列函数的闭复线性包：
+
+\[
+h_k(z)=\frac1{1-z}\log\left(\frac{1+z+\cdots+z^{k-1}}k\right),\quad k\ge2.
+\]
+
+对数在原点取 \(-\log k\) 的解析分支。[E02, Theorem 2.1] 两条分别等价于 RH。闭包存在性不指定自然 Möbius 部分和。2026 年 [E02] 的较右半平面收敛和数值实验不能替代临界 Hardy 空间的结论。
+
+#### F20：Salem 积分方程
+
+**A069，Salem：** 对每个 \(1/2<\delta<1\)，每个有界可测复函数 \(f\)，若
+
+\[
+\int_0^\infty\frac{t^{\delta-1}f(t)}{e^{xt}+1}dt=0\quad\text{对所有 }x>0,
+\]
+
+则 \(f=0\) 几乎处处。所有 \(\delta\) 的合取与 RH 等价。[E03]
+
+**A070，显式 Mellin 表达：** 对所有 \(1/2<\delta<1\)、\(\gamma\in\mathbb R\)，
+\(\int_0^\infty t^{\delta-1+i\gamma}/(e^t+1)dt\ne0\)。
+
+直接桥梁为
+
+\[
+\int_0^\infty\frac{t^{s-1}}{e^{xt}+1}dt
+=x^{-s}\Gamma(s)(1-2^{1-s})\zeta(s),\quad x>0,\ \Re s>0.
+\tag{E17}
+\]
+
+\(s=1\) 按可去抵消解释。目标开带上 Gamma 与 \(1-2^{1-s}\) 不为零，故 A070 与 RH 等价。[E03] 任意有界函数的 Salem 唯一性仍需自己的分析证明；显式幂函数读法不替代它。2026 预印本的发表状态与经典 Mellin 恒等式分开，不主张新的数学优先权。
+
+### 15. 广义 Li、完整实根判据与横向单调性
+
+#### 扩展 F02：完整实参数族
+
+固定 \(a\in\mathbb R\setminus\{1/2\}\)，使用实际非平凡零点及解析重数定义
+
+\[
+S_n(a)=\lim_{T\to\infty}\sum_{|\Im\rho|\le T}m_\rho
+\left[1-\left(\frac{\rho-a}{\rho+a-1}\right)^n\right],\quad
+D_n(a)=\left.\frac1{(n-1)!}\frac{d^n}{ds^n}
+\bigl((s-a)^{n-1}\log\xi(s)\bigr)\right|_{s=1-a}.
+\]
+
+对称极限、实值性和局部对数先证明合法。每个固定许可参数下，以下三条各自与 RH 等价。[E04, Theorems 1、2、5]
+
+| ID | 精确陈述 |
+| --- | --- |
+| A071 | 对所有 \(n\ge1\)，\(S_n(a)\ge0\)。 |
+| A072 | 对所有 \(n\ge1\)，\((1-2a)D_n(a)\ge0\)，保留左右参数区域的相反符号。 |
+| A073 | 对每个 \(\epsilon>0\)，存在 \(C_{a,\epsilon}\ge0\)，使所有 \(n\ge1\) 满足 \(S_n(a)\ge-C_{a,\epsilon}e^{\epsilon n}\)。 |
+
+原 Li 系数的特例身份要与已有导数定义证明一致。一个固定指数下界或有限前缀不能代替 A073 的全部 epsilon。
+
+#### 扩展 F05、F15：完整不等式塔与全正性
+
+对实际 \(\Xi\) 定义
+
+\[
+L_k[\Xi](x)=\sum_{j=0}^{2k}\frac{(-1)^{j+k}}{(2k)!}\binom{2k}{j}
+\Xi^{(j)}(x)\Xi^{(2k-j)}(x).
+\]
+
+**A074，经典广义 Laguerre 判据：** 对全部 \(k\ge0,x\in\mathbb R\)，\(L_k[\Xi](x)\ge0\)。完整阶数塔等价于 RH；单个 Turán/Laguerre 不等式只提供必要条件。[E05, Section 2]
+
+复用前文 \(a_n=n!\xi^{(2n)}(1/2)/(2n)!>0\)。
+
+**A075，Pólya–Schur 特化：** 对每个实根实多项式 \(\sum p_jX^j\)，系数乘子输出 \(\sum a_jp_jX^j\) 仍实根，零多项式按通用乘子定义允许。[E05] 通过 \(\Psi(u)=\sum a_nu^n/n!\) 的 Laguerre–Pólya I 类性质连接 RH。
+
+令 \(b_n=a_n/n!\) 对 \(n\ge0\)，\(b_n=0\) 对 \(n<0\)。
+
+**A076，离散 PF∞：** 对全部阶数 \(r\ge1\)，全部严格递增非负整数行索引 \(i_p\) 和列索引 \(j_q\)，\(\det[b_{j_q-i_p}]_{p,q=1}^r\ge0\)。[E06] 使用实际 \(\Psi\) 的亏格零性质与 Aissen–Schoenberg–Whitney–Edrei 表示；不能把亏格零误写成增长阶为零。该全正性等价于 RH，所有两组索引不能缩为主子式。2026 年的巨大 shift 区域结果不完成全称判据。
+
+#### 扩展 F01：实际 ξ 的横向性质
+
+**A077：** 对每个 \(t\in\mathbb R\)，\(\sigma\mapsto|\xi(\sigma+it)|\) 在 \((1/2,\infty)\) 严格递增。[E07, Corollary 1] 左半平面严格递减版本由函数方程归入同族。
+
+**A078：** 对全部 \(\Re s>1/2\)，\(\Re(\xi'(s)\overline{\xi(s)})>0\)。[E07, E15.C5c] 这是对数导数正性的无除法表达；零点处左侧为零，反向不会偷用未证明的非零分母。两条各自等价于 RH，但一般函数的严格单调不等同于导数处处严格正。
+
+### 16. 极值整数、置换群和算术平滑
+
+#### 扩展 F08：极丰数及超丰数子集
+
+定义 \(F(n)=\sigma(n)/(n\log\log n)\)，
+
+\[
+XA=\{10080\}\cup\{n>10080:\ \forall\,10080\le m<n,\ F(m)<F(n)\}.
+\]
+
+**A079：** \(XA\) 无限。这与 RH 等价，保留起点 10080 及严格纪录条件。[E08, Theorem 2.4]
+
+**A080，预印本规格，待独立核验：** 对全部 superabundant 正整数 \(n\)，\(\sigma(n)\le H_n+e^{H_n}\log H_n\)。superabundant 指每个 \(1\le m<n\) 都满足 \(\sigma(m)/m<\sigma(n)/n\)。[E09, Theorem 3.1] 声称最小 Lagarias 反例必为 superabundant；其有限初始区间与阈值单调性尚待独立复核。本条进入公开规格数量，但不能与独立核验完毕的经典定理或机器证明合并统计。
+
+#### F21：Landau 最大置换阶
+
+\(g(n)\) 为对称群 \(S_n\) 中元素的最大阶。使用 \(\operatorname{li}(x)=\operatorname{Ei}(\log x)\) 的主值归一化及其在 \(x>1\) 上的反函数，不能换成前文相差常数的 \(\int_2^xdt/\log t\)。设
+
+\[
+q_n=\frac{\sqrt{\operatorname{li}^{-1}(n)}-\log g(n)}{(n\log n)^{1/4}},\ n\ge2,
+\quad d=\frac{2-\sqrt2}{3},\quad c=\sum_{\rho\in\mathcal Z}\frac{m_\rho}{|\rho(\rho+1)|}.
+\]
+
+\(c\) 使用实际全体零点与完整可和性。以下各条分别等价于 RH。[E10, Theorem 1.1、Corollary 1.3]
+
+| ID | 精确陈述 |
+| --- | --- |
+| A081 | 所有 \(n\ge1\) 满足 \(\log g(n)<\sqrt{\operatorname{li}^{-1}(n)}\)。 |
+| A082 | 存在 \(N\ge1\)，使 A081 的不等式对所有 \(n\ge N\) 成立。 |
+| A083 | 所有 \(n\ge2\) 满足 \(q_n\ge d-c-\tfrac{43}{100}\tfrac{\log\log n}{\log n}>0\)。 |
+| A084 | 所有 \(n\ge19425\) 满足 \(q_n\le d+c+\tfrac{51}{50}\tfrac{\log\log n}{\log n}\)。 |
+| A085 | 所有 \(n\ge2\) 满足 \(\tfrac{694}{6250}<q_n\le q_2\)，其中有理下界等于 0.11104。 |
+| A086 | \(d-c\le\liminf q_n\le\limsup q_n\le d+c\)。上下极限用扩展实数定义。 |
+| A087 | 存在最终有界实序列 \(u_n,v_n\)，使所有充分大 \(n\) 满足 \((d-c)(1+\tfrac{\log\log n+u_n}{4\log n})\le q_n\le(d+c)(1+\tfrac{\log\log n+v_n}{4\log n})\)。 |
+
+A087 显式保留两项 \(O(1)\)。原论文的有限计算和阈值证书未在本轮执行。群论的最大阶与 prime-power 优化必须证明是同一个对象。相近的 squarefree 优化 \(h(n)\) 或 \(\omega(g(n))\) 结论另需核对，不能据外形相同推定。
+
+#### Nicolas 2024：全部整数上的 totient 阈值
+
+\(p_j\) 为第 \(j\) 个素数，\(P_k=\prod_{j\le k}p_j\)，\(k=120568\)。定义
+
+\[
+A=P_k\frac{p_{k+1}p_{k+2}}{p_kp_{k-10}},\qquad
+\delta=e^{\gamma_E}(4+\gamma_E-\log(4\pi)),
+\]
+
+\[
+C_\varphi(n)=\left(\frac n{\varphi(n)}-e^{\gamma_E}\log\log n\right)\sqrt{\log n},\quad n\ge2.
+\]
+
+| ID | 与 RH 等价的陈述 |
+| --- | --- |
+| A088 | 对所有整数 \(n>A\)，\(C_\varphi(n)<\delta\)。 |
+| A089 | \(\limsup_{n\to\infty}C_\varphi(n)=\delta\)。 |
+| A090 | 存在实数 \(B\) 与整数 \(N\ge2\)，使全部 \(n\ge N\) 满足 \(C_\varphi(n)\le B\)。 |
+
+[E11, Theorem 1.1、Eqs. (1.5)–(1.12)] 给出 RH 下的阈值及 limsup，非 RH 下 limsup 为正无穷。原文 \(C_\varphi(A)>\delta\)，所以输入必须是 \(n>A\)。这些全部整数的精细误差不能由原 primorial 判据 A047 直接替换。
+
+#### 扩展 F09：完整平滑参数族
+
+**A091，Hardy–Littlewood：** 定义整函数 \(H(x)=\sum_{j\ge1}(-x)^j/(j!\zeta(2j+1))\)。对每个 \(\epsilon>0\)，\(H(x)=O_\epsilon(x^{-1/4+\epsilon})\) 当 \(x\to+\infty\)，当且仅当 RH。[E12, Introduction] 它对应 \(\sum\mu(n)e^{-x/n^2}/n\) 的自然部分和极限；也可用绝对收敛的 \(\sum\mu(n)(e^{-x/n^2}-1)/n\) 定义，再消费无条件 \(\sum\mu(n)/n=0\)。
+
+**A092：** 对每个固定 \(k\ge1,\ell>0\)，令 \(P_{k,\ell}(x)=\sum_{n\ge1}\mu(n)n^{-k}e^{-x/n^\ell}\)。RH 等价于
+
+\[
+\forall\epsilon>0,\quad P_{k,\ell}(x)=O_{k,\ell,\epsilon}(x^{-k/\ell+1/(2\ell)+\epsilon}).
+\]
+
+[E12, Theorem 3.10 的 zeta 特化] 每个许可参数对各自给出等价定理；\(k=1\) 的自然部分和极限不能误称绝对收敛。
+
+**A093：** 固定整数 \(r\ge0\)、实数 \(k\ge r+1,\ell>0\)。令 \(\sigma_r(n)=\sum_{d\mid n}d^r\)，其 Dirichlet 卷积逆为 \(\sigma_r^{-1}=\mu*(n\mapsto n^r\mu(n))\)。RH 等价于
+
+\[
+\forall\epsilon>0,\quad
+\sum_{n\ge1}\sigma_r^{-1}(n)n^{-k}e^{-x/n^\ell}
+=O_{k,r,\ell,\epsilon}(x^{-k/\ell+(1+2r)/(2\ell)+\epsilon}).
+\]
+
+[E12, Theorem 3.13] 卷积逆不等于逐点倒数。边界参数的级数收敛须单独证明；相邻公式为使用 \(1/\zeta'(\rho)\) 所加的单零点假设不能未经核对混入此端点。一般 L-function 的版本另记为 GRH 范围。
+
+### 17. 来源覆盖账与尚未编号的缺口
+
+每项分别登记：来源已定位、精确陈述已提取、双向数学证明已审查、原对象上的 Lean 定理已核验。当前新增条目主要完成前两阶段。公开来源中的定理并不因此自动成为本项目的机器真值。
+
+| 来源集合 | 已接入 | 尚未完成 |
+| --- | --- | --- |
+| Broughan I（2017） | 原算术族及本次极丰数、Landau、totient | 极值整数、纪录型和误差变体仍须逐定理对照。 |
+| Broughan II（2017） | 原 Li/Weil/Nyman；本次 Hardy、Salem、完整实根和全正性 | 正交多项式、分圆、积分方程、离散测度、Hermitian forms、smooth numbers 未完成逐条核对。 |
+| Broughan III（2023） | 原 dBN/Jensen；本次自逼近入口 | prime-counting、divisor-count、zero-gap、Dobner、Gonek–Bagchi、可判定性尚未逐定理区分附加假设。 |
+| AIM 纲要 Section C | 大部分已列经典入口 | 空标题和未提取公式不能算已经覆盖；下面 Q 表保留原始论文义务。 |
+| 现代论文 [E01]–[E12] | A065–A093 的明确规格 | 原始证明、精度证书及参数边界按每条来源继续核验；A080 明确保留预印本状态。 |
+
+| 登记号 | 已找到的方向 | 尚待精确提取或核对 |
+| --- | --- | --- |
+| Q01 | Amoroso（1995）的分圆多项式乘积高度，AIM C3a | \(F_N=\prod_{n\le N}\Phi_n\) 的 \((2\pi)^{-1}\int_{-\pi}^{\pi}\log^+\vert F_N(e^{it})\vert dt=O_\epsilon(N^{1/2+\epsilon})\) 已见专家纲要；原始全文和全部条件未核完。 |
+| Q02 | Broughan II Chapter 6；Romik 的 Hermite、Meixner–Pollaczek、continuous Hahn 展开 | 仅存在正交展开不构成 RH 等价；需要原始系数、零点或完备性判据。 |
+| Q03 | Weingartner 的加权余数向量投影，[E02] 文献链 | 固定 \(r_k(j)=j\bmod k\) 的权重、索引及投影系数趋向 \(-\mu(k)/k\) 的完整量词。 |
+| Q04 | Lapidus–Maier（1995）的分形弦逆谱问题 | Minkowski 维数、计数渐近、可测性以及逐维无零点与全部非中线维数的区别。 |
+| Q05 | Nicolas 的 \(\pi(x)\) 与 divisor-count 判据，Broughan III Chapters 1–2 | 约数个数 \(d(n)\) 与约数和 \(\sigma(n)\) 不同，原 Robin 不能代替。 |
+| Q06 | \(\omega(g(n))\) 与 squarefree 最大乘积 \(h(n)\) | 各自反向结论及精确阈值，不能从 A081 外推。 |
+| Q07 | Mikolás、Pólya/Newman 积分、Grommer inequalities | AIM 部分标题没有完整命题；需追溯原函数、参数和全部阶数。 |
+| Q08 | Broughan II 的离散测度、Hermitian forms、smooth numbers | 具体算术对象与必要充分性；通用 Gram 正性不够。 |
+| Q09 | Mazet–Saias、Laurinčikas、Gonek–Bagchi 的离散/短区间自逼近 | 步长、例外集、区间长度及密度归一化，不能仅用 A065 代替全部变体。 |
+| Q10 | Dobner、zero-gap、可判定性 | 普通 RH、GRH、RH 加单零点和逻辑附加假设逐条分类。 |
+
+Q01–Q10 没有算入 A001–A093。它们表明目前覆盖审查尚未完成，不能通过增加同义节点宣称全公开覆盖。固定来源集合的每个实际等价定理应映射到一个 ID，或注明参数特化、同义表达、范围不同、仅单向等理由；新增公开来源继续追加。
+
+### 18. 形式化接入与证据边界
+
+保留 P0–P5。广义 Li 和整函数条目复用 canonical Li、实际 ξ、Jensen 与 Newton–Hankel；Hardy/Nyman 共用 Mellin 与有界变换；Salem 使用实际 ζ 的 Mellin 核和独立唯一性；极值整数复用算术函数、primorial、Gronwall/Robin；Landau 构造实际有限群与 prime-power 优化的对应；平滑参数族复用 Möbius 卷积与完整可和性。每个新 Lean 真源配套 Scribe，理论继续追加本卷。
+
+本轮没有新增 Lean、运行编译或核验传递公理闭包。93 个节点是文献与数学规格，不能包装成接收 92 个未知等价式参数的结构后宣称形式化完成。完整终点仍是每个原始命题与 `RiemannHypothesis` 的两个方向。
+
+### 19. 新增参考文献
+
+- **[E01]** A. Laurinčikas, *Remarks on the Connection of the Riemann Hypothesis to Self-Approximation*, Computation 12(8), 164 (2024), [DOI:10.3390/computation12080164](https://www.mdpi.com/2079-3197/12/8/164). Theorems 2、4。
+- **[E02]** J. Manzur, W. Noor, G. Quintero, *A Hardy space approximation supporting zero-free half-planes for the ζ-function*, [arXiv:2606.16097v1](https://arxiv.org/html/2606.16097v1). Theorems 2.1–2.2 重述原始 Noor、Bagchi 判据；不采用数值实验作证明。
+- **[E03]** González, Negrín, *A new equivalence to the Riemann Hypothesis by means of the Salem integral equation*, [arXiv:2604.15396v1](https://arxiv.org/html/2604.15396v1). 经典 Salem 与显式幂函数读法；预印本。
+- **[E04]** S. K. Sekatskii, *Generalized Bombieri–Lagarias’ theorem and generalized Li’s criterion*, [arXiv:1304.7895v3](https://arxiv.org/abs/1304.7895v3). Theorems 1、2、5。
+- **[E05]** I. Wagner, *On a new class of Laguerre–Pólya type functions with applications in number theory*, [arXiv:2108.01827v2](https://arxiv.org/abs/2108.01827v2). 经典 Pólya–Schur 与广义 Laguerre 引用链；不将 shifted 类结果升级为 RH。
+- **[E06]** W. Michałowski, *An explicit uniform cubic wedge for consecutive Toeplitz minors of the Riemann ξ-coefficients*, [arXiv:2607.16795v1](https://arxiv.org/html/2607.16795v1). 使用引言的经典 PF∞ 对应，巨大 shift 结果没有在本轮独立核验。
+- **[E07]** J. Sondow, C. Dumitrescu, *A monotonicity property of Riemann’s xi function and a reformulation of the Riemann Hypothesis*, [arXiv:1005.1104](https://arxiv.org/abs/1005.1104). Corollary 1。
+- **[E08]** S. Nazardonyavi, S. Yakubovich, *Extremely abundant numbers and the Riemann hypothesis*, [arXiv:1211.2147](https://arxiv.org/abs/1211.2147). Theorem 2.4。
+- **[E09]** A. MacArevey, *On the Lagarias Inequality and Superabundant Numbers*, [arXiv:2602.15905v2](https://arxiv.org/html/2602.15905v2). Theorem 3.1；A080 待独立核验。
+- **[E10]** M. Deléglise, J.-L. Nicolas, *The Landau function and the Riemann hypothesis*, [arXiv:1907.07664](https://arxiv.org/abs/1907.07664). Theorem 1.1、Corollary 1.3、Section 2.2。
+- **[E11]** J.-L. Nicolas, *A Robin inequality for n/phi(n)*, New Zealand Journal of Mathematics 55 (2024), 1–9, [DOI:10.53733/324](https://nzjmath.org/index.php/NZJMATH/article/view/324). Theorem 1.1 与 Eqs. (1.5)–(1.12)。
+- **[E12]** Garg, Maji, *Equivalent criteria for the Riemann hypothesis for a general class of L-functions*, [arXiv:2409.17708v2](https://arxiv.org/html/2409.17708v2). Introduction、Theorems 3.10、3.13；这里只收普通 ζ 范围。
+- **[E13]** K. Broughan, *Equivalents of the Riemann Hypothesis*, Volume I (2017), [DOI:10.1017/9781108178228](https://doi.org/10.1017/9781108178228); Volume II (2017), [DOI:10.1017/9781108178266](https://doi.org/10.1017/9781108178266). 已核目录与部分对应原文，未完成全书逐定理核对。
+- **[E14]** K. Broughan, Volume III (2023), [DOI:10.1017/9781009384780](https://doi.org/10.1017/9781009384780). 逐定理覆盖审查仍开放。
+- **[E15]** American Institute of Mathematics, [RH expert workshop outline](https://www.aimath.org/WWN/rh/rh.pdf), Section C。第一方专家目录与原文追溯入口，空标题不充当完整定理。
+
+**当前状态：93 个节点、92 个替代表述规格、21 个判据族；公开文献全覆盖仍未完成，Q01–Q10 是明确未决项。**
+
 \]
 
 ---

@@ -6,8 +6,4 @@ coverage_gids:
   - gid: D5/S1/Phase/HeckeOstrowskiCoboundary.hecke_ostrowski_coboundary
     target_statement_id: sha256:0ee032fbaeeefe775cca39722344d73afc939dbfae8cd407aa295e3683b73969
 receipts:
-  scribe:
-    - gid: D5/S1/Phase/HeckeOstrowskiCoboundary.hecke_ostrowski_coboundary
-      definition_sha256: sha256:088df932dd038afe7b30c7005c502cb66e08f983b421b1424c73d703376ba68a
-      emission_sha256: sha256:1ec45c3a1a7792d41cb26e25041a4b9a36467cf4b098e8f79053d25f090cd025
   unresolved_subitems: []

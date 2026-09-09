@@ -89,14 +89,12 @@ internal static class Program
             return ExecutePlan(options.RepositoryRoot, fullPlan);
         }
 
-        var protectedBaseEvaluatorPaths = ControllerClosure.Derive(protectedBase);
-        var candidateEvaluatorPaths = ControllerClosure.Derive(candidate);
-        var plan = EngineeringTestPlanPolicy.Evaluate(
+        var plan = EngineeringTestPlanPolicy.EvaluateOrdinary(
             changedPaths,
-            protectedBase,
-            candidate,
-            protectedBaseEvaluatorPaths,
-            candidateEvaluatorPaths);
+            RepositoryRules.ReadSnapshotProjects(protectedBase),
+            RepositoryRules.ReadSnapshotProjects(candidate),
+            full: options.Full,
+            admissionPlane: admissionPlane);
         return ExecutePlan(options.RepositoryRoot, plan);
     }
 
@@ -107,6 +105,25 @@ internal static class Program
             plan,
             invocation => RunTests(repositoryRoot, invocation));
     }
+
+    // Projects in a plan run concurrently (EngineeringTestExecutor.Execute), and two
+    // of them commonly reference the same project. The first attempt is --no-build
+    // and cannot race, but the fallback builds, and two concurrent builds of one
+    // shared reference write the same obj/ and bin/. A half-written output leaves
+    // the dependent test project with no runnable assembly, and dotnet test then
+    // reports the missing dll as an invalid argument.
+    //
+    // That is #5060: six occurrences over a month, every one of them naming
+    // CandidateNewXunitProjectWithoutLiteralIsTestProjectIsSelected, which is the
+    // only test in its class whose two selected projects share a ProjectReference.
+    // Its siblings run the same parallel path with disjoint references and have
+    // never been recorded failing.
+    //
+    // The build fallback is therefore serialized. It costs nothing where the
+    // fallback does not fire — in CI the projects are already built, and the
+    // recorded RETRY lines name only synthetic fixture projects — and where it
+    // does fire, the second build finds the shared reference up to date.
+    private static readonly object BuildFallbackGate = new();
 
     private static int RunTests(
         string repositoryRoot,
@@ -150,7 +167,10 @@ internal static class Program
                 Console.WriteLine(
                     $"ENGINEERING_TEST_RETRY project={JsonSerializer.Serialize(invocation.ProjectPath)} "
                     + "reason=missing-build-output");
-                result = Run(noBuild: false);
+                lock (BuildFallbackGate)
+                {
+                    result = Run(noBuild: false);
+                }
                 Console.Error.Write(result.StandardError);
             }
             if (result.ExitCode != 0) return result.ExitCode;
@@ -268,6 +288,11 @@ internal static class Program
             $"ENGINEERING_TEST_PLAN state={plan.Kind.ToString().ToLowerInvariant()} "
             + $"changed={plan.ChangedPaths.Length} selected={plan.Projects.Length} "
             + $"reason={JsonSerializer.Serialize(plan.Reason)}");
+        foreach (var project in plan.RemovedBaseTestProjects)
+        {
+            Console.WriteLine(
+                $"ENGINEERING_TEST_PROJECT_REMOVED project={JsonSerializer.Serialize(project)}");
+        }
         foreach (var project in plan.Projects)
         {
             Console.WriteLine(
@@ -310,7 +335,7 @@ internal static class Program
             _ => throw new InvalidDataException($"{description} snapshot decode returned an unknown outcome"),
         };
 
-    private sealed record Options(string RepositoryRoot, string Head, string Base)
+    private sealed record Options(string RepositoryRoot, string Head, string Base, bool Full)
     {
         internal static Options Parse(IReadOnlyList<string> arguments)
         {
@@ -322,16 +347,21 @@ internal static class Program
                 if (!values.TryAdd(arguments[index], arguments[index + 1]))
                     throw new ArgumentException($"duplicate option: {arguments[index]}");
             }
-            if (values.Count != 3
-                || values.Keys.Any(static name => name is not "--repository" and not "--head" and not "--base"))
+            if (values.Keys.Any(static name => name is not "--repository" and not "--head" and not "--base" and not "--full"))
             {
-                throw new ArgumentException("options must be exactly --repository, --head, and --base");
+                throw new ArgumentException("options must be --repository, --head, --base, and optional --full 0|1");
             }
 
             return new Options(
                 Path.GetFullPath(Require(values, "--repository")),
                 Require(values, "--head"),
-                Require(values, "--base"));
+                Require(values, "--base"),
+                values.GetValueOrDefault("--full", "0") switch
+                {
+                    "0" => false,
+                    "1" => true,
+                    _ => throw new ArgumentException("--full must be 0 or 1"),
+                });
         }
 
         private static string Require(IReadOnlyDictionary<string, string> values, string name) =>

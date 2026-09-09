@@ -23,18 +23,13 @@ internal sealed partial class ProductionCliEnvironment
         CoverageCommand.Run(repository, leanReportSource, arguments);
 
     public CommandResult DigestStatus(IReadOnlyList<string> arguments) =>
-        scribeEmissionVerifier is null
-            ? new CommandResult(
-                false,
-                string.Empty,
-                "DIGEST_STATUS_INVALID Scribe emission verifier is unavailable\n")
-            : DigestStatusCommand.Run(
-                repository,
-                leanReportSource,
-                scribeEmissionVerifier,
-                arguments,
-                atomHistorySource,
-                timeProvider);
+        DigestStatusCommand.Run(
+            repository,
+            leanReportSource,
+            scribeEmissionVerifier,
+            arguments,
+            atomHistorySource,
+            timeProvider);
 
     public CommandResult ShowAtom(IReadOnlyList<string> arguments) =>
         ShowAtomCommand.Run(repository, arguments);
@@ -65,6 +60,9 @@ internal sealed partial class ProductionCliEnvironment
 
     public ExplicitCommandResult DepositHeaderCheck(IReadOnlyList<string> arguments) =>
         DepositHeaderCheckCommand.Run(repository, leanReportSource, arguments);
+
+    public ExplicitCommandResult LeanUtilityInput(IReadOnlyList<string> arguments) =>
+        LeanUtilityInputCommand.Run(repository, arguments);
 
     public ExplicitCommandResult LedgerFrozen(IReadOnlyList<string> arguments) =>
         LedgerFrozenCommand.Run(repositoryRoot, repository, arguments);
@@ -106,39 +104,15 @@ internal sealed partial class ProductionCliEnvironment
     public CommandResult QuarantineAtom(IReadOnlyList<string> arguments) =>
         QuarantineAtomCommand.Run(repositoryRoot, repository, arguments);
 
+    public CommandResult CoverBatch(IReadOnlyList<string> arguments) =>
+        CoverBatchCommand.Run(repositoryRoot, repository, leanReportSource,
+            scribeEmissionVerifier, timeProvider.GetUtcNow(), arguments);
+
     public CommandResult SettleAtom(IReadOnlyList<string> arguments) =>
         SettleAtomCommand.Run(repositoryRoot, repository, arguments);
 
     public CommandResult DecomposeAtom(IReadOnlyList<string> arguments) =>
         DecomposeAtomCommand.Run(repositoryRoot, repository, arguments);
-
-    public CommandResult AlignScribeReceipt(IReadOnlyList<string> arguments)
-    {
-        if (scribeEmissionVerifier is null)
-        {
-            return new CommandResult(
-                false,
-                string.Empty,
-                "ALIGN_SCRIBE_RECEIPT_INVALID Scribe emission verifier is unavailable\n");
-        }
-
-        try
-        {
-            return AlignScribeReceiptCommand.Run(
-                repositoryRoot,
-                repository,
-                leanReportSource,
-                scribeEmissionVerifier,
-                arguments);
-        }
-        catch (Exception exception)
-        {
-            return new CommandResult(
-                false,
-                string.Empty,
-                $"ALIGN_SCRIBE_RECEIPT_INVALID {exception.Message}\n");
-        }
-    }
 
     public CommandResult Route(IReadOnlyList<string> arguments)
     {
