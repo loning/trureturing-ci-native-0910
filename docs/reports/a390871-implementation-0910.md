@@ -130,3 +130,15 @@ CLAUDE.md 3.2 四项对照：
 basis/consumer/instance/premises/result/claim 为 not-applicable(kind=none)。
 question_answered：用户预登记的 A390871 非 2 幂项指数双边界是否成立。
 未使用 sorry、自加 axiom 或 native_decide。
+
+## Canonical report 与开 PR 前复查
+
+- make lean-report EXIT=0，68.329 秒；delta changed=0, added=2, removed=0, recheck=2。
+  这是 donor 报告到当前树的差量，不声称本席新增两个模块。
+- 报告 SHA256=d77a4a8beadbd4005913fa3c86538fb9f9d1ddee4430cfdad3082ffcc54dff24。
+  模块摘录保存于 runner attempt-1/module-report.json；included 声明三个，均仅标准三公理。
+- 主定理 statement_id=sha256:e2f477804813efa1986b77545dfce253c28fa512326db58dbc3c97effb5e37d8。
+- gap_at_least_three statement_id=sha256:ee69cafdd50c1d15563270ad0c89556b1063e1be62a7a45d82640a283c6e9271。
+- six_mul_le_pow_add_eight statement_id=sha256:918cab237d7f4e9d24c44c11e977d63cdd79186aa5d56b96f6d22816fe73c5de。
+- git fetch origin dev 成功；开 PR 前再次对 origin/dev 的 D5/Blueprint 搜
+  A390871、目标名、Mersenne gap/exponent，未命中；无重复目标。
