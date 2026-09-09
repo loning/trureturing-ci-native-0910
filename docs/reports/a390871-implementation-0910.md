@@ -204,3 +204,15 @@ LEAN_CACHE {"status":"present","worktree":"/Users/chronoai/trureturing-a390871",
   远端 admission workflow 34412127213 的工程检查和 canonical Lean report 尚在运行，
   观察时无已报告失败；本节报告提交后的最新远端状态以 runner 最终快照为准。
 - 本节只补工作收据与更正检索接口的使用措辞，不改 Lean、Blueprint 或冻结身份。
+
+## PR 观察窗口结算
+
+- make pr-open 的创建步骤成功；600 秒观察窗口结束时，最终收据为
+  `PR_WATCH_RESULT pr=6728 outcome=timeout pending=2 missing=1`。
+  内部 watch EXIT=124，经 make 返回 EXIT=2，总耗时 602.877 秒；不是 CI 失败判词。
+- 观察窗口结束后，当前提交 a26a22f495 的 run 34412380855 已完成 Lean 项目构建与
+  canonical report 生成，正在执行 Run complete mathematical content checks；
+  工程检查正在执行 Run candidate engineering tests with resource observation。
+  尚无 required-check 全绿结论，未合并、未启用 auto-merge。
+- 按用户指定的实施阶段停止判据交付“成”；最后这次仅报告提交后的 head 与 CI 快照
+  写入 runner 的 result.json。观察超时不改写成数学 blocked，也不冒称远端验绿。
