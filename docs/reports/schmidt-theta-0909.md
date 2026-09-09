@@ -125,6 +125,29 @@ diagonal unitary need not preserve bipartite Schmidt coefficients. Here the
 fixed occupation permits the cross term to be absorbed into a left factor,
 but the equality with the source's inversion statistic must itself be checked.
 
+## Probe Run 01 And Numerical Cross-Check
+
+`make lean` exited 2. Log: `lean-bind-01.log` in the runner attempt directory.
+The temporary probe used the existing D5 glob solely for elaboration, with no
+production header or registration. `phase_star_mul` passed with only
+`propext`, `Classical.choice`, and `Quot.sound`. The other statements failed
+on matrix notation scope, applying an iff before its parameters, namespace
+resolution for `det_isUnit`, and finite-sum normalization. Error-recovery
+`sorryAx` in those failed elaborations is not accepted proof evidence.
+The statements are retained at their original strength while fixing the script.
+
+An independent Node integer enumeration of the 840 legal words computed the
+inversion polynomial coefficients as
+`[1,3,7,13,22,33,46,59,71,80,85,85,80,71,59,46,33,22,13,7,3,1]`.
+Counts modulo 8 are `[105,105,105,105,105,105,105,105]`.
+The remainder modulo `q^4+1` is `[0,0,0,0]`, so evaluation at
+`q=exp(i*pi/4)` is exactly zero. This is an integer-computation cross-check,
+not a Lean proof of clause 3. No false source clause has been detected.
+
+At k=4, the 12 positive probability numerators over denominator 840 are
+`[12,96,48,48,72,144,144,72,48,48,96,12]`; their sum is 840.
+The boundary-count sequence is `[1,4,8,11,12,11,8,4,1]`.
+
 ## Current Claims And Limits
 
 No target clause has yet been proved or refuted. No new D5 module or public
