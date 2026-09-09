@@ -4,8 +4,7 @@ using System.Text;
 namespace StrataLint.Engine;
 
 internal sealed record LeanSourceToken(
-    string Text, int Line, int Column, ImmutableArray<string> IdentifierParts = default,
-    LeanSourceToken? PossibleEqualityIdentifier = null)
+    string Text, int Line, int Column, ImmutableArray<string> IdentifierParts = default)
 {
     internal bool IsIdentifier => !IdentifierParts.IsDefaultOrEmpty;
     internal string Identifier => LeanSourceTokenizer.IdentifierText(IdentifierParts);
@@ -38,6 +37,7 @@ internal static class LeanSourceTokenizer
         private int index;
         private int line = 1;
         private int column;
+        private readonly EqualityNotationScope equalityScope = new();
 
         internal ImmutableArray<LeanSourceToken> ReadCode(int? interpolationLine = null)
         {
@@ -77,7 +77,11 @@ internal static class LeanSourceTokenizer
                 var tokenLine = line;
                 var tokenColumn = column;
                 var identifierParts = ImmutableArray<string>.Empty;
-                LeanSourceToken? possibleEqualityIdentifier = null;
+                if (interpolationLine is null && brackets.Count == 0)
+                {
+                    equalityScope.BeforeToken(tokenLine, tokenColumn);
+                }
+
                 var rawQuote = RawStringQuote();
                 if (rawQuote >= 0)
                 {
@@ -92,21 +96,6 @@ internal static class LeanSourceTokenizer
                 else if (source[index] == '\'' && !At("''"))
                 {
                     ReadCharacter();
-                    if (result.Count > 0 && result[^1].Text == "="
-                        && result[^1].Line == tokenLine && result[^1].Column + 1 == tokenColumn
-                        && source[start + 1] != '\u00ab' && IsIdentifierStart(CodePointAt(start + 1)))
-                    {
-                        // ='g' can also be registered =' followed by g'. Keep both
-                        // readings; dependency consumers must not discard the name.
-                        var literalEnd = (index, line, column);
-                        index = start + 1;
-                        line = tokenLine;
-                        column = tokenColumn + 1;
-                        var parts = ReadIdentifier();
-                        possibleEqualityIdentifier = new LeanSourceToken(
-                            source[(start + 1)..index], tokenLine, tokenColumn + 1, parts);
-                        (index, line, column) = literalEnd;
-                    }
                 }
                 else if (NameLiteralPrefixLength() is var prefix && prefix > 0)
                 {
@@ -144,8 +133,12 @@ internal static class LeanSourceTokenizer
                     }
                 }
 
-                result.Add(new LeanSourceToken(source[start..index], tokenLine, tokenColumn,
-                    identifierParts, possibleEqualityIdentifier));
+                var token = new LeanSourceToken(source[start..index], tokenLine, tokenColumn, identifierParts);
+                result.Add(token);
+                if (interpolationLine is null)
+                {
+                    equalityScope.Observe(token);
+                }
             }
 
             if (brackets.TryPeek(out var opening))
@@ -184,9 +177,9 @@ internal static class LeanSourceTokenizer
                 return 2;
             }
 
-            // Keep complete characters in the structural projection. ReadCode retains
-            // the possible =' identifier interpretation for dependency consumers.
-            if (At("='") && !At("='\\") && CharacterLiteralLength(index + 1, out _) == 0)
+            // Mathlib's =' token is scoped to FirstOrder. When active, Lean's
+            // longest-token rule applies before any character lookahead at the apostrophe.
+            if (At("='") && equalityScope.IsActive)
             {
                 return 2;
             }
@@ -321,6 +314,13 @@ internal static class LeanSourceTokenizer
                 if (cursor < source.Length)
                 {
                     var escape = source[cursor++];
+                    // Lean 4.33 quotedCharFn uses this finite simple-escape alphabet.
+                    if (escape is not ('\\' or '"' or '\'' or 'r' or 'n' or 't' or 'x' or 'u'))
+                    {
+                        error = "Lean character escape is malformed.";
+                        return 0;
+                    }
+
                     var digits = escape switch { 'x' => 2, 'u' => 4, _ => 0 };
                     for (var count = 0; count < digits; count++)
                     {
@@ -422,6 +422,121 @@ internal static class LeanSourceTokenizer
                     column++;
                 }
             }
+        }
+    }
+
+    // Only the pinned FirstOrder equality token needs environmental disambiguation
+    // from a Char. Track command headers at the same column-zero boundaries used by
+    // LeanSourceCatalog; comments and literals never become commands. This is not
+    // a parser for user-defined notation or arbitrary term-local scope expressions.
+    private sealed class EqualityNotationScope
+    {
+        private readonly List<LeanSourceToken> header = [];
+        private readonly Stack<(string Namespace, bool Active)> scopes = new();
+        private string currentNamespace = string.Empty;
+        private int previousLine;
+        private bool commandStart;
+        private bool localBodyPending;
+        private bool? localRestore;
+
+        internal bool IsActive { get; private set; }
+
+        internal void BeforeToken(int line, int column)
+        {
+            commandStart = column == 0 && line > previousLine;
+            if (!commandStart)
+            {
+                return;
+            }
+
+            FinishHeader(local: false);
+            if (localRestore is { } previous && !localBodyPending)
+            {
+                IsActive = previous;
+                localRestore = null;
+            }
+        }
+
+        internal void Observe(LeanSourceToken token)
+        {
+            previousLine = token.Line;
+            if (localBodyPending)
+            {
+                commandStart = true;
+                localBodyPending = false;
+            }
+
+            if (commandStart)
+            {
+                commandStart = false;
+                if (token.Text is "open" or "namespace" or "section" or "noncomputable" or "end")
+                {
+                    header.Add(token);
+                }
+            }
+            else if (header.Count > 0)
+            {
+                if (header[0].Text == "open" && token.Text == "in")
+                {
+                    localRestore ??= IsActive;
+                    FinishHeader(local: true);
+                    localBodyPending = true;
+                }
+                else
+                {
+                    header.Add(token);
+                }
+            }
+        }
+
+        private void FinishHeader(bool local)
+        {
+            if (header.Count == 0)
+            {
+                return;
+            }
+
+            var command = header[0].Text;
+            if (command == "open")
+            {
+                // Elab.Open activates simple/scoped/hiding opens, but not selective
+                // or renaming opens. Parser.withOpenDeclFnCore additionally leaves
+                // hiding opens inactive while parsing the body of `open ... in`.
+                if (!header.Any(token => token.Text is "(" or "renaming")
+                    && !(local && header.Any(token => token.Text == "hiding")))
+                {
+                    IsActive |= header.Skip(1).TakeWhile(token => token.Text != "hiding")
+                        .Any(token => token.IsIdentifier && token.Identifier is "FirstOrder" or "_root_.FirstOrder");
+                }
+            }
+            else if (command == "end")
+            {
+                var count = header.Count > 1 ? header[1].IdentifierParts.Length : 1;
+                for (var part = 0; part < count && scopes.TryPop(out var previous); part++)
+                {
+                    (currentNamespace, IsActive) = previous;
+                }
+            }
+            else
+            {
+                var section = header.FindIndex(token => token.Text == "section");
+                if (command == "namespace" || section >= 0)
+                {
+                    var nameIndex = command == "namespace" ? 1 : section + 1;
+                    var parts = nameIndex < header.Count ? header[nameIndex].IdentifierParts : [];
+                    foreach (var part in parts.IsDefaultOrEmpty ? ImmutableArray.Create(string.Empty) : parts)
+                    {
+                        scopes.Push((currentNamespace, IsActive));
+                        if (command == "namespace")
+                        {
+                            currentNamespace = currentNamespace.Length == 0 ? part : currentNamespace + "." + part;
+                            IsActive |= currentNamespace == "FirstOrder";
+                        }
+                    }
+                }
+            }
+
+            header.Clear();
         }
     }
 

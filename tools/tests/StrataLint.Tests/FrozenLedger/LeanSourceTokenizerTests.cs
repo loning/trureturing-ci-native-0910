@@ -11,11 +11,11 @@ public sealed class LeanSourceTokenizerTests
     [InlineData(true, "a'")]
     public void EqualityAmbiguityRetainsDependencyProjection(bool embedded, string name)
     {
-        var tokens = Scan("\nt ='" + name, embedded);
-        Assert.Equal(new[] { "t", "=", "'" + name }, tokens.Select(static token => token.Text));
-        Assert.False(tokens[^1].IsIdentifier);
+        var tokens = Scan("open scoped FirstOrder\nt ='" + name, embedded)[3..];
+        Assert.Equal(new[] { "t", "='", name }, tokens.Select(static token => token.Text));
+        Assert.True(tokens[^1].IsIdentifier);
         Assert.Equal(2, tokens[^1].Line);
-        Assert.Equal(3, tokens[^1].Column);
+        Assert.Equal(4, tokens[^1].Column);
 
         // Exercise the existing dependency consumer with both scanner outputs.
         var identifiers = LeanSourceCatalog.QualifiedIdentifiers(tokens);
@@ -30,6 +30,7 @@ public sealed class LeanSourceTokenizerTests
         var tokens = Scan("\n'g' ='g'", embedded);
         Assert.Equal(new[] { "'g'", "=", "'g'" }, tokens.Select(static token => token.Text));
         Assert.All(tokens, token => Assert.False(token.IsIdentifier));
+        Assert.Empty(LeanSourceCatalog.QualifiedIdentifiers(tokens));
         Assert.Equal(2, tokens[^1].Line);
         Assert.Equal(5, tokens[^1].Column);
     }
@@ -117,12 +118,12 @@ public sealed class LeanSourceTokenizerTests
     {
         foreach (var source in new[] { "=' right'", "='right'" })
         {
-            var tokens = Scan(source, embedded);
+            var tokens = Scan("open scoped FirstOrder\n" + source, embedded)[3..];
             Assert.Equal(new[] { "='", "right'" }, tokens.Select(static token => token.Text));
             Assert.Equal("right'", tokens[1].Identifier);
         }
 
-        // Without a Lean environment, ='a' can also mean equality followed by a Char.
+        // Outside the FirstOrder scope these are equality followed by a Char.
         foreach (var literal in new[] { "'a'", "')'", "' '", "'\\''", "'\\x61'", "'\\u0061'", "'\U0001f600'" })
         {
             var tokens = Scan("=" + literal, embedded);
@@ -165,6 +166,115 @@ public sealed class LeanSourceTokenizerTests
             var exception = Assert.Throws<LeanSourceExtractionException>(() => Scan("\n" + source, embedded));
             Assert.Equal(2, exception.Line);
             Assert.Equal("Lean character literal is unterminated or malformed.", exception.Message);
+        }
+    }
+
+
+    [Theory]
+    [InlineData(false, false, false)]
+    [InlineData(false, false, true)]
+    [InlineData(false, true, false)]
+    [InlineData(false, true, true)]
+    [InlineData(true, false, false)]
+    [InlineData(true, false, true)]
+    [InlineData(true, true, false)]
+    [InlineData(true, true, true)]
+    public void EqualityContextPreservesWholeIdentifierSpans(bool embedded, bool qualified, bool spaced)
+    {
+        var name = qualified ? "g'.native_decide" : "g'native_decide";
+        var tokens = Scan("open scoped FirstOrder\n(t ='" + (spaced ? " " : "") + name + ")\nnative_decide", embedded);
+        var reference = Assert.Single(tokens, token => token.Text == name);
+        Assert.Equal(name, reference.Identifier);
+        Assert.Equal(2, reference.Line);
+        Assert.Equal(spaced ? 6 : 5, reference.Column);
+        var bare = Assert.Single(tokens, token => token.Text == "native_decide");
+        Assert.Equal(3, bare.Line);
+        Assert.Equal(0, bare.Column);
+    }
+
+    [Theory]
+    [InlineData("open scoped FirstOrder\n", "", true)]
+    [InlineData("open FirstOrder\n", "", true)]
+    [InlineData("namespace FirstOrder.Language\n", "end FirstOrder.Language\n", false)]
+    [InlineData("section Local\nopen scoped FirstOrder\n", "end Local\n", false)]
+    [InlineData("open scoped FirstOrder in\n", "", false)]
+    [InlineData("open scoped FirstOrder in ", "", false)]
+    [InlineData("open FirstOrder hiding Language\n", "", true)]
+    public void EqualityContextFollowsCommandScopes(string prefix, string suffix, bool remainsActive)
+    {
+        foreach (var embedded in new[] { false, true })
+        {
+            var source = prefix + "theorem a : (t ='g') = (t =' g') := by rfl\n" + suffix
+                + "theorem b : 'g' = 'g' := by rfl\n";
+            var tokens = Scan(source, embedded);
+            Assert.Equal(2, tokens.Count(token => token.Text == "='"));
+            Assert.Equal(2, tokens.Count(token => token.IsIdentifier && token.Identifier == "g'"));
+            // The next declaration probes restoration with the colliding compact spelling.
+            var tail = Scan(source + (remainsActive ? "example : (t ='g') = (t =' g') := by rfl\n"
+                : "example : 'g' ='g' := by rfl\n"), embedded);
+            Assert.Equal(remainsActive ? 4 : 2, tail.Count(token => token.Text == "='"));
+            Assert.Equal(remainsActive ? 4 : 2,
+                LeanSourceCatalog.QualifiedIdentifiers(tail).Count(name => name == "g'"));
+        }
+    }
+
+    [Theory]
+    [InlineData("import Mathlib.ModelTheory.Syntax\n", "")]
+    [InlineData("section FirstOrder\n", "end FirstOrder\n")]
+    [InlineData("namespace Outer.FirstOrder\n", "end Outer.FirstOrder\n")]
+    [InlineData("open FirstOrder (Language)\n", "")]
+    [InlineData("open FirstOrder.Language\n", "")]
+    [InlineData("open FirstOrder hiding Language in\n", "")]
+    [InlineData("-- open scoped FirstOrder\n", "")]
+    [InlineData("/- open scoped FirstOrder -/\n", "")]
+    [InlineData("def text := \"open scoped FirstOrder\"\n", "")]
+    public void EqualityContextDoesNotActivateFromUnrelatedOrInertText(string prefix, string suffix)
+    {
+        foreach (var embedded in new[] { false, true })
+        {
+            var tokens = Scan(prefix + "theorem a : 'g' ='g' := by rfl\n" + suffix, embedded);
+            Assert.Equal(2, tokens.Count(token => token.Text == "'g'"));
+            Assert.DoesNotContain("g'", LeanSourceCatalog.QualifiedIdentifiers(tokens));
+        }
+    }
+
+    [Theory]
+    [InlineData("\\q")]
+    [InlineData("\\a")]
+    [InlineData("\\b")]
+    [InlineData("\\f")]
+    [InlineData("\\v")]
+    [InlineData("\\0")]
+    [InlineData("\\/")]
+    [InlineData("\\x0z")]
+    [InlineData("\\u00xz")]
+    public void CharacterEscapeRejectsInvalidSequences(string escape)
+    {
+        foreach (var embedded in new[] { false, true })
+        {
+            var error = Assert.Throws<LeanSourceExtractionException>(() => Scan("\n'" + escape + "'", embedded));
+            Assert.Equal(2, error.Line);
+            Assert.Equal("Lean character escape is malformed.", error.Message);
+        }
+    }
+
+    [Theory]
+    [InlineData("\\\\")]
+    [InlineData("\\\"")]
+    [InlineData("\\'")]
+    [InlineData("\\r")]
+    [InlineData("\\n")]
+    [InlineData("\\t")]
+    [InlineData("\\x61")]
+    [InlineData("\\u0061")]
+    public void CharacterEscapeAcceptsPinnedSimpleAndHexSequences(string escape)
+    {
+        foreach (var embedded in new[] { false, true })
+        {
+            var literal = "'" + escape + "'";
+            var tokens = Scan("=" + literal, embedded);
+            Assert.Equal(new[] { "=", literal }, tokens.Select(static token => token.Text));
+            Assert.Empty(LeanSourceCatalog.QualifiedIdentifiers(tokens));
         }
     }
 

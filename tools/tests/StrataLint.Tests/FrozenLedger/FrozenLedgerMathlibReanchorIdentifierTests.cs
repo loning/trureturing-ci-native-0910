@@ -57,6 +57,72 @@ public sealed partial class FrozenLedgerTests
             [], [], expected: false);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void EqualityContextWhitespacePreservesReanchorInBothDirections(bool spacedBefore)
+    {
+        AssertIdentifierReanchor(FirstOrderEqualitySource(spacedBefore, "g'"),
+            FirstOrderEqualitySource(!spacedBefore, "g'"), [], [], expected: true);
+    }
+
+    [Theory]
+    [InlineData(false, false, "g'")]
+    [InlineData(false, true, "g'")]
+    [InlineData(true, false, "g'")]
+    [InlineData(true, true, "g'")]
+    [InlineData(false, false, "other")]
+    [InlineData(false, true, "other")]
+    [InlineData(true, false, "other")]
+    [InlineData(true, true, "other")]
+    public void EqualityContextCharactersIgnoreDefinitionChanges(bool spaced, bool imported, string name)
+    {
+        var proposition = $"theorem a : 'g' ={(spaced ? " " : "")}'g' := by rfl\n";
+        var source = imported ? "import D5.S0.Carrier.Helper\n" + proposition
+            : $"def {name} : Nat := 0\n" + proposition;
+        var before = imported ? new[] { IdentifierHelper(name, "0") } : [];
+        var after = imported ? new[] { IdentifierHelper(name, "1") } : [];
+        AssertIdentifierReanchor(source, source, before, before, expected: true);
+        AssertIdentifierReanchor(source, source.Replace("by rfl", "by exact rfl", StringComparison.Ordinal),
+            before, before, expected: true);
+        AssertIdentifierReanchor(source, source.Replace(":= 0", ":= 1", StringComparison.Ordinal),
+            before, after, expected: true);
+        AssertIdentifierReanchor(source, source.Replace("'g'", "'a'", StringComparison.Ordinal),
+            before, before, expected: false);
+    }
+
+    [Theory]
+    [InlineData(false, "g'")]
+    [InlineData(true, "g'")]
+    [InlineData(false, "a'")]
+    [InlineData(true, "a'")]
+    public void EqualityContextRetainsImportedFirstOrderDependencies(bool spaced, string name)
+    {
+        var helperSource = "import Mathlib.ModelTheory.Syntax\nnamespace D5.S0.Carrier.Helper\n"
+            + $"def {name} : FirstOrder.Language.Term FirstOrder.Language.empty (Sum Nat (Fin 0)) := .var (.inl 0)\n"
+            + "end D5.S0.Carrier.Helper\n";
+        var helper = ModuleWithReport("Helper", helperSource, statementMaterial: "Term", declarations: [name], kind: "def");
+        var changed = helper with { Source = helperSource.Replace(".inl 0", ".inl 1", StringComparison.Ordinal) };
+        var source = "import D5.S0.Carrier.Helper\nopen scoped FirstOrder\nopen D5.S0.Carrier.Helper\n"
+            + "theorem a (t : FirstOrder.Language.Term FirstOrder.Language.empty (Sum Nat (Fin 0))) :\n"
+            + $"    (t ='{(spaced ? " " : "")}{name}) = (t ='{(spaced ? " " : "")}{name}) := by rfl\n";
+        AssertIdentifierReanchor(source, source, [helper], [helper], expected: true);
+        AssertIdentifierReanchor(source, source, [helper], [changed], expected: false);
+    }
+
+    [Theory]
+    [InlineData("namespace FirstOrder\n", "end FirstOrder\n")]
+    [InlineData("section Local\nopen scoped FirstOrder\n", "end Local\n")]
+    [InlineData("open scoped FirstOrder in\n", "")]
+    public void EqualityContextScopeRestorationKeepsCharacterDependenciesInert(string prefix, string suffix)
+    {
+        var source = "import Mathlib.ModelTheory.Syntax\ndef g' : Nat := 0\n"
+            + prefix + "example (t g' : FirstOrder.Language.Term FirstOrder.Language.empty (Sum Nat (Fin 0))) :\n"
+            + "    (t ='g') = (t =' g') := by rfl\n" + suffix
+            + "theorem a : 'g' ='g' := by rfl\n";
+        AssertIdentifierReanchor(source, source.Replace(":= 0", ":= 1", StringComparison.Ordinal), [], [], expected: true);
+    }
+
     private static string FirstOrderEqualitySource(bool spaced, string name) =>
         "import Mathlib.ModelTheory.Syntax\nopen scoped FirstOrder\n"
         + $"def {name} : FirstOrder.Language.Term FirstOrder.Language.empty (Sum Nat (Fin 0)) := .var (.inl 0)\n"

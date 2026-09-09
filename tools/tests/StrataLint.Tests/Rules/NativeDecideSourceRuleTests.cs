@@ -38,6 +38,93 @@ public sealed class NativeDecideSourceRuleTests
         Assert.Equal("NATIVE_DECIDE_SOURCE line=5: bare native_decide token is forbidden in changed D5 Lean source", diagnostic.Message);
     }
 
+    [Theory]
+    [InlineData(false, false, false)]
+    [InlineData(false, false, true)]
+    [InlineData(false, true, false)]
+    [InlineData(false, true, true)]
+    [InlineData(true, false, false)]
+    [InlineData(true, false, true)]
+    [InlineData(true, true, false)]
+    [InlineData(true, true, true)]
+    public void EqualityContextSourceRuleKeepsWholeNamesAndFollowingBareToken(bool qualified, bool spaced, bool bare)
+    {
+        var source = EqualitySpanSource(qualified, spaced);
+        var fixture = Source(source, baseline: true);
+        fixture.Files[Path] += bare ? "example : True := by native_decide\n" : "example : True := by decide\n";
+        var completed = Execute(fixture, (Path, RawChangeKind.Modified));
+        Assert.Contains(completed.ExecutedRules, id => id.Value == Rule);
+        var diagnostics = completed.Diagnostics.Where(item => item.RuleId.Value == Rule).ToArray();
+        if (!bare)
+        {
+            Assert.Empty(diagnostics);
+            return;
+        }
+
+        var diagnostic = Assert.Single(diagnostics);
+        Assert.Equal(Path, diagnostic.Path);
+        Assert.Equal(AdmissionEffect.Block, diagnostic.AdmissionEffect);
+        Assert.Equal($"NATIVE_DECIDE_SOURCE line={(qualified ? 6 : 5)}: bare native_decide token is forbidden in changed D5 Lean source", diagnostic.Message);
+    }
+
+    [Theory]
+    [InlineData("\\q", false)]
+    [InlineData("\\q", true)]
+    [InlineData("\\a", false)]
+    [InlineData("\\b", false)]
+    [InlineData("\\f", false)]
+    [InlineData("\\v", false)]
+    [InlineData("\\0", false)]
+    [InlineData("\\/", false)]
+    [InlineData("\\x0z", false)]
+    [InlineData("\\u00xz", false)]
+    public void CharacterEscapeRegisteredRuleRejectsMalformedInputWithLine(string escape, bool baseline)
+    {
+        var fixture = Source("example : True := by decide\n", baseline);
+        fixture.Files[Path] += "\ndef bad : Char := '" + escape + "'\n";
+        var completed = Execute(fixture, (Path, baseline ? RawChangeKind.Modified : RawChangeKind.Added));
+        Assert.Contains(completed.ExecutedRules, id => id.Value == Rule);
+        var diagnostic = Assert.Single(completed.Diagnostics, item => item.RuleId.Value == Rule);
+        Assert.Equal(Path, diagnostic.Path);
+        Assert.Equal(AdmissionEffect.Block, diagnostic.AdmissionEffect);
+        Assert.Equal(DisplaySeverity.Error, diagnostic.DisplaySeverity);
+        Assert.Equal("NATIVE_DECIDE_LEXICAL_ERROR line=3: Lean character escape is malformed.", diagnostic.Message);
+        Assert.Equal($"SL-035 {Path}: {diagnostic.Message}", diagnostic.Render());
+    }
+
+    [Theory]
+    [InlineData("\\\\")]
+    [InlineData("\\\"")]
+    [InlineData("\\'")]
+    [InlineData("\\r")]
+    [InlineData("\\n")]
+    [InlineData("\\t")]
+    [InlineData("\\x61")]
+    [InlineData("\\u0061")]
+    public void CharacterEscapeRegisteredRuleAcceptsValidInputAndStillFindsBareToken(string escape)
+    {
+        var fixture = Source("def c : Char := '" + escape + "'\n");
+        Assert.Empty(Evaluate(fixture, (Path, RawChangeKind.Added)));
+        fixture.Files[Path] += "example : True := by native_decide\n";
+        var completed = Execute(fixture, (Path, RawChangeKind.Added));
+        Assert.Contains(completed.ExecutedRules, id => id.Value == Rule);
+        var diagnostic = Assert.Single(completed.Diagnostics, item => item.RuleId.Value == Rule);
+        Assert.Equal(Path, diagnostic.Path);
+        Assert.Equal("NATIVE_DECIDE_SOURCE line=2: bare native_decide token is forbidden in changed D5 Lean source", diagnostic.Message);
+    }
+
+    private static string EqualitySpanSource(bool qualified, bool spaced)
+    {
+        var source = FirstOrderEqualitySource(spaced);
+        if (!qualified)
+        {
+            return source.Replace("g'", "g'native_decide", StringComparison.Ordinal);
+        }
+
+        return source.Replace("example (t g' :", "def g'.native_decide : FirstOrder.Language.Term FirstOrder.Language.empty (Sum Nat (Fin 0)) := .var (.inl 0)\nexample (t :", StringComparison.Ordinal)
+            .Replace("g')", "g'.native_decide)", StringComparison.Ordinal);
+    }
+
     private static string FirstOrderEqualitySource(bool spaced) =>
         "import Mathlib.ModelTheory.Syntax\nopen scoped FirstOrder\n"
         + "example (t g' : FirstOrder.Language.Term FirstOrder.Language.empty (Sum Nat (Fin 0))) :\n"

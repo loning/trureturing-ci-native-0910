@@ -49,6 +49,47 @@ public sealed class NativeDecideAdmissionTests
         Assert.IsType<AdmissionOutcome.Admitted>(Admit(context));
     }
 
+    [Theory]
+    [InlineData(false, false, false)]
+    [InlineData(false, false, true)]
+    [InlineData(false, true, false)]
+    [InlineData(false, true, true)]
+    [InlineData(true, false, false)]
+    [InlineData(true, false, true)]
+    [InlineData(true, true, false)]
+    [InlineData(true, true, true)]
+    public void EqualityContextProductionAdmissionKeepsWholeNamesAndFollowingBareToken(bool qualified, bool spaced, bool bare)
+    {
+        var context = Candidate(bare ? "native_decide" : "decide", EqualitySpanSource(qualified, spaced),
+            sourceImport: "Mathlib.ModelTheory.Syntax");
+        var completed = Assert.IsType<RuleExecutionOutcome.Completed>(RuleCatalog.Default.Execute(context)).Capability;
+        Assert.Contains(completed.ExecutedRules, id => id.Value == "SL-035");
+        if (!bare)
+        {
+            Assert.DoesNotContain(completed.Diagnostics, item => item.AdmissionEffect == AdmissionEffect.Block);
+            Assert.IsType<AdmissionOutcome.Admitted>(Admit(context));
+            return;
+        }
+
+        var diagnostic = Assert.Single(completed.Diagnostics, item => item.AdmissionEffect == AdmissionEffect.Block);
+        Assert.Equal("SL-035", diagnostic.RuleId.Value);
+        Assert.Equal(Path, diagnostic.Path);
+        Assert.Equal($"NATIVE_DECIDE_SOURCE line={(qualified ? 13 : 12)}: bare native_decide token is forbidden in changed D5 Lean source", diagnostic.Message);
+        Assert.Contains(diagnostic, Assert.IsType<AdmissionOutcome.RuleRejected>(Admit(context)).Diagnostics);
+    }
+
+    private static string EqualitySpanSource(bool qualified, bool spaced)
+    {
+        var source = FirstOrderEqualitySource(spaced);
+        if (!qualified)
+        {
+            return source.Replace("g'", "g'native_decide", StringComparison.Ordinal);
+        }
+
+        return source.Replace("example (t g' :", "def g'.native_decide : FirstOrder.Language.Term FirstOrder.Language.empty (Sum Nat (Fin 0)) := .var (.inl 0)\nexample (t :", StringComparison.Ordinal)
+            .Replace("g')", "g'.native_decide)", StringComparison.Ordinal);
+    }
+
     private static string FirstOrderEqualitySource(bool spaced) =>
         "import Mathlib.ModelTheory.Syntax\nopen scoped FirstOrder\n"
         + "example (t g' : FirstOrder.Language.Term FirstOrder.Language.empty (Sum Nat (Fin 0))) :\n"

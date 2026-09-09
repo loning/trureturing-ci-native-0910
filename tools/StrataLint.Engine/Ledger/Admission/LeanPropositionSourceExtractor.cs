@@ -696,13 +696,6 @@ internal sealed partial class LeanSourceCatalog
             {
                 yield return tokens[index].Identifier;
             }
-
-            // Without a Lean scope environment, require equivalence under both readings.
-            // ResolveDependencies applies the same candidate lookup and shadowing filter.
-            if (tokens[index].PossibleEqualityIdentifier is { } possible)
-            {
-                yield return possible.Identifier;
-            }
         }
     }
 
