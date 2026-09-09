@@ -1,7 +1,6 @@
 import LeanInformationAudit.RegistryTypes
 import LeanInformationAudit.NameWire
 import LeanInformationAudit.Census.Ownership
-import LeanInformationAudit.StatementEncoding
 
 namespace LeanInformationAudit.CensusStream
 
@@ -127,15 +126,12 @@ private unsafe def registryRecords (data : ModuleData) : Json := Id.run do
     ("owners", Json.arr #[]), ("named", Json.arr named),
     ("registries", registryRecords data)]).compress
 
-  -- Statement material is transient for ONE frozen constant. In particular,
-  -- never collect a module's statement strings before hashing them downstream.
+  -- Statement identities for collisions are supplied by the standalone producer.
   for info in data.constants do
     unless keys.contains info.name do continue
     let owner := Json.mkObj [("name", nameJson info.name),
       ("matches", toJson (CensusOwnership.moduleContainsTheorem data info)),
-      ("kind", toJson (if info.isTheorem then "theorem" else "other")),
-      ("name_key", toJson (encodeName info.name)),
-      ("statement_material", toJson (encodeStatement info))]
+      ("kind", toJson (if info.isTheorem then "theorem" else "other"))]
     out.putStrLn (Json.mkObj [("module", toJson moduleName), ("part", toJson part),
       ("owner", owner)]).compress
 

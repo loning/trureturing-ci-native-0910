@@ -51,6 +51,9 @@ def lean(repository, directory, program, args, label, env):
                         module.replace(".", "/") + ".lean"):
                     out.write(canonical(row))
             os.replace(temporary, path)
+            from extraction import add_collision_identities
+            add_collision_identities(repository, path, read(args[0]), pathlib.Path(args[1]),
+                lambda module: "tools/lean-inspector/" + module.replace(".", "/") + ".lean", env)
         return result
     return run([binary, "-DmaxRecDepth=100000", "-DmaxHeartbeats=0", "--run",
                 str(repository / "tools/lean-inspector/Census" / program), *map(str, args)],
