@@ -6,7 +6,8 @@ private def theoremInfo : ConstantInfo := .thmInfo {
   name := `Fixture.target, levelParams := [], type := mkConst ``True, value := mkConst ``True.intro }
 
 run_cmd do
-  let data : ModuleData := { default with constNames := #[theoremInfo.name], constants := #[theoremInfo] }
+  let data : ModuleData := { (default : ModuleData) with
+    constNames := #[theoremInfo.name], constants := #[theoremInfo] }
   unless CensusOwnership.moduleContainsTheorem data theoremInfo do
     throwError "streamMembershipPositive: theorem not found in its module"
   let malformed := { data with constNames := #[] }

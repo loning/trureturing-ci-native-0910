@@ -69,34 +69,6 @@ structure FrozenReport where
   reportSha256 : String
   theorems : Array StatementKey
 
-open Std.Internal.Parsec Std.Internal.Parsec.ByteArray in
-private partial def nameKeyParser : Std.Internal.Parsec.ByteArray.Parser Name := do
-    skipByteChar 'n'
-    match ← any with
-    | 48 => return .anonymous
-    | 115 =>
-      skipByteChar '('
-      let parent ← nameKeyParser
-      skipByteChar ','
-      let size ← digits
-      skipByteChar ':'
-      let bytes ← take size
-      let some text := String.fromUTF8? bytes.toByteArray | fail "invalid UTF-8 name component"
-      skipByteChar ')'
-      return .str parent text
-    | 110 =>
-      skipByteChar '('
-      let parent ← nameKeyParser
-      skipByteChar ','
-      let index ← digits
-      skipByteChar ')'
-      return .num parent index
-    | _ => fail "invalid Lean name key"
-
-/-- Decode the inspector's structured, byte-length-prefixed Name encoding. -/
-def parseNameKey (text : String) : Except String Name :=
-  (nameKeyParser <* Std.Internal.Parsec.eof).run text.toUTF8
-
 /-- The supported wire identity, also used by synthetic producer fixtures. -/
 def truthExportIdentity : Json := Json.mkObj [
   ("schema", toJson "stratalint.truth-export"), ("schema_version", toJson (2 : Nat)),
