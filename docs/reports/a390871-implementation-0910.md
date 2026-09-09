@@ -166,3 +166,17 @@ question_answered：用户预登记的 A390871 非 2 幂项指数双边界是否
 ```text
 LEAN_CACHE {"status":"present","worktree":"/Users/chronoai/trureturing-a390871","donor":null,"method":"none","reason":null,"stamp_miss":null,"pin_sha256":"sha256:6c4c682ffba051b5744fe7a75ccc99d7f3b20227b3b026f392f3315be0adaa4e","clonefile_errno":null,"clonefile_errnos":[],"clonefile_attempts":0,"clonefile_cleanup_error":null,"mathlib_missing_olean_files":0,"mathlib_missing_olean_samples":[],"archive_status":"not_attempted","archive_mode":null,"archive_skip_reason":"project olean state is warm","archive_reason":null,"archive_producer_commit_sha":null,"archive_workflow_run_id":null,"mathlib_olean_state":"warm","mathlib_olean_probe_error":null,"project_olean_state":"warm","project_olean_probe_error":null}
 ```
+
+## 无 atom 冻结与交付边界
+
+- make deposit-uncovered BASE=3759149d0ea0884cb8a57fb950e3caddab007a38
+  GID=D5/S3/Arith/Mersenne/GapExponentBounds.mersenne_gap_exponent_bounds
+  EXIT=0，88.422 秒。canonical report 命中缓存，头部预检 SL-012 通过，
+  emit 为 0 changed blueprints，ledger-align 为 added=1 changed=0 conflicts=0。
+- Freeze event_hash=sha256:aa1cec53a1dc8652f9b0a9ec93c3eb85bbcb0fa69f4645b9bb456627124f17e5。
+- 模块 statement_id=sha256:538a665fa98009940c289f039526a7172113f7654293f1a418498214fd784158。
+  state 在 Golden/Frozen/state/D5/S3/Arith/Mersenne/GapExponentBounds.lean.json。
+  身份直接读取 canonical writer 工件；无 atom/coverage，状态为 frozen-uncovered。
+- 原目标已 kernel 证明，非将结论替换为 4∣k。下界等号的阳性对照已核验。
+  未主张用户 131/162/163 是本席重跑、全球文献完备性、优先权或多模型共识。
+  未读外链仍为 ASSUMED-UNVERIFIED；本地全绿不冒称远端 CI 全绿或 PR 已合并。
