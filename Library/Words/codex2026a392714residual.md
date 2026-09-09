@@ -251,6 +251,15 @@ A5/A5.1 真源已查：utility 位于 anchors 与 digest 之间，无计算性�
 首次 rw 误选到要保留的前缀，指定 k=v.val+1 后闭合；未改陈述。
 落点候选 Compositions 子目录实际递归计数：D5 6，Blueprint 12，均小于 48。
 
+
+## Lean 核验批次 3：关键下界删除
+
+热树增量最终 EXIT=0；lower_cut_removal 与 rowSum_eq_upper 已通过 kernel。
+它们直接证明每次下界删除的坏子集符号和为零，并迭代到 Upper 集合。
+初次 Finset ext/simp 过度展开成员关系，改为显式 Finset.ext 与分步展开后闭合；
+类型头需 Classical 的 DecidablePred 已显式提供。余一个不承重的 unused change 警告，
+下批会删除该行。未引入 sorry 或 axiom；上界总和的最终消去仍待验证。
+
 <!-- lean-checkpoint -->
 ## 当前已编译源码快照
 
@@ -260,6 +269,7 @@ import Mathlib.GroupTheory.Perm.Sign
 import Mathlib.Tactic
 
 open scoped BigOperators
+open Classical
 namespace Residual
 
 def prefixSum {n : ℕ} (p : Equiv.Perm (Fin n)) (k : ℕ) : ℕ :=
@@ -348,6 +358,95 @@ theorem upper_swap_of_short {n} (a b : Equiv.Perm (Fin n)) (u v : Fin n)
     exact hmono.trans hshort
   · rw [prefixSum_swap b u v huv hkv]
     exact hb k hk
+
+
+theorem swap_sum_zero {n} (s : Finset (Equiv.Perm (Fin n))) (u v : Fin n)
+    (hne : u ≠ v) (hmem : ∀ b ∈ s, b * Equiv.swap u v ∈ s) :
+    ∑ b ∈ s, signInt b = 0 := by
+  classical
+  apply Finset.sum_involution (fun b _ => b * Equiv.swap u v)
+  · intro b hb; rw [signInt_swap b u v hne]; omega
+  · intro b hb hsign; exact swap_ne b u v hne
+  · exact hmem
+  · intro b hb; exact swap_twice b u v
+
+noncomputable def rowSum {n} (a : Equiv.Perm (Fin n)) (r : ℕ) : ℤ := by
+  classical
+  exact ∑ b : Equiv.Perm (Fin n) with Upper a b ∧ LowerFrom a b r, signInt b
+
+theorem lower_cut_removal {n} (a : Equiv.Perm (Fin n)) (r : ℕ) :
+    rowSum a r = rowSum a (r + 1) := by
+  classical
+  let s := Finset.univ.filter fun b : Equiv.Perm (Fin n) =>
+    Upper a b ∧ LowerFrom a b (r + 1)
+  let test := fun b : Equiv.Perm (Fin n) =>
+    ∀ i : Fin n, i.val = r → prefixSum a r < prefixSum b (r + 1)
+  have hgood : s.filter test = Finset.univ.filter
+      (fun b : Equiv.Perm (Fin n) => Upper a b ∧ LowerFrom a b r) := by
+    apply Finset.ext
+    intro b
+    dsimp only [s]
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+    change ((Upper a b ∧ LowerFrom a b (r + 1)) ∧ test b) ↔
+      Upper a b ∧ LowerFrom a b r
+    constructor
+    · rintro ⟨⟨hu, hl⟩, ht⟩
+      refine ⟨hu, fun i hi => ?_⟩
+      by_cases he : i.val = r
+      · simpa [he] using ht i he
+      · exact hl i (by omega)
+    · rintro ⟨hu, hl⟩
+      exact ⟨⟨hu, fun i hi => hl i (by omega)⟩, fun i hi => by
+        simpa [hi] using hl i (by omega)⟩
+  have hbad : ∑ b ∈ s.filter (fun b => ¬test b), signInt b = 0 := by
+    by_cases hr : r < n
+    · by_cases hr0 : r = 0
+      · subst r
+        apply Finset.sum_eq_zero
+        intro b hb
+        have ht := (Finset.mem_filter.mp hb).2
+        exact (ht (by intro i hi; simpa [hi] using prefixSum_pos b i)).elim
+      · let u : Fin n := ⟨r - 1, by omega⟩
+        let v : Fin n := ⟨r, hr⟩
+        have huv : v.val = u.val + 1 := by dsimp [u, v]; omega
+        apply swap_sum_zero _ u v (by intro he; have := congrArg Fin.val he; dsimp [u,v] at this; omega)
+        intro b hb
+        obtain ⟨hb, ht⟩ := Finset.mem_filter.mp hb
+        obtain ⟨hu, hl⟩ := (Finset.mem_filter.mp hb).2
+        have hshort : prefixSum b (r + 1) ≤ prefixSum a r := by
+          by_contra h
+          exact ht (by intro i hi; omega)
+        have hshort' : prefixSum (b * Equiv.swap u v) (r + 1) ≤ prefixSum a r := by
+          rw [prefixSum_swap b u v huv (by dsimp [v]; omega)]
+          exact hshort
+        apply Finset.mem_filter.mpr
+        refine ⟨?_, ?_⟩
+        · apply Finset.mem_filter.mpr
+          refine ⟨Finset.mem_univ _, upper_swap_of_short a b u v huv hu hshort, ?_⟩
+          intro i hi
+          rw [prefixSum_swap b u v huv (by dsimp [v]; omega)]
+          exact hl i hi
+        · intro h
+          have := h v rfl
+          omega
+    · apply Finset.sum_eq_zero
+      intro b hb
+      have ht := (Finset.mem_filter.mp hb).2
+      exact (ht (by intro i hi; have := i.isLt; omega)).elim
+  have he := Finset.sum_filter_add_sum_filter_not s test signInt
+  rw [hgood, hbad, add_zero] at he
+  exact he
+
+theorem rowSum_eq_upper {n} (a : Equiv.Perm (Fin n)) :
+    rowSum a 0 = ∑ b : Equiv.Perm (Fin n) with Upper a b, signInt b := by
+  classical
+  have hr : ∀ r, rowSum a 0 = rowSum a r := by
+    intro r
+    induction r with
+    | zero => rfl
+    | succ r ih => exact ih.trans (lower_cut_removal a r)
+  rw [hr n]
+  simp [rowSum, LowerFrom, show ∀ i : Fin n, ¬n ≤ i.val from fun i => by omega]
 
 end Residual
 ```
