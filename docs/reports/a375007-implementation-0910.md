@@ -63,3 +63,13 @@
   修复为在 `t=q*k+r` 内先展开 q=(q−1)+1 与乘法，再由 `omega` 推导截断减法等式；最后用 `simp only` 归约标准余数引理。
 - 两个私有构造及主定理均已核验；尚未执行 make lean/lean-report，不能以文件检查代替完整门。
 - route 调用曾因绝对路径、缺键、null/空 artifact 被拒；阅读 RouteTests 的字符串型 manifest 后修正为 artifact=lean。所有失败为调用数据错误，未修改工具。
+
+## 完整构建与语义回声
+
+- `make lean` EXIT=0，21.123 秒，12808 jobs；本次新增模块 Built 1.0s。macOS ARM 本地 donor 热树；不外推 CI 耗时。
+- runner `KernelEcho.lean` 中三个 **private** 检查分别证明 `P 3 ∧ ¬Prime 4`、`P 8 ∧ ¬Prime 9`、`P 24 ∧ ¬Prime 25`，以及 P 与 brief 公式的 `Iff.rfl` 回声。
+  EXIT=0；不将这些有限正例写入 D5 或独立冻结。初次 `norm_num` 未载入 Prime 扩展，改用 kernel `decide`；没有 native_decide。
+- `#print axioms a375007_prime`：`[propext, Classical.choice, Quot.sound]`。
+- canonical route EXIT=0，输出 GID、路径、S3 与 I 七行 skeleton 均匹配落点。
+- `Library/Arith` 创建前实数 48，不能再放；笔记改用已注册 Factorization 域的首个真实工件 `Library/Factorization/ratajczak2024a375007.md`。尚未提交过超容量位置。
+- generality=I 表示本条固定商余谓词及阈值的算术结果，不声称跨所有二次域；与无界量化及 utility=none 相容。
