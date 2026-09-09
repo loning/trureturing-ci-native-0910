@@ -6,6 +6,177 @@ uses the consensus-rnd/sshx attempt contract. LANE #6160. User-authorized scope:
 attempt bind-only first, stop on success or a false source clause, publish a
 report and PR without auto-merge. No deposit, cover, or freeze.
 
+## Final Outcome
+
+**Bind-only for the all-theta Schmidt target; stop rule 1 triggered.**
+Run 05 of `make lean` exited 0. The checked probe is retained verbatim as
+`docs/reports/schmidt-theta-0909-snippets.lean`, outside the D5 build glob.
+There is no production module, deposit, cover, or freeze. This is a report
+delivery, not a claim that the entire atom has been Lean-certified:
+cross-theta orthogonality remains explicitly open in Lean.
+
+| Source obligation | Checked result |
+| --- | --- |
+| (27), every real theta, source B(a,b), both phased sector families orthonormal | Proved in probe: `cross_area_count_formula`, `area_append`, `phased_factorization`, `phased_cut_sector_gram` |
+| Every chronological prefix cut, every real theta, same Schmidt coefficients; (29) rank 12 at 4\|4 | Proved using actual `LinearMap.singularValues`: `all_theta_cut_singular_values`, `all_theta_cut_rank`, `all_theta_5040_rank` |
+| Psi_0 orthogonal to Psi_(pi/4) | **Lean-open**; exact integer diagnostic gives overlap 0/840 = 0; not an assumed premise of any spectral result |
+| Psi_0 and Psi_(pi/4) have the same entanglement spectrum and entropy | Proved for all pairs of real phases by `all_theta_cut_singular_values` and `all_theta_cut_entropy` |
+
+The source scope is a finite ordered alphabet with one fixed occupation and
+`a.card = t+s`; for 5040 it is (4,2,1,1), `k=0,...,8`, `t=k`, `s=8-k`.
+No theta=0 restriction or extra unproved mathematical hypothesis was added.
+The generic matrix identity also holds for unnormalized matrices; its use as
+a normalized source state is guarded by the cardinality premise, checked in
+`phased_state_normalized` and `normalization_positive`. All three multiplicities
+are positive, as are the nonzero Schmidt coefficients. Entropy sums only over
+the singular-value support; `entropy_log_argument_pos` checks each log argument
+is positive. Mathlib defines singular values through a positive adjoint Gram
+operator. There is no infimum in this probe.
+
+The local phase factors are explicit: the left entry is
+exp(i theta (A(u)+B(occ(u),a-occ(u)))); the right entry is exp(i theta A(v)).
+They factor the actual phased coefficient matrix on its legal support.
+`Matrix.charpoly_mul_comm` cancels the right unitary after the left unitary has
+cancelled in the Gram matrix. The two Mathlib eigenvalue/charpoly iff theorems
+and the existing singular-value formulas then identify the sorted sequences,
+including multiplicities and trailing zero values. A global diagonal unitary
+alone is insufficient; the fixed-occupation factorization is essential.
+
+Proof shape is **bind-only**, `escape_witness: null`,
+`admission_basis: not-applicable(user-stop-rule-1; report-only)`.
+No independent new-content or novelty claim is made.
+
+## Verified Artifact And Reproduction
+
+Run 05 built the temporary path
+`D5/S3/Quantum/Entanglement/SchmidtThetaProbe0909.lean` using `make lean`.
+The file was then moved without changing its bytes to the report directory.
+SHA-256: `69c39fe441633bb77ec6727b6faa7a108a16906eb3a24fee95a040263f2db061`.
+The probe build's own job took 26 seconds according to Lean's build output;
+this is not total wall time or a cold-build benchmark. Every one of the 19
+printed theorem axiom closures is exactly
+`[propext, Classical.choice, Quot.sound]`. The two remaining helper theorems
+(`phase_add`, `phase_preserves_gram`) occur in those live dependency closures.
+There is no `sorry`, `admit`, private axiom, or budget override in the checked file.
+Unused-instance/hypothesis/simp-argument warnings remain in the probe; the build
+exit code is 0, not a warning-free claim.
+
+To reproduce, place the unchanged snippet bytes at the temporary D5 path above,
+run `make lean`, and remove that temporary file afterwards. Do not register,
+deposit, or freeze it. The normal build does not import the archived snippet.
+Run `node docs/reports/schmidt-theta-0909-witnesses.mjs` for the separately
+labelled finite diagnostic. Build and diagnostic logs are in the runner's
+`schmidt-theta-0909/attempt-1` artifact directory.
+
+## Per-Declaration Accounting
+
+These are archived probe declarations, not public D5 additions. In every row:
+`proof_shape=bind-only`, `escape_witness=null`, and the admission basis is the
+report-only stop above. Utility kind is `none`: these are general identities,
+normalization, or direct specialization of an existing rank theorem, with no
+new checker, numeric reduction, bounded enumeration, or certified instance.
+
+Direct frozen dependencies use these full pins:
+
+- CHS: `D5/S3/Quantum/Entanglement/CoherentHistorySchmidt`,
+  `sha256:12fe938e662c8edbaeefb12298e5fc281e7f17595aafd457281a98bd63db1ca1`.
+- OWS: `D5/S3/Quantum/Entanglement/OccupancyWordSectors`,
+  `sha256:4c2e6fd9d41a26d9ddd554f91b64b4ed76e6b80ed308ee656970febafbbe55e1`.
+  Scope: finite alphabet and fixed-length word sectors; normalization requires
+  the occupation cardinality to equal the word length.
+
+| Declaration | Direct frozen theorem use | Utility / live consumer |
+| --- | --- | --- |
+| `phase_star_mul` | none | Unit modulus for `phaseUnitary` and `phase_preserves_gram` |
+| `unitary_gram_eigenvalues` | none | Sorted Gram eigenvalues for `all_theta_cut_eigenvalues` |
+| `unitary_rank` | none | Rank for both all-theta rank consumers |
+| `gram_toEuclideanLin` | none | Actual adjoint operator in `singular_values_of_gram_eigenvalues` |
+| `singular_values_of_gram_eigenvalues` | none | Mathlib singular values in `all_theta_cut_singular_values` |
+| `entropy_log_argument_pos` | none | Defined log domain for the entropy obligation |
+| `cross_area_count_formula` | none | Source B formula in clause 1; a fidelity check |
+| `area_append` | none | Definition/sum normalization for both phased factorizations |
+| `phase_add` | none | Exponential normalization for both phased factorizations |
+| `phased_matrix_local_factors` | OWS `occupation_append` | Local unitary matrices for all-theta spectral/rank consumers |
+| `phased_factorization` | CHS `normalized_coefficient_factorization` | Equation (27) |
+| `phase_preserves_gram` | none | Both phased orthogonality and whole-state normalization |
+| `phased_cut_sector_gram` | CHS `cut_sector_gram` | Orthogonality in clause 1 |
+| `phased_state_normalized` | OWS `multiplicity_pos`, `sector_gram` | Positive normalization and unit whole-state norm |
+| `phased_matrix_is_state` | CHS `coefficient_eq_uniform_word` | Source's actual state-to-matrix connection |
+| `all_theta_cut_eigenvalues` | none | Spectrum with multiplicity for all-theta singular values |
+| `all_theta_cut_singular_values` | none | Clause 2 and entropy consumer |
+| `all_theta_cut_entropy` | none | Entropy part of clause 3 |
+| `all_theta_cut_rank` | CHS `coefficient_rank` | Every cut's rank |
+| `all_theta_5040_rank` | CHS `history_5040_max_schmidt_rank` | Equation (29), all theta |
+| `normalization_positive` | CHS `schmidt_coefficient_pos`; OWS `multiplicity_pos`, `boundary_spec`, `complement_card` | Denominator/root/log-domain audit |
+
+The six auxiliary definitions only spell out the source phase, phased vectors,
+the matrix, and the entropy functional, or package a diagonal matrix as a
+unitary. They supply notation to the consumers above, not separate content.
+`area_append` uses OWS's word/occupation definitions, but no direct frozen
+theorem; definitions are distinguished from theorem dependencies in this table.
+
+## Accepted Mathlib Bindings
+
+| Declaration | Path under pinned Mathlib/ | Actually used |
+| --- | --- | --- |
+| `Complex.norm_exp_ofReal_mul_I` | `Analysis/Complex/Trigonometric.lean` | yes, phase cancellation |
+| `Matrix.mem_unitaryGroup_iff'` | `LinearAlgebra/UnitaryGroup.lean` | yes, diagonal unitary packaging |
+| `Matrix.IsHermitian.eigenvalues_eq_eigenvalues_iff` | `Analysis/Matrix/Spectrum.lean` | yes |
+| `Matrix.charpoly_mul_comm` | `LinearAlgebra/Matrix/Charpoly/Basic.lean` | yes |
+| `Matrix.rank_mul_eq_left_of_isUnit_det`, `Matrix.rank_mul_eq_right_of_isUnit_det` | `LinearAlgebra/Matrix/Rank.lean` | yes |
+| `Matrix.UnitaryGroup.det_isUnit` | `LinearAlgebra/UnitaryGroup.lean` | yes |
+| `Matrix.toEuclideanLin_conjTranspose_eq_adjoint` | `Analysis/InnerProductSpace/Adjoint.lean` | yes |
+| `Matrix.toEuclideanLin_eq_toLin_orthonormal` | `Analysis/InnerProductSpace/PiL2.lean` | yes |
+| `Matrix.toLin_mul` | `LinearAlgebra/Matrix/ToLin.lean` | yes |
+| `Matrix.charpoly_toLin` | `LinearAlgebra/Charpoly/ToMatrix.lean` | yes |
+| `LinearMap.IsSymmetric.eigenvalues_eq_eigenvalues_iff` | `Analysis/InnerProductSpace/Spectrum.lean` | yes |
+| `LinearMap.singularValues_of_lt`, `LinearMap.singularValues_of_finrank_le`, `LinearMap.singularValues_pos_iff_ne_zero` | `Analysis/InnerProductSpace/SingularValues.lean` | yes |
+| `Fin.sum_univ_add` | `Algebra/BigOperators/Fin.lean` | yes |
+| `Finset.sum_multiset_map_count` | `Algebra/BigOperators/Group/Finset/Basic.lean` | yes |
+| `Matrix.charpoly_units_conj`, `Matrix.charpoly_units_conj'` | `LinearAlgebra/Matrix/Charpoly/Basic.lean` | no, attempted inverse-coercion route superseded |
+| `Unitary.spectrum_star_right_conjugate` | `Algebra/Star/Unitary.lean` | no, set spectrum loses multiplicities |
+
+## Required Numerical Witnesses
+
+Positive: the two-word occupation (1,1), cut 1|1, has normalized Gram matrix
+diag(1/2,1/2) at both theta 0 and pi: norm squared 1, Schmidt squares (1/2,1/2),
+rank 2, entropy log(2) approximately 0.6931471805599453.
+
+Negative for the fixed-occupation premise: use all four words with amplitude
+1/2. At theta 0 the coefficient matrix is [[1,1],[1,1]]/2; at theta pi it is
+[[1,1],[-1,1]]/2. Both norms squared equal 1, but the Gram matrices are
+[[1/2,1/2],[1/2,1/2]] and diag(1/2,1/2); Schmidt squares change from (1,0) to
+(1/2,1/2), rank changes from 1 to 2, and entropy from 0 to log(2). This state
+uses occupations (2,0), (1,1), and (0,2), violating fixed occupation. It refutes
+the proposed unrestricted-global-diagonal-unitary justification, not the source.
+
+Negative for normalization: occupation (1,0), cut 1|1, violates 1=1+1. There
+are zero legal words. The totalized coefficient matrix is zero: rank 0 while
+the boundary count is 1. This falsifies the unguarded rank/normalization
+conclusion; it does not falsify the purely algebraic Gram invariance identity.
+
+The source-specific pi/4 overlap has equal inversion-residue counts
+[105,105,105,105,105,105,105,105]. Reduction modulo q^4+1 gives [0,0,0,0], hence
+overlap 0/840=0. Exact small-integer enumeration is independently executable
+in Node, but has not been proved correct by Lean. Entropy decimals are
+approximations, not certified intervals. The diagnostic is being rerun after
+adding the fixed-occupation counterexample; its final exit code is recorded
+in the runner result.
+
+## Explicit Nonclaims
+
+No complete Lean proof or coverage of the full atom is claimed. In particular,
+cross-theta orthogonality is not inferred from equal entanglement spectra and
+is not smuggled into any hypothesis. No arbitrary real-valued cut positions,
+nonchronological bipartitions, mixed occupations, or infinite alphabets are
+covered by the source-state claim. No exhaustive literature/library search,
+general provability claim, independent review, admission, or implication for
+RH is claimed. Unopened external pages and unseen reviews remain
+ASSUMED-UNVERIFIED. No third-party search was needed after pinned Mathlib
+bindings closed the main target and activated the immediate stop rule.
+
+The sections below preserve the earlier search and failed-build history.
+
 ## Registered Question And Stop Rules
 
 Question: does atom
@@ -148,7 +319,7 @@ At k=4, the 12 positive probability numerators over denominator 840 are
 `[12,96,48,48,72,144,144,72,48,48,96,12]`; their sum is 840.
 The boundary-count sequence is `[1,4,8,11,12,11,8,4,1]`.
 
-## Current Claims And Limits
+## Run 02 Claims And Limits (Historical)
 
 Run 02 (`make lean`) exited 2. `unitary_rank` now passes with the standard
 three axioms. Remaining script errors concern the diagonal entry's

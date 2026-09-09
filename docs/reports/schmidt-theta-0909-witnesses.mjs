@@ -4,7 +4,12 @@ import assert from 'node:assert/strict';
 const occupation = [4, 2, 1, 1];
 const sum = xs => xs.reduce((a, b) => a + b, 0);
 const factorial = n => n < 2 ? 1 : n * factorial(n - 1);
-const count = a => factorial(sum(a)) / a.reduce((p, n) => p * factorial(n), 1);
+const count = a => {
+  assert.ok(a.every(n => Number.isInteger(n) && n >= 0));
+  const denominator = a.reduce((p, n) => p * factorial(n), 1);
+  assert.ok(denominator > 0);
+  return factorial(sum(a)) / denominator;
+};
 const histogram = Array(22).fill(0);
 const histories = [];
 
@@ -84,6 +89,19 @@ const gram = m => [0, 1].map(i => [0, 1].map(j =>
 assert.deepEqual(gram(phaseZeroSupport), [[0.5, 0], [0, 0.5]]);
 assert.deepEqual(gram(phasePiSupport), [[0.5, 0], [0, 0.5]]);
 
+// Dropping fixed occupation allows a global diagonal phase to change Schmidt
+// coefficients: the four equal amplitudes have norm one at both phases.
+const mixedZero = [[1, 1], [1, 1]];
+const mixedPi = [[1, 1], [-1, 1]];
+const mixedGram = m => [0, 1].map(i => [0, 1].map(j =>
+  sum([0, 1].map(k => m[k][i] * m[k][j])) / 4));
+assert.equal(sum(mixedZero.flat().map(x => x * x)), 4);
+assert.equal(sum(mixedPi.flat().map(x => x * x)), 4);
+assert.deepEqual(mixedGram(mixedZero), [[0.5, 0.5], [0.5, 0.5]]);
+assert.deepEqual(mixedGram(mixedPi), [[0.5, 0], [0, 0.5]]);
+assert.equal(rank2(mixedZero), 1);
+assert.equal(rank2(mixedPi), 2);
+
 console.log(JSON.stringify({
   historyCount: histories.length,
   inversionHistogram: histogram,
@@ -101,11 +119,22 @@ console.log(JSON.stringify({
       rank: rank2(validSupport), boundaryCount: 2,
       entropyApprox: Math.log(2)
     },
-    negative: {
+    negativeCardinality: {
       occupation: [1, 0], cut: [1, 1], cardinalityPremise: '1 != 1 + 1',
       legalWords: invalidWordCount, normalizationExists: false,
       totalizedCoefficientMatrixRank: rank2(invalidSupport), boundaryCount: 1,
       failedConclusion: '0 != 1'
+    },
+    negativeFixedOccupation: {
+      amplitudesAtZero: [[0.5, 0.5], [0.5, 0.5]],
+      amplitudesAtPi: [[0.5, 0.5], [-0.5, 0.5]],
+      occupiedSectors: [[2, 0], [1, 1], [0, 2]],
+      fixedOccupationPremise: false,
+      normSquaredAtBothPhases: 1,
+      schmidtSquaresAtZero: [1, 0], schmidtSquaresAtPi: [0.5, 0.5],
+      rankAtZero: rank2(mixedZero), rankAtPi: rank2(mixedPi),
+      entropyAtZero: 0, entropyAtPiApprox: Math.log(2),
+      failedConclusion: '[1,0] != [1/2,1/2]'
     }
   },
   nonclaims: [
