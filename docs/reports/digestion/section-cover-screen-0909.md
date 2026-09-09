@@ -54,7 +54,7 @@ basis. No source recompilation or independent theorem is required for screening.
 
 ## Progress
 
-Screened: 140 / 164. frozen-covered: 7; frozen-partial: 4; needs-lean: 129; not-an-assertion: 0; unreadable: 0.
+Screened: 141 / 164. frozen-covered: 8; frozen-partial: 4; needs-lean: 129; not-an-assertion: 0; unreadable: 0.
 
 All screened source bodies were read in full. The theorem-like headings are not treated as evidence by themselves. Source IDs are quantum-rh. Atom links point to immutable CAS bodies. The input bytes field is retained as supplied and is not used as a classifier.
 
@@ -71,6 +71,7 @@ Scope: state pins identify the module statement; theorem selectors are listed se
 | 80 | [7b2657006891568aa395dfd9fa14bde9d9d23d2ade0c449b00f7cdf5c616baec](../../../Meta/Digestion/atoms/sha256/7b2657006891568aa395dfd9fa14bde9d9d23d2ade0c449b00f7cdf5c616baec) ## 定理二：什么时候投影后的几何能够独立执行？ | frozen-covered | `D5/S0/Rewriting/Quotients/DynamicsDescent` | 将观察的余域限制到 pi(X) 后映射自动满射；冻结的存在唯一下降 iff 保持纤维与源文存在下降 iff 保持纤维等价。 | S44 |
 | 92 | [8ef6b9257471235dae81e95cd49a82d8589c77b60cfb90cd4d4355ed0ae75092](../../../Meta/Digestion/atoms/sha256/8ef6b9257471235dae81e95cd49a82d8589c77b60cfb90cd4d4355ed0ae75092) ## 定理 G3　Gribinski 猜想在 \(m=2\) 处成立 | frozen-covered | `D5/S3/Zeros/Convolution/GribinskiDegreeTwo` | 冻结 G3 的五个全称实参数、严格 alpha>-1 和两个存在非负实根与 boxed 断言一致。 | C+3, S48 |
 | 121 | [c352d304105e02cbbcb0607e31a1e217adb85d4b344ba0d75c23ba4420dbf0e1](../../../Meta/Digestion/atoms/sha256/c352d304105e02cbbcb0607e31a1e217adb85d4b344ba0d75c23ba4420dbf0e1) ## 定理 U1：正拼接的必要充分条件 | frozen-covered | `D5/S3/Weil/ZetaLinear/ExactStickyReduction` | 冻结 Schur 能量正性等价式经复空间的实内积表达、交换块顺序和一维剩余能量 delta_N*\|z\|^2，恰为源 U1。 | S18, S32, S82 |
+| 164 | [ff5edc2fa518d7aad2e434878eaed431d77462514fb23ba7bdbc47c5183d425e](../../../Meta/Digestion/atoms/sha256/ff5edc2fa518d7aad2e434878eaed431d77462514fb23ba7bdbc47c5183d425e) ## 定理 G4　参数范围 \(\alpha>-1\) 是锐的 | frozen-covered | `D5/S3/Zeros/Convolution/GribinskiDegreeTwo` | 两族反例的严格参数区间、指定输入、负常数项/负判别式及完整保非负根 iff alpha>-1 均有冻结声明。 | C+3, S48 |
 | 10 | [0a350824194cd6312628fc5708116dfece7d0e63fec2a1e2f8c201549d63c707](../../../Meta/Digestion/atoms/sha256/0a350824194cd6312628fc5708116dfece7d0e63fec2a1e2f8c201549d63c707) ## 定理三：每一个连续时间切面的 Schmidt 系数都与 \(\theta\) 无关 | frozen-partial | `D5/S3/Quantum/Entanglement/CoherentHistorySchmidt` | 冻结件覆盖 theta=0 的分解、权重和中切 rank=12；未覆盖任意 theta 的相位历史。 | S10, S23 |
 | 45 | [3f70bb4b78d38951e5b98029e96abb9e4d697c94e858de86ce861782dfe79bb9](../../../Meta/Digestion/atoms/sha256/3f70bb4b78d38951e5b98029e96abb9e4d697c94e858de86ce861782dfe79bb9) ### 定理十一：消去正的内部块，不丢失任何负方向 | frozen-partial | `D5/S3/Weil/ZetaLinear/ExactStickyReduction` | 实内积空间的 Schur 能量负指数相等已冻；源文复 Hermitian 惯性计数所需域桥未核实。 | S32, S18, S17 |
 | 120 | [c3316916b643d8cf28de3e1b451f7f3ba61d1337f85a87b7eb42cc1568f9621f](../../../Meta/Digestion/atoms/sha256/c3316916b643d8cf28de3e1b451f7f3ba61d1337f85a87b7eb42cc1568f9621f) ## 定理：只使用 \(2,3,5,7\)，在 5040 之后不会产生 Robin 反例 | frozen-partial | `D5/S3/Arith/GoldenResource/RobinRationalBasis` | 只找到 n=10080=2^5*3^2*5*7>5040 的无条件严格 Robin 特例；无对所有非负指数的全族声明。 | S09, S72 |
@@ -334,6 +335,25 @@ proof_shape: `bind-only`; escape_witness: `null`; admission_basis: `not-applicab
 | delta_N:=d-b*G_N^-1*b >=0 | forall z:C in the reduced space | same; r=G_N^-1*(b*z) | schurEnergy(z)=d\|z\|^2-Re(r*G_N r)=(d-b*G_N^-1*b)\|z\|^2; all z nonnegative iff delta_N>=0 | equivalent |
 | (U13) both directions of iff | same blocks and all source vectors | hQQNonneg,hQQSymm,hQQInv already discharged by source G_N>0 | (exact_sticky_reduction ...).1 : (forall full vectors, energy>=0) iff (forall reduced vectors, energy>=0) | equivalent |
 
+## frozen-covered: ff5edc2fa518d7aad2e434878eaed431d77462514fb23ba7bdbc47c5183d425e
+
+定理 G4　参数范围 \(\alpha>-1\) 是锐的
+
+- GID: `D5/S3/Zeros/Convolution/GribinskiDegreeTwo`; statement_id: `sha256:184c298cb6b3a6b32640e84511f41eede52d8d0d29ae2b24a68f14ef5722487e`; [state pin](../../../Golden/Frozen/state/D5/S3/Zeros/Convolution/GribinskiDegreeTwo.lean.json); [Lean source](../../../D5/S3/Zeros/Convolution/GribinskiDegreeTwo.lean).
+- Declarations: `g4_negative_product`, `g4_negative_discriminant`, `g4_parameter_range_sharp`, `preservation_iff`, `g1_explicit_coefficients`.
+- Scope: alpha:Real excluding -1,-2; family (1,0,1,0) only -2<alpha<-1; family (1,1,1,1) only alpha<-2; exact preservation iff -1<alpha for degree two corrected product-prefactor convolution.
+
+Quantifiers/domain: No alpha=-1 or alpha=-2 endpoint is admitted. Both open subintervals together exhaust admissible alpha<-1. Each alpha has the specified nonnegative inputs; negation of existence of nonnegative output factorization matches failure of P_2(R>=0). preservation_iff quantifies all nonnegative real a,b,c,d, not just the two examples, and uses G3 for the forward range. In the first family the monic quadratic's constant coefficient equals the product of its two roots by Vieta; it is not an arbitrary coefficient of a nonmonic polynomial. Corrected source operation is the appended product-prefactor definition at QUANTUM-RH.md:61194.
+
+proof_shape: `bind-only`; escape_witness: `null`; admission_basis: `not-applicable(screening-only; direct frozen projection and monic Vieta normalization)`. Direct frozen dependencies are exactly the interfaces listed above. No content claim or escape witness is made.
+
+| Atom clause | Lean binders | Lean assumptions | Lean conclusion | Label |
+| --- | --- | --- | --- | --- |
+| for every admissible alpha<-1 there exist nonnegative inputs whose output fails P_2(R>=0) | alpha : Real; exists a b c d : Real | alpha!=-1; alpha!=-2; alpha<-1 | g4_parameter_range_sharp: 0<=a,b,c,d and not exists r s>=0 with output=rootPair r s | verbatim |
+| -2<alpha<-1; (a,b,c,d)=(1,0,1,0); product of roots=kappa(alpha)<0 | alpha : Real; fixed rootPair 1 0 twice | hlo : -2<alpha; hhi : alpha<-1 | g4_negative_product: output.coeff 0=kappa alpha and kappa alpha<0; g1 supplies monicity, so coeff0 is root product; also explicitly no nonnegative factorization | equivalent |
+| alpha<-2; (a,b,c,d)=(1,1,1,1); D=8(1-2*kappa(alpha))<0 | alpha : Real; four fixed entries 1 | halpha : alpha<-2 | g4_negative_discriminant: discriminant alpha 1 1 1 1=8*(1-2*kappa alpha), discriminant<0 and all real x output.eval x!=0 | verbatim |
+| on R\{-1,-2}, [forall p,q in P_2(R>=0), output in P_2(R>=0)] iff alpha>-1 | alpha : Real; preservesNonnegativeRoots expands forall a b c d : Real ... exists r s : Real ... | h1 : alpha!=-1; h2 : alpha!=-2 | preservation_iff : preservesNonnegativeRoots alpha <-> -1<alpha | verbatim |
+
 ## frozen-partial: 0a350824194cd6312628fc5708116dfece7d0e63fec2a1e2f8c201549d63c707
 
 定理三：每一个连续时间切面的 Schmidt 系数都与 \(\theta\) 无关
@@ -525,6 +545,14 @@ Counts are matching lines including comments in baseline D5 Lean files, unless a
 | S89 | `rg -n --glob '*.lean' '(?i)jensen.*(real.?root\|hyperbol\|lower)\|\brolle\b\|positive.*roots.*deriv' D5` | 15 |
 | S90 | `rg -n --glob '*.lean' '(?i)\bxi\w*.*(monoton\|positive\|inequal)\|two.?point.*pos\|turan\|log.?concav.*moment' D5` | 27 |
 | S91 | `rg -n --glob '*.lean' '(?i)cos.*(integral\|expect)\|characteristic.*quadratic\|norm.*projection.*sum\|projection.*pythag' D5` | 16 |
+| S92 | `rg -n --glob '*.lean' '(?i)history.*gap\|propagation.*gap\|path.*laplacian\|laplacian.*path\|feynman.?kitaev\|open.*chain.*spectr' D5` | 0 |
+| S93 | `rg -n --glob '*.lean' '(?i)companion.*observ\|observ.*companion\|output.*zero.*iff\|faithful.*histor\|histor.*faithful' D5` | 3 |
+| S94 | `rg -n --glob '*.lean' '(?i)eventually.*zero\|eventual.*vanish\|martingale\|borel.?cantelli' D5` | 73 |
+| S95 | `rg -n --glob '*.lean' '(?i)poisson.*(toeplitz\|bound\|floor)\|toeplitz.*(smooth\|poisson\|condition)\|smoothing.*(positive\|floor)' D5` | 1 |
+| S96 | `rg -n --glob '*.lean' '(?i)von.?mangoldt.*(bound\|triang)\|triang.*(read\|zeta)\|riesz.*mean\|landau.*(singular\|rh\|bound)' D5` | 16 |
+| S97 | `rg -n --glob '*.lean' '(?i)confluent.*(pick\|gram)\|jet.*curvature\|curvature.*slack\|phase.*second.*deriv' D5` | 11 |
+| S98 | `rg -n --glob '*.lean' '(?i)negative.*polynomial.*test\|polynomial.*negative.*witness\|rational.*negative.*(square\|test)\|reflected.*moment' D5` | 7 |
+| S99 | `rg -n --glob '*.lean' '(?i)adjacent.*orthogon\|neighbou?r.*orthogon\|two.?mode\|double.*copy.*kernel' D5` | 21 |
 
 Full count collection for streaming receipts: `rg -n ... | node` consumes stdout, splits into matching lines, and emits the count and distinct paths. Final result.json retains collection commands and returned paths. Controls: C+2=1, C+3=4, C-=0, C-2=0.
 
