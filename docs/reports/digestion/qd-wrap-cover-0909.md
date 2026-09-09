@@ -1,12 +1,14 @@
 # B1.1 / B3 / B4：忠实性复核与上游包装
 
+实施结算：三个最薄上游包装均已 kernel 验证并冻结；B3、B4 两个靶 atom 已 `absorbed-closed`。B1.1 的两个既有子 atom 已分别闭合，父 atom 仍为无覆盖边的 `residual-open`，被 canonical cover 的既有分解校验拒绝。故父靶闭合数为 **2/3**，不冒称全部 cover；没有触发预登记数学停止判据 2/3/4，工具阻塞单列如下。此报告为开 PR 前的已推送交付快照，PR/CI 最终状态由 runner result 记录。
+
 产地：无 skill，单 Codex worker 直接实施与自查，零独立评审席；前两席的判形继承自 `qd-family-triage-0909.md`，不是本席独立共识。LANE #6160；分支 `lane/math/qd-wrap-cover-0909`；起点 `4ee990c9cb7eb3c8692f0c3f6e5be53cf28f9c85`。
 
 已完整读取 CLAUDE.md、两份 brief note、standing-math-loop 第八至十二节和前席报告。前席探针源码从两个已提交的 triage 分支读取；报告中相对链接的附件没有一并带入本树，不冒称那些链接在本树可用。所有临时文件和原始运行日志在 runner attempt 目录中。初始已有暂存报告与未跟踪的 `candidates.json`、`family.json`；提交只定向 add。
 
 ## 第 0 步：写 Lean 之前的逐子句映射
 
-三次 `make show-atom ATOM_ID=<完整 id>` 均 EXIT=0，当前 `coverage_gids=[]`。以下映射是实施前登记；编译通过之后还须按实际声明再次对账。任一项不能兑现即该条 `partial`，不 deposit、不 cover。三条既判 `proof_shape=bind-only`、`escape_witness=null`；本席只允许 `admission_basis=rule-11-upstream-wrapper`，遇到新数学引理、归纳或估计即停止该条。
+开工三次 `make show-atom ATOM_ID=<完整 id>` 均 EXIT=0，当时 `coverage_gids=[]`。以下映射是实施前登记；编译通过之后还须按实际声明再次对账。任一项不能兑现即该条 `partial`，不 deposit、不 cover。三条既判 `proof_shape=bind-only`、`escape_witness=null`；本席只允许 `admission_basis=rule-11-upstream-wrapper`，遇到新数学引理、归纳或估计即停止该条。
 
 共同对象：保留冻结的 `sourceThetaCoefficient` / `sourceJensenPolynomial`。实系数模型的复化必须在声明中识别为 `(sourceJensenPolynomial d).comp (C (-1) * X) |>.reflect d`。反射多项式在零点有正确顶系数值；只在非零处使用倒数公式。次数只用 `natDegree ≤ d`，不假设原 P 的次数恰为 d。B3/B4 的 `h0 : sourceThetaCoefficient 0 = 1` 对应源设置逐字的 `a_0=1`（QUANTUM-RH 的固定对象节），不是本席新证的分析桥。其系数正性由冻结 `source_theta_normalization h0` 第四投影得到，不另作全阶正实现假设。
 
@@ -87,7 +89,7 @@ B1.1 `make lean` 第三次 EXIT=0（27.901 秒）；前两次 EXIT=2 是 map/ref
 
 ASSUMED-UNVERIFIED：源规范 a₀=1 的分析证明不在本席；未打开外部论文网页；无独立评审；前席日志不重放。nonclaims：不证明 RH，不主张新数学内容，不以编译绿代替忠实性，不把 rule-11 的必要性等同于可证性，不以 refutes 新造准入依据。
 
-B1.1 积分公式子 atom `ae0bab9f…`：`make cover` EXIT=0（174.578 秒），`ledger_changed=true`，已迁入 absorbed-closed；本次提交携带首次冻结、镜像和这条 coverage。该子 atom 已提交推送 `347db77617`。散文子 atom `2ddc6236…` 随后 `make cover` EXIT=0（175.723 秒），`ledger_changed=true`，同样迁入 absorbed-closed。其难易评语在 Scribe 保留为不作复杂度推论的边界，不伪造复杂度谓词或估计；它的数学断言对应上表后三行。父 atom 将单独重试 cover。
+B1.1 积分公式子 atom `ae0bab9f…`：`make cover` EXIT=0（174.578 秒），`ledger_changed=true`，已迁入 absorbed-closed；本次提交携带首次冻结、镜像和这条 coverage。该子 atom 已提交推送 `347db77617`。散文子 atom `2ddc6236…` 随后 `make cover` EXIT=0（175.723 秒），`ledger_changed=true`，同样迁入 absorbed-closed。其难易评语在 Scribe 保留为不作复杂度推论的边界，不伪造复杂度谓词或估计；它的数学断言对应上表后三行。父 atom 的后续重试与判词见下节。
 
 ### B1.1 父 atom 的工具阻塞
 
@@ -118,7 +120,19 @@ B3 首次 deposit 因 origin/dev 再次前移、非当前 HEAD 祖先而 EXIT=2�
 容量口径更正：前文 5/10/5 与预计 8/16/8 是三个目录的物理文件数。实查 `RepositoryRules.Structure.cs:100` 起的 `IsCapacityExcluded`：Blueprint 的生成 md、Frozen/state 都免计容量。因此正式 SL-003 计费为 Lean 与 Scribe 源各预计 8/48，余量各 40；Frozen/state 没有这项文件槽费用。初始物理计数不冒称机器计费计数。
 
 
-B3 deposit EXIT=0 (773.666 seconds, including the required full report after the upstream producer change). The atom moved from residual-open with empty coverage to absorbed-closed with the exact statement identity `sha256:aff726c2285de50e35bd19fe5256d773f97e4d4aa967a601cee7df2aeb215989`. The explicit follow-up cover recognized the same existing edge; the full follow-up command exited 0 (117.378 seconds).
+B3 deposit EXIT=0（773.666 秒，含上游 inspector producer 变更后必需的全量报告）。atom 从空 coverage 的 residual-open 迁入 absorbed-closed，声明身份为 `sha256:aff726c2285de50e35bd19fe5256d773f97e4d4aa967a601cee7df2aeb215989`。随后显式 cover 识别同一已存在的边，EXIT=0（117.378 秒）；整条已提交推送 `f3888ae03c`。
+
+### B4 实际声明复核
+
+`source_jensen_coupling_budget` 与 B3 使用相同的 `n`、源规范 `h0`、互异严格正前阶根 `lam` 及缩放节点 `t`。三个结论依次是每个二阶导数分母非零、同一 `sourceCoupling` 全和的系数表达式、同一全和的四阶累积量表达式。表中三项全部 equivalent；没有耦合非负假设，保留负号、12、d²、恰 d−1 项和 moment 的 2k 下标约定。
+
+本条首次 `make lean` EXIT=0（28.126 秒），`make lean-report` EXIT=0（79.597 秒）。逐声明审计新增 7 项，全批共 40 个显式声明（含私有 helper），公理均限于 `[propext, Classical.choice, Quot.sound]`，用途均为 `none`。B4 的 `anchors` 与第 9 行实际直接 import 都是 `Mathlib.LinearAlgebra.Lagrange`。`nodal_derivative` 和 `residue_sum` 分别实例化上游插值唯一性与系数和式，其余 helper 是源系数、次数和环规范化；没有新的归纳或根估计。
+
+`make emit` EXIT=0（65.360 秒）；生成公式的全部 binder、两个预算等式、η 与 χ₄ 定义及分母非零子句均已逐项核对。三条公开定理在源码中使用的六条冻结定理前置，已实读当前状态片和接受事件中的声明身份，记录于 [frozen-dependencies.json](qd-wrap-cover-0909/frozen-dependencies.json)；其作用域与 GID、声明 statement_id 均逐项列出，不以模块 pin 冒充声明身份。
+
+B4 deposit EXIT=0（278.206 秒），`ledger_changed=true`；atom 已从空 coverage 的 residual-open 迁入 absorbed-closed。声明身份 `sha256:354c620e951865fbc0c9968f4cfedd0d198d23ef766d931d63fb93f93f5884e7`；模块 pin `sha256:30c717d3ad66b80f8338b201f787b65cdcc28792a3e3573b7d1107d7c78447cd`；接受事件 `72ce68de0e295382af7f46043605c339e55e1e9317a57f8cf31af56e68bbbc6e`。
+
+随后的显式 `make cover` EXIT=0（97.656 秒），canonical playbook 把 `already has coverage` 识别为 `coverage-already-applied` 幂等成功；末尾 emit 完成。最终三个模块行数为 173/386/192，Lean 与 Scribe 源目录各计费 8/48、余量各 40；全批没有新域、预算改动或裸 lake。
 
 ## 必要性原文（CAS 字节，不缩写矩阵）
 

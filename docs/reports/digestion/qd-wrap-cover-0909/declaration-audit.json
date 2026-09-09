@@ -394,5 +394,89 @@
       "propext"
     ],
     "statement_id": "sha256:aff726c2285de50e35bd19fe5256d773f97e4d4aa967a601cee7df2aeb215989"
+  },
+  {
+    "declaration": "_private.D5.S3.Zeros.Jensen.SourceJensenCouplingBudget.0.D5.S3.Zeros.Jensen.SourceJensenCouplingBudget.nodal_derivative",
+    "visibility": "private",
+    "utility": "none",
+    "reason": "任意次数的上游多项式插值唯一性实例。",
+    "axioms": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "statement_id": "sha256:02457e8147b526f6785db1ddf7a4a151ff5bbfb91adb4fd4f89a7832cc9d1238"
+  },
+  {
+    "declaration": "_private.D5.S3.Zeros.Jensen.SourceJensenCouplingBudget.0.D5.S3.Zeros.Jensen.SourceJensenCouplingBudget.residue_sum",
+    "visibility": "private",
+    "utility": "none",
+    "reason": "任意次数的 Lagrange.coeff_eq_sum 实例，系数/域规范化。",
+    "axioms": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "statement_id": "sha256:f025dadde6185157db413c1551fbef5085ad7694d96d82efaae89b42f7224eb7"
+  },
+  {
+    "declaration": "_private.D5.S3.Zeros.Jensen.SourceJensenCouplingBudget.0.D5.S3.Zeros.Jensen.SourceJensenCouplingBudget.q_degree",
+    "visibility": "private",
+    "utility": "none",
+    "reason": "任意阶的反射系数和源多项式符号和规范化。",
+    "axioms": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "statement_id": "sha256:5ecb95654ebeea51f67ee14f90bced20986539930fa39a96a190627cc29ba116"
+  },
+  {
+    "declaration": "_private.D5.S3.Zeros.Jensen.SourceJensenCouplingBudget.0.D5.S3.Zeros.Jensen.SourceJensenCouplingBudget.q_coeff",
+    "visibility": "private",
+    "utility": "none",
+    "reason": "任意阶任意合法下标的 coeff_reflect 实例。",
+    "axioms": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "statement_id": "sha256:495f97cbdb4da125879ae81443c77cb02ce94492189b0ab2a42fdbdeb1c20a55"
+  },
+  {
+    "declaration": "_private.D5.S3.Zeros.Jensen.SourceJensenCouplingBudget.0.D5.S3.Zeros.Jensen.SourceJensenCouplingBudget.source_top_three",
+    "visibility": "private",
+    "utility": "none",
+    "reason": "任意 n 的源前三系数规范化；下标 0/1/2 是参数族系数投影，不是有限实例准入。",
+    "axioms": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "statement_id": "sha256:2210a54aa4d99b6dc339479d70e0049843871639489d665b38f367d90cde13a3"
+  },
+  {
+    "declaration": "_private.D5.S3.Zeros.Jensen.SourceJensenCouplingBudget.0.D5.S3.Zeros.Jensen.SourceJensenCouplingBudget.source_cumulant",
+    "visibility": "private",
+    "utility": "none",
+    "reason": "任意 n 的系数-矩恒等式及环规范化。",
+    "axioms": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "statement_id": "sha256:0ebd39872ea78becea75d74087a10f78bdd31221bd87842617a59497de2f68d1"
+  },
+  {
+    "declaration": "D5.S3.Zeros.Jensen.SourceJensenCouplingBudget.source_jensen_coupling_budget",
+    "visibility": "public",
+    "utility": "none",
+    "reason": "无界 n 和任意前阶根元组上的同一留数全和等式。",
+    "axioms": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "statement_id": "sha256:354c620e951865fbc0c9968f4cfedd0d198d23ef766d931d63fb93f93f5884e7"
   }
 ]
