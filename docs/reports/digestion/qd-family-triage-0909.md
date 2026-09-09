@@ -22,3 +22,10 @@
 - `cd2ad7f9986ee06ef6a8ac86aa7834a19d836483eaa1475b57396f3ba7ae536a`：待降阶探针。
 
 `nonclaims`：未落地；未 cover；未 deposit；未开 PR；未主张检索穷尽；“未命中”不是“Mathlib 里不存在”的证明；未证四条目标；未主张 RH 的任何蕴含。未打开的外部文献为 `ASSUMED-UNVERIFIED`，不承载本判词。
+
+
+## B1.1 第一次片段实测（整次 make 尚待退出）
+
+`B11Probe.lean` 已 elaborate 完整 `b11_source`：对 d≥2、全部 x:ℝ，复多项式 Q 在 x 的值等于指定相邻层积分加 `(-1)^d*d!/d^d*a_d`。`b11_constant` 直接用已冻结 `source_jensen_coeff_edges` 第四投影；`b11_source` 接前席 B1 系数运输和 Mathlib FTC。两者 axioms 都恰为标准三公理。日志 [b11-checkpoint.log](qd-family-triage-0909/b11-checkpoint.log) 尚无 EXIT，不据此提前把整次 make 记为通过；待命令返回后逐条结算。
+
+[search-02.json](qd-family-triage-0909/search-02.json) 记录第二批实查：Lagrange.coeff_eq_sum（497 行）、Gauss–Lucas（97 行）、FTC、real restriction 与 Schur。前述箭头关键词无命中不能遮盖这些语义近邻。B4 新探针检验“余式最高系数等于临界值/节点差积之和”；这是 Lagrange 直接实例化的候选 bind 路线，尚未判定。

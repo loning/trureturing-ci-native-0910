@@ -1,0 +1,69 @@
+[
+  {
+    "label": "lagrange",
+    "argv": [
+      "rg",
+      "-n",
+      "\\b(coeff_eq_sum|eq_of_degree_le_of_eval_index_eq|eval_nodal_derivative_eval_node_eq|leadingCoeff_basis)\\b",
+      ".lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean"
+    ],
+    "exit": 0,
+    "matching_lines": 8,
+    "stdout": "117:theorem eq_of_degree_le_of_eval_index_eq (hvs : Set.InjOn v s)\n279:theorem leadingCoeff_basis (hvs : Set.InjOn v s) (hi : i ∈ s) :\n495:theorem coeff_eq_sum\n500:  rw [coeff_C_mul, ← natDegree_basis hvs hi, ← leadingCoeff, leadingCoeff_basis hvs hi]\n511:  exact coeff_eq_sum hvs (by rw [hdegree]; norm_cast; lia)\n605:theorem eval_nodal_derivative_eval_node_eq [DecidableEq ι] {i : ι} (hi : i ∈ s) :\n615:  apply eq_of_degree_le_of_eval_index_eq (v := ((↑) : Rˣ → R)) (G : Set Rˣ).toFinset\n652:  rw [eval_nodal_derivative_eval_node_eq hi, nodalWeight_eq_eval_nodal_erase_inv]\n",
+    "stderr": ""
+  },
+  {
+    "label": "gauss-lucas",
+    "argv": [
+      "rg",
+      "-n",
+      "\\b(rootSet_derivative_subset_convexHull_rootSet|eq_centerMass_of_eval_derivative_eq_zero)\\b",
+      ".lake/packages/mathlib/Mathlib/Analysis/Complex/Polynomial/GaussLucas.lean"
+    ],
+    "exit": 0,
+    "matching_lines": 5,
+    "stdout": "58:See also `rootSet_derivative_subset_convexHull_rootSet` below.\n60:theorem eq_centerMass_of_eval_derivative_eq_zero (hP : 0 < P.degree)\n94:See also `eq_centerMass_of_eval_derivative_eq_zero`\n97:theorem rootSet_derivative_subset_convexHull_rootSet (h₀ : 0 < P.degree) :\n101:  rw [eq_centerMass_of_eval_derivative_eq_zero h₀ hz.2]\n",
+    "stderr": ""
+  },
+  {
+    "label": "ftc",
+    "argv": [
+      "rg",
+      "-n",
+      "\\b(integral_eq_sub_of_hasDerivAt|comp_ofReal|hasDerivAt)\\b",
+      ".lake/packages/mathlib/Mathlib/Analysis/Complex/RealDeriv.lean",
+      ".lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Polynomial.lean",
+      ".lake/packages/mathlib/Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean"
+    ],
+    "exit": 0,
+    "matching_lines": 22,
+    "stdout": ".lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Polynomial.lean:66:protected theorem hasDerivAt (x : 𝕜) : HasDerivAt (fun x => p.eval x) (p.derivative.eval x) x :=\n.lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Polynomial.lean:67:  (p.hasStrictDerivAt x).hasDerivAt\n.lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Polynomial.lean:71:  (q.hasStrictDerivAt_aeval x).hasDerivAt\n.lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Polynomial.lean:75:  (p.hasDerivAt x).hasDerivWithinAt\n.lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Polynomial.lean:82:  (p.hasDerivAt x).differentiableAt\n.lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Polynomial.lean:108:  (p.hasDerivAt x).deriv\n.lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Polynomial.lean:126:  p.hasDerivAt x\n.lake/packages/mathlib/Mathlib/Analysis/Complex/RealDeriv.lean:54:  simpa using! (C.comp z (B.comp z A)).hasDerivAt\n.lake/packages/mathlib/Mathlib/Analysis/Complex/RealDeriv.lean:97:theorem HasDerivAt.comp_ofReal (hf : HasDerivAt e e' ↑z) : HasDerivAt (fun y : ℝ => e ↑y) e' z := by\n.lake/packages/mathlib/Mathlib/Analysis/Complex/RealDeriv.lean:98:  simpa only [ofRealCLM_apply, ofReal_one, mul_one] using! hf.comp z ofRealCLM.hasDerivAt\n.lake/packages/mathlib/Mathlib/Analysis/Complex/RealDeriv.lean:105:    ofRealCLM.hasDerivAt.scomp z hf\n.lake/packages/mathlib/Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean:91:* `intervalIntegral.integral_eq_sub_of_hasDerivAt` - version for functions with a derivative on\n.lake/packages/mathlib/Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean:666:  (hf.integral_hasStrictDerivAt a b).hasDerivAt.deriv\n.lake/packages/mathlib/Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean:721:  (integral_hasStrictDerivAt_of_tendsto_ae_right hf hmeas hb).hasDerivAt\n.lake/packages/mathlib/Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean:728:  (integral_hasStrictDerivAt_right hf hmeas hb).hasDerivAt\n.lake/packages/mathlib/Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean:749:  (integral_hasStrictDerivAt_of_tendsto_ae_left hf hmeas ha).hasDerivAt\n.lake/packages/mathlib/Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean:756:  (integral_hasStrictDerivAt_left hf hmeas ha).hasDerivAt\n.lake/packages/mathlib/Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean:1148:theorem integral_eq_sub_of_hasDerivAt (hderiv : ∀ x ∈ uIcc a b, HasDerivAt f (f' x) x)\n.lake/packages/mathlib/Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean:1178:  integral_eq_sub_of_hasDerivAt (fun x hx => (hderiv x hx).hasDerivAt) hint\n.lake/packages/mathlib/Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean:1194:    rw [integral_eq_sub_of_hasDerivAt_of_le hab hcont (fun x hx => (hderiv x hx).hasDerivAt) hint]\n.lake/packages/mathlib/Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean:1197:        (fun x hx => (hderiv x hx).hasDerivAt) hint.symm, neg_sub]\n.lake/packages/mathlib/Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean:1212:  convert! (integral_eq_sub_of_hasDerivAt hderiv' hint) using 1\n",
+    "stderr": ""
+  },
+  {
+    "label": "frozen-top",
+    "argv": [
+      "rg",
+      "-n",
+      "\\bsource_jensen_coeff_edges\\b",
+      "D5/S3/Zeros/Jensen/SourceJensenPrincipalBlockObstruction.lean"
+    ],
+    "exit": 0,
+    "matching_lines": 8,
+    "stdout": "31:theorem source_jensen_coeff_edges (d : ℕ) (hd : 1 ≤ d) :\n54:  rw [hmatch, (source_jensen_coeff_edges d hd).1] at hz\n58:  exact (source_jensen_coeff_edges d hd).2.1\n63:  rw [(source_jensen_coeff_edges d hd).2.2.2]\n176:  rw [(source_jensen_coeff_edges d hd).2.2.1] at hcoeff\n203:  rw [coeff_map, hc0, (source_jensen_coeff_edges d hd).1] at hz\n211:  rw [coeff_map, hc1, (source_jensen_coeff_edges d hd).2.1] at h1\n230:  rw [(source_jensen_coeff_edges d hd).2.2.1] at hcoeff\n",
+    "stderr": ""
+  },
+  {
+    "label": "schur",
+    "argv": [
+      "rg",
+      "-n",
+      "\\b(fromBlocks₂₂|fromBlocks₁₁)\\b",
+      ".lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/PosDef.lean"
+    ],
+    "exit": 1,
+    "matching_lines": 0,
+    "stdout": "",
+    "stderr": ""
+  }
+]
