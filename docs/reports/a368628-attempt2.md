@@ -88,3 +88,5 @@ Private `initial_echo` 修复后正式模块编译 EXIT=0、零 warning/error，
 ## 全项目门读数
 
 `make lean`：首次 C# 括号错误 EXIT=2 / 2.411s；第二次 FormulaDsl.D 参数要求 byte，Residue helper 用 int，EXIT=2 / 10.984s。两处均修在新增 Scribe 文件。第三次 **EXIT=0 / 59.182s / 12828 jobs**，日志含 LEAN_CACHE 收据，未更改检测或预算；旧模块的重放 warning 不归本次新模块。新模块单文件编译零 warning/error。后续 lean-report/emit/冻结/Scribe 检查按序进行。
+
+首次 `make lean-report` EXIT=0 / 64.004s；delta recheck=1，report SHA256 `ec96a45d3db40a91bf01d610333751d79bce3d3d512d8fe427e6346e152fc648`。全构建比单文件调用额外启用了风格 linter，新模块有两处 `0<n` 空格 warning（先前“零 warning”只描述单文件读数）；已修为 `0 < n`，按源码变化重新运行 lean/lean-report，不关闭 linter。
