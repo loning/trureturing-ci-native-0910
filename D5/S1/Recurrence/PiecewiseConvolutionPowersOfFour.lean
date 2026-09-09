@@ -95,7 +95,6 @@ theorem seq_even_index_zero (j : ℕ) : (seq (2*j+2) : ZMod 2) = 0 := by
     show 2*j+2-1 = 2*j+1 by omega]
   exact square_odd_coeff binary j
 
-#print axioms seq_even_index_zero
 
 private theorem square_expand (f : PowerSeries (ZMod 2)) : f.expand 2 (by decide) = f^2 := by
   have h := MvPowerSeries.map_frobenius_expand 2 (by decide : 2 ≠ 0) (f := f)
@@ -121,7 +120,6 @@ theorem seq_four_mul_add_three (j : ℕ) : (seq (4*j+3) : ZMod 2) = 0 := by
     omega), show 4*j+3-1 = 4*j+2 by omega]
   exact fourth_coeff_three binary j
 
-#print axioms seq_four_mul_add_three
 
 
 /-- At indices congruent to one modulo four, parity descends to the quotient. -/
@@ -130,6 +128,56 @@ theorem seq_four_mul_add_one (j : ℕ) : (seq (4*j+1) : ZMod 2) = (seq j : ZMod 
     rintro ⟨k, hk⟩
     omega), show 4*j+1-1 = 4*j by omega, ← fourth_expand, coeff_expand_mul, binary_coeff]
 
+
+
+/-- The parity conjecture for OEIS A368628, including its index-zero initial value. -/
+theorem a368628_odd_iff (n : ℕ) : Odd (seq n) ↔ ∃ k : ℕ, 3 * n + 1 = 4 ^ k := by
+  rw [← ZMod.natCast_eq_one_iff_odd]
+  induction n using Nat.strong_induction_on with
+  | h n ih =>
+    by_cases hn0 : n = 0
+    · subst n
+      simp only [seq_zero, Nat.cast_one, mul_zero, zero_add]
+      exact iff_of_true trivial ⟨0, rfl⟩
+    obtain ⟨j, hj | hj⟩ := Nat.even_or_odd' n
+    · have hn : n = 2*(j-1)+2 := by omega
+      have hz : (seq n : ZMod 2) = 0 := hn ▸ seq_even_index_zero (j-1)
+      rw [hz]
+      apply iff_of_false zero_ne_one
+      rintro ⟨k, hk⟩
+      cases k with
+      | zero => simp only [pow_zero] at hk; omega
+      | succ k => rw [pow_succ] at hk; omega
+    · obtain ⟨m, hm | hm⟩ := Nat.even_or_odd' j
+      · have hn : n = 4*m+1 := by omega
+        have hc : (seq n : ZMod 2) = (seq m : ZMod 2) := hn ▸ seq_four_mul_add_one m
+        rw [hc, ih m (by omega)]
+        constructor
+        · rintro ⟨k, hk⟩
+          refine ⟨k+1, ?_⟩
+          rw [pow_succ]
+          omega
+        · rintro ⟨k, hk⟩
+          cases k with
+          | zero => simp only [pow_zero] at hk; omega
+          | succ k =>
+            refine ⟨k, ?_⟩
+            rw [pow_succ] at hk
+            omega
+      · have hn : n = 4*m+3 := by omega
+        have hz : (seq n : ZMod 2) = 0 := hn ▸ seq_four_mul_add_three m
+        rw [hz]
+        apply iff_of_false zero_ne_one
+        rintro ⟨k, hk⟩
+        cases k with
+        | zero => simp only [pow_zero] at hk; omega
+        | succ k => rw [pow_succ] at hk; omega
+
+#print axioms seq_zero
+#print axioms seq_recurrence
+#print axioms seq_even_index_zero
+#print axioms seq_four_mul_add_three
 #print axioms seq_four_mul_add_one
+#print axioms a368628_odd_iff
 
 end D5.S1.Recurrence.PiecewiseConvolutionPowersOfFour

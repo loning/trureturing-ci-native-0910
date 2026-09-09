@@ -57,3 +57,5 @@
 本轮完整读取四个直接 xref 的 N/C/H/F/Y 字段（A368593/A368626/A368627/A368629，均 HTTP200），所查页无 A368628 奇偶证明。Israel 68阶递推文件 HTTP200，已下载；长多项式系数未逐项验证，ASSUMED-UNVERIFIED，不作为证明依赖。原目标 OEIS 页、arXiv 检索与源码检索收据仅支持所查范围未见证明。
 
 无 atom 入口核实：`make deposit` 的 `require_transaction_arguments` 强制已有 ATOM_ID，不能用于本题；依用户明确指示使用它内部同一 writer `ledger-align --add`，另行运行相同 `deposit-header-check`。不会造 atom 满足接口。
+
+**目标定理已通过单文件 Lean**：`a368628_odd_iff (n : ℕ) : Odd (seq n) ↔ ∃ k : ℕ, 3*n+1=4^k`。修复后 EXIT=0，六条公开定理的 `#print axioms` 均仅标准三项。尚未宣告最终“成”：全项目门、Scribe、冻结、PR 在后续完成。
