@@ -166,7 +166,7 @@ def execute(options):
         if options.fixture_truth_export:
             validate_fixture_export(json.loads(pathlib.Path(options.fixture_truth_export).read_bytes()))
         step(["make", "lean-cache-ensure"], "cache")
-        for module in ["Census.Codec", "CensusSchema", "Census.Coverage", "Census.Report",
+        for module in ["Census.Codec", "CensusSchema", "Census.Coverage", "Census.Report", "Census.Ownership",
                        "Census.Manifest", "Census.Transport", "DispositionEvidence", "DispositionCensus",
                        "Census.Query", "Census.Receipt", "Census.Command", "Census.Publish"]:
             source = repository / "tools/lean-inspector/LeanInformationAudit" / (module.replace(".", "/") + ".lean")

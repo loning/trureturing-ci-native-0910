@@ -1,5 +1,7 @@
+import Lean
+
 namespace LeanInformationAudit.Tests.Census.Query
 
-theorem shared : True → True := id
+def ownerParent (n : Nat) : Nat := n
 
 end LeanInformationAudit.Tests.Census.Query

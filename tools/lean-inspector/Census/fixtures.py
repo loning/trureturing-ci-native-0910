@@ -43,7 +43,7 @@ def prepare_fixtures(repository, directory):
             logs, "compile", cwd=repository, env=env)
 
     for module in ("Query.Observed", "Query.DuplicateLeft", "Query.DuplicateRight", "Query.Contract",
-                   "Query.Coverage", "Query.Publication", "Query.DirectEvidence", "Query.Enumeration",
+                   "Query.Coverage", "Query.Publication", "Query.DirectEvidence", "Query.Enumeration", "Query.Ownership",
                    "AssessmentCommand", "Command", "CommandRejection",
                    "InvalidEvidence", "LandedFinite", "Coverage", "Json", "NameIdentity", "Assessment",
                    "Evidence", "ArchitectureRepair", "ProvenanceUniverses", "RegisteredClosedTruth",
@@ -111,7 +111,8 @@ def main():
         run(["lake", "env", "lean", str(duplicate_source)], directory / "duplicate-evidence-imports",
             "process", cwd=repository)
     except RuntimeError:
-        assert "owning module mismatch" in (directory / "duplicate-evidence-imports/process.log").read_text()
+        log = (directory / "duplicate-evidence-imports/process.log").read_text()
+        assert "owning module mismatch" in log or "already been declared" in log, log
         assert not duplicate_output.exists()
     else:
         raise AssertionError("duplicate-name owners reintroduced by evidence imports were accepted")

@@ -89,10 +89,11 @@ private def certified (index : Index) (head : String) (key : StatementKey)
 /-- Exhaustive within the declared query domain, never a mathematical classifier.
 Absence of the required named certificates leaves a diagnostic observation;
 errors from discovery or validation are propagated and never become observations. -/
-def assess (index : Index) (head : String) (key : StatementKey) : MetaM (CensusAssessment key) := do
+def assess (index : Index) (head : String) (key : StatementKey)
+    (recordedOwner : Option Name := none) : MetaM (CensusAssessment key) := do
   let env ← getEnv
-  let info ← getConstInfo key.theoremName
-  unless info.isTheorem && index.modules.contains (owningModule env key.theoremName) do
+  let owner := recordedOwner.getD (owningModule env key.theoremName)
+  unless ← CensusOwnership.recordedModuleContainsTheorem env index.modules owner key.theoremName do
     throwError "census query: theorem outside declared import scope: {key.theoremName}"
   let statement ← inferType (← mkConstWithFreshMVarLevels key.theoremName)
   let mut candidates := #[]
@@ -189,7 +190,7 @@ def assess (index : Index) (head : String) (key : StatementKey) : MetaM (CensusA
   for value in dispositions do discard <| certified index head key value
   if let some value := dispositions[0]? then return .certified value
   return .observed {
-    owningModule := owningModule env key.theoremName
+    owningModule := owner
     root := index.root
     importScope := ⟨index.modules, true⟩
     queryCompleted := true

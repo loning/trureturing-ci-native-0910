@@ -39,9 +39,10 @@ elab "#census_query " requestPath:str " output " destination:str : command => do
         StatementKey.mk (<- ofExcept <| parseNameKey request[1]!) request[2]!
       if ids.contains key.statementId then throwError "census query: duplicate statement identity"
       ids := ids.insert key.statementId
-      unless (owningModule env key.theoremName).toString == request[0]! do
+      let owner := request[0]!.toName
+      unless <- CensusOwnership.recordedModuleContainsTheorem env index.modules owner key.theoremName do
         throwError "census query: owning module mismatch: {key.theoremName}"
-      let row <- assess index head key
+      let row <- assess index head key (some owner)
       if let .certified disposition := row then
         certifiedRows := certifiedRows.push (Sigma.mk key (.certified disposition))
         let names := match disposition with
@@ -53,7 +54,8 @@ elab "#census_query " requestPath:str " output " destination:str : command => do
           | .boundedFiniteTruncation value => #[value.truncationFamily, value.comparisonStatement] ++
               (match value.certification with | .reportOnly => #[] | .transferred name => #[name])
           | .unreachable value => #[value.evidence]
-        for name in names.push key.theoremName do
+        certifiedImports := certifiedImports.push owner
+        for name in names do
           certifiedImports := certifiedImports.push (owningModule env name)
       let json := dispositionRowJson (Sigma.mk key row)
       let json := match row with

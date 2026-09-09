@@ -1,4 +1,5 @@
 import LeanInformationAudit.Census.Report
+import LeanInformationAudit.Census.Ownership
 import LeanInformationAudit.SealCommand
 import LeanInformationAudit.StructuralRealization
 import LeanInformationAudit.Sha256
@@ -600,7 +601,8 @@ private def validateObserved (head : String) (root : Name) (modules : Array Name
   let env ← getEnv
   let actualOwner := env.getModuleIdxFor? key.theoremName |>.map
       (env.header.moduleNames[·.toNat]!) |>.getD env.header.mainModule
-  unless payload.owningModule == actualOwner do
+  unless ← CensusOwnership.recordedModuleContainsTheorem env modules
+      payload.owningModule key.theoremName do
     throwError (censusError head "owning_module" actualOwner.toString payload.owningModule.toString)
   unless inRoot env modules key.theoremName do
     throwError (censusError head "root" s!"import-closure-containing:{key.theoremName}" root.toString)
