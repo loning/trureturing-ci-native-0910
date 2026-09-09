@@ -47,7 +47,7 @@ All have source_id `quantum-rh` and initial directory `residual-open`.
 
 | Group | Atom ID | Initial state | Result |
 | --- | --- | --- | --- |
-| A1 | `66fd622e5d54c25826af9d416db18df1d8eecf9c71288d80ff0460237e3e95d2` | residual-open | full match; writer pending |
+| A1 | `66fd622e5d54c25826af9d416db18df1d8eecf9c71288d80ff0460237e3e95d2` | residual-open | absorbed-closed; two edges |
 | A2 | `088d882f6a10249e981da5d77bc3bb5e53e75a5ee02313bdd7c879cb21e22413` | residual-open | pending audit |
 | A3 | `5f5912050d91b5f8998e6799d12c40e766fa4d65798ff890b506a56c3bc0ed3c` | residual-open | pending audit |
 | B1 | `c352d304105e02cbbcb0607e31a1e217adb85d4b344ba0d75c23ba4420dbf0e1` | residual-open | dossier pending; cover prohibited |
@@ -107,7 +107,26 @@ Search receipt: `git grep -n -P
 origin/dev -- D5/S3/Zeros/Convolution/GribinskiDegreeTwo.lean` found exactly three
 lines, one per declaration. `g1_explicit_coefficients` is the positive control
 with the same word-boundary, whitespace and alternation features.
-Writer and migration receipts will follow before processing A2.
+Negative control with the same regex features:
+`git grep -n -P '\btheorem\s+(section_cover_absent_0909|section_cover_missing_0909)\b'
+origin/dev -- D5/S3/Zeros/Convolution/GribinskiDegreeTwo.lean` found zero lines,
+exit 1 (expected no-match, not a validation failure).
+
+Writer receipt: `make cover-batch ATOMS=<attempt-1>/a1-cover.tsv
+BASE=1bb54f920527c303ebaec4e5388d48fcbee0df04` returned 0 and `status=applied`.
+The TSV has two rows for this one atom. The resulting directory is
+`Meta/Digestion/backfill/quantum-rh/absorbed-closed/`; the old residual path is
+absent. The emitted report changed zero blueprints, and `git diff --check`
+returned 0. The only ledger delta is this atom's migration and its two edges.
+Declaration pins written by the canonical writer (distinct from the module pin):
+
+- `discriminant_eq_output`: `sha256:f1485302da7dad7c340240c52ed1003a06a757b6795d07e8bc9d605fde7e4a9f`
+- `g2_discriminant_bound`: `sha256:0da02bd7a338b4c210dec5b5e2512019e7ea5d99f32295ff662fdfb7ed00e790`
+
+The canonical Lean report used the existing warm cache and refreshed 32 baseline
+additions (`changed=0 added=32 removed=0 recheck=32`), then produced report
+`sha256:af574b21fd88feb264bfc954cbb4ae54eece0589735a3cc802ed51c919d17e16`.
+These are report-production readings, not new Lean source changes by this worker.
 
 ## Nonclaims
 
