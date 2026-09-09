@@ -94,34 +94,6 @@ structure FrozenReport where
   reportSha256 : String
   theorems : Array StatementKey
 
-open Std.Internal.Parsec Std.Internal.Parsec.ByteArray in
-private partial def nameKeyParser : Std.Internal.Parsec.ByteArray.Parser Name := do
-    skipByteChar 'n'
-    match ← any with
-    | 48 => return .anonymous
-    | 115 =>
-      skipByteChar '('
-      let parent ← nameKeyParser
-      skipByteChar ','
-      let size ← digits
-      skipByteChar ':'
-      let bytes ← take size
-      let some text := String.fromUTF8? bytes.toByteArray | fail "invalid UTF-8 name component"
-      skipByteChar ')'
-      return .str parent text
-    | 110 =>
-      skipByteChar '('
-      let parent ← nameKeyParser
-      skipByteChar ','
-      let index ← digits
-      skipByteChar ')'
-      return .num parent index
-    | _ => fail "invalid Lean name key"
-
-/-- Decode the inspector's structured, byte-length-prefixed Name encoding. -/
-def parseNameKey (text : String) : Except String Name :=
-  (nameKeyParser <* Std.Internal.Parsec.eof).run text.toUTF8
-
 /-- The supported wire identity, also used by synthetic producer fixtures. -/
 def truthExportIdentity : Json := Json.mkObj [
   ("schema", toJson "stratalint.truth-export"), ("schema_version", toJson (2 : Nat)),
@@ -131,8 +103,7 @@ def truthExportIdentity : Json := Json.mkObj [
 source_commit binds HEAD; declaration_name_key preserves Lean Name structure;
 statement_id is read verbatim. Only frozen nodes' theorem declarations are included.
 The caller pins the report bytes independently with expectedSha256. -/
-private def parseReportCore (bytes actualSha256 : String) : Except String FrozenReport := do
-  let json ← (Json.parse bytes).mapError (censusError "unknown" "report" "valid-json")
+private def parseReportCore (json : Json) (actualSha256 : String) : Except String FrozenReport := do
   let expectedHead := (json.getObjValAs? String "source_commit").toOption.getD "unknown"
   for field in ["schema", "dialect", "producer"] do
     let expected ← truthExportIdentity.getObjValAs? String field
@@ -163,8 +134,13 @@ private def parseReportCore (bytes actualSha256 : String) : Except String Frozen
   checkFrozenUniqueness head sorted
   return { headSha := head, reportSha256 := actualSha256, theorems := sorted }
 
+def parseReportJson (json : Json) (sha256 : String) : Except String FrozenReport := do
+  let report ← parseReportCore json sha256
+  checkFrozenKeys report.headSha report.theorems
+  return report
+
 private def parseReportHashed (bytes sha256 : String) : Except String FrozenReport :=
-  (parseReportCore bytes sha256).mapError fun error =>
+  ((Json.parse bytes) >>= fun json => parseReportCore json sha256).mapError fun error =>
     if error.startsWith "IE-" then error else censusError "unknown" "report" "well-formed" error
 
 def parseReportData (bytes : String) : Except String FrozenReport :=

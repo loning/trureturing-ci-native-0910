@@ -138,39 +138,6 @@ def selectReport (report : FrozenReport) (bytes selectionPrefix : String) : Exce
         ids := ids.insert (← stringField row "statement_id")
   return { report with theorems := report.theorems.filter (fun key => ids.contains key.statementId) }
 
-private def readRows (paths : Array String) (report : FrozenReport) (head sha : String) : MetaM
-    (DispositionInventory × Array ProvenanceSource) := do
-  if paths.isEmpty then throwError "query receipt: no independently verified query partitions"
-  let mut rows := #[]
-  let mut wireRows := #[]
-  let mut sources := #[]
-  for path in paths do
-    unless ← (System.FilePath.mk path).pathExists do throwError "query receipt: missing transport"
-    let result ← ofExcept <| Json.parse (← IO.FS.readFile path)
-    let scopeJson ← ofExcept <| result.getObjVal? "scope"
-    let scope : ImportClosureScope := {
-      modules := ← (← ofExcept <| scopeJson.getObjValAs? (Array Json) "modules").mapM
-        (fun value => ofExcept <| parseNameJson value)
-      completed := ← ofExcept <| scopeJson.getObjValAs? Bool "completed" }
-    for row in ← ofExcept <| result.getObjValAs? (Array Json) "entries" do
-      wireRows := wireRows.push (row, scope)
-    for source in ← ofExcept <| result.getObjValAs? (Array Json) "source_inputs" do
-      let source : ProvenanceSource := {
-        moduleName := (← ofExcept <| stringField source "module").toName
-        path := ← ofExcept <| stringField source "path"
-        sha256 := ← ofExcept <| stringField source "sha256" }
-      unless sources.contains source do sources := sources.push source
-  let keys ← wireRows.mapM fun (row, _) => do
-    return StatementKey.mk (← ofExcept <| parseNameJson (← ofExcept <| row.getObjVal? "theorem_name"))
-      (← ofExcept <| stringField row "statement_id")
-  ofExcept <| checkIdentityInputs report.headSha report.theorems keys
-  ofExcept <| checkReportBinding head sha report
-  for (row, scope) in wireRows do
-    let parsed ← ofExcept <| parseRow row (some scope)
-    if let .observed value := parsed.2 then ofExcept <| checkObservationStatus head value
-    rows := rows.push parsed
-  return (⟨head, rows⟩, sources.qsort (fun a b => a.moduleName.toString < b.moduleName.toString))
-
 def summaryFields (report : FrozenReport) (inventory : DispositionInventory)
     (sources : Array ProvenanceSource) : List (String × Json) :=
   let counts := count inventory
@@ -181,44 +148,28 @@ def summaryFields (report : FrozenReport) (inventory : DispositionInventory)
     ("source_inputs", toJson sources), ("theorem_count", toJson report.theorems.size),
     ("requested_keys", toJson report.theorems.size),
     ("input_kind", toJson (if report.headSha == "fixture-head" then "synthetic_fixture" else "production")),
-    ("query_verification", toJson "lean_query_replay"),
+    ("query_verification", toJson "lean_streaming_query"),
     ("status", toJson (if complete then "complete" else "partial")),
     ("coverage_theorem_count", toJson counts.accounted),
     ("counts", toJson counts), ("certified_complete", toJson (complete && counts.observed == 0))]
 
-/-- Serialize one row at a time: the shared import closure can be much larger
-than its row. It is never materialized as a whole-repository JSON value. -/
-private def streamArtifact (path : String) (fields : List (String × Json))
-    (inventory : DispositionInventory) : IO Unit := do
-  let handle ← IO.FS.Handle.mk path .write
-  handle.putStr "{"
-  for (field, value) in fields do
-    handle.putStr ((toJson field).compress ++ ":" ++ value.compress ++ ",\n")
-  handle.putStr "\"rows\":[\n"
-  let rows := inventory.sortedEntries
-  for i in [:rows.size] do
-    if i > 0 then handle.putStr ",\n"
-    handle.putStr (dispositionRowJson rows[i]!).compress
-  handle.putStr "\n]}\n"
-  handle.flush
-
-/-- Independent data-only publication. Lean replays each bounded query before
-accepting its rows. The kernel claim is over ids; Name-level `ExactlyCovers`
-and report metadata are elaborator-bound, not claimed by the kernel theorem. -/
+/-- The query lane supplies one whole-stream artifact and receipt. The kernel
+claim is over ids; Name binding and handoff metadata are elaborator obligations. -/
 elab "#disposition_census" &"projection" &"root" root:ident &"source" sourcePath:str &"report" reportPath:str
     &"head" head:str &"report_sha256" reportSha:str &"prefix" selectionPrefix:str
-    &"manifest" manifestName:ident &"report_keys" reportKeysName:ident &"receipts" receiptsPath:str
+    &"manifest" manifestName:ident &"report_keys" reportKeysName:ident &"census" censusPath:str
+    &"receipt" receiptPath:str &"receipt_digest" receiptDigest:str
     &"certificate" certificate:ident " output " outputPath:str : command => do
   let destination := outputPath.getString
   phase destination "manifest_binding"
   let bytes ← IO.FS.readFile reportPath.getString
   let report ← parseReportDataIO bytes
   let selected ← ofExcept <| selectReport report bytes selectionPrefix.getString
-  let paths ← ofExcept <| fromJson? (α := Array String) (← ofExcept <| Json.parse
-    (← IO.FS.readFile receiptsPath.getString))
   let manifestName := manifestName.getId.eraseMacroScopes
   let reportKeysName := reportKeysName.getId.eraseMacroScopes
-  let (inventory, sources) ← liftTermElabM <| readRows paths report head.getString reportSha.getString
+  let rows ← CensusTransport.readHandoff censusPath.getString receiptPath.getString receiptDigest.getString report
+  ofExcept <| checkIdentityInputs report.headSha report.theorems rows
+  ofExcept <| checkReportBinding head.getString reportSha.getString report
   phase destination "certificate_compile_kernel"
   let options := ((← getOptions).erase `maxRecDepth).setBool `Elab.async false
   let input ← IO.FS.readFile sourcePath.getString
@@ -231,7 +182,7 @@ elab "#disposition_census" &"projection" &"root" root:ident &"source" sourcePath
     phase destination "manifest_binding"
     liftTermElabM <| checkFinalEnvironment env (some root.getId)
     withEnv env <| liftTermElabM <| withOptions (fun _ => options) do
-      bindEmittedManifest selected root.getId (inventory.entries.map (·.1)) manifestName reportKeysName
+      bindEmittedManifest selected root.getId rows manifestName reportKeysName
   let (data, _) ← readModuleData (checkedPath.withExtension "olean")
   let imports := data.imports.map (·.module.toString)
   let closure := staged.header.moduleNames.filter (· != root.getId) |>.map Name.toString
@@ -239,9 +190,6 @@ elab "#disposition_census" &"projection" &"root" root:ident &"source" sourcePath
     ("imports", toJson imports), ("transitive_imports", toJson closure)]).pretty ++ "\n")
   let ids := mkConst (manifestName.appendAfter "Keys")
   let reportKeysExpr := mkConst reportKeysName
-  phase destination "receipt_verification"
-  liftTermElabM do
-    for path in paths do discard <| CensusReceipt.verify path report
   phase destination "certificate_compile_kernel"
   let proposition ← withEnv staged <| liftTermElabM do
     let expected ← mkAppM ``CensusKeyManifest.Certificate #[ids, toExpr selected.theorems.size, reportKeysExpr]
@@ -255,18 +203,13 @@ elab "#disposition_census" &"projection" &"root" root:ident &"source" sourcePath
   let typeText ← withEnv staged <| liftTermElabM <| return toString (← ppExpr proposition)
   let certificateJson := Json.mkObj [("name", toJson certificateName.toString),
     ("type", toJson typeText), ("axioms", toJson (axioms.map Name.toString))]
-  let fields := summaryFields report inventory sources ++ [("certificate", certificateJson)]
-  ofExcept <| checkCounts inventory (count inventory)
   copyFinalArtifacts checkedPath (System.FilePath.mk sourcePath.getString) root.getId
   if ← (System.FilePath.mk destination).pathExists then
     let same ← IO.Process.output { cmd := "/bin/test", args := #[reportPath.getString, "-ef", destination] }
     unless same.exitCode == 1 do throwError "census projection: output aliases report"
   phase destination "json_emission"
-  let temporary := destination ++ ".tmp"
-  streamArtifact temporary fields inventory
-  IO.FS.writeFile (temporary ++ ".summary.json") ((Json.mkObj fields).pretty ++ "\n")
-  IO.FS.rename temporary destination
-  IO.FS.rename (temporary ++ ".summary.json") (destination ++ ".summary.json")
+  CensusTransport.publish censusPath.getString destination <| Json.mkObj [
+    ("certificate", certificateJson), ("query_receipt_digest", toJson receiptDigest.getString)]
   phase destination "certificate_compile_kernel"
   withEnv staged <| elabCommand (← `(command| #print axioms $(mkIdent certificateName)))
 

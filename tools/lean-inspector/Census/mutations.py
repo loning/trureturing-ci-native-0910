@@ -8,7 +8,7 @@ import pathlib
 from resources import run
 
 
-def partition_main():
+def certificate_mutations():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", required=True, type=pathlib.Path)
     options = parser.parse_args()
