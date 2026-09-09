@@ -46,13 +46,24 @@ elab "#census_certificate_benchmark" &"report" reportPath:str &"head" head:str
     return toString (← ppExpr info.type)
   withEnv staged <| elabCommand (← `(command| #print axioms $(mkIdent certificate)))
   phase "json"
-  let fields := Json.mkObj [
+  let fields := [
     ("head_sha", toJson report.headSha), ("report_sha256", toJson report.reportSha256),
-    ("keys", toJson report.theorems.size), ("rows", toJson report.theorems),
+    ("keys", toJson report.theorems.size),
     ("certificate", Json.mkObj [("name", toJson certificate.toString), ("proposition", toJson proposition),
       ("axioms", toJson (axioms.map Name.toString))]),
     ("final_env_imports", toJson (data.imports.map (·.module.toString))),
     ("transitive_imports", toJson (staged.header.moduleNames.filter (· != `CensusRun.Root) |>.map Name.toString))]
   IO.FS.writeBinFile (source.withExtension "olean") (← IO.FS.readBinFile (checked.withExtension "olean"))
-  IO.FS.writeFile (destination / "certificate.json.tmp") (fields.compress ++ "\n")
+  -- Match the publisher's bounded row serialization; the full row JSON need
+  -- not coexist with the imported, checked environment in the driver heap.
+  let handle ← IO.FS.Handle.mk (destination / "certificate.json.tmp") .write
+  handle.putStr "{"
+  for (field, value) in fields do
+    handle.putStr ((toJson field).compress ++ ":" ++ value.compress ++ ",")
+  handle.putStr "\"rows\":["
+  for i in [:report.theorems.size] do
+    if i > 0 then handle.putStr ","
+    handle.putStr (toJson report.theorems[i]!).compress
+  handle.putStr "]}\n"
+  handle.flush
   IO.FS.rename (destination / "certificate.json.tmp") (destination / "certificate.json")
