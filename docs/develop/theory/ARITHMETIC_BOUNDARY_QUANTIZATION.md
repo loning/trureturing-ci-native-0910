@@ -3625,3 +3625,517 @@ make ingest BASE=391f7355698085c6500b46838a093dad05947ffb SOURCE=arithmetic-boun
 新 canonical 源跨度覆盖、文件身份和命令退出码由本次 implementation envelope 记录。
 Git 暂存、提交、push、PR、merge 和后续独立评审均归 caller;本节没有代行这些动作,
 也没有把有效实施信封当作独立评审或长期目标完成。
+
+## 28. 固定三素数的相对跨度界与非负整数指数射线排除
+
+**28.1 本层命题与证据身份。** 本节是 C33 / S17 的 PAPER_ARGUMENT / repo-derived
+参考输入,主数学输入为实际 GPT PRO task aaaf57ba-7b72-4143-b830-b4b58fe7fc2c,
+conversation conv_576df749336210e9,该调用观测模型 GPT-6 Astra。
+本节证明一个对共同高度一致的远第三坐标负裕量,再与第 27 节的小坐标分离结果合成
+固定三素数的有界相对跨度结论,并把射线排除扩展到所有非零非负整数方向。
+经典范数与凹性材料的出处见 28.18;专门的组合估计是这里展开的推导,
+其原创性未作评定,不声称新颖性、优先权或穷尽文献检索。
+GH 保留为用户尚未数学定义的原标签。这个包络比较缺口不被称为 RH 等价判据,
+本节没有 RH 进展或形式化证明主张。
+
+本节只用已完成的 relative-spread primary、其 caller 固定核验和本树封存的先行源文。
+后续 common-height 与 balanced-all-slab primaries 不是本层输入。
+第 1-27 节的 201529 字节 / 3627 行前缀原样保留,SHA256 为
+b7cb35d87d0a7b7e569c49ab57f2b556c454257de8bd65899587d13be1338537;
+implementation BASE 为 feb497ec31f68e09ccc547a08810c398e66f3ee6。
+原始 primary payload 的 SHA256 为
+7d0bddfc1fcf761290f7bf777663f52f07af927eb2832001a67ff509bdeb4f11。
+其两处转义的非负整数记号在本节排作通常的 \(\mathbb Z_{\ge0}\),原始 payload 不改。
+
+**28.2 正步长、闭角点与同一比较目标。** 全部对数为自然对数,范数为通常欧氏范数。
+固定有限 \(h_1,h_2,h_3>0\),要求八个子集和两两不同,并按值排列为
+\[
+0=v_0<v_1<\cdots<v_7=Q,\qquad Q=h_1+h_2+h_3,
+\qquad \delta=\min_{0\le j<7}(v_{j+1}-v_j)>0.
+\]
+正步长本身不保证子集和不同;这是假设的一部分,素数情形在 28.13 验证它。
+固定有限 \(S\ge0\)。对有限实数
+\[
+T\ge\log2,\qquad 0\le s\le S,\qquad t\ge s,
+\qquad c=(T,T+s,T+t),\quad d_i=c_i+h_i,\quad A=3T+s+t,
+\]
+称有限实预算对 \((M_0,M_1)\) 可容许,当且仅当
+\[
+Q+\log5040<M_0<M_1<\infty
+\]
+且至少两个角点 \(x\in\prod_i\{c_i,d_i\}\) 的预算在闭区间
+\([M_0,M_1]\) 中。角点预算恰为 \(A+v_j\);两端均可取到实际角点。
+置
+\[
+f(x)=\log(1-e^{-x})\quad(x>0),\qquad
+D(M_1)=\max_{\substack{0\le y_i\le1\\\sum_i h_i y_i\le M_1-A}}
+\sum_{i=1}^3\bigl((1-y_i)f(c_i)+y_i f(d_i)\bigr),
+\]
+\[
+\mu=M_1/3,\quad I=[M_0/3,M_1/3],\quad
+\delta_i=\operatorname{dist}(I,\{c_i,d_i\}),\quad
+\rho=\sqrt{\frac{\delta_1^2+\delta_2^2+\delta_3^2}{6}},
+\qquad L=\mu-\rho,\quad H=\mu+2\rho,
+\]
+\[
+\Psi=f(H)+2f(L),\qquad G(M_0,M_1)=D(M_1)-\Psi.
+\]
+\(\delta\) 是子集和最小间隔,\(\delta_i\) 是距离,二者不可混用。
+角点存在保证 \(M_1\ge A\),所以 \(D\) 的可行域非空且紧,最大值存在。
+28.4 先证 \(L,H\ge T>0\),再使用 \(\Psi\)。在原素数域,这仍是
+\(G=U_{\rm dual}-U_{\rm var}\),共同的 \(\log E_S\) 抵消;
+本节直接使用上述原始优化定义,无需重建背包价格证书。
+
+**28.3 定理 A:显式一致远坐标界。** 保留 primary 的常数,其中
+\(K\) 即原 payload 所记的 \(K_W\):
+\[
+\boxed{K=K_W=
+\frac{(S+4Q)^2+(2S+4Q)^2+(S+Q)^2}{9}},\qquad
+\boxed{\epsilon=\delta/18},
+\]
+\[
+\boxed{a=e^{-(S+Q)/2}(1-e^{-\epsilon})>0},
+\]
+\[
+\boxed{R=1+\max\left\{
+2S+3Q,\ \sqrt{6K},\ \frac{9K}{\delta},\quad
+\frac32(S+Q)+3\log\!\left(\frac{2}{1-e^{-\delta/18}}\right)
+\right\}.}
+\]
+这些量有限,\(K>0\),所有分母和对数自变量均严格正。
+若 \(t\ge R\),则 28.2 的每个可容许实薄层均满足
+\[
+\boxed{e^T G(M_0,M_1)<-a<0.}
+\]
+这也蕴含较弱的 \(e^TG\le-a\)。常数不依赖 \(T,s,M_0,M_1\)
+或步长标签的排列;但依赖固定步长集合及所选 \(S\)。
+证明依次由 28.4-28.12 给出。允许 \(T=\log2\)、\(s=0\)、\(s=S\),
+特别在 \(t=R\) 仍是严格负裕量。
+
+**28.4 正支持与饱和所需单调性。** 对 \(x\in\mathbb R^3\) 定义
+\[
+\bar x=\tfrac13\sum_i x_i,\qquad
+\Pi x=x-\bar x\mathbf1,\qquad
+\ell(x)=\bar x-\|\Pi x\|/\sqrt6.
+\]
+第 27 节已证明它的精确等号分类;此处只重述所需的自足范数步骤。
+因为 \(\|\Pi e_i\|=\sqrt{2/3}\),对 \(u\ge0\),三角不等式给
+\[
+\ell(x+ue_i)-\ell(x)
+\ge u/3-u\|\Pi e_i\|/\sqrt6=0.
+\]
+当 \(u=0\) 恒等;当 \(u>0\),取等恰为 \(\Pi x=\lambda\Pi e_i\)、\(\lambda\ge0\),
+即三角等号的非负共线情形。因此 \(\ell\) 逐坐标非减。
+若 \(x\) 是薄层中的实际角点,则 \(\bar x\in I\)、\(\mu\ge\bar x\),
+逐项 \(\delta_i\le|x_i-\bar x|\)。故
+\[
+L\ge\mu-\|\Pi x\|/\sqrt6
+=\ell(x)+(\mu-\bar x)\ge\ell(c)\ge\ell(T\mathbf1)=T.
+\]
+这与 primary 从 \(\delta_i\le|x_i-\mu|\) 和三角不等式得到的较弱式
+\(L\ge\ell(x)+(1-1/\sqrt2)(\mu-\bar x)\ge T\) 一致。
+于是 \(H\ge L\ge T\ge\log2\),包括 \(\rho=0\) 的情形。
+
+在正支持域 \(\mu-\rho>0\)、\(\rho\ge0\),令
+\(F(\mu,\rho)=f(\mu+2\rho)+2f(\mu-\rho)\)。直接微分得
+\[
+f'(x)=\frac1{e^x-1}>0,\qquad
+f''(x)=-\frac{e^x}{(e^x-1)^2}<0,
+\]
+\[
+F_\mu=f'(H)+2f'(L)>0,\qquad
+F_\rho=2\bigl(f'(H)-f'(L)\bigr)\le0.
+\]
+后式在 \(\rho=0\) 为等号,在 \(\rho>0\) 严格负;无需在零距离处微分范数。
+固定 \(M_1\) 而提高可容许的 \(M_0\) 时,区间缩小,各距离和 \(\rho\) 非减,
+所以 \(\Psi\) 非增、\(G\) 非减。中间区间仍含保留角点,正支持一直有效。
+这是非严格单调性,不能把所有饱和步骤都说成严格。证毕。
+
+**28.5 第二角点饱和及空域的精确条件。** 给定任一可容许薄层,
+令 \(A+v_j\) 是不超过 \(M_1\) 的最大角点预算。至少两个角点在薄层内,
+故 \(j\ge1\),且第二大角点预算
+\[
+a_*=A+v_{j-1}\ge M_0>Q+\log5040,\qquad a_*<M_1.
+\]
+证明。若 \(A+v_{j-1}<M_0\),不超过 \(M_1\) 的角点至多一个落在薄层内,
+与假设矛盾。又 \(v_{j-1}<v_j\) 且 \(A+v_j\le M_1\),所以最后不等式严格。
+因此 \((a_*,M_1)\) 仍可容许,保留两个闭端点意义下的角点,
+28.4 给
+\[
+G(M_0,M_1)\le G(a_*,M_1).
+\]
+若 \(M_1\le A+Q\),写 \(r=v_{j-1}\)、\(q=M_1-A\),则
+\[
+0\le r<q\le Q,\qquad q-r\ge v_j-v_{j-1}\ge\delta.
+\]
+\(M_1=A+v_j\) 时同样有效,不使用极限或开角点惯例。
+若 \(M_1\ge A+Q\),则 \(j=7\)、\(a_*=A+v_6\),由 28.12 单独处理。
+
+整个可容许域为空当且仅当
+\[
+\boxed{A+v_6\le Q+\log5040.}
+\]
+若右式成立,严格大于 cutoff 的角点至多一个,没有可容许薄层。
+反之,若 \(A+v_6>Q+\log5040\),
+取 \((M_0,M_1)=(A+v_6,A+Q)\) 即得可容许薄层。
+cutoff 的等号属于空域,不能用闭角点约定把它纳入。证毕。
+
+**28.6 饱和有限区间中的精确端点几何。** 现在只考虑
+\(M_0=A+r,M_1=A+q\),其中 \(0\le r<q\le Q\)。若 \(t\ge2S+3Q\),则
+\[
+\frac{M_0}3-d_1=\frac{t+s+r}3-h_1
+\ge\frac{2S}3+Q-h_1>0,
+\]
+\[
+\frac{M_0}3-d_2=\frac{t+r-2s}3-h_2\ge Q-h_2>0,
+\qquad
+c_3-\frac{M_1}3=\frac{2t-s-q}3\ge S+\frac{5Q}3>0.
+\]
+严格性使用另外两个步长正,即 \(Q-h_i>0\)。因此最近端点分别是
+\(d_1,d_2,c_3\),距离恰为
+\[
+\boxed{\delta_1=\frac{t+s+r}3-h_1,\quad
+\delta_2=\frac{t+r-2s}3-h_2,\quad
+\delta_3=\frac{2t-s-q}3.}
+\]
+这些式子由区间整体在前两个上端点之上、在第三个下端点之下直接得到。
+整个有限范围没有最近端点的反射切换,并非只在相邻角点节点如此。
+这里的 \(c_3>M_1/3\) **不外推到** \(M_1\to\infty\) 的上尾;
+那时可失效的几何不参与 28.12 的证明。证毕。
+
+**28.7 精确范数余项、零条件与正分母。** 在 28.6 的范围置
+\[
+\boldsymbol\delta=tU+W,\qquad U=\frac{(1,1,2)}3,\qquad
+W=\left(\frac{s+r}3-h_1,\frac{r-2s}3-h_2,\frac{-s-q}3\right).
+\]
+由 \(s\le S\)、\(r,q\le Q\)、\(h_i\le Q\) 得
+\[
+|W_1|\le(S+4Q)/3,\quad |W_2|\le(2S+4Q)/3,\quad
+|W_3|\le(S+Q)/3,\qquad \|W\|^2\le K.
+\]
+令
+\[
+u=U/\|U\|=(1,1,2)/\sqrt6,\qquad
+v=\langle u,W\rangle=-\frac{s+h_1+h_2+2(q-r)/3}{\sqrt6},
+\]
+\[
+W_\perp=W-vu,\qquad z=t\|U\|+v,\qquad
+\|U\|^2=2/3,\quad \|u\|=1,\quad \langle u,W_\perp\rangle=0.
+\]
+如果 \(t\ge\sqrt{6K}\),则由 \(|v|\le\|W\|\le\sqrt K\),
+\[
+z\ge t\sqrt{2/3}-\sqrt K\ge t/\sqrt6>0.
+\]
+正交分解给 \(\|tU+W\|^2=z^2+\|W_\perp\|^2\)。定义线性化端点
+\[
+L_\infty=\mu-z/\sqrt6
+=T+\frac s2+\frac{4q-r}9+\frac{h_1+h_2}6.
+\]
+这只是显式表达式,不以未经控制的渐近符号代替余项。精确有理化得到
+\[
+\boxed{L_\infty-L=
+\frac{\|W_\perp\|^2}
+{\sqrt6\bigl(\sqrt{z^2+\|W_\perp\|^2}+z\bigr)}.}
+\]
+分母至少 \(2\sqrt6z\ge2t>0\),故
+\[
+\boxed{0\le L_\infty-L\le\frac{K}{2t}.}
+\]
+余项为零当且仅当 \(W_\perp=0\),亦即 \(W\) 与 \(U\) 共线;
+允许共线系数为负,因为 \(z>0\) 已另行保证。
+这些恒等式及分母估计完全不含共同高度 \(T\)。阈值等号
+\(t=\sqrt{6K}\) 也给严格正分母。证毕。
+
+**28.8 前两坐标的资源上界。** 继续固定有限区间,记
+\[
+B=h_1+h_2>0,\qquad
+m_{\rm low}=T+\frac{s+\min(q,B)}2.
+\]
+任意可行 \(y\) 满足
+\(h_1y_1+h_2y_2\le\min(q,B)\)。由 \(f\) 凹,
+\[
+(1-y_i)f(c_i)+y_i f(d_i)\le f(c_i+h_i y_i).
+\]
+对前两行再作等权 Jensen,并用 \(f\) 递增,得它们的贡献至多
+\[
+2f\!\left(T+\frac{s+h_1y_1+h_2y_2}2\right)\le2f(m_{\rm low}).
+\]
+第三行至多 \(f(d_3)<0\),所以
+\[
+\boxed{D(M_1)\le2f(m_{\rm low})+f(d_3)<2f(m_{\rm low}).}
+\]
+证明对每个可行 \(y\) 成立,取最大即可;没有选择特定最优背包解或假定其价格无并列。
+单行弦界在 \(y_i=0,1\) 取等,在 \(0<y_i<1\) 严格;
+两行 Jensen 取等要求 \(c_1+h_1y_1=c_2+h_2y_2\)。资源界的等号另要求
+\(h_1y_1+h_2y_2=\min(q,B)\),第三行上界取等要求 \(y_3=1\)。
+无论这些条件能否同时达到,最后一步因 \(d_3\) 有限且正而始终严格。
+\(q\le B\) 与 \(q\ge B\) 两种资源情形均被保留。证毕。
+
+**28.9 两种资源情形的端点间隙。** 将 28.7 与 28.8 的显式式子相减,分别得
+\[
+\boxed{L_\infty-m_{\rm low}=
+\begin{cases}
+(B-q)/6+(q-r)/9,&q\le B,\\
+(q-B)/3+(q-r)/9,&q\ge B.
+\end{cases}}
+\]
+证明。在第一种情形,\(m_{\rm low}=T+(s+q)/2\),相减为
+\(B/6-q/18-r/9\),即所列第一式;第二种情形减去
+\(T+(s+B)/2\),得 \((4q-r)/9-B/3\),即第二式。
+在 \(q=B\) 两式同为 \((q-r)/9\),无缺口也无额外分支限制。
+各式首项非负,所以 \(q-r\ge\delta\) 给
+\(L_\infty-m_{\rm low}\ge\delta/9\)。又若
+\(t\ge\sqrt{6K}\) 且 \(t\ge9K/\delta\),28.7 给
+\[
+L\ge L_\infty-\frac K{2t}
+\ge m_{\rm low}+\frac\delta9-\frac\delta{18}
+=\boxed{m_{\rm low}+\epsilon}.
+\]
+允许 \(q-r=\delta\)、\(q=B\) 及两个余项阈值的等号。
+相邻角点足以满足间隔假设,但证明覆盖其间的每个实上预算。证毕。
+
+**28.10 一致负裕量在 \(t=R\) 仍严格。** 对 \(x\ge\log2\),
+\[
+-f(x)=\int_0^{e^{-x}}\frac{du}{1-u}\le2e^{-x}.
+\]
+同时对 \(m>0\)、\(\epsilon>0\),
+\[
+f(m+\epsilon)-f(m)=\int_0^\epsilon\frac{du}{e^{m+u}-1}
+\ge e^{-m}(1-e^{-\epsilon}).
+\]
+所有积分均在正定义域。因 \(H\ge\mu=T+(s+t+q)/3\ge T+t/3\),
+有 \(f(H)\ge-2e^{-T-t/3}\)。再用
+\(m_{\rm low}\le T+(S+Q)/2\)、28.8-28.9,得到
+\[
+\Psi-D\ge2e^{-T}\bigl[a-e^{-t/3}\bigr],\qquad
+ e^TG\le-2\bigl[a-e^{-t/3}\bigr].
+\]
+具体地,先用 \(D<2f(m_{\rm low})\)、\(L\ge m_{\rm low}+\epsilon\),
+再应用上述积分差下界;将可能的严格步放宽为 \(\ge\) 不影响结论。
+令
+\[
+B_{\rm tail}=\tfrac32(S+Q)+3\log\!\left(\frac2{1-e^{-\epsilon}}\right).
+\]
+则 \(e^{-B_{\rm tail}/3}=a/2\)。28.3 的 \(+1\) 保证
+\(t\ge R>B_{\rm tail}\),从而 \(e^{-t/3}<a/2\)。于是
+\[
+\boxed{e^TG\le-2[a-e^{-t/3}]<-a<0.}
+\]
+这说明即使前面若干非严格估计取等,\(t=R\) 也不会失去严格裕量。
+没有计算或声称任何数值半径。证毕。
+
+**28.11 每个有限上预算薄层的归约。** 设 \(t\ge R\) 且
+\(M_1\le A+Q\)。28.5 的第二角点饱和给 \(r=v_{j-1}\)、\(q=M_1-A\),
+满足全部有限区间假设,特别是 \(q-r\ge\delta\)。
+因为 \(R\) 大于 28.6-28.9 所需阈值,28.10 直接适用,故
+\[
+e^TG(M_0,M_1)\le e^TG(A+v_{j-1},M_1)<-a.
+\]
+上预算位于两个相邻角点之间、恰在角点、或恰为 \(A+Q\),结论一致。
+因此此处不依赖一般箱体的有限最大值定理,也不需要运行其 25 槽设计。
+若另有同箱体有限支配式 \(G\le\max_jG_j\),固定 \(T\) 下当然有
+\(e^TG\le\max_j(e^TG_j)\);本节给的是覆盖整个饱和区间的直接证明,
+不能把对角点的有限检查冒充这里的全实薄层证明。证毕。
+
+**28.12 上尾单独由严格单调性控制。** 设 \(M_1\ge A+Q\)。若原薄层可容许,
+28.5 给 \(A+v_6>Q+\log5040\),所以末相邻对
+\((A+v_6,A+Q)\) 可容许,并已由 28.11 控制。
+饱和后固定 \(M_0=A+v_6\)。整个上尾中全上角点可行,所有弦增益
+\(f(d_i)-f(c_i)>0\),故
+\[
+D(M_1)=\sum_i f(d_i).
+\]
+这是常数;恰好达到全上目标需要全部 \(y_i=1\),所以一般而言
+此饱和值可达当且仅当 \(M_1\ge A+Q\)。
+随着上预算严格增加,\(\mu\) 严格增加,距离区间扩大,各 \(\delta_i\)
+及 \(\rho\) 非增。28.4 的 \(F_\mu>0,F_\rho\le0\) 给 \(\Psi\) 严格增加。
+比较两个参数点时可先在旧 \(\mu\) 减小 \(\rho\),再提高 \(\mu\);
+两段的 \(\mu-\rho\) 都至少为原先的正 \(L\),故单调性使用域合法。
+即使 \(\rho\) 在某段不变或为零,\(\mu\) 的严格增长仍使结论严格。
+因此上尾 \(G\) 严格减少,并有
+\[
+e^TG(M_0,M_1)\le e^TG(A+v_6,M_1)
+\le e^TG(A+v_6,A+Q)<-a.
+\]
+第二步在 \(M_1>A+Q\) 时严格,在 \(M_1=A+Q\) 时相等。
+本证明完全没有假定上尾仍有 \(c_3>M_1/3\)。
+28.11 与本段合起来完成定理 A;空域情形按 28.5 是全称空真。证毕。
+
+**28.13 固定素数、标签排列与小坐标分离的正确符号。** 固定无序集合
+\(P=\{p_1,p_2,p_3\}\),其中三个素数两两不同。对
+\(b\in\mathbb Z_{\ge0}^3\),取
+\[
+h_i=\log p_i,\quad c_i=(b_i+1)h_i,\quad d_i=(b_i+2)h_i.
+\]
+若两个子集和相等,指数化后为两个平方自由素数乘积相等,唯一分解迫使子集相同。
+故八个子集和不同、\(\delta>0\)。同理 \(c_i=c_j\) 会使两个不同素数的
+严格正整数幂相等,不可能。可唯一按 \(c_1<c_2<c_3\) 重排坐标,
+且必须把 \(p_i,b_i,h_i,d_i\) 一起搬动;这个 \(p_1\) 不必是最小素数。
+于是 \(c=(T,T+s,T+t)\)、\(T\ge\log2\)、\(0<s<t\)。
+
+为自足地连接第 27 节,记 \(E=\ell(c)\)、\(d_*=\min_i d_i\)。有
+\[
+E=T+\frac{s+t-\sqrt{s^2-st+t^2}}3\ge T+\frac s3,
+\]
+因为 \(s(t-s)\ge0\) 给根式不超过 \(t\)。在一般有序实坐标上,
+此步取等恰为 \(s=0\) 或 \(t=s\);实际素数箱体中严格。
+若 \(s\ge3\log(3p_1)\),则
+\[
+E\ge T+h_1+\log3=d_1+\log3\ge d_*+\log3.
+\]
+设 \(u=e^{-d_*}\in(0,1)\),精确展开给
+\[
+(1-u/3)^3-(1-u)=u^2/3-u^3/27>0.
+\]
+对正量取对数并用递增性,即
+\(f(d_*)<3f(d_*+\log3)\le3f(E)\)。另一方面
+\[
+D\le\sum_i f(d_i)<f(d_*),\qquad
+\Psi\ge3f(L)\ge3f(E),
+\]
+其中支持界来自 28.4。所以每个可容许薄层均有 \(G<0\),
+包括分离阈值的等号。其等价整数充分条件为
+\[
+p_2^{b_2+1}\ge27p_1^{b_1+4},
+\]
+使用的是坐标次序标签;不同素数的唯一分解又排除了该整数式的等号。
+**正确结论是条件证明 \(G<0\),从而排除 \(G\ge0\)**。
+primary 已纠正 caller 早先把被排除符号写成 \(G<0\) 的措辞;
+这里不沿用那个反向表述。证毕。
+
+**28.14 定理 B:每个固定三素数集合的有界相对跨度。** 对上述固定 \(P\),置
+\[
+p_{\max}=\max P,\qquad S=3\log(3p_{\max}),
+\]
+并以此 \(S\) 和 \(h_i=\log p_i\) 定义 28.3 的同一 \(K,\epsilon,a,R\)。
+如果某个指数箱体存在可容许实薄层使 \(G\ge0\),则
+\[
+\boxed{\max_i((b_i+1)\log p_i)-\min_i((b_i+1)\log p_i)<R.}
+\]
+证明。按 28.13 排列下坐标。若 \(s\ge3\log(3p_1)\),那里已严格排除
+\(G\ge0\),故这样的箱体必须满足
+\(s<3\log(3p_1)\le S\),特别 \(s<S\)。
+如果再有 \(t\ge R\),定理 A 又对所有可容许薄层给严格负号,矛盾。
+所以 \(t<R\)。\(Q,\delta,p_{\max},S,K,R\) 均在素数标签排列下不变,
+半径只依赖固定的无序素数集合。
+其逆否形式为跨度 \(\ge R\) 的箱体每个可容许薄层都有 \(G<0\),包括跨度等于 \(R\)。
+这不对小坐标分离那一支另声称统一的 \(-ae^{-T}\) 裕量;
+该显式裕量由定理 A 在 \(s\le S,t\ge R\) 的范围提供。证毕。
+
+**28.15 定理 C:非零非负整数指数射线的 ceiling 截断。** 固定同一 \(P\),取
+\[
+m,r\in\mathbb Z_{\ge0}^3,\qquad m\ne(0,0,0),\qquad
+b_i(n)=m_i n+r_i\quad(n\in\mathbb Z_{\ge0}).
+\]
+在原始固定标签下定义
+\[
+\alpha_i=m_i\log p_i,\qquad \gamma_i=(r_i+1)\log p_i,\qquad
+c_i(n)=\alpha_i n+\gamma_i.
+\]
+任选最大斜率标签 \(i_+\) 与最小斜率标签 \(i_-\);若几个最小值同为零,
+可任取其中一个。置
+\[
+\Delta=\alpha_{i_+}-\alpha_{i_-}>0,\qquad
+\beta=\gamma_{i_+}-\gamma_{i_-},\qquad
+\boxed{N=\max\left\{0,\left\lceil\frac{R-\beta}{\Delta}\right\rceil\right\}.}
+\]
+则对每个整数 \(n\ge N\),箱体 \(b(n)\) 的每个可容许实薄层均满足 \(G<0\)。
+
+证明。先验 \(\Delta>0\):若全部 \(\alpha_i\) 相同且一个 \(m_i=0\),
+共同斜率为零,使所有 \(m_i=0\),矛盾。若共同斜率严格正,则任意两个标签满足
+\(p_i^{m_i}=p_j^{m_j}\),与不同素数的唯一分解矛盾。
+因此 \(\Delta\) 严格正,\(N\) 有限且为非负整数。对每个 \(n\ge0\),
+不管当前坐标的排序怎样,都有
+\[
+\max_i c_i(n)-\min_i c_i(n)
+\ge c_{i_+}(n)-c_{i_-}(n)=\Delta n+\beta.
+\]
+当整数 \(n\ge N\) 时,ceiling 定义确保 \(\Delta n+\beta\ge R\),
+即使 \((R-\beta)/\Delta\le0\) 而 \(N=0\) 也如此。
+定理 B 的逆否形式遂给所需严格负号。\(\Delta n+\beta=R\) 被同一定理覆盖,
+无需给 ceiling 加一,也无需第 27 节的坐标排序稳定化 cutoff。
+零斜率坐标可以存在,\(\beta\) 可以为负,都不改变证明。
+这里没有计算或认证任何数值 \(N\)。证毕。
+
+**28.16 原整数角点的严格 cutoff 与射线空域。** 对素数箱体记
+\[
+N_e=\prod_{i=1}^3p_i^{b_i+e_i},\qquad e_i\in\{0,1\}.
+\]
+实际整数指数可为零,而平移坐标指数为 \(b_i+1\) 或 \(b_i+2\),均正。
+角点预算恰为 \(Q+\log N_e\)。唯一分解给八个整数角点不同;
+因此 28.5 精确等价于:可容许域为空,当且仅当第二大的 \(N_e\le5040\),
+包括等于 5040 的边界。两端的角点包含仍是闭的,严格性只在
+\(Q+\log5040<M_0\) 这个原下截断处。
+
+定理 A-C 对空域的全称结论为空真,不声称存在薄层。
+非零非负射线还满足
+\[
+N_e(n)=\left(\prod_i p_i^{m_i}\right)^n\prod_i p_i^{r_i+e_i},
+\]
+其中共同乘子 \(\prod_i p_i^{m_i}>1\),故所有八个整数角点及第二大角点最终超过 5040。
+这是最终非空性的直接证明,但不是定理 C 的附加前提;
+为了全称排除无需另加非空域 cutoff,也没有给出数值非空域界。证毕。
+
+**28.17 未闭的共同高度与精确范围。** 固定 \(P\) 后,定理 B 只把可能的
+\(G\ge0\) 限制到相对跨度 \(<R\);共同高度 \(T\) 仍无上界。
+该几何区域含无穷多素数指数箱体:对任意充分大的实数 \(Z\ge\max_i h_i\),取
+\[
+b_i=\lceil Z/h_i\rceil-1\in\mathbb Z_{\ge0},\qquad
+c_i=h_i\lceil Z/h_i\rceil\in[Z,Z+h_i).
+\]
+因而 \(\max c_i-\min c_i<\max h_i\le Q<R\),且 \(\min c_i\to\infty\)。
+所以任意大的共同高度均有这种有界形状箱体;这构造的是剩余几何区域中的箱体,
+**不是** \(G\ge0\) 的见证。一般这样取得的指数序列不属于一条固定整数射线,
+与定理 C 无冲突。论证只是取整构造,本轮没有执行指数枚举。
+
+剩余区域的符号尚未由本节判定,可容许薄层中是否有 \(G=0\) 也未决定。
+远坐标区和小坐标分离区的结论都严格排除了零号。
+这里的常数不是对变化素数集合一致的常数,没有有限完整的素数/指数搜索补集,
+没有一般素数三坐标全域符号定理,也没有 RH 结论。
+下一数学缺口是固定步长、有界相对偏移但共同高度无界时的 \(G\) 控制;
+后续独立研究即使完成,也须作为另层输入,不能被本节提前引用。
+
+**28.18 经典归属与已完成固定核验。** primary 已读并引用 Boyd/Vandenberghe,
+[Convex Optimization](https://web.stanford.edu/~boyd/cvxbook/bv_cvxbook.pdf),
+Appendix A.1.2 印刷 p.634 的范数公理,§3.1.5 印刷 pp.72-73 的范数凸性,
+以及 §3.1.3 印刷 p.70 式 (3.3) 的严格一阶条件。
+第 27.19 节已保存 caller 的书页与 PDF 身份核对。
+范数不等式、凹性、Jensen 及此处所用的初等微积分属于经典材料;
+本书不被说成含有这里专门的 \(K,\epsilon,a,R\) 或素数跨度定理。
+所需专门推导及正支持步骤已在本节给出,论文证明地位不等于 Lean 冻结。
+
+caller 的既有审计为 caller-relative-prime-spread-audit-0909.json,
+SHA256 493e5f8d2432469936611f95c5d34a42ea5463bb1b29188e827b135ac14b4c47:
+SymPy 1.14.0,11 项固定符号恒等式已通过,所供 host session 11977 退出 0。
+这些既有核验按其原身份保留,不作为本轮重新运行的 11 个结果,
+更不作为独立评审或历史数值搜索的重放许可。
+本轮 CPU 仅做源文/身份/生成覆盖验证及普通编排;搜索计数和 GPU dispatch 均为 0。
+完整输入限制、11 项名称、核验出处和剩余交付义务见唯一新增报告
+[relative-prime-spread-proof-0910.md](../../reports/relative-prime-spread-proof-0910.md)。
+
+**28.19 实施、canonical 摄入与尚待交付。** 本层为 caller 的 consensus-rnd:sshx
+编排下 Codex CLI I12 实施,flight qgh0910-i12-relative-spread,attempt 1,
+工作树 /Users/auricstudio/trureturing-qgh-variance,分支
+lane/math/quantized-gh-relative-spread-0910。
+实施者继承 repo-prior-exposed 的 CLAUDE.md / agents/CONTEXT.md 及完整所供 GoalArtifact;
+primary 自报 external-prior-exposed,账户/项目先验未知且不可控。
+不声称先验无污染或模型族多样性。primary 当时读取 pinned 仓库 URL 遇到 DisabledError,
+故其仓库全文忠实性未获独立检查;此历史访问限制不会被本次本地核对抹去。
+
+本层源文之外只加一份纸面核验/provenance 报告。全部新增 CAS 与条目仅由
+~~~sh
+make ingest BASE=feb497ec31f68e09ccc547a08810c398e66f3ee6 SOURCE=arithmetic-boundary-quantization
+~~~
+产生;旧 CAS/entry/report 保留,生成字节及生成器拥有的 EOF 空行不手修。
+源文是 paper reference input,CAS 是该输入的 canonical 摄入物,
+覆盖源跨度不表示其命题已由 Lean 吸收。条目的 receipts.chain_atoms 及嵌套子项
+按实际 schema 读取,不用删字段来迎合临时检查。
+本轮没有工具、Lean、source registry、策略或 GPU kernel 改动,
+没有候选生成、旧 fixed-xi 重放、子 worker、peer review 或 worker log_ref 内容读取。
+canonical 工具的实际退出码、生成身份及每个新编号单元的跨度覆盖由实施信封记录;
+工具若失败须显式交回,不能手工制造通过。
+
+源实现候选仍需 caller 在实施 terminal 后封存,再安排独立源文评审、普通仓库门和 PR。
+最终 S17 MERGED 依赖 S16 MERGED;本实施不判定前驱实时 review 状态。
+Git 暂存、提交、push、PR 和 merge 都归 caller,不由 I12 执行。
+本节交回候选不等于独立评审、正式交付、长期研究目标完成或允许立即用作已准入剪枝规则。
