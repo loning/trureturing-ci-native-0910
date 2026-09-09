@@ -59,3 +59,18 @@ blocked = 实际 Lean 尝试的 goal/错误、路线与最锐剩余子命题。
 - gh search code 'A390871 language:Lean' 返回 []；目标定理名搜索仅返回本仓分诊 note。
   arXiv search query=A390871 成功打开，页面明确 produced no results。
 - dominating_theorem_search=not-found-in-searched-scope，维持第一档；不声称全球无证明。
+
+## Lean 片段 1：差至少为 3 与线性界
+
+- canonical route 返回 D5/S3/Arith/Mersenne/GapExponentBounds.lean、S3、generality I。
+  Arith 直属 Lean 文件 33，Blueprint 直属文件 56；因镜像容量压力新建 Mersenne 子桶，
+  创建前 0 文件。route 初次误用绝对路径、继而误用 null 字段，两次 rc=2；
+  按 ManifestLoader/RouteEngine 现行契约改为仓内相对路径及 artifact=lean、空 selector/tag 后 rc=0。
+- 热树 lake env lean 该模块最终 EXIT=0，无警告。gap_at_least_three 排除 m=0，
+  差 1 由等式推出 k=2^n，差 2 由模 2 矛盾排除；由此 r+3≤k。
+  six_mul_le_pow_add_eight 比较 r² 与 (k−3)²，得到 6*k≤2^m+8。
+- 首次编译失败在泛用 rw [pow_succ] 意外重写 k²；改为明确基数 2、指数 n。
+  模 2 simp 留下余数矛盾，接 omega 关闭。此为实际 Lean goal 修复，不是数学路线失败。
+- r=0 未被额外排除；m=0 的不可解性由平方严格递增得到。主指数界下一步完成。
+- 当前 Makefile 已提供 make deposit-uncovered，内部调用同一 ledger-align --add 与
+  deposit 预检。后续使用此 canonical 无 atom 门，取代手工复制配方。
