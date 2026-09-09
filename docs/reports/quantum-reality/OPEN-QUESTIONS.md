@@ -19,16 +19,34 @@ D 障碍分「可去项 vs 结构性盲核」两笔账 / E 代价以「要先建
 | §17.1 / §18 量子统计层 | `thermal_weyl_characteristic_one_mode` | 单模 Fock/Gibbs 模型须先由 owner 指定为物理输入 |
 | Einstein 方程 | `linearized_einstein_symbol_transverse`(`k^μ E_μν(k,h)=0`) | spin-2 模型输入 |
 
-### orchestrator 的一条待验读数(`ASSUMED-UNVERIFIED`)
+### orchestrator 的一条读数:**该待验项已跑,结果 `open`**(2026-09-10)
 
-`equivariant_selfAdjoint_eq_smul_id_of_irreducible` 读着像实自伴版 Schur 引理。
-我查了钉版 mathlib:Schur 在 `RepresentationTheory/FDRep.lean:158` 与
-`CategoryTheory/Preadditive/Schur`,**但都是代数闭域版**;有限维自伴谱定理在
-`Analysis/InnerProductSpace/Spectrum.lean`。所提切片是**实**内积空间 + **正交**作用 + **自伴**;
-实域上 Schur 只给除环(ℝ/ℂ/ℍ),`A = aI` 不自动成立——是「自伴」把它逼出来的。
-**故推测为 content 而非 bind-only,但这是推断不是读数**:
-决定性检验是 `tools/scripts/agent/bindonly-probe.sh`,**尚未跑**(跑它需要第三个 Lean 进程,
-当时两席在飞)。**点题前应先跑它**,免得派一个 bind-only 靶。
+`equivariant_selfAdjoint_eq_smul_id_of_irreducible` 读着像实自伴版 Schur 引理,
+第 10 轮结算时记为待验。**现已跑完 `tools/scripts/agent/bindonly-probe.sh`:**
+
+```
+BINDONLY_PROBE status=open lane=/Users/chronoai/trureturing-a392714r2 seconds=15
+```
+
+即该陈述 elaborate 通过,而 `exact?` **未能**从钉版 Mathlib 单项闭合它。
+
+**这是单侧读数,不得读过头**(工具自己写明):`closed` 才是决定性的(命中即禁止派席);
+**`open` 不足以据此派席** —— `exact?` 只试单项闭合,不排除数行 bind-only 组合。
+它排除的只有一件事:**「钉版 Mathlib 一项就闭」**。
+
+与手查一致:mathlib 的 Schur 在 `RepresentationTheory/FDRep.lean:158` 与
+`CategoryTheory/Preadditive/Schur`,**均为代数闭域版**;有限维自伴谱定理另在
+`Analysis/InnerProductSpace/Spectrum.lean`。实域上 Schur 只给除环(ℝ/ℂ/ℍ),
+`A = aI` **不自动成立** —— 是「自伴」把它逼出来的。
+
+**探针本身的两条边界(如实记)**:①首次跑在一棵**缓存未建**的 worktree 上,
+真实错误是 `unknown module prefix 'Mathlib'` 而工具报 `statement-did-not-elaborate`,
+我据此改了一个没错的陈述;该归因缺陷已修(`mathlib-unavailable-in-lane`,带三份真实工件的
+预登记验证)。②第二次是真的陈述错(`⟪⟫_ℝ` 记号不在作用域),改用 `LinearMap.IsSymmetric` 后通过。
+**上面那条 `open` 是第三次、在热树上、15 秒得到的。**
+
+**对选题的意义**:四项中的 cross-species 一项,其拟议首切片**没有**在这一侧当场作废。
+其余三项的切片**尚未探针**,不得据此推广。
 
 ### 重启条件(不变)
 
