@@ -1,0 +1,57 @@
+COMMAND: ["make", "-f", "Makefile", "-f", "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/probe.mk", "lean", "PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Next.lean"]
+LEAN_CACHE {"status":"present","worktree":"/Users/auricstudio/trureturing-u1bridge-0909","donor":null,"method":"none","reason":null,"stamp_miss":null,"pin_sha256":"sha256:6c4c682ffba051b5744fe7a75ccc99d7f3b20227b3b026f392f3315be0adaa4e","clonefile_errno":null,"clonefile_errnos":[],"clonefile_attempts":0,"clonefile_cleanup_error":null,"mathlib_missing_olean_files":0,"mathlib_missing_olean_samples":[],"archive_status":"not_attempted","archive_mode":null,"archive_skip_reason":"project olean state is warm","archive_reason":null,"archive_producer_commit_sha":null,"archive_workflow_run_id":null,"mathlib_olean_state":"warm","mathlib_olean_probe_error":null,"project_olean_state":"warm","project_olean_probe_error":null}
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Next.lean:29:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Next.lean:33:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Next.lean:56:2: error: linarith failed to find a contradiction
+case e_a.e_a.h1
+n : ℕ
+a : ℝ
+t eta : Fin (n + 1) → ℝ
+heta : ∀ (i : Fin (n + 1)), 0 ≤ eta i
+x : ℝ
+hx : ∀ (i : Fin (n + 1)), x ≠ t i
+v : Fin (n + 1) → ℝ := fun i => x - t i
+this✝ : Invertible v := { invOf := fun i => (x - t i)⁻¹, invOf_mul_self := ⋯, mul_invOf_self := ⋯ }
+this : Invertible (diagonal v) := diagonalInvertible v
+hinv : ⅟(diagonal v) = diagonal fun i => (x - t i)⁻¹
+hm :
+  (scalar (Fin 1 ⊕ Fin (n + 1))) x - arrow n a t eta =
+    fromBlocks (of fun x_1 x_2 => x - a / ↑(n + 2)) (of fun x i => -√(eta i)) (of fun i x => -√(eta i)) (diagonal v)
+i : Fin (n + 1)
+a✝¹ : i ∈ Finset.univ
+hs : √(eta i) ^ 2 = eta i
+a✝ : -√(eta i) * (x - t i)⁻¹ * -√(eta i) < eta i * (x - t i)⁻¹
+⊢ False
+failed
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Next.lean:139:26: warning: This simp argument is unused:
+  mul_inv
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [div_eq_mul_inv, hd, mul_assoc, mul_left_comm, mul_comm]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Next.lean:159:77: error: `ring_nf` made no progress on the goal
+'QdB3Probe.laguerre_splits' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'QdB3Probe.b3_full' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'QdB3Probe.arrow_hermitian' depends on axioms: [propext, Classical.choice, Quot.sound]
+'QdB3Probe.arrow_schur' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'QdB3Probe.b3_charpoly_target' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+'QdB3Probe.b3_residue_sign_target' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
+make: *** [qd-triage-probe] Error 2
+
+EXIT=2
+SECONDS=25.687206042
