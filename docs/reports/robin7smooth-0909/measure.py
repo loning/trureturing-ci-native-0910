@@ -85,7 +85,7 @@ for n, sigma, exponents in rows:
 windows = []
 for lo, hi in zip((5040, 10000, 20000, 40000, 80000),
                   (10000, 20000, 40000, 80000, 131072)):
-    members = [row for row in rows if lo < row[0] < hi]
+    members = [row for row in rows if lo <= row[0] < hi]
     maximal = max(members, key=lambda row: Q(row[1], row[0]))
     windows.append({"lower": lo, "upper": hi, "count": len(members),
                     "max_ratio": str(Q(maximal[1], maximal[0])),

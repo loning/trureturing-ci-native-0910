@@ -81,6 +81,41 @@ The single-instance checker application also hit the default recursion limit;
 no budget was changed. This is a failed bind-only attempt, not a proof that
 every possible bind-only proof is impossible. No RH premise is available or used.
 
+## Threshold and enumeration measurement
+
+measure.py uses fractions.Fraction throughout the decisions, with the geometric
+atanh remainder and exponential Taylor tail. Decimal fields are display only.
+The frozen Euler bracket implies that the crossing T, defined by
+exp(gamma) * log(log(T)) = 35/8, lies strictly between 116141 and 116144.
+The selected exact tail start is 131072 = 2^17; its certified rational lower
+bound for the right side displays as 4.393371363221533 > 35/8.
+
+The exponent box is 0..16, 0..10, 0..7, 0..6 (10,472 tuples), of which exactly
+482 distinct products satisfy 5040 < n < 131072. First: 5103=(0,6,0,1).
+Last: 129654=(1,3,0,4). An independent direct integer loop gave the same count.
+All 482 pass the exact-rational exploratory comparison; no counterexample or
+uncertified case. Minimum certified normalized margin displays as
+0.05610237980934384 at 10080, sigma=39312. This is not yet a Lean proof.
+The initial diagnostic windows excluded their endpoints; four smooth endpoints
+(10000,20000,40000,80000) were in the total 482 but omitted from window counts.
+The diagnostic window filter has been corrected to include lower endpoints.
+
+Preregistration v2, before implementation of the public theorem: the concrete
+escape witness will be a private finite arithmetic clearance, small_values,
+bounding sigma/n by 381/100 below 10000, 197/50 below 20000, and 407/100 below
+131072. These new integer inequalities are on the live path of the full theorem,
+are not supplied by frozen predecessors, and are not definitionally equivalent
+to a Robin inequality (they contain no log, exp or Euler constant). The generic
+factorization bound may itself be bind-only after inlining; it is not claimed
+as the escape witness. Only the unrestricted final theorem will be public.
+
+Strictness: each finite prime-power factor is strictly below p/(p-1).
+The product over actual prime support is strictly bounded when the support is
+nonempty, which follows here from n>5040>1. The fixed four-factor product also
+handles exponent zero: that factor equals 1 and remains strictly below p/(p-1).
+Log(log x) is strictly increasing for x>1 because log x>0; therefore all lower
+thresholds transfer in the forward direction. No reversed inequality is used.
+
 ## Current nonclaims
 
 The target is not yet proved. No claim of provability, exhaustive search,
