@@ -94,7 +94,39 @@ theorem surviving_sum (n : ℕ) (hn : 1 ≤ n) :
   rw [sum_congr rfl hterm, sum_sub_distrib, hodd]
   simp [show 1 ≤ 2 * n by omega]
 
+/-- Hanna's second conjecture, conditional only on the printed sum and Euler-number residues. -/
+theorem a380056_div_five
+    (a E : ℕ → ℕ)
+    (hformula : ∀ m : ℕ, 1 ≤ m →
+      a (2 * m) = ∑ k ∈ Icc 1 m,
+        (2 * m).choose (2 * k) * E (m - k) * 4 ^ (m - k))
+    (hE0 : E 0 = 1)
+    (hE5 : ∀ r : ℕ, 0 < r → E r % 5 = if r % 2 = 1 then 1 else 0) :
+    ∀ n : ℕ, 1 ≤ n → 5 ∣ a (4 * n) := by
+  intro n hn
+  apply (ZMod.natCast_eq_zero_iff (a (4 * n)) 5).mp
+  have hf := hformula (2 * n) (by omega)
+  rw [show 2 * (2 * n) = 4 * n by omega] at hf
+  rw [hf]
+  simp only [Nat.cast_sum, Nat.cast_mul, Nat.cast_pow]
+  rw [← surviving_sum n hn]
+  apply sum_congr rfl
+  intro k hk
+  by_cases heq : k = 2 * n
+  · subst k
+    simp [hE0]
+  · have hpos : 0 < 2 * n - k := by
+      have := mem_Icc.mp hk
+      omega
+    have heuler : (E (2 * n - k) : ZMod 5) =
+        if (2 * n - k) % 2 = 1 then 1 else 0 := by
+      rw [← ZMod.natCast_mod (E (2 * n - k)) 5, hE5 _ hpos]
+      split_ifs <;> rfl
+    rw [heuler]
+    by_cases hmod : (2 * n - k) % 2 = 1 <;> simp [heq, hmod]
+
 #print axioms binomial_residue_two
 #print axioms surviving_sum
+#print axioms a380056_div_five
 
 end D5.S3.Factorization.A380056
