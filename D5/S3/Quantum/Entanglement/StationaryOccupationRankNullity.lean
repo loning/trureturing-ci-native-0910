@@ -5,7 +5,6 @@
    anchors: []
    utility: none
    digest: Stationary occupation residual Grams force the product-minus-maximum memory lower bound. -/
-
 import Mathlib.Data.Complex.Basic
 import Mathlib.LinearAlgebra.Matrix.Rank
 import Mathlib.LinearAlgebra.Matrix.PosDef
@@ -19,38 +18,23 @@ import Mathlib.Data.Finsupp.Multiset
 import Mathlib.LinearAlgebra.Basis.SMul
 import Mathlib.Algebra.MvPolynomial.Coeff
 import Mathlib.RingTheory.Polynomial.DegreeLT
-
 set_option autoImplicit false
 set_option relaxedAutoImplicit false
-
 noncomputable section
-
-open scoped BigOperators
-open scoped ComplexOrder
-
+open scoped BigOperators ComplexOrder
 namespace D5.S3.Quantum.Entanglement.StationaryOccupationRankNullity
-
 open D5.S3.Quantum.Entanglement.BoundedProfileCardinality
-
-/- `Matrix.rank` is definitionally the finrank of the range of `mulVecLin`.
-   This spelling keeps the source-facing rank/nullity bridge independent of
-   any choice of bases or a positive-semidefinite realization. -/
 theorem gram_rank_add_nullity {ι κ : Type*} [Fintype ι] [Fintype κ]
     (G : Matrix ι κ ℂ) :
     G.rank + Module.finrank ℂ (LinearMap.ker G.mulVecLin) = Fintype.card κ := by
   have h := LinearMap.finrank_range_add_finrank_ker G.mulVecLin
   simpa only [Matrix.rank, Module.finrank_fintype_fun_eq_card] using h
-
 theorem gram_rank_ge_card_sub_nullity {ι κ : Type*} [Fintype ι] [Fintype κ]
     (G : Matrix ι κ ℂ) (q : Nat)
     (hker : Module.finrank ℂ (LinearMap.ker G.mulVecLin) ≤ q) :
     Fintype.card κ - q ≤ G.rank := by
   have h := gram_rank_add_nullity G
   omega
-
-/- This is the reusable lower-bound interface for the stationary occupation
-   argument.  Its only model-specific input is the kernel estimate; the
-   cardinality and rank/nullity bookkeeping are kernel-checked here. -/
 theorem bounded_profile_rank_ge
     {ι : Type*} [Fintype ι] [DecidableEq ι]
     (a : ι → Nat)
@@ -61,37 +45,23 @@ theorem bounded_profile_rank_ge
     (∏ i : ι, (a i + 1)) - q ≤ G.rank := by
   rw [← card_bounded_profiles a]
   exact gram_rank_ge_card_sub_nullity G q hker
-
-/- A Gram factor through a finite memory coordinate carrier cannot have rank
-   larger than that carrier. The factor form stays independent of positivity
-   and leaves the model-specific kernel estimate explicit. -/
 theorem gram_factor_rank_le_memory_card {ι κ : Type*} [Fintype ι] [Fintype κ]
     (C : Matrix κ ι ℂ) :
     (C.conjTranspose * C).rank ≤ Fintype.card κ := by
   exact (Matrix.rank_mul_le_left C.conjTranspose C).trans
     (Matrix.rank_le_card_width C.conjTranspose)
-
-/- Complex Gram matrices are Hermitian. Positivity is intentionally left to a
-   future repository-specific real quadratic-form interface. -/
 theorem gram_factor_is_hermitian {ι κ : Type*} [Fintype ι] [Fintype κ]
     (C : Matrix κ ι ℂ) :
     (C.conjTranspose * C).IsHermitian := by
   exact Matrix.isHermitian_conjTranspose_mul_self C
-
-/- With Mathlib's ComplexOrder scope, the standard matrix predicate records
-   the nonnegative Hermitian quadratic form of a finite Gram factor. -/
 theorem gram_factor_pos_semidef {ι κ : Type*} [Fintype ι] [Fintype κ]
     (C : Matrix κ ι ℂ) :
     (C.conjTranspose * C).PosSemidef := by
   exact Matrix.posSemidef_conjTranspose_mul_self C
-
-/- Kernel estimates may be proved on the factor itself and transported to its
-   Gram matrix without changing the nullspace. -/
 theorem gram_factor_kernel_eq {ι κ : Type*} [Fintype ι] [Fintype κ]
     (C : Matrix κ ι ℂ) :
     (C.conjTranspose * C).mulVecLin.ker = C.mulVecLin.ker := by
   exact Matrix.ker_mulVecLin_conjTranspose_mul_self C
-
 theorem bounded_profile_memory_ge
     {ι κ : Type*} [Fintype ι] [DecidableEq ι] [Fintype κ]
     (a : ι → Nat) (C : Matrix κ (Profile a) ℂ) (q : Nat)
@@ -100,17 +70,10 @@ theorem bounded_profile_memory_ge
     (∏ i : ι, (a i + 1)) - q ≤ Fintype.card κ := by
   exact (bounded_profile_rank_ge a (C.conjTranspose * C) q hker).trans
     (gram_factor_rank_le_memory_card C)
-
 end D5.S3.Quantum.Entanglement.StationaryOccupationRankNullity
-
-/- Concrete stationary residual Gram construction and the physical memory lower bound. -/
-
 namespace Stationary56RectangularBound
-
 open MvPolynomial
-
 variable {K sigma : Type*} [Field K] [Fintype sigma]
-
 theorem coeff_single_linearForm_pow (c : sigma → K) (i : sigma) (n k : ℕ) :
     coeff (Finsupp.single i n) ((∑ j, c j • (X j : MvPolynomial sigma K)) ^ k) =
       if n = k then (c i) ^ n else 0 := by
@@ -120,7 +83,6 @@ theorem coeff_single_linearForm_pow (c : sigma → K) (i : sigma) (n k : ℕ) :
     Finsupp.prod_single_index (by simp)
   have hquot : n.factorial / n.factorial = 1 := Nat.div_self (Nat.factorial_pos n)
   simp [Finsupp.multinomial, hprod, hquot]
-
 theorem coeff_single_aeval_linearForm (c : sigma → K) (i : sigma)
     (F : Polynomial K) (n : ℕ) :
     coeff (Finsupp.single i n)
@@ -136,7 +98,6 @@ theorem coeff_single_aeval_linearForm (c : sigma → K) (i : sigma)
         simpa only [Finset.mem_range, not_lt] using hn
       omega)
     simp [hn, hFn]
-
 theorem aeval_linearForm_injective (c : sigma → K) (i : sigma) (hi : c i ≠ 0) :
     Function.Injective (Polynomial.aeval (R := K)
       (∑ j, c j • (X j : MvPolynomial sigma K))) := by
@@ -145,7 +106,6 @@ theorem aeval_linearForm_injective (c : sigma → K) (i : sigma) (hi : c i ≠ 0
   have h := congrArg (coeff (Finsupp.single i n)) hFG
   rw [coeff_single_aeval_linearForm, coeff_single_aeval_linearForm] at h
   exact mul_right_cancel₀ (pow_ne_zero n hi) h
-
 theorem natDegree_le_of_rectangular_support
     (a : sigma → ℕ) (c : sigma → K) (i : sigma) (hi : c i ≠ 0)
     (F : Polynomial K)
@@ -160,7 +120,6 @@ theorem natDegree_le_of_rectangular_support
       rw [coeff_single_aeval_linearForm, Polynomial.coeff_natDegree]
       exact mul_ne_zero (Polynomial.leadingCoeff_ne_zero.mpr hF) (pow_ne_zero _ hi)
     simpa using hbox _ (mem_support_iff.mpr hc) i
-
 theorem finrank_le_pivot_capacity
     (a : sigma → ℕ) (L : Submodule K (MvPolynomial sigma K))
     (hconst : ∀ b : K, C b ∈ L → b = 0)
@@ -206,7 +165,6 @@ theorem finrank_le_pivot_capacity
   have heq := (LinearEquiv.ofBijective f hf).finrank_eq
   rw [hdim, heq] at hlt
   omega
-
 omit [Fintype sigma] in
 theorem submodule_eq_bot_of_zero_box
     (a : sigma → ℕ) (L : Submodule K (MvPolynomial sigma K))
@@ -223,7 +181,6 @@ theorem submodule_eq_bot_of_zero_box
     exact Nat.eq_zero_of_le_zero (by simpa [ha i] using hbox p hp d hd i)
   have hz : coeff 0 p = 0 := hconst _ (he ▸ hp)
   simpa [hz] using he
-
 theorem stationary_rectangular_nullity_bound [CharZero K]
     (a : sigma → ℕ) (L : Submodule K (MvPolynomial sigma K))
     [FiniteDimensional K L]
@@ -250,37 +207,28 @@ theorem stationary_rectangular_nullity_bound [CharZero K]
       exact (finrank_le_pivot_capacity a L hconst hbox c i hi hrep).trans
         (Finset.le_sup (Finset.mem_univ i))
     · omega
-
 end Stationary56RectangularBound
-
 namespace Stationary56GramRank
-
 open D5.S1.Ledger.BoundedTimeSlice Matrix
 open scoped BigOperators ComplexOrder Classical
-
 variable {sigma : Type*} [Fintype sigma]
-
 def lower (a : sigma → ℕ) (i : sigma) (r : TailBox a) : TailBox a := by
   classical
   exact fun j => ⟨(r j).val - if j = i then 1 else 0,
     lt_of_le_of_lt (Nat.sub_le _ _) (r j).isLt⟩
-
 omit [Fintype sigma] in
 @[simp] theorem lower_val (a : sigma → ℕ) (i : sigma) (r : TailBox a) (j : sigma) :
     (lower a i r j).val = (r j).val - if j = i then 1 else 0 := by
   classical
   rfl
-
 def loweringMatrix (a : sigma → ℕ) (i : sigma) :
     Matrix (TailBox a) (TailBox a) ℂ := by
   classical
   exact fun s r => if 0 < (r i).val then
     (Pi.single (lower a i r) 1 : TailBox a → ℂ) s else 0
-
 def lowering (a : sigma → ℕ) (i : sigma) :
     (TailBox a → ℂ) →ₗ[ℂ] (TailBox a → ℂ) :=
   (loweringMatrix a i).mulVecLin
-
 theorem lowering_single (a : sigma → ℕ) (i : sigma) (r : TailBox a) (c : ℂ) :
     lowering a i (Pi.single r c) =
       if 0 < (r i).val then Pi.single (lower a i r) c else 0 := by
@@ -288,7 +236,6 @@ theorem lowering_single (a : sigma → ℕ) (i : sigma) (r : TailBox a) (c : ℂ
   ext s
   simp [lowering, loweringMatrix, Matrix.mulVec_single, Pi.single_apply]
   split_ifs <;> simp_all
-
 theorem lowered_gram_entry (a : sigma → ℕ) (i : sigma)
     (B : Matrix (TailBox a) (TailBox a) ℂ) (r s : TailBox a) :
     ((loweringMatrix a i).conjTranspose * B * loweringMatrix a i) r s =
@@ -298,7 +245,6 @@ theorem lowered_gram_entry (a : sigma → ℕ) (i : sigma)
   by_cases hr : 0 < (r i).val <;> by_cases hs : 0 < (s i).val <;>
     simp [Matrix.mul_apply, Matrix.conjTranspose_apply, loweringMatrix, hr, hs,
       Pi.single_apply]
-
 theorem recurrence_quadratic_identity (a : sigma → ℕ)
     (B : Matrix (TailBox a) (TailBox a) ℂ)
     (hrec : ∀ r s : TailBox a, r ≠ 0 → s ≠ 0 →
@@ -330,7 +276,6 @@ theorem recurrence_quadratic_identity (a : sigma → ℕ)
   intro i _
   simp only [lowering, Matrix.mulVecLin_apply, star_mulVec, dotProduct_mulVec,
     vecMul_vecMul]
-
 theorem lowering_mem_kernel (a : sigma → ℕ)
     (B : Matrix (TailBox a) (TailBox a) ℂ) (hB : B.PosSemidef)
     (hrec : ∀ r s : TailBox a, r ≠ 0 → s ≠ 0 →
@@ -346,16 +291,11 @@ theorem lowering_mem_kernel (a : sigma → ℕ)
   have hi := (Finset.sum_eq_zero_iff_of_nonneg
     (fun j (_ : j ∈ Finset.univ) => hB.dotProduct_mulVec_nonneg (lowering a j u))).mp hz
   exact (hB.dotProduct_mulVec_zero_iff _).mp (hi i (Finset.mem_univ i))
-
 end Stationary56GramRank
-
 namespace Stationary56GramRank
-
 open D5.S1.Ledger.BoundedTimeSlice MvPolynomial
 open scoped BigOperators Classical
-
 variable {sigma : Type*} [Fintype sigma]
-
 def boxEquiv (a : sigma → ℕ) : TailBox a ≃ {d : sigma →₀ ℕ | ∀ i, d i ≤ a i} where
   toFun r := ⟨Finsupp.equivFunOnFinite.symm (fun i => (r i).val), by
     intro i
@@ -363,33 +303,25 @@ def boxEquiv (a : sigma → ℕ) : TailBox a ≃ {d : sigma →₀ ℕ | ∀ i, 
   invFun d := fun i => ⟨d.val i, Nat.lt_succ_of_le (d.property i)⟩
   left_inv r := by rfl
   right_inv d := by apply Subtype.ext; ext i; rfl
-
 def exponent (a : sigma → ℕ) (r : TailBox a) : sigma →₀ ℕ :=
   (boxEquiv a r).val
-
 @[simp] theorem exponent_apply (a : sigma → ℕ) (r : TailBox a) (i : sigma) :
     exponent a r i = (r i).val := rfl
-
 @[simp] theorem exponent_zero (a : sigma → ℕ) : exponent a 0 = 0 := by
   ext i
   rfl
-
 theorem exponent_injective (a : sigma → ℕ) : Function.Injective (exponent a) := by
   intro r s h
   apply (boxEquiv a).injective
   exact Subtype.ext h
-
 theorem exponent_lower (a : sigma → ℕ) (i : sigma) (r : TailBox a) :
     exponent a (lower a i r) = exponent a r - Finsupp.single i 1 := by
   ext j
   simp [Finsupp.single_apply, eq_comm]
-
 def rectangle (a : sigma → ℕ) : Submodule ℂ (MvPolynomial sigma ℂ) :=
   restrictSupport ℂ {d | ∀ i, d i ≤ a i}
-
 def boxBasis (a : sigma → ℕ) : Module.Basis (TailBox a) ℂ (rectangle a) :=
   (basisRestrictSupport ℂ {d | ∀ i, d i ≤ a i}).reindex (boxEquiv a).symm
-
 theorem boxBasis_val (a : sigma → ℕ) (r : TailBox a) :
     (boxBasis a r).val = monomial (exponent a r) 1 := by
   refine (congrArg Subtype.val
@@ -398,47 +330,36 @@ theorem boxBasis_val (a : sigma → ℕ) (r : TailBox a) :
   exact congrArg AddMonoidAlgebra.ofCoeff
     (Finsupp.supportedEquivFinsupp_symm_single (R := ℂ)
       {d : sigma →₀ ℕ | ∀ i, d i ≤ a i} (boxEquiv a r) (1 : ℂ))
-
 def factorialProduct (a : sigma → ℕ) (r : TailBox a) : ℂ :=
   ∏ i, (Nat.factorial (r i).val : ℂ)
-
 theorem factorialProduct_ne_zero (a : sigma → ℕ) (r : TailBox a) :
     factorialProduct a r ≠ 0 := by
   apply Finset.prod_ne_zero_iff.mpr
   intro i _
   exact_mod_cast Nat.factorial_ne_zero (r i).val
-
 @[simp] theorem factorialProduct_zero (a : sigma → ℕ) : factorialProduct a 0 = 1 := by
   simp [factorialProduct]
-
 def scaledBasis (a : sigma → ℕ) : Module.Basis (TailBox a) ℂ (rectangle a) :=
   (boxBasis a).unitsSMul
     (fun r => (Units.mk0 (factorialProduct a r) (factorialProduct_ne_zero a r))⁻¹)
-
 theorem scaledBasis_val (a : sigma → ℕ) (r : TailBox a) :
     (scaledBasis a r).val = monomial (exponent a r) (factorialProduct a r)⁻¹ := by
   simp [scaledBasis, Module.Basis.unitsSMul_apply, Units.smul_def, boxBasis_val,
     smul_monomial]
-
 def coordinateEquiv (a : sigma → ℕ) : (TailBox a → ℂ) ≃ₗ[ℂ] rectangle a :=
   (scaledBasis a).equivFun.symm
-
 def polynomialMap (a : sigma → ℕ) : (TailBox a → ℂ) →ₗ[ℂ] MvPolynomial sigma ℂ :=
   (rectangle a).subtype.comp (coordinateEquiv a).toLinearMap
-
 theorem polynomialMap_injective (a : sigma → ℕ) : Function.Injective (polynomialMap a) :=
   Subtype.val_injective.comp (coordinateEquiv a).injective
-
 theorem polynomialMap_single (a : sigma → ℕ) (r : TailBox a) (c : ℂ) :
     polynomialMap a (Pi.single r c) =
       monomial (exponent a r) (c * (factorialProduct a r)⁻¹) := by
   simp [polynomialMap, coordinateEquiv, Module.Basis.equivFun_symm_apply,
     scaledBasis_val, smul_monomial]
-
 theorem polynomialMap_mem_rectangle (a : sigma → ℕ) (u : TailBox a → ℂ) :
     polynomialMap a u ∈ rectangle a :=
   (coordinateEquiv a u).property
-
 theorem factorialProduct_lower (a : sigma → ℕ) (i : sigma) (r : TailBox a)
     (hr : 0 < (r i).val) :
     factorialProduct a r = (r i).val * factorialProduct a (lower a i r) := by
@@ -454,7 +375,6 @@ theorem factorialProduct_lower (a : sigma → ℕ) (i : sigma) (r : TailBox a)
   unfold factorialProduct
   simp_rw [hcoord, Finset.prod_mul_distrib]
   simp
-
 theorem pderiv_polynomialMap_single (a : sigma → ℕ) (i : sigma)
     (r : TailBox a) (c : ℂ) :
     pderiv i (polynomialMap a (Pi.single r c)) =
@@ -468,7 +388,6 @@ theorem pderiv_polynomialMap_single (a : sigma → ℕ) (i : sigma)
     field_simp
   · have hz : (r i).val = 0 := Nat.eq_zero_of_not_pos hr
     simp [hz]
-
 theorem pderiv_polynomialMap (a : sigma → ℕ) (i : sigma) (u : TailBox a → ℂ) :
     pderiv i (polynomialMap a u) = polynomialMap a (lowering a i u) := by
   have h : (pderiv i).toLinearMap.comp (polynomialMap a) =
@@ -477,7 +396,6 @@ theorem pderiv_polynomialMap (a : sigma → ℕ) (i : sigma) (u : TailBox a → 
     intro r c
     exact pderiv_polynomialMap_single a i r c
   exact LinearMap.congr_fun h u
-
 theorem constantCoeff_polynomialMap (a : sigma → ℕ) (u : TailBox a → ℂ) :
     constantCoeff (polynomialMap a u) = u 0 := by
   have h : (lcoeff ℂ 0).comp (polynomialMap a) = LinearMap.proj 0 := by
@@ -493,16 +411,11 @@ theorem constantCoeff_polynomialMap (a : sigma → ℕ) (u : TailBox a → ℂ) 
       simp
     · simp [he, hr, eq_comm]
   exact LinearMap.congr_fun h u
-
 end Stationary56GramRank
-
 namespace Stationary56GramRank
-
 open D5.S1.Ledger.BoundedTimeSlice MvPolynomial Matrix
 open scoped BigOperators ComplexOrder Classical
-
 variable {sigma : Type*} [Fintype sigma]
-
 theorem stationary_gram_rank_lower_bound (a : sigma → ℕ)
     (B : Matrix (TailBox a) (TailBox a) ℂ) (hB : B.PosSemidef)
     (h00 : B 0 0 = 1)
@@ -543,31 +456,22 @@ theorem stationary_gram_rank_lower_bound (a : sigma → ℕ)
   change B.rank + Module.finrank ℂ N = Module.finrank ℂ (TailBox a → ℂ) at hrank
   rw [hcard] at hrank
   omega
-
 end Stationary56GramRank
-
 namespace Stationary56PhysicalNecessity
-
-open D5.S3.Quantum.Entanglement.SequentialRegisterCircuit
-open D5.S3.Quantum.Entanglement.OccupancyWordSectors
+open D5.S3.Quantum.Entanglement.SequentialRegisterCircuit D5.S3.Quantum.Entanglement.OccupancyWordSectors
 open scoped BigOperators ComplexOrder
-
 variable {A K : Type*} [Fintype A] [Fintype K]
-
 open Classical in
 def emission (blank : A) (U : Unitary (A × K)) :
     Space K →ₗᵢ[ℂ] Space (A × K) :=
   U.toLinearIsometry.comp
     (coordinateEmbedding (blankInjection blank (Function.Embedding.refl K)))
-
 def letter (blank : A) (U : Unitary (A × K)) (i : A) : Space K →ₗ[ℂ] Space K where
   toFun x := WithLp.toLp 2 (fun k => emission blank U x (i, k))
   map_add' x y := by ext k; simp
   map_smul' c x := by ext k; simp
-
 @[simp] theorem letter_apply (blank : A) (U : Unitary (A × K)) (i : A)
     (x : Space K) (k : K) : letter blank U i x k = emission blank U x (i, k) := rfl
-
 theorem emission_basis (blank : A) (U : Unitary (A × K)) (j : K) :
     emission blank U (basis j) = U (basis (blank, j)) := by
   classical
@@ -575,39 +479,31 @@ theorem emission_basis (blank : A) (U : Unitary (A × K)) (j : K) :
     (basis j)) = U (basis (blank, j))
   rw [show coordinateEmbedding (blankInjection blank (Function.Embedding.refl K))
     (basis j) = basis (blank, j) from coordinate_embedding_basis _ j]
-
 theorem letter_expansion (blank : A) (U : Unitary (A × K)) (i : A)
     (x : Space K) (k : K) :
     letter blank U i x k = ∑ j, x j * U (basis (blank, j)) (i, k) := by
   conv_lhs => rw [basis_expansion x]
   simp [map_sum, emission_basis]
-
-/-- A prefix coefficient, not a physical conditional operation. -/
 def prefixMemory (blank : A) (U : Unitary (A × K)) : List A → Space K →ₗ[ℂ] Space K
   | [] => LinearMap.id
   | i :: w => (prefixMemory blank U w).comp (letter blank U i)
-
 @[simp] theorem prefix_nil (blank : A) (U : Unitary (A × K)) (x : Space K) :
     prefixMemory blank U [] x = x := rfl
-
 @[simp] theorem prefix_cons (blank : A) (U : Unitary (A × K)) (i : A)
     (w : List A) (x : Space K) :
     prefixMemory blank U (i :: w) x = prefixMemory blank U w (letter blank U i x) := rfl
-
 theorem prefix_append (blank : A) (U : Unitary (A × K))
     (u v : List A) (x : Space K) :
     prefixMemory blank U (u ++ v) x = prefixMemory blank U v (prefixMemory blank U u x) := by
   induction u generalizing x with
   | nil => rfl
   | cons i u ih => simpa only [List.cons_append, prefix_cons] using ih (letter blank U i x)
-
 theorem initialized_zero (blank : A) (x : Space K) (w : Fin 0 → A) (k : K) :
     initialized blank 0 x (w, k) = x k := by
   classical
   have hw : w = (fun _ => blank) := Subsingleton.elim _ _
   subst w
   exact coordinate_embedding_apply _ x k
-
 theorem circuit_fixed_coefficients (blank : A) (U : Unitary (A × K))
     (n t : ℕ) (x : Space K) (w : Fin n → A) (k : K) :
     circuit (fun _ => U) n t (initialized blank n x) (w, k) =
@@ -634,7 +530,6 @@ theorem circuit_fixed_coefficients (blank : A) (U : Unitary (A × K))
     apply Finset.sum_congr rfl
     intro l _
     ring
-
 theorem suffix_injective (blank : A) (U : Unitary (A × K)) (n : ℕ)
     (x y : Space K)
     (h : ∀ (w : Fin n → A), prefixMemory blank U (List.ofFn w) x =
@@ -645,34 +540,24 @@ theorem suffix_injective (blank : A) (U : Unitary (A × K)) (n : ℕ)
   rcases p with ⟨w, k⟩
   simp only [circuit_fixed_coefficients]
   exact congrArg (fun z : Space K => z k) (h w)
-
 theorem letter_inner_sum (blank : A) (U : Unitary (A × K)) (x y : Space K) :
     inner ℂ x y = ∑ i, inner ℂ (letter blank U i x) (letter blank U i y) := by
   rw [← (emission blank U).inner_map_map x y]
   simp only [PiLp.inner_apply, Fintype.sum_prod_type, letter_apply]
-
 end Stationary56PhysicalNecessity
-
 namespace Stationary56PhysicalNecessity
-
-open D5.S3.Quantum.Entanglement.SequentialRegisterCircuit
-open D5.S3.Quantum.Entanglement.OccupancyWordSectors
+open D5.S3.Quantum.Entanglement.SequentialRegisterCircuit D5.S3.Quantum.Entanglement.OccupancyWordSectors
 open scoped BigOperators ComplexOrder
-
 variable {A K : Type*} [Fintype A] [Fintype K] [DecidableEq A]
-
 def scaledInitial (a : Multiset A) (x : Space K) : Space K :=
   (Real.sqrt (multiplicity a.card a : ℝ) : ℂ) • x
-
 def residualMemory (a : Multiset A) (blank : A) (U : Unitary (A × K))
     (x : Space K) (r : Multiset A) : Space K :=
   prefixMemory blank U (List.ofFn (representative (a - r) rfl)) (scaledInitial a x)
-
 variable (a : Multiset A) (blank : A) (U : Unitary (A × K)) (x f : Space K)
 variable (hout : ∀ (w : Fin a.card → A) (k : K),
   circuit (fun _ => U) a.card 0 (initialized blank a.card x) (w, k) =
     sectorVector a.card a w * f k)
-
 include hout in
 theorem scaled_full_word (w : Fin a.card → A) :
     prefixMemory blank U (List.ofFn w) (scaledInitial a x) =
@@ -685,7 +570,6 @@ theorem scaled_full_word (w : Fin a.card → A) :
   rw [← circuit_fixed_coefficients blank U a.card 0 x w k, hout]
   by_cases h : occupation w = a <;>
     simp [sectorVector, sectorWords, h, hs]
-
 include hout in
 theorem scaled_full_list (w : List A) (hw : w.length = a.card) :
     prefixMemory blank U w (scaledInitial a x) =
@@ -697,7 +581,6 @@ theorem scaled_full_list (w : List A) (hw : w.length = a.card) :
     subst n
     exact scaled_full_word a blank U x f hout v
   simpa [occupation] using h w.length hw w.get
-
 include hout in
 theorem prefix_residual_output (r : Multiset A) (hr : r ≤ a)
     (u : List A) (hu : (u : Multiset A) = a - r)
@@ -719,7 +602,6 @@ theorem prefix_residual_output (r : Multiset A) (hr : r ≤ a)
       rw [h]
       exact Multiset.sub_add_cancel hr
   simp only [he]
-
 include hout in
 theorem residual_output (r : Multiset A) (hr : r ≤ a)
     (v : List A) (hv : v.length = r.card) :
@@ -727,7 +609,6 @@ theorem residual_output (r : Multiset A) (hr : r ≤ a)
       if (v : Multiset A) = r then f else 0 := by
   apply prefix_residual_output a blank U x f hout r hr _ _ v hv
   exact occupation_representative (a - r) rfl
-
 include hout in
 theorem residual_representative_independent (r : Multiset A) (hr : r ≤ a)
     (u : List A) (hu : (u : Multiset A) = a - r) :
@@ -736,12 +617,10 @@ theorem residual_representative_independent (r : Multiset A) (hr : r ≤ a)
   intro v
   rw [prefix_residual_output a blank U x f hout r hr u hu _ List.length_ofFn,
     residual_output a blank U x f hout r hr _ List.length_ofFn]
-
 include hout in
 theorem residual_zero : residualMemory a blank U x 0 = f := by
   have h := residual_output a blank U x f hout 0 zero_le [] rfl
   simpa using h
-
 include hout in
 theorem residual_letter_of_mem (r : Multiset A) (hr : r ≤ a)
     (i : A) (hi : i ∈ r) :
@@ -764,7 +643,6 @@ theorem residual_letter_of_mem (r : Multiset A) (hr : r ≤ a)
     · intro h
       rw [h, Multiset.cons_erase hi]
   simp only [he]
-
 include hout in
 theorem residual_letter_of_not_mem (r : Multiset A) (hr : r ≤ a)
     (hr0 : r ≠ 0) (i : A) (hi : i ∉ r) :
@@ -782,37 +660,26 @@ theorem residual_letter_of_not_mem (r : Multiset A) (hr : r ≤ a)
     rw [← h]
     simp
   simp [he]
-
 end Stationary56PhysicalNecessity
-
 namespace Stationary56PhysicalNecessity
-
-open D5.S3.Quantum.Entanglement.SequentialRegisterCircuit
-open D5.S3.Quantum.Entanglement.OccupancyWordSectors
-open D5.S1.Ledger.BoundedTimeSlice
+open D5.S3.Quantum.Entanglement.SequentialRegisterCircuit D5.S3.Quantum.Entanglement.OccupancyWordSectors D5.S1.Ledger.BoundedTimeSlice
 open scoped BigOperators ComplexOrder
-
 variable {A K : Type*} [Fintype A] [Fintype K] [DecidableEq A]
-
 def boxOccupation (a : Multiset A) (r : TailBox a.count) : Multiset A :=
   Finsupp.toMultiset (Finsupp.equivFunOnFinite.symm (fun i => (r i).val))
-
 @[simp] theorem box_occupation_count (a : Multiset A) (r : TailBox a.count) (i : A) :
     (boxOccupation a r).count i = (r i).val := by
   simp [boxOccupation]
-
 @[simp] theorem box_occupation_zero (a : Multiset A) : boxOccupation a 0 = 0 := by
   apply Multiset.ext.mpr
   intro i
   simp
-
 theorem box_occupation_le (a : Multiset A) (r : TailBox a.count) :
     boxOccupation a r ≤ a := by
   apply Multiset.le_iff_count.mpr
   intro i
   rw [box_occupation_count]
   exact Nat.le_of_lt_succ (r i).isLt
-
 theorem box_occupation_ne_zero (a : Multiset A) (r : TailBox a.count) (hr : r ≠ 0) :
     boxOccupation a r ≠ 0 := by
   intro h
@@ -821,11 +688,9 @@ theorem box_occupation_ne_zero (a : Multiset A) (r : TailBox a.count) (hr : r �
   apply Fin.ext
   have hc := congrArg (Multiset.count i) h
   simpa using hc
-
 theorem box_occupation_mem (a : Multiset A) (r : TailBox a.count) (i : A) :
     i ∈ boxOccupation a r ↔ 0 < (r i).val := by
   rw [← Multiset.count_pos, box_occupation_count]
-
 theorem box_occupation_lower (a : Multiset A) (r : TailBox a.count) (i : A) :
     boxOccupation a (Stationary56GramRank.lower a.count i r) = (boxOccupation a r).erase i := by
   apply Multiset.ext.mpr
@@ -835,33 +700,27 @@ theorem box_occupation_lower (a : Multiset A) (r : TailBox a.count) (i : A) :
   · subst j
     simp
   · simp [h, Multiset.count_erase_of_ne h]
-
 def occupationGram (a : Multiset A) (blank : A) (U : Unitary (A × K))
     (x : Space K) : Matrix (TailBox a.count) (TailBox a.count) ℂ :=
   Matrix.gram ℂ (fun r => residualMemory a blank U x (boxOccupation a r))
-
 theorem occupation_gram_psd (a : Multiset A) (blank : A) (U : Unitary (A × K))
     (x : Space K) : (occupationGram a blank U x).PosSemidef :=
   Matrix.posSemidef_gram ℂ _
-
 theorem occupation_gram_rank_le (a : Multiset A) (blank : A) (U : Unitary (A × K))
     (x : Space K) : (occupationGram a blank U x).rank ≤ Fintype.card K := by
   classical
   rw [occupationGram, Matrix.gram_eq_conjTranspose_mul (EuclideanSpace.basisFun K ℂ)]
   exact (Matrix.rank_mul_le_right _ _).trans (Matrix.rank_le_card_height _)
-
 variable (a : Multiset A) (blank : A) (U : Unitary (A × K)) (x f : Space K)
 variable (hout : ∀ (w : Fin a.card → A) (k : K),
   circuit (fun _ => U) a.card 0 (initialized blank a.card x) (w, k) =
     sectorVector a.card a w * f k)
-
 include hout in
 theorem occupation_gram_zero (hf : ‖f‖ = 1) : occupationGram a blank U x 0 0 = 1 := by
   simp only [occupationGram, Matrix.gram_apply, box_occupation_zero,
     residual_zero a blank U x f hout]
   rw [inner_self_eq_norm_sq_to_K, hf]
   norm_num
-
 include hout in
 theorem occupation_gram_recurrence (r s : TailBox a.count) (hr : r ≠ 0) (hs : s ≠ 0) :
     occupationGram a blank U x r s = ∑ i,
@@ -889,17 +748,13 @@ theorem occupation_gram_recurrence (r s : TailBox a.count) (hr : r ≠ 0) (hs : 
       (box_occupation_le a r) (box_occupation_ne_zero a r hr) i
       (fun h => hri ((box_occupation_mem a r i).mp h))]
     simp [hri]
-
 theorem unit_memory_card_pos (y : Space K) (hy : ‖y‖ = 1) : 0 < Fintype.card K := by
   classical
   by_contra h
   have : IsEmpty K := Fintype.card_eq_zero_iff.mp (Nat.eq_zero_of_not_pos h)
   have hz : y = 0 := by ext k; exact isEmptyElim k
   simp [hz] at hy
-
 set_option maxHeartbeats 800000 in
--- The physical Gram proof combines finite-dimensional linear algebra with the
--- recursive residual and polynomial-rigidity arguments.
 theorem physical_stationary_memory_dimension_lower_bound
     (a : Multiset A) (blank : A) (U : Unitary (A × K))
     (x f : Space K) (hx : ‖x‖ = 1) (hf : ‖f‖ = 1)
@@ -926,13 +781,9 @@ theorem physical_stationary_memory_dimension_lower_bound
       subst q
       exact hu0
     exact hlow.trans (hupp _)
-
 end Stationary56PhysicalNecessity
 
-
 namespace D5.S3.Quantum.Entanglement.StationaryOccupationRankNullity
-
-/-- The stationary occupation preparation forces the product-minus-maximum memory bound. -/
 theorem stationary_memory_dimension_lower_bound
     {A K : Type*} [Fintype A] [DecidableEq A] [Fintype K]
     (a : Multiset A) (blank : A)
@@ -946,5 +797,4 @@ theorem stationary_memory_dimension_lower_bound
     (∏ i, (a.count i + 1)) - Finset.univ.sup a.count ≤ Fintype.card K := by
   exact Stationary56PhysicalNecessity.physical_stationary_memory_dimension_lower_bound
     a blank U x f hx hf hout
-
 end D5.S3.Quantum.Entanglement.StationaryOccupationRankNullity
