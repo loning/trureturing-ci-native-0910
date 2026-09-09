@@ -1,5 +1,5 @@
 ---
-bibkey: a392714probe20260910
+bibkey: codex2026a392714probe
 authors: Codex implementation worker
 year: 2026
 title: A392714 parity imbalance — bounded involution probe
@@ -328,3 +328,16 @@ Path(__file__).with_name('probe-results.json').write_text(json.dumps(results,ens
 caller 的四项数值已由本席独立算法复核；n=5 亦仅为有限探针，未推进未知范围。
 本席单点自查与 Lean kernel 核验不冒称独立/异模型评审。
 一般奇偶差仍未证；本报告不是 published 或问题已解决的证据。
+
+## 交付门收据
+
+`make lean-report` EXIT=0，58.90 秒，delta changed=0 / added=1 / recheck=1。
+计量口径分列：time 的 maximum resident set size=3922231296 bytes，
+report-supervisor 的 rss_peak_kb=4843216；二者不混作同一峰值。
+该步骤前报告与已编译源码已提交并推送至 c8828a5812。
+首次 `make emit` 被 invalid-library-note 拒绝：bibkey 不满足
+`^[a-z]+[0-9]{4}[a-z][a-z0-9]*$`。已按既有格式改名为 codex2026a392714probe，
+未改判官。最终 `make emit` EXIT=0，emitted: 0 changed blueprint(s)。
+无 OpenProblemResolutionClaim，故 ledger-align --add 不适用。
+提交前与当次 origin/dev=c2f1ec82d0c22eeb0712d495fbe230465954f196
+作 git merge-tree，EXIT=0，无冲突。
