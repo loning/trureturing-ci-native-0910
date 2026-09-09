@@ -92,6 +92,24 @@ for lo, hi in zip((5040, 10000, 20000, 40000, 80000),
                     "maximizer": maximal[0],
                     "rhs_lower_approx": float(rhs_bounds(lo)[0])})
 
+nonvacuity = []
+for exponents in ((5, 2, 1, 1), (4, 2, 1, 1)):
+    n = prod(p ** e for p, e in zip((2, 3, 5, 7), exponents))
+    sigma = prod((p ** (e + 1) - 1) // (p - 1)
+                 for p, e in zip((2, 3, 5, 7), exponents))
+    lower, upper = rhs_bounds(n)
+    scale = 10 ** 8
+    outer_lower = Q((lower * scale).__floor__(), scale)
+    outer_upper = Q((upper * scale).__ceil__(), scale)
+    nonvacuity.append({
+        "n": n, "exponents": exponents, "sigma": sigma,
+        "ratio": str(Q(sigma, n)),
+        "rhs_rational_enclosure": [str(outer_lower), str(outer_upper)],
+        "hypothesis_holds": n > 5040,
+        "conclusion_certified_true": Q(sigma, n) < outer_lower,
+        "conclusion_certified_false": outer_upper < Q(sigma, n)
+    })
+
 print(json.dumps({
     "method": "Fraction arithmetic; atanh log remainder, geometric exp tail",
     "threshold_strict_integer_enclosure": [threshold_lower, threshold_upper],
@@ -107,5 +125,6 @@ print(json.dumps({
                                   "n": minimum[1], "sigma": minimum[2],
                                   "exponents": minimum[3]},
     "windows": windows,
+    "nonvacuity": nonvacuity,
     "nonclaim": "Not a kernel proof; decimal fields are display only."
 }, indent=2))

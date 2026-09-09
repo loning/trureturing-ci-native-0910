@@ -149,6 +149,40 @@ equivalent to the Robin conclusion (no exp/log/gamma), and is consumed in all
 three finite branches. The general geometric estimate is not claimed as the
 escape witness. These are author assessments, not machine classification.
 
+## Report, Scribe and two-sided nonvacuity
+
+make lean-report exited 0. Report input address:
+sha256:a114c4f0ad995a4b56671ca81dde48afae05b615f262c7ed94b750533782d074.
+Raw report SHA-256:
+b6d8d996cfef7088928232d5170f0354d0a4f624b1c83f0e6788863b88885fea.
+The new source is bound by
+sha256:650a2ef0a93531eb21bff7133b8ab4587c02bc5e3ab4a2a46717ccebc2394a5d.
+The sole public included declaration has statement_id
+sha256:f22c3edbec1a3d227094dd2e2884f48ca1fd14c62a89fad16111d41fbfe5b15b
+and exactly the three standard axioms. The raw report also includes 15 private
+source declarations; inclusion in the identity report does not make them public.
+
+make emit exited 0 and generated the corresponding SevenSmooth.md from the
+Scribe definition. The only theorem node uses StatementSource.FromAuthor with
+a typed formula quantifying all four natural exponents and the strict bound.
+The generated document was read and matched to the Lean statement.
+
+The updated exact-rational experiment exited 0 and gives both nonvacuity sides:
+
+- Positive: n=10080=2^5*3^2*5*7, sigma=39312, sigma/n=39/10.
+  The Robin right side lies in
+  [395610237/100000000, 98902619/25000000], strictly above 39/10.
+- Outside the hypothesis: n=5040=2^4*3^2*5*7, sigma=19344,
+  sigma/n=403/105. The Robin right side lies in
+  [76337533/20000000, 76337579/20000000], strictly below 403/105.
+  This is not a counterexample to the theorem, since n>5040 fails.
+
+These brackets are outward-rounded rational enclosures, and all comparisons
+are exact. They are diagnostic evidence, not additional public finite theorems.
+The measured finite count remains 482; corrected five-window counts are
+71, 89, 103, 121, 98. Logs are attempt-1/lean-report.log, emit.log and
+measurement.json. git diff --check exited 0.
+
 ## Current nonclaims
 
 No claim of mathematical novelty, exhaustive library/web search, a Lean proof
