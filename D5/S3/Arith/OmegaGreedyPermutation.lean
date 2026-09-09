@@ -11,16 +11,21 @@ import Mathlib.Data.Nat.Prime.Infinite
 import Mathlib.Data.Nat.Squarefree
 import Mathlib.Data.Set.Finite.Lattice
 import Mathlib.Order.Lattice.Nat
-import Mathlib.Tactic
+import Mathlib.Tactic.NormNum
+import Mathlib.Tactic.NthRewrite
+import Mathlib.Tactic.Positivity
+import Mathlib.Tactic.Push
 
 open scoped ArithmeticFunction.omega
 namespace D5.S3.Arith.OmegaGreedyPermutation
 
+/-- Zero-based enumeration: `prime r` is the (r+1)-st prime. -/
 noncomputable def prime (r : ℕ) : ℕ := Nat.nth Nat.Prime r
 
 private theorem prime_prime (r : ℕ) : (prime r).Prime :=
   Nat.nth_mem_of_infinite Nat.infinite_setOfPred_prime r
 
+/-- Minimum of the positive multiples of q outside the finite used set. -/
 noncomputable def next (q : ℕ) (used : Finset ℕ) : ℕ :=
   sInf {y | 0 < y ∧ y ∉ used ∧ q ∣ y}
 
@@ -34,14 +39,18 @@ private theorem next_spec (q : ℕ) (used : Finset ℕ) (hq : 0 < q) :
   have := Nat.le_mul_of_pos_left (used.sup id + 1) hq
   omega
 
+/-- Tail state after the seeds 1 and 2, retaining exactly the finite used history. -/
 noncomputable def state : ℕ → ℕ × Finset ℕ
   | 0 => (2, {1, 2})
   | k + 1 =>
       let y := next (prime (ω (state k).1 - 1)) (state k).2
       (y, insert y (state k).2)
 
+/-- Tail terms, starting with b(0)=2. -/
 noncomputable def b (n : ℕ) : ℕ := (state n).1
+/-- Queue selected by the distinct-prime-factor count of the current tail term. -/
 noncomputable def q (n : ℕ) : ℕ := prime (ω (b n) - 1)
+/-- OEIS indices start at 1; the auxiliary index 0 is assigned 1. -/
 noncomputable def seq (n : ℕ) : ℕ := if n ≤ 1 then 1 else b (n - 2)
 
 private theorem step_spec (n : ℕ) :
@@ -188,5 +197,122 @@ private theorem two_queue_infinite : {n | q n = 2}.Infinite := by
   rw [hn] at hle
   omega
 
-#print axioms two_queue_infinite
+
+
+private theorem even_count_infinite (r : ℕ) :
+    {m | 0 < m ∧ 2 ∣ m ∧ ω m = r + 1}.Infinite := by
+  let S := (Finset.range (r + 1)).image prime
+  let P := ∏ p ∈ S, p
+  have hS : ∀ p ∈ S, p.Prime := by
+    intro p hp
+    obtain ⟨i, _, rfl⟩ := Finset.mem_image.mp hp
+    exact prime_prime _
+  have hP : 0 < P := Finset.prod_pos (fun p hp => (hS p hp).pos)
+  have htwo : 2 ∈ S := by
+    apply Finset.mem_image.mpr
+    exact ⟨0, by simp, Nat.nth_prime_zero_eq_two⟩
+  have hcard : S.card = r + 1 := by
+    rw [Finset.card_image_of_injective _ prime_injective, Finset.card_range]
+  let f := fun t : ℕ => 2 ^ (t + 1) * P
+  have hfi : Function.Injective f := by
+    intro i j he
+    have hpow : 2 ^ (i + 1) = 2 ^ (j + 1) := Nat.eq_of_mul_eq_mul_right hP he
+    have := Nat.pow_right_injective (by decide : 2 ≤ 2) hpow
+    omega
+  apply (Set.infinite_range_of_injective hfi).mono
+  rintro m ⟨t, rfl⟩
+  refine ⟨Nat.mul_pos (pow_pos (by decide) _) hP, ?_, ?_⟩
+  · exact dvd_mul_of_dvd_left (dvd_pow_self 2 (by omega : t + 1 ≠ 0)) P
+  · change ω (2 ^ (t + 1) * P) = r + 1
+    rw [omega_card, Nat.primeFactors_mul (by positivity) hP.ne',
+      Nat.primeFactors_pow_succ, Nat.Prime.primeFactors Nat.prime_two]
+    change ({2} ∪ (∏ p ∈ S, p).primeFactors).card = r + 1
+    rw [Nat.primeFactors_prod hS, Finset.singleton_union, Finset.insert_eq_of_mem htwo, hcard]
+
+private theorem all_queues_infinite (r : ℕ) : {n | q n = prime r}.Infinite := by
+  intro hf
+  have hfinite : (b '' {n | q n = prime r}).Finite := hf.image b
+  apply even_count_infinite r
+  apply hfinite.subset
+  intro m hm
+  obtain ⟨n, hn⟩ := queue_exhausts 2 Nat.prime_two two_queue_infinite hm.1 hm.2.1
+  refine ⟨n, ?_, hn⟩
+  change prime (ω (b n) - 1) = prime r
+  rw [hn, hm.2.2, Nat.add_sub_cancel]
+
+private theorem tail_surjective {m : ℕ} (hm : 2 ≤ m) : ∃ n, b n = m := by
+  obtain ⟨p, hp, hd⟩ := Nat.exists_prime_and_dvd (by omega : m ≠ 1)
+  have hr : prime (Nat.count Nat.Prime p) = p := Nat.nth_count hp
+  apply queue_exhausts p hp
+  · rw [← hr]
+    exact all_queues_infinite _
+  · omega
+  · exact hd
+
+private theorem seq_tail (n : ℕ) : seq (n + 2) = b n := by
+  simp [seq, show ¬ n + 2 ≤ 1 by omega]
+
+/-- A363956 starts with the prescribed two seeds. -/
+theorem sequence_initial : seq 1 = 1 ∧ seq 2 = 2 := by
+  norm_num [seq, b, state]
+
+/-- Every term at a positive index is positive. -/
+theorem sequence_positive (n : ℕ) : 0 < seq n := by
+  unfold seq
+  split
+  · omega
+  · exact lt_of_lt_of_le (by decide : 0 < 2) (b_ge_two _)
+
+/-- The least-unused recursion never repeats a positive-index term. -/
+theorem sequence_injective {i j : ℕ} (hi : 0 < i) (hj : 0 < j)
+    (he : seq i = seq j) : i = j := by
+  by_cases hi1 : i ≤ 1 <;> by_cases hj1 : j ≤ 1
+  · omega
+  · have hb := b_ge_two (j - 2)
+    simp only [seq, if_pos hi1, if_neg hj1] at he
+    omega
+  · have hb := b_ge_two (i - 2)
+    simp only [seq, if_pos hj1, if_neg hi1] at he
+    omega
+  · simp only [seq, if_neg hi1, if_neg hj1] at he
+    have := b_injective he
+    omega
+
+private theorem used_seq (k : ℕ) :
+    (state k).2 = (Finset.range (k + 2)).image (fun i => seq (i + 1)) := by
+  induction k with
+  | zero =>
+    simp [state, Finset.range_add_one, seq, b]
+    exact Finset.pair_comm 1 2
+  | succ k ih =>
+    change insert (b (k + 1)) (state k).2 = _
+    rw [ih, Finset.range_add_one (n := k + 2), Finset.image_insert]
+    rw [show k + 2 + 1 = (k + 1) + 2 by omega, seq_tail]
+
+/-- Every later term is exactly the smallest positive unused multiple of the
+prime indexed by the previous term's number of distinct prime factors. -/
+theorem sequence_greedy (k : ℕ) :
+    seq (k + 3) = sInf {y | 0 < y ∧
+      (∀ i ∈ Finset.range (k + 2), y ≠ seq (i + 1)) ∧
+      prime (ω (seq (k + 2)) - 1) ∣ y} := by
+  rw [show k + 3 = (k + 1) + 2 by omega, seq_tail, seq_tail]
+  change next (q k) (state k).2 = _
+  unfold next
+  rw [used_seq]
+  congr 1
+  ext y
+  simp [eq_comm, q]
+
+/-- Every positive integer occurs in OEIS A363956. -/
+theorem a363956_surjective (m : ℕ) (hm : 0 < m) : ∃ n, 0 < n ∧ seq n = m := by
+  by_cases h : m = 1
+  · exact ⟨1, by decide, h ▸ sequence_initial.1⟩
+  · obtain ⟨n, hn⟩ := tail_surjective (by omega : 2 ≤ m)
+    exact ⟨n + 2, by omega, (seq_tail n).trans hn⟩
+
+#print axioms sequence_initial
+#print axioms sequence_positive
+#print axioms sequence_injective
+#print axioms sequence_greedy
+#print axioms a363956_surjective
 end D5.S3.Arith.OmegaGreedyPermutation
