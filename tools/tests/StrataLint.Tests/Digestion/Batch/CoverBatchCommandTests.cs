@@ -563,8 +563,7 @@ public sealed partial class CoverBatchCommandTests
     {
         public VerifiedScribeEmissions Verify(RepositorySnapshot snapshot, LeanAxiomReport report,
             RawChangeSet? changes = null, FrozenStateCatalog? frozenState = null,
-            FrozenStatementIndex? frozenStatements = null,
-            BackfillInventoryDocument? inventory = null)
+            FrozenStatementIndex? frozenStatements = null)
         {
             callback();
             return VerifiedScribeEmissions.Empty;

@@ -158,12 +158,12 @@ internal static partial class CoverBatchCommand
         var error = new StringWriter();
         // Match scribe.sh's ordered producers while retaining the validated batch inputs.
         var exit = ScribeEmitter.Emit(documentsAssembly, root, false, output, error, session.Report,
-            validateRepository: true, session.FrozenState, session.FrozenStatements, session.Document);
+            validateRepository: true, session.FrozenState, session.FrozenStatements);
         if (exit == 0) exit = ValuesEmitter.Emit(root, false, output, error);
         if (exit == 0) exit = FileMapEmitter.Emit(root, false, output, error);
         if (exit != 0) return new(false, output.ToString(), error.ToString());
         var dag = DagRenderCommand.Run(root, new(ReadEmittedSnapshot(root, session), session.Lean, session.Report), false,
-            documentsAssembly, session.Document);
+            documentsAssembly);
         output.Write(dag.Output);
         error.Write(dag.Error);
         try

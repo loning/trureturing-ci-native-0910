@@ -210,14 +210,6 @@ public static class DocumentGraphExportProjectionExtensions
             string repositoryRoot,
             DeclarationCatalog catalog,
             IReadOnlySet<string> formalTruthRepoPaths)
-            => AssembleRepository(documentsAssembly, repositoryRoot, catalog, formalTruthRepoPaths, null);
-
-        internal static DocumentGraphExportProjection AssembleRepository(
-            Assembly documentsAssembly,
-            string repositoryRoot,
-            DeclarationCatalog catalog,
-            IReadOnlySet<string> formalTruthRepoPaths,
-            BackfillInventoryDocument? inventory)
         {
             ArgumentNullException.ThrowIfNull(documentsAssembly);
             ArgumentException.ThrowIfNullOrWhiteSpace(repositoryRoot);
@@ -225,7 +217,7 @@ public static class DocumentGraphExportProjectionExtensions
             ArgumentNullException.ThrowIfNull(formalTruthRepoPaths);
             var definitions = DocumentDefinitions.Discover(documentsAssembly, repositoryRoot);
             var documents = definitions.Select(definition => definition.Document.ResolveDeclarations(catalog)).ToArray();
-            var census = ReceiptFreeDocumentCatalog.Load(repositoryRoot, documents, inventory: inventory);
+            var census = ReceiptFreeDocumentCatalog.Load(repositoryRoot, documents);
             var graph = DocumentGraphAssembler.Assemble(
                 documents,
                 catalog);

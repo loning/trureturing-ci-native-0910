@@ -396,8 +396,7 @@ internal sealed class ProjectionReconciliationFailureVerifier : IScribeEmissionV
         LeanAxiomReport report,
         RawChangeSet? changes = null,
         FrozenStateCatalog? frozenState = null,
-        FrozenStatementIndex? frozenStatements = null,
-        BackfillInventoryDocument? inventory = null) =>
+        FrozenStatementIndex? frozenStatements = null) =>
         throw new InvalidDataException("projection fixture/live-report disagreement");
 }
 
@@ -421,8 +420,7 @@ internal sealed class ReportDerivedScribeEmissionVerifier(
         LeanAxiomReport report,
         RawChangeSet? changes = null,
         FrozenStateCatalog? frozenState = null,
-        FrozenStatementIndex? frozenStatements = null,
-        BackfillInventoryDocument? inventory = null)
+        FrozenStatementIndex? frozenStatements = null)
     {
         var declaration = Assert.Single(report.Files[RepoPath.CreateKnown(targetPath)].Declarations);
         var badge = AxiomBadge(declaration.Axioms);

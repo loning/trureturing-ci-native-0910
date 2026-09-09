@@ -60,8 +60,7 @@ internal static class DagRenderCommand
         string repositoryRoot,
         TruthContext truth,
         bool check,
-        Assembly documentsAssembly,
-        BackfillInventoryDocument? inventory = null)
+        Assembly documentsAssembly)
     {
         var output = new StringWriter();
         var error = new StringWriter();
@@ -83,8 +82,7 @@ internal static class DagRenderCommand
                 documentsAssembly,
                 repositoryRoot,
                 DeclarationCatalog.Create(truth.Report),
-                projection.Nodes.Select(static node => node.RepoPath.Value).ToHashSet(StringComparer.Ordinal),
-                inventory);
+                projection.Nodes.Select(static node => node.RepoPath.Value).ToHashSet(StringComparer.Ordinal));
         }
         catch (Exception exception) when (
             exception is InvalidOperationException

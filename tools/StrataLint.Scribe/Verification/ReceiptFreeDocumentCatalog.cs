@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using StrataLint.Engine;
 
 namespace StrataLint.Scribe;
 
@@ -12,8 +11,7 @@ internal static class ReceiptFreeDocumentCatalog
     internal static ReceiptFreeDocumentCensus Load(
         string repositoryRoot,
         IEnumerable<ScribeDocument> documents,
-        bool tolerateAbsentDocuments = false,
-        BackfillInventoryDocument? inventory = null)
+        bool tolerateAbsentDocuments = false)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(repositoryRoot);
         ArgumentNullException.ThrowIfNull(documents);
