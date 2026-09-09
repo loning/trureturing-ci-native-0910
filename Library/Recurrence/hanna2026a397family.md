@@ -165,8 +165,10 @@ The failed build is lean-inherited.log (EXIT=2); repaired build results,
 numeric rechecks and remaining gates are recorded below as they finish.
 
 Continuation checkpoint: lean-repaired.log ends in "Build completed
-successfully (12782 jobs)" and EXIT=0. The repaired module has no warnings,
-no sorryAx and standard-three-axiom closures for all eight printed theorems.
+successfully (12782 jobs)" and EXIT=0. The repaired module has no sorryAx
+and standard-three-axiom closures for all eight printed theorems. That run
+still reported one header line-length warning; the following documentation
+checkpoint shortens the digest again to remove it.
 Thus the predecessor's parity and modulus-eight results, and the rescued
 literal exponential equivalence, are now personally reverified.
 Own exact numeric.json: all four integer recurrences checked through n=200,
@@ -174,3 +176,63 @@ all four independent Fraction/logarithm reconstructions through n=30, all
 available source data (19,18,17,18 terms for q=1,3,5,2), and odd-parameter
 Catalan parity through m=99 agree, with zero failures. Finite checks are
 supporting evidence only; the Lean inductions prove the universal results.
+
+The continuation adds only two named specializations, parity_q5 and parity_q3,
+as companions for distinct external problem claims. They are not independent
+escape content: parity_q5 -> odd_parameter_parity and parity_q3 ->
+odd_parameter_parity (consumer -> prerequisite). The family_conjectures
+package consumes these endpoints, residues_q2 and the frozen q=1 endpoint.
+All three new dossiers have exactly the closed eight required sections.
+
+## Declaration audit against the frozen base
+
+`utility: none`: every exported theorem is an unbounded symbolic result or
+its defining/source companion. The eight arithmetic residue cases occur
+inside an induction step for arbitrary n; no finite positive instance,
+enumerator, checker or conditional numerical reduction is exported.
+The external questions were fixed in the triage and the local witnesses
+preregistered above. Module admission_basis=escape-witness.
+
+Direct frozen dependencies use prefix
+`D5/S1/Recurrence/Residue/ExponentialSquareWeightCatalanParity.`:
+
+| Alias | GID suffix | statement_id |
+| --- | --- | --- |
+| FD | d | sha256:5707f1375c75b009c3984c89314f4832fd6378b72a0ed5682dba3678d11bb905 |
+| FA | a | sha256:85ad7b1cadad232def0515c6587486ae2cb9ff91afcaab60da542f8455ce8620 |
+| FR | d_recurrence | sha256:4eb51322247dae82866b18de8698b2fa46b64891a2e8aa36503aaa20e35f4bf6 |
+| FP | hanna_conjecture | sha256:acdcefdae4fd84e8d43561a16d92b3cbaec20efc7c2548b4a5b97aacff9255a9 |
+
+These identities were read from the canonical Lean report; the frozen module
+state pin was already present on the inherited base. Mathlib declarations
+are library inputs, not frozen D5 dependencies. The following shape labels
+are semantic self-review, not a claim that the inspector classifies novelty.
+
+| Public theorem | proof_shape | escape_witness / companion use | direct frozen input |
+| --- | --- | --- | --- |
+| b_recurrence | bind-only | Guard/filter normalization; normalized_mod_two and normalized_mod_eight -> b_recurrence | none |
+| a_eq | bind-only | Positive defining branch; coeff_M_rat and residues_q2 -> a_eq | none |
+| log_derivative_identity | bind-only | Coefficient splitting and recurrence normalization; generating_unique and source_iff -> log_derivative_identity | none |
+| coeff_M_rat | bind-only | Rational cancellation; generating_unique and source_iff -> coeff_M_rat | none |
+| generating_unique | content | Strong induction cancels the unknown diagonal coefficient after matching all smaller convolution terms | none |
+| source_iff | content | generating_unique and linear_ode_unique, both active in the two implications | none |
+| normalized_mod_two | content | Strong induction transports both smaller factors of the normalized recurrence for every odd q | FD, FR |
+| odd_parameter_parity | content | normalized_mod_two is the active intermediate; then apply FP | FA, FP |
+| normalized_mod_eight | content | Arbitrary-index endpoint/interior separation and strong induction establish the new 6/2 invariant | none |
+| residues_q2 | content | normalized_mod_eight is the active intermediate before multiplication by n | none |
+| parity_q5 | content | Inherited active normalized_mod_two witness; direct proof specializes this module's odd_parameter_parity | none |
+| parity_q3 | content | Inherited active normalized_mod_two witness; direct proof specializes this module's odd_parameter_parity | none |
+| family_conjectures | content | Active normalized_mod_two and normalized_mod_eight via its components; direct proof only packages endpoints | FA, FP |
+
+The content rows use admission_basis=escape-witness. The bind-only rows
+have no standalone admission; their directed companion uses are the stated
+obligations. The two endpoint specializations and family package do not
+constitute further independent escapes. The four public definitions b, a,
+M and exponent introduce the exact coefficients/source data consumed by
+these theorems; none is a separate mathematical resolution claim.
+
+Documentation checkpoint: lean-dossiers.log ends with Build completed
+successfully (12782 jobs), EXIT=0. This includes compilation of the Scribe
+definitions and the two named Lean endpoints. A missing parenthesis in the
+first Scribe draft was caught before Lean ran (lean-final.log, EXIT=2) and
+repaired. This checkpoint is committed and pushed before lean-report.

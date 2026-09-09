@@ -4,7 +4,7 @@
    mirror-E: none(waiver:unbounded-symbolic-proof)
    anchors: []
    utility: none
-   digest: Parameter congruence transports parity; endpoint separation gives residues modulo eight. -/
+   digest: Odd parameters transport parity; endpoint separation gives residues modulo eight. -/
 
 import D5.S1.Recurrence.Residue.ExponentialSquareWeightCatalanParity
 import Mathlib.Algebra.BigOperators.Intervals
@@ -392,6 +392,14 @@ theorem residues_q2 (n : ℕ) (hn : 2 ≤ n) :
   change a 2 n % 8 = _ % 8 at hmod
   split_ifs at hmod ⊢ <;> norm_num at hmod ⊢ <;> exact hmod
 
+/-- The A397345 parity endpoint, specialized from the odd-parameter theorem. -/
+theorem parity_q5 (n : ℕ) : Odd (a 5 n) ↔ ∃ k : ℕ, n + 1 = 2 ^ k :=
+  odd_parameter_parity 5 ⟨2, rfl⟩ n
+
+/-- The A397348 parity endpoint, specialized from the odd-parameter theorem. -/
+theorem parity_q3 (n : ℕ) : Odd (a 3 n) ↔ ∃ k : ℕ, n + 1 = 2 ^ k :=
+  odd_parameter_parity 3 ⟨1, rfl⟩ n
+
 /-- The four dispatched conjectures, reusing the frozen q=1 sequence directly. -/
 theorem family_conjectures :
     (∀ n : ℕ, Odd (a 5 n) ↔ ∃ k : ℕ, n + 1 = 2 ^ k) ∧
@@ -400,7 +408,7 @@ theorem family_conjectures :
       ∃ k : ℕ, n + 1 = 2 ^ k) ∧
     (∀ n : ℕ, 2 ≤ n →
       a 2 n % 8 = if n % 4 = 2 then 4 else if n % 4 = 0 then 0 else 2) :=
-  ⟨odd_parameter_parity 5 ⟨2, rfl⟩, odd_parameter_parity 3 ⟨1, rfl⟩,
+  ⟨parity_q5, parity_q3,
     ExponentialSquareWeightCatalanParity.hanna_conjecture, residues_q2⟩
 
 #print axioms family_conjectures
