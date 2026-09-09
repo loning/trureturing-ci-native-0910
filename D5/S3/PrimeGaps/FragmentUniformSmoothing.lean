@@ -81,7 +81,7 @@ theorem uniformScaleMixture_apply_le
         _ = ENNReal.ofReal (zeta + s)⁻¹ * volume A := by
           rw [Real.volume_preimage_mul_right (ne_of_gt hscale),
             abs_of_pos (inv_pos.mpr hscale)]
-        _ ≤ _ := mul_le_mul_right' (ENNReal.ofReal_le_ofReal hinv) _
+        _ ≤ _ := mul_le_mul_left (ENNReal.ofReal_le_ofReal hinv) _
     _ = _ := by simp
 
 /-- Every half-open interval of length delta has probability at most

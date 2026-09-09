@@ -140,7 +140,8 @@ theorem fragment_mass_interval_of_perpetuity
     rw [show nu = Measure.map (fun c : FiniteMeasure ℝ => (c.mass : ℝ))
       (fragmentLaw zeta) from rfl,
       Measure.map_apply measurable_fragment_mass_real
-        (measurableSet_le measurable_const measurable_id).compl]
+        (show MeasurableSet {s : ℝ | ¬ 0 ≤ s} from
+          (measurableSet_le measurable_const measurable_id).compl)]
     have hempty : (fun c : FiniteMeasure ℝ => (c.mass : ℝ)) ⁻¹'
         {s : ℝ | ¬ 0 ≤ s} = ∅ := by
       ext c
@@ -169,7 +170,7 @@ theorem fragment_mesh_window_of_perpetuity
         (⌊R / h⌋₊ : ℝ≥0∞) * ENNReal.ofReal (delta / zeta) := by
   refine (fragment_mesh_original_boundary_probability zeta epsilon delta h R
     hzeta hepsilon hdelta hh).trans ?_
-  apply add_le_add_left
+  apply add_le_add_right
   calc
     _ ≤ ∑ k ∈ Finset.Icc 1 ⌊R / h⌋₊, ENNReal.ofReal (delta / zeta) := by
       apply Finset.sum_le_sum
@@ -188,11 +189,13 @@ theorem fragment_total_mass_tail
     (Measure.measurable_coe MeasurableSet.univ).comp measurable_subtype_coe
   have hmean : (∫⁻ c, (c : Measure ℝ) Set.univ ∂fragmentLaw zeta) =
       ENNReal.ofReal zeta := by
-    simpa only [lintegral_const, one_mul, Real.volume_Ioc, sub_zero] using
+    simpa only [lintegral_const, one_mul, Measure.restrict_apply_univ,
+      Real.volume_Ioc, sub_zero] using
       lintegral_fragmentLaw zeta (fun _ => (1 : ℝ≥0∞)) measurable_const
   have hsets : {c : FiniteMeasure ℝ | R ≤ (c.mass : ℝ)} =
       {c : FiniteMeasure ℝ | ENNReal.ofReal R ≤ (c : Measure ℝ) Set.univ} := by
     ext c
+    change R ≤ (c.mass : ℝ) ↔ ENNReal.ofReal R ≤ (c : Measure ℝ) Set.univ
     rw [← FiniteMeasure.ennreal_mass]
     exact ENNReal.ofReal_le_coe.symm
   rw [hsets]
