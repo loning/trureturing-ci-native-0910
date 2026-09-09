@@ -73,3 +73,20 @@
 - canonical route EXIT=0，输出 GID、路径、S3 与 I 七行 skeleton 均匹配落点。
 - `Library/Arith` 创建前实数 48，不能再放；笔记改用已注册 Factorization 域的首个真实工件 `Library/Factorization/ratajczak2024a375007.md`。尚未提交过超容量位置。
 - generality=I 表示本条固定商余谓词及阈值的算术结果，不声称跨所有二次域；与无界量化及 utility=none 相容。
+
+## Canonical Lean report
+
+`make lean-report` EXIT=0，65.290 秒；delta `changed=0 added=5 removed=1 recheck=5`，为 donor 报告与本树的真实差量，不把全部 5 个说成本席新增。
+报告 SHA256 `127a7450cd5b35f6f093f1bb6dc0f7678a924bf36987f650c0f18c9c5add6845`。
+模块源码 SHA256 `2dae556b0fb3028ad667cc519229021e945e9d4d031abb099ceaabe6b1b5c2a6`。
+公开声明只有 P 与 a375007_prime；报告也把三个私有 helper 计入模块 statement 集，不将 private 错说成报告完全排除。
+
+| 声明 | statement_id | 公理 |
+| --- | --- | --- |
+| P | sha256:82d69984517207c0827ba27d7baef08df198e447d4e8b39a005afb85741d3d79 | [] |
+| a375007_prime | sha256:69d007e7c4e173245ac561d2e93a19708ff0ae41d32285958fff241e4f8302f5 | Classical.choice, Quot.sound, propext |
+| private unequal_factor_witness | sha256:450d58336ec1394e393c3594ca32f379b674c3bac4078a05b2ccf05dca08754a | Classical.choice, Quot.sound, propext |
+| private square_factor_witness | sha256:f35f1e7d82468655a90d62be9a6b516763121f688365e150286bd61dcd471a94 | Classical.choice, Quot.sound, propext |
+| private remainder_of_decomposition | sha256:2aa6f33b8bc1b8a8c700ae4e97dc08e1ff714a98f868229a1b30e87982bcaa45 | Quot.sound, propext |
+
+`make deposit` 的现役入口强制 ATOM_ID 并在冻结后 cover；本题无 atom，按用户明示改走它内部同一 canonical `deposit-header-check` 与 `ledger-align --add`，不传假 atom。protected base 钉为 `b1c34e4ffff0e67321c1ed9ec60b9eea741e239f`。
