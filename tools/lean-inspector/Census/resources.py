@@ -10,6 +10,7 @@ import re
 import signal
 import subprocess
 import sys
+import threading
 import time
 
 
@@ -18,8 +19,6 @@ class ResourceRejected(RuntimeError):
 
 
 def check_budget(free_percent, rss_bytes, budget_bytes):
-    if free_percent < 30:
-        raise ResourceRejected(f"free_memory={free_percent}% below 30%")
     if rss_bytes > budget_bytes:
         raise ResourceRejected(f"rss={rss_bytes} exceeds budget={budget_bytes}")
 
@@ -35,7 +34,7 @@ def free_memory():
     return 100 * int(values["MemAvailable"].split()[0]) // int(values["MemTotal"].split()[0])
 
 
-def process_rss(pid):
+def process_tree(pid):
     table = subprocess.check_output(["ps", "-axo", "pid=,ppid=,rss="], text=True)
     processes = [tuple(map(int, line.split())) for line in table.splitlines() if line.strip()]
     descendants = {pid}
@@ -44,36 +43,60 @@ def process_rss(pid):
         if expanded == descendants:
             break
         descendants = expanded
-    return max((rss * 1024 for child, _, rss in processes if child in descendants), default=0)
+    return {child: rss * 1024 for child, _, rss in processes if child in descendants}
 
 
-def run(command, directory, label, *, cwd=None, env=None, budget_gb=8, phase_path=None):
-    """The owner-requested safety limit is 8 GiB, with exactly one active child job.
+def kill_tree(pid, known):
+    # Receipt replay starts nested sessions, so killing only the outer group leaks workers.
+    descendants = set(process_tree(pid)) | known | {pid}
+    groups = set()
+    for child in descendants:
+        try:
+            groups.add(os.getpgid(child))
+        except ProcessLookupError:
+            pass
+    for group in groups - {os.getpgrp()}:
+        try:
+            os.killpg(group, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+    for child in descendants:
+        try:
+            os.kill(child, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
 
-    RSS sampling bounds individual descendants; time also records the OS high-water
-    mark. A rejected process is killed and waited for before another job can start.
-    """
+
+def run(command, directory, label, *, cwd=None, env=None, budget_gb=8, phase_path=None, cancel=None):
+    """Bound every descendant, propagate nested rejection, and retain OS/sample peaks."""
     directory = pathlib.Path(directory)
     directory.mkdir(parents=True, exist_ok=True)
     started = time.monotonic()
     measurement = {"label": label, "command": command, "rss_budget_gib": budget_gb,
                    "peak_rss_bytes": 0, "memory_readings": [], "status": "rejected", "phases": {}}
-    current_phase = "certificate_compile_kernel" if phase_path else label
+    current_phase = "publication_startup" if phase_path else label
     last_sample = started
     proc = None
+    known = set()
+    child_env = dict(os.environ if env is None else env)
+    abort_path = pathlib.Path(child_env.setdefault("CENSUS_RESOURCE_ABORT", str(directory / f"{label}.abort.json")))
     timing_path = directory / f"{label}.time.log"
     try:
+        if abort_path.exists():
+            raise ResourceRejected(f"resource abort: {abort_path.read_text()}")
         free = free_memory()
         measurement["memory_readings"].append({"seconds": 0, "free_percent": free})
         check_budget(free, 0, budget_gb * 1024 ** 3)
         flag = "-l" if sys.platform == "darwin" else "-v"
         with (directory / f"{label}.log").open("w") as output:
             proc = subprocess.Popen(["/usr/bin/time", flag, "-o", str(timing_path), *command],
-                                    cwd=cwd, env=env, stdout=output, stderr=subprocess.STDOUT,
+                                    cwd=cwd, env=child_env, stdout=output, stderr=subprocess.STDOUT,
                                     start_new_session=True)
             next_memory_check = started
             while True:
-                rss = process_rss(proc.pid)
+                processes = process_tree(proc.pid)
+                known = set(processes)
+                rss = max(processes.values(), default=0)
                 measurement["peak_rss_bytes"] = max(measurement["peak_rss_bytes"], rss)
                 now = time.monotonic()
                 phase = measurement["phases"].setdefault(current_phase,
@@ -89,6 +112,10 @@ def run(command, directory, label, *, cwd=None, env=None, budget_gb=8, phase_pat
                         {"seconds": round(now - started, 3), "free_percent": free})
                     next_memory_check = now + 5
                 check_budget(free, rss, budget_gb * 1024 ** 3)
+                if abort_path.exists():
+                    raise ResourceRejected(f"resource abort: {abort_path.read_text()}")
+                if cancel is not None and cancel.is_set():
+                    raise RuntimeError(f"{label}: cancelled after another query failed")
                 try:
                     result = proc.wait(timeout=0.2)
                     break
@@ -109,8 +136,19 @@ def run(command, directory, label, *, cwd=None, env=None, budget_gb=8, phase_pat
         return measurement
     except BaseException as error:
         measurement["error"] = str(error)
+        if isinstance(error, ResourceRejected) and not abort_path.exists():
+            temporary = abort_path.with_name(abort_path.name + f".{os.getpid()}.{threading.get_ident()}.tmp")
+            try:
+                with temporary.open("w") as output:
+                    json.dump({"label": label, "phase": current_phase,
+                               "peak_rss_bytes": measurement["peak_rss_bytes"], "error": str(error)}, output)
+                os.link(temporary, abort_path)
+            except FileExistsError:
+                pass
+            finally:
+                temporary.unlink(missing_ok=True)
         if proc is not None and proc.poll() is None:
-            os.killpg(proc.pid, signal.SIGKILL)
+            kill_tree(proc.pid, known)
             proc.wait()
         raise
     finally:

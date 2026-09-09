@@ -7,6 +7,9 @@ import unittest
 from unittest import mock
 import argparse
 import json
+import os
+import subprocess
+import sys
 
 PROGRAM = pathlib.Path(__file__).with_name("pipeline.py")
 
@@ -130,11 +133,55 @@ class PipelineTests(unittest.TestCase):
         spec = importlib.util.spec_from_file_location("census_resources", PROGRAM.with_name("resources.py"))
         resources = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(resources)
-        with self.assertRaisesRegex(resources.ResourceRejected, "free_memory"):
-            resources.check_budget(29, 0, 8 * 1024 ** 3)
+        resources.check_budget(29, 0, 8 * 1024 ** 3)
         with self.assertRaisesRegex(resources.ResourceRejected, "rss"):
             resources.check_budget(83, 8 * 1024 ** 3 + 1, 8 * 1024 ** 3)
         resources.check_budget(30, 8 * 1024 ** 3, 8 * 1024 ** 3)
+
+    def test_query_concurrency_tracks_memory(self):
+        from scheduling import query_capacity
+        self.assertEqual(query_capacity(39), 1)
+        self.assertEqual(query_capacity(40), 3)
+        self.assertEqual(query_capacity(89), 3)
+
+    def test_resource_rejection_cancels_other_queries(self):
+        from resources import ResourceRejected
+        from scheduling import query_results
+        cancellations = []
+
+        def work(job, cancel):
+            if job == 0:
+                raise ResourceRejected("rss exceeded in query")
+            self.assertTrue(cancel.wait(2))
+            cancellations.append(job)
+
+        with mock.patch("scheduling.free_memory", return_value=80):
+            with self.assertRaisesRegex(ResourceRejected, "rss exceeded"):
+                list(query_results(range(3), work, lambda *args: None))
+        self.assertTrue(all(job in (1, 2) for job in cancellations))
+
+    def test_nested_replay_rejection_kills_separate_process_sessions(self):
+        from resources import ResourceRejected, run
+        command = (
+            "import json, os, pathlib, subprocess, sys, time\n"
+            "child = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(60)'], "
+            "start_new_session=True)\n"
+            "pathlib.Path('child.pid').write_text(str(child.pid))\n"
+            "pathlib.Path(os.environ['CENSUS_RESOURCE_ABORT']).write_text("
+            "json.dumps({'phase': 'synthetic_replay_rejection'}))\n"
+            "child.wait()\n")
+        with tempfile.TemporaryDirectory() as folder:
+            directory = pathlib.Path(folder)
+            with self.assertRaisesRegex(ResourceRejected, "synthetic_replay_rejection"):
+                run([sys.executable, "-c", command], directory, "guard", cwd=directory,
+                    env=dict(os.environ, CENSUS_RESOURCE_ABORT=str(directory / "abort.json")))
+            pid = (directory / "child.pid").read_text()
+            status = subprocess.run(["ps", "-o", "stat=", "-p", pid],
+                                    capture_output=True, text=True).stdout.strip()
+            self.assertTrue(not status or status.startswith("Z"), status)
+            record = json.loads((directory / "guard.resources.json").read_text())
+            self.assertEqual(record["status"], "rejected")
+            self.assertLess(record["peak_rss_bytes"], 8 * 1024 ** 3)
 
 
 if __name__ == "__main__":

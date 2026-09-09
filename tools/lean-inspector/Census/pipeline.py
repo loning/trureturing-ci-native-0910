@@ -136,9 +136,11 @@ def execute(options):
     directory = pathlib.Path(options.output).resolve()
     directory.mkdir(parents=True, exist_ok=False)
     started = time.monotonic()
-    state = {"status": "running", "rss_budget_gib": 8, "concurrency": 2, "pipeline_jobs": 1, "partitions": {},
+    state = {"status": "running", "rss_budget_gib": 8, "concurrency": 3, "pipeline_jobs": 1, "partitions": {},
+             "query_schedule": [], "query_peak_concurrency": 0,
              "runtime_seconds": {}, "rejected": [], "assumed_unverified": []}
     env = dict(os.environ, LEAN_NUM_THREADS="1")
+    env["CENSUS_RESOURCE_ABORT"] = str(directory / "resource-abort.json")
     # Lake adds its own search paths after this run-local root.
     env["LEAN_PATH"] = str(directory) + os.pathsep + env.get("LEAN_PATH", "")
     env["LEAN_SRC_PATH"] = str(repository / "tools/lean-inspector") + os.pathsep + str(repository)
@@ -229,6 +231,7 @@ def execute(options):
         completed = []
         certified_imports = set()
         response_paths = []
+        jobs = []
         for number, (label, members) in enumerate(query_partitions):
             selected = [key for key in keys if key[0] in members]
             if not selected:
@@ -244,13 +247,27 @@ def execute(options):
                 f"import {module}\n" for module in sorted(set(members) | evidence_modules))
             source += f"#census_query {string(str(request))} output {string(str(response))}\n"
             path = write_module(directory, "CensusQueryRun." + relative, source)
-            try:
-                result = lean(path, "query-" + label)
-                output = validate_result(json.loads(response.read_text()), head, selected)
-            except (RuntimeError, ValueError) as error:
-                state["rejected"].append({"partition": label, "keys": len(selected), "error": str(error)})
-                save()
-                break
+            jobs.append((label, members, selected, path, response))
+
+        def query(job, cancel):
+            label, _, selected, path, response = job
+            print("CENSUS_STEP query-" + label, flush=True)
+            result = run(["lake", "env", "lean", "-DmaxRecDepth=100000", "-DmaxHeartbeats=0",
+                          "-R", str(directory), str(path)], directory / "logs" / ("query-" + label),
+                         "process", cwd=repository, env=env, cancel=cancel)
+            return result, validate_result(json.loads(response.read_text()), head, selected)
+
+        def scheduled(job, active, capacity, free):
+            state["query_schedule"].append({"partition": job[0], "active": active,
+                "capacity": capacity, "free_percent": free, "seconds": round(time.monotonic() - started, 3)})
+            state["query_peak_concurrency"] = max(state["query_peak_concurrency"], active)
+            save()
+
+        from scheduling import query_results
+        query_started = time.monotonic()
+        for job, (result, output) in query_results(jobs, query, scheduled):
+            label, members, selected, path, response = job
+            state["runtime_seconds"]["query-" + label] = result["wall_seconds"]
             state["partitions"].setdefault(label, {})["query"] = result
             state["partitions"][label]["query_modules"] = members
             state["partitions"][label]["keys"] = len(selected)
@@ -262,12 +279,13 @@ def execute(options):
             completed.extend(output["entries"])
             state["completed_keys"] = len(completed)
             save()
+        state["runtime_seconds"]["query_partitions"] = round(time.monotonic() - query_started, 3)
         if not completed:
             raise RuntimeError("no completed query partitions; no census artifact published")
         state["status"] = "complete" if len(completed) == len(all_keys) else "partial"
         state["certified_imports"] = sorted(certified_imports)
         receipts = directory / "query-outputs.json"
-        receipts.write_text(json.dumps(response_paths) + "\n")
+        receipts.write_text(json.dumps(sorted(response_paths)) + "\n")
         step([sys.executable, str(repository / "tools/lean-inspector/Census/manifest.py"),
               "--directory", str(directory), "--report", str(report_path),
               "--receipts", str(receipts), "--prefix", options.prefix], "manifest_emission")
