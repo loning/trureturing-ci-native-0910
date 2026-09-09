@@ -151,7 +151,24 @@ def execute(options):
         else:
             step(["git", "diff", "--exit-code", "HEAD", "--", "D5", "lean-toolchain",
                   "lake-manifest.json", "lakefile.toml", "Golden/Frozen/state", "tools/lean-inspector"], "pinned_inputs")
-            step(["make", "truth-export", f"OUT={directory / 'truth'}", f"LEAN_REPORT={options.lean_report}"],
+            raw_report = pathlib.Path(options.lean_report).resolve()
+            verifier = str(repository / "tools/scripts/report/lean-report-input.sh")
+            def verify_report(label):
+                step(["bash", verifier, "verify", "--repository", str(repository),
+                      "--report", str(raw_report)], label, build=True)
+            regenerated = False
+            try:
+                verify_report("report_provenance")
+            except RuntimeError:
+                # Only the canonical producer may repair missing/stale input
+                # attestations. Verify its result before truth-export consumes it.
+                step(["make", "lean-report"], "report_regeneration", build=True)
+                raw_report = repository / ".lake/build/stratalint/raw-lean-report.json"
+                verify_report("report_provenance_regenerated")
+                regenerated = True
+            state["report_provenance"] = {"verified": True, "regenerated": regenerated,
+                                          "report": str(raw_report)}
+            step(["make", "truth-export", f"OUT={directory / 'truth'}", f"LEAN_REPORT={raw_report}"],
                  "truth_export", build=True)
             report_path = exported_path((directory / "logs/truth_export.log").read_text())
         report, all_keys, report_modules = read_inventory(report_path)
