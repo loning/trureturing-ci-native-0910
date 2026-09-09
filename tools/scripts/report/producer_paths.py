@@ -1,10 +1,14 @@
 """Discover executable script and local Python dependencies from producer entrypoints."""
+import sys
+
+# Input discovery must not write generated files beside the sources it addresses.
+sys.dont_write_bytecode = True
+
 import ast
 import hashlib
 import json
 import pathlib
 import re
-import sys
 from dotnet_producer import project_inputs
 
 root = pathlib.Path(sys.argv[1]).resolve()
