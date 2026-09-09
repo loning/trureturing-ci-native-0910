@@ -91,12 +91,14 @@ public sealed class LeanReportProducerInputScriptTests
     {
         using var fixture = new ProducerInputFixture();
         if (prebuilt) fixture.UsePrebuiltEntrypoint();
+        var sources = fixture.ProducerSourceImage();
 
         var result = fixture.Run("address");
 
         Assert.True(result.ExitCode == 0, Encoding.UTF8.GetString(result.StandardError));
         Assert.Equal(fixture.ExpectedAddressBytes(), result.StandardOutput);
         Assert.Empty(result.StandardError);
+        Assert.Equal(sources, fixture.ProducerSourceImage());
     }
 
     private static string[] Lines(ProcessOutput output) =>

@@ -91,8 +91,14 @@ internal sealed class ProducerInputFixture : IDisposable
         "#!/bin/bash\ndotnet \"$ROOT/tools/StrataLint.Cli/bin/Release/net10.0/StrataLint.dll\" worktree with-cache-writer --\n");
 
     internal ProcessOutput Run(string command, string? workingDirectory = null) => TestProcessRunner.Run(
-        "/bin/bash", [Path.Combine(repository, InputHelperPath), command, "--repository", repository],
+        "/usr/bin/env", ["-u", "PYTHONDONTWRITEBYTECODE", "-u", "PYTHONPYCACHEPREFIX",
+            "/bin/bash", Path.Combine(repository, InputHelperPath), command, "--repository", repository],
         workingDirectory ?? repository, TestBudgets.WorkflowProcessHangGuard, 1024 * 1024);
+
+    internal string[] ProducerSourceImage() => Directory.EnumerateFiles(
+            Path.Combine(repository, "tools"), "*", SearchOption.AllDirectories)
+        .Select(path => Path.GetRelativePath(repository, path).Replace('\\', '/'))
+        .Order(StringComparer.Ordinal).Select(path => HashFile(path) + "  " + path).ToArray();
 
     internal string[] Address()
     {
