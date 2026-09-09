@@ -144,3 +144,50 @@ incorporated into the canonically routed D5 module with its semantic definitions
 Routing succeeded for D5/S3/ArithSums/DisjointStrictRefinement, generality G.
 The route parser also required string-valued empty fields and artifact=lean;
 those manifest-input errors were fixed before creating the module.
+
+### Full equivalence accepted
+
+Hot-cache `lake env lean D5/S3/ArithSums/DisjointStrictRefinement.lean` returned
+EXIT 0. `nontrivial_disjoint_refinement_iff` has exactly the axioms
+`[propext, Classical.choice, Quot.sound]`. No sorry or private axiom is used.
+The main file still awaits the mandatory project/report/emission/deposit gates.
+
+The total function `blocks : ℕ → Finset ℕ` is constrained only on S; nontriviality
+is also witnessed *inside S*. Changing an off-S value cannot witness it. Thus
+this existential represents exactly one block per member and does not pretend
+that total functions off S have a unique extension. All disjointness obligations
+explicitly quantify distinct members of S. The least changed set is nonempty
+by the supplied nontriviality witness, including when considering S = ∅.
+
+## Declaration accounting
+
+The only public theorem is
+`D5/S3/ArithSums/DisjointStrictRefinement.nontrivial_disjoint_refinement_iff`.
+
+- `proof_shape: content`.
+- `direct_frozen_dependencies: []` (there are no D5 imports, hence no frozen
+  GID/statement_id pairs; Mathlib is accounted separately above).
+- `escape_witness: least_changed_block_disjoint`, the private theorem saying
+  the least changed member's block avoids S.
+- `admission_basis: escape-witness`.
+- Section 3.2(i): the public proof explicitly calls this private theorem;
+  it is in the elaborated transitive constant dependency closure.
+- Section 3.2(ii): selection by min' alone does not establish disjointness;
+  positive-sum strict descent and contradiction with the smaller singleton
+  block supply the new combination. No searched frozen or upstream theorem
+  supplies this conclusion by projection or normalization.
+- Section 3.2(iii): the witness concerns an already selected block with a
+  leastness hypothesis, while the public conclusion is an existence iff.
+  It is neither definitionally equivalent to nor an alias of that conclusion.
+- Section 3.2(iv): its disjointness proof is the actual second conjunct of the
+  constructed right-hand witness. It survives reduction; removing it leaves
+  that required conjunct unproved, not a discarded or unrelated proof term.
+- The reverse implication constructs the function that replaces exactly the
+  selected singleton. Original positivity hS is used for every unchanged block.
+- `utility: none`: the public mathematical result is a general finite-set
+  theorem with no bound on member size or number of blocks; it is not an
+  enumeration, checker, numeric reduction, or certified finite instance.
+  Utility-specific fields: `not-applicable(kind=none)`.
+
+Definitions `IsDisjointStrictRefinement` and `NontrivialDisjointRefinement`
+only encode the semantic contract; they are not claimed as independent results.

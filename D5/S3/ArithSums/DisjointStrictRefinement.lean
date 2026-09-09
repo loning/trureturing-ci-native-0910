@@ -47,4 +47,68 @@ private lemma part_lt_of_nontrivial {T : Finset ℕ} {s t : ℕ}
   change (∑ x ∈ T, x) = s at hsum
   omega
 
+private theorem least_changed_block_disjoint {S : Finset ℕ} {blocks : ℕ → Finset ℕ}
+    (hf : IsDisjointStrictRefinement S blocks) {s : ℕ}
+    (hs : s ∈ S) (hchanged : blocks s ≠ {s})
+    (hleast : ∀ t ∈ S, t < s → blocks t = {t}) : Disjoint (blocks s) S := by
+  apply Finset.disjoint_left.mpr
+  intro t ht htS
+  have hts := part_lt_of_nontrivial (hf.1 s hs).1 (hf.1 s hs).2 hchanged ht
+  have hfixed := hleast t htS hts
+  exact Finset.disjoint_left.mp (hf.2 s hs t htS (Ne.symm (ne_of_lt hts))) ht
+    (by simp [hfixed])
+
+/-- The common pointwise criterion behind OEIS A384350 and A384318:
+a nontrivial disjoint family exists exactly when a member is a sum of distinct positive
+nonmembers. The empty set is allowed. -/
+theorem nontrivial_disjoint_refinement_iff (S : Finset ℕ) (hS : ∀ s ∈ S, 0 < s) :
+    NontrivialDisjointRefinement S ↔ ∃ s ∈ S, ∃ T : Finset ℕ,
+      (∀ t ∈ T, 0 < t) ∧ Disjoint T S ∧ T.sum id = s := by
+  classical
+  constructor
+  · rintro ⟨blocks, hf, s₀, hs₀, hc₀⟩
+    let changed := S.filter fun s => blocks s ≠ {s}
+    have hne : changed.Nonempty := ⟨s₀, Finset.mem_filter.mpr ⟨hs₀, hc₀⟩⟩
+    let s := changed.min' hne
+    have hs : s ∈ S ∧ blocks s ≠ {s} :=
+      Finset.mem_filter.mp (Finset.min'_mem changed hne)
+    refine ⟨s, hs.1, blocks s, (hf.1 s hs.1).1, ?_, (hf.1 s hs.1).2⟩
+    apply least_changed_block_disjoint hf hs.1 hs.2
+    intro t ht hts
+    by_contra hchange
+    have hmin : s ≤ t := Finset.min'_le changed t (Finset.mem_filter.mpr ⟨ht, hchange⟩)
+    omega
+  · rintro ⟨s, hs, T, hpos, hdisj, hsum⟩
+    let blocks : ℕ → Finset ℕ := fun r => if r = s then T else {r}
+    refine ⟨blocks, ⟨?_, ?_⟩, s, hs, ?_⟩
+    · intro r hr
+      by_cases hrs : r = s
+      · subst r
+        simpa [blocks] using And.intro hpos hsum
+      · simp only [blocks, if_neg hrs]
+        exact ⟨by simpa using hS r hr, by simp⟩
+    · intro r hr q hq hrq
+      apply Finset.disjoint_left.mpr
+      intro t htr htq
+      by_cases hrs : r = s
+      · subst r
+        have hqs : q ≠ s := Ne.symm hrq
+        have htT : t ∈ T := by simpa [blocks] using htr
+        have ht : t = q := by simpa [blocks, hqs] using htq
+        exact Finset.disjoint_left.mp hdisj htT (ht ▸ hq)
+      · have ht : t = r := by simpa [blocks, hrs] using htr
+        by_cases hqs : q = s
+        · subst q
+          have htT : t ∈ T := by simpa [blocks] using htq
+          exact Finset.disjoint_left.mp hdisj htT (ht ▸ hr)
+        · have ht' : t = q := by simpa [blocks, hqs] using htq
+          exact hrq (ht.symm.trans ht')
+    · intro heq
+      have hsT : s ∈ T := by
+        have hmem : s ∈ blocks s := heq ▸ Finset.mem_singleton_self s
+        simpa [blocks] using hmem
+      exact Finset.disjoint_left.mp hdisj hsT hs
+
+#print axioms nontrivial_disjoint_refinement_iff
+
 end D5.S3.ArithSums.DisjointStrictRefinement
