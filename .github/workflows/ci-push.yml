@@ -81,11 +81,11 @@ jobs:
           compression-level: 0
           retention-days: 7
       - id: snapshot
-        if: github.event_name == 'push' && github.ref == 'refs/heads/dev' && inputs.candidate_sha == ''
+        if: github.event_name == 'push' && github.ref == 'refs/heads/integration-ci-current-stability-0909-tests' && inputs.candidate_sha == ''
         env:
           STRATALINT_BUILD_SUCCEEDED: 'true'
         run: python3 tools/scripts/worktree/lean_actions.py snapshot --repository "$GITHUB_WORKSPACE" --layers judge
-      - if: github.event_name == 'push' && github.ref == 'refs/heads/dev' && inputs.candidate_sha == '' && steps.snapshot.outputs.judge_ready == 'true'
+      - if: github.event_name == 'push' && github.ref == 'refs/heads/integration-ci-current-stability-0909-tests' && inputs.candidate_sha == '' && steps.snapshot.outputs.judge_ready == 'true'
         continue-on-error: true
         uses: actions/cache/save@v4
         with:
