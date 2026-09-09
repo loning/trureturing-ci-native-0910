@@ -3187,6 +3187,8 @@ $J(C,A)=(C,\{e\in A:\exists d\in\Omega_C\ (e\prec d)\})$。该筛选不用事件
 
 本批由 `consensus-rnd:sshx` 的一个 `codex-cli implementation worker` 在工作树 `/Users/auricstudio/trureturing-csa-upgrade-pr3-0909`、分支 `lane/theory/csa-upgrade-pr3-0909` 实施，基线钉住 `4ac806a62d274a48550978b827a4bf546a8c898e`。输入为 caller 交付的收敛 brief（含 R1）、本仓标架与既有卷文，属于 `repo-prior-exposed`；本 implementation worker 未另派子席。
 
+本次 fix pass 3 以 merge 合入包含 dev `a1bcdde34d` 的实际 tip `692c7efed4`（合并提交 `5e12e9c731`；两版本卷字节相同），因 #6684 同尾追加而将 PR3 五节整体顺延为 §27–§31、定义 25、命题 42–47、反例 D6–D10，数学内容不变。
+
 按 **caller／brief 提供的席位记录**，思考席六席全部为 `nyxid-oracle`，其中五席为 codex 负载门超时后的协议回退。该席位说明不是本 worker 对宿主超时原因的独立测量，也不构成模型多样性声明。本 worker 亲跑附录、canonical ingest 与下列 git／字节核对；orchestrator 亲验结果未向本席提供，记“未测”。评审与 PR 生命周期由 caller 接续；本节不预报评审、CI 或合入结果。
 
 本批形态为 **ingest**：`contextual-spacetime-arithmetic` 源卷新增内容经 canonical writer 进入 atom CAS 与该 source 的 `residual-open` backfill。未新增 Lean、axiom、判官、schema 或生产引擎；本批没有 deposit／cover，不报告新增冻结或已吸收状态。Lean、CI、独立评审与物理实验均为“未测”，分别由形式化／CI／评审／物理模型工作承担。
@@ -3211,168 +3213,37 @@ ALL_FINITE_CHECKS_PASSED
 
 ### 31.4 ingest 与固定检查点的 git 读数
 
-下列 ingest 在追加 §31 之前实际运行，环境变量 `BASE=4ac806a62d274a48550978b827a4bf546a8c898e` 固定 canonical make 的比较基线。命令原文：
+本次 fix pass 3 在合并 dev、完成重编号并删除旧摄入清单后，实际运行下列命令（2026-09-10）。摄入基线固定为 `a1bcdde34d41cde0c9d77af53de7f2a5088e98a7`；执行前的已提交输入为 `3b08ee811c46e22b65518b43441e328dce5434c8`：
 
 ```sh
-make ingest SOURCE="contextual-spacetime-arithmetic docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md"
+BASE=a1bcdde34d41cde0c9d77af53de7f2a5088e98a7 make ingest SOURCE="contextual-spacetime-arithmetic docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md"
 ```
 
-退出码 **0**；新增 atom 文件 **63**、新增 backfill 文件 **63**，计数来自同次调用前后未跟踪路径集合之差，并与 writer stdout 对齐。stdout 原文：
+退出码 **0**，stderr 为空；调用前后新增 **93 个 atom、93 个 residual-open backfill**（186 个文件，路径集合实测、两侧 atom_id 成对）。stdout 原文：
 
 ```text
-INGEST residual_open_added=63 skipped_existing=134 coarse_fallbacks=0 open_genres=0 cas_objects_written=63 ledger_changed=true
+INGEST residual_open_added=93 skipped_existing=144 coarse_fallbacks=0 open_genres=0 cas_objects_written=93 ledger_changed=true
 ```
 
-本次产物已提交为 `d743044d654fd8db8f4179bc4604e10e9705d6b2`。以下读数指向这个 **§27–§30 与首次 ingest 均已提交、尚未追加 §31 的固定检查点**；本节自身及其消化产物的最终计数、提交、推送和 git 读数统一由同次 runner 的 `result.json` 记录。这样每份收据都有明确的树边界。
+新增 atom 已逐项检出 §27–§31、定义 25、命题 42–47、反例 D6–D10，以及附录的 D6／D7／D8／D10 注释。本次产物提交为 `52ad2ab16eeca9462f2b32c291b6f119bb386ea9`；下列 git 读数以该提交为固定检查点，范围截至本节改写之前：
 
-`git status` 原文（退出码 0；同次 `git status --porcelain=v1` 的 stdout 为空）：
+| 读数口径 | 实测值 |
+| --- | --- |
+| 摄入基线本卷行数 | 2552 |
+| 上述执行输入及摄入检查点本卷行数 | 3378 |
+| 本节更新后的本卷行数（下一次摄入的输入） | 3249 |
+| 相对实际合入 dev `692c7efed4e50c2262984cd4e0aa0e6776cdedc3` 的本卷增删行 | +826／−0 |
+| 同一 git 比较范围的新增 atom／backfill | 93／93 |
+| 检查点 `git status --porcelain=v1` | 退出 0，stdout 为空 |
+
+`git diff --shortstat 692c7efed4e50c2262984cd4e0aa0e6776cdedc3..52ad2ab16eeca9462f2b32c291b6f119bb386ea9` 实跑退出 0，stdout 原文：
 
 ```text
-On branch lane/theory/csa-upgrade-pr3-0909
-Your branch and 'origin/dev' have diverged,
-and have 5 and 22 different commits each, respectively.
-  (use "git pull" if you want to integrate the remote branch with yours)
-
-
-It took 2.83 seconds to enumerate untracked files.
-See 'git help status' for information on how to improve this.
-
-nothing to commit, working tree clean
+ 187 files changed, 4126 insertions(+)
 ```
 
-`git diff --stat 4ac806a62d` 原文（退出码 0）：
+摄入比较基线与 git 范围分别固定：fetch 时 dev 已从 `a1bcdde34d` 前进到 `692c7efed4`，两版本卷相同，后者包含的其他 dev 改动不计作 PR3 产物。旧摄入删除严格使用 brief 指定的 `4ac806a62d274a48550978b827a4bf546a8c898e..d2c713228e74cd2fbe20a31e2c400c8face7389d` 新增路径清单：95 对、190 个文件；#6684 的 35 对及更早产物不在删除集合。重摄入可按内容地址重新生成其中字节未变的 atom。
 
-```text
- ...69eb84ff8fa097791d610ae7416baf791b71a832bf3fef5 |    4 +
- ...08b70264d66292139a053a762604a0a0eebfd3d9a56f6eb | 1197 ++++++++++++++++++++
- ...ee9ebacdb1c8a21629097b784ba2e3f06b5dece4f7be532 |   13 +
- ...e8dc90fb810196214450c3465da0d68dfaa0b455899327d |    4 +
- ...d0537b7809cfe41c7fd31f81055ff044692c99496350db7 |    1 +
- ...ca257fd6c22e8d559f13612695f23459de76846059514a8 |   27 +
- ...3305794a1f35e430a8e40076d4a05b20246340f6efef370 |    4 +
- ...0290fa99b9bc0acfa7b662a70d340ca6da8e7b11d4d59ce |    1 +
- ...7e6ed834e3ce7ce81a909cf4bf650ec5cfae3abbaa18453 |    1 +
- ...7783f3c47f15cca2d48372ebb32f863fd1327e4b731a720 |    1 +
- ...11ebe8d5095c3fc4810b3f6777fd51eccf79d3b25e717c8 |    8 +
- ...f3d518ec77c92f13504c9bad5fce4b46754b7ba25065457 |   14 +
- ...7f27eb7e3ee7d154e73164bf905e692ca7a65bdda762741 |    1 +
- ...2c84cac09c354f619b45e6893aee2dc854aedbc34625ac5 |    1 +
- ...0553eb2cd236031bd181fba57e010885adca294351112c1 |    1 +
- ...097b7ebf50470251383398cb3e47baa8a696ff29fafa6e0 |    4 +
- ...d45414578e855d136f5aef0d5f2323d06aeb6dad5acec02 |   26 +
- ...f701abfb1ad8b4c68b5c5ffe8a951038fbacf9453469c9f |    6 +
- ...67c7c7f695d75e4d5b8e7c5011c6291ccb8fa8ed83a5d31 |    4 +
- ...2777a5853402960b2673c6807d78c48cd4a077a3a0954b7 |   15 +
- ...4353d48717acdecd0881820b68024bee0d909e700b09d1f |    1 +
- ...4ff91638bbbcaf2a2a93ebf3e139e957352cbdfc546f6ea |    1 +
- ...319fac91e799b05eb3f2bd28ee7786928fb7066d05f34f3 |    1 +
- ...b7b3194ed6cb6d8ea12ea820a41f32dcdbe672055b7e4df |    1 +
- ...2c8f4c007ce3016a9a6be222bae8afb86c69ce50183aea0 |   30 +
- ...7465e364304615fc0ef9aae7bf26165e3ac371cea20a839 |    1 +
- ...5f7c05a80a613ea40f5de43854aa3ebbb1b63e6dde53384 |   17 +
- ...bf855506464c17c1c875a684e8a6db04a24c4edfeff47b7 |    4 +
- ...8e235ef453d39fef40124389f3ecd22722b5093262f5fc4 |    1 +
- ...1250360fd2fc654bf82921b60080ec45df40bf371edbd1f |    1 +
- ...25d00c69530f2882e746a24c08953a95c7f814c05a295d9 |    6 +
- ...1ae971d3269f4357c88f957bc84cf5de517ed467a8af411 |    7 +
- ...ac0b3464b3c6ee17239c795641cb0428cafe42c83a5fc0b |   29 +
- ...a21d6aa1f4696629eebefd452d61a7c7c21856a83c4f09a |  631 +++++++++++
- ...5d62cfe796ec9461c905cd32d3be2a03e99ddd1037b7bb6 |    7 +
- ...df26b6980492fe5015416b6b200eea5c5d9cfa682c49636 |   19 +
- ...2d9953a470e4233e06f35bdd4ff2e03c7982de58bda417b |    7 +
- ...16f427ebb32c719a7e7ee52229d738bd6be245091465222 |    6 +
- ...f32efd0acdee015ce25bd47700889e80088b62e833be8aa |    1 +
- ...a0c39aae96660678c197078cf7434baed6fceca76760e7e |    2 +
- ...6beb6f1677b66b62819f651b09b0ab1594515ac04303f70 |   26 +
- ...c130d570b188c44b83fb66f4e9291ef2be9c2d23305e1b1 |   27 +
- ...518355cd5f141f3830214b55e10962a89cd34f3ad4a901b |    1 +
- ...a6f613621536d779f4a3ab8df7d33f0b7a993b7b9d1d198 |    2 +
- ...aeeae0933c3361c102dc25b08a90544e7a90ff101c4fe02 |    1 +
- ...c76619ebd9c1a1398bb95641a6499f128f4847859ca9ed6 |   10 +
- ...e95bd7eba6949409865cbdd9b41438900a23bae7ac38add |    1 +
- ...dd732adf299246d817299624237a58297ca0b1d666ed5d2 |    1 +
- ...8c762bd86fde330eeddc3b806493a1256d716cd985d8ef2 |   20 +
- ...1a768c2ae1a412b0b224e93d69f5cbc2b5094569213ccbb |    1 +
- ...54beebbe1e44dd756c5698e38a29af062c02eebf4af0a9e |    1 +
- ...672c1e615f5c26dfca804dde48cfaf21bcb2a7b93b78009 |    1 +
- ...02ad90c41aefaaa946a7f025617845d5e202e539fa95e9a |   10 +
- ...807442a3dd144bd76823ec384214c923ed639b65c63a9f0 |    2 +
- ...e3c3e25236f595dc4e8e0529f1b81958a9f8b66cf331213 |    2 +
- ...7541dbaf1e53bcaa0d7129d6f5d37110c028c991d5b22b2 |    1 +
- ...9ba576c7e57f57b5c31b33e08c2d7edac93043b2cfbe40e |    3 +
- ...7f4b774eca265b56eb168c8690ced50a37066e66949de80 |    2 +
- ...ed686bd00a37363e5d6c0e35c7f11fe6af3ba5302aab0dc |   13 +
- ...3d43156cf5f51274ff038a52f04b0ea3bf47460af0e5f03 |    1 +
- ...fac65f12926ecb4139156298189edb7e79798668d93bf36 |    6 +
- ...3e1403569e9e24c0ecddf6e8b835c5968a90a2212e9af34 |    1 +
- ...224dbc760558e12c052d0a517b97bf726a6bdd819dd8b8c |    4 +
- ...4ff8fa097791d610ae7416baf791b71a832bf3fef5.yaml |    7 +
- ...264d66292139a053a762604a0a0eebfd3d9a56f6eb.yaml |   12 +
- ...acdb1c8a21629097b784ba2e3f06b5dece4f7be532.yaml |    7 +
- ...0fb810196214450c3465da0d68dfaa0b455899327d.yaml |    7 +
- ...b7809cfe41c7fd31f81055ff044692c99496350db7.yaml |    7 +
- ...fd6c22e8d559f13612695f23459de76846059514a8.yaml |   10 +
- ...94a1f35e430a8e40076d4a05b20246340f6efef370.yaml |    7 +
- ...a99b9bc0acfa7b662a70d340ca6da8e7b11d4d59ce.yaml |    7 +
- ...834e3ce7ce81a909cf4bf650ec5cfae3abbaa18453.yaml |    7 +
- ...3c47f15cca2d48372ebb32f863fd1327e4b731a720.yaml |    7 +
- ...8d5095c3fc4810b3f6777fd51eccf79d3b25e717c8.yaml |    7 +
- ...8ec77c92f13504c9bad5fce4b46754b7ba25065457.yaml |   10 +
- ...b7e3ee7d154e73164bf905e692ca7a65bdda762741.yaml |    7 +
- ...ac09c354f619b45e6893aee2dc854aedbc34625ac5.yaml |    7 +
- ...b2cd236031bd181fba57e010885adca294351112c1.yaml |    7 +
- ...ebf50470251383398cb3e47baa8a696ff29fafa6e0.yaml |    7 +
- ...4578e855d136f5aef0d5f2323d06aeb6dad5acec02.yaml |    7 +
- ...bfb1ad8b4c68b5c5ffe8a951038fbacf9453469c9f.yaml |   10 +
- ...7f695d75e4d5b8e7c5011c6291ccb8fa8ed83a5d31.yaml |    7 +
- ...5853402960b2673c6807d78c48cd4a077a3a0954b7.yaml |   10 +
- ...48717acdecd0881820b68024bee0d909e700b09d1f.yaml |    7 +
- ...638bbbcaf2a2a93ebf3e139e957352cbdfc546f6ea.yaml |    7 +
- ...c91e799b05eb3f2bd28ee7786928fb7066d05f34f3.yaml |    7 +
- ...94ed6cb6d8ea12ea820a41f32dcdbe672055b7e4df.yaml |    7 +
- ...c007ce3016a9a6be222bae8afb86c69ce50183aea0.yaml |   11 +
- ...364304615fc0ef9aae7bf26165e3ac371cea20a839.yaml |    7 +
- ...5a80a613ea40f5de43854aa3ebbb1b63e6dde53384.yaml |    7 +
- ...506464c17c1c875a684e8a6db04a24c4edfeff47b7.yaml |    7 +
- ...ef453d39fef40124389f3ecd22722b5093262f5fc4.yaml |    7 +
- ...60fd2fc654bf82921b60080ec45df40bf371edbd1f.yaml |    7 +
- ...c69530f2882e746a24c08953a95c7f814c05a295d9.yaml |    7 +
- ...1d3269f4357c88f957bc84cf5de517ed467a8af411.yaml |   10 +
- ...464b3c6ee17239c795641cb0428cafe42c83a5fc0b.yaml |    7 +
- ...aa1f4696629eebefd452d61a7c7c21856a83c4f09a.yaml |    7 +
- ...fe796ec9461c905cd32d3be2a03e99ddd1037b7bb6.yaml |    7 +
- ...6980492fe5015416b6b200eea5c5d9cfa682c49636.yaml |    7 +
- ...3a470e4233e06f35bdd4ff2e03c7982de58bda417b.yaml |    7 +
- ...7ebb32c719a7e7ee52229d738bd6be245091465222.yaml |    7 +
- ...d0acdee015ce25bd47700889e80088b62e833be8aa.yaml |    7 +
- ...aae96660678c197078cf7434baed6fceca76760e7e.yaml |    7 +
- ...f1677b66b62819f651b09b0ab1594515ac04303f70.yaml |   11 +
- ...570b188c44b83fb66f4e9291ef2be9c2d23305e1b1.yaml |   11 +
- ...5cd5f141f3830214b55e10962a89cd34f3ad4a901b.yaml |    7 +
- ...3621536d779f4a3ab8df7d33f0b7a993b7b9d1d198.yaml |    7 +
- ...0933c3361c102dc25b08a90544e7a90ff101c4fe02.yaml |    7 +
- ...9ebd9c1a1398bb95641a6499f128f4847859ca9ed6.yaml |    7 +
- ...7eba6949409865cbdd9b41438900a23bae7ac38add.yaml |    7 +
- ...adf299246d817299624237a58297ca0b1d666ed5d2.yaml |    7 +
- ...bd86fde330eeddc3b806493a1256d716cd985d8ef2.yaml |    7 +
- ...c2ae1a412b0b224e93d69f5cbc2b5094569213ccbb.yaml |    7 +
- ...bbe1e44dd756c5698e38a29af062c02eebf4af0a9e.yaml |    7 +
- ...e615f5c26dfca804dde48cfaf21bcb2a7b93b78009.yaml |    7 +
- ...0c41aefaaa946a7f025617845d5e202e539fa95e9a.yaml |   12 +
- ...2a3dd144bd76823ec384214c923ed639b65c63a9f0.yaml |    7 +
- ...25236f595dc4e8e0529f1b81958a9f8b66cf331213.yaml |    7 +
- ...baf1e53bcaa0d7129d6f5d37110c028c991d5b22b2.yaml |    7 +
- ...6c7e57f57b5c31b33e08c2d7edac93043b2cfbe40e.yaml |    7 +
- ...74eca265b56eb168c8690ced50a37066e66949de80.yaml |    7 +
- ...bd00a37363e5d6c0e35c7f11fe6af3ba5302aab0dc.yaml |    7 +
- ...56cf5f51274ff038a52f04b0ea3bf47460af0e5f03.yaml |    7 +
- ...f12926ecb4139156298189edb7e79798668d93bf36.yaml |    7 +
- ...3569e9e24c0ecddf6e8b835c5968a90a2212e9af34.yaml |    7 +
- ...c760558e12c052d0a517b97bf726a6bdd819dd8b8c.yaml |    7 +
- .../theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md      |  592 ++++++++++
- 127 files changed, 3313 insertions(+)
-```
+合并的字节核对保留了附录 PR3 插入：该段为 314 行代码及一行前导空行。含此插入的原始前缀与 dev 全文直接 `cmp` 退出 **1**，差异从附录 PR3 插入处开始；只剔除此已知插入后的前缀与 dev 全文 `cmp` 退出 **0**、stdout 为空。dev 的 §24–§26 共 416 行、27967 字节原样在前，PR3 的 §27–§31 紧随其后；原始前缀完全相同与保留附录插入不能同时成立，不将前者报告为通过。
 
-检查点字节核对以基线全文为参照：去掉 R1 插入段后，既有 158,518 字节逐字节保留；Python 块计数为 1，文稿 diff 删除行数为 0。检查点改动路径仅含本卷、`Meta/Digestion/atoms` 与 `Meta/Digestion/backfill`。该读数来自本次 `scope-audit.json` 与检查点 git 输出；本节完成后的同口径检查及最终干净状态由 `result.json` 记录。
-
-**空白诊断的单独账目。** 追加本节后、再次 ingest 前，实际运行 `git diff --check 4ac806a62d` 退出 `2`：42 条诊断全在首次 ingest 生成的 42 个 atom 中，仅为行尾空白或末尾空行。实际运行 `git diff --check 4ac806a62d -- docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md Meta/Digestion/backfill` 退出 `0`、stdout 为空。诊断原文保存在 runner 工件 `whitespace-all.stdout`，计数与命令在 `whitespace.json`；canonical atom 字节按第 4.7 条保留，本批未手改 atom 或 writer。最终含本节消化产物的同口径诊断由 `result.json` 记录。
+本节改写后再以同一摄入基线运行 canonical writer，使本次产地与收据文字也进入消化账。该补充摄入及最终累计 atom／backfill 数、附录原始 stdout、git 差分目录集、提交、推送与干净状态，由本次 runner 的 `result.json` 和所引日志记录；本节上述 93／93 明确只指固定检查点，不冒充最终累计数。
