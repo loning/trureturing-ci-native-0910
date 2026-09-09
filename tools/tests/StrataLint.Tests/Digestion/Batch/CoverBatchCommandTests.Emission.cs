@@ -249,7 +249,7 @@ public sealed partial class CoverBatchCommandTests
     {
         WriteProblem(root);
         WriteScribeFixture(root, "Trureturing.lean", "-- synthetic root module\n");
-        LeanReportInputScriptTests.CopyBatchProducerInputs(root);
+        ProducerInputFixture.CopyBatchProducerInputs(root);
         WriteScribeFixture(root, ".gitignore", ".lake/\nGenerated/\ntools/Generated/scribe-emissions.v1.json\n");
         WriteScribeFixture(root, "Blueprint/D5/S0/Carrier/Probe.md", "old blueprint projection\n");
         WriteScribeFixture(root, CanonicalValuesWriter.RelativePath, "old values projection\n");

@@ -521,7 +521,7 @@ public sealed partial class CoverBatchCommandTests
                 reports.TryAdd(path.Value, new LeanFileReport([], []));
             var reportPath = RawLeanReportArtifact.DefaultPath(Root);
             RawLeanReportArtifact.WriteFile(reportPath, snapshot, LeanAxiomReport.Create(reports));
-            LeanReportInputScriptTests.AttestBatchReport(Root, reportPath);
+            ProducerInputFixture.AttestBatchReport(Root, reportPath);
             return reportPath;
         }
 
