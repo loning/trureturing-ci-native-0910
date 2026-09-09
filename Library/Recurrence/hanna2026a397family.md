@@ -284,3 +284,17 @@ generated Markdown was not edited by hand. Current ordinary directory counts
 are Lean Residue=8, Blueprint Residue=16 and Library/Recurrence=35, all below
 48. Each new Problems dossier has exactly eight sections. git diff --check
 passes. Remote admission, CI and MERGED state are still pending this checkpoint.
+
+The first PR run 34348619104 passed engineering and produced its Lean report,
+then failed the mathematical content check: exactly three
+incomplete-library-locator findings named this note and the A397346/A397348
+notes. Each lacked the canonical Verified locator section despite containing
+the already-retrieved source URL in frontmatter. Those sections are now added;
+no Lean, frozen state or theorem statement changes are involved.
+The same canonical scribe-content-checks.sh now exits 0 locally with
+DESCRIBE_STATUS red=0; the changed Blueprint's Markdown check also passes.
+The source-bound Lean report remains current because only Library prose changed.
+
+## Verified locator
+
+- URL: https://oeis.org/A397345
