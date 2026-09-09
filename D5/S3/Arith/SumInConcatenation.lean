@@ -8,7 +8,7 @@
 import Mathlib.Data.Nat.Digits.Lemmas
 import Mathlib.Data.List.Infix
 import Mathlib.Order.Lattice.Nat
-import Mathlib.Tactic
+import Mathlib.Tactic.NormNum
 
 namespace D5.S3.Arith.SumInConcatenation
 
@@ -140,10 +140,6 @@ private theorem next_spec (x : ℕ) (used : Finset ℕ) (hx : 0 < x) :
   intro hm
   have := Finset.le_sup (f := id) hm
   exact (not_le_of_gt hy) this
-
-private theorem next_le (x y : ℕ) (used : Finset ℕ)
-    (hy : 0 < y) (hu : y ∉ used) (hl : Legal x y) : next x used ≤ y :=
-  Nat.sInf_le ⟨hy, hu, hl⟩
 
 /-- Current term and all terms used so far; the initial state is (1,{1}). -/
 noncomputable def state : ℕ → ℕ × Finset ℕ
