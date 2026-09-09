@@ -4,7 +4,7 @@
    mirror-E: none(waiver:unbounded-symbolic-proof)
    anchors: []
    utility: none
-   digest: The least-unused multiple sequence indexed by distinct prime factor counts is a permutation. -/
+   digest: The omega-indexed greedy multiple sequence permutes the positive integers. -/
 import Mathlib.NumberTheory.ArithmeticFunction.Misc
 import Mathlib.Data.Nat.Prime.Nth
 import Mathlib.Data.Nat.Prime.Infinite
@@ -282,8 +282,7 @@ private theorem used_seq (k : ℕ) :
     (state k).2 = (Finset.range (k + 2)).image (fun i => seq (i + 1)) := by
   induction k with
   | zero =>
-    simp [state, Finset.range_add_one, seq, b]
-    exact Finset.pair_comm 1 2
+    simpa [state, Finset.range_add_one, seq, b] using Finset.pair_comm 1 2
   | succ k ih =>
     change insert (b (k + 1)) (state k).2 = _
     rw [ih, Finset.range_add_one (n := k + 2), Finset.image_insert]
