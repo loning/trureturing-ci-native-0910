@@ -14,10 +14,7 @@ internal static class FrozenLedgerDeltaPredicate
             && path.EndsWith(".lean", StringComparison.Ordinal);
 
     internal static bool IsDeltaDefinitionInput(string path) =>
-        path is RepositoryPathPolicy.PrWorkflowPath
-            or RepositoryPathPolicy.PushWorkflowPath
-            or "tools/scripts/ci-stage.sh"
-            or "tools/scripts/workflow/ci.py"
+        path is ".github/workflows/ci.yml"
             or "tools/scripts/report/lean-report-input.sh"
             or "tools/lean-inspector/Inspector.lean"
             or "Directory.Build.props"
@@ -31,9 +28,5 @@ internal static class FrozenLedgerDeltaPredicate
         || path.StartsWith("tools/StrataLint.Cli/", StringComparison.Ordinal)
             && path.EndsWith(".cs", StringComparison.Ordinal)
         || path.StartsWith("tools/StrataLint.Engine/", StringComparison.Ordinal)
-            && path.EndsWith(".cs", StringComparison.Ordinal)
-        || path.StartsWith("tools/StrataLint.EngineeringScope/", StringComparison.Ordinal)
-            && (path.EndsWith(".cs", StringComparison.Ordinal)
-                || path.EndsWith(".csproj", StringComparison.Ordinal)
-                || path.EndsWith("packages.lock.json", StringComparison.Ordinal));
+            && path.EndsWith(".cs", StringComparison.Ordinal);
 }

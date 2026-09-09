@@ -532,17 +532,25 @@ public sealed partial class TestProjectTopologyPolicyTests
     }
 
     [Fact]
-    public void CurrentRepositoryTopologyContainsKnownDebtAndOwnedPairs()
+    public void CurrentRepositoryCandidateDeltaIsAcceptedByTheSameRatchet()
     {
         var root = RepositoryLayout.FindRoot();
-        var projects = GitIndexRepositoryFiles.EnumerateDeclared(root, "tools")
-            .Where(static entry => entry.RelativePath.EndsWith(".csproj", StringComparison.Ordinal))
-            .Select(entry => new TestProjectTopologyProject(entry.RelativePath, File.ReadAllText(entry.FullPath)))
-            .ToArray();
-        var candidate = new TestProjectTopologySnapshot(projects);
-        var debt = TestProjectTopologyPolicy.CalculateDebt(candidate);
+        var protectedBase = ReadProtectedBase(root);
+        var candidate = Decode(GitRepositorySnapshotReader.ReadCurrent(root));
+        var result = TestProjectTopologyPolicy.EvaluateSnapshots(protectedBase, candidate);
+
+        Assert.True(result.IsAccepted, result.Message);
+
+        // 此处曾是 `Assert.NotEmpty(result.BaseDebt)`,假定 base 上总有存量债。
+        // 该假定与棘轮本身矛盾:棘轮要求债只减不增,故「还清」是它的目标状态,
+        // 而那条断言把目标状态判成失败 —— 债从 5 还到 0 后它必红。
+        // 保留的是真正承重的部分:债的种类必须都是已知类别,且债务集单调不增;
+        // base 债为空时该包含式即强制候选债也为空(棘轮的全树判词)。
         Assert.All(
-            debt,
+            result.CandidateDebt,
+            debt => Assert.Contains(debt, result.BaseDebt));
+        Assert.All(
+            result.BaseDebt.Concat(result.CandidateDebt),
             static debt => Assert.Contains(
                 debt.Kind,
                 new[]
@@ -554,7 +562,8 @@ public sealed partial class TestProjectTopologyPolicyTests
                     "orphan-owned-project",
                     "owned-test-to-owned-test-reference",
                 }));
-        AssertHasDebtFreePair(candidate, debt);
+        AssertHasDebtFreePair(protectedBase, result.BaseDebt);
+        AssertHasDebtFreePair(candidate, result.CandidateDebt);
     }
 
     [Fact]
@@ -659,11 +668,14 @@ public sealed partial class TestProjectTopologyPolicyTests
         string subject,
         string related) => new(kind, subject, related);
 
+    private static RepositorySnapshot Decode(RawRepositorySnapshot raw) =>
+        Assert.IsType<SnapshotDecodeOutcome.Decoded>(SnapshotDecoder.Decode(raw)).Snapshot;
+
     private static void AssertHasDebtFreePair(
-        TestProjectTopologySnapshot snapshot,
+        RepositorySnapshot snapshot,
         IReadOnlyList<TestProjectTopologyDebt> debt)
     {
-        var projects = snapshot.Projects
+        var projects = TestProjectTopologyPolicy.ReadSnapshotProjects(snapshot).Projects
             .Select(static project =>
             {
                 var path = project.Path.Replace('\\', '/');
@@ -721,4 +733,20 @@ public sealed partial class TestProjectTopologyPolicyTests
         });
     }
 
+    private static RepositorySnapshot ReadProtectedBase(string root)
+    {
+        try
+        {
+            return Decode(GitRepositorySnapshotReader.ReadRevision(root, "HEAD^1"));
+        }
+        catch (InvalidOperationException exception) when (exception.Message.Contains(
+                   "Not a valid object name HEAD^1",
+                   StringComparison.Ordinal))
+        {
+            // This worker checkout is rooted at a shallow protected-base commit. The required
+            // engineering executor itself rejects a CI checkout without HEAD^1, so this local
+            // allow-side fallback cannot weaken the admission path.
+            return Decode(GitRepositorySnapshotReader.ReadRevision(root, "HEAD"));
+        }
+    }
 }

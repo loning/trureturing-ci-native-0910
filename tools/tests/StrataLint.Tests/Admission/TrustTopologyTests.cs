@@ -45,7 +45,7 @@ public sealed class TrustTopologyTests
         "lean-toolchain",
         ".github/CODEOWNERS",
         RuleFixture.WorkflowPath,
-        RuleFixture.StageScriptPath,
+        RuleFixture.HarnessGatePath,
     };
 
     public static TheoryData<string> DataPaths => new()

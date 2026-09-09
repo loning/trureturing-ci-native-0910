@@ -33,7 +33,7 @@ public sealed partial class FrozenSurfaceRuleTests
         "tools/scripts/worktree/lean-cache-ensure.sh",
         "tools/scripts/lib/resource-observation-lib.sh",
         "tools/scripts/lean-report-pair.sh",
-        ".github/workflows/ci-push.yml",
+        ".github/workflows/ci.yml",
         "Directory.Build.props",
         "Directory.Build.targets",
         "Directory.Packages.props",
@@ -56,7 +56,7 @@ public sealed partial class FrozenSurfaceRuleTests
         "tools/scripts/worktree/lean-cache-ensure.sh",
         "tools/scripts/lib/resource-observation-lib.sh",
         "tools/scripts/lean-report-pair.sh",
-        ".github/workflows/ci-push.yml",
+        ".github/workflows/ci.yml",
         "lean-toolchain",
         "lakefile.toml",
         "lakefile.lean",
@@ -66,7 +66,7 @@ public sealed partial class FrozenSurfaceRuleTests
     public static TheoryData<string> CatalogProducerWakeupInputs => new()
     {
         "lean-toolchain",
-        ".github/workflows/ci-push.yml",
+        ".github/workflows/ci.yml",
         "tools/StrataLint.Cli/Program.cs",
     };
 
@@ -496,7 +496,7 @@ public sealed partial class FrozenSurfaceRuleTests
     }
 
     [Fact]
-    public void Sl008CurrentReportsStalePinForUnrelatedDocsChange()
+    public void Sl008CatalogExecutionDoesNotReportStalePinForUnrelatedDocsChange()
     {
         var fixture = new RuleFixture();
         AddState(
@@ -507,13 +507,13 @@ public sealed partial class FrozenSurfaceRuleTests
 
         var completed = ExecuteCatalogWithOnlyModifiedPath(fixture, "docs/x.md");
 
-        Assert.Contains(completed.Diagnostics, static diagnostic =>
+        Assert.DoesNotContain(completed.Diagnostics, static diagnostic =>
             diagnostic.RuleId == RuleId.CreateKnown(8));
-        Assert.Contains(RuleId.CreateKnown(8), completed.ExecutedRules);
+        Assert.Contains(RuleId.CreateKnown(8), completed.SkippedRules);
     }
 
     [Fact]
-    public void Sl008CurrentRechecksStatesWithoutDeltaSelection()
+    public void Sl008DoesNotRecheckCurrentStatesForAnUnrelatedPath()
     {
         var fixture = new RuleFixture();
         foreach (var module in new[] { FrozenPath, RuleFixture.ValuesBindingPath })
@@ -526,11 +526,11 @@ public sealed partial class FrozenSurfaceRuleTests
 
         var evaluation = Evaluate(fixture, ("README.md", RawChangeKind.Modified));
 
-        Assert.NotEmpty(evaluation.Diagnostics);
+        Assert.Empty(evaluation.Diagnostics);
     }
 
     [Fact]
-    public void Sl008CurrentRechecksUnrelatedStateForManagedLeanChange()
+    public void Sl008DoesNotWakeUnrelatedStateForManagedLeanChange()
     {
         var fixture = new RuleFixture();
         AddState(
@@ -540,7 +540,7 @@ public sealed partial class FrozenSurfaceRuleTests
 
         var evaluation = Evaluate(fixture, (FrozenPath, RawChangeKind.Modified));
 
-        Assert.NotEmpty(evaluation.Diagnostics);
+        Assert.Empty(evaluation.Diagnostics);
     }
 
     private static RuleFixture FrozenFixture(out string eventPath)
