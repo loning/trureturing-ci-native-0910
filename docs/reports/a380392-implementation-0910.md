@@ -95,3 +95,14 @@ n=0 不进入结论；禁止反向、重复或对角步，n=1 须符合单格路
 - 删除总括 Mathlib.Tactic，改为具体 FieldSimp/NormNum/Ring imports。
   精简暴露 Nat.cast_sum 未导入；查其源码后显式导入 Algebra.BigOperators.Ring.Finset。
 - 最终该文件增量检查 EXIT=0，无警告。主定理仍为 brief 原式。
+
+## 完整构建与叙事落点
+
+- make lean EXIT=0，9.806 秒，12820 jobs；新增模块 Built 1.6s。
+  macOS ARM donor 热树，非 CI 时长。完整日志在 runner attempt-1/make-lean.log。
+- canonical route EXIT=0，返回 D5/S3/Arith/Paths/MonotoneOnePaths.lean、S3、generality I，
+  与头部及镜像地址完全一致。I 表示固定二元方阵问题，不声称跨二次域通用性。
+- Library/Arith 已有 48 个直属文件；Library/Words 为 24，故 note 放 Words，新增后 25。
+  rascoe2025a380392 满足 bibkey 文法，Verified locator 正文逐字含 canonical URL。
+- Scribe 使用 StatementSource.FromLean 直接投影主定理，说明路径编码和双重计数。
+  未将治理判形词汇放入 Scribe。尚未 emit 与 Scribe 内容门，不冒称其已绿。
