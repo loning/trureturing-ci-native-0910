@@ -18,9 +18,7 @@ public sealed class RuleEngineCapacityDerivationTests
             context,
             static _ => throw new InvalidOperationException("unknown-debt derivation was called"));
 
-        Assert.Empty(findings);
-        var current = RuleCatalog.Default.EvaluateCurrentSingle(RuleId.CreateKnown(3), context.CurrentFacts);
-        var finding = Assert.Single(current.Diagnostics, item => item.Path == RuleFixture.RingPath);
+        var finding = Assert.Single(findings, item => item.Path == RuleFixture.RingPath);
         Assert.Equal("artifact exceeds 800 lines", finding.Message);
     }
 
@@ -116,7 +114,7 @@ public sealed class RuleEngineCapacityDerivationTests
         ScribeTestMap Derive(RepositorySnapshot snapshot) =>
             ReferenceEquals(snapshot, context.Current) ? currentMap : baselineMap;
         var store = new ScribeTestMapStore(storage, environment, Derive);
-        var cachedContext = DeltaRuleContext.Create(
+        var cachedContext = RuleEvaluationContext.Create(
             context.Current,
             context.Baseline,
             context.Policy,
@@ -168,7 +166,7 @@ public sealed class RuleEngineCapacityDerivationTests
             return Derive(snapshot);
         }
         var store = new ScribeTestMapStore(storage, environment, CountedDerive);
-        var cachedContext = DeltaRuleContext.Create(
+        var cachedContext = RuleEvaluationContext.Create(
             context.Current, context.Baseline, context.Policy, context.Lean, context.Changes,
             context.MetaEvaluation, context.VerifiedScribeEmissions, store);
         var expected = RepositoryRules.EvaluateCapacity(context, Derive);
@@ -275,7 +273,7 @@ public sealed class RuleEngineCapacityDerivationTests
     {
         var fixture = new RuleFixture();
         var context = fixture.Build(RawChangeSet.Create([RuleFixture.BlueprintSourcePath]));
-        var sameSnapshotContext = DeltaRuleContext.Create(
+        var sameSnapshotContext = RuleEvaluationContext.Create(
             context.Current,
             context.Current,
             context.Policy,

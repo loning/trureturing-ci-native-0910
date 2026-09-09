@@ -163,7 +163,7 @@ public sealed partial class LeanCacheEnsureCommandTests
         InitializeRepository(repository.Path);
         var target = AddWorktree(repository.Path, "pin-mismatched-missing-target");
         Directory.CreateDirectory(Path.Combine(target, ".lake"));
-        File.WriteAllText(Path.Combine(repository.Path, "lake-manifest.json"), LeanCacheFixtureFile.Manifest('f'));
+        File.WriteAllText(Path.Combine(repository.Path, "lean-toolchain"), "leanprover/lean4:v4.30.0\n");
         WriteCache(repository.Path, "wrong pin donor\n");
         _ = WriteProjectOlean(repository.Path, "DonorWarm");
         var cloner = new RecordingDirectoryCloner();
@@ -177,7 +177,7 @@ public sealed partial class LeanCacheEnsureCommandTests
         Assert.True(result.Success, result.Error);
         Assert.Empty(cloner.Invocations);
         Assert.True(File.Exists(Path.Combine(target, ".lake", "cache-get.marker")));
-        Assert.Contains("mathlib partition", result.Output, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("pin bytes", result.Output, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -418,7 +418,7 @@ public sealed partial class LeanCacheEnsureCommandTests
     }
 
     [Fact]
-    public void WrappedBuildPreservesFailedDonorClonefileReceipt()
+    public void FailedMissingDonorAttemptPreservesClonefileReceiptThroughDegradedReceipt()
     {
         using var repository = new TemporaryDirectory();
         using var sharedCache = new MathlibCacheFixture();
@@ -436,7 +436,8 @@ public sealed partial class LeanCacheEnsureCommandTests
             ["--path", fixture.Target, "--", "lake", "build"],
             new RecordingWorktreeProcessRunner { FailCopy = true, FailLake = true },
             cloner,
-            FileSystemLeanCacheStateProbe.Instance);
+            FileSystemLeanCacheStateProbe.Instance,
+            _ => "1");
 
         Assert.True(result.Success, result.Error);
         Assert.Single(cloner.Invocations);
@@ -446,7 +447,7 @@ public sealed partial class LeanCacheEnsureCommandTests
     }
 
     [Fact]
-    public void ExplicitEnsurePreservesFailedDonorClonefileReceipt()
+    public void FailedMissingDonorAttemptPreservesClonefileReceiptThroughFailureReceipt()
     {
         using var repository = new TemporaryDirectory();
         using var sharedCache = new MathlibCacheFixture();
@@ -467,10 +468,10 @@ public sealed partial class LeanCacheEnsureCommandTests
             removePartial: null,
             FileSystemLeanCacheStateProbe.Instance);
 
-        Assert.True(result.Success, result.Error);
+        Assert.False(result.Success);
         Assert.Single(cloner.Invocations);
-        using var receipt = ParseReceipt(result.Output);
-        Assert.Equal("degraded", receipt.RootElement.GetProperty("status").GetString());
+        using var receipt = ParseReceipt(result.Error);
+        Assert.Equal("failed", receipt.RootElement.GetProperty("status").GetString());
         AssertCrossDeviceCloneReceipt(receipt.RootElement);
     }
 

@@ -224,7 +224,7 @@ internal sealed class NoOpRule : IRepositoryRule
 {
     public bool AppliesTo(RepositoryFile artifact, RuleApplicabilityContext context) => true;
 
-    public ImmutableArray<RuleFinding> EvaluateCurrent(CurrentRuleContext context) =>
+    public ImmutableArray<RuleFinding> Evaluate(RuleEvaluationContext context) =>
         ImmutableArray<RuleFinding>.Empty;
 }
 
@@ -232,7 +232,7 @@ internal sealed class ThrowingRule : IRepositoryRule
 {
     public bool AppliesTo(RepositoryFile artifact, RuleApplicabilityContext context) => true;
 
-    public ImmutableArray<RuleFinding> EvaluateCurrent(CurrentRuleContext context) =>
+    public ImmutableArray<RuleFinding> Evaluate(RuleEvaluationContext context) =>
         throw new InvalidOperationException("injected rule failure");
 }
 

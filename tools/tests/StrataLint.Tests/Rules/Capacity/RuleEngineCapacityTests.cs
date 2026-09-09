@@ -394,7 +394,7 @@ public sealed class RuleEngineCapacityTests
     }
 
     [Fact]
-    public void Sl003CurrentBlocksUntouchedBucketBeyondRepositoryTolerance()
+    public void Sl003DoesNotBlockUntouchedBucketBeyondRepositoryTolerance()
     {
         var count = RepositoryRules.DirectoryToleranceLimit + 1;
         var fixture = OverfullBucket(baselineCount: count, currentCount: count);
@@ -402,7 +402,7 @@ public sealed class RuleEngineCapacityTests
             RuleId.CreateKnown(3),
             fixture.Build()).Diagnostics;
 
-        Assert.Contains(diagnostics, diagnostic =>
+        Assert.DoesNotContain(diagnostics, diagnostic =>
             diagnostic.Path == OverfullBucketPath
             && diagnostic.AdmissionEffect == AdmissionEffect.Block);
     }
@@ -655,8 +655,18 @@ public sealed class RuleEngineCapacityTests
             + $"{RepositoryRules.DirectoryToleranceLimit}; split per CLAUDE.md 8)",
             diagnostic.Message);
     }
+    // 2026-08-15 实测的连坐:dev 上 DigestionLedgerAligner.cs 因两个 PR 的**并集**达到 823 行
+    // (各自树内是 799 与 639,都没越线,各自 admit 都是对的)。此后每一个 PR 的准入都判红,
+    // 包括 #1890/#1891/#1896/#1897 这些从未碰过该文件的——全仓锁死约一小时。
+    //
+    // 阻断该落在把它推过线的那个候选身上,不该落在无辜候选身上。判据取自分叉点:本次改动
+    // 有没有让它变长。这与目录轴既有的做法同构(带内候选只有引入了分叉点上不存在的路径才阻断,
+    // 见 RepositoryRules.Structure.cs 的 DirectoryToleranceLimit 注释与 2026-08-13 判例)。
+    //
+    // 检测不降级:超线仍然出 finding,只是无辜者那条是 Observe;全仓检测由 push
+    // 侧的 capacity-audit 承担。
     [Fact]
-    public void Sl003CurrentBlocksAnAlreadyOversizeArtifact()
+    public void Sl003DoesNotBlockACandidateThatDidNotGrowAnAlreadyOversizeArtifact()
     {
         var fixture = new RuleFixture();
         var oversize = fixture.Files[RuleFixture.RingPath]
@@ -666,8 +676,8 @@ public sealed class RuleEngineCapacityTests
 
         var diagnostic = Assert.Single(
             RuleCatalog.Default.EvaluateSingle(RuleId.CreateKnown(3), fixture.Build()).Diagnostics);
-        Assert.Equal(AdmissionEffect.Block, diagnostic.AdmissionEffect);
-        Assert.Contains("exceeds 800 lines", diagnostic.Message, StringComparison.Ordinal);
+        Assert.Equal(AdmissionEffect.Observe, diagnostic.AdmissionEffect);
+        Assert.Contains("did not grow it", diagnostic.Message, StringComparison.Ordinal);
     }
 
     [Fact]

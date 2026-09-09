@@ -19,12 +19,17 @@ if ! git -C "$candidate_root" rev-parse --is-inside-work-tree >/dev/null 2>&1; t
   exit 2
 fi
 
+head_sha="$(git -C "$candidate_root" rev-parse HEAD)"
+base_sha="$(git -C "$candidate_root" rev-parse HEAD^1)"
+
 run_engineering_tests() {
   make \
     --no-print-directory \
     -C "$candidate_root/tools" \
     engineering-tests \
-    "REPOSITORY=$candidate_root"
+    "REPOSITORY=$candidate_root" \
+    "HEAD=$head_sha" \
+    "BASE=$base_sha"
 }
 
 observation_library="$candidate_root/tools/scripts/lib/resource-observation-lib.sh"
