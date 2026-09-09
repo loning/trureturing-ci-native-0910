@@ -78,9 +78,7 @@ def truthExportIdentity : Json := Json.mkObj [
 source_commit binds HEAD; declaration_name_key preserves Lean Name structure;
 statement_id is read verbatim. Only frozen nodes' theorem declarations are included.
 The caller pins the report bytes independently with expectedSha256. -/
-private def parseReportCore (bytes : String) : Except String FrozenReport := do
-  let actualSha256 := "sha256:" ++ Sha256.hex bytes.toUTF8
-  let json ← (Json.parse bytes).mapError (censusError "unknown" "report" "valid-json")
+def parseReportJson (json : Json) (actualSha256 : String) : Except String FrozenReport := do
   let expectedHead := (json.getObjValAs? String "source_commit").toOption.getD "unknown"
   for field in ["schema", "dialect", "producer"] do
     let expected ← truthExportIdentity.getObjValAs? String field
@@ -110,6 +108,10 @@ private def parseReportCore (bytes : String) : Except String FrozenReport := do
   let sorted := keys.qsort StatementKey.lt
   checkFrozenKeys head sorted
   return { headSha := head, reportSha256 := actualSha256, theorems := sorted }
+
+private def parseReportCore (bytes : String) : Except String FrozenReport := do
+  let json ← (Json.parse bytes).mapError (censusError "unknown" "report" "valid-json")
+  parseReportJson json ("sha256:" ++ Sha256.hex bytes.toUTF8)
 
 def parseReportData (bytes : String) : Except String FrozenReport :=
   (parseReportCore bytes).mapError fun error =>

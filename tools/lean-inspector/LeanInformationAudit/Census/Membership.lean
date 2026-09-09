@@ -8,6 +8,13 @@ private def field (value : Json) (key : String) : IO Json := IO.ofExcept (value.
 private def str (value : Json) (key : String) : IO String := IO.ofExcept (value.getObjValAs? String key)
 private def arr (value : Json) (key : String) : IO (Array Json) := IO.ofExcept (value.getObjValAs? (Array Json) key)
 
+private structure Candidate where
+  moduleName : String
+  key : String
+  mode : String
+  identity : String := ""
+  name : String := ""
+
 def graphClosure (graph : Std.HashMap String (Array String)) (roots : Array String) :
     Except String (Array String) := do
   let mut visited : Std.HashSet String := {}
@@ -95,7 +102,15 @@ def membership (stream request destination : String) : IO Unit := do
   let mut errors := #[]
   let mut validationImports : Std.HashSet String := {}
   let allNamed := named.toArray.map (·.2) |>.qsort (fun a b => a.compress < b.compress)
-  let allRegistrations := registrations.toArray.map (·.2)
+  -- Decode the small index once, before the repository-sized key loop.
+  let indexedNamed ← allNamed.mapM fun entry => do
+    let mode ← str entry "mode"
+    let identity ← if mode == "key" then str entry "identity" else pure ""
+    return ({ moduleName := ← str entry "module", key := (← field entry "key").compress,
+      mode, identity, name := (← field entry "name").compress } : Candidate)
+  let allRegistrations ← registrations.toArray.mapM fun (_, entry) => do
+    return ({ moduleName := ← str entry "module", key := (← field entry "key").compress,
+      mode := "name" } : Candidate)
   for key in keys do
     unless key.size == 3 do throw <| IO.userError "IE-C044 invalid request triple"
     let owner := key[0]!
@@ -103,7 +118,8 @@ def membership (stream request destination : String) : IO Unit := do
     let id := key[2]!
     let root ← IO.ofExcept <| assignment.getObjValAs? String owner
     let some scope := scopeSets[root]? | throw <| IO.userError "IE-C044 missing root scope"
-    let occurrences := owners.getD (nameJson name).compress {}
+    let nameText := (nameJson name).compress
+    let occurrences := owners.getD nameText {}
     let mut error : Option String := none
     if occurrences.size > 1 then
       error := some s!"IE-C035 DuplicateAnalysisDisposition component=ownership_collision modules={toJson (occurrences.toArray.map (·.1) |>.qsort (· < ·))}"
@@ -116,18 +132,17 @@ def membership (stream request destination : String) : IO Unit := do
       error := some "IE-C036 DispositionIdentityMismatch component=owning_module_membership"
     let mut hits := #[]
     for entry in allRegistrations do
-      if scope.contains (← str entry "module") && (← field entry "key").compress == (nameJson name).compress then
+      if scope.contains entry.moduleName && entry.key == nameText then
         hits := hits.push entry
-    for entry in allNamed do
-      unless scope.contains (← str entry "module") do continue
-      let mode ← str entry "mode"
+    for entry in indexedNamed do
+      unless scope.contains entry.moduleName do continue
+      let mode := entry.mode
       if mode == "support" then continue
       if mode == "unknown" then
         if error.isNone || error.get!.startsWith "IE-C034" then
-          error := some s!"IE-C036 DispositionIdentityMismatch component=unclassifiable_named_key name={(← field entry "name").compress}"
+          error := some s!"IE-C036 DispositionIdentityMismatch component=unclassifiable_named_key name={entry.name}"
       else if mode == "statement" ||
-          ((← field entry "key").compress == (nameJson name).compress &&
-            (mode != "key" || (← str entry "identity") == id)) then
+          (entry.key == nameText && (mode != "key" || entry.identity == id)) then
         -- Proposition equality requires isDefEq. Retain potential matches for
         -- assess; syntactic inequality is never used as a proof of absence.
         hits := hits.push entry
@@ -141,7 +156,7 @@ def membership (stream request destination : String) : IO Unit := do
       validationImports := validationImports.insert owner
       -- All in-scope evidence, including support and seals, is provided by the
       -- discovery modules in this root's definition. Peer payloads are omitted.
-      for entry in hits do validationImports := validationImports.insert (← str entry "module")
+      for entry in hits do validationImports := validationImports.insert entry.moduleName
   let result := Json.mkObj [("rows", Json.arr rows), ("candidate_keys", toJson candidates),
     ("errors", Json.arr errors), ("scopes", toJson scopes), ("named", toJson allNamed),
     ("assignment", assignment), ("evidence_modules", toJson evidenceModules),

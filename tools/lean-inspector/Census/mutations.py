@@ -31,7 +31,7 @@ def main():
          '  return env.getModuleIdxFor? declaration == some index',
          ["lake", "env", "lean", str(fixture)]),
         ("drop-scope-filter", membership, "streamOutOfScopeEvidence",
-         '      unless scope.contains (← str entry "module") do continue',
+         '      unless scope.contains entry.moduleName do continue',
          '      pure ()',
          [sys.executable, str(python_root / "negative_fixtures.py"), "--directory", str(options.fixtures), "--case", "out_of_scope"]),
         ("ignore-import-graph", streaming, "test_receipt_digest_includes_import_graph",

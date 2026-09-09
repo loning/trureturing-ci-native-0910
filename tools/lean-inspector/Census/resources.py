@@ -90,8 +90,7 @@ def run(command, directory, label, *, cwd=None, env=None, budget_gb=4, phase_pat
     try:
         free = free_memory()
         measurement["memory_readings"].append({"seconds": 0, "free_percent": free})
-        if budget_gb:
-            check_budget(free, 0, budget_gb * 1024 ** 3)
+        check_budget(free, 0, (budget_gb or 4) * 1024 ** 3)
         flag = "-l" if sys.platform == "darwin" else "-v"
         with (directory / f"{label}.log").open("w") as output:
             proc = subprocess.Popen(["/usr/bin/time", flag, "-o", str(timing_path), *command],

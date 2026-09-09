@@ -5,6 +5,19 @@ namespace LeanInformationAudit.CensusReceipt
 
 open Lean Meta DispositionCensus
 
+/-- Hash the exact bytes already read, through stdin, without reopening a path.
+Report hashing is run-local IO; the pure SHA implementation remains available
+to the certificate layer. Interpreting its rounds over a full export dominated
+the candidate pass, while the native digest preserves the same byte binding. -/
+def hashReportBytes (bytes : String) : IO String := do
+  let output ← IO.Process.output { cmd := "python3", args := #["-c",
+    "import hashlib,sys;print(hashlib.sha256(sys.stdin.buffer.read()).hexdigest())"] } (some bytes)
+  let hash := output.stdout.trimAscii.toString
+  unless output.exitCode == 0 && hash.length == 64 &&
+      hash.toList.all (fun c => c.isDigit || ('a' ≤ c && c ≤ 'f')) do
+    throw <| IO.userError "IE-C044 native report digest failed"
+  return "sha256:" ++ hash
+
 def readRequest (path : String) : MetaM (Json × FrozenReport) := do
   let input ← ofExcept <| Json.parse (← IO.FS.readFile path)
   let object ← ofExcept <| input.getObj?
@@ -12,8 +25,9 @@ def readRequest (path : String) : MetaM (Json × FrozenReport) := do
     throwError "census query: input requires exactly head, keys, report and report_sha256"
   let head ← ofExcept <| stringField input "head"
   let bytes ← IO.FS.readFile (← ofExcept <| stringField input "report")
-  let report ← ofExcept <| parseReport head (← ofExcept <| stringField input "report_sha256") bytes
   let json ← ofExcept <| Json.parse bytes
+  let report ← ofExcept <| parseReportJson json (← hashReportBytes bytes)
+  ofExcept <| checkReportBinding head (← ofExcept <| stringField input "report_sha256") report
   let mut owners : Std.HashMap String (String × Name) := {}
   for node in ← ofExcept <| json.getObjValAs? (Array Json) "nodes" do
     let path ← ofExcept <| stringField node "repo_path"

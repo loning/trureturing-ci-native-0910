@@ -37,6 +37,7 @@ def external_graph(directory):
     upstream or surplus project olean is opened or hashed by the census.
     """
     domain = read(directory / "domain.json")
+    domain_names = set(domain)
     repository = pathlib.Path(__file__).resolve().parents[3]
     pending = set()
     for line in (directory / "index.jsonl").open():
@@ -60,10 +61,10 @@ def external_graph(directory):
         if data["module"] != module:
             raise ValueError("IE-C044 mismatched compiler import metadata: " + module)
         imports = sorted(set(entry[0] for entry in data["directImports"]))
-        if set(imports) & set(domain):
+        if domain_names.intersection(imports):
             raise ValueError("IE-C044 upstream evidence boundary violated: " + module)
         result[module] = imports
-        pending.update(set(imports) - set(result))
+        pending.update(dependency for dependency in imports if dependency not in result)
     request = read(directory / "membership-request.json")
     request["external_graph"] = sorted(result.items())
     write(directory / "membership-request.json", request)
