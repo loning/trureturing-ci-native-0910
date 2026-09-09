@@ -1,0 +1,4 @@
+SHOW_ATOM_INVALID Repository file must be strict UTF-8: docs/reports/digestion/qd-family-triage-0909/b11-01.log.gz.
+make: *** [show-atom] Error 2
+
+EXIT=2

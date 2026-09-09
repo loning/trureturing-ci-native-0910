@@ -1,0 +1,42 @@
+COMMAND: ['make', 'show-atom', 'ATOM_ID=c0a72a217fb966246fd4a48a809795cdc539435d1e88d1a10d041a9bcd9ed98d']
+SHOW_ATOM atom_id=c0a72a217fb966246fd4a48a809795cdc539435d1e88d1a10d041a9bcd9ed98d source_id=quantum-rh source_path=docs/develop/theory/QUANTUM-RH.md atomizer=generic-v1
+HASH_RECORD raw_sha256=sha256:c0a72a217fb966246fd4a48a809795cdc539435d1e88d1a10d041a9bcd9ed98d normalized_sha256=sha256:c0a72a217fb966246fd4a48a809795cdc539435d1e88d1a10d041a9bcd9ed98d cas_ref=sha256:c0a72a217fb966246fd4a48a809795cdc539435d1e88d1a10d041a9bcd9ed98d source=ledger
+COVERAGE coverage_gids=[] source=coverage
+BEGIN_RAW_TEXT
+## 定理 B4：新增耦合总预算
+
+在定理 B3 的设置下：
+
+$$
+\boxed{
+\sum_{i=1}^{d-1}\eta_{d,i}
+=
+\frac{d-1}{d^2}
+\left(a_1^2-2a_2\right)
+=
+-\frac{d-1}{12d^2}\chi_4.
+}
+\tag{B18}
+$$
+
+END_RAW_TEXT
+BEGIN_NORMALIZED_TEXT
+## 定理 B4：新增耦合总预算
+
+在定理 B3 的设置下：
+
+$$
+\boxed{
+\sum_{i=1}^{d-1}\eta_{d,i}
+=
+\frac{d-1}{d^2}
+\left(a_1^2-2a_2\right)
+=
+-\frac{d-1}{12d^2}\chi_4.
+}
+\tag{B18}
+$$
+
+END_NORMALIZED_TEXT
+
+EXIT=0

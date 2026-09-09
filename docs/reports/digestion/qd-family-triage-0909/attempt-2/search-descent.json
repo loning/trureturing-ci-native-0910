@@ -1,0 +1,40 @@
+[
+  {
+    "command": [
+      "rg",
+      "-n",
+      "\\b(rootSet_derivative_subset_convexHull_rootSet|convex_halfSpace_re_ge|convex_halfSpace_re_gt|convex_halfSpace_im_le|convex_halfSpace_im_ge)\\b",
+      ".lake/packages/mathlib/Mathlib/Analysis/Complex/Polynomial/GaussLucas.lean",
+      ".lake/packages/mathlib/Mathlib/Analysis/Complex/Convex.lean"
+    ],
+    "exit": 0,
+    "matched_lines": 7,
+    "stdout": ".lake/packages/mathlib/Mathlib/Analysis/Complex/Polynomial/GaussLucas.lean:58:See also `rootSet_derivative_subset_convexHull_rootSet` below.\n.lake/packages/mathlib/Mathlib/Analysis/Complex/Polynomial/GaussLucas.lean:97:theorem rootSet_derivative_subset_convexHull_rootSet (h₀ : 0 < P.degree) :\n.lake/packages/mathlib/Mathlib/Analysis/Complex/Convex.lean:57:theorem convex_halfSpace_re_gt : Convex ℝ { c : ℂ | r < c.re } :=\n.lake/packages/mathlib/Mathlib/Analysis/Complex/Convex.lean:59:theorem convex_halfSpace_re_ge : Convex ℝ { c : ℂ | r ≤ c.re } :=\n.lake/packages/mathlib/Mathlib/Analysis/Complex/Convex.lean:63:theorem convex_halfSpace_im_le : Convex ℝ { c : ℂ | c.im ≤ r } :=\n.lake/packages/mathlib/Mathlib/Analysis/Complex/Convex.lean:67:theorem convex_halfSpace_im_ge : Convex ℝ { c : ℂ | r ≤ c.im } :=\n.lake/packages/mathlib/Mathlib/Analysis/Complex/Convex.lean:103:              ((convex_halfSpace_re_gt 0).isPathConnected ⟨1, by simp⟩) ⟨1 + .I, by simp⟩).union\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "rg",
+      "-n",
+      "\\b(antitone_nat_of_succ_le|find_spec|find_min)\\b",
+      ".lake/packages/mathlib/Mathlib/Order/Monotone/Basic.lean",
+      ".lake/packages/mathlib/Mathlib/Data/Nat/Find.lean"
+    ],
+    "exit": 0,
+    "matched_lines": 17,
+    "stdout": ".lake/packages/mathlib/Mathlib/Order/Monotone/Basic.lean:29:* `antitone_nat_of_succ_le`, `antitone_int_of_succ_le`: If `f : ℕ → α` or `f : ℤ → α` and\n.lake/packages/mathlib/Mathlib/Order/Monotone/Basic.lean:552:theorem antitone_nat_of_succ_le {f : ℕ → α} (hf : ∀ n, f (n + 1) ≤ f n) : Antitone f :=\n.lake/packages/mathlib/Mathlib/Data/Nat/Find.lean:68:* `Nat.find_spec` is the proof that `Nat.find hp` satisfies `p`.\n.lake/packages/mathlib/Mathlib/Data/Nat/Find.lean:69:* `Nat.find_min` is the proof that if `m < Nat.find hp` then `m` does not satisfy `p`.\n.lake/packages/mathlib/Mathlib/Data/Nat/Find.lean:70:* `Nat.find_min'` is the proof that if `m` does satisfy `p` then `Nat.find hp ≤ m`.\n.lake/packages/mathlib/Mathlib/Data/Nat/Find.lean:75:protected theorem find_spec : p (Nat.find H) :=\n.lake/packages/mathlib/Mathlib/Data/Nat/Find.lean:78:grind_pattern Nat.find_spec => Nat.find H\n.lake/packages/mathlib/Mathlib/Data/Nat/Find.lean:80:protected theorem find_min : ∀ {m : ℕ}, m < Nat.find H → ¬p m :=\n.lake/packages/mathlib/Mathlib/Data/Nat/Find.lean:83:protected theorem find_min' {m : ℕ} (h : p m) : Nat.find H ≤ m :=\n.lake/packages/mathlib/Mathlib/Data/Nat/Find.lean:84:  Nat.le_of_not_gt fun l => Nat.find_min H l h\n.lake/packages/mathlib/Mathlib/Data/Nat/Find.lean:88:  · grind [Nat.find_min]\n.lake/packages/mathlib/Mathlib/Data/Nat/Find.lean:90:    have := Nat.find_min' h hm\n.lake/packages/mathlib/Mathlib/Data/Nat/Find.lean:94:  ⟨fun h2 ↦ ⟨Nat.find h, h2, Nat.find_spec h⟩,\n.lake/packages/mathlib/Mathlib/Data/Nat/Find.lean:95:    fun ⟨_, hmn, hm⟩ ↦ Nat.lt_of_le_of_lt (Nat.find_min' h hm) hmn⟩\n.lake/packages/mathlib/Mathlib/Data/Nat/Find.lean:114:  Nat.find_min' _ (hpq _ (Nat.find_min' _ hx) (Nat.find_spec ⟨x, hx⟩))\n.lake/packages/mathlib/Mathlib/Data/Nat/Find.lean:143:  refine (find_eq_iff _).2 ⟨Nat.find_spec h₂, fun n hn ↦ ?_⟩\n.lake/packages/mathlib/Mathlib/Data/Nat/Find.lean:145:  exacts [h0, @Nat.find_min (fun n ↦ p (n + 1)) _ h₂ _ (succ_lt_succ_iff.1 hn)]\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "rg",
+      "-n",
+      "\\b(jensen_polynomial_obstruction|hRhToHyperbolic|hNonnegativeHyperbolicToRh)\\b",
+      "D5/S3/Zeros/Jensen/JensenPolynomialObstruction.lean"
+    ],
+    "exit": 0,
+    "matched_lines": 6,
+    "stdout": "47:theorem jensen_polynomial_obstruction\n50:    (hRhToHyperbolic :\n54:    (hNonnegativeHyperbolicToRh :\n65:  · exact hRhToHyperbolic hGamma\n80:        (hNonnegativeHyperbolicToRh hGamma hNonnegative hAllHyperbolic)\n82:#print axioms jensen_polynomial_obstruction\n",
+    "stderr": ""
+  }
+]

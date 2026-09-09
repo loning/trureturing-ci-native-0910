@@ -240,3 +240,11 @@ make -f Makefile -f /var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-r
 ```
 
 读 atom 的工具异常另记：三条首轮 `make show-atom` 均 EXIT=2，原文为 `SHOW_ATOM_INVALID Repository file must be strict UTF-8: docs/reports/digestion/qd-family-triage-0909/b11-01.log.gz.`，无 Lean 未闭合目标。临时把继承的二进制归档移出当前树重读，完成后原样恢复；本席新日志用 ASCII 无损归档，避免重复此触发。该异常不支持任何数学 no/content 判词。
+
+### Attempt 2 / 第二批检索与 atom 回声
+
+三次重读均 EXIT=0：[B3](qd-family-triage-0909/attempt-2/b3-atom-retry.txt)、[B4](qd-family-triage-0909/attempt-2/b4-atom-retry.txt)、[推论](qd-family-triage-0909/attempt-2/descent-atom-retry.txt)。继承的 gzip 已恢复原位。本次暂存失败 Python 胶水曾因 stdin 编码报 `SyntaxError`，尚未执行任何写入；已用 UTF-8 文件补丁与 ASCII 胶水完成，不作数学证据。早期对 `D5/S3/Zeros/JensenPolynomialObstruction.lean` 的不存在路径查询已改正为 `D5/S3/Zeros/Jensen/JensenPolynomialObstruction.lean`；错误路径的未命中不承重。
+
+[B3 检索](qd-family-triage-0909/attempt-2/search-b3.json) 进一步命中 `Matrix.IsHermitian.charpoly_eq`（谱分解）、`Matrix.PosSemidef.posDef_iff_det_ne_zero`（严格性）、`Lagrange.eval_interpolate_not_at_node`（有理分式）及 `Polynomial.Splits.eval_derivative_div_eval_of_ne_zero`（对数导数）。这些上游接口须经实际装配才能判断 B3；关键词零命中不构成缺失证明。
+
+[推论检索](qd-family-triage-0909/attempt-2/search-descent.json) 与 [新读取的冻结 Jensen 接口](qd-family-triage-0909/attempt-2/frozen-jensen-obstruction.json)：`jensen_polynomial_obstruction` 显式要求 `hRhToHyperbolic`、`hNonnegativeHyperbolicToRh`；其失败见证为 `∃ d n`，不是固定 `n=0`。因此不会以 `.2` 投影冒充 atom 最后一句的无条件源断言。零点/次数不足的负根运输采用 `P` 的负根 → `Q` 的**非负**根 → 导数非负根 → `P` 的负根；在反射引入零根时仍忠实，不增加 `natDegree=d` 前提。

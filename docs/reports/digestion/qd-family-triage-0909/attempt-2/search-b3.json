@@ -1,0 +1,78 @@
+[
+  {
+    "command": [
+      "rg",
+      "-n",
+      "\\b(det_fromBlocks|fromBlocks)",
+      ".lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/SchurComplement.lean"
+    ],
+    "exit": 0,
+    "matched_lines": 134,
+    "stdout": "23:* `Matrix.det_fromBlocks₁₁`, `Matrix.det_fromBlocks₂₂`: determinant of a block matrix in terms of\n50:theorem fromBlocks_eq_of_invertible₁₁ (A : Matrix m m α) (B : Matrix m n α) (C : Matrix l m α)\n52:    fromBlocks A B C D =\n53:      fromBlocks 1 0 (C * ⅟A) 1 * fromBlocks A 0 0 (D - C * ⅟A * B) *\n54:        fromBlocks 1 (⅟A * B) 0 1 := by\n55:  simp only [fromBlocks_multiply, Matrix.mul_zero, Matrix.zero_mul, add_zero, zero_add,\n61:theorem fromBlocks_eq_of_invertible₂₂ (A : Matrix l m α) (B : Matrix l n α) (C : Matrix n m α)\n63:    fromBlocks A B C D =\n64:      fromBlocks 1 (B * ⅟D) 0 1 * fromBlocks (A - B * ⅟D * C) 0 0 D *\n65:        fromBlocks 1 0 (⅟D * C) 1 :=\n69:      fromBlocks_submatrix_sum_swap_sum_swap] using fromBlocks_eq_of_invertible₁₁ D C B A\n78:def fromBlocksZero₂₁Invertible (A : Matrix m m α) (B : Matrix m n α) (D : Matrix n n α)\n79:    [Invertible A] [Invertible D] : Invertible (fromBlocks A B 0 D) :=\n80:  invertibleOfLeftInverse _ (fromBlocks (⅟A) (-(⅟A * B * ⅟D)) 0 (⅟D)) <| by\n81:    simp_rw [fromBlocks_multiply, Matrix.mul_zero, Matrix.zero_mul, zero_add, add_zero,\n83:      fromBlocks_one]\n87:def fromBlocksZero₁₂Invertible (A : Matrix m m α) (C : Matrix n m α) (D : Matrix n n α)\n88:    [Invertible A] [Invertible D] : Invertible (fromBlocks A 0 C D) :=\n90:      (fromBlocks (⅟A) 0 (-(⅟D * C * ⅟A))\n92:    simp_rw [fromBlocks_multiply, Matrix.mul_zero, Matrix.zero_mul, zero_add, add_zero,\n94:      fromBlocks_one]\n97:    [Invertible A] [Invertible D] [Invertible (fromBlocks A B 0 D)] :\n98:    ⅟(fromBlocks A B 0 D) = fromBlocks (⅟A) (-(⅟A * B * ⅟D)) 0 (⅟D) := by\n99:  let := fromBlocksZero₂₁Invertible A B D\n100:  convert! (rfl : ⅟(fromBlocks A B 0 D) = _)\n103:    [Invertible A] [Invertible D] [Invertible (fromBlocks A 0 C D)] :\n104:    ⅟(fromBlocks A 0 C D) = fromBlocks (⅟A) 0 (-(⅟D * C * ⅟A)) (⅟D) := by\n105:  let := fromBlocksZero₁₂Invertible A C D\n106:  convert! (rfl : ⅟(fromBlocks A 0 C D) = _)\n111:    [Invertible (fromBlocks A B 0 D)] : Invertible A × Invertible D where\n113:    invertibleOfLeftInverse _ (⅟(fromBlocks A B 0 D)).toBlocks₁₁ <| by\n114:      have := invOf_mul_self (fromBlocks A B 0 D)\n115:      rw [← fromBlocks_toBlocks (⅟(fromBlocks A B 0 D)), fromBlocks_multiply] at this\n116:      simpa only [Matrix.toBlocks_fromBlocks₁₁, Matrix.mul_zero, add_zero, ← fromBlocks_one] using\n119:    invertibleOfRightInverse _ (⅟(fromBlocks A B 0 D)).toBlocks₂₂ <| by\n120:      have := mul_invOf_self (fromBlocks A B 0 D)\n121:      rw [← fromBlocks_toBlocks (⅟(fromBlocks A B 0 D)), fromBlocks_multiply] at this\n122:      simpa only [Matrix.toBlocks_fromBlocks₂₂, Matrix.zero_mul, zero_add, ← fromBlocks_one] using\n128:    [Invertible (fromBlocks A 0 C D)] : Invertible A × Invertible D where\n130:    invertibleOfRightInverse _ (⅟(fromBlocks A 0 C D)).toBlocks₁₁ <| by\n131:      have := mul_invOf_self (fromBlocks A 0 C D)\n132:      rw [← fromBlocks_toBlocks (⅟(fromBlocks A 0 C D)), fromBlocks_multiply] at this\n134:      simpa only [Matrix.toBlocks_fromBlocks₁₁, Matrix.zero_mul, add_zero, ← fromBlocks_one] using\n137:    invertibleOfLeftInverse _ (⅟(fromBlocks A 0 C D)).toBlocks₂₂ <| by\n138:      have := invOf_mul_self (fromBlocks A 0 C D)\n139:      rw [← fromBlocks_toBlocks (⅟(fromBlocks A 0 C D)), fromBlocks_multiply] at this\n141:      simpa only [Matrix.toBlocks_fromBlocks₂₂, Matrix.mul_zero, zero_add, ← fromBlocks_one] using\n144:/-- `invertibleOfFromBlocksZero₂₁Invertible` and `Matrix.fromBlocksZero₂₁Invertible` form\n146:def fromBlocksZero₂₁InvertibleEquiv (A : Matrix m m α) (B : Matrix m n α) (D : Matrix n n α) :\n147:    Invertible (fromBlocks A B 0 D) ≃ Invertible A × Invertible D where\n152:    exact fromBlocksZero₂₁Invertible A B D\n156:/-- `invertibleOfFromBlocksZero₁₂Invertible` and `Matrix.fromBlocksZero₁₂Invertible` form\n158:def fromBlocksZero₁₂InvertibleEquiv (A : Matrix m m α) (C : Matrix n m α) (D : Matrix n n α) :\n159:    Invertible (fromBlocks A 0 C D) ≃ Invertible A × Invertible D where\n164:    exact fromBlocksZero₁₂Invertible A C D\n170:This is a propositional form of `Matrix.fromBlocksZero₂₁InvertibleEquiv`. -/\n173:    IsUnit (fromBlocks A B 0 D) ↔ IsUnit A ∧ IsUnit D := by\n175:    (fromBlocksZero₂₁InvertibleEquiv _ _ _).nonempty_congr]\n179:This is a propositional form of `Matrix.fromBlocksZero₁₂InvertibleEquiv` forms an `iff`. -/\n182:    IsUnit (fromBlocks A 0 C D) ↔ IsUnit A ∧ IsUnit D := by\n184:    (fromBlocksZero₁₂InvertibleEquiv _ _ _).nonempty_congr]\n190:    (fromBlocks A B 0 D)⁻¹ = fromBlocks A⁻¹ (-(A⁻¹ * B * D⁻¹)) 0 D⁻¹ := by\n195:    let := fromBlocksZero₂₁Invertible A B D\n198:    have : ¬IsUnit (fromBlocks A B 0 D) :=\n201:      Ring.inverse_non_unit _ this, Matrix.zero_mul, neg_zero, fromBlocks_zero]\n207:    (fromBlocks A 0 C D)⁻¹ = fromBlocks A⁻¹ 0 (-(D⁻¹ * C * A⁻¹)) D⁻¹ := by\n212:    let := fromBlocksZero₁₂Invertible A C D\n215:    have : ¬IsUnit (fromBlocks A 0 C D) :=\n218:      Ring.inverse_non_unit _ this, Matrix.zero_mul, neg_zero, fromBlocks_zero]\n233:def fromBlocks₂₂Invertible (A : Matrix m m α) (B : Matrix m n α) (C : Matrix n m α)\n235:    Invertible (fromBlocks A B C D) := by\n236:  -- factor `fromBlocks` via `fromBlocks_eq_of_invertible₂₂`, and state the inverse we expect\n239:      (fromBlocks (⅟(A - B * ⅟D * C)) (-(⅟(A - B * ⅟D * C) * B * ⅟D))\n241:      (fromBlocks_eq_of_invertible₂₂ _ _ _ _) _\n245:    refine Invertible.mul ?_ (fromBlocksZero₁₂Invertible _ _ _)\n247:      Invertible.mul (fromBlocksZero₂₁Invertible _ _ _)\n248:        (fromBlocksZero₂₁Invertible _ _ _)\n252:        fromBlocks 1 0 (-(1 * (⅟D * C) * 1)) 1 *\n253:          (fromBlocks (⅟(A - B * ⅟D * C)) (-(⅟(A - B * ⅟D * C) * 0 * ⅟D)) 0 (⅟D) *\n254:            fromBlocks 1 (-(1 * (B * ⅟D) * 1)) 0 1)\n256:    simp only [fromBlocks_multiply, Matrix.one_mul, Matrix.mul_one, Matrix.zero_mul,\n263:def fromBlocks₁₁Invertible (A : Matrix m m α) (B : Matrix m n α) (C : Matrix n m α)\n265:    Invertible (fromBlocks A B C D) := by\n267:  letI := fromBlocks₂₂Invertible D C B A\n269:    submatrixEquivInvertible (fromBlocks D C B A) (Equiv.sumComm _ _) (Equiv.sumComm _ _)\n272:      (fromBlocks (⅟A + ⅟A * B * ⅟(D - C * ⅟A * B) * C * ⅟A) (-(⅟A * B * ⅟(D - C * ⅟A * B)))\n274:      (fromBlocks_submatrix_sum_swap_sum_swap _ _ _ _).symm\n275:      (fromBlocks_submatrix_sum_swap_sum_swap _ _ _ _).symm\n279:    [Invertible (fromBlocks A B C D)] :\n280:    ⅟(fromBlocks A B C D) =\n281:      fromBlocks (⅟(A - B * ⅟D * C)) (-(⅟(A - B * ⅟D * C) * B * ⅟D))\n283:  let := fromBlocks₂₂Invertible A B C D\n284:  convert! (rfl : ⅟(fromBlocks A B C D) = _)\n288:    [Invertible (fromBlocks A B C D)] :\n289:    ⅟(fromBlocks A B C D) =\n290:      fromBlocks (⅟A + ⅟A * B * ⅟(D - C * ⅟A * B) * C * ⅟A) (-(⅟A * B * ⅟(D - C * ⅟A * B)))\n292:  let := fromBlocks₁₁Invertible A B C D\n293:  convert! (rfl : ⅟(fromBlocks A B C D) = _)\n299:    (D : Matrix n n α) [Invertible D] [Invertible (fromBlocks A B C D)] :\n301:  suffices Invertible (fromBlocks (A - B * ⅟D * C) 0 0 D) by\n305:  letI iDC : Invertible (fromBlocks 1 0 (⅟D * C) 1 : Matrix (m ⊕ n) (m ⊕ n) α) :=\n306:    fromBlocksZero₁₂Invertible _ _ _\n307:  letI iBD : Invertible (fromBlocks 1 (B * ⅟D) 0 1 : Matrix (m ⊕ n) (m ⊕ n) α) :=\n308:    fromBlocksZero₂₁Invertible _ _ _\n309:  letI iBDC := Invertible.copy ‹_› _ (fromBlocks_eq_of_invertible₂₂ A B C D).symm\n317:    (D : Matrix n n α) [Invertible A] [Invertible (fromBlocks A B C D)] :\n321:    submatrixEquivInvertible (fromBlocks A B C D) (Equiv.sumComm _ _) (Equiv.sumComm _ _)\n322:  letI iDCBA := iABCD'.copy _ (fromBlocks_submatrix_sum_swap_sum_swap _ _ _ _).symm\n325:/-- `Matrix.invertibleOfFromBlocks₂₂Invertible` and `Matrix.fromBlocks₂₂Invertible` as an\n329:    Invertible (fromBlocks A B C D) ≃ Invertible (A - B * ⅟D * C) where\n331:  invFun _i_schur := fromBlocks₂₂Invertible _ _ _ _\n335:/-- `Matrix.invertibleOfFromBlocks₁₁Invertible` and `Matrix.fromBlocks₁₁Invertible` as an\n339:    Invertible (fromBlocks A B C D) ≃ Invertible (D - C * ⅟A * B) where\n341:  invFun _i_schur := fromBlocks₁₁Invertible _ _ _ _\n349:    IsUnit (fromBlocks A B C D) ↔ IsUnit (A - B * ⅟D * C) := by\n357:    IsUnit (fromBlocks A B C D) ↔ IsUnit (D - C * ⅟A * B) := by\n370:theorem det_fromBlocks₁₁ (A : Matrix m m α) (B : Matrix m n α) (C : Matrix n m α)\n372:    (Matrix.fromBlocks A B C D).det = det A * det (D - C * ⅟A * B) := by\n373:  rw [fromBlocks_eq_of_invertible₁₁ (A := A), det_mul, det_mul, det_fromBlocks_zero₂₁,\n374:    det_fromBlocks_zero₂₁, det_fromBlocks_zero₁₂, det_one, det_one, one_mul, one_mul, mul_one]\n377:theorem det_fromBlocks_one₁₁ (B : Matrix m n α) (C : Matrix n m α) (D : Matrix n n α) :\n378:    (Matrix.fromBlocks 1 B C D).det = det (D - C * B) := by\n380:  rw [det_fromBlocks₁₁, invOf_one, Matrix.mul_one, det_one, one_mul]\n384:theorem det_fromBlocks₂₂ (A : Matrix m m α) (B : Matrix m n α) (C : Matrix n m α)\n386:    (Matrix.fromBlocks A B C D).det = det D * det (A - B * ⅟D * C) := by\n387:  have : fromBlocks A B C D =\n388:      (fromBlocks D C B A).submatrix (Equiv.sumComm _ _) (Equiv.sumComm _ _) := by\n391:  rw [this, det_submatrix_equiv_self, det_fromBlocks₁₁]\n394:theorem det_fromBlocks_one₂₂ (A : Matrix m m α) (B : Matrix m n α) (C : Matrix n m α) :\n395:    (Matrix.fromBlocks A B C 1).det = det (A - B * C) := by\n397:  rw [det_fromBlocks₂₂, invOf_one, Matrix.mul_one, det_one, one_mul]\n404:    det (1 + A * B) = det (fromBlocks 1 (-A) B 1) := by\n405:      rw [det_fromBlocks_one₂₂, Matrix.neg_mul, sub_neg_eq_add]\n406:    _ = det (1 + B * A) := by rw [det_fromBlocks_one₁₁, Matrix.mul_neg, sub_neg_eq_add]\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "rg",
+      "-n",
+      "\\b(charpoly_eq|posDef_iff_eigenvalues_pos|posDef_iff_det_ne_zero)\\b",
+      ".lake/packages/mathlib/Mathlib/Analysis/Matrix"
+    ],
+    "exit": 0,
+    "matched_lines": 6,
+    "stdout": ".lake/packages/mathlib/Mathlib/Analysis/Matrix/Spectrum.lean:155:lemma charpoly_eq : A.charpoly = ∏ i, (X - C (hA.eigenvalues i : 𝕜)) := by\n.lake/packages/mathlib/Mathlib/Analysis/Matrix/Spectrum.lean:161:  rw [hA.charpoly_eq, Polynomial.roots_prod]\n.lake/packages/mathlib/Mathlib/Analysis/Matrix/Spectrum.lean:183:  · rw [hA.charpoly_eq, hB.charpoly_eq, h]\n.lake/packages/mathlib/Mathlib/Analysis/Matrix/Order.lean:200:lemma PosSemidef.posDef_iff_det_ne_zero [DecidableEq n] {A : Matrix n n 𝕜} (hA : A.PosSemidef) :\n.lake/packages/mathlib/Mathlib/Analysis/Matrix/PosDef.lean:71:lemma IsHermitian.posDef_iff_eigenvalues_pos [DecidableEq n] (hA : A.IsHermitian) :\n.lake/packages/mathlib/Mathlib/Analysis/Matrix/PosDef.lean:83:  hA.isHermitian.posDef_iff_eigenvalues_pos.mp hA i\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "rg",
+      "-n",
+      "\\b(eval_interpolate_not_at_node|eval_derivative_div_eval_of_ne_zero)\\b",
+      ".lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean",
+      ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Splits.lean"
+    ],
+    "exit": 0,
+    "matched_lines": 5,
+    "stdout": ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Splits.lean:654:theorem Splits.eval_derivative_div_eval_of_ne_zero (hf : Splits f) {x : R} (hx : f.eval x ≠ 0) :\n.lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean:685:theorem eval_interpolate_not_at_node (hx : ∀ i ∈ s, x ≠ v i) :\n.lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean:696:      (eval_interpolate_not_at_node 1 hx).symm\n.lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean:699:theorem eval_interpolate_not_at_node' (hvs : Set.InjOn v s) (hs : s.Nonempty)\n.lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean:705:    eval_interpolate_not_at_node r hx, eval_interpolate_not_at_node 1 hx]\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "rg",
+      "-n",
+      "-i",
+      "\\b(arrowhead|interlacing|interlace|laguerre)\\b",
+      ".lake/packages/mathlib/Mathlib/Analysis/Complex/Polynomial",
+      ".lake/packages/mathlib/Mathlib/Algebra/Polynomial",
+      ".lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix"
+    ],
+    "exit": 1,
+    "matched_lines": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "rg",
+      "-n",
+      "\\btheorem det_fromBlocks(\\u2081\\u2081|\\u2082\\u2082)",
+      ".lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/SchurComplement.lean"
+    ],
+    "exit": 0,
+    "matched_lines": 2,
+    "stdout": "370:theorem det_fromBlocks₁₁ (A : Matrix m m α) (B : Matrix m n α) (C : Matrix n m α)\n384:theorem det_fromBlocks₂₂ (A : Matrix m m α) (B : Matrix m n α) (C : Matrix n m α)\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "rg",
+      "-n",
+      "\\btheorem nonexistent_fromBlocks(\\u2081\\u2081|\\u2082\\u2082)",
+      ".lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/SchurComplement.lean"
+    ],
+    "exit": 1,
+    "matched_lines": 0,
+    "stdout": "",
+    "stderr": ""
+  }
+]
