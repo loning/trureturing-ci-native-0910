@@ -107,5 +107,63 @@ private theorem squarefreeSum_eq_product (N : ℕ) (hn : N ≠ 0) :
   simpa only [List.toFinset_coe, Nat.toFinset_factors, Finset.prod_val, id_eq] using
     (prod_add_one (f := fun q : ℕ => q) N.primeFactors).symm
 
+private theorem squarefree_factor_le {b q : ℕ} (hb : 2 ≤ b) (hbq : b ≤ q) :
+    ((q : ℚ)+1)/(q : ℚ)^2 ≤ ((b : ℚ)+1)/(b : ℚ)^2 := by
+  have hb' : (2 : ℚ) ≤ b := by exact_mod_cast hb
+  have hbq' : (b : ℚ) ≤ q := by exact_mod_cast hbq
+  have hq' : (2 : ℚ) ≤ q := hb'.trans hbq'
+  apply (div_le_div_iff₀ (by positivity) (by positivity)).2
+  nlinarith [mul_nonneg (sub_nonneg.mpr hbq')
+    (by positivity : (0 : ℚ) ≤ (b : ℚ)*(q : ℚ) + b + q)]
+
+private theorem squarefree_product_le (F : Finset ℕ) (b : ℕ) (hb : 2 ≤ b)
+    (hne : F.Nonempty) (hF : ∀ q ∈ F, b ≤ q) :
+    (∏ q ∈ F, ((q : ℚ)+1)/(q : ℚ)^2) ≤ ((b : ℚ)+1)/(b : ℚ)^2 := by
+  obtain ⟨q, hq⟩ := hne
+  have hunit : ∀ x ∈ F, ((x : ℚ)+1)/(x : ℚ)^2 ≤ 1 := by
+    intro x hx
+    have hx' : (2 : ℚ) ≤ x := by exact_mod_cast le_trans hb (hF x hx)
+    apply (div_le_one (by positivity : (0 : ℚ) < (x : ℚ)^2)).2
+    nlinarith
+  calc
+    _ ≤ ∏ x ∈ ({q} : Finset ℕ), ((x : ℚ)+1)/(x : ℚ)^2 :=
+      prod_le_prod_of_subset_of_le_one (singleton_subset_iff.mpr hq)
+        (fun x _ => by positivity) (fun x hx _ => hunit x hx)
+    _ = ((q : ℚ)+1)/(q : ℚ)^2 := by simp
+    _ ≤ _ := squarefree_factor_le hb (hF q hq)
+
+private theorem joint_products_lt (F : Finset ℕ) (hne : F.Nonempty)
+    (hF : ∀ q ∈ F, 3 ≤ q ∧ q ≠ 4) :
+    (∏ q ∈ F, (1 + 1/(q : ℚ)^2)) +
+      (∏ q ∈ F, ((q : ℚ)+1)/(q : ℚ)^2) < 5/3 := by
+  by_cases h3 : 3 ∈ F
+  · have hT : ∀ q ∈ F.erase 3, 5 ≤ q := by
+      intro q hq
+      have := hF q (mem_erase.mp hq).2
+      have := (mem_erase.mp hq).1
+      omega
+    by_cases he : F.erase 3 = ∅
+    · have hsingle : F = {3} := by
+        rw [← insert_erase h3, he]
+        simp
+      rw [hsingle]
+      norm_num
+    · have hA := reciprocal_square_product_le (F.erase 3) 5 (by decide) hT
+      have hB := squarefree_product_le (F.erase 3) 5 (by decide)
+        (nonempty_iff_ne_empty.mpr he) hT
+      rw [← insert_erase h3, prod_insert (notMem_erase _ _),
+        prod_insert (notMem_erase _ _)]
+      norm_num at hA hB ⊢
+      nlinarith
+  · have hF5 : ∀ q ∈ F, 5 ≤ q := by
+      intro q hq
+      have := hF q hq
+      have : q ≠ 3 := fun h => h3 (h ▸ hq)
+      omega
+    have hA := reciprocal_square_product_le F 5 (by decide) hF5
+    have hB := squarefree_product_le F 5 (by decide) hne hF5
+    norm_num at hA hB ⊢
+    linarith
+
 end
 end D5.S3.Arith.EulerFormDivisorSum
