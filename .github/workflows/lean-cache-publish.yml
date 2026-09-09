@@ -11,7 +11,7 @@ jobs:
   publish:
     name: Publish the Lean build cache
     if: github.ref == 'refs/heads/dev'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-24.04-arm
     timeout-minutes: 120
     env:
       STRATALINT_CACHE_WRITES: 'false'
