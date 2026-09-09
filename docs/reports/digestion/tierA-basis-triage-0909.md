@@ -78,6 +78,7 @@ $$
 }
 \tag{M25}
 $$
+
 ```
 
 | Source assertion | Original probe counterpart | Status | Domain and boundary check |
@@ -142,6 +143,7 @@ S=A-BC^{-1}B^*.
 }
 \tag{8}
 $$
+
 ```
 
 | Source assertion | Original probe counterpart | Status | Domain and boundary check |
@@ -230,6 +232,7 @@ x^2+(t-\gamma)^2<\delta^2.
 }
 \tag{88}
 $$
+
 ```
 
 | Source assertion | Original probe counterpart | Status | Domain and boundary check |
@@ -298,6 +301,7 @@ $$
 }
 \tag{14}
 $$
+
 ```
 
 | Source assertion | Original probe counterpart | Status | Domain and boundary check |
@@ -379,6 +383,7 @@ B_p(z)\overline{B_p(w)}\mathcal P_S(z,w).
 }
 \tag{V15}
 $$
+
 ```
 
 | Source assertion | Original probe counterpart | Status | Domain and boundary check |
@@ -455,6 +460,7 @@ $$
 }
 \tag{4}
 $$
+
 ```
 
 | Source assertion | Original probe counterpart | Status | Domain and boundary check |
@@ -539,6 +545,7 @@ $$
 }
 \tag{13}
 $$
+
 ```
 
 | Source assertion | Original probe counterpart | Status | Domain and boundary check |
@@ -584,6 +591,81 @@ Probe receipt: `prior/probes/Endpoint150-v2.lean`; inherited `make lean` exit 0;
 decoded `prior/logs/Endpoint150-v2.log.gz` ends in `EXIT: 0`. Earlier
 `Endpoint150` exit 2 remains in the inherited run ledger, not erased.
 
+## Conclusion
+
+`verdict: propose`; `screened: 7`; `not-an-assertion: 0`.
+All seven have truth-evaluable assertions. This is a proposed judgment for the
+thinking stage, not authorization to execute a production workflow.
+
+`by_verdict`:
+
+| Verdict | Count |
+| --- | ---: |
+| wrap-and-cover-eligible | 3 |
+| no-admission-basis | 2 |
+| partial-fidelity | 2 |
+| needs-more-work | 0 |
+
+`by_fidelity: {full: 5, partial: 2, mismatch: 0}`.
+`by_admission_basis: {rule-11-upstream-wrapper: 3, none: 4}`.
+The primary verdict uses `partial-fidelity` for atoms 90 and 105; both also lack
+a basis for the tested candidate. Thus the four entries in `no_basis` must not
+be counted as four additional primary verdicts. This preserves the two axes.
+The preregistered majority-normalization prediction is supported (4/7), while
+three genuine upstream wrappers were identified and justified individually.
+
+`per_atom`: the seven complete records above, each containing `fidelity` and its
+clause table, `upstream_declaration`, `wrapper_thinness`, `necessity_citation`,
+`verdict`, and `why_not_escape_witness`. Their structured counterparts, including
+every clause row, are in the worker-owned `result.json`.
+
+`eligible_for_wrap`:
+
+- `937abccd3570503c88aaac8b088e687e6f79db29ca9f67f887b72a028bd4f866`: Schur minimum.
+- `b923baf16e3404ffc7143c8258cd778915ab93409a40512c8d156d065ed1f61a`: divisor parity.
+- `e405a7f40fa7ee5313052263686a73c8b8578d18290d1f429cb1826603f82480`: first-return laws.
+
+`no_basis` (current candidates, not a claim that no future reformulation can qualify):
+
+- `7d5d9c72f7ad9abb794dd61d99e68ff5adc1271970f00e4a009b9e334680a0d2`: coefficient extraction followed by cancellation, no upstream readback theorem carrying M25.
+- `96902e5b1d0b9ac78c37f6c1f75fd1d5043bfd6c18f5e2451352b6fbc6977b46`: rational numerator and sign normalization; no upstream pair-contribution/disk theorem carrying the conclusion.
+- `bc9748938013e4b3c632bfa0e1257a59733df2e1682ed0a8a0d7a0dcc534ab2b`: conjugation and rational normalization; `sub_conj` does not carry V15 or positive rank one.
+- `ff41c11de3a485a3451a5788237056c9099133f734e8bf7b75a1240d6746dd85`: norm expansions followed by locally completed weighted square; no upstream extremal identity in this proof.
+
+`fidelity_gaps`:
+
+- Atom 90: actual-zero-pair contribution to `Re(xi'/xi)` is not connected to the tested rational model. Both boxed algebraic subclaims are covered.
+- Atom 105: positivity and rank one are absent; the probe only handles open-upper-half-plane `z,w`. A broader regular-point interpretation of V15 and all analytic extension questions remain uncertified.
+
+`probe_runs`: prior `Readback75`, `Schur89`, `Disk90-v2`, `Parity104`, `Pick105`,
+`Return126`, `Endpoint150-v2` each have inherited exit 0. Prior failed attempts
+`Disk90` and `Endpoint150` each have exit 2; the prior baseline has exit 0. All
+ten entries are recorded in the opened immutable `prior/probe-runs.json`.
+This seat ran one new `UpstreamSignatures` inspection via `make lean`, exit 0,
+with its command, printed signature, cache state, and actual log above.
+There were seven fresh `make show-atom` calls, each exit 0; these are source
+reads, not Lean proofs. No failed exploratory run is promoted to proof evidence.
+
+`search_receipts`: R75, R89, R90, R104, R105, R126, R150 above record the actual
+commands, scopes, counts, positive controls, and opened local source windows.
+The Unicode-boundary and truncated exploratory output limitations are explicitly
+recorded in R90. All cited Mathlib source belongs to the manifest-pinned local
+revision, whose worktree was checked clean at final audit.
+
+`assumed_unverified`:
+
+- The connection from atom 90's rational model to actual xi zero data is unverified; no such connection is assumed true by this verdict.
+- The intended full `z,w` domain in V15 is not made explicit by the atom or its immediate definition; no successful upper-half-plane probe resolves that omission.
+- Meromorphic cancellation and real-diagonal analytic extension in V3 have not been verified.
+- External DLMF/arXiv references printed in the source were not opened for this local pinned-library audit; no claim of literature verification is made.
+- Search is bounded to the stated scopes. No exhaustive ecosystem search or independent second-reviewer confirmation is claimed.
+- No production wrapper, mirror, admission run, or coverage workflow was evaluated; eligibility is the fidelity-and-basis judgment requested here.
+
+`nonclaims`: the section below is part of this conclusion. The (a) basis is
+unavailable for all seven bind-only probes; (c) has no supplied atom-mandated
+independent typed edge plus preregistered named consumer in any of the seven.
+No `refutes` label or source demand alone substitutes for those requirements.
+
 ## Push Receipts
 
 | Commit | Completed unit | Push result |
@@ -594,8 +676,14 @@ decoded `prior/logs/Endpoint150-v2.log.gz` ends in `EXIT: 0`. Earlier
 | `8a48ad8068a6e8abd3a237daf18e1542a7d3116b` | Atom 90 | exit 0 |
 | `3b0ea401d33d72def4731520c7ef7171b5670287` | Atom 104 | exit 0 |
 | `20666941dd35dbc37d825d01a0c431502b61383a` | Atom 105 | exit 0 |
-| `4f3fe9a297` | Atom 126 source/inspection preregistration checkpoint | exit 0 |
+| `4f3fe9a29754aaf301064b32a03b9d6cd3dad2e0` | Atom 126 source/inspection preregistration checkpoint | exit 0 |
 | `820e77f51e162c4a58c31c506fb012ab4d3eb08d` | Atom 126 | exit 0 |
+| `9b899c7b94b0d8ccbacb9023d64224c2c38d96ae` | Atom 150 | exit 0 |
+
+These are `conclusion.pushed.commits` for the preregistration, checkpoint, and
+all seven per-atom judgments, each observed pushed before proceeding. The
+runner envelope additionally records the final report-consolidation commit
+after its push succeeds; a commit does not attempt to contain its own hash.
 
 ## Nonclaims
 
@@ -607,6 +695,10 @@ decoded `prior/logs/Endpoint150-v2.log.gz` ends in `EXIT: 0`. Earlier
 - No new proof of these source assertions, proof of their future provability,
   exhaustive library search, or implication to RH is claimed.
 
-The final structured `conclusion` and push receipts will be appended as the
-seven judgments are completed. The runner envelope is a separate worker-owned
-artifact, published atomically only after completion.
+Final audit: the only changed tracked path relative to the pinned start is this
+report. The supplied untracked `tierA.json` remains untouched. The seven raw
+quotation blocks were compared against CAS bytes; their sole display difference
+was one omitted terminal newline each, restored in the final consolidation.
+`git diff --check` passes. The worker publishes `result.json.tmp` by atomic
+rename to `result.json`, then publishes `completion.sentinel.tmp` by atomic
+rename to `completion.sentinel`, in the prescribed attempt directory.
