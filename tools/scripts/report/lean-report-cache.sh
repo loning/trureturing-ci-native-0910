@@ -83,12 +83,12 @@ asset="$(python3 "$HELPER" name "$repository" "$producer" "$producer" "$config")
 
 download_verified() {
   local name="$1" destination="$2"
-  # 0 = verified; 1 = downloaded but invalid; 2 = unavailable read. Only a
-  # successful download can establish corruption; a failed read cannot.
+  # 0 = verified; 1 = rejected contents; 2 = unavailable transport or verifier.
+  # Preserve the helper result: failure to verify does not establish corruption.
   mkdir -p "$destination" || return 2
   gh_io release download "$TAG" --repo "$REPO" --dir "$destination" \
     --pattern "$name" --pattern "$name.sha256" || return 2
-  python3 "$HELPER" unpack "$destination/$name" "$destination/bundle" || return 1
+  python3 "$HELPER" unpack "$destination/$name" "$destination/bundle"
 }
 
 if [[ "$COMMAND" == fetch ]]; then

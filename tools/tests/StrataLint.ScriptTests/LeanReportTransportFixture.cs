@@ -148,6 +148,7 @@ internal sealed class LeanReportTransportFixture : IDisposable
     internal string[] CacheSnapshot() => Suffixes.Select(suffix => Digest(File.ReadAllBytes(CachedReport + suffix))).ToArray();
     internal string[] ReleaseSnapshot() => Assets.Select(path => Path.GetFileName(path) + "=" + Digest(File.ReadAllBytes(path))).ToArray();
     internal void SimulateTransferDuration() => File.WriteAllText(Path.Combine(Bin, "sitecustomize.py"), TransferClockStub);
+    internal void RestoreVerifier() => File.Delete(Path.Combine(Bin, "bash"));
     internal void RemoveDigestAsset() => File.Delete(CurrentArchive + ".sha256");
     private string CurrentArchive => Assets.Single(value => value.EndsWith("-" + RepositoryAddress + ".zip", StringComparison.Ordinal));
 
@@ -330,6 +331,19 @@ internal sealed class LeanReportTransportFixture : IDisposable
                 matches = [p for p in root.iterdir() if fnmatch.fnmatchcase(p.name, pattern)]
                 if not matches: raise SystemExit(1)
                 for p in matches: shutil.copyfile(p, destination/p.name)
+            failure = os.environ.get('FIXTURE_GH_VERIFY_FAILURE')
+            if failure and destination.name == os.environ.get('FIXTURE_GH_VERIFY_PHASE', 'existing'):
+                print(f'fixture download complete phase={destination.name} failure={failure}', file=sys.stderr)
+                # Fail actual local operations only after both assets arrived.
+                if failure == 'unpack-directory':
+                    (destination/'bundle').write_text('blocks extraction directory\n')
+                elif failure == 'unpack-write':
+                    (destination/'bundle'/'raw-lean-report.json').mkdir(parents=True)
+                elif failure == 'verifier':
+                    bash = pathlib.Path(os.environ['REPORT_FIXTURE']) / 'bin' / 'bash'
+                    bash.write_text('#!/bin/sh\nif [ "${2-}" = coordinates ]; then exit 69; fi\nexec /bin/bash "$@"\n')
+                    bash.chmod(0o755)
+                else: raise SystemExit('unsupported verification failure: '+failure)
         else: raise SystemExit('unsupported fake gh: '+repr(args))
         PY
         """;

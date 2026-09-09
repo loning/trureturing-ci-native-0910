@@ -88,12 +88,45 @@ public sealed class LeanReportTransportTests
         fixture.Success(fixture.Fetch());
     }
 
-    [Fact]
-    public void UnavailablePostUploadVerificationDoesNotClaimPublicationSuccess()
+    [Theory]
+    [InlineData("unpack-directory", "File exists")]
+    [InlineData("unpack-write", "Is a directory")]
+    [InlineData("verifier", "returned non-zero exit status 69")]
+    public void UnavailableLocalVerificationPreservesOriginalPairEvenWhenProspectiveUploadFails(string failure, string diagnostic)
     {
         if (OperatingSystem.IsWindows()) return;
         using var fixture = new LeanReportTransportFixture();
-        var result = fixture.Publish(fixture.Bundle(), "FIXTURE_GH_DOWNLOAD_FAIL=published");
+        var bundle = fixture.Bundle();
+        fixture.Success(fixture.Publish(bundle));
+        var before = fixture.ReleaseSnapshot();
+        var uploads = fixture.UploadCount;
+        LeanReportTransportFixture.Attempt result;
+        try { result = fixture.Publish(bundle, "FIXTURE_GH_VERIFY_FAILURE=" + failure, "FIXTURE_GH_UPLOAD_FAIL=1"); }
+        finally { fixture.RestoreVerifier(); }
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.Contains("fixture download complete phase=existing failure=" + failure, result.Text, StringComparison.Ordinal);
+        Assert.Contains(diagnostic, result.Text, StringComparison.Ordinal);
+        Assert.Equal(before, fixture.ReleaseSnapshot());
+        Assert.Equal(uploads, fixture.UploadCount);
+        Assert.Contains("reason=publication-unavailable", result.Text, StringComparison.Ordinal);
+        Assert.DoesNotContain("status=published", result.Text, StringComparison.Ordinal);
+        fixture.Success(fixture.Fetch());
+    }
+
+    [Theory]
+    [InlineData("download")]
+    [InlineData("unpack-directory")]
+    [InlineData("unpack-write")]
+    [InlineData("verifier")]
+    public void UnavailablePostUploadVerificationDoesNotClaimPublicationSuccess(string failure)
+    {
+        if (OperatingSystem.IsWindows()) return;
+        using var fixture = new LeanReportTransportFixture();
+        var environment = failure == "download" ? new[] { "FIXTURE_GH_DOWNLOAD_FAIL=published" }
+            : new[] { "FIXTURE_GH_VERIFY_FAILURE=" + failure, "FIXTURE_GH_VERIFY_PHASE=published" };
+        LeanReportTransportFixture.Attempt result;
+        try { result = fixture.Publish(fixture.Bundle(), environment); }
+        finally { fixture.RestoreVerifier(); }
         Assert.NotEqual(0, result.ExitCode);
         Assert.Contains("reason=publication-unavailable", result.Text, StringComparison.Ordinal);
         Assert.DoesNotContain("status=published", result.Text, StringComparison.Ordinal);
@@ -294,6 +327,8 @@ public sealed class LeanReportTransportTests
     [InlineData("complete")]
     [InlineData("partial")]
     [InlineData("corrupt")]
+    [InlineData("materials-zip")]
+    [InlineData("pair-address")]
     public void RepeatedPublicationVerifiesOrRepairsAllAssets(string state)
     {
         if (OperatingSystem.IsWindows()) return;
@@ -301,7 +336,8 @@ public sealed class LeanReportTransportTests
         var bundle = fixture.Bundle();
         fixture.Success(fixture.Publish(bundle));
         if (state == "partial") fixture.RemoveDigestAsset();
-        if (state == "corrupt") fixture.DamageAsset("archive-digest");
+        if (state != "complete" && state != "partial")
+            fixture.DamageAsset(state == "corrupt" ? "archive-digest" : state);
         var uploads = fixture.UploadCount;
         fixture.Success(fixture.Publish(bundle));
         Assert.Equal(state == "complete" ? uploads : uploads + 1, fixture.UploadCount);

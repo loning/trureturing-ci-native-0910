@@ -256,10 +256,14 @@ def main():
         else:
             raise ValueError("unknown command")
         return 0
-    except (OSError, ValueError, TypeError, KeyError, UnicodeError, zipfile.BadZipFile,
-            RuntimeError, subprocess.SubprocessError) as error:
+    except (ValueError, TypeError, KeyError, UnicodeError, zipfile.BadZipFile) as error:
         print(f"lean-report-cache: {error}", file=sys.stderr)
         return 1
+    except Exception as error:
+        # I/O, subprocess and verifier runtime failures cannot establish corrupt
+        # contents. Only completed content rejection above permits replacement.
+        print(f"lean-report-cache: verification unavailable: {error}", file=sys.stderr)
+        return 2
 
 
 if __name__ == "__main__":
