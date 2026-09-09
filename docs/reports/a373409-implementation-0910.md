@@ -64,3 +64,21 @@
 28≤余数时用下一周期 44/45 障碍。只有中间情形允许跨度18，迫使
 x0=36q+9、x1=36q+11；Full 强制 36q+12 在列表内，与 x1 相邻矛盾。
 这沿用原拟议见证，仅明确端点，初段也由第一情形统一处理。
+
+## 定义与障碍引理检查点
+
+- `FullNonsquarefreeInterval` 已按三字段落盘：`increasing`、`nonsquarefree`、`full`。
+  `full` 的量词覆盖任意两项之间的全部非平方自由自然数，无隐藏的上界假设。
+- 热树 API 探针确认 v4.33 使用 `List.IsChain`，brief 的 `Chain'` 更新为该现役名。
+  API 探针四个候选名字不存在，已改用编译器确认的
+  `List.IsChain.pairwise`、`List.mem_iff_getElem`、`List.pairwise_iff_getElem`。
+- `lake env lean D5/S3/Arith/Congruence/NonsquarefreeAntirun.lean` EXIT=0：
+  Full 定义、no_neighbors、4/9 整除引理与 upper_of_pair 已验证。
+  一条 letI 风格警告按建议改为 let；尚未声称项目 make lean 通过。
+- GitHub 命中逐项收窄：打开 LeanTriathlon 的
+  `LiveLeanTriathlonSorry/NonSquareFreeWeird/All.lean`（2aede420…），
+  目标是 `weird_squarefree_infinite`，证明为 sorry，与本题不同。
+  打开 hex-dev 的 EezTests（40585b8…）：命中为多项式分解测试。
+  其余三个 hex 文件未打开，明确 ASSUMED-UNVERIFIED，不据文件名宣称完整核验。
+- dominating_theorem_search：在已检索/已打开范围未找到本题的已有证明；
+  这不是对全部文献的穷尽保证。Library/Arith 实测 48，不能向该桶新增笔记。
