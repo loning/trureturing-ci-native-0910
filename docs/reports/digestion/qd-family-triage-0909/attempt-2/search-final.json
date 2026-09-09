@@ -1,0 +1,100 @@
+[
+  {
+    "command": [
+      "rg",
+      "-n",
+      "\\b(theorem|lemma) (Splits\\.)?eval_derivative_div_eval_of_ne_zero\\b",
+      ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Splits.lean"
+    ],
+    "exit": 0,
+    "matched_lines": 1,
+    "stdout": "654:theorem Splits.eval_derivative_div_eval_of_ne_zero (hf : Splits f) {x : R} (hx : f.eval x ≠ 0) :\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "rg",
+      "-n",
+      "\\b(theorem|lemma) (Splits\\.)?qd_attempt2_absent_control\\b",
+      ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Splits.lean"
+    ],
+    "exit": 1,
+    "matched_lines": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "rg",
+      "-n",
+      "\\b(theorem|lemma) HasDerivAt\\.(fun_div|fun_sum|congr_of_eventuallyEq|unique)\\b",
+      ".lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv"
+    ],
+    "exit": 0,
+    "matched_lines": 4,
+    "stdout": ".lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Inv.lean:168:theorem HasDerivAt.fun_div (hc : HasDerivAt c c' x) (hd : HasDerivAt d d' x) (hx : d x ≠ 0) :\n.lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Add.lean:218:theorem HasDerivAt.fun_sum (h : ∀ i ∈ u, HasDerivAt (A i) (A' i) x) :\n.lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Basic.lean:399:theorem HasDerivAt.unique (h₀ : HasDerivAt f f₀' x) (h₁ : HasDerivAt f f₁' x) : f₀' = f₁' :=\n.lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Basic.lean:609:theorem HasDerivAt.congr_of_eventuallyEq (h : HasDerivAt f f' x) (h₁ : f₁ =ᶠ[𝓝 x] f) :\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "rg",
+      "-n",
+      "\\b(theorem|lemma) HasDerivAt\\.(qd_attempt2_absent_control|qd_attempt2_other_absent)\\b",
+      ".lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv"
+    ],
+    "exit": 1,
+    "matched_lines": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "rg",
+      "-n",
+      "\\b(theorem|lemma) (reflect_map|map_sum|sum_multiset_map_count|prod_multiset_map_count)\\b",
+      ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean",
+      ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Eval/Defs.lean",
+      ".lake/packages/mathlib/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean"
+    ],
+    "exit": 0,
+    "matched_lines": 3,
+    "stdout": ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Eval/Defs.lean:583:protected theorem map_sum {ι : Type*} (g : ι → R[X]) (s : Finset ι) :\n.lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean:138:lemma reflect_map {S : Type*} [Semiring S] (f : R →+* S) (p : R[X]) (n : ℕ) :\n.lake/packages/mathlib/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean:591:theorem prod_multiset_map_count [DecidableEq ι] (s : Multiset ι) {M : Type*} [CommMonoid M]\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "rg",
+      "-n",
+      "\\b(theorem|lemma) source_theta_normalization\\b",
+      "D5/S3/Zeros/Jensen/SourceThetaMomentBounds.lean"
+    ],
+    "exit": 0,
+    "matched_lines": 1,
+    "stdout": "176:theorem source_theta_normalization (h0 : sourceThetaCoefficient 0 = 1) :\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "rg",
+      "-n",
+      "\\b(theorem|lemma) qd_attempt2_absent_control\\b",
+      "D5/S3/Zeros/Jensen/SourceThetaMomentBounds.lean"
+    ],
+    "exit": 1,
+    "matched_lines": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "rg",
+      "-n",
+      "\\b(theorem|lemma) (Splits\\.)?qd_attempt2_absent_control\\b",
+      ".lake/packages/mathlib/Mathlib"
+    ],
+    "exit": 1,
+    "matched_lines": 0,
+    "stdout": "",
+    "stderr": ""
+  }
+]

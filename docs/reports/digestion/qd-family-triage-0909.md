@@ -330,3 +330,32 @@ hd : 1 ≤ d
 ```
 
 上游 `reflect_map` 的方向与目标相反，下一次只反向改写。这个目标不重新记成 Q 数学缺口。
+
+### Attempt 2 / B3：bind-only = yes
+
+`atom_id=2bc63109d666c92a11aa641dbeae45bc08e3f4f939bc5ce4406a75e5d86d03b6`；`bind_only=yes`；`proof_shape=bind-only`；`remaining_gap=none`（原文有限设置内）；`escape_witness=null`。
+
+[b3-08 完整探针](qd-family-triage-0909/attempt-2/b3-08.lean) 整次 **EXIT=0**，46.98047575 秒。[运行摘录](qd-family-triage-0909/attempt-2/b3-08-excerpt.txt) / [完整日志无损 ASCII 归档](qd-family-triage-0909/attempt-2/b3-08.log.gz.b64)。`b3_source_full` 同时给出 B13 等价、B14 的严格正定性与精确 `charpoly=q`；`q_map_source` 核对其实系数模型的复化恰等于原始源 `Polynomial.reflect`。这些声明及符号、Schur、重建子引理均仅 `[propext, Classical.choice, Quot.sound]`。
+
+判形依据：箭头行列式直接接 `Matrix.det_fromBlocks₂₂`，通过 `Lagrange.eq_interpolate` / `eval_interpolate_not_at_node` 识别 q；Hermitian 特征多项式分解和 `posDef_iff_eigenvalues_pos` 给矩阵与正根关系。正系数使 P 在非负输入严格为正；零输入的 Q 用顶系数公式处理，系数正性来自冻结第四投影，故未增加精确次数或 `hno` 前提。
+
+留数方向最终**没有使用因子归纳**：`Polynomial.Splits.eval_derivative_div_eval_of_ne_zero` 在局部非零邻域给对数导数；`HasDerivAt.fun_div`、`fun_sum`、`congr_of_eventuallyEq`、`unique` 直接把其导数识别为负的重数加权倒数平方和。`Finset.sum_nonpos`、平方非负及域规范化闭合符号。这些原子事实全部来自上游直接实例化，原拟 Laguerre 归纳逃逸见证因第 3.2(iv) 的反事实条件失败而**撤回**：不用归纳，仅绑定已能得到整个结论。它不进入 `content_candidates`。
+
+`mathlib_hits`（本地实查；新引用收据为 [search-final.json](qd-family-triage-0909/attempt-2/search-final.json)）：
+
+- `Polynomial.Splits.eval_derivative_div_eval_of_ne_zero` — `.lake/packages/mathlib/Mathlib/Algebra/Polynomial/Splits.lean:654`。
+- `HasDerivAt.fun_div` — `.lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Inv.lean:168`；`HasDerivAt.fun_sum` — `.lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Add.lean:218`。
+- `HasDerivAt.unique` / `HasDerivAt.congr_of_eventuallyEq` — `.lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Basic.lean:399` / `:609`。
+- `Matrix.det_fromBlocks₂₂` — `.lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/SchurComplement.lean:384`；`Matrix.eval_charpoly` — `.lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/Charpoly/Basic.lean:137`。
+- `Lagrange.eq_interpolate` / `Lagrange.eval_interpolate_not_at_node` — `.lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean:362` / `:685`。
+- `Matrix.IsHermitian.charpoly_eq` — `.lake/packages/mathlib/Mathlib/Analysis/Matrix/Spectrum.lean:154`；`Matrix.IsHermitian.posDef_iff_eigenvalues_pos` — `.lake/packages/mathlib/Mathlib/Analysis/Matrix/PosDef.lean:71`。
+- `Polynomial.reflect_map` — `.lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean:138`。
+
+`frozen_interfaces`：F2、F3 提供实系数源的复化识别，F1 通过既判 B1 把前层缩放根接成临界节点（各声明完整身份见前文）。直接使用的新冻结接口 **F5** 为 GID `D5/S3/Zeros/Jensen/SourceThetaMomentBounds`，模块 `statement_id=sha256:9de7bd223c662525a590ce1366b1efcfc26700544e7bb42d0e6fb229b51f67f1`；声明 `source_theta_normalization`，声明 `statement_id=sha256:f2833d5f83723ffce02a966e718c61fa0d1e6bd269835bfcc1c5ed396ced9d03`。作用域：显式源规范 `sourceThetaCoefficient 0=1` 下的四项合取，第四投影给 `∀ k, 0<sourceThetaCoefficient k`；不证明该源规范本身或 RH。[冻结读取原料](qd-family-triage-0909/attempt-2/frozen-theta-normalization.json)。
+
+`admission_if_landed=rule-11-upstream-wrapper`：命中 `Matrix.det_fromBlocks₂₂`、`Lagrange.eval_interpolate_not_at_node` 与 `Matrix.IsHermitian.posDef_iff_eigenvalues_pos`；使包装必要的 atom 子句是**以所定义 η 构造指定箭头矩阵，并要求该矩阵严格正定且 charpoly 恰为实际 q_d**。上游给一般分块行列式、插值及谱判据，原文要求它们在同一源对象上的专门化接口；本判词不把可证性本身当准入依据，不执行落地。
+
+```sh
+make -f Makefile -f /var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/probe.mk lean PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean
+# EXIT=0 (b3-08)
+```
