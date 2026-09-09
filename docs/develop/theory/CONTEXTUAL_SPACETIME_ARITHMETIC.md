@@ -2726,3 +2726,237 @@ $J(C,A)=(C,\{e\in A:\exists d\in\Omega_C\ (e\prec d)\})$。该筛选不用事件
 | **仅对 §19 的 $\mathbb Z[\mathbb Z^3]$**，有限系数可经群字符作 Fourier 对应，$\widehat{\mathbb Z^3}\cong\mathbb T^3$（此处 $\mathbb T=\mathbb R/\mathbb Z$，不同于来源树集合 $T$） | 这是阿贝尔群卷积的标准字符对应，缺少 Born 规则与测量理论；不移植到 §24 非结合的来源 pair 代数。上述 Pontryagin duality 稳定入口支持群对偶框架（`literature-attested`）；与本卷空间代数的绑定及边界为 `repo-derived` |
 
 表中的缺项来自对本卷现有定义域与运算的核对，未作物理实验；双缝、Born 规则、Bell 实验与量子动力学在本批均为“未测”，本批也没有提供这些实验或物理公理的实现。
+
+<a id="pr3-receipts"></a>
+
+## 28. PR3 的来源、产地与核验收据
+
+### 28.1 成熟来源与本仓推导的边界
+
+| 范围 | 成熟来源及适用对象 | 本仓推导与结算边界 |
+| --- | --- | --- |
+| §24 来源语言 | §14–16 已使用的有限支撑与上下文归纳方法；§26 的关系来源文献仅提供查询／系数背景（`literature-attested`） | 联合分箱、非结合有序 pair 更新、来源核及混合时间核的 CSA 特定证明为 `repo-derived`；不把交换环公理移植到来源代数，不主张完整来源代数分类 |
+| §25 因果语言 | Rota 的 Möbius 反演框架，DOI [10.1007/BF00531932](https://doi.org/10.1007/BF00531932)，`literature-attested`；此处只用有限布尔格 | 目标域为当前区域的筛选、剖面推送、平衡参数隔离、完整 iff 与 D1–D5 为 `repo-derived`；正文另直接证明所用反演式，有限运行不承担一般必要性 |
+| §26 理论对照 | 下表逐项列出的游戏、关系查询、来源游戏、事件结构、因果集、可逆计算及范畴化对象，`literature-attested` | 每项操作／观察／条件的对应及不对应判断为 `repo-derived`；没有建立同一查询语言、monus、公理组或范畴结构 |
+| §27 量子边界 | 下表物理文献、测量覆盖／概率模型／全局截面框架、去量子化极限和阿贝尔群字符对偶，`literature-attested` | 本卷缺项与三条局部类比为 `repo-derived`；Fourier 仅绑定 §19 的空间群环，不推出 Born 规则、双缝或 Bell 型裁决 |
+
+`repo-derived` 说明本卷给出了推导，不声明优先权。本批按 DOI、arXiv、出版页、Crossref 元数据及作者／学术站点检索；没有作穷尽的新颖性排查，新颖性优先权为“未测”。原文访问失败不等于没有相关文献，不能据此标 `suspected-novel`。`literature-attested` 的归属标签与本席实际核读强度分开记录：下表“未取回”各项的原文核读为 `ASSUMED-UNVERIFIED`，其中元数据或二手核读的范围逐行写明。已下载文件也不等于已通读。
+
+| 文献（DOI 或稳定 URL） | 本席核读状态 | 实际范围与未核部分 |
+| --- | --- | --- |
+| [Rota (1964), Theory of Möbius Functions](https://doi.org/10.1007/BF00531932) | 未取回 | 取回出版页并核读元数据；原文未取回。正文另给布尔格反演的直接证明。 |
+| [Conway, On Numbers and Games](https://doi.org/10.1201/9781439864159) | 未取回 | 出版页及 Crossref 题名、作者、登记日期已核；书本文字未取回。第二版 DOI 的版次说明据 brief，非 1976 原版 DOI。 |
+| [Green–Ives–Tannen (2009), Reconcilable Differences](https://doi.org/10.1145/1514894.1514920) | 未取回 | 出版入口返回 HTTP 403；Crossref 元数据已核。整数差语义另由已通读的 TaPP 文 §4 交叉核读。 |
+| [Geerts–Poggi (2010), On Database Query Languages for K-relations](https://doi.org/10.1016/j.jal.2009.09.001) | 未取回 | 取回 linkinghub 入口及 Crossref 元数据，原文未取回；差扩展另见已通读 TaPP 文的讨论。 |
+| [Amsterdamer–Deutch–Tannen, TaPP 差运算限制 (2011)](https://arxiv.org/abs/1105.2255) | 已读全文 | 通读取回的 5 页；核对 Figure 2 的 A10/A11、§3 命题 3.4／推论 3.5 与 §4 整数差语义。 |
+| [Amsterdamer–Deutch–Tannen, PODS 聚合来源 (2011)](https://arxiv.org/abs/1101.1110) | 只读摘要 | 全文文件已取回，核读摘要中的值层来源、聚合与差；全文未通读。 |
+| [Köhler–Ludäscher–Zinn (2013), First-Order Provenance Games](https://arxiv.org/abs/1309.2655) | 只读摘要 | 全文文件已取回，核读完整摘要及开篇；全文未通读。另有 DOI 10.1007/978-3-642-41660-6_20。 |
+| [Winskel (1987), Event Structures](https://doi.org/10.1007/3-540-17906-2_31) | 只读摘要 | 核读出版页摘要；章节全文未取回。 |
+| [Bombelli–Lee–Meyer–Sorkin (1987), Space-time as a Causal Set](https://doi.org/10.1103/PhysRevLett.59.521) | 已读全文 | DOI 入口返回 HTTP 403 后，从 APS harvest 取回并通读 4 页。 |
+| [Bennett (1973), Logical Reversibility of Computation](https://doi.org/10.1147/rd.176.0525) | 未取回 | DOI 转至 IEEE，HTTP 202 且正文为空；另查 UVA PDF 与 IBM 题名入口均为 HTTP 404。未取得摘要或原文，外部断言据 brief。 |
+| [Baez–Dolan, Categorification](https://arxiv.org/abs/math/9802029) | 只读摘要 | 全文文件已取回，核读摘要及开篇的范畴、函子与相干要求；全文未通读。 |
+| [Baez, The Mysteries of Counting](https://math.ucr.edu/home/baez/counting/) | 只读摘要 | 核读讲座入口摘要；未通读讲义或幻灯片。 |
+| [Feynman (1948), Space-Time Approach to Non-Relativistic Quantum Mechanics](https://doi.org/10.1103/RevModPhys.20.367) | 只读摘要 | 从 APS harvest 取回全文；核读摘要、引言及 §2 片段的振幅相加／模平方；全文未通读。 |
+| [Griffiths (1984), Consistent Histories and the Interpretation of Quantum Mechanics](https://doi.org/10.1007/BF01015734) | 只读摘要 | 核读出版页摘要；原文未取回。 |
+| [Gell-Mann–Hartle (1990), Quantum Mechanics in the Light of Quantum Cosmology](https://arxiv.org/abs/1803.04605) | 只读摘要 | 取回 2018 重发全文；核读完整摘要及重发说明，确认概率指派的退相干条件；全文未通读。 |
+| [Sorkin (1994), Quantum Mechanics as Quantum Measure Theory](https://arxiv.org/abs/gr-qc/9401003) | 只读摘要 | 全文文件已取回，核读摘要中的测度加性层级；全文未通读。 |
+| [Abramsky–Brandenburger (2011), The Sheaf-Theoretic Structure of Non-Locality and Contextuality](https://arxiv.org/abs/1102.0264) | 只读摘要 | 全文文件已取回；除摘要外核读 §2.1–2.3 的测量覆盖、结果指派与分布定义，全文未通读。 |
+| [Litvinov–Maslov, Correspondence Principle for Idempotent Calculus and Some Computer Applications](https://arxiv.org/abs/math/0101021) | 已读全文 | 通读取回的 27 页；§2 的 h log u 运输及 h→0+ 极限为本节直接引用范围。 |
+| [Johnston (2008), Particle Propagators on Discrete Spacetime](https://arxiv.org/abs/0806.3083) | 只读摘要 | 全文文件已取回，核读摘要的离散传播子及 Minkowski 撒点比较条件；全文未通读。 |
+| [Encyclopedia of Mathematics, Pontryagin Duality](https://encyclopediaofmath.org/wiki/Pontryagin_duality) | 已读全文 | 通读该网页及所附参考、评论；仅引用局部紧阿贝尔群／字符群部分。 |
+
+上述核读状态取自本次实际取回文件与阅读窗口；逐次 URL、HTTP 结果及保留文本位于 runner 工件目录的 `literature/fetch.json`、`literature/extra-fetch.json`、`literature/bennett-fetch.json` 与同目录原文文件。未通读项的完整证明核读仍为“未测”，由后续文献核读或评审接续；本卷自给的证明不依赖把这些状态提升为已读全文。
+
+### 28.2 本批产地与调用边界
+
+本批由 `consensus-rnd:sshx` 的一个 `codex-cli implementation worker` 在工作树 `/Users/auricstudio/trureturing-csa-upgrade-pr3-0909`、分支 `lane/theory/csa-upgrade-pr3-0909` 实施，基线钉住 `4ac806a62d274a48550978b827a4bf546a8c898e`。输入为 caller 交付的收敛 brief（含 R1）、本仓标架与既有卷文，属于 `repo-prior-exposed`；本 implementation worker 未另派子席。
+
+按 **caller／brief 提供的席位记录**，思考席六席全部为 `nyxid-oracle`，其中五席为 codex 负载门超时后的协议回退。该席位说明不是本 worker 对宿主超时原因的独立测量，也不构成模型多样性声明。本 worker 亲跑附录、canonical ingest 与下列 git／字节核对；orchestrator 亲验结果未向本席提供，记“未测”。评审与 PR 生命周期由 caller 接续；本节不预报评审、CI 或合入结果。
+
+本批形态为 **ingest**：`contextual-spacetime-arithmetic` 源卷新增内容经 canonical writer 进入 atom CAS 与该 source 的 `residual-open` backfill。未新增 Lean、axiom、判官、schema 或生产引擎；本批没有 deposit／cover，不报告新增冻结或已吸收状态。Lean、CI、独立评审与物理实验均为“未测”，分别由形式化／CI／评审／物理模型工作承担。
+
+### 28.3 附录实际命令与有限收据
+
+本席在上述工作树实际运行下列原文命令（2026-09-10，本批执行文件对应本卷唯一 Python 块）；退出码 **0**，stderr 为空。复用 `Rich/add/mul/neg/temporal/filt`，R1 允许的 `pr3_` 代码只插在既有最终打印之前。
+
+```sh
+sed -n '/^```python$/,/^```$/p' docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md | sed '1d;$d' | python3 -
+```
+
+stdout 中 `pr3_` 两行及最终行原文如下；原有检查也在同一次执行中通过：
+
+```text
+pr3_source: samples=48 updates=240 witnesses=6 brackets=28,32 B1=distinct ordered_pair=distinct
+pr3_causal: updates=551 product_antichains=48 targets=Omega bare_probes=16 P_plus=1,0 legal_probes=1200 mobius_profiles=51 mobius_coefficients=1200 bounded_contexts=273 B2_time=2,1 strict_successor=1,0 edge=0,1 marginals=1,2 redundant_insertions=12 timed_nonisomorphism=True
+ALL_FINITE_CHECKS_PASSED
+```
+
+这些计数由实际执行累加。随机种子为 `20260910`；随机当前区域大小取 0、2、4，额外档案点数取 0、1、2，兼容时标的边取传递闭包，选择任意子集。48 个随机样本逐字节检查来源更新，并核对因果剖面更新、乘积当前反链与无出边；额外档案目标见证断言因果筛选只遍历 `Omega`。51 个反演对象为 48 个随机样本加 D1 两对象与当前区域外目标见证，合法探针恢复两种选择位，采用规范序列化字节逐格比较。B2 的 273 个有界上下文为 16 个固定基本操作在深度 0–2 的全部单孔复合；一般上下文结论由命题 41 证明。D1 的补集裸探针只要求两侧相等，§25.3 已列其非零情形。有限收据不声明枚举全部载体、上下文、时间属性签名或历史同构类型；一般必要性已由正文证明，未启用 `pr3_mobius_finite` 降级形态。
+
+### 28.4 ingest 与固定检查点的 git 读数
+
+下列 ingest 在追加 §28 之前实际运行，环境变量 `BASE=4ac806a62d274a48550978b827a4bf546a8c898e` 固定 canonical make 的比较基线。命令原文：
+
+```sh
+make ingest SOURCE="contextual-spacetime-arithmetic docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md"
+```
+
+退出码 **0**；新增 atom 文件 **63**、新增 backfill 文件 **63**，计数来自同次调用前后未跟踪路径集合之差，并与 writer stdout 对齐。stdout 原文：
+
+```text
+INGEST residual_open_added=63 skipped_existing=134 coarse_fallbacks=0 open_genres=0 cas_objects_written=63 ledger_changed=true
+```
+
+本次产物已提交为 `d743044d654fd8db8f4179bc4604e10e9705d6b2`。以下读数指向这个 **§24–§27 与首次 ingest 均已提交、尚未追加 §28 的固定检查点**；本节自身及其消化产物的最终计数、提交、推送和 git 读数统一由同次 runner 的 `result.json` 记录。这样每份收据都有明确的树边界。
+
+`git status` 原文（退出码 0；同次 `git status --porcelain=v1` 的 stdout 为空）：
+
+```text
+On branch lane/theory/csa-upgrade-pr3-0909
+Your branch and 'origin/dev' have diverged,
+and have 5 and 22 different commits each, respectively.
+  (use "git pull" if you want to integrate the remote branch with yours)
+
+
+It took 2.83 seconds to enumerate untracked files.
+See 'git help status' for information on how to improve this.
+
+nothing to commit, working tree clean
+```
+
+`git diff --stat 4ac806a62d` 原文（退出码 0）：
+
+```text
+ ...69eb84ff8fa097791d610ae7416baf791b71a832bf3fef5 |    4 +
+ ...08b70264d66292139a053a762604a0a0eebfd3d9a56f6eb | 1197 ++++++++++++++++++++
+ ...ee9ebacdb1c8a21629097b784ba2e3f06b5dece4f7be532 |   13 +
+ ...e8dc90fb810196214450c3465da0d68dfaa0b455899327d |    4 +
+ ...d0537b7809cfe41c7fd31f81055ff044692c99496350db7 |    1 +
+ ...ca257fd6c22e8d559f13612695f23459de76846059514a8 |   27 +
+ ...3305794a1f35e430a8e40076d4a05b20246340f6efef370 |    4 +
+ ...0290fa99b9bc0acfa7b662a70d340ca6da8e7b11d4d59ce |    1 +
+ ...7e6ed834e3ce7ce81a909cf4bf650ec5cfae3abbaa18453 |    1 +
+ ...7783f3c47f15cca2d48372ebb32f863fd1327e4b731a720 |    1 +
+ ...11ebe8d5095c3fc4810b3f6777fd51eccf79d3b25e717c8 |    8 +
+ ...f3d518ec77c92f13504c9bad5fce4b46754b7ba25065457 |   14 +
+ ...7f27eb7e3ee7d154e73164bf905e692ca7a65bdda762741 |    1 +
+ ...2c84cac09c354f619b45e6893aee2dc854aedbc34625ac5 |    1 +
+ ...0553eb2cd236031bd181fba57e010885adca294351112c1 |    1 +
+ ...097b7ebf50470251383398cb3e47baa8a696ff29fafa6e0 |    4 +
+ ...d45414578e855d136f5aef0d5f2323d06aeb6dad5acec02 |   26 +
+ ...f701abfb1ad8b4c68b5c5ffe8a951038fbacf9453469c9f |    6 +
+ ...67c7c7f695d75e4d5b8e7c5011c6291ccb8fa8ed83a5d31 |    4 +
+ ...2777a5853402960b2673c6807d78c48cd4a077a3a0954b7 |   15 +
+ ...4353d48717acdecd0881820b68024bee0d909e700b09d1f |    1 +
+ ...4ff91638bbbcaf2a2a93ebf3e139e957352cbdfc546f6ea |    1 +
+ ...319fac91e799b05eb3f2bd28ee7786928fb7066d05f34f3 |    1 +
+ ...b7b3194ed6cb6d8ea12ea820a41f32dcdbe672055b7e4df |    1 +
+ ...2c8f4c007ce3016a9a6be222bae8afb86c69ce50183aea0 |   30 +
+ ...7465e364304615fc0ef9aae7bf26165e3ac371cea20a839 |    1 +
+ ...5f7c05a80a613ea40f5de43854aa3ebbb1b63e6dde53384 |   17 +
+ ...bf855506464c17c1c875a684e8a6db04a24c4edfeff47b7 |    4 +
+ ...8e235ef453d39fef40124389f3ecd22722b5093262f5fc4 |    1 +
+ ...1250360fd2fc654bf82921b60080ec45df40bf371edbd1f |    1 +
+ ...25d00c69530f2882e746a24c08953a95c7f814c05a295d9 |    6 +
+ ...1ae971d3269f4357c88f957bc84cf5de517ed467a8af411 |    7 +
+ ...ac0b3464b3c6ee17239c795641cb0428cafe42c83a5fc0b |   29 +
+ ...a21d6aa1f4696629eebefd452d61a7c7c21856a83c4f09a |  631 +++++++++++
+ ...5d62cfe796ec9461c905cd32d3be2a03e99ddd1037b7bb6 |    7 +
+ ...df26b6980492fe5015416b6b200eea5c5d9cfa682c49636 |   19 +
+ ...2d9953a470e4233e06f35bdd4ff2e03c7982de58bda417b |    7 +
+ ...16f427ebb32c719a7e7ee52229d738bd6be245091465222 |    6 +
+ ...f32efd0acdee015ce25bd47700889e80088b62e833be8aa |    1 +
+ ...a0c39aae96660678c197078cf7434baed6fceca76760e7e |    2 +
+ ...6beb6f1677b66b62819f651b09b0ab1594515ac04303f70 |   26 +
+ ...c130d570b188c44b83fb66f4e9291ef2be9c2d23305e1b1 |   27 +
+ ...518355cd5f141f3830214b55e10962a89cd34f3ad4a901b |    1 +
+ ...a6f613621536d779f4a3ab8df7d33f0b7a993b7b9d1d198 |    2 +
+ ...aeeae0933c3361c102dc25b08a90544e7a90ff101c4fe02 |    1 +
+ ...c76619ebd9c1a1398bb95641a6499f128f4847859ca9ed6 |   10 +
+ ...e95bd7eba6949409865cbdd9b41438900a23bae7ac38add |    1 +
+ ...dd732adf299246d817299624237a58297ca0b1d666ed5d2 |    1 +
+ ...8c762bd86fde330eeddc3b806493a1256d716cd985d8ef2 |   20 +
+ ...1a768c2ae1a412b0b224e93d69f5cbc2b5094569213ccbb |    1 +
+ ...54beebbe1e44dd756c5698e38a29af062c02eebf4af0a9e |    1 +
+ ...672c1e615f5c26dfca804dde48cfaf21bcb2a7b93b78009 |    1 +
+ ...02ad90c41aefaaa946a7f025617845d5e202e539fa95e9a |   10 +
+ ...807442a3dd144bd76823ec384214c923ed639b65c63a9f0 |    2 +
+ ...e3c3e25236f595dc4e8e0529f1b81958a9f8b66cf331213 |    2 +
+ ...7541dbaf1e53bcaa0d7129d6f5d37110c028c991d5b22b2 |    1 +
+ ...9ba576c7e57f57b5c31b33e08c2d7edac93043b2cfbe40e |    3 +
+ ...7f4b774eca265b56eb168c8690ced50a37066e66949de80 |    2 +
+ ...ed686bd00a37363e5d6c0e35c7f11fe6af3ba5302aab0dc |   13 +
+ ...3d43156cf5f51274ff038a52f04b0ea3bf47460af0e5f03 |    1 +
+ ...fac65f12926ecb4139156298189edb7e79798668d93bf36 |    6 +
+ ...3e1403569e9e24c0ecddf6e8b835c5968a90a2212e9af34 |    1 +
+ ...224dbc760558e12c052d0a517b97bf726a6bdd819dd8b8c |    4 +
+ ...4ff8fa097791d610ae7416baf791b71a832bf3fef5.yaml |    7 +
+ ...264d66292139a053a762604a0a0eebfd3d9a56f6eb.yaml |   12 +
+ ...acdb1c8a21629097b784ba2e3f06b5dece4f7be532.yaml |    7 +
+ ...0fb810196214450c3465da0d68dfaa0b455899327d.yaml |    7 +
+ ...b7809cfe41c7fd31f81055ff044692c99496350db7.yaml |    7 +
+ ...fd6c22e8d559f13612695f23459de76846059514a8.yaml |   10 +
+ ...94a1f35e430a8e40076d4a05b20246340f6efef370.yaml |    7 +
+ ...a99b9bc0acfa7b662a70d340ca6da8e7b11d4d59ce.yaml |    7 +
+ ...834e3ce7ce81a909cf4bf650ec5cfae3abbaa18453.yaml |    7 +
+ ...3c47f15cca2d48372ebb32f863fd1327e4b731a720.yaml |    7 +
+ ...8d5095c3fc4810b3f6777fd51eccf79d3b25e717c8.yaml |    7 +
+ ...8ec77c92f13504c9bad5fce4b46754b7ba25065457.yaml |   10 +
+ ...b7e3ee7d154e73164bf905e692ca7a65bdda762741.yaml |    7 +
+ ...ac09c354f619b45e6893aee2dc854aedbc34625ac5.yaml |    7 +
+ ...b2cd236031bd181fba57e010885adca294351112c1.yaml |    7 +
+ ...ebf50470251383398cb3e47baa8a696ff29fafa6e0.yaml |    7 +
+ ...4578e855d136f5aef0d5f2323d06aeb6dad5acec02.yaml |    7 +
+ ...bfb1ad8b4c68b5c5ffe8a951038fbacf9453469c9f.yaml |   10 +
+ ...7f695d75e4d5b8e7c5011c6291ccb8fa8ed83a5d31.yaml |    7 +
+ ...5853402960b2673c6807d78c48cd4a077a3a0954b7.yaml |   10 +
+ ...48717acdecd0881820b68024bee0d909e700b09d1f.yaml |    7 +
+ ...638bbbcaf2a2a93ebf3e139e957352cbdfc546f6ea.yaml |    7 +
+ ...c91e799b05eb3f2bd28ee7786928fb7066d05f34f3.yaml |    7 +
+ ...94ed6cb6d8ea12ea820a41f32dcdbe672055b7e4df.yaml |    7 +
+ ...c007ce3016a9a6be222bae8afb86c69ce50183aea0.yaml |   11 +
+ ...364304615fc0ef9aae7bf26165e3ac371cea20a839.yaml |    7 +
+ ...5a80a613ea40f5de43854aa3ebbb1b63e6dde53384.yaml |    7 +
+ ...506464c17c1c875a684e8a6db04a24c4edfeff47b7.yaml |    7 +
+ ...ef453d39fef40124389f3ecd22722b5093262f5fc4.yaml |    7 +
+ ...60fd2fc654bf82921b60080ec45df40bf371edbd1f.yaml |    7 +
+ ...c69530f2882e746a24c08953a95c7f814c05a295d9.yaml |    7 +
+ ...1d3269f4357c88f957bc84cf5de517ed467a8af411.yaml |   10 +
+ ...464b3c6ee17239c795641cb0428cafe42c83a5fc0b.yaml |    7 +
+ ...aa1f4696629eebefd452d61a7c7c21856a83c4f09a.yaml |    7 +
+ ...fe796ec9461c905cd32d3be2a03e99ddd1037b7bb6.yaml |    7 +
+ ...6980492fe5015416b6b200eea5c5d9cfa682c49636.yaml |    7 +
+ ...3a470e4233e06f35bdd4ff2e03c7982de58bda417b.yaml |    7 +
+ ...7ebb32c719a7e7ee52229d738bd6be245091465222.yaml |    7 +
+ ...d0acdee015ce25bd47700889e80088b62e833be8aa.yaml |    7 +
+ ...aae96660678c197078cf7434baed6fceca76760e7e.yaml |    7 +
+ ...f1677b66b62819f651b09b0ab1594515ac04303f70.yaml |   11 +
+ ...570b188c44b83fb66f4e9291ef2be9c2d23305e1b1.yaml |   11 +
+ ...5cd5f141f3830214b55e10962a89cd34f3ad4a901b.yaml |    7 +
+ ...3621536d779f4a3ab8df7d33f0b7a993b7b9d1d198.yaml |    7 +
+ ...0933c3361c102dc25b08a90544e7a90ff101c4fe02.yaml |    7 +
+ ...9ebd9c1a1398bb95641a6499f128f4847859ca9ed6.yaml |    7 +
+ ...7eba6949409865cbdd9b41438900a23bae7ac38add.yaml |    7 +
+ ...adf299246d817299624237a58297ca0b1d666ed5d2.yaml |    7 +
+ ...bd86fde330eeddc3b806493a1256d716cd985d8ef2.yaml |    7 +
+ ...c2ae1a412b0b224e93d69f5cbc2b5094569213ccbb.yaml |    7 +
+ ...bbe1e44dd756c5698e38a29af062c02eebf4af0a9e.yaml |    7 +
+ ...e615f5c26dfca804dde48cfaf21bcb2a7b93b78009.yaml |    7 +
+ ...0c41aefaaa946a7f025617845d5e202e539fa95e9a.yaml |   12 +
+ ...2a3dd144bd76823ec384214c923ed639b65c63a9f0.yaml |    7 +
+ ...25236f595dc4e8e0529f1b81958a9f8b66cf331213.yaml |    7 +
+ ...baf1e53bcaa0d7129d6f5d37110c028c991d5b22b2.yaml |    7 +
+ ...6c7e57f57b5c31b33e08c2d7edac93043b2cfbe40e.yaml |    7 +
+ ...74eca265b56eb168c8690ced50a37066e66949de80.yaml |    7 +
+ ...bd00a37363e5d6c0e35c7f11fe6af3ba5302aab0dc.yaml |    7 +
+ ...56cf5f51274ff038a52f04b0ea3bf47460af0e5f03.yaml |    7 +
+ ...f12926ecb4139156298189edb7e79798668d93bf36.yaml |    7 +
+ ...3569e9e24c0ecddf6e8b835c5968a90a2212e9af34.yaml |    7 +
+ ...c760558e12c052d0a517b97bf726a6bdd819dd8b8c.yaml |    7 +
+ .../theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md      |  592 ++++++++++
+ 127 files changed, 3313 insertions(+)
+```
+
+检查点字节核对以基线全文为参照：去掉 R1 插入段后，既有 158,518 字节逐字节保留；Python 块计数为 1，文稿 diff 删除行数为 0。检查点改动路径仅含本卷、`Meta/Digestion/atoms` 与 `Meta/Digestion/backfill`。该读数来自本次 `scope-audit.json` 与检查点 git 输出；本节完成后的同口径检查及最终干净状态由 `result.json` 记录。
+
+**空白诊断的单独账目。** 追加本节后、再次 ingest 前，实际运行 `git diff --check 4ac806a62d` 退出 `2`：42 条诊断全在首次 ingest 生成的 42 个 atom 中，仅为行尾空白或末尾空行。实际运行 `git diff --check 4ac806a62d -- docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md Meta/Digestion/backfill` 退出 `0`、stdout 为空。诊断原文保存在 runner 工件 `whitespace-all.stdout`，计数与命令在 `whitespace.json`；canonical atom 字节按第 4.7 条保留，本批未手改 atom 或 writer。最终含本节消化产物的同口径诊断由 `result.json` 记录。
