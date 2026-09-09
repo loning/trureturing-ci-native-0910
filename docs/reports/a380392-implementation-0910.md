@@ -203,3 +203,17 @@ missing:D5/S3/Arith/Paths/MonotoneOnePaths.mean_monotone_one_paths。
 第三次 make emit EXIT=2，29.187 秒：DSL 的 Le 紧接 n 会发射成非法 LaTeX 宏。检查整条公式的控制词边界，同时补齐 Le 与 Cdot 后的 Sp；这是同一 authored 公式的发射调试，尚未发生 deposit 或整 lane 重做。
 
 make emit 最终 EXIT=0，67.168 秒；仅本题 1 个 Blueprint 被修改。已逐字读投影公式，与 Lean 主定理及 n≥1 限制一致。Generated/ 与 tools/Generated 的运行期投影不加入 Git。
+
+## Scribe 内容门与冻结预检
+
+- projections --check --report .lake/build/stratalint/raw-lean-report.json EXIT=0，11.914 秒。
+  本次差量不唤醒脚本内部的 projection 分支，故显式执行该子项，不冒称已自动执行。
+- bash tools/scripts/workflow/scribe-content-checks.sh .lake/build/stratalint/raw-lean-report.json
+  "" 48e95107100e503cdc52aa44cc15165b65fc3213 EXIT=0，23.549 秒。
+  Describe 与 Library locator 检查通过；真实 KaTeX 为 markdown: judged=1 formula(s)=1 red=0。
+  既有笔记 online-doi-title-check 是非阻断 Observe，不当成联网 DOI 核验。
+- canonical deposit-header-check --target D5/S3/Arith/Paths/MonotoneOnePaths.lean
+  --protected-base 48e95107100e503cdc52aa44cc15165b65fc3213 EXIT=0，7.291 秒，SL-012 通过。
+- make deposit 入口 require_transaction_arguments 强制 ATOM_ID 且随后 cover；本题无 atom。
+  按用户明示及仓内先例，使用该入口同一 canonical deposit-header-check 与
+  ledger-align --add，不制造假 atom、不绕过头部/当前 Lean report 预检。
