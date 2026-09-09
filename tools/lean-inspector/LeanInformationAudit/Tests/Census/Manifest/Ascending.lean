@@ -3,7 +3,7 @@ import LeanInformationAudit.Census.Manifest
 open Lean Meta Elab.Command LeanInformationAudit CensusManifest
 
 -- These hit the kernel conjunct directly. The publication binder also rejects
--- the altered chunks before proof construction, against its wire authorities.
+-- the altered chunks before publication, against its wire authorities.
 run_cmd do
   liftTermElabM do
     for (label, values) in [
