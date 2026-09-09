@@ -21,6 +21,9 @@ commit `d43088b76be65982a2fc8270da3c2137ebbea94f`, path
 Its history was inspected with
 `git log --oneline origin/dev..origin/lane/math/section-cover-screen-0909`.
 The existing untracked `candidates.json` is a supplied input, outside this diff.
+The continuation resumed from the supplied conversation summary, existing
+commits and command logs; it is part of the same implementation stream, not an
+independent review.
 
 ## Preregistered decision rule
 
@@ -408,6 +411,57 @@ executed for this atom. Its migration is `residual-open -> residual-open`, with
 `coverage_gids: []`. The unelaborated bridge and any stronger interpretation of
 the title's "independently execute" wording remain uncovered.
 
+## Final local verification
+
+At content checkpoint `412fcb588a47cccc596fdd3467aa9dc4eb09d348`, a structured
+Ruby YAML/JSON inspection (`<attempt-1>/verify-ledger.rb`, exit 0) compared the
+five ledger records with baseline `1bb54f920527c303ebaec4e5388d48fcbee0df04`.
+It found exactly three `residual-open -> absorbed-closed` migrations and four
+coverage edges with the declaration pins recorded above. All three records
+retain their original noncoverage fields and have no unresolved subitems.
+Both B records remain at their original residual paths with empty coverage and
+are byte-identical to baseline.
+
+The complete baseline diff, with rename detection disabled, is exactly the six
+A-ledger old/new paths and this report. There are zero `.lean`, frozen-state,
+atom-CAS, B-ledger, or other tracked changes. `git diff --check` returned 0 and
+the tracked working tree was clean. This inspection verifies structure and
+scope; it does not verify mathematical fidelity.
+
+Additional literal-declaration search, at the initially resolved origin/dev:
+
+```text
+git grep -n -P '\btheorem\s+(golden_resource_5040_unique_maximum_of_price_interval|sorted_positive_sum_product_classification|exact_sticky_reduction|dynamics_descends_iff)\b' origin/dev -- D5
+```
+
+Result: four lines, exactly one per named declaration, exit 0. The same-feature
+positive and negative controls are recorded in A1. These are declaration-text
+readings, not claims about all semantic references or an exhaustive search.
+
+Late `git fetch origin dev` returned 0 and resolved origin/dev to
+`bec7677043c96526c256a3d6c413c965aead4c67`. The five nominated module/frozen
+paths and all five atom paths have no diff between the original baseline and
+that fetched dev. `git merge-tree --write-tree origin/dev HEAD` returned 0,
+tree `3614d67d99b21046581955744651300bf8981a60`, at the content checkpoint above:
+no merge conflict was reported. No merge, rebase, deposit or freeze was executed.
+
+Checkpoint pushes, each with exit 0:
+
+| Atom | Audit / dossier commit | Coverage receipt commit |
+| --- | --- | --- |
+| A1 | `dedb9237970cfd674f1fca9bfd8b1f734f2b08dd` | `e62051ae71a5c080e8c0d4c9050f919e70a44cda` |
+| A2 | `c9b16aa9c60b8ecedc401921ff9332895de25f3b` | `1a705e286cd4d4f8b9af3b7db2d37aac7c139748` |
+| A3 | `44b6214a083b6b12af116c5425e7614a26a6f8e6` | `5399bac8f45a6fdb030bba96d807de4c7aedcf72` |
+| B1 | `87ec5696950bd10a5ad4fe8cc7adf380150eadeb` | none; cover prohibited |
+| B2 | `412fcb588a47cccc596fdd3467aa9dc4eb09d348` | none; cover prohibited |
+
+The preregistration was separately pushed as
+`ee9e8ed394b3655f677823b6e73cb5ab1add423e`. All five show-atom commands and all
+three canonical cover commands returned 0. PR opening uses `make pr-open`
+without `AUTO_MERGE`; its command exit, required-check result, final remote head
+and PR number are delivery-time receipts in the attempt's `result.json` and
+`pr-open.log`. This report makes no claim of merge.
+
 ## Nonclaims
 
 - No claim that `make cover` judges fidelity.
@@ -415,4 +469,4 @@ the title's "independently execute" wording remain uncovered.
 - No new theorem, proof, deposit, freeze, or implication to RH is claimed.
 - No exhaustive repository or literature search is claimed.
 - No independent review or multi-model consensus is claimed.
-- PR checks have not yet been measured at this dossier checkpoint.
+- No automatic merge or merged-PR outcome is claimed.
