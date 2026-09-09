@@ -3865,3 +3865,71 @@ $$
 **证明（$q$ 层的正面表达式）。** $U_0$ 只选零位置、时刻 $0$、符号为正的点，新选中事件恰为 $(e,u_+)$，$e\in A_X$，其位置为 $x(e)$、符号仍为 $\sigma(e)$、时间为 $\max(t(e),0)+1$。乘积当前区域为反链，故 $F_{\downarrow Q^*}$ 恰按新事件自身属性筛选。对整数 $t(e)$，$\max(t(e),0)+1=2$ 当且仅当 $t(e)=1$；位置为零的条件也恰为 $x(e)=0$。有限求和即得 (TCAU-QEXP)，空区域时两边均为零。证毕。
 
 (TCAU-QEXP) 的乘积改变档案与当前区域，故不满足 (TCAU-NONEXP) 的丰富输出要求；两结论的观察层不同。柱集仍由 $F_S$ 完整表达；除本节具名 $B$ 和柱集外的一般区域分类仍为“未测”，不从此例推出所有非柱集不可表达。
+
+<a id="pr4-evidence"></a>
+
+## 33. PR4 本批产地与核验收据
+
+### 33.1 实施、先验暴露与思考输入
+
+本批属于 caller 的 `consensus-rnd:sshx` 流程，由一个 Codex 实施席以 `codex-cli` 载体在工作树 `/Users/auricstudio/trureturing-csa-upgrade-pr4-0910`、分支 `lane/theory/csa-upgrade-pr4-0910` 落地。该 worker 没有单独调用本地 skill，没有另派子席；输入是 caller 收敛 brief（含 R1-PR4）、完整 `CLAUDE.md`、既有卷文及前批有限核验，故为 `repo-prior-exposed`，不冒充盲推导或独立评审。
+
+原始基线是 `34d73f32f87c9a50af4890ffb5b141ce0af5110b`。开工实际执行 `git fetch origin dev && git merge-tree --write-tree origin/dev HEAD`，退出 0，试合树为 `a31ec0c72dcfff2c53206eaa0e3f1eca8903392c`；随后 `git merge origin/dev` 退出 0，以 fast-forward 合入 `49c7aecf0c64e27d43dc8bea8fd18ca438080c05`。两版卷字节相同，仍为 3251 行，最大编号为定义 25、命题 47、引理 1、反例 D10，故本批续为 §32–33、定义 26、命题 48–51、引理 2、D11–D12、增补 M，没有 rebase。
+
+**思考构成与判词摘要均据 caller／R1 记录转述**：六席中五席一致；`parsimony` 与 `natural-ownership` 给出最早元素及命中读数直接反演，`worth`、`teleology`、`proportional-containment` 要求将 D11 归为剖面之差的忘时见证并删去可选文献升级表。第六席的具体判词、各思考席模型与载体、原始投票工件未向本 worker 提供，未作独立核验，不据此宣称异模型共识。可选命题 51 的证明形态据 `natural-ownership` 方案；本席补明“保留 b 的任意输入位 ⇒ 不得出现清零掩码 ⇒ a 也不被筛除”的依赖步骤，再使用 N 的偶数性。
+
+本 worker 亲跑下列附录、ingest 与 git／字节核对；这些是实施自查，不是评审判词。caller 后续亲验、独立评审、CI 与合入结果均未向本席提供，记“未测”，本收据不预报它们。
+
+本批形态为 **ingest**：`contextual-spacetime-arithmetic` 源卷追加经 canonical writer 进入 atom CAS 及该源的 `residual-open` backfill。本批没有 deposit／cover；没有新增 Lean、axiom、判官、schema 或 tools，不报告新增冻结或已吸收状态。数学状态为 `repo-derived` 的普通 ZFC 推导加有限核验。
+
+文献仅内部复用 §28.4 已列的 Rota (1964) 反演来源（框架标签 `literature-attested`），不重复增加引文。写作时本席查询该已有 DOI 的 Crossref 元数据，HTTP 200，确认 DOI 与出版年 1964；原始响应及口径在 runner 的 `rota-crossref.json`、`literature-check.json`。该查询不等于通读原文，未升级 §31.1 的任何核读状态。全球新颖性检索与原文全文核读均为“未测”；本批只复用已给直接公式，不以文献全文为新增证明前提，不作优先权主张。
+
+### 33.2 附录实际命令与有限检查范围
+
+本席在上述工作树实际运行下列原文命令，退出码 **0**，stderr 为空；唯一 Python 块沿用 `Rich/add/mul/neg/temporal/filt` 及 `pr3_` 的 `timed=True` 辅助函数，新增段共 **313 行**，只插在原末行打印之前。
+
+```sh
+sed -n '/^```python$/,/^```$/p' docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md | sed '1d;$d' | python3 -
+```
+
+stdout 的 `pr4_` 行与最后一行原文为：
+
+```text
+pr4_temporal_causal: random_samples=64 cases=83 updates=2189 endpoint_updates=2189 earliest_rows=208 product_antichains=166 guard_success=121 strict_failures=128 context_reads=3548 mobius_profiles=89 mobius_coefficients=3548 xi_paths=2272 forget_paths=2272 kernel_edges=17 D11=1,0 D11_Z_times=-2,-1 common_k=-3 shifted_probe=1,0 fixed_U0=1,1 q_expression=83 B2=2,1 D10_indegrees=[1, 1],[0, 2] c_then_b=1,0
+ALL_FINITE_CHECKS_PASSED
+```
+
+计数均由执行累加。随机种子 `2026091004`，64 个随机平衡表示的当前区域大小取 0、2、4、6，当前时间取整数 −5 至 4，额外档案点数取 0、1、2，边按严格时标生成后取传递闭包，选择任意子集。加定向见证共 83 个输入；覆盖空档案、非空档案而空当前区域、负时刻、最高当前时刻在 W/Z 中抵消、未选目标、当前区域外目标及严格失败传播。更新同时比较剖面及三个端点；乘积只断言该次新当前区域反链与单点后继属性集。
+
+89 份反演核验为 83 个输入加三对对象各用共同 D 的六次恢复；恢复器只接收固定查询词汇 D 和终端上下文读数表，不接收 Rich 对象、不调用剖面函数。规范序列化后逐字节恢复两选择位的全部系数，并断言每个非零格的自身属性恰为 U 的唯一最早元素。Ξ 的 2272 次双路径比较，一条直接分别遍历 Ω/A，另一条只消费 Γ_t 系数及端点，两路不共用边缘化函数；另检查忘时推送的集合去重。83 次 q 表达式检查包含 D12 的四个选择输入，不代替命题 51 对全部有限上下文的否定证明。17 次核比较只核对具名见证的方向，不代替命题 50 的因子映射证明。
+
+原始 stdout/stderr 与命令退出码存于 runner 的 `appendix.stdout.log`、`appendix.stderr.log`、`appendix-receipt.json`。更强结论的边界仍按 §32.5–32.6：一般 F_B 分类、含 M_P 的混合闭包、Γ_t 全部实际像、物理模型和 Lean 均为“未测”，各项未测原因已在相应证明边界说明。
+
+### 33.3 ingest 与固定检查点的 git 读数
+
+首次摄入的已提交输入为 `7a21063aa1ae808ecd2ffc867063058fe5b80840`（§32 提交 `a6d73cfaa8`，附录提交 `7a21063aa1`），摄入基线固定为上述合入 dev SHA。实际命令：
+
+```sh
+BASE=49c7aecf0c64e27d43dc8bea8fd18ca438080c05 make ingest SOURCE="contextual-spacetime-arithmetic docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md"
+```
+
+退出码 **0**，stderr 为空；新增 **57 个 atom 与 57 个 residual-open backfill**，新增路径的 atom_id 两侧成对。stdout 原文：
+
+```text
+INGEST residual_open_added=57 skipped_existing=217 coarse_fallbacks=0 open_genres=0 cas_objects_written=57 ledger_changed=true
+```
+
+本次 114 个生成文件已提交为 `0fbf39866eb530d2756c2ddb5e3859503801806e`，内容检出 §32、定义 26、引理 2、命题 48–51、D11/D12 及 PR4 附录段。以下读数仅指该固定检查点，**截至本节追加之前**：
+
+| 读数口径 | 实测值 |
+| --- | --- |
+| 本卷相对摄入基线的增删 | +616／−0 行（§32 为 303 行，附录为 313 行） |
+| 本卷行数 | 3867 |
+| 新增 atom／backfill | 57／57 |
+| `git status --porcelain=v1` | 退出 0，stdout 为空 |
+| `git diff --shortstat 49c7aecf0c64e27d43dc8bea8fd18ca438080c05..0fbf39866eb530d2756c2ddb5e3859503801806e` | 115 files changed, 3864 insertions(+) |
+| `git diff --name-only` 的路径集合 | 本卷 + `Meta/Digestion/atoms/sha256` + `Meta/Digestion/backfill/contextual-spacetime-arithmetic/residual-open` |
+
+只追加的字节核对以基线本卷 **248728 字节** 为对象：去掉唯一新增 pr4_ 插入后的前缀逐字节等于基线全文，且只有一个 Python 块。它同时核对顶部导航与 §1–31；不将“未去掉附录插入的整段原始前缀相等”报告为通过。
+
+本节是上述固定检查点之后的正文追加，仍须以同一命令再运行 ingest，使本节产地与收据进入消化账；最终累计计数不以这里的 57／57 代替。正文最后改动之后的摄入、最终 HEAD、逐节提交、推送、试合及干净状态，由 runner 目录 `/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/csa-pr4-impl-0910/attempt-1` 的 `result.json` 与 `implementation.log` 绑定记录。本批按 brief 只交付推送分支，不开 PR；这不是持续研究目标、评审或仓库准入已完成的声明。
