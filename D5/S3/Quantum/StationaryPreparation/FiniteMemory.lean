@@ -70,32 +70,41 @@ theorem output_eq_tmul_iff (V : H →ₗᵢ[ℂ] Space A ⊗[ℂ] H)
   rw [← (coefficients (Fin n → A)).injective.eq_iff, funext_iff]
   simp only [output_coefficients, coefficients_tmul]
 
+private theorem coefficients_map (V : H →ₗᵢ[ℂ] Space A ⊗[ℂ] H)
+    (I : Type*) [Fintype I] (z : Space I ⊗[ℂ] H) (i : I) :
+    coefficients I (TensorProduct.map (LinearMap.id : Space I →ₗ[ℂ] Space I)
+      V.toLinearMap z) i = V (coefficients I z i) := by
+  induction z using TensorProduct.induction_on with
+  | zero => simp
+  | tmul y h => simp [TensorProduct.map_tmul, coefficients_tmul]
+  | add z z' hz hz' => simp [map_add, hz, hz']
+
 theorem output_tensor_step (V : H →ₗᵢ[ℂ] Space A ⊗[ℂ] H) (n : ℕ) (x : H) :
     TensorProduct.map (LinearMap.id : Space (Fin n → A) →ₗ[ℂ] Space (Fin n → A))
       V.toLinearMap (output V n x) =
     (coefficients (Fin n → A)).symm (fun w => (coefficients A).symm
       (fun i => coefficients (Fin (n + 1) → A) (output V (n + 1) x) (Fin.snoc w i))) := by
-  have hmap (z : Space (Fin n → A) ⊗[ℂ] H) (w : Fin n → A) :
-      coefficients (Fin n → A) (TensorProduct.map LinearMap.id V.toLinearMap z) w =
-        V (coefficients (Fin n → A) z w) := by
-    induction z using TensorProduct.induction_on with
-    | zero => simp
-    | tmul y h => simp [TensorProduct.map_tmul, coefficients_tmul]
-    | add z z' hz hz' => simp [map_add, hz, hz']
-  have hlast (u : List A) (i : A) (y : H) :
-      wordMemory V (u ++ [i]) y = coefficients A (V (wordMemory V u y)) i := by
-    induction u generalizing y with
-    | nil => rfl
-    | cons j u ih => exact ih (coefficients A (V y) j)
+  have hlast (m : ℕ) (w : Fin m → A) (i : A) (y : H) :
+      coefficients (Fin (m + 1) → A) (output V (m + 1) y) (Fin.snoc w i) =
+        coefficients A (V (coefficients (Fin m → A) (output V m y) w)) i := by
+    induction m generalizing y with
+    | zero => simp only [output_succ, output_zero, Fin.snoc_zero]
+    | succ m ih =>
+      have htail : Fin.tail (α := fun _ : Fin (m + 2) => A) (Fin.snoc w i) =
+          Fin.snoc (α := fun _ : Fin (m + 1) => A) (Fin.tail w) i := by
+        ext j
+        refine Fin.lastCases ?_ (fun k => ?_) j
+        · simp [Fin.tail]
+        · simp only [Fin.tail, Fin.succ_castSucc, Fin.snoc_castSucc]
+      rw [output_succ, output_succ V m y w, htail, Fin.snoc_apply_zero]
+      exact ih (Fin.tail w) (coefficients A (V y) (w 0))
   apply (coefficients (Fin n → A)).injective
   ext w
-  rw [LinearEquiv.apply_symm_apply, hmap]
+  rw [LinearEquiv.apply_symm_apply, coefficients_map]
   apply (coefficients A).injective
   ext i
-  rw [LinearEquiv.apply_symm_apply, output_coefficients, output_coefficients,
-    List.ofFn_succ_last]
-  simpa only [Fin.snoc_castSucc, Fin.snoc_last] using
-    (hlast (List.ofFn w) i x).symm
+  rw [LinearEquiv.apply_symm_apply]
+  exact (hlast n w i x).symm
 
 variable (H) [FiniteDimensional ℂ H]
 
@@ -142,12 +151,17 @@ theorem exists_fixed_unitary (blank : A) (V : H →ₗᵢ[ℂ] Space A ⊗[ℂ] 
   have hword (w : List A) (x : H) :
       PhysicalGram.prefixMemory blank U w (coordinates H x) =
         coordinates H (wordMemory V w x) := by
-    induction w generalizing x with
+    induction w using List.reverseRecOn with
     | nil => rfl
-    | cons i w ih =>
-      simpa only [PhysicalGram.prefix_cons, hletter, wordMemory, LinearMap.comp_apply,
-        LinearMap.proj_apply, LinearEquiv.coe_coe, LinearIsometry.coe_toLinearMap] using
-        ih (coefficients A (V x) i)
+    | append_singleton w i ih =>
+      rw [PhysicalGram.prefix_append, ih, PhysicalGram.prefix_cons,
+        PhysicalGram.prefix_nil, hletter]
+      apply congrArg (coordinates H)
+      have h := congrArg (fun z : Space (Fin w.length → A) ⊗[ℂ] (Space A ⊗[ℂ] H) =>
+        coefficients A (coefficients (Fin w.length → A) z w.get) i)
+        (output_tensor_step V w.length x)
+      simpa only [coefficients_map, LinearEquiv.apply_symm_apply, output_coefficients,
+        List.ofFn_succ_last, Fin.snoc_castSucc, Fin.snoc_last, List.ofFn_get] using h
   refine ⟨U, hstep, hword, ?_⟩
   intro n t x
   ext ⟨w, k⟩
@@ -167,11 +181,13 @@ theorem stationary_memory_dimension_lower_bound [DecidableEq A] [Nonempty A]
     (∏ i, (a.count i + 1)) - Finset.univ.sup a.count ≤ Module.finrank ℂ H := by
   classical
   let blank : A := Classical.choice inferInstance
-  obtain ⟨U, _, _, hU⟩ := exists_fixed_unitary blank V
+  obtain ⟨U, _, hword, _⟩ := exists_fixed_unitary blank V
+  have hcoeff := (output_eq_tmul_iff V a.card x f
+    (WithLp.toLp 2 (sectorVector a.card a))).mp hout
   have hphysical (w : Fin a.card → A) (k : Fin (Module.finrank ℂ H)) :
       circuit (fun _ => U) a.card 0 (initialized blank a.card (coordinates H x)) (w, k) =
         sectorVector a.card a w * coordinates H f k := by
-    rw [hU, hout, tensorCoordinates_apply, coefficients_tmul]
+    rw [PhysicalGram.circuit_fixed_coefficients, hword, hcoeff]
     simp
   simpa using PhysicalGram.stationary_memory_dimension_lower_bound a blank U
     (coordinates H x) (coordinates H f) (by simpa using hx) (by simpa using hf) hphysical

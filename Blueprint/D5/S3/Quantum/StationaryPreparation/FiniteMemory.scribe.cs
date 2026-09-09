@@ -117,7 +117,8 @@ internal sealed class FiniteMemoryDocument : IScribeDocumentDefinition
                     "appends i to w. The outer coefficient inverse has values in Space(A) tensor H; " +
                     "the inner inverse has values in H. Both are exact equivalences, and every " +
                     "word has the unique split into its initial segment and last symbol. " +
-                    "This identifies the word presentation with the tensor operation at every stage."),
+                    "The zero and successor identities prove this last-symbol rule by induction " +
+                    "on the prefix length. Tensor-map linearity then gives the displayed equality."),
                 Paragraph(Text(
                     "Now H is finite-dimensional over the complex numbers, and K is " +
                     "Fin(finrank(C,H)). coordinates(H) is an isometric linear equivalence from H " +
@@ -135,8 +136,9 @@ internal sealed class FiniteMemoryDocument : IScribeDocumentDefinition
                 Entry("exists_fixed_unitary", fixedUnitary,
                     "Fix any blank symbol. The blank embedding and the coordinate form of V " +
                     "are two isometric embeddings into the same finite-dimensional joint space. " +
-                    "A unitary agrees with them. Their letter maps intertwine, so induction on " +
-                    "the word gives the middle equality. The actual circuit coefficient theorem " +
+                    "A unitary agrees with them. Their letter maps intertwine. Induction by " +
+                    "appending the last symbol uses the identity-tensor-V equality above to " +
+                    "transport the whole prefix and gives the middle equality. The circuit coefficient theorem " +
                     "then gives the last vector equality for every length, starting time and x. " +
                     "The schedule in circuit is the constant function with value U."),
                 Entry("output_norm", outputNorm,
@@ -151,8 +153,9 @@ internal sealed class FiniteMemoryDocument : IScribeDocumentDefinition
                     "The subtraction in the dimension bound is natural-number subtraction; " +
                     "sup is the maximum over the finite nonempty alphabet.")),
                 Entry("stationary_memory_dimension_lower_bound", lower,
-                    "Transport the exact tensor output to the fixed-blank, constant-unitary " +
-                    "circuit. coordinates preserves both endpoint norms and the common f. " +
+                    "The common-memory tensor equivalence gives every word coefficient. " +
+                    "The fixed-unitary word transport gives the corresponding circuit coefficients. " +
+                    "coordinates preserves both endpoint norms and the common f. " +
                     "Applying the physical stationary bound gives the displayed dimension bound. " +
                     "Zero occupation is included; a unit initial vector excludes zero-dimensional H."),
                 Entry("capacityOccupation", capacityDef,
