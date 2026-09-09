@@ -2,7 +2,7 @@
    generality: G
    mirror-B: D5/B/S3/Quantum/Matrix/SchurMinimum
    mirror-E: none(waiver:algebraically-proved)
-   anchors: [mathlib/module/Mathlib.LinearAlgebra.Matrix.Hermitian]
+   anchors: [mathlib/module/Mathlib.LinearAlgebra.Matrix.PosDef]
    utility: none
    digest: The Schur quadratic form is the attained minimum over the internal block. -/
 
