@@ -49,8 +49,8 @@ atom judgment is committed and pushed before advancing to the next one.
 
 ## Progress
 
-`screened: 4 / 7`. Completed: M4 readback, Schur minimum, reflected-pair disk,
-divisor parity.
+`screened: 5 / 7`. Completed: M4 readback, Schur minimum, reflected-pair disk,
+divisor parity, Pick update.
 
 ## Evidence Coordinates
 
@@ -346,6 +346,83 @@ search in Mathlib's `Data/Nat` and `NumberTheory/ArithmeticFunction` returned
 Probe receipt: `prior/probes/Parity104.lean`; inherited `make lean` exit 0;
 decoded `prior/logs/Parity104.log.gz` ends in `EXIT: 0`.
 
+## Atom 105: Pick Update
+
+`atom_id: bc9748938013e4b3c632bfa0e1257a59733df2e1682ed0a8a0d7a0dcc534ab2b`
+
+Complete raw body returned by `make show-atom` (exit 0, hash matches, no coverage):
+
+```text
+## 定理 V3：相位修补增加一个正秩一项
+
+对：
+
+$$
+\mathcal P_S(z,w)
+=
+\frac{1-S(z)\overline{S(w)}}{-i(z-\overline w)},
+$$
+
+有：
+
+$$
+\boxed{
+\mathcal P_{B_pS}(z,w)
+=
+\frac{
+2\Im p
+}{
+(z-\overline p)(\overline w-p)
+}
++
+B_p(z)\overline{B_p(w)}\mathcal P_S(z,w).
+}
+\tag{V15}
+$$
+```
+
+| Source assertion | Original probe counterpart | Status | Domain and boundary check |
+| --- | --- | --- | --- |
+| Definition of `P_S`, using the displayed denominator `-i(z-conj w)` | `Triage105.kernel` | equivalent | Same sign, conjugation direction and response values. No analyticity or Schur-contraction hypothesis on `S` is added. |
+| V15 on upper-half-plane `p,z,w` | `Triage105.kernel_update` | equivalent | All three imaginary parts are strictly positive. `z = w` in the open half-plane and `z = p` are included. Denominators are proved nonzero, not postulated. |
+| V15 without the probe's extra positive-imaginary-part restrictions on `z,w` | Not stated | not-covered | The atom and immediate definition 33183-33218 specify upper-half-plane `p` only. For example, distinct real `z,w` have regular denominators but are excluded by `hz,hw`. If an upper-half-plane-only convention is intended, it needs an explicit source-domain justification; it cannot be inferred from this successful probe. |
+| Heading: the added term is positive | No positive-semidefinite kernel/Gram statement | not-covered | A scalar complex equality does not explicitly assert the quadratic-form inequality for every finite sampling and every coefficient vector. |
+| Heading: the added term has rank one | No rank or feature-map statement | not-covered | Must distinguish nonzero rank-one kernel/nonempty Gram sampling from empty sampling (rank zero). No such quantifier or degeneracy contract is printed in the probe. |
+
+`fidelity: partial`. The open-half-plane formula is checked, but the positive
+rank-one assertion is absent even under that restricted domain. The source's
+following proof supplies a proposed feature function
+`g_p(z) = sqrt(2 Im p)/(z-conj p)` outside these CAS bytes; it is not a theorem
+in the probe. The present judgment does not claim the rank assertion is false.
+Real diagonal extension, or cancellation at a pole of a meromorphic `S`, has
+not been checked. Lean's total division and a total `Complex -> Complex`
+function must not be presented as those analytic extensions.
+
+`upstream_declaration: none` (none carries V15 or positive rank one).
+The locally opened `Complex.sub_conj`,
+`.lake/packages/mathlib/Mathlib/Data/Complex/Basic.lean:668`, states only
+`z - conj z = (2*z.im : Real) * I`. It changes the numerator's notation.
+`wrapper_thinness: not-applicable`: after elementary imaginary-part inequalities
+exclude the denominators, the probe unfolds `blaschke` and `kernel`, then
+`field_simp`/`ring` establish V15. No upstream kernel-update theorem is invoked.
+`necessity_citation`: the complete V15 and the exact heading
+`相位修补增加一个正秩一项` above; a real source demand alone does not supply (b),
+and no preregistered named consumer or new typed edge establishes (c).
+`verdict: partial-fidelity`; independently `admission_basis: none` for the
+tested normalization-only update, also listed in `no_basis`.
+`proof_shape: bind-only`; `direct_frozen_dependencies: []`; `escape_witness: null`.
+`why_not_escape_witness`: every live step is conjugation rewriting, linear
+sign arithmetic, or rational normalization of the supplied definitions.
+
+Search receipt R105:
+`rg -n '\b(blaschke|Blaschke|sub_conj)\b' D5/S3/Weil/Pick .lake/packages/mathlib/Mathlib/Data/Complex/Basic.lean`
+returned 2 Mathlib lines and 0 D5 lines in that scope. The declaration at 668 is
+the same-feature positive control; its complete body was opened (655-679).
+Source windows 32750-32985 and 33150-33290 were read to distinguish boundary
+claims from the formula's explicit domain. No global absence claim is made.
+Probe receipt: `prior/probes/Pick105.lean`; inherited `make lean` exit 0;
+decoded `prior/logs/Pick105.log.gz` ends in `EXIT: 0`.
+
 ## Push Receipts
 
 | Commit | Completed unit | Push result |
@@ -354,6 +431,7 @@ decoded `prior/logs/Parity104.log.gz` ends in `EXIT: 0`.
 | `b11e3e695343125c81d378db2fe79f5f5677d823` | Atom 75 | exit 0 |
 | `5f6b525177589b4fe361303687ba4a99932e0595` | Atom 89 | exit 0 |
 | `8a48ad8068a6e8abd3a237daf18e1542a7d3116b` | Atom 90 | exit 0 |
+| `3b0ea401d33d72def4731520c7ef7171b5670287` | Atom 104 | exit 0 |
 
 ## Nonclaims
 
