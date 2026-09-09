@@ -49,3 +49,11 @@
 **第二步完成**：四次 Frobenius 探针 EXIT=0；正式 `seq_four_mul_add_three (j)` 编译 EXIT=0，标准三公理闭包。`square_expand` 直接用 Mathlib `map_frobenius_expand` 和 `ZMod.frobenius_zmod`；两次 expand 合成四次，再用 `coeff_expand_of_not_dvd`。认证 GitHub 代码搜索 `gh api search/code?q=A368628+language:Lean` 成功，total_count=0；替代此前401失败，检索边界仍限字面 A 号。
 
 **第三步完成**：`seq_four_mul_add_one (j) : (seq (4*j+1) : ZMod 2) = (seq j : ZMod 2)`，正式文件增量编译 EXIT=0，标准三公理闭包。与第二步共用一般 `fourth_expand`，此步精确应用 `coeff_expand_mul`。三个无界模二递推均已闭合，下一步为指数双向强归纳。
+
+### 强归纳尝试
+
+首次编译只有零基例报错：`simp only` 已把 `1=1` 归约为 `True`，`iff_of_true rfl` 需要 `True` 而收到等式证明。改 `rfl` 为 `trivial`；非零所有分支（正偶、4j+3排除、4j+1指数前推/回推）均无编译错误。
+
+本轮完整读取四个直接 xref 的 N/C/H/F/Y 字段（A368593/A368626/A368627/A368629，均 HTTP200），所查页无 A368628 奇偶证明。Israel 68阶递推文件 HTTP200，已下载；长多项式系数未逐项验证，ASSUMED-UNVERIFIED，不作为证明依赖。原目标 OEIS 页、arXiv 检索与源码检索收据仅支持所查范围未见证明。
+
+无 atom 入口核实：`make deposit` 的 `require_transaction_arguments` 强制已有 ATOM_ID，不能用于本题；依用户明确指示使用它内部同一 writer `ledger-align --add`，另行运行相同 `deposit-header-check`。不会造 atom 满足接口。
