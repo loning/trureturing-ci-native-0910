@@ -73,6 +73,8 @@ All Mathlib paths below are relative to `.lake/packages/mathlib/`. Every listed 
 
 All seven A atoms have successful complete-claim probes. D=E=0: all 150 bodies contain explicit mathematical assertions, and their necessary context could be read. B/C are remaining obligations, not permission to build a module.
 
+Final evidence checks: [verification.json](tier3-mathlib-triage-0909/verification.json), including raw-text hashes, citations, compressed logs, probe axiom closures, pin and changed-path scope. These are worker checks, not an independent review.
+
 | # | atom_id | Title | Tier | Criterion / remaining mathematics | Local Mathlib declaration | Probe / EXIT | Searches |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | `028cb6a153eaec67ee356ef9571a406a6d9460c0092fbc031df4abab42884a85` | 定理十一：有限多边形绕数证书 | C | 缺带二阶导数/顶点误差预算的轮廓同伦和零点计数证书；通用路径理论不提供这条带常数的接口。 | none claimed | not run | winding |
@@ -318,7 +320,7 @@ Frozen state JSON stores only `statement_id`; module names must be located throu
 
 ## repository_leads
 
-- `D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering`, `sha256:ee43a04a542df25237818cbfeeb29bb1abaed956f90db04822d08e8f413d50b4`: `D5.S3.Zeros.Jensen.NormalizedJensenDegreeLowering.source_jensen_degree_lowering`, D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.lean:136. Frozen identity for the fixed theta-density P_d at d>=2 and arbitrary complex v. This is not a q_d reciprocal-coordinate derivative or a real-rootedness theorem. No probe imports this dependency.
+- `D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering`, `sha256:ee43a04a542df25237818cbfeeb29bb1abaed956f90db04822d08e8f413d50b4`: `D5.S3.Zeros.Jensen.NormalizedJensenDegreeLowering.source_jensen_degree_lowering`, D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.lean:135. Frozen identity for the fixed theta-density P_d at d>=2 and arbitrary complex v. This is not a q_d reciprocal-coordinate derivative or a real-rootedness theorem. No probe imports this dependency.
 
 ## unscreened
 
@@ -340,6 +342,7 @@ Frozen state JSON stores only `statement_id`; module names must be located throu
 - `5408df1bd556f4426487cce03b82b5b239b82454`
 - `d85d63b1763bbd197a317496845b18d5f5de7dab`
 - `b54b06ba7fc5680a50e0c97cc3f742e90b3316f7`
+- `d6c50aee555796f8f40b43cbb334bcb5dba1cf96`
 
 Every listed checkpoint was pushed successfully. The final runner envelope includes the commit containing this final report (a commit cannot contain its own hash).
 

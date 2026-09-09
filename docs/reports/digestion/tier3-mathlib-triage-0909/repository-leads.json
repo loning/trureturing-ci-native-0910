@@ -5,7 +5,7 @@
     "state": "Golden/Frozen/state/D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.lean.json",
     "declaration": "D5.S3.Zeros.Jensen.NormalizedJensenDegreeLowering.source_jensen_degree_lowering",
     "source": "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.lean",
-    "line": 136,
+    "line": 135,
     "affected_indices": [
       8,
       20,

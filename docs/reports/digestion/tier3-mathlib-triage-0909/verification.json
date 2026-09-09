@@ -1,0 +1,2027 @@
+{
+  "command": "node /private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/verify.mjs",
+  "exit": 0,
+  "verified_at_utc": "2026-09-09T05:53:24.541Z",
+  "head_at_verification": "d6c50aee555796f8f40b43cbb334bcb5dba1cf96",
+  "checks": {
+    "input_count": 150,
+    "unique_screened_count": 150,
+    "raw_sha256_verified": 150,
+    "all_show_atom_exits_zero": true,
+    "by_tier": {
+      "A": 7,
+      "B": 41,
+      "C": 102,
+      "D": 0,
+      "E": 0
+    },
+    "unscreened": 0,
+    "successful_distinct_A_probes": 7,
+    "probe_run_count": 10,
+    "failed_runs_preserved": 2,
+    "citation_count": 62,
+    "search_receipt_count": 64,
+    "regex_controls_verified": true,
+    "only_report_paths_changed": true,
+    "mathlib_clean": true
+  },
+  "stop_criteria": {
+    "normal_completion": true,
+    "halfway_stop_triggered": false,
+    "last_checkpoint_before_halfway": "d85d63b1763bbd197a317496845b18d5f5de7dab",
+    "screened_at_that_checkpoint": 125,
+    "all_150_checkpoint": "b54b06ba7fc5680a50e0c97cc3f742e90b3316f7",
+    "scope_violation": false
+  },
+  "input_sha256": "1c845d13de86c68962b274a94cbb0a40cf8ca0a6fd9be05774dc03caedb10c9b",
+  "input_metadata": {
+    "bytes_field_actual_unit": "Unicode characters",
+    "matches_character_count": 150,
+    "matches_utf8_byte_count": 0,
+    "input_preserved": true
+  },
+  "mathlib_pin": {
+    "lean": "leanprover/lean4:v4.33.0",
+    "inputRev": "v4.33.0",
+    "rev": "db584cd6d46c92f209a44c0f1c829460d327499d"
+  },
+  "raw_atom_checks": [
+    {
+      "index": 1,
+      "atom_id": "028cb6a153eaec67ee356ef9571a406a6d9460c0092fbc031df4abab42884a85",
+      "sha256_matches": true,
+      "input_bytes": 203,
+      "unicode_characters": 203,
+      "utf8_bytes": 303
+    },
+    {
+      "index": 2,
+      "atom_id": "04174c1260762c6fb3fe24cd51b93eea78714592b4cd71e927db335d5edf8b77",
+      "sha256_matches": true,
+      "input_bytes": 300,
+      "unicode_characters": 300,
+      "utf8_bytes": 474
+    },
+    {
+      "index": 3,
+      "atom_id": "062d6f5a910eed117ab7596a2e34f1a6a0728de5e8599136b47689b29d2870c9",
+      "sha256_matches": true,
+      "input_bytes": 94,
+      "unicode_characters": 94,
+      "utf8_bytes": 134
+    },
+    {
+      "index": 4,
+      "atom_id": "0715d2f9078c88ee013814d101b0c36bdb33c5cf5ce76d58239e51cc6485df25",
+      "sha256_matches": true,
+      "input_bytes": 281,
+      "unicode_characters": 281,
+      "utf8_bytes": 327
+    },
+    {
+      "index": 5,
+      "atom_id": "072eca25d260537060a5e1b2b7dada75dbf623eba8eebb4bad8c765d8ebe6749",
+      "sha256_matches": true,
+      "input_bytes": 173,
+      "unicode_characters": 173,
+      "utf8_bytes": 231
+    },
+    {
+      "index": 6,
+      "atom_id": "0831062a074c8393d5e0d16a4caa4487d783311664ffa661ab52092973475c5b",
+      "sha256_matches": true,
+      "input_bytes": 228,
+      "unicode_characters": 228,
+      "utf8_bytes": 296
+    },
+    {
+      "index": 7,
+      "atom_id": "083b7658fb28ffb6609e6c46923ebd4e8c9c27dc3813f06187a0aa23c398e7d4",
+      "sha256_matches": true,
+      "input_bytes": 229,
+      "unicode_characters": 229,
+      "utf8_bytes": 365
+    },
+    {
+      "index": 8,
+      "atom_id": "087e3caa7c278b4ea58f06604daa8721ab5258f6c451a25ed8f2d0092d823ca0",
+      "sha256_matches": true,
+      "input_bytes": 143,
+      "unicode_characters": 143,
+      "utf8_bytes": 173
+    },
+    {
+      "index": 9,
+      "atom_id": "0d2c6e9ed518bfcee93cc1f4b71877666e729b3db0f05d06a2b43bbf53e86984",
+      "sha256_matches": true,
+      "input_bytes": 166,
+      "unicode_characters": 166,
+      "utf8_bytes": 228
+    },
+    {
+      "index": 10,
+      "atom_id": "0e1a7beb490fc5aece3b6e13b10c6523ab64fac627efd6b825dc5c5551af5eab",
+      "sha256_matches": true,
+      "input_bytes": 205,
+      "unicode_characters": 205,
+      "utf8_bytes": 275
+    },
+    {
+      "index": 11,
+      "atom_id": "0e8d9e20c8a7ec0e0820053dc56a9dae075722a110b78a0ecee60b5cb202f2d8",
+      "sha256_matches": true,
+      "input_bytes": 242,
+      "unicode_characters": 242,
+      "utf8_bytes": 278
+    },
+    {
+      "index": 12,
+      "atom_id": "1033c98f6c47c1c95ba84c013ed594e604e96b5061d49672f6a3333ff411cb3a",
+      "sha256_matches": true,
+      "input_bytes": 121,
+      "unicode_characters": 121,
+      "utf8_bytes": 149
+    },
+    {
+      "index": 13,
+      "atom_id": "10f086b0306c55830d4a16268948883d503cc3e347c5ebb45d89be2a6927fe3a",
+      "sha256_matches": true,
+      "input_bytes": 213,
+      "unicode_characters": 213,
+      "utf8_bytes": 273
+    },
+    {
+      "index": 14,
+      "atom_id": "15eb12aed71ec186edbcd3e877571bdd32780f55e1539a8ff1211975db8f51c3",
+      "sha256_matches": true,
+      "input_bytes": 88,
+      "unicode_characters": 88,
+      "utf8_bytes": 124
+    },
+    {
+      "index": 15,
+      "atom_id": "16ee2a6dfb3840e47529bdbd48187c9167a2230d63a5ac51826e62a979baf1ff",
+      "sha256_matches": true,
+      "input_bytes": 286,
+      "unicode_characters": 286,
+      "utf8_bytes": 346
+    },
+    {
+      "index": 16,
+      "atom_id": "183d1842d5f7033b150a150210195c78562694a2c239a984aea1f5b7f86ec009",
+      "sha256_matches": true,
+      "input_bytes": 305,
+      "unicode_characters": 305,
+      "utf8_bytes": 373
+    },
+    {
+      "index": 17,
+      "atom_id": "19d4c054e92739f02edd10bc8c8cade6a616e273f45552e1f9e1da08359a6462",
+      "sha256_matches": true,
+      "input_bytes": 66,
+      "unicode_characters": 66,
+      "utf8_bytes": 110
+    },
+    {
+      "index": 18,
+      "atom_id": "1ad5bec02ef18c7e44f7099ba5b17703e14dbfd047be51ab11ee29d6d17dfa0e",
+      "sha256_matches": true,
+      "input_bytes": 203,
+      "unicode_characters": 203,
+      "utf8_bytes": 258
+    },
+    {
+      "index": 19,
+      "atom_id": "1ba55c6c1a84a3ff33ceebbcb3a7c7d52c48d18a1823c4354d954afe0d3aee38",
+      "sha256_matches": true,
+      "input_bytes": 264,
+      "unicode_characters": 264,
+      "utf8_bytes": 394
+    },
+    {
+      "index": 20,
+      "atom_id": "1e414ffb45d7fcaa9536a956298c4e291f91a2e310f112d2cf8419518caefd1a",
+      "sha256_matches": true,
+      "input_bytes": 328,
+      "unicode_characters": 328,
+      "utf8_bytes": 552
+    },
+    {
+      "index": 21,
+      "atom_id": "1e9daffd76d1ac95768ad7e9737ce9069f71ca9d5406430f42768de16be0a86c",
+      "sha256_matches": true,
+      "input_bytes": 110,
+      "unicode_characters": 110,
+      "utf8_bytes": 146
+    },
+    {
+      "index": 22,
+      "atom_id": "1eecc9129a67c60825a86b1efaa93284267df6701e12127565d8873086de3021",
+      "sha256_matches": true,
+      "input_bytes": 416,
+      "unicode_characters": 416,
+      "utf8_bytes": 667
+    },
+    {
+      "index": 23,
+      "atom_id": "207bdea6c00dc779749029d64849d7221c08cad532ac5d38069d8871e87b4d92",
+      "sha256_matches": true,
+      "input_bytes": 643,
+      "unicode_characters": 643,
+      "utf8_bytes": 1021
+    },
+    {
+      "index": 24,
+      "atom_id": "224b9dc2f29a8182291ff077025c0f1cf83c02aeb844e2893366013f04898914",
+      "sha256_matches": true,
+      "input_bytes": 308,
+      "unicode_characters": 308,
+      "utf8_bytes": 428
+    },
+    {
+      "index": 25,
+      "atom_id": "23e85e40204222cb3bee95c5c9072bd75f3796b82d41f908f8629d8a201137b9",
+      "sha256_matches": true,
+      "input_bytes": 219,
+      "unicode_characters": 219,
+      "utf8_bytes": 253
+    },
+    {
+      "index": 26,
+      "atom_id": "247c5740e6ce2838bb73fce435941602825eace40b67c44c62f23f45796e0b04",
+      "sha256_matches": true,
+      "input_bytes": 202,
+      "unicode_characters": 202,
+      "utf8_bytes": 246
+    },
+    {
+      "index": 27,
+      "atom_id": "24e7f65c67cec1074a6af47cd138dda33f014adcc2b6d569e14823c62aadc6ea",
+      "sha256_matches": true,
+      "input_bytes": 194,
+      "unicode_characters": 194,
+      "utf8_bytes": 220
+    },
+    {
+      "index": 28,
+      "atom_id": "2664266b147343a4836824aae0348abd88a5ef821e178a073f2b6e8b8fe91a0d",
+      "sha256_matches": true,
+      "input_bytes": 281,
+      "unicode_characters": 281,
+      "utf8_bytes": 319
+    },
+    {
+      "index": 29,
+      "atom_id": "27065ff2e7fd688eaed358a1953fc8fec5b4a98870cdeee7317e43e4c228d6e6",
+      "sha256_matches": true,
+      "input_bytes": 183,
+      "unicode_characters": 183,
+      "utf8_bytes": 221
+    },
+    {
+      "index": 30,
+      "atom_id": "2bc63109d666c92a11aa641dbeae45bc08e3f4f939bc5ce4406a75e5d86d03b6",
+      "sha256_matches": true,
+      "input_bytes": 355,
+      "unicode_characters": 355,
+      "utf8_bytes": 443
+    },
+    {
+      "index": 31,
+      "atom_id": "2bcdc03e5777fcc1c396e5b07b17101c3f52508fb80a62a55e3b96a0b66158f2",
+      "sha256_matches": true,
+      "input_bytes": 209,
+      "unicode_characters": 209,
+      "utf8_bytes": 255
+    },
+    {
+      "index": 32,
+      "atom_id": "2c37bff2d8f941ea92b5c037c21e6d179a2ab8fe3a67836b6ecb5b2e766793e7",
+      "sha256_matches": true,
+      "input_bytes": 307,
+      "unicode_characters": 307,
+      "utf8_bytes": 401
+    },
+    {
+      "index": 33,
+      "atom_id": "2f9a49afd3fffe7f7744822c6adea7f922e808404a7654ca0c8fd4f80195d788",
+      "sha256_matches": true,
+      "input_bytes": 262,
+      "unicode_characters": 262,
+      "utf8_bytes": 296
+    },
+    {
+      "index": 34,
+      "atom_id": "2fa59f238e0c5dfb86c347ac26b274ce1ed355e030ffbc580a98779ceef61e6a",
+      "sha256_matches": true,
+      "input_bytes": 553,
+      "unicode_characters": 553,
+      "utf8_bytes": 999
+    },
+    {
+      "index": 35,
+      "atom_id": "2fbed82e07d243d1005a8a1c09923c3aaa3d8b0a414ff7a9210cd5c6f2ed26e2",
+      "sha256_matches": true,
+      "input_bytes": 293,
+      "unicode_characters": 293,
+      "utf8_bytes": 369
+    },
+    {
+      "index": 36,
+      "atom_id": "3342849ebfebb0ba8cd5217fe1a75e542e800c394bc9e9478978e025363fa770",
+      "sha256_matches": true,
+      "input_bytes": 326,
+      "unicode_characters": 326,
+      "utf8_bytes": 458
+    },
+    {
+      "index": 37,
+      "atom_id": "33bd332c5190b7fb8bf6b6fde4e8863e2cbc32878b35713e4e42abc4c4582e8b",
+      "sha256_matches": true,
+      "input_bytes": 387,
+      "unicode_characters": 387,
+      "utf8_bytes": 631
+    },
+    {
+      "index": 38,
+      "atom_id": "34f85f5ef0ec8521296d78b1a195aa9330397b316945d3dae5f77744c60587eb",
+      "sha256_matches": true,
+      "input_bytes": 123,
+      "unicode_characters": 123,
+      "utf8_bytes": 181
+    },
+    {
+      "index": 39,
+      "atom_id": "352958cfd6f933764581834a39a2547c32c91c2871dfc88c0e6d915af186b804",
+      "sha256_matches": true,
+      "input_bytes": 176,
+      "unicode_characters": 176,
+      "utf8_bytes": 222
+    },
+    {
+      "index": 40,
+      "atom_id": "3b96c202fb8567eb58151de0b72315414794aa9b0003e2aecba521121fa0a819",
+      "sha256_matches": true,
+      "input_bytes": 160,
+      "unicode_characters": 160,
+      "utf8_bytes": 180
+    },
+    {
+      "index": 41,
+      "atom_id": "3cefd6e75bf3146ba90cf7614b16b286751f3a36029a22cbba8e97a49ba911d3",
+      "sha256_matches": true,
+      "input_bytes": 114,
+      "unicode_characters": 114,
+      "utf8_bytes": 144
+    },
+    {
+      "index": 42,
+      "atom_id": "3ea6f6f717cf3b008eb7110a832936a14b2d2a332b6ee2abe42cb1146455f049",
+      "sha256_matches": true,
+      "input_bytes": 91,
+      "unicode_characters": 91,
+      "utf8_bytes": 119
+    },
+    {
+      "index": 43,
+      "atom_id": "409c425f66ec18a504f4d6304af1f43493cb5a92225344c4f79b342fd0f5eacd",
+      "sha256_matches": true,
+      "input_bytes": 137,
+      "unicode_characters": 137,
+      "utf8_bytes": 177
+    },
+    {
+      "index": 44,
+      "atom_id": "4104d8727c10869ec5ae256646c45c0bc72bcb83febed83f36c94488bbd5a763",
+      "sha256_matches": true,
+      "input_bytes": 469,
+      "unicode_characters": 469,
+      "utf8_bytes": 743
+    },
+    {
+      "index": 45,
+      "atom_id": "42a6721fabfa0a316cd60251fdff5e3997dec865d18964539f6241a7c2dba3f9",
+      "sha256_matches": true,
+      "input_bytes": 222,
+      "unicode_characters": 222,
+      "utf8_bytes": 280
+    },
+    {
+      "index": 46,
+      "atom_id": "4ad8c850dca051f69ac5f8fc65592b377d32fca0fac5d5347fcc3c0ea2b7c153",
+      "sha256_matches": true,
+      "input_bytes": 396,
+      "unicode_characters": 396,
+      "utf8_bytes": 500
+    },
+    {
+      "index": 47,
+      "atom_id": "4bf0743f24ceefdab6eae275b611c01646e5bf795de46dc68456a1d7ed269bf6",
+      "sha256_matches": true,
+      "input_bytes": 302,
+      "unicode_characters": 302,
+      "utf8_bytes": 386
+    },
+    {
+      "index": 48,
+      "atom_id": "4dea51c9bf2a5ec929da7acfdeb7d4694ddb3effba5083d8d5e0519ebed7bfd6",
+      "sha256_matches": true,
+      "input_bytes": 187,
+      "unicode_characters": 187,
+      "utf8_bytes": 311
+    },
+    {
+      "index": 49,
+      "atom_id": "4f1af385073cf374adf2837dcb61d6f03822ba385a3f589dacb3087c8b867246",
+      "sha256_matches": true,
+      "input_bytes": 384,
+      "unicode_characters": 384,
+      "utf8_bytes": 604
+    },
+    {
+      "index": 50,
+      "atom_id": "506ba2fa80720ba43ca7d89d6b8d9c39455747237809df8fd552367fc064f22c",
+      "sha256_matches": true,
+      "input_bytes": 211,
+      "unicode_characters": 211,
+      "utf8_bytes": 481
+    },
+    {
+      "index": 51,
+      "atom_id": "51ecbc2e4c8976d219f4c2617007564164468c320acb88918b7ab6d848e61d79",
+      "sha256_matches": true,
+      "input_bytes": 117,
+      "unicode_characters": 117,
+      "utf8_bytes": 143
+    },
+    {
+      "index": 52,
+      "atom_id": "528a07b72b26ab9b7df6f3645a60c76eedd91f4489b30838ea8ccb310c386c9b",
+      "sha256_matches": true,
+      "input_bytes": 431,
+      "unicode_characters": 431,
+      "utf8_bytes": 825
+    },
+    {
+      "index": 53,
+      "atom_id": "578c45143001f9f9929455e22deef3c7cba964c4389ba0b9d79dd9371ed8f806",
+      "sha256_matches": true,
+      "input_bytes": 113,
+      "unicode_characters": 113,
+      "utf8_bytes": 153
+    },
+    {
+      "index": 54,
+      "atom_id": "5918f6bd5a66f8b7eb15b4b1c505d54dfdf3b73d884b537a42b153c9270e3d4c",
+      "sha256_matches": true,
+      "input_bytes": 380,
+      "unicode_characters": 380,
+      "utf8_bytes": 444
+    },
+    {
+      "index": 55,
+      "atom_id": "594f93cbc27b15032549c9271c41b100f049b61736e5e5d1fdbb8c90fb3cdda4",
+      "sha256_matches": true,
+      "input_bytes": 320,
+      "unicode_characters": 320,
+      "utf8_bytes": 558
+    },
+    {
+      "index": 56,
+      "atom_id": "59626bffd526d065fe29b4f63e40a4367886e380208787d0cf0fe4df9e169a9b",
+      "sha256_matches": true,
+      "input_bytes": 213,
+      "unicode_characters": 213,
+      "utf8_bytes": 289
+    },
+    {
+      "index": 57,
+      "atom_id": "5a2c25fc480f079e01ab62c81849c0487bae747b3674423d9bdd62f45ba8ae2f",
+      "sha256_matches": true,
+      "input_bytes": 125,
+      "unicode_characters": 125,
+      "utf8_bytes": 169
+    },
+    {
+      "index": 58,
+      "atom_id": "5f07081bda1ac55ca035fd26826575c18e003849d50ee64a715d99ee9c802999",
+      "sha256_matches": true,
+      "input_bytes": 174,
+      "unicode_characters": 174,
+      "utf8_bytes": 252
+    },
+    {
+      "index": 59,
+      "atom_id": "62ee996f8ec3b4c0ff8b4d9d182f2785eed2515aa9b326c2e160705c7abdef3f",
+      "sha256_matches": true,
+      "input_bytes": 122,
+      "unicode_characters": 122,
+      "utf8_bytes": 136
+    },
+    {
+      "index": 60,
+      "atom_id": "62f3d7a538f73aad17058c82235f1c1b82a07a089f54ad53aa27094677675f61",
+      "sha256_matches": true,
+      "input_bytes": 452,
+      "unicode_characters": 452,
+      "utf8_bytes": 660
+    },
+    {
+      "index": 61,
+      "atom_id": "63092dbf1c6ca5601c3853ad32183d153a5ba60589f537fa409f0581ade1df64",
+      "sha256_matches": true,
+      "input_bytes": 171,
+      "unicode_characters": 171,
+      "utf8_bytes": 265
+    },
+    {
+      "index": 62,
+      "atom_id": "692393217ace683f2485ba9cf02961c2290a83cb594513880aed0c55acd62466",
+      "sha256_matches": true,
+      "input_bytes": 221,
+      "unicode_characters": 221,
+      "utf8_bytes": 273
+    },
+    {
+      "index": 63,
+      "atom_id": "69ae4d23bd64324ec6c5efe11686945d726482b842c45097e2e0e9360599cdb1",
+      "sha256_matches": true,
+      "input_bytes": 190,
+      "unicode_characters": 190,
+      "utf8_bytes": 222
+    },
+    {
+      "index": 64,
+      "atom_id": "72307ef5e33caa0d618146ecef4ad819f3ee4ebe2e55ebe5a6c226f5cd5a34e1",
+      "sha256_matches": true,
+      "input_bytes": 375,
+      "unicode_characters": 375,
+      "utf8_bytes": 423
+    },
+    {
+      "index": 65,
+      "atom_id": "72f167014dbb653f2eec31560ed015c7e2c0d4140cb398121ad04c898e8b066f",
+      "sha256_matches": true,
+      "input_bytes": 84,
+      "unicode_characters": 84,
+      "utf8_bytes": 106
+    },
+    {
+      "index": 66,
+      "atom_id": "74c15d92cd745276176c9d4c66c4cdd5b7bf59fae5b937ae1e1a07186deca95b",
+      "sha256_matches": true,
+      "input_bytes": 142,
+      "unicode_characters": 142,
+      "utf8_bytes": 188
+    },
+    {
+      "index": 67,
+      "atom_id": "7721167db127aee2407282ad63f0739c5d953cd1720752a4d67089f562f7f10b",
+      "sha256_matches": true,
+      "input_bytes": 216,
+      "unicode_characters": 216,
+      "utf8_bytes": 306
+    },
+    {
+      "index": 68,
+      "atom_id": "77c2008257f3b60bc946f7a241541d17e94ffbd08b19325833bb0612dc5b1af0",
+      "sha256_matches": true,
+      "input_bytes": 125,
+      "unicode_characters": 125,
+      "utf8_bytes": 185
+    },
+    {
+      "index": 69,
+      "atom_id": "781219f95a1fdbea17a70a99cd34033d8dcc9569251b578580b4da952a19bbfd",
+      "sha256_matches": true,
+      "input_bytes": 302,
+      "unicode_characters": 302,
+      "utf8_bytes": 370
+    },
+    {
+      "index": 70,
+      "atom_id": "783d413d2f102a6149222de31f25d081389f7d601c08e27fec9e339cf2f22c4c",
+      "sha256_matches": true,
+      "input_bytes": 175,
+      "unicode_characters": 175,
+      "utf8_bytes": 285
+    },
+    {
+      "index": 71,
+      "atom_id": "78f6a2108eaba02cfbe8c76ca6e12034335c4c1e4129bde2a2affd123bf56568",
+      "sha256_matches": true,
+      "input_bytes": 137,
+      "unicode_characters": 137,
+      "utf8_bytes": 197
+    },
+    {
+      "index": 72,
+      "atom_id": "7a359a1aa118ffc5f3423e85e46ce5f615806e4b8c0a16998ec49691a0215817",
+      "sha256_matches": true,
+      "input_bytes": 131,
+      "unicode_characters": 131,
+      "utf8_bytes": 185
+    },
+    {
+      "index": 73,
+      "atom_id": "7afafe5a6e3e8435ddf051d6cf49c1c6ca223fa4c95dfe286f19c8f391ec33d5",
+      "sha256_matches": true,
+      "input_bytes": 228,
+      "unicode_characters": 228,
+      "utf8_bytes": 278
+    },
+    {
+      "index": 74,
+      "atom_id": "7bc4a56b9299f55e209695fa3689db283e8328893508c0a4473ed32dea18b33b",
+      "sha256_matches": true,
+      "input_bytes": 148,
+      "unicode_characters": 148,
+      "utf8_bytes": 194
+    },
+    {
+      "index": 75,
+      "atom_id": "7d5d9c72f7ad9abb794dd61d99e68ff5adc1271970f00e4a009b9e334680a0d2",
+      "sha256_matches": true,
+      "input_bytes": 87,
+      "unicode_characters": 87,
+      "utf8_bytes": 117
+    },
+    {
+      "index": 76,
+      "atom_id": "8062498ed2ea8f74ddd34c3c2dec295a44f3074797e0634b52cbd2630b51459e",
+      "sha256_matches": true,
+      "input_bytes": 130,
+      "unicode_characters": 130,
+      "utf8_bytes": 192
+    },
+    {
+      "index": 77,
+      "atom_id": "87852ef96970dd58409cceccafe2fa235ed951e6c39b41869e0fca5ecb677246",
+      "sha256_matches": true,
+      "input_bytes": 97,
+      "unicode_characters": 97,
+      "utf8_bytes": 131
+    },
+    {
+      "index": 78,
+      "atom_id": "88517388478e9834b20004960ece45e5026828dc5fbb0a58206c141a37529a4b",
+      "sha256_matches": true,
+      "input_bytes": 302,
+      "unicode_characters": 302,
+      "utf8_bytes": 370
+    },
+    {
+      "index": 79,
+      "atom_id": "887786649b4338a76547a05ce2a7b0347b65b5fbe737f69ec247188f3214a077",
+      "sha256_matches": true,
+      "input_bytes": 187,
+      "unicode_characters": 187,
+      "utf8_bytes": 243
+    },
+    {
+      "index": 80,
+      "atom_id": "88b85ee6e765d6cc5180d029dfdce4cb39fa51093abb321682813ff46a09f58c",
+      "sha256_matches": true,
+      "input_bytes": 419,
+      "unicode_characters": 419,
+      "utf8_bytes": 763
+    },
+    {
+      "index": 81,
+      "atom_id": "8a1900b281e35bf99c03af2be822b3b0f7a042c7b2a5f8d9ee837df2ca1de391",
+      "sha256_matches": true,
+      "input_bytes": 143,
+      "unicode_characters": 143,
+      "utf8_bytes": 179
+    },
+    {
+      "index": 82,
+      "atom_id": "8b768726d3b3963e9b9e1a11bc7f33a04a657642db42c63fbdaaff28bf0456b0",
+      "sha256_matches": true,
+      "input_bytes": 196,
+      "unicode_characters": 196,
+      "utf8_bytes": 268
+    },
+    {
+      "index": 83,
+      "atom_id": "8c8a536d7244072e5e39acc9ab7d2fdf7d874b16349959336f6450a8aad7d74d",
+      "sha256_matches": true,
+      "input_bytes": 144,
+      "unicode_characters": 144,
+      "utf8_bytes": 170
+    },
+    {
+      "index": 84,
+      "atom_id": "8df09af617ce850c0ed67805688f8fc4f3a0073576a33701fa752ca4ea9ca08a",
+      "sha256_matches": true,
+      "input_bytes": 207,
+      "unicode_characters": 207,
+      "utf8_bytes": 247
+    },
+    {
+      "index": 85,
+      "atom_id": "8f9277771081db94f2cbe4d55fe4075fdde7edc0a9ecf4e443ae45717b8c0dcb",
+      "sha256_matches": true,
+      "input_bytes": 181,
+      "unicode_characters": 181,
+      "utf8_bytes": 223
+    },
+    {
+      "index": 86,
+      "atom_id": "8fa3ec47d77910a7c979444b92779fa3031a487901bebfcdf8f8e10d56ce54d4",
+      "sha256_matches": true,
+      "input_bytes": 52,
+      "unicode_characters": 52,
+      "utf8_bytes": 90
+    },
+    {
+      "index": 87,
+      "atom_id": "90382ec6571adc1e9f8248f72b7b7a2bb916d5ade3bdbfc99e99b6477c208b34",
+      "sha256_matches": true,
+      "input_bytes": 506,
+      "unicode_characters": 506,
+      "utf8_bytes": 824
+    },
+    {
+      "index": 88,
+      "atom_id": "92536bbe2b763233c6c90f6e32152612b3a4c8316395ce3895a27051104157cb",
+      "sha256_matches": true,
+      "input_bytes": 182,
+      "unicode_characters": 182,
+      "utf8_bytes": 250
+    },
+    {
+      "index": 89,
+      "atom_id": "937abccd3570503c88aaac8b088e687e6f79db29ca9f67f887b72a028bd4f866",
+      "sha256_matches": true,
+      "input_bytes": 166,
+      "unicode_characters": 166,
+      "utf8_bytes": 198
+    },
+    {
+      "index": 90,
+      "atom_id": "96902e5b1d0b9ac78c37f6c1f75fd1d5043bfd6c18f5e2451352b6fbc6977b46",
+      "sha256_matches": true,
+      "input_bytes": 434,
+      "unicode_characters": 434,
+      "utf8_bytes": 530
+    },
+    {
+      "index": 91,
+      "atom_id": "983c804dbd8a847852de8910fac6e9702a31040ec86415def14516a225851762",
+      "sha256_matches": true,
+      "input_bytes": 194,
+      "unicode_characters": 194,
+      "utf8_bytes": 266
+    },
+    {
+      "index": 92,
+      "atom_id": "9877043750157f00197144b87542162e34a7242d56d6533a857d4cb5822fd169",
+      "sha256_matches": true,
+      "input_bytes": 191,
+      "unicode_characters": 191,
+      "utf8_bytes": 240
+    },
+    {
+      "index": 93,
+      "atom_id": "9907b45db0455394c6e8a00a5cd8ff4254b92dddb711777a18a6ab48d070c176",
+      "sha256_matches": true,
+      "input_bytes": 235,
+      "unicode_characters": 235,
+      "utf8_bytes": 267
+    },
+    {
+      "index": 94,
+      "atom_id": "9a5d07eae55d326165113eae65bcedf131f3abfb57916fd7c08913609d7adbab",
+      "sha256_matches": true,
+      "input_bytes": 234,
+      "unicode_characters": 234,
+      "utf8_bytes": 254
+    },
+    {
+      "index": 95,
+      "atom_id": "9a6bf4e79560e0d3df31fbe2a177f290ec07ec71218e71eb89e322dc2f039635",
+      "sha256_matches": true,
+      "input_bytes": 85,
+      "unicode_characters": 85,
+      "utf8_bytes": 109
+    },
+    {
+      "index": 96,
+      "atom_id": "a5b558f46722070fb3661959014acf45a036f4013ac27541c95454f998a44da2",
+      "sha256_matches": true,
+      "input_bytes": 211,
+      "unicode_characters": 211,
+      "utf8_bytes": 257
+    },
+    {
+      "index": 97,
+      "atom_id": "a7dc27aa3ded303f19a0085dc10e7521c4f0e9984b5970c109e3a572b1c30f11",
+      "sha256_matches": true,
+      "input_bytes": 306,
+      "unicode_characters": 306,
+      "utf8_bytes": 431
+    },
+    {
+      "index": 98,
+      "atom_id": "a7e88754e5bb8b4c30b89baee6fd1fe41153876af182d201b96a9086884d779f",
+      "sha256_matches": true,
+      "input_bytes": 459,
+      "unicode_characters": 459,
+      "utf8_bytes": 770
+    },
+    {
+      "index": 99,
+      "atom_id": "a86360d87830d173c35426c12b589270e406c6a12dc8dfb241ccdbefb825d0e3",
+      "sha256_matches": true,
+      "input_bytes": 245,
+      "unicode_characters": 245,
+      "utf8_bytes": 309
+    },
+    {
+      "index": 100,
+      "atom_id": "af4b3b2fa8cb484824d83794e63fc48816b6e05c9c0ad32f76e3a360c35e30eb",
+      "sha256_matches": true,
+      "input_bytes": 189,
+      "unicode_characters": 189,
+      "utf8_bytes": 273
+    },
+    {
+      "index": 101,
+      "atom_id": "b407682500faaa6d8da43ce0ed7505d8350c1352ad449a548751bce1b62cd783",
+      "sha256_matches": true,
+      "input_bytes": 108,
+      "unicode_characters": 108,
+      "utf8_bytes": 160
+    },
+    {
+      "index": 102,
+      "atom_id": "b5821e42febe81b45815f8be9802ddafcf7daab5dc4c74e501b0e709ce3e6000",
+      "sha256_matches": true,
+      "input_bytes": 314,
+      "unicode_characters": 314,
+      "utf8_bytes": 474
+    },
+    {
+      "index": 103,
+      "atom_id": "b664d8929116da6563cafcdddb7f6e7dc3b66a6fe434e807422ba82db9b83ee4",
+      "sha256_matches": true,
+      "input_bytes": 217,
+      "unicode_characters": 217,
+      "utf8_bytes": 265
+    },
+    {
+      "index": 104,
+      "atom_id": "b923baf16e3404ffc7143c8258cd778915ab93409a40512c8d156d065ed1f61a",
+      "sha256_matches": true,
+      "input_bytes": 85,
+      "unicode_characters": 85,
+      "utf8_bytes": 121
+    },
+    {
+      "index": 105,
+      "atom_id": "bc9748938013e4b3c632bfa0e1257a59733df2e1682ed0a8a0d7a0dcc534ab2b",
+      "sha256_matches": true,
+      "input_bytes": 253,
+      "unicode_characters": 253,
+      "utf8_bytes": 291
+    },
+    {
+      "index": 106,
+      "atom_id": "bdbe4b53515757ce5b701ee375409970886fe1274ff51cca53692271e1f924bb",
+      "sha256_matches": true,
+      "input_bytes": 97,
+      "unicode_characters": 97,
+      "utf8_bytes": 131
+    },
+    {
+      "index": 107,
+      "atom_id": "bdc556a362036fbf086d0f5882d47613103ee99fa42cd1bf20d16e264b0b274a",
+      "sha256_matches": true,
+      "input_bytes": 87,
+      "unicode_characters": 87,
+      "utf8_bytes": 113
+    },
+    {
+      "index": 108,
+      "atom_id": "be67399e40a50efabac4cb3841bc3a3b7bbb408e0954367e9f95efe2f390eede",
+      "sha256_matches": true,
+      "input_bytes": 296,
+      "unicode_characters": 296,
+      "utf8_bytes": 396
+    },
+    {
+      "index": 109,
+      "atom_id": "c03c3d51c8caa76b112c4d2b77618edb95c424c724d03c1f4e1b0fe8887986d5",
+      "sha256_matches": true,
+      "input_bytes": 150,
+      "unicode_characters": 150,
+      "utf8_bytes": 198
+    },
+    {
+      "index": 110,
+      "atom_id": "c0a72a217fb966246fd4a48a809795cdc539435d1e88d1a10d041a9bcd9ed98d",
+      "sha256_matches": true,
+      "input_bytes": 156,
+      "unicode_characters": 156,
+      "utf8_bytes": 192
+    },
+    {
+      "index": 111,
+      "atom_id": "c24e34de0c01213d2344c494115a947d88276005c94863a848567f7031e10009",
+      "sha256_matches": true,
+      "input_bytes": 294,
+      "unicode_characters": 294,
+      "utf8_bytes": 456
+    },
+    {
+      "index": 112,
+      "atom_id": "c468d943aacd5d85352a7866613f53c2d6b6fd3e5a7c94cf9a5115a718abb0c9",
+      "sha256_matches": true,
+      "input_bytes": 169,
+      "unicode_characters": 169,
+      "utf8_bytes": 205
+    },
+    {
+      "index": 113,
+      "atom_id": "c600e6828d8eeb65e865c4c7c465be9aa00cb5a30100be45cfcb26542c868b4d",
+      "sha256_matches": true,
+      "input_bytes": 237,
+      "unicode_characters": 237,
+      "utf8_bytes": 411
+    },
+    {
+      "index": 114,
+      "atom_id": "cd2ad7f9986ee06ef6a8ac86aa7834a19d836483eaa1475b57396f3ba7ae536a",
+      "sha256_matches": true,
+      "input_bytes": 535,
+      "unicode_characters": 535,
+      "utf8_bytes": 873
+    },
+    {
+      "index": 115,
+      "atom_id": "cf00b1802f9e0029835530f6cff45c04fc84ccaa1f13d1eadc540c1dc6259ba3",
+      "sha256_matches": true,
+      "input_bytes": 269,
+      "unicode_characters": 269,
+      "utf8_bytes": 411
+    },
+    {
+      "index": 116,
+      "atom_id": "d434181a00c8203a60054490e976fdfcfe0f1b1c1fc42b9a2d58797aa0341a9d",
+      "sha256_matches": true,
+      "input_bytes": 417,
+      "unicode_characters": 417,
+      "utf8_bytes": 621
+    },
+    {
+      "index": 117,
+      "atom_id": "d46f67d9701bbca5691908d2a1ff2d60f8cc946f10b5a1e91c784b83ad378bde",
+      "sha256_matches": true,
+      "input_bytes": 174,
+      "unicode_characters": 174,
+      "utf8_bytes": 218
+    },
+    {
+      "index": 118,
+      "atom_id": "d5fddb4b2a8fa2c2afef4de9faac8e2192fa333bce05b160799f87fefa9c339f",
+      "sha256_matches": true,
+      "input_bytes": 419,
+      "unicode_characters": 419,
+      "utf8_bytes": 533
+    },
+    {
+      "index": 119,
+      "atom_id": "d9aefe500d926d5c9ec8e40a4997df1371cfe837dc3a11f548b7a2cfcf99b6b7",
+      "sha256_matches": true,
+      "input_bytes": 156,
+      "unicode_characters": 156,
+      "utf8_bytes": 198
+    },
+    {
+      "index": 120,
+      "atom_id": "daba72e239c5a9bae6419c9ee7873c87de22293ae599a303dd3feeff596ed538",
+      "sha256_matches": true,
+      "input_bytes": 490,
+      "unicode_characters": 490,
+      "utf8_bytes": 736
+    },
+    {
+      "index": 121,
+      "atom_id": "dd585f94675a53aceed6592da3ad291d31505f93c47ec491c1b9bba0851ef5f7",
+      "sha256_matches": true,
+      "input_bytes": 209,
+      "unicode_characters": 209,
+      "utf8_bytes": 257
+    },
+    {
+      "index": 122,
+      "atom_id": "deaf86853b1217a64e0283dae2f03f6aa847b19a5d16e68a95518b8caef0da80",
+      "sha256_matches": true,
+      "input_bytes": 260,
+      "unicode_characters": 260,
+      "utf8_bytes": 318
+    },
+    {
+      "index": 123,
+      "atom_id": "df8445edb07e25e1e79b9efacc91d4900583fa229efe7706745af103ff1cb3f5",
+      "sha256_matches": true,
+      "input_bytes": 448,
+      "unicode_characters": 448,
+      "utf8_bytes": 674
+    },
+    {
+      "index": 124,
+      "atom_id": "e12105bf8ad122862f6fe04a1b4abe22b29365455992101560012d8a9cdf9f44",
+      "sha256_matches": true,
+      "input_bytes": 324,
+      "unicode_characters": 324,
+      "utf8_bytes": 382
+    },
+    {
+      "index": 125,
+      "atom_id": "e17855c9db943466019087527afd9e178fa5c465197a1a9de44490e5fa8444b2",
+      "sha256_matches": true,
+      "input_bytes": 239,
+      "unicode_characters": 239,
+      "utf8_bytes": 303
+    },
+    {
+      "index": 126,
+      "atom_id": "e405a7f40fa7ee5313052263686a73c8b8578d18290d1f429cb1826603f82480",
+      "sha256_matches": true,
+      "input_bytes": 185,
+      "unicode_characters": 185,
+      "utf8_bytes": 257
+    },
+    {
+      "index": 127,
+      "atom_id": "e44ad50e6f818d656b6b3b1318b466ef65b9d4fe363f0d70d2f988ffda11c865",
+      "sha256_matches": true,
+      "input_bytes": 221,
+      "unicode_characters": 221,
+      "utf8_bytes": 303
+    },
+    {
+      "index": 128,
+      "atom_id": "e5d2d285af1f22158b076150c40f53f7d8ce44d2a32dbf3093e84e39ae416c82",
+      "sha256_matches": true,
+      "input_bytes": 306,
+      "unicode_characters": 306,
+      "utf8_bytes": 368
+    },
+    {
+      "index": 129,
+      "atom_id": "e608f6dc2b3e96087ebd63bf03573113e4862368d4ca9073b2e7e18b62f93d6a",
+      "sha256_matches": true,
+      "input_bytes": 81,
+      "unicode_characters": 81,
+      "utf8_bytes": 117
+    },
+    {
+      "index": 130,
+      "atom_id": "e6b6fecddb5eee0812a0243c4df590974799c2c4403225694671db7205f1e6a0",
+      "sha256_matches": true,
+      "input_bytes": 113,
+      "unicode_characters": 113,
+      "utf8_bytes": 131
+    },
+    {
+      "index": 131,
+      "atom_id": "e9720c882324b7c79f984b3a679f76fadc56b24259982372cfb13ef034c4860a",
+      "sha256_matches": true,
+      "input_bytes": 163,
+      "unicode_characters": 163,
+      "utf8_bytes": 264
+    },
+    {
+      "index": 132,
+      "atom_id": "ee425ea06616fd0f316f4ec675f08c194f1a322c66490006b88f876689118d41",
+      "sha256_matches": true,
+      "input_bytes": 320,
+      "unicode_characters": 320,
+      "utf8_bytes": 402
+    },
+    {
+      "index": 133,
+      "atom_id": "eeec54732cd5164f183f001e2f20aca1e7c3d82f7e60e2ae713bb6be62891335",
+      "sha256_matches": true,
+      "input_bytes": 116,
+      "unicode_characters": 116,
+      "utf8_bytes": 144
+    },
+    {
+      "index": 134,
+      "atom_id": "ef6f54cb65d0244d86eb6429a06d130952605ede928d46583fdd5558ae1c0b90",
+      "sha256_matches": true,
+      "input_bytes": 96,
+      "unicode_characters": 96,
+      "utf8_bytes": 116
+    },
+    {
+      "index": 135,
+      "atom_id": "efc75726d17ed8663b268d9d47e0616c4b92a0383da0261cb7c4c6c7f3b819d2",
+      "sha256_matches": true,
+      "input_bytes": 216,
+      "unicode_characters": 216,
+      "utf8_bytes": 248
+    },
+    {
+      "index": 136,
+      "atom_id": "f19c5a47126f834bc6db65cd85562ee9c8c64fbe0f5db7868a89cc9f8713412b",
+      "sha256_matches": true,
+      "input_bytes": 179,
+      "unicode_characters": 179,
+      "utf8_bytes": 243
+    },
+    {
+      "index": 137,
+      "atom_id": "f4f9b0a4df470ba2b4bf10beee83d880ad7f4b3f0386116c90457ebb5d0fe984",
+      "sha256_matches": true,
+      "input_bytes": 103,
+      "unicode_characters": 103,
+      "utf8_bytes": 159
+    },
+    {
+      "index": 138,
+      "atom_id": "f62752ed0e3bef8ecf2a83bb81efd8d286d810248bbeb79696cb3710c0c3b1e5",
+      "sha256_matches": true,
+      "input_bytes": 83,
+      "unicode_characters": 83,
+      "utf8_bytes": 109
+    },
+    {
+      "index": 139,
+      "atom_id": "f7638bdcf1e35350eda1b731d962c04911ac25c6a52343035a7db2a5bb04e456",
+      "sha256_matches": true,
+      "input_bytes": 220,
+      "unicode_characters": 220,
+      "utf8_bytes": 384
+    },
+    {
+      "index": 140,
+      "atom_id": "f7ca82eaa0b6663d12c0bfd1a9ddf79bed9767d3db424fab41f9fc1bf4da0364",
+      "sha256_matches": true,
+      "input_bytes": 184,
+      "unicode_characters": 184,
+      "utf8_bytes": 388
+    },
+    {
+      "index": 141,
+      "atom_id": "f94e72b42f9e6da0084b96b95d047cefcf3467c62f9875897dd6b2e40f6d2e97",
+      "sha256_matches": true,
+      "input_bytes": 174,
+      "unicode_characters": 174,
+      "utf8_bytes": 270
+    },
+    {
+      "index": 142,
+      "atom_id": "fa8b4b6196fcba7e8ebb4dd83eb2eef163a13a0db12bf2d3c4701126f37ade22",
+      "sha256_matches": true,
+      "input_bytes": 345,
+      "unicode_characters": 345,
+      "utf8_bytes": 431
+    },
+    {
+      "index": 143,
+      "atom_id": "fad0a54d7c08517061dd72156313f2d20793a832d69377d4b2c6ccafb4a15a71",
+      "sha256_matches": true,
+      "input_bytes": 144,
+      "unicode_characters": 144,
+      "utf8_bytes": 212
+    },
+    {
+      "index": 144,
+      "atom_id": "fb1c38b64efe553d45ac383d0721cd76c7b64279dcff96cd63865be615fbdfb5",
+      "sha256_matches": true,
+      "input_bytes": 106,
+      "unicode_characters": 106,
+      "utf8_bytes": 176
+    },
+    {
+      "index": 145,
+      "atom_id": "fb59b24ac5caf7f843daafe640a109f5656d2c90a088f47e404bc07f5425aefc",
+      "sha256_matches": true,
+      "input_bytes": 163,
+      "unicode_characters": 163,
+      "utf8_bytes": 200
+    },
+    {
+      "index": 146,
+      "atom_id": "fc7df336d8009cc2fb6b17b81726c35280f4a7c87df6b80aeb2ab2ed62148dc1",
+      "sha256_matches": true,
+      "input_bytes": 281,
+      "unicode_characters": 281,
+      "utf8_bytes": 343
+    },
+    {
+      "index": 147,
+      "atom_id": "fe2435c31f17b225da1fc23447f6bc697da4eab605315d6d8611f1370db9369d",
+      "sha256_matches": true,
+      "input_bytes": 152,
+      "unicode_characters": 152,
+      "utf8_bytes": 174
+    },
+    {
+      "index": 148,
+      "atom_id": "fe32fa800185d6c61117be686cf2b1eca3bb051f168159cfafd23edb452fb19f",
+      "sha256_matches": true,
+      "input_bytes": 109,
+      "unicode_characters": 109,
+      "utf8_bytes": 185
+    },
+    {
+      "index": 149,
+      "atom_id": "fed862d04754e331ffe1254aa2d4f4f01ae3fb08ffb349002952eee303bf8a3e",
+      "sha256_matches": true,
+      "input_bytes": 282,
+      "unicode_characters": 282,
+      "utf8_bytes": 338
+    },
+    {
+      "index": 150,
+      "atom_id": "ff41c11de3a485a3451a5788237056c9099133f734e8bf7b75a1240d6746dd85",
+      "sha256_matches": true,
+      "input_bytes": 123,
+      "unicode_characters": 123,
+      "utf8_bytes": 151
+    }
+  ],
+  "mathlib_citations": [
+    {
+      "index": 75,
+      "declaration": "Polynomial.coeff_monomial",
+      "file": "Mathlib/Algebra/Polynomial/Basic.lean",
+      "line": 581,
+      "cited_line": "theorem coeff_monomial : coeff (monomial n a) m = if n = m then a else 0 := by",
+      "generated_to_additive": false
+    },
+    {
+      "index": 75,
+      "declaration": "Nat.descFactorial_pos",
+      "file": "Mathlib/Data/Nat/Factorial/Basic.lean",
+      "line": 374,
+      "cited_line": "lemma descFactorial_pos {n k : ℕ} : 0 < n.descFactorial k ↔ k ≤ n := by simp [Nat.pos_iff_ne_zero]",
+      "generated_to_additive": false
+    },
+    {
+      "index": 89,
+      "declaration": "Matrix.schur_complement_eq₂₂",
+      "file": "Mathlib/LinearAlgebra/Matrix/Hermitian.lean",
+      "line": 378,
+      "cited_line": "theorem schur_complement_eq₂₂ [Fintype m] [Fintype n] [DecidableEq n] (A : Matrix m m α)",
+      "generated_to_additive": false
+    },
+    {
+      "index": 89,
+      "declaration": "Matrix.PosDef.isUnit",
+      "file": "Mathlib/LinearAlgebra/Matrix/PosDef.lean",
+      "line": 507,
+      "cited_line": "theorem isUnit [DecidableEq n] {M : Matrix n n K} (hM : M.PosDef) : IsUnit M := by",
+      "generated_to_additive": false
+    },
+    {
+      "index": 89,
+      "declaration": "Matrix.PosSemidef.dotProduct_mulVec_nonneg",
+      "file": "Mathlib/LinearAlgebra/Matrix/PosDef.lean",
+      "line": 305,
+      "cited_line": "theorem dotProduct_mulVec_nonneg {M : Matrix n n R} (hM : M.PosSemidef) :",
+      "generated_to_additive": false
+    },
+    {
+      "index": 90,
+      "declaration": "sq_nonneg",
+      "file": "Mathlib/Algebra/Order/Ring/Unbundled/Basic.lean",
+      "line": 606,
+      "cited_line": "lemma sq_nonneg [ExistsAddOfLE R] [PosMulMono R] [AddLeftMono R]",
+      "generated_to_additive": false
+    },
+    {
+      "index": 90,
+      "declaration": "div_lt_iff₀",
+      "file": "Mathlib/Algebra/Order/GroupWithZero/Basic.lean",
+      "line": 1146,
+      "cited_line": "lemma div_lt_iff₀ (hc : 0 < c) : b / c < a ↔ b < a * c := by",
+      "generated_to_additive": false
+    },
+    {
+      "index": 90,
+      "declaration": "mul_lt_mul_iff_right₀",
+      "file": "Mathlib/Algebra/Order/GroupWithZero/Defs.lean",
+      "line": 286,
+      "cited_line": "theorem mul_lt_mul_iff_right₀ [PosMulStrictMono α] [PosMulReflectLT α] (a0 : 0 < a) :",
+      "generated_to_additive": false
+    },
+    {
+      "index": 104,
+      "declaration": "ArithmeticFunction.cardFactors_mul",
+      "file": "Mathlib/NumberTheory/ArithmeticFunction/Misc.lean",
+      "line": 290,
+      "cited_line": "theorem cardFactors_mul {m n : ℕ} (m0 : m ≠ 0) (n0 : n ≠ 0) : Ω (m * n) = Ω m + Ω n := by",
+      "generated_to_additive": false
+    },
+    {
+      "index": 105,
+      "declaration": "Complex.sub_conj",
+      "file": "Mathlib/Data/Complex/Basic.lean",
+      "line": 668,
+      "cited_line": "theorem sub_conj (z : ℂ) : z - conj z = (2 * z.im : ℝ) * I :=",
+      "generated_to_additive": false
+    },
+    {
+      "index": 126,
+      "declaration": "Submodule.starProjection_unit_singleton",
+      "file": "Mathlib/Analysis/InnerProductSpace/Projection/Basic.lean",
+      "line": 417,
+      "cited_line": "theorem starProjection_unit_singleton {v : E} (hv : ‖v‖ = 1) (w : E) :",
+      "generated_to_additive": false
+    },
+    {
+      "index": 126,
+      "declaration": "Submodule.norm_sq_eq_add_norm_sq_starProjection",
+      "file": "Mathlib/Analysis/InnerProductSpace/Projection/Basic.lean",
+      "line": 557,
+      "cited_line": "theorem norm_sq_eq_add_norm_sq_starProjection (x : E) (S : Submodule 𝕜 E)",
+      "generated_to_additive": false
+    },
+    {
+      "index": 126,
+      "declaration": "Submodule.starProjection_orthogonal",
+      "file": "Mathlib/Analysis/InnerProductSpace/Projection/Basic.lean",
+      "line": 209,
+      "cited_line": "lemma starProjection_orthogonal (U : Submodule 𝕜 E) [U.HasOrthogonalProjection] :",
+      "generated_to_additive": false
+    },
+    {
+      "index": 126,
+      "declaration": "Finset.sum_range_sub'",
+      "file": "Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean",
+      "line": 903,
+      "cited_line": "lemma prod_range_div' (f : ℕ → G) (n : ℕ) : (∏ i ∈ range n, f i / f (i + 1)) = f 0 / f n := by",
+      "generated_to_additive": true
+    },
+    {
+      "index": 150,
+      "declaration": "norm_sub_sq_real",
+      "file": "Mathlib/Analysis/InnerProductSpace/Basic.lean",
+      "line": 435,
+      "cited_line": "theorem norm_sub_sq_real (x y : F) : ‖x - y‖ ^ 2 = ‖x‖ ^ 2 - 2 * ⟪x, y⟫_ℝ + ‖y‖ ^ 2 :=",
+      "generated_to_additive": false
+    },
+    {
+      "index": 150,
+      "declaration": "norm_add_sq_real",
+      "file": "Mathlib/Analysis/InnerProductSpace/Basic.lean",
+      "line": 409,
+      "cited_line": "theorem norm_add_sq_real (x y : F) : ‖x + y‖ ^ 2 = ‖x‖ ^ 2 + 2 * ⟪x, y⟫_ℝ + ‖y‖ ^ 2 := by",
+      "generated_to_additive": false
+    },
+    {
+      "index": 4,
+      "declaration": "LinearIsometryEquiv.inner_map_map",
+      "file": "Mathlib/Analysis/InnerProductSpace/LinearMap.lean",
+      "line": 120,
+      "cited_line": "theorem LinearIsometryEquiv.inner_map_map (f : E ≃ₗᵢ[𝕜] E') (x y : E) : ⟪f x, f y⟫ = ⟪x, y⟫ :=",
+      "generated_to_additive": false
+    },
+    {
+      "index": 4,
+      "declaration": "LinearIsometryEquiv.inner_map_eq_flip",
+      "file": "Mathlib/Analysis/InnerProductSpace/LinearMap.lean",
+      "line": 124,
+      "cited_line": "theorem LinearIsometryEquiv.inner_map_eq_flip (f : E ≃ₗᵢ[𝕜] E') (x : E) (y : E') :",
+      "generated_to_additive": false
+    },
+    {
+      "index": 8,
+      "declaration": "Polynomial.coeff_derivative",
+      "file": "Mathlib/Algebra/Polynomial/Derivative.lean",
+      "line": 58,
+      "cited_line": "theorem coeff_derivative (p : R[X]) (n : ℕ) :",
+      "generated_to_additive": false
+    },
+    {
+      "index": 15,
+      "declaration": "Real.one_sub_sq_div_two_le_cos",
+      "file": "Mathlib/Analysis/SpecialFunctions/Trigonometric/Bounds.lean",
+      "line": 123,
+      "cited_line": "lemma one_sub_sq_div_two_le_cos : 1 - x ^ 2 / 2 ≤ cos x := by",
+      "generated_to_additive": false
+    },
+    {
+      "index": 20,
+      "declaration": "intervalIntegral.integral_eq_sub_of_hasDerivAt",
+      "file": "Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean",
+      "line": 1148,
+      "cited_line": "theorem integral_eq_sub_of_hasDerivAt (hderiv : ∀ x ∈ uIcc a b, HasDerivAt f (f' x) x)",
+      "generated_to_additive": false
+    },
+    {
+      "index": 21,
+      "declaration": "Complex.dist_le_mul_div_pow_of_mapsTo_ball_of_isLittleO",
+      "file": "Mathlib/Analysis/Complex/Schwarz.lean",
+      "line": 146,
+      "cited_line": "theorem dist_le_mul_div_pow_of_mapsTo_ball_of_isLittleO {f : E → F} {c z : E} {R₁ R₂ : ℝ} {n : ℕ}",
+      "generated_to_additive": false
+    },
+    {
+      "index": 25,
+      "declaration": "Polynomial.fwdDiff_iter_degree_eq_factorial",
+      "file": "Mathlib/Algebra/Group/ForwardDiff.lean",
+      "line": 266,
+      "cited_line": "theorem Polynomial.fwdDiff_iter_degree_eq_factorial (P : R[X]) :",
+      "generated_to_additive": false
+    },
+    {
+      "index": 25,
+      "declaration": "Polynomial.fwdDiff_iter_eq_zero_of_degree_lt",
+      "file": "Mathlib/Algebra/Group/ForwardDiff.lean",
+      "line": 274,
+      "cited_line": "theorem Polynomial.fwdDiff_iter_eq_zero_of_degree_lt {P : R[X]} {n : ℕ} (hP : P.natDegree < n) :",
+      "generated_to_additive": false
+    },
+    {
+      "index": 30,
+      "declaration": "Matrix.PosDef.fromBlocks₂₂",
+      "file": "Mathlib/LinearAlgebra/Matrix/PosDef.lean",
+      "line": 582,
+      "cited_line": "theorem fromBlocks₂₂ [DecidableEq n] (A : Matrix m m R')",
+      "generated_to_additive": false
+    },
+    {
+      "index": 33,
+      "declaration": "Matrix.det_mul",
+      "file": "Mathlib/LinearAlgebra/Matrix/Determinant/Basic.lean",
+      "line": 138,
+      "cited_line": "theorem det_mul (M N : Matrix n n R) : det (M * N) = det M * det N :=",
+      "generated_to_additive": false
+    },
+    {
+      "index": 36,
+      "declaration": "Real.cos_sq_add_sin_sq",
+      "file": "Mathlib/Analysis/Complex/Trigonometric.lean",
+      "line": 666,
+      "cited_line": "theorem cos_sq_add_sin_sq : cos x ^ 2 + sin x ^ 2 = 1 := by rw [add_comm, sin_sq_add_cos_sq]",
+      "generated_to_additive": false
+    },
+    {
+      "index": 41,
+      "declaration": "MeasureTheory.integral_Ioi_of_hasDerivAt_of_tendsto",
+      "file": "Mathlib/MeasureTheory/Integral/IntegralEqImproper.lean",
+      "line": 787,
+      "cited_line": "theorem integral_Ioi_of_hasDerivAt_of_tendsto (hcont : ContinuousWithinAt f (Ici a) a)",
+      "generated_to_additive": false
+    },
+    {
+      "index": 43,
+      "declaration": "ConvexOn.map_integral_le",
+      "file": "Mathlib/Analysis/Convex/Integral.lean",
+      "line": 199,
+      "cited_line": "theorem ConvexOn.map_integral_le [IsProbabilityMeasure μ] (hg : ConvexOn ℝ s g)",
+      "generated_to_additive": false
+    },
+    {
+      "index": 47,
+      "declaration": "antitoneOn_of_deriv_nonpos",
+      "file": "Mathlib/Analysis/Calculus/Deriv/MeanValue.lean",
+      "line": 479,
+      "cited_line": "theorem antitoneOn_of_deriv_nonpos {D : Set ℝ} (hD : Convex ℝ D) {f : ℝ → ℝ}",
+      "generated_to_additive": false
+    },
+    {
+      "index": 50,
+      "declaration": "exists_rat_btwn",
+      "file": "Mathlib/Algebra/Order/Archimedean/Basic.lean",
+      "line": 371,
+      "cited_line": "theorem exists_rat_btwn {x y : K} (h : x < y) : ∃ q : ℚ, x < q ∧ q < y := by",
+      "generated_to_additive": false
+    },
+    {
+      "index": 51,
+      "declaration": "MeasureTheory.norm_charFun_le_one",
+      "file": "Mathlib/MeasureTheory/Measure/CharacteristicFunction/Basic.lean",
+      "line": 175,
+      "cited_line": "lemma norm_charFun_le_one [IsProbabilityMeasure μ] (t : E) : ‖charFun μ t‖ ≤ 1 :=",
+      "generated_to_additive": false
+    },
+    {
+      "index": 59,
+      "declaration": "Submodule.norm_starProjection_apply_le",
+      "file": "Mathlib/Analysis/InnerProductSpace/Projection/Basic.lean",
+      "line": 361,
+      "cited_line": "theorem norm_starProjection_apply_le (v : E) :",
+      "generated_to_additive": false
+    },
+    {
+      "index": 63,
+      "declaration": "Matrix.invOf_fromBlocks₂₂_eq",
+      "file": "Mathlib/LinearAlgebra/Matrix/SchurComplement.lean",
+      "line": 277,
+      "cited_line": "theorem invOf_fromBlocks₂₂_eq (A : Matrix m m α) (B : Matrix m n α) (C : Matrix n m α)",
+      "generated_to_additive": false
+    },
+    {
+      "index": 66,
+      "declaration": "Finset.sum_involution",
+      "file": "Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean",
+      "line": 665,
+      "cited_line": "lemma prod_involution (g : ∀ a ∈ s, ι) (hg₁ : ∀ a ha, f a * f (g a ha) = 1)",
+      "generated_to_additive": true
+    },
+    {
+      "index": 74,
+      "declaration": "meromorphicOrderAt_logDeriv_eq_neg_one",
+      "file": "Mathlib/Analysis/Meromorphic/Order.lean",
+      "line": 996,
+      "cited_line": "theorem meromorphicOrderAt_logDeriv_eq_neg_one [CharZero 𝕜] (hf : MeromorphicAt f x)",
+      "generated_to_additive": false
+    },
+    {
+      "index": 76,
+      "declaration": "meromorphicOrderAt_logDeriv_eq_neg_one",
+      "file": "Mathlib/Analysis/Meromorphic/Order.lean",
+      "line": 996,
+      "cited_line": "theorem meromorphicOrderAt_logDeriv_eq_neg_one [CharZero 𝕜] (hf : MeromorphicAt f x)",
+      "generated_to_additive": false
+    },
+    {
+      "index": 79,
+      "declaration": "PowerSeries.coeff_rescale",
+      "file": "Mathlib/RingTheory/PowerSeries/Basic.lean",
+      "line": 567,
+      "cited_line": "theorem coeff_rescale (f : R⟦X⟧) (a : R) (n : ℕ) :",
+      "generated_to_additive": false
+    },
+    {
+      "index": 80,
+      "declaration": "Unitary.star_mul_self_of_mem",
+      "file": "Mathlib/Algebra/Star/Unitary.lean",
+      "line": 61,
+      "cited_line": "theorem star_mul_self_of_mem {U : R} (hU : U ∈ unitary R) : star U * U = 1 :=",
+      "generated_to_additive": false
+    },
+    {
+      "index": 81,
+      "declaration": "Matrix.toMatrixInnerProductSpace",
+      "file": "Mathlib/Analysis/Matrix/Order.lean",
+      "line": 336,
+      "cited_line": "def toMatrixInnerProductSpace (M : Matrix n n 𝕜) (hM : M.PosSemidef) :",
+      "generated_to_additive": false
+    },
+    {
+      "index": 83,
+      "declaration": "MeasureTheory.integral_Ioi_of_hasDerivAt_of_tendsto",
+      "file": "Mathlib/MeasureTheory/Integral/IntegralEqImproper.lean",
+      "line": 787,
+      "cited_line": "theorem integral_Ioi_of_hasDerivAt_of_tendsto (hcont : ContinuousWithinAt f (Ici a) a)",
+      "generated_to_additive": false
+    },
+    {
+      "index": 85,
+      "declaration": "Finset.sum_mul_sq_le_sq_mul_sq",
+      "file": "Mathlib/Algebra/Order/BigOperators/Ring/Finset.lean",
+      "line": 159,
+      "cited_line": "lemma sum_mul_sq_le_sq_mul_sq [CommSemiring R] [LinearOrder R] [IsStrictOrderedRing R]",
+      "generated_to_additive": false
+    },
+    {
+      "index": 92,
+      "declaration": "Complex.normSq_inv",
+      "file": "Mathlib/Data/Complex/Basic.lean",
+      "line": 750,
+      "cited_line": "theorem normSq_inv (z : ℂ) : normSq z⁻¹ = (normSq z)⁻¹ := by simp",
+      "generated_to_additive": false
+    },
+    {
+      "index": 96,
+      "declaration": "Matrix.schur_complement_eq₂₂",
+      "file": "Mathlib/LinearAlgebra/Matrix/Hermitian.lean",
+      "line": 378,
+      "cited_line": "theorem schur_complement_eq₂₂ [Fintype m] [Fintype n] [DecidableEq n] (A : Matrix m m α)",
+      "generated_to_additive": false
+    },
+    {
+      "index": 97,
+      "declaration": "Matrix.det_vandermonde_ne_zero_iff",
+      "file": "Mathlib/LinearAlgebra/Vandermonde.lean",
+      "line": 232,
+      "cited_line": "theorem det_vandermonde_ne_zero_iff [IsDomain R] {v : Fin n → R} :",
+      "generated_to_additive": false
+    },
+    {
+      "index": 103,
+      "declaration": "MeasureTheory.integral_add",
+      "file": "Mathlib/MeasureTheory/Integral/Bochner/Basic.lean",
+      "line": 237,
+      "cited_line": "theorem integral_add {f g : α → G} (hf : Integrable f μ) (hg : Integrable g μ) :",
+      "generated_to_additive": false
+    },
+    {
+      "index": 103,
+      "declaration": "MeasureTheory.integral_div",
+      "file": "Mathlib/MeasureTheory/Integral/Bochner/Basic.lean",
+      "line": 295,
+      "cited_line": "theorem integral_div {L : Type*} [RCLike L] (r : L) (f : α → L) :",
+      "generated_to_additive": false
+    },
+    {
+      "index": 109,
+      "declaration": "Polynomial.fwdDiff_iter_degree_eq_factorial",
+      "file": "Mathlib/Algebra/Group/ForwardDiff.lean",
+      "line": 266,
+      "cited_line": "theorem Polynomial.fwdDiff_iter_degree_eq_factorial (P : R[X]) :",
+      "generated_to_additive": false
+    },
+    {
+      "index": 109,
+      "declaration": "Polynomial.fwdDiff_iter_eq_zero_of_degree_lt",
+      "file": "Mathlib/Algebra/Group/ForwardDiff.lean",
+      "line": 274,
+      "cited_line": "theorem Polynomial.fwdDiff_iter_eq_zero_of_degree_lt {P : R[X]} {n : ℕ} (hP : P.natDegree < n) :",
+      "generated_to_additive": false
+    },
+    {
+      "index": 110,
+      "declaration": "Matrix.trace_eq_neg_charpoly_coeff",
+      "file": "Mathlib/LinearAlgebra/Matrix/Charpoly/Coeff.lean",
+      "line": 139,
+      "cited_line": "theorem trace_eq_neg_charpoly_coeff [Nonempty n] (M : Matrix n n R) :",
+      "generated_to_additive": false
+    },
+    {
+      "index": 112,
+      "declaration": "Matrix.PosDef.fromBlocks₁₁",
+      "file": "Mathlib/LinearAlgebra/Matrix/PosDef.lean",
+      "line": 563,
+      "cited_line": "theorem fromBlocks₁₁ [DecidableEq m] {A : Matrix m m R'}",
+      "generated_to_additive": false
+    },
+    {
+      "index": 114,
+      "declaration": "Polynomial.card_roots_le_derivative",
+      "file": "Mathlib/Analysis/Calculus/LocalExtr/Polynomial.lean",
+      "line": 63,
+      "cited_line": "theorem card_roots_le_derivative (p : ℝ[X]) :",
+      "generated_to_additive": false
+    },
+    {
+      "index": 116,
+      "declaration": "MeasureTheory.integral_Ioi_of_hasDerivAt_of_tendsto",
+      "file": "Mathlib/MeasureTheory/Integral/IntegralEqImproper.lean",
+      "line": 787,
+      "cited_line": "theorem integral_Ioi_of_hasDerivAt_of_tendsto (hcont : ContinuousWithinAt f (Ici a) a)",
+      "generated_to_additive": false
+    },
+    {
+      "index": 119,
+      "declaration": "Real.one_sub_sq_div_two_le_cos",
+      "file": "Mathlib/Analysis/SpecialFunctions/Trigonometric/Bounds.lean",
+      "line": 123,
+      "cited_line": "lemma one_sub_sq_div_two_le_cos : 1 - x ^ 2 / 2 ≤ cos x := by",
+      "generated_to_additive": false
+    },
+    {
+      "index": 122,
+      "declaration": "CFC.posPart_sub_negPart",
+      "file": "Mathlib/Analysis/SpecialFunctions/ContinuousFunctionalCalculus/PosPart/Basic.lean",
+      "line": 77,
+      "cited_line": "lemma posPart_sub_negPart (a : A) (ha : IsSelfAdjoint a := by cfc_tac) : a⁺ - a⁻ = a := by",
+      "generated_to_additive": false
+    },
+    {
+      "index": 122,
+      "declaration": "CFC.negPart_nonneg",
+      "file": "Mathlib/Analysis/SpecialFunctions/ContinuousFunctionalCalculus/PosPart/Basic.lean",
+      "line": 147,
+      "cited_line": "lemma negPart_nonneg (a : A) :",
+      "generated_to_additive": false
+    },
+    {
+      "index": 127,
+      "declaration": "Complex.norm_le_norm_of_mapsTo_ball",
+      "file": "Mathlib/Analysis/Complex/Schwarz.lean",
+      "line": 238,
+      "cited_line": "theorem norm_le_norm_of_mapsTo_ball (hd : DifferentiableOn ℂ f (ball 0 R))",
+      "generated_to_additive": false
+    },
+    {
+      "index": 131,
+      "declaration": "Rat.denseRange_cast",
+      "file": "Mathlib/Topology/Algebra/Order/Archimedean.lean",
+      "line": 33,
+      "cited_line": "theorem Rat.denseRange_cast {𝕜} [Field 𝕜] [LinearOrder 𝕜] [IsStrictOrderedRing 𝕜]",
+      "generated_to_additive": false
+    },
+    {
+      "index": 134,
+      "declaration": "LinearIsometryEquiv.inner_map_map",
+      "file": "Mathlib/Analysis/InnerProductSpace/LinearMap.lean",
+      "line": 120,
+      "cited_line": "theorem LinearIsometryEquiv.inner_map_map (f : E ≃ₗᵢ[𝕜] E') (x y : E) : ⟪f x, f y⟫ = ⟪x, y⟫ :=",
+      "generated_to_additive": false
+    },
+    {
+      "index": 142,
+      "declaration": "Matrix.charpoly_units_conj",
+      "file": "Mathlib/LinearAlgebra/Matrix/Charpoly/Basic.lean",
+      "line": 285,
+      "cited_line": "theorem charpoly_units_conj (M : (Matrix n n R)ˣ) (N : Matrix n n R) :",
+      "generated_to_additive": false
+    },
+    {
+      "index": 148,
+      "declaration": "Set.Finite.measure_zero",
+      "file": "Mathlib/MeasureTheory/Measure/Typeclasses/NullSingletonClass.lean",
+      "line": 79,
+      "cited_line": "theorem _root_.Set.Finite.measure_zero (h : s.Finite) (μ : Measure α) [NullSingletonClass μ] :",
+      "generated_to_additive": false
+    },
+    {
+      "index": 149,
+      "declaration": "MeasureTheory.integral_integral_swap",
+      "file": "Mathlib/MeasureTheory/Integral/Prod.lean",
+      "line": 482,
+      "cited_line": "theorem integral_integral_swap ⦃f : α → β → E⦄ (hf : Integrable (uncurry f) (μ.prod ν)) :",
+      "generated_to_additive": false
+    }
+  ],
+  "probe_checks": [
+    {
+      "probe": "baseline",
+      "exit": 0,
+      "log": "logs/baseline.log.gz",
+      "log_gzip_sha256": "9357a5de789a07e2c882d5fd52137552b267046cb481491a4590c7084b73a068",
+      "log_utf8_bytes": 64067558,
+      "archived_probe": null,
+      "source_sha256": null,
+      "declarations": []
+    },
+    {
+      "probe": "Readback75",
+      "exit": 0,
+      "log": "logs/Readback75.log.gz",
+      "log_gzip_sha256": "61b02ebac8de22c733523f047e2df6b842717dd0a8066ac09823cb3e5a8059db",
+      "log_utf8_bytes": 64069102,
+      "archived_probe": "probes/Readback75.lean",
+      "source_sha256": "a41e288ecc78b5da99c3390acacd533e5dba75823c6c94fc6160aaa55057b82b",
+      "declarations": [
+        {
+          "declaration": "Triage75.readback",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ]
+        }
+      ]
+    },
+    {
+      "probe": "Disk90",
+      "exit": 2,
+      "log": "logs/Disk90.log.gz",
+      "log_gzip_sha256": "4aed22fafcf5366af227cd1facdb745ed886eff7e1c93a22244ccb2238cc01ac",
+      "log_utf8_bytes": 1586,
+      "archived_probe": "probes/Disk90.lean",
+      "source_sha256": "5d8850867948931fc8882728a4c8e2d8eaaf3c5b16650e6f7533304186074374",
+      "declarations": [
+        {
+          "declaration": "Triage90.reflected_pair",
+          "axioms": [
+            "propext",
+            "sorryAx",
+            "Classical.choice",
+            "Quot.sound"
+          ]
+        }
+      ]
+    },
+    {
+      "probe": "Schur89",
+      "exit": 0,
+      "log": "logs/Schur89.log.gz",
+      "log_gzip_sha256": "e3e5c5d6a13fc899bd481496edcb87dafcf2db147e35cbaccdd9c1e37387198f",
+      "log_utf8_bytes": 64069155,
+      "archived_probe": "probes/Schur89.lean",
+      "source_sha256": "69d8dc7faead91414e6f10cc641684aa56bc19fa142a72b8665d78608f2c5c39",
+      "declarations": [
+        {
+          "declaration": "Triage89.schur_minimum",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ]
+        }
+      ]
+    },
+    {
+      "probe": "Disk90-v2",
+      "exit": 0,
+      "log": "logs/Disk90-v2.log.gz",
+      "log_gzip_sha256": "dfbd6ca79cb076a1d28ba24290cc1936b7fff2ee7b63424b16e03d8f7d8d1545",
+      "log_utf8_bytes": 64068604,
+      "archived_probe": "probes/Disk90-v2.lean",
+      "source_sha256": "d7617f727d5aa7e70d9809793e0e2bd3e586410c89c9958ed8e5f94182d9311e",
+      "declarations": [
+        {
+          "declaration": "Triage90.reflected_pair",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ]
+        }
+      ]
+    },
+    {
+      "probe": "Parity104",
+      "exit": 0,
+      "log": "logs/Parity104.log.gz",
+      "log_gzip_sha256": "9f7a9cb430bfe8b9c3794e3039cd2bf3d1942d849ce756da6811118d941f168e",
+      "log_utf8_bytes": 64068674,
+      "archived_probe": "probes/Parity104.lean",
+      "source_sha256": "7be56cb06186ab2cfc8216ff6d3360fc65701d42ae3b6e991820e876ef03d17e",
+      "declarations": [
+        {
+          "declaration": "Triage104.complement_parity",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ]
+        }
+      ]
+    },
+    {
+      "probe": "Pick105",
+      "exit": 0,
+      "log": "logs/Pick105.log.gz",
+      "log_gzip_sha256": "213fe4a5fc3356a8c1f6daddd35d786f391b69bae23105c558caca90c7dfec54",
+      "log_utf8_bytes": 64069063,
+      "archived_probe": "probes/Pick105.lean",
+      "source_sha256": "eadd722e0d75be30a86c5af3d003a5ebe0496b0518fa9b5f2685a309ef37ccf2",
+      "declarations": [
+        {
+          "declaration": "Triage105.kernel_update",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ]
+        }
+      ]
+    },
+    {
+      "probe": "Endpoint150",
+      "exit": 2,
+      "log": "logs/Endpoint150.log.gz",
+      "log_gzip_sha256": "7e3309ba9fcf3fc92e551405e3a8417fb02699e1f0ec68e25a21f24b3905705e",
+      "log_utf8_bytes": 2009,
+      "archived_probe": "probes/Endpoint150.lean",
+      "source_sha256": "ff2f9037ebf2c85c9cc844116e20d9e3d0c91a28ad304ac1a3570115c8b0b7b8",
+      "declarations": [
+        {
+          "declaration": "Triage150.endpoint_minimum",
+          "axioms": [
+            "propext",
+            "sorryAx",
+            "Classical.choice",
+            "Quot.sound"
+          ]
+        }
+      ]
+    },
+    {
+      "probe": "Endpoint150-v2",
+      "exit": 0,
+      "log": "logs/Endpoint150-v2.log.gz",
+      "log_gzip_sha256": "15989ecfab42730575b485c8616954aceaf6cb9d8644b14675e7c7bc2006334b",
+      "log_utf8_bytes": 64069012,
+      "archived_probe": "probes/Endpoint150-v2.lean",
+      "source_sha256": "d4c2ca8d3bffd4d3db6781caa0d9070a27ca3babc01aead4661a65cbc2c4045f",
+      "declarations": [
+        {
+          "declaration": "Triage150.endpoint_minimum",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ]
+        }
+      ]
+    },
+    {
+      "probe": "Return126",
+      "exit": 0,
+      "log": "logs/Return126.log.gz",
+      "log_gzip_sha256": "1faa78cde79cee44e941e595711ab871b946c6e1b7e1d00c322fbca4a52d1ea9",
+      "log_utf8_bytes": 64069053,
+      "archived_probe": "probes/Return126.lean",
+      "source_sha256": "c9a0b6f6b377dd4ab3bfa14c3568e3df0c5c0e8827117283e0c61a1a0d50d724",
+      "declarations": [
+        {
+          "declaration": "Triage126.step_balance",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ]
+        },
+        {
+          "declaration": "Triage126.conservation",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ]
+        }
+      ]
+    }
+  ],
+  "frozen_registry_checks": [
+    {
+      "gid": "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering",
+      "statement_id": "sha256:ee43a04a542df25237818cbfeeb29bb1abaed956f90db04822d08e8f413d50b4",
+      "state": "Golden/Frozen/state/D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.lean.json",
+      "declaration": "D5.S3.Zeros.Jensen.NormalizedJensenDegreeLowering.source_jensen_degree_lowering",
+      "source": "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.lean",
+      "line": 135,
+      "affected_indices": [
+        8,
+        20,
+        114
+      ],
+      "scope": "Frozen identity for the fixed theta-density P_d at d>=2 and arbitrary complex v. This is not a q_d reciprocal-coordinate derivative or a real-rootedness theorem.",
+      "used_by_probes": false,
+      "correction": "An initial content search returned zero because state JSON stores only statement_id; filename search and a JSON read confirm the frozen record.",
+      "registry_statement_id_matches": true
+    }
+  ],
+  "changed_paths": [
+    "docs/reports/digestion/tier3-mathlib-triage-0909.md",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/atoms-1.json",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/atoms-2.json",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/atoms-3.json",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/atoms-4.json",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/atoms-5.json",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/atoms-6.json",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/conclusion.json",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/decisions-1.json",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/decisions-2.json",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/decisions-3.json",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/decisions-4.json",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/decisions-5.json",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/decisions-6.json",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/logs/Disk90-v2.log.gz",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/logs/Disk90.log.gz",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/logs/Endpoint150-v2.log.gz",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/logs/Endpoint150.log.gz",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/logs/Parity104.log.gz",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/logs/Pick105.log.gz",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/logs/Readback75.log.gz",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/logs/Return126.log.gz",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/logs/Schur89.log.gz",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/logs/baseline.log.gz",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/probe-runs.json",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/probes/Disk90-v2.lean",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/probes/Disk90.lean",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/probes/Endpoint150-v2.lean",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/probes/Endpoint150.lean",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/probes/Parity104.lean",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/probes/Pick105.lean",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/probes/Readback75.lean",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/probes/Return126.lean",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/probes/Schur89.lean",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/probes/probe.mk",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/repository-leads.json",
+    "docs/reports/digestion/tier3-mathlib-triage-0909/search-receipts.json"
+  ],
+  "verification_history": [
+    {
+      "attempt": 1,
+      "exit": 1,
+      "reason": "The initial checker applied the successful-proof axiom whitelist to failed probe logs too. Disk90 and Endpoint150 contain Lean-generated sorryAx after elaboration errors. The check now applies the whitelist only to EXIT=0 proofs and retains all failed-run axiom output."
+    },
+    {
+      "attempt": 2,
+      "exit": 1,
+      "reason": "The frozen Jensen lead pointed to statement-body line 136. Corrected its declaration reference to line 135; its registry statement_id matched."
+    },
+    {
+      "attempt": 3,
+      "exit": 0,
+      "reason": "All evidence checks passed."
+    }
+  ],
+  "scalar_restriction_read": {
+    "declaration": "InnerProductSpace.complexToReal",
+    "file": "Mathlib/Analysis/InnerProductSpace/Basic.lean",
+    "line": 971,
+    "scope": "Explicitly install as a local instance to specialize the real endpoint minimum to any complex inner product space; not a global instance."
+  },
+  "limitations": [
+    "Mechanical evidence checks are not independent semantic review.",
+    "A kernel run proves its temporary formal statement; source fidelity was checked by this worker.",
+    "No bounded search proves library-wide absence."
+  ]
+}
