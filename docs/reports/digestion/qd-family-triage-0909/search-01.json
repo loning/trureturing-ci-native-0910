@@ -1,0 +1,88 @@
+[
+  {
+    "label": "repo-positive",
+    "argv": [
+      "rg",
+      "-n",
+      "\\bsource_jensen_degree_lowering\\b",
+      "D5",
+      "--glob",
+      "*.lean"
+    ],
+    "exit": 0,
+    "matching_lines": 1,
+    "stdout": "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering.lean:135:theorem source_jensen_degree_lowering (d : ℕ) (hd : 2 ≤ d) (v : ℂ) :\n",
+    "stderr": ""
+  },
+  {
+    "label": "repo-negative-control",
+    "argv": [
+      "rg",
+      "-n",
+      "\\bqd_triage_nonexistent_control_0909\\b",
+      "D5",
+      "--glob",
+      "*.lean"
+    ],
+    "exit": 1,
+    "matching_lines": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "label": "repo-candidates",
+    "argv": [
+      "rg",
+      "-n",
+      "\\b(arrowhead|Arrowhead|interlacing|Interlacing)\\b",
+      "D5",
+      "--glob",
+      "*.lean"
+    ],
+    "exit": 0,
+    "matching_lines": 3,
+    "stdout": "D5/S3/Constants/NewtonHankelRealRootCriterion.lean:34:     search contain Bezoutian/interlacing criteria but no Hermite or Newton\nD5/S3/Zeros/Convolution/EulerianSquareRow33.lean:7:   digest: Row 33 of the ordinary Eulerian matrix square, via quotient interlacing. -/\nD5/S3/Observer/BlockStructure/ObserverInnovationEquation.lean:19:     directly. No pinned interlacing or packaged innovation-root theorem was found. -/\n",
+    "stderr": ""
+  },
+  {
+    "label": "mathlib-positive",
+    "argv": [
+      "rg",
+      "-n",
+      "\\bcoeff_reflect\\b",
+      ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean"
+    ],
+    "exit": 0,
+    "matching_lines": 5,
+    "stdout": "96:theorem coeff_reflect (N : ℕ) (f : R[X]) (i : ℕ) : coeff (reflect N f) i = f.coeff (revAt N i) := by\n116:  simp only [coeff_add, coeff_reflect]\n121:  simp only [coeff_reflect, coeff_C_mul]\n222:  rw [reverse, coeff_reflect]\n250:    rw [reverse, coeff_reflect, ← revAt_le f.natTrailingDegree_le_natDegree, revAt_invol]\n",
+    "stderr": ""
+  },
+  {
+    "label": "mathlib-negative-control",
+    "argv": [
+      "rg",
+      "-n",
+      "\\bqd_triage_nonexistent_control_0909\\b",
+      ".lake/packages/mathlib/Mathlib"
+    ],
+    "exit": 1,
+    "matching_lines": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "label": "mathlib-arrow",
+    "argv": [
+      "rg",
+      "-n",
+      "\\b(arrowhead|Arrowhead|interlacing|Interlacing)\\b",
+      ".lake/packages/mathlib/Mathlib/LinearAlgebra",
+      ".lake/packages/mathlib/Mathlib/Algebra/Polynomial",
+      ".lake/packages/mathlib/Mathlib/Analysis/Calculus"
+    ],
+    "exit": 1,
+    "matching_lines": 0,
+    "stdout": "",
+    "stderr": ""
+  }
+]
