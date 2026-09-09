@@ -132,3 +132,35 @@ specialized to a single complex added coordinate, before considering any
 production bridge. The external Make extension pattern is already documented
 in `docs/reports/robin/zhao-assumption1-map-0909.md:180-191`; it preserves the
 root `make lean` recipe and invokes the canonical cache wrapper for the probe.
+
+### Probe preregistration
+
+The first probe is `ATTEMPT/U1BindProbe.lean`, with no production file or
+root build configuration change. It states the matrix/real-energy bridge as
+a `Prop` definition (a type-checked specification, not an assumed theorem).
+The tested U13 proof uses `Matrix.PosDef.fromBlocks₁₁`, the diagonal PSD
+criterion on `Unit`, positivity-implies-invertibility, and the upstream
+Hermitian quadratic-form imaginary-part identity. All parameters remain
+universal; no `d >= 0` premise or real-coordinate restriction is introduced.
+The auxiliary scalar characterization uses `sq_nonneg` and `linarith only`.
+Expected stop: if U13 elaborates without extra axioms, stop by rule 1.
+
+The accepted event
+`Golden/Frozen/accepted/77b273ad639b961bd812b1d3c943cb54a326530b9931638d6d628e07cf1af5aa.json`
+was read (not recomputed). It supplies the declaration-specific identity of
+`exact_sticky_reduction`:
+`sha256:2aa18f7c41e8824177fc3ff8c12414a78a0add89e6a1af4ad1cf671999db7a51`.
+The distinct module pin above must not be substituted for this selector ID.
+
+Corrected regex: `\b(theorem|lemma)\s+(fromBlocks[^ ]*|real_inner_eq_re_inner)\s`
+on Mathlib PosDef/Basic returned 3 lines (exit 0). The same-feature control
+`\b(theorem|lemma)\s+(exact_sticky_reduction|real_inner_comm)\s` on the frozen
+file/Basic returned 1 line (exit 0): `real_inner_comm`; the frozen declaration
+has a newline after its name. The earlier trailing-boundary control returned
+2 as already recorded. No negative conclusion is drawn from either syntax.
+
+Two exploratory searches exited 2 because guessed obsolete paths
+`Mathlib/Data/Complex/Order.lean` and `Mathlib/LinearAlgebra/Basic.lean` do not
+exist. The actual APIs were opened in `Mathlib/Analysis/RCLike/Basic.lean`
+(`RCLike.nonneg_iff`) and `Mathlib/LinearAlgebra/Span/Basic.lean`
+(`LinearMap.toSpanSingleton`); these errors are not absence evidence.
