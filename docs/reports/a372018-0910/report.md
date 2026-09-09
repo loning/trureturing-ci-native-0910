@@ -56,3 +56,13 @@ Proof route refinement before coding: compare s=A(x)-A(-x) directly with 4xB(x²
 - Preserve the verified construction lemmas in the module now. Before the next test, rescale A=1+2xH; the independent contraction becomes H=1+x(3H-H²+3xH²+2x²H³), removing rational constants. B's contraction is unchanged.
 
 Both independent definitions and their exact equations now pass `lake env lean D5/S1/Recurrence/Algebraic/CubicOddBisection.lean`, EXIT=0 (warm tree). `A_equation` proves the constant 1 and original cubic; `B_equation` proves the constant 1 and original normalized reversion equation. No odd-index relation is present in either definition. The earlier ring failure is resolved by integer rescaling and separate polynomial evaluation lemmas. Uniqueness and elimination remain to implement.
+
+## Unbounded identity verified
+
+`lake env lean D5/S1/Recurrence/Algebraic/CubicOddBisection.lean` now EXIT=0. All five public theorems (`A_equation`, `B_equation`, `A_unique`, `B_unique`, `odd_coeff_identity`) have exactly the standard axiom set propext/Classical.choice/Quot.sound. The full natural-number quantified identity is proved, not inferred from a finite prefix.
+
+The Vieta route is now kernel-verified without Laurent series: subtract the cubic equations, cancel u-v using constant coefficient 2, derive `uv(1-x(u+v))+1=0`, and eliminate uv. The difference factor for the resulting sum equation has constant coefficient 1; comparison with 4xB(x²) follows. No use of invertibility of x, of u+v, or of a zero-constant series occurs. A_unique cancels a factor of constant coefficient -2; B_unique cancels a factor of constant coefficient 1.
+
+Two local proof errors were repaired before the successful check: an expansive `neg_pow` simp expression exceeded recursion depth (replaced by map simplification and ring-based linear combination), and a no-progress `simp` became `simp only [map_ofNat]`. These were elaboration errors; the final printed axiom sets have no sorryAx.
+
+Project make gates, Scribe, freeze, and PR remain outstanding; this checkpoint does not claim them complete.

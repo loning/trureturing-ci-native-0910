@@ -85,4 +85,91 @@ theorem B_equation : constantCoeff B = 1 ∧ B * (1 - 4 * X * B) ^ 2 = 1 - 3 * X
     simpa using hc
   · linear_combination h
 
+theorem A_unique (f : PowerSeries ℚ) (h0 : constantCoeff f = 1)
+    (hf : X * f ^ 3 - f ^ 2 + 3 * X * f + 1 = 0) : f = A := by
+  let q := X * (f ^ 2 + f * A + A ^ 2) - (f + A) + 3 * X
+  have hq : q ≠ 0 := by
+    intro hz
+    have hc := congrArg constantCoeff hz
+    norm_num [q, h0, A_equation.1] at hc
+  apply sub_eq_zero.mp
+  apply (mul_eq_zero.mp (show (f - A) * q = 0 by
+    dsimp [q]
+    linear_combination hf - A_equation.2)).resolve_right hq
+
+theorem B_unique (f : PowerSeries ℚ)
+    (hf : f * (1 - 4 * X * f) ^ 2 = 1 - 3 * X * f) : f = B := by
+  let q := 1 + 3 * X - 8 * X * (f + B) + 16 * X ^ 2 * (f ^ 2 + f * B + B ^ 2)
+  have hq : q ≠ 0 := by
+    intro hz
+    have hc := congrArg constantCoeff hz
+    norm_num [q] at hc
+  apply sub_eq_zero.mp
+  apply (mul_eq_zero.mp (show (f - B) * q = 0 by
+    dsimp [q]
+    linear_combination hf - B_equation.2)).resolve_right hq
+
+private theorem cubic_pair_sum (u v : PS) (h0 : constantCoeff (u - v) ≠ 0)
+    (hu : X * u ^ 3 - u ^ 2 + 3 * X * u + 1 = 0)
+    (hv : X * v ^ 3 - v ^ 2 + 3 * X * v + 1 = 0) :
+    (u + v) * (1 - X * (u + v)) ^ 2 = 4 * X - 3 * X ^ 2 * (u + v) := by
+  have hne : u - v ≠ 0 := by
+    intro hz
+    exact h0 (by rw [hz, map_zero])
+  have hq : X * (u ^ 2 + u * v + v ^ 2) - (u + v) + 3 * X = 0 := by
+    apply (mul_eq_zero.mp (show (u - v) *
+      (X * (u ^ 2 + u * v + v ^ 2) - (u + v) + 3 * X) = 0 by
+        linear_combination hu - hv)).resolve_left hne
+  have hp : u * v * (1 - X * (u + v)) + 1 = 0 := by
+    linear_combination hu - u * hq
+  linear_combination -(1 - X * (u + v)) * hq - X * hp
+
+private theorem sum_equation_unique (s z : PS)
+    (hs : s * (1 - X * s) ^ 2 = 4 * X - 3 * X ^ 2 * s)
+    (hz : z * (1 - X * z) ^ 2 = 4 * X - 3 * X ^ 2 * z) : s = z := by
+  let q := 1 - 2 * X * (s + z) + X ^ 2 * (s ^ 2 + s * z + z ^ 2) + 3 * X ^ 2
+  have hq : q ≠ 0 := by
+    intro he
+    have hc := congrArg constantCoeff he
+    norm_num [q] at hc
+  apply sub_eq_zero.mp
+  apply (mul_eq_zero.mp (show (s - z) * q = 0 by
+    dsimp [q]
+    linear_combination hs - hz)).resolve_right hq
+
+private theorem odd_series_identity : A - rescale (-1) A = 4 * X * expand 2 (by decide) B := by
+  have hconstant : constantCoeff (rescale (-1 : ℚ) A) = 1 := by
+    simpa only [coeff_zero_eq_constantCoeff, pow_zero, one_mul] using
+      (coeff_rescale A (-1) 0).trans (by simp [A_equation.1])
+  have hv : X * (-rescale (-1 : ℚ) A) ^ 3 - (-rescale (-1 : ℚ) A) ^ 2 +
+      3 * X * (-rescale (-1 : ℚ) A) + 1 = 0 := by
+    have he := congrArg (rescale (-1 : ℚ)) A_equation.2
+    simp only [map_add, map_sub, map_mul, map_pow, map_ofNat, map_one, map_zero,
+      rescale_neg_one_X] at he
+    linear_combination he
+  have hs := cubic_pair_sum A (-rescale (-1 : ℚ) A) (by
+    simp only [map_sub, map_neg, A_equation.1, hconstant]
+    norm_num) A_equation.2 hv
+  apply sum_equation_unique
+  · simpa only [sub_eq_add_neg] using hs
+  · have hb := congrArg (expand 2 (by decide : 2 ≠ 0) (R := ℚ)) B_equation.2
+    simp only [map_mul, map_sub, map_one, map_ofNat, map_pow, expand_X] at hb
+    linear_combination 4 * X * hb
+
+/-- The odd-index coefficients of A372018 are twice the coefficients of A371364. -/
+theorem odd_coeff_identity (n : ℕ) : coeff (2 * n + 1) A = 2 * coeff n B := by
+  have h := congrArg (coeff (2 * n + 1)) odd_series_identity
+  rw [show 4 * X * expand 2 (by decide) B = X * (C 4 * expand 2 (by decide) B) by
+    simp only [map_ofNat]; ring] at h
+  simp only [map_sub, coeff_rescale, coeff_succ_X_mul, coeff_C_mul, coeff_expand_mul] at h
+  have hn : (-1 : ℚ) ^ (2 * n + 1) = -1 := by simp [pow_add, pow_mul]
+  rw [hn] at h
+  linear_combination h / 2
+
+#print axioms A_equation
+#print axioms B_equation
+#print axioms A_unique
+#print axioms B_unique
+#print axioms odd_coeff_identity
+
 end D5.S1.Recurrence.Algebraic.CubicOddBisection
