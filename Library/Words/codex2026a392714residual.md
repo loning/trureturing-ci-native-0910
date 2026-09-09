@@ -58,3 +58,24 @@ make lean：尚未运行；LEAN_CACHE：尚未取得。
 未主张检索穷尽；未主张 S(a) 已证或已反驳；未主张 A392714 原猜想已解决
 （桥明确不在本轮范围）；未主张任何有限吻合构成证明。
 未真正打开的外部页面均为 ASSUMED-UNVERIFIED，不能承载文献结论。
+
+## 检索批次 1：D5
+
+命令模板 `git grep -n -P '<pattern>' -- D5`，在上述起点源码上查询。
+下列为匹配行数，不冒充声明数：
+
+| pattern | 行数 | exit |
+| --- | ---: | ---: |
+| `\bsum_involution\b` | 3 | 0 |
+| `\bsign\b` | 294 | 0 |
+| `\bPerm\.sign\b` | 0 | 1 |
+| `\bprefix\b` | 371 | 0 |
+| `partial sum` | 41 | 0 |
+| `Lindström\|Gessel\|Viennot\|LGV`（PCRE alternation） | 0 | 1 |
+| `\btheorem\b`（相同词界特性阳性对照） | 25410 | 0 |
+
+sum_involution 命中 ConvolutionRecurrenceOddPowersOfTwo 与
+ReflectedSpectrum/ParityConditionedMoments，均需自供配对，不是 S(a)。
+Perm.sign 与 LGV 零命中；sign/prefix 的宽筛含注释及不相关含义，
+这些计数只证明搜索执行，不证明语义穷尽。
+完整 stdout、命令及退出码保存在 runner attempt 的 `d5-search.json` 和对应 txt。
