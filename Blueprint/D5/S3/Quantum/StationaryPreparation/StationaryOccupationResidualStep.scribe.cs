@@ -2,7 +2,7 @@ using static StrataLint.Scribe.DefinitionDsl;
 using static StrataLint.Scribe.FormulaDsl;
 using F = StrataLint.Scribe.FormulaDsl;
 
-namespace StrataLint.Scribe.Blueprint.D5.S3.Quantum.Entanglement;
+namespace StrataLint.Scribe.Blueprint.D5.S3.Quantum.StationaryPreparation;
 
 internal sealed class StationaryOccupationResidualStepDocument : IScribeDocumentDefinition
 {
@@ -27,7 +27,7 @@ internal sealed class StationaryOccupationResidualStepDocument : IScribeDocument
                 DeclarationHandle.Create(Prefix + "positive_residual_step"),
                 H("Every legal positive-tail transition has the prescribed residual"),
                 StatementSource.FromAuthor(Disp(Context(All("a", Multi,
-                    Call("PositiveResidualStep", a))))), AssessedProvenance.FromRepo(),
+                    PositiveTransitions())))), AssessedProvenance.FromRepo(),
                 Blocks(Paragraph(Text(
                     "PositiveResidualStep(a) means: for every b<=a with positive tail count, "
                     + "every i belonging to b, and every k:Fin(d(a)), the (i,k) coefficient "
@@ -50,11 +50,26 @@ internal sealed class StationaryOccupationResidualStepDocument : IScribeDocument
                     Paragraph(Text(
                         "The residual transitions imply every word coefficient by induction. "
                         + "The normalized sector and the unitary circuit imply that the "
-                        + "chosen initial residual has norm one. The common final memory "
+                        + "initial vector, the complex inverse square root of multiplicity(card(a),a) times physicalResidual(a,a), has norm one. The common final memory "
                         + "is the sink basis vector. This includes zero occupation and "
                         + "letters of zero capacity; all physical memory is Fin(d(a))."))), DescribeRole.Theorem))));
 
-    private const string Prefix = "D5/S3/Quantum/Entanglement/StationaryOccupationResidualStep.";
+    private static Formula PositiveTransitions()
+    {
+        var b = Id("b");
+        var i = Id("i");
+        var q = Call("maximalHead", a);
+        var hypotheses = And(new Formula.Relation(b, FormulaRelationOperator.LessThanOrEqual, a),
+            new Formula.Relation(D(0), FormulaRelationOperator.LessThan, Call("tailCount", q, b)));
+        var output = Call("coefficient", Call("physicalGate", a),
+            Call("blankMemory", q, Call("physicalResidual", a, b)), Call("pair", i, k));
+        var equation = Eq(output, Call("physicalResidual", a, Call("erase", b, i), k));
+        return All("b", Multi, new Formula.Logic(hypotheses, FormulaLogicOperator.Implies,
+            All("i", A, new Formula.Logic(new Formula.Relation(i, FormulaRelationOperator.MemberOf, b),
+                FormulaLogicOperator.Implies, All("k", Memory, equation)))));
+    }
+
+    private const string Prefix = "D5/S3/Quantum/StationaryPreparation/StationaryOccupationResidualStep.";
     private static Formula Attainment => Context(All("a", Multi,
         Exists("blank", A, Exists("U", Call("Unitary", Call("Prod", A, Memory)),
             Exists("x", Space, Exists("f", Space,

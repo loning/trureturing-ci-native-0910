@@ -1,12 +1,12 @@
-/- GID: D5/S3/Quantum/Entanglement/StationaryOccupationResidualStep
+/- GID: D5/S3/Quantum/StationaryPreparation/StationaryOccupationResidualStep
    generality: G
-   mirror-B: D5/B/S3/Quantum/Entanglement/StationaryOccupationResidualStep
+   mirror-B: D5/B/S3/Quantum/StationaryPreparation/StationaryOccupationResidualStep
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
    utility: none
    digest: Explicit residual transitions attain the product-minus-maximum memory dimension with one fixed physical unitary. -/
 
-import D5.S3.Quantum.Entanglement.StationaryOccupationResidualCircuit
+import D5.S3.Quantum.StationaryPreparation.StationaryOccupationResidualCircuit
 
 set_option autoImplicit false
 set_option relaxedAutoImplicit false
@@ -14,10 +14,12 @@ set_option relaxedAutoImplicit false
 noncomputable section
 open scoped BigOperators
 
-namespace D5.S3.Quantum.Entanglement.StationaryOccupationResidualStep
+namespace D5.S3.Quantum.StationaryPreparation.StationaryOccupationResidualStep
 
-open D5.S3.Quantum.Entanglement.StationaryOccupationPadding
-open D5.S3.Quantum.Entanglement.StationaryOccupationResidualCircuit
+open D5.S3.Quantum.StationaryPreparation.PaddingMemory
+open D5.S3.Quantum.StationaryPreparation.ResidualCalculus
+open D5.S3.Quantum.StationaryPreparation.StationaryOccupationPadding
+open D5.S3.Quantum.StationaryPreparation.StationaryOccupationResidualCircuit
 open D5.S3.Quantum.Entanglement.SequentialRegisterCircuit
 open D5.S3.Quantum.Entanglement.OccupancyWordSectors
 
@@ -376,4 +378,4 @@ theorem stationary_memory_dimension_attained (a : Multiset A) :
 
 end Attainment
 
-end D5.S3.Quantum.Entanglement.StationaryOccupationResidualStep
+end D5.S3.Quantum.StationaryPreparation.StationaryOccupationResidualStep
