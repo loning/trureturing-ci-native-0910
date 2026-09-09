@@ -1,0 +1,18 @@
+**命题 57（实际投影上的联合因子化像）。** 若各 $F_i$ 经已给定的 $D_i$ 因子化，即使用命题 48 的唯一函数
+$F_{i,D_i}:\Gamma_{D_i}\to Y_i$ 满足 $F_i=F_{i,D_i}\circ r_{D_i}$，令
+$U=\bigcup_{i\in I}D_i$，则
+
+$$
+J[\Gamma]
+=
+\left\{
+\bigl(F_{i,D_i}(u|_{D_i})\bigr)_{i\in I}:
+u\in\Gamma_U
+\right\}.
+\tag{JR-ACTUAL-IMAGE}
+$$
+
+右端必须使用实际投影 $\Gamma_U=r_U[\Gamma]$；不能未经证明把它替换为各边缘投影域的自然连接。
+
+**证明。** 对每个 $\gamma\in\Gamma$，取 $u=\gamma|_U$。各 $u|_{D_i}$ 属于 $\Gamma_{D_i}$，因子化等式给出右端所列元组，所以左端包含于右端。反向，任取 $u\in\Gamma_U$，实际投影的定义保证确实存在一个共同世界 $\gamma\in\Gamma$ 实现它；于是所有 $F_{i,D_i}(u|_{D_i})$ 同时等于这个世界的 $F_i(\gamma)$，该元组属于 $J[\Gamma]$。这一共同原像的存在正是无条件拼接边缘域时可能丢失的步骤。证毕。
+

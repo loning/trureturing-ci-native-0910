@@ -1,0 +1,14 @@
+**命题 64（补集和固定时间平移保留全部观察依赖）。** 对任意固定
+$k\in\mathbb Z$，
+
+$$
+\operatorname{Dep}_{\rm ts}(N\circ H)
+=\operatorname{Dep}_{\rm ts}(H),
+\qquad
+\operatorname{Dep}_{\rm ts}(T_k\circ H)
+=\operatorname{Dep}_{\rm ts}(H).
+\tag{OD-REVERSIBLE}
+$$
+
+这里使用的是 $\Xi$ 实际像上的逆，分别为再作补集及 $T_{-k}$。固定丰富因子的当前 $q$ 非零，甚至 $q=1$，均不能据此推出它的乘法也保留这个依赖族。
+

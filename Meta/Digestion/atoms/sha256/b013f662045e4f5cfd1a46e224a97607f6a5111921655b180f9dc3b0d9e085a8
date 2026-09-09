@@ -1,0 +1,23 @@
+**命题 59（组合后冲突的精确公式）。** 定义 33 的输出冲突超图为
+
+$$
+\mathcal H_G
+=
+\left\{
+\Delta(\gamma,\eta):
+\gamma,\eta\in\Gamma,\
+\widehat f(J(\gamma))\ne\widehat f(J(\eta))
+\right\}
+\subseteq\mathcal H_J.
+\tag{JR-OUTPUT-CONFLICT}
+$$
+
+因而
+
+$$
+\operatorname{Dep}(G)\supseteq\operatorname{Dep}(J).
+\tag{JR-OUTPUT-DEPENDENCY}
+$$
+
+这给出哪些实际世界对仍有输出冲突的准确条件，而不只给出各输入充分域并集的上界；充分域族变大表示组合允许更多、可能更小的充分域。
+

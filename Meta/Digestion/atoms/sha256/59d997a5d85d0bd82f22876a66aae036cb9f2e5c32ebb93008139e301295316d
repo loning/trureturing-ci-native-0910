@@ -1,0 +1,20 @@
+**定义 32（带成功标签的部分操作总化）。** 给定部分操作
+
+$$
+f:D_f\subseteq\prod_{i\in I}Y_i\longrightarrow Y,
+$$
+
+取非交并 $Y_\bot=(\{1\}\times Y)\sqcup\{\bot\}$，其中 $\bot$ 是独立的失败标签；写 $\operatorname{succ}(y)=(1,y)$。定义总函数
+
+$$
+\widehat f:\prod_{i\in I}Y_i\longrightarrow Y_\bot,\qquad
+\widehat f(y)=
+\begin{cases}
+\operatorname{succ}(f(y)),&y\in D_f,\\
+\bot,&y\notin D_f.
+\end{cases}
+\tag{JR-TOTAL}
+$$
+
+成功标签区分所有普通结果与失败，即使普通值域本身也包含一个名为“失败”的元素，也不能把它与外加的 $\bot$ 混同。
+

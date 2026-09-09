@@ -1,0 +1,14 @@
+**命题 56（联合冲突的并与充分域族的交）。** 对定义 31 的任意指标集 $I$，
+
+$$
+\mathcal H_J=\bigcup_{i\in I}\mathcal H_{F_i},
+\qquad
+\operatorname{Dep}(J)=\bigcap_{i\in I}\operatorname{Dep}(F_i).
+\tag{JR-DEPENDENCY}
+$$
+
+若已给定 $D_i\in\operatorname{Dep}(F_i)$，则
+$U=\bigcup_{i\in I}D_i$ 对 $J$ 充分。上述交在 $\mathcal P(S)$ 内取；空指标时采用空并为 $\varnothing$、空交为 $\mathcal P(S)$ 的约定，联合响应为唯一的空元组。
+
+**证明。** 两个元组值不同，当且仅当至少一个分量不同，所以来自世界对的冲突边集合恰为各分量冲突边的并。按命题 48，命中这一并，等价于同时命中每个分量的全部冲突边，得到充分域族的交公式。若两个世界在 $U$ 上赋值相同，它们也在每个 $D_i$ 上相同，各 $F_i$ 的充分性遂使全部分量响应相同，故 $U$ 充分。空指标时没有分量冲突，前述空并、空交约定正好给出恒定空元组的充分域族。证毕。
+

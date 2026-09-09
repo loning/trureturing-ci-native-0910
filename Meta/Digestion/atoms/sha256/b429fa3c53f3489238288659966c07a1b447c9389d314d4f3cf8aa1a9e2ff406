@@ -1,0 +1,13 @@
+**定义 31（同一世界上的联合响应）。** 固定定义 28 的来源集合 $S$、非空值域族 $(V_s)_{s\in S}$ 及同一个非空合法世界域
+$\varnothing\ne\Gamma\subseteq\prod_{s\in S}V_s$。给定任意集合 $I$ 及总函数族
+$F_i:\Gamma\to Y_i\ (i\in I)$，其中各 $Y_i$ 为集合，定义
+
+$$
+J:\Gamma\longrightarrow\prod_{i\in I}Y_i,\qquad
+J(\gamma)=(F_i(\gamma))_{i\in I},\qquad
+J[\Gamma]=\{(F_i(\gamma))_{i\in I}:\gamma\in\Gamma\}.
+\tag{JR-JOINT}
+$$
+
+$J[\Gamma]$ 是实际联合像；各分量必须在同一个 $\gamma$ 上同时取值。此处 $J$ 指联合响应函数，不是 §10 中以同一字母临时表示的自然连接域。$\Gamma_D,r_D,\Delta,\mathcal H_F,\operatorname{Dep}(F)$ 全部沿用定义 28。
+

@@ -1,0 +1,25 @@
+**定义 34（全部指定严格观察的充分域）。** 对任一上述允许一孔上下文 $C$，沿用 §25 的总标签观察
+$\operatorname{obs}_C:\mathcal B\to\mathbb Z_\bot$：求值成功时为
+$(1,q(C(X)))$，任一步失败时为 $\bot$。定义
+
+$$
+\operatorname{Dep}_{\rm ts}(H)
+=
+\left\{
+D\subseteq S:
+\begin{array}{l}
+\forall\gamma,\eta\in\Gamma,\quad
+\gamma|_D=\eta|_D\\
+\displaystyle\Longrightarrow\
+\forall C\in\operatorname{Ctx}_{\Sigma_{\rm ts}},\quad
+\operatorname{obs}_C(H(\gamma))
+=\operatorname{obs}_C(H(\eta))
+\end{array}
+\right\}.
+\tag{OD-ALL-CONTEXTS}
+$$
+
+使用配对扩展时将上下文族换成
+$\operatorname{Ctx}_{\Sigma_{\rm ts}^{\rm pair}}$。
+观察相同要求同步成功或失败，不能只比较成功时的整数。这里的“全部未来观察”恰指这个语言中的全部有限上下文。
+

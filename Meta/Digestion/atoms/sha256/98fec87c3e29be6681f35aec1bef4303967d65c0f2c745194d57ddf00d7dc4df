@@ -1,0 +1,12 @@
+**命题 56（联合冲突的并与充分域族的交）。** 对定义 31 的任意指标集 $I$，
+
+$$
+\mathcal H_J=\bigcup_{i\in I}\mathcal H_{F_i},
+\qquad
+\operatorname{Dep}(J)=\bigcap_{i\in I}\operatorname{Dep}(F_i).
+\tag{JR-DEPENDENCY}
+$$
+
+若已给定 $D_i\in\operatorname{Dep}(F_i)$，则
+$U=\bigcup_{i\in I}D_i$ 对 $J$ 充分。上述交在 $\mathcal P(S)$ 内取；空指标时采用空并为 $\varnothing$、空交为 $\mathcal P(S)$ 的约定，联合响应为唯一的空元组。
+

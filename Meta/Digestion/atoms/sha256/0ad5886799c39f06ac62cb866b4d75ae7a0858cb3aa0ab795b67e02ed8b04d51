@@ -1,0 +1,14 @@
+**定义 35（联合摘要响应）。** 令
+
+$$
+F_\Xi=\Xi\circ H:\Gamma\longrightarrow\mathcal D_{\rm ts},
+\qquad
+F_\Xi(\gamma)=\Xi(H(\gamma)),
+\tag{OD-XI-TARGET}
+$$
+
+其中 $\Xi$ 是定义 22 的五分量摘要，
+$\mathcal D_{\rm ts}=\Xi[\mathcal B]$ 是命题 37 的实际像。
+$\operatorname{Dep}(F_\Xi)$ 使用定义 28；它与
+$\operatorname{Dep}(H)$、$\operatorname{Dep}(q\circ H)$ 是有明确目标类型的不同域族。
+

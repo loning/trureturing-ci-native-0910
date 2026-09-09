@@ -1,0 +1,16 @@
+**命题 61（显式非空域限制）。** 显式选定非空
+$\Gamma'\subseteq\Gamma$ 后，对任一总响应 $F:\Gamma\to Y$，在同一来源集 $S$ 上有
+
+$$
+\mathcal H_{F|_{\Gamma'}}
+=
+\{\Delta(\gamma,\eta):
+\gamma,\eta\in\Gamma',\ F(\gamma)\ne F(\eta)\}
+\subseteq\mathcal H_F,
+\qquad
+\operatorname{Dep}(F|_{\Gamma'})\supseteq\operatorname{Dep}(F).
+\tag{JR-RESTRICTION}
+$$
+
+原充分域仍充分，并可能出现更小的充分域；限制后的依赖或可能值结论不能作为原 $\Gamma$ 上的无条件结论。
+

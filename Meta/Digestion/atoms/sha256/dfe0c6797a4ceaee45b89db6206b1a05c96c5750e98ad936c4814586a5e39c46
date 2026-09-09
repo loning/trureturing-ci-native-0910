@@ -1,0 +1,11 @@
+**定义 33（严格组合响应与成功世界域）。** 定义
+
+$$
+G=\widehat f\circ J:\Gamma\longrightarrow Y_\bot,\qquad
+\Gamma_f=J^{-1}[D_f]
+=\{\gamma\in\Gamma:J(\gamma)\in D_f\}.
+\tag{JR-SUCCESS-DOMAIN}
+$$
+
+原部分函数 $f\circ J$ 恰在 $\Gamma_f$ 上成功。表达式复合采用严格失败传播：任一输入子表达式已经失败，整个上层结果仍为失败；全部输入成功时才去掉成功标签、检查本层守卫并求值。因此普通数值 $0$、其他普通常数及失败是不同响应，常数操作也不能把一个已经失败的子表达式变成成功。
+

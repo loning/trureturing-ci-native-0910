@@ -1,0 +1,10 @@
+### 36.2 成熟依赖检测文献的有限适用域
+
+成熟背景仍为 Thomas Bläsius、Tobias Friedrich、Martin Schirneck，
+*The Complexity of Dependency Detection and Discovery in Relational Databases*，
+[arXiv:2103.13331v1](https://arxiv.org/abs/2103.13331v1)，
+[该版本 HTML](https://arxiv.org/html/2103.13331v1)。
+主数学来源记录已核读 §§2.1–2.2 的有限超图与关系模型及 §3.3 Lemma 9 的证明：有限属性、有限关系表中，固定右端属性的极小非平凡函数依赖左端，对应于右端取值不同的行对之差异集合去掉目标属性后形成的超图的极小命中集。这里的极小指包含极小，有限关系表不要求属性值域有限。
+
+这一对应为 P3a 的冲突超图背景提供 literature-attested 来源；它不直接承担 R8 的严格标签响应或 R9 的 $\Xi$ 桥接证明，也不承担任意无限模型的结论。R8/R9 的证明由 §34–35 所载主来源公开数学内容承担。本实施席没有独立重抓该论文，不冒领新的外部核读、原创优先权或多项式算法。
+

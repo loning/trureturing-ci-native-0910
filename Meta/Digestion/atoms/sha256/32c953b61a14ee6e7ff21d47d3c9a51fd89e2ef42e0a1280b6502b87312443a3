@@ -1,0 +1,11 @@
+**命题 62（全部时间—空间观察依赖恰为摘要依赖）。** 对上述每个合法 $H$，
+
+$$
+\operatorname{Dep}_{\rm ts}(H)
+=\operatorname{Dep}(\Xi\circ H)
+=\operatorname{Dep}(F_\Xi).
+\tag{OD-BRIDGE}
+$$
+
+命题对已证明的固定时间—空间配对谓词扩展同样成立。
+

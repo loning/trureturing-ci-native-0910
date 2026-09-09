@@ -1,0 +1,14 @@
+**命题 60（核完全保留的实际像单射判据）。** 对任一总函数 $F$，写
+$\ker F=\{(\gamma,\eta)\in\Gamma^2:F(\gamma)=F(\eta)\}$。则
+
+$$
+\ker G=\ker J
+\quad\Longleftrightarrow\quad
+\widehat f|_{J[\Gamma]}\text{ 单射}.
+\tag{JR-KERNEL}
+$$
+
+满足这一条件时，
+$\operatorname{Dep}(G)=\operatorname{Dep}(J)$。
+仅有充分域族相等，不足以反推出实际联合像上的单射。
+

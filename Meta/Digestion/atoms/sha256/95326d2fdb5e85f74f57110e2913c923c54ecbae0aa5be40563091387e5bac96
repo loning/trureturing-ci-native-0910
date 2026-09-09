@@ -1,0 +1,17 @@
+**命题 63（确定观察恢复的依赖包含方向）。** 设
+$O_2:\mathcal B\to Y_2$、$O_1:\mathcal B\to Y_1$ 为总观察，并存在确定函数
+$f:O_2[\mathcal B]\to Y_1$ 使 $O_1=f\circ O_2$。部分上下文观察先按定义 34 标签化为总观察。则
+
+$$
+\operatorname{Dep}(O_1\circ H)
+\supseteq
+\operatorname{Dep}(O_2\circ H).
+\tag{OD-FACTOR-INCLUSION}
+$$
+
+特别地，
+$\operatorname{Dep}(q\circ H)\supseteq\operatorname{Dep}_{\rm ts}(H)$；
+该包含可以严格，亦即当前 $q$ 所需的来源信息可以严格少于全部允许未来观察所需的信息。
+
+**证明。** 若 $D$ 对 $O_2\circ H$ 充分，同 $D$ 赋值的两个世界给出相同 $O_2$ 值，沿同一确定函数 $f$ 便得到相同 $O_1$ 值。因此 $O_2\circ H$ 的每个充分域对 $O_1\circ H$ 也充分，得到所写方向。由命题 39 的 $q(X)=\varepsilon Z_X$，$q$ 可从 $\Xi$ 确定恢复，再用命题 62 即得特别情形。例 H1 给出严格包含。证毕。
+

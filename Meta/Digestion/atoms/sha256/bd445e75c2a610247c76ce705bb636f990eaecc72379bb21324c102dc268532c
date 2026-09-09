@@ -1,0 +1,32 @@
+**命题 58（全域成功与带标签的精确结果像）。** 原 $f\circ J$ 在整个 $\Gamma$ 上有定义，当且仅当
+
+$$
+J[\Gamma]\subseteq D_f
+\quad\Longleftrightarrow\quad
+\Gamma_f=\Gamma.
+\tag{JR-TOTAL-SUCCESS}
+$$
+
+原非空共同域上的全部标签结果恰为
+
+$$
+G[\Gamma]=\widehat f[J[\Gamma]]
+=
+\{\operatorname{succ}(y):y\in f[J[\Gamma]\cap D_f]\}
+\ \cup\
+\begin{cases}
+\{\bot\},&J[\Gamma]\setminus D_f\ne\varnothing,\\
+\varnothing,&J[\Gamma]\setminus D_f=\varnothing.
+\end{cases}
+\tag{JR-RESULT-IMAGE}
+$$
+
+去掉成功标签后的成功可能值恰为 $f[J[\Gamma]\cap D_f]$，而
+
+$$
+\bot\in G[\Gamma]
+\quad\Longleftrightarrow\quad
+J[\Gamma]\setminus D_f\ne\varnothing.
+\tag{JR-POSSIBLE-FAILURE}
+$$
+

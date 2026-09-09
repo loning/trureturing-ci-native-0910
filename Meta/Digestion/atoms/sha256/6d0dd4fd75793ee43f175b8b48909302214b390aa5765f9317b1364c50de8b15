@@ -1,0 +1,16 @@
+**命题 57（实际投影上的联合因子化像）。** 若各 $F_i$ 经已给定的 $D_i$ 因子化，即使用命题 48 的唯一函数
+$F_{i,D_i}:\Gamma_{D_i}\to Y_i$ 满足 $F_i=F_{i,D_i}\circ r_{D_i}$，令
+$U=\bigcup_{i\in I}D_i$，则
+
+$$
+J[\Gamma]
+=
+\left\{
+\bigl(F_{i,D_i}(u|_{D_i})\bigr)_{i\in I}:
+u\in\Gamma_U
+\right\}.
+\tag{JR-ACTUAL-IMAGE}
+$$
+
+右端必须使用实际投影 $\Gamma_U=r_U[\Gamma]$；不能未经证明把它替换为各边缘投影域的自然连接。
+
