@@ -48,11 +48,11 @@ internal sealed class MonotoneOnePathsDocument : IScribeDocumentDefinition
         new Formula.Apply(Seq(Operatorname, Grp(F.Id(name))), [.. args]);
     private static Formula MeanFormula() => Disp(Seq(
         Forall, Sp, N(), InMacro, Mathbb, Grp(F.Id("N")), Comma, Sp,
-        D(1), Le, N(), Sp, Implies, Sp,
+        D(1), Sp, Le, Sp, N(), Sp, Implies, Sp,
         new Formula.Fraction(
             Seq(Sum, Underscore, Grp(F.Id("M"), InMacro, Mathcal, Grp(F.Id("M")),
                 Underscore, N()), Call("pathCount", F.Id("M"))),
-            new Formula.Power(D(2), Seq(N(), Cdot, N()))),
+            new Formula.Power(D(2), Seq(N(), Sp, Cdot, Sp, N()))),
         Sp, Eq, Sp,
         new Formula.Fraction(
             Call("choose", Seq(D(2), N(), Minus, D(2)), Seq(N(), Minus, D(1))),
