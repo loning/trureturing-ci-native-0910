@@ -67,5 +67,45 @@ private theorem reciprocal_square_product_le (F : Finset ℕ) (b : ℕ) (hb : 1 
           apply (div_le_div_iff₀ (by linarith) (by linarith)).2
           nlinarith
 
+private theorem unitary_divisor_product {N d : ℕ} (hn : N ≠ 0) (hd : d ∣ N)
+    (hc : d.Coprime (N / d)) :
+    d = ∏ q ∈ d.primeFactors, q ^ N.factorization q := by
+  have hd0 : d ≠ 0 := ne_zero_of_dvd_ne_zero hn hd
+  nth_rw 1 [Nat.prod_primeFactors_pow_factorization hd0]
+  apply prod_congr rfl
+  intro q hq
+  congr 1
+  have hf := Nat.factorization_eq_of_coprime_left hc (List.mem_toFinset.mp hq)
+  simpa [Nat.mul_div_cancel' hd] using hf.symm
+
+private theorem unitarySum_le_product (N : ℕ) (hn : N ≠ 0) :
+    unitarySum N ≤ ∏ q ∈ N.primeFactors, (q ^ N.factorization q + 1) := by
+  let D := N.divisors.filter (fun d => Nat.Coprime d (N / d))
+  let g := fun F : Finset ℕ => ∏ q ∈ F, q ^ N.factorization q
+  have hv : ∀ d ∈ D, d = g d.primeFactors := by
+    intro d hd
+    exact unitary_divisor_product hn (Nat.dvd_of_mem_divisors (mem_filter.mp hd).1)
+      (mem_filter.mp hd).2
+  have hi : Set.InjOn Nat.primeFactors D := by
+    intro d hd e he h
+    rw [hv d hd, hv e he, h]
+  calc
+    unitarySum N = ∑ d ∈ D, g d.primeFactors := sum_congr rfl hv
+    _ = ∑ F ∈ D.image Nat.primeFactors, g F := (sum_image hi).symm
+    _ ≤ ∑ F ∈ N.primeFactors.powerset, g F := by
+      apply sum_le_sum_of_subset_of_nonneg
+      · intro F hF
+        obtain ⟨d, hd, rfl⟩ := mem_image.mp hF
+        exact mem_powerset.mpr
+          (Nat.primeFactors_mono (Nat.dvd_of_mem_divisors (mem_filter.mp hd).1) hn)
+      · intros; exact Nat.zero_le _
+    _ = _ := (prod_add_one _).symm
+
+private theorem squarefreeSum_eq_product (N : ℕ) (hn : N ≠ 0) :
+    squarefreeSum N = ∏ q ∈ N.primeFactors, (q + 1) := by
+  rw [squarefreeSum, Nat.sum_divisors_filter_squarefree hn, Nat.factors_eq]
+  simpa only [List.toFinset_coe, Nat.toFinset_factors, Finset.prod_val, id_eq] using
+    (prod_add_one (f := fun q : ℕ => q) N.primeFactors).symm
+
 end
 end D5.S3.Arith.EulerFormDivisorSum
