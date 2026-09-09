@@ -57,12 +57,12 @@ def claim : Prop :=
 -- together with the recursive Cauchy sums; no external numerical oracle is used.
 set_option maxHeartbeats 2000000 in
 set_option maxRecDepth 10000 in
-private theorem hankel_four_eq_neg_one : hankel (convolutionPower 4) 4 = -1 := by
-  decide +kernel
-
-/-- The permitted pair `r = 4, n = 0` forces the impossible equality `1 = -1`. -/
+/-- The permitted pair `r = 4, n = 0` forces the impossible equality `1 = -1`.
+The finite numerical evidence is local to this proof, with no exported instance. -/
 theorem result : ¬ claim := by
   intro h
+  have hankel_four_eq_neg_one : hankel (convolutionPower 4) 4 = -1 := by
+    decide +kernel
   obtain ⟨α, _, h0, _, h4, _⟩ := h 4 (Or.inl (by decide)) 0
   have impossible : (1 : ℤ) = -1 := calc
     1 = hankel (convolutionPower 4) 0 := Matrix.det_fin_zero.symm
@@ -72,7 +72,6 @@ theorem result : ¬ claim := by
   exact (by decide : (1 : ℤ) ≠ -1) impossible
 
 #print axioms claim
-#print axioms hankel_four_eq_neg_one
 #print axioms result
 
 end D5.S0.Certificates.MotzkinConvolutionHankelRefutation
