@@ -123,3 +123,6 @@
 第二轮（第一轮真正进入 Lean）`b4-02.log` EXIT=2：`nodal_derivative` 与 `b4_cumulant` 标准三公理；`b4_residue_sum` 尚含错误恢复 sorryAx，不承载结论。报错是 `degree_lt_iff_coeff_zero` 需显式参数、`sum_neg_distrib` 改写方向反了。修复后连同实际源 Q 前三系数的规范化一起重跑，不把部分证明误报为整条通过。
 
 B1.1 原始 stdout 61.14 MB（Mathlib/仓库历史警告回放）已在当前树改存无损 gzip；[摘录](qd-family-triage-0909/b11-01-excerpt.txt) 给可读的 command/EXIT/axioms。原始字节仍完整保留，未重写已推历史。
+
+
+B4 第三轮 `make lean` EXIT=2（149.23秒）：错误集中在复数域 `n+2 ≠ 0` 未显式交给 `field_simp`，以及宽 `simp` 提前拆开 C 的乘积，导致系数引理无法命中。已改为先 `simp only [finsetSum_coeff, coeff_C_mul_X_pow]` 再规范化，补显式非零分母；仍不把这类语法/规范化失败称为数学 content。原始失败源码与日志已归档。
