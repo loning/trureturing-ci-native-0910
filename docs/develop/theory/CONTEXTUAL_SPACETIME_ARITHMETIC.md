@@ -10,6 +10,8 @@
 
 > **PR1 增补导航与阅读时序（2026-09-09）。** §1–13、命题 1–15 和附录的原运行记录保留为基线叙述；其中“本次”及 §12 的 PRO task 均指原稿那次工作。当前增补由 Codex 实施：[§14 观察同余](#pr1-observation)扩充 §9 的下降判据，[§15 精确空间读数](#pr1-spatial)将 §8 定义 12／命题 9 特化到共同位置，[§16 明确语言下的充分性](#pr1-languages)接通 §8/9，[§17 反例、来源与本轮核验](#pr1-boundaries)说明适用边界。附录仍只有一个 Python 核验块，已在其中追加 PR1 检查。本轮调用与评审状态单列于 §17，不沿用原稿 PRO 成功记录。
 
+> **PR2 增补导航与显式勘界（2026-09-09）。** 本批在固定 PR1 候选上增补：[§18 分层律](#pr2-laws)、[§19 卷积整性与单位](#pr2-units)、[§20 时间摘要及最粗充分性](#pr2-theta)、[§21 整数时标规则](#pr2-time)、[§22 带参考点的空间运输](#pr2-reference)、[§23 来源与核验边界](#pr2-evidence)。§17 的“下一批”“本轮”保留为 PR1 当时的范围记录；§12 仍仅是原稿的旧 PRO 收据。本批不改变定义 6 的默认零参考点及 `max+1`，也不把空间商的环律提升为档案律。新增核验继续放在附录原有唯一 Python 块中。
+
 ## 1. 有限情境、整体与类型
 
 固定空间维数 $d=3$。一般结论对任一预先固定的有限 $d\geq1$ 同样成立。令 $HF=V_\omega$ 为遗传有限集合的集合，自然数取有限 von Neumann 序数，有序对取 Kuratowski 编码，有限元组由有序对编码。为保证整数坐标也是有限编码，取 $\mathbb Z_{\rm code}=(\{0\}\times\mathbb N)\cup(\{1\}\times\mathbb N_{>0})$，其中 $(0,m)$ 表示 $m$，$(1,m)$ 表示 $-m$。它与通常整数显式双射，序和算术沿此双射运输；全文把这份实现简记为 $\mathbb Z$。不把通常整数的无限等价类表示直接塞入 $HF$。来源树集合 $T\subset HF$ 由下列有限构造生成：
@@ -1117,6 +1119,333 @@ for coeffs in product(range(-2,3),repeat=3):
         unit_candidates += 1
 assert unit_candidates == 513
 print("pr1_rng: zero_divisors=confirmed N_not_J=confirmed N_not_multiplicative=confirmed P0_unit_only=True finite_unit_candidates_rejected=513")
+
+# PR2: all finite data still use Rich and the original archive operations.
+def history_map(x, y, mapping):
+    assert set(mapping) == set(x.e) and set(mapping.values()) == set(y.e)
+    assert len(set(mapping.values())) == len(mapping)
+    assert all(x.e[e] == y.e[mapping[e]] for e in x.e)
+    assert {(mapping[a],mapping[b]) for a,b in x.o} == set(y.o)
+    assert {mapping[e] for e in x.w} == set(y.w)
+    assert {mapping[e] for e in x.a} == set(y.a)
+    return 1
+
+def rebracket(x, y, z):
+    return {**{(0,(0,e)):(0,e) for e in x.e},
+            **{(0,(1,e)):(1,(0,e)) for e in y.e},
+            **{(1,e):(1,(1,e)) for e in z.e}}
+
+def unit_at(t):
+    return time_shift(integer(1), t)
+
+def guard(x, y):
+    return all(x.e[e][0] < y.e[f][0] for e in x.e for f in y.e)
+
+def attempt(operation):
+    try:
+        return operation()
+    except ValueError:
+        return FAIL
+
+hist_left, hist_right = mul(u,add(u,u)), add(mul(u,u),mul(u,u))
+assert (len(hist_left.e),len(hist_right.e),q(hist_left),q(hist_right)) == (14,16,2,2)
+comm_left, comm_right = mul(source7,source8), mul(source8,source7)
+new_sources = [{z.e[e][3] for e in z.e if z.e[e][0] == 1}
+               for z in (comm_left,comm_right)]
+assert new_sources == [{("pair",("leaf",7),("leaf",8))},
+                       {("pair",("leaf",8),("leaf",7))}]
+assert new_sources[0].isdisjoint(new_sources[1])
+assert len(comm_left.w) == len(comm_right.w) == 4
+empty = integer(0)
+additive_isomorphisms = history_map(add(source7,source8),add(source8,source7),
+                                  {(i,e):(1-i,e) for i,z in enumerate((source7,source8)) for e in z.e})
+additive_isomorphisms += history_map(add(u,empty),u,{(0,e):e for e in u.e})
+assert add(u,empty) != u and add(add(u,u),u) != add(u,add(u,u))
+additive_isomorphisms += history_map(add(add(u,u),u),add(u,add(u,u)),rebracket(u,u,u))
+assert q(add(u,neg(u))) == 0 and len(add(u,neg(u)).e) == 4
+print(f"pr2_history: distributivity_archives={len(hist_left.e)},{len(hist_right.e)} ordered_source_new_events={len(comm_left.w)},{len(comm_right.w)} additive_isomorphisms={additive_isomorphisms}")
+
+temporal_states = [empty] + [unit_at(t0) for t0 in (-1,0,1,2)]
+current_empty = valid(replace(unit_at(4),w=frozenset(),a=frozenset()))
+temporal_states.append(current_empty)
+temporal_checks, temporal_defined = 0, 0
+for xx,yy,zz in product(temporal_states,repeat=3):
+    required = guard(xx,yy) and guard(xx,zz) and guard(yy,zz)
+    tl = attempt(lambda: temporal(temporal(xx,yy),zz))
+    tr = attempt(lambda: temporal(xx,temporal(yy,zz)))
+    assert (tl is not FAIL) == (tr is not FAIL) == required
+    if required:
+        history_map(tl,tr,rebracket(xx,yy,zz))
+        temporal_defined += 1
+    temporal_checks += 1
+assert guard(unit_at(2),empty) and guard(empty,unit_at(1))
+assert not guard(unit_at(2),unit_at(1))
+assert attempt(lambda:temporal(temporal(unit_at(2),empty),unit_at(1))) is FAIL
+assert attempt(lambda:temporal(unit_at(2),temporal(empty,unit_at(1)))) is FAIL
+legal = temporal(temporal(unit_at(0),unit_at(1)),unit_at(2))
+assert (len(legal.e),len(legal.o)) == (6,12)
+assert attempt(lambda:temporal(temporal(u,empty),unit_at(1))) is not FAIL
+assert temporal_checks == 216
+print(f"pr2_temporal: triples={temporal_checks} defined={temporal_defined} legal_archive={len(legal.e)} legal_edges={len(legal.o)} empty_middle_adjacent_guards_insufficient=True")
+
+# None denotes +infinity in m and -infinity in M/s; no finite float times.
+def theta(x):
+    return (read_pair(x), min((v[0] for v in x.e.values()),default=None),
+            max((v[0] for v in x.e.values()),default=None),
+            max((x.e[e][0] for e in x.w),default=None))
+
+def lo(*values):
+    return min((v for v in values if v is not None),default=None)
+
+def hi(*values):
+    return max((v for v in values if v is not None),default=None)
+
+def gamma(s, t):
+    return None if s is None or t is None else max(s,t)+1
+
+def theta_add(x, y):
+    return pair_add(x[0],y[0]),lo(x[1],y[1]),hi(x[2],y[2]),hi(x[3],y[3])
+
+def theta_mul(x, y):
+    g0 = gamma(x[3],y[3])
+    return pair_mul(x[0],y[0]),lo(x[1],y[1]),hi(x[2],y[2],g0),g0
+
+def theta_guard(x, y):
+    return x[2] is None or y[1] is None or x[2] < y[1]
+
+def ceiling_state(s, selected_time=None, floor=0, ceiling=10):
+    selected_time = s if selected_time is None else selected_time
+    e = {"pos":(selected_time,origin,1,("leaf",0)),
+         "neg":(s,origin,-1,("leaf",0)),
+         "old_min":(floor,origin,1,("leaf",9)),
+         "old_max":(ceiling,origin,1,("leaf",9))}
+    return valid(Rich(e,frozenset(),frozenset(("pos","neg")),frozenset(("pos",))))
+
+c0,c9 = ceiling_state(0),ceiling_state(9)
+selected_low = ceiling_state(9,selected_time=0)
+assert theta(c0) == (({},delta),0,10,0)
+assert theta(c9) == (({},delta),0,10,9)
+assert max(selected_low.e[e][0] for e in selected_low.a) == 0
+assert theta(selected_low)[3] == 9
+theta_states = [empty,unit_at(-1),u,unit_at(1),current_empty,c0,c9,selected_low]
+theta_pairs,theta_unary,threshold_checks = 0,0,0
+for xx in theta_states:
+    tx = theta(xx)
+    bg,zx = tx[0]
+    assert theta(neg(xx)) == ((bg,plus_c(bg,minus_c(zx))),*tx[1:])
+    theta_unary += 1
+    for points in (set(),{origin},{v}):
+        assert theta(at(xx,points)) == ((bg,{p:a for p,a in zx.items() if p in points}),*tx[1:])
+        theta_unary += 1
+    for k in (-3,0,4):
+        assert theta(time_shift(xx,k)) == (tx[0],*(a+k if a is not None else None for a in tx[1:]))
+        theta_unary += 1
+    for t0 in range(-3,13):
+        assert guard(xx,unit_at(t0)) == (tx[2] is None or tx[2] < t0)
+        assert guard(unit_at(t0),xx) == (tx[1] is None or t0 < tx[1])
+        threshold_checks += 2
+    for yy in theta_states:
+        ty = theta(yy)
+        assert theta(add(xx,yy)) == theta_add(tx,ty)
+        assert theta(mul(xx,yy)) == theta_mul(tx,ty)
+        out = attempt(lambda: temporal(xx,yy))
+        assert (out is not FAIL) == theta_guard(tx,ty)
+        if out is not FAIL:
+            assert theta(out) == theta_add(tx,ty)
+        theta_pairs += 1
+assert (theta_pairs,theta_unary,threshold_checks) == (64,56,256)
+c0_twice,c9_twice = [mul(mul(xx,u),u) for xx in (c0,c9)]
+maxima = theta(c0_twice)[2],theta(c9_twice)[2]
+assert maxima == (10,11)
+assert q(temporal(c0_twice,unit_at(11))) == 2
+assert attempt(lambda:temporal(c9_twice,unit_at(11))) is FAIL
+assert theta(mul(selected_low,u))[3] == 10  # Using max selected A would give 1.
+same_theta_time = ceiling_state(9,selected_time=5)
+assert theta(selected_low) == theta(same_theta_time)
+time_filter_reads = tuple(q(filt(xx,lambda e,xx=xx:xx.e[e][0] == 0))
+                          for xx in (selected_low,same_theta_time))
+assert time_filter_reads == (1,0)
+amplification_checks = 0
+amp0,amp2 = [ceiling_state(s,floor=-1,ceiling=2) for s in (0,2)]
+amp_empty = valid(replace(amp0,w=frozenset(),a=frozenset()))
+for xx,yy in ((amp0,amp2),(amp_empty,replace(amp2,a=frozenset()))):
+    tx,ty = theta(xx),theta(yy)
+    assert tx[:3] == ty[:3] and tx[3] != ty[3]
+    early = tx[1]
+    n = tx[2] - (tx[3] if tx[3] is not None else ty[3]) + 1
+    r0 = ty[3]+n
+    for j in range(1,n+1):
+        xx,yy = mul(xx,unit_at(early)),mul(yy,unit_at(early))
+        for rich,old_t in ((xx,tx),(yy,ty)):
+            s0 = old_t[3]
+            expected_s = None if s0 is None else s0+j
+            assert theta(rich)[2:] == (hi(old_t[2],expected_s),expected_s)
+    assert theta(xx)[2] < r0 == theta(yy)[2]
+    assert attempt(lambda:temporal(xx,unit_at(r0))) is not FAIL
+    assert attempt(lambda:temporal(yy,unit_at(r0))) is FAIL
+    amplification_checks += 1
+print(f"pr2_theta: pairs={theta_pairs} unary={theta_unary} integer_thresholds={threshold_checks} amplification_cases={amplification_checks} archive_maxima={maxima[0]},{maxima[1]} following_U11=defined,failed time_filter={time_filter_reads[0]},{time_filter_reads[1]}")
+
+theta_law_checks = 0
+law_states = [empty,u,current_empty,c9]
+for xx,yy,zz in product(law_states,repeat=3):
+    assert theta(add(add(xx,yy),zz)) == theta(add(xx,add(yy,zz)))
+    assert theta(mul(xx,add(yy,zz))) == theta(add(mul(xx,yy),mul(xx,zz)))
+    assert theta(mul(add(xx,yy),zz)) == theta(add(mul(xx,zz),mul(yy,zz)))
+    theta_law_checks += 1
+for xx,yy in product(theta_states,repeat=2):
+    assert theta(mul(xx,yy)) == theta(mul(yy,xx))
+    assert theta(add(xx,yy)) == theta(add(yy,xx))
+    assert theta(add(xx,empty)) == theta(xx)
+    assert theta(mul(xx,u))[3] != 0
+theta_left,theta_right = mul(mul(u,u),unit_at(1)),mul(u,mul(u,unit_at(1)))
+assert theta(theta_left) == (({},delta),0,2,2)
+assert theta(theta_right) == (({},delta),0,3,3)
+assert theta(mul(u,empty)) == (({},{}),0,0,None) != theta(empty)
+print(f"pr2_theta_laws: rich_triples={theta_law_checks} associativity_maxima={theta(theta_left)[2]},{theta(theta_right)[2]} zero_absorbing=False")
+
+small = [sparse(dict(zip((origin,v,h),cs))) for cs in product((-1,0,1),repeat=3) if any(cs)]
+extreme_checks,unit_product_checks = 0,0
+for ca,cb in product(small,repeat=2):
+    cc = conv(ca,cb)
+    assert cc
+    for extremum in (min,max):
+        pa,pb = extremum(ca),extremum(cb)
+        target = tuple(a+b for a,b in zip(pa,pb))
+        assert extremum(cc) == target and cc[target] == ca[pa]*cb[pb]
+        splits = [(p0,q0) for p0 in ca for q0 in cb
+                  if tuple(a+b for a,b in zip(p0,q0)) == target]
+        assert splits == [(pa,pb)]
+    if cc == delta:
+        assert len(ca) == len(cb) == 1
+        assert next(iter(ca.values()))*next(iter(cb.values())) == 1
+        unit_product_checks += 1
+    extreme_checks += 1
+unit_checks = 0
+for point,sgn in product((origin,v,tuple(-a for a in v),h,tuple(-a for a in h)),(-1,1)):
+    assert conv({point:sgn},{tuple(-a for a in point):sgn}) == delta
+    unit_checks += 1
+nonunit = {origin:2,v:-1}
+assert sum(nonunit.values()) == 1 and len(nonunit) == 2
+inverse_candidates = 0
+for cs in product((-1,0,1),repeat=3):
+    candidate = sparse(dict(zip((tuple(-a for a in v),origin,v),cs)))
+    assert conv(nonunit,candidate) != delta
+    inverse_candidates += 1
+assert (len(small),extreme_checks,unit_checks,inverse_candidates) == (26,676,10,27)
+print(f"pr2_extrema: nonzero_samples={len(small)} pairs={extreme_checks} products_delta0={unit_product_checks} signed_delta_inverses={unit_checks} nonunit_augmentation={sum(nonunit.values())} inverse_candidates_rejected={inverse_candidates}")
+
+def tree_shapes(start, n):
+    if n == 1:
+        return [start]
+    return [(left,right) for k in range(1,n) for left in tree_shapes(start,k)
+            for right in tree_shapes(start+k,n-k)]
+
+def tree_time(tree, times, delay=1):
+    if isinstance(tree,int):
+        return times[tree]
+    return max(tree_time(tree[0],times,delay),tree_time(tree[1],times,delay))+delay
+
+def leaf_depths(tree, depth=0):
+    return [(tree,depth)] if isinstance(tree,int) else (
+        leaf_depths(tree[0],depth+1)+leaf_depths(tree[1],depth+1))
+
+def tree_rich(tree, times):
+    return unit_at(times[tree]) if isinstance(tree,int) else mul(
+        tree_rich(tree[0],times),tree_rich(tree[1],times))
+
+tree_checks,rich_tree_checks = 0,0
+for n in (3,4):
+    for tree in tree_shapes(0,n):
+        for times in product((-2,0,3),repeat=n):
+            for delay in (1,2,3):
+                assert tree_time(tree,times,delay) == max(times[i]+delay*d for i,d in leaf_depths(tree))
+                tree_checks += 1
+        times = tuple(range(n))
+        rich = tree_rich(tree,times)
+        expected = max(times[i]+d for i,d in leaf_depths(tree))
+        assert theta(rich)[2:] == (expected,expected)
+        rich_tree_checks += 1
+translation_checks,delay_transport_checks = 0,0
+for a,b,c in product(range(-3,4),range(-3,4),(-2,0,3)):
+    assert max(a,b)+1+c == max(a+c,b+c)+1
+    translation_checks += 1
+for scale,b,delay,t0,t1 in product((1,2,3),(-2,0,3),(1,2,3),range(-2,3),range(-2,3)):
+    assert scale*(max(t0,t1)+delay)+b == max(scale*t0+b,scale*t1+b)+scale*delay
+    delay_transport_checks += 1
+assert 2*(max(0,0)+1) != max(2*0,2*0)+1
+assert (tree_checks,rich_tree_checks,translation_checks,delay_transport_checks) == (1377,7,147,675)
+print(f"pr2_clock: depth_cases={tree_checks} rich_trees={rich_tree_checks} translations={translation_checks} scaled_delay_cases={delay_transport_checks} fixed_delay_scaling_rejected=True")
+
+def mul_at(x, y, reference):
+    z = mul(x,y)
+    events = dict(z.e)
+    for key in z.w:
+        t0,p0,s0,r0 = events[key]
+        events[key] = (t0,tuple(a-b for a,b in zip(p0,reference)),s0,r0)
+    return valid(replace(z,e=events))
+
+def affine_point(p, matrix, offset):
+    return tuple(sum(a*b for a,b in zip(row,p))+v0 for row,v0 in zip(matrix,offset))
+
+def affine_rich(x, matrix, offset):
+    return valid(replace(x,e={key:(t0,affine_point(p0,matrix,offset),s0,r0)
+                              for key,(t0,p0,s0,r0) in x.e.items()}))
+
+def push_c(c, function):
+    out = {}
+    for p0,value in c.items():
+        target = function(p0)
+        out[target] = out.get(target,0)+value
+    return sparse(out)
+
+def conv_at(c, d, reference):
+    return {tuple(a-b for a,b in zip(p0,reference)):value for p0,value in conv(c,d).items()}
+
+matrices = [((1,0,0),(0,1,0),(0,0,1)),((2,0,0),(0,2,0),(0,0,2)),
+            ((1,1,0),(0,1,0),(0,0,-1)),((0,0,0),(0,1,0),(0,0,1))]
+references,offset = (origin,(1,2,-1)),(2,-1,3)
+reference_states = [u,sx,sy,current_empty]
+reference_checks,affine_checks,space_unit_checks = 0,0,0
+for reference in references:
+    for xx,yy in product(reference_states,repeat=2):
+        result = mul_at(xx,yy,reference)
+        standard = mul(xx,yy)
+        assert result.e.keys() == standard.e.keys()
+        assert (result.o,result.w,result.a) == (standard.o,standard.w,standard.a)
+        assert all((v0[0],v0[2:]) == (standard.e[e][0],standard.e[e][2:]) for e,v0 in result.e.items())
+        assert (q(result),charge(result,result.w),len(result.e)) == (
+            q(xx)*q(yy),0,len(xx.e)+len(yy.e)+len(xx.w)*len(yy.w))
+        assert read_pair(result) == tuple(conv_at(a,b,reference) for a,b in zip(read_pair(xx),read_pair(yy)))
+        if reference == origin:
+            assert result == standard
+        reference_checks += 1
+        for matrix in matrices:
+            function = lambda p,matrix=matrix:affine_point(p,matrix,offset)
+            transported = affine_rich(result,matrix,offset)
+            assert transported == mul_at(affine_rich(xx,matrix,offset),affine_rich(yy,matrix,offset),function(reference))
+            assert read_pair(transported) == tuple(push_c(c,function) for c in read_pair(result))
+            for a,b in zip(read_pair(xx),read_pair(yy)):
+                assert push_c(conv_at(a,b,reference),function) == conv_at(push_c(a,function),push_c(b,function),function(reference))
+            affine_checks += 1
+    for c in small:
+        assert conv_at({reference:1},c,reference) == conv_at(c,{reference:1},reference) == c
+        space_unit_checks += 1
+assert mul_at(spatial(u,offset=1),spatial(u,offset=1),origin) != spatial(mul_at(u,u,origin),offset=1)
+collapsed = realize({}, {origin:1,v:1})
+matrix = matrices[-1]
+function = lambda p:affine_point(p,matrix,origin)
+transported = affine_rich(collapsed,matrix,origin)
+assert transported.e.keys() == collapsed.e.keys() and len(transported.e) == 4
+wrong_before = affine_rich(at(collapsed,{origin}),matrix,origin)
+wrong_after = at(transported,{origin})
+assert (q(wrong_before),q(wrong_after)) == (1,2)
+pull_selected = filt(collapsed,lambda e:function(collapsed.e[e][1]) == origin)
+assert affine_rich(pull_selected,matrix,origin) == wrong_after
+assert push_c({origin:1},function) == {origin:1} != read_pair(wrong_after)[1]
+assert push_c(read_pair(pull_selected)[1],function) == read_pair(wrong_after)[1] == {origin:2}
+assert (reference_checks,affine_checks,space_unit_checks) == (32,128,52)
+print(f"pr2_reference: rich_pairs={reference_checks} affine_transports={affine_checks} space_units={space_unit_checks} noninjective_events={len(transported.e)} direct_image_filter={q(wrong_before)},{q(wrong_after)} pullback_filter={q(wrong_after)}")
 print("ALL_FINITE_CHECKS_PASSED")
 ```
 
@@ -1463,3 +1792,345 @@ ALL_FINITE_CHECKS_PASSED
 ```
 
 输出中的 `confirmed/True` 仅报告上述有限例子的断言；一般结论由正文证明。原附录末句“新文档之外未改动任何仓库文件”只描述基线工作；本轮交付范围为本源正文及本源 canonical ingest 新产物，不新增 Lean 或生产算术模块。
+
+<a id="pr2-laws"></a>
+
+## 18. PR2 增补 D：分层律与强部分结合
+
+本批沿用 $d=3$、定义 1–19，新增结论均为普通数学证明。等式必须说明所在层，不能省略取商步骤：
+
+| 层 | 所识别的数据 | 可引用的律及边界 |
+| --- | --- | --- |
+| 严格标签相等 $=$ | 全部编码，包括每次并集的嵌套标签 | $N^2X=X$；带标签并集不作无条件结合、交换或单位等式 |
+| 历史同构 $\cong_h$ | 可重命名出现标识，仍保存全部属性、偏序、当前区域和当前选择 | 并行加法为交换幺半群；档案乘法不结合、不交换、不分配、无单位 |
+| $\pi$ 空间商 $P=I\times R$ | 双空间电荷，遗忘时间及历史 | §15 的交换 rng；加法逆是 $J$，$N$ 一般不是负号；$P_0$ 才有自己的单位 |
+| $\Theta$ 时间摘要 | $\pi$ 及 §20 的三个端点 | §20 的闭合部分代数；并行加法为交换幺半群，乘法交换、分配但不结合、无单位 |
+| 标量商 $\mathcal B/\ker q$ | 所选总电荷 | §4 的整数环；仅凭标量不能保留时间复合域 |
+
+对本批指定语言，关系有 $=\ \subseteq\ \cong_h\ \subseteq\ker\Theta\subseteq\ker\pi\subseteq\ker q$：历史同构按位置及时间重索引，保持双电荷和三个端点；后两包含由忘掉端点及 $q=\varepsilon z$ 给出。反向均失败，分别见出现重命名、B1 的同时间异来源、B3 的旧档案时刻、§16 的同数异位置见证。此链不外推到带固定出现身份探针的任意签名。
+
+**命题 24（历史层的律与反例）。** 历史同构是 $\boxplus,\boxtimes,N$ 的同余，也是 $\triangleright$ 的强保域同余。模历史同构的并行加法以空档案为单位，满足交换、结合；$N$ 是对合，但非空档案没有相对于空档案的加法逆。表中历史乘法的四项失败均成立。
+
+**证明。** 给输入的历史同构 $h_X,h_Y$，在两份旧档案上使用 $(i,e)\mapsto(i,h_i(e))$，在乘法新点上使用 $p_{ab}\mapsto p_{h_X(a)h_Y(b)}$。这是双射，保持全部属性（来源仍为同序的 pair）、生成边及其传递闭包，也运输当前区域和选择。补集由双射运输。时间 guard 逐事件只检查被保持的时刻，故在两侧同真同假；有定义时同一双射还运输全部跨边。这证明同余及保域性。
+
+并行加法的交换同构交换左右标签；结合同构按实际嵌套位置展平为三个分量，再按另一括号加标签。更明确地，左括号的 $(0,(0,e)),(0,(1,f)),(1,g)$ 分别对应右括号的 $(0,e),(1,(0,f)),(1,(1,g))$。两侧都只含原有内部边，所有属性与区域、选择对应，故为历史同构。空档案相加时去掉唯一非空分量的标签即得单位同构。对任一非空 $E_X$，$|E_{X\boxplus Y}|=|E_X|+|E_Y|>0$，所以任何 $Y$ 都不能把和变成空档案；特别 $N(X)$ 不是这种逆。$N^2X=X$ 已由命题 1 在严格层证明。标签展平是同构而非标签等式，例如非空 $X$ 与 $X\boxplus0_\varnothing$ 的有限事件标识整体被加了一层标签，不应写成严格单位等式。
+
+非结合仍用 §4 的原见证 $X=Y=\mathbf i(1),Z=\mathbf i(2)$，两括号档案数为 $28,32$，旧反例完整保留。非分配取 $U=\mathbf i(1)$：
+
+$$
+|E_{U\boxtimes(U\boxplus U)}|=2+4+2\cdot4=14,
+\qquad
+|E_{(U\boxtimes U)\boxplus(U\boxtimes U)}|=8+8=16.
+\tag{HD}
+$$
+
+二者 $q=2$，但基数阻止任何历史同构；另一侧分配也由 $(U\boxplus U)\boxtimes U$ 的同一计数失败。非交换取两个两事件的 $U$ 型表示，时间全为 $0$、位置全为零、各选正事件，第一份来源全为 leaf(7)，第二份全为 leaf(8)。$X\boxtimes Y$ 的四个新点全在时刻 $1$，来源全为 pair(leaf(7),leaf(8))；$Y\boxtimes X$ 的四个新点同在时刻 $1$，来源全为 pair(leaf(8),leaf(7))。有序 pair 的这些值不同，时刻 $1$ 的点也不能对应任何时刻 $0$ 的旧点，故不存在保属性的双射。
+
+最后假定某 $V$ 是历史乘法单位。由 $0_\varnothing\boxtimes V\cong_h0_\varnothing$，档案基数公式迫使 $E_V=\varnothing$。但此时 $U\boxtimes V$ 的当前区域为空，不能同构于当前区域有两点的 $U$，矛盾。此证明排除任意 $V$，不只排除所选数值一代表。证毕。
+
+**命题 25（时间复合的强部分结合）。** 写 $G(X,Y)$ 为定义 5 的全档案 guard。两表达式 $(X\triangleright Y)\triangleright Z$ 与 $X\triangleright(Y\triangleright Z)$ 都恰在
+
+$$
+G(X,Y)\ \land\ G(X,Z)\ \land\ G(Y,Z)
+\tag{TA}
+$$
+
+上有定义；在该域上有命题 24 所述的重括号历史同构。
+
+**证明。** 左括号先要求 $G(X,Y)$，再要求 $E_X\sqcup E_Y$ 中每点早于 $E_Z$ 每点；后一要求恰分成 $G(X,Z)\land G(Y,Z)$。右括号先要求 $G(Y,Z)$，再将其档案并集拆开得到 $G(X,Y)\land G(X,Z)$。这种全称量词对并集的分解在任一集合为空时仍成立，故两定义域完全相同。两侧最终都保留三个内部偏序并加入全部 $X\to Y,X\to Z,Y\to Z$ 跨边，标签展平逐边对应，也逐项对应全部属性、区域和选择，所以是历史同构，不是无条件严格标签结合式。证毕。
+
+若 $E_Y\ne\varnothing$，相邻 guard 可经任一 $y\in E_Y$ 和整数序传递性推出 $G(X,Z)$；这个非空前提不能省。取 $X=T_2(U),Y=0_\varnothing,Z=T_1(U)$，$G(X,Y)$ 与 $G(Y,Z)$ 都空真，$G(X,Z)$ 却为假，两括号都失败。合法对照 $U,T_1(U),T_2(U)$ 满足全部三 guard，两括号都有六事件与十二条跨可比关系。空中间的合法对照 $U,0_\varnothing,T_1(U)$ 也满足 (TA)。
+
+<a id="pr2-units"></a>
+
+## 19. PR2 增补 E：有限空间卷积的整性、单位与方程
+
+以下 $R=\mathbb Z^{(\mathbb Z^3)}$ 及 $*$ 完全沿用 §15；所有支撑有限。给 $\mathbb Z^3$ 选定字典全序 $\le_{\rm lex}$：按第一个不同坐标的整数序比较。共同加向量后首个不同坐标及该处差值不变，故它与加法相容，即 $p<q\Rightarrow p+r<q+r$。该序不须良序；这里只用非空有限支撑存在最大、最小元。
+
+**命题 26（卷积极值与无零因子）。** 对非零 $a,b\in R$，记支撑极值为 $a_-,a_+,b_-,b_+$，则
+
+$$
+\min\operatorname{supp}(a*b)=a_-+b_-,\qquad
+\max\operatorname{supp}(a*b)=a_++b_+.
+\tag{EXT}
+$$
+
+两极值点分别只有这一种来自两支撑的拆分，系数分别为 $a(a_-)b(b_-)$ 与 $a(a_+)b(b_+)$，均非零。因此 $R$ 无零因子。
+
+**证明。** 对支撑点 $p,q$ 有 $p\le a_+,q\le b_+$，所以 $p+q\le a_++b_+$。若 $p<a_+$，则 $p+q<a_++q\le a_++b_+$；若 $q<b_+$ 同理。因此等号迫使 $p=a_+,q=b_+$，反向这一对确实出现。该卷积系数只有一个非零乘积项，两个非零整数的乘积非零，不能被其他项抵消；它是支撑最大元。将不等号反向得到最小元及唯一拆分。乘积至少含极值点，故不为零。证毕。
+
+**命题 27（全部自身单位）。** $R$ 的单位恰为 $\pm\delta_p\ (p\in\mathbb Z^3)$，相应逆为同号的 $\pm\delta_{-p}$。$P_0=\{0\}\times R$ 相对于其自身单位 $(0,\delta_0)$ 的单位恰为 $(0,\pm\delta_p)$。
+
+**证明。** $\delta_0*a=a$ 由逐点有限和直接成立。若 $a*b=\delta_0$，两因子都非零，由 (EXT) 有 $a_++b_+=a_-+b_-=0$。定义在这个有序群中的宽度 $W(a)=a_+-a_-\ge0$，同理 $W(b)\ge0$；两式相减得 $W(a)+W(b)=0$。两个非负元之和为零迫使各自为零：若其一严格正，加另一非负元仍严格正。于是两个支撑分别只有一个点，写为 $a=A\delta_p,b=B\delta_q$。乘积等于 $\delta_0$ 迫使 $p+q=0,AB=1$；整数中只能 $A=B=1$ 或 $A=B=-1$。反向这些点质量确实乘为 $\delta_0$。$R\to P_0,c\mapsto(0,c)$ 保持全部运算和自身单位，故直接运输分类。证毕。
+
+这里的宽度是字典有序群中的向量差，未引入欧氏长度。命题 26 不会使 $P$ 无零因子：§15.3 的 $(\alpha,0)(0,\delta_0)=0$ 仍是正确反例。$P$ 自身无单位，本节不在 $P$ 中偷用“乘法逆”。
+
+**反例 C1（数值可逆不推出有限空间可逆）。** 任取 $v\ne0$，令 $f=2\delta_0-\delta_v$，则 $\varepsilon(f)=1$，但它有两个支撑点，不属命题 27 的单位族，所以没有有限支撑卷积逆。由命题 18 可实现 $\pi(X)=(0,f)$，其 $q(X)=1$ 在整数标量商已经可逆，在 $P_0$ 的空间商却不可逆。此处未改变 §6 的整数非零与整除守卫、有理非零分母守卫或 §7 的实数非零类守卫。
+
+**命题 28（空间方程的准确条件）。** 在有单位环 $R$ 中，给定 $f,h$，方程 $f*g=h$ 有解当且仅当 $h\in fR$；这是主理想成员条件。若 $f\ne0$，有解时唯一。
+
+**证明。** $fR=\{f*r:r\in R\}$ 含零、对差封闭，且 $(f*r)*s=f*(r*s)$，故为理想。其成员定义正是存在一个有限支撑解，未声称存在通用除法操作或给出算法。若 $f*g_1=f*g_2$，分配律给 $f*(g_1-g_2)=0$，命题 26 迫使 $g_1=g_2$。$f=0$ 时恰在 $h=0$ 有解，且每个 $g$ 都是解。证毕。
+
+<a id="pr2-theta"></a>
+
+## 20. PR2 增补 F：保域时间摘要与最粗充分性
+
+### 20.1 端点类型、实际像及闭合更新
+
+**定义 20（时间摘要及允许签名）。** 对 $X\in\mathcal B$ 记
+
+$$
+\Theta(X)=(\pi(X),m_X,M_X,s_X),\quad
+m_X=\min t_X[E_X],\quad M_X=\max t_X[E_X],\quad
+s_X=\max t_X[\Omega_X].
+\tag{TH}
+$$
+
+端点类型为 $m_X\in\mathbb Z\cup\{+\infty\}$，$M_X,s_X\in\mathbb Z\cup\{-\infty\}$，统一在扩展整数全序中比较。约定空 $E$ 的 $m=+\infty,M=-\infty$，空 $\Omega$ 的 $s=-\infty$。实际载体是
+
+$$
+\mathcal T:=\Theta[\mathcal B]\subseteq
+P\times(\mathbb Z\cup\{+\infty\})
+\times(\mathbb Z\cup\{-\infty\})^2.
+$$
+
+不声称右边任意元组可实现。例如 $E\ne\varnothing$ 时 $m,M$ 都有限且 $m\le M$；$\Omega\ne\varnothing$ 时还须 $m\le s\le M$。$\pi=(0,0)$ 不判定 $\Omega$ 为空，因未选的同位置正负对也有此读数。$s$ 检查整个当前整体，绝非 $\max t[A]$；例如所选正点在 $0$、未选负点在 $9$ 时，$s=9$ 而所选最大时刻为 $0$。
+
+指定
+
+$$
+\Sigma_{\rm st}=\{\boxplus,\boxtimes,N,\triangleright\}
+\cup\{F_S:S\subseteq\mathbb Z^3\}
+\cup\{T_k:k\in\mathbb Z\}.
+\tag{ST}
+$$
+
+乘法仍为定义 6 的 `max+1` 档案乘法，平移每次带显式整数 $k$。终端观察仍是 $q$，上下文严格按定义 16 使用全槽位、任意固定丰富参数及有限复合，失败为独立的 $\bot$。本签名不含来源、因果、出现身份或时间筛选。
+
+**命题 29（$\Theta$ 上的精确域与更新，repo-derived）。** 在 $\mathcal T$ 的实际像上，(ST) 的操作全部下降并恰好保域。并行加法与有定义的时间复合都更新为
+
+$$
+(\pi_X+\pi_Y,\ \min(m_X,m_Y),\ \max(M_X,M_Y),\ \max(s_X,s_Y)).
+\tag{TH+}
+$$
+
+时间复合的域恰为 $M_X<m_Y$，包括空输入。令
+
+$$
+\gamma(s,t)=
+\begin{cases}
+-\infty,&s=-\infty\text{ 或 }t=-\infty,\\
+\max(s,t)+1,&s,t\in\mathbb Z.
+\end{cases}
+$$
+
+档案乘法写 $g=\gamma(s_X,s_Y)$，更新为
+
+$$
+(\pi_X\pi_Y,\ \min(m_X,m_Y),\ \max(M_X,M_Y,g),\ g),
+\tag{TH*}
+$$
+
+其中 $\pi_X\pi_Y=(w_X*w_Y,z_X*z_Y)$。补集仅把 $\pi$ 换为 $(w,w-z)$，空间筛选仅换为 $(w,\mathbf1_Sz)$；两者三个端点均不变。$T_k$ 不改 $\pi$，对三个有限端点加 $k$，对无穷哨兵保持原值。
+
+**证明。** 并集只复制两档案的时刻、两当前区域的时刻，故极值分别取 min/max，且命题 20 给出 $\pi$ 加法；时间复合只添边、不改这几组数据。若两档案非空，有限极值使全称 guard 等价于最大左时刻严格小于最小右时刻。若左为空，$-\infty<m_Y$ 对所有可能的 $m_Y$ 成立；若右为空，$M_X<+\infty$ 对所有可能的 $M_X$ 成立；两者空时也成立，正好对应空真。
+
+乘法任一当前区域空时无新事件，旧档案并集给出 (TH*) 的 $g=-\infty$ 分支。否则两区域的最高时刻都达到；所有新时刻至多 $\max(s_X,s_Y)+1$，取最高时刻父点即可达到，故新整体最大值为 $g$。新事件比其两个父点都晚，而父点已在旧档案中，所以任何新点都不能降低旧档案并集的最小时刻。档案最大值则须同时计两份旧档案及新整体，恰为 $\max(M_X,M_Y,g)$。$\pi$ 乘法由命题 20 给出。补集与空间筛选不改变 $E,\Omega,t$，平移保极值和空性，得其余更新。每个实际像输入都可取丰富原像；上述公式等于该合法丰富运算的像，故输出仍在 $\mathcal T$，且同摘要的不同原像得到同输出、同域。这证明恰好下降，不依赖任意形式端点元组的可实现性。证毕。
+
+可选地加入 §15.2 的纯位置 $M_K$：它使用完整乘积情境，三个端点仍按 (TH*)，只有 $z$ 改用 (K)，故以下充分性与必要性也不变。这个边界不许可任意来源、因果或时间关系配对。
+
+### 20.2 必要性探针与恢复定理
+
+**命题 30（$\Theta$ 恰为最粗充分读数，repo-derived）。** 对 (ST) 的严格 $q$ 观察，
+
+$$
+\approx_{\Sigma_{\rm st}}=\ker\Theta.
+\tag{THEQ}
+$$
+
+因此任意对此语言充分的总读数 $h:\mathcal B\to H$ 都在其实际像上唯一恢复 $\Theta$：存在唯一 $\kappa:h[\mathcal B]\to\mathcal T$ 满足 $\kappa(h(X))=\Theta(X)$。
+
+**证明（充分性）。** 命题 29 使 $\ker\Theta$ 对所有基本操作强保域，并在域内保持摘要；终端 $q=\varepsilon z$ 可由摘要恢复。对定义 16 的上下文归纳：基本步骤同步成功或失败，成功时摘要相同；复合传播失败或继续应用同一更新。因此同摘要时任意上下文的严格终端观察相同。
+
+**证明（恢复 $\pi,m,M$）。** 反向，单点探针 $q(F_pX)$ 与 $q(F_pNX)$ 按 (REC) 恢复全部 $z,w$。现在记 $U_t=T_t(\mathbf i(1))$，即两个当前正负事件、均在零位置且时刻 $t$、只选正事件，$q(U_t)=1$。这里下标 $t$ 始终指时间；与 §16 的空间平移见证区分。任意 $U_t$ 都可作为固定参数，不需要它是签名里的常数符号。由命题 29，
+
+$$
+X\triangleright U_t\text{ 有定义}\iff M_X<t,
+\qquad U_t\triangleright X\text{ 有定义}\iff t<m_X.
+\tag{TP}
+$$
+
+两整数阈值族分别恢复 $M$ 和 $m$。具体地，若 $M_X<M_Y$，较大者 $M_Y$ 有限，取 $t=M_Y$ 区分；这也覆盖 $M_X=-\infty$。若 $m_X<m_Y$，较小者 $m_X$ 有限，取 $t=m_X$ 区分；这也覆盖 $m_Y=+\infty$。空档案的阈值族在所有整数上均成功，而任一有限端点都有一个失败阈值，所以哨兵也被区分。
+
+**证明（恢复 $s$，显式迭代界）。** 只余 $\pi,m,M$ 相同而 $s$ 不同的情形。不失一般性 $s_X<s_Y$，故 $s_Y$ 有限，$E_Y$ 非空；共同的 $m,M$ 因而有限，两档案都非空。选任意整数 $t\le m$，它同时满足 $t\le M$ 及 $t\le s_i$（对所有有限的 $s_i$）。对两输入用同一个一孔上下文反复右乘：$X^{(0)}=X$，$X^{(n+1)}=X^{(n)}\boxtimes U_t$，$Y$ 同理。由 (TH*) 归纳，非空当前区域每步最高时刻加一，而空当前区域始终为空；对 $n\ge1$，
+
+$$
+\begin{array}{ll}
+s_i\in\mathbb Z:&s_{i^{(n)}}=s_i+n,\quad M_{i^{(n)}}=\max(M,s_i+n),\\
+s_i=-\infty:&s_{i^{(n)}}=-\infty,\quad M_{i^{(n)}}=M.
+\end{array}
+\tag{AMP}
+$$
+
+理由是新加入的每份 $U_t$ 不超过旧天花板 $M$，而 $s_i+n$ 严格递增；有限 $s_i$ 仍不低于 $t$，所以下一次 $\gamma$ 恰再加一。两侧的 $\pi$ 始终相同，因为每步都与同一 $\pi(U_t)$ 相乘。
+
+若两 $s$ 有限，取 $n=M-s_X+1\ge1$、$r=s_Y+n$，则 $M<s_X+n<s_Y+n=r$，所以 $M_{X^{(n)}}<r=M_{Y^{(n)}}$。若 $s_X=-\infty$，取 $n=M-s_Y+1\ge1$、$r=s_Y+n=M+1$，则 $M_{X^{(n)}}=M<r=M_{Y^{(n)}}$。两种情况下再接 $\square\triangleright U_r$，左侧有定义而右侧失败。迭代数有限，整个探针属于定义 16 的有限上下文。因此 $s$ 不同必可区分，得到必要性。空 $E$ 与非空 $E$ 已由上一段区分，不会在此被错误当成共同有限天花板的输入。
+
+合并两方向得 (THEQ)。充分读数 $h$ 有 $\ker h\subseteq\approx_{\Sigma_{\rm st}}=\ker\Theta$；对每个 $h$ 的像点，所有原像的 $\Theta$ 值相同，故其图定义唯一 $\kappa$，与命题 23 的像上恢复证明相同。没有在未命中的 $H$ 点上选值，也不声称恢复函数可计算或字节数最优。证毕。
+
+**反例 C2（仅存 $\pi,\min E,\max E$ 不充分）。** 构造 $X_0,X_9$，每份当前整体是一正一负，位置全为零、来源 leaf(0)、只选正事件；两点时刻分别全为 $0$ 或全为 $9$。另各加两个不入 $\Omega$ 的档案事件，时刻 $0,10$、零位置、正符号、来源 leaf(9)，使用不同出现标识，偏序为空。两者 $\pi=(0,\delta_0),m=0,M=10$，但 $s=0,9$。两次右乘 $U_0$ 后分别 $s=2,11$，归档最大时刻为 $10,11$。随后接 $\triangleright U_{11}$，前者有定义且 $q=2$，后者因 $11<11$ 为假而失败。这是明确的三步上下文，不靠一般迭代界代替具体核算。
+
+**摘要的消费边界。** $\Theta$ 仍丢来源与因果：B1 两对象都有 $(m,M,s)=(0,0,0)$，B2 两对象都有 $(0,1,1)$，其原查询反例仍成立。它也不回答任意时间筛选。例：一份当前正事件在 $0$、另一份在 $5$，两份当前负事件都在 $9$，只选正点；另都加不入当前区域的时刻 $0,10$ 旧事件，其他属性同 C2。二者 $\Theta=((0,\delta_0),0,10,9)$，按“时刻等于 $0$”筛选却得 $1,0$。该操作未在 (ST) 中；正式扩签名才会进一步细化观察核。
+
+### 20.3 摘要层的运算律及非环边界
+
+**命题 31（摘要层的精确律）。** $\mathcal T$ 的并行加法是交换幺半群，单位为 $\Theta(0_\varnothing)=((0,0),+\infty,-\infty,-\infty)$；乘法交换且双侧分配，但不结合、没有单位；并行零一般不吸收乘法。
+
+**证明。** (TH+) 的 $\pi$ 加法交换结合，端点的 min/max 也交换结合，空哨兵分别是相应 min/max 的单位。这给出全部幺半群律。乘法的 $\pi$ 卷积交换，(TH*) 各端点式也对称，故摘要乘法交换；这不反驳历史层的来源反例。
+
+证明分配时先核对包括空区域的恒等式
+
+$$
+\gamma(s,\max(t,u))=\max(\gamma(s,t),\gamma(s,u)).
+\tag{GD}
+$$
+
+若 $s=-\infty$ 或 $t=u=-\infty$，两边都为 $-\infty$。其余情形 $s$ 有限且 $t,u$ 至少一个有限；忽略其中的空项，两边都是这些有限值与 $s$ 的最大值加一，故相等。现比较 $X(Y+Z)$ 与 $XY+XZ$：$\pi$ 分量由卷积分配律相同；最小端点两边都是 $\min(m_X,m_Y,m_Z)$（重复的 $m_X$ 由 min 的幂等性消去）；$s$ 分量由 (GD) 相同；$M$ 分量两边都是 $\max(M_X,M_Y,M_Z,\gamma(s_X,s_Y),\gamma(s_X,s_Z))$。因此分配成立，另一侧由交换性给出。此核对包含 $E$ 空及 $\Omega$ 空而 $E$ 非空的边界。
+
+非结合取 $U_0,U_0,U_1$，其三个 $s$ 为 $0,0,1$。左括号的新根时刻为 $\max(1,1)+1=2$，旧事件最高仅 $1$，故 $M=s=2$；右括号先生成 $2$，再生成 $3$，归档 $M=s=3$。两侧 $m=0,\pi=(0,\delta_0)$，摘要仍不同。任何单位候选 $V$ 与 $U_t$ 相乘，若 $s_V=-\infty$，输出 $s=-\infty\ne t$；否则输出 $s=\max(s_V,t)+1>t$，同样不可能是 $U_t$。故没有乘法单位。最后 $U_0\boxtimes0_\varnothing$ 的摘要是 $((0,0),0,0,-\infty)$，不等于空档案的并行零。非空档案的加法逆也不可能存在，因为其有限 $M$ 与任意 $M'$ 取 max 后不能成为 $-\infty$。所以这里不是环，空间环律不能全部搬上来。证毕。
+
+<a id="pr2-time"></a>
+
+## 21. PR2 增补 G：整数时间规则的必然部分与约定部分
+
+**命题 32（最早整数与全部交换重标）。** 对 $a,b\in\mathbb Z$，$\max(a,b)+1$ 是同时严格晚于二者的最早整数。一个任意函数 $h:\mathbb Z\to\mathbb Z$ 满足
+
+$$
+h(\max(a,b)+1)=\max(h(a),h(b))+1\quad(\forall a,b\in\mathbb Z)
+\tag{CLOCK}
+$$
+
+当且仅当存在 $c\in\mathbb Z$ 使 $h(n)=n+c$ 对全部整数成立，不需先假设 $h$ 双射或单调。
+
+**证明。** $\max(a,b)+1$ 严格大于二者；任一整数 $j>a,b$ 满足 $j>\max(a,b)$，整数离散性给 $j\ge\max(a,b)+1$。对 (CLOCK) 代入 $a=b=n$，得到 $h(n+1)=h(n)+1$。以 $c=h(0)$，向上归纳给全部非负整数的公式；以 $h(n)=h(n+1)-1$ 向下归纳给全部负整数的公式。反向，整数平移保 max，代入即得 (CLOCK)。证毕。
+
+**命题 33（完整二叉构造树的根时刻）。** 给一棵有限完整二叉树（每个内部节点恰有两子节点），叶 $i$ 的输入时刻为 $t_i\in\mathbb Z$，每个内部节点按默认规则计算。以叶到根的边数为 $\operatorname{depth}_i$，则
+
+$$
+t_{\rm root}=\max_i(t_i+\operatorname{depth}_i).
+\tag{TREE}
+$$
+
+**证明。** 单叶树深度为零，公式成立。内部根的两子树由归纳假设分别有根时刻 $\max_{i\in L}(t_i+d_i)$、$\max_{i\in R}(t_i+d_i)$；新根取二者 max 再加一，等于对所有叶取 $\max(t_i+d_i+1)$。每片叶在整树中的深度恰比其子树深度多一，得公式。证毕。该式描述所选生成事件的构造树；档案中不参与该树的旧事件还可有更大时刻，不能用 (TREE) 代替全档案 $M$。它准确暴露括号树形依赖，不是物理时间定律。
+
+**明示边界族（不替换默认）。** 若预先选择正整数延迟 $\kappa$，把每个新时刻规定为 $\max(a,b)+\kappa$，它仍严格晚于两父点，所以命题 3 的合法性证明逐边照用；但仅 $\kappa=1$ 有命题 32 的“最早整数”性质。同一结构归纳给根时刻 $\max_i(t_i+\kappa\operatorname{depth}_i)$。对正整数 $a$ 及整数 $b$，$h(t)=at+b$ 满足
+
+$$
+h(\max(t,u)+\kappa)
+=\max(h(t),h(u))+a\kappa.
+$$
+
+这是因为正缩放保 max 且 $h(v+\kappa)=h(v)+a\kappa$。因此缩放同时运输延迟为 $a\kappa$ 才交换；若固定 $\kappa>0$，取 $t=u$ 就迫使 $a\kappa=\kappa$，即 $a=1$。默认模型与 §20 主定理始终取 $\kappa=1$。
+
+<a id="pr2-reference"></a>
+
+## 22. PR2 增补 H：共同空间参考点与整数仿射运输
+
+**定义 21（带参考点的情境纤维）。** 对每个 $o\in\mathbb Z^3$ 取一个带标记的载体 $\mathcal B_o=\{(o,X):X\in\mathcal B\}$。只在共同 $o$ 的纤维内定义乘法 $\boxtimes_o$：定义 6 唯一改变的是新事件位置
+
+$$
+x(p_{ab})=x_X(a)+x_Y(b)-o.
+\tag{ORIGIN}
+$$
+
+档案、符号、来源、`max+1` 时间、偏序、当前区域与选择都沿旧规则。$o=0$ 时逐项回到原模型，绝不暗换默认。不同参考点的输入不在此二元操作的域内；需先显式运输到共同纤维。在本节省略对象上重复的 $o$ 标记，并以 $u(X)$ 简记 $u(C_X)$。
+
+**命题 34（参考点卷积与空间单位）。** 此运算合法，$q(X\boxtimes_oY)=q(X)q(Y)$、$u(X\boxtimes_oY)=u(X)u(Y)$ 及命题 3 的档案基数均不变。空间乘法成为
+
+$$
+(c*_o d)(r)=\sum_{p+q-o=r}c(p)d(q),
+\qquad \pi(X\boxtimes_oY)=(w_X*_ow_Y,z_X*_oz_Y).
+\tag{OC}
+$$
+
+有单位空间环 $(R,+,*_o)$ 的自身单位为 $\delta_o$；$\{0\}\times R$ 的自身单位为 $(0,\delta_o)$。它们不是档案乘法单位，也不是 $P$ 的单位。
+
+**证明。** 位置不参与时标偏序约束，故合法性证明不变；电荷与基数只用符号、标签及候选对数，故命题 3 的逐项证明不变。按两父位置分组有限和即得 (OC)。直接计算 $\delta_o*_oc=c=c*_o\delta_o$。令 $L_o(c)(r)=c(r+o)$，它是 $R$ 的加法双射；置 $p=p'+o,q=q'+o$，有 $p+q-o=r+o\iff p'+q'=r$，所以 $L_o(c*_od)=L_o(c)*L_o(d)$。于是该环经 $L_o$ 与原 $R$ 同构，$P$ 的背景条件也由总和不变保持，故它仍无单位，$P_0$ 的自身单位则如上。档案基数及当前区域的无单位反证完全与位置无关，命题 24 仍适用。证毕。
+
+**命题 35（整数仿射正向与双向运输）。** 给任意整数矩阵 $M\in\operatorname{Mat}_{3\times3}(\mathbb Z)$、整数向量 $v$，令 $F(x)=Mx+v$。将全部事件位置经 $F$ 运输而保持事件身份及其他数据，参考点同时变为 $F(o)$，定义 $\mathcal F:\mathcal B_o\to\mathcal B_{F(o)}$。它对全部这种 $M$ 都是合法的正向运输，且
+
+$$
+F(x+y-o)=F(x)+F(y)-F(o),
+\qquad
+\mathcal F(X\boxtimes_oY)=\mathcal F(X)\boxtimes_{F(o)}\mathcal F(Y).
+\tag{AFF}
+$$
+
+整数坐标上的双向运输恰在 $M\in GL_3(\mathbb Z)$ 时保证。
+
+**证明。** 左式展开为 $Mx+My-Mo+v$，右式也为同一向量。档案标签不变，旧点的属性在两侧一样，新点的位置由此恒等式一样，其他生成属性及边按同一旧规则，故得到完整丰富表示的等式，而非仅电荷等式。任意整数矩阵都保持位置的整数类型，且位置无额外合法性约束，故正向结论不要求单射。若 $M$ 在整数格点上双射，标准基向量的逆像组成整数矩阵 $N$，有 $MN=I$；行列式给 $\det M\det N=1$，所以 $\det M=\pm1$。反向若 $\det M=\pm1$，伴随矩阵公式给整数逆 $M^{-1}$，仿射逆为 $x\mapsto M^{-1}(x-v)$，也将参考点运回 $o$。这证明等价。证毕。
+
+固定 $o$ 的共同平移失配仍在：先把两个输入加 $v\ne0$ 却不动 $o$，新位置为 $x+y+2v-o$；先乘再平移为 $x+y+v-o$。 (AFF) 运输的是带参考点的整个族，要求同时 $o\mapsto o+v$，没有推翻 §8 的旧反例。
+
+**命题 36（有限推送与筛选的逆像公式）。** 即使 $F$ 非单射，$\mathcal F$ 也不合并任何事件身份。空间电荷则用有限推送
+
+$$
+(F_*c)(r)=\sum_{p\in\operatorname{supp}(c),\ F(p)=r}c(p),
+\qquad \pi(\mathcal F X)=(F_*w_X,F_*z_X)
+$$
+
+合并系数；对任意 $S\subseteq\mathbb Z^3$ 有
+
+$$
+F_*(\mathbf1_{F^{-1}(S)}z)=\mathbf1_SF_*z,
+\qquad
+\mathcal F(F_{F^{-1}(S)}X)=F_S(\mathcal F X).
+\tag{PULL}
+$$
+
+还满足 $F_*(c*_od)=(F_*c)*_{F(o)}(F_*d)$ 及 $\varepsilon(F_*c)=\varepsilon(c)$。
+
+**证明。** 事件集合未取商，只改其位置属性；按新位置归组自然得到 $F_*$，即使某纤维无限，参与的支撑仍有限。左边 (PULL) 在 $r$ 的系数为 $\sum_{F(p)=r}\mathbf1_S(F(p))z(p)=\mathbf1_S(r)\sum_{F(p)=r}z(p)$，得电荷式；事件式来自逐事件条件 $x(e)\in F^{-1}(S)\iff F(x(e))\in S$。推送卷积的两边都是有限双和，分别按 $F(p+q-o)=r$ 或 $F(p)+F(q)-F(o)=r$ 分组，(AFF) 使条件相同。对全部目标点求和则每个原支撑项恰计一次，得增广式。证毕。
+
+**反例 C3（直接像区域不能替代逆像）。** 取非单射 $F(x_1,x_2,x_3)=(0,x_2,x_3)$，$e_1=(1,0,0)$，$z=\delta_0+\delta_{e_1}$，$D=\{0\}$。有 $F_*(\mathbf1_Dz)=\delta_0$，但 $\mathbf1_{F[D]}F_*z=2\delta_0$。可用两个位置各一正一负、只选正点的四事件平衡表示实现 $w=0,z$；运输后四个出现仍各自存在，两个所选正贡献只是同处零点。错误来自把非饱和 $D$ 直接换成 $F[D]$：其逆像还含 $e_1$。正确的 (PULL) 在 $S=\{0\}$ 使用整个逆像，两边均为 $2\delta_0$。
+
+<a id="pr2-evidence"></a>
+
+## 23. PR2 的来源、调用边界与定向核验
+
+### 23.1 成熟框架与本仓推导的边界
+
+分层代数、上下文等价、群代数与仿射空间采用成熟框架，不称新颖。§17.2 已核读收据中的 Burris/Sankappanavar、Pitts、Mathlib 在线有限支撑卷积仍分别支持这些背景概念；它们不直接承担本批的 CSA 特定摘要证明。另使用 caller 在批准计划中提供的核读结论：
+
+| 来源 | 精确范围与使用边界 |
+| --- | --- |
+| J. S. Milne, *Algebraic Groups* (2017)，[§12b，pp. 230–231](https://www.jmilne.org/math/Books/iAG2017.pdf) | `literature-attested`：域系数的有限生成阿贝尔群代数背景；不是本文整数系数单位分类的证明。 |
+| Jean Gallier，[geomcs-v2.pdf](https://www.cis.upenn.edu/~jean/gbooks/geomcs-v2.pdf)，作者 2025-10-09 版 §2.1，pp. 18–19 | `literature-attested`：实系数仿射空间与点/向量区分；不冒称该页直接证明整数 torsor 定理。 |
+
+CSA 的实际像、分层反例、$\Theta$ 闭合更新及必要性、此处整数仿射运输归类为 `repo-derived`；卷积极值、整数单位与整数仿射结论的证明均在正文自给，不以外部引文或有限核验填补证明。没有新增 Lean、axiom、判官、schema 或生产引擎，也不宣称本稿已被 Lean 验证。
+
+**本批产地与意见状态。** 本批由 `consensus-rnd:sshx` 的一个 Codex implementation_worker 在固定 PR1 已提交候选 `feec239217c30601cca92c53620492516bec915a` 上实施；输入包括用户批准数学计划、必读规范及本树文稿，属于 `repo-prior-exposed`。未读取另一工作树、同轮 architecture 工件或其他 review 输出，未调用其他 worker。按 caller 本批明确告知的事实，PR1 两次 architecture oracle 请求均因超过预定 `configuring_composer` 等待窗口而被 caller 取消，未返回数学内容；这两次不是已完成数学意见。§17.2 的思考失败和纯连通性探测也不计本轮 S1，§12 旧 PRO 任务只属原稿历史。用户所称 GPT PRO 即 nyxid oracle 通道，不另按型号名是否带 Pro 判定。当前没有可消费的本轮成功实质 Nyx 数学意见；S1 由后续实际 oracle 评审继续结算，实际意见的处置和独立三席评审由 caller 记录。本批不预报 PR2 最终评审通过、required checks 通过或合入。
+
+### 23.2 定向有限核验的预期与界限
+
+附录原有唯一 Python 块复用 `Rich/add/mul/neg/temporal`；新增辅助函数仅用于本页的精确样本核验。预期值由 §18–22 的公式和手算反例规定：历史分配档案为 $14/16$，来源交换在时刻 $1$ 处有四个不匹配的新点；时间复合包括六事件十二条跨边的合法三元组、空中间合法例及相邻 guard 空真而两括号失败的例子。另用含空档案、空当前区域、非空旧档案、未选高时刻点的样本逐对检查 (TH+)、(TH*) 及精确 guard，C2 两次右乘后 $\max E=10/11$，接 $U_{11}$ 恰一侧失败。
+
+卷积测试在三个给定格点、系数 $\{-1,0,1\}$ 的非零小支撑样本中核对极值系数及唯一拆分，另检验 $2\delta_0-\delta_v$ 的增广为 $1$、不属单位族，并在明示有限候选中排除它的逆；无零因子和全部单位分类只由命题 26–27 证明。树公式比较不同括号、不同叶时刻及正整数延迟；参考点测试使用一般整数矩阵、非单射矩阵和仿射位移，同时检查全部事件数据与参考点的运输，并执行 C3 的 $1/2$ 筛选差异。stdout 中的新增计数均由实际执行累加或读取样本结果，有限运行不证明无限全称命题、全部上下文或所有整数仿射映射。
+
+
+**有限窗口的具体取值。** 时间三元组取空档案、$U_{-1},U_0,U_1,U_2$ 及档案为时刻 $4$ 的正负对但当前区域为空的六个状态。$\Theta$ 的八个状态取空档案、$U_{-1},U_0,U_1$、上述空当前区域状态、C2 的两状态和正点时刻 $0$/负点时刻 $9$ 的状态；每个状态核验补集、三种空间筛选、三种平移，并在整数阈值 $[-3,12]$ 上探测左右 guard。卷积极值的三个格点为 $0,v,h$（沿用 §17.3）；逆候选仅取 $-v,0,v$ 上三系数在 $\{-1,0,1\}$ 的 $27$ 个函数。树枚举三叶和四叶的全部二叉括号，叶时刻各取 $\{-2,0,3\}$、延迟取 $1,2,3$；丰富树另每个括号取叶时刻 $(0,1,\ldots,n-1)$。参考点用 $0,(1,2,-1)$，矩阵用恒等、$2I$、$(x_1,x_2,x_3)\mapsto(x_1+x_2,x_2,-x_3)$ 和 C3 的投影，位移为 $(2,-1,3)$；输入取 $U_0$、§17.3 的 $X,Y$ 及空当前区域状态。
+
+**本批实际运行收据（2026-09-09）。** 在固定候选 `feec239217c30601cca92c53620492516bec915a` 的指定工作树中，亲跑附录原 `sed ... | sed ... | python3 -` 提取命令；首次及将新增同构计数改为实际调用累加后的重跑均退出 `0`。最终执行包含原检查、PR1 检查及 PR2 新增检查，末行实得 `ALL_FINITE_CHECKS_PASSED`。下面仅列最终执行的 PR2 stdout，不把原历史输出当作本批收据：
+
+```text
+pr2_history: distributivity_archives=14,16 ordered_source_new_events=4,4 additive_isomorphisms=3
+pr2_temporal: triples=216 defined=56 legal_archive=6 legal_edges=12 empty_middle_adjacent_guards_insufficient=True
+pr2_theta: pairs=64 unary=56 integer_thresholds=256 amplification_cases=2 archive_maxima=10,11 following_U11=defined,failed time_filter=1,0
+pr2_theta_laws: rich_triples=64 associativity_maxima=2,3 zero_absorbing=False
+pr2_extrema: nonzero_samples=26 pairs=676 products_delta0=2 signed_delta_inverses=10 nonunit_augmentation=1 inverse_candidates_rejected=27
+pr2_clock: depth_cases=1377 rich_trees=7 translations=147 scaled_delay_cases=675 fixed_delay_scaling_rejected=True
+pr2_reference: rich_pairs=32 affine_transports=128 space_units=52 noninjective_events=4 direct_image_filter=1,2 pullback_filter=2
+ALL_FINITE_CHECKS_PASSED
+```
+
+这些结果只判所列样本；完整一般证明位于命题 24–36。canonical ingest 与差分检查的实际命令、退出码、新增 atom/backfill 及 residual-open 计数由本 worker 的 runner 结果工件记录，独立评审与 git/GitHub 生命周期交由 caller 接续。
