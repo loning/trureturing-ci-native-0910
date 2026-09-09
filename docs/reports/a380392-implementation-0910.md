@@ -65,3 +65,15 @@ n=0 不进入结论；禁止反向、重复或对角步，n=1 须符合单格路
 - 编码约定：对 (k+1)×(k+1) 矩阵，路径以 range(2*k) 的 k 元子集记录东步位置。
   时刻 t 的两个坐标为 range(t) 与该子集交集及差集的基数；坐标和=t，故各访问格互异。
   这是用户已预登记见证的具体实现，不改变数学目标。
+
+## Lean 片段 1：访问格互异
+
+- 新落点 D5/S3/Arith/Paths/MonotoneOnePaths.lean；Arith 父目录递归文件数 114，
+  Blueprint 镜像父目录递归文件数 218、直属 54，故新增 Paths 子桶，首次真实工件入桶。
+  新桶创建前不存在（0 文件），创建后 Lean 1 文件。
+- 热树增量 lake env lean 该文件 EXIT=0；只有 unnecessarySimpa 风格警告。
+- Path k 是 range(2*k) 的 k 元子集，pathCell 的两个坐标为前缀交/差集基数；
+  Lean 已证坐标界、rank=t、pathCell_injective、pathCells_card=2*k+1。
+  首次检查因 sdiff_subset_sdiff_left 的显式参数次序错误失败，读源码签名后修正。
+- pathCount 实际过滤路径，要求每个访问格为 true；零维分支仅使定义总化，不在主定理范围内。
+- 主均值定理尚未实现，此片段检查不等于完整构建。
