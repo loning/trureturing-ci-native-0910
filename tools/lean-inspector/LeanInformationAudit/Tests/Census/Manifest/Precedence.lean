@@ -1,4 +1,5 @@
 import LeanInformationAudit.Census.Manifest
+import LeanInformationAudit.Tests.Census.Manifest.ReportIO
 
 open Lean LeanInformationAudit DispositionCensus CensusManifest
 

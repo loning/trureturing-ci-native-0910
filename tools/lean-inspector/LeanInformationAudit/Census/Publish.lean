@@ -154,7 +154,7 @@ elab "#disposition_census" &"projection" &"root" root:ident &"source" sourcePath
   let destination := outputPath.getString
   phase destination "manifest_binding"
   let bytes ← IO.FS.readFile reportPath.getString
-  let report ← ofExcept <| parseReportData bytes
+  let report ← parseReportDataIO bytes
   let selected ← ofExcept <| selectReport report bytes selectionPrefix.getString
   let paths ← ofExcept <| fromJson? (α := Array String) (← ofExcept <| Json.parse
     (← IO.FS.readFile receiptsPath.getString))

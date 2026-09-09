@@ -106,8 +106,7 @@ def truthExportIdentity : Json := Json.mkObj [
 source_commit binds HEAD; declaration_name_key preserves Lean Name structure;
 statement_id is read verbatim. Only frozen nodes' theorem declarations are included.
 The caller pins the report bytes independently with expectedSha256. -/
-private def parseReportCore (bytes : String) : Except String FrozenReport := do
-  let actualSha256 := "sha256:" ++ Sha256.hex bytes.toUTF8
+private def parseReportCore (bytes actualSha256 : String) : Except String FrozenReport := do
   let json ← (Json.parse bytes).mapError (censusError "unknown" "report" "valid-json")
   let expectedHead := (json.getObjValAs? String "source_commit").toOption.getD "unknown"
   for field in ["schema", "dialect", "producer"] do
@@ -139,9 +138,23 @@ private def parseReportCore (bytes : String) : Except String FrozenReport := do
   checkFrozenKeys head sorted
   return { headSha := head, reportSha256 := actualSha256, theorems := sorted }
 
-def parseReportData (bytes : String) : Except String FrozenReport :=
-  (parseReportCore bytes).mapError fun error =>
+private def parseReportHashed (bytes sha256 : String) : Except String FrozenReport :=
+  (parseReportCore bytes sha256).mapError fun error =>
     if error.startsWith "IE-" then error else censusError "unknown" "report" "well-formed" error
+
+def parseReportData (bytes : String) : Except String FrozenReport :=
+  parseReportHashed bytes ("sha256:" ++ Sha256.hex bytes.toUTF8)
+
+/-- Hash the exact bytes passed to the Lean parser, through the host SHA-256
+implementation. Piping those bytes avoids a second path read and its race.
+Only hashing crosses this boundary: frozen membership and keys are parsed here. -/
+def parseReportDataIO (bytes : String) : IO FrozenReport := do
+  let result ← IO.Process.output { cmd := "/usr/bin/shasum", args := #["-a", "256"] } (some bytes)
+  unless result.exitCode == 0 do throw <| IO.userError "census report: SHA-256 failed"
+  let hash := (result.stdout.take 64).toString
+  unless hash.length == 64 && hash.toList.all (fun c => c.isDigit || ('a' ≤ c && c ≤ 'f')) do
+    throw <| IO.userError "census report: invalid SHA-256 output"
+  IO.ofExcept <| parseReportHashed bytes ("sha256:" ++ hash)
 
 def checkReportBinding (expectedHead expectedSha256 : String) (report : FrozenReport) :
     Except String Unit := do
