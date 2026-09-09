@@ -3,6 +3,7 @@
 import json
 import os
 import pathlib
+import re
 
 from emission import string
 from resources import run
@@ -72,7 +73,8 @@ def check_receipts(repository, directory, report_path):
         rejected("swapped-query-receipt", "query receipt")
     finally:
         manifest.write_bytes(original_manifest)
-    edited_inventory = original.replace(", 0)", ", 99)", 1)
+    edited_inventory = re.sub(r"(CensusRun.manifestKeys.chunk0 : Nat := )(0x[0-9a-f]+)",
+                              lambda match: match[1] + hex(int(match[2], 0) + 99), original, count=1)
     assert edited_inventory != original
     rejected("edited-inventory-row", "component=statement_id_nat", edited_inventory)
 
