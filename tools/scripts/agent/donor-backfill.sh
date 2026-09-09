@@ -13,6 +13,12 @@
 # copy is plain — the repository forbids per-file clone walks — and skips any file
 # already present, so it is idempotent and never overwrites.
 #
+# What counts as a module's artifacts is a rule, not a list: every file under the
+# two build subtrees whose name is the module's own name followed by a dot. Most
+# modules have five such files beside the olean and three beside the C output, but
+# one in this tree also carries .olean.private, .olean.server and .ir.sig, so a
+# fixed extension table would silently copy such a module in half.
+#
 # Usage: donor-backfill.sh [--dry-run] [donor-dir]
 # Sentinel: DONOR_BACKFILL status=<synced|seeded|no-source|behind> donor=<n> best=<n> copied=<files>
 # Exit 0 when the donor is at or brought to the fullest state; 2 when no eligible
@@ -66,16 +72,19 @@ copied=0
 while read -r rel; do
   [ -n "$rel" ] || continue
   stem="${rel%.olean}"
-  for pair in "lib/lean/D5:.olean" "lib/lean/D5:.olean.hash" "lib/lean/D5:.ilean" \
-              "lib/lean/D5:.ilean.hash" "lib/lean/D5:.trace" \
-              "ir/D5:.c" "ir/D5:.c.hash" "ir/D5:.setup.json"; do
-    sub="${pair%%:*}"; ext="${pair##*:}"
-    src="$best/.lake/build/$sub/$stem$ext"
-    dst="$DONOR/.lake/build/$sub/$stem$ext"
-    [ -f "$src" ] || continue
-    [ -f "$dst" ] && continue
-    mkdir -p "$(dirname "$dst")" || continue
-    cp "$src" "$dst" 2>/dev/null && copied=$((copied+1))
+  base="${stem##*/}"
+  dir="${stem%/*}"
+  [ "$dir" = "$stem" ] && dir="."
+  for sub in "lib/lean/D5" "ir/D5"; do
+    sdir="$best/.lake/build/$sub/$dir"
+    ddir="$DONOR/.lake/build/$sub/$dir"
+    for src in "$sdir/$base".*; do
+      [ -f "$src" ] || continue
+      dst="$ddir/${src##*/}"
+      [ -f "$dst" ] && continue
+      mkdir -p "$ddir" || continue
+      cp "$src" "$dst" 2>/dev/null && copied=$((copied+1))
+    done
   done
 done < <(cd "$best/.lake/build/lib/lean/D5" 2>/dev/null && find . -name '*.olean' | sed 's|^\./||')
 
