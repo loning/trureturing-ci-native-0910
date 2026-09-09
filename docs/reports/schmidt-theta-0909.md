@@ -168,9 +168,9 @@ after archiving the probe also exited 0 (`lean-final-tree.log`).
 Final search-count audit on the unchanged source tree: using `rg -c -i -P`
 with the two repository regexes printed below returned 76 and 37 matching
 lines respectively (both exit 0). The same-option matrix-directory search
-for `\\b(?:\\w*singularValues\\w*|\\w*singular_values\\w*|\\w*svd\\w*)\\b`
+for `\b(?:\w*singularValues\w*|\w*singular_values\w*|\w*svd\w*)\b`
 returned 0 (exit 1); its same-feature control
-`\\b(?:\\w*conjTranspose\\w*|\\w*unitary\\w*)\\b` returned 398 (exit 0).
+`\b(?:\w*conjTranspose\w*|\w*unitary\w*)\b` returned 398 (exit 0).
 The directories were `.lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix`
 and `.lake/packages/mathlib/Mathlib/Analysis/Matrix`. The count is matching
 lines, not declarations. The actual singular-value API was read under
