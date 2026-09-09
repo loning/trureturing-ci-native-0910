@@ -52,3 +52,27 @@ Not run yet. Cache, make exits, measured times, and log paths will be appended.
 No proof, counterexample, novelty beyond the searched scope, frozen node,
 atom coverage, independent review, or PR is claimed at this checkpoint.
 No theory volume or atom is being created for this task.
+
+## Search batch 2
+
+- Read all 779 lines of CLAUDE.md in chunks, including truncated intervals;
+  read agents/CONTEXT.md and spec A5.1. `utility: none` is the exact grammar
+  for this general, unbounded theorem (not a finite certified instance).
+- This worktree initially had no `.lake`; started `make lean-cache-ensure`
+  before any Lake invocation. Inspected the existing main checkout's mathlib
+  sources read-only; `git rev-parse HEAD` there equals the requested pin.
+- Pinned mathlib search `rg -n -i 'a384309|leading.?digit|leading.?counter'`
+  over Mathlib: zero hits. Read `Data/Nat/Count.lean` and the Count section of
+  `Data/Nat/Nth.lean`: reuse `Nat.count_injective`,
+  `Nat.count_nth_succ_of_infinite`, and `Nat.nth_mem_of_infinite`.
+  Located `Finite.exists_infinite_fiber` in Data/Fintype/Pigeonhole.
+- `curl https://oeis.org/A384309/internal` succeeded and was read in full:
+  revision 32, 2025-07-21; David James Sycamore, 2025-05-25. Its comment
+  explicitly calls the exact multiplicity a conjecture. Its examples and
+  Python generator include the current term before reading the counter.
+  This page does not cite a research paper; no unidentified 2025 paper is claimed read.
+- A later Python urllib attempt at the same OEIS page and its two xrefs got
+  HTTP 403. These failures are not negative search evidence; curl fallback pending.
+- arXiv web search, all fields, query `A384309`: HTTP 200, explicitly
+  "produced no results". Saved page and extracted text in runner attempt directory.
+- GitHub Lean code search is in flight. No globally exhaustive novelty claim.
