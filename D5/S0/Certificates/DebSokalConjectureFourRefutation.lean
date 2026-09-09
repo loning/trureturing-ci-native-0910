@@ -71,9 +71,13 @@ theorem result : ¬ claim := by
   intro h
   obtain ⟨z, hz, hnonreal⟩ := h 3 3 (by decide) (by decide)
   -- Compute from the recurrence, not from an assumed table of coefficients.
+  have values : stirlingSubset 3 3 0 = 0 ∧ stirlingSubset 3 3 1 = 1 ∧
+      stirlingSubset 3 3 2 = 35 ∧ stirlingSubset 3 3 3 = 280 := by
+    decide +kernel
   have row_eval : (rowPolynomial 3 3).eval z =
       z * (280 * (z * z) + 35 * z + 1) := by
-    norm_num [rowPolynomial, stirlingSubset, Nat.choose, Finset.sum_range_succ]
+    norm_num [rowPolynomial, Finset.sum_range_succ, values.1, values.2.1,
+      values.2.2.1, values.2.2.2]
     ring
   rw [row_eval] at hz
   rcases mul_eq_zero.mp hz with hzero | hquad
