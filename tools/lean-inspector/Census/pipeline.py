@@ -163,7 +163,10 @@ def execute(options):
         if not keys:
             raise ValueError("no frozen theorem keys selected")
         with report_path.open("rb") as source:
-            report_digest = "sha256:" + hashlib.file_digest(source, "sha256").hexdigest()
+            report_hash = hashlib.sha256()
+            for block in iter(lambda: source.read(1024 * 1024), b""):
+                report_hash.update(block)
+            report_digest = "sha256:" + report_hash.hexdigest()
         request = {"head": head, "keys": keys, "report": str(report_path),
                    "report_sha256": report_digest}
         write(directory / "request.json", request)
