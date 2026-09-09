@@ -193,7 +193,7 @@ enumerator, checker or conditional numerical reduction is exported.
 The external questions were fixed in the triage and the local witnesses
 preregistered above. Module admission_basis=escape-witness.
 
-Direct frozen dependencies use prefix
+Explicit source-level frozen references use prefix
 `D5/S1/Recurrence/Residue/ExponentialSquareWeightCatalanParity.`:
 
 | Alias | GID suffix | statement_id |
@@ -207,6 +207,9 @@ These identities were read from the canonical Lean report; the frozen module
 state pin was already present on the inherited base. Mathlib declarations
 are library inputs, not frozen D5 dependencies. The following shape labels
 are semantic self-review, not a claim that the inspector classifies novelty.
+The last column lists explicit references in each declaration's source;
+it is not an extracted kernel dependency graph. Unfolding FA exposes FD,
+and the named local companions carry their own transitive dependencies.
 
 | Public theorem | proof_shape | escape_witness / companion use | direct frozen input |
 | --- | --- | --- | --- |
@@ -236,3 +239,48 @@ successfully (12782 jobs), EXIT=0. This includes compilation of the Scribe
 definitions and the two named Lean endpoints. A missing parenthesis in the
 first Scribe draft was caught before Lean ran (lean-final.log, EXIT=2) and
 repaired. This checkpoint is committed and pushed before lean-report.
+
+## Report and freeze receipts
+
+The continuation's make lean-report exited 0 with full-fallback, not delta
+reuse. Its report SHA-256 is
+2e30e20369e9a241e54ea2918918ad2eb71d9898c1c1564160af255c1a38d919.
+The supervisor recorded peak RSS 10,781,456 KB and peak open descriptors 372;
+these are local measurements, not a bound for other machines. All source
+changes were committed and pushed before this run. LAKE_JOBS=1 and
+LEAN_NUM_THREADS=1 were set; idle .NET build servers were stopped.
+
+The new module has 17 authored public declarations, 15 private helpers and
+one generated b.eq_def in the 33 include_in_statement entries. All 124
+reported declarations have axiom closures within propext, Classical.choice
+and Quot.sound. An initial scratch count incorrectly equated the 17 public
+declarations with the full included set; reading the actual names corrected
+that bookkeeping error. An optional imported-proof dependency probe emitted
+Lean panics despite process exit 0; its results are discarded. The table
+above is source-level review, and axiom evidence uses the canonical report.
+
+ledger-align with the existing q=1 selector and --add for this module exited
+0: selectors_considered=2, changed=0, added=1, unchanged=1, conflicts=0.
+It wrote the canonical accepted event and state pin with module statement_id
+sha256:1f368a3309049ab978ede8b2f767fa9eae0eb7029eaa3c6e6ccea8a23f018a42.
+No frozen Lean source was changed.
+
+The first make emit exited 2: the Scribe ID derived from definition M
+contained an uppercase letter. The repair applies ToLowerInvariant to
+display IDs, as in the existing q=1 Scribe; Lean declaration handles retain
+their exact case. This is a projection construction error, not a Lean failure.
+
+Additional own literature recheck: three separate GitHub Lean searches for
+A397345, A397348 and A397346 returned empty arrays. The continuation also
+read the full jOEIS A397346.java at commit
+bfee16443fd9f61b28334e4dad2ba37b5b1ad316: its 18-line generator contains no
+modular proof. The earlier broad search failures remain predecessor reports.
+
+The repaired make emit exited 0 (emit-repaired.log), emitting one changed
+Blueprint with 17 std3 declaration blocks and exactly three typed resolution
+edges, for A397345, A397348 and A397346. The Scribe consumer recorded peak
+RSS 4,595,440 KB. The emitted formulas were read against the Lean statements;
+generated Markdown was not edited by hand. Current ordinary directory counts
+are Lean Residue=8, Blueprint Residue=16 and Library/Recurrence=35, all below
+48. Each new Problems dossier has exactly eight sections. git diff --check
+passes. Remote admission, CI and MERGED state are still pending this checkpoint.

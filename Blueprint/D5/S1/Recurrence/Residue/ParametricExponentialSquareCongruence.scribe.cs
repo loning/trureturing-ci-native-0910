@@ -107,7 +107,7 @@ internal sealed class ParametricExponentialSquareCongruenceDocument : IScribeDoc
 
     private static DocumentBlock Node(string name, string title, Formula formula, string prose,
         DescribeRole role = DescribeRole.Theorem, string? bibkey = null, string? slug = null) =>
-        Describe.Lean(DescribeId.Create("a397family-" + name.Replace('_', '-')),
+        Describe.Lean(DescribeId.Create("a397family-" + name.Replace('_', '-').ToLowerInvariant()),
             DeclarationHandle.Create(Prefix + name), H(title), StatementSource.FromAuthor(formula),
             bibkey is null ? AssessedProvenance.FromRepo() :
                 AssessedProvenance.FromLiterature(LibraryNoteRef.Create("D5/L/Recurrence/" + bibkey)),
