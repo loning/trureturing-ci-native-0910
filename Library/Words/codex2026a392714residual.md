@@ -270,6 +270,21 @@ exists_min_move、upper_sum_vanish 已通过 kernel。
 数学陈述未改。两个承重消去引理现在均已编译；最后需把原始 L(a) 的逐项条件接上，
 再进入 D5/Scribe/构建门，尚未报“成”。
 
+
+## Lean 核验批次 5：S(a) 全称证明
+
+热树增量最终 EXIT=0。InResidual 逐项采用原题的严格下界与非严格上界；
+inResidual_iff 接到 Upper ∧ LowerFrom 0；signed_residual_sum 无附加假设闭合。
+首次 id 分支的 singleton 和未被 simp 自动求值，改用 sum_eq_single 后闭合。
+最终 #print axioms 的现场原文为：
+
+- Residual.signed_residual_sum: [propext, choice, Quot.sound]
+- Residual.lower_cut_removal: [propext, choice, Quot.sound]
+- Residual.upper_sum_vanish: [propext, choice, Quot.sound]
+
+无 sorry、无私 axiom、无 native_decide。该定理还覆盖 n=0，但其 n≥1 特化恰为 S(a)。
+这只是单文件 kernel 结果；“成”的其余门（make lean、正式落点、PR）仍须完成。
+
 <!-- lean-checkpoint -->
 ## 当前已编译源码快照
 
@@ -561,6 +576,48 @@ theorem upper_sum_vanish {n} (a : Equiv.Perm (Fin n)) (ha : a ≠ 1) :
     omega
   · rw [prefixSum_swap b u v huv he]
     exact hu l hl
+
+
+/-- The one-based values are `a i + 1`; prefix arguments are lengths. -/
+def InResidual {n : ℕ} (a b : Equiv.Perm (Fin n)) : Prop :=
+  ∀ i : Fin n, prefixSum a i.val < prefixSum b (i.val + 1) ∧
+    prefixSum b (i.val + 1) ≤ prefixSum a (i.val + 1)
+
+theorem inResidual_iff {n} (a b : Equiv.Perm (Fin n)) :
+    InResidual a b ↔ Upper a b ∧ LowerFrom a b 0 := by
+  constructor
+  · intro h
+    refine ⟨?_, fun i _ => (h i).1⟩
+    intro k hk
+    by_cases hk0 : k = 0
+    · simp [hk0]
+    · let i : Fin n := ⟨k - 1, by omega⟩
+      have hi : i.val + 1 = k := by dsimp [i]; omega
+      simpa only [hi] using (h i).2
+  · rintro ⟨hu, hl⟩ i
+    exact ⟨hl i (by omega), hu (i.val + 1) (by omega)⟩
+
+/-- S(a): the signed residual sum is one for the identity and zero otherwise. -/
+theorem signed_residual_sum {n : ℕ} (a : Equiv.Perm (Fin n)) :
+    (∑ b : Equiv.Perm (Fin n) with InResidual a b, signInt b) =
+      if a = 1 then 1 else 0 := by
+  have hrow : (∑ b : Equiv.Perm (Fin n) with InResidual a b, signInt b) =
+      rowSum a 0 := by simp only [rowSum, inResidual_iff]
+  rw [hrow, rowSum_eq_upper]
+  by_cases ha : a = 1
+  · subst a
+    rw [if_pos rfl, Finset.sum_eq_single 1]
+    · simp [signInt]
+    · intro b hb hne
+      exact (hne ((upper_identity b).mp (Finset.mem_filter.mp hb).2)).elim
+    · intro h
+      exact (h (Finset.mem_filter.mpr ⟨Finset.mem_univ _, fun k hk => le_rfl⟩)).elim
+  · rw [if_neg ha]
+    exact upper_sum_vanish a ha
+
+#print axioms signed_residual_sum
+#print axioms lower_cut_removal
+#print axioms upper_sum_vanish
 
 end Residual
 ```
