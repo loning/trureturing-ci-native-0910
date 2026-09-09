@@ -147,3 +147,31 @@ No theory volume or atom is being created for this task.
 - Source length 181 lines; no sorry, axiom declaration, or native_decide.
   Existing project warnings were replayed by Lake; the new module's file
   check has no warnings. Canonical Lean report and semantic audit are running.
+
+## Canonical report and semantic audit
+
+- `make lean-report` EXIT=0, 63.159 seconds. Report SHA256:
+  297cbbf4190e4df0a08eb356a334c6b731cb3c135d47b2fbf951527b28812aea.
+  Log: attempt-1/make-lean-report.log; canonical output:
+  .lake/build/stratalint/raw-lean-report.json.
+- Existing proof-edges.sh, using Lean Expr.getUsedConstants on elaborated
+  values/types and expanding auxiliary constants, returned EDGES_OK,
+  24 nonauxiliary constants, 9 nonprivate constants (including the generated
+  orbit.eq_def equation). All external D5 dependencies are empty; all axiom
+  sets are subsets of propext, Classical.choice, Quot.sound.
+- The live chain is leading_counter_multiplicity -> successor_multiplicity
+  -> successor_bijOn -> all_digits_infinite / emit_nth / term_recurrence.
+  a_recurrence uses digit_eq_iff, term_pos, and term_recurrence -> orbit_count.
+- The compiler eliminates the reflexive a_one use in the main proof; it is
+  not claimed as a surviving constant edge. Its named companion purpose is
+  the initial-condition API required by the brief. KernelAudit.recurrence_echo
+  is the registered semantic consumer of a_one and a_recurrence, bundling
+  the two source conditions. It is not an additional frozen result.
+- KernelAudit initially timed out reducing the 21-entry private sequence
+  echo at 200000 heartbeats. The general proof and axiom queries passed;
+  replace that oversized smoke test with the first six actual terms, enough
+  to distinguish the update order, plus leading10(1234)=1 and zero behavior.
+- Library note includes Verified locator with literal url and doi lines.
+  Source inspection found production Describe rejects suspected-novel nodes;
+  the proved multiplicity is accurately marked repo-derived, with the OEIS
+  conjecture acknowledged. No global novelty assertion is needed or made.
