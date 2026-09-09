@@ -10,7 +10,7 @@
 - Read first: tracked `tools/scripts/agent/probe-brief-note.txt`, then all of `CLAUDE.md` and `agents/CONTEXT.md`.
 - Scope: review only; no edits to `D5/**` or `Blueprint/**`, no freeze/deposit/cover/merge action.
 - Worker artifacts: `/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/robin-review-0909/attempt-1` (called `ATTEMPT` below).
-- Checkpoints: Q1-Q5 complete; Q6 pending. Overall verdict is pending until all six questions are reviewed.
+- Checkpoints: Q1-Q6 complete. Verdict: `approve`; blocking findings: none. One nonblocking stale-status observation is recorded under Q6.
 
 ## Q1. Mathematical correctness
 
@@ -305,6 +305,114 @@ The Make operations only update generated caches/reports. The review's tracked d
 
 Push receipt for Q4: `36d0448210`, EXIT 0. Q5 is recorded in the next checkpoint commit.
 
-## Pending checks and nonclaims
+## Q6. Progress report and Scribe mirror
 
-At this checkpoint Q6 has not been concluded; mirrors remain pending. No claim of general Robin, RH, novelty, search exhaustiveness, successful freeze, or remote CI/merge is made. No external literature page has been opened or used as evidence.
+Result: mathematical statement and narrative fidelity pass. One nonblocking documentation observation: `docs/reports/robin7smooth-0909/progress.md:219`, under `Current nonclaims`, still says no merge has occurred. That was a pre-PR snapshot, but the reviewed tree already contains merge `9a90c5fda46f7969cb4e90c6ab794a09ef5736b6` (#6563, 2026-09-09 11:05:46 +0800, verified with `git show --no-patch --format=fuller`). Labeling that sentence explicitly as the implementation-seat pre-PR state would avoid a stale current-status reading. This does not affect the theorem, proof, or freeze eligibility; no audited file was edited.
+
+The full 219-line progress report was read. Lines 16-18 and 121-124 expressly retain the `n>5040` hypothesis and unbounded natural exponents. Lines 88-98 distinguish the rational experiment from a Lean proof; lines 140-142 distinguish the simpler Lean tail certificate from the displayed crossing estimate. Lines 144-150 identify proof shape as author assessment, and lines 190-196 distinguish local EXIT 3 from EXIT 0 and `UTILITY-OBSERVED` from machine semantic classification. Lines 214-218 disavow novelty, search exhaustiveness, a Lean theorem for the crossing/count, and RH implications. The `{2,3,5,7}` family is not presented as general Robin, and no remaining numerical hypothesis is disguised as a proved unconditional conclusion.
+
+The progress report's two endpoint diagnostics were additionally checked using this worker's exact rational atanh-series remainder plus outward rounding. Own intervals are contained in the reported intervals:
+
+```
+n=10080:
+3956102379809343853/10^18 <= RHS <= 3956104753471483851/10^18
+sigma/n = 39/10 < lower endpoint
+n=5040:
+1908438329309823917/(5*10^17) <= RHS <= 3816878948746330059/10^18
+upper endpoint < sigma/n = 403/105
+```
+
+The five windows independently contain `71,89,103,121,98` values. Across all 482, this worker's minimum certified normalized margin is `56102379809343853/10^18` at 10080 (display `0.05610237980934385`); the implementation's nearby displayed last digit comes from its own lower approximation. Own tail RHS lower bound is `2196685681610766629/(5*10^17)`, agreeing with the reported display near `4.393371363221533`. These checks are in `mirror_numbers.py`/`mirror_numbers.json`, EXIT 0; no floating-point comparison determines acceptance.
+
+Historical implementation build/admission/selftest/emit logs were not replayed or independently read in this review; their exact past exits/timings remain `ASSUMED-UNVERIFIED` as historical statements. This review substitutes its own requested Make runs and current canonical report for the mathematical validation. External pages and search hits mentioned by that seat were not opened by this seat and remain `ASSUMED-UNVERIFIED`; their contents and literature completeness are not premises of this verdict.
+
+### Formula and Describe nodes
+
+Read all 65 lines of `Blueprint/D5/S3/Arith/Robin/SevenSmooth.scribe.cs` and all 26 lines of its emitted `.md`. There is exactly **one** `DescribeRole.Theorem` node, **zero** Proposition nodes and **zero** Lemma nodes. The theorem node has `StatementSource.FromAuthor(RobinFormula())` at `:16` and role Theorem at `:36`. Its handle at `:14` points to the sole public Lean theorem.
+
+Following the actual formula construction:
+
+- `:40-44`: `n = ((2^a * 3^b) * 5^c) * 7^d`, same association and bases as Lean.
+- `:45`: ratio is `sigma(1,n)/n`, not an integer quotient or a different arithmetic function; the prose identifies sigma(1,n) as the positive-divisor sum.
+- `:46-47`: RHS is `exp(eulerMascheroniConstant) * log(log(n))`, with exactly two logs.
+- `:48-55`: all four variables are universally bound in the natural numbers; the implication has antecedent `5040<n` and consequent strict `ratio<RHS`. No upper exponent bound or hidden certificate hypothesis is added or removed.
+- The emitted formula at `.md:9` matches this construction and `SevenSmooth.lean:170-174`. Natural-to-real coercions are suppressed in mathematical notation only; both comparison operands have the ordinary real interpretation.
+
+The surrounding Scribe paragraphs preserve the finite/tail split and private-enumeration status, and expressly deny any RH premise. Literal discovery/control receipt, followed by full source inspection:
+
+```
+rg -n '\bDescribeRole\.(Theorem|Proposition|Lemma)\b|\bStatementSource\.FromAuthor\b' Blueprint/D5/S3/Arith/Robin/SevenSmooth.scribe.cs
+# EXIT 0; 2 lines: FromAuthor at 16 and Theorem at 36
+```
+
+The positive result checks the same word-boundary and alternation features; the one-to-one node relationship is established by reading the constructor, not by counts alone. `make emit` was not run because this review must not modify Blueprint files. This is a check of the committed AST and emitted formula, not a new emitter freshness attestation.
+
+Push receipt for Q5: `f3078bb3bb`, EXIT 0. Q6 is the commit containing this completed section. `git diff --check` passed before final publication.
+
+## Conclusion
+
+```yaml
+verdict: approve
+blocking: []
+math_check:
+  strict_uniform_bound: pass (including exponent-zero cases)
+  threshold_direction_and_enclosure: pass (116141 < T < 116144 < 131072)
+  finite_completeness: pass (proved exponent box; own count 482)
+  piecewise_bounds: pass (71/89/322 cases, zero violations, 18 detailed samples)
+degenerate_point_check: pass (positive denominator and both log domains; no admitted degenerate point)
+proof_shape_independent: content
+admission_basis: escape-witness
+escape_witness_four_tests:
+  witness: small_values
+  elaborated_closure: pass
+  not_frozen_binding_or_normalization: pass
+  not_definitionally_equivalent_or_alias: pass
+  live_path_and_counterfactual: pass
+preregistration_verified: true
+preregistration_scope: adb94f9668 v2 precedes source implementation ca3b0e95c3; not all exploration
+utility_verdict:
+  kind: none
+  public_theorems: 1
+  private_theorems: 12
+  private_definitions: 3
+  private_authored_total: 15
+  authored_total: 16
+own_exit_codes:
+  make_lean: {exit: 0, seconds: 16.224060833}
+  make_lean_report: {exit: 0, seconds: 58.270924125}
+axioms_own_reading:
+  all_elaborated_declarations: 49
+  standard_three: 37
+  Quot.sound_and_propext: 10
+  propext_only: 2
+  outside_standard_three: 0
+sorryax_present: false
+mirror_check:
+  statement_faithful: true
+  theorem_nodes: 1
+  from_author_nodes: 1
+  nonblocking: progress.md:219 is a stale pre-PR merge-status sentence
+pushed:
+  branch: lane/math/robin-review-0909
+  commits:
+    - 7766d95416f5db216efa4e7c417d0e3177acfd6a  # Q1
+    - 9b7f11119fb2a472d70b0f800d75513d66443311  # Q2
+    - c8bdef184b8fa842e8db68e30598f607ff599a4c  # Q3
+    - 36d044821003aee9f82ce443f83538213e4e17af  # Q4
+    - f3078bb3bbd8b8ddf35b52fb993efbadf9703b61  # Q5
+    - self: the Q6 checkpoint containing this report; full SHA in ATTEMPT/result.json
+assumed_unverified:
+  - Historical implementation logs, exact model version, and external literature pages not opened by this seat
+  - Remote CI/admission of this review branch and fresh emitter execution were not requested or performed
+nonclaims:
+  - No proof of general Robin or RH, and no implication to or from RH
+  - No novelty or exhaustive library/web/proof-search claim
+  - No independent new formalization, freeze, deposit, cover, merge, or target-file edit
+  - No general-purpose machine proof-shape classifier or proof that all alternative bind-only proofs are impossible
+```
+
+The worker result envelope contains the same verdict with full structured evidence, samples, exact command exits, and the six actual pushed commit SHAs. Its publication occurs after the Q6 push, so it can record the last commit without a self-referential Git hash.
+
+## Nonclaims
+
+All six requested questions have been reviewed. This is an independent review of the fixed submitted statement and proof, with an offline arithmetic reconstruction and own Make verification. It does not extend the statement to primes beyond 7, assert RH, claim a freeze/merge of this report, or treat unread literature or historical carrier logs as independently established facts.
