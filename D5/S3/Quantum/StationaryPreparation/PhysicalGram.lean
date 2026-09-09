@@ -3,11 +3,12 @@
    mirror-B: D5/B/S3/Quantum/StationaryPreparation/PhysicalGram
    mirror-E: none(waiver:evidence-not-specified-by-formal-manifest)
    anchors: []
-   utility: none
+   utility: kind=certified-instance; basis=consumer=D5/S3/Quantum/StationaryPreparation/PhysicalGram.occupation_5040_stationary_minimum; instance=D5/S3/Quantum/Entanglement/CoherentHistorySchmidt.occupation5040; result=D5/S3/Quantum/StationaryPreparation/PhysicalGram.occupation_5040_stationary_minimum
    digest: Actual fixed-unitary residual memories yield a scaled Gram and the stationary memory dimension lower bound. -/
 
 import D5.S3.Quantum.StationaryGram.StationaryOccupationRankNullity
 import D5.S3.Quantum.Entanglement.SequentialRegisterCircuit
+import D5.S3.Quantum.StationaryPreparation.StationaryOccupationResidualStep
 import Mathlib.Analysis.InnerProductSpace.GramMatrix
 import Mathlib.Data.Finsupp.Multiset
 
@@ -340,4 +341,60 @@ theorem stationary_memory_dimension_lower_bound
       subst q
       exact hu0
     exact hlow.trans (hupp _)
+
+open D5.S3.Quantum.Entanglement.CoherentHistorySchmidt
+
+def stationaryMemoryDimensions (a : Multiset A) : Set ℕ :=
+  {d | ∃ (blank : A) (U : Unitary (A × Fin d)) (x f : Space (Fin d)),
+    ‖x‖ = 1 ∧ ‖f‖ = 1 ∧ ∀ (w : Fin a.card → A) (k : Fin d),
+      circuit (fun _ => U) a.card 0 (initialized blank a.card x) (w, k) =
+        sectorVector a.card a w * f k}
+
+theorem stationary_memory_dimension_isLeast [Nonempty A] (a : Multiset A) :
+    IsLeast (stationaryMemoryDimensions a)
+      ((∏ i, (a.count i + 1)) - Finset.univ.sup a.count) := by
+  refine ⟨StationaryOccupationResidualStep.stationary_memory_dimension_attained a, ?_⟩
+  rintro d ⟨blank, U, x, f, hx, hf, hout⟩
+  simpa using stationary_memory_dimension_lower_bound a blank U x f hx hf hout
+
+theorem zero_occupation_memory_isLeast [Nonempty A] :
+    IsLeast (stationaryMemoryDimensions (0 : Multiset A)) 1 := by
+  refine ⟨?_, ?_⟩
+  · refine ⟨Classical.arbitrary A, LinearIsometryEquiv.refl ℂ _, basis 0, basis 0,
+      (EuclideanSpace.basisFun _ ℂ).norm_eq_one _, (EuclideanSpace.basisFun _ ℂ).norm_eq_one _, ?_⟩
+    intro w k
+    change Fin 0 → A at w
+    change initialized (Classical.arbitrary A) 0 (basis (0 : Fin 1)) (w, k) =
+      sectorVector 0 (0 : Multiset A) w * basis (0 : Fin 1) k
+    rw [initialized_zero]
+    simp [sectorVector, Entanglement.OccupancyWordSectors.multiplicity, sectorWords,
+      occupation, Word, Subsingleton.elim w default]
+  · rintro d ⟨blank, U, x, f, hx, hf, hout⟩
+    exact Nat.succ_le_of_lt (by simpa using unit_memory_card_pos x hx)
+
+theorem occupation_5040_stationary_minimum :
+    occupation5040.card = 8 ∧ (sectorWords 8 occupation5040).card = 840 ∧
+    IsLeast (stationaryMemoryDimensions occupation5040) 56 ∧
+    ∃ (blank : Option (Fin 3)) (U : Unitary (Option (Fin 3) × Fin 56))
+      (x f : Space (Fin 56)), ‖x‖ = 1 ∧ ‖f‖ = 1 ∧
+      ∀ (w : Fin 8 → Option (Fin 3)) (k : Fin 56),
+        circuit (fun _ => U) 8 0 (initialized blank 8 x) (w, k) =
+          (if occupation w = occupation5040 then (Real.sqrt 840 : ℂ)⁻¹ else 0) * f k := by
+  have hm : multiplicity 8 occupation5040 = 840 := by
+    rw [multiplicity_eq_factorial _ occupation_5040_card]
+    norm_num [occupation5040, capacity_occupation_count, Fintype.prod_option,
+      tailCapacities5040, Fin.prod_univ_succ, Nat.factorial]
+  have hd : (∏ i, (occupation5040.count i + 1)) -
+      Finset.univ.sup occupation5040.count = 56 := by
+    simp only [occupation5040, capacity_occupation_count]
+    decide
+  have hmin := stationary_memory_dimension_isLeast occupation5040
+  rw [hd] at hmin
+  refine ⟨occupation_5040_card, hm, hmin, ?_⟩
+  obtain ⟨blank, U, x, f, hx, hf, hout⟩ := hmin.1
+  refine ⟨blank, U, x, f, hx, hf, ?_⟩
+  generalize hcard : occupation5040.card = n at hout
+  have hn : n = 8 := hcard.symm.trans occupation_5040_card
+  rw [hn] at hout
+  simpa [sectorVector, sectorWords, hm] using hout
 end D5.S3.Quantum.StationaryPreparation.PhysicalGram
