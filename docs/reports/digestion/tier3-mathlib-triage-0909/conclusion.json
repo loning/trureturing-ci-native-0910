@@ -2,8 +2,8 @@
   "verdict": "propose",
   "screened_count": 125,
   "by_tier": {
-    "A": 4,
-    "B": 36,
+    "A": 5,
+    "B": 35,
     "C": 85,
     "D": 0,
     "E": 0
@@ -193,6 +193,45 @@
           "probe": "Parity104",
           "exit": 0,
           "log": "logs/Parity104.log.gz"
+        }
+      ]
+    },
+    {
+      "atom_id": "bc9748938013e4b3c632bfa0e1257a59733df2e1682ed0a8a0d7a0dcc534ab2b",
+      "title": "## 定理 V3：相位修补增加一个正秩一项",
+      "bytes": 253,
+      "index": 105,
+      "tier": "A",
+      "claim": "上半平面 Blaschke 因子乘响应后，Pick 核等于给定正秩一项加原核合同。",
+      "reason": "对 p,z,w 在上半平面，linarith only 从虚部正性排除全部分母零；Complex.sub_conj 把 2*Im(p) 化为共轭差，随后 field_simp/ring 验证完整核恒等式。无 S 的额外分析前件；不主张实边界对角延拓。",
+      "mathlib": [
+        {
+          "declaration": "Complex.sub_conj",
+          "file": "Mathlib/Data/Complex/Basic.lean",
+          "line": 668
+        }
+      ],
+      "source_context": [
+        33180,
+        33270
+      ],
+      "probe": "Pick105",
+      "searches": [
+        "finite-geometry",
+        "toeplitz"
+      ],
+      "source_line": 33218,
+      "proof_shape": "bind-only",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": true,
+      "probe_exit": 0,
+      "probe_runs": [
+        {
+          "probe": "Pick105",
+          "exit": 0,
+          "log": "logs/Pick105.log.gz"
         }
       ]
     }
@@ -1047,38 +1086,6 @@
         "theta-analytic"
       ],
       "source_line": 3982,
-      "proof_shape": "not-assessed(no-complete-proof)",
-      "direct_frozen_dependencies": [],
-      "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)",
-      "probe_ran": false,
-      "probe_exit": null,
-      "probe_runs": []
-    },
-    {
-      "atom_id": "bc9748938013e4b3c632bfa0e1257a59733df2e1682ed0a8a0d7a0dcc534ab2b",
-      "title": "## 定理 V3：相位修补增加一个正秩一项",
-      "bytes": 253,
-      "index": 105,
-      "tier": "B",
-      "claim": "上半平面 Blaschke 因子乘响应后，Pick 核等于给定正秩一项加原核合同。",
-      "reason": "Complex.sub_conj 提供 2*Im(p) 的精确共轭代数式；待核实全部分母非零及完整有理核恒等式，当前未以形式通分猜测代替验证。",
-      "mathlib": [
-        {
-          "declaration": "Complex.sub_conj",
-          "file": "Mathlib/Data/Complex/Basic.lean",
-          "line": 668
-        }
-      ],
-      "source_context": [
-        33180,
-        33270
-      ],
-      "searches": [
-        "finite-geometry",
-        "toeplitz"
-      ],
-      "source_line": 33218,
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
@@ -3185,6 +3192,22 @@
       ],
       "archived_probe": "probes/Parity104.lean",
       "log_encoding": "gzip"
+    },
+    {
+      "probe": "Pick105",
+      "command": "make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Pick105.lean'",
+      "exit": 0,
+      "signal": null,
+      "log": "logs/Pick105.log.gz",
+      "started": "2026-09-09T05:28:53.801Z",
+      "atoms": [
+        "bc9748938013e4b3c632bfa0e1257a59733df2e1682ed0a8a0d7a0dcc534ab2b"
+      ],
+      "indices": [
+        105
+      ],
+      "archived_probe": "probes/Pick105.lean",
+      "log_encoding": "gzip"
     }
   ],
   "unscreened": [
@@ -4134,6 +4157,38 @@
       "exit": 0,
       "line_match_count": 1,
       "interpretation": "Filename search; matches count files."
+    },
+    {
+      "id": "sixth-topics",
+      "scope": "D5",
+      "program": "rg",
+      "args": [
+        "-n",
+        "-i",
+        "-P",
+        "(Borel.Cantelli|measure_limsup|ae_eventually|integral.*odd|Odd.*integral|path.*spectr|spectr.*path|laplacian.*path|path.*laplacian|charpoly.*conj|charpoly.*similar|integral_integral_swap|norm_sub_sq_real)",
+        "D5",
+        "-g",
+        "*.lean"
+      ],
+      "exit": 0,
+      "line_match_count": 52
+    },
+    {
+      "id": "sixth-topics",
+      "scope": ".lake/packages/mathlib/Mathlib",
+      "program": "rg",
+      "args": [
+        "-n",
+        "-i",
+        "-P",
+        "(Borel.Cantelli|measure_limsup|ae_eventually|integral.*odd|Odd.*integral|path.*spectr|spectr.*path|laplacian.*path|path.*laplacian|charpoly.*conj|charpoly.*similar|integral_integral_swap|norm_sub_sq_real)",
+        ".lake/packages/mathlib/Mathlib",
+        "-g",
+        "*.lean"
+      ],
+      "exit": 0,
+      "line_match_count": 120
     }
   ],
   "repository_leads": [
@@ -4169,7 +4224,8 @@
       "fcbe1bf4be3d38a2324acb6d7b392c46919c280b",
       "134dc1f58721e6c7555355cc0d7c6e2f29100376",
       "0bce26792dcc213354e1d279a96e52e44b711c98",
-      "43dc167e1f7ccfbb80f9edd18a5ca48bbc94a4d0"
+      "43dc167e1f7ccfbb80f9edd18a5ca48bbc94a4d0",
+      "f9334cdd41556baa415a2d3ccb369c7f248fee87"
     ],
     "branch": "lane/math/tier3-mathlib-triage-0909",
     "note": "Commits through the preceding checkpoint; final delivery envelope also records its containing report commit."

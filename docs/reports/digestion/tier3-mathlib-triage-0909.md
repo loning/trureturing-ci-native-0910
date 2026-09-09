@@ -54,7 +54,7 @@ pushed immediately, including failures. Report-only delivery: no PR.
 
 ## conclusion
 
-Screened: **125/150**. A=4, B=36, C=85, D=0, E=0.
+Screened: **125/150**. A=5, B=35, C=85, D=0, E=0.
 
 Structured result: [conclusion.json](tier3-mathlib-triage-0909/conclusion.json).
 Complete canonical atom reads (raw and normalized text, command, EXIT) are in `atoms-1.json` through `atoms-6.json` as collected. Reading ahead does not count as screening.
@@ -167,7 +167,7 @@ All Mathlib paths below are relative to `.lake/packages/mathlib/`. Every listed 
 | 102 | `b5821e42febe81b45815f8be9802ddafcf7daab5dc4c74e501b0e709ce3e6000` | 定理五：任意周期的解析分支次数 | C | 缺 prime-zeta 的 Möbius 延拓、实际占据分类系数 A_dj 的全纯性与路径继续的分支兼容。 | none claimed | not run | discrete-winding, theta-analytic |
 | 103 | `b664d8929116da6563cafcdddb7f6e7dc3b66a6fe434e807422ba82db9b83ee4` | 定理 E1：在正表示下，这是另一份正谱测度 | B | 积分加法与常数除法支持分式恒等式积分化；缺实际 Delta=-S(-4) 的端点绑定、z=-4 的可去解释及全阶 Laurent 系数/积分交换。 | `MeasureTheory.integral_add` (Mathlib/MeasureTheory/Integral/Bochner/Basic.lean:237); `MeasureTheory.integral_div` (Mathlib/MeasureTheory/Integral/Bochner/Basic.lean:295) | not run | fifth-reweighting, theta-analytic |
 | 104 | `b923baf16e3404ffc7143c8258cd778915ab93409a40512c8d156d065ed1f61a` | 定理：它们是否相容，由总指数奇偶决定 | A | ArithmeticFunction.cardFactors_mul 直接给 Omega(d)+Omega(N/d)=Omega(N)；pow_add 和 (-1)^2=1 规范化给算子在每个因数坐标的等式。探针量化任意 N,d&#124;N 及任意复波函数，没有枚举 5040。 | `ArithmeticFunction.cardFactors_mul` (Mathlib/NumberTheory/ArithmeticFunction/Misc.lean:290) | Parity104: 0 | fourth-bindings, fifth-reweighting |
-| 105 | `bc9748938013e4b3c632bfa0e1257a59733df2e1682ed0a8a0d7a0dcc534ab2b` | 定理 V3：相位修补增加一个正秩一项 | B | Complex.sub_conj 提供 2*Im(p) 的精确共轭代数式；待核实全部分母非零及完整有理核恒等式，当前未以形式通分猜测代替验证。 | `Complex.sub_conj` (Mathlib/Data/Complex/Basic.lean:668) | not run | finite-geometry, toeplitz |
+| 105 | `bc9748938013e4b3c632bfa0e1257a59733df2e1682ed0a8a0d7a0dcc534ab2b` | 定理 V3：相位修补增加一个正秩一项 | A | 对 p,z,w 在上半平面，linarith only 从虚部正性排除全部分母零；Complex.sub_conj 把 2*Im(p) 化为共轭差，随后 field_simp/ring 验证完整核恒等式。无 S 的额外分析前件；不主张实边界对角延拓。 | `Complex.sub_conj` (Mathlib/Data/Complex/Basic.lean:668) | Pick105: 0 | finite-geometry, toeplitz |
 | 106 | `bdbe4b53515757ce5b701ee375409970886fe1274ff51cca53692271e1f924bb` | 定理 Q4：实际 \(\mu_n\) 在正半轴严格递减 | C | 缺实际 theta 双模态积分的严格形状不等式与求导交换；普通 log-concavity API 未给该指定核结论。 | none claimed | not run | theta-analytic, gaussian-moments |
 | 107 | `bdc556a362036fbf086d0f5882d47613103ee99fa42cd1bf20d16e264b0b274a` | 定理 O1：\(\mathsf K\) 是迹类自伴算子 | C | 缺实际核的可求和秩一展开及迹理想范数控制；本地 TraceClass logging 命中已排除。 | none claimed | not run | negative-spectrum-refined, theta-analytic |
 | 108 | `be67399e40a50efabac4cb3841bc3a3b7bbb408e0954367e9f95efe2f390eede` | 定理 R2：实际两模态的局部高斯极限 | C | 缺双峰 Laplace 方法的统一尾控制、独立极限与矩一致可积性。 | none claimed | not run | gaussian-moments, theta-analytic |
@@ -199,6 +199,7 @@ Logs ending in `.gz` are losslessly compressed complete stdout/stderr, including
 - Schur89: `make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Schur89.lean'`; EXIT=0; [log](tier3-mathlib-triage-0909/logs/Schur89.log.gz); atoms 937abccd3570503c88aaac8b088e687e6f79db29ca9f67f887b72a028bd4f866.
 - Disk90-v2: `make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Disk90-v2.lean'`; EXIT=0; [log](tier3-mathlib-triage-0909/logs/Disk90-v2.log.gz); atoms 96902e5b1d0b9ac78c37f6c1f75fd1d5043bfd6c18f5e2451352b6fbc6977b46.
 - Parity104: `make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Parity104.lean'`; EXIT=0; [log](tier3-mathlib-triage-0909/logs/Parity104.log.gz); atoms b923baf16e3404ffc7143c8258cd778915ab93409a40512c8d156d065ed1f61a.
+- Pick105: `make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Pick105.lean'`; EXIT=0; [log](tier3-mathlib-triage-0909/logs/Pick105.log.gz); atoms bc9748938013e4b3c632bfa0e1257a59733df2e1682ed0a8a0d7a0dcc534ab2b.
 
 ## search_receipts
 
@@ -264,6 +265,8 @@ Full commands and untruncated hits: [search-receipts.json](tier3-mathlib-triage-
 | frozen-path-positive | Golden/Frozen/state | `rg '--files' 'Golden/Frozen/state' '-g' '*MatrixTracePowerSum*'` | 1 | 0 |
 | frozen-path-negative | Golden/Frozen/state | `rg '--files' 'Golden/Frozen/state' '-g' '*TriageMissing0909*'` | 0 | 1 |
 | frozen-jensen-path | Golden/Frozen/state | `rg '--files' 'Golden/Frozen/state' '-g' '*NormalizedJensenDegreeLowering*'` | 1 | 0 |
+| sixth-topics | D5 | `rg '-n' '-i' '-P' '(Borel.Cantelli|measure_limsup|ae_eventually|integral.*odd|Odd.*integral|path.*spectr|spectr.*path|laplacian.*path|path.*laplacian|charpoly.*conj|charpoly.*similar|integral_integral_swap|norm_sub_sq_real)' 'D5' '-g' '*.lean'` | 52 | 0 |
+| sixth-topics | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '(Borel.Cantelli|measure_limsup|ae_eventually|integral.*odd|Odd.*integral|path.*spectr|spectr.*path|laplacian.*path|path.*laplacian|charpoly.*conj|charpoly.*similar|integral_integral_swap|norm_sub_sq_real)' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 120 | 0 |
 
 The positive and negative controls share case-insensitivity, alternation, word boundaries and whitespace matching. The initial `negative-spectrum` query matched `registerTraceClass` (logging infrastructure); the refined word-boundary query excludes this false positive. Generic Caratheodory measure hits are not Toeplitz spectral theorems.
 
@@ -311,6 +314,7 @@ Frozen state JSON stores only `statement_id`; module names must be located throu
 - `134dc1f58721e6c7555355cc0d7c6e2f29100376`
 - `0bce26792dcc213354e1d279a96e52e44b711c98`
 - `43dc167e1f7ccfbb80f9edd18a5ca48bbc94a4d0`
+- `f9334cdd41556baa415a2d3ccb369c7f248fee87`
 
 Every listed checkpoint was pushed successfully. The final runner envelope includes the commit containing this final report (a commit cannot contain its own hash).
 
