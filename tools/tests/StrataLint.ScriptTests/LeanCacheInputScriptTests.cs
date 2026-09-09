@@ -37,6 +37,8 @@ public sealed class LeanCacheInputScriptTests
     [InlineData("test_report_snapshot_keeps_only_current_complete_seed")]
     [InlineData("test_report_snapshot_rejects_invalid_current_without_using_history")]
     [InlineData("test_report_staging_and_restore_validate_independently")]
+    [InlineData("test_report_export_requires_matching_handoff")]
+    [InlineData("test_report_export_does_not_revalidate")]
     public void SnapshotReadinessAndMaterialRespectWriterPermissions(string behavior)
     {
         if (OperatingSystem.IsWindows()) return;

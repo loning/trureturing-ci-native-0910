@@ -286,12 +286,115 @@ output.write_text('''))
     def produce_report(self, fixture):
         result = fixture.pair()
         self.assertEqual(0, result.returncode, result.stdout + result.stderr)
-        summary = self.root / "build/ci/current-result.json"
-        summary.parent.mkdir(parents=True, exist_ok=True)
-        summary.write_text(json.dumps({"stage": "current", "exit": 0,
-            "report": fixture.output.relative_to(self.root).as_posix()}))
+        # Synthetic current/pack evidence for the export consumer. Fake Lake is
+        # the statement producer; this fixture does not claim a real current run.
+        (self.root / ".gitignore").write_text("*\n")
+        for args in (("init", "-q"), ("add", "-f", ".gitignore", "D5", "Trureturing.lean",
+                     "lakefile.toml", "lake-manifest.json", "lean-toolchain"),
+                     ("-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "candidate")):
+            subprocess.run(["git", "-C", str(self.root), *args], check=True, capture_output=True)
+        self.env.update(CANDIDATE_SHA=subprocess.check_output(
+            ["git", "-C", str(self.root), "rev-parse", "HEAD"], text=True).strip(), GITHUB_REPOSITORY="fixture/trureturing")
+        self.write_handoff(fixture)
         return next(seed for seed in fixture.seeds()
                     if fixture.bundle_bytes(seed)[".seed.json"] == fixture.bundle_bytes(fixture.output)[".seed.json"])
+
+    def write_handoff(self, fixture):
+        summary = self.root / "build/ci/current-result.json"
+        summary.parent.mkdir(parents=True, exist_ok=True)
+        candidate, round_id = "e" * 64, "fixture-current-round"
+        summary.write_text(json.dumps({"stage": "current", "exit": 0, "candidate": candidate,
+            "current_evidence": "build/ci/current.json",
+            "report": fixture.output.relative_to(self.root).as_posix()}))
+        paths = [str(fixture.output.relative_to(self.root)) + suffix for suffix in
+                 ("", ".sha256", ".input.attestation", ".provenance.json", ".materials.zip", ".seed.json")]
+        def materials(paths):
+            return [{"path": path, "sha256": hashlib.sha256((self.root / path).read_bytes()).hexdigest()}
+                    for path in sorted(paths)]
+        current = self.root / "build/ci/current.json"
+        current.write_text(json.dumps({"version": 1, "candidate": candidate, "round": round_id,
+            "steps": [{"name": name, "raw_exit": 0, "exit": 0, "status": "executed", "log": "build/ci/fixture.log"}
+                      for name in ("lean-report", "scribe", "filemap", "check-current")], "materials": materials(paths)}))
+        (self.root / "build/ci/transport.json").write_text(json.dumps({"version": 1, "stage": "current",
+            "candidate": candidate, "round": round_id, "commit": self.env["CANDIDATE_SHA"],
+            "run_id": int(self.env["GITHUB_RUN_ID"]), "run_attempt": int(self.env["GITHUB_RUN_ATTEMPT"]),
+            "repository": self.env["GITHUB_REPOSITORY"], "materials": [dict(item,
+                mode=(self.root / item["path"]).stat().st_mode & 0o777) for item in
+                materials(paths + ["build/ci/current.json", "build/ci/current-result.json"])]}))
+
+    def test_report_export_requires_matching_handoff(self):
+        fixture = self.prepare_report()
+        self.produce_report(fixture)
+        self.assertEqual("true", self.snapshot_result()[0]["report_ready"])
+        manifest = self.root / "build/lean-cache/report/manifest.json"
+        saved = manifest.read_bytes()
+        paths = [self.root / "build/ci" / name for name in ("current-result.json", "current.json", "transport.json")]
+        original = [path.read_bytes() for path in paths]
+        cases = ("missing-current", "missing-transport", "current-bytes", "summary-bytes", "candidate", "round",
+                 "commit", "run_id", "run_attempt", "repository", "stage", "missing-binding", "material-binding",
+                 "current-candidate", "current-round", "current-material")
+        for case in cases:
+            with self.subTest(case=case):
+                if case == "missing-current": paths[1].unlink()
+                elif case == "missing-transport": paths[2].unlink()
+                elif case == "current-bytes": paths[1].write_bytes(original[1] + b" ")
+                elif case == "summary-bytes": paths[0].write_bytes(original[0] + b" ")
+                else:
+                    transport = json.loads(original[2])
+                    if case.startswith("current-"):
+                        current = json.loads(original[1])
+                        if case == "current-material": current["materials"][0]["sha256"] = "0" * 64
+                        else: current[case.removeprefix("current-")] = "stale"
+                        paths[1].write_text(json.dumps(current))
+                        for item in transport["materials"]:
+                            if item["path"] == "build/ci/current.json":
+                                item["sha256"] = hashlib.sha256(paths[1].read_bytes()).hexdigest()
+                    elif case == "missing-binding": transport["materials"] = transport["materials"][1:]
+                    elif case == "material-binding": transport["materials"][-1]["sha256"] = "0" * 64
+                    else: transport[case] = 99 if case in ("run_id", "run_attempt") else "stale"
+                    paths[2].write_text(json.dumps(transport))
+                readiness, receipts = self.snapshot_result()
+                self.assertEqual("false", readiness["report_ready"], receipts)
+                self.assertEqual("save-failed", receipts["report"]["status"])
+                self.assertEqual(saved, manifest.read_bytes())
+                self.assertFalse(list(manifest.parent.parent.glob(".snapshot-*")))
+            for path, data in zip(paths, original): path.write_bytes(data)
+
+    def test_report_export_does_not_revalidate(self):
+        fixture = self.prepare_report()
+        self.produce_report(fixture)
+        hooks = self.root / "export-hooks"
+        hooks.mkdir()
+        (hooks / "sitecustomize.py").write_text('''
+import atexit, collections, json, os, pathlib, subprocess, sys
+counts = collections.Counter()
+processes = []
+def observe(frame, event, arg):
+    if event == "call":
+        file, name = pathlib.Path(frame.f_code.co_filename).name, frame.f_code.co_name
+        if (file == "delta.py" and name in ("valid_bundle", "parse_json_modules", "validate_materials")
+                or file == "zipfile.py" and name == "read"):
+            counts[name] += 1
+sys.setprofile(observe)
+start = subprocess.Popen
+def process(command, *args, **kwargs):
+    processes.append(command)
+    return start(command, *args, **kwargs)
+subprocess.Popen = process
+def finish():
+    sys.setprofile(None)
+    with open(os.environ["EXPORT_OBSERVATIONS"], "a") as stream:
+        stream.write(json.dumps({"counts": dict(counts), "processes": processes}) + "\\n")
+atexit.register(finish)
+''')
+        observations = self.root / "export-observations.jsonl"
+        with mock.patch.dict(self.env, PYTHONPATH=str(hooks), EXPORT_OBSERVATIONS=str(observations)):
+            readiness, receipts = self.snapshot_result()
+        self.assertEqual("true", readiness["report_ready"], receipts)
+        recorded = [json.loads(line) for line in observations.read_text().splitlines()]
+        print("REPORT_EXPORT_CALLS " + json.dumps(recorded), flush=True)
+        self.assertEqual({}, {key: value for row in recorded for key, value in row["counts"].items()})
+        self.assertTrue(all(pathlib.Path(command[0]).name == "git" for row in recorded for command in row["processes"]), recorded)
 
     def test_report_snapshot_keeps_only_current_complete_seed(self):
         from argparse import Namespace
@@ -377,7 +480,8 @@ output.write_text('''))
         bundle = fixture.bundle_bytes(fixture.output)
         summary = self.root / "build/ci/current-result.json"
         original_summary = summary.read_bytes()
-        cases = ["missing-summary", "failed-current", "missing-report", "missing-seed", "materials", "partition", "identity"]
+        cases = ["missing-summary", "failed-current", "missing-report", "missing-seed", "materials", "partition", "identity",
+                 "sha", "bound-sha", "bound-sha-name", "missing-sha", "missing-attestation", "missing-provenance", "missing-materials"]
         for case in cases:
             with self.subTest(case=case):
                 if case == "missing-summary": summary.unlink()
@@ -388,6 +492,17 @@ output.write_text('''))
                         "report": fixture.output.relative_to(self.root).as_posix()}))
                 elif case == "missing-report": fixture.output.unlink()
                 elif case == "missing-seed": pathlib.Path(str(fixture.output) + ".seed.json").unlink()
+                elif case in ("sha", "bound-sha", "bound-sha-name"):
+                    value = "0" * 64 + "  " + fixture.output.name + "\n"
+                    if case == "bound-sha-name": value = hashlib.sha256(bundle[""]).hexdigest() + "  wrong-name.json\n"
+                    pathlib.Path(str(fixture.output) + ".sha256").write_text(value)
+                    # Current's material seal alone does not replace the original
+                    # SHA sidecar grammar/digest check before copy rewrites it.
+                    if case.startswith("bound-"): self.write_handoff(fixture)
+                elif case.startswith("missing-"):
+                    suffix = {"missing-sha": ".sha256", "missing-attestation": ".input.attestation",
+                              "missing-provenance": ".provenance.json", "missing-materials": ".materials.zip"}[case]
+                    pathlib.Path(str(fixture.output) + suffix).unlink()
                 elif case == "materials": pathlib.Path(str(fixture.output) + ".materials.zip").write_bytes(b"corrupt")
                 elif case == "partition":
                     seed = json.loads(bundle[".seed.json"])
@@ -402,6 +517,7 @@ output.write_text('''))
                 fixture.write_bundle_bytes(fixture.output, bundle)
                 summary.write_bytes(original_summary)
                 (self.root / "D5/A.lean").write_text("def a := 1\n")
+                self.write_handoff(fixture)
         self.assertEqual(bundle[".materials.zip"], fixture.bundle_bytes(current)[".materials.zip"])
 
     def test_report_staging_and_restore_validate_independently(self):
@@ -617,6 +733,8 @@ shutil.copyfile = damaged
     def test_snapshot_readiness_and_material_follow_writer_permissions(self):
         fixture = self.prepare_report()
         current = self.produce_report(fixture)
+        self.env.update(GITHUB_RUN_ID="34362630774", GITHUB_RUN_ATTEMPT="1")
+        self.write_handoff(fixture)
         material = {
             "dependency": (".lake/packages", "mathlib/Mathlib.olean", b"private dependency seed\n"),
             "project": (".lake/build", "lib/Module.olean", b"private project seed\n"),
