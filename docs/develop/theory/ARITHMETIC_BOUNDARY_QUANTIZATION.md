@@ -1545,3 +1545,388 @@ make ingest BASE=ba80db594e632ae67aad496a3d68bab506769478 SOURCE=arithmetic-boun
 本次无 CPU/GPU 候选搜索,不重跑 xi、5040 或人工网格实验,不修改既有报告、数值证据、工具、测试套件、其它理论、形式根或冻结状态。一般真实素数 \(k\ge3\) 仍 **OPEN**;未将另行进行的 primary follow-up 结论纳入本增量。反驳本结算须在完整二点域内给出 \(D>\Psi_2\),或在无等坐标角点时给出等号;真实二素数域中经精确匹配证书认证的 \(U_{\rm dual}\ge U_{\rm var}\) 也会反驳严格推论,只有一个实际薄层角点的例子不在定理域内。
 
 这关闭的是一个二坐标参数族的纸面比较,不产生新的 Robin 有限证书或无限整数覆盖,也不完成长期研究目标。I5/I6 组合源的独立复审、CI 三门和 PR MERGED 落地仍由 caller 承担;本次实施不声明这些义务已履行,也不为已解决的二素数比较安排 GPU 搜索。
+
+## 24. 实际下端角点可行时的全维条件占优
+
+**24.1 状态与精确问题域。** 本节是 2026-09-09 的 S12 后续结算,状态为 **PAPER_ARGUMENT / repo-derived 参考输入**。沿用第 15-23 节的函数、平方偏差之和及预算约定。第 22-23 节的二坐标全域结算、第 21 节的人工实数网格反例和所有历史记录保持有效;一般真实素数 \(k\ge3\) 的无条件比较仍 **OPEN**。GH 仍只有第 1 节的工作 RH 解释,不另造 GH 定义,不主张 RH 进展、全球新颖性或 Lean 冻结。
+
+取整数 \(k\ge2\),每行恰为正实二点网格
+
+\[
+C_i=\{c_i,d_i\},\qquad 0<c_i<d_i<\infty\quad(1\le i\le k),
+\qquad -\infty<M_0<M_1<\infty.
+\]
+
+要求至少两个不同的**实际角点**属于闭端点、严格正宽度的薄层
+
+\[
+\mathcal C=\left\{x\in\prod_{i=1}^k C_i:
+M_0\le\sum_i x_i\le M_1\right\},\qquad |\mathcal C|\ge2.
+\]
+
+不同角点的坐标和可以相等,不能用两个混合分布或两个满足期望预算的点替代这个计数要求。所有对数为自然对数,定义
+
+\[
+f(x)=\log(1-e^{-x})\quad(x>0),\qquad
+\mu_0=M_0/k,\quad \mu=M_1/k,\quad I=[\mu_0,\mu],
+\]
+\[
+\eta_i=\operatorname{dist}(I,C_i)
+=\min_{u\in I,\,x\in C_i}|u-x|,\qquad V_0=\sum_i\eta_i^2,
+\]
+\[
+D(M_1)=\inf_{\lambda\ge0}\left\{\lambda M_1+
+\sum_i\max_{x\in C_i}[f(x)-\lambda x]\right\}.
+\]
+
+对 \(m>0,0\le V<k(k-1)m^2\),始终使用
+
+\[
+r=\sqrt{\frac{V}{k(k-1)}},\qquad
+\Psi_k(m,V)=f(m+(k-1)r)+(k-1)f(m-r).
+\]
+
+这里 \(V\) 不是平均方差 \(V/k\);\(M_i\) 是坐标和预算,不是未平移的素数指数预算。
+
+**24.2 条件定理与存在量词。** 在 24.1 的完整域中,进一步假设:**存在某个最优且真正分数的基本解,它对应的实际下端角点属于 \(\mathcal C\)**。更明确地,24.4 的 LP 有一个最优基本解,唯一真正分数行为 \(j\),其上端点权重 \(\theta\in(0,1)\),其它行固定在实际端点 \(t_i\in C_i\)。该解预算饱和,写成
+
+\[
+z=(1-\theta)c_j+\theta d_j=\mu+s\in(c_j,d_j),
+\qquad z+\sum_{i\ne j}t_i=k\mu,
+\]
+\[
+x^-=(c_j,t_{-j}),\qquad M_0\le\sum_i x_i^-<M_1.
+\]
+
+则
+
+\[
+\mu>0,\qquad 0\le V_0<k(k-1)\mu^2,\qquad
+\boxed{D(M_1)<\Psi_k(\mu,V_0)}.
+\]
+
+只需能选到**一个**满足附加条件的最优基本解,不要求每个最优解或每个最优基本解都满足,也不要求预先固定的并列排序恰好选到它。对 \(k\ge3\),不从 \(|\mathcal C|\ge2\) 推出这项附加条件。在真正分数分支中,\(x^-\in\mathcal C\) 本身已保证非空;下述证明不再另用两个角点的计数,但定理保留原问题的完整计数假设。
+
+### 定义域、基本解与未使用分数假设的边界
+
+**24.3 正定义域与单调性。** 取任一实际 \(x\in\mathcal C\),令 \(m=\sum_i x_i/k\in I\)、\(V(x)=\sum_i(x_i-m)^2\)。正坐标且 \(k\ge2\) 给出
+
+\[
+0\le V_0\le V(x)=\sum_i x_i^2-km^2
+<(\sum_i x_i)^2-km^2=k(k-1)m^2\le k(k-1)\mu^2.
+\]
+
+故 \(\mu\ge m>0\),不额外要求 \(\mu_0>0\)。第 15 节的包络以及第 16 节的均值严格递增、方差严格递减性均在这个正定义域内使用。方差比较包括零端点:在正方差区间严格递减并于零连续,所以 \(0\le V_a<V_b<k(k-1)m^2\) 仍给出 \(\Psi_k(m,V_b)<\Psi_k(m,V_a)\)。
+
+**24.4 精确 LP、并列与期望预算。** 置 \(h_i=d_i-c_i>0\)、\(\Delta_i=f(d_i)-f(c_i)>0\)、\(\rho_i=\Delta_i/h_i>0\)、\(R=M_1-\sum_i c_i\ge0\)。按第 18 节已证的逐项弱对偶与匹配乘子机制,有达到的精确值
+
+\[
+D(M_1)=\max_{\substack{0\le\alpha_i\le1\\\sum_i h_i\alpha_i\le R}}
+\sum_i[f(c_i)+\alpha_i\Delta_i].
+\]
+
+可行域非空且紧,故存在最优基本解。基本解至多一行真正分数:若两行都严格处于 \((0,1)\),沿保持 \(\sum_i h_i\alpha_i\) 的非零双向微扰仍可行,该点便不是极点。若预算未饱和而存在分数行,单行双向小扰动也排除极点;更强地,由于每个 \(\Delta_i>0\),任何有预算松弛且未全满的点都不是最优。因而真正分数的最优解必预算饱和,而 \(R\ge\sum_i h_i\) 时全上端点是唯一最优解。
+
+按 \(\rho_i\) 非增填充、并列时任意固定排序,给出至多一行分数的匹配证书。对定理选出的其它最优分数基本解也可直接匹配:预算中性的两行交换说明,每个已满行满足 \(\rho_i\ge\rho_j\),每个空行满足 \(\rho_i\le\rho_j\),否则向密度更高行转移一小份预算会严格增加目标。因此 \(\lambda_* =\rho_j>0\) 使逐行价格最大值与该解匹配,精确达到 \(D(M_1)\)。密度并列不破坏这些非严格符号;并列的非基本最优解可能有多行分数,不把它们强行写成唯一分数行。
+
+该 LP 的约束是**期望**坐标和不超过 \(M_1\),没有施加下预算 \(M_0\)。在定理的真正分数解中,实际两支撑角点满足
+
+\[
+M^-:=\sum_i x_i^-=M_1-\theta h_j<M_1,
+\qquad M^+:=d_j+\sum_{i\ne j}t_i=M_1+(1-\theta)h_j>M_1.
+\]
+
+附加条件只使下角点 \(M^-\ge M_0\);上角点依然违反实际上预算。不能把期望可行说成整个支撑逐点可行。\(R=0\) 时唯一可行角点为全下端点,与至少两个实际薄层角点不相容,仍有 \(\lambda_*\ge\max_i\rho_i\) 的退化匹配证书。
+
+**24.5 整数最优解与 inactive budget 分列。** 若选择到整数最优基本解 \(x^*\),预算饱和时它的和为 \(M_1\),故确在薄层内。若预算覆盖全箱,正增益使 \(x^*=(d_1,\ldots,d_k)\) 唯一最优,它的和不超过 \(M_1\),又不小于任一已有薄层角点的和,故也至少为 \(M_0\)。令 \(m^*=\sum_i x_i^*/k\)、\(V_{\rm int}=\sum_i(x_i^*-m^*)^2\),则
+
+\[
+D(M_1)=\sum_i f(x_i^*)\le\Psi_k(m^*,V_{\rm int})
+\le\Psi_k(\mu,V_{\rm int})\le\Psi_k(\mu,V_0).
+\]
+
+这一路先增均值、再减方差,由实际角点保证 \(V_0\le V_{\rm int}\),全程正定义域有效,无需附加下角点假设。若 \(M_1>\sum_i d_i\),预算严格不活跃,取 \(\lambda_*=0\),且 \(m^*<\mu\) 使最终比较严格;不存在真正分数的最优解。\(M_1=\sum_i d_i\) 时仍取 \(\lambda_*=0\),但预算饱和,不称为严格松弛。
+
+饱和的整数分支若不全等,存在 \(x_i^*<\mu\)。严格宽度 \(\mu_0<\mu\) 使
+\(\eta_i\le\max(\mu_0-x_i^*,0)<\mu-x_i^*\),其它行 \(\eta_l\le|x_l^*-\mu|\),从而 \(V_0<V_{\rm int}\),比较仍严格。只有全等角点 \(x^*=\mu\mathbf1\) 可以取等:此时 \(V_0=0\),任意 LP 混合的逐行 Jensen 与总均值 Jensen 给出目标至多 \(kf(\mu)\),该角点达到它。这是整数分支的边界说明,不能把整数解称为满足 24.2 的真正分数解。
+
+### Hermite 工具与真正分数分支
+
+**24.6 有限支撑上的二次上界。** 对参考矩 \(0<V<k(k-1)\mu^2\),令 \(L=\mu-\sqrt{V/[k(k-1)]}>0\)、\(H=\mu+\sqrt{(k-1)V/k}>L\)。取
+
+\[
+P(x)=f(L)+f'(L)(x-L)+a(x-L)^2,\qquad
+a=\frac{f(H)-f(L)-f'(L)(H-L)}{(H-L)^2}<0.
+\]
+
+负号由 \(f''<0\) 得到。第 15 节的 Rolle/Hermite 余项及 \(f'''(x)>0\) 给出
+
+\[
+f(x)-P(x)=\frac{f'''(\xi)}6(x-L)^2(x-H)\le0
+\qquad(0<x\le H),
+\]
+
+节点上差为零,其余点的 \(\xi\) 位于 \(x,L,H\) 张成的正实区间内。特别是 \(0<x<L\) 仍合法;不在 \(x>H\) 使用这个上界。
+
+若 \(\mathcal M\) 是正支撑不超过 \(H\) 的有限非负加权和,满足 \(\mathcal M(1)=k\)、\(\mathcal M(x)=k\mu\)、\(\mathcal M((x-\mu)^2)=V_{\mathcal M}\),则与原型 \((H,L,\ldots,L)\) 比较得到
+
+\[
+\mathcal M(f)\le\mathcal M(P)
+=\Psi_k(\mu,V)+a(V_{\mathcal M}-V).
+\]
+
+因此 \(V_{\mathcal M}\ge V\) 时,因 \(a<0\),右边**不超过** \(\Psi_k(\mu,V)\)。质量是 \(k\),不是 1;不能把有多个加权支撑的对象未经矩核对直接当成 \(k\) 个实际坐标。此式只需参考矩 \(V\) 的正定义域,没有对 \(\Psi_k(\mu,V_{\mathcal M})\) 作求值要求。
+
+**24.7 均值向量已满足方差下界。** 以下固定 24.2 存在的那个最优解,写 \(c=c_j,d=d_j\),并置
+
+\[
+y_j=z=\mu+s,\quad y_i=t_i\ (i\ne j),\qquad
+W=\sum_{i\ne j}(t_i-\mu)^2,\quad
+\overline V=\sum_i(y_i-\mu)^2=s^2+W.
+\]
+
+所有 \(y_i>0\),均值为 \(\mu\),故 \(\overline V<k(k-1)\mu^2\)。这是均值向量的平方偏差,不是原混合的中心二阶矩;后者为 \(\overline V+\theta(1-\theta)h_j^2\)。若 \(\overline V\ge V_0\),真正分数行的严格凹性与第 15 节给出
+
+\[
+D(M_1)=(1-\theta)f(c)+\theta f(d)+\sum_{i\ne j}f(t_i)
+<\sum_i f(y_i)\le\Psi_k(\mu,\overline V)\le\Psi_k(\mu,V_0).
+\]
+
+这包括 \(\overline V=V_0\)、\(V_0=0\) 及 \(\overline V=V_0=0\)。严格性来自 \(c<d\)、\(0<\theta<1\),无需非零方差,也不使用退化的 Hermite 插值或除以零距离。
+
+**24.8 剩余域中的实际下角点约束与内点正性。** 只余 \(\overline V<V_0\),令 \(v=\eta_j\)。其它行都是实际端点且 \(\mu\in I\),故
+
+\[
+s^2+W<V_0=v^2+\sum_{i\ne j}\eta_i^2\le v^2+W,
+\qquad v>|s|\ge0.
+\]
+
+于是 \(c,d\) 都不在 \(I\)。若 \(d<\mu_0\),则 \(\mu-z>\mu-d\ge\mu_0-d=v\);若 \(c>\mu\),则 \(z-\mu>c-\mu=v\),都矛盾。因此
+
+\[
+c<\mu_0<\mu<d,\qquad v=\min(\mu_0-c,d-\mu)>0.
+\]
+
+实际下角点的下预算给出 \(k\mu_0\le c+\sum_{i\ne j}t_i=k\mu+c-z\),从而
+
+\[
+kv\le k(\mu_0-c)\le(k-1)(\mu-c)-s.
+\]
+
+令 \(n=k-1\ge1\),以及
+
+\[
+A=\frac{kv+s}{n},\qquad c'=\mu-A,\qquad d'=\mu+v.
+\]
+
+上述不等式给出 \(c'\ge c>0\),而 \(d'\le d\)。又
+
+\[
+z-c'=\frac{k(v+s)}{n}>0,\quad d'-z=v-s>0,
+\quad (\mu-v)-c'=\frac{v+s}{n}>0.
+\]
+
+因此完整支撑关系为
+
+\[
+0<c\le c'<\mu-v<z<\mu+v=d'\le d.
+\]
+
+令 \(q\) 为原 \((c,f(c)),(d,f(d))\) 的仿射割线。凹性保证任意收缩到内部子区间且保持均值 \(z\) 的混合,其目标至少为 \(q(z)\)。收缩到对称点 \(\mu-v,\mu+v\) 时严格提高:左端 \(\mu-v\in(c,d)\),\(f(\mu-v)>q(\mu-v)\),且其权重 \((v-s)/(2v)>0\)。收缩到 \(c',d'\) 只需弱提高即可。所有这些点均是**解析上界工具**,不宣称属于原二点网格或构成新的实际可行配置。
+
+**24.9 非集中距离域。** 若 \(v^2\le(k-1)V_0/k\),在分数行用对称支撑 \(\mu-v,\mu+v\),上端点权重 \(\alpha=(v+s)/(2v)\in(0,1)\),其它行保留原 \(t_i\)。对应加权和 \(\mathcal M_0\) 满足
+
+\[
+D(M_1)<\mathcal M_0(f),\qquad
+\mathcal M_0(1)=k,\quad \mathcal M_0(x)=k\mu,\quad
+\mathcal M_0((x-\mu)^2)=W+v^2\ge V_0.
+\]
+
+此域 \(V_0>0\),令 \(L_0=\mu-\sqrt{V_0/[k(k-1)]}>0\)、\(H_0=\mu+\sqrt{(k-1)V_0/k}\)。对原均值向量的零和偏差作 Cauchy-Schwarz,逐项得到
+
+\[
+|y_i-\mu|^2\le\frac{k-1}{k}\overline V
+<\frac{k-1}{k}V_0.
+\]
+
+故每个固定支撑 \(t_i<H_0\),而 \(\mu+v\le H_0\);正性已由 24.8 保证。用 24.6 在参考矩 \(V_0\) 的多项式 \(P_0\) 及其 \(a_0<0\),得到
+
+\[
+D(M_1)<\mathcal M_0(f)\le\mathcal M_0(P_0)
+=\Psi_k(\mu,V_0)+a_0(W+v^2-V_0)\le\Psi_k(\mu,V_0).
+\]
+
+阈值 \(v^2=(k-1)V_0/k\)、矩相等 \(W+v^2=V_0\) 及高节点上的支撑均包括在内;第一步的严格割线提升不消失。
+
+### 集中距离域的两个完整证明与矩公式勘正
+
+**24.10 先平均固定行并保持原来的 \(V_0\)。** 现在设 \(v^2>(k-1)V_0/k\)。因为 \(\sum_{i\ne j}(t_i-\mu)=-s\),固定行的算术平均为
+
+\[
+t=\frac1n\sum_{i\ne j}t_i=\mu-\frac{s}{n}>0,
+\qquad \sum_{i\ne j}f(t_i)\le n f(t).
+\]
+
+严格凹性使等号恰在原固定行全相等时成立;\(n=1\) 时这一步恒等。再将分数行收缩到 \(c',d'\),保持其均值 \(z\)。新上端点权重精确为
+
+\[
+\theta'=\frac{A+s}{A+v}
+=\frac{k(v+s)}{(2k-1)v+s}\in(0,1).
+\]
+
+分母正,且 \(1-\theta'=(v-s)/(A+v)>0\)。两步都给目标的合法上界:
+
+\[
+D(M_1)\le(1-\theta')f(c')+\theta'f(d')+n f(t)=:\mathcal M_*(f).
+\]
+
+平均后的 \(t\) 与内侧端点是解析替代点,不是原离散配置。**\(V_0\) 从始至终仍是原 \(I,C_1,\ldots,C_k\) 的距离平方和**,不对平均行重建网格,不重算或换掉距离证书。
+
+**24.11 被拒绝的 caller 矩公式及正确方向。** 本任务早先 caller prompt 提出的行矩
+
+\[
+\frac{kv^2+2vs-(k-2)s^2}{k-1}
+\]
+
+是错误公式,已在任何源实施之前被主数学论证拒绝;它不是本卷已合入定理的撤回。正确的中心二阶矩由均值为 \(s\) 的两支撑 \(-A,v\) 直接算出:
+
+\[
+(1-\theta')A^2+\theta'v^2
+=Av+s(v-A)
+=\frac{kv^2-s^2}{k-1}.
+\]
+
+两个候选表达式之差为 \([2vs-(k-3)s^2]/(k-1)\),不是恒等于零;不能沿用被拒绝公式的符号担忧。平均固定行的中心二阶矩为 \(n(t-\mu)^2=s^2/n\),所以
+
+\[
+\mathcal M_*(1)=k,\qquad \mathcal M_*(x)=z+nt=k\mu,
+\qquad \mathcal M_*((x-\mu)^2)=\frac{kv^2}{k-1}=:V_*.
+\]
+
+若保留原固定行,正确的总矩则是
+
+\[
+V_{\rm new}=\frac{kv^2}{k-1}+W-\frac{s^2}{k-1}
+=V_*+W-\frac{s^2}{k-1}\ge V_*.
+\]
+
+最后一步是 Cauchy-Schwarz:
+\(s^2=(\sum_{i\ne j}(t_i-\mu))^2\le(k-1)W\)。因此在相同总质量、一次矩下,24.6 的**负二次系数**乘上 \(V_{\rm new}-V_*\ge0\) 给非正修正项,方向正好有利于所需上界,不需要错误地把 \(V_{\rm new}\) 估成不大于 \(V_*\)。
+
+**24.12 平均路线的精确矩匹配与严格性。** 对 \(V_*\) 置
+
+\[
+L=\mu-\frac{v}{k-1},\qquad H=\mu+v=d'.
+\]
+
+由 \(v>|s|\)、\(n\ge1\) 和 \(c'>0\),逐项有
+
+\[
+L-c'=v+\frac{s}{n}>0,\qquad
+t-L=\frac{v-s}{n}>0,\qquad H-t=v+\frac{s}{n}>0.
+\]
+
+故 \(0<c'<L<t<H=d'\),所有替代支撑均在 \((0,H]\)。\(L>0\) 同时给出 \(v<(k-1)\mu\),所以
+
+\[
+V_0<V_*<k(k-1)\mu^2.
+\]
+
+第一步来自本域的集中条件,第二步确保包络正定义域。\(\mathcal M_*\) 与原型 \((H,L,\ldots,L)\) 的总质量、一次矩、中心二阶矩完全相同。用 24.6 的 Hermite 多项式得到
+
+\[
+D(M_1)\le\mathcal M_*(f)\le\mathcal M_*(P)
+=f(H)+(k-1)f(L)=\Psi_k(\mu,V_*)
+<\Psi_k(\mu,V_0).
+\]
+
+最后一步的严格性来自 \(V_*>V_0\),不依赖平均或内侧割线步骤是否取等。Hermite 在 \(c'<L\) 处仍有正确符号,并未跨过高节点使用上界。这完成集中域的第一条证明。
+
+**24.13 不平均固定行的直接证明。** 同在集中域,令
+
+\[
+\mathcal M_{\rm dir}(\phi)=(1-\theta')\phi(c')+\theta'\phi(d')+
+\sum_{i\ne j}\phi(t_i).
+\]
+
+内侧割线给出 \(D(M_1)\le\mathcal M_{\rm dir}(f)\),总质量和一次矩仍为 \(k,k\mu\),中心二阶矩恰为 24.11 的 \(V_{\rm new}\)。由 24.9 对原均值向量的坐标界和本域条件,
+
+\[
+0<t_i\le\mu+\sqrt{\frac{k-1}{k}\overline V}
+<\mu+\sqrt{\frac{k-1}{k}V_0}<\mu+v=H.
+\]
+
+加上 \(0<c'<H\)、\(d'=H\),全部支撑仍在 Hermite 的有效范围。保持 24.12 的 \(L,H,V_*\),用正确的 \(V_{\rm new}\ge V_*\) 及 \(a<0\) 得到
+
+\[
+D(M_1)\le\mathcal M_{\rm dir}(f)\le\mathcal M_{\rm dir}(P)
+=\Psi_k(\mu,V_*)+a\left(W-\frac{s^2}{k-1}\right)
+\le\Psi_k(\mu,V_*)<\Psi_k(\mu,V_0).
+\]
+
+这是保留原固定行的第二条完整路线,不是把平均证明的矩等式误用于未平均的行。\(W=s^2/(k-1)\) 的边界允许,最后的方差严格比较仍在。24.7、24.9、24.12 或 24.13 穷尽真正分数分支;零方差与整数、inactive budget 已分别处理。24.2 的条件定理证毕。
+
+### 素数平移、尚余区域与来源
+
+**24.14 精确的素数下角点条件。** 取第 18 节完整素数域:有限不同素数标签集 \(S=\{p_1,\ldots,p_k\}\)、\(k\ge2\)、\(b_i\in\mathbb Z_{\ge0}\)、\(A_{p_i}=\{b_i,b_i+1\}\)、有限 \(\log5040<T_0<T_1\),且至少两个不同的实际允许指数向量落在 \([T_0,T_1]\) 内。令
+
+\[
+\ell_i=\log p_i,\quad c_i=(b_i+1)\ell_i,\quad d_i=(b_i+2)\ell_i,
+\quad M_q=T_q+\sum_i\ell_i\quad(q=0,1).
+\]
+
+实际角点与指数向量一一对应,\(M_1-M_0=T_1-T_0\)。\(\mu_0,\mu,I,V_0\) 恰为第 16/19 节原来的量。零指数仍允许,因为 \(c_i\ge\log p_i>0\),\(g_{p_i}(0)=0\)。保留 \(E_S=\prod_{p\in S}(1-p^{-1})^{-1}\),对每个 \(\lambda\ge0\) 精确有
+
+\[
+\lambda T_1+\sum_i\max_{a\in A_{p_i}}[g_{p_i}(a)-\lambda a\ell_i]
+=\log E_S+\lambda M_1+\sum_i\max_{x\in C_i}[f(x)-\lambda x],
+\]
+\[
+U_{\rm dual}=\log E_S+D(M_1),\qquad
+U_{\rm var}=\log E_S+\Psi_k(\mu,V_0).
+\]
+
+对某个最优真正分数基本解,记分数行 \(j\) 的权重为 \(\theta_j\in(0,1)\)。其实际下角点预算为
+
+\[
+M^-=M_1-\theta_j\ell_j,
+\qquad T^-=T_1-\theta_j\log p_j.
+\]
+
+因为 \(M^-<M_1\),附加条件精确等价于
+
+\[
+\boxed{\theta_j\log(p_j)\le T_1-T_0}.
+\]
+
+等号表示实际下角点恰在下预算端点,仍在定理域内。因此,只要**存在一个**最优真正分数基本解满足这个条件,就有 \(U_{\rm dual}<U_{\rm var}\)。\(T_0>\log5040\) 完整保留,但其数值不是本条比较证明所需的新性质;该结论本身不证明任何 Robin 阈值。
+
+**24.15 残余的一般素数问题与既有反例。** 对 \(k=2\),第 22 节的四角点引理已经从两个实际可行角点推出最优分数解的下角点可行,第 23 节的不同素数严格结算不变。对 \(k\ge3\),还没有证明总能选到满足 24.14 条件的最优基本解;不能把二行计数引理按维数直接外推。存在量词允许在密度并列时选择另一个最优基本解,但不提供这种选择一定成功的算术定理。
+
+结合第 19 节既有充分条件,若真实素数箱体出现反向 \(U_{\rm var}<U_{\rm dual}\),它必须没有整数最优基本解,并且每个最优基本解的相关分数行都必须同时避开已证区域,即
+
+\[
+0<\theta_j<1,\qquad \overline V<V_0,\qquad
+v^2>\frac{k-1}{k}V_0,\qquad
+\theta_j\log p_j>T_1-T_0.
+\]
+
+最后一个条件就是实际下角点严格低于薄层。只要任一最优基本解满足已证的充分条件,其最优值就已受控;不能只找到一个不满足下角点条件的解便宣布反向。余域内第 20 节的精确分数行凹性缺口比较仍待解决,尚无本节提供的真实素数反例或普遍占优证明。
+
+第 21 节的人工 \(k=3\) 网格完全保留。直接引用那里已记录的最优解,其实际下角点和为 \(29.82\),而 \(M_0=29.999997\),所以下角点假设失败。另两个实际角点的和均为 \(30\) 不改变这一事实。该人工实数例仍非素数格反例;这里没有重跑其八状态枚举或数值报告,没有新数值实例。
+
+反驳 24.2 需要在完整正二点域中,给出由匹配 LP 解与支持乘子认证的真正分数最优基本解,且其实际下角点属于薄层,却有 \(D(M_1)\ge\Psi_k(\mu,V_0)\)。下角点低于 \(M_0\) 的例子不构成这条条件定理的反证。
+
+**24.16 主数学来源、摄入边界与交付义务。** 主输入是 caller 提供的完成 structured conclusion:task `e96a5b22-8c16-4bd0-95ce-a06f1cf2413a`,conversation `conv_fc5fcce44d2bc103`,载体 `company-chatgpt-pro` browser Work,观测返回模型 `GPT-6 Astra`,完成时间 `2026-09-08T16:42:56.754+00:00`,opaque primary log_ref `qgh0909:lower-corner-all-k:73b2c9e4`。这是同一主数学对话的来源输入,不是独立评审、实施批准或投票。没有打开该 log_ref、原始对话、先前 worker 日志或同轮 peer 输出,没有新 PRO 调用。
+
+本次是 caller 已应用 `consensus-rnd:sshx` 下的 I7 implementation 同载体重试,实施者为 Codex、`repo-prior-exposed`,纸面逐式核对是实施支持证据,不冒称独立复审、上下文无先验或模型多样性。经典分数背包、Jensen 与 Hermite 方法的归属沿用第 15/18/23 节;本次写作还读取 [Continuous knapsack problem](https://en.wikipedia.org/wiki/Continuous_knapsack_problem) 与 [Hermite interpolation](https://en.wikipedia.org/wiki/Hermite_interpolation) 的摘要接口,只核对经典方法归属,未从摘要取得本条件定理,不声称文献穷尽或全球新颖性。
+
+工作树为 `/Users/auricstudio/trureturing-qgh-variance`,分支 `lane/math/quantized-gh-lower-corner-0909`,封存 HEAD 与唯一摄入 BASE 均为 `6fe2f015c1191dca86563a2e1292227af48ce9e0`。追加前实际核对 PR 6488 为 MERGED,merge commit `e03d7817c7d77eb896d5ef5522ab59eb19f297d7`。完整历史前缀为 1547 行、95444 字节、SHA256 `4ac0311a51f086e4ad587f30a73067fca0ebcac222a9499b3ed55af58a9dfaee`,逐字节保留。源之外的新 CAS blob 与 residual-open 条目仅由以下 canonical 命令产生:
+
+```sh
+make ingest BASE=6fe2f015c1191dca86563a2e1292227af48ce9e0 SOURCE=arithmetic-boundary-quantization
+```
+
+所有历史 CAS/条目及既有报告保留。此前 Q1/T1 advisory 关于约 18 行旧散文未被旧 CAS 切片保留的追溯边界仍在;本增量不修历史源或 producer。本节使用编号项与普通标题,但摄入退出成功本身不证明散文全覆盖:本次实际 emitted claims 的新散文覆盖范围与任何遗漏,由本次实施结果信封逐项报告,不对旧切片作穷尽摄入声明。canonical CAS 的空白/文件末尾格式归 generator 所有,与源 diff 的 whitespace 核验分开报告。
+
+没有 CPU/GPU 候选生成,不重跑 xi、5040 或人工网格,不改工具、测试、其它理论、形式根或冻结状态,不重建 Lean。独立质量复审、CI 三门和 PR MERGED 落地仍由 caller 承担;本实施不宣布这些义务完成。有限的 S12 纸面追加不完成持续研究目标,余下一般素数 \(k\ge3\) 问题保持 **OPEN**。
