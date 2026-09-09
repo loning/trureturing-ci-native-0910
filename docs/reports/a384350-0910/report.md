@@ -46,7 +46,9 @@ Triage decision (verbatim from the task, not a new literature claim):
 
 ## Verification log
 
-Pending. No Lean proof or gate success claimed at this checkpoint.
+The initial preregistration checkpoint claimed no Lean proof or gate success.
+The chronological records below now establish the general equivalence and all
+requested local gates, including no-atom freezing. PR delivery is recorded last.
 
 ## Unclaimed
 
@@ -275,3 +277,24 @@ Explicit `projections --check --report` via the canonical
 The same canonical report was supplied both as the environment variable and
 the report argument. Log/timing: runner `projections-check.log` /
 `projections-check-result.json`. All three requested Scribe checks have now run.
+
+### No-atom freeze
+
+`make deposit-uncovered
+BASE=5d6a244a852db7cf66e3d9a78f4ec885b9f0a55c
+GID=D5/S3/ArithSums/DisjointStrictRefinement.nontrivial_disjoint_refinement_iff`:
+EXIT 0, 84.28 seconds. The canonical wrapper reused the successful report,
+passed SL-012 header checks, emitted zero changed Blueprints, then ran
+`ledger-align --add D5/S3/ArithSums/DisjointStrictRefinement.lean`.
+Receipt: `changed=0 added=1 unchanged=3942 conflicts=0`, `reason=NO_ATOM`.
+No theory source, atom, or coverage edge was created.
+
+- Module `statement_id`: `sha256:e1f6c3c7bd0cbeafa2c44d8ac014afcdbfd970ed288134d24d08b5546bff2bab`.
+- Freeze event: `sha256:4d06f5002ee0ac0a811870332594091ef0f6f078cde7f1de334111ff9aa88883`.
+- Frozen prerequisite node IDs: `[]`.
+- New canonical files: the module's `Golden/Frozen/state` pin and its single
+  `Golden/Frozen/accepted` event. The module snapshot includes private semantic
+  controls; none is exposed or claimed as a separate public finite-instance result.
+- Logs: runner `make-deposit-uncovered.log` / `make-deposit-uncovered-result.json`.
+
+These final local gate results supersede earlier pending checkpoint descriptions.
