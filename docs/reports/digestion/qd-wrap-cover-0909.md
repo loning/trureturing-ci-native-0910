@@ -89,6 +89,20 @@ ASSUMED-UNVERIFIED：源规范 a₀=1 的分析证明不在本席；未打开外
 
 B1.1 积分公式子 atom `ae0bab9f…`：`make cover` EXIT=0（174.578 秒），`ledger_changed=true`，已迁入 absorbed-closed；本次提交携带首次冻结、镜像和这条 coverage。该子 atom 已提交推送 `347db77617`。散文子 atom `2ddc6236…` 随后 `make cover` EXIT=0（175.723 秒），`ledger_changed=true`，同样迁入 absorbed-closed。其难易评语在 Scribe 保留为不作复杂度推论的边界，不伪造复杂度谓词或估计；它的数学断言对应上表后三行。父 atom 将单独重试 cover。
 
+### B1.1 父 atom 的工具阻塞
+
+散文子 atom 已提交推送 `ded5c67dbd`。父 atom 重试 `make cover` EXIT=2（58.115 秒），原文为：
+
+```text
+COVER_INVALID digest status is invalid: entry 1e414ffb45d7fcaa9536a956298c4e291f91a2e310f112d2cf8419518caefd1a has multiple clauses but newly claims absorbed with unresolved_subitems=[]; decompose the uncovered clauses before absorption
+```
+
+随后 `make decompose ATOM_ID=<父完整 id> DRY_RUN=1` EXIT=0（13.208 秒）：两个计划片段为 `[0,269)`、`[269,552)`，child_id 与现存链逐项一致，均 `reused=true`，`cas_objects=0 ledger_updates=0`。因此更正中间诊断：不是缺分解，也不是忠实性缺口；canonical dry run 确认已有同一字节计划，而 cover 仍拒绝父 atom。
+
+定位：`DigestionStatusEvaluator.cs:130` 的新吸收门消费 `VerifiedClausePlanParents`；`DigestionLedgerAligner.cs:277` 可跳过继承源的计划重验。本席未修改判官、源字节、baseline 或链来绕过拒绝，保留第一次 deposit 生成的失败 disposition。**B1.1 的公式与散文子 atom 已 cover，父 atom 未 cover（工具阻塞）；不计父条成功，不冒称其为忠实性 partial。** 先结算这条并继续 B3/B4。
+
+报告补写时一次 Python stdin 编码错误 EXIT=1，报告未改；改用结构化 patch 补写，不静默漏账。
+
 ## 必要性原文（CAS 字节，不缩写矩阵）
 
 ### B1.1：准入必要性所引的原文字节
