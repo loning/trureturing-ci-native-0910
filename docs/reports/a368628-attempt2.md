@@ -59,3 +59,7 @@
 无 atom 入口核实：`make deposit` 的 `require_transaction_arguments` 强制已有 ATOM_ID，不能用于本题；依用户明确指示使用它内部同一 writer `ledger-align --add`，另行运行相同 `deposit-header-check`。不会造 atom 满足接口。
 
 **目标定理已通过单文件 Lean**：`a368628_odd_iff (n : ℕ) : Odd (seq n) ↔ ∃ k : ℕ, 3*n+1=4^k`。修复后 EXIT=0，六条公开定理的 `#print axioms` 均仅标准三项。尚未宣告最终“成”：全项目门、Scribe、冻结、PR 在后续完成。
+
+### 语义回声与依赖读数
+
+追加 private 的前四项回声，直接从自然数卷积递推计算，不使用奇偶定理。首次编译仅该 private echo 有两处 simp 未归约：`coeff 0 (mk seq ^ 4)`、`if Even 3 then … else …`；修复为显式 constantCoeff/map_pow 和奇偶分支。主定理仍闭合。编译期 `getUsedConstants` 已确认七条预登记直接依赖，包括 `square_even_coeff → ConvolutionRecurrenceOddPowersOfTwo.convolution_pairing`，复用不是闲置 import。
