@@ -34,7 +34,8 @@ def benchmark(repository, report, directory):
     driver = write_module(directory, "BenchmarkDriver", f"import {module}\n"
         f"#census_certificate_benchmark report {string(str(report))} head {string(head)} "
         f"digest {string(digest)} directory {string(str(directory))}\n")
-    result = run(["lake", "env", "lean", "-DmaxHeartbeats=0", "-DmaxRecDepth=4000", str(driver)],
+    result = run(["lake", "env", "python3", str(pathlib.Path(__file__).resolve()),
+        "--report", str(report), "--directory", str(directory), "--driver", str(driver)],
         directory, "certificate", cwd=repository, budget_gb=4,
         env=dict(os.environ, LEAN_NUM_THREADS="1"), phase_path=directory / "benchmark.phase")
     # The whole-path target is a profiling trigger, not a first-overrun stop.
@@ -47,13 +48,28 @@ def benchmark(repository, report, directory):
     return result
 
 
+def run_driver(driver):
+    # Lake supplies the warm dependency paths. Put the compiler's own library
+    # first so every Init/Lean import avoids a failed probe of each package.
+    # Lake setup and this lookup are inside the whole-path resource timer.
+    prefix = subprocess.check_output(["lean", "--print-prefix"], text=True).strip()
+    library = str(pathlib.Path(prefix) / "lib/lean")
+    paths = [path for path in os.environ.get("LEAN_PATH", "").split(os.pathsep)
+             if path and path != library]
+    env = dict(os.environ, LEAN_PATH=os.pathsep.join([library, *paths]))
+    os.execvpe("lean", ["lean", "-DmaxHeartbeats=0", "-DmaxRecDepth=4000", str(driver)], env)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--report", required=True, type=pathlib.Path)
     parser.add_argument("--directory", required=True, type=pathlib.Path)
     parser.add_argument("--bindings", type=pathlib.Path, help="Internal: emit from parseReport's validated rows")
+    parser.add_argument("--driver", type=pathlib.Path, help="Internal: execute inside Lake's warm environment")
     options = parser.parse_args()
-    if options.bindings:
+    if options.driver:
+        run_driver(options.driver)
+    elif options.bindings:
         emit(options.report, options.bindings, options.directory)
     else:
         repository = pathlib.Path(__file__).resolve().parents[3]
