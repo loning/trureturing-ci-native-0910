@@ -190,5 +190,49 @@ private theorem normalized_sums_le (N : ℕ) (hn : N ≠ 0) :
       exact_mod_cast squarefreeSum_eq_product N hn
     rw [hs, ← hprod, prod_div_distrib]
 
+private theorem support_products_lt (F : Finset ℕ) (p : ℕ) (e : ℕ → ℕ)
+    (hp : 5 ≤ p) (hpe : 1 ≤ e p) (hpF : p ∉ F) (hne : F.Nonempty)
+    (hF : ∀ q ∈ F, 3 ≤ q ∧ q ≠ 4) (he : ∀ q ∈ F, 2 ≤ e q) :
+    (∏ q ∈ insert p F, (1 + 1 / (q : ℚ) ^ e q)) +
+      (∏ q ∈ insert p F, ((q : ℚ) + 1) / (q : ℚ) ^ e q) < 2 := by
+  have hp' : (5 : ℚ) ≤ p := by exact_mod_cast hp
+  have hp0 : (0 : ℚ) < p := by linarith
+  have hppow : (p : ℚ) ≤ (p : ℚ) ^ e p := by
+    simpa using pow_le_pow_right₀ (by linarith : (1 : ℚ) ≤ p) hpe
+  have hpbound : 1 + 1 / (p : ℚ) ≤ 6 / 5 := by
+    have := one_div_le_one_div_of_le (by norm_num : (0 : ℚ) < 5) hp'
+    linarith
+  have hpA : 1 + 1 / (p : ℚ) ^ e p ≤ 6 / 5 :=
+    (add_le_add (le_refl 1) (one_div_le_one_div_of_le hp0 hppow)).trans hpbound
+  have hpB : ((p : ℚ) + 1) / (p : ℚ) ^ e p ≤ 6 / 5 := by
+    calc
+      _ ≤ ((p : ℚ) + 1) / p :=
+        div_le_div_of_nonneg_left (by positivity) hp0 hppow
+      _ = 1 + 1 / (p : ℚ) := by rw [add_div, div_self (ne_of_gt hp0)]
+      _ ≤ _ := hpbound
+  have hpow : ∀ q ∈ F, (q : ℚ)^2 ≤ (q : ℚ) ^ e q := by
+    intro q hq
+    have hq' : (3 : ℚ) ≤ q := by exact_mod_cast (hF q hq).1
+    exact pow_le_pow_right₀ (by linarith) (he q hq)
+  have hA : (∏ q ∈ F, (1 + 1 / (q : ℚ) ^ e q)) ≤
+      ∏ q ∈ F, (1 + 1 / (q : ℚ)^2) := by
+    apply prod_le_prod (fun _ _ => by positivity)
+    intro q hq
+    have hq' : (0 : ℚ) < q := by exact_mod_cast (by have := (hF q hq).1; omega : 0 < q)
+    exact add_le_add (le_refl 1) (one_div_le_one_div_of_le (by positivity) (hpow q hq))
+  have hB : (∏ q ∈ F, ((q : ℚ) + 1) / (q : ℚ) ^ e q) ≤
+      ∏ q ∈ F, ((q : ℚ) + 1) / (q : ℚ)^2 := by
+    apply prod_le_prod (fun _ _ => by positivity)
+    intro q hq
+    have hq' : (0 : ℚ) < q := by exact_mod_cast (by have := (hF q hq).1; omega : 0 < q)
+    exact div_le_div_of_nonneg_left (by positivity) (by positivity) (hpow q hq)
+  rw [prod_insert hpF, prod_insert hpF]
+  calc
+    _ ≤ (6 / 5 : ℚ) * (∏ q ∈ F, (1 + 1 / (q : ℚ)^2)) +
+        (6 / 5 : ℚ) * (∏ q ∈ F, ((q : ℚ) + 1) / (q : ℚ)^2) := by
+      exact add_le_add (mul_le_mul hpA hA (by positivity) (by norm_num))
+        (mul_le_mul hpB hB (by positivity) (by norm_num))
+    _ < 2 := by have := joint_products_lt F hne hF; linarith
+
 end
 end D5.S3.Arith.EulerFormDivisorSum
