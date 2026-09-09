@@ -68,7 +68,7 @@ theorem quadratic_of_bounded_second_difference (L : ℕ → ℝ) (a : ℝ)
           _ = |(L (n + 1) - L n) +
               (L (n + 1 + 1) - 2 * L (n + 1) + L (n + 1 - 1))| := by rw [identity]
           _ ≤ |L (n + 1) - L n| +
-              |L (n + 1 + 1) - 2 * L (n + 1) + L (n + 1 - 1)| := abs_add _ _
+              |L (n + 1 + 1) - 2 * L (n + 1) + L (n + 1 - 1)| := abs_add_le _ _
           _ ≤ a * (2 * (n : ℝ) + 1) + 2 * a := add_le_add ih hs
           _ = _ := by push_cast; ring
   intro n
@@ -77,7 +77,7 @@ theorem quadratic_of_bounded_second_difference (L : ℕ → ℝ) (a : ℝ)
   | succ n ih =>
       calc
         |L (n + 1)| = |L n + (L (n + 1) - L n)| := by congr 1; ring
-        _ ≤ |L n| + |L (n + 1) - L n| := abs_add _ _
+        _ ≤ |L n| + |L (n + 1) - L n| := abs_add_le _ _
         _ ≤ a * (n : ℝ) ^ 2 + a * (2 * (n : ℝ) + 1) := add_le_add ih (increment n)
         _ = _ := by push_cast; ring
 
@@ -109,7 +109,7 @@ theorem canonical_curvature_second_difference_bound
       (fun i j : Fin 2 => if i = j then (1 : ℂ) else (d : ℂ)) := by
     ext i j
     fin_cases i <;> fin_cases j <;>
-      simp [Matrix.submatrix, toeplitzMatrix, pick, canonicalLiCurvature, hnZ, d]
+      simp [Matrix.submatrix, toeplitzMatrix, pick, canonicalLiCurvature, hnZ, hn0, d]
   rw [entries] at compressed
   have plus := compressed.re_dotProduct_nonneg (fun _ : Fin 2 => (1 : ℂ))
   have minus := compressed.re_dotProduct_nonneg (fun i : Fin 2 => if i = 0 then (1 : ℂ) else -1)

@@ -150,7 +150,9 @@ theorem canonical_smaller_radius_summable (r R : ℝ≥0) (hsmall : r < R)
   calc
     _ = (|canonicalLiCoefficient (n + 1)| * (R : ℝ) ^ n) * ((r : ℝ) / R) ^ n := by
       rw [div_pow]
-      field_simp [ne_of_gt Rpos] <;> ring
+      field_simp [ne_of_gt Rpos]
+      ring_nf
+      rfl
     _ ≤ C * ((r : ℝ) / R) ^ n :=
       mul_le_mul_of_nonneg_right (bound n) (pow_nonneg ratio_nonneg n)
 

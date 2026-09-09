@@ -108,10 +108,10 @@ theorem rh_canonical_li_disk_summable (hRH : RiemannHypothesis)
     Summable (fun n : ℕ => |canonicalLiCoefficient (n + 1)| * (r : ℝ) ^ n) := by
   have hin : ((r : ℝ) : ℂ) ∈ Metric.ball (0 : ℂ) 1 := by
     simpa only [Metric.mem_ball, dist_zero_right, Complex.norm_real,
-      Real.norm_eq_abs, abs_of_nonneg r.property] using (show (r : ℝ) < 1 from hr)
+      Real.norm_eq_abs, NNReal.abs_eq] using (show (r : ℝ) < 1 from hr)
   have hs := (rh_canonical_li_global_expansion hRH ((r : ℝ) : ℂ) hin).summable.norm
   simpa only [norm_mul, norm_pow, Complex.norm_real, Real.norm_eq_abs,
-    abs_of_nonneg r.property] using hs
+    NNReal.abs_eq] using hs
 
 /-- An actual canonical equivalence, with no external Li criterion and no
 coefficient-sign premise. The original arithmetic condition remains unproved. -/
@@ -132,10 +132,10 @@ theorem rh_iff_canonical_li_global_expansion :
   intro r hr
   have hin : ((r : ℝ) : ℂ) ∈ Metric.ball (0 : ℂ) 1 := by
     simpa only [Metric.mem_ball, dist_zero_right, Complex.norm_real,
-      Real.norm_eq_abs, abs_of_nonneg r.property] using (show (r : ℝ) < 1 from hr)
+      Real.norm_eq_abs, NNReal.abs_eq] using (show (r : ℝ) < 1 from hr)
   have hs := (expansion ((r : ℝ) : ℂ) hin).summable.norm
   simpa only [norm_mul, norm_pow, Complex.norm_real, Real.norm_eq_abs,
-    abs_of_nonneg r.property] using hs
+    NNReal.abs_eq] using hs
 
 #print axioms rh_canonical_li_global_expansion
 #print axioms rh_iff_canonical_li_disk_summable

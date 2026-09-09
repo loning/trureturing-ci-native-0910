@@ -59,14 +59,16 @@ theorem canonical_xi_disk_analytic :
   intro z hz
   have inverseAnalytic : AnalyticAt ℂ (fun w : ℂ => (1 - w)⁻¹) z :=
     (analyticAt_const.sub analyticAt_id).inv (sub_ne_zero.mpr (disk_ne_one hz).symm)
-  exact (xi_reading_differentiable.analyticAt ((1 - z)⁻¹)).comp inverseAnalytic
+  exact (xi_reading_differentiable.analyticAt ((1 - z)⁻¹)).comp
+    (f := fun w : ℂ => (1 - w)⁻¹) inverseAnalytic
 
 private theorem canonical_xi_disk_derivative (z : ℂ) (hz : z ∈ Metric.ball (0 : ℂ) 1) :
     deriv canonicalXiDisk z = (1 - z)⁻¹ ^ 2 * deriv xiReading ((1 - z)⁻¹) := by
   have innerDerivative : HasDerivAt (fun w : ℂ => (1 - w)⁻¹) ((1 - z)⁻¹ ^ 2) z := by
-    simpa only [zero_sub, neg_neg, one_div, inv_pow] using
+    convert!
       (((hasDerivAt_const z (1 : ℂ)).sub (hasDerivAt_id z)).inv
-        (sub_ne_zero.mpr (disk_ne_one hz).symm))
+        (sub_ne_zero.mpr (disk_ne_one hz).symm)) using 1
+    simp [inv_pow]
   have chain := (xi_reading_differentiable ((1 - z)⁻¹)).hasDerivAt.comp z innerDerivative
   change HasDerivAt canonicalXiDisk
     (deriv xiReading ((1 - z)⁻¹) * (1 - z)⁻¹ ^ 2) z at chain
@@ -83,7 +85,6 @@ theorem canonical_xi_disk_local_equation :
   have nearNonzero := (canonical_xi_disk_analytic 0 origin).continuousAt.eventually_ne initial
   filter_upwards [canonical_li_local_expansion, nearNonzero,
     Metric.ball_mem_nhds (0 : ℂ) (by norm_num : (0 : ℝ) < 1)] with z series nonzero hz
-  change deriv canonicalXiDisk z = canonicalLiSeries z * canonicalXiDisk z
   have sum_eq : canonicalLiSeries z =
       (1 - z) ^ (-2 : ℤ) * logDeriv xiReading (1 / (1 - z)) := series.tsum_eq
   rw [canonical_xi_disk_derivative z hz, sum_eq]
@@ -127,7 +128,7 @@ theorem canonical_li_summable_right_half_plane
     simp only [Complex.normSq_eq_norm_sq] at smaller
     nlinarith [norm_nonneg (s - 1), norm_nonneg s]
   let z : ℂ := 1 - s⁻¹
-  have quotient : z = (s - 1) / s := by dsimp [z]; field_simp [hs0] <;> ring
+  have quotient : z = (s - 1) / s := by dsimp [z]; field_simp [hs0]
   have inDisk : z ∈ Metric.ball (0 : ℂ) 1 := by
     rw [Metric.mem_ball, dist_zero_right, quotient, norm_div]
     exact (div_lt_one (norm_pos_iff.mpr hs0)).mpr normSmaller

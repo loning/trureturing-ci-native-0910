@@ -9,6 +9,7 @@
 import Mathlib.Analysis.Analytic.OfScalars
 import Mathlib.Analysis.Analytic.Order
 import Mathlib.Analysis.Analytic.ChangeOrigin
+import Mathlib.Analysis.Complex.Basic
 import Mathlib.Analysis.SpecificLimits.Normed
 
 /-!
@@ -40,8 +41,8 @@ theorem quadratic_coefficients_summable (a : ℕ → ℂ) (C : ℝ)
   have h1 := summable_pow_mul_geometric_of_norm_lt_one 1 hrnorm
   have h2 := summable_pow_mul_geometric_of_norm_lt_one 2 hrnorm
   have major : Summable (fun n : ℕ => C * ((n : ℝ) + 1) ^ 2 * (r : ℝ) ^ n) := by
-    convert ((h2.add (h1.mul_left 2)).add h0).mul_left C using 1
-    funext n
+    refine (((h2.add (h1.mul_left 2)).add h0).mul_left C).congr ?_
+    intro n
     simp only [pow_one]
     ring
   exact Summable.of_nonneg_of_le
@@ -99,7 +100,7 @@ theorem analytic_linear_ode_zero_free {U : Set ℂ} {f g : ℂ → ℂ} {p : ℂ
     exact analyticOrderAt_mul (analyticG z hz) (analyticF z hz)
   have nondecreasing : analyticOrderAt f z ≤ analyticOrderAt (deriv f) z := by
     rw [orderProduct]
-    exact le_add_of_nonneg_left (zero_le _)
+    exact le_add_of_nonneg_left zero_le
   have drops : analyticOrderAt (deriv f) z + 1 = analyticOrderAt f z := by
     simpa [zero] using (analyticF z hz).analyticOrderAt_deriv_add_one
   cases orderF : analyticOrderAt f z with
