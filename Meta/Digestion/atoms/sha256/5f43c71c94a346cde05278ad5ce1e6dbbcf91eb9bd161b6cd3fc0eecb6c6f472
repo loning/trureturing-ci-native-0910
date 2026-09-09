@@ -1,0 +1,2 @@
+**H-2**:观测保最小公倍数。对一切正整数 \(m,n\):\(\mathrm{Gobs}(\mathrm{lcm}(m,n))=\mathrm{lcm}(\mathrm{Gobs}\,m,\mathrm{Gobs}\,n)\)。
+

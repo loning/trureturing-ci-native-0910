@@ -18,7 +18,8 @@ private def censusReportInput (inventory : DispositionInventory) : Json := Json.
 
 /-- Exercise successful publication and inspect its count and kernel certificate. -/
 def expectAcceptedCensus (root inventoryName certificate : Name)
-    (inventory : DispositionInventory) (structuralCount : Nat) : CommandElabM Unit :=
+    (inventory : DispositionInventory) (structuralCount : Nat)
+    (assessmentCounts : Option (Nat × Nat × Nat × Bool) := none) : CommandElabM Unit :=
   IO.FS.withTempDir fun dir => do
     let bytes := (censusReportInput inventory).compress
     let reportPath := dir / "report.json"
@@ -38,6 +39,14 @@ def expectAcceptedCensus (root inventoryName certificate : Name)
     let counts ← ofExcept <| projection.getObjVal? "counts"
     unless (← ofExcept <| counts.getObjValAs? Nat "structural_occurrence") == structuralCount do
       throwError "unexpected structural count: {counts.compress}"
+    if let some (accounted, certified, observed, complete) := assessmentCounts then
+      for (field, expected) in [("accounted", accounted), ("certified", certified),
+          ("observed", observed), ("observed_query_completed", observed),
+          ("observed_query_incomplete", 0)] do
+        unless (← ofExcept <| counts.getObjValAs? Nat field) == expected do
+          throwError "unexpected assessment count: {field} {counts.compress}"
+      unless (← ofExcept <| projection.getObjValAs? Bool "certified_complete") == complete do
+        throwError "unexpected certified_complete"
     let sources ← ofExcept <| projection.getObjValAs? (Array Json) "source_inputs"
     let env ← getEnv
     let expectedModules := inventory.entries.toList.filterMap fun row =>
@@ -195,8 +204,8 @@ run_cmd do
     (replaceReportNodes (duplicateReportNodes `Fixture.other))
 
 private def repeatedNameInventory : DispositionInventory := ⟨"fixture-head", #[
-  ⟨⟨`Fixture.repeated, "id-first"⟩, .unreachable ⟨.noCanonicalObjectCarrier, `Evidence⟩⟩,
-  ⟨⟨`Fixture.repeated, "id-second"⟩, .unreachable ⟨.noCanonicalObjectCarrier, `Evidence⟩⟩]⟩
+  ⟨⟨`Fixture.repeated, "id-first"⟩, .certified <| .unreachable ⟨.noCanonicalObjectCarrier, `Evidence⟩⟩,
+  ⟨⟨`Fixture.repeated, "id-second"⟩, .certified <| .unreachable ⟨.noCanonicalObjectCarrier, `Evidence⟩⟩]⟩
 
 /-- info: Except.ok 2 -/
 #guard_msgs in

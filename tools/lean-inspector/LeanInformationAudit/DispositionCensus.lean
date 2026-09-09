@@ -1,4 +1,4 @@
-import LeanInformationAudit.AnalysisDisposition
+import LeanInformationAudit.CensusSchema
 import LeanInformationAudit.Sha256
 import LeanInformationAudit.DispositionEvidence
 import Std.Internal.Parsec.ByteArray
@@ -53,116 +53,6 @@ def checkCoverage (head : String) (frozen : Array StatementKey)
   unless inventory.ExactlyCovers head frozen.toList.toFinset do
     throw <| censusError head "keys" (toJson expected).compress
       (toJson inventory.keys).compress
-
-structure Counts where
-  finiteOccurrence : Nat := 0
-  structuralOccurrence : Nat := 0
-  boundedFiniteTruncation : Nat := 0
-  unreachable : Nat := 0
-  noCanonicalObjectCarrier : Nat := 0
-  noFinitePrimitiveBundle : Nat := 0
-  noFaithfulPrimitiveRealization : Nat := 0
-  deriving DecidableEq, Repr
-
-def count (inventory : DispositionInventory) : Counts :=
-  inventory.entries.foldl (init := {}) fun counts entry =>
-    match entry.2 with
-    | .finiteOccurrence _ => { counts with finiteOccurrence := counts.finiteOccurrence + 1 }
-    | .structuralOccurrence _ => { counts with structuralOccurrence := counts.structuralOccurrence + 1 }
-    | .boundedFiniteTruncation _ =>
-      { counts with boundedFiniteTruncation := counts.boundedFiniteTruncation + 1 }
-    | .unreachable value =>
-      let counts := { counts with unreachable := counts.unreachable + 1 }
-      match value.reason with
-      | .noCanonicalObjectCarrier =>
-        { counts with noCanonicalObjectCarrier := counts.noCanonicalObjectCarrier + 1 }
-      | .noFinitePrimitiveBundle =>
-        { counts with noFinitePrimitiveBundle := counts.noFinitePrimitiveBundle + 1 }
-      | .noFaithfulPrimitiveRealization =>
-        { counts with noFaithfulPrimitiveRealization := counts.noFaithfulPrimitiveRealization + 1 }
-
-def Counts.fields (counts : Counts) : List (String × Nat) := [
-  ("finite_occurrence", counts.finiteOccurrence),
-  ("structural_occurrence", counts.structuralOccurrence),
-  ("bounded_finite_truncation", counts.boundedFiniteTruncation),
-  ("unreachable", counts.unreachable),
-  ("no_canonical_object_carrier", counts.noCanonicalObjectCarrier),
-  ("no_finite_primitive_bundle", counts.noFinitePrimitiveBundle),
-  ("no_faithful_primitive_realization", counts.noFaithfulPrimitiveRealization)]
-
-instance : ToJson Counts := ⟨fun counts => Json.mkObj <|
-  counts.fields.map fun (name, value) => (name, toJson value)⟩
-
-def checkCounts (inventory : DispositionInventory) (counts : Counts) : Except String Unit := do
-  for ((name, expected), (_, actual)) in (count inventory).fields.zip counts.fields do
-    unless expected == actual do
-      throw <| censusError inventory.headSha name (toString expected) (toString actual)
-
-private def stringField (json : Json) (field : String) : Except String String := do
-  let value ← json.getObjValAs? String field
-  if value.isEmpty then throw field
-  return value
-
-private def nameField (json : Json) (field : String) : Except String Name := do
-  parseNameJson (← json.getObjVal? field)
-
-private def exactFields (json : Json) (fields : List String) : Except String Unit := do
-  let object ← json.getObj?
-  unless object.size == fields.length && fields.all object.contains do
-    throw "payload_fields"
-
-/-- Strict decoding makes the dependent constructor, not a separate label, own the payload. -/
-def parseRow (row : Json) : Except String
-    (Sigma fun key : StatementKey => AnalysisDisposition key) := do
-  let key : StatementKey := ⟨← nameField row "theorem_name", ← stringField row "statement_id"⟩
-  let className ← stringField row "class"
-  let parsed : Except String (AnalysisDisposition key) := do
-    exactFields row ["theorem_name", "statement_id", "class", "payload"]
-    let payload ← row.getObjVal? "payload"
-    match className with
-    | "finite_occurrence" =>
-      exactFields payload ["canonical_arena", "registration", "realization",
-        "nondegeneracy_certificate", "state_enumeration_certificate"]
-      return .finiteOccurrence ⟨← nameField payload "canonical_arena",
-        ← nameField payload "registration", ← nameField payload "realization",
-        ← nameField payload "nondegeneracy_certificate",
-        ← nameField payload "state_enumeration_certificate"⟩
-    | "structural_occurrence" =>
-      exactFields payload ["canonical_arena", "registration", "realization",
-        "strictness_certificate", "witness_certificate"]
-      return .structuralOccurrence ⟨← nameField payload "canonical_arena",
-        ← nameField payload "registration", ← nameField payload "realization",
-        ← nameField payload "strictness_certificate", ← nameField payload "witness_certificate"⟩
-    | "bounded_finite_truncation" =>
-      exactFields payload ["truncation_family", "bound", "comparison_statement", "certification"]
-      let certification ← payload.getObjVal? "certification"
-      let certification ← match ← stringField certification "kind" with
-        | "report_only" => do
-          exactFields certification ["kind"]
-          pure TruncationCertification.reportOnly
-        | "transferred" => do
-          exactFields certification ["kind", "transfer_theorem"]
-          pure <| TruncationCertification.transferred (← nameField certification "transfer_theorem")
-        | _ => throw "certification"
-      return .boundedFiniteTruncation ⟨← nameField payload "truncation_family",
-        ← payload.getObjValAs? Nat "bound", ← nameField payload "comparison_statement", certification⟩
-    | "unreachable" =>
-      exactFields payload ["reason", "evidence"]
-      let reason ← match ← stringField payload "reason" with
-        | "no_canonical_object_carrier" => pure UnreachableReason.noCanonicalObjectCarrier
-        | "no_finite_primitive_bundle" => pure UnreachableReason.noFinitePrimitiveBundle
-        | "no_faithful_primitive_realization" => pure UnreachableReason.noFaithfulPrimitiveRealization
-        | _ => throw "reason"
-      return .unreachable ⟨reason, ← nameField payload "evidence"⟩
-    | _ => throw "class"
-  match parsed with
-  | .ok disposition => return ⟨key, disposition⟩
-  | .error invalid => throw <| classError key.theoremName className invalid
-
-def parseInventory (json : Json) : Except String DispositionInventory := do
-  exactFields json ["head_sha", "entries"]
-  return { headSha := ← stringField json "head_sha"
-           entries := ← (← json.getObjValAs? (Array Json) "entries").mapM parseRow }
 
 /-- An immutable report already restricted to frozen elaborated theorem declarations.
 The producer owns frozen membership; source provenance checks do not discover members. -/
@@ -248,66 +138,80 @@ def artifact (report : FrozenReport) (inventory : DispositionInventory)
     ("head_sha", toJson report.headSha), ("report_sha256", toJson report.reportSha256),
     ("source_inputs", toJson sources),
     ("theorem_count", toJson report.theorems.size), ("counts", toJson counts),
+    ("certified_complete", toJson (counts.observed == 0)),
     ("rows", Json.arr <| inventory.sortedEntries.map dispositionRowJson)]
 
 /-- Independently checks an output projection against its input inventory. -/
 def checkArtifact (report : FrozenReport) (inventory : DispositionInventory)
     (candidate : Json) (sources : Array ProvenanceSource := #[]) : Except String Unit := do
   let expected ← artifact report inventory sources
-  for field in ["schema", "head_sha", "report_sha256", "source_inputs", "theorem_count", "counts", "rows"] do
+  for field in censusArtifactFields do
     let expectedValue ← expected.getObjVal? field
     let actual ← match candidate.getObjVal? field with
       | .ok value => pure value
       | .error _ => throw <| censusError report.headSha field expectedValue.compress "missing"
     unless expectedValue.compress == actual.compress do
       throw <| censusError report.headSha field expectedValue.compress actual.compress
+  validateAnalysisInventory .anonymous candidate
 
 open Meta Elab Command
 
 private def keyExpr (key : StatementKey) : Expr :=
   mkApp2 (mkConst ``StatementKey.mk) (toExpr key.theoremName) (toExpr key.statementId)
 
-private def rowExpr (entry : Sigma fun key : StatementKey => AnalysisDisposition key) : MetaM Expr := do
+private def rowExpr (entry : Sigma fun key : StatementKey => CensusAssessment key) : MetaM Expr := do
   let key := keyExpr entry.1
-  let (constructor, payload) ← match entry.2 with
-    | .finiteOccurrence value => do
-      let payload ← mkAppOptM ``FiniteOccurrenceDisposition.mk #[some key,
-        some (toExpr value.canonicalArena), some (toExpr value.registration),
-        some (toExpr value.realization), some (toExpr value.nondegeneracyCertificate),
-        some (toExpr value.stateEnumerationCertificate)]
-      pure (``AnalysisDisposition.finiteOccurrence, payload)
-    | .structuralOccurrence value => do
-      let payload ← mkAppOptM ``StructuralOccurrenceDisposition.mk #[some key,
-        some (toExpr value.canonicalArena), some (toExpr value.registration),
-        some (toExpr value.realization), some (toExpr value.strictnessCertificate),
-        some (toExpr value.witnessCertificate)]
-      pure (``AnalysisDisposition.structuralOccurrence, payload)
-    | .boundedFiniteTruncation value => do
-      let certification := match value.certification with
-        | .reportOnly => mkConst ``TruncationCertification.reportOnly
-        | .transferred name => mkApp (mkConst ``TruncationCertification.transferred) (toExpr name)
-      let payload ← mkAppOptM ``BoundedFiniteTruncationDisposition.mk #[some key,
-        some (toExpr value.truncationFamily), some (toExpr value.bound),
-        some (toExpr value.comparisonStatement), some certification]
-      pure (``AnalysisDisposition.boundedFiniteTruncation, payload)
-    | .unreachable value => do
-      let reason := mkConst <| match value.reason with
-        | .noCanonicalObjectCarrier => ``UnreachableReason.noCanonicalObjectCarrier
-        | .noFinitePrimitiveBundle => ``UnreachableReason.noFinitePrimitiveBundle
-        | .noFaithfulPrimitiveRealization => ``UnreachableReason.noFaithfulPrimitiveRealization
-      let payload ← mkAppOptM ``UnreachableDisposition.mk #[some key,
-        some reason, some (toExpr value.evidence)]
-      pure (``AnalysisDisposition.unreachable, payload)
-  let disposition ← mkAppOptM constructor #[some key, some payload]
+  let assessment ← match entry.2 with
+    | .certified disposition => match disposition with
+      | .finiteOccurrence value => do
+        let payload ← mkAppOptM ``FiniteOccurrenceDisposition.mk #[some key,
+          some (toExpr value.canonicalArena), some (toExpr value.registration),
+          some (toExpr value.realization), some (toExpr value.nondegeneracyCertificate),
+          some (toExpr value.stateEnumerationCertificate)]
+        let disposition ← mkAppOptM ``AnalysisDisposition.finiteOccurrence #[some key, some payload]
+        mkAppOptM ``CensusAssessment.certified #[some key, some disposition]
+      | .structuralOccurrence value => do
+        let payload ← mkAppOptM ``StructuralOccurrenceDisposition.mk #[some key,
+          some (toExpr value.canonicalArena), some (toExpr value.registration),
+          some (toExpr value.realization), some (toExpr value.strictnessCertificate),
+          some (toExpr value.witnessCertificate)]
+        let disposition ← mkAppOptM ``AnalysisDisposition.structuralOccurrence #[some key, some payload]
+        mkAppOptM ``CensusAssessment.certified #[some key, some disposition]
+      | .boundedFiniteTruncation value => do
+        let certification := match value.certification with
+          | .reportOnly => mkConst ``TruncationCertification.reportOnly
+          | .transferred name => mkApp (mkConst ``TruncationCertification.transferred) (toExpr name)
+        let payload ← mkAppOptM ``BoundedFiniteTruncationDisposition.mk #[some key,
+          some (toExpr value.truncationFamily), some (toExpr value.bound),
+          some (toExpr value.comparisonStatement), some certification]
+        let disposition ← mkAppOptM ``AnalysisDisposition.boundedFiniteTruncation
+          #[some key, some payload]
+        mkAppOptM ``CensusAssessment.certified #[some key, some disposition]
+      | .unreachable value => do
+        let reason := mkConst <| match value.reason with
+          | .noCanonicalObjectCarrier => ``UnreachableReason.noCanonicalObjectCarrier
+          | .noFinitePrimitiveBundle => ``UnreachableReason.noFinitePrimitiveBundle
+          | .noFaithfulPrimitiveRealization => ``UnreachableReason.noFaithfulPrimitiveRealization
+        let payload ← mkAppOptM ``UnreachableDisposition.mk #[some key,
+          some reason, some (toExpr value.evidence)]
+        let disposition ← mkAppOptM ``AnalysisDisposition.unreachable #[some key, some payload]
+        mkAppOptM ``CensusAssessment.certified #[some key, some disposition]
+    | .observed value => do
+      let scope ← mkAppOptM ``ImportClosureScope.mk #[
+        some (toExpr value.importScope.modules), some (toExpr value.importScope.completed)]
+      let observation ← mkAppOptM ``AnalysisObservation.mk #[some key,
+        some (toExpr value.owningModule), some (toExpr value.root), some scope,
+        some (toExpr value.queryCompleted), some (toExpr value.candidates), some (toExpr value.note)]
+      mkAppOptM ``CensusAssessment.observed #[some key, some observation]
   let motive := mkLambda `key .default (mkConst ``StatementKey)
-    (mkApp (mkConst ``AnalysisDisposition) (.bvar 0))
-  mkAppOptM ``Sigma.mk #[some (mkConst ``StatementKey), some motive, some key, some disposition]
+    (mkApp (mkConst ``CensusAssessment) (.bvar 0))
+  mkAppOptM ``Sigma.mk #[some (mkConst ``StatementKey), some motive, some key, some assessment]
 
 /-- Reifies the actual inventory and asks Lean's kernel to verify ExactlyCovers.
 No native evaluation result is used as a proof. -/
 def coverageProof (report : FrozenReport) (inventory : DispositionInventory) : MetaM Expr := do
   let motive := mkLambda `key .default (mkConst ``StatementKey)
-    (mkApp (mkConst ``AnalysisDisposition) (.bvar 0))
+    (mkApp (mkConst ``CensusAssessment) (.bvar 0))
   let rowType := mkApp2 (mkConst ``Sigma [.zero, .zero]) (mkConst ``StatementKey) motive
   let entries ← mkArrayLit rowType (← inventory.entries.toList.mapM rowExpr)
   let inventoryExpr := mkApp2 (mkConst ``DispositionInventory.mk) (toExpr inventory.headSha) entries

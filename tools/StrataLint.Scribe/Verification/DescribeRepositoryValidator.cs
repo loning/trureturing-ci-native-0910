@@ -401,7 +401,7 @@ internal static class DescribeRepositoryValidator
 
     /// <summary>
     /// Binds a problem candidate to its literature note. The note owns the paper's
-    /// identity, so the candidate's <c>doi</c> must reproduce the note's DOI byte
+    /// identity, so the candidate must reproduce the note's DOI or URL byte
     /// for byte, and a candidate
     /// whose bibkey names no note is a dangling reference rather than a stylistic slip.
     /// </summary>
@@ -419,15 +419,15 @@ internal static class DescribeRepositoryValidator
             return;
         }
 
-        var expected = candidate.Doi.Value;
-        if (note.Doi is null
-            || !string.Equals(note.Doi.Value, expected, StringComparison.Ordinal))
+        var expected = candidate.Doi?.Value ?? candidate.Url!.AbsoluteUri;
+        var actual = note.Doi?.Value ?? note.Url?.AbsoluteUri;
+        if (!string.Equals(actual, expected, StringComparison.Ordinal))
         {
             findings.Add(new DescribeRedFinding(
                 "problem-source-mismatch",
                 candidate.RelativePath,
-                $"problem expects DOI {expected} in "
-                + $"{note.RelativePath}, which carries {note.Doi?.Value ?? "no DOI"}"));
+                $"problem expects source {expected} in "
+                + $"{note.RelativePath}, which carries {actual ?? "no locator"}"));
         }
     }
 

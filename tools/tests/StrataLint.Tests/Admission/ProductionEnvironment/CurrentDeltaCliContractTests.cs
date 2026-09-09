@@ -92,7 +92,7 @@ public sealed class CurrentDeltaCliContractTests
             case "annotation": Write(protectedPath, "#!/bin/sh\nexit 0\n"); break;
             case "mixed": Write("tools/StrataLint.Cli/probe.cs", "// candidate judge\n"); Write(RuleFixture.BlueprintPath, "# changed\n"); break;
             case "first-freeze": Write("Golden/Frozen/accepted/" + new string('a', 64) + ".json", "{}\n"); break;
-            case "ratchet": for (var i = 0; i < 25; i++) Write($"docs/reports/ratchet/{i}.json", "{}\n"); break;
+            case "ratchet": for (var i = 0; i <= RepositoryRules.DirectoryFileLimit; i++) Write($"docs/reports/ratchet/{i}.json", "{}\n"); break;
             case "missing-base-project": File.Delete(Path.Combine(root, firstProject)); break;
             default: Write(RuleFixture.BlueprintPath, "# changed\n"); break;
         }
