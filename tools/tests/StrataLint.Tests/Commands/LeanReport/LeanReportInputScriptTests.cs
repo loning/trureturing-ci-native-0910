@@ -484,6 +484,15 @@ public sealed partial class LeanReportInputScriptTests
                         TestRepositoryLayout.FindRoot(),
                         ".github", "workflows", "ci.yml"),
                     Encoding.UTF8));
+            // Copied entrypoints can reach more scripts; retain the explicit synthetic inputs.
+            var sourceRoot = TestRepositoryLayout.FindRoot();
+            foreach (var path in Directory.EnumerateFiles(
+                Path.Combine(sourceRoot, "tools", "scripts"), "*.sh", SearchOption.AllDirectories))
+            {
+                var relative = Path.GetRelativePath(sourceRoot, path);
+                if (!File.Exists(Path.Combine(repository, relative)))
+                    Write(relative, File.ReadAllText(path, Encoding.UTF8));
+            }
             Write("Directory.Build.props", "<Project />\n");
             Write("Directory.Packages.props", "<Project />\n");
             Write(CliProjectPath, "<Project Sdk=\"Microsoft.NET.Sdk\" />\n");
