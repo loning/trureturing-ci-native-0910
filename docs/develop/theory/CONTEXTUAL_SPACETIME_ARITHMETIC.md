@@ -2074,6 +2074,362 @@ for pr4_x, pr4_y, pr4_f, pr4_c in (
     pr4_equal(pr4_c(pr4_x), pr4_c(pr4_y), "kernel_edges")
 
 print(f"pr4_temporal_causal: random_samples={len(pr4_samples)} cases={len(pr4_cases)} updates={pr4_counts['updates']} endpoint_updates={pr4_counts['endpoint_updates']} earliest_rows={pr4_counts['earliest_rows']} product_antichains={pr4_counts['product_antichains']} guard_success={pr4_counts['guard_success']} strict_failures={pr4_counts['strict_failures']} context_reads={pr4_counts['context_reads']} mobius_profiles={pr4_counts['mobius_profiles']} mobius_coefficients={pr4_counts['mobius_coefficients']} xi_paths={pr4_counts['xi_paths']} forget_paths={pr4_counts['forget_paths']} kernel_edges={pr4_counts['kernel_edges']} D11={pr4_d11_reads[0]},{pr4_d11_reads[1]} D11_Z_times=-2,-1 common_k={pr4_common_k} shifted_probe={pr4_shift_probe[0]},{pr4_shift_probe[1]} fixed_U0={pr4_flat_probe[0]},{pr4_flat_probe[1]} q_expression={pr4_counts['q_expression']} B2={pr4_B2[0]},{pr4_B2[1]} D10_indegrees={pr4_D10_indegrees[0]},{pr4_D10_indegrees[1]} c_then_b={pr4_c_then_b[0]},{pr4_c_then_b[1]}")
+# PR5: mixed closure and expression checks; reuse Rich and timed PR3/PR4 helpers.
+pr5_counts = {name: 0 for name in (
+    "region_updates", "pair_updates", "endpoints", "unselected_parent_pairs",
+    "rejected_parent_pairs", "empty_products", "old_endpoint_products",
+    "negative_time_inputs", "asymmetric_slots", "context_steps", "context_q",
+    "ts_pair_contexts", "mix_contexts", "strict_failures", "rich_equalities",
+    "H_cases", "D13_choices", "D14_choices", "bit_maps", "q_expression", "D14_q")}
+
+def pr5_equal(actual, expected, counter):
+    assert pr3_bytes(actual) == pr3_bytes(expected), (counter, actual, expected)
+    pr5_counts[counter] += 1
+
+class pr5_Set:
+    # Fixed mathematical predicates, including infinite regions; no input X here.
+    def __init__(self, predicate):
+        self.predicate = predicate
+    def __contains__(self, item):
+        return self.predicate(item)
+
+def pr5_cell(x, e):
+    return x.e[e][0], x.e[e][1]
+
+def pr5_region(x, B):
+    return filt(x, lambda e: pr5_cell(x, e) in B)
+
+def pr5_pair(x, y, P):
+    return restricted_mul(x, y, lambda e, f: (pr5_cell(x, e), pr5_cell(y, f)) in P)
+
+def pr5_region_profile(g, B):
+    return push_c(g, lambda row: (row[0], row[1] * int((row[0][3], row[0][0]) in B), row[2]))
+
+def pr5_pair_profile(g, gg, P):
+    out = {}
+    for (a, b, upper), value in g.items():
+        for (aa, bb, uu), other in gg.items():
+            joined = pr4_diamond(a, aa)
+            selected = b * bb * int(((a[3], a[0]), (aa[3], aa[0])) in P)
+            row = (joined, selected, frozenset((joined,)))
+            # Coefficients already carry sign. P only changes the selection bit.
+            out[row] = out.get(row, 0) + value * other
+    return sparse(out)
+
+def pr5_summary(x):
+    return pr4_profile(x), *theta(x)[1:3]
+
+def pr5_summary_q(summary):
+    return sum(value for (a, b, upper), value in summary[0].items() if b)
+
+def pr5_rich_bytes(x):
+    # Complete encoded state, including event IDs, all attributes, order, Omega, A.
+    return x.e, x.o, x.w, x.a
+
+def pr5_summary_step(state, step):
+    if state is FAIL:
+        return FAIL
+    g, m, M = state
+    op, *args = step
+    if op == "N":
+        return push_c(g, lambda row: (row[0], 1-row[1], row[2])), m, M
+    if op in ("FB", "FS", "FL", "FQ"):
+        param, = args
+        if op == "FB":
+            return pr5_region_profile(g, param), m, M
+        def mask(row):
+            if op == "FS":
+                return row[0][0] in param
+            if op == "FL":
+                return row[0][2] in param
+            return any(a in param for a in row[2])
+        return push_c(g, lambda row: (row[0], row[1]*int(mask(row)), row[2])), m, M
+    if op == "T":
+        k, = args
+        return (pr4_shift_profile(g, k), m+k if m is not None else None,
+                M+k if M is not None else None)
+    slot, parameter, *predicate = args
+    left, right = (state, pr5_summary(parameter)) if slot == 0 else (pr5_summary(parameter), state)
+    gl, ml, Ml = left
+    gr, mr, Mr = right
+    if op == "then" and not (Ml is None or mr is None or Ml < mr):
+        return FAIL
+    if op in ("add", "then"):
+        updated_left = gl if op == "add" else push_c(
+            gl, lambda row: (row[0], row[1], row[2] | pr3_V(gr)))
+        return plus_c(updated_left, gr), lo(ml, mr), hi(Ml, Mr)
+    assert op in ("mul", "MP")
+    generated_max = gamma(pr4_support_time(gl), pr4_support_time(gr))
+    updated = pr4_profile_product(gl, gr) if op == "mul" else pr5_pair_profile(gl, gr, predicate[0])
+    return updated, lo(ml, mr), hi(Ml, Mr, generated_max)
+
+def pr5_rich_step(state, step):
+    if state is FAIL:
+        return FAIL
+    op, *args = step
+    if op == "N":
+        return neg(state)
+    if op == "FB":
+        return pr5_region(state, args[0])
+    if op == "FS":
+        return at(state, args[0])
+    if op == "FL":
+        return filt(state, lambda e: state.e[e][3] in args[0])
+    if op == "FQ":
+        return pr3_causal_filter(state, args[0], timed=True)
+    if op == "T":
+        return time_shift(state, args[0])
+    slot, parameter, *predicate = args
+    left, right = (state, parameter) if slot == 0 else (parameter, state)
+    if op == "MP":
+        return pr5_pair(left, right, predicate[0])
+    return attempt(lambda: {"add": add, "mul": mul, "then": temporal}[op](left, right))
+
+pr5_all = pr5_Set(lambda _: True)
+pr5_empty = frozenset()
+pr5_column = pr5_Set(lambda cell: cell[1] in {origin, v})
+pr5_past = pr5_Set(lambda cell: cell[0] <= -2)
+pr5_adjacent = pr5_Set(lambda cell: (cell[1] == origin and cell[0] <= 0)
+                                  or (cell[1] == v and cell[0] <= 1))
+pr5_gap2 = pr5_Set(lambda cell: (cell[1] == origin and cell[0] <= 0)
+                              or (cell[1] == v and cell[0] <= 2))
+pr5_single = frozenset({(1, origin)})
+pr5_checker = pr5_Set(lambda cell: (cell[0] + cell[1][0]) % 2 == 0)
+pr5_regions = (pr5_all, pr5_empty, pr5_column, pr5_past,
+               pr5_adjacent, pr5_gap2, pr5_single, pr5_checker)
+pr5_asymmetric = pr5_Set(lambda pair: pair[0][0] < pair[1][0])
+pr5_position_pair = pr5_Set(lambda pair: pair[0][1] == origin and pair[1][1] == v)
+pr5_predicates = (pr5_empty, pr5_all, pr5_asymmetric, pr5_position_pair)
+pr5_Qpositive = pr5_Set(lambda a: a[1] == 1)
+
+def pr5_Q(B):
+    return pr5_Set(lambda a: (a[3], a[0]) in B)
+
+def pr5_Qstar(B):
+    return pr5_Set(lambda a: (a[3]-1, a[0]) in B)
+
+pr5_rng = pr3_Random(2026091005)
+pr5_samples = []
+for pr5_i in range(64):
+    pr5_n = pr5_rng.choice((0, 2, 4, 6))
+    pr5_signs = [1]*(pr5_n//2) + [-1]*(pr5_n//2)
+    pr5_rng.shuffle(pr5_signs)
+    pr5_events = {j: (pr5_rng.randrange(-8, 6), pr5_rng.choice((origin, v, h)), sign,
+                      pr5_rng.choice((pr3_l0, pr3_l1, ("pair", pr3_l0, pr3_l1))))
+                   for j, sign in enumerate(pr5_signs)}
+    pr5_whole = frozenset(pr5_events)
+    for pr5_j in range(pr5_rng.randrange(3)):
+        pr5_events[("old", pr5_j)] = (pr5_rng.choice((-12, 10)), h, 1, ("leaf", 9))
+    pr5_edges = {(a, b) for a in pr5_events for b in pr5_events
+                 if pr5_events[a][0] < pr5_events[b][0] and pr5_rng.randrange(4) == 0}
+    pr5_chosen = frozenset(e for e in sorted(pr5_whole) if pr5_rng.randrange(2))
+    pr5_samples.append(valid(Rich(pr5_events, closure(pr5_edges), pr5_whole, pr5_chosen)))
+
+# D13 is parameterized, with negative-time instances distinct from the old D12.
+pr5_D13_reads = []
+for pr5_t1, pr5_t2, pr5_p in ((-4, -1, origin), (-2, 3, v), (4, 7, h)):
+    pr5_events = {e: (n, pr5_p, sign, pr3_l0)
+                  for e, n, sign in zip("abcd", (pr5_t1, pr5_t2, pr5_t1, pr5_t1), (1, 1, -1, -1))}
+    pr5_fixed = valid(Rich(pr5_events, frozenset({("a", "b")}), frozenset(pr5_events), frozenset()))
+    pr5_D13_family = [replace(pr5_fixed, a=A) for A in pr3_subsets("ab")]
+    pr5_B = frozenset({(pr5_t2, pr5_p)})
+    pr5_target = frozenset({pr3_alpha(pr5_fixed, "b", timed=True)})
+    pr5_reads = tuple(q(pr5_region(x, pr5_B)) for x in pr5_D13_family)
+    pr5_causal_reads = tuple(q(pr3_causal_filter(x, pr5_target, timed=True)) for x in pr5_D13_family)
+    assert pr5_reads == (0, 0, 1, 1) and pr5_causal_reads == (0, 1, 1, 2)
+    pr5_counts["D13_choices"] += len(pr5_D13_family)
+    pr5_D13_reads.append((pr5_reads, pr5_causal_reads))
+
+# D14: three individually identifiable positive points, plus three isolated negatives.
+pr5_d14_events = {"a": (1, origin, 1, pr3_l0), "b": (2, v, 1, pr3_l0),
+                   "c": (0, origin, 1, pr3_l0)}
+pr5_d14_events.update({e: (0, origin, -1, pr3_l0) for e in "xyz"})
+pr5_d14 = valid(Rich(pr5_d14_events, frozenset({("a", "b")}),
+                     frozenset(pr5_d14_events), frozenset()))
+pr5_D14_family = [replace(pr5_d14, a=A) for A in pr3_subsets("abc")]
+pr5_D14_reads, pr5_D14_causal = [], []
+for pr5_x in pr5_D14_family:
+    pr5_direct = pr5_region(pr5_x, pr5_gap2)
+    pr5_encoded = at(pr3_causal_filter(pr5_x, pr5_Q(pr5_gap2), timed=True), {origin, v})
+    assert pr5_direct.a == pr5_x.a & {"b", "c"}
+    assert pr5_encoded.a == pr5_x.a
+    pr5_D14_reads.append(q(pr5_direct))
+    pr5_D14_causal.append(q(pr5_encoded))
+    pr5_counts["D14_choices"] += 1
+assert pr5_D14_reads == [0, 0, 1, 1, 1, 1, 2, 2]
+assert pr5_D14_causal == [0, 1, 1, 1, 2, 2, 2, 3]
+assert (pr5_D14_reads[1], pr5_D14_causal[1]) == (0, 1)
+
+pr5_cases = pr5_samples + [empty, pr4_archive_only, pr4_cancel, pr3_outside,
+                           pr3_d5x, pr3_d5y, pr3_U0, unit_at(-3)] + pr5_D14_family
+for pr5_i, pr5_x in enumerate(pr5_cases):
+    assert charge(pr5_x, pr5_x.w) == 0
+    pr5_g, pr5_m, pr5_M = pr5_summary(pr5_x)
+    if any(event[0] < 0 for event in pr5_x.e.values()):
+        pr5_counts["negative_time_inputs"] += 1
+    for pr5_B in pr5_regions:
+        pr5_out = pr5_region(pr5_x, pr5_B)
+        pr5_equal(pr4_profile(pr5_out), pr5_region_profile(pr5_g, pr5_B), "region_updates")
+        pr5_equal(theta(pr5_out)[1:], theta(pr5_x)[1:], "endpoints")
+        assert (pr5_out.e, pr5_out.o, pr5_out.w) == (pr5_x.e, pr5_x.o, pr5_x.w)
+    pr5_y = pr5_cases[(pr5_i + 3) % len(pr5_cases)]
+    for pr5_left, pr5_right in ((pr5_x, pr5_y), (pr5_y, pr5_x)):
+        for pr5_P in pr5_predicates:
+            pr5_out = pr5_pair(pr5_left, pr5_right, pr5_P)
+            pr5_expected = pr5_summary_step(pr5_summary(pr5_left), ("MP", 0, pr5_right, pr5_P))
+            pr5_equal(pr4_profile(pr5_out), pr5_expected[0], "pair_updates")
+            pr5_equal(theta(pr5_out)[1:], (*pr5_expected[1:], pr4_support_time(pr5_expected[0])), "endpoints")
+            assert len(pr5_out.w) == len(pr5_left.w)*len(pr5_right.w)
+            assert len(pr5_out.e) == len(pr5_left.e)+len(pr5_right.e)+len(pr5_out.w)
+            assert not any(e in pr5_out.w for e, d in pr5_out.o)
+            assert all(pr3_U(pr5_out, e, timed=True) == {pr3_alpha(pr5_out, e, timed=True)}
+                       for e in pr5_out.w)
+            for pr5_e, pr5_f in product(pr5_left.w, pr5_right.w):
+                pr5_counts["unselected_parent_pairs"] += int(pr5_e not in pr5_left.a or pr5_f not in pr5_right.a)
+                pr5_counts["rejected_parent_pairs"] += int((pr5_cell(pr5_left, pr5_e), pr5_cell(pr5_right, pr5_f)) not in pr5_P)
+            pr5_counts["empty_products"] += int(not pr5_out.w)
+            pr5_counts["old_endpoint_products"] += int(any(
+                z.e[e][0] in theta(z)[1:3] for z in (pr5_left, pr5_right) for e in z.e.keys()-z.w))
+
+# A fixed asymmetric P distinguishes both slots; sources remain ordered as well.
+pr5_early, pr5_late = unit_at(-3), unit_at(2)
+assert (q(pr5_pair(pr5_early, pr5_late, pr5_asymmetric)),
+        q(pr5_pair(pr5_late, pr5_early, pr5_asymmetric))) == (1, 0)
+for pr5_slot in (0, 1):
+    pr5_step = ("MP", pr5_slot, pr5_late, pr5_asymmetric)
+    pr5_equal(pr5_summary(pr5_rich_step(pr5_early, pr5_step)),
+               pr5_summary_step(pr5_summary(pr5_early), pr5_step), "asymmetric_slots")
+
+# P=empty must retain the full background. Deleting rejected rows predicts 0, not 2.
+pr5_empty_pair = pr5_pair(pr3_U0, pr3_U0, pr5_empty)
+pr5_empty_g = pr5_pair_profile(pr4_profile(pr3_U0), pr4_profile(pr3_U0), pr5_empty)
+pr5_pair_negative_control = q(pr3_causal_filter(neg(pr5_empty_pair), pr5_Qpositive, timed=True))
+assert len(pr5_empty_pair.w) == 4 and pr5_empty_g and all(b == 0 for a, b, U in pr5_empty_g)
+assert sum(abs(value) for value in pr5_empty_g.values()) == 4
+assert pr5_pair_negative_control == 2
+pr5_wrong_g = {}  # The deliberately wrong update deletes every rejected pair.
+assert pr5_summary_q(pr5_summary_step(pr5_summary_step((pr5_wrong_g, 0, 1), ("N",)),
+                                     ("FQ", pr5_Qpositive))) == 0
+
+# All words/parameters are fixed before iterating X. Both binary slots are exercised.
+pr5_words = []
+for pr5_param in (pr3_U0, unit_at(-20), unit_at(20), pr4_archive_only, empty):
+    for pr5_slot in (0, 1):
+        pr5_words.append(("ts_pair_contexts", (("FB", pr5_checker), ("MP", pr5_slot, pr5_param, pr5_asymmetric),
+                          ("N",), ("T", -2), ("FB", pr5_past), ("add", 1-pr5_slot, pr3_U0),
+                          ("mul", pr5_slot, pr3_U0), ("then", 0, unit_at(30)))))
+        pr5_words.append(("mix_contexts", (("FQ", pr5_Qpositive), ("FB", pr5_gap2),
+                          ("MP", pr5_slot, pr5_param, pr5_position_pair), ("FL", pr5_all),
+                          ("T", 1), ("N",), ("FS", {origin, v}), ("FQ", pr5_Qpositive),
+                          ("then", pr5_slot, unit_at(30)), ("FB", pr5_empty))))
+for pr5_x in pr5_cases:
+    for pr5_kind, pr5_word in pr5_words:
+        pr5_rich, pr5_state = pr5_x, pr5_summary(pr5_x)
+        for pr5_step in pr5_word:
+            pr5_rich = pr5_rich_step(pr5_rich, pr5_step)
+            pr5_state = pr5_summary_step(pr5_state, pr5_step)
+            assert (pr5_rich is FAIL) == (pr5_state is FAIL)
+            if pr5_state is not FAIL:
+                pr5_equal(pr5_summary(pr5_rich), pr5_state, "context_steps")
+                pr5_equal(q(pr5_rich), pr5_summary_q(pr5_state), "context_q")
+                assert charge(pr5_rich, pr5_rich.w) == 0
+            else:
+                pr5_counts["strict_failures"] += 1
+        pr5_counts[pr5_kind] += 1
+for pr5_slot in (0, 1):
+    pr5_failing = ("then", pr5_slot, pr3_U0)
+    pr5_suffixes = (("N",), ("FB", pr5_empty), ("FQ", pr5_empty), ("mul", 0, empty),
+                    ("mul", 1, empty), ("MP", 0, empty, pr5_empty), ("MP", 1, empty, pr5_empty))
+    for pr5_suffix in pr5_suffixes:
+        pr5_ops = tuple(lambda z, step=step: pr5_rich_step(z, step) for step in (pr5_failing, pr5_suffix))
+        # Also use the original strict evaluator, whose failed temporal raises.
+        pr5_temporal_op = (lambda z: temporal(z, pr3_U0)) if pr5_slot == 0 else (lambda z: temporal(pr3_U0, z))
+        assert observe((pr5_temporal_op, pr5_ops[1]), pr3_U0, q) is FAIL
+        assert pr5_summary_step(pr5_summary_step(pr5_summary(pr3_U0), pr5_failing), pr5_suffix) is FAIL
+        pr5_counts["strict_failures"] += 1
+
+# Proposition 53: full Rich equality, never a profile+cardinality substitute for history.
+pr5_expressible = ((pr5_all, pr5_all), (pr5_empty, pr5_empty),
+                   (pr5_column, {origin, v}), (pr5_past, pr5_all), (pr5_adjacent, {origin, v}))
+for pr5_B, pr5_S in pr5_expressible:
+    for pr5_x in pr5_cases:
+        pr5_out = at(pr3_causal_filter(pr5_x, pr5_Q(pr5_B), timed=True), pr5_S)
+        pr5_equal(pr5_rich_bytes(pr5_out), pr5_rich_bytes(pr5_region(pr5_x, pr5_B)), "rich_equalities")
+
+# Exact small family: two positions, arbitrary membership on seven time blocks
+# (-infinity,-3], {-2}, {-1}, {0}, {1}, {2}, [3,+infinity).
+# Two representatives in each infinite tail expose strict-time witnesses there.
+pr5_times = (-4, -3, -2, -1, 0, 1, 2, 3, 4)
+pr5_blocks = (0, 0, 1, 2, 3, 4, 5, 6, 6)
+def pr5_H(matrix):
+    active = [p for p in range(len(matrix[0])) if any(row[p] for row in matrix)]
+    return all(not any(matrix[j]) or all(matrix[i][p] for p in active)
+               for i in range(len(matrix)) for j in range(i+1, len(matrix)))
+
+pr5_normal_forms = set()
+for pr5_S in pr3_subsets(range(2)):
+    pr5_normal_forms.add(tuple(tuple(p in pr5_S for p in range(2)) for t in pr5_times))
+    for pr5_top in range(-4, 5):
+        for pr5_R in pr3_subsets(pr5_S):
+            if pr5_R:
+                pr5_normal_forms.add(tuple(tuple((t < pr5_top and p in pr5_S) or
+                                      (t == pr5_top and p in pr5_R) for p in range(2)) for t in pr5_times))
+for pr5_bits in product((False, True), repeat=14):
+    pr5_matrix = tuple(tuple(pr5_bits[7*p+block] for p in range(2)) for block in pr5_blocks)
+    assert pr5_H(pr5_matrix) == (pr5_matrix in pr5_normal_forms)
+    pr5_counts["H_cases"] += 1
+for pr5_B, pr5_expected_H in ((pr5_column, True), (pr5_past, True), (pr5_adjacent, True),
+                              (pr5_gap2, False), (pr5_single, False), (pr5_empty, True)):
+    pr5_matrix = tuple(tuple((t, p) in pr5_B for p in (origin, v, h)) for t in pr5_times)
+    assert pr5_H(pr5_matrix) == pr5_expected_H
+
+# Finite bit-map closure is supplementary; the proof excludes arbitrary finite words.
+for pr5_size in (2, 3):
+    pr5_identity = (0, 1)*pr5_size
+    pr5_masks = {mask for mask in product((0, 1), repeat=pr5_size) if mask[0] >= mask[1]}
+    if pr5_size == 3:
+        pr5_masks |= {mask for mask in product((0, 1), repeat=3) if mask[0] == mask[2]}
+    pr5_maps, pr5_pending = {pr5_identity}, [pr5_identity]
+    while pr5_pending:
+        pr5_map = pr5_pending.pop()
+        pr5_next = {tuple(1-z for z in pr5_map)} | {
+            tuple(z*mask[i//2] for i, z in enumerate(pr5_map)) for mask in pr5_masks}
+        for pr5_map1 in pr5_next-pr5_maps:
+            pr5_maps.add(pr5_map1)
+            pr5_pending.append(pr5_map1)
+    assert (0, 0)+(0, 1)*(pr5_size-1) not in pr5_maps
+    assert all(f[:2] == (0, 1) for f in pr5_maps if f[2:] == (0, 1)*(pr5_size-1))
+    pr5_counts["bit_maps"] += len(pr5_maps)
+
+# Proposition 54: fixed lower bounds, no upper-bound or finite-region assumption.
+pr5_bounded_regions = ((pr5_empty, -5), (pr5_single, 1),
+    (frozenset({(-5, origin), (-2, v), (3, h)}), -5),
+    (pr5_Set(lambda cell: cell[0] >= -4 and cell[1] in {origin, v}), -4),
+    (pr5_Set(lambda cell: cell[0] >= -6 and (cell[0]+cell[1][0]) % 2 == 0), -6))
+for pr5_B, pr5_k0 in pr5_bounded_regions:
+    for pr5_k in (pr5_k0-1, pr5_k0-2, pr5_k0-7):
+        pr5_parameter, pr5_target = time_shift(pr3_U0, pr5_k), pr5_Qstar(pr5_B)
+        for pr5_x in pr5_cases:
+            pr5_equal(q(pr3_causal_filter(mul(pr5_x, pr5_parameter), pr5_target, timed=True)),
+                       q(pr5_region(pr5_x, pr5_B)), "q_expression")
+pr5_bad_B = frozenset({(0, origin)})
+pr5_bad_x = unit_at(-1)
+pr5_bad_bound = (q(pr5_region(pr5_bad_x, pr5_bad_B)),
+                 q(pr3_causal_filter(mul(pr5_bad_x, pr3_U0), pr5_Qstar(pr5_bad_B), timed=True)))
+assert pr5_bad_bound == (0, 1)
+
+# D14 is unbounded below, so its positive q expression is a separate direct check.
+pr5_D14_Q = pr5_Set(lambda a: (a[0] == origin and a[3] == 1)
+                              or (a[0] == v and a[3] in {1, 2, 3}))
+for pr5_x in pr5_cases:
+    pr5_equal(q(pr3_causal_filter(mul(pr5_x, pr3_U0), pr5_D14_Q, timed=True)),
+               q(pr5_region(pr5_x, pr5_gap2)), "D14_q")
+assert all(pr5_counts[k] > 0 for k in pr5_counts)
+print("pr5_mixed_closure: " + " ".join(f"{name}={value}" for name, value in pr5_counts.items())
+      + f" seed=2026091005 random_samples={len(pr5_samples)} cases={len(pr5_cases)}"
+      + " P_empty_Omega=4 P_empty_Gamma=nonempty P_empty_N_positive=2 wrong_deleted_rows=0"
+      + " D13=0,0,1,1/0,1,1,2 D14=0,0,1,1,1,1,2,2/0,1,1,1,2,2,2,3 bad_k=0,1")
+
 print("ALL_FINITE_CHECKS_PASSED")
 ```
 
