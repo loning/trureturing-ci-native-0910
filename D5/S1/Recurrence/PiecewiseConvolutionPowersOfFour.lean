@@ -9,6 +9,7 @@
 import D5.S1.Recurrence.ConvolutionRecurrenceOddPowersOfTwo
 import Mathlib.RingTheory.PowerSeries.Expand
 import Mathlib.Algebra.BigOperators.Intervals
+import Mathlib.FieldTheory.Finite.Basic
 open Finset PowerSeries
 open D5.S1.Recurrence.ConvolutionRecurrenceOddPowersOfTwo (convolution_pairing)
 
@@ -95,5 +96,31 @@ theorem seq_even_index_zero (j : ℕ) : (seq (2*j+2) : ZMod 2) = 0 := by
   exact square_odd_coeff binary j
 
 #print axioms seq_even_index_zero
+
+private theorem square_expand (f : PowerSeries (ZMod 2)) : f.expand 2 (by decide) = f^2 := by
+  have h := MvPowerSeries.map_frobenius_expand 2 (by decide : 2 ≠ 0) (f := f)
+  change (f.expand 2 (by decide)).map (frobenius (ZMod 2) 2) = f ^ 2 at h
+  rw [ZMod.frobenius_zmod, PowerSeries.map_id] at h
+  exact h
+private theorem fourth_expand (f : PowerSeries (ZMod 2)) : f.expand 4 (by decide) = f^4 := by
+  calc
+    f.expand 4 (by decide) = (f.expand 2 (by decide)).expand 2 (by decide) :=
+      expand_mul 2 (by decide) 2 (by decide) f
+    _ = f^4 := by rw [square_expand, square_expand, ← pow_mul]
+
+private theorem fourth_coeff_three (f : PowerSeries (ZMod 2)) (j : ℕ) :
+    coeff (4*j+2) (f^4) = 0 := by
+  rw [← fourth_expand]
+  apply coeff_expand_of_not_dvd
+  omega
+
+/-- The sequence vanishes modulo two at indices congruent to three modulo four. -/
+theorem seq_four_mul_add_three (j : ℕ) : (seq (4*j+3) : ZMod 2) = 0 := by
+  rw [binary_recurrence (by omega), if_neg (by
+    rintro ⟨k, hk⟩
+    omega), show 4*j+3-1 = 4*j+2 by omega]
+  exact fourth_coeff_three binary j
+
+#print axioms seq_four_mul_add_three
 
 end D5.S1.Recurrence.PiecewiseConvolutionPowersOfFour

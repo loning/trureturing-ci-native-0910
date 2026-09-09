@@ -45,3 +45,5 @@
 配对探针修复后 EXIT=0：`square_even_coeff` 实际应用既有 `convolution_pairing`；`square_odd_coeff` 经 `X*expand₂(f)` 降到 midpoint=0，不重证 involution。首次序列 cast 桥 EXIT=1：`simp only` 未把 `map(series^p)` 与 `(map series)^p` 对齐，具体两侧为 `Nat.castRingHom … (coeff … (series^p))` / `coeff … ((PowerSeries.map … series)^p)`；改为反向 `map_pow` 再 `coeff_map`。
 
 **第一步完成**：`seq_even_index_zero (j : ℕ) : (seq (2*j+2) : ZMod 2)=0`，正式文件热树增量编译 EXIT=0；`#print axioms` 仅 `propext, Classical.choice, Quot.sound`。原卷积到自然数 cast 桥已闭合。全项目门与冻结待最终模块齐备后依序执行。
+
+**第二步完成**：四次 Frobenius 探针 EXIT=0；正式 `seq_four_mul_add_three (j)` 编译 EXIT=0，标准三公理闭包。`square_expand` 直接用 Mathlib `map_frobenius_expand` 和 `ZMod.frobenius_zmod`；两次 expand 合成四次，再用 `coeff_expand_of_not_dvd`。认证 GitHub 代码搜索 `gh api search/code?q=A368628+language:Lean` 成功，total_count=0；替代此前401失败，检索边界仍限字面 A 号。
