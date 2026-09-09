@@ -1636,7 +1636,7 @@ assert set(pr3_expected_left).isdisjoint(pr3_expected_right)
 assert pr3_rho_src(comm_left) != pr3_rho_src(comm_right)
 assert pr3_rho_src(source7)[1] != pr3_rho_src(source8)[1]
 
-# D1: bare probes cancel, including equality after N, but the legal isolation separates.
+# D6: bare probes cancel, including equality after N, but the legal isolation separates.
 pr3_d1e = {e: (t0, origin, sign, pr3_l0)
            for e, t0, sign in zip("abcd", (0, 1, 2, 2), (1, -1, 1, -1))}
 pr3_d1x = valid(Rich(pr3_d1e, closure({("a", "b"), ("b", "c"), ("b", "d")}),
@@ -1714,7 +1714,7 @@ pr3_J_reads = tuple(q(filt(z, lambda e: any((e, d) in z.o for d in z.w)))
                     for z in (causal, no_causal))
 assert pr3_J_reads == (1, 0)
 
-# D2: inserting a same-attribute generating edge creates a cross-attribute closure edge.
+# D7: inserting a same-attribute generating edge creates a cross-attribute closure edge.
 pr3_d2e = {e: (t0, origin, sign, pr3_l0)
            for e, t0, sign in zip("abcd", (0, 1, 2, 0), (1, 1, -1, -1))}
 pr3_d2x = valid(Rich(pr3_d2e, frozenset({("b", "c")}), frozenset(pr3_d2e), frozenset("a")))
@@ -1724,7 +1724,7 @@ assert theta(pr3_d2x)[1:] == theta(pr3_d2y)[1:]
 pr3_edge_reads = tuple(q(pr3_causal_filter(z, {pr3_vm})) for z in (pr3_d2x, pr3_d2y))
 assert pr3_edge_reads == (0, 1)
 
-# D3: all singleton hitting marginals agree, but a two-attribute query differs.
+# D8: all singleton hitting marginals agree, but a two-attribute query differs.
 pr3_d3e = {"e1": (0, origin, 1, pr3_l0), "e2": (0, origin, 1, pr3_l0),
            "b": (1, origin, -1, ("leaf", 1)), "c": (1, origin, -1, ("leaf", 2))}
 pr3_d3x = valid(Rich(pr3_d3e, frozenset({("e2", "b"), ("e2", "c")}),
@@ -1748,7 +1748,7 @@ for pr3_x in pr3_samples:
             pr3_counts["redundant_insertions"] += 1
 assert pr3_counts["redundant_insertions"] > 0
 
-# D5: even the time-attribute profile need not recover incidence or history isomorphism.
+# D10: even the time-attribute profile need not recover incidence or history isomorphism.
 pr3_d5e = {e: (t0, origin, 1, pr3_l0)
            for e, t0 in zip(("a1", "a2", "b1", "b2"), (0, 0, 1, 1))}
 pr3_d5e.update({("n", i): (0, origin, -1, pr3_l0) for i in range(4)})
@@ -2868,7 +2868,7 @@ $$
 
 <a id="pr3-source"></a>
 
-## 24. PR3 增补 I：来源语言与来源–位置双电荷
+## 27. PR3 增补 I：来源语言与来源–位置双电荷
 
 本节沿用定义 1 的来源树集合 $T$，将定义 12／命题 9 的联合分箱 $f(e)=(x(e),\rho(e))$ 向全域补零。记全局读数为 $\rho_{\rm src}$，与逐事件来源函数 $\rho(e)$ 区分：
 
@@ -2894,7 +2894,7 @@ $(c\star d)(u,\operatorname{pair}(r,s))=\sum_{p+q=u}c(p,r)d(q,s)$，而每个叶
 
 指定 $\Sigma_{\rm src}=\Sigma_{\rm sp}\cup\{F_L:L\subseteq T\}$，载体仍为 $\mathcal B$，观察与全槽位、全参数、任意有限深度上下文仍按定义 16。
 
-**命题 37（来源双电荷的精确更新，repo-derived）。** 写 $w=w_X^\rho,z=z_X^\rho,w'=w_Y^\rho,z'=z_Y^\rho$，则
+**命题 42（来源双电荷的精确更新，repo-derived）。** 写 $w=w_X^\rho,z=z_X^\rho,w'=w_Y^\rho,z'=z_Y^\rho$，则
 
 $$
 \begin{aligned}
@@ -2909,7 +2909,7 @@ $$
 
 **证明。** 沿命题 20 的分组求和，在联合 bin 中并行两份电荷相加；新乘积事件的联合属性为 $(p+q,\operatorname{pair}(r,s))$，父 bin 对上的有限双和是系数之积，再向该联合属性推送即为 $\star$。旧档案不入当前区域，故不添线性项。补集在每个 bin 内取未选电荷；两种筛选只掩蔽所选电荷，背景不变。各操作在 $\mathcal B$ 上总定义；增广对 $\star$ 保乘由有限双和给出，所以背景总和仍为零。证毕。
 
-**命题 38（来源语言的观察核，repo-derived）。**
+**命题 43（来源语言的观察核，repo-derived）。**
 
 $$
 \approx_{\Sigma_{\rm src}}=\ker\rho_{\rm src}.
@@ -2939,7 +2939,7 @@ $$
 
 两者 $w^\rho=0$，所列支撑不交，虽 $q=2$ 相同。§18 的来源交换例分别有 $z^\rho=\delta_{(0,\operatorname{pair}(l_7,l_8))}$ 与 $\delta_{(0,\operatorname{pair}(l_8,l_7))}$，同样 $w^\rho=0$。这些事实证明 $\rho_{\rm src}$ 能区分相应对象，**不证明它恢复档案基数**；§4 的 $28/32$ 仍是档案计数，(SRC) 只数当前区域。
 
-**命题 39（来源与时间混合语言，repo-derived）。**
+**命题 44（来源与时间混合语言，repo-derived）。**
 
 $$
 \approx_{\Sigma_{\rm src}\cup\Sigma_{\rm st}}
@@ -2949,15 +2949,15 @@ $$
 
 **证明。** 对两种并集复合，$\rho_{\rm src}$ 都逐分量相加；时间复合只添边，其精确守卫仍为命题 29 的 $M_X<m_Y$。乘法、补集、两种筛选按 (SRC-UP)，$T_k$ 不改联合电荷。端点对并集、乘法、补集、平移复用命题 29；来源筛选与空间筛选一样不改 $E,\Omega,t$，故不改端点。现在对**混合**上下文归纳：基本步骤用同一参数、同一守卫，两侧同步失败，或成功并得到同一四元摘要；复合严格传播失败，成功则继续归纳，终端由 $z^\rho$ 求和。故此核充分，证明没有把两条核定理取交当作混合闭包证明。反向，来源单点探针 (SRC-REC) 仍在；命题 30 的平衡 $U_t$、左右时间守卫与有限右乘放大探针也仍在，分别恢复 $m,M,s$。因此所有四个坐标必要。证毕。
 
-本节的联合分箱沿用 §8，核证明沿用 §14–16 的上下文方法，CSA 专用公式与见证标 `repo-derived`；成熟框架与外部文献的范围在 §26、§28 逐项列明，不主张新颖性或完整来源代数分类。
+本节的联合分箱沿用 §8，核证明沿用 §14–16 的上下文方法，CSA 专用公式与见证标 `repo-derived`；成熟框架与外部文献的范围在 §29、§31 逐项列明，不主张新颖性或完整来源代数分类。
 
 <a id="pr3-causal"></a>
 
-## 25. PR3 增补 J：去身份因果可观测性
+## 28. PR3 增补 J：去身份因果可观测性
 
-### 25.1 属性、剖面与允许语言
+### 28.1 属性、剖面与允许语言
 
-**定义 22（去身份因果筛选与因果剖面）。** 令
+**定义 25（去身份因果筛选与因果剖面）。** 令
 
 $$
 \mathrm{Attr}=\mathbb Z^3\times\{+1,-1\}\times T,\quad
@@ -2986,9 +2986,9 @@ $$
 未选事件进入 $b=0$ 行，不能只记 $b=1$；下标 $c$ 与 §10 的世界域 $\Gamma$ 区分。指定
 $\Sigma_{\rm cau}=\Sigma_{\rm src}\cup\Sigma_{\rm st}\cup\{F_{\downarrow Q}:Q\subseteq\mathrm{Attr}\}$，仍按定义 16 观察严格终端 $q$。本文对本签名的全部量词只指这个明确的操作集合。
 
-### 25.2 推送更新与充分性
+### 28.2 推送更新与充分性
 
-**命题 40（剖面的推送更新与充分性，repo-derived）。** 以下操作把剖面系数沿所列映射推送；多个格合并时将系数相加：
+**命题 45（剖面的推送更新与充分性，repo-derived）。** 以下操作把剖面系数沿所列映射推送；多个格合并时将系数相加：
 
 | 操作 | 对剖面格 $(a,b,U)$ 的更新 |
 | --- | --- |
@@ -3016,7 +3016,7 @@ $$
 
 $V$ 不是独立坐标。对 $a=(p,\epsilon,r)$ 的格求和恢复 $w^\rho(p,r)=\sum_{\epsilon,b,U}\Gamma_c(a,b,U)$，只取 $b=1$ 恢复 $z^\rho$，再求和恢复 $q$。对定义 16 的混合上下文归纳：同剖面、同端点在每个基本步骤同步过守卫或失败；成功则按上表和命题 29 得同摘要。复合严格传播失败；成功到终端时 $q$ 相同。这是全部上下文的充分性证明，有限抽样只核对实现。证毕。
 
-### 25.3 自身属性隔离引理
+### 28.3 自身属性隔离引理
 
 **引理 1（自身属性隔离，repo-derived）。** 固定平衡参数 $U_0=\mathbf i(1)$：当前区域恰有位置 $0$、时刻 $0$、来源 $l_0=\operatorname{leaf}(0)$ 的一正一负两事件，偏序空，只选正事件 $u_+$。对 $v=(p,\epsilon,\tau)$、$\eta\in\{0,1\}$，记 $J_1=\mathrm{id},J_0=N$，以及
 
@@ -3041,20 +3041,20 @@ $$
 
 附录的 $P_\epsilon(Z)$ 简写为 $F_{\downarrow Q_\epsilon}(Z\boxtimes U_0)$，其中固定谓词 $Q_\epsilon=\{(p,\epsilon,r):p\in\mathbb Z^3,r\in T\}$；在该乘积反链上它隔离原选择的符号。它是合法上下文的辅助名称，不是新增操作。不能改用“早时刻单事件参数”：其当前总电荷为 $\pm1$，不在定义 3 的平衡载体中，定义 16 不允许它作参数。
 
-**反例 D1（裸探针抵消，repo-derived）。** 取 $E=\Omega=\{a,b,c,d\}$，位置全 $0$、来源全 $l_0$，符号 $+,-,+,-$，时刻 $0,1,2,2$，严格关系恰为
+**反例 D6（裸探针抵消，repo-derived）。** 取 $E=\Omega=\{a,b,c,d\}$，位置全 $0$、来源全 $l_0$，符号 $+,-,+,-$，时刻 $0,1,2,2$，严格关系恰为
 $a\prec b,a\prec c,a\prec d,b\prec c,b\prec d$。$X$ 选 $\{a,b\}$，$Y$ 选空集。记 $v_+=(0,+1,l_0),v_-=(0,-1,l_0)$，则 $U(a)=U(b)=\{v_+,v_-\}$。任意 $Q,S,L$ 对 $a,b$ 同取同舍，故
 $q(F_{\downarrow Q}F_SF_LX)=q(F_{\downarrow Q}F_SF_LY)=0$。先取 $N$ 后两侧也相等：原来相差的 $a,b$ 仍抵消；**此时不恒为零**，例如 $Q=\{v_+\},S=\{0\},L=\{l_0\}$ 时两侧均为 $1$。引理 1 用 $v=v_+,\eta=1,Q=\{v_+,v_-\}$ 却分别给 $1,0$；$q(P_+(X)),q(P_+(Y))$ 也为 $1,0$。这些读数由所列四事件逐项求和，附录复核。缺的是裸探针证书的隔离步，**不是核等式被反驳**。
 
-### 25.4 必要性与完整 iff
+### 28.4 必要性与完整 iff
 
-**命题 41（去身份因果语言的观察核，repo-derived）。**
+**命题 46（去身份因果语言的观察核，repo-derived）。**
 
 $$
 \approx_{\Sigma_{\rm cau}}=\ker(\Gamma_c,m,M,s).
 \tag{CAU-EQ}
 $$
 
-**证明。** 充分性已由命题 40 的混合上下文归纳给出。必要性比较 $X,Y$ 时，固定共同有限集合 $D=V_X\cup V_Y$。所有 $U_X(e),U_Y(e)$ 均为 $D$ 的非空子集；$v\notin D$ 的行全零。在这对对象的证明中，$D$ 及下列 $Q$ 是**固定的谓词参数**，并非增加一个随输入变化的原语。对每个 $v\in D,\eta\in\{0,1\}$，引理 1 的全部合法上下文读数相等，所以两对象的全部 $f_{v,\eta}(Q)$ 相等。对 $W\subseteq D$，令
+**证明。** 充分性已由命题 45 的混合上下文归纳给出。必要性比较 $X,Y$ 时，固定共同有限集合 $D=V_X\cup V_Y$。所有 $U_X(e),U_Y(e)$ 均为 $D$ 的非空子集；$v\notin D$ 的行全零。在这对对象的证明中，$D$ 及下列 $Q$ 是**固定的谓词参数**，并非增加一个随输入变化的原语。对每个 $v\in D,\eta\in\{0,1\}$，引理 1 的全部合法上下文读数相等，所以两对象的全部 $f_{v,\eta}(Q)$ 相等。对 $W\subseteq D$，令
 
 $$
 h_{v,\eta}(W)=f_{v,\eta}(D)-f_{v,\eta}(D\setminus W)
@@ -3074,36 +3074,36 @@ $$
 
 这是普通 ZFC 内的完整 iff；一般必要性由隔离与有限反演的任意对象证明承担。附录的小样本逐字节恢复不替代这个证明，也不声称 Lean 已验证。
 
-### 25.5 不可观察的精确范围与正面因果分离
+### 28.5 不可观察的精确范围与正面因果分离
 
 在端点相同的前提下，保持 $\Gamma_c$ 的修改在 $\Sigma_{\rm cau}$ 下不可观察；该限定不能丢掉，因为本签名保留时间复合域。仅谈因果关系修改而固定其他数据时，端点自动相同。
 
-**命题 42（同属性关系差的局部不可见性，repo-derived）。** 固定 $E,\Omega,t,x,\sigma,\rho,A$。若两个合法的**传递严格关系**之对称差只含 $\alpha(e)=\alpha(f)$ 的事件对 $(e,f)$，则每个当前事件的 $U$ 不变，故两表示在 $\Sigma_{\rm cau}$ 下不可区分。
+**命题 47（同属性关系差的局部不可见性，repo-derived）。** 固定 $E,\Omega,t,x,\sigma,\rho,A$。若两个合法的**传递严格关系**之对称差只含 $\alpha(e)=\alpha(f)$ 的事件对 $(e,f)$，则每个当前事件的 $U$ 不变，故两表示在 $\Sigma_{\rm cau}$ 下不可区分。
 
-**证明。** 对每个 $e\in\Omega$，改变的当前目标 $f$ 都与 $e$ 同属性；这个属性原已由 $e\preceq e$ 在 $U(e)$ 中，添删这些关系不改属性集。指向 $E\setminus\Omega$ 的关系不直接贡献任何当前目标。假设说的是两份完整传递关系，因而不存在另一个未入差集的闭包变化。剖面及端点相同，用命题 41。证毕。
+**证明。** 对每个 $e\in\Omega$，改变的当前目标 $f$ 都与 $e$ 同属性；这个属性原已由 $e\preceq e$ 在 $U(e)$ 中，添删这些关系不改属性集。指向 $E\setminus\Omega$ 的关系不直接贡献任何当前目标。假设说的是两份完整传递关系，因而不存在另一个未入差集的闭包变化。剖面及端点相同，用命题 46。证毕。
 
 一个可核查的充分插边条件是：对 $e,f\in\Omega$，插入 $e\prec f$ 前已有 $U(f)\subseteq U(e)$，且插入后取闭包仍满足严格时标。任何新增当前可达对的路径都经过这条新边；它从一个原来可达 $e$ 的当前点 $g$，到一个原来可由 $f$ 达到的当前点。目标属性已在 $U(f)\subseteq U(e)\subseteq U(g)$ 中，所以所有 $U$ 不变。这也允许闭包新增跨属性关系，只要没有新增属性可达性。相反，只知道一条**生成边**的端点同属性，不能推断取闭包后仍不可见。
 
-**反例 D2（同属性生成边可造成正面因果分离，repo-derived）。** $E=\Omega=\{a,b,c,d\}$，位置全 $0$、来源 $l_0$，符号 $+,+,-,-$，时刻 $0,1,2,0$，选择 $\{a\}$。$X$ 只有 $b\prec c$；$Y$ 为 $a\prec b,b\prec c,a\prec c$。两者 $\rho_{\rm src}=(0,\delta_{(0,l_0)})$、$(m,M,s)=(0,2,2)$，但对 $Q=\{(0,-1,l_0)\}$ 有 $q(F_{\downarrow Q}X)=0,q(F_{\downarrow Q}Y)=1$。这些值逐事件计算并由附录 `edge=0,1` 复核，证明 $\Sigma_{\rm cau}$ 严格细化 $\Sigma_{\rm src}\cup\Sigma_{\rm st}$。新增生成边 $a\prec b$ 两端同属性，却在闭包中新增 $a\prec c$ 的跨属性关系，故也反驳“插入同属性生成边并取闭包必不可见”的全称断言。
+**反例 D7（同属性生成边可造成正面因果分离，repo-derived）。** $E=\Omega=\{a,b,c,d\}$，位置全 $0$、来源 $l_0$，符号 $+,+,-,-$，时刻 $0,1,2,0$，选择 $\{a\}$。$X$ 只有 $b\prec c$；$Y$ 为 $a\prec b,b\prec c,a\prec c$。两者 $\rho_{\rm src}=(0,\delta_{(0,l_0)})$、$(m,M,s)=(0,2,2)$，但对 $Q=\{(0,-1,l_0)\}$ 有 $q(F_{\downarrow Q}X)=0,q(F_{\downarrow Q}Y)=1$。这些值逐事件计算并由附录 `edge=0,1` 复核，证明 $\Sigma_{\rm cau}$ 严格细化 $\Sigma_{\rm src}\cup\Sigma_{\rm st}$。新增生成边 $a\prec b$ 两端同属性，却在闭包中新增 $a\prec c$ 的跨属性关系，故也反驳“插入同属性生成边并取闭包必不可见”的全称断言。
 
-**反例 D3（单点命中边缘不足，repo-derived）。** 取两个选中正事件 $e_1,e_2$，同属性 $a=(0,+1,l_0)$、时刻 $0$；两个未选负事件，分别有属性 $b=(0,-1,\operatorname{leaf}(1))$、$c=(0,-1,\operatorname{leaf}(2))$、时刻 $1$。取 $E=\Omega$ 为这四点。$X$ 中仅 $e_2$ 指向两个负事件；$Y$ 中 $e_1$ 指向属性 $b$ 的负事件、$e_2$ 指向属性 $c$ 的负事件。对所有单属性 $Q$，读数全同：$Q=\{a\}$ 为 $2$，$\{b\},\{c\}$ 各为 $1$，其余为 $0$；但 $Q=\{b,c\}$ 时分别为 $1,2$（逐点命中计数；附录 `marginals=1,2`）。上述反演使用共同有限集 $D$ 上的子集命中读数。D3 证明只保存单步单点边缘不充分；这里不主张所用探针族最小，也不排除单点筛选的复合提供联合信息（例如 $q(F_{\downarrow\{b\}}(F_{\downarrow\{c\}}X))=1$ 而 $Y$ 侧为 $0$）。
+**反例 D8（单点命中边缘不足，repo-derived）。** 取两个选中正事件 $e_1,e_2$，同属性 $a=(0,+1,l_0)$、时刻 $0$；两个未选负事件，分别有属性 $b=(0,-1,\operatorname{leaf}(1))$、$c=(0,-1,\operatorname{leaf}(2))$、时刻 $1$。取 $E=\Omega$ 为这四点。$X$ 中仅 $e_2$ 指向两个负事件；$Y$ 中 $e_1$ 指向属性 $b$ 的负事件、$e_2$ 指向属性 $c$ 的负事件。对所有单属性 $Q$，读数全同：$Q=\{a\}$ 为 $2$，$\{b\},\{c\}$ 各为 $1$，其余为 $0$；但 $Q=\{b,c\}$ 时分别为 $1,2$（逐点命中计数；附录 `marginals=1,2`）。上述反演使用共同有限集 $D$ 上的子集命中读数。D8 证明只保存单步单点边缘不充分；这里不主张所用探针族最小，也不排除单点筛选的复合提供联合信息（例如 $q(F_{\downarrow\{b\}}(F_{\downarrow\{c\}}X))=1$ 而 $Y$ 侧为 $0$）。
 
-### 25.6 B2 的签名边界
+### 28.6 B2 的签名边界
 
-B2 两对象在本节的 $\Sigma_{\rm cau}$ 下仍同核。确切地，记 $a_+=(0,+1,l_0),a_-=(0,-1,l_0)$，所有正事件的 $U=\{a_+\}$，所有负事件的 $U=\{a_-\}$；二者剖面都只有 $(a_+,1,\{a_+\})\mapsto2$ 与 $(a_-,0,\{a_-\})\mapsto-2$，端点均为 $(0,1,1)$。由命题 41 得全部本签名上下文观察相同。若将时间纳入 $\alpha_t(e)=(x(e),\sigma(e),\rho(e),t(e))$，同样形式的属性查询用 $Q=\{(0,+1,l_0,1)\}$，便分别命中两正点与仅上层正点，读数为 $2,1$。这些 B2 读数来自所列事件与关系，附录另查有界本签名上下文及时间查询；本节不立时间属性因果核定理。
+B2 两对象在本节的 $\Sigma_{\rm cau}$ 下仍同核。确切地，记 $a_+=(0,+1,l_0),a_-=(0,-1,l_0)$，所有正事件的 $U=\{a_+\}$，所有负事件的 $U=\{a_-\}$；二者剖面都只有 $(a_+,1,\{a_+\})\mapsto2$ 与 $(a_-,0,\{a_-\})\mapsto-2$，端点均为 $(0,1,1)$。由命题 46 得全部本签名上下文观察相同。若将时间纳入 $\alpha_t(e)=(x(e),\sigma(e),\rho(e),t(e))$，同样形式的属性查询用 $Q=\{(0,+1,l_0,1)\}$，便分别命中两正点与仅上层正点，读数为 $2,1$。这些 B2 读数来自所列事件与关系，附录另查有界本签名上下文及时间查询；本节不立时间属性因果核定理。
 
-**反例 D4（去身份但不在 $\Sigma_{\rm cau}$ 的筛选，repo-derived）。** 定义
-$J(C,A)=(C,\{e\in A:\exists d\in\Omega_C\ (e\prec d)\})$。该筛选不用事件身份、在重命名下不变，却问是否有**严格**后继。对 B2 两对象，$q(JX)=1,q(JY)=0$（前者只选到 $a$，后者没有严格边；附录 `strict_successor=1,0`）。故“任何去身份签名下 B2 同核”为假；$J$ 不在 $\Sigma_{\rm cau}$ 内，这不反驳命题 41。也不能把 $J$ 当作其已有上下文：若能表达，它就不能分开本签名同核的 B2。
+**反例 D9（去身份但不在 $\Sigma_{\rm cau}$ 的筛选，repo-derived）。** 定义
+$J(C,A)=(C,\{e\in A:\exists d\in\Omega_C\ (e\prec d)\})$。该筛选不用事件身份、在重命名下不变，却问是否有**严格**后继。对 B2 两对象，$q(JX)=1,q(JY)=0$（前者只选到 $a$，后者没有严格边；附录 `strict_successor=1,0`）。故“任何去身份签名下 B2 同核”为假；$J$ 不在 $\Sigma_{\rm cau}$ 内，这不反驳命题 46。也不能把 $J$ 当作其已有上下文：若能表达，它就不能分开本签名同核的 B2。
 
-### 25.7 时间属性剖面的历史边界
+### 28.7 时间属性剖面的历史边界
 
-**反例 D5（时间属性仍不恢复历史，repo-derived）。** 四个选中正点 $a_1,a_2$ 在时刻 $0$，$b_1,b_2$ 在时刻 $1$；四点除时间外全同属性 $(0,+1,l_0)$。一图的严格关系为 $\{a_1\prec b_1,a_2\prec b_2\}$，另一图为 $\{a_1\prec b_1,a_2\prec b_1\}$。各加四个时刻 $0$、位置 $0$、来源 $l_0$ 的孤立未选负点，取 $E=\Omega$ 为全部八点，得到合法平衡表示。以 $\alpha_t$ 代替 $\alpha$ 所算 $\Gamma_t$ 相同：每个下层正点看见时刻 $0,1$ 两个正属性，每个上层正点只看见自己的时刻 $1$ 正属性，负点均只看见自身负属性。上层入度多重集却为 $\{1,1\}$ 与 $\{2,0\}$（由所列两条边计算；附录复核），任何保时间的历史同构都须保存该多重集，故历史不同构。此例只划定剖面遗忘重数与入射关联的边界，不新增关于时间属性签名的核定理。
+**反例 D10（时间属性仍不恢复历史，repo-derived）。** 四个选中正点 $a_1,a_2$ 在时刻 $0$，$b_1,b_2$ 在时刻 $1$；四点除时间外全同属性 $(0,+1,l_0)$。一图的严格关系为 $\{a_1\prec b_1,a_2\prec b_2\}$，另一图为 $\{a_1\prec b_1,a_2\prec b_1\}$。各加四个时刻 $0$、位置 $0$、来源 $l_0$ 的孤立未选负点，取 $E=\Omega$ 为全部八点，得到合法平衡表示。以 $\alpha_t$ 代替 $\alpha$ 所算 $\Gamma_t$ 相同：每个下层正点看见时刻 $0,1$ 两个正属性，每个上层正点只看见自己的时刻 $1$ 正属性，负点均只看见自身负属性。上层入度多重集却为 $\{1,1\}$ 与 $\{2,0\}$（由所列两条边计算；附录复核），任何保时间的历史同构都须保存该多重集，故历史不同构。此例只划定剖面遗忘重数与入射关联的边界，不新增关于时间属性签名的核定理。
 
 <a id="pr3-comparisons"></a>
 
-## 26. PR3 增补 K：与既有理论的对照
+## 29. PR3 增补 K：与既有理论的对照
 
-本节不新增数学，不作综述。表中外部文献的对象及结论标 `literature-attested`，与本卷的对应判断标 `repo-derived`；取回与核读强度在 §28 披露。对应只比较操作、观察和成立条件，不把名称相似当作定理。
+本节不新增数学，不作综述。表中外部文献的对象及结论标 `literature-attested`，与本卷的对应判断标 `repo-derived`；取回与核读强度在 §31 披露。对应只比较操作、观察和成立条件，不把名称相似当作定理。
 
 | 既有对象或定理 | 确切对应 | 确切不对应 | 来源与标签 |
 | --- | --- | --- | --- |
@@ -3122,7 +3122,7 @@ $J(C,A)=(C,\{e\in A:\exists d\in\Omega_C\ (e\prec d)\})$。该筛选不用事件
 
 <a id="pr3-quantum-boundaries"></a>
 
-## 27. PR3 增补 L：与量子力学的差距
+## 30. PR3 增补 L：与量子力学的差距
 
 本节不新增数学；沿 §13 的反驳表，只结算“**这些结论未由本卷当前定义推出**”，不写成任何扩展都不可能。外部构造标 `literature-attested`，本卷欠缺何种结构的判断标 `repo-derived`。本卷的整数读数、来源树和共同世界域均未被定义为物理态或实验概率。
 
@@ -3139,22 +3139,22 @@ $J(C,A)=(C,\{e\in A:\exists d\in\Omega_C\ (e\prec d)\})$。该筛选不用事件
 | --- | --- |
 | 历史归并的组合结构：多个构造参与一个读数或来源表达 | 缺少振幅及概率解释，也没有一致历史／退相干条件；来源同上表 Feynman、Griffiths、Gell-Mann–Hartle、Sorkin，外部框架 `literature-attested`，本卷类比 `repo-derived` |
 | $q$ 沿 $\boxplus$ 及有定义的 $\triangleright$ 相加，形式上类似可加作用量 | 缺少物理作用量的定义、单位与 $\hbar$，也没有由作用量到振幅的规则；§3 命题 2 与上述 Feynman 文给出比较两端，本卷类比 `repo-derived` |
-| **仅对 §19 的 $\mathbb Z[\mathbb Z^3]$**，有限系数可经群字符作 Fourier 对应，$\widehat{\mathbb Z^3}\cong\mathbb T^3$（此处 $\mathbb T=\mathbb R/\mathbb Z$，不同于来源树集合 $T$） | 这是阿贝尔群卷积的标准字符对应，缺少 Born 规则与测量理论；不移植到 §24 非结合的来源 pair 代数。上述 Pontryagin duality 稳定入口支持群对偶框架（`literature-attested`）；与本卷空间代数的绑定及边界为 `repo-derived` |
+| **仅对 §19 的 $\mathbb Z[\mathbb Z^3]$**，有限系数可经群字符作 Fourier 对应，$\widehat{\mathbb Z^3}\cong\mathbb T^3$（此处 $\mathbb T=\mathbb R/\mathbb Z$，不同于来源树集合 $T$） | 这是阿贝尔群卷积的标准字符对应，缺少 Born 规则与测量理论；不移植到 §27 非结合的来源 pair 代数。上述 Pontryagin duality 稳定入口支持群对偶框架（`literature-attested`）；与本卷空间代数的绑定及边界为 `repo-derived` |
 
 表中的缺项来自对本卷现有定义域与运算的核对，未作物理实验；双缝、Born 规则、Bell 实验与量子动力学在本批均为“未测”，本批也没有提供这些实验或物理公理的实现。
 
 <a id="pr3-receipts"></a>
 
-## 28. PR3 的来源、产地与核验收据
+## 31. PR3 的来源、产地与核验收据
 
-### 28.1 成熟来源与本仓推导的边界
+### 31.1 成熟来源与本仓推导的边界
 
 | 范围 | 成熟来源及适用对象 | 本仓推导与结算边界 |
 | --- | --- | --- |
-| §24 来源语言 | §14–16 已使用的有限支撑与上下文归纳方法；§26 的关系来源文献仅提供查询／系数背景（`literature-attested`） | 联合分箱、非结合有序 pair 更新、来源核及混合时间核的 CSA 特定证明为 `repo-derived`；不把交换环公理移植到来源代数，不主张完整来源代数分类 |
-| §25 因果语言 | Rota 的 Möbius 反演框架，DOI [10.1007/BF00531932](https://doi.org/10.1007/BF00531932)，`literature-attested`；此处只用有限布尔格 | 目标域为当前区域的筛选、剖面推送、平衡参数隔离、完整 iff 与 D1–D5 为 `repo-derived`；正文另直接证明所用反演式，有限运行不承担一般必要性 |
-| §26 理论对照 | 下表逐项列出的游戏、关系查询、来源游戏、事件结构、因果集、可逆计算及范畴化对象，`literature-attested` | 每项操作／观察／条件的对应及不对应判断为 `repo-derived`；没有建立同一查询语言、monus、公理组或范畴结构 |
-| §27 量子边界 | 下表物理文献、测量覆盖／概率模型／全局截面框架、去量子化极限和阿贝尔群字符对偶，`literature-attested` | 本卷缺项与三条局部类比为 `repo-derived`；Fourier 仅绑定 §19 的空间群环，不推出 Born 规则、双缝或 Bell 型裁决 |
+| §27 来源语言 | §14–16 已使用的有限支撑与上下文归纳方法；§29 的关系来源文献仅提供查询／系数背景（`literature-attested`） | 联合分箱、非结合有序 pair 更新、来源核及混合时间核的 CSA 特定证明为 `repo-derived`；不把交换环公理移植到来源代数，不主张完整来源代数分类 |
+| §28 因果语言 | Rota 的 Möbius 反演框架，DOI [10.1007/BF00531932](https://doi.org/10.1007/BF00531932)，`literature-attested`；此处只用有限布尔格 | 目标域为当前区域的筛选、剖面推送、平衡参数隔离、完整 iff 与 D6–D10 为 `repo-derived`；正文另直接证明所用反演式，有限运行不承担一般必要性 |
+| §29 理论对照 | 下表逐项列出的游戏、关系查询、来源游戏、事件结构、因果集、可逆计算及范畴化对象，`literature-attested` | 每项操作／观察／条件的对应及不对应判断为 `repo-derived`；没有建立同一查询语言、monus、公理组或范畴结构 |
+| §30 量子边界 | 下表物理文献、测量覆盖／概率模型／全局截面框架、去量子化极限和阿贝尔群字符对偶，`literature-attested` | 本卷缺项与三条局部类比为 `repo-derived`；Fourier 仅绑定 §19 的空间群环，不推出 Born 规则、双缝或 Bell 型裁决 |
 
 `repo-derived` 说明本卷给出了推导，不声明优先权。本批按 DOI、arXiv、出版页、Crossref 元数据及作者／学术站点检索；没有作穷尽的新颖性排查，新颖性优先权为“未测”。原文访问失败不等于没有相关文献，不能据此标 `suspected-novel`。`literature-attested` 的归属标签与本席实际核读强度分开记录：下表“未取回”各项的原文核读为 `ASSUMED-UNVERIFIED`，其中元数据或二手核读的范围逐行写明。已下载文件也不等于已通读。
 
@@ -3183,7 +3183,7 @@ $J(C,A)=(C,\{e\in A:\exists d\in\Omega_C\ (e\prec d)\})$。该筛选不用事件
 
 上述核读状态取自本次实际取回文件与阅读窗口；逐次 URL、HTTP 结果及保留文本位于 runner 工件目录的 `literature/fetch.json`、`literature/extra-fetch.json`、`literature/bennett-fetch.json` 与同目录原文文件。未通读项的完整证明核读仍为“未测”，由后续文献核读或评审接续；本卷自给的证明不依赖把这些状态提升为已读全文。
 
-### 28.2 本批产地与调用边界
+### 31.2 本批产地与调用边界
 
 本批由 `consensus-rnd:sshx` 的一个 `codex-cli implementation worker` 在工作树 `/Users/auricstudio/trureturing-csa-upgrade-pr3-0909`、分支 `lane/theory/csa-upgrade-pr3-0909` 实施，基线钉住 `4ac806a62d274a48550978b827a4bf546a8c898e`。输入为 caller 交付的收敛 brief（含 R1）、本仓标架与既有卷文，属于 `repo-prior-exposed`；本 implementation worker 未另派子席。
 
@@ -3191,7 +3191,7 @@ $J(C,A)=(C,\{e\in A:\exists d\in\Omega_C\ (e\prec d)\})$。该筛选不用事件
 
 本批形态为 **ingest**：`contextual-spacetime-arithmetic` 源卷新增内容经 canonical writer 进入 atom CAS 与该 source 的 `residual-open` backfill。未新增 Lean、axiom、判官、schema 或生产引擎；本批没有 deposit／cover，不报告新增冻结或已吸收状态。Lean、CI、独立评审与物理实验均为“未测”，分别由形式化／CI／评审／物理模型工作承担。
 
-### 28.3 附录实际命令与有限收据
+### 31.3 附录实际命令与有限收据
 
 本席在上述工作树实际运行下列原文命令（2026-09-10，本批执行文件对应本卷唯一 Python 块）；退出码 **0**，stderr 为空。复用 `Rich/add/mul/neg/temporal/filt`，R1 允许的 `pr3_` 代码只插在既有最终打印之前。
 
@@ -3207,11 +3207,11 @@ pr3_causal: updates=551 product_antichains=48 targets=Omega bare_probes=16 P_plu
 ALL_FINITE_CHECKS_PASSED
 ```
 
-这些计数由实际执行累加。随机种子为 `20260910`；随机当前区域大小取 0、2、4，额外档案点数取 0、1、2，兼容时标的边取传递闭包，选择任意子集。48 个随机样本逐字节检查来源更新，并核对因果剖面更新、乘积当前反链与无出边；额外档案目标见证断言因果筛选只遍历 `Omega`。51 个反演对象为 48 个随机样本加 D1 两对象与当前区域外目标见证，合法探针恢复两种选择位，采用规范序列化字节逐格比较。B2 的 273 个有界上下文为 16 个固定基本操作在深度 0–2 的全部单孔复合；一般上下文结论由命题 41 证明。D1 的补集裸探针只要求两侧相等，§25.3 已列其非零情形。有限收据不声明枚举全部载体、上下文、时间属性签名或历史同构类型；一般必要性已由正文证明，未启用 `pr3_mobius_finite` 降级形态。
+这些计数由实际执行累加。随机种子为 `20260910`；随机当前区域大小取 0、2、4，额外档案点数取 0、1、2，兼容时标的边取传递闭包，选择任意子集。48 个随机样本逐字节检查来源更新，并核对因果剖面更新、乘积当前反链与无出边；额外档案目标见证断言因果筛选只遍历 `Omega`。51 个反演对象为 48 个随机样本加 D6 两对象与当前区域外目标见证，合法探针恢复两种选择位，采用规范序列化字节逐格比较。B2 的 273 个有界上下文为 16 个固定基本操作在深度 0–2 的全部单孔复合；一般上下文结论由命题 46 证明。D6 的补集裸探针只要求两侧相等，§28.3 已列其非零情形。有限收据不声明枚举全部载体、上下文、时间属性签名或历史同构类型；一般必要性已由正文证明，未启用 `pr3_mobius_finite` 降级形态。
 
-### 28.4 ingest 与固定检查点的 git 读数
+### 31.4 ingest 与固定检查点的 git 读数
 
-下列 ingest 在追加 §28 之前实际运行，环境变量 `BASE=4ac806a62d274a48550978b827a4bf546a8c898e` 固定 canonical make 的比较基线。命令原文：
+下列 ingest 在追加 §31 之前实际运行，环境变量 `BASE=4ac806a62d274a48550978b827a4bf546a8c898e` 固定 canonical make 的比较基线。命令原文：
 
 ```sh
 make ingest SOURCE="contextual-spacetime-arithmetic docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md"
@@ -3223,7 +3223,7 @@ make ingest SOURCE="contextual-spacetime-arithmetic docs/develop/theory/CONTEXTU
 INGEST residual_open_added=63 skipped_existing=134 coarse_fallbacks=0 open_genres=0 cas_objects_written=63 ledger_changed=true
 ```
 
-本次产物已提交为 `d743044d654fd8db8f4179bc4604e10e9705d6b2`。以下读数指向这个 **§24–§27 与首次 ingest 均已提交、尚未追加 §28 的固定检查点**；本节自身及其消化产物的最终计数、提交、推送和 git 读数统一由同次 runner 的 `result.json` 记录。这样每份收据都有明确的树边界。
+本次产物已提交为 `d743044d654fd8db8f4179bc4604e10e9705d6b2`。以下读数指向这个 **§27–§30 与首次 ingest 均已提交、尚未追加 §31 的固定检查点**；本节自身及其消化产物的最终计数、提交、推送和 git 读数统一由同次 runner 的 `result.json` 记录。这样每份收据都有明确的树边界。
 
 `git status` 原文（退出码 0；同次 `git status --porcelain=v1` 的 stdout 为空）：
 
