@@ -23,6 +23,8 @@ internal sealed record ScribeProjectCompilationContext(
     IReadOnlyList<ScribeCompilationProject> Projects,
     IReadOnlySet<string> ProductionAssemblies)
 {
+    internal Func<IEnumerable<ScribeCompilationProject>, IReadOnlyList<string>>? DescribeMetadataInputs { get; init; }
+
     internal static ScribeProjectCompilationContext Create(
         IReadOnlyList<ScribeTrackedSource> files,
         IReadOnlyDictionary<string, string> projectBySourcePath,
@@ -159,7 +161,7 @@ internal static class ScribeProjectCompilationBuilder
                 .Select(source => CSharpSyntaxTree.ParseText(source.Content, ParseOptions, source.Path))
                 .Append(ImplicitUsingsTree(project.Path))
                 .ToList();
-            var resolution = ScribeMetadataReferenceResolver.Resolve(project);
+            var resolution = ScribeMetadataReferenceResolver.Resolve(project, context.DescribeMetadataInputs);
             if (resolution.Degradation?.NeedsXunitAttributeFallback == true)
             {
                 trees.Add(XunitAttributeFallbackTree(project.Path));
