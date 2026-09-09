@@ -1,10 +1,10 @@
 {
   "verdict": "propose",
-  "screened_count": 75,
+  "screened_count": 100,
   "by_tier": {
-    "A": 1,
-    "B": 17,
-    "C": 57,
+    "A": 2,
+    "B": 27,
+    "C": 71,
     "D": 0,
     "E": 0
   },
@@ -52,6 +52,55 @@
           "probe": "Readback75",
           "exit": 0,
           "log": "logs/Readback75.log.gz"
+        }
+      ]
+    },
+    {
+      "atom_id": "937abccd3570503c88aaac8b088e687e6f79db29ca9f67f887b72a028bd4f866",
+      "title": "## 定理二：边界有效几何由 Schur 补唯一确定",
+      "bytes": 166,
+      "index": 89,
+      "tier": "A",
+      "claim": "C 正定的复 Hermitian 分块二次型，在固定 x 下关于 y 的最小值是 Schur 补二次型。",
+      "reason": "直接实例化 schur_complement_eq₂₂，PosDef.isUnit 供应逆，PosSemidef 的二次型非负供应下界；代入 y=-C^-1 B*x 达到等号。探针验证 IsLeast，未只验证配方。",
+      "mathlib": [
+        {
+          "declaration": "Matrix.schur_complement_eq₂₂",
+          "file": "Mathlib/LinearAlgebra/Matrix/Hermitian.lean",
+          "line": 378
+        },
+        {
+          "declaration": "Matrix.PosDef.isUnit",
+          "file": "Mathlib/LinearAlgebra/Matrix/PosDef.lean",
+          "line": 507
+        },
+        {
+          "declaration": "Matrix.PosSemidef.dotProduct_mulVec_nonneg",
+          "file": "Mathlib/LinearAlgebra/Matrix/PosDef.lean",
+          "line": 305
+        }
+      ],
+      "source_context": [
+        55856,
+        55906
+      ],
+      "probe": "Schur89",
+      "searches": [
+        "finite-geometry",
+        "schur"
+      ],
+      "source_line": 55868,
+      "proof_shape": "bind-only",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": true,
+      "probe_exit": 0,
+      "probe_runs": [
+        {
+          "probe": "Schur89",
+          "exit": 0,
+          "log": "logs/Schur89.log.gz"
         }
       ]
     }
@@ -563,6 +612,318 @@
         "theta-analytic"
       ],
       "source_line": 4666,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "8062498ed2ea8f74ddd34c3c2dec295a44f3074797e0634b52cbd2630b51459e",
+      "title": "## 定理 V1：零点转成了一个特定的相位接触",
+      "bytes": 130,
+      "index": 76,
+      "tier": "B",
+      "claim": "A 的 m 重零点在 S_h 中变为值 -1、导数 -2i/(hm) 的可去点。",
+      "reason": "logDeriv 在有限阶零点的简单极点阶数已有接口；缺 Cayley 分式的可去延拓值与一阶 jet 的精确系数。",
+      "mathlib": [
+        {
+          "declaration": "meromorphicOrderAt_logDeriv_eq_neg_one",
+          "file": "Mathlib/Analysis/Meromorphic/Order.lean",
+          "line": 996
+        }
+      ],
+      "searches": [
+        "logderiv-residue",
+        "toeplitz"
+      ],
+      "source_line": 32852,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "887786649b4338a76547a05ce2a7b0347b65b5fbe737f69ec247188f3214a077",
+      "title": "## 定理二：谱平滑对首次返回概率的作用是精确的指数折扣",
+      "bytes": 187,
+      "index": 79,
+      "tier": "B",
+      "claim": "谱平滑给 S_a(z)=S(az)，首次回返系数与概率分别折扣 a^n,a^(2n)。",
+      "reason": "PowerSeries.coeff_rescale 直接供应重标系数乘 a^n；缺实际谱平滑到边界 Schur 函数复合的等式，及首次返回振幅的系数识别。",
+      "mathlib": [
+        {
+          "declaration": "PowerSeries.coeff_rescale",
+          "file": "Mathlib/RingTheory/PowerSeries/Basic.lean",
+          "line": 567
+        }
+      ],
+      "searches": [
+        "toeplitz",
+        "fourth-bindings"
+      ],
+      "source_line": 59865,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "88b85ee6e765d6cc5180d029dfdce4cb39fa51093abb321682813ff46a09f58c",
+      "title": "## 定理三：混合方格的相容条件",
+      "bytes": 419,
+      "index": 80,
+      "tier": "B",
+      "claim": "酉网格基本方格相容等价于回返为 I，并在单连通矩形格推出全路径独立。",
+      "reason": "酉算子的 star*U=1 支持局部回返等价；缺任意两条网格路径的相邻交换归约和周期边界的全局环路条件。",
+      "mathlib": [
+        {
+          "declaration": "Unitary.star_mul_self_of_mem",
+          "file": "Mathlib/Algebra/Star/Unitary.lean",
+          "line": 61
+        }
+      ],
+      "searches": [
+        "unitary-involution",
+        "fourth-bindings"
+      ],
+      "source_line": 54780,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "8a1900b281e35bf99c03af2be822b3b0f7a042c7b2a5f8d9ee837df2ca1de391",
+      "title": "## 定理 N2：代数平方就是两条件态的相对振幅",
+      "bytes": 143,
+      "index": 81,
+      "tier": "B",
+      "claim": "B!=0 时两种归一最大纠缠条件态的内积为 Tr(B²)/Tr(B*B)。",
+      "reason": "Mathlib 的矩阵内积实例提供 trace(B*M*A*) 配对；缺源文 (B tensor I)Omega 的向量化与两层平方根归一化的实际绑定。",
+      "mathlib": [
+        {
+          "declaration": "Matrix.toMatrixInnerProductSpace",
+          "file": "Mathlib/Analysis/Matrix/Order.lean",
+          "line": 336
+        }
+      ],
+      "source_context": [
+        11646,
+        11716
+      ],
+      "searches": [
+        "finite-geometry",
+        "partial-trace"
+      ],
+      "source_line": 11685,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "8c8a536d7244072e5e39acc9ab7d2fdf7d874b16349959336f6450a8aad7d74d",
+      "title": "## 定理 T6：高阶矩的精确递推",
+      "bytes": 144,
+      "index": 83,
+      "tier": "B",
+      "claim": "实际 M_n(t) 等于三个 J 核矩的指定二次 t 多项式组合。",
+      "reason": "尾积分 FTC 可处理分部积分端点步骤；缺 W 与 J 的双副本微分恒等式及实际核的快速衰减边界。",
+      "mathlib": [
+        {
+          "declaration": "MeasureTheory.integral_Ioi_of_hasDerivAt_of_tendsto",
+          "file": "Mathlib/MeasureTheory/Integral/IntegralEqImproper.lean",
+          "line": 787
+        }
+      ],
+      "searches": [
+        "real-calculus",
+        "theta-analytic"
+      ],
+      "source_line": 27309,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "8f9277771081db94f2cbe4d55fe4075fdde7edc0a9ecf4e443ae45717b8c0dcb",
+      "title": "## 定理三：整段历史的精确双端点读出",
+      "bytes": 181,
+      "index": 85,
+      "tier": "B",
+      "claim": "固定两端的整段酉历史加权作用量最小值为端点失配平方/总时间。",
+      "reason": "有限和 Cauchy-Schwarz 提供加权位移能量下界；缺整段酉坐标变换、给定端点约束的双射和最优内部历史构造。",
+      "mathlib": [
+        {
+          "declaration": "Finset.sum_mul_sq_le_sq_mul_sq",
+          "file": "Mathlib/Algebra/Order/BigOperators/Ring/Finset.lean",
+          "line": 159
+        }
+      ],
+      "source_context": [
+        55914,
+        55984
+      ],
+      "searches": [
+        "fourth-bindings",
+        "unitary-involution"
+      ],
+      "source_line": 55952,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "96902e5b1d0b9ac78c37f6c1f75fd1d5043bfd6c18f5e2451352b6fbc6977b46",
+      "title": "### 定理十五：一个反射零点对的负贡献区域，恰好是一个圆盘",
+      "bytes": 434,
+      "index": 90,
+      "tier": "B",
+      "claim": "x,m>0 且排除配对零点时，反射配对有理贡献为指定分式，负性恰为圆盘不等式。",
+      "reason": "平方非负、正分母比较与通分均已有接口；首版完整探针误用要求全局乘法保序的 mul_lt_mul_left，EXIT=2，尚未完成正确正乘子接口绑定，暂不计 A。",
+      "mathlib": [
+        {
+          "declaration": "sq_nonneg",
+          "file": "Mathlib/Algebra/Order/Ring/Unbundled/Basic.lean",
+          "line": 606
+        },
+        {
+          "declaration": "div_lt_iff₀",
+          "file": "Mathlib/Algebra/Order/GroupWithZero/Basic.lean",
+          "line": 1146
+        },
+        {
+          "declaration": "mul_lt_mul_iff_right₀",
+          "file": "Mathlib/Algebra/Order/GroupWithZero/Defs.lean",
+          "line": 286
+        }
+      ],
+      "source_context": [
+        67711,
+        67792
+      ],
+      "searches": [
+        "finite-geometry"
+      ],
+      "source_line": 67730,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": true,
+      "probe_exit": 2,
+      "probe_runs": [
+        {
+          "probe": "Disk90",
+          "exit": 2,
+          "log": "logs/Disk90.log.gz"
+        }
+      ]
+    },
+    {
+      "atom_id": "9877043750157f00197144b87542162e34a7242d56d6533a857d4cb5822fd169",
+      "title": "### 定理十六：负贡献圆盘的 Möbius 像",
+      "bytes": 191,
+      "index": 92,
+      "tier": "B",
+      "claim": "反射圆盘经 z=1-1/s 映成指定中心半径的圆盘，且中心模平方=1+半径平方。",
+      "reason": "复倒数模平方公式已库有；仍需完整坐标配方、K>0 和模不等式双向转换的绑定，当前未用只验证中心公式替代整条。",
+      "mathlib": [
+        {
+          "declaration": "Complex.normSq_inv",
+          "file": "Mathlib/Data/Complex/Basic.lean",
+          "line": 750
+        }
+      ],
+      "source_context": [
+        67820,
+        67903
+      ],
+      "searches": [
+        "finite-geometry",
+        "fourth-bindings"
+      ],
+      "source_line": 67864,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "a5b558f46722070fb3661959014acf45a036f4013ac27541c95454f998a44da2",
+      "title": "## 定理 E2：下界是一个最佳多项式逼近问题",
+      "bytes": 211,
+      "index": 96,
+      "tier": "B",
+      "claim": "正表示下 Delta-L_N 等于指定加权多项式逼近的最小误差，并推出单调下界。",
+      "reason": "Schur 配方提供有限二次优化的代数部分；缺实际矩矩阵与加权 L2 误差展开、严格可逆和嵌套多项式空间的匹配。",
+      "mathlib": [
+        {
+          "declaration": "Matrix.schur_complement_eq₂₂",
+          "file": "Mathlib/LinearAlgebra/Matrix/Hermitian.lean",
+          "line": 378
+        }
+      ],
+      "searches": [
+        "schur",
+        "special-polynomials"
+      ],
+      "source_line": 4276,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "a7dc27aa3ded303f19a0085dc10e7521c4f0e9984b5970c109e3a572b1c30f11",
+      "title": "## 定理 D1：任意足够多的不同采样点，都保留全部负方向",
+      "bytes": 306,
+      "index": 97,
+      "tier": "B",
+      "claim": "足够多个互异合法采样点保留 Bézout 矩阵全部负惯性并计数非实共轭根对。",
+      "reason": "Vandermonde 行列式非零等价于采样互异已有接口；缺实际采样核合同公式、Bézout 惯性与非实根对计数定理。",
+      "mathlib": [
+        {
+          "declaration": "Matrix.det_vandermonde_ne_zero_iff",
+          "file": "Mathlib/LinearAlgebra/Vandermonde.lean",
+          "line": 232
+        }
+      ],
+      "searches": [
+        "fourth-bindings",
+        "negative-spectrum-refined",
+        "special-polynomials"
+      ],
+      "source_line": 2771,
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
@@ -1768,6 +2129,302 @@
       "probe_ran": false,
       "probe_exit": null,
       "probe_runs": []
+    },
+    {
+      "atom_id": "87852ef96970dd58409cceccafe2fa235ed951e6c39b41869e0fca5ecb677246",
+      "title": "## 定理三：最大全局离线位移的距离公式",
+      "bytes": 97,
+      "index": 77,
+      "tier": "C",
+      "claim": "实际最大全局离线位移等于 b-R(b) 的无穷远极限。",
+      "reason": "缺全部零点集合到最近极点距离的统一上下界与极限交换；有限点距离计算不供应全谱上确界。",
+      "searches": [
+        "theta-analytic",
+        "negative-spectrum-refined"
+      ],
+      "source_line": 47414,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "88517388478e9834b20004960ece45e5026828dc5fbb0a58206c141a37529a4b",
+      "title": "## 定理六：全部高周期共有的非退化界",
+      "bytes": 302,
+      "index": 78,
+      "tier": "C",
+      "claim": "全部高周期归一 W_d 有给定组合数误差与严格正实部。",
+      "reason": "缺实际算术权重的全 d Dirichlet 尾估计及明确组合常数；普通求和支配不识别 W_d。",
+      "searches": [
+        "discrete-winding",
+        "theta-analytic"
+      ],
+      "source_line": 62833,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "8b768726d3b3963e9b9e1a11bc7f33a04a657642db42c63fbdaaff28bf0456b0",
+      "title": "## 定理一：忠实切面的拼接公式",
+      "bytes": 196,
+      "index": 82,
+      "tier": "C",
+      "claim": "每条完整 DAG 历史恰穿一次的边切面使总路径和精确因子化。",
+      "reason": "缺完整路径与前缀/切边/后缀三元组的保权双射，不能把一般有限和换序当作忠实切面定理。",
+      "searches": [
+        "bandwidth",
+        "unitary-involution"
+      ],
+      "source_line": 53110,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "8df09af617ce850c0ed67805688f8fc4f3a0073576a33701fa752ca4ea9ca08a",
+      "title": "## 定理 E4：有限链精确保留前 \\(2N\\) 个回返矩",
+      "bytes": 207,
+      "index": 84,
+      "tier": "C",
+      "claim": "指定有限 Jacobi 链精确保留前 2N 个实际回返矩。",
+      "reason": "缺 Stieltjes 正交多项式/高斯求积的 2N-1 次精确性及实际 J_N 构造匹配。",
+      "searches": [
+        "special-polynomials",
+        "toeplitz"
+      ],
+      "source_line": 4538,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "8fa3ec47d77910a7c979444b92779fa3031a487901bebfcdf8f8e10d56ce54d4",
+      "title": "## 定理 I1：它对任意有限矩阵都收敛且严格正定",
+      "bytes": 52,
+      "index": 86,
+      "tier": "C",
+      "claim": "任意有限 C 的高斯历史积分 W_T(C) 收敛且严格正定。",
+      "reason": "缺矩阵指数增长与高斯尾的可积支配，以及每个非零方向积分严格正的证明；不能只读 >0 忽略收敛。",
+      "searches": [
+        "gaussian-moments",
+        "negative-spectrum-refined"
+      ],
+      "source_line": 5100,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "90382ec6571adc1e9f8248f72b7b7a2bb916d5ade3bdbfc99e99b6477c208b34",
+      "title": "## 推论：RH 强迫纯素数读出最终具有固定负余量",
+      "bytes": 506,
+      "index": 87,
+      "tier": "C",
+      "claim": "RH 下纯素数三角读数有指定 limsup/liminf，并最终 <=负常数*X^(3/2)。",
+      "reason": "缺素数平方确定偏移、在线零点振荡常数与纯素数/素数幂读数差的实际解析估计。",
+      "searches": [
+        "theta-analytic",
+        "discrete-winding"
+      ],
+      "source_line": 28239,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "92536bbe2b763233c6c90f6e32152612b3a4c8316395ce3895a27051104157cb",
+      "title": "## 定理 P3：这个转换不会随阶数变得任意病态",
+      "bytes": 182,
+      "index": 88,
+      "tier": "C",
+      "claim": "实际系数转换 T_F 与其逆及全部有限截断具有统一 M,kappa^-1 范数界。",
+      "reason": "缺实际解析乘子 F,1/F 的系数范数与 Toeplitz 乘子算子之间的统一界，特别是有限截断逆的兼容性。",
+      "searches": [
+        "toeplitz",
+        "negative-spectrum-refined"
+      ],
+      "source_line": 16700,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "983c804dbd8a847852de8910fac6e9702a31040ec86415def14516a225851762",
+      "title": "## 引理：小历史宽度下，行列式不会比 \\(\\exp[-O(d^2\\log d)]\\) 更小",
+      "bytes": 194,
+      "index": 91,
+      "tier": "C",
+      "claim": "根有统一模界的首一多项式在 r0~d^-2 的历史 Gram 行列式有 -C*d²log(d+1) 下界。",
+      "reason": "缺合流 Vandermonde/导数 Gram 的统一定量下界；普通行列式非零不控制这个维数尺度。",
+      "searches": [
+        "special-polynomials",
+        "gaussian-moments"
+      ],
+      "source_line": 8435,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "9907b45db0455394c6e8a00a5cd8ff4254b92dddb711777a18a6ab48d070c176",
+      "title": "### 定理十四：负部分的精确产生率",
+      "bytes": 235,
+      "index": 93,
+      "tier": "C",
+      "claim": "实际符号负部分的径向产生率等于跨正负区双重奇异积分并有下界。",
+      "reason": "缺移动负域的可微性、Poisson 奇异核积分交换及正负区抵消；标量非负性不能供应等式。",
+      "searches": [
+        "toeplitz",
+        "negative-spectrum-refined",
+        "real-calculus"
+      ],
+      "source_line": 67498,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "9a5d07eae55d326165113eae65bcedf131f3abfb57916fd7c08913609d7adbab",
+      "title": "## 定理 O4：截断误差",
+      "bytes": 234,
+      "index": 94,
+      "tier": "C",
+      "claim": "无限实际 K 的有限截断误差同时有给定迹范数与算子范数界。",
+      "reason": "缺该系数核的迹类分解和精确尾部求和估计；Mathlib 没有在已查范围供应所需迹范数接口。",
+      "searches": [
+        "negative-spectrum-refined",
+        "toeplitz"
+      ],
+      "source_line": 14363,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "9a6bf4e79560e0d3df31fbe2a177f290ec07ec71218e71eb89e322dc2f039635",
+      "title": "## 定理 S4：裸 Bessel 核的有限正值区间",
+      "bytes": 85,
+      "index": 95,
+      "tier": "C",
+      "claim": "虚阶修正 Bessel 核 K_it(a) 在 |t|<=a 时严格为正。",
+      "reason": "缺此虚阶 Bessel 积分的符号定理；检索到的特殊函数/指数正性不足以处理振荡积分。",
+      "searches": [
+        "theta-analytic"
+      ],
+      "source_line": 26029,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "a7e88754e5bb8b4c30b89baee6fd1fe41153876af182d201b96a9086884d779f",
+      "title": "## 推论：存在超几何速度的截断方案",
+      "bytes": 459,
+      "index": 98,
+      "tier": "C",
+      "claim": "实际 xi 增长配合 R_N=(N/logN)^2 得到超几何截断误差指数界。",
+      "reason": "缺实际 D,D',D'' 的统一增长上界与算子截断常数 M_R 的联动估计；Stirling 的存在不能直接认证该算子界。",
+      "searches": [
+        "theta-analytic",
+        "negative-spectrum-refined"
+      ],
+      "source_line": 16949,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "a86360d87830d173c35426c12b589270e406c6a12dc8dfb241ccdbefb825d0e3",
+      "title": "## 定理二：第四阶在绝对收敛域内的全部零点",
+      "bytes": 245,
+      "index": 99,
+      "tier": "C",
+      "claim": "实际 F4 在 Re(s)>1 的全部零点为指定对数格点，且全部简单。",
+      "reason": "缺完整 F4 因子分解、指定代数根 alpha 的唯一性及其他因子的无零性；不认证给出的小数。",
+      "searches": [
+        "discrete-winding",
+        "theta-analytic",
+        "winding"
+      ],
+      "source_line": 48617,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "af4b3b2fa8cb484824d83794e63fc48816b6e05c9c0ad32f76e3a360c35e30eb",
+      "title": "## 定理 D3：共同正回返表示",
+      "bytes": 189,
+      "index": 100,
+      "tier": "C",
+      "claim": "实际 S 在非实域有有限正 Stieltjes 测度表示当且仅当 RH。",
+      "reason": "缺 xi 零点到正测度的完整表示与反向唯一性/极点支撑论证。",
+      "searches": [
+        "theta-analytic",
+        "toeplitz",
+        "negative-spectrum-refined"
+      ],
+      "source_line": 3330,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     }
   ],
   "tierD": [],
@@ -1816,34 +2473,25 @@
       ],
       "archived_probe": "probes/Disk90.lean",
       "log_encoding": "gzip"
+    },
+    {
+      "probe": "Schur89",
+      "command": "make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Schur89.lean'",
+      "exit": 0,
+      "signal": null,
+      "log": "logs/Schur89.log.gz",
+      "started": "2026-09-09T05:15:04.858Z",
+      "atoms": [
+        "937abccd3570503c88aaac8b088e687e6f79db29ca9f67f887b72a028bd4f866"
+      ],
+      "indices": [
+        89
+      ],
+      "archived_probe": "probes/Schur89.lean",
+      "log_encoding": "gzip"
     }
   ],
   "unscreened": [
-    "8062498ed2ea8f74ddd34c3c2dec295a44f3074797e0634b52cbd2630b51459e",
-    "87852ef96970dd58409cceccafe2fa235ed951e6c39b41869e0fca5ecb677246",
-    "88517388478e9834b20004960ece45e5026828dc5fbb0a58206c141a37529a4b",
-    "887786649b4338a76547a05ce2a7b0347b65b5fbe737f69ec247188f3214a077",
-    "88b85ee6e765d6cc5180d029dfdce4cb39fa51093abb321682813ff46a09f58c",
-    "8a1900b281e35bf99c03af2be822b3b0f7a042c7b2a5f8d9ee837df2ca1de391",
-    "8b768726d3b3963e9b9e1a11bc7f33a04a657642db42c63fbdaaff28bf0456b0",
-    "8c8a536d7244072e5e39acc9ab7d2fdf7d874b16349959336f6450a8aad7d74d",
-    "8df09af617ce850c0ed67805688f8fc4f3a0073576a33701fa752ca4ea9ca08a",
-    "8f9277771081db94f2cbe4d55fe4075fdde7edc0a9ecf4e443ae45717b8c0dcb",
-    "8fa3ec47d77910a7c979444b92779fa3031a487901bebfcdf8f8e10d56ce54d4",
-    "90382ec6571adc1e9f8248f72b7b7a2bb916d5ade3bdbfc99e99b6477c208b34",
-    "92536bbe2b763233c6c90f6e32152612b3a4c8316395ce3895a27051104157cb",
-    "937abccd3570503c88aaac8b088e687e6f79db29ca9f67f887b72a028bd4f866",
-    "96902e5b1d0b9ac78c37f6c1f75fd1d5043bfd6c18f5e2451352b6fbc6977b46",
-    "983c804dbd8a847852de8910fac6e9702a31040ec86415def14516a225851762",
-    "9877043750157f00197144b87542162e34a7242d56d6533a857d4cb5822fd169",
-    "9907b45db0455394c6e8a00a5cd8ff4254b92dddb711777a18a6ab48d070c176",
-    "9a5d07eae55d326165113eae65bcedf131f3abfb57916fd7c08913609d7adbab",
-    "9a6bf4e79560e0d3df31fbe2a177f290ec07ec71218e71eb89e322dc2f039635",
-    "a5b558f46722070fb3661959014acf45a036f4013ac27541c95454f998a44da2",
-    "a7dc27aa3ded303f19a0085dc10e7521c4f0e9984b5970c109e3a572b1c30f11",
-    "a7e88754e5bb8b4c30b89baee6fd1fe41153876af182d201b96a9086884d779f",
-    "a86360d87830d173c35426c12b589270e406c6a12dc8dfb241ccdbefb825d0e3",
-    "af4b3b2fa8cb484824d83794e63fc48816b6e05c9c0ad32f76e3a360c35e30eb",
     "b407682500faaa6d8da43ce0ed7505d8350c1352ad449a548751bce1b62cd783",
     "b5821e42febe81b45815f8be9802ddafcf7daab5dc4c74e501b0e709ce3e6000",
     "b664d8929116da6563cafcdddb7f6e7dc3b66a6fe434e807422ba82db9b83ee4",
@@ -2663,6 +3311,38 @@
       ],
       "exit": 0,
       "line_match_count": 21
+    },
+    {
+      "id": "fourth-bindings",
+      "scope": "D5",
+      "program": "rg",
+      "args": [
+        "-n",
+        "-i",
+        "-P",
+        "(coeff_rescale|rescale_coeff|det_vandermonde_ne_zero_iff|Unitary.star_mul_self|star_mul_self_of_mem|sum_mul_sq_le_sq_mul_sq|sum_mul_sq_le|cardFactors_mul|liouville_apply_mul|normSq_inv)",
+        "D5",
+        "-g",
+        "*.lean"
+      ],
+      "exit": 0,
+      "line_match_count": 41
+    },
+    {
+      "id": "fourth-bindings",
+      "scope": ".lake/packages/mathlib/Mathlib",
+      "program": "rg",
+      "args": [
+        "-n",
+        "-i",
+        "-P",
+        "(coeff_rescale|rescale_coeff|det_vandermonde_ne_zero_iff|Unitary.star_mul_self|star_mul_self_of_mem|sum_mul_sq_le_sq_mul_sq|sum_mul_sq_le|cardFactors_mul|liouville_apply_mul|normSq_inv)",
+        ".lake/packages/mathlib/Mathlib",
+        "-g",
+        "*.lean"
+      ],
+      "exit": 0,
+      "line_match_count": 47
     }
   ],
   "mathlib_pin": {
@@ -2677,7 +3357,8 @@
       "6009dcbe96888c3ca23ad3e331da2efec04b9452",
       "dad8e18532ec0063093aad820e8bd4b4c8cf80dc",
       "e77cf4009e6801e994e5bfff59a6b124c61ae292",
-      "fcbe1bf4be3d38a2324acb6d7b392c46919c280b"
+      "fcbe1bf4be3d38a2324acb6d7b392c46919c280b",
+      "134dc1f58721e6c7555355cc0d7c6e2f29100376"
     ],
     "branch": "lane/math/tier3-mathlib-triage-0909",
     "note": "Commits through the preceding checkpoint; final delivery envelope also records its containing report commit."

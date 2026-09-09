@@ -54,7 +54,7 @@ pushed immediately, including failures. Report-only delivery: no PR.
 
 ## conclusion
 
-Screened: **75/150**. A=1, B=17, C=57, D=0, E=0.
+Screened: **100/150**. A=2, B=27, C=71, D=0, E=0.
 
 Structured result: [conclusion.json](tier3-mathlib-triage-0909/conclusion.json).
 Complete canonical atom reads (raw and normalized text, command, EXIT) are in `atoms-1.json` through `atoms-6.json` as collected. Reading ahead does not count as screening.
@@ -138,6 +138,31 @@ All Mathlib paths below are relative to `.lake/packages/mathlib/`. Every listed 
 | 73 | `7afafe5a6e3e8435ddf051d6cf49c1c6ca223fa4c95dfe286f19c8f391ec33d5` | 定理 L5：低阶自动上界 | C | 缺分区/Schur 多项式的统一系数估计；后续阈值整理不能覆盖这一数学缺项。 | none claimed | not run | special-polynomials, q-combinatorics |
 | 74 | `7bc4a56b9299f55e209695fa3689db283e8328893508c0a4473ed32dea18b33b` | 定理 E5：实际谱留数的整数约束 | B | Mathlib 已证明有限非零阶零点的 logDeriv 具有简单极点；缺留数系数 m、倒数坐标变换及实际 S 的定义绑定。 | `meromorphicOrderAt_logDeriv_eq_neg_one` (Mathlib/Analysis/Meromorphic/Order.lean:996) | not run | logderiv-residue, theta-analytic |
 | 75 | `7d5d9c72f7ad9abb794dd61d99e68ff5adc1271970f00e4a009b9e334680a0d2` | 定理 M4：有限算术关系可以精确回读 | A | 展开实际定义后，coeff_monomial 提取权重系数，descFactorial_pos 供应 k<=n<=d 时分母非零，逐项 field_simp 即恢复 P_n；对任意实系数序列成立。 | `Polynomial.coeff_monomial` (Mathlib/Algebra/Polynomial/Basic.lean:581); `Nat.descFactorial_pos` (Mathlib/Data/Nat/Factorial/Basic.lean:374) | Readback75: 0 | polynomial-readback, third-bindings |
+| 76 | `8062498ed2ea8f74ddd34c3c2dec295a44f3074797e0634b52cbd2630b51459e` | 定理 V1：零点转成了一个特定的相位接触 | B | logDeriv 在有限阶零点的简单极点阶数已有接口；缺 Cayley 分式的可去延拓值与一阶 jet 的精确系数。 | `meromorphicOrderAt_logDeriv_eq_neg_one` (Mathlib/Analysis/Meromorphic/Order.lean:996) | not run | logderiv-residue, toeplitz |
+| 77 | `87852ef96970dd58409cceccafe2fa235ed951e6c39b41869e0fca5ecb677246` | 定理三：最大全局离线位移的距离公式 | C | 缺全部零点集合到最近极点距离的统一上下界与极限交换；有限点距离计算不供应全谱上确界。 | none claimed | not run | theta-analytic, negative-spectrum-refined |
+| 78 | `88517388478e9834b20004960ece45e5026828dc5fbb0a58206c141a37529a4b` | 定理六：全部高周期共有的非退化界 | C | 缺实际算术权重的全 d Dirichlet 尾估计及明确组合常数；普通求和支配不识别 W_d。 | none claimed | not run | discrete-winding, theta-analytic |
+| 79 | `887786649b4338a76547a05ce2a7b0347b65b5fbe737f69ec247188f3214a077` | 定理二：谱平滑对首次返回概率的作用是精确的指数折扣 | B | PowerSeries.coeff_rescale 直接供应重标系数乘 a^n；缺实际谱平滑到边界 Schur 函数复合的等式，及首次返回振幅的系数识别。 | `PowerSeries.coeff_rescale` (Mathlib/RingTheory/PowerSeries/Basic.lean:567) | not run | toeplitz, fourth-bindings |
+| 80 | `88b85ee6e765d6cc5180d029dfdce4cb39fa51093abb321682813ff46a09f58c` | 定理三：混合方格的相容条件 | B | 酉算子的 star*U=1 支持局部回返等价；缺任意两条网格路径的相邻交换归约和周期边界的全局环路条件。 | `Unitary.star_mul_self_of_mem` (Mathlib/Algebra/Star/Unitary.lean:61) | not run | unitary-involution, fourth-bindings |
+| 81 | `8a1900b281e35bf99c03af2be822b3b0f7a042c7b2a5f8d9ee837df2ca1de391` | 定理 N2：代数平方就是两条件态的相对振幅 | B | Mathlib 的矩阵内积实例提供 trace(B*M*A*) 配对；缺源文 (B tensor I)Omega 的向量化与两层平方根归一化的实际绑定。 | `Matrix.toMatrixInnerProductSpace` (Mathlib/Analysis/Matrix/Order.lean:336) | not run | finite-geometry, partial-trace |
+| 82 | `8b768726d3b3963e9b9e1a11bc7f33a04a657642db42c63fbdaaff28bf0456b0` | 定理一：忠实切面的拼接公式 | C | 缺完整路径与前缀/切边/后缀三元组的保权双射，不能把一般有限和换序当作忠实切面定理。 | none claimed | not run | bandwidth, unitary-involution |
+| 83 | `8c8a536d7244072e5e39acc9ab7d2fdf7d874b16349959336f6450a8aad7d74d` | 定理 T6：高阶矩的精确递推 | B | 尾积分 FTC 可处理分部积分端点步骤；缺 W 与 J 的双副本微分恒等式及实际核的快速衰减边界。 | `MeasureTheory.integral_Ioi_of_hasDerivAt_of_tendsto` (Mathlib/MeasureTheory/Integral/IntegralEqImproper.lean:787) | not run | real-calculus, theta-analytic |
+| 84 | `8df09af617ce850c0ed67805688f8fc4f3a0073576a33701fa752ca4ea9ca08a` | 定理 E4：有限链精确保留前 \(2N\) 个回返矩 | C | 缺 Stieltjes 正交多项式/高斯求积的 2N-1 次精确性及实际 J_N 构造匹配。 | none claimed | not run | special-polynomials, toeplitz |
+| 85 | `8f9277771081db94f2cbe4d55fe4075fdde7edc0a9ecf4e443ae45717b8c0dcb` | 定理三：整段历史的精确双端点读出 | B | 有限和 Cauchy-Schwarz 提供加权位移能量下界；缺整段酉坐标变换、给定端点约束的双射和最优内部历史构造。 | `Finset.sum_mul_sq_le_sq_mul_sq` (Mathlib/Algebra/Order/BigOperators/Ring/Finset.lean:159) | not run | fourth-bindings, unitary-involution |
+| 86 | `8fa3ec47d77910a7c979444b92779fa3031a487901bebfcdf8f8e10d56ce54d4` | 定理 I1：它对任意有限矩阵都收敛且严格正定 | C | 缺矩阵指数增长与高斯尾的可积支配，以及每个非零方向积分严格正的证明；不能只读 >0 忽略收敛。 | none claimed | not run | gaussian-moments, negative-spectrum-refined |
+| 87 | `90382ec6571adc1e9f8248f72b7b7a2bb916d5ade3bdbfc99e99b6477c208b34` | 推论：RH 强迫纯素数读出最终具有固定负余量 | C | 缺素数平方确定偏移、在线零点振荡常数与纯素数/素数幂读数差的实际解析估计。 | none claimed | not run | theta-analytic, discrete-winding |
+| 88 | `92536bbe2b763233c6c90f6e32152612b3a4c8316395ce3895a27051104157cb` | 定理 P3：这个转换不会随阶数变得任意病态 | C | 缺实际解析乘子 F,1/F 的系数范数与 Toeplitz 乘子算子之间的统一界，特别是有限截断逆的兼容性。 | none claimed | not run | toeplitz, negative-spectrum-refined |
+| 89 | `937abccd3570503c88aaac8b088e687e6f79db29ca9f67f887b72a028bd4f866` | 定理二：边界有效几何由 Schur 补唯一确定 | A | 直接实例化 schur_complement_eq₂₂，PosDef.isUnit 供应逆，PosSemidef 的二次型非负供应下界；代入 y=-C^-1 B*x 达到等号。探针验证 IsLeast，未只验证配方。 | `Matrix.schur_complement_eq₂₂` (Mathlib/LinearAlgebra/Matrix/Hermitian.lean:378); `Matrix.PosDef.isUnit` (Mathlib/LinearAlgebra/Matrix/PosDef.lean:507); `Matrix.PosSemidef.dotProduct_mulVec_nonneg` (Mathlib/LinearAlgebra/Matrix/PosDef.lean:305) | Schur89: 0 | finite-geometry, schur |
+| 90 | `96902e5b1d0b9ac78c37f6c1f75fd1d5043bfd6c18f5e2451352b6fbc6977b46` | 定理十五：一个反射零点对的负贡献区域，恰好是一个圆盘 | B | 平方非负、正分母比较与通分均已有接口；首版完整探针误用要求全局乘法保序的 mul_lt_mul_left，EXIT=2，尚未完成正确正乘子接口绑定，暂不计 A。 | `sq_nonneg` (Mathlib/Algebra/Order/Ring/Unbundled/Basic.lean:606); `div_lt_iff₀` (Mathlib/Algebra/Order/GroupWithZero/Basic.lean:1146); `mul_lt_mul_iff_right₀` (Mathlib/Algebra/Order/GroupWithZero/Defs.lean:286) | Disk90: 2 | finite-geometry |
+| 91 | `983c804dbd8a847852de8910fac6e9702a31040ec86415def14516a225851762` | 引理：小历史宽度下，行列式不会比 \(\exp[-O(d^2\log d)]\) 更小 | C | 缺合流 Vandermonde/导数 Gram 的统一定量下界；普通行列式非零不控制这个维数尺度。 | none claimed | not run | special-polynomials, gaussian-moments |
+| 92 | `9877043750157f00197144b87542162e34a7242d56d6533a857d4cb5822fd169` | 定理十六：负贡献圆盘的 Möbius 像 | B | 复倒数模平方公式已库有；仍需完整坐标配方、K>0 和模不等式双向转换的绑定，当前未用只验证中心公式替代整条。 | `Complex.normSq_inv` (Mathlib/Data/Complex/Basic.lean:750) | not run | finite-geometry, fourth-bindings |
+| 93 | `9907b45db0455394c6e8a00a5cd8ff4254b92dddb711777a18a6ab48d070c176` | 定理十四：负部分的精确产生率 | C | 缺移动负域的可微性、Poisson 奇异核积分交换及正负区抵消；标量非负性不能供应等式。 | none claimed | not run | toeplitz, negative-spectrum-refined, real-calculus |
+| 94 | `9a5d07eae55d326165113eae65bcedf131f3abfb57916fd7c08913609d7adbab` | 定理 O4：截断误差 | C | 缺该系数核的迹类分解和精确尾部求和估计；Mathlib 没有在已查范围供应所需迹范数接口。 | none claimed | not run | negative-spectrum-refined, toeplitz |
+| 95 | `9a6bf4e79560e0d3df31fbe2a177f290ec07ec71218e71eb89e322dc2f039635` | 定理 S4：裸 Bessel 核的有限正值区间 | C | 缺此虚阶 Bessel 积分的符号定理；检索到的特殊函数/指数正性不足以处理振荡积分。 | none claimed | not run | theta-analytic |
+| 96 | `a5b558f46722070fb3661959014acf45a036f4013ac27541c95454f998a44da2` | 定理 E2：下界是一个最佳多项式逼近问题 | B | Schur 配方提供有限二次优化的代数部分；缺实际矩矩阵与加权 L2 误差展开、严格可逆和嵌套多项式空间的匹配。 | `Matrix.schur_complement_eq₂₂` (Mathlib/LinearAlgebra/Matrix/Hermitian.lean:378) | not run | schur, special-polynomials |
+| 97 | `a7dc27aa3ded303f19a0085dc10e7521c4f0e9984b5970c109e3a572b1c30f11` | 定理 D1：任意足够多的不同采样点，都保留全部负方向 | B | Vandermonde 行列式非零等价于采样互异已有接口；缺实际采样核合同公式、Bézout 惯性与非实根对计数定理。 | `Matrix.det_vandermonde_ne_zero_iff` (Mathlib/LinearAlgebra/Vandermonde.lean:232) | not run | fourth-bindings, negative-spectrum-refined, special-polynomials |
+| 98 | `a7e88754e5bb8b4c30b89baee6fd1fe41153876af182d201b96a9086884d779f` | 推论：存在超几何速度的截断方案 | C | 缺实际 D,D',D'' 的统一增长上界与算子截断常数 M_R 的联动估计；Stirling 的存在不能直接认证该算子界。 | none claimed | not run | theta-analytic, negative-spectrum-refined |
+| 99 | `a86360d87830d173c35426c12b589270e406c6a12dc8dfb241ccdbefb825d0e3` | 定理二：第四阶在绝对收敛域内的全部零点 | C | 缺完整 F4 因子分解、指定代数根 alpha 的唯一性及其他因子的无零性；不认证给出的小数。 | none claimed | not run | discrete-winding, theta-analytic, winding |
+| 100 | `af4b3b2fa8cb484824d83794e63fc48816b6e05c9c0ad32f76e3a360c35e30eb` | 定理 D3：共同正回返表示 | C | 缺 xi 零点到正测度的完整表示与反向唯一性/极点支撑论证。 | none claimed | not run | theta-analytic, toeplitz, negative-spectrum-refined |
 
 ## probe_runs
 
@@ -146,6 +171,7 @@ Logs ending in `.gz` are losslessly compressed complete stdout/stderr, including
 - baseline: `make 'lean'`; EXIT=0; [log](tier3-mathlib-triage-0909/logs/baseline.log.gz); atoms .
 - Readback75: `make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Readback75.lean'`; EXIT=0; [log](tier3-mathlib-triage-0909/logs/Readback75.log.gz); atoms 7d5d9c72f7ad9abb794dd61d99e68ff5adc1271970f00e4a009b9e334680a0d2.
 - Disk90: `make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Disk90.lean'`; EXIT=2; [log](tier3-mathlib-triage-0909/logs/Disk90.log.gz); atoms 96902e5b1d0b9ac78c37f6c1f75fd1d5043bfd6c18f5e2451352b6fbc6977b46.
+- Schur89: `make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Schur89.lean'`; EXIT=0; [log](tier3-mathlib-triage-0909/logs/Schur89.log.gz); atoms 937abccd3570503c88aaac8b088e687e6f79db29ca9f67f887b72a028bd4f866.
 
 ## search_receipts
 
@@ -201,36 +227,13 @@ Full commands and untruncated hits: [search-receipts.json](tier3-mathlib-triage-
 | logderiv-residue | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '(residue.*logDeriv|logDeriv.*residue|logDeriv.*order|order.*logDeriv)' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 6 | 0 |
 | finite-geometry | D5 | `rg '-n' '-i' '-P' '(schur_complement_eq₂₂|div_neg_iff_of_pos_right|mul_neg_iff_of_pos_left|sub_conj|trace_conjTranspose_mul_self|trace_mul_self|inner.*trace|trace.*inner)' 'D5' '-g' '*.lean'` | 121 | 0 |
 | finite-geometry | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '(schur_complement_eq₂₂|div_neg_iff_of_pos_right|mul_neg_iff_of_pos_left|sub_conj|trace_conjTranspose_mul_self|trace_mul_self|inner.*trace|trace.*inner)' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 21 | 0 |
+| fourth-bindings | D5 | `rg '-n' '-i' '-P' '(coeff_rescale|rescale_coeff|det_vandermonde_ne_zero_iff|Unitary.star_mul_self|star_mul_self_of_mem|sum_mul_sq_le_sq_mul_sq|sum_mul_sq_le|cardFactors_mul|liouville_apply_mul|normSq_inv)' 'D5' '-g' '*.lean'` | 41 | 0 |
+| fourth-bindings | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '(coeff_rescale|rescale_coeff|det_vandermonde_ne_zero_iff|Unitary.star_mul_self|star_mul_self_of_mem|sum_mul_sq_le_sq_mul_sq|sum_mul_sq_le|cardFactors_mul|liouville_apply_mul|normSq_inv)' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 47 | 0 |
 
 The positive and negative controls share case-insensitivity, alternation, word boundaries and whitespace matching. The initial `negative-spectrum` query matched `registerTraceClass` (logging infrastructure); the refined word-boundary query excludes this false positive. Generic Caratheodory measure hits are not Toeplitz spectral theorems.
 
 ## unscreened
 
-- `8062498ed2ea8f74ddd34c3c2dec295a44f3074797e0634b52cbd2630b51459e`
-- `87852ef96970dd58409cceccafe2fa235ed951e6c39b41869e0fca5ecb677246`
-- `88517388478e9834b20004960ece45e5026828dc5fbb0a58206c141a37529a4b`
-- `887786649b4338a76547a05ce2a7b0347b65b5fbe737f69ec247188f3214a077`
-- `88b85ee6e765d6cc5180d029dfdce4cb39fa51093abb321682813ff46a09f58c`
-- `8a1900b281e35bf99c03af2be822b3b0f7a042c7b2a5f8d9ee837df2ca1de391`
-- `8b768726d3b3963e9b9e1a11bc7f33a04a657642db42c63fbdaaff28bf0456b0`
-- `8c8a536d7244072e5e39acc9ab7d2fdf7d874b16349959336f6450a8aad7d74d`
-- `8df09af617ce850c0ed67805688f8fc4f3a0073576a33701fa752ca4ea9ca08a`
-- `8f9277771081db94f2cbe4d55fe4075fdde7edc0a9ecf4e443ae45717b8c0dcb`
-- `8fa3ec47d77910a7c979444b92779fa3031a487901bebfcdf8f8e10d56ce54d4`
-- `90382ec6571adc1e9f8248f72b7b7a2bb916d5ade3bdbfc99e99b6477c208b34`
-- `92536bbe2b763233c6c90f6e32152612b3a4c8316395ce3895a27051104157cb`
-- `937abccd3570503c88aaac8b088e687e6f79db29ca9f67f887b72a028bd4f866`
-- `96902e5b1d0b9ac78c37f6c1f75fd1d5043bfd6c18f5e2451352b6fbc6977b46`
-- `983c804dbd8a847852de8910fac6e9702a31040ec86415def14516a225851762`
-- `9877043750157f00197144b87542162e34a7242d56d6533a857d4cb5822fd169`
-- `9907b45db0455394c6e8a00a5cd8ff4254b92dddb711777a18a6ab48d070c176`
-- `9a5d07eae55d326165113eae65bcedf131f3abfb57916fd7c08913609d7adbab`
-- `9a6bf4e79560e0d3df31fbe2a177f290ec07ec71218e71eb89e322dc2f039635`
-- `a5b558f46722070fb3661959014acf45a036f4013ac27541c95454f998a44da2`
-- `a7dc27aa3ded303f19a0085dc10e7521c4f0e9984b5970c109e3a572b1c30f11`
-- `a7e88754e5bb8b4c30b89baee6fd1fe41153876af182d201b96a9086884d779f`
-- `a86360d87830d173c35426c12b589270e406c6a12dc8dfb241ccdbefb825d0e3`
-- `af4b3b2fa8cb484824d83794e63fc48816b6e05c9c0ad32f76e3a360c35e30eb`
 - `b407682500faaa6d8da43ce0ed7505d8350c1352ad449a548751bce1b62cd783`
 - `b5821e42febe81b45815f8be9802ddafcf7daab5dc4c74e501b0e709ce3e6000`
 - `b664d8929116da6563cafcdddb7f6e7dc3b66a6fe434e807422ba82db9b83ee4`
@@ -289,6 +292,7 @@ The positive and negative controls share case-insensitivity, alternation, word b
 - `dad8e18532ec0063093aad820e8bd4b4c8cf80dc`
 - `e77cf4009e6801e994e5bfff59a6b124c61ae292`
 - `fcbe1bf4be3d38a2324acb6d7b392c46919c280b`
+- `134dc1f58721e6c7555355cc0d7c6e2f29100376`
 
 Every listed checkpoint was pushed successfully. The final runner envelope includes the commit containing this final report (a commit cannot contain its own hash).
 
