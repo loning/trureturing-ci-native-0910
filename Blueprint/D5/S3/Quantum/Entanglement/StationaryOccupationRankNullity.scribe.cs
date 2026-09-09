@@ -85,7 +85,7 @@ internal sealed class StationaryOccupationRankNullityDocument : IScribeDocumentD
                 Theorem("gram-factor-rank-le-memory-card", "gram_factor_rank_le_memory_card", factorUpper,
                     "A Gram factor through a finite memory carrier has rank at most that carrier's cardinality."),
                 Theorem("gram-factor-is-hermitian", "gram_factor_is_hermitian", factorHermitian,
-                    "A complex Gram factor is Hermitian; positivity remains an explicit real quadratic-form obligation."),
+                    "A complex Gram factor is Hermitian; positivity of the physical stationary factor remains a separate obligation."),
                 Theorem("gram-factor-pos-semidef", "gram_factor_pos_semidef", factorPsd,
                     "With the ComplexOrder scope, a finite complex Gram factor is positive semidefinite."),
                 Theorem("bounded-profile-memory-ge", "bounded_profile_memory_ge", memoryLower,

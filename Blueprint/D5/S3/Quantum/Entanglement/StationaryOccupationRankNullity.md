@@ -64,7 +64,7 @@ $$\forall I \in Type,\; \forall K \in Type,\; \left(Fintype\left(I\right) \land 
 
 *Commentary.*
 
-A complex Gram factor is Hermitian; positivity remains an explicit real quadratic-form obligation.
+A complex Gram factor is Hermitian; positivity of the physical stationary factor remains a separate obligation.
 
 **Theorem 1.6 (gram_factor_pos_semidef).**
 
