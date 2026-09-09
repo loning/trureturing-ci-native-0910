@@ -110,9 +110,121 @@ private theorem order_colors {α : Type*} [DecidableEq α] (f : α → ℕ)
     obtain ⟨l, hl, hls, hlc⟩ := ih _ hsmall (s.erase x) (f x) hnext rfl
     refine ⟨x :: l, ?_, ?_, ?_⟩
     · simp only [List.nodup_cons]
-      exact ⟨by simpa [← List.mem_toFinset, hls] using Finset.notMem_erase x s, hl⟩
+      exact ⟨by simp [← List.mem_toFinset, hls], hl⟩
     · simp [hls, Finset.insert_erase hxs]
     · simpa only [List.map_cons, List.isChain_cons_cons] using
         And.intro (Ne.symm hxp) hlc
+
+private def ValidBlocks (m : Multiset ℕ) (s : Finset (ℕ × ℕ)) : Prop :=
+  (∀ b ∈ s, 0 < b.1 ∧ 0 < b.2) ∧
+    Set.InjOn (fun b : ℕ × ℕ => b.1 * b.2) s ∧
+    ∑ b ∈ s, Multiset.replicate b.2 b.1 = m
+
+-- If one value is overrepresented, merging its largest block with one of
+-- its other blocks avoids every existing sum by the pigeonhole principle.
+private theorem minimal_balanced {m : Multiset ℕ} {s : Finset (ℕ × ℕ)}
+    (hv : ValidBlocks m s)
+    (hmin : ∀ t, ValidBlocks m t → s.card ≤ t.card) (v : ℕ) :
+    2 * (s.filter (fun b => b.1 = v)).card ≤ s.card + 1 := by
+  classical
+  let w : ℕ × ℕ → ℕ := fun b => b.1 * b.2
+  let t := s.filter (fun b => b.1 = v)
+  let o := s.filter (fun b => b.1 ≠ v)
+  obtain ⟨hp, hi, hm⟩ := hv
+  change Set.InjOn w s at hi
+  by_contra hbad
+  change ¬ 2 * t.card ≤ s.card + 1 at hbad
+  have hcounts : t.card + o.card = s.card :=
+    Finset.card_filter_add_card_filter_not (s := s) (fun b => b.1 = v)
+  have ht : t.Nonempty := Finset.card_pos.mp (by change 0 < t.card; omega)
+  obtain ⟨a, ha, hamax⟩ := Finset.exists_max_image t w ht
+  obtain ⟨has, hav⟩ := Finset.mem_filter.mp ha
+  have hchoice : ∃ b ∈ t.erase a, w a + w b ∉ s.image w := by
+    by_contra hn
+    push Not at hn
+    have hsub : ((t.erase a).image (fun b => w a + w b)) ⊆ o.image w := by
+      intro z hz
+      obtain ⟨b, hb, rfl⟩ := Finset.mem_image.mp hz
+      obtain ⟨c, hc, he⟩ := Finset.mem_image.mp (hn b hb)
+      refine Finset.mem_image.mpr ⟨c, Finset.mem_filter.mpr ⟨hc, ?_⟩, he⟩
+      intro hcv
+      have hcm := hamax c (Finset.mem_filter.mpr ⟨hc, hcv⟩)
+      have hbs := (Finset.mem_filter.mp (Finset.mem_of_mem_erase hb)).1
+      have hbp : 0 < w b := Nat.mul_pos (hp b hbs).1 (hp b hbs).2
+      omega
+    have hci : ((t.erase a).image (fun b => w a + w b)).card = (t.erase a).card := by
+      apply Finset.card_image_of_injOn
+      intro b hb c hc he
+      exact hi ((Finset.mem_filter.mp (Finset.mem_of_mem_erase hb)).1)
+        ((Finset.mem_filter.mp (Finset.mem_of_mem_erase hc)).1) (Nat.add_left_cancel he)
+    have hle := (Finset.card_le_card hsub).trans (Finset.card_image_le)
+    rw [hci, Finset.card_erase_of_mem ha] at hle
+    change ¬ 2 * t.card ≤ s.card + 1 at hbad
+    omega
+  obtain ⟨b, hb, hnew⟩ := hchoice
+  obtain ⟨hba, hbt⟩ := Finset.mem_erase.mp hb
+  obtain ⟨hbs, hbv⟩ := Finset.mem_filter.mp hbt
+  let z : ℕ × ℕ := (v, a.2 + b.2)
+  have hwz : w z = w a + w b := by
+    dsimp [w, z]
+    rw [hav, hbv, Nat.mul_add]
+  have hzs : z ∉ s := by
+    intro hz
+    exact hnew (Finset.mem_image.mpr ⟨z, hz, hwz⟩)
+  let u := (s.erase a).erase b
+  have hus : u ⊆ s := (Finset.erase_subset _ _).trans (Finset.erase_subset _ _)
+  have hzu : z ∉ u := fun hz => hzs (hus hz)
+  have hbe : b ∈ s.erase a := Finset.mem_erase.mpr ⟨hba, hbs⟩
+  have hv' : ValidBlocks m (insert z u) := by
+    refine ⟨?_, ?_, ?_⟩
+    · intro c hc
+      rcases Finset.mem_insert.mp hc with rfl | hc
+      · exact ⟨by change 0 < v; exact hav ▸ (hp a has).1,
+          by dsimp [z]; have := (hp a has).2; omega⟩
+      · exact hp c (hus hc)
+    · intro c hc d hd he
+      rcases Finset.mem_insert.mp hc with rfl | hc
+      · rcases Finset.mem_insert.mp hd with rfl | hd
+        · rfl
+        · exact False.elim (hnew (Finset.mem_image.mpr
+            ⟨d, hus hd, (show w z = w d from he).symm.trans hwz⟩))
+      · rcases Finset.mem_insert.mp hd with rfl | hd
+        · exact False.elim (hnew (Finset.mem_image.mpr
+            ⟨c, hus hc, (show w c = w z from he).trans hwz⟩))
+        · exact hi (hus hc) (hus hd) he
+    · let parts : ℕ × ℕ → Multiset ℕ := fun b => Multiset.replicate b.2 b.1
+      have hzparts : parts z = parts a + parts b := by
+        dsimp [parts, z]
+        rw [hav, hbv, Multiset.replicate_add]
+      have he1 := Finset.sum_erase_add s parts has
+      have he2 := Finset.sum_erase_add (s.erase a) parts hbe
+      change ∑ c ∈ insert z u, parts c = m
+      rw [Finset.sum_insert hzu, hzparts]
+      calc
+        parts a + parts b + ∑ c ∈ u, parts c =
+            (∑ c ∈ u, parts c) + parts b + parts a := by ac_rfl
+        _ = m := by rw [he2, he1]; exact hm
+  have hle := hmin (insert z u) hv'
+  rw [Finset.card_insert_of_notMem hzu] at hle
+  have hc1 := Finset.card_erase_of_mem has
+  have hc2 := Finset.card_erase_of_mem hbe
+  change ((s.erase a).erase b).card + 1 ≥ s.card at hle
+  have htwo : 2 ≤ s.card := by
+    have := Finset.card_pos.mpr (show (s.erase a).Nonempty from ⟨b, hbe⟩)
+    omega
+  omega
+
+private theorem exists_balanced {m : Multiset ℕ} (hm : HasConstantBlocks m) :
+    ∃ s : Finset (ℕ × ℕ), ValidBlocks m s ∧
+      ∀ v, 2 * (s.filter (fun b => b.1 = v)).card ≤ s.card + 1 := by
+  classical
+  change ∃ s, ValidBlocks m s at hm
+  obtain ⟨s, hs⟩ := hm
+  have hex : ∃ k, ∃ t, ValidBlocks m t ∧ t.card = k := ⟨s.card, s, hs, rfl⟩
+  obtain ⟨t, ht, he⟩ := Nat.find_spec hex
+  refine ⟨t, ht, minimal_balanced ht ?_⟩
+  intro u hu
+  rw [he]
+  exact Nat.find_min' hex ⟨u, hu, rfl⟩
 
 end D5.S1.Words.Compositions.ConstantBlocksDistinctRunSums
