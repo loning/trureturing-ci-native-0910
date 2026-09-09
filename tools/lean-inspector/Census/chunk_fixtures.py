@@ -2,6 +2,7 @@
 
 import json
 import os
+import re
 
 from emission import manifest_source, name, string, write_module
 from resources import run
@@ -27,10 +28,14 @@ def check_chunks(repository, directory):
         "    CensusManifest.bindEmittedManifest\n"
         "      { headSha := \"fixture-head\", reportSha256 := \"digest\", theorems := expectedRows }\n"
         "      `CensusRun.Root expectedRows `CensusRun.manifest `CensusRun.reportKeys\n")
-    ordered = "CensusRun.reportKeys.chunk0, CensusRun.reportKeys.chunk1, CensusRun.reportKeys.chunk2"
+    ordered = "decodeIds 100 CensusRun.reportKeys.chunk0, decodeIds 100 CensusRun.reportKeys.chunk1, decodeIds 5 CensusRun.reportKeys.chunk2"
     cases = [("noncomputableMultiChunkBound", original, True),
              ("chunkReorderedBetweenSides", original.replace(ordered,
-                 "CensusRun.reportKeys.chunk1, CensusRun.reportKeys.chunk0, CensusRun.reportKeys.chunk2"), False)]
+                 "decodeIds 100 CensusRun.reportKeys.chunk1, decodeIds 100 CensusRun.reportKeys.chunk0, decodeIds 5 CensusRun.reportKeys.chunk2"), False),
+             ("wrongChunkArity", original.replace("decodeIds 100 CensusRun.reportKeys.chunk0",
+                 "decodeIds 99 CensusRun.reportKeys.chunk0"), False),
+             ("chunkLiteralBinding", re.sub(r"(CensusRun.reportKeys.chunk0 : Nat := )(\d+)",
+                 lambda m: m[1] + str(int(m[2]) + 1), original, count=1), False)]
     outcomes = []
     try:
         for label, text, accepted in cases:
@@ -41,7 +46,8 @@ def check_chunks(repository, directory):
             except RuntimeError:
                 assert not accepted
                 log = (root / label / "process.log").read_text()
-                assert "component=report_keys_binding" in log, log
+                expected = "component=statement_id_nat" if label == "chunkLiteralBinding" else "component=report_keys_binding"
+                assert expected in log, log
             else:
                 assert accepted, label + " accepted"
             outcomes.append({"name": label, "status": "accepted" if accepted else "rejected",

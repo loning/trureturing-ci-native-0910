@@ -4,6 +4,7 @@ import copy
 import json
 import os
 import pathlib
+import re
 
 from emission import string
 from resources import run
@@ -46,7 +47,7 @@ def check_manifest_negatives(repository, directory):
             response.write_bytes(pristine)
 
     rejected("manifestDetachedFromRows", "component=manifest_keys",
-             text=original.replace('"idTheorem"', '"Detached"', 1))
+             text=original.replace("keys := CensusRun.manifestKeys", "keys := []", 1))
     deleted = copy.deepcopy(data)
     deleted["entries"].pop(observed_index)
     rejected("deletedManifestRow", "IE-C034", transport=deleted)
@@ -57,7 +58,8 @@ def check_manifest_negatives(repository, directory):
     rejected("duplicateIdDifferentName", "IE-C035", transport=duplicated)
     # Both 0 and 1 have valid distinct wire strings. Binding both to Nat 1 fails.
     rejected("sameNatDifferentWireRejected", "component=statement_id_nat",
-             text=original.replace(", 0)", ", 1)", 1))
+             text=re.sub(r"(CensusRun.manifestKeys.chunk0 : Nat := )(\d+)",
+                         lambda m: m[1] + str(int(m[2]) + 1), original, count=1))
     for label, wire in [
             ("uppercaseIdentity", "sha256:" + "A" * 64),
             ("shortIdentity", "sha256:" + "0" * 63),
@@ -70,7 +72,7 @@ def check_manifest_negatives(repository, directory):
         rejected(label, "component=statement_id_format", transport=malformed)
     start = original.index("noncomputable def CensusRun.reportKeys.")
     reflexive = original[:start] + (
-        "noncomputable def CensusRun.reportKeys : List (Lean.Name × Nat) := CensusRun.manifest.keys\n")
+        "noncomputable def CensusRun.reportKeys : List Nat := CensusRun.manifest.keys\n")
     rejected("reflexiveReportRejected", "component=report_keys_binding", text=reflexive)
     rejected("reflexiveReportNameRejected", "component=report_keys_binding", driver_text=original_driver.replace(
         "report_keys CensusRun.reportKeys", "report_keys CensusRun.manifestKeys"))
@@ -89,10 +91,10 @@ def check_manifest_negatives(repository, directory):
     assert any(row["statement_id"] == "sha256:" + "0" * 64 for row in artifact["rows"])
     outcomes.append({"name": "leadingZeroIdentity", "status": "preserved"})
     outcomes.append({"name": "noncomputableDataBound", "status": "accepted"})
-    rejected("chunkMovedBetweenSides", "component=report_keys_binding", text=original.replace(
-        "List.flatten [CensusRun.reportKeys.chunk0]", "List.flatten [CensusRun.manifestKeys.chunk0]"))
-    rejected("chunkDuplicatedBetweenSides", "component=report_keys_binding", text=original.replace(
-        "List.flatten [CensusRun.reportKeys.chunk0]",
-        "List.flatten [CensusRun.reportKeys.chunk0, CensusRun.manifestKeys.chunk0]"))
+    rejected("chunkMovedBetweenSides", "component=report_keys_binding", text=re.sub(
+        r"decodeIds (\d+) CensusRun.reportKeys.chunk0", r"decodeIds \1 CensusRun.manifestKeys.chunk0", original))
+    rejected("chunkDuplicatedBetweenSides", "component=report_keys_binding", text=re.sub(
+        r"decodeIds (\d+) CensusRun.reportKeys.chunk0",
+        r"decodeIds \1 CensusRun.reportKeys.chunk0, decodeIds \1 CensusRun.manifestKeys.chunk0", original))
     (directory / "negative-fixtures.json").write_text(json.dumps(outcomes, indent=2) + "\n")
     return outcomes

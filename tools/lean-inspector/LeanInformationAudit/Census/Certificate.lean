@@ -2,13 +2,26 @@ import Init
 
 namespace LeanInformationAudit
 
-/-- The kernel identity retains the full structured Name and decoded 256-bit id. -/
+/-- Publication metadata is bound by the elaborator. The kernel claim below
+contains only ids; Name-level `ExactlyCovers` is not claimed from this certificate. -/
 structure CensusKeyManifest where
   headSha : String
   reportSha256 : String
   censusRoot : Lean.Name
-  keys : List (Lean.Name × Nat)
+  keys : List Nat
   deriving Repr, Inhabited
+
+/-- A chunk contains at most 100 base-2^256 digits, least significant id first.
+The explicit arity preserves leading zero digits. The binder checks the domain,
+arity and packed literal against each independent wire authority. -/
+def decodeIds : Nat → Nat → List Nat
+  | 0, _ => []
+  | k + 1, value => value % 2 ^ 256 :: decodeIds k (value / 2 ^ 256)
+
+theorem decodeIds_length (k value : Nat) : (decodeIds k value).length = k := by
+  induction k generalizing value with
+  | zero => rfl
+  | succ k ih => exact congrArg Nat.succ (ih _)
 
 /-- Exactly one Nat comparison per adjacent pair. -/
 def strictlyAscending : List Nat → Bool
@@ -41,10 +54,12 @@ theorem strictlyAscending_nodup (xs : List Nat)
       | nil => rfl
       | cons b rest => exact (Bool.and_eq_true_iff.mp h).2
 
-/-- The flat certificate binds metadata, ordering, and independently emitted full keys. -/
-def CensusKeyManifest.Certificate (m : CensusKeyManifest) (head sha : String)
-    (root : Lean.Name) (reportKeys : List (Lean.Name × Nat)) : Prop :=
-  m.headSha = head ∧ m.reportSha256 = sha ∧ m.censusRoot = root ∧
-    strictlyAscending (m.keys.map Prod.snd) = true ∧ m.keys = reportKeys
+/-- Accounting over the id set: linear adjacent comparisons, requested count,
+and equality with independently emitted report ids. Names, hex spelling and
+metadata remain elaborator obligations; this is not Name-level `ExactlyCovers`.
+Never decide `List.Nodup` or Finset equality here (quadratic). -/
+def CensusKeyManifest.Certificate (ids : List Nat) (requested : Nat)
+    (reportIds : List Nat) : Prop :=
+  strictlyAscending ids = true ∧ ids.length = requested ∧ ids = reportIds
 
 end LeanInformationAudit

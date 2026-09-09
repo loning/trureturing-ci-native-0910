@@ -8,7 +8,7 @@ private def oneId := "sha256:" ++ String.ofList (List.replicate 63 '0') ++ "1"
 run_cmd do
   let keys : Array StatementKey := #[⟨`T, zeroId⟩, ⟨`U, oneId⟩]
   let report : FrozenReport := ⟨"head", "digest", keys⟩
-  let manifest : CensusKeyManifest := ⟨"head", "digest", `Root, [(`T, 0), (`U, 1)]⟩
+  let manifest : CensusKeyManifest := ⟨"head", "digest", `Root, [0, 1]⟩
   let duplicates : Array StatementKey := #[⟨`T, zeroId⟩, ⟨`Other, zeroId⟩]
   let check (label expected : String) (result : Except String Unit) := do
     match result with

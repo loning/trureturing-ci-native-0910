@@ -16,28 +16,25 @@ def main():
     repository = pathlib.Path(__file__).resolve().parents[3]
     source_root = repository / "tools/lean-inspector"
     manifest = source_root / "LeanInformationAudit/Census/Manifest.lean"
-    codec = source_root / "LeanInformationAudit/Census/Codec.lean"
     publisher = source_root / "LeanInformationAudit/Census/Publish.lean"
     contract = source_root / "LeanInformationAudit/Tests/Census/Manifest/Contract.lean"
     environment = contract.with_name("Environment.lean")
     cases = [
         ("drop-ascending", manifest, contract, "certificateAscendingConjunct",
          lambda text: text.replace(
-             '  let mut proof ← mkAppM ``And.intro #[orderProof, equalityProof]',
-             '  let mut proof := equalityProof')),
-        ("inventory-copy-rhs", manifest, contract, "reportListEqualityBinding",
+             '  let proof ← mkAppM ``And.intro #[orderProof, tail]',
+             '  let proof := tail')),
+        ("drop-length", manifest, contract.with_name("Length.lean"), "certificateLengthConjunct",
          lambda text: text.replace(
-             '#[manifest, toExpr head, toExpr sha, toExpr root, reportKeys]',
-             '#[manifest, toExpr head, toExpr sha, toExpr root, keys]')),
-        ("skip-codec-roundtrip", codec, contract, "codecRoundTripBinding",
+             '  let tail ← mkAppM ``And.intro #[lengthProof, equalityProof]',
+             '  let tail := equalityProof')),
+        ("skip-chunk-recomputation", manifest, contract.with_name("Chunks.lean"), "chunkLiteralBinding",
          lambda text: text.replace(
-             '  unless (← renderStatementId value) == wire do throw <| formatError name wire\n', '')),
+             '    unless (.lit (.natVal value) : Expr) == .lit (.natVal packed) do',
+             '    unless (.lit (.natVal value) : Expr) == .lit (.natVal value) do')),
         ("payload-import", publisher, environment, "finalEnvironmentImports",
          lambda text: text.replace('Elab.runFrontend input options',
              'Elab.runFrontend ("import LeanInformationAudit.DispositionCensus\\n" ++ input) options')),
-        ("publisher-import", publisher, environment, "finalEnvironmentImports",
-         lambda text: text.replace('Elab.runFrontend input options',
-             'Elab.runFrontend ("import LeanInformationAudit.Census.Publish\\n" ++ input) options')),
     ]
     outcomes = []
     for label, source, fixture, expected, transform in cases:

@@ -58,21 +58,26 @@ def name(value):
     raise ValueError("invalid structured Lean name")
 
 
-def key_list(keys):
-    ordered = sorted(((key, statement_nat(wire)) for key, wire in keys), key=lambda item: item[1])
-    return "[\n" + ",\n".join(f"  ({name(key)}, {value})" for key, value in ordered) + "]"
+def pack_ids(values):
+    """Least significant digit first; arity is emitted separately, including zero."""
+    if not 1 <= len(values) <= 100 or any(not 0 <= value < 2 ** 256 for value in values):
+        raise ValueError("IE-C036 component=statement_id_nat or chunk_arity")
+    packed = 0
+    for value in reversed(values):
+        packed = (packed << 256) | value
+    return packed
 
 
 def chunked_keys(declaration, keys):
-    ordered = sorted(keys, key=lambda item: statement_nat(item[1]))
+    ordered = sorted(statement_nat(wire) for _, wire in keys)
     chunks = []
     definitions = []
     for start in range(0, len(ordered), 100):
         chunk = f"{declaration}.chunk{start // 100}"
-        chunks.append(chunk)
-        definitions.append(f"noncomputable def {chunk} : List (Lean.Name × Nat) := "
-                           + key_list(ordered[start:start + 100]) + "\n")
-    definitions.append(f"noncomputable def {declaration} : List (Lean.Name × Nat) := "
+        values = ordered[start:start + 100]
+        chunks.append(f"decodeIds {len(values)} {chunk}")
+        definitions.append(f"noncomputable def {chunk} : Nat := {pack_ids(values)}\n")
+    definitions.append(f"noncomputable def {declaration} : List Nat := "
                        + "List.flatten [" + ", ".join(chunks) + "]\n")
     return "".join(definitions)
 

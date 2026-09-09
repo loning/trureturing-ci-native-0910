@@ -103,7 +103,8 @@ private def streamArtifact (path : String) (fields : List (String × Json))
   handle.flush
 
 /-- Independent data-only publication. Lean replays each bounded query before
-accepting its rows; the kernel sees only full keys and immutable report metadata. -/
+accepting its rows. The kernel claim is over ids; Name-level `ExactlyCovers`
+and report metadata are elaborator-bound, not claimed by the kernel theorem. -/
 elab "#disposition_census" &"projection" &"root" root:ident &"source" sourcePath:str &"report" reportPath:str
     &"head" head:str &"report_sha256" reportSha:str &"prefix" selectionPrefix:str
     &"manifest" manifestName:ident &"report_keys" reportKeysName:ident &"receipts" receiptsPath:str
@@ -128,7 +129,7 @@ elab "#disposition_census" &"projection" &"root" root:ident &"source" sourcePath
   IO.FS.writeFile (destination ++ ".environment.json") ((Json.mkObj [
     ("imports", toJson imports), ("transitive_imports", toJson closure)]).pretty ++ "\n")
   phase destination "manifest_binding"
-  let value := mkConst manifestName
+  let ids := mkConst (manifestName.appendAfter "Keys")
   let reportKeysExpr := mkConst reportKeysName
   withEnv finalEnv <| liftTermElabM <| withOptions (fun _ => options) do
     bindEmittedManifest selected root.getId (inventory.entries.map (·.1)) manifestName reportKeysName
@@ -138,9 +139,9 @@ elab "#disposition_census" &"projection" &"root" root:ident &"source" sourcePath
   phase destination "certificate_compile_kernel"
   let certificateName := (← getCurrNamespace) ++ certificate.getId.eraseMacroScopes
   let (proof, proposition) ← withEnv finalEnv <| liftTermElabM <| withOptions (fun _ => options) do
-    let proof ← certificateProof value report.headSha report.reportSha256 root.getId reportKeysExpr
+    let proof ← certificateProof ids selected.theorems.size reportKeysExpr
     let proposition ← mkAppM ``CensusKeyManifest.Certificate
-      #[value, toExpr report.headSha, toExpr report.reportSha256, toExpr root.getId, reportKeysExpr]
+      #[ids, toExpr selected.theorems.size, reportKeysExpr]
     return (proof, proposition)
   let declaration := Declaration.thmDecl {
     name := certificateName, levelParams := [], type := proposition, value := proof }

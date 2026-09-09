@@ -10,31 +10,24 @@ private def literalNameExpr : Name → Expr
   | .str parent part => mkApp2 (mkConst ``Name.str) (literalNameExpr parent) (toExpr part)
   | .num parent part => mkApp2 (mkConst ``Name.num) (literalNameExpr parent) (toExpr part)
 
-/-- Match the emitted constructor syntax, without ToExpr's Name.mkStrN compression. -/
-def keysLiteralExpr (keys : List (Name × Nat)) : Expr :=
-  letI : ToExpr Name := ⟨literalNameExpr, mkConst ``Name⟩
-  toExpr keys
-
-/-- All renderers consume this ordering: ascending decoded 256-bit ids. -/
-def canonicalKeys (keys : Array StatementKey) : Except String (List (Name × Nat)) := do
-  let values ← keys.mapM fun key => do
-    return (key.theoremName, ← decodeStatementId key.theoremName key.statementId)
-  return (values.qsort (fun a b => a.2 < b.2)).toList
+/-- All renderers consume ascending decoded ids. Name/hex/Nat correspondence is
+an elaborator obligation; the JSON retains the original structured Name and hex. -/
+def canonicalKeys (keys : Array StatementKey) : Except String (List Nat) := do
+  let values ← keys.mapM fun key => decodeStatementId key.theoremName key.statementId
+  return (values.qsort (· < ·)).toList
 
 private def bindKeys (component : String) (wire : Array StatementKey)
-    (keys : List (Name × Nat)) : Except String Unit := do
+    (keys : List Nat) : Except String Unit := do
   let sorted := wire.qsort (fun a b => a.statementId < b.statementId)
   unless sorted.size == keys.length do
     throw <| identityError .anonymous component (toString sorted.size) (toString keys.length)
-  for (key, (name, value)) in sorted.toList.zip keys do
-    unless key.theoremName == name do
-      throw <| identityError name component (nameJson key.theoremName).compress (nameJson name).compress
-    bindStatementIdNat name key.statementId value
+  for (key, value) in sorted.toList.zip keys do
+    bindStatementIdNat key.theoremName key.statementId value
 
-/-- Both sides have independent authorities: the actual rows and immutable report.
-Checking a reflexive equality alone cannot establish either binding. -/
+/-- Both sides have independent authorities: actual rows and immutable report.
+This checks metadata and Name-level binding; the kernel claims only an id set. -/
 def checkManifestBinding (report : FrozenReport) (root : Name) (rows : Array StatementKey)
-    (m : CensusKeyManifest) (reportKeys : List (Name × Nat)) : Except String Unit := do
+    (m : CensusKeyManifest) (reportKeys : List Nat) : Except String Unit := do
   checkFrozenKeys report.headSha report.theorems
   checkInventoryDuplicates rows
   unless m.reportSha256 == report.reportSha256 do
@@ -48,41 +41,40 @@ def checkManifestBinding (report : FrozenReport) (root : Name) (rows : Array Sta
 private def bindingError (component : String) : MetaM α :=
   throwError "{identityError .anonymous component "independent canonical chunks" "alias or expression"}"
 
-/-- Compare constructor trees without evaluating definitions or requiring their IR.
-Each side has its own names and is rendered from its own validated wire authority. -/
+/-- Pack validated 256-bit ids, least significant digit first. -/
+def packIds (ids : List Nat) : Nat :=
+  ids.foldr (fun value packed => value + 2 ^ 256 * packed) 0
+
+/-- Match both the chunk graph and every packed Nat literal. No evalExpr or
+unfolding of global definitions: cross-side aliases, moves, duplication, order
+and arity changes are rejected before kernel proof construction. -/
 def bindChunkedKeys (listName : Name) (component : String)
-    (wire : Array StatementKey) : MetaM (List (Name × Nat)) := do
+    (wire : Array StatementKey) : MetaM (List Nat) := do
   let keys ← ofExcept <| canonicalKeys wire
   let keyArray := keys.toArray
-  let ordered := wire.qsort (fun a b => a.statementId < b.statementId)
   let chunkCount := (wire.size + 99) / 100
   let names := (List.range chunkCount).map (fun n => listName ++ .mkSimple ("chunk" ++ toString n))
-  let keyType := toTypeExpr (Name × Nat)
-  let chunks ← mkListLit (mkApp (mkConst ``List [.zero]) keyType) (names.map mkConst)
+  let decoded := names.zipIdx |>.map fun (name, n) =>
+    mkApp2 (mkConst ``decodeIds) (mkNatLit (min 100 (wire.size - n * 100))) (mkConst name)
+  let chunks ← mkListLit (toTypeExpr (List Nat)) decoded
   let expected ← mkAppM ``List.flatten #[chunks]
-  -- Lean's list notation inserts local lets. Only substitute those lets;
-  -- global definitions (including aliases to the other side) stay opaque.
+  -- List notation inserts local lets. Substitute only those lets; global
+  -- definitions (including an alias to the other side) remain opaque.
   let joined ← zetaReduce (← getConstInfoDefn listName).value (zetaDelta := false) (beta := false)
-  unless joined == expected do
-    bindingError (component ++ "_binding")
+  unless joined == expected do bindingError (component ++ "_binding")
   for n in [:chunkCount] do
-    let chunkName := names[n]!
-    let actual ← zetaReduce (← getConstInfoDefn chunkName).value (zetaDelta := false) (beta := false)
+    let actual := (← getConstInfoDefn names[n]!).value
+    unless actual.isAppOfArity ``OfNat.ofNat 3 do bindingError component
+    let .lit (.natVal value) := actual.getAppArgs[1]! | bindingError component
+    unless actual == mkNatLit value do bindingError component
     let chunk := keyArray.extract (n * 100) ((n + 1) * 100) |>.toList
-    unless actual == keysLiteralExpr chunk do
-      -- Preserve row/name/Nat diagnostics, even when the canonical tree is wrong.
-      let mut tail := actual
-      for key in ordered.extract (n * 100) ((n + 1) * 100) do
-        unless tail.isAppOfArity ``List.cons 3 do bindingError component
-        let pair := tail.getAppArgs[1]!
-        unless pair.isAppOfArity ``Prod.mk 4 &&
-            pair.getAppArgs[2]! == literalNameExpr key.theoremName do bindingError component
-        let numeral := pair.getAppArgs[3]!
-        unless numeral.isAppOfArity ``OfNat.ofNat 3 do bindingError component
-        let some value := numeral.getAppArgs[1]!.rawNatLit? | bindingError component
-        unless numeral == mkNatLit value do bindingError component
-        ofExcept <| bindStatementIdNat key.theoremName key.statementId value
-        tail := tail.getAppArgs[2]!
+    let packed := packIds chunk
+    unless (.lit (.natVal value) : Expr) == .lit (.natVal packed) do
+      -- Preserve the row's strict codec diagnostic on a mismatching digit.
+      let ordered := wire.qsort (fun a b => a.statementId < b.statementId)
+      for (key, digit) in (ordered.extract (n * 100) ((n + 1) * 100)).toList.zip
+          (decodeIds chunk.length value) do
+        ofExcept <| bindStatementIdNat key.theoremName key.statementId digit
       bindingError component
   return keys
 
@@ -106,23 +98,19 @@ def bindEmittedManifest (report : FrozenReport) (root : Name) (rows : Array Stat
   let reportKeys ← bindChunkedKeys reportKeysName "report_keys" report.theorems
   ofExcept <| checkManifestBinding report root rows ⟨head, sha, root, keys⟩ reportKeys
 
-/-- Build only adjacent Nat decisions. Every other conjunct is reflexivity on
-canonical literals, then checked against the independently constructed full type. -/
-def certificateProof (manifest : Expr) (head sha : String) (root : Name)
-    (reportKeys : Expr) : MetaM Expr := do
-  let keys ← mkAppM ``CensusKeyManifest.keys #[manifest]
-  let projection := mkApp2 (mkConst ``Prod.snd [.zero, .zero]) (toTypeExpr Name) (toTypeExpr Nat)
-  let ids ← mkAppM ``List.map #[projection, keys]
+/-- Decide only linear order and length. Reflexivity compares the independently
+bound chunk graphs for equality without deciding quadratic Nodup/Finset goals. -/
+def certificateProof (ids : Expr) (requested : Nat) (reportIds : Expr) : MetaM Expr := do
   let ordered ← mkAppM ``strictlyAscending #[ids]
   let orderProof ← mkDecideProof (← mkEq ordered (toExpr true))
-  let equalityProof ← mkEqRefl keys
-  let mut proof ← mkAppM ``And.intro #[orderProof, equalityProof]
-  for value in [toExpr root, toExpr sha, toExpr head] do
-    proof ← mkAppM ``And.intro #[← mkEqRefl value, proof]
-  let expected ← mkAppM ``CensusKeyManifest.Certificate
-    #[manifest, toExpr head, toExpr sha, toExpr root, reportKeys]
+  let length ← mkAppM ``List.length #[ids]
+  let lengthProof ← mkDecideProof (← mkEq length (toExpr requested))
+  let equalityProof ← mkEqRefl ids
+  let tail ← mkAppM ``And.intro #[lengthProof, equalityProof]
+  let proof ← mkAppM ``And.intro #[orderProof, tail]
+  let expected ← mkAppM ``CensusKeyManifest.Certificate #[ids, toExpr requested, reportIds]
   unless ← isDefEq (← inferType proof) expected do
-    throwError "{identityError .anonymous "certificate_type" "full manifest certificate" "detached proof"}"
+    throwError "{identityError .anonymous "certificate_type" "id order, length and report equality" "detached proof"}"
   checkWithKernel proof
   return proof
 

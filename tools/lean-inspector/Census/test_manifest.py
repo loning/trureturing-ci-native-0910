@@ -1,7 +1,6 @@
 """Independent authorities for emitted kernel keys and report keys."""
 
-import pathlib
-import tempfile
+import re
 import unittest
 
 import emission
@@ -29,13 +28,13 @@ class ManifestTests(unittest.TestCase):
     def test_report_keys_are_rendered_from_the_report(self):
         wire = "sha256:" + "0" * 64
         rows = [{"theorem_name": ["str", ["anonymous"], "Inventory"], "statement_id": wire}]
-        report_keys = [("Fixture", "ns(n0,6:Report)", wire)]
+        report_keys = [("Fixture", "ns(n0,6:Report)", "sha256:" + format(1, "064x"))]
         source = emission.manifest_source(rows, report_keys, "head", "digest", "Root")
         before, after = source.split("def CensusRun.reportKeys.chunk", 1)
-        self.assertIn('"Inventory"', before)
-        self.assertNotIn('"Report"', before)
-        self.assertIn('"Report"', after)
-        self.assertNotIn('"Inventory"', after)
+        self.assertIn("CensusRun.manifestKeys.chunk0 : Nat := 0", before)
+        self.assertIn("0 : Nat := 1", after)
+        self.assertNotIn('"Inventory"', source)
+        self.assertNotIn('"Report"', source)
         self.assertNotIn(wire, source)
 
     def test_manifest_literals_are_canonical_and_deterministic(self):
@@ -61,7 +60,27 @@ class ManifestTests(unittest.TestCase):
             for number, expected in enumerate((100, 100, 5)):
                 body = source.split(f"def CensusRun.{side}.chunk{number} :", 1)[1].split(
                     "noncomputable def", 1)[0]
-                self.assertEqual(body.count("Lean.Name.str"), expected)
+                packed = int(body.split(":=", 1)[1].split()[0])
+                decoded = []
+                for _ in range(expected):
+                    packed, digit = divmod(packed, 2 ** 256)
+                    decoded.append(digit)
+                self.assertEqual(packed, 0)
+                self.assertEqual(decoded, list(range(number * 100, number * 100 + expected)))
+                self.assertIn(f"decodeIds {expected} CensusRun.{side}.chunk{number}", source)
+        self.assertNotIn("Lean.Name × Nat", source)
+        self.assertNotIn("List.Nodup", source)
+
+    def test_packing_rejects_out_of_domain_digits(self):
+        for values in ([2 ** 256], [-1], [0] * 101, []):
+            with self.subTest(values=values), self.assertRaises(ValueError):
+                emission.pack_ids(values)
+
+    def test_zero_high_digit_has_explicit_arity(self):
+        self.assertEqual(emission.pack_ids([1, 0]), 1)
+        source = emission.chunked_keys("Ids", [(["anonymous"], "sha256:" + "0" * 64)])
+        self.assertIn("decodeIds 1 Ids.chunk0", source)
+        self.assertIn("Ids.chunk0 : Nat := 0", source)
 
 
 if __name__ == "__main__":
