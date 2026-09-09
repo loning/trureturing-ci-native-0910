@@ -25,6 +25,12 @@ namespace D5.S0.Automata.FiniteSampleSkeletonTotalization
 
 open D5.S0.Automata.BinaryZeckendorfBlockSkeleton
 
+noncomputable instance zeroFiberFintype {Output : Type u} {State : Type v}
+    (machine : TypedPartialDFAO binaryZeckendorfBase Output State) [Fintype State] :
+    Fintype (ZeroFiber machine) := by
+  classical
+  exact Fintype.ofFinite _
+
 universe u v
 
 variable {Output : Type u} {State : Type v}
