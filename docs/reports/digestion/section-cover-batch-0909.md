@@ -48,7 +48,7 @@ All have source_id `quantum-rh` and initial directory `residual-open`.
 | Group | Atom ID | Initial state | Result |
 | --- | --- | --- | --- |
 | A1 | `66fd622e5d54c25826af9d416db18df1d8eecf9c71288d80ff0460237e3e95d2` | residual-open | absorbed-closed; two edges |
-| A2 | `088d882f6a10249e981da5d77bc3bb5e53e75a5ee02313bdd7c879cb21e22413` | residual-open | pending audit |
+| A2 | `088d882f6a10249e981da5d77bc3bb5e53e75a5ee02313bdd7c879cb21e22413` | residual-open | full match; writer pending |
 | A3 | `5f5912050d91b5f8998e6799d12c40e766fa4d65798ff890b506a56c3bc0ed3c` | residual-open | pending audit |
 | B1 | `c352d304105e02cbbcb0607e31a1e217adb85d4b344ba0d75c23ba4420dbf0e1` | residual-open | dossier pending; cover prohibited |
 | B2 | `7b2657006891568aa395dfd9fa14bde9d9d23d2ade0c449b00f7cdf5c616baec` | residual-open | dossier pending; cover prohibited |
@@ -127,6 +127,55 @@ The canonical Lean report used the existing warm cache and refreshed 32 baseline
 additions (`changed=0 added=32 removed=0 recheck=32`), then produced report
 `sha256:af574b21fd88feb264bfc954cbb4ae54eece0589735a3cc802ed51c919d17e16`.
 These are report-production readings, not new Lean source changes by this worker.
+
+## A2: 5040 open price interval
+
+Atom: `088d882f6a10249e981da5d77bc3bb5e53e75a5ee02313bdd7c879cb21e22413`.
+`make show-atom` returned 0 with the complete raw/normalized body and no initial
+coverage. There are two boxes: the strict price interval (31), and `5040`, whose
+adjoining predicate says it is the unique global maximizer over positive integers.
+
+Frozen declaration GID:
+`D5/S3/Arith/GoldenResource5040PriceInterval.golden_resource_5040_unique_maximum_of_price_interval`.
+The actually read state file is
+`Golden/Frozen/state/D5/S3/Arith/GoldenResource5040PriceInterval.lean.json`, pin
+`sha256:5ff6c71eede645e4240967fc93b7f3e64324a924d1ed5ba9b002a637e96a3e69`.
+`git show origin/dev:D5/S3/Arith/GoldenResource5040PriceInterval.lean` was read
+through the nominated signature's `:= by` (lines 278-284). Its exact shape is
+universal `{lambda : Real}`, the two strict price hypotheses, universal `{n : Nat}`,
+`hn : 1 <= n`, and a conjunction of the maximum inequality and equality iff.
+No further theorem parameters or RH assumption appear.
+
+| Source clause | Lean binders | Lean hypotheses / conclusion | Label |
+| --- | --- | --- | --- |
+| Box (31), lower endpoint: log(12/11)/log(11) < lambda | `{lambda : Real}` | `hlower : Real.log (12 / 11) / Real.log 11 < lambda`; left endpoint excluded | verbatim |
+| Box (31), upper endpoint: lambda < log(31/30)/log(2) | same lambda | `hupper : lambda < Real.log (31 / 30) / Real.log 2`; right endpoint excluded | verbatim |
+| All positive integers N | `{n : Nat}` | `hn : 1 <= n`; exactly equivalent to `0 < n` in Nat, including 1 and excluding 0 | equivalent |
+| Objective F_lambda(N)=log(sum over d dividing N of 1/d)-lambda*log(N) | `lambda : Real`, `n : Nat` | `goldenResourceObjective` at GoldenResourceOptimalInteger.lean:22 uses `Real.log (sum d in n.divisors, (d : Real)^(-1)) - lambda * Real.log n` | equivalent |
+| Box `5040` with adjoining global-maximum predicate | arbitrary positive n at each admissible lambda | First conjunct: `goldenResourceObjective lambda n <= goldenResourceObjective lambda 5040` | verbatim |
+| Same box and adjoining unique-maximum predicate | the same n and lambda, same three hypotheses | Second conjunct: `(goldenResourceObjective lambda n = goldenResourceObjective lambda 5040) <-> n = 5040` | verbatim |
+
+The objective definition was read from origin/dev and compared with
+`QUANTUM-RH.md:38236-38250`: reciprocal notation and the finite positive-divisor
+index are the same. The surrounding source assumes lambda>0; this follows from
+the positive lower threshold (both logarithms are positive), so it adds no
+restriction to the Lean interval. Numerals 12/11 and 31/30 are real division
+inside `Real.log`, not truncated Nat division. The maximizer comparison is
+non-strict, while the price hypotheses are strict. Uniqueness is an actual iff,
+not merely existence of a maximizing point. The domain is unbounded positive
+Nat, not prime-only, smooth-only, or a finite tested range.
+
+The unboxed decimal sentence explicitly says approximately. A double-precision
+observation gave lower `0.036286562627101906` and upper `0.04730571477835682`;
+rounding to eight decimal places yields the source's `0.03628656` and
+`0.04730571`. These are not substituted as exact endpoints and are not claimed
+to be kernel-certified numerical bounds.
+
+Fidelity verdict: full match. Proposed use `proof_shape: bind-only`,
+`escape_witness: null`,
+`admission_basis: not-applicable(cover of an existing frozen declaration)`.
+The direct frozen dependency is the declaration GID above, with its module pin.
+Writer outcome remains pending at this audit checkpoint.
 
 ## Nonclaims
 
