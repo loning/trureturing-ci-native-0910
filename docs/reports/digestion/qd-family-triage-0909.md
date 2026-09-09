@@ -126,3 +126,12 @@ B1.1 原始 stdout 61.14 MB（Mathlib/仓库历史警告回放）已在当前树
 
 
 B4 第三轮 `make lean` EXIT=2（149.23秒）：错误集中在复数域 `n+2 ≠ 0` 未显式交给 `field_simp`，以及宽 `simp` 提前拆开 C 的乘积，导致系数引理无法命中。已改为先 `simp only [finsetSum_coeff, coeff_C_mul_X_pow]` 再规范化，补显式非零分母；仍不把这类语法/规范化失败称为数学 content。原始失败源码与日志已归档。
+
+
+## 中点停止：仅一条完成
+
+2026-09-09 08:43:16 UTC 检查，已超过预登记中点 08:42:31 UTC。`screened=1`、`bind_only_count=1`；B1.1 为 yes。依用户停止条件，停止新增数学检索、证明修补及探针。B3、B4、降阶推论均 **未判**，不填伪造的 no。
+
+B4 第四轮 [b4-04.log](qd-family-triage-0909/b4-04.log) EXIT=2，217.170564375 秒。`b4_residue_sum`、`nodal_derivative`、`b4_cumulant`、`b4_source_cumulant` 仅标准三公理；`qSource_top_three` 仍有未闭合目标 `True ∨ sourceThetaCoefficient 2 = 0`，`b4_source` 依赖错误恢复 `sorryAx`。这不是数学逃逸见证，整条不得判为 bind-only 或 content。保持失败快照 [B4Probe-04.lean](qd-family-triage-0909/B4Probe-04.lean)，不再修补。
+
+降阶探针仅准备、未调用 make；归档为 [DescentProbe-UNRUN.lean](qd-family-triage-0909/DescentProbe-UNRUN.lean)。B3 没有探针。完整结构化结算与推送收据随后仅做归档整理。
