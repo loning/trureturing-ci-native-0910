@@ -114,3 +114,11 @@ For odd_coeff_identity, the four witness conditions are:
 The next `make lean` returned EXIT=2 after 11.503860209 seconds: Scribe C# helper `D(k)` expects byte, but Pow accepted int (CS1503, line 95). This occurred before the Lean report step; that step did not run. Changed the helper's parameter type to byte; literal exponents 2 and 3 remain unchanged. No mathematical statement or proof changed. Re-run the ordered gates on the repaired documentation.
 
 Pre-PR duplicate lookup against `origin/dev=d59adb46d4703e7fdc7ef7569c5c0919247cc87a`: `git grep -P 'A372018|A371364|odd_coeff_identity|CubicOddBisection' origin/dev -- D5` had no matches (exit 1). Separate `git merge-tree --write-tree HEAD origin/dev` EXIT=0, tree `8fd353645fedccbeb1beec5ce838175b31c05a87`; no conflicts or deleted target paths.
+
+## Final Lean and elaborated dependency receipts
+
+Final `make lean` on the complete six-theorem module: EXIT=0, 29.370193542 seconds, 12832 jobs (attempt-1/make-lean-final-v2.log and .receipt.json). The target module was rebuilt and each public theorem printed only propext, Classical.choice, Quot.sound. The repaired Scribe source also compiled. No sorry, private axiom, native_decide, or forbidden governance terms were found in the Lean/Scribe sources; `git diff --check` passed.
+
+A separate warm Lean audit imports the built module and inspects `Lean.getEnv`, `ConstantInfo.value? (allowOpaque := true)`, and `Expr.getUsedConstants`. Twelve required direct edges all passed, EXIT=0, log attempt-1/dependencies.log: odd_coeff_identity→odd_series_identity; odd_series_identity→cubic_pair_sum/sum_equation_unique/A_equation/B_equation; A_equation/B_equation→fixed_equation; fixed_equation→fixed_agree→approximation_stable; odd_coeff_identity_of_equations→A_unique/B_unique/odd_coeff_identity. These are elaborated proof-body edges, not textual grep counts. The live-path analysis above additionally checks how those results are consumed; a constant edge alone does not prove liveness.
+
+The canonical report currently plans delta recheck of two added modules relative to the seeded report (`changed=0 added=2 removed=0 recheck=2`), and its cache receipt is `status=present`, both layers warm, `stamp_miss=null`. Final report/emit/Scribe results still pending.
