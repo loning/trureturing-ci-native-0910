@@ -34,12 +34,20 @@ class AnalyticTests(unittest.TestCase):
 
     def test_content_relocation_and_unused_seed_identity(self):
         spec, provenance = load_initializer(RECIPE)
-        self.assertEqual(3559, len(RECIPE.read_bytes()))
-        self.assertEqual("369cb45c5005ef2154ca844f3ad67726746ccb5067f04faf67d32bcff23a58a2",
+        raw = RECIPE.read_bytes()
+        # Raw identity from StructuredCanonicalWriter.WriteJson; content is separate.
+        self.assertEqual(1467, len(raw))
+        self.assertEqual("fbbaee8c55cd098d7c298283b9496ae9ff85be835ea2adce5e90220fd9f3cd68",
                          provenance["recipe_raw_sha256"])
+        self.assertEqual(hashlib.sha256(raw).hexdigest(), provenance["recipe_raw_sha256"])
+        self.assertEqual(raw.decode("utf-8"), provenance["recipe_raw_utf8"])
+        self.assertEqual(str(RECIPE.resolve()), provenance["recipe_path"])
+        self.assertEqual("f22c900bd1482a55fb7a8294f4e164fde99c38bd7feaa80caf6af23ae41c44af",
+                         spec["recipe_sha256"])
+        self.assertEqual(spec["recipe_sha256"], identity(json.loads(raw)))
         with tempfile.TemporaryDirectory() as temporary:
             relocated = Path(temporary) / "relocated.json"
-            relocated.write_bytes(RECIPE.read_bytes())
+            relocated.write_bytes(raw)
             relocated_spec, relocated_provenance = load_initializer(relocated)
             self.assertEqual(spec, relocated_spec)
             self.assertEqual(provenance["recipe_raw_sha256"], relocated_provenance["recipe_raw_sha256"])
