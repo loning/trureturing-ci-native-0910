@@ -2,6 +2,7 @@
 """Report bundle staging and transport framing; report semantics belong to delta.py."""
 
 import argparse
+import datetime
 import hashlib
 import importlib.util
 import json
@@ -12,6 +13,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 import zipfile
 
 HERE = pathlib.Path(__file__).resolve().parent
@@ -194,15 +196,52 @@ def asset_inventory(path):
     return {asset["name"]: asset for page in pages for asset in page}
 
 
-def publication_state(path, exact):
+def asset_timestamp(value):
+    # GitHub emits UTC Z; Python 3.9's fromisoformat requires an explicit offset.
+    if isinstance(value, str):
+        value = value.replace("Z", "+00:00")
+    return datetime.datetime.fromisoformat(value)
+
+
+def abandoned_starter(asset, maximum_upload_seconds):
+    # GitHub documents empty starter remnants after upstream 502s, but a recent
+    # starter may still belong to an active request. Use the publisher's maximum
+    # allowed upload window, never this invocation's possibly shorter timeout.
+    if asset.get("state") != "starter" or type(asset.get("size")) is not int or asset["size"] != 0:
+        return False
+    try:
+        created = asset_timestamp(asset["created_at"])
+        updated = asset_timestamp(asset["updated_at"])
+        return (created.utcoffset() == updated.utcoffset() == datetime.timedelta(0)
+                and created <= updated and time.time() - updated.timestamp() > maximum_upload_seconds)
+    except (KeyError, TypeError, ValueError, OverflowError):
+        return False
+
+
+def publication_state(path, exact, maximum_upload_seconds):
     assets = asset_inventory(path)
     members = [assets.get(name) for name in (exact, exact + ".sha256")]
-    if any(item is not None and item.get("state") != "uploaded" for item in members):
-        # An upload in progress is unavailable, not confirmed damaged content.
-        return "unavailable"
+    pending = [item for item in members if item is not None and item.get("state") != "uploaded"]
+    if pending:
+        return "starter" if all(abandoned_starter(item, maximum_upload_seconds) for item in pending) else "unavailable"
     if all(item is not None for item in members):
         return "complete"
     return "partial" if any(item is not None for item in members) else "absent"
+
+
+def starter_recovery_ids(previous, confirmed, exact, maximum_upload_seconds):
+    before, after = asset_inventory(previous), asset_inventory(confirmed)
+    names = (exact, exact + ".sha256")
+    if (any(before.get(name) != after.get(name) for name in names)
+            or publication_state(confirmed, exact, maximum_upload_seconds) != "starter"):
+        raise ValueError("starter-publication-changed")
+    identities = [after[name].get("id") for name in names if name in after]
+    if any(type(identity) is not int or identity <= 0 for identity in identities) or len(set(identities)) != len(identities):
+        raise ValueError("invalid-asset-identity")
+    # Replace the observed partial pair together: a newly packed archive can
+    # have a different transport digest even when its report inputs are equal.
+    for identity in identities:
+        print(identity)
 
 
 def select_assets(path, exact):
@@ -248,7 +287,9 @@ def main():
         elif command == "select":
             select_assets(pathlib.Path(values[0]), values[1])
         elif command == "publication-state":
-            print(publication_state(pathlib.Path(values[0]), values[1]))
+            print(publication_state(pathlib.Path(values[0]), values[1], int(values[2])))
+        elif command == "starter-recovery-ids":
+            starter_recovery_ids(pathlib.Path(values[0]), pathlib.Path(values[1]), values[2], int(values[3]))
         elif command == "local-seed":
             return local_seed(pathlib.Path(values[0]), *values[1:])
         elif command == "root":

@@ -345,6 +345,173 @@ public sealed class LeanReportTransportTests
         fixture.Success(fixture.Fetch());
     }
 
+    [Theory]
+    [InlineData("2026-09-01T00:00:00Z", "2026-09-01T00:00:00Z", "starter")]
+    [InlineData("2026-09-01T00:00:00+00:00", "2026-09-01T00:00:00+00:00", "starter")]
+    [InlineData("2026-09-01T00:00:00Z", "2026-09-08T00:00:00Z", "unavailable")]
+    [InlineData("2026-09-01T00:00:00Z", "2026-09-01T00:00:00", "unavailable")]
+    [InlineData("2026-09-01T00:00:00Z", "2026-09-01T00:00:00+01:00", "unavailable")]
+    [InlineData("2026-09-01T00:00:00Z", "2026-09-01T00:00:00ZZ", "unavailable")]
+    [InlineData("2026-09-01T00:00:00Z", null, "unavailable")]
+    [InlineData("2026-09-02T00:00:00Z", "2026-09-01T00:00:00Z", "unavailable")]
+    public void StarterPublicationStateParsesUtcTimestampsConservatively(string? created, string? updated, string expected)
+    {
+        if (OperatingSystem.IsWindows()) return;
+        using var fixture = new LeanReportTransportFixture();
+        var result = fixture.PublicationState(created, updated);
+        fixture.Success(result);
+        Assert.Equal(expected, result.Stdout.Trim());
+        Assert.Empty(result.Stderr);
+        Assert.Empty(fixture.ReleaseCalls);
+    }
+
+    [Theory]
+    [InlineData("archive")]
+    [InlineData("digest")]
+    [InlineData("both")]
+    public void StarterFailureBecomesRecoverableAfterUploadWindow(string member)
+    {
+        if (OperatingSystem.IsWindows()) return;
+        using var fixture = new LeanReportTransportFixture();
+        var bundle = fixture.FailedStarterPair(member);
+        var before = fixture.ReleaseSnapshot();
+        var uploads = fixture.UploadCount;
+        var active = fixture.Publish(bundle, "FIXTURE_NOW=2026-09-08T00:00:00Z");
+        Assert.NotEqual(0, active.ExitCode);
+        Assert.Equal(before, fixture.ReleaseSnapshot());
+        Assert.Equal(uploads, fixture.UploadCount);
+        Assert.Equal(0, fixture.DeleteCount);
+
+        fixture.Success(fixture.Publish(bundle));
+        Assert.Equal(uploads + 1, fixture.UploadCount);
+        Assert.Equal(2, fixture.DeleteCount);
+        Assert.Equal(2, fixture.Assets.Length);
+        Assert.All(fixture.AssetStates(), state => Assert.Equal("uploaded", state));
+        Assert.DoesNotContain("--clobber", fixture.ReleaseCalls.Last(value => value.StartsWith("release upload ", StringComparison.Ordinal)),
+            StringComparison.Ordinal);
+        fixture.Success(fixture.Fetch());
+        foreach (var suffix in LeanReportTransportFixture.Suffixes.Where(value => value != ".sha256"))
+            Assert.Equal(FixtureFile.ReadAllBytes(bundle + suffix), FixtureFile.ReadAllBytes(fixture.CachedReport + suffix));
+    }
+
+    [Theory]
+    [InlineData("missing-digest")]
+    [InlineData("corrupt-archive")]
+    [InlineData("unavailable-download")]
+    public void StarterRecoveryRequiresCompleteVerifiedPair(string failure)
+    {
+        if (OperatingSystem.IsWindows()) return;
+        using var fixture = new LeanReportTransportFixture();
+        var bundle = fixture.FailedStarterPair();
+        var uploads = fixture.UploadCount;
+        var result = fixture.Publish(bundle, failure == "unavailable-download"
+            ? "FIXTURE_GH_DOWNLOAD_FAIL=published" : "FIXTURE_GH_UPLOADED_DAMAGE=" + failure);
+        Assert.Equal(uploads + 1, fixture.UploadCount);
+        Assert.Equal(2, fixture.DeleteCount);
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.DoesNotContain("status=published", result.Text, StringComparison.Ordinal);
+        Assert.Contains(failure == "corrupt-archive" ? "reason=publication-incomplete" : "reason=publication-unavailable",
+            result.Text, StringComparison.Ordinal);
+        if (failure == "unavailable-download") fixture.Success(fixture.Fetch());
+        else Assert.NotEqual(0, fixture.Fetch().ExitCode);
+    }
+
+    [Theory]
+    [InlineData("initial-unavailable")]
+    [InlineData("confirm-unavailable")]
+    [InlineData("confirm-active")]
+    [InlineData("confirm-replaced")]
+    public void StarterRecoveryMetadataUnavailableOrChangedPreservesAssets(string scenario)
+    {
+        if (OperatingSystem.IsWindows()) return;
+        using var fixture = new LeanReportTransportFixture();
+        var bundle = fixture.FailedStarterPair();
+        var before = fixture.ReleaseSnapshot();
+        var uploads = fixture.UploadCount;
+        var reads = fixture.AssetReadCount;
+        var result = fixture.Publish(bundle, "FIXTURE_GH_METADATA_SCENARIO=" + scenario, "FIXTURE_GH_UPLOAD_FAIL=1");
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.Contains("reason=publication-unavailable", result.Text, StringComparison.Ordinal);
+        Assert.DoesNotContain("status=published", result.Text, StringComparison.Ordinal);
+        Assert.Equal(before, fixture.ReleaseSnapshot());
+        Assert.Equal(uploads, fixture.UploadCount);
+        Assert.Equal(0, fixture.DeleteCount);
+        Assert.Equal(reads + (scenario == "initial-unavailable" ? 1 : 2), fixture.AssetReadCount);
+        if (scenario == "confirm-active") Assert.Contains("open", fixture.AssetStates());
+    }
+
+    [Theory]
+    [InlineData("recent")]
+    [InlineData("at-maximum")]
+    [InlineData("open")]
+    [InlineData("unknown")]
+    [InlineData("nonempty")]
+    [InlineData("missing-size")]
+    [InlineData("missing-time")]
+    [InlineData("future")]
+    [InlineData("active-companion")]
+    public void ActiveOrUncertainStarterIsPreserved(string scenario)
+    {
+        if (OperatingSystem.IsWindows()) return;
+        using var fixture = new LeanReportTransportFixture();
+        var bundle = fixture.FailedStarterPair();
+        var state = scenario is "open" or "unknown" ? scenario : "starter";
+        int? size = scenario == "missing-size" ? null : scenario == "nonempty" ? 1 : 0;
+        var updated = scenario switch
+        {
+            "recent" => "2026-09-08T00:00:01Z",
+            "at-maximum" => "2026-09-08T00:00:00Z",
+            "missing-time" => null,
+            "future" => "2026-09-10T00:00:00Z",
+            _ => "2026-09-07T00:00:00Z",
+        };
+        fixture.SetAssetMetadata("", state, size, updated);
+        if (scenario == "active-companion") fixture.SetAssetMetadata(".sha256", "open", 0, "2026-09-07T00:00:00Z");
+        var before = fixture.ReleaseSnapshot();
+        var uploads = fixture.UploadCount;
+        var result = fixture.Publish(bundle, "STRATALINT_REPORT_CACHE_TRANSFER_TIMEOUT_SECONDS=75");
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.Contains("reason=publication-unavailable", result.Text, StringComparison.Ordinal);
+        Assert.Equal(before, fixture.ReleaseSnapshot());
+        Assert.Equal(uploads, fixture.UploadCount);
+        Assert.Equal(0, fixture.DeleteCount);
+    }
+
+    [Fact]
+    public void StarterRecoveryDeletionFailureIsBounded()
+    {
+        if (OperatingSystem.IsWindows()) return;
+        using var fixture = new LeanReportTransportFixture();
+        var bundle = fixture.FailedStarterPair();
+        var before = fixture.ReleaseSnapshot();
+        var uploads = fixture.UploadCount;
+        var result = fixture.Publish(bundle, "FIXTURE_GH_DELETE_FAIL=1");
+        Assert.Equal(1, fixture.DeleteCount);
+        Assert.Equal(uploads, fixture.UploadCount);
+        Assert.Equal(before, fixture.ReleaseSnapshot());
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.Contains("reason=publication-unavailable", result.Text, StringComparison.Ordinal);
+        Assert.DoesNotContain("status=published", result.Text, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void StarterRecoveryPreservesReplacementCreatedAfterRecheck()
+    {
+        if (OperatingSystem.IsWindows()) return;
+        using var fixture = new LeanReportTransportFixture();
+        var bundle = fixture.FailedStarterPair();
+        var before = fixture.ReleaseSnapshot();
+        var uploads = fixture.UploadCount;
+        var result = fixture.Publish(bundle, "FIXTURE_GH_DELETE_RACE=1");
+        Assert.Equal(1, fixture.DeleteCount);
+        Assert.Equal(uploads, fixture.UploadCount);
+        Assert.Equal(before, fixture.ReleaseSnapshot());
+        Assert.Contains("open", fixture.AssetStates());
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.Contains("reason=publication-unavailable", result.Text, StringComparison.Ordinal);
+        Assert.DoesNotContain("status=published", result.Text, StringComparison.Ordinal);
+    }
+
     [Fact]
     public void PublicationRejectsStaleInputBeforeRemoteWrite()
     {
