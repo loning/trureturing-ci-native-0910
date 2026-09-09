@@ -438,3 +438,17 @@ Blueprint Markdown，三条 theorem 均带作者公式及 std3 kernel 标记。
 Blueprint/D5/S1/Words/Compositions=14、Library/Words=23、
 docs/develop/theory=44，全部低于 48。`git diff --check` EXIT=0。
 已按门序启动独立 S(a) atom 的 make deposit；未创建原猜想 coverage 边。
+
+## 冻结与覆盖收据
+
+`make deposit ATOM_ID=296127e0b63573701297f231e6beb2f0364309aca09386ea44485b4f1b6ea59a GID=D5/S1/Words/Compositions/ResidualPermutationSign.signed_residual_sum BASE=25b883dcebf4305950c779111490338639eed3bc`
+EXIT=0，212.726997292 秒。执行次序是 make lean → make lean-report →
+make emit → make deposit；报告的中间提交用于持续保全，正式 D5/Scribe/冻结产物在四门后提交。
+DEPOSIT_HEADER_CHECKED SL-012 通过；LEDGER_ALIGN added=1、changed=0、conflicts=0。
+目标 atom 被机器迁入 absorbed-closed，唯一 coverage 边指向 signed_residual_sum，
+target_statement_id 与上表一致；未手写覆盖/冻结状态。模块 statement_id 为
+sha256:356c8b73bb2babc122f505a0697ab7f2efd1e4d59d45808a9f4db4a853dcb218，
+accepted 记录 f2bc5d6b46621d27ae59e6029c099fa0d3ca3dbf2053d0792f8c2c8b5805a73c.json。
+inspector included=26：六个定义、三个公开定理、十七个私有引理；全体公理闭包之并
+仍仅为标准三公理。主定理不含 sorry/私 axiom/native_decide。
+本轮未运行 make preflight；第一次热树增量之前已完成 make lean-cache-ensure。
