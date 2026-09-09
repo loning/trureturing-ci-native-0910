@@ -56,3 +56,17 @@
   其一般参数 f 不提供本题两种对象的计数等价。未发现可消费的规范化声明。
 - 已打开 OEIS A383093/internal（HTTP 成功，13917 字节）；外部文献核查继续。
 - spec A5.1 确认 utility: none 文法与七行头位置；Meta/domains.yaml 已读。
+
+## 检索第 4 批
+
+- OEIS 主条目 revision 13 (2025-05-04)：formula 仍为 Conjecture，
+  Sum_{d|n} a(d)=A323774(n)。全部 42 个直接 xref 已下载成功，原 HTML 与提取字段在 runner attempt。
+- 已逐字段读 A323774、A381995、A381993、A383014、A383309、A382203、A279789。
+  A323774 给系统计数二项式和，A381995 按整数编码纤维求和，未给本题规范化双射。
+  A382203 当前名称是 distinct sums；主条目一条 xref 把 equal 类型指到它，实为 A382204，
+  此为来源交叉引用差异，不影响目标定义，未静默当成同一对象。
+- gh search code 'A383093 language:Lean' 返回 []；'"constant blocks" language:Lean'
+  返回两个 Kakeya Plank/Refinement 路径（非分拆库），尚未打开，ASSUMED-UNVERIFIED。
+- arXiv A383093 检索页成功下载；下一批读其结果及全部 xref 的相关命中。
+- 精确可复用 Mathlib 命中：Multiset.exists_smul_of_dvd_count，
+  ∀a∈s, k∣count a s → ∃u, s=k•u。已读完整证明与签名；本题将直接应用，禁止重证。
