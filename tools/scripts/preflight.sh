@@ -10,31 +10,39 @@ reason=""
 finish() {
   local raw=$?
   trap - EXIT
+  trap '' HUP INT TERM
   set +e
   local rc=2
   case "$raw" in 0|1|2) rc="$raw" ;; esac
   if [[ -n "$ROOT" ]] && declare -F resource_observe >/dev/null; then resource_observe preflight-finish "$ROOT" || true; fi
-  if [[ -n "$TEMPORARY" && -d "$CANDIDATE/build/ci" ]]; then
+  local owned_candidate="${TEMPORARY:+$TEMPORARY/candidate}"
+  if [[ -n "$owned_candidate" && -d "$owned_candidate/build/ci" ]]; then
     local retained="$ROOT/build/preflight"
     mkdir -p "$retained" || rc=2
     local bundle
     bundle="$(mktemp "$retained/candidate.XXXXXXXX")" || rc=2
     # Current includes the shared runtime and report; engineering's records and
     # failure diagnostics live under build/ci. Archive each common member once.
-    local paths="$CANDIDATE/build/ci/current-paths.nul"
-    [[ -f "$paths" ]] || paths="$CANDIDATE/build/ci/build-paths.nul"
+    local paths="$owned_candidate/build/ci/current-paths.nul"
+    [[ -f "$paths" ]] || paths="$owned_candidate/build/ci/build-paths.nul"
     if [[ -f "$paths" ]]; then
       while IFS= read -r -d '' path; do
         case "$path" in build/ci|build/ci/*) ;; *) printf '%s\0' "$path" ;; esac
       done < "$paths" > "$TEMPORARY/artifact-paths.nul"
       printf 'build/ci\0' >> "$TEMPORARY/artifact-paths.nul"
-      tar -czf "$bundle" -C "$CANDIDATE" --null -T "$TEMPORARY/artifact-paths.nul" || rc=2
+      tar -czf "$bundle" -C "$owned_candidate" --null -T "$TEMPORARY/artifact-paths.nul" || rc=2
     else
-      tar -czf "$bundle" -C "$CANDIDATE" build/ci || rc=2
+      tar -czf "$bundle" -C "$owned_candidate" build/ci || rc=2
     fi
     printf 'PREFLIGHT_ARTIFACT bundle=%s\n' "$bundle"
   fi
-  if [[ -n "$TEMPORARY" ]]; then rm -rf -- "$TEMPORARY"; fi
+  if [[ -n "$owned_candidate" ]]; then
+    if [[ -e "$owned_candidate/.git" ]] && ! git -C "$ROOT" worktree remove --force "$owned_candidate"; then
+      rc=2
+    else
+      rm -rf -- "$TEMPORARY" || rc=2
+    fi
+  fi
   printf 'PREFLIGHT_RESULT mode=%s stage=%s exit=%s raw_exit=%s reason=%s\n' "$MODE" "$stage" "$rc" "$raw" "$reason"
   exit "$rc"
 }
@@ -64,7 +72,8 @@ if [[ "$MODE" == pr ]]; then
   [[ "$TREE_SHA" =~ ^[0-9a-fA-F]{40}$ ]] || fail_input invalid-merge-tree
   TEMPORARY="$(mktemp -d "${TMPDIR:-/tmp}/ci-preflight.XXXXXXXX")"
   CANDIDATE="$TEMPORARY/candidate"
-  git clone --quiet --shared --no-checkout "$ROOT" "$CANDIDATE"
+  # Keep source worktrees visible to normal donor discovery without checking out base code.
+  git worktree add --quiet --detach --no-checkout "$CANDIDATE" "$HEAD_SHA"
   git -C "$CANDIDATE" read-tree --reset -u "$TREE_SHA"
   printf 'PREFLIGHT_CANDIDATE path=%s\n' "$CANDIDATE"
 fi
