@@ -298,3 +298,20 @@ No theory source, atom, or coverage edge was created.
 - Logs: runner `make-deposit-uncovered.log` / `make-deposit-uncovered-result.json`.
 
 These final local gate results supersede earlier pending checkpoint descriptions.
+
+### PR delivery
+
+Opened https://github.com/the-omega-institute/trureturing/pull/6730 through
+`make pr-open HEAD=lane/math/a384350 MESSAGE=<runner>/pr-message.md`.
+The creation step returned EXIT 0; the same canonical process is waiting for
+the three required CI checks. Auto-merge was not enabled.
+
+Implementation outcome under the user-assigned stopping rule: **成**. The
+general theorem is kernel checked, has no sorry or private axiom, is frozen
+without an atom, and has an open PR. This is not a claim that the PR is merged.
+At this checkpoint remote CI is pending; its terminal receipt is stored in the
+runner's `make-pr-open-result.json` and final `implementation-report.md`.
+
+Final source delta contains seven added files: Lean, Scribe source and emitted
+markdown, the Library locator note, two canonical freeze files, and this report.
+`git diff --check` passed. No protected base file or preexisting module changed.
