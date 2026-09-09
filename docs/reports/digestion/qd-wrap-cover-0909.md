@@ -103,6 +103,23 @@ COVER_INVALID digest status is invalid: entry 1e414ffb45d7fcaa9536a956298c4e291f
 
 报告补写时一次 Python stdin 编码错误 EXIT=1，报告未改；改用结构化 patch 补写，不静默漏账。
 
+### B3 实际声明复核
+
+`source_jensen_positive_extension` 的 binder 是 `n : ℕ`、源规范 `h0`、`lam : Fin (n+1) → ℝ`、互异、严格正、前阶根等式；正文没有额外 `hcrit`、`hno` 或目标 charpoly 假设。`d=n+2`，`t=scale d * lam`。实际结论先给全部节点严格正及二阶导数非零，再给上表 B13 的 iff 和 B14 的指定 arrow `PosDef ∧ charpoly=sourceQ d`。逐行复核上表五项全部 equivalent，两个方向、严格正定、η≥0、重根和零耦合边界保持。
+
+`make lean` 第一次在 C# 前置因不存在的 `Eta` 宏退出；改用既有 DSL 的命名符号 `mathrm{eta}`。第二次仅 Lean binder `λ` 是保留 token，改名 `lam`；第三次 EXIT=0（26.163 秒），全部数学证明仍沿前席上游绑定路线，公理仅标准三项。未改预算或关闭 linter；剩余空格/letI 风格 warning 不影响 kernel 判词。
+
+补充精确边界对照：d=2、a₁=3、a₂=9/2，q₂=(x−3/2)²，η=0，K=diag(3/2,3/2)>0，预算与 χ₄ 都为 0；Python Fraction 实算断言通过，已写入 exact-arithmetic-controls.json。它是通用系数样本，不是实际 theta 数值或公开有限实例。
+
+B3 的 `make lean-report` EXIT=0（95.141 秒）、`make emit` EXIT=0（67.678 秒）；生成镜像的全部假设、η 定义和指定矩阵已对照核读。18 个显式声明的逐声明用途理由与公理已加入 declaration-audit.json，全部 `utility: none`；`sed -n '5p;9p'` 确认 anchor 与直接 import 都是 `Mathlib.LinearAlgebra.Matrix.SchurComplement`。
+
+B3 首次 deposit 因 origin/dev 再次前移、非当前 HEAD 祖先而 EXIT=2。合入当时最新 `e7e63c615460da48effcb4a76f96a3a6730af75d`，merge `bb51a6467a` 已推送；已读取新 CONTEXT 全文和 spec 增量。后续事务显式使用这个已合入的 SHA 作为 BASE，保持同一轮检查基准；不修改预算常数。
+
+容量口径更正：前文 5/10/5 与预计 8/16/8 是三个目录的物理文件数。实查 `RepositoryRules.Structure.cs:100` 起的 `IsCapacityExcluded`：Blueprint 的生成 md、Frozen/state 都免计容量。因此正式 SL-003 计费为 Lean 与 Scribe 源各预计 8/48，余量各 40；Frozen/state 没有这项文件槽费用。初始物理计数不冒称机器计费计数。
+
+
+B3 deposit EXIT=0 (773.666 seconds, including the required full report after the upstream producer change). The atom moved from residual-open with empty coverage to absorbed-closed with the exact statement identity `sha256:aff726c2285de50e35bd19fe5256d773f97e4d4aa967a601cee7df2aeb215989`. The explicit follow-up cover recognized the same existing edge; the full follow-up command exited 0 (117.378 seconds).
+
 ## 必要性原文（CAS 字节，不缩写矩阵）
 
 ### B1.1：准入必要性所引的原文字节
