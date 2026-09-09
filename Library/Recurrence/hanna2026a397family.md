@@ -86,3 +86,9 @@ full build, freeze, merge, or resolution of the three remaining targets is
 claimed at this checkpoint. The q=1 bind probe is not a new theorem deposit.
 Caller ranges n=0..120 (odd q) and n=2..120 (q=2) are caller measurements.
 The triage's n<=200/Fraction computations were not run by this worker.
+
+First proof checkpoint: normalized_mod_two and odd_parameter_parity compiled
+without diagnostics; each axiom closure is exactly propext, Classical.choice,
+Quot.sound. The new strong induction transports coefficients to the frozen
+q=1 series, so Catalan pairing is reused. Source correspondence remains to be
+verified for the new parameters; no original-source resolution is claimed yet.
