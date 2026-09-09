@@ -319,3 +319,14 @@ make -f Makefile -f /var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-r
 make -f Makefile -f /var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/probe.mk lean PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/DescentRH.lean
 # EXIT=2 (descent-rh-01)
 ```
+
+B3 第七次 [源码](qd-family-triage-0909/attempt-2/b3-07.lean) / [日志](qd-family-triage-0909/attempt-2/b3-07.log)：EXIT=2，29.634208625 秒。`laguerre_splits` 已换成上游对数导数、`HasDerivAt.fun_div` / `fun_sum` / `unique`、负平方和与域归一化，无因子归纳依赖；`b3_normalized_full` 已消除 `hno`，`b3_source_full` 用已冻结 `source_theta_normalization` 第四投影得到全部正系数，三条均仅标准三公理。整次唯一错误在源复化识别的改写方向：
+
+```text
+d : ℕ
+hd : 1 ≤ d
+⊢ Polynomial.map (algebraMap ℝ ℂ) (reflect d ((P sourceThetaCoefficient d).comp (C (-1) * X))) =
+    reflect d ((sourceJensenPolynomial d).comp (C (-1) * X))
+```
+
+上游 `reflect_map` 的方向与目标相反，下一次只反向改写。这个目标不重新记成 Q 数学缺口。
