@@ -5,8 +5,8 @@ year: 2026
 title: A392714 round two — the residual signed sum S(a)
 doi: null
 url: https://github.com/the-omega-institute/trureturing
-claim: Investigation of the residual signed sum; no proof or refutation is yet claimed.
-strata_touched: []
+claim: A general Lean proof of the residual signed sum S(a); the original conjecture bridge is outside scope.
+strata_touched: [S1]
 license: citation-only
 triage: anchor
 ---
@@ -55,7 +55,7 @@ make lean：尚未运行；LEAN_CACHE：尚未取得。
 
 ## 未主张
 
-未主张检索穷尽；未主张 S(a) 已证或已反驳；未主张 A392714 原猜想已解决
+未主张检索穷尽；未主张 A392714 原猜想已解决
 （桥明确不在本轮范围）；未主张任何有限吻合构成证明。
 未真正打开的外部页面均为 ASSUMED-UNVERIFIED，不能承载文献结论。
 
@@ -297,6 +297,17 @@ EXIT=0：residual_open_added=1、cas_objects_written=1、coarse_fallbacks=0。
 atom ID 为 `296127e0b63573701297f231e6beb2f0364309aca09386ea44485b4f1b6ea59a`；
 内容只陈述 S(a)，没有原猜想或 Φ(n) 桥。首次 show-atom 错把 source 前缀加入 ID，
 EXIT=2（absent from digestion ledger）；读取 loader 的 ID 规则后改用纯内容 hash。
+
+## 正式构建批次 1
+
+正式模块 `make lean` EXIT=0，墙钟 49.066614792 秒（本工作树、Apple ARM 宿主、
+未设置 LAKE_JOBS，已有私有 warm 缓存）；构建日志 `attempt-1/make-lean.log`。
+LEAN_CACHE：status=present、method=none、donor=null、stamp_miss=null、
+mathlib_missing_olean_files=0、mathlib_olean_state=warm、project_olean_state=warm、
+archive_status=not_attempted、archive_skip_reason=project olean state is warm；
+pin_sha256=sha256:6c4c682ffba051b5744fe7a75ccc99d7f3b20227b3b026f392f3315be0adaa4e。
+`make show-atom` 以纯 hash 重跑 EXIT=0，原文与规范化文本均与 S(a) 一致。
+前面的“尚未运行/未证明”是各批次当时的历史记录，本节更新当前验证状态。
 
 <!-- lean-checkpoint -->
 ## 当前已编译源码快照
