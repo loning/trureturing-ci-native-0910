@@ -105,6 +105,32 @@ class IncrementalTests(unittest.TestCase):
             self.assertFalse(run("reader-b")["hit"])
             self.assertEqual(len(calls), 4)
 
+    def test_expanded_rows_cache_binds_rows_scopes_and_emitter(self):
+        from emission_cache import cache_key
+        first = cache_key("rows-a", ["A"], [["Root", [0]]], "emitter-a")
+        self.assertNotEqual(first, cache_key("rows-b", ["A"], [["Root", [0]]], "emitter-a"))
+        self.assertNotEqual(first, cache_key("rows-a", ["B"], [["Root", [0]]], "emitter-a"))
+        self.assertNotEqual(first, cache_key("rows-a", ["A"], [["Root", []]], "emitter-a"))
+        self.assertNotEqual(first, cache_key("rows-a", ["A"], [["Root", [0]]], "emitter-b"))
+
+    def test_expanded_rows_clone_rewrites_only_the_new_header(self):
+        from emission_cache import store_rows, restore_rows
+        with tempfile.TemporaryDirectory() as folder:
+            root = pathlib.Path(folder)
+            source = root / "source.json"
+            source.write_bytes(b'{"head":"old","rows":[1,2,3]}')
+            cache = root / "cache"
+            old_header = b'{"head":"old","rows":'
+            new_header = b'{"head":"new","rows":'
+            stored = store_rows(cache, "sha256:"+"a"*64, source, len(old_header))
+            if not stored: self.skipTest("filesystem clone unavailable; streaming fallback remains active")
+            result = root / "result.json"
+            self.assertTrue(restore_rows(cache, "sha256:"+"a"*64, result, new_header))
+            self.assertEqual(result.read_bytes(), b'{"head":"new","rows":[1,2,3]}')
+            self.assertEqual(source.read_bytes(), b'{"head":"old","rows":[1,2,3]}')
+            self.assertFalse(restore_rows(cache, "sha256:"+"b"*64, root/"missing", new_header))
+            self.assertFalse(restore_rows(cache, "sha256:"+"a"*64, root/"long", b"longer header"))
+
 
 if __name__ == "__main__":
     unittest.main()

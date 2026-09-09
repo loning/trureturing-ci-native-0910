@@ -134,6 +134,7 @@ def hash_receipt(repository, directory):
               "scopes": membership["scopes"], "module_names": membership["module_names"],
               "extraction": {k: extraction[k] for k in ["cache_keys", "source_digest", "frozen_names_digest"]},
               "membership": read(directory / "membership-cache.json")["receipt"],
+              "expanded_rows_cache_key": expanded_rows_key(projection, membership),
               "candidate_validation": validation,
               "toolchain": (repository / "lean-toolchain").read_text().strip()}
     from streaming import receipt_digest
@@ -150,6 +151,13 @@ def name_json(name):
     return value
 
 
+def expanded_rows_key(projection, membership):
+    from emission_cache import cache_key
+    emitter = digest([(name, hashlib.sha256(pathlib.Path(__file__).with_name(name).read_bytes()).hexdigest())
+                      for name in ["phases.py", "emission_cache.py", "streaming.py"]])
+    return cache_key(projection["rows_sha256"], membership["module_names"], membership["scopes"], emitter)
+
+
 def emit(directory):
     projection = read(directory / "projection.json")
     info = read(directory / "emission.json")
@@ -159,6 +167,14 @@ def emit(directory):
                   status="complete" if complete else "partial", coverage_theorem_count=counts["accounted"],
                   certified_complete=complete and counts["certified"] == counts["accounted"])
     metadata = read(directory / "membership.json")
+    from emission_cache import restore_rows, store_rows
+    address = expanded_rows_key(projection, metadata)
+    cache = pathlib.Path(__file__).resolve().parents[3] / ".lake/build/census/expanded-rows"
+    header = canonical(fields)[:-2] + b',"rows":[\n'
+    if restore_rows(cache, address, directory / "census.json", header):
+        write(directory / "census.json.summary.json", fields)
+        write(directory / "emission-cache.json", {"cache_key": address, "hit": True})
+        return
     names = [name_json(m) for m in metadata["module_names"]]
     scope_files = {}
     folder = directory / "scopes"
@@ -175,7 +191,7 @@ def emit(directory):
     # Scope bytes are encoded once per semantic root, then copied to each row.
     # This retains the J2 row schema without constructing a repository-sized DOM.
     with (directory / "census.json").open("wb") as out:
-        out.write(canonical(fields)[:-2] + b',"rows":[\n')
+        out.write(header)
         for number, line in enumerate((directory / "rows.jsonl").open("rb")):
             row = json.loads(line)
             if number:
@@ -187,6 +203,8 @@ def emit(directory):
             out.write(encoded)
         out.write(b"\n]}\n")
     write(directory / "census.json.summary.json", fields)
+    stored = store_rows(cache, address, directory / "census.json", len(header))
+    write(directory / "emission-cache.json", {"cache_key": address, "hit": False, "stored": stored})
 
 
 def sort_rows(directory):

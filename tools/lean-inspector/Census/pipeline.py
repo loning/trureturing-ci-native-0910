@@ -216,6 +216,7 @@ def execute(options):
                      artifact_bytes=(directory / "census.json").stat().st_size,
                      extraction_cache=read(directory / "extraction.json"),
                      membership_cache=read(directory / "membership-cache.json"),
+                     emission_cache=read(directory / "emission-cache.json"),
                      validation_cache={k: validation[k] for k in ["hits", "misses", "revalidated_keys"]},
                      batches={"bound": validation["receipt"]["bound"],
                               "key_bound": validation["receipt"]["key_bound"],

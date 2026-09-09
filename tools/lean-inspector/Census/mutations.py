@@ -23,6 +23,7 @@ def main():
     membership = source_root / "LeanInformationAudit/Census/Membership.lean"
     incremental = python_root / "incremental.py"
     membership_cache = python_root / "membership_cache.py"
+    emission_cache = python_root / "emission_cache.py"
     fixture = source_root / "LeanInformationAudit/Tests/Census/Query/Ownership.lean"
     cases = [
         ("skip-freshness", streaming, "streamFreshnessGate",
@@ -56,6 +57,10 @@ def main():
          '    address = digest([file_digest(index), file_digest(request), reader])',
          '    address = digest([file_digest(request), reader])',
          [sys.executable, "-m", "unittest", "test_incremental.IncrementalTests.test_membership_cache_requires_exact_index_request_and_native_reader"]),
+        ("expanded-cache-ignores-rows", emission_cache, "test_expanded_rows_cache_binds_rows_scopes_and_emitter",
+         '    return digest([rows, modules, scopes, emitter])',
+         '    return digest([modules, scopes, emitter])',
+         [sys.executable, "-m", "unittest", "test_incremental.IncrementalTests.test_expanded_rows_cache_binds_rows_scopes_and_emitter"]),
     ]
     outcomes = []
     for label, source, expected, old, new, command in cases:
