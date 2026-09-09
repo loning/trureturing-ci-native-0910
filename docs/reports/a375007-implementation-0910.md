@@ -122,3 +122,6 @@
 
 Scribe 初次 `make emit` EXIT=2（9.871 秒）：数字 DSL 按单个十进制数字接参，`D(24)` 非法；已修为 `D(2,4)`。
 没有改 Lean、工具或任何判官来修这条内容错误。
+
+第二次 `make emit` EXIT=2（33.140 秒）：本库 Library note loader 要求非空 strata_touched 为块列表，不接受这里的 YAML flow 列表；已按现存笔记改为块列表。对应 dangling-literature-reference 是笔记加载失败的后果。
+开 PR 前再查：`git fetch origin dev` 后 `git grep -P` 在 origin/dev 的 D5/Blueprint 搜 A375007/isolated quotient/remainder 仍无命中；`git merge-tree --write-tree HEAD origin/dev` EXIT=0，结果树 `a448e4dc5a6945f871974450c2dde98ec0d2ed7d`。
