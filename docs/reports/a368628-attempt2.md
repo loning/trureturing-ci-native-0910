@@ -96,3 +96,5 @@ Private `initial_echo` 修复后正式模块编译 EXIT=0、零 warning/error，
 最终源码 `make lean-report` **EXIT=0 / 60.118s**，delta changed=1 / recheck=1。六条公开定理及全部 private 声明的报告公理集合均在标准许可集内；无 sorryAx。声明身份随该空格修改不变。
 
 首次 `make emit` EXIT=2 / 16.341s：Library 的非空 `strata_touched: [S1]` 不被本仓 note parser 接受（`strata_touched must be a list`），连带 literature reference 无法解析。改成既有 block-list 文法 `strata_touched:\n  - S1`，Verified locator 中原样 url/doi 已在；未改 Lean 源码。
+
+第二次 emit EXIT=2 / 15.421s：list 成员须为 GID，`S1` 不是 GID。已读 `LibraryNoteCatalog.cs:218-228` 的实际 parser（`Gid.Parse(RequireString(...))`），将成员改为本模块完整 GID。前次把字段名当语义、只修 YAML 形状不够，此次按真源类型修正。
