@@ -8,6 +8,7 @@
 
 import D5.S1.Recurrence.Residue.ExponentialSquareWeightCatalanParity
 import Mathlib.Algebra.BigOperators.Intervals
+import Mathlib.RingTheory.PowerSeries.Exp
 
 open PowerSeries Finset
 
@@ -179,6 +180,105 @@ theorem generating_unique (q : ℤ) (hq : q ≠ 0) (b : ℕ → ℚ) (m : PowerS
     nlinarith
 
 
+/-- The exponent in the original OEIS equation; all divisions take place in Q. -/
+noncomputable def exponent (q : ℤ) (f : ℕ → ℚ) : PowerSeries ℚ :=
+  mk (fun n => if n = 0 then 0 else if n = 1 then 1 else
+    ((q : ℚ) * (n : ℚ) ^ 2 - 1) * f n / ((q : ℚ) * (n : ℚ) ^ 2))
+
+private theorem exponent_zero (q : ℤ) (f : ℕ → ℚ) :
+    constantCoeff (exponent q f) = 0 := by simp [exponent]
+
+private theorem exponent_shape (q : ℤ) (hq : q ≠ 0) (f : ℕ → ℚ) (n : ℕ)
+    (hn : 2 ≤ n) :
+    coeff n (C (q : ℚ) * (X * derivative ℚ (exponent q f))) =
+      ((q : ℚ) * (n : ℚ) ^ 2 - 1) * f n / n := by
+  obtain ⟨r, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (by omega : n ≠ 0)
+  rw [coeff_C_mul, coeff_succ_X_mul, coeff_derivative]
+  simp only [exponent, coeff_mk, if_neg (by omega : r + 1 ≠ 0),
+    if_neg (by omega : r + 1 ≠ 1)]
+  have hqq : (q : ℚ) ≠ 0 := by exact_mod_cast hq
+  have hrr : (r : ℚ) + 1 ≠ 0 := by positivity
+  push_cast
+  field_simp
+
+private theorem exp_subst_zero (L : PowerSeries ℚ) (hL : constantCoeff L = 0) :
+    constantCoeff ((exp ℚ).subst L) = 1 := by
+  rw [← coeff_zero_eq_constantCoeff_apply,
+    coeff_subst' (HasSubst.of_constantCoeff_zero' hL), finsum_eq_single _ 0]
+  · simp
+  · intro n hn
+    simp [coeff_zero_eq_constantCoeff_apply, hL, zero_pow hn]
+
+private theorem linear_ode_unique (F G H : PowerSeries ℚ)
+    (h0 : coeff 0 F = coeff 0 G)
+    (hF : derivative ℚ F = H * F) (hG : derivative ℚ G = H * G) : F = G := by
+  ext n
+  induction n using Nat.strong_induction_on with
+  | h n ih =>
+    cases n with
+    | zero => exact h0
+    | succ n =>
+      have hs : coeff n (H * F) = coeff n (H * G) := by
+        rw [coeff_mul, coeff_mul]
+        apply sum_congr rfl
+        intro ij hij
+        have hij' := Finset.mem_antidiagonal.mp hij
+        rw [ih ij.2 (by omega)]
+      have hf := congrArg (coeff n) hF
+      have hg := congrArg (coeff n) hG
+      rw [coeff_derivative] at hf hg
+      have hnq : (n : ℚ) + 1 ≠ 0 := by positivity
+      exact mul_right_cancel₀ hnq (hf.trans (hs.trans hg.symm))
+
+/-- Exact equivalence with the source self-referential formal exponential equation. -/
+theorem source_iff (q : ℤ) (hq : q ≠ 0) (f : ℕ → ℚ) :
+    mk f = (exp ℚ).subst (exponent q f) ↔ ∀ n : ℕ, f n = (a q n : ℚ) := by
+  let L := exponent q f
+  let N := C (q : ℚ) * (X * derivative ℚ L)
+  have hL0 : constantCoeff L = 0 := exponent_zero q f
+  have hN0 : coeff 0 N = 0 := by simp [N]
+  have hN1 : coeff 1 N = (q : ℚ) := by
+    change coeff (0 + 1) (C (q : ℚ) * (X * derivative ℚ L)) = _
+    rw [coeff_C_mul, coeff_succ_X_mul, coeff_derivative]
+    simp [L, exponent]
+  have hNshape : ∀ n : ℕ, 2 ≤ n →
+      coeff n N = ((q : ℚ) * (n : ℚ) ^ 2 - 1) * f n / n :=
+    exponent_shape q hq f
+  have hE : derivative ℚ ((exp ℚ).subst L) = derivative ℚ L * (exp ℚ).subst L := by
+    rw [derivative_subst (HasSubst.of_constantCoeff_zero' hL0), derivative_exp, mul_comm]
+  constructor
+  · intro heq
+    have hf0 : f 0 = 1 := by
+      have hz := exp_subst_zero L hL0
+      rw [← heq, ← coeff_zero_eq_constantCoeff_apply, coeff_mk] at hz
+      exact hz
+    apply generating_unique q hq f N hf0 hN0 hN1 hNshape
+    change C (q : ℚ) * (X * derivative ℚ (mk f)) = N * mk f
+    have hd : derivative ℚ (mk f) = derivative ℚ L * mk f := by
+      simpa only [heq] using hE
+    rw [hd]
+    dsimp [N]
+    ring
+  · intro hf
+    have heq : mk f = mk (fun n => (a q n : ℚ)) := by ext n; simp [hf]
+    have hN : N = (M q).map (Int.castRingHom ℚ) := by
+      ext n
+      by_cases hn : 2 ≤ n
+      · rw [hNshape n hn, hf n, coeff_M_rat q n hn]
+      · interval_cases n <;> simp [hN0, hN1, M]
+    have hscale := rational_identity q
+    rw [← heq, ← hN] at hscale
+    have hqq : (q : ℚ) ≠ 0 := by exact_mod_cast hq
+    have hunit : C (q : ℚ) * (X : PowerSeries ℚ) ≠ 0 :=
+      mul_ne_zero (by simpa only [map_zero] using C_injective.ne hqq) X_ne_zero
+    have hF : derivative ℚ (mk f) = derivative ℚ L * mk f := by
+      apply mul_left_cancel₀ hunit
+      dsimp [N] at hscale
+      linear_combination hscale
+    apply linear_ode_unique (mk f) ((exp ℚ).subst L) (derivative ℚ L) _ hF hE
+    rw [coeff_mk, hf 0, a_zero, Int.cast_one,
+      coeff_zero_eq_constantCoeff_apply, exp_subst_zero L hL0]
+
 /-- Odd parameters give the same normalized coefficients modulo two as the frozen q=1 series. -/
 theorem normalized_mod_two (q : ℤ) (hq : Odd q) (n : ℕ) :
     (b q n : ZMod 2) = (ExponentialSquareWeightCatalanParity.d n : ZMod 2) := by
@@ -293,6 +393,19 @@ theorem residues_q2 (n : ℕ) (hn : 2 ≤ n) :
   change a 2 n % 8 = _ % 8 at hmod
   split_ifs at hmod ⊢ <;> norm_num at hmod ⊢ <;> exact hmod
 
+/-- The four dispatched conjectures, reusing the frozen q=1 sequence directly. -/
+theorem family_conjectures :
+    (∀ n : ℕ, Odd (a 5 n) ↔ ∃ k : ℕ, n + 1 = 2 ^ k) ∧
+    (∀ n : ℕ, Odd (a 3 n) ↔ ∃ k : ℕ, n + 1 = 2 ^ k) ∧
+    (∀ n : ℕ, Odd (ExponentialSquareWeightCatalanParity.a n) ↔
+      ∃ k : ℕ, n + 1 = 2 ^ k) ∧
+    (∀ n : ℕ, 2 ≤ n →
+      a 2 n % 8 = if n % 4 = 2 then 4 else if n % 4 = 0 then 0 else 2) :=
+  ⟨odd_parameter_parity 5 (by norm_num), odd_parameter_parity 3 (by norm_num),
+    ExponentialSquareWeightCatalanParity.hanna_conjecture, residues_q2⟩
+
+#print axioms family_conjectures
+#print axioms source_iff
 #print axioms log_derivative_identity
 #print axioms generating_unique
 #print axioms normalized_mod_eight
