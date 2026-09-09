@@ -359,3 +359,41 @@ hd : 1 ≤ d
 make -f Makefile -f /var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/probe.mk lean PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean
 # EXIT=0 (b3-08)
 ```
+
+### Attempt 2 / conclusion
+
+完整、可机读的本席结论见 [conclusion.json](qd-family-triage-0909/attempt-2/conclusion.json)：包含 `screened`、三条 `per_atom` 的五项、`bind_only_count`、`content_candidates`、`undetermined`、全部 `probe_runs` 的实际 argv/EXIT/日志及错误原文、`search_receipts`、`pushed.commits`、`assumed_unverified`、`nonclaims`。它是最终报告提交前的快照；runner 的最终 envelope 会补入该报告提交的哈希。
+
+`screened=3`，`bind_only_count=2`，`content_candidates=[]`。`per_atom` 结算：B3=yes，B4=yes；推论整条为 `undetermined`（`bind_only=null`），其有限子句已通过。唯一 `undetermined` 为 `cd2ad7f9986ee06ef6a8ac86aa7834a19d836483eaa1475b57396f3ba7ae536a`，精确剩余目标与冻结接口不匹配已在上节逐字列出。两条 yes 均为原文有限前提下的判形，不新证共同的源分析规范。
+
+预登记的“至少一条明确 yes/no”期望已经满足；中点零判定停止条件未触发。三条的筛选和判词现已结算，未把未判桥降格成工作量，也未拿编译失败认证 content。已撤回的 Laguerre 候选不计入内容候选。
+
+`probe_runs` 共 13 次，严格顺序运行；4 次 EXIT=0，9 次 EXIT=2。以下记录仅本席增量，上一席的失败与判词保持原文，不重判：
+
+| run | EXIT | 秒 | 证据 |
+| --- | ---: | ---: | --- |
+| b4-01 | 0 | 248.460 | [摘录](qd-family-triage-0909/attempt-2/b4-01-excerpt.txt) |
+| b3-01 | 2 | 104.062 | [日志](qd-family-triage-0909/attempt-2/b3-01.log) |
+| b3-02 | 2 | 80.673 | [日志](qd-family-triage-0909/attempt-2/b3-02.log) |
+| descent-01 | 2 | 82.817 | [日志](qd-family-triage-0909/attempt-2/descent-01.log) |
+| b3-03 | 2 | 28.407 | [日志](qd-family-triage-0909/attempt-2/b3-03.log) |
+| descent-02 | 2 | 47.390 | [日志](qd-family-triage-0909/attempt-2/descent-02.log) |
+| b3-04 | 2 | 25.687 | [日志](qd-family-triage-0909/attempt-2/b3-04.log) |
+| descent-03 | 0 | 55.297 | [摘录](qd-family-triage-0909/attempt-2/descent-03-excerpt.txt) |
+| b3-05 | 0 | 38.598 | [摘录](qd-family-triage-0909/attempt-2/b3-05-excerpt.txt) |
+| b3-06 | 2 | 22.046 | [日志](qd-family-triage-0909/attempt-2/b3-06.log) |
+| descent-rh-01 | 2 | 48.734 | [日志](qd-family-triage-0909/attempt-2/descent-rh-01.log) |
+| b3-07 | 2 | 29.634 | [日志](qd-family-triage-0909/attempt-2/b3-07.log) |
+| b3-08 | 0 | 46.980 | [摘录](qd-family-triage-0909/attempt-2/b3-08-excerpt.txt) |
+
+每次原始日志首行是实际 `make` argv，完整源快照以 run 名归档。成功运行的大日志以 gzip 后 base64 存储，避免继承二进制归档触发的 strict UTF-8 reader 问题；结构化结论同时给原始 runner 日志地址和归档地址。`descent-02` 没有单独打印 `⊢`，它的 type mismatch 原文同时给出了 `has type` 与 `expected`，完整保留，未虚构目标。
+
+`search_receipts`：[首批](qd-family-triage-0909/attempt-2/search-01.json)、[B3](qd-family-triage-0909/attempt-2/search-b3.json)、[推论](qd-family-triage-0909/attempt-2/search-descent.json)、[最终新增引用与对照](qd-family-triage-0909/attempt-2/search-final.json)。最后一批的同正则阳性/阴性读数为：Splits 声明 1/0 行，HasDerivAt 声明 4/0 行，冻结源规范声明 1/0 行；阳性 EXIT=0、阴性 EXIT=1。生成的 `Finset.sum_multiset_map_count` 在源码上以 `@[to_additive] prod_multiset_map_count` 承载，位置为 `.lake/packages/mathlib/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean:591`，未把文本搜不到生成名当作缺失。一次未引号 shell glob `*Pos*` 曾由 zsh 报 `no matches found`，未执行该 rg；随后改为确定目录的 rg，不据此负命中推断数学事实。
+
+`pushed.commits`：此前 12 次提交均已逐次 push，完整哈希在结构化结论中；B4 判词提交为 `ed00879e1e8cd25386a2e8672627d56e43ab6826`，推论判词提交为 `9160350648919cd3980ce83adfe550c2bd748fcd`，B3 判词提交为 `7fc747bf5e`。最终报告随后单独定向提交推送，runner envelope 记录完整提交集与远端 HEAD。
+
+`assumed_unverified`：原文的 `sourceThetaCoefficient 0=1` 未在本席独立证明；实际 RH 到固定源失败桥未验证；外链 arXiv/DLMF 及移位窗口渐近比较未打开；无独立评审、无异模型复核。准入字段仅为条件判词，不冒领为门已通过。
+
+`nonclaims`：未建 D5 生产模块、未 cover/deposit/开 PR、未改预算；未并发构建或直接裸调 lake；未重判 B1/B1.1/Q 绑定；未用精确次数前提掩盖零根；未证明整个推论或 RH；未认证 content；未主张检索穷尽或未命中即不存在；未将 `refutes` 当第四种准入；编译失败与 error-recovery `sorryAx` 均不承担数学结论。开工前已有的 `candidates.json` / `family.json` 未纳入提交。
+
+Runner-owned 工件由本席写入 attempt-2：先写 `result.json.tmp` 后原子改名为 `result.json`，再对 `completion.sentinel` 作同样发布；结果只含顶层 `conclusion` 对象与非空 `log_ref`，`conclusion.verdict=propose`。最终发布发生于本报告提交推送之后。

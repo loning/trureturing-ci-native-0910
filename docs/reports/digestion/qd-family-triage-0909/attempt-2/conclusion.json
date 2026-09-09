@@ -1,0 +1,1154 @@
+{
+  "verdict": "propose",
+  "attempt": 2,
+  "stage": "thinking",
+  "branch": "lane/math/qd-family-triage2-0909",
+  "base": "18f70e6ee6b809110f9bef3214a4cd51688b6c57",
+  "report": "docs/reports/digestion/qd-family-triage-0909.md",
+  "screened": [
+    "2bc63109d666c92a11aa641dbeae45bc08e3f4f939bc5ce4406a75e5d86d03b6",
+    "c0a72a217fb966246fd4a48a809795cdc539435d1e88d1a10d041a9bcd9ed98d",
+    "cd2ad7f9986ee06ef6a8ac86aa7834a19d836483eaa1475b57396f3ba7ae536a"
+  ],
+  "screened_count": 3,
+  "per_atom": [
+    {
+      "atom_id": "2bc63109d666c92a11aa641dbeae45bc08e3f4f939bc5ce4406a75e5d86d03b6",
+      "title": "Theorem B3: exact one-step positive extension criterion",
+      "bind_only": "yes",
+      "status": "determined",
+      "remaining_gap": "none within the original finite setting",
+      "mathlib_hits": [
+        {
+          "declaration": "Polynomial.reflect",
+          "path": ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean",
+          "line": 88,
+          "scope": "Inherited polynomial definition, including zero arguments."
+        },
+        {
+          "declaration": "Polynomial.coeff_reflect",
+          "path": ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean",
+          "line": 96,
+          "scope": "Exact reflected coefficients."
+        },
+        {
+          "declaration": "Polynomial.eval₂_reflect_mul_pow",
+          "path": ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean",
+          "line": 191,
+          "scope": "Reciprocal evaluation only at explicitly invertible arguments."
+        },
+        {
+          "declaration": "Polynomial.eq_of_degree_le_of_eval_index_eq",
+          "path": ".lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean",
+          "line": 117,
+          "scope": "Polynomial uniqueness from degree, leading coefficient and nodes."
+        },
+        {
+          "declaration": "Lagrange.eq_interpolate",
+          "path": ".lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean",
+          "line": 362,
+          "scope": "Interpolation of the residual polynomial."
+        },
+        {
+          "declaration": "Lagrange.coeff_eq_sum",
+          "path": ".lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean",
+          "line": 495,
+          "scope": "Residue budget as highest interpolation coefficient."
+        },
+        {
+          "declaration": "Lagrange.eval_nodal_derivative_eval_node_eq",
+          "path": ".lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean",
+          "line": 605,
+          "scope": "Simple node derivative as a root-difference product."
+        },
+        {
+          "declaration": "Lagrange.eval_interpolate_not_at_node",
+          "path": ".lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean",
+          "line": 685,
+          "scope": "Rational interpolation away from nodes."
+        },
+        {
+          "declaration": "Polynomial.Splits.eval_derivative_div_eval_of_ne_zero",
+          "path": ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Splits.lean",
+          "line": 654,
+          "scope": "Logarithmic derivative of a real-split polynomial."
+        },
+        {
+          "declaration": "HasDerivAt.fun_div",
+          "path": ".lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Inv.lean",
+          "line": 168,
+          "scope": "Derivative of the logarithmic derivative."
+        },
+        {
+          "declaration": "HasDerivAt.fun_sum",
+          "path": ".lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Add.lean",
+          "line": 218,
+          "scope": "Derivative of the finite reciprocal sum."
+        },
+        {
+          "declaration": "HasDerivAt.unique",
+          "path": ".lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Basic.lean",
+          "line": 399,
+          "scope": "Identify the two derivative values."
+        },
+        {
+          "declaration": "HasDerivAt.congr_of_eventuallyEq",
+          "path": ".lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Basic.lean",
+          "line": 609,
+          "scope": "Use equality on the nonzero neighborhood."
+        },
+        {
+          "declaration": "Matrix.det_fromBlocks₂₂",
+          "path": ".lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/SchurComplement.lean",
+          "line": 384,
+          "scope": "Explicit arrow matrix Schur complement."
+        },
+        {
+          "declaration": "Matrix.eval_charpoly",
+          "path": ".lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/Charpoly/Basic.lean",
+          "line": 137,
+          "scope": "Evaluate the characteristic polynomial as a determinant."
+        },
+        {
+          "declaration": "Matrix.IsHermitian.charpoly_eq",
+          "path": ".lake/packages/mathlib/Mathlib/Analysis/Matrix/Spectrum.lean",
+          "line": 154,
+          "scope": "Real Hermitian spectrum factors the characteristic polynomial."
+        },
+        {
+          "declaration": "Matrix.IsHermitian.posDef_iff_eigenvalues_pos",
+          "path": ".lake/packages/mathlib/Mathlib/Analysis/Matrix/PosDef.lean",
+          "line": 71,
+          "scope": "Strict positivity of all eigenvalues."
+        },
+        {
+          "declaration": "Polynomial.reflect_map",
+          "path": ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean",
+          "line": 138,
+          "scope": "The real model complexifies to the exact reflected source polynomial."
+        }
+      ],
+      "frozen_interfaces": [
+        {
+          "gid": "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering",
+          "module_statement_id": "sha256:ee43a04a542df25237818cbfeeb29bb1abaed956f90db04822d08e8f413d50b4",
+          "declaration": "normalizedJensen_degree_lowering",
+          "statement_id": "sha256:f13a2fdd4121c7b170af20e397cf8d9c567ddfcfd4dd8e37d469c21f8603d6bf",
+          "scope": "Any real coefficient sequence; degree at least 2; complex polynomial identity.",
+          "usage": "Supplies inherited B1; it does not supply a matrix or RH theorem."
+        },
+        {
+          "gid": "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering",
+          "module_statement_id": "sha256:ee43a04a542df25237818cbfeeb29bb1abaed956f90db04822d08e8f413d50b4",
+          "declaration": "normalizedJensen_eq_fallingFactorial_sum",
+          "statement_id": "sha256:8a2655f8cbb74a3d045256378f01d8c6468e59545dc09fc5446bd390f898c025",
+          "scope": "Any real coefficient sequence; degree at least 1.",
+          "usage": "Identifies the exact finite sum and degree bound."
+        },
+        {
+          "gid": "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering",
+          "module_statement_id": "sha256:ee43a04a542df25237818cbfeeb29bb1abaed956f90db04822d08e8f413d50b4",
+          "declaration": "sourceJensenPolynomial_eq_normalizedJensen",
+          "statement_id": "sha256:0c96cec689edaf5a585802b79a9c52b976c6dcedbee0cd259b40d0a7d19ecfa9",
+          "scope": "Fixed source theta coefficients; degree at least 1.",
+          "usage": "Binds the literal source polynomial to the general normalized family."
+        },
+        {
+          "gid": "D5/S3/Zeros/Jensen/SourceThetaMomentBounds",
+          "module_statement_id": "sha256:9de7bd223c662525a590ce1366b1efcfc26700544e7bb42d0e6fb229b51f67f1",
+          "declaration": "source_theta_normalization",
+          "statement_id": "sha256:f2833d5f83723ffce02a966e718c61fa0d1e6bd269835bfcc1c5ed396ced9d03",
+          "scope": "Assumes sourceThetaCoefficient 0 = 1, as in the original finite setup.",
+          "usage": "Fourth projection gives positivity of every source coefficient; it does not prove the assumed source normalization or RH."
+        }
+      ],
+      "admission_if_landed": "rule-11-upstream-wrapper",
+      "proof_shape": "bind-only",
+      "escape_witness": null,
+      "decisive_probe": "b3-08",
+      "final_declarations": [
+        "QdB3Probe.b3_source_full",
+        "QdB3Probe.q_map_source"
+      ],
+      "admission_reason": "The atom requires the specified sqrt-residue arrow matrix, strict PosDef and exact source charpoly in one interface; general Schur, interpolation and spectral declarations supply the necessary upstream bindings.",
+      "witness_withdrawal": "The preregistered product-induction Laguerre witness fails criterion 3.2(iv): a complete passing alternative uses the upstream logarithmic derivative, derivative uniqueness and a finite sum of nonpositive terms. No product induction is used by the final target.",
+      "fidelity": "The explicit real falling-factorial polynomial complexifies exactly to the frozen normalized source; reflect_map identifies Q with the literal source reflect. hno is discharged, source positivity comes from F5, and natDegree=d is never added as a premise."
+    },
+    {
+      "atom_id": "c0a72a217fb966246fd4a48a809795cdc539435d1e88d1a10d041a9bcd9ed98d",
+      "title": "Theorem B4: total new coupling budget",
+      "bind_only": "yes",
+      "status": "determined",
+      "remaining_gap": "none within the original finite setting",
+      "mathlib_hits": [
+        {
+          "declaration": "Polynomial.reflect",
+          "path": ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean",
+          "line": 88,
+          "scope": "Inherited polynomial definition, including zero arguments."
+        },
+        {
+          "declaration": "Polynomial.coeff_reflect",
+          "path": ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean",
+          "line": 96,
+          "scope": "Exact reflected coefficients."
+        },
+        {
+          "declaration": "Polynomial.eval₂_reflect_mul_pow",
+          "path": ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean",
+          "line": 191,
+          "scope": "Reciprocal evaluation only at explicitly invertible arguments."
+        },
+        {
+          "declaration": "Polynomial.eq_of_degree_le_of_eval_index_eq",
+          "path": ".lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean",
+          "line": 117,
+          "scope": "Polynomial uniqueness from degree, leading coefficient and nodes."
+        },
+        {
+          "declaration": "Lagrange.eq_interpolate",
+          "path": ".lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean",
+          "line": 362,
+          "scope": "Interpolation of the residual polynomial."
+        },
+        {
+          "declaration": "Lagrange.coeff_eq_sum",
+          "path": ".lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean",
+          "line": 495,
+          "scope": "Residue budget as highest interpolation coefficient."
+        },
+        {
+          "declaration": "Lagrange.eval_nodal_derivative_eval_node_eq",
+          "path": ".lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean",
+          "line": 605,
+          "scope": "Simple node derivative as a root-difference product."
+        },
+        {
+          "declaration": "Lagrange.eval_interpolate_not_at_node",
+          "path": ".lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean",
+          "line": 685,
+          "scope": "Rational interpolation away from nodes."
+        }
+      ],
+      "frozen_interfaces": [
+        {
+          "gid": "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering",
+          "module_statement_id": "sha256:ee43a04a542df25237818cbfeeb29bb1abaed956f90db04822d08e8f413d50b4",
+          "declaration": "normalizedJensen_degree_lowering",
+          "statement_id": "sha256:f13a2fdd4121c7b170af20e397cf8d9c567ddfcfd4dd8e37d469c21f8603d6bf",
+          "scope": "Any real coefficient sequence; degree at least 2; complex polynomial identity.",
+          "usage": "Supplies inherited B1; it does not supply a matrix or RH theorem."
+        },
+        {
+          "gid": "D5/S3/Zeros/Jensen/SourceJensenPrincipalBlockObstruction",
+          "module_statement_id": "sha256:5e43098caa9fb48b4fccd8adc30e337ff93668044d5dcfc06acab33dc8970f3c",
+          "declaration": "source_jensen_coeff_edges",
+          "statement_id": "sha256:adde2bcfe9e6e59415236589839993c3faa03e7cabdaa4276c8a049fc9daae39",
+          "scope": "Fixed source; degree at least 1; four coefficient equalities.",
+          "usage": "Provides source constant and linear coefficients; no roots or RH implication."
+        }
+      ],
+      "admission_if_landed": "rule-11-upstream-wrapper",
+      "proof_shape": "bind-only",
+      "escape_witness": null,
+      "decisive_probe": "b4-01",
+      "final_declarations": [
+        "QdB4Probe.b4_source_full"
+      ],
+      "admission_reason": "B18 requires the actual eta sum in terms of the source coefficients and fourth cumulant; Lagrange.coeff_eq_sum supplies the general formula requiring this source specialization.",
+      "fidelity": "Both B18 equalities are packaged. The inherited quadratic normalization goal True or sourceThetaCoefficient 2 = 0 is closed by ring_nf then simp. The source unit constant is an original explicit assumption, not a new degree premise."
+    },
+    {
+      "atom_id": "cd2ad7f9986ee06ef6a8ac86aa7834a19d836483eaa1475b57396f3ba7ae536a",
+      "title": "Corollary: real-rootedness descends in degree",
+      "bind_only": null,
+      "status": "undetermined",
+      "remaining_gap": {
+        "mathematical_defect_established": false,
+        "unverified_mathematical_obligation": "The actual RiemannHypothesis versus fixed n=0 source Jensen tower analytic implication. No defect, impossibility of binding, or escape witness has been established."
+      },
+      "mathlib_hits": [
+        {
+          "declaration": "Polynomial.reflect",
+          "path": ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean",
+          "line": 88,
+          "scope": "Inherited polynomial definition, including zero arguments."
+        },
+        {
+          "declaration": "Polynomial.coeff_reflect",
+          "path": ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean",
+          "line": 96,
+          "scope": "Exact reflected coefficients."
+        },
+        {
+          "declaration": "Polynomial.eval₂_reflect_mul_pow",
+          "path": ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean",
+          "line": 191,
+          "scope": "Reciprocal evaluation only at explicitly invertible arguments."
+        },
+        {
+          "declaration": "Polynomial.rootSet_derivative_subset_convexHull_rootSet",
+          "path": ".lake/packages/mathlib/Mathlib/Analysis/Complex/Polynomial/GaussLucas.lean",
+          "line": 97,
+          "scope": "Derivative roots stay in the original root convex hull."
+        },
+        {
+          "declaration": "convex_halfSpace_re_gt",
+          "path": ".lake/packages/mathlib/Mathlib/Analysis/Complex/Convex.lean",
+          "line": 57,
+          "scope": "Strict positive real half-space."
+        },
+        {
+          "declaration": "convex_halfSpace_re_ge",
+          "path": ".lake/packages/mathlib/Mathlib/Analysis/Complex/Convex.lean",
+          "line": 59,
+          "scope": "Nonnegative half-space accommodates reflection-created zero roots."
+        },
+        {
+          "declaration": "convex_halfSpace_im_le",
+          "path": ".lake/packages/mathlib/Mathlib/Analysis/Complex/Convex.lean",
+          "line": 63,
+          "scope": "One side of the real axis."
+        },
+        {
+          "declaration": "convex_halfSpace_im_ge",
+          "path": ".lake/packages/mathlib/Mathlib/Analysis/Complex/Convex.lean",
+          "line": 67,
+          "scope": "Other side of the real axis."
+        },
+        {
+          "declaration": "antitone_nat_of_succ_le",
+          "path": ".lake/packages/mathlib/Mathlib/Order/Monotone/Basic.lean",
+          "line": 552,
+          "scope": "Adjacent descent extends over the degree tower."
+        },
+        {
+          "declaration": "Nat.find_spec",
+          "path": ".lake/packages/mathlib/Mathlib/Data/Nat/Find.lean",
+          "line": 75,
+          "scope": "Minimum from an existing failure witness."
+        },
+        {
+          "declaration": "Nat.find_min",
+          "path": ".lake/packages/mathlib/Mathlib/Data/Nat/Find.lean",
+          "line": 80,
+          "scope": "All smaller degrees avoid failure."
+        },
+        {
+          "declaration": "RiemannHypothesis",
+          "path": ".lake/packages/mathlib/Mathlib/NumberTheory/LSeries/RiemannZeta.lean",
+          "line": 185,
+          "scope": "Actual zeta-zero proposition, not an arbitrary Prop parameter."
+        }
+      ],
+      "frozen_interfaces": [
+        {
+          "gid": "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering",
+          "module_statement_id": "sha256:ee43a04a542df25237818cbfeeb29bb1abaed956f90db04822d08e8f413d50b4",
+          "declaration": "normalizedJensen_degree_lowering",
+          "statement_id": "sha256:f13a2fdd4121c7b170af20e397cf8d9c567ddfcfd4dd8e37d469c21f8603d6bf",
+          "scope": "Any real coefficient sequence; degree at least 2; complex polynomial identity.",
+          "usage": "Supplies inherited B1; it does not supply a matrix or RH theorem."
+        },
+        {
+          "gid": "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering",
+          "module_statement_id": "sha256:ee43a04a542df25237818cbfeeb29bb1abaed956f90db04822d08e8f413d50b4",
+          "declaration": "normalizedJensen_eq_fallingFactorial_sum",
+          "statement_id": "sha256:8a2655f8cbb74a3d045256378f01d8c6468e59545dc09fc5446bd390f898c025",
+          "scope": "Any real coefficient sequence; degree at least 1.",
+          "usage": "Identifies the exact finite sum and degree bound."
+        },
+        {
+          "gid": "D5/S3/Zeros/Jensen/NormalizedJensenDegreeLowering",
+          "module_statement_id": "sha256:ee43a04a542df25237818cbfeeb29bb1abaed956f90db04822d08e8f413d50b4",
+          "declaration": "sourceJensenPolynomial_eq_normalizedJensen",
+          "statement_id": "sha256:0c96cec689edaf5a585802b79a9c52b976c6dcedbee0cd259b40d0a7d19ecfa9",
+          "scope": "Fixed source theta coefficients; degree at least 1.",
+          "usage": "Binds the literal source polynomial to the general normalized family."
+        },
+        {
+          "gid": "D5/S3/Zeros/Jensen/SourceJensenPrincipalBlockObstruction",
+          "module_statement_id": "sha256:5e43098caa9fb48b4fccd8adc30e337ff93668044d5dcfc06acab33dc8970f3c",
+          "declaration": "source_jensen_coeff_edges",
+          "statement_id": "sha256:adde2bcfe9e6e59415236589839993c3faa03e7cabdaa4276c8a049fc9daae39",
+          "scope": "Fixed source; degree at least 1; four coefficient equalities.",
+          "usage": "Provides source constant and linear coefficients; no roots or RH implication."
+        }
+      ],
+      "unusable_nearby_frozen_interfaces": [
+        {
+          "gid": "D5/S3/Zeros/Jensen/JensenPolynomialObstruction",
+          "module_statement_id": "sha256:3176f8464f62de1fa135849a4f3ad9c5b5edae6cff9142369ac4e9f0bf3fd08f",
+          "declaration": "jensen_polynomial_obstruction",
+          "statement_id": "sha256:ea04044fba0d24c98867f3fe4405682d1e95f38c22b9d4ec51f62003dcd41b39",
+          "scope": "Arbitrary RH Prop; both analytic bridges are explicit hypotheses; failure permits arbitrary shift n.",
+          "usage": "Scope mismatch: cannot discharge actual RH to fixed n=0 source failure."
+        }
+      ],
+      "admission_if_landed": "none",
+      "proof_shape": null,
+      "escape_witness": null,
+      "decisive_probe": null,
+      "partial_probes": [
+        "descent-03",
+        "descent-rh-01"
+      ],
+      "finite_clauses": {
+        "proof_shape": "bind-only",
+        "run": "descent-03",
+        "exit": 0,
+        "declarations": [
+          "B1BindOnlyProbe.source_negative_descent",
+          "B1BindOnlyProbe.source_real_descent",
+          "B1BindOnlyProbe.source_failure_upward",
+          "B1BindOnlyProbe.source_minimal_failure"
+        ],
+        "scope": "Clauses (27)-(29), zero/degree-deficit-safe root transport and minimum/persistence given an existing failure witness."
+      },
+      "exact_remaining_goal": [
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/DescentRH.lean:374:63: error: unsolved goals\nh0 : sourceThetaCoefficient 0 = 1\nhNotRh : ¬RiemannHypothesis\ns : ℂ\nhAll : ∀ (d : ℕ), 1 ≤ d → ∀ (z : ℂ), eval z (sourceJensenPolynomial d) = 0 → z.im = 0\nhs : riemannZeta s = 0\nhtrivial : ¬∃ n, s = -2 * (↑n + 1)\nhone : s ≠ 1\n⊢ s.re = 1 / 2"
+      ],
+      "admission_reason": "The entire atom has not been bound or given an elaborated escape witness. A conditional finite minimum theorem does not provide an admission basis for the actual RH clause."
+    }
+  ],
+  "bind_only_count": 2,
+  "content_candidates": [],
+  "undetermined": [
+    "cd2ad7f9986ee06ef6a8ac86aa7834a19d836483eaa1475b57396f3ba7ae536a"
+  ],
+  "probe_runs": [
+    {
+      "run": "b4-01",
+      "command": [
+        "make",
+        "-f",
+        "Makefile",
+        "-f",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/probe.mk",
+        "lean",
+        "PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B4Probe.lean"
+      ],
+      "exit": 0,
+      "seconds": 248.4600485,
+      "raw_log": "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/b4-01.log",
+      "archived_log": "docs/reports/digestion/qd-family-triage-0909/attempt-2/b4-01.log.gz.b64",
+      "source_snapshot": "docs/reports/digestion/qd-family-triage-0909/attempt-2/b4-01.lean",
+      "diagnostics_verbatim": [],
+      "unclosed_goals_verbatim": [],
+      "target_axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "run": "b3-01",
+      "command": [
+        "make",
+        "-f",
+        "Makefile",
+        "-f",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/probe.mk",
+        "lean",
+        "PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean"
+      ],
+      "exit": 2,
+      "seconds": 104.06240925,
+      "raw_log": "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/b3-01.log",
+      "archived_log": "docs/reports/digestion/qd-family-triage-0909/attempt-2/b3-01.log",
+      "source_snapshot": "docs/reports/digestion/qd-family-triage-0909/attempt-2/b3-01.lean",
+      "diagnostics_verbatim": [
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:18:37: error: unsolved goals\ncase inl.inl\nn : ℕ\na : ℝ\nt eta : Fin (n + 1) → ℝ\ni j : Fin 1\n⊢ fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))\n      (of fun i j => if i = j then t i else 0) (Sum.inl i) (Sum.inl j) =\n    fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))\n      (of fun i j => if i = j then t i else 0) (Sum.inl j) (Sum.inl i)\n\ncase inl.inr\nn : ℕ\na : ℝ\nt eta : Fin (n + 1) → ℝ\ni : Fin 1\nj : Fin (n + 1)\n⊢ fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))\n      (of fun i j => if i = j then t i else 0) (Sum.inl i) (Sum.inr j) =\n    fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))\n      (of fun i j => if i = j then t i else 0) (Sum.inr j) (Sum.inl i)\n\ncase inr.inl\nn : ℕ\na : ℝ\nt eta : Fin (n + 1) → ℝ\ni : Fin (n + 1)\nj : Fin 1\n⊢ fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))\n      (of fun i j => if i = j then t i else 0) (Sum.inl j) (Sum.inr i) =\n    fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))\n      (of fun i j => if i = j then t i else 0) (Sum.inr i) (Sum.inl j)\n\ncase inr.inr\nn : ℕ\na : ℝ\nt eta : Fin (n + 1) → ℝ\ni j : Fin (n + 1)\n⊢ fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))\n      (of fun i j => if i = j then t i else 0) (Sum.inr i) (Sum.inr j) =\n    fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))\n      (of fun i j => if i = j then t i else 0) (Sum.inr j) (Sum.inr i)",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:39:82: error: Application type mismatch: The argument\n  j\nhas type\n  Fin (n + 1)\nbut is expected to have type\n  Fin 1\nin the application\n  Subsingleton.elim i j",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:39:82: error: Application type mismatch: The argument\n  j\nhas type\n  Fin 1\nbut is expected to have type\n  Fin (n + 1)\nin the application\n  Subsingleton.elim i j",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:39:62: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  Subsingleton (Fin (n + 1))\n\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:39:62: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  Subsingleton (Fin (n + 1))\n\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:38:66: error: unsolved goals\ncase inl.inl\nn : ℕ\na : ℝ\nt eta : Fin (n + 1) → ℝ\nheta : ∀ (i : Fin (n + 1)), 0 ≤ eta i\nx : ℝ\nhx : ∀ (i : Fin (n + 1)), x ≠ t i\nv : Fin (n + 1) → ℝ := fun i => x - t i\nthis✝ : Invertible v := { invOf := fun i => (x - t i)⁻¹, invOf_mul_self := ⋯, mul_invOf_self := ⋯ }\nthis : Invertible (diagonal v) := diagonalInvertible v\nhinv : ⅟(diagonal v) = diagonal fun i => (x - t i)⁻¹\ni j : Fin 1\n⊢ x -\n      fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))\n        (of fun i j => if i = j then t i else 0) (Sum.inl j) (Sum.inl j) =\n    fromBlocks (fun x_1 x_2 => x - a / (↑n + 2)) (fun x i => -√(eta i)) (fun i x => -√(eta i))\n      (of fun i j => if i = j then x - t i else 0) (Sum.inl j) (Sum.inl j)\n\ncase inl.inr\nn : ℕ\na : ℝ\nt eta : Fin (n + 1) → ℝ\nheta : ∀ (i : Fin (n + 1)), 0 ≤ eta i\nx : ℝ\nhx : ∀ (i : Fin (n + 1)), x ≠ t i\nv : Fin (n + 1) → ℝ := fun i => x - t i\nthis✝ : Invertible v := { invOf := fun i => (x - t i)⁻¹, invOf_mul_self := ⋯, mul_invOf_self := ⋯ }\nthis : Invertible (diagonal v) := diagonalInvertible v\nhinv : ⅟(diagonal v) = diagonal fun i => (x - t i)⁻¹\ni : Fin 1\nj : Fin (n + 1)\n⊢ -fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))\n        (of fun i j => if i = j then t i else 0) (Sum.inl i) (Sum.inr j) =\n    fromBlocks (fun x_1 x_2 => x - a / (↑n + 2)) (fun x i => -√(eta i)) (fun i x => -√(eta i))\n      (of fun i j => if i = j then x - t i else 0) (Sum.inl i) (Sum.inr j)\n\ncase inr.inl\nn : ℕ\na : ℝ\nt eta : Fin (n + 1) → ℝ\nheta : ∀ (i : Fin (n + 1)), 0 ≤ eta i\nx : ℝ\nhx : ∀ (i : Fin (n + 1)), x ≠ t i\nv : Fin (n + 1) → ℝ := fun i => x - t i\nthis✝ : Invertible v := { invOf := fun i => (x - t i)⁻¹, invOf_mul_self := ⋯, mul_invOf_self := ⋯ }\nthis : Invertible (diagonal v) := diagonalInvertible v\nhinv : ⅟(diagonal v) = diagonal fun i => (x - t i)⁻¹\ni : Fin (n + 1)\nj : Fin 1\n⊢ -fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))\n        (of fun i j => if i = j then t i else 0) (Sum.inr i) (Sum.inl j) =\n    fromBlocks (fun x_1 x_2 => x - a / (↑n + 2)) (fun x i => -√(eta i)) (fun i x => -√(eta i))\n      (of fun i j => if i = j then x - t i else 0) (Sum.inr i) (Sum.inl j)\n\ncase inr.inr\nn : ℕ\na : ℝ\nt eta : Fin (n + 1) → ℝ\nheta : ∀ (i : Fin (n + 1)), 0 ≤ eta i\nx : ℝ\nhx : ∀ (i : Fin (n + 1)), x ≠ t i\nv : Fin (n + 1) → ℝ := fun i => x - t i\nthis✝ : Invertible v := { invOf := fun i => (x - t i)⁻¹, invOf_mul_self := ⋯, mul_invOf_self := ⋯ }\nthis : Invertible (diagonal v) := diagonalInvertible v\nhinv : ⅟(diagonal v) = diagonal fun i => (x - t i)⁻¹\ni j : Fin (n + 1)\n⊢ (if i = j then x else 0) -\n      fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))\n        (of fun i j => if i = j then t i else 0) (Sum.inr i) (Sum.inr j) =\n    fromBlocks (fun x_1 x_2 => x - a / (↑n + 2)) (fun x i => -√(eta i)) (fun i x => -√(eta i))\n      (of fun i j => if i = j then x - t i else 0) (Sum.inr i) (Sum.inr j)",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:40:10: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern\n  (fromBlocks ?A ?B ?C ?D).det\nin the target expression\n  (fromBlocks (fun x_1 x_2 => x - a / ↑(n + 2)) (fun x i => -√(eta i)) (fun i x => -√(eta i)) (diagonal v)).det =\n    (∏ i, (x - t i)) * (x - a / ↑(n + 2) - ∑ i, eta i / (x - t i))\n\nn : ℕ\na : ℝ\nt eta : Fin (n + 1) → ℝ\nheta : ∀ (i : Fin (n + 1)), 0 ≤ eta i\nx : ℝ\nhx : ∀ (i : Fin (n + 1)), x ≠ t i\nv : Fin (n + 1) → ℝ := fun i => x - t i\nthis✝ : Invertible v := { invOf := fun i => (x - t i)⁻¹, invOf_mul_self := ⋯, mul_invOf_self := ⋯ }\nthis : Invertible (diagonal v) := diagonalInvertible v\nhinv : ⅟(diagonal v) = diagonal fun i => (x - t i)⁻¹\nhm :\n  (scalar (Fin 1 ⊕ Fin (n + 1))) x - arrow n a t eta =\n    fromBlocks (fun x_1 x_2 => x - a / ↑(n + 2)) (fun x i => -√(eta i)) (fun i x => -√(eta i)) (diagonal v)\n⊢ (fromBlocks (fun x_1 x_2 => x - a / ↑(n + 2)) (fun x i => -√(eta i)) (fun i x => -√(eta i)) (diagonal v)).det =\n    (∏ i, (x - t i)) * (x - a / ↑(n + 2) - ∑ i, eta i / (x - t i))\n\nNote: The target expression is not type-correct under the `implicit` transparency level, which may have triggered the failure. This is usually caused by unfolding of semireducible definitions in prior tactic steps. Use `set_option linter.tacticCheckInstances true` to investigate the source of the issue.\nFull error:\n  Application type mismatch: The argument\n    fun x_1 x_2 => x - a / ↑(n + 2)\n  has type\n    Fin 1 → Fin 1 → ℝ\n  but is expected to have type\n    Matrix (Fin 1) (Fin 1) ℝ\n  in the application\n    fromBlocks fun x_1 x_2 => x - a / ↑(n + 2)",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:63:26: error: Application type mismatch: The argument\n  Set.Infinite.diff Set.infinite_univ (Set.finite_range t)\nhas type\n  (Set.univ \\ Set.range t).Infinite\nbut is expected to have type\n  ?m.123 ⊆\n    {x |\n      eval x (arrow n a t fun i => -↑(n + 2) * eval (t i) q / eval (t i) (derivative (derivative q))).charpoly =\n        eval x q}\nin the application\n  Set.Infinite.mono (Set.Infinite.diff Set.infinite_univ (Set.finite_range t))",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:81:2: error: `simp` made no progress"
+      ],
+      "unclosed_goals_verbatim": [
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:18:37: error: unsolved goals\ncase inl.inl\nn : ℕ\na : ℝ\nt eta : Fin (n + 1) → ℝ\ni j : Fin 1\n⊢ fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))\n      (of fun i j => if i = j then t i else 0) (Sum.inl i) (Sum.inl j) =\n    fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))\n      (of fun i j => if i = j then t i else 0) (Sum.inl j) (Sum.inl i)\n\ncase inl.inr\nn : ℕ\na : ℝ\nt eta : Fin (n + 1) → ℝ\ni : Fin 1\nj : Fin (n + 1)\n⊢ fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))\n      (of fun i j => if i = j then t i else 0) (Sum.inl i) (Sum.inr j) =\n    fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))\n      (of fun i j => if i = j then t i else 0) (Sum.inr j) (Sum.inl i)\n\ncase inr.inl\nn : ℕ\na : ℝ\nt eta : Fin (n + 1) → ℝ\ni : Fin (n + 1)\nj : Fin 1\n⊢ fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))\n      (of fun i j => if i = j then t i else 0) (Sum.inl j) (Sum.inr i) =\n    fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))\n      (of fun i j => if i = j then t i else 0) (Sum.inr i) (Sum.inl j)\n\ncase inr.inr\nn : ℕ\na : ℝ\nt eta : Fin (n + 1) → ℝ\ni j : Fin (n + 1)\n⊢ fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))\n      (of fun i j => if i = j then t i else 0) (Sum.inr i) (Sum.inr j) =\n    fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))\n      (of fun i j => if i = j then t i else 0) (Sum.inr j) (Sum.inr i)",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:38:66: error: unsolved goals\ncase inl.inl\nn : ℕ\na : ℝ\nt eta : Fin (n + 1) → ℝ\nheta : ∀ (i : Fin (n + 1)), 0 ≤ eta i\nx : ℝ\nhx : ∀ (i : Fin (n + 1)), x ≠ t i\nv : Fin (n + 1) → ℝ := fun i => x - t i\nthis✝ : Invertible v := { invOf := fun i => (x - t i)⁻¹, invOf_mul_self := ⋯, mul_invOf_self := ⋯ }\nthis : Invertible (diagonal v) := diagonalInvertible v\nhinv : ⅟(diagonal v) = diagonal fun i => (x - t i)⁻¹\ni j : Fin 1\n⊢ x -\n      fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))\n        (of fun i j => if i = j then t i else 0) (Sum.inl j) (Sum.inl j) =\n    fromBlocks (fun x_1 x_2 => x - a / (↑n + 2)) (fun x i => -√(eta i)) (fun i x => -√(eta i))\n      (of fun i j => if i = j then x - t i else 0) (Sum.inl j) (Sum.inl j)\n\ncase inl.inr\nn : ℕ\na : ℝ\nt eta : Fin (n + 1) → ℝ\nheta : ∀ (i : Fin (n + 1)), 0 ≤ eta i\nx : ℝ\nhx : ∀ (i : Fin (n + 1)), x ≠ t i\nv : Fin (n + 1) → ℝ := fun i => x - t i\nthis✝ : Invertible v := { invOf := fun i => (x - t i)⁻¹, invOf_mul_self := ⋯, mul_invOf_self := ⋯ }\nthis : Invertible (diagonal v) := diagonalInvertible v\nhinv : ⅟(diagonal v) = diagonal fun i => (x - t i)⁻¹\ni : Fin 1\nj : Fin (n + 1)\n⊢ -fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))\n        (of fun i j => if i = j then t i else 0) (Sum.inl i) (Sum.inr j) =\n    fromBlocks (fun x_1 x_2 => x - a / (↑n + 2)) (fun x i => -√(eta i)) (fun i x => -√(eta i))\n      (of fun i j => if i = j then x - t i else 0) (Sum.inl i) (Sum.inr j)\n\ncase inr.inl\nn : ℕ\na : ℝ\nt eta : Fin (n + 1) → ℝ\nheta : ∀ (i : Fin (n + 1)), 0 ≤ eta i\nx : ℝ\nhx : ∀ (i : Fin (n + 1)), x ≠ t i\nv : Fin (n + 1) → ℝ := fun i => x - t i\nthis✝ : Invertible v := { invOf := fun i => (x - t i)⁻¹, invOf_mul_self := ⋯, mul_invOf_self := ⋯ }\nthis : Invertible (diagonal v) := diagonalInvertible v\nhinv : ⅟(diagonal v) = diagonal fun i => (x - t i)⁻¹\ni : Fin (n + 1)\nj : Fin 1\n⊢ -fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))\n        (of fun i j => if i = j then t i else 0) (Sum.inr i) (Sum.inl j) =\n    fromBlocks (fun x_1 x_2 => x - a / (↑n + 2)) (fun x i => -√(eta i)) (fun i x => -√(eta i))\n      (of fun i j => if i = j then x - t i else 0) (Sum.inr i) (Sum.inl j)\n\ncase inr.inr\nn : ℕ\na : ℝ\nt eta : Fin (n + 1) → ℝ\nheta : ∀ (i : Fin (n + 1)), 0 ≤ eta i\nx : ℝ\nhx : ∀ (i : Fin (n + 1)), x ≠ t i\nv : Fin (n + 1) → ℝ := fun i => x - t i\nthis✝ : Invertible v := { invOf := fun i => (x - t i)⁻¹, invOf_mul_self := ⋯, mul_invOf_self := ⋯ }\nthis : Invertible (diagonal v) := diagonalInvertible v\nhinv : ⅟(diagonal v) = diagonal fun i => (x - t i)⁻¹\ni j : Fin (n + 1)\n⊢ (if i = j then x else 0) -\n      fromBlocks (fun x x_1 => a / (↑n + 2)) (fun x i => √(eta i)) (fun i x => √(eta i))\n        (of fun i j => if i = j then t i else 0) (Sum.inr i) (Sum.inr j) =\n    fromBlocks (fun x_1 x_2 => x - a / (↑n + 2)) (fun x i => -√(eta i)) (fun i x => -√(eta i))\n      (of fun i j => if i = j then x - t i else 0) (Sum.inr i) (Sum.inr j)",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:40:10: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern\n  (fromBlocks ?A ?B ?C ?D).det\nin the target expression\n  (fromBlocks (fun x_1 x_2 => x - a / ↑(n + 2)) (fun x i => -√(eta i)) (fun i x => -√(eta i)) (diagonal v)).det =\n    (∏ i, (x - t i)) * (x - a / ↑(n + 2) - ∑ i, eta i / (x - t i))\n\nn : ℕ\na : ℝ\nt eta : Fin (n + 1) → ℝ\nheta : ∀ (i : Fin (n + 1)), 0 ≤ eta i\nx : ℝ\nhx : ∀ (i : Fin (n + 1)), x ≠ t i\nv : Fin (n + 1) → ℝ := fun i => x - t i\nthis✝ : Invertible v := { invOf := fun i => (x - t i)⁻¹, invOf_mul_self := ⋯, mul_invOf_self := ⋯ }\nthis : Invertible (diagonal v) := diagonalInvertible v\nhinv : ⅟(diagonal v) = diagonal fun i => (x - t i)⁻¹\nhm :\n  (scalar (Fin 1 ⊕ Fin (n + 1))) x - arrow n a t eta =\n    fromBlocks (fun x_1 x_2 => x - a / ↑(n + 2)) (fun x i => -√(eta i)) (fun i x => -√(eta i)) (diagonal v)\n⊢ (fromBlocks (fun x_1 x_2 => x - a / ↑(n + 2)) (fun x i => -√(eta i)) (fun i x => -√(eta i)) (diagonal v)).det =\n    (∏ i, (x - t i)) * (x - a / ↑(n + 2) - ∑ i, eta i / (x - t i))\n\nNote: The target expression is not type-correct under the `implicit` transparency level, which may have triggered the failure. This is usually caused by unfolding of semireducible definitions in prior tactic steps. Use `set_option linter.tacticCheckInstances true` to investigate the source of the issue.\nFull error:\n  Application type mismatch: The argument\n    fun x_1 x_2 => x - a / ↑(n + 2)\n  has type\n    Fin 1 → Fin 1 → ℝ\n  but is expected to have type\n    Matrix (Fin 1) (Fin 1) ℝ\n  in the application\n    fromBlocks fun x_1 x_2 => x - a / ↑(n + 2)"
+      ],
+      "nonzero_assessment": "Matrix.of and block transparency, index typing, infinite-set argument direction; API failures only."
+    },
+    {
+      "run": "b3-02",
+      "command": [
+        "make",
+        "-f",
+        "Makefile",
+        "-f",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/probe.mk",
+        "lean",
+        "PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean"
+      ],
+      "exit": 2,
+      "seconds": 80.67269204200001,
+      "raw_log": "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/b3-02.log",
+      "archived_log": "docs/reports/digestion/qd-family-triage-0909/attempt-2/b3-02.log",
+      "source_snapshot": "docs/reports/digestion/qd-family-triage-0909/attempt-2/b3-02.lean",
+      "diagnostics_verbatim": [
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:18:37: error: unsolved goals\ncase inr.inr\nn : ℕ\na : ℝ\nt eta : Fin (n + 1) → ℝ\ni j : Fin (n + 1)\n⊢ (if i = j then t i else 0) = if i = j then t j else 0",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:46:13: error: Ambiguous term\n  sub_apply\nPossible interpretations:\n  _root_.sub_apply : ∀ (f g : ?m.361) (x : ?m.362), (f - g) x = f x - g x\n  \n  Matrix.sub_apply : ∀ (A B : Matrix ?m.361 ?m.362 ?m.363) (i : ?m.361) (j : ?m.362), (A - B) i j = A i j - B i j",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:46:2: error: `simp` made no progress",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:72:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern\n  eval x (arrow n a t fun i => -↑(n + 2) * eval (t i) q / eval (t i) (derivative (derivative q))).charpoly\nin the target expression\n  x ∈\n    {x |\n      eval x (arrow n a t fun i => -↑(n + 2) * eval (t i) q / eval (t i) (derivative (derivative q))).charpoly =\n        eval x q}\n\nn : ℕ\nq : ℝ[X]\na : ℝ\nt : Fin (n + 1) → ℝ\nht : Function.Injective t\nhdeg : q.natDegree ≤ n + 2\nhmonic : q.coeff (n + 2) = 1\nhlinear : q.coeff (n + 1) = -a\nhcrit : ∀ (i : Fin (n + 1)), eval (t i) (derivative q) = 0\nheta : ∀ (i : Fin (n + 1)), 0 ≤ -↑(n + 2) * eval (t i) q / eval (t i) (derivative (derivative q))\nx : ℝ\nhx : x ∈ Set.univ \\ Set.range t\nhxt : ∀ (i : Fin (n + 1)), x ≠ t i\n⊢ x ∈\n    {x |\n      eval x (arrow n a t fun i => -↑(n + 2) * eval (t i) q / eval (t i) (derivative (derivative q))).charpoly =\n        eval x q}",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:86:2: error: unsolved goals\ncase neg\nn : ℕ\nq : ℝ[X]\nx : ℝ\nhsplit : q.Splits\nhcrit : eval x (derivative q) = 0\nhsecond : eval x (derivative (derivative q)) ≠ 0\nhx : ¬eval x q = 0\nhlog : 0 = (Multiset.map (fun z => 1 / (x - z)) q.roots).sum\n⊢ 0 ≤ -↑(n + 2) * eval x q / eval x (derivative (derivative q))\ncase neg\nn : ℕ\nq : ℝ[X]\nx : ℝ\nhsplit : q.Splits\nhcrit : eval x (derivative q) = 0\nhsecond : eval x (derivative (derivative q)) ≠ 0\nhx : ¬eval x q = 0\nhlog : 0 = (Multiset.map (fun z => 1 / (x - z)) q.roots).sum\n⊢ 0 ≤ -↑(n + 2) * eval x q / eval x (derivative (derivative q))"
+      ],
+      "unclosed_goals_verbatim": [
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:18:37: error: unsolved goals\ncase inr.inr\nn : ℕ\na : ℝ\nt eta : Fin (n + 1) → ℝ\ni j : Fin (n + 1)\n⊢ (if i = j then t i else 0) = if i = j then t j else 0",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:72:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern\n  eval x (arrow n a t fun i => -↑(n + 2) * eval (t i) q / eval (t i) (derivative (derivative q))).charpoly\nin the target expression\n  x ∈\n    {x |\n      eval x (arrow n a t fun i => -↑(n + 2) * eval (t i) q / eval (t i) (derivative (derivative q))).charpoly =\n        eval x q}\n\nn : ℕ\nq : ℝ[X]\na : ℝ\nt : Fin (n + 1) → ℝ\nht : Function.Injective t\nhdeg : q.natDegree ≤ n + 2\nhmonic : q.coeff (n + 2) = 1\nhlinear : q.coeff (n + 1) = -a\nhcrit : ∀ (i : Fin (n + 1)), eval (t i) (derivative q) = 0\nheta : ∀ (i : Fin (n + 1)), 0 ≤ -↑(n + 2) * eval (t i) q / eval (t i) (derivative (derivative q))\nx : ℝ\nhx : x ∈ Set.univ \\ Set.range t\nhxt : ∀ (i : Fin (n + 1)), x ≠ t i\n⊢ x ∈\n    {x |\n      eval x (arrow n a t fun i => -↑(n + 2) * eval (t i) q / eval (t i) (derivative (derivative q))).charpoly =\n        eval x q}",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Probe.lean:86:2: error: unsolved goals\ncase neg\nn : ℕ\nq : ℝ[X]\nx : ℝ\nhsplit : q.Splits\nhcrit : eval x (derivative q) = 0\nhsecond : eval x (derivative (derivative q)) ≠ 0\nhx : ¬eval x q = 0\nhlog : 0 = (Multiset.map (fun z => 1 / (x - z)) q.roots).sum\n⊢ 0 ≤ -↑(n + 2) * eval x q / eval x (derivative (derivative q))\ncase neg\nn : ℕ\nq : ℝ[X]\nx : ℝ\nhsplit : q.Splits\nhcrit : eval x (derivative q) = 0\nhsecond : eval x (derivative (derivative q)) ≠ 0\nhx : ¬eval x q = 0\nhlog : 0 = (Multiset.map (fun z => 1 / (x - z)) q.roots).sum\n⊢ 0 ≤ -↑(n + 2) * eval x q / eval x (derivative (derivative q))"
+      ],
+      "nonzero_assessment": "Diagonal equality, ambiguous names, set membership normalization, and an unclosed residue sign obligation; no mathematical no verdict."
+    },
+    {
+      "run": "descent-01",
+      "command": [
+        "make",
+        "-f",
+        "Makefile",
+        "-f",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/probe.mk",
+        "lean",
+        "PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/DescentProbe.lean"
+      ],
+      "exit": 2,
+      "seconds": 82.817306,
+      "raw_log": "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/descent-01.log",
+      "archived_log": "docs/reports/digestion/qd-family-triage-0909/attempt-2/descent-01.log",
+      "source_snapshot": "docs/reports/digestion/qd-family-triage-0909/attempt-2/descent-01.lean",
+      "diagnostics_verbatim": [
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/DescentProbe.lean:195:33: error(lean.unknownIdentifier): Unknown identifier `revAt_self`",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/DescentProbe.lean:196:8: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern\n  (sourceJensenPolynomial d).coeff 0\nin the target expression\n  (sourceJensenPolynomial d).coeff ((revAt d) d) * (-1) ^ (revAt d) d = 1\n\nd : ℕ\nhd : 2 ≤ d\nh0 : sourceThetaCoefficient 0 = 1\nhp : RealRoots (sourceJensenPolynomial d)\nhpdeg : ∀ (k : ℕ), 1 ≤ k → (sourceJensenPolynomial k).natDegree ≤ k\nhq : RealRoots (Q (sourceJensenPolynomial d) d)\n⊢ (sourceJensenPolynomial d).coeff ((revAt d) d) * (-1) ^ (revAt d) d = 1",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/DescentProbe.lean:222:2: error: Type mismatch: After simplification, term\n  source_real_descent (n + 1 + 1) (Decidable.byContradiction fun a => source_real_antitone._proof_1_1 n a) h0\n has type\n  RealRoots (sourceJensenPolynomial (n + 1 + 1)) → RealRoots (sourceJensenPolynomial (n + 1))\nbut is expected to have type\n  RealRoots (sourceJensenPolynomial (n + 1 + 1)) ≤ RealRoots (sourceJensenPolynomial (n + 1))",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/DescentProbe.lean:238:37: error: Ambiguous term\n  not_imp\nPossible interpretations:\n  _root_.not_imp : ¬(?m.113 → ?m.114) ↔ ?m.113 ∧ ¬?m.114\n  \n  Classical.not_imp : ¬(?m.113 → ?m.114) ↔ ?m.113 ∧ ¬?m.114",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/DescentProbe.lean:238:2: error: Type mismatch: After simplification, term\n  hh\n has type\n  ∃ x, ∃ (_ : eval x (sourceJensenPolynomial d) = 0), ¬x.im = 0\nbut is expected to have type\n  ∃ z, eval z (sourceJensenPolynomial d) = 0 ∧ z.im ≠ 0",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/DescentProbe.lean:256:4: error: Type mismatch: After simplification, term\n  ht hh\n has type\n  RealRoots (sourceJensenPolynomial (d₀ - 1 + 1))\nbut is expected to have type\n  RealRoots (sourceJensenPolynomial (Nat.find hex))",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/DescentProbe.lean:294:11: error(lean.unknownIdentifier): Unknown identifier `div_neg_iff_of_pos_right`",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/DescentProbe.lean:279:80: error: unsolved goals\ncase neg\np : ℂ[X]\nd : ℕ\nhp : p.natDegree ≤ d\nhr : NegativeRoots p\nz : ℂ\nhz : z ^ d * eval (-1 / z) p = 0\nhz0 : ¬z = 0\nhw : (-1 / z).im = 0 ∧ (-1 / z).re < 0\nhim : z.im = 0\nhre : z.re ≠ 0\nhneg : -z.re / Complex.normSq z < 0\nhn : 0 < Complex.normSq z\n⊢ 0 ≤ z.re",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/DescentProbe.lean:316:11: error(lean.unknownIdentifier): Unknown identifier `div_pos_iff_of_pos`",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/DescentProbe.lean:299:57: error: unsolved goals\np : ℂ[X]\nd : ℕ\nhp : p.natDegree ≤ d\nhzero : eval 0 p ≠ 0\nhr : NonnegativeRoots (Q p d)\nz : ℂ\nhz : eval z p = 0\nhz0 : z ≠ 0\nhw0 : -1 / z ≠ 0\nhroot : eval (-1 / z) (Q p d) = 0\nhw : (-1 / z).im = 0 ∧ 0 ≤ (-1 / z).re\nhim : z.im = 0\nhneq : (-1 / z).re ≠ 0\nhpos : 0 < (-1 / z).re\nhn : 0 < Complex.normSq z\nthis : 0 < -z.re / Complex.normSq z\n⊢ z.re < 0",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/DescentProbe.lean:328:33: error(lean.unknownIdentifier): Unknown identifier `revAt_self`",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/DescentProbe.lean:329:8: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern\n  (sourceJensenPolynomial d).coeff 0\nin the target expression\n  (sourceJensenPolynomial d).coeff ((revAt d) d) * (-1) ^ (revAt d) d = 1\n\nd : ℕ\nhd : 2 ≤ d\nh0 : sourceThetaCoefficient 0 = 1\nhp : NegativeRoots (sourceJensenPolynomial d)\nhpdeg : ∀ (k : ℕ), 1 ≤ k → (sourceJensenPolynomial k).natDegree ≤ k\nhq : NonnegativeRoots (Q (sourceJensenPolynomial d) d)\n⊢ (sourceJensenPolynomial d).coeff ((revAt d) d) * (-1) ^ (revAt d) d = 1",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/DescentProbe.lean:351:4: error: failed to prove strict positivity, but it would be possible to prove nonnegativity if desired"
+      ],
+      "unclosed_goals_verbatim": [
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/DescentProbe.lean:196:8: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern\n  (sourceJensenPolynomial d).coeff 0\nin the target expression\n  (sourceJensenPolynomial d).coeff ((revAt d) d) * (-1) ^ (revAt d) d = 1\n\nd : ℕ\nhd : 2 ≤ d\nh0 : sourceThetaCoefficient 0 = 1\nhp : RealRoots (sourceJensenPolynomial d)\nhpdeg : ∀ (k : ℕ), 1 ≤ k → (sourceJensenPolynomial k).natDegree ≤ k\nhq : RealRoots (Q (sourceJensenPolynomial d) d)\n⊢ (sourceJensenPolynomial d).coeff ((revAt d) d) * (-1) ^ (revAt d) d = 1",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/DescentProbe.lean:279:80: error: unsolved goals\ncase neg\np : ℂ[X]\nd : ℕ\nhp : p.natDegree ≤ d\nhr : NegativeRoots p\nz : ℂ\nhz : z ^ d * eval (-1 / z) p = 0\nhz0 : ¬z = 0\nhw : (-1 / z).im = 0 ∧ (-1 / z).re < 0\nhim : z.im = 0\nhre : z.re ≠ 0\nhneg : -z.re / Complex.normSq z < 0\nhn : 0 < Complex.normSq z\n⊢ 0 ≤ z.re",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/DescentProbe.lean:299:57: error: unsolved goals\np : ℂ[X]\nd : ℕ\nhp : p.natDegree ≤ d\nhzero : eval 0 p ≠ 0\nhr : NonnegativeRoots (Q p d)\nz : ℂ\nhz : eval z p = 0\nhz0 : z ≠ 0\nhw0 : -1 / z ≠ 0\nhroot : eval (-1 / z) (Q p d) = 0\nhw : (-1 / z).im = 0 ∧ 0 ≤ (-1 / z).re\nhim : z.im = 0\nhneq : (-1 / z).re ≠ 0\nhpos : 0 < (-1 / z).re\nhn : 0 < Complex.normSq z\nthis : 0 < -z.re / Complex.normSq z\n⊢ z.re < 0",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/DescentProbe.lean:329:8: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern\n  (sourceJensenPolynomial d).coeff 0\nin the target expression\n  (sourceJensenPolynomial d).coeff ((revAt d) d) * (-1) ^ (revAt d) d = 1\n\nd : ℕ\nhd : 2 ≤ d\nh0 : sourceThetaCoefficient 0 = 1\nhp : NegativeRoots (sourceJensenPolynomial d)\nhpdeg : ∀ (k : ℕ), 1 ≤ k → (sourceJensenPolynomial k).natDegree ≤ k\nhq : NonnegativeRoots (Q (sourceJensenPolynomial d) d)\n⊢ (sourceJensenPolynomial d).coeff ((revAt d) d) * (-1) ^ (revAt d) d = 1"
+      ],
+      "nonzero_assessment": "API names, Prop order versus implication, Nat.find alias, reciprocal signs and positive casts; subsequently resolved."
+    },
+    {
+      "run": "b3-03",
+      "command": [
+        "make",
+        "-f",
+        "Makefile",
+        "-f",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/probe.mk",
+        "lean",
+        "PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Next.lean"
+      ],
+      "exit": 2,
+      "seconds": 28.406680042,
+      "raw_log": "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/b3-03.log",
+      "archived_log": "docs/reports/digestion/qd-family-triage-0909/attempt-2/b3-03.log",
+      "source_snapshot": "docs/reports/digestion/qd-family-triage-0909/attempt-2/b3-03.lean",
+      "diagnostics_verbatim": [
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Next.lean:55:2: error: `dsimp` made no progress",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Next.lean:160:4: error: `simp` made no progress",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Next.lean:155:72: error: unsolved goals\ncase e'_4\np q : ℝ[X]\nx : ℝ\nhp : 0 ≤ eval x (derivative p) ^ 2 - eval x p * eval x (derivative (derivative p))\nhq : 0 ≤ eval x (derivative q) ^ 2 - eval x q * eval x (derivative (derivative q))\nh :\n  0 ≤\n    eval x q ^ 2 * (eval x (derivative p) ^ 2 - eval x p * eval x (derivative (derivative p))) +\n      eval x p ^ 2 * (eval x (derivative q) ^ 2 - eval x q * eval x (derivative (derivative q)))\n⊢ (eval x (derivative p) * eval x q + eval x p * eval x (derivative q)) ^ 2 -\n      eval x p * eval x q *\n        (eval x (derivative (derivative p)) * eval x q + eval x (derivative p) * eval x (derivative q) +\n          (eval x (derivative p) * eval x (derivative q) + eval x p * eval x (derivative (derivative q)))) =\n    eval x q ^ 2 * (eval x (derivative p) ^ 2 - eval x p * eval x (derivative (derivative p))) +\n      eval x p ^ 2 * (eval x (derivative q) ^ 2 - eval x q * eval x (derivative (derivative q)))",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Next.lean:201:59: error: No goals to be solved"
+      ],
+      "unclosed_goals_verbatim": [
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Next.lean:155:72: error: unsolved goals\ncase e'_4\np q : ℝ[X]\nx : ℝ\nhp : 0 ≤ eval x (derivative p) ^ 2 - eval x p * eval x (derivative (derivative p))\nhq : 0 ≤ eval x (derivative q) ^ 2 - eval x q * eval x (derivative (derivative q))\nh :\n  0 ≤\n    eval x q ^ 2 * (eval x (derivative p) ^ 2 - eval x p * eval x (derivative (derivative p))) +\n      eval x p ^ 2 * (eval x (derivative q) ^ 2 - eval x q * eval x (derivative (derivative q)))\n⊢ (eval x (derivative p) * eval x q + eval x p * eval x (derivative q)) ^ 2 -\n      eval x p * eval x q *\n        (eval x (derivative (derivative p)) * eval x q + eval x (derivative p) * eval x (derivative q) +\n          (eval x (derivative p) * eval x (derivative q) + eval x p * eval x (derivative (derivative q)))) =\n    eval x q ^ 2 * (eval x (derivative p) ^ 2 - eval x p * eval x (derivative (derivative p))) +\n      eval x p ^ 2 * (eval x (derivative q) ^ 2 - eval x q * eval x (derivative (derivative q)))"
+      ],
+      "nonzero_assessment": "Empty dsimp/simp, a polynomial product identity and an extra tactic after goal closure; normalization only."
+    },
+    {
+      "run": "descent-02",
+      "command": [
+        "make",
+        "-f",
+        "Makefile",
+        "-f",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/probe.mk",
+        "lean",
+        "PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/DescentProbe.lean"
+      ],
+      "exit": 2,
+      "seconds": 47.390419458,
+      "raw_log": "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/descent-02.log",
+      "archived_log": "docs/reports/digestion/qd-family-triage-0909/attempt-2/descent-02.log",
+      "source_snapshot": "docs/reports/digestion/qd-family-triage-0909/attempt-2/descent-02.lean",
+      "diagnostics_verbatim": [
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/DescentProbe.lean:239:2: error: Type mismatch: After simplification, term\n  hh\n has type\n  ∃ x, ∃ (_ : eval x (sourceJensenPolynomial d) = 0), ¬x.im = 0\nbut is expected to have type\n  ∃ z, eval z (sourceJensenPolynomial d) = 0 ∧ z.im ≠ 0"
+      ],
+      "unclosed_goals_verbatim": [],
+      "nonzero_assessment": "Existential-proof binder versus conjunction normalization; subsequently resolved by push_neg."
+    },
+    {
+      "run": "b3-04",
+      "command": [
+        "make",
+        "-f",
+        "Makefile",
+        "-f",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/probe.mk",
+        "lean",
+        "PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Next.lean"
+      ],
+      "exit": 2,
+      "seconds": 25.687206042,
+      "raw_log": "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/b3-04.log",
+      "archived_log": "docs/reports/digestion/qd-family-triage-0909/attempt-2/b3-04.log",
+      "source_snapshot": "docs/reports/digestion/qd-family-triage-0909/attempt-2/b3-04.lean",
+      "diagnostics_verbatim": [
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Next.lean:56:2: error: linarith failed to find a contradiction\ncase e_a.e_a.h1\nn : ℕ\na : ℝ\nt eta : Fin (n + 1) → ℝ\nheta : ∀ (i : Fin (n + 1)), 0 ≤ eta i\nx : ℝ\nhx : ∀ (i : Fin (n + 1)), x ≠ t i\nv : Fin (n + 1) → ℝ := fun i => x - t i\nthis✝ : Invertible v := { invOf := fun i => (x - t i)⁻¹, invOf_mul_self := ⋯, mul_invOf_self := ⋯ }\nthis : Invertible (diagonal v) := diagonalInvertible v\nhinv : ⅟(diagonal v) = diagonal fun i => (x - t i)⁻¹\nhm :\n  (scalar (Fin 1 ⊕ Fin (n + 1))) x - arrow n a t eta =\n    fromBlocks (of fun x_1 x_2 => x - a / ↑(n + 2)) (of fun x i => -√(eta i)) (of fun i x => -√(eta i)) (diagonal v)\ni : Fin (n + 1)\na✝¹ : i ∈ Finset.univ\nhs : √(eta i) ^ 2 = eta i\na✝ : -√(eta i) * (x - t i)⁻¹ * -√(eta i) < eta i * (x - t i)⁻¹\n⊢ False\nfailed",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Next.lean:159:77: error: `ring_nf` made no progress on the goal"
+      ],
+      "unclosed_goals_verbatim": [
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Next.lean:56:2: error: linarith failed to find a contradiction\ncase e_a.e_a.h1\nn : ℕ\na : ℝ\nt eta : Fin (n + 1) → ℝ\nheta : ∀ (i : Fin (n + 1)), 0 ≤ eta i\nx : ℝ\nhx : ∀ (i : Fin (n + 1)), x ≠ t i\nv : Fin (n + 1) → ℝ := fun i => x - t i\nthis✝ : Invertible v := { invOf := fun i => (x - t i)⁻¹, invOf_mul_self := ⋯, mul_invOf_self := ⋯ }\nthis : Invertible (diagonal v) := diagonalInvertible v\nhinv : ⅟(diagonal v) = diagonal fun i => (x - t i)⁻¹\nhm :\n  (scalar (Fin 1 ⊕ Fin (n + 1))) x - arrow n a t eta =\n    fromBlocks (of fun x_1 x_2 => x - a / ↑(n + 2)) (of fun x i => -√(eta i)) (of fun i x => -√(eta i)) (diagonal v)\ni : Fin (n + 1)\na✝¹ : i ∈ Finset.univ\nhs : √(eta i) ^ 2 = eta i\na✝ : -√(eta i) * (x - t i)⁻¹ * -√(eta i) < eta i * (x - t i)⁻¹\n⊢ False\nfailed"
+      ],
+      "nonzero_assessment": "Multiplication of the sqrt-square identity by an arbitrary inverse requires ring rearrangement; empty ring tactic; normalization only."
+    },
+    {
+      "run": "descent-03",
+      "command": [
+        "make",
+        "-f",
+        "Makefile",
+        "-f",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/probe.mk",
+        "lean",
+        "PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/DescentProbe.lean"
+      ],
+      "exit": 0,
+      "seconds": 55.297342209,
+      "raw_log": "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/descent-03.log",
+      "archived_log": "docs/reports/digestion/qd-family-triage-0909/attempt-2/descent-03.log.gz.b64",
+      "source_snapshot": "docs/reports/digestion/qd-family-triage-0909/attempt-2/descent-03.lean",
+      "diagnostics_verbatim": [],
+      "unclosed_goals_verbatim": [],
+      "target_axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "run": "b3-05",
+      "command": [
+        "make",
+        "-f",
+        "Makefile",
+        "-f",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/probe.mk",
+        "lean",
+        "PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Next.lean"
+      ],
+      "exit": 0,
+      "seconds": 38.597842542,
+      "raw_log": "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/b3-05.log",
+      "archived_log": "docs/reports/digestion/qd-family-triage-0909/attempt-2/b3-05.log.gz.b64",
+      "source_snapshot": "docs/reports/digestion/qd-family-triage-0909/attempt-2/b3-05.lean",
+      "diagnostics_verbatim": [],
+      "unclosed_goals_verbatim": [],
+      "target_axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "run": "b3-06",
+      "command": [
+        "make",
+        "-f",
+        "Makefile",
+        "-f",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/probe.mk",
+        "lean",
+        "PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean"
+      ],
+      "exit": 2,
+      "seconds": 22.045980792,
+      "raw_log": "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/b3-06.log",
+      "archived_log": "docs/reports/digestion/qd-family-triage-0909/attempt-2/b3-06.log",
+      "source_snapshot": "docs/reports/digestion/qd-family-triage-0909/attempt-2/b3-06.lean",
+      "diagnostics_verbatim": [
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:188:54: error: `simp` made no progress",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:197:45: error: not a positivity goal",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:200:16: error(lean.unknownIdentifier): Unknown identifier `div_nonpos_iff_of_pos`",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:166:79: error: unsolved goals\ncase neg\np : ℝ[X]\nhp : p.Splits\nx : ℝ\nhx : ¬eval x p = 0\nhp0 : p ≠ 0\nhsum :\n  ∀ (y : ℝ),\n    (Multiset.map (fun z => 1 / (y - z)) p.roots).sum = ∑ z ∈ p.roots.toFinset, ↑(Multiset.count z p.roots) / (y - z)\nhf :\n  HasDerivAt (fun y => eval y (derivative p) / eval y p)\n    ((eval x (derivative (derivative p)) * eval x p - eval x (derivative p) * eval x (derivative p)) / eval x p ^ 2) x\nhg :\n  HasDerivAt (fun y => ∑ z ∈ p.roots.toFinset, ↑(Multiset.count z p.roots) / (y - z))\n    (∑ z ∈ p.roots.toFinset, -↑(Multiset.count z p.roots) / (x - z) ^ 2) x\nheq :\n  (fun y => eval y (derivative p) / eval y p) =ᶠ[nhds x] fun y =>\n    ∑ z ∈ p.roots.toFinset, ↑(Multiset.count z p.roots) / (y - z)\nhi :\n  (eval x (derivative (derivative p)) * eval x p - eval x (derivative p) * eval x (derivative p)) / eval x p ^ 2 =\n    ∑ z ∈ p.roots.toFinset, -↑(Multiset.count z p.roots) / (x - z) ^ 2\nhn : ∑ z ∈ p.roots.toFinset, -↑(Multiset.count z p.roots) / (x - z) ^ 2 ≤ 0\nhfrac :\n  (eval x (derivative (derivative p)) * eval x p - eval x (derivative p) * eval x (derivative p)) / eval x p ^ 2 ≤ 0\n⊢ LaguerreAt p x",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:293:63: error: unsolved goals\na : ℕ → ℝ\nd k : ℕ\nhk : k ≤ d\n⊢ ∑ b ∈ Finset.range (d + 1), (C (↑(d.descFactorial b) / ↑d ^ b) * C (a b) * X ^ b).coeff k =\n    ↑(d.descFactorial k) / ↑d ^ k * a k",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:324:26: error(lean.unknownIdentifier): Unknown identifier `div_nonneg_of_nonpos_of_nonpos`",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:360:2: error: unsolved goals\ncase hlinear\na : ℕ → ℝ\nn : ℕ\nh0 : a 0 = 1\nha : ∀ (k : ℕ), 0 < a k\nt : Fin (n + 1) → ℝ\nht : Function.Injective t\nhcrit : ∀ (i : Fin (n + 1)), eval (t i) (derivative (Q a (n + 2))) = 0\nhd : ↑(n + 2) ≠ 0\n⊢ (↑n + 2) / (↑n + 2) * a 1 = a 1",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:369:59: error: unsolved goals\na : ℕ → ℝ\nd : ℕ\nhd : 1 ≤ d\n⊢ Polynomial.map (algebraMap ℝ ℂ) (∑ x ∈ Finset.range (d + 1), C (↑(d.descFactorial x) / ↑d ^ x) * C (a x) * X ^ x) =\n    ∑ x ∈ Finset.range (d + 1), C (↑(d.descFactorial x) / ↑d ^ x) * C ↑(a x) * X ^ x"
+      ],
+      "unclosed_goals_verbatim": [
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:166:79: error: unsolved goals\ncase neg\np : ℝ[X]\nhp : p.Splits\nx : ℝ\nhx : ¬eval x p = 0\nhp0 : p ≠ 0\nhsum :\n  ∀ (y : ℝ),\n    (Multiset.map (fun z => 1 / (y - z)) p.roots).sum = ∑ z ∈ p.roots.toFinset, ↑(Multiset.count z p.roots) / (y - z)\nhf :\n  HasDerivAt (fun y => eval y (derivative p) / eval y p)\n    ((eval x (derivative (derivative p)) * eval x p - eval x (derivative p) * eval x (derivative p)) / eval x p ^ 2) x\nhg :\n  HasDerivAt (fun y => ∑ z ∈ p.roots.toFinset, ↑(Multiset.count z p.roots) / (y - z))\n    (∑ z ∈ p.roots.toFinset, -↑(Multiset.count z p.roots) / (x - z) ^ 2) x\nheq :\n  (fun y => eval y (derivative p) / eval y p) =ᶠ[nhds x] fun y =>\n    ∑ z ∈ p.roots.toFinset, ↑(Multiset.count z p.roots) / (y - z)\nhi :\n  (eval x (derivative (derivative p)) * eval x p - eval x (derivative p) * eval x (derivative p)) / eval x p ^ 2 =\n    ∑ z ∈ p.roots.toFinset, -↑(Multiset.count z p.roots) / (x - z) ^ 2\nhn : ∑ z ∈ p.roots.toFinset, -↑(Multiset.count z p.roots) / (x - z) ^ 2 ≤ 0\nhfrac :\n  (eval x (derivative (derivative p)) * eval x p - eval x (derivative p) * eval x (derivative p)) / eval x p ^ 2 ≤ 0\n⊢ LaguerreAt p x",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:293:63: error: unsolved goals\na : ℕ → ℝ\nd k : ℕ\nhk : k ≤ d\n⊢ ∑ b ∈ Finset.range (d + 1), (C (↑(d.descFactorial b) / ↑d ^ b) * C (a b) * X ^ b).coeff k =\n    ↑(d.descFactorial k) / ↑d ^ k * a k",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:360:2: error: unsolved goals\ncase hlinear\na : ℕ → ℝ\nn : ℕ\nh0 : a 0 = 1\nha : ∀ (k : ℕ), 0 < a k\nt : Fin (n + 1) → ℝ\nht : Function.Injective t\nhcrit : ∀ (i : Fin (n + 1)), eval (t i) (derivative (Q a (n + 2))) = 0\nhd : ↑(n + 2) ≠ 0\n⊢ (↑n + 2) / (↑n + 2) * a 1 = a 1",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:369:59: error: unsolved goals\na : ℕ → ℝ\nd : ℕ\nhd : 1 ≤ d\n⊢ Polynomial.map (algebraMap ℝ ℂ) (∑ x ∈ Finset.range (d + 1), C (↑(d.descFactorial x) / ↑d ^ x) * C (a x) * X ^ x) =\n    ∑ x ∈ Finset.range (d + 1), C (↑(d.descFactorial x) / ↑d ^ x) * C ↑(a x) * X ^ x"
+      ],
+      "nonzero_assessment": "Division API names, derivative congruence normalization, finite coefficient sum and casts; all subsequently resolved."
+    },
+    {
+      "run": "descent-rh-01",
+      "command": [
+        "make",
+        "-f",
+        "Makefile",
+        "-f",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/probe.mk",
+        "lean",
+        "PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/DescentRH.lean"
+      ],
+      "exit": 2,
+      "seconds": 48.733654375,
+      "raw_log": "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/descent-rh-01.log",
+      "archived_log": "docs/reports/digestion/qd-family-triage-0909/attempt-2/descent-rh-01.log",
+      "source_snapshot": "docs/reports/digestion/qd-family-triage-0909/attempt-2/descent-rh-01.lean",
+      "diagnostics_verbatim": [
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/DescentRH.lean:374:63: error: unsolved goals\nh0 : sourceThetaCoefficient 0 = 1\nhNotRh : ¬RiemannHypothesis\ns : ℂ\nhAll : ∀ (d : ℕ), 1 ≤ d → ∀ (z : ℂ), eval z (sourceJensenPolynomial d) = 0 → z.im = 0\nhs : riemannZeta s = 0\nhtrivial : ¬∃ n, s = -2 * (↑n + 1)\nhone : s ≠ 1\n⊢ s.re = 1 / 2"
+      ],
+      "unclosed_goals_verbatim": [
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/DescentRH.lean:374:63: error: unsolved goals\nh0 : sourceThetaCoefficient 0 = 1\nhNotRh : ¬RiemannHypothesis\ns : ℂ\nhAll : ∀ (d : ℕ), 1 ≤ d → ∀ (z : ℂ), eval z (sourceJensenPolynomial d) = 0 → z.im = 0\nhs : riemannZeta s = 0\nhtrivial : ¬∃ n, s = -2 * (↑n + 1)\nhone : s ≠ 1\n⊢ s.re = 1 / 2"
+      ],
+      "nonzero_assessment": "Actual RH source criterion remains unconnected after finite-interface logical normalization. This does not establish mathematical difficulty, falsity, or content."
+    },
+    {
+      "run": "b3-07",
+      "command": [
+        "make",
+        "-f",
+        "Makefile",
+        "-f",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/probe.mk",
+        "lean",
+        "PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean"
+      ],
+      "exit": 2,
+      "seconds": 29.634208625,
+      "raw_log": "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/b3-07.log",
+      "archived_log": "docs/reports/digestion/qd-family-triage-0909/attempt-2/b3-07.log",
+      "source_snapshot": "docs/reports/digestion/qd-family-triage-0909/attempt-2/b3-07.lean",
+      "diagnostics_verbatim": [
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:391:9: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern\n  reflect ?n (Polynomial.map ?f ?p)\nin the target expression\n  Polynomial.map (algebraMap ℝ ℂ) (reflect d ((P sourceThetaCoefficient d).comp (C (-1) * X))) =\n    reflect d ((sourceJensenPolynomial d).comp (C (-1) * X))\n\nd : ℕ\nhd : 1 ≤ d\n⊢ Polynomial.map (algebraMap ℝ ℂ) (reflect d ((P sourceThetaCoefficient d).comp (C (-1) * X))) =\n    reflect d ((sourceJensenPolynomial d).comp (C (-1) * X))"
+      ],
+      "unclosed_goals_verbatim": [
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean:391:9: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern\n  reflect ?n (Polynomial.map ?f ?p)\nin the target expression\n  Polynomial.map (algebraMap ℝ ℂ) (reflect d ((P sourceThetaCoefficient d).comp (C (-1) * X))) =\n    reflect d ((sourceJensenPolynomial d).comp (C (-1) * X))\n\nd : ℕ\nhd : 1 ≤ d\n⊢ Polynomial.map (algebraMap ℝ ℂ) (reflect d ((P sourceThetaCoefficient d).comp (C (-1) * X))) =\n    reflect d ((sourceJensenPolynomial d).comp (C (-1) * X))"
+      ],
+      "nonzero_assessment": "Only reflect_map was applied in the wrong direction; subsequently resolved."
+    },
+    {
+      "run": "b3-08",
+      "command": [
+        "make",
+        "-f",
+        "Makefile",
+        "-f",
+        "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/probe.mk",
+        "lean",
+        "PROBE=/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/B3Final.lean"
+      ],
+      "exit": 0,
+      "seconds": 46.980475750000004,
+      "raw_log": "/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/qd-family-triage-0909/attempt-2/b3-08.log",
+      "archived_log": "docs/reports/digestion/qd-family-triage-0909/attempt-2/b3-08.log.gz.b64",
+      "source_snapshot": "docs/reports/digestion/qd-family-triage-0909/attempt-2/b3-08.lean",
+      "diagnostics_verbatim": [],
+      "unclosed_goals_verbatim": [],
+      "target_axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    }
+  ],
+  "search_receipts": {
+    "attempt_2": [
+      {
+        "receipt": "docs/reports/digestion/qd-family-triage-0909/attempt-2/search-01.json",
+        "observations": [
+          {
+            "command": [
+              "rg",
+              "-n",
+              "\\bsource_jensen_coeff_edges\\b",
+              "D5/S3/Zeros/Jensen",
+              "--glob",
+              "*.lean"
+            ],
+            "exit": 0,
+            "matched_lines": 8,
+            "stdout": "D5/S3/Zeros/Jensen/SourceJensenPrincipalBlockObstruction.lean:31:theorem source_jensen_coeff_edges (d : ℕ) (hd : 1 ≤ d) :\nD5/S3/Zeros/Jensen/SourceJensenPrincipalBlockObstruction.lean:54:  rw [hmatch, (source_jensen_coeff_edges d hd).1] at hz\nD5/S3/Zeros/Jensen/SourceJensenPrincipalBlockObstruction.lean:58:  exact (source_jensen_coeff_edges d hd).2.1\nD5/S3/Zeros/Jensen/SourceJensenPrincipalBlockObstruction.lean:63:  rw [(source_jensen_coeff_edges d hd).2.2.2]\nD5/S3/Zeros/Jensen/SourceJensenPrincipalBlockObstruction.lean:176:  rw [(source_jensen_coeff_edges d hd).2.2.1] at hcoeff\nD5/S3/Zeros/Jensen/SourceJensenPrincipalBlockObstruction.lean:203:  rw [coeff_map, hc0, (source_jensen_coeff_edges d hd).1] at hz\nD5/S3/Zeros/Jensen/SourceJensenPrincipalBlockObstruction.lean:211:  rw [coeff_map, hc1, (source_jensen_coeff_edges d hd).2.1] at h1\nD5/S3/Zeros/Jensen/SourceJensenPrincipalBlockObstruction.lean:230:  rw [(source_jensen_coeff_edges d hd).2.2.1] at hcoeff\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "rg",
+              "-n",
+              "\\bqd_attempt2_nonexistent_control\\b",
+              "D5/S3/Zeros/Jensen",
+              "--glob",
+              "*.lean"
+            ],
+            "exit": 1,
+            "matched_lines": 0,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "rg",
+              "-n",
+              "\\b(coeff_eq_sum|eq_of_degree_le_of_eval_index_eq|eval_nodal_derivative_eval_node_eq)\\b",
+              ".lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean"
+            ],
+            "exit": 0,
+            "matched_lines": 6,
+            "stdout": "117:theorem eq_of_degree_le_of_eval_index_eq (hvs : Set.InjOn v s)\n495:theorem coeff_eq_sum\n511:  exact coeff_eq_sum hvs (by rw [hdegree]; norm_cast; lia)\n605:theorem eval_nodal_derivative_eval_node_eq [DecidableEq ι] {i : ι} (hi : i ∈ s) :\n615:  apply eq_of_degree_le_of_eval_index_eq (v := ((↑) : Rˣ → R)) (G : Set Rˣ).toFinset\n652:  rw [eval_nodal_derivative_eval_node_eq hi, nodalWeight_eq_eval_nodal_erase_inv]\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "rg",
+              "-n",
+              "\\bqd_attempt2_nonexistent_control\\b",
+              ".lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean"
+            ],
+            "exit": 1,
+            "matched_lines": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        ]
+      },
+      {
+        "receipt": "docs/reports/digestion/qd-family-triage-0909/attempt-2/search-b3.json",
+        "observations": [
+          {
+            "command": [
+              "rg",
+              "-n",
+              "\\b(det_fromBlocks|fromBlocks)",
+              ".lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/SchurComplement.lean"
+            ],
+            "exit": 0,
+            "matched_lines": 134,
+            "stdout": "23:* `Matrix.det_fromBlocks₁₁`, `Matrix.det_fromBlocks₂₂`: determinant of a block matrix in terms of\n50:theorem fromBlocks_eq_of_invertible₁₁ (A : Matrix m m α) (B : Matrix m n α) (C : Matrix l m α)\n52:    fromBlocks A B C D =\n53:      fromBlocks 1 0 (C * ⅟A) 1 * fromBlocks A 0 0 (D - C * ⅟A * B) *\n54:        fromBlocks 1 (⅟A * B) 0 1 := by\n55:  simp only [fromBlocks_multiply, Matrix.mul_zero, Matrix.zero_mul, add_zero, zero_add,\n61:theorem fromBlocks_eq_of_invertible₂₂ (A : Matrix l m α) (B : Matrix l n α) (C : Matrix n m α)\n63:    fromBlocks A B C D =\n64:      fromBlocks 1 (B * ⅟D) 0 1 * fromBlocks (A - B * ⅟D * C) 0 0 D *\n65:        fromBlocks 1 0 (⅟D * C) 1 :=\n69:      fromBlocks_submatrix_sum_swap_sum_swap] using fromBlocks_eq_of_invertible₁₁ D C B A\n78:def fromBlocksZero₂₁Invertible (A : Matrix m m α) (B : Matrix m n α) (D : Matrix n n α)\n79:    [Invertible A] [Invertible D] : Invertible (fromBlocks A B 0 D) :=\n80:  invertibleOfLeftInverse _ (fromBlocks (⅟A) (-(⅟A * B * ⅟D)) 0 (⅟D)) <| by\n81:    simp_rw [fromBlocks_multiply, Matrix.mul_zero, Matrix.zero_mul, zero_add, add_zero,\n83:      fromBlocks_one]\n87:def fromBlocksZero₁₂Invertible (A : Matrix m m α) (C : Matrix n m α) (D : Matrix n n α)\n88:    [Invertible A] [Invertible D] : Invertible (fromBlocks A 0 C D) :=\n90:      (fromBlocks (⅟A) 0 (-(⅟D * C * ⅟A))\n92:    simp_rw [fromBlocks_multiply, Matrix.mul_zero, Matrix.zero_mul, zero_add, add_zero,\n94:      fromBlocks_one]\n97:    [Invertible A] [Invertible D] [Invertible (fromBlocks A B 0 D)] :\n98:    ⅟(fromBlocks A B 0 D) = fromBlocks (⅟A) (-(⅟A * B * ⅟D)) 0 (⅟D) := by\n99:  let := fromBlocksZero₂₁Invertible A B D\n100:  convert! (rfl : ⅟(fromBlocks A B 0 D) = _)\n103:    [Invertible A] [Invertible D] [Invertible (fromBlocks A 0 C D)] :\n104:    ⅟(fromBlocks A 0 C D) = fromBlocks (⅟A) 0 (-(⅟D * C * ⅟A)) (⅟D) := by\n105:  let := fromBlocksZero₁₂Invertible A C D\n106:  convert! (rfl : ⅟(fromBlocks A 0 C D) = _)\n111:    [Invertible (fromBlocks A B 0 D)] : Invertible A × Invertible D where\n113:    invertibleOfLeftInverse _ (⅟(fromBlocks A B 0 D)).toBlocks₁₁ <| by\n114:      have := invOf_mul_self (fromBlocks A B 0 D)\n115:      rw [← fromBlocks_toBlocks (⅟(fromBlocks A B 0 D)), fromBlocks_multiply] at this\n116:      simpa only [Matrix.toBlocks_fromBlocks₁₁, Matrix.mul_zero, add_zero, ← fromBlocks_one] using\n119:    invertibleOfRightInverse _ (⅟(fromBlocks A B 0 D)).toBlocks₂₂ <| by\n120:      have := mul_invOf_self (fromBlocks A B 0 D)\n121:      rw [← fromBlocks_toBlocks (⅟(fromBlocks A B 0 D)), fromBlocks_multiply] at this\n122:      simpa only [Matrix.toBlocks_fromBlocks₂₂, Matrix.zero_mul, zero_add, ← fromBlocks_one] using\n128:    [Invertible (fromBlocks A 0 C D)] : Invertible A × Invertible D where\n130:    invertibleOfRightInverse _ (⅟(fromBlocks A 0 C D)).toBlocks₁₁ <| by\n131:      have := mul_invOf_self (fromBlocks A 0 C D)\n132:      rw [← fromBlocks_toBlocks (⅟(fromBlocks A 0 C D)), fromBlocks_multiply] at this\n134:      simpa only [Matrix.toBlocks_fromBlocks₁₁, Matrix.zero_mul, add_zero, ← fromBlocks_one] using\n137:    invertibleOfLeftInverse _ (⅟(fromBlocks A 0 C D)).toBlocks₂₂ <| by\n138:      have := invOf_mul_self (fromBlocks A 0 C D)\n139:      rw [← fromBlocks_toBlocks (⅟(fromBlocks A 0 C D)), fromBlocks_multiply] at this\n141:      simpa only [Matrix.toBlocks_fromBlocks₂₂, Matrix.mul_zero, zero_add, ← fromBlocks_one] using\n144:/-- `invertibleOfFromBlocksZero₂₁Invertible` and `Matrix.fromBlocksZero₂₁Invertible` form\n146:def fromBlocksZero₂₁InvertibleEquiv (A : Matrix m m α) (B : Matrix m n α) (D : Matrix n n α) :\n147:    Invertible (fromBlocks A B 0 D) ≃ Invertible A × Invertible D where\n152:    exact fromBlocksZero₂₁Invertible A B D\n156:/-- `invertibleOfFromBlocksZero₁₂Invertible` and `Matrix.fromBlocksZero₁₂Invertible` form\n158:def fromBlocksZero₁₂InvertibleEquiv (A : Matrix m m α) (C : Matrix n m α) (D : Matrix n n α) :\n159:    Invertible (fromBlocks A 0 C D) ≃ Invertible A × Invertible D where\n164:    exact fromBlocksZero₁₂Invertible A C D\n170:This is a propositional form of `Matrix.fromBlocksZero₂₁InvertibleEquiv`. -/\n173:    IsUnit (fromBlocks A B 0 D) ↔ IsUnit A ∧ IsUnit D := by\n175:    (fromBlocksZero₂₁InvertibleEquiv _ _ _).nonempty_congr]\n179:This is a propositional form of `Matrix.fromBlocksZero₁₂InvertibleEquiv` forms an `iff`. -/\n182:    IsUnit (fromBlocks A 0 C D) ↔ IsUnit A ∧ IsUnit D := by\n184:    (fromBlocksZero₁₂InvertibleEquiv _ _ _).nonempty_congr]\n190:    (fromBlocks A B 0 D)⁻¹ = fromBlocks A⁻¹ (-(A⁻¹ * B * D⁻¹)) 0 D⁻¹ := by\n195:    let := fromBlocksZero₂₁Invertible A B D\n198:    have : ¬IsUnit (fromBlocks A B 0 D) :=\n201:      Ring.inverse_non_unit _ this, Matrix.zero_mul, neg_zero, fromBlocks_zero]\n207:    (fromBlocks A 0 C D)⁻¹ = fromBlocks A⁻¹ 0 (-(D⁻¹ * C * A⁻¹)) D⁻¹ := by\n212:    let := fromBlocksZero₁₂Invertible A C D\n215:    have : ¬IsUnit (fromBlocks A 0 C D) :=\n218:      Ring.inverse_non_unit _ this, Matrix.zero_mul, neg_zero, fromBlocks_zero]\n233:def fromBlocks₂₂Invertible (A : Matrix m m α) (B : Matrix m n α) (C : Matrix n m α)\n235:    Invertible (fromBlocks A B C D) := by\n236:  -- factor `fromBlocks` via `fromBlocks_eq_of_invertible₂₂`, and state the inverse we expect\n239:      (fromBlocks (⅟(A - B * ⅟D * C)) (-(⅟(A - B * ⅟D * C) * B * ⅟D))\n241:      (fromBlocks_eq_of_invertible₂₂ _ _ _ _) _\n245:    refine Invertible.mul ?_ (fromBlocksZero₁₂Invertible _ _ _)\n247:      Invertible.mul (fromBlocksZero₂₁Invertible _ _ _)\n248:        (fromBlocksZero₂₁Invertible _ _ _)\n252:        fromBlocks 1 0 (-(1 * (⅟D * C) * 1)) 1 *\n253:          (fromBlocks (⅟(A - B * ⅟D * C)) (-(⅟(A - B * ⅟D * C) * 0 * ⅟D)) 0 (⅟D) *\n254:            fromBlocks 1 (-(1 * (B * ⅟D) * 1)) 0 1)\n256:    simp only [fromBlocks_multiply, Matrix.one_mul, Matrix.mul_one, Matrix.zero_mul,\n263:def fromBlocks₁₁Invertible (A : Matrix m m α) (B : Matrix m n α) (C : Matrix n m α)\n265:    Invertible (fromBlocks A B C D) := by\n267:  letI := fromBlocks₂₂Invertible D C B A\n269:    submatrixEquivInvertible (fromBlocks D C B A) (Equiv.sumComm _ _) (Equiv.sumComm _ _)\n272:      (fromBlocks (⅟A + ⅟A * B * ⅟(D - C * ⅟A * B) * C * ⅟A) (-(⅟A * B * ⅟(D - C * ⅟A * B)))\n274:      (fromBlocks_submatrix_sum_swap_sum_swap _ _ _ _).symm\n275:      (fromBlocks_submatrix_sum_swap_sum_swap _ _ _ _).symm\n279:    [Invertible (fromBlocks A B C D)] :\n280:    ⅟(fromBlocks A B C D) =\n281:      fromBlocks (⅟(A - B * ⅟D * C)) (-(⅟(A - B * ⅟D * C) * B * ⅟D))\n283:  let := fromBlocks₂₂Invertible A B C D\n284:  convert! (rfl : ⅟(fromBlocks A B C D) = _)\n288:    [Invertible (fromBlocks A B C D)] :\n289:    ⅟(fromBlocks A B C D) =\n290:      fromBlocks (⅟A + ⅟A * B * ⅟(D - C * ⅟A * B) * C * ⅟A) (-(⅟A * B * ⅟(D - C * ⅟A * B)))\n292:  let := fromBlocks₁₁Invertible A B C D\n293:  convert! (rfl : ⅟(fromBlocks A B C D) = _)\n299:    (D : Matrix n n α) [Invertible D] [Invertible (fromBlocks A B C D)] :\n301:  suffices Invertible (fromBlocks (A - B * ⅟D * C) 0 0 D) by\n305:  letI iDC : Invertible (fromBlocks 1 0 (⅟D * C) 1 : Matrix (m ⊕ n) (m ⊕ n) α) :=\n306:    fromBlocksZero₁₂Invertible _ _ _\n307:  letI iBD : Invertible (fromBlocks 1 (B * ⅟D) 0 1 : Matrix (m ⊕ n) (m ⊕ n) α) :=\n308:    fromBlocksZero₂₁Invertible _ _ _\n309:  letI iBDC := Invertible.copy ‹_› _ (fromBlocks_eq_of_invertible₂₂ A B C D).symm\n317:    (D : Matrix n n α) [Invertible A] [Invertible (fromBlocks A B C D)] :\n321:    submatrixEquivInvertible (fromBlocks A B C D) (Equiv.sumComm _ _) (Equiv.sumComm _ _)\n322:  letI iDCBA := iABCD'.copy _ (fromBlocks_submatrix_sum_swap_sum_swap _ _ _ _).symm\n325:/-- `Matrix.invertibleOfFromBlocks₂₂Invertible` and `Matrix.fromBlocks₂₂Invertible` as an\n329:    Invertible (fromBlocks A B C D) ≃ Invertible (A - B * ⅟D * C) where\n331:  invFun _i_schur := fromBlocks₂₂Invertible _ _ _ _\n335:/-- `Matrix.invertibleOfFromBlocks₁₁Invertible` and `Matrix.fromBlocks₁₁Invertible` as an\n339:    Invertible (fromBlocks A B C D) ≃ Invertible (D - C * ⅟A * B) where\n341:  invFun _i_schur := fromBlocks₁₁Invertible _ _ _ _\n349:    IsUnit (fromBlocks A B C D) ↔ IsUnit (A - B * ⅟D * C) := by\n357:    IsUnit (fromBlocks A B C D) ↔ IsUnit (D - C * ⅟A * B) := by\n370:theorem det_fromBlocks₁₁ (A : Matrix m m α) (B : Matrix m n α) (C : Matrix n m α)\n372:    (Matrix.fromBlocks A B C D).det = det A * det (D - C * ⅟A * B) := by\n373:  rw [fromBlocks_eq_of_invertible₁₁ (A := A), det_mul, det_mul, det_fromBlocks_zero₂₁,\n374:    det_fromBlocks_zero₂₁, det_fromBlocks_zero₁₂, det_one, det_one, one_mul, one_mul, mul_one]\n377:theorem det_fromBlocks_one₁₁ (B : Matrix m n α) (C : Matrix n m α) (D : Matrix n n α) :\n378:    (Matrix.fromBlocks 1 B C D).det = det (D - C * B) := by\n380:  rw [det_fromBlocks₁₁, invOf_one, Matrix.mul_one, det_one, one_mul]\n384:theorem det_fromBlocks₂₂ (A : Matrix m m α) (B : Matrix m n α) (C : Matrix n m α)\n386:    (Matrix.fromBlocks A B C D).det = det D * det (A - B * ⅟D * C) := by\n387:  have : fromBlocks A B C D =\n388:      (fromBlocks D C B A).submatrix (Equiv.sumComm _ _) (Equiv.sumComm _ _) := by\n391:  rw [this, det_submatrix_equiv_self, det_fromBlocks₁₁]\n394:theorem det_fromBlocks_one₂₂ (A : Matrix m m α) (B : Matrix m n α) (C : Matrix n m α) :\n395:    (Matrix.fromBlocks A B C 1).det = det (A - B * C) := by\n397:  rw [det_fromBlocks₂₂, invOf_one, Matrix.mul_one, det_one, one_mul]\n404:    det (1 + A * B) = det (fromBlocks 1 (-A) B 1) := by\n405:      rw [det_fromBlocks_one₂₂, Matrix.neg_mul, sub_neg_eq_add]\n406:    _ = det (1 + B * A) := by rw [det_fromBlocks_one₁₁, Matrix.mul_neg, sub_neg_eq_add]\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "rg",
+              "-n",
+              "\\b(charpoly_eq|posDef_iff_eigenvalues_pos|posDef_iff_det_ne_zero)\\b",
+              ".lake/packages/mathlib/Mathlib/Analysis/Matrix"
+            ],
+            "exit": 0,
+            "matched_lines": 6,
+            "stdout": ".lake/packages/mathlib/Mathlib/Analysis/Matrix/Spectrum.lean:155:lemma charpoly_eq : A.charpoly = ∏ i, (X - C (hA.eigenvalues i : 𝕜)) := by\n.lake/packages/mathlib/Mathlib/Analysis/Matrix/Spectrum.lean:161:  rw [hA.charpoly_eq, Polynomial.roots_prod]\n.lake/packages/mathlib/Mathlib/Analysis/Matrix/Spectrum.lean:183:  · rw [hA.charpoly_eq, hB.charpoly_eq, h]\n.lake/packages/mathlib/Mathlib/Analysis/Matrix/Order.lean:200:lemma PosSemidef.posDef_iff_det_ne_zero [DecidableEq n] {A : Matrix n n 𝕜} (hA : A.PosSemidef) :\n.lake/packages/mathlib/Mathlib/Analysis/Matrix/PosDef.lean:71:lemma IsHermitian.posDef_iff_eigenvalues_pos [DecidableEq n] (hA : A.IsHermitian) :\n.lake/packages/mathlib/Mathlib/Analysis/Matrix/PosDef.lean:83:  hA.isHermitian.posDef_iff_eigenvalues_pos.mp hA i\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "rg",
+              "-n",
+              "\\b(eval_interpolate_not_at_node|eval_derivative_div_eval_of_ne_zero)\\b",
+              ".lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean",
+              ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Splits.lean"
+            ],
+            "exit": 0,
+            "matched_lines": 5,
+            "stdout": ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Splits.lean:654:theorem Splits.eval_derivative_div_eval_of_ne_zero (hf : Splits f) {x : R} (hx : f.eval x ≠ 0) :\n.lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean:685:theorem eval_interpolate_not_at_node (hx : ∀ i ∈ s, x ≠ v i) :\n.lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean:696:      (eval_interpolate_not_at_node 1 hx).symm\n.lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean:699:theorem eval_interpolate_not_at_node' (hvs : Set.InjOn v s) (hs : s.Nonempty)\n.lake/packages/mathlib/Mathlib/LinearAlgebra/Lagrange.lean:705:    eval_interpolate_not_at_node r hx, eval_interpolate_not_at_node 1 hx]\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "rg",
+              "-n",
+              "-i",
+              "\\b(arrowhead|interlacing|interlace|laguerre)\\b",
+              ".lake/packages/mathlib/Mathlib/Analysis/Complex/Polynomial",
+              ".lake/packages/mathlib/Mathlib/Algebra/Polynomial",
+              ".lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix"
+            ],
+            "exit": 1,
+            "matched_lines": 0,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "rg",
+              "-n",
+              "\\btheorem det_fromBlocks(\\u2081\\u2081|\\u2082\\u2082)",
+              ".lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/SchurComplement.lean"
+            ],
+            "exit": 0,
+            "matched_lines": 2,
+            "stdout": "370:theorem det_fromBlocks₁₁ (A : Matrix m m α) (B : Matrix m n α) (C : Matrix n m α)\n384:theorem det_fromBlocks₂₂ (A : Matrix m m α) (B : Matrix m n α) (C : Matrix n m α)\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "rg",
+              "-n",
+              "\\btheorem nonexistent_fromBlocks(\\u2081\\u2081|\\u2082\\u2082)",
+              ".lake/packages/mathlib/Mathlib/LinearAlgebra/Matrix/SchurComplement.lean"
+            ],
+            "exit": 1,
+            "matched_lines": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        ]
+      },
+      {
+        "receipt": "docs/reports/digestion/qd-family-triage-0909/attempt-2/search-descent.json",
+        "observations": [
+          {
+            "command": [
+              "rg",
+              "-n",
+              "\\b(rootSet_derivative_subset_convexHull_rootSet|convex_halfSpace_re_ge|convex_halfSpace_re_gt|convex_halfSpace_im_le|convex_halfSpace_im_ge)\\b",
+              ".lake/packages/mathlib/Mathlib/Analysis/Complex/Polynomial/GaussLucas.lean",
+              ".lake/packages/mathlib/Mathlib/Analysis/Complex/Convex.lean"
+            ],
+            "exit": 0,
+            "matched_lines": 7,
+            "stdout": ".lake/packages/mathlib/Mathlib/Analysis/Complex/Polynomial/GaussLucas.lean:58:See also `rootSet_derivative_subset_convexHull_rootSet` below.\n.lake/packages/mathlib/Mathlib/Analysis/Complex/Polynomial/GaussLucas.lean:97:theorem rootSet_derivative_subset_convexHull_rootSet (h₀ : 0 < P.degree) :\n.lake/packages/mathlib/Mathlib/Analysis/Complex/Convex.lean:57:theorem convex_halfSpace_re_gt : Convex ℝ { c : ℂ | r < c.re } :=\n.lake/packages/mathlib/Mathlib/Analysis/Complex/Convex.lean:59:theorem convex_halfSpace_re_ge : Convex ℝ { c : ℂ | r ≤ c.re } :=\n.lake/packages/mathlib/Mathlib/Analysis/Complex/Convex.lean:63:theorem convex_halfSpace_im_le : Convex ℝ { c : ℂ | c.im ≤ r } :=\n.lake/packages/mathlib/Mathlib/Analysis/Complex/Convex.lean:67:theorem convex_halfSpace_im_ge : Convex ℝ { c : ℂ | r ≤ c.im } :=\n.lake/packages/mathlib/Mathlib/Analysis/Complex/Convex.lean:103:              ((convex_halfSpace_re_gt 0).isPathConnected ⟨1, by simp⟩) ⟨1 + .I, by simp⟩).union\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "rg",
+              "-n",
+              "\\b(antitone_nat_of_succ_le|find_spec|find_min)\\b",
+              ".lake/packages/mathlib/Mathlib/Order/Monotone/Basic.lean",
+              ".lake/packages/mathlib/Mathlib/Data/Nat/Find.lean"
+            ],
+            "exit": 0,
+            "matched_lines": 17,
+            "stdout": ".lake/packages/mathlib/Mathlib/Order/Monotone/Basic.lean:29:* `antitone_nat_of_succ_le`, `antitone_int_of_succ_le`: If `f : ℕ → α` or `f : ℤ → α` and\n.lake/packages/mathlib/Mathlib/Order/Monotone/Basic.lean:552:theorem antitone_nat_of_succ_le {f : ℕ → α} (hf : ∀ n, f (n + 1) ≤ f n) : Antitone f :=\n.lake/packages/mathlib/Mathlib/Data/Nat/Find.lean:68:* `Nat.find_spec` is the proof that `Nat.find hp` satisfies `p`.\n.lake/packages/mathlib/Mathlib/Data/Nat/Find.lean:69:* `Nat.find_min` is the proof that if `m < Nat.find hp` then `m` does not satisfy `p`.\n.lake/packages/mathlib/Mathlib/Data/Nat/Find.lean:70:* `Nat.find_min'` is the proof that if `m` does satisfy `p` then `Nat.find hp ≤ m`.\n.lake/packages/mathlib/Mathlib/Data/Nat/Find.lean:75:protected theorem find_spec : p (Nat.find H) :=\n.lake/packages/mathlib/Mathlib/Data/Nat/Find.lean:78:grind_pattern Nat.find_spec => Nat.find H\n.lake/packages/mathlib/Mathlib/Data/Nat/Find.lean:80:protected theorem find_min : ∀ {m : ℕ}, m < Nat.find H → ¬p m :=\n.lake/packages/mathlib/Mathlib/Data/Nat/Find.lean:83:protected theorem find_min' {m : ℕ} (h : p m) : Nat.find H ≤ m :=\n.lake/packages/mathlib/Mathlib/Data/Nat/Find.lean:84:  Nat.le_of_not_gt fun l => Nat.find_min H l h\n.lake/packages/mathlib/Mathlib/Data/Nat/Find.lean:88:  · grind [Nat.find_min]\n.lake/packages/mathlib/Mathlib/Data/Nat/Find.lean:90:    have := Nat.find_min' h hm\n.lake/packages/mathlib/Mathlib/Data/Nat/Find.lean:94:  ⟨fun h2 ↦ ⟨Nat.find h, h2, Nat.find_spec h⟩,\n.lake/packages/mathlib/Mathlib/Data/Nat/Find.lean:95:    fun ⟨_, hmn, hm⟩ ↦ Nat.lt_of_le_of_lt (Nat.find_min' h hm) hmn⟩\n.lake/packages/mathlib/Mathlib/Data/Nat/Find.lean:114:  Nat.find_min' _ (hpq _ (Nat.find_min' _ hx) (Nat.find_spec ⟨x, hx⟩))\n.lake/packages/mathlib/Mathlib/Data/Nat/Find.lean:143:  refine (find_eq_iff _).2 ⟨Nat.find_spec h₂, fun n hn ↦ ?_⟩\n.lake/packages/mathlib/Mathlib/Data/Nat/Find.lean:145:  exacts [h0, @Nat.find_min (fun n ↦ p (n + 1)) _ h₂ _ (succ_lt_succ_iff.1 hn)]\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "rg",
+              "-n",
+              "\\b(jensen_polynomial_obstruction|hRhToHyperbolic|hNonnegativeHyperbolicToRh)\\b",
+              "D5/S3/Zeros/Jensen/JensenPolynomialObstruction.lean"
+            ],
+            "exit": 0,
+            "matched_lines": 6,
+            "stdout": "47:theorem jensen_polynomial_obstruction\n50:    (hRhToHyperbolic :\n54:    (hNonnegativeHyperbolicToRh :\n65:  · exact hRhToHyperbolic hGamma\n80:        (hNonnegativeHyperbolicToRh hGamma hNonnegative hAllHyperbolic)\n82:#print axioms jensen_polynomial_obstruction\n",
+            "stderr": ""
+          }
+        ]
+      },
+      {
+        "receipt": "docs/reports/digestion/qd-family-triage-0909/attempt-2/search-final.json",
+        "observations": [
+          {
+            "command": [
+              "rg",
+              "-n",
+              "\\b(theorem|lemma) (Splits\\.)?eval_derivative_div_eval_of_ne_zero\\b",
+              ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Splits.lean"
+            ],
+            "exit": 0,
+            "matched_lines": 1,
+            "stdout": "654:theorem Splits.eval_derivative_div_eval_of_ne_zero (hf : Splits f) {x : R} (hx : f.eval x ≠ 0) :\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "rg",
+              "-n",
+              "\\b(theorem|lemma) (Splits\\.)?qd_attempt2_absent_control\\b",
+              ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Splits.lean"
+            ],
+            "exit": 1,
+            "matched_lines": 0,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "rg",
+              "-n",
+              "\\b(theorem|lemma) HasDerivAt\\.(fun_div|fun_sum|congr_of_eventuallyEq|unique)\\b",
+              ".lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv"
+            ],
+            "exit": 0,
+            "matched_lines": 4,
+            "stdout": ".lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Inv.lean:168:theorem HasDerivAt.fun_div (hc : HasDerivAt c c' x) (hd : HasDerivAt d d' x) (hx : d x ≠ 0) :\n.lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Add.lean:218:theorem HasDerivAt.fun_sum (h : ∀ i ∈ u, HasDerivAt (A i) (A' i) x) :\n.lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Basic.lean:399:theorem HasDerivAt.unique (h₀ : HasDerivAt f f₀' x) (h₁ : HasDerivAt f f₁' x) : f₀' = f₁' :=\n.lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv/Basic.lean:609:theorem HasDerivAt.congr_of_eventuallyEq (h : HasDerivAt f f' x) (h₁ : f₁ =ᶠ[𝓝 x] f) :\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "rg",
+              "-n",
+              "\\b(theorem|lemma) HasDerivAt\\.(qd_attempt2_absent_control|qd_attempt2_other_absent)\\b",
+              ".lake/packages/mathlib/Mathlib/Analysis/Calculus/Deriv"
+            ],
+            "exit": 1,
+            "matched_lines": 0,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "rg",
+              "-n",
+              "\\b(theorem|lemma) (reflect_map|map_sum|sum_multiset_map_count|prod_multiset_map_count)\\b",
+              ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean",
+              ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Eval/Defs.lean",
+              ".lake/packages/mathlib/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean"
+            ],
+            "exit": 0,
+            "matched_lines": 3,
+            "stdout": ".lake/packages/mathlib/Mathlib/Algebra/Polynomial/Eval/Defs.lean:583:protected theorem map_sum {ι : Type*} (g : ι → R[X]) (s : Finset ι) :\n.lake/packages/mathlib/Mathlib/Algebra/Polynomial/Reverse.lean:138:lemma reflect_map {S : Type*} [Semiring S] (f : R →+* S) (p : R[X]) (n : ℕ) :\n.lake/packages/mathlib/Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean:591:theorem prod_multiset_map_count [DecidableEq ι] (s : Multiset ι) {M : Type*} [CommMonoid M]\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "rg",
+              "-n",
+              "\\b(theorem|lemma) source_theta_normalization\\b",
+              "D5/S3/Zeros/Jensen/SourceThetaMomentBounds.lean"
+            ],
+            "exit": 0,
+            "matched_lines": 1,
+            "stdout": "176:theorem source_theta_normalization (h0 : sourceThetaCoefficient 0 = 1) :\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "rg",
+              "-n",
+              "\\b(theorem|lemma) qd_attempt2_absent_control\\b",
+              "D5/S3/Zeros/Jensen/SourceThetaMomentBounds.lean"
+            ],
+            "exit": 1,
+            "matched_lines": 0,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "rg",
+              "-n",
+              "\\b(theorem|lemma) (Splits\\.)?qd_attempt2_absent_control\\b",
+              ".lake/packages/mathlib/Mathlib"
+            ],
+            "exit": 1,
+            "matched_lines": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        ]
+      }
+    ],
+    "inherited": "Prior attempt citations and F1-F4 identity receipts are consumed without replay.",
+    "atom_reads": [
+      {
+        "atom": "b3",
+        "receipt": "docs/reports/digestion/qd-family-triage-0909/attempt-2/b3-atom.txt",
+        "exit": 2,
+        "diagnostics_verbatim": [
+          "SHOW_ATOM_INVALID Repository file must be strict UTF-8: docs/reports/digestion/qd-family-triage-0909/b11-01.log.gz."
+        ]
+      },
+      {
+        "atom": "b3",
+        "receipt": "docs/reports/digestion/qd-family-triage-0909/attempt-2/b3-atom-retry.txt",
+        "exit": 0,
+        "diagnostics_verbatim": []
+      },
+      {
+        "atom": "b4",
+        "receipt": "docs/reports/digestion/qd-family-triage-0909/attempt-2/b4-atom.txt",
+        "exit": 2,
+        "diagnostics_verbatim": [
+          "SHOW_ATOM_INVALID Repository file must be strict UTF-8: docs/reports/digestion/qd-family-triage-0909/b11-01.log.gz."
+        ]
+      },
+      {
+        "atom": "b4",
+        "receipt": "docs/reports/digestion/qd-family-triage-0909/attempt-2/b4-atom-retry.txt",
+        "exit": 0,
+        "diagnostics_verbatim": []
+      },
+      {
+        "atom": "descent",
+        "receipt": "docs/reports/digestion/qd-family-triage-0909/attempt-2/descent-atom.txt",
+        "exit": 2,
+        "diagnostics_verbatim": [
+          "SHOW_ATOM_INVALID Repository file must be strict UTF-8: docs/reports/digestion/qd-family-triage-0909/b11-01.log.gz."
+        ]
+      },
+      {
+        "atom": "descent",
+        "receipt": "docs/reports/digestion/qd-family-triage-0909/attempt-2/descent-atom-retry.txt",
+        "exit": 0,
+        "diagnostics_verbatim": []
+      }
+    ],
+    "limits": "Negative regex hits are not absence proofs. Controls use the same word-boundary, alternation and optional-prefix features. Generated to_additive sum names are tied to their source declarations."
+  },
+  "pushed": {
+    "commits": [
+      "b3b675267ed1843167be3043ade73c8c35df4344",
+      "ed00879e1e8cd25386a2e8672627d56e43ab6826",
+      "388481626f7b1e264520a65b9101451c6693b319",
+      "b0ef655a6b50fce8d43f8488238f3fa604d7ab7d",
+      "9c961acef5b5ed74422bdc693ec69fa9f165494e",
+      "e40ea4f27649bcefe31a0f9012d8d7ea41aef075",
+      "a58d7224e5688ec9e9315a5c39261c79caf88398",
+      "57f9b420eb43fc4773f1b7850e6fd9e71586845e",
+      "5ea613b96e0aab2b25f9aa394583dffb4377a9c7",
+      "9160350648919cd3980ce83adfe550c2bd748fcd",
+      "5fac182f3b847615ca90630df7b78958ff2e7496",
+      "7fc747bf5e53ce130c79b74bf9ba2d91b1f63302"
+    ],
+    "status": "All listed commits were pushed individually; this archived conclusion is a snapshot before its own report commit. The final runner envelope includes the final pushed report commit."
+  },
+  "preregistration": {
+    "start_utc": "2026-09-09 09:25:30 UTC",
+    "midpoint_utc": "2026-09-09 09:55:30 UTC",
+    "deadline_utc": "2026-09-09 10:25:30 UTC",
+    "window_basis": "The brief supplied no numeric duration; the worker preregistered the same 60-minute interpretation as attempt 1, without altering any runner or repository budget.",
+    "midpoint_stop_triggered": false,
+    "expectation": "At least one of the three atoms has a definite yes/no supported by an actual probe.",
+    "expectation_outcome": "met: B3 and B4 have definite yes verdicts.",
+    "screening_closed": "All three have final triage entries; the entire descent atom remains explicitly undetermined. No criterion was weakened."
+  },
+  "assumed_unverified": [
+    "The original finite setup assumes sourceThetaCoefficient 0 = 1. Its actual theta/xi analytic normalization is not proved here; conditional source positivity is supplied by frozen F5.",
+    "The actual RH-to-fixed-source-failure bridge is unverified. The original prose assertion is not treated as a frozen theorem.",
+    "The external arXiv/DLMF pages and the explanatory shifted-window asymptotic comparison were not opened or independently checked.",
+    "One Codex worker performed these probes. No skill, subagent, independent reviewer or orchestrator re-verification was used.",
+    "Admission classifications are conditional soft triage judgments, not a completed deposition or an independent review."
+  ],
+  "nonclaims": [
+    "No D5 production module, cover, deposit, PR or budget change; builds were strictly sequential through make lean, without direct bare lake invocation.",
+    "No rejudgment of B1/B1.1 or the common Q/reflect binding, and no exact-degree premise added to bypass zero roots.",
+    "No certified content candidate; the withdrawn Laguerre route is not counted as content.",
+    "No proof of the entire descent atom, no assertion that its remaining analytic bridge is false, mathematically difficult, impossible to bind, or already proved.",
+    "No RH implication is claimed beyond explicit conditional interfaces; no external-literature exhaustiveness claim.",
+    "Compilation failure and error-recovery sorryAx are not evidence of a mathematical gap or of success.",
+    "No fourth admission basis called refutes; only rule-11-upstream-wrapper or none is assigned here.",
+    "Pre-existing untracked candidates.json and family.json were left untouched and unstaged."
+  ]
+}
