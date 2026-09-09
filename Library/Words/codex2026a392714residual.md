@@ -28,6 +28,19 @@ Mathlib pin `db584cd6d46c92f209a44c0f1c829460d327499d`。
 `codex2026a392714probe`；不重做 Φ(n) 上的配对、文献核对或已有有限枚举。
 Library/Words 容量：`find Library/Words -type f | wc -l` = 22（新增本文件前）。
 
+## Verified locator
+
+本条**不是文献陈述,是本仓推导**,故 `doi: null`。规范定位是仓库本身:
+https://github.com/the-omega-institute/trureturing
+S(a) 的形式化真源为 `D5/S1/Words/Compositions/ResidualPermutationSign.lean`,
+公开定理 `signed_residual_sum`(另两条公开定理 `lower_cut_removal`、`upper_sum_vanish`
+是其证明路径上的具名中间结果)。
+
+**原始上下文(只作 provenance,不是本条的出处)**:OEIS A392714
+(https://oeis.org/A392714)与 arXiv:2605.11137v1 §3 及 Remark 4 —— 二者把 A392714 的
+奇偶差明写为 conjecture。**S(a) 这条陈述在那两处都没有出现**:它是本研究线第一轮把
+「在 Φ(n) 上找反号对合」归约之后新造的组合命题。原猜想到 S(a) 的桥不在本轮范围内。
+
 ## 预登记 v1
 
 档位 1，新近小猜想研究线的独立组合子命题。
