@@ -167,6 +167,7 @@ def run(args):
                 state_store.atomic_json(root/'summary.json',dict(identity=identity,attempt=str(path),
                                                                  status=receipt['status'],**summary))
     except (ValueError,RuntimeError,OSError,KeyError,TypeError) as error:
+        exit_code=1
         receipt.update(status='failed',error=repr(error))
     finally:
         gpu_seconds=gpu.gpu_seconds if gpu is not None else sum(

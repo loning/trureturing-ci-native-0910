@@ -13,6 +13,7 @@ from types import SimpleNamespace
 from contextlib import redirect_stdout
 import io
 import os
+import subprocess
 import sys
 import uuid
 
@@ -52,6 +53,30 @@ def transport_fixture():
                          -1 if i<0 else masks[j+1],j,i,bits,int(i<0 and slot>0),0]
         rows.append(row)
     return rows
+
+
+def verification_fixture(directory):
+    """Fixed synthetic verification state; never relabel a historical checkpoint."""
+    directory=Path(directory).resolve()
+    source=directory/'input.json'
+    storage.state_store.atomic_json(source,dict(
+        schema_version=1,kind='constant-prime-corner-order-input',
+        primes=list(exact.PRIMES),rows=constant_fixture(),triple_order='lexicographic',
+        mask_convention='bit i increments prime i',search_executed=False,
+        exponent_boxes_generated=0))
+    args=SimpleNamespace(command='verify',first_box=3072,last_box=3072,chunk_boxes=1,
+                         max_chunks=0,precisions='128,256',state_dir=str(directory/'run'),
+                         input=source,input_sha256=storage.state_store.file_hash(source))
+    identity=runner.identities(args.input_sha256,(128,256))
+    with storage.state_store.StateLocks(args.state_dir):
+        store=storage.WindowStore(Path(args.state_dir)/'window-3072-3072',identity,3072,3072)
+        store.initialize()
+        rows=transport_fixture()
+        raw=store.write_raw(3072,3072,rows,dict(synthetic=True,gpu_dispatches=0,
+                                              purpose='summary-publication-regression'))
+        records=runner.verify_rows(rows,constant_fixture(),(128,256))
+        store.commit_chunk(3072,3072,records,storage.state_store.file_hash(raw))
+    return args
 
 
 class ExactContracts(unittest.TestCase):
@@ -188,6 +213,101 @@ class CertificationContracts(unittest.TestCase):
 
 
 class PublicationContracts(unittest.TestCase):
+    def assert_verified_fixture(self, receipt):
+        self.assertEqual('verify',receipt['mode'])
+        self.assertEqual(25,receipt['verification_replay_rows'])
+        self.assertEqual(0,receipt['new_gpu_raw_rows'])
+        self.assertEqual(0,receipt['recovered_gpu_raw_rows'])
+        self.assertEqual([],receipt['events'])
+        self.assertTrue(receipt['summary']['coverage_complete'])
+        self.assertEqual(25,receipt['summary']['completed_rows'])
+        self.assertEqual(6,receipt['summary']['cpu_evaluated_active'])
+        for key in ('unresolved_ids','invalid_ids','disagreement_ids'):
+            self.assertEqual([],receipt['summary'][key])
+
+    def test_run_summary_publication_error_returns_nonzero(self):
+        with tempfile.TemporaryDirectory() as d, patch.dict(os.environ,{'GPU5040_SHARED_ROOT':d+'/shared'}):
+            args=verification_fixture(d)
+            root=Path(args.state_dir); attempted=[]
+            checkpoint=root/'window-3072-3072/checkpoint.json'
+            before=checkpoint.read_bytes()
+            atomic_json=runner.state_store.atomic_json
+            def fail_summary(path, value):
+                if path==root/'summary.json':
+                    attempted.append(value)
+                    raise OSError('synthetic summary publication failure')
+                atomic_json(path,value)
+            with (patch.object(runner.state_store,'atomic_json',side_effect=fail_summary),
+                  patch.object(runner,'environment',return_value={'synthetic':True}),
+                  patch.object(runner,'MpsRunner',side_effect=AssertionError('GPU forbidden')),
+                  redirect_stdout(io.StringIO()) as output):
+                code=runner.run(args)
+            self.assertEqual(1,len(attempted))
+            self.assertEqual('certified_window',attempted[0]['status'])
+            self.assertFalse((root/'summary.json').exists())
+            self.assertEqual(before,checkpoint.read_bytes())
+            printed=json.loads(output.getvalue())
+            receipt=json.loads(Path(printed['artifact']).read_bytes())
+            self.assert_verified_fixture(receipt)
+            self.assertEqual('failed',receipt['status'])
+            self.assertEqual('failed',printed['status'])
+            self.assertIn('synthetic summary publication failure',receipt['error'])
+            self.assertEqual(code,printed['exit_code'])
+            self.assertEqual((True,True),(code!=0,receipt['exit_code']!=0),
+                             f"run exit={code}, receipt exit={receipt['exit_code']}")
+
+    def assert_process_publication_outcomes(self, through_make):
+        for collision in (False,True):
+            with (self.subTest(summary_directory_collision=collision),
+                  tempfile.TemporaryDirectory() as d,
+                  patch.dict(os.environ,{'GPU5040_SHARED_ROOT':d+'/shared'})):
+                args=verification_fixture(d)
+                root=Path(args.state_dir); summary=root/'summary.json'
+                checkpoint=root/'window-3072-3072/checkpoint.json'
+                before=checkpoint.read_bytes()
+                if collision: summary.mkdir()
+                if through_make:
+                    command=['make','--no-print-directory','-C',str(Path(runner.__file__).resolve().parents[2]),
+                             'prime-slab-verify','SLAB_FIRST=3072','SLAB_LAST=3072','SLAB_CHUNK=1',
+                             'SLAB_MAX_CHUNKS=0','SLAB_PRECISIONS=128,256',
+                             f'SLAB_STATE={root}',f'SLAB_INPUT={args.input}',
+                             f'SLAB_INPUT_SHA={args.input_sha256}']
+                else:
+                    command=[sys.executable,'-B',str(Path(runner.__file__).resolve()),'verify',
+                             '--first-box','3072','--last-box','3072','--chunk-boxes','1',
+                             '--precisions','128,256','--state-dir',str(root),
+                             '--input',str(args.input),'--input-sha256',args.input_sha256]
+                # Only an infrastructure hang guard; elapsed time is not a verdict.
+                result=subprocess.run(command,capture_output=True,text=True,check=False,timeout=60)
+                receipts=list(root.glob('run-*.json'))
+                self.assertEqual(1,len(receipts),result.stdout+result.stderr)
+                receipt=json.loads(receipts[0].read_bytes())
+                self.assert_verified_fixture(receipt)
+                self.assertEqual(before,checkpoint.read_bytes())
+                printed=json.loads(result.stdout.splitlines()[-1])
+                self.assertEqual(receipt['status'],printed['status'])
+                self.assertEqual(receipt['exit_code'],printed['exit_code'])
+                if collision:
+                    self.assertEqual('failed',receipt['status'])
+                    self.assertIn('IsADirectoryError',receipt['error'])
+                    self.assertTrue(summary.is_dir())
+                else:
+                    published=json.loads(summary.read_bytes())
+                    self.assertEqual('certified_window',receipt['status'])
+                    self.assertEqual(receipt['status'],published['status'])
+                    self.assertEqual(receipt['identity'],published['identity'])
+                    self.assertEqual(receipt['summary']['classification_stream_sha256'],
+                                     published['classification_stream_sha256'])
+                self.assertEqual((collision,collision),
+                                 (result.returncode!=0,receipt['exit_code']!=0),
+                                 f"process exit={result.returncode}, receipt exit={receipt['exit_code']}")
+
+    def test_verify_process_summary_publication_outcomes(self):
+        self.assert_process_publication_outcomes(through_make=False)
+
+    def test_make_verify_summary_publication_outcomes(self):
+        self.assert_process_publication_outcomes(through_make=True)
+
     def test_incomplete_batch_and_identity_mismatch_do_not_advance_checkpoint(self):
         with tempfile.TemporaryDirectory() as d:
             store = storage.WindowStore(Path(d), {'program':'a'}, 0, 0)
