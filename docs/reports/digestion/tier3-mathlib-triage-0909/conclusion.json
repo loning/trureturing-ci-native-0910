@@ -1800,6 +1800,22 @@
       ],
       "archived_probe": "probes/Readback75.lean",
       "log_encoding": "gzip"
+    },
+    {
+      "probe": "Disk90",
+      "command": "make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Disk90.lean'",
+      "exit": 2,
+      "signal": null,
+      "log": "logs/Disk90.log.gz",
+      "started": "2026-09-09T05:12:59.783Z",
+      "atoms": [
+        "96902e5b1d0b9ac78c37f6c1f75fd1d5043bfd6c18f5e2451352b6fbc6977b46"
+      ],
+      "indices": [
+        90
+      ],
+      "archived_probe": "probes/Disk90.lean",
+      "log_encoding": "gzip"
     }
   ],
   "unscreened": [
@@ -2615,6 +2631,38 @@
       ],
       "exit": 0,
       "line_match_count": 6
+    },
+    {
+      "id": "finite-geometry",
+      "scope": "D5",
+      "program": "rg",
+      "args": [
+        "-n",
+        "-i",
+        "-P",
+        "(schur_complement_eq₂₂|div_neg_iff_of_pos_right|mul_neg_iff_of_pos_left|sub_conj|trace_conjTranspose_mul_self|trace_mul_self|inner.*trace|trace.*inner)",
+        "D5",
+        "-g",
+        "*.lean"
+      ],
+      "exit": 0,
+      "line_match_count": 121
+    },
+    {
+      "id": "finite-geometry",
+      "scope": ".lake/packages/mathlib/Mathlib",
+      "program": "rg",
+      "args": [
+        "-n",
+        "-i",
+        "-P",
+        "(schur_complement_eq₂₂|div_neg_iff_of_pos_right|mul_neg_iff_of_pos_left|sub_conj|trace_conjTranspose_mul_self|trace_mul_self|inner.*trace|trace.*inner)",
+        ".lake/packages/mathlib/Mathlib",
+        "-g",
+        "*.lean"
+      ],
+      "exit": 0,
+      "line_match_count": 21
     }
   ],
   "mathlib_pin": {
@@ -2628,7 +2676,8 @@
       "c8ba70a54e9b859185515602015f630d89019ae9",
       "6009dcbe96888c3ca23ad3e331da2efec04b9452",
       "dad8e18532ec0063093aad820e8bd4b4c8cf80dc",
-      "e77cf4009e6801e994e5bfff59a6b124c61ae292"
+      "e77cf4009e6801e994e5bfff59a6b124c61ae292",
+      "fcbe1bf4be3d38a2324acb6d7b392c46919c280b"
     ],
     "branch": "lane/math/tier3-mathlib-triage-0909",
     "note": "Commits through the preceding checkpoint; final delivery envelope also records its containing report commit."

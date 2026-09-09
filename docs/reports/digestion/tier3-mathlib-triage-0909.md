@@ -145,6 +145,7 @@ Logs ending in `.gz` are losslessly compressed complete stdout/stderr, including
 
 - baseline: `make 'lean'`; EXIT=0; [log](tier3-mathlib-triage-0909/logs/baseline.log.gz); atoms .
 - Readback75: `make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Readback75.lean'`; EXIT=0; [log](tier3-mathlib-triage-0909/logs/Readback75.log.gz); atoms 7d5d9c72f7ad9abb794dd61d99e68ff5adc1271970f00e4a009b9e334680a0d2.
+- Disk90: `make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Disk90.lean'`; EXIT=2; [log](tier3-mathlib-triage-0909/logs/Disk90.log.gz); atoms 96902e5b1d0b9ac78c37f6c1f75fd1d5043bfd6c18f5e2451352b6fbc6977b46.
 
 ## search_receipts
 
@@ -198,6 +199,8 @@ Full commands and untruncated hits: [search-receipts.json](tier3-mathlib-triage-
 | polynomial-readback | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '(readback|回读|Jensen.*coeff|coeff.*Jensen|falling.factorial|q.multinomial)' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 3 | 0 |
 | logderiv-residue | D5 | `rg '-n' '-i' '-P' '(residue.*logDeriv|logDeriv.*residue|logDeriv.*order|order.*logDeriv)' 'D5' '-g' '*.lean'` | 27 | 0 |
 | logderiv-residue | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '(residue.*logDeriv|logDeriv.*residue|logDeriv.*order|order.*logDeriv)' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 6 | 0 |
+| finite-geometry | D5 | `rg '-n' '-i' '-P' '(schur_complement_eq₂₂|div_neg_iff_of_pos_right|mul_neg_iff_of_pos_left|sub_conj|trace_conjTranspose_mul_self|trace_mul_self|inner.*trace|trace.*inner)' 'D5' '-g' '*.lean'` | 121 | 0 |
+| finite-geometry | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '(schur_complement_eq₂₂|div_neg_iff_of_pos_right|mul_neg_iff_of_pos_left|sub_conj|trace_conjTranspose_mul_self|trace_mul_self|inner.*trace|trace.*inner)' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 21 | 0 |
 
 The positive and negative controls share case-insensitivity, alternation, word boundaries and whitespace matching. The initial `negative-spectrum` query matched `registerTraceClass` (logging infrastructure); the refined word-boundary query excludes this false positive. Generic Caratheodory measure hits are not Toeplitz spectral theorems.
 
@@ -285,6 +288,7 @@ The positive and negative controls share case-insensitivity, alternation, word b
 - `6009dcbe96888c3ca23ad3e331da2efec04b9452`
 - `dad8e18532ec0063093aad820e8bd4b4c8cf80dc`
 - `e77cf4009e6801e994e5bfff59a6b124c61ae292`
+- `fcbe1bf4be3d38a2324acb6d7b392c46919c280b`
 
 Every listed checkpoint was pushed successfully. The final runner envelope includes the commit containing this final report (a commit cannot contain its own hash).
 
