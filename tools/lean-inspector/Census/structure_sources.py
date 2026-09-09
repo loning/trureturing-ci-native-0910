@@ -176,6 +176,8 @@ def synchronize(repository, directory, cache, store, measure):
     plans = {}
     binary = None
     for mode, manifest, hashes in [("bodies", project, project_hashes), ("names", external, upstream_hashes)]:
+        if any(not pathlib.Path(p).is_file() for _, paths in manifest for p in paths):
+            raise ValueError("missing_olean_part")
         plan = part_plan(manifest, hashes, reader, raw, mode)
         missing = [[m, p["paths"]] for m, p in plan.items() if any(not f.is_file() for _, f in p["parts"])]
         stats[mode + "_part_hits"] = sum(f.is_file() for p in plan.values() for _, f in p["parts"])

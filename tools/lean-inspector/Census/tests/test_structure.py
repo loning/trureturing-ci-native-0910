@@ -104,7 +104,7 @@ class StructureTests(unittest.TestCase):
         keys = [key("shared.congr_simp", m) for m in ["Left", "Right"]] + [key("a")]
         rows, _ = self.run_graph(keys)
         self.assertEqual(len(rows), 3)
-        self.assertEqual(rows[key("a")[2]]["reason"], "frozen_key_ambiguous")
+        self.assertEqual(rows[key("a")[2]].get("reason"), "frozen_key_ambiguous")
         self.assertIsNone(rows[key("a")[2]]["readings"])
         self.store.module("Fixture", ["Left"], "repository")
         rows, _ = self.run_graph(keys)
@@ -171,6 +171,39 @@ class StructureTests(unittest.TestCase):
         rows, _ = self.run_graph([key("a"), key("b")])
         self.assertEqual(self.reading(rows, "b")["direct_frozen_prerequisites"], [])
         self.assertEqual(self.reading(rows, "b")["value_constant_count"], 1)
+
+    def test_cache_tracks_helper_body_and_root_read_error(self):
+        keys = self.panel()
+        cache = self.path / "cache"
+        self.run_graph(keys, cache=cache)
+        self.decl("h", ["c"], kind="def")
+        rows, summary = self.run_graph(keys, cache=cache)
+        self.assertEqual(self.reading(rows, "b")["folded_frozen_prerequisites"][0]["statement_id"], key("c")[2])
+        self.assertGreater(summary["cache"]["fold_hits"], 0)
+        self.store.module("Fixture", ["Core"], "repository", error="missing_olean_part")
+        rows, _ = self.run_graph(keys, cache=cache)
+        self.assertEqual(rows[key("a")[2]]["reason"], "missing_olean_part")
+
+    def test_unresolved_extraction_propagates_missing_graph_fields(self):
+        self.decl("a", [])
+        self.decl("b", ["absent"])
+        self.decl("c", ["b"])
+        rows, _ = self.run_graph([key(n) for n in "abc"])
+        self.assertEqual(rows[key("c")[2]]["status"], "partial")
+        self.assertEqual(rows[key("c")[2]]["missing_fields"], ["descendant_subgraph_size", "frozen_dag_depth"])
+        self.assertEqual(self.reading(rows, "a")["frozen_dag_depth"], 0)
+        self.assertIsNone(self.reading(rows, "a")["descendant_subgraph_size"])
+
+    def test_upstream_name_collisions_preserve_all_provenance(self):
+        self.store.module("OtherCore", [], "Init")
+        self.decl("True.intro", [], module="OtherCore", kind="other")
+        self.store.module("Fixture", ["Core", "OtherCore"], "repository")
+        self.decl("a", ["True.intro"])
+        rows, _ = self.run_graph([key("a")])
+        boundary = self.reading(rows, "a")["upstream_boundary_constants"]
+        self.assertEqual(boundary[0]["provenance"], [
+            {"declaring_module": "Core", "library": "Init"},
+            {"declaring_module": "OtherCore", "library": "Init"}])
 
 
 if __name__ == "__main__":

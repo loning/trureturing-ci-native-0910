@@ -151,7 +151,8 @@ class Store:
         token_path = folder / (address + ".tokens.gz")
         frontier_path = folder / (address + ".frontier.gz")
         root = self.raw(key[0], key[1])
-        root_hash = root[3] if root else None
+        root_state = self.db.execute("SELECT library,error FROM modules WHERE name=?", (key[0],)).fetchone()
+        root_hash = digest([root[3] if root else None, root_state, self.frozen_keys(key[0], key[1])])
         if entry_path.is_file() and token_path.is_file() and frontier_path.is_file():
             entry = json.loads(entry_path.read_bytes())
             if self.cache_valid(entry, token_path, key, policy, root_hash):
