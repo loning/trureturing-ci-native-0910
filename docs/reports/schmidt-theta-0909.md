@@ -191,3 +191,14 @@ the matrix-to-operator route to actual `LinearMap.singularValues`.
 Two incidental searches exited 2 (a malformed Makefile regexp and a quoted
 WithBot wildcard); corrected searches returned the actual definitions above.
 Neither error is treated as a negative search result.
+
+## Probe Run 04
+
+`make lean` exited 2 (`lean-bind-04.log`). The all-theta Gram eigenvalue
+identity, local diagonal phase factorization, normalized whole state, all-cut
+rank, and rank 12 at 4|4 now pass with the standard three axioms. No source
+claim has been weakened. The remaining errors are in the explicit bridge to
+Mathlib singular values (an unspecified intermediate basis and omitted explicit
+linear-map arguments), the entropy definition's decidable index instance, and
+a natural-number zero cast in the count formula. These failed declarations
+are not accepted despite error-recovery axiom output.
