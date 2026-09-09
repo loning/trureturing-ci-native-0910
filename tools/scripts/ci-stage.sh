@@ -21,7 +21,9 @@ fi
 case "$stage" in
   engineering)
     [[ $# == 1 ]] || exit 2
-    export CI=true
+    export CI=true DOTNET_CLI_UI_LANGUAGE=en-US
+    python3 tools/scripts/report/dotnet_producer.py prepare "$ROOT"
+    export CustomAfterMicrosoftCSharpTargets="$ROOT/build/judge-seed/seed.targets"
     /bin/bash tools/scripts/report/report-supervisor.sh --role ci-bootstrap-restore -- \
       dotnet restore tools/StrataLint.EngineeringScope/StrataLint.EngineeringScope.csproj --locked-mode
     /bin/bash tools/scripts/report/report-supervisor.sh --role ci-bootstrap-build -- \

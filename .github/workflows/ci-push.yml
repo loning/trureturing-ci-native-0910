@@ -49,7 +49,7 @@ jobs:
         with:
           global-json-file: global.json
       - id: keys
-        run: python3 tools/scripts/worktree/lean_actions.py keys --repository "$GITHUB_WORKSPACE"
+        run: python3 tools/scripts/worktree/lean_actions.py keys --repository "$GITHUB_WORKSPACE" --layers judge
       - id: elan
         if: steps.keys.outputs.elan_key != ''
         continue-on-error: true
@@ -58,6 +58,18 @@ jobs:
           path: ~/.elan
           key: ${{ steps.keys.outputs.elan_key }}
       - run: tools/scripts/workflow/install-lean-toolchain.sh lean-toolchain --github-path "$GITHUB_PATH"
+      - id: judge
+        if: steps.keys.outputs.judge_key != ''
+        continue-on-error: true
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ steps.keys.outputs.judge_path }}
+          key: ${{ steps.keys.outputs.judge_key }}
+          restore-keys: ${{ steps.keys.outputs.judge_restore_prefix }}
+      - name: Restore optional judge seed
+        env:
+          JUDGE_KEY: ${{ steps.judge.outputs.cache-matched-key }}
+        run: python3 tools/scripts/worktree/lean_actions.py restore --repository "$GITHUB_WORKSPACE" --layers judge --judge-key "$JUDGE_KEY"
       - run: make -C tools engineering
       - id: pack
         run: python3 tools/scripts/workflow/ci.py pack --repository "$GITHUB_WORKSPACE" --stage engineering --commit "$CANDIDATE_SHA" --archive "$RUNNER_TEMP/ci-engineering.tar.gz"
@@ -69,6 +81,17 @@ jobs:
           if-no-files-found: error
           compression-level: 0
           retention-days: 7
+      - id: snapshot
+        if: github.event_name == 'push' && github.ref == 'refs/heads/dev' && inputs.candidate_sha == ''
+        env:
+          STRATALINT_CHECK_SUCCEEDED: 'true'
+        run: python3 tools/scripts/worktree/lean_actions.py snapshot --repository "$GITHUB_WORKSPACE" --layers judge
+      - if: github.event_name == 'push' && github.ref == 'refs/heads/dev' && inputs.candidate_sha == '' && steps.snapshot.outputs.judge_ready == 'true'
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ steps.keys.outputs.judge_path }}
+          key: ${{ steps.keys.outputs.judge_key }}
       - if: always()
         run: python3 tools/scripts/workflow/ci.py summary --repository "$GITHUB_WORKSPACE" --stage engineering
 
