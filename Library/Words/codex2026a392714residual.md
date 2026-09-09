@@ -243,6 +243,14 @@ A5/A5.1 真源已查：utility 位于 anchors 与 digest 之间，无计算性�
 候选 D5/S1/Words 根递归计数 103、Blueprint 对应根 120，故不在根新增；
 实际落点须另数一个现有子目录容量。
 
+
+## Lean 核验批次 2
+
+热树增量最终 EXIT=0，无诊断。已验证相邻交换只改变一个前缀长度、交换二次还原、
+无不动点、signInt 反号，以及短前缀上界条件下 Upper 的保持。
+首次 rw 误选到要保留的前缀，指定 k=v.val+1 后闭合；未改陈述。
+落点候选 Compositions 子目录实际递归计数：D5 6，Blueprint 12，均小于 48。
+
 <!-- lean-checkpoint -->
 ## 当前已编译源码快照
 
@@ -298,6 +306,48 @@ theorem prefixSum_pos {n} (p : Equiv.Perm (Fin n)) (i : Fin n) :
     0 < prefixSum p (i.val + 1) := by
   rw [prefixSum_step]
   omega
+
+
+theorem prefixSum_swap {n} (p : Equiv.Perm (Fin n)) (u v : Fin n)
+    (huv : v.val = u.val + 1) {k : ℕ} (hk : k ≠ v.val) :
+    prefixSum (p * Equiv.swap u v) k = prefixSum p k := by
+  classical
+  have hm (i : Fin n) : (Equiv.swap u v i).val < k ↔ i.val < k := by
+    by_cases hiu : i = u
+    · subst i; simp only [Equiv.swap_apply_left]; omega
+    · by_cases hiv : i = v
+      · subst i; simp only [Equiv.swap_apply_right]; omega
+      · simp [Equiv.swap_apply_of_ne_of_ne hiu hiv]
+  simpa only [prefixSum, Finset.sum_filter, Equiv.Perm.mul_apply, hm] using
+    (Equiv.sum_comp (Equiv.swap u v) fun i : Fin n =>
+      if i.val < k then (p i).val + 1 else 0)
+
+theorem swap_twice {n} (p : Equiv.Perm (Fin n)) (u v : Fin n) :
+    (p * Equiv.swap u v) * Equiv.swap u v = p := by simp [mul_assoc]
+
+theorem swap_ne {n} (p : Equiv.Perm (Fin n)) (u v : Fin n) (h : u ≠ v) :
+    p * Equiv.swap u v ≠ p := by
+  intro he
+  have he' := congrArg (fun q : Equiv.Perm (Fin n) => q u) he
+  simp only [Equiv.Perm.mul_apply, Equiv.swap_apply_left] at he'
+  exact h (p.injective he').symm
+
+theorem signInt_swap {n} (p : Equiv.Perm (Fin n)) (u v : Fin n) (h : u ≠ v) :
+    signInt (p * Equiv.swap u v) = -signInt p := by
+  simp [signInt, Equiv.Perm.sign_mul, Equiv.Perm.sign_swap h]
+
+theorem upper_swap_of_short {n} (a b : Equiv.Perm (Fin n)) (u v : Fin n)
+    (huv : v.val = u.val + 1) (hb : Upper a b)
+    (hshort : prefixSum b (v.val + 1) ≤ prefixSum a v.val) :
+    Upper a (b * Equiv.swap u v) := by
+  intro k hk
+  by_cases hkv : k = v.val
+  · subst k
+    have hmono := prefixSum_mono (b * Equiv.swap u v) (Nat.le_succ v.val)
+    rw [prefixSum_swap b u v huv (k := v.val + 1) (by omega)] at hmono
+    exact hmono.trans hshort
+  · rw [prefixSum_swap b u v huv hkv]
+    exact hb k hk
 
 end Residual
 ```
