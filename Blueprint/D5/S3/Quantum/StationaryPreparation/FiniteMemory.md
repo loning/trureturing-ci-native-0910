@@ -114,7 +114,7 @@ $$\forall A \in Type,\; Fintype\left(A\right) \Rightarrow \left(\forall H \in Ty
 
 *Commentary.*
 
-Applying the identity tensor V to the n-symbol output gives the next output, regrouped as an n-symbol word followed by one symbol. snoc(w,i) appends i to w. The outer coefficient inverse has values in Space(A) tensor H; the inner inverse has values in H. Both are exact equivalences, and every word has the unique split into its initial segment and last symbol. This identifies the word presentation with the tensor operation at every stage.
+Applying the identity tensor V to the n-symbol output gives the next output, regrouped as an n-symbol word followed by one symbol. snoc(w,i) appends i to w. The outer coefficient inverse has values in Space(A) tensor H; the inner inverse has values in H. Both are exact equivalences, and every word has the unique split into its initial segment and last symbol. The zero and successor identities prove this last-symbol rule by induction on the prefix length. Tensor-map linearity then gives the displayed equality.
 
 Now H is finite-dimensional over the complex numbers, and K is Fin(finrank(C,H)). coordinates(H) is an isometric linear equivalence from H to Space(K). tensorCoordinates(H,I) is an isometric linear equivalence from Space(I) tensor H to Space(I times K), formed from the tensor product orthonormal basis. Thus K has exactly the dimension of H, including zero.
 
@@ -164,7 +164,7 @@ $$\forall A \in Type,\; Fintype\left(A\right) \Rightarrow \left(\forall H \in Ty
 
 *Commentary.*
 
-Fix any blank symbol. The blank embedding and the coordinate form of V are two isometric embeddings into the same finite-dimensional joint space. A unitary agrees with them. Their letter maps intertwine, so induction on the word gives the middle equality. The actual circuit coefficient theorem then gives the last vector equality for every length, starting time and x. The schedule in circuit is the constant function with value U.
+Fix any blank symbol. The blank embedding and the coordinate form of V are two isometric embeddings into the same finite-dimensional joint space. A unitary agrees with them. Their letter maps intertwine. Induction by appending the last symbol uses the identity-tensor-V equality above to transport the whole prefix and gives the middle equality. The circuit coefficient theorem then gives the last vector equality for every length, starting time and x. The schedule in circuit is the constant function with value U.
 
 **Theorem 1.14 (output_norm).**
 
@@ -190,7 +190,7 @@ $$\forall A \in Type,\; Fintype\left(A\right) \Rightarrow \left(\forall H \in Ty
 
 *Commentary.*
 
-Transport the exact tensor output to the fixed-blank, constant-unitary circuit. coordinates preserves both endpoint norms and the common f. Applying the physical stationary bound gives the displayed dimension bound. Zero occupation is included; a unit initial vector excludes zero-dimensional H.
+The common-memory tensor equivalence gives every word coefficient. The fixed-unitary word transport gives the corresponding circuit coefficients. coordinates preserves both endpoint norms and the common f. Applying the physical stationary bound gives the displayed dimension bound. Zero occupation is included; a unit initial vector excludes zero-dimensional H.
 
 **Definition 1.16 (capacityOccupation).**
 
