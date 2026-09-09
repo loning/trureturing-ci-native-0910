@@ -23,10 +23,11 @@ class StructureSourceTests(unittest.TestCase):
             plans = part_plan([["A", ["base", "server", "private"]]], hashes, "reader", root, "bodies")
             records = [
                 {"module": "A", "part": "base", "imports": []},
-                {"name": name_key("h"), "kind": "opaque", "value": None, "type": []},
+                {"name": ["str", ["anonymous"], "h"], "kind": "opaque", "value": None, "type": []},
                 {"module": "A", "part": "server", "imports": []},
                 {"module": "A", "part": "private", "imports": []},
-                {"name": name_key("h"), "kind": "opaque", "value": [name_key("a")], "type": []}]
+                {"name": ["str", ["anonymous"], "h"], "kind": "opaque",
+                 "value": [["str", ["anonymous"], "a"]], "type": []}]
             from streaming import canonical
             raw.write_bytes(b"".join(canonical(r) for r in records))
             stores = [Store(root / (n + ".sqlite")) for n in ["stream", "restore"]]
@@ -40,6 +41,22 @@ class StructureSourceTests(unittest.TestCase):
             finally:
                 for store in stores:
                     store.close()
+
+    def test_structured_names_preserve_unicode_and_numeric_components(self):
+        from Structure.sources import pack_declaration
+        with tempfile.TemporaryDirectory() as scratch:
+            store = Store(pathlib.Path(scratch) / "names.sqlite")
+            try:
+                store.module("A", [], "repository")
+                row = {"name": ["num", ["str", ["anonymous"], "é"], 7], "kind": "theorem",
+                       "value": [["str", ["anonymous"], "7"]], "type": [["anonymous"]]}
+                stats = dict(packed_declarations=0, value_walks=0, type_walks=0,
+                             value_name_incidences=0, type_name_incidences=0)
+                pack_declaration(store, "A", row, "repository", stats)
+                self.assertEqual(store.raw("A", "nn(ns(n0,2:é),7)")[:3],
+                                 ("theorem", ["ns(n0,1:7)"], ["n0"]))
+            finally:
+                store.close()
 
     def test_part_cache_binds_content_layout_reader_but_not_tree_path(self):
         hashes = [["A", "base", 3, "digest-a"], ["A", "server", 2, "digest-s"]]

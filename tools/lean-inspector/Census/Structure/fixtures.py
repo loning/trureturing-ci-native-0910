@@ -8,6 +8,7 @@ from phases import write
 from resources import run
 from Structure.graph import analyse
 from Structure.store import Store
+from Structure.sources import structured_name_key
 
 
 def check_structure(repository, directory):
@@ -21,7 +22,10 @@ def check_structure(repository, directory):
     binary = build(repository, "structure.lean", env)
     run([str(binary), str(manifest), str(raw), "bodies"], folder, "native", cwd=repository, env=env)
     rows = [json.loads(line) for line in raw.read_text().splitlines()]
-    declarations = {r["name"]: r for r in rows if "name" in r}
+    declarations = {structured_name_key(r["name"]): dict(r,
+        name=structured_name_key(r["name"]),
+        value=None if r["value"] is None else [structured_name_key(n) for n in r["value"]],
+        type=[structured_name_key(n) for n in r["type"]]) for r in rows if "name" in r}
     prefix = "LeanInformationAudit.Tests.Census.Structure."
     named = lambda n: name_key(prefix + n)
     assert declarations[named("a")]["value"] == []

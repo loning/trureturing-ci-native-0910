@@ -1,5 +1,4 @@
 import LeanInformationAudit.NameWire
-import LeanInformationAudit.StatementEncoding
 import LeanInformationAudit.DeclarationDependencies
 
 namespace LeanInformationAudit.CensusStructure
@@ -18,9 +17,9 @@ def kind (info : ConstantInfo) : String :=
 /-- Raw summaries do not depend on the frozen set or core policy. In particular,
 a newly frozen helper reuses its raw summary and changes the projection cut. -/
 def summary (info : ConstantInfo) : Json :=
-  Json.mkObj [("name", toJson (encodeName info.name)), ("kind", toJson (kind info)),
-    ("value", toJson ((declarationValueDependencies info).map (·.map encodeName))),
-    ("type", toJson ((declarationTypeDependencies info).map encodeName))]
+  Json.mkObj [("name", nameJson info.name), ("kind", toJson (kind info)),
+    ("value", toJson ((declarationValueDependencies info).map (·.map nameJson))),
+    ("type", toJson ((declarationTypeDependencies info).map nameJson))]
 
 @[noinline] private unsafe def emitPart (moduleName part : String) (data : ModuleData)
     (bodies : Bool) (out : IO.FS.Stream) : IO Unit := do
@@ -31,7 +30,7 @@ def summary (info : ConstantInfo) : Json :=
   else
     -- Membership only at the package boundary; upstream proof values are never walked.
     for name in data.constNames do
-      out.putStrLn (Json.mkObj [("name", toJson (encodeName name))]).compress
+      out.putStrLn (Json.mkObj [("name", nameJson name)]).compress
 
 /-- No region-backed Name, Expr or JSON escapes this lifetime. Parts are read
 together and released in reverse order, including server/private overrides. -/
