@@ -63,3 +63,5 @@
 ### 语义回声与依赖读数
 
 追加 private 的前四项回声，直接从自然数卷积递推计算，不使用奇偶定理。首次编译仅该 private echo 有两处 simp 未归约：`coeff 0 (mk seq ^ 4)`、`if Even 3 then … else …`；修复为显式 constantCoeff/map_pow 和奇偶分支。主定理仍闭合。编译期 `getUsedConstants` 已确认七条预登记直接依赖，包括 `square_even_coeff → ConvolutionRecurrenceOddPowersOfTwo.convolution_pairing`，复用不是闲置 import。
+
+Private `initial_echo` 修复后正式模块编译 EXIT=0、零 warning/error，前四项 1,1,2,14 经 kernel 验证，未作为公开有限实例冻结。另独立 Python 原卷积探针 n=0..300：前十项与 brief 全等，奇指标 [0,1,5,21,85] 与谓词预测逐项相同，耗时0.599秒；只作语义回声，不计证明进展。

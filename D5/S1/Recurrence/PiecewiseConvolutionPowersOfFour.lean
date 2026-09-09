@@ -180,4 +180,39 @@ theorem a368628_odd_iff (n : ℕ) : Odd (seq n) ↔ ∃ k : ℕ, 3 * n + 1 = 4 ^
 #print axioms seq_four_mul_add_one
 #print axioms a368628_odd_iff
 
+
+-- A coefficient-level echo of the original integer recurrence, not of the parity theorem.
+private theorem initial_echo : seq 0 = 1 ∧ seq 1 = 1 ∧ seq 2 = 2 ∧ seq 3 = 14 := by
+  have h1 : seq 1 = 1 := by
+    rw [seq_recurrence (by decide), if_neg (by decide : ¬Even 1)]
+    norm_num only [Nat.sub_self, coeff_zero_eq_constantCoeff, map_pow]
+    simp only [← coeff_zero_eq_constantCoeff, series, coeff_mk, seq_zero, one_pow]
+  have h2 : seq 2 = 2 := by
+    have h := seq_recurrence (n := 2) (by decide)
+    norm_num [series, pow_succ, coeff_mul, Finset.Nat.antidiagonal_succ, seq_zero, h1] at h
+    exact h
+  have h3 : seq 3 = 14 := by
+    have h := seq_recurrence (n := 3) (by decide)
+    rw [if_neg (by decide : ¬Even 3)] at h
+    norm_num [series, pow_succ, coeff_mul, Finset.Nat.antidiagonal_succ, seq_zero, h1, h2] at h
+    exact h
+  exact ⟨seq_zero, h1, h2, h3⟩
+
+run_cmd do
+  for (consumer, provider) in
+      [( ``a368628_odd_iff, ``seq_even_index_zero),
+       ( ``a368628_odd_iff, ``seq_four_mul_add_three),
+       ( ``a368628_odd_iff, ``seq_four_mul_add_one),
+       ( ``seq_even_index_zero, ``square_odd_coeff),
+       ( ``square_odd_coeff, ``square_even_coeff),
+       ( ``square_even_coeff, ``convolution_pairing),
+       ( ``seq_recurrence, ``pow_coeff_congr)] do
+    let some info := (← Lean.getEnv).checked.get.find? consumer
+      | throwError "Missing declaration: {consumer}"
+    let some value := info.value? (allowOpaque := true)
+      | throwError "Missing proof body: {consumer}"
+    unless value.getUsedConstants.contains provider do
+      throwError "Missing elaborated dependency: {consumer} -> {provider}"
+    Lean.logInfo m!"ELABORATED_DEPENDENCY {consumer} -> {provider}"
+
 end D5.S1.Recurrence.PiecewiseConvolutionPowersOfFour
