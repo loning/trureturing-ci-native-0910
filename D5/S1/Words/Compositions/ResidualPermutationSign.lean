@@ -2,7 +2,7 @@
    generality: G
    mirror-B: D5/B/S1/Words/Compositions/ResidualPermutationSign
    mirror-E: none(waiver:unbounded-symbolic-proof)
-   anchors: [codex2026a392714residual]
+   anchors: []
    utility: none
    digest: Interlaced prefix intervals have signed permutation sum supported only at identity. -/
 
