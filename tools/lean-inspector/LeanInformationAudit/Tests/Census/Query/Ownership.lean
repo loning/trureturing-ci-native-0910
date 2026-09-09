@@ -19,6 +19,8 @@ run_cmd liftTermElabM do
   unless value.owningModule == owner do
     throwError "ownerMembershipPositive: recorded provenance was lost"
   let scope := DispositionCensus.censusRootModules env owner
+  if scope.contains (CensusQuery.owningModule env name) then
+    throwError "ownerMembershipScopedPositive: first importer was not excluded"
   unless <- CensusOwnership.theoremInScope env scope name do
     throwError "ownerMembershipScopedPositive: valid occurrence outside first-import scope rejected"
   DispositionCensus.validateEvidence owner ⟨"fixture-head", #[⟨key, .observed
@@ -37,5 +39,10 @@ run_cmd liftTermElabM do
     if CensusOwnership.moduleContainsTheorem data candidate then
       throwError "{label}: mismatching declaration accepted"
   let parent <- getConstInfo `LeanInformationAudit.Tests.Census.Query.ownerParent
-  if CensusOwnership.moduleContainsTheorem data parent then
+  let some parentIndex := env.getModuleIdx? `LeanInformationAudit.Tests.Census.Query.OwnerSource
+    | throwError "ownerMembershipWrongKind: missing definition module"
+  let parentData := env.header.moduleData[parentIndex.toNat]!
+  unless parentData.constNames.contains parent.name do
+    throwError "ownerMembershipWrongKind: definition absent from the control module"
+  if CensusOwnership.moduleContainsTheorem parentData parent then
     throwError "ownerMembershipWrongKind: definition accepted as theorem"
