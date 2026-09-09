@@ -309,6 +309,19 @@ pin_sha256=sha256:6c4c682ffba051b5744fe7a75ccc99d7f3b20227b3b026f392f3315be0adaa
 `make show-atom` 以纯 hash 重跑 EXIT=0，原文与规范化文本均与 S(a) 一致。
 前面的“尚未运行/未证明”是各批次当时的历史记录，本节更新当前验证状态。
 
+## 正式核验批次 2：声明报告与展开后的常量边
+
+`make lean-report` EXIT=0，62.092479959 秒；raw report SHA-256 为
+8ead6154f9db782a552e2727b4d9314edf838ac5828cb27941d99b2f41951fa0。
+`DependencyAudit.lean` 对正式模块的环境常量读取 theorem/definition 的 proof body，
+以 `getUsedConstants` 打印模块内部边，并打印三条公开定理的公理闭包；
+EXIT=0，8.518048 秒。实际每条公理闭包均为 propext、Classical.choice、Quot.sound。
+其代码与全部输出保存在 attempt；此读取不把依赖出现自动判作语义活用。
+现场边确认 signed_residual_sum → rowSum_eq_upper → lower_cut_removal，
+及 signed_residual_sum → upper_sum_vanish → upper_fixed_prefix / exists_min_move。
+lower_cut_removal → upper_swap_of_short / swap_sum_zero。
+语义活路径将在最终逐声明账中结合证明项的用途核对。
+
 <!-- lean-checkpoint -->
 ## 当前已编译源码快照
 
