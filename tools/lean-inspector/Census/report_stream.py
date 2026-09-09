@@ -3,7 +3,7 @@
 import json
 
 
-def fields(path, chunk_size=65536):
+def fields(path, chunk_size=65536, array_field="nodes"):
     """Yield metadata fields and individual nodes, never the full node array.
 
     Space is one maximum module JSON value plus a fixed input buffer. The
@@ -65,7 +65,7 @@ def fields(path, chunk_size=65536):
                     raise ValueError("IE-C044 invalid or duplicate export field")
                 seen.add(key)
                 take(":")
-                if key == "nodes":
+                if key == array_field:
                     take("[")
                     if peek() != "]":
                         while True:
@@ -84,5 +84,5 @@ def fields(path, chunk_size=65536):
                 if peek() == "}":
                     raise ValueError("IE-C044 trailing export field comma")
         take("}")
-        if "nodes" not in seen or peek():
+        if array_field not in seen or peek():
             raise ValueError("IE-C044 missing nodes or trailing export JSON")

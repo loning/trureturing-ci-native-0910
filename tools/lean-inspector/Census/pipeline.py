@@ -247,6 +247,12 @@ def execute(options):
         # consume a whole-stream receipt. These measured rows remain report-only.
         state["publication"] = {"status": "blocked", "accounted": len(keys),
             "reason": "certificate transport requires per-root receipts; whole-stream integration belongs to the certificate lane"}
+        if not options.no_structure:
+            from structure import run_sidecar
+            # Only completed census bytes are inputs. Structural failures have
+            # their own closed diagnostics and never change accounting status.
+            os.environ.update(env)
+            state["structure"] = run_sidecar(repository, directory, pathlib.Path(options.lean_report))
         print(json.dumps({"status": state["status"], "counts": state["counts"], "replay": state["replay"]}), flush=True)
         return 0 if state["status"] == "complete" else 2
     except BaseException as error:
@@ -263,6 +269,7 @@ def main():
     parser.add_argument("--fixture-truth-export", help="synthetic fixture input; production revisions reject")
     parser.add_argument("--prefix", default="D5", help="explicit partial measurement scope")
     parser.add_argument("--replay-of", help="rerun every phase and compare canonical outputs to this prior run")
+    parser.add_argument("--no-structure", action="store_true", help="omit the report-only structural sidecar")
     return execute(parser.parse_args())
 
 

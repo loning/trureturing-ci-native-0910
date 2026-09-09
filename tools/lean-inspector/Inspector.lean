@@ -2,6 +2,7 @@
 -- byte-identical .NET statement addresses before publishing the report.
 
 import LeanInformationAudit.StatementEncoding
+import LeanInformationAudit.DeclarationDependencies
 import Lean.Environment
 import Lean.CoreM
 import Lean.PrivateName
@@ -67,19 +68,6 @@ def kindOf : ConstantInfo → String
 def sortedUnique (values : Array String) : Array String :=
   (values.qsort (· < ·)).foldl (init := #[]) fun result value =>
     if result.back? == some value then result else result.push value
-
-/-- The constants whose axiom closures a declaration's own closure is the union
-of. Mirrors the per-kind traversal of `Lean.CollectAxioms.collect`: bodies (type
-and, where present, value/constructors) contribute their used constants. -/
-def declarationDependencies : ConstantInfo → Array Name
-  | .axiomInfo info => info.type.getUsedConstants
-  | .defnInfo info => info.type.getUsedConstants ++ info.value.getUsedConstants
-  | .thmInfo info => info.type.getUsedConstants ++ info.value.getUsedConstants
-  | .opaqueInfo info => info.type.getUsedConstants ++ info.value.getUsedConstants
-  | .quotInfo _ => #[]
-  | .ctorInfo info => info.type.getUsedConstants
-  | .recInfo info => info.type.getUsedConstants
-  | .inductInfo info => info.type.getUsedConstants ++ info.ctors.toArray
 
 /-- Report-shared state for axiom-closure collection. `closure` memoizes the final
 sorted axiom set of every constant once its strongly connected component has been
