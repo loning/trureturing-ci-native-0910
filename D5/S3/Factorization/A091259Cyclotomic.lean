@@ -44,7 +44,10 @@ theorem cyclotomicThree_prime_divisor {t q : ℕ} (hq : q.Prime)
   have ht0 : (t : ZMod q) ≠ 0 := by intro h; simp [h] at hz
   have ht1 : (t : ZMod q) ≠ 1 := by
     intro h
-    have h3 : (3 : ZMod q) = 0 := by convert hz using 1 <;> rw [h] <;> ring
+    have h3 : (3 : ZMod q) = 0 := by
+      convert hz using 1
+      rw [h]
+      ring
     have hd : q ∣ 3 := (ZMod.natCast_eq_zero_iff 3 q).1 h3
     exact hq3 ((Nat.dvd_prime (by decide : Nat.Prime 3)).1 hd |>.resolve_left hq.ne_one)
   have hc : (t : ZMod q) ^ 3 = 1 := by

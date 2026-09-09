@@ -8,6 +8,16 @@
 
 import D5.S3.Factorization.A091259PrimePower
 
+/- Search receipts (2026-09-09):
+   OEIS A091259 still labels Marcus's 2024-08-11 assertion a conjecture; A353816 explicitly
+   states the prime-exponent criterion used below. The quadratic-form characterization is
+   outside this theorem's scope. The three GoldenResource modules named in the task supply
+   the existing sigma API pattern. Pinned Mathlib supplies multiplicative_factorization,
+   sigma_apply_prime_pow, coprime_div_gcd_div_gcd, and orderOf_dvd_card_sub_one; these are reused.
+   Repository and pinned-Mathlib searches found no A091259 theorem. Authenticated GitHub code
+   search for A091259 language:Lean returned total_count=0. This is a bounded search receipt,
+   not a claim that no proof exists anywhere. -/
+
 namespace D5.S3.Factorization.A091259
 
 open D5.S3.Factorization.A091259Cancellation
