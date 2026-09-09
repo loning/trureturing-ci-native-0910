@@ -27,10 +27,14 @@ def prepare(repository, directory, membership, request, *, bound=BATCH_MODULE_BO
                           for p in sources if p.suffix in (".lean", ".py")])
     toolchain = digest([(repository / "lean-toolchain").read_text(),
                         (repository / "lake-manifest.json").read_text()])
-    imports, addresses, used_inputs = {}, {}, {}
+    imports, addresses, source_hashes = {}, {}, {}
     cache = cache or repository / ".lake/build/census/validation"
-    for key in membership["candidate_keys"]:
-        owner, _, identity = key
+    keys_by_id = {key[2]: key for key in membership["candidate_keys"]}
+
+    def inputs_for(key):
+        # Only one key's dependency digest lists are transient. Keeping those
+        # lists for every candidate would duplicate graph-sized data per key.
+        owner = key[0]
         root = membership["assignment"][owner]
         scope = set(scopes[root])
         evidence = sorted(scope.intersection(membership["evidence_modules"]) |
@@ -40,32 +44,37 @@ def prepare(repository, directory, membership, request, *, bound=BATCH_MODULE_BO
         # stay equal. Bind the actual project closure, plus pinned upstreams.
         owner_inputs = [[m, hashes[m]] for m in closure(graph, [owner]) if m in hashes]
         evidence_inputs = [[m, hashes[m]] for m in closure(graph, evidence) if m in hashes]
-        source_inputs = [[m, hashlib.sha256((repository / domain[m]).read_bytes()).hexdigest()]
-                         for m in evidence if m in hashes]
+        for module in evidence:
+            if module in hashes and module not in source_hashes:
+                source_hashes[module] = hashlib.sha256((repository / domain[module]).read_bytes()).hexdigest()
+        source_inputs = [[m, source_hashes[m]] for m in evidence if m in hashes]
         input_scope = digest([root, scopes[root], source_inputs])
-        address = validation_key(key, digest(owner_inputs), evidence_inputs, toolchain, query_digest, input_scope)
-        addresses[identity] = address
-        used_inputs[identity] = {"key": key, "owner_olean": hashes[owner], "owner_inputs": owner_inputs,
+        return {"key": key, "owner_olean": hashes[owner], "owner_inputs": owner_inputs,
             "evidence_inputs": evidence_inputs, "toolchain": toolchain, "query_source": query_digest,
             "scope": input_scope, "source_inputs": source_inputs}
-    # The receipt's logical batches cover every key, independent of cache warmth.
-    planned = candidate_batches(membership["candidate_keys"], imports, graph, bound)
+
     hits, missing, entries, source_inputs = [], [], [], []
     for key in membership["candidate_keys"]:
+        inputs = inputs_for(key)
+        addresses[key[2]] = validation_key(key, digest(inputs["owner_inputs"]), inputs["evidence_inputs"],
+                                         toolchain, query_digest, inputs["scope"])
         path = cache / (addresses[key[2]][7:] + ".json")
         if path.is_file():
             value = json.loads(path.read_bytes())
-            if value["inputs"] != used_inputs[key[2]] or value["row"]["statement_id"] != key[2]:
+            if value["inputs"] != inputs or value["row"]["statement_id"] != key[2]:
                 raise ValueError("IE-C044 validation cache input binding mismatch")
             hits.append(key)
             entries.append(value["row"])
             source_inputs.extend(value["source_inputs"])
         else:
             missing.append(key)
+    # The receipt's logical batches cover every key, independent of cache warmth.
+    planned = candidate_batches(membership["candidate_keys"], imports, graph, bound)
     return {"planned": planned, "execute": candidate_batches(missing, imports, graph, bound), "bound": bound,
             "key_bound": BATCH_KEY_BOUND,
             "hits": hits, "misses": missing, "entries": entries, "source_inputs": source_inputs,
-            "addresses": addresses, "inputs": used_inputs, "cache": cache, "scopes": scopes}
+            "addresses": addresses, "inputs_for": inputs_for, "keys_by_id": keys_by_id,
+            "cache": cache, "scopes": scopes}
 
 
 def run_batches(repository, directory, membership, request, plan, step, lean_binary):
@@ -118,7 +127,8 @@ def run_batches(repository, directory, membership, request, plan, step, lean_bin
         for row in value["entries"]:
             identity = row["statement_id"]
             atomic_json(plan["cache"] / (plan["addresses"][identity][7:] + ".json"), {
-                "inputs": plan["inputs"][identity], "row": row, "source_inputs": keyed_sources[identity]})
+                "inputs": plan["inputs_for"](plan["keys_by_id"][identity]),
+                "row": row, "source_inputs": keyed_sources[identity]})
         plan["entries"].extend(value["entries"])
         plan["source_inputs"].extend(value["source_inputs"])
         executions.append({"keys": batch["keys"], "receipt": receipt})
