@@ -1,0 +1,15 @@
+**定义 26（辅助乘法与平移）。** 定义 $\diamond:\mathcal L^2\to\mathcal L$ 为
+
+$$
+(c\diamond d)(n,r)=
+\sum_{\substack{(a,p)\in\operatorname{supp}(c),\ (b,q)\in\operatorname{supp}(d)\\
+\max(a,b)=n,\ p+q=r}}
+c(a,p)d(b,q),
+\qquad
+\alpha=\tau_1,\quad
+(\alpha c)(n,p)=c(n-1,p).
+\tag{CUM-AUX}
+$$
+
+辅助乘积的支撑包含于父支撑对的有限像，所以仍属 $\mathcal L$。$\diamond$ 只用于分析剖面代数，不替换默认 $\odot$，也不替换丰富乘法 $\boxtimes$；它的无延迟时间规则不作为定义 6 的新事件规则。
+
