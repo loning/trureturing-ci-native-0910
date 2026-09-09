@@ -29,7 +29,7 @@
    `Meta/domains.yaml` 已注册 `Arith`，地层 S3。报告根目录当前直属文件 37 个。
 5. mathlib 声明和外部文献：待本席实查，不采用分诊记录替代检索。
 
-## 未主张
+## 开工时的未主张（下文逐项更新）
 
 - 尚未跑 Lean、尚未证明目标、尚未冻结、尚未开 PR。
 - 尚未打开 OEIS/arXiv/第三方检索页；关于那些页面的输入均为 `ASSUMED-UNVERIFIED`。
@@ -125,3 +125,26 @@ Scribe 初次 `make emit` EXIT=2（9.871 秒）：数字 DSL 按单个十进制�
 
 第二次 `make emit` EXIT=2（33.140 秒）：本库 Library note loader 要求非空 strata_touched 为块列表，不接受这里的 YAML flow 列表；已按现存笔记改为块列表。对应 dangling-literature-reference 是笔记加载失败的后果。
 开 PR 前再查：`git fetch origin dev` 后 `git grep -P` 在 origin/dev 的 D5/Blueprint 搜 A375007/isolated quotient/remainder 仍无命中；`git merge-tree --write-tree HEAD origin/dev` EXIT=0，结果树 `a448e4dc5a6945f871974450c2dde98ec0d2ed7d`。
+
+## 冻结结算
+
+- `make emit` 最终 EXIT=0，55.276 秒；仅本题一个 Blueprint 改动，已读投影公式和说明。
+- canonical `deposit-header-check` EXIT=0，8.118 秒，SL-012 通过。
+- canonical `ledger-align --add D5/S3/Arith/IsolatedQuotientRemainder.lean --candidate-lean-report .lake/build/stratalint/raw-lean-report.json` EXIT=0，7.240 秒。
+  `selectors_considered=3922 changed=0 added=1 unchanged=3921 conflicts=0`。
+- 新增冻结事件 `e9c5b8877ca890ecd3868689950127fc81d0c4ff74de5bc4ebb69569afbb953c`；成员状态片为 `Golden/Frozen/state/D5/S3/Arith/IsolatedQuotientRemainder.lean.json`。
+- 没有 atom/source_id/coverage；这是无 atom 的 deposit，不是消化。没有新理论卷、ingest、普通有限正例冻结或治理改动。
+
+完整 make lean 的 LEAN_CACHE 收据：
+
+```text
+LEAN_CACHE {"status":"present","worktree":"/Users/chronoai/trureturing-a375007","donor":null,"method":"none","reason":null,"stamp_miss":null,"pin_sha256":"sha256:6c4c682ffba051b5744fe7a75ccc99d7f3b20227b3b026f392f3315be0adaa4e","clonefile_errno":null,"clonefile_errnos":[],"clonefile_attempts":0,"clonefile_cleanup_error":null,"mathlib_missing_olean_files":0,"mathlib_missing_olean_samples":[],"archive_status":"not_attempted","archive_mode":null,"archive_skip_reason":"project olean state is warm","archive_reason":null,"archive_producer_commit_sha":null,"archive_workflow_run_id":null,"mathlib_olean_state":"warm","mathlib_olean_probe_error":null,"project_olean_state":"warm","project_olean_probe_error":null}
+```
+
+## 当前未主张
+
+- 未主张全球文献无证明或本席拥有发现优先权；搜索范围与失败请求如上。
+- 未主张证明 OEIS 第二条 Fortunate 型猜想、无限多个序列项、或 Lean 内的单调枚举/第六项桥；已证明的是 brief 精确给出的 t>24 值形式。
+- 没有把用户扫描当作本席实测，也没有将有限检查作为无限证明。
+- 未访问的 xref 外链、通用搜索引擎未能取得的内容均为 ASSUMED-UNVERIFIED。
+- 本席独立评审席为 0，未宣称多模型共识；PR 创建、CI 和合入情况在最终交付记录中另报。
