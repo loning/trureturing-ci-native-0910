@@ -131,3 +131,83 @@ private theorem strict_rows_iff_heights (d : YoungDiagram) :
     have ha := d.rowLen_anti (i + 1) j (by omega)
     simp only [YoungDiagram.get_rowLens]
     simpa using lt_of_le_of_lt ha hd
+
+private theorem strict_rows_iff_interval (d : YoungDiagram) :
+    d.rowLens.Pairwise (· > ·) ↔
+      ∃ k : ℕ, ∀ h : ℕ, h ∈ d.transpose.rowLens ↔ 0 < h ∧ h ≤ k := by
+  constructor
+  · intro hs
+    exact ⟨d.colLen 0, (strict_rows_iff_heights d).mp hs⟩
+  · rintro ⟨k, hk⟩
+    have hk_le : k ≤ d.colLen 0 := by
+      by_cases hp : 0 < k
+      · exact (height_bounds d k ((hk k).mpr ⟨hp, le_rfl⟩)).2
+      · omega
+    have hl_le : d.colLen 0 ≤ k := by
+      by_cases hp : 0 < d.colLen 0
+      · exact ((hk _).mp (max_height_mem d hp)).2
+      · omega
+    have he : k = d.colLen 0 := by omega
+    subst k
+    exact (strict_rows_iff_heights d).mpr hk
+
+private theorem oddify_gapfree (r : sibling% Rows) :
+    GapfreeOdd ((sibling% oddify) r).val.val ↔
+      ∃ k : ℕ, ∀ h : ℕ, h ∈ r.val ↔ 0 < h ∧ h ≤ k := by
+  change (∃ k : ℕ, ∀ x : ℕ, x ∈ r.val.map (fun h => 2 * h - 1) ↔
+    ∃ i < k, x = 2 * i + 1) ↔ _
+  constructor
+  · rintro ⟨k, hk⟩
+    refine ⟨k, fun h => ⟨?_, ?_⟩⟩
+    · intro hh
+      have hp := r.property.2 h hh
+      have hm : 2 * h - 1 ∈ r.val.map (fun h => 2 * h - 1) :=
+        List.mem_map.mpr ⟨h, hh, rfl⟩
+      obtain ⟨i, hi, he⟩ := (hk _).mp hm
+      exact ⟨hp, by omega⟩
+    · rintro ⟨hp, hb⟩
+      have hm := (hk (2 * h - 1)).mpr ⟨h - 1, by omega, by omega⟩
+      obtain ⟨a, ha, he⟩ := List.mem_map.mp hm
+      have hap := r.property.2 a ha
+      have heq : a = h := by omega
+      simpa only [heq] using ha
+  · rintro ⟨k, hk⟩
+    refine ⟨k, fun x => ⟨?_, ?_⟩⟩
+    · intro hx
+      obtain ⟨h, hh, rfl⟩ := List.mem_map.mp hx
+      obtain ⟨hp, hb⟩ := (hk h).mp hh
+      exact ⟨h - 1, by omega, by omega⟩
+    · rintro ⟨i, hi, rfl⟩
+      exact List.mem_map.mpr ⟨i + 1, (hk _).mpr ⟨by omega, by omega⟩, by omega⟩
+
+private theorem row_gapfree (r : sibling% Rows) :
+    r.val.Pairwise (· > ·) ↔
+      GapfreeOdd ((sibling% oddify) ((sibling% conjugate) r)).val.val := by
+  rw [oddify_gapfree]
+  have h := strict_rows_iff_interval (YoungDiagram.ofRowLens r.val r.property.1)
+  rw [YoungDiagram.rowLens_ofRowLens_eq_self r.property.2] at h
+  exact h
+
+private theorem strict_row_first (r : sibling% Rows) :
+    IsStrictFirstSums (firstSums (0 :: r.val.reverse)) ↔ r.val.Pairwise (· > ·) := by
+  constructor
+  · rintro ⟨s, hs, _, he⟩
+    have heq := (sibling% firstSums_injective) 0 he
+    rw [heq] at hs
+    simpa using hs.reverse
+  · intro hs
+    exact ⟨r.val.reverse, hs.reverse, by simpa using r.property.2, rfl⟩
+
+private theorem firstOddEquiv_gapfree
+    (y : {y : List ℕ // IsZeroPrependedFirstSums y}) :
+    IsStrictFirstSums y.val ↔ GapfreeOdd ((sibling% firstOddEquiv) y).val.val := by
+  obtain ⟨r, rfl⟩ := (sibling% rowFirstEquiv).surjective y
+  change IsStrictFirstSums (firstSums (0 :: r.val.reverse)) ↔ _
+  rw [strict_row_first]
+  have he : (sibling% firstOddEquiv) ((sibling% rowFirstEquiv) r) =
+      (sibling% oddify) ((sibling% conjugate) r) := by
+    change (sibling% oddify) ((sibling% conjugate)
+      ((sibling% rowFirstEquiv).symm ((sibling% rowFirstEquiv) r))) = _
+    rw [Equiv.symm_apply_apply]
+  rw [he]
+  exact row_gapfree r
