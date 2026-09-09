@@ -22,3 +22,5 @@ LANE #6160；atom `087e3caa7c278b4ea58f06604daa8721ab5258f6c451a25ed8f2d0092d823
 第二批读数：B1 周围定义 B1/B2 与证明全文已读，q 明文为多项式；原文倒数表达式的零点须由多项式规范化解释。落点 `D5/S3/Zeros/Jensen/` 现有五模块已全文读完，未找到 B5 的已有声明。相关文本检索只作候选筛选，不作依赖闭包的语义证明。首个临时探针已写在 attempt 目录，先取冻结降阶恒等式的系数，再引用 Mathlib `coeff_reflect` 与求导/线性换元系数公式，最后作自然数指标与域运算规范化。尚未取得编译结论。
 
 第一批推送已成功：`db143f851f`。本机 `make lean` 已启动。误探路径 `tools/scripts/lean.sh`、Mathlib `Algebra/GroupWithZero/Power.lean` 不存在，均记录为命令路径错误，不解释为数学库缺口。
+
+第一次探针编译 `make -f Makefile -f A/probe.mk lean PROBE=A/B1Probe.lean` 退出 2（`A` 为任务指定 attempt 目录）。失败点是 `pow_sub₀` 的显式底数参数漏传，以及交换环乘积的括号重写未命中；系数范围两分支及次数界未报错。保留 `A/probe-01.log` 与 `A/B1Probe-01.lean`。失败版本的 `#print axioms` 含错误恢复用 `sorryAx`，不计为证明。初始原生 `make lean` 退出 0，12766 jobs，project/mathlib 均 warm。
