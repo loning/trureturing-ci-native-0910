@@ -1,0 +1,201 @@
+name: CI current
+
+on:
+  push:
+    branches: [dev]
+  workflow_call:
+    inputs:
+      candidate_sha:
+        required: true
+        type: string
+    outputs:
+      artifact_id:
+        value: ${{ jobs.current.outputs.artifact_id }}
+      artifact_name:
+        value: ${{ jobs.current.outputs.artifact_name }}
+      run_id:
+        value: ${{ jobs.current.outputs.run_id }}
+      run_attempt:
+        value: ${{ jobs.current.outputs.run_attempt }}
+      commit:
+        value: ${{ jobs.current.outputs.commit }}
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  CANDIDATE_SHA: ${{ inputs.candidate_sha || github.sha }}
+  CI_WORKFLOW_INPUTS: ${{ toJSON(inputs) }}
+  STRATALINT_CACHE_WRITES: ${{ github.event_name == 'push' && github.ref == 'refs/heads/dev' && inputs.candidate_sha == '' }}
+
+jobs:
+  engineering:
+    name: engineering
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 120
+    outputs:
+      artifact_id: ${{ steps.upload.outputs.artifact-id }}
+      run_id: ${{ steps.pack.outputs.run_id }}
+      run_attempt: ${{ steps.pack.outputs.run_attempt }}
+      commit: ${{ steps.pack.outputs.commit }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.CANDIDATE_SHA }}
+          persist-credentials: false
+      - run: python3 tools/scripts/workflow/ci.py checkout --repository "$GITHUB_WORKSPACE" --commit "$CANDIDATE_SHA"
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - id: keys
+        run: python3 tools/scripts/worktree/lean_actions.py keys --repository "$GITHUB_WORKSPACE"
+      - id: elan
+        if: steps.keys.outputs.elan_key != ''
+        continue-on-error: true
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.elan
+          key: ${{ steps.keys.outputs.elan_key }}
+      - run: tools/scripts/workflow/install-lean-toolchain.sh lean-toolchain --github-path "$GITHUB_PATH"
+      - run: make -C tools engineering
+      - id: pack
+        run: python3 tools/scripts/workflow/ci.py pack --repository "$GITHUB_WORKSPACE" --stage engineering --commit "$CANDIDATE_SHA" --archive "$RUNNER_TEMP/ci-engineering.tar.gz"
+      - id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.pack.outputs.artifact_name }}
+          path: ${{ steps.pack.outputs.archive }}
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
+      - if: always()
+        run: python3 tools/scripts/workflow/ci.py summary --repository "$GITHUB_WORKSPACE" --stage engineering
+
+  current:
+    name: current
+    needs: engineering
+    runs-on: ubuntu-24.04-arm
+    # Match the existing six-hour normal Lean envelope at the hosted job ceiling.
+    # Setup, checks and transport also consume this job's time.
+    timeout-minutes: 360
+    outputs:
+      artifact_id: ${{ steps.upload.outputs.artifact-id }}
+      artifact_name: ${{ steps.pack.outputs.artifact_name }}
+      run_id: ${{ steps.pack.outputs.run_id }}
+      run_attempt: ${{ steps.pack.outputs.run_attempt }}
+      commit: ${{ steps.pack.outputs.commit }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.CANDIDATE_SHA }}
+          persist-credentials: false
+      - run: python3 tools/scripts/workflow/ci.py checkout --repository "$GITHUB_WORKSPACE" --commit "$CANDIDATE_SHA"
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - uses: actions/download-artifact@v4
+        with:
+          artifact-ids: ${{ needs.engineering.outputs.artifact_id }}
+          path: ${{ runner.temp }}/engineering
+          merge-multiple: true
+      - name: Validate upstream engineering bundle
+        env:
+          UPSTREAM_RUN: ${{ needs.engineering.outputs.run_id }}
+          UPSTREAM_ATTEMPT: ${{ needs.engineering.outputs.run_attempt }}
+        run: python3 tools/scripts/workflow/ci.py restore --repository "$GITHUB_WORKSPACE" --stage engineering --commit "$CANDIDATE_SHA" --run-id "$UPSTREAM_RUN" --run-attempt "$UPSTREAM_ATTEMPT" --archive "$RUNNER_TEMP/engineering/ci-engineering.tar.gz"
+      - id: keys
+        run: python3 tools/scripts/worktree/lean_actions.py keys --repository "$GITHUB_WORKSPACE"
+      - id: elan
+        if: steps.keys.outputs.elan_key != ''
+        continue-on-error: true
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.elan
+          key: ${{ steps.keys.outputs.elan_key }}
+      - run: tools/scripts/workflow/install-lean-toolchain.sh lean-toolchain --github-path "$GITHUB_PATH"
+      - id: dependency
+        if: steps.keys.outputs.dependency_key != ''
+        continue-on-error: true
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ steps.keys.outputs.dependency_path }}
+          key: ${{ steps.keys.outputs.dependency_key }}
+          restore-keys: ${{ steps.keys.outputs.dependency_restore_prefix }}
+      - id: project
+        if: steps.keys.outputs.project_key != ''
+        continue-on-error: true
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ steps.keys.outputs.project_path }}
+          key: ${{ steps.keys.outputs.project_key }}
+          restore-keys: ${{ steps.keys.outputs.project_restore_prefix }}
+      - id: report
+        if: steps.keys.outputs.report_key != ''
+        continue-on-error: true
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ steps.keys.outputs.report_path }}
+          key: ${{ steps.keys.outputs.report_key }}
+          restore-keys: ${{ steps.keys.outputs.report_restore_prefix }}
+      - name: Restore optional validated seeds
+        env:
+          DEPENDENCY_KEY: ${{ steps.dependency.outputs.cache-matched-key }}
+          PROJECT_KEY: ${{ steps.project.outputs.cache-matched-key }}
+          REPORT_KEY: ${{ steps.report.outputs.cache-matched-key }}
+        run: python3 tools/scripts/worktree/lean_actions.py restore --repository "$GITHUB_WORKSPACE" --dependency-key "$DEPENDENCY_KEY" --project-key "$PROJECT_KEY" --report-key "$REPORT_KEY"
+      - name: Produce and check current with bounded cache preparation
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: make current
+      - id: pack
+        run: python3 tools/scripts/workflow/ci.py pack --repository "$GITHUB_WORKSPACE" --stage current --commit "$CANDIDATE_SHA" --archive "$RUNNER_TEMP/ci-current.tar.gz"
+      - id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.pack.outputs.artifact_name }}
+          path: ${{ steps.pack.outputs.archive }}
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+      - id: snapshot
+        if: github.event_name == 'push' && github.ref == 'refs/heads/dev' && inputs.candidate_sha == ''
+        env:
+          STRATALINT_CHECK_SUCCEEDED: 'true'
+        run: python3 tools/scripts/worktree/lean_actions.py snapshot --repository "$GITHUB_WORKSPACE"
+      - if: github.event_name == 'push' && github.ref == 'refs/heads/dev' && inputs.candidate_sha == '' && steps.snapshot.outputs.dependency_ready == 'true'
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ steps.keys.outputs.dependency_path }}
+          key: ${{ steps.keys.outputs.dependency_key }}
+      - if: github.event_name == 'push' && github.ref == 'refs/heads/dev' && inputs.candidate_sha == '' && steps.snapshot.outputs.project_ready == 'true'
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ steps.keys.outputs.project_path }}
+          key: ${{ steps.keys.outputs.project_key }}
+      - if: github.event_name == 'push' && github.ref == 'refs/heads/dev' && inputs.candidate_sha == '' && steps.snapshot.outputs.report_ready == 'true'
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ steps.keys.outputs.report_path }}
+          key: ${{ steps.keys.outputs.report_key }}
+      - if: github.event_name == 'push' && github.ref == 'refs/heads/dev' && inputs.candidate_sha == '' && steps.elan.outputs.cache-hit != 'true' && steps.keys.outputs.elan_key != ''
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.elan
+          key: ${{ steps.keys.outputs.elan_key }}
+      - if: always()
+        run: python3 tools/scripts/workflow/ci.py summary --repository "$GITHUB_WORKSPACE" --stage current
+      - name: Retain current failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-current-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            build/ci/current-result.json
+            build/ci/logs/current
+          if-no-files-found: warn
+          retention-days: 7
