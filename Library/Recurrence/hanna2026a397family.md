@@ -308,6 +308,36 @@ only after all actual checks pass; no exemption is requested.
 The classification-only make lean passed (12782 jobs, EXIT=0); this checkpoint
 is committed and pushed before producing its fresh report.
 
+Final local receipts: the classification report exits 0 with delta changed=1,
+added=0, removed=0, recheck=1, peak RSS 4,401,984 KB, and report SHA-256
+65957f64376b9765df64c86a9cd9a7f0fdfe6b42d212d6be80a3d88aa71b48c7.
+make emit exits 0 with zero changed Blueprints. The canonical make test
+mathematical gate exits 0 (math-gate-final.log), reusing that report; SL-010
+and frozen consistency SL-008 pass, and Markdown judged=1, formulas=17, red=0.
+All 124 reported declarations still use only the standard axioms. The stored
+module statement_id remains the one recorded above. This is local validation
+of this branch, not a verdict from the newly changed dev CI.
+
+## Remote merge boundary
+
+PR https://github.com/the-omega-institute/trureturing/pull/6635 is OPEN with
+auto-merge enabled; no MERGED claim is made. While this attempt ran, dev
+adopted the replacement CI in ad503954f8. Remote runs 34350714946 and
+34351188667 fail before checking this mathematical content: the public test
+class LeanReportInputScriptTests lacks partial, while the already-present
+LeanReportInputScriptTests.BatchFixture.cs declares the same class partial
+(CS0260). Both files were read at immutable dev revision
+634771a3bd24c19f8e5cbec67d5346717b916e0f; neither is changed by this PR.
+
+The observed dev protection still requires Candidate harness engineering checks,
+Canonical Lean report production and Content-addressed dev baseline admission.
+The replacement workflow instead runs push / engineering, push / current and
+delta. These are two distinct upstream blockers. No branch protection or
+shared harness code was changed in this mathematical delivery. The next merge
+step requires the shared CI repair, alignment of the protected check names,
+and a successful PR run. A git merge-tree with that dev revision is conflict-free.
+Sanitized logs and immutable source excerpts are in the worker artifact directory.
+
 ## Verified locator
 
 - URL: https://oeis.org/A397345
