@@ -26,7 +26,7 @@ def main():
         original = text[start:end]
         heads = {
             "ascending": ('ids.toString ++ ".length = " ++ toString requested ++ " ∧ " ++ ids.toString ++ " = " ++ reportIds.toString',
-                          '"(by\\n  exact (LeanInformationAudit.certificate_of_buckets " ++ ids.getPrefix.toString ++ ".bucketFacts (by decide +kernel)).2)\\n"'),
+                          '"(by\\n  exact (LeanInformationAudit.certificate_of_buckets " ++ ids.getPrefix.toString ++ ".bucketFacts (requested := " ++ toString requested ++ ") (by decide +kernel)).2)\\n"'),
             "length": ('"LeanInformationAudit.strictlyAscending " ++ ids.toString ++ " = true ∧ " ++ ids.toString ++ " = " ++ reportIds.toString',
                        '"(by\\n  have h := LeanInformationAudit.certificate_of_buckets " ++ ids.getPrefix.toString ++ ".bucketFacts (requested := " ++ toString requested ++ ") (by decide +kernel)\\n  exact ⟨h.1, h.2.2⟩)\\n"'),
             "equality": ('"LeanInformationAudit.strictlyAscending " ++ ids.toString ++ " = true ∧ " ++ ids.toString ++ ".length = " ++ toString requested',
