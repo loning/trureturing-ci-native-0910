@@ -3,6 +3,8 @@
 import json
 import re
 
+from config import PREFIX_BITS
+
 
 def statement_nat(wire):
     if not isinstance(wire, str) or not re.fullmatch(r"sha256:[0-9a-f]{64}", wire):
@@ -68,7 +70,7 @@ def pack_ids(values):
     return packed
 
 
-def chunked_keys(declaration, keys):
+def chunked_keys(declaration, keys, public=False):
     # Hex numeral syntax is still a Nat literal in Lean. It avoids decimal
     # conversion limits for these 25,600-bit values; no id is a JSON number.
     ordered = sorted(statement_nat(wire) for _, wire in keys)
@@ -79,22 +81,64 @@ def chunked_keys(declaration, keys):
         values = ordered[start:start + 100]
         chunks.append(f"decodeIds {len(values)} {chunk}")
         definitions.append(f"noncomputable def {chunk} : Nat := 0x{pack_ids(values):x}\n")
-    definitions.append(f"noncomputable def {declaration} : List Nat := "
+    definitions.append(("public " if public else "") + f"noncomputable def {declaration} : List Nat := "
                        + "List.flatten [" + ", ".join(chunks) + "]\n")
     return "".join(definitions)
 
 
-def manifest_source(rows, report_keys, head, digest, root):
+def partition(keys, b):
+    if not isinstance(b, int) or not 0 <= b <= 256:
+        raise ValueError("prefix bits must be in [0, 256]")
+    buckets = [[] for _ in range(2 ** b)]
+    for key, wire in keys:
+        buckets[statement_nat(wire) >> (256 - b)].append((key, wire))
+    return buckets
+
+
+def bucket_sources(rows, report_keys, b=PREFIX_BITS):
+    inventory = partition(((row["theorem_name"], row["statement_id"]) for row in rows), b)
+    report = partition(((parse_name_key(key), wire) for _, key, wire in report_keys), b)
+    sources = {}
+    for k, (inv, rep) in enumerate(zip(inventory, report)):
+        module = f"CensusRun.Bucket{k}"
+        sources[module] = ("module\npublic import LeanInformationAudit.Census.Certificate\n"
+            "open LeanInformationAudit\n"
+            + chunked_keys(module + ".manifestKeys", inv, public=True)
+            + chunked_keys(module + ".reportKeys", rep, public=True)
+            + f"@[expose] public def {module}.n : Nat := {len(inv)}\n"
+            + f"public theorem {module}.ascending : strictlyAscending {module}.manifestKeys = true := by decide +kernel\n"
+            + f"public theorem {module}.range : inRange {k} {b} {module}.manifestKeys = true := by decide +kernel\n"
+            + f"public theorem {module}.length : {module}.manifestKeys.length = {module}.n := by decide +kernel\n"
+            + f"public theorem {module}.equality : {module}.manifestKeys = {module}.reportKeys := by rfl\n")
+    return sources
+
+
+def manifest_source(rows, report_keys, head, digest, root, b=PREFIX_BITS):
     root_name = ["anonymous"]
     for part in root.split("."):
         root_name = ["str", root_name, part]
-    inventory = chunked_keys("CensusRun.manifestKeys",
-                             ((row["theorem_name"], row["statement_id"]) for row in rows))
-    report = chunked_keys("CensusRun.reportKeys", ((parse_name_key(key), wire) for _, key, wire in report_keys))
-    return ("import LeanInformationAudit.Census.Certificate\nopen LeanInformationAudit\n"
-            + inventory + "noncomputable def CensusRun.manifest : CensusKeyManifest :=\n"
+    buckets = [f"CensusRun.Bucket{k}" for k in range(2 ** b)]
+    def refs(suffix):
+        return "[" + ", ".join(module + suffix for module in buckets) + "]"
+    proof = "\n".join(f"  BucketCertificates.cons {m}.ascending {m}.range {m}.length {m}.equality <|"
+                      for m in buckets) + f"\n  BucketCertificates.nil {2 ** b}\n"
+    return ("module\npublic import LeanInformationAudit.Census.Certificate\n"
+            + "".join(f"public import {module}\n" for module in buckets)
+            + "open LeanInformationAudit\n"
+            + f"@[expose] public def CensusRun.prefixBits : Nat := {b}\n"
+            + f"@[expose] public noncomputable def CensusRun.manifestKeys : List Nat := List.flatten {refs('.manifestKeys')}\n"
+            + f"@[expose] public noncomputable def CensusRun.reportKeys : List Nat := List.flatten {refs('.reportKeys')}\n"
+            + "@[expose] public noncomputable def CensusRun.manifest : CensusKeyManifest :=\n"
             f"  {{ headSha := {string(head)}, reportSha256 := {string(digest)},\n"
-            f"    censusRoot := {name(root_name)}, keys := CensusRun.manifestKeys }}\n" + report)
+            f"    censusRoot := {name(root_name)}, keys := CensusRun.manifestKeys }}\n"
+            + f"public theorem CensusRun.bucketFacts : BucketCertificates {b} 0 "
+            + refs('.manifestKeys') + " " + refs('.n') + " " + refs('.reportKeys') + " :=\n" + proof)
+
+
+def write_manifest(directory, rows, report_keys, head, digest, root, b=PREFIX_BITS):
+    for module, source in bucket_sources(rows, report_keys, b).items():
+        write_module(directory, module, source)
+    return write_module(directory, root, manifest_source(rows, report_keys, head, digest, root, b))
 
 
 def write_module(directory, module, contents):

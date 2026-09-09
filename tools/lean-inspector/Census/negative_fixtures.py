@@ -6,7 +6,7 @@ import os
 import pathlib
 import re
 
-from emission import manifest_source, string
+from emission import manifest_source, bucket_sources, string, write_module
 from pipeline import frozen_keys
 from resources import run
 
@@ -14,7 +14,17 @@ from resources import run
 def check_manifest_negatives(repository, directory, only=None):
     root = directory / "first"
     source = root / "CensusRun/Root.lean"
-    original = source.read_text()
+    original = {"CensusRun.Root": source.read_text()}
+    original.update({"CensusRun." + p.stem: p.read_text() for p in source.parent.glob("Bucket*.lean")})
+
+    def change(bundle, module, transform):
+        return dict(bundle, **{module: transform(bundle[module])})
+
+    def root_change(transform):
+        return change(original, "CensusRun.Root", transform)
+
+    def bucket_change(transform, bundle=None):
+        return change(original if bundle is None else bundle, "CensusRun.Bucket0", transform)
     driver = root / "CensusPublish/Root.lean"
     original_driver = driver.read_text()
     responses = [pathlib.Path(path) for path in json.loads((root / "query-outputs.json").read_text())]
@@ -35,7 +45,8 @@ def check_manifest_negatives(repository, directory, only=None):
         if only is not None and label not in only:
             return
         output = directory / (label + ".json")
-        source.write_text(text)
+        for module, contents in text.items():
+            write_module(root, module, contents)
         driver.write_text(driver_text.replace(string(str(root / "census.json")), string(str(output))))
         if transport is not None:
             response.write_text(json.dumps(transport) + "\n")
@@ -52,7 +63,8 @@ def check_manifest_negatives(repository, directory, only=None):
         else:
             raise AssertionError(label + " was accepted")
         finally:
-            source.write_text(original)
+            for module, contents in original.items():
+                write_module(root, module, contents)
             driver.write_text(original_driver)
             response.write_bytes(pristine)
             report_path.write_bytes(report_bytes)
@@ -60,10 +72,11 @@ def check_manifest_negatives(repository, directory, only=None):
     def source_for(transport):
         rows = [row for path in responses
                 for row in (transport if path == response else json.loads(path.read_text()))["entries"]]
-        return manifest_source(rows, frozen_keys(report), report["source_commit"], digest, "CensusRun.Root")
+        return dict(bucket_sources(rows, frozen_keys(report)), **{"CensusRun.Root":
+            manifest_source(rows, frozen_keys(report), report["source_commit"], digest, "CensusRun.Root")})
 
     rejected("manifestDetachedFromRows", "component=manifest_keys",
-             text=original.replace("keys := CensusRun.manifestKeys", "keys := []", 1))
+             text=root_change(lambda text: text.replace("keys := CensusRun.manifestKeys", "keys := []", 1)))
     deleted = copy.deepcopy(data)
     deleted["entries"].pop(observed_index)
     rejected("deletedManifestRow", "IE-C034", text=source_for(deleted), transport=deleted)
@@ -77,14 +90,17 @@ def check_manifest_negatives(repository, directory, only=None):
         "statement_id"] = "sha256:" + "0" * 63
     rejected("publisherInventoryDuplicateBeforeMalformedReport", "IE-C035",
              transport=duplicated, report_data=malformed_report)
-    wrong_nat = re.sub(r"(CensusRun.manifestKeys.chunk0 : Nat := )(0x[0-9a-f]+)",
-                       lambda m: m[1] + hex(int(m[2], 0) + 1), source_for(deleted), count=1)
+    wrong_nat = bucket_change(lambda text: re.sub(r"(CensusRun.Bucket0.manifestKeys.chunk0 : Nat := )(0x[0-9a-f]+)",
+                       lambda m: m[1] + hex(int(m[2], 0) + 1), text, count=1), source_for(deleted))
     rejected("publisherNatBeforeMissingRow", "component=statement_id_nat",
              text=wrong_nat, transport=deleted)
     # Both 0 and 1 have valid distinct wire strings. Binding both to Nat 1 fails.
     rejected("sameNatDifferentWireRejected", "component=statement_id_nat",
-             text=re.sub(r"(CensusRun.manifestKeys.chunk0 : Nat := )(0x[0-9a-f]+)",
-                         lambda m: m[1] + hex(int(m[2], 0) + 1), original, count=1))
+             text=bucket_change(lambda text: re.sub(r"(CensusRun.Bucket0.manifestKeys.chunk0 : Nat := )(0x[0-9a-f]+)",
+                         lambda m: m[1] + hex(int(m[2], 0) + 1), text, count=1)))
+    rejected("idPlacedInWrongBucket", "component=bucket_prefix",
+             text=bucket_change(lambda text: re.sub(r"(CensusRun.Bucket0.manifestKeys.chunk0 : Nat := )(0x[0-9a-f]+)",
+                         lambda m: m[1] + hex(int(m[2], 0) + 2 ** 248), text, count=1)))
     for label, wire in [
             ("uppercaseIdentity", "sha256:" + "A" * 64),
             ("shortIdentity", "sha256:" + "0" * 63),
@@ -96,15 +112,14 @@ def check_manifest_negatives(repository, directory, only=None):
         malformed = copy.deepcopy(data)
         malformed["entries"][observed_index]["statement_id"] = wire
         rejected(label, "component=statement_id_format", transport=malformed)
-    start = original.index("noncomputable def CensusRun.reportKeys.")
-    reflexive = original[:start] + (
-        "noncomputable def CensusRun.reportKeys : List Nat := CensusRun.manifest.keys\n")
+    reflexive = root_change(lambda text: re.sub(
+        r"(def CensusRun.reportKeys : List Nat := )[^\n]+", r"\1CensusRun.manifestKeys", text))
     rejected("reflexiveReportRejected", "component=report_keys_binding", text=reflexive)
     rejected("reflexiveReportNameRejected", "component=report_keys_binding", driver_text=original_driver.replace(
         "report_keys CensusRun.reportKeys", "report_keys CensusRun.manifestKeys"))
-    rejected("wrongChunkArity", "component=report_keys_binding", text=re.sub(
-        r"decodeIds (\d+) CensusRun.reportKeys.chunk0",
-        lambda m: f"decodeIds {int(m[1]) - 1} CensusRun.reportKeys.chunk0", original, count=1))
+    rejected("wrongChunkArity", "component=report_keys_binding", text=bucket_change(lambda text: re.sub(
+        r"decodeIds (\d+) CensusRun.Bucket0.reportKeys.chunk0",
+        lambda m: f"decodeIds {int(m[1]) - 1} CensusRun.Bucket0.reportKeys.chunk0", text, count=1)))
     relabelled = copy.deepcopy(data)
     certified = next(row for path in responses for row in json.loads(path.read_text())["entries"]
                      if row["class"] != "observed")
@@ -112,17 +127,17 @@ def check_manifest_negatives(repository, directory, only=None):
     relabelled["entries"][observed_index]["payload"] = certified["payload"]
     rejected("observedRelabelledCertified", "query receipt: edited", transport=relabelled)
     rejected("staleManifestHead", "component=head",
-             text=original.replace('headSha := "fixture-head"', 'headSha := "stale"', 1))
+             text=root_change(lambda text: text.replace('headSha := "fixture-head"', 'headSha := "stale"', 1)))
     rejected("wrongManifestDigest", "component=report_sha256",
-             text=original.replace('reportSha256 := ' + string(digest), 'reportSha256 := "wrong"', 1))
+             text=root_change(lambda text: text.replace('reportSha256 := ' + string(digest), 'reportSha256 := "wrong"', 1)))
     artifact = json.loads((root / "census.json").read_text())
     assert any(row["statement_id"] == "sha256:" + "0" * 64 for row in artifact["rows"])
     outcomes.append({"name": "leadingZeroIdentity", "status": "preserved"})
     outcomes.append({"name": "noncomputableDataBound", "status": "accepted"})
-    rejected("chunkMovedBetweenSides", "component=report_keys_binding", text=re.sub(
-        r"decodeIds (\d+) CensusRun.reportKeys.chunk0", r"decodeIds \1 CensusRun.manifestKeys.chunk0", original))
-    rejected("chunkDuplicatedBetweenSides", "component=report_keys_binding", text=re.sub(
-        r"decodeIds (\d+) CensusRun.reportKeys.chunk0",
-        r"decodeIds \1 CensusRun.reportKeys.chunk0, decodeIds \1 CensusRun.manifestKeys.chunk0", original))
+    rejected("chunkMovedBetweenSides", "component=report_keys_binding", text=bucket_change(lambda text: re.sub(
+        r"decodeIds (\d+) CensusRun.Bucket0.reportKeys.chunk0", r"decodeIds \1 CensusRun.Bucket0.manifestKeys.chunk0", text)))
+    rejected("chunkDuplicatedBetweenSides", "component=report_keys_binding", text=bucket_change(lambda text: re.sub(
+        r"decodeIds (\d+) CensusRun.Bucket0.reportKeys.chunk0",
+        r"decodeIds \1 CensusRun.Bucket0.reportKeys.chunk0, decodeIds \1 CensusRun.Bucket0.manifestKeys.chunk0", text)))
     (directory / "negative-fixtures.json").write_text(json.dumps(outcomes, indent=2) + "\n")
     return outcomes

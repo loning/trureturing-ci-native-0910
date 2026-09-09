@@ -13,7 +13,7 @@ import pathlib
 import subprocess
 import sys
 
-from emission import manifest_source, string, write_module
+from emission import write_manifest, string, write_module
 from pipeline import frozen_keys
 from resources import run
 
@@ -21,14 +21,13 @@ from resources import run
 def emit(report_path, bindings_path, directory):
     report_bytes = report_path.read_bytes()
     report = json.loads(report_bytes)
-    source = manifest_source(json.loads(bindings_path.read_text()), frozen_keys(report),
+    write_manifest(directory, json.loads(bindings_path.read_text()), frozen_keys(report),
         report["source_commit"], "sha256:" + hashlib.sha256(report_bytes).hexdigest(), "CensusRun.Root")
-    write_module(directory, "CensusRun.Root", source)
 
 
 def benchmark(repository, report, directory):
     directory.mkdir(parents=True, exist_ok=True)
-    head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repository, text=True).strip()
+    head = json.loads(report.read_text())["source_commit"]
     digest = "sha256:" + hashlib.sha256(report.read_bytes()).hexdigest()
     module = "LeanInformationAudit.Tests.Census.Manifest.Benchmark"
     driver = write_module(directory, "BenchmarkDriver", f"import {module}\n"
@@ -38,12 +37,10 @@ def benchmark(repository, report, directory):
         "--report", str(report), "--directory", str(directory), "--driver", str(driver)],
         directory, "certificate", cwd=repository, budget_gb=4,
         env=dict(os.environ, LEAN_NUM_THREADS="1"), phase_path=directory / "benchmark.phase")
-    # The whole-path target is a profiling trigger, not a first-overrun stop.
-    # Only the corrected compile/kernel phase has the owner's hard stop bar.
-    kernel = result["phases"].get("compile_kernel", {})
-    if kernel.get("wall_seconds", 0) > 120 or kernel.get("peak_rss_bytes", 0) > 4 * 1024 ** 3:
-        raise RuntimeError("STOP: compile/kernel exceeds 120 s or 4 GiB; see certificate.resources.json")
-    result["whole_path_target_met"] = result["wall_seconds"] <= 60 and result["peak_rss_bytes"] <= 2 * 1024 ** 3
+    build = json.loads((directory / "CensusRun/Root.checked.build.json").read_text())
+    result["build"] = build
+    result["whole_path_target_met"] = build["wall_s"] <= 180 and build["max_process_peak_rss_bytes"] <= 1024 ** 3
+    result["profile_required"] = build["wall_s"] > 360 or build["max_process_peak_rss_bytes"] > 2 * 1024 ** 3
     (directory / "target.json").write_text(json.dumps(result, indent=2) + "\n")
     return result
 

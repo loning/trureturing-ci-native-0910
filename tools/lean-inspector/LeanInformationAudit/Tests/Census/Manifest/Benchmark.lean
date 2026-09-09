@@ -53,7 +53,7 @@ elab "#census_certificate_benchmark" &"report" reportPath:str &"head" head:str
       ("axioms", toJson (axioms.map Name.toString))]),
     ("final_env_imports", toJson (data.imports.map (·.module.toString))),
     ("transitive_imports", toJson (staged.header.moduleNames.filter (· != `CensusRun.Root) |>.map Name.toString))]
-  IO.FS.writeBinFile (source.withExtension "olean") (← IO.FS.readBinFile (checked.withExtension "olean"))
+  copyFinalArtifacts checked source `CensusRun.Root
   -- Match the publisher's bounded row serialization; the full row JSON need
   -- not coexist with the imported, checked environment in the driver heap.
   let handle ← IO.FS.Handle.mk (destination / "certificate.json.tmp") .write

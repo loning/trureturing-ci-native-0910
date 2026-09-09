@@ -49,7 +49,7 @@ def prepare_fixtures(repository, directory):
                    "Evidence", "ArchitectureRepair", "ProvenanceUniverses", "RegisteredClosedTruth", "LawRegistry",
                    "SplitRootCatalog", "UnreachableProofs", "UnreachableRoot",
                    "Manifest.Contract", "Manifest.Environment", "Manifest.Precedence",
-                   "Manifest.Length", "Manifest.Ascending", "Manifest.Chunks"):
+                   "Manifest.Length", "Manifest.Ascending", "Manifest.Chunks", "Manifest.Buckets"):
         prepare("LeanInformationAudit.Tests.Census." + module)
     prepare("LeanInformationAudit.Census.Command")
 
@@ -181,6 +181,8 @@ def main():
     manifest_negatives = check_manifest_negatives(repository, directory)
     from chunk_fixtures import check_chunks
     manifest_negatives.extend(check_chunks(repository, directory))
+    from bucket_fixtures import check_bucket_negatives
+    manifest_negatives.extend(check_bucket_negatives(repository, directory))
     result = {"query_contract": "passed", "coverage": "passed", "artifact_determinism": results[0],
               "manifest_negatives": manifest_negatives,
               "query_receipt_negatives": receipt_negatives,

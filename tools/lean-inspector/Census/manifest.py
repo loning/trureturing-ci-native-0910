@@ -5,7 +5,7 @@ import hashlib
 import json
 import pathlib
 
-from emission import manifest_source, string, write_module
+from emission import write_manifest, string, write_module
 from pipeline import frozen_keys
 
 
@@ -20,8 +20,7 @@ def emit(directory, report_path, receipts_path, prefix):
         result = json.loads(pathlib.Path(path).read_text())
         rows.extend({field: row[field] for field in ("theorem_name", "statement_id")}
                     for row in result["entries"])
-    source = manifest_source(rows, keys, head, digest, "CensusRun.Root")
-    path = write_module(directory, "CensusRun.Root", source)
+    path = write_manifest(directory, rows, keys, head, digest, "CensusRun.Root")
     driver = ("import LeanInformationAudit.Census.Publish\n"
                f"#disposition_census projection root CensusRun.Root source {string(str(path))} "
                f"report {string(str(report_path))}\n"

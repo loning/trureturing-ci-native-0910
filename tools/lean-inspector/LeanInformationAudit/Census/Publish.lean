@@ -5,6 +5,11 @@ namespace LeanInformationAudit.CensusProjection
 
 open Lean Meta Elab Command DispositionCensus CensusManifest
 
+private def isBucketModule (root module : Name) : Bool :=
+  let suffix := module.toString.drop (root.getPrefix.toString.length + 7) |>.toString
+  module.toString.startsWith (root.getPrefix.toString ++ ".Bucket") &&
+    !suffix.isEmpty && suffix.toList.all Char.isDigit
+
 /-- Check the source boundary and the complete imported closure. A compiled
 source is loaded through its own module; only that exact module is excluded
 from the dependency closure, after its direct imports have been checked. -/
@@ -14,27 +19,30 @@ def checkFinalEnvironment (env : Environment) (compiledRoot : Option Name := non
     throwError "finalEnvironmentImports: final source must import only Census.Certificate"
   for module in env.header.moduleNames do
     if module.getRoot != `Init && module != `LeanInformationAudit.Census.Certificate &&
-        some module != compiledRoot then
+        some module != compiledRoot && !(compiledRoot.any (isBucketModule · module)) then
       throwError "finalEnvironmentImports: payload import {module}"
 
-private def checkSourceImports (imports : Array Import) : IO Unit := do
-  unless (imports.map (·.module)).filter (· != `Init) == #[`LeanInformationAudit.Census.Certificate] do
+private def checkSourceImports (imports : Array Import) (root : Name) : IO Unit := do
+  let names := (imports.map (·.module)).filter (· != `Init)
+  unless names.contains `LeanInformationAudit.Census.Certificate && names.all
+      (fun m => m == `LeanInformationAudit.Census.Certificate || isBucketModule root m) do
     throw <| IO.userError "finalEnvironmentImports: final source must import only Census.Certificate"
 
 /-- Compile in a separate Init-only process: the driver's Mathlib/Lean environment
 must not coexist with kernel reduction in one heap. Load only the resulting
 constructor trees for structural binding. The source and olean remain reviewable. -/
 def elaborateFinalSource (input : String) (fileName : String) (root : Name)
-    (options : Options) : IO Environment := do
+    (options : Options) (dataOnly : Bool := false) : IO Environment := do
   let input := input
   let (imports, _, messages) ← Elab.parseImports input fileName
   if messages.hasErrors then throw <| IO.userError "finalEnvironmentImports: invalid import header"
-  checkSourceImports imports
+  checkSourceImports imports root
   let source : System.FilePath := fileName
   let directory := source.withExtension "compile"
   let compiledSource := directory / (System.mkFilePath (root.components.map Name.toString)).withExtension "lean"
   IO.FS.createDirAll compiledSource.parent.get!
-  IO.FS.writeFile compiledSource input
+  let dataInput := (input.splitOn ("\npublic theorem " ++ root.getPrefix.toString ++ ".bucketFacts")).head!
+  IO.FS.writeFile compiledSource (if dataOnly then dataInput else input)
   let target := compiledSource.withExtension "olean"
   -- The checked header permits exactly Init and Certificate. Resolve that
   -- module once, then avoid probing every Mathlib/package path for each Init
@@ -46,19 +54,28 @@ def elaborateFinalSource (input : String) (fileName : String) (root : Name)
   let finalSearchPath : SearchPath := [← getLibDir (← getBuildDir), certificateDirectory]
   -- The invoking Lean process already has the warm toolchain and LEAN_PATH.
   -- Its child needs only the compiler, not a second Lake environment startup.
+  let repository ← IO.currentDir
+  let mut inputDirectory := source
+  for _ in root.components do inputDirectory := inputDirectory.parent.get!
   let result ← IO.Process.output {
-    cmd := "lean"
-    args := #["-DmaxHeartbeats=0", "-DmaxRecDepth=4000",
-      "-R", directory.toString, "-o", target.toString, compiledSource.toString]
-    env := #[("LEAN_NUM_THREADS", some "1"), ("LEAN_PATH", some finalSearchPath.toString)] }
+    cmd := "python3"
+    args := #[ (repository / "tools/lean-inspector/Census/buckets.py").toString,
+      "--source", compiledSource.toString, "--root", root.toString,
+      "--inputs", inputDirectory.toString, "--certificate-directory", certificateDirectory.toString ] ++
+      (if dataOnly then #["--data-only"] else #[]) }
   IO.FS.writeFile (source.withExtension "compiler.log") (result.stdout ++ result.stderr)
   unless result.exitCode == 0 do
     throw <| IO.userError s!"census certificate: final source failed elaboration: {result.stdout}{result.stderr}"
   let (data, _) ← readModuleData target
-  checkSourceImports data.imports
+  checkSourceImports data.imports root
   -- Serialized output is the standalone compiler's environment, including its
   -- kernel-checked theorem, never the IO driver's environment.
-  IO.FS.writeBinFile (source.withExtension "olean") (← IO.FS.readBinFile target)
+  for suffix in ["olean", "olean.server", "olean.private", "ir"] do
+    let artifact := compiledSource.withExtension suffix
+    if ← artifact.pathExists then
+      IO.FS.writeBinFile (source.withExtension suffix) (← IO.FS.readBinFile artifact)
+  IO.FS.writeFile (source.withExtension "build.json")
+    (← IO.FS.readFile (compiledSource.withExtension "build.json"))
   let previous ← searchPathRef.get
   try
     searchPathRef.set (directory :: finalSearchPath)
@@ -69,9 +86,12 @@ def elaborateFinalSource (input : String) (fileName : String) (root : Name)
 /-- Emit the actual proposition over ids, with a literal requested count.
 Reflexivity is cheaper than decide for equality of the independently bound chunks. -/
 def certificateSource (input : String) (ids reportIds certificate : Name) (requested : Nat) : String :=
-  input ++ "\ntheorem " ++ certificate.toString ++ " :\n  LeanInformationAudit.CensusKeyManifest.Certificate " ++
+  input ++ "\npublic theorem " ++ certificate.toString ++ " :\n  LeanInformationAudit.CensusKeyManifest.Certificate " ++
     ids.toString ++ " " ++ toString requested ++ " " ++ reportIds.toString ++
-    " := by\n  exact ⟨by decide +kernel, by decide +kernel, rfl⟩\n"
+    " := by\n  exact ⟨LeanInformationAudit.strictlyAscending_flatten_of_ranges " ++
+    ids.getPrefix.toString ++ ".bucketFacts,\n    (LeanInformationAudit.length_flatten " ++
+    ids.getPrefix.toString ++ ".bucketFacts).trans (by decide +kernel),\n    congrArg List.flatten (LeanInformationAudit.bucket_congruence " ++
+    ids.getPrefix.toString ++ ".bucketFacts)⟩\n"
 
 /-- A valid certificate needs one imported environment. Both the kernel theorem
 and its constructor graph are checked before publication. If its proof fails,
@@ -82,11 +102,24 @@ def elaborateBoundSource (input checkedInput : String) (source checked : System.
     CommandElabM Environment := do
   let staged ← try elaborateFinalSource checkedInput checked.toString root options
     catch error => do
-      let data ← elaborateFinalSource input source.toString root options
+      let data ← elaborateFinalSource input source.toString root options (dataOnly := true)
       check data
       throw error
   check staged
   return staged
+
+/-- Keep all serialized module levels together. The private level is needed by
+the binder and audit tools; ordinary `module` imports load only public interfaces. -/
+def copyFinalArtifacts (checked source : System.FilePath) (root : Name) : IO Unit := do
+  for suffix in ["olean", "olean.server", "olean.private", "ir"] do
+    if ← (checked.withExtension suffix).pathExists then
+      IO.FS.writeBinFile (source.withExtension suffix) (← IO.FS.readBinFile (checked.withExtension suffix))
+  let directory := checked.withExtension "compile" /
+    System.mkFilePath (root.getPrefix.components.map Name.toString)
+  for entry in ← directory.readDir do
+    if entry.fileName.startsWith "Bucket" && !entry.fileName.endsWith ".lean" &&
+        !entry.fileName.endsWith ".compiler.log" then
+      IO.FS.writeBinFile (source.parent.get! / entry.fileName) (← IO.FS.readBinFile entry.path)
 
 private def phase (destination label : String) : IO Unit :=
   IO.FS.writeFile (destination ++ ".phase") label
@@ -224,8 +257,7 @@ elab "#disposition_census" &"projection" &"root" root:ident &"source" sourcePath
     ("type", toJson typeText), ("axioms", toJson (axioms.map Name.toString))]
   let fields := summaryFields report inventory sources ++ [("certificate", certificateJson)]
   ofExcept <| checkCounts inventory (count inventory)
-  IO.FS.writeBinFile ((System.FilePath.mk sourcePath.getString).withExtension "olean")
-    (← IO.FS.readBinFile (checkedPath.withExtension "olean"))
+  copyFinalArtifacts checkedPath (System.FilePath.mk sourcePath.getString) root.getId
   if ← (System.FilePath.mk destination).pathExists then
     let same ← IO.Process.output { cmd := "/bin/test", args := #[reportPath.getString, "-ef", destination] }
     unless same.exitCode == 1 do throwError "census projection: output aliases report"

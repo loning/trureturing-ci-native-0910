@@ -20,19 +20,33 @@ def main():
     report = source_root / "LeanInformationAudit/Census/Report.lean"
     contract = source_root / "LeanInformationAudit/Tests/Census/Manifest/Contract.lean"
     environment = contract.with_name("Environment.lean")
+    def omit_conjunct(text, family):
+        start = text.index("def certificateSource (")
+        end = text.index("\n/--", start)
+        original = text[start:end]
+        heads = {
+            "ascending": ('ids.toString ++ ".length = " ++ toString requested ++ " ∧ " ++ ids.toString ++ " = " ++ reportIds.toString',
+                          '"(by\\n  exact (LeanInformationAudit.certificate_of_buckets " ++ ids.getPrefix.toString ++ ".bucketFacts (by decide +kernel)).2)\\n"'),
+            "length": ('"LeanInformationAudit.strictlyAscending " ++ ids.toString ++ " = true ∧ " ++ ids.toString ++ " = " ++ reportIds.toString',
+                       '"(by\\n  have h := LeanInformationAudit.certificate_of_buckets " ++ ids.getPrefix.toString ++ ".bucketFacts (requested := " ++ toString requested ++ ") (by decide +kernel)\\n  exact ⟨h.1, h.2.2⟩)\\n"'),
+            "equality": ('"LeanInformationAudit.strictlyAscending " ++ ids.toString ++ " = true ∧ " ++ ids.toString ++ ".length = " ++ toString requested',
+                         '"(by\\n  have h := LeanInformationAudit.certificate_of_buckets " ++ ids.getPrefix.toString ++ ".bucketFacts (requested := " ++ toString requested ++ ") (by decide +kernel)\\n  exact ⟨h.1, h.2.1⟩)\\n"'),
+        }
+        proposition, proof = heads[family]
+        signature = original[:original.index(" :=\n")]
+        replacement = signature + ' :=\n  input ++ "\\npublic theorem " ++ certificate.toString ++ " : " ++\n    ' + proposition + ' ++ " := " ++\n    ' + proof + '\n'
+        return text[:start] + replacement + text[end:]
+
     cases = [
         ("drop-ascending", publisher, contract, "certificateAscendingConjunct",
-         lambda text: text.replace(
-             '" :\\n  LeanInformationAudit.CensusKeyManifest.Certificate " ++', '" :\\n  " ++').replace(
-             'ids.toString ++ " " ++ toString requested ++ " " ++ reportIds.toString ++',
-             'ids.toString ++ ".length = " ++ toString requested ++ " ∧ " ++ ids.toString ++ " = " ++ reportIds.toString ++').replace(
-             'exact ⟨by decide +kernel, by decide +kernel, rfl⟩', 'exact ⟨by decide +kernel, rfl⟩')),
+         lambda text: omit_conjunct(text, "ascending")),
         ("drop-length", publisher, contract.with_name("Length.lean"), "certificateLengthConjunct",
+         lambda text: omit_conjunct(text, "length")),
+        ("drop-bucket-equality", publisher, contract.with_name("Buckets.lean"), "bucketEqualityConjunct",
+         lambda text: omit_conjunct(text, "equality")),
+        ("skip-bucket-range", manifest, contract.with_name("Buckets.lean"), "bucketRangeBinding",
          lambda text: text.replace(
-             '" :\\n  LeanInformationAudit.CensusKeyManifest.Certificate " ++', '" :\\n  LeanInformationAudit.strictlyAscending " ++').replace(
-             'ids.toString ++ " " ++ toString requested ++ " " ++ reportIds.toString ++',
-             'ids.toString ++ " = true ∧ " ++ ids.toString ++ " = " ++ reportIds.toString ++').replace(
-             'exact ⟨by decide +kernel, by decide +kernel, rfl⟩', 'exact ⟨by decide +kernel, rfl⟩')),
+             '    if let some (k, b) := bucket then\n      unless (decodeIds chunk.length value).all (fun id => idPrefix b id == k) do\n        bindingError "bucket_prefix"\n', "")),
         ("skip-chunk-recomputation", manifest, contract.with_name("Chunks.lean"), "chunkLiteralBinding",
          lambda text: text.replace(
              '    unless (.lit (.natVal value) : Expr) == .lit (.natVal packed) do',

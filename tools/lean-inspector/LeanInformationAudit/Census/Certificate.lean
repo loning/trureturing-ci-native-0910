@@ -69,8 +69,9 @@ Never decide `List.Nodup` or Finset equality here (quadratic). -/
 /-- The top `b` bits of a validated 256-bit id. -/
 @[expose] def idPrefix (b id : Nat) : Nat := id / 2 ^ (256 - b)
 
-@[expose] def inRange (k b : Nat) (ids : List Nat) : Bool :=
-  ids.all (fun id => decide (idPrefix b id = k))
+@[expose] def inRange (k b : Nat) : List Nat → Bool
+  | [] => true
+  | id :: ids => decide (idPrefix b id = k) && inRange k b ids
 
 /-- One constructor per bucket, including empty buckets. Its indices ensure
 that range order, the inventory lists, report lists and counts cannot drift. -/
@@ -82,33 +83,40 @@ inductive BucketCertificates (b : Nat) : Nat → List (List Nat) → List Nat �
       (tail : BucketCertificates b (k + 1) invs ns reps) :
       BucketCertificates b k (inv :: invs) (n :: ns) (rep :: reps)
 
-private theorem ascending_iff_pairwise (ids : List Nat) :
-    strictlyAscending ids = true ↔ ids.Pairwise (· < ·) := by
-  induction ids with
-  | nil => simp [strictlyAscending]
+-- Direct Boolean recursion retains the flat certificate's [propext] closure;
+-- Init's pairwise_append / all_eq_true additionally depend on Quot.sound.
+private theorem ascending_append {xs ys : List Nat}
+    (hx : strictlyAscending xs = true) (hy : strictlyAscending ys = true)
+    (cross : ∀ x ∈ xs, ∀ y ∈ ys, x < y) : strictlyAscending (xs ++ ys) = true := by
+  induction xs with
+  | nil => exact hy
   | cons a xs ih =>
-    constructor
-    · intro h
-      refine List.pairwise_cons.mpr ⟨ascending_head h, ih.mp ?_⟩
-      cases xs with
+    cases xs with
+    | nil =>
+      cases ys with
       | nil => rfl
-      | cons c cs => exact (Bool.and_eq_true_iff.mp h).2
-    · intro h
-      cases xs with
-      | nil => rfl
-      | cons c cs =>
-        have parts := List.pairwise_cons.mp h
-        exact Bool.and_eq_true_iff.mpr ⟨decide_eq_true (parts.1 c (by simp)), ih.mpr parts.2⟩
+      | cons b ys =>
+        exact Bool.and_eq_true_iff.mpr ⟨decide_eq_true (cross a (by simp) b (by simp)), hy⟩
+    | cons b xs =>
+      have parts := Bool.and_eq_true_iff.mp hx
+      exact Bool.and_eq_true_iff.mpr ⟨parts.1, ih parts.2
+        (fun x mem y hy => cross x (List.mem_cons_of_mem a mem) y hy)⟩
 
 private theorem range_prefix {k b : Nat} {ids : List Nat} (h : inRange k b ids = true)
-    {id : Nat} (mem : id ∈ ids) : idPrefix b id = k :=
-  of_decide_eq_true ((List.all_eq_true.mp h) id mem)
+    {id : Nat} (mem : id ∈ ids) : idPrefix b id = k := by
+  induction ids with
+  | nil => cases mem
+  | cons x xs ih =>
+    have parts := Bool.and_eq_true_iff.mp h
+    rcases List.mem_cons.mp mem with eq | mem
+    · subst id; exact of_decide_eq_true parts.1
+    · exact ih parts.2 mem
 
 private theorem flatten_prefix_lower {b k invs ns reps}
     (h : BucketCertificates b k invs ns reps) :
     ∀ id ∈ invs.flatten, k ≤ idPrefix b id := by
   induction h with
-  | nil => simp
+  | nil => intro id mem; cases mem
   | @cons k inv rep n invs ns reps ordered range length equality tail ih =>
     intro id mem
     rcases List.mem_append.mp mem with mem | mem
@@ -118,12 +126,10 @@ private theorem flatten_prefix_lower {b k invs ns reps}
 /-- Join checked ranges without decoding or comparing any concrete ids. -/
 theorem strictlyAscending_flatten_of_ranges {b k invs ns reps}
     (h : BucketCertificates b k invs ns reps) : strictlyAscending invs.flatten = true := by
-  apply (ascending_iff_pairwise _).mpr
   induction h with
-  | nil => exact List.Pairwise.nil
+  | nil => rfl
   | @cons k inv rep n invs ns reps ordered range length equality tail ih =>
-    apply List.pairwise_append.mpr
-    refine ⟨(ascending_iff_pairwise _).mp ordered, ih, ?_⟩
+    apply ascending_append ordered ih
     intro x hx y hy
     have px := range_prefix range hx
     have py := flatten_prefix_lower tail y hy

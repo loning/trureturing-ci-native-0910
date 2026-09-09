@@ -49,11 +49,13 @@ def packIds (ids : List Nat) : Nat :=
 unfolding of global definitions: cross-side aliases, moves, duplication, order
 and arity changes are rejected before publication. -/
 def bindChunkedKeys (listName : Name) (component : String)
-    (wire : Array StatementKey) : MetaM (List Nat) := do
+    (wire : Array StatementKey) (bucket : Option (Nat × Nat) := none) : MetaM (List Nat) := do
   let keys ← ofExcept <| canonicalKeys wire
   let keyArray := keys.toArray
   let chunkCount := (wire.size + 99) / 100
-  let names := (List.range chunkCount).map (fun n => listName ++ .mkSimple ("chunk" ++ toString n))
+  let names ← (List.range chunkCount).mapM fun n => do
+    let name := listName ++ .mkSimple ("chunk" ++ toString n)
+    return if (← getEnv).contains name then name else mkPrivateNameCore listName.getPrefix name
   let decoded := names.zipIdx |>.map fun (name, n) =>
     mkApp2 (mkConst ``decodeIds) (mkNatLit (min 100 (wire.size - n * 100))) (mkConst name)
   let chunks ← mkListLit (toTypeExpr (List Nat)) decoded
@@ -68,6 +70,9 @@ def bindChunkedKeys (listName : Name) (component : String)
     let .lit (.natVal value) := actual.getAppArgs[1]! | bindingError component
     unless actual == mkNatLit value do bindingError component
     let chunk := keyArray.extract (n * 100) ((n + 1) * 100) |>.toList
+    if let some (k, b) := bucket then
+      unless (decodeIds chunk.length value).all (fun id => idPrefix b id == k) do
+        bindingError "bucket_prefix"
     let packed := packIds chunk
     unless (.lit (.natVal value) : Expr) == .lit (.natVal packed) do
       -- Preserve the row's strict codec diagnostic on a mismatching digit.
@@ -77,6 +82,45 @@ def bindChunkedKeys (listName : Name) (component : String)
         ofExcept <| bindStatementIdNat key.theoremName key.statementId digit
       bindingError component
   return keys
+
+private def natConstant (name : Name) (component : String) : MetaM Nat := do
+  let value := (← getConstInfoDefn name).value
+  unless value.isAppOfArity ``OfNat.ofNat 3 do bindingError component
+  let .lit (.natVal n) := value.getAppArgs[1]! | bindingError component
+  unless value == mkNatLit n do bindingError component
+  return n
+
+/-- Bind the join's constructor graph and recompute each bucket independently.
+No kernel reduction of the joined ids occurs here or in the assembly proof. -/
+def bindBuckets (listName reportName : Name) (rows report : Array StatementKey) : MetaM Unit := do
+  let scope := listName.getPrefix
+  let b ← natConstant (scope ++ `prefixBits) "bucket_prefix_bits"
+  unless b ≤ 256 do bindingError "bucket_prefix_bits"
+  let names := (List.range (2 ^ b)).map (fun k => scope ++ .mkSimple ("Bucket" ++ toString k))
+  for (list, side, component) in [(listName, `manifestKeys, "manifest_keys"),
+      (reportName, `reportKeys, "report_keys")] do
+    let items ← mkListLit (toTypeExpr (List Nat)) (names.map (fun n => mkConst (n ++ side)))
+    let expected ← mkAppM ``List.flatten #[items]
+    let joined ← zetaReduce (← getConstInfoDefn list).value (zetaDelta := false) (beta := false)
+    unless joined == expected do bindingError (component ++ "_binding")
+  let mut invBuckets := Array.replicate (2 ^ b) (#[] : Array StatementKey)
+  let mut repBuckets := invBuckets
+  for row in rows do
+    let id ← ofExcept <| decodeStatementId row.theoremName row.statementId
+    let k := idPrefix b id
+    invBuckets := invBuckets.modify k (·.push row)
+  for row in report do
+    let id ← ofExcept <| decodeStatementId row.theoremName row.statementId
+    let k := idPrefix b id
+    repBuckets := repBuckets.modify k (·.push row)
+  let mut total := 0
+  for (name, k) in names.zipIdx do
+    let inv ← bindChunkedKeys (name ++ `manifestKeys) "manifest_keys" invBuckets[k]! (some (k, b))
+    discard <| bindChunkedKeys (name ++ `reportKeys) "report_keys" repBuckets[k]! (some (k, b))
+    let n ← natConstant (name ++ `n) "bucket_length"
+    unless n == inv.length do bindingError "bucket_length"
+    total := total + n
+  unless total == rows.size do bindingError "bucket_total"
 
 def bindEmittedManifest (report : FrozenReport) (root : Name) (rows : Array StatementKey)
     (manifestName reportKeysName : Name) : MetaM Unit := do
@@ -93,8 +137,7 @@ def bindEmittedManifest (report : FrozenReport) (root : Name) (rows : Array Stat
   let listName := manifestName.appendAfter "Keys"
   unless args[3]! == mkConst listName do bindingError "manifest_keys"
   if reportKeysName == listName then bindingError "report_keys_binding"
-  discard <| bindChunkedKeys listName "manifest_keys" rows
-  discard <| bindChunkedKeys reportKeysName "report_keys" report.theorems
+  bindBuckets listName reportKeysName rows report.theorems
   ofExcept <| checkMissingKeys report.headSha report.theorems rows
 
 /-- Decide only linear order and length. Reflexivity compares the independently
