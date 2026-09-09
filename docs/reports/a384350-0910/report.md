@@ -124,3 +124,23 @@ is required for the repository-derived proof; the report retains the OEIS
 statement locators and bounded literature assessment. First route invocation
 with an absolute manifest path was rejected (`manifest path must be
 repository-relative`); the manifest is moved to a relative run-local path.
+
+### First kernel-checked proof unit
+
+The private lemma `part_lt_of_nontrivial` is accepted by Lean (hot-cache
+`lake env lean /tmp/a384350-part.lean`, EXIT 0). For any positive finite
+partition whose sum is s and which differs from {s}, every part is < s.
+It reuses `single_le_sum`, `sum_erase_add`, and
+`eq_singleton_iff_unique_mem`. This is an unbounded structural lemma, not a
+finite certificate. The final equivalence is not yet claimed.
+
+Failure history: the initial `simpa [hsum]` did not rewrite an eta-expanded
+sum; the second version still left `hsum : T.sum id = s` opaque to omega's
+atom comparison. An actual goal trace isolated the mismatch with
+`sum (fun x => x)`; `change (∑ x ∈ T, x) = s at hsum` fixed it. No assumption
+or mathematical statement was weakened. The supplied scratch proof is now
+incorporated into the canonically routed D5 module with its semantic definitions.
+
+Routing succeeded for D5/S3/ArithSums/DisjointStrictRefinement, generality G.
+The route parser also required string-valued empty fields and artifact=lean;
+those manifest-input errors were fixed before creating the module.
