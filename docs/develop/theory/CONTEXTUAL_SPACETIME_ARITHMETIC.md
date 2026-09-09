@@ -3201,6 +3201,8 @@ $J(C,A)=(C,\{e\in A:\exists d\in\Omega_C\ (e\prec d)\})$。该筛选不用事件
 sed -n '/^```python$/,/^```$/p' docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md | sed '1d;$d' | python3 -
 ```
 
+本次合并与重编号后的复跑同样退出 **0**、stderr 为空，以下两条 `pr3_` 收据与原收据逐字相同，末行仍为 `ALL_FINITE_CHECKS_PASSED`。
+
 stdout 中 `pr3_` 两行及最终行原文如下；原有检查也在同一次执行中通过：
 
 ```text
@@ -3231,7 +3233,7 @@ INGEST residual_open_added=93 skipped_existing=144 coarse_fallbacks=0 open_genre
 | --- | --- |
 | 摄入基线本卷行数 | 2552 |
 | 上述执行输入及摄入检查点本卷行数 | 3378 |
-| 本节更新后的本卷行数（下一次摄入的输入） | 3249 |
+| 本节更新后的本卷行数（下一次摄入的输入） | 3251 |
 | 相对实际合入 dev `692c7efed4e50c2262984cd4e0aa0e6776cdedc3` 的本卷增删行 | +826／−0 |
 | 同一 git 比较范围的新增 atom／backfill | 93／93 |
 | 检查点 `git status --porcelain=v1` | 退出 0，stdout 为空 |
