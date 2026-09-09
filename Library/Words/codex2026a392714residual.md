@@ -297,12 +297,13 @@ S(a) 的唯一内容模块落在 D5/S1/Words/Compositions/ResidualPermutationSig
 Words 已在 Meta/domains.yaml 注册于 S1；同域 Library/Words 与既有 G 模块可查。
 头七行采用 A5.1 的 literal `utility: none`。实际新增前目录容量为 D5 6、
 Blueprint 12、theory 43（direct files）；均未挤入已满父桶。
-为本题独立摄入 docs/develop/theory/RESIDUAL_PERMUTATION_SIGN.md，
-`make ingest BASE=25b883dcebf4305950c779111490338639eed3bc SOURCE=docs/develop/theory/RESIDUAL_PERMUTATION_SIGN.md`
-EXIT=0：residual_open_added=1、cas_objects_written=1、coarse_fallbacks=0。
-atom ID 为 `296127e0b63573701297f231e6beb2f0364309aca09386ea44485b4f1b6ea59a`；
-内容只陈述 S(a)，没有原猜想或 Φ(n) 桥。首次 show-atom 错把 source 前缀加入 ID，
-EXIT=2（absent from digestion ledger）；读取 loader 的 ID 规则后改用纯内容 hash。
+**该席曾为本题独立摄入 `docs/develop/theory/RESIDUAL_PERMUTATION_SIGN.md`
+（8 行，内容即 S(a) 本身），并以其 atom 走 `make deposit ATOM_ID=…`。
+orchestrator 在结算时把这一段整体撤下**（卷、atom blob、backfill 条目三个面),
+理由见本节末的「撤下循环摄入」。冻结与 Blueprint 不受影响：
+`accepted` 事件的 payload 只有 `statement_id` / `declaration_statement_ids` /
+`descriptor_selector` / `prerequisite_frozen_node_ids`，**不引用任何 atom**（已亲验）；
+`.scribe.cs` 对该卷与该 atom 的引用数为 **0**（已亲验）。
 
 ## 正式构建批次 1
 
@@ -450,8 +451,8 @@ docs/develop/theory=44，全部低于 48。`git diff --check` EXIT=0。
 EXIT=0，212.726997292 秒。执行次序是 make lean → make lean-report →
 make emit → make deposit；报告的中间提交用于持续保全，正式 D5/Scribe/冻结产物在四门后提交。
 DEPOSIT_HEADER_CHECKED SL-012 通过；LEDGER_ALIGN added=1、changed=0、conflicts=0。
-目标 atom 被机器迁入 absorbed-closed，唯一 coverage 边指向 signed_residual_sum，
-target_statement_id 与上表一致；未手写覆盖/冻结状态。模块 statement_id 为
+（该 atom 与其 coverage 边已由 orchestrator 在结算时撤下，见上节；
+本段保留席位当时的原始收据作为战史，不代表当前树的状态。）模块 statement_id 为
 sha256:356c8b73bb2babc122f505a0697ab7f2efd1e4d59d45808a9f4db4a853dcb218，
 accepted 记录 f2bc5d6b46621d27ae59e6029c099fa0d3ca3dbf2053d0792f8c2c8b5805a73c.json。
 inspector included=26：六个定义、三个公开定理、十七个私有引理；全体公理闭包之并
@@ -476,3 +477,26 @@ PR_WATCH_RESULT pr=6689 outcome=timeout pending=2 missing=1；make EXIT=2，
 快照 head=5c3873454bbaa94b2c2bf242605c20702e51bf12，state=OPEN，mergeable=MERGEABLE。
 本轮按“make lean 通过且 PR 开出”的用户判据结算成；不主张 required-CI 全绿，
 不主张 PR 已合并。最终报告追记未改变已核验的 Lean 源码。
+
+## 撤下循环摄入（orchestrator 结算,2026-09-10）
+
+**动作**：删除 `docs/develop/theory/RESIDUAL_PERMUTATION_SIGN.md`、
+其 atom blob `296127e0…`、以及 `Meta/Digestion/backfill/residual-permutation-sign/` 整个目录。
+**保留**：`D5` 模块、`.scribe.cs`、`.md` 投影、`Golden/Frozen/state` 与 `accepted`
+——数学与冻结一字未动。
+
+**理由**。那卷 8 行，内容就是本模块刚证出的 S(a)；席位自己写卷、自己摄入、
+再用自己的模块覆盖它。第 3.3 条明写「**源卷复述不算消费**：源句本身是同一计算的报告时，
+覆盖它用一般定理，或把该句标为计算实验、不形式化」，并把「为了让旧管道有消费者而造任务」
+列为反面即病。第 1.2 条与第 4.3 条定 `docs/theory` 是**参考输入（灵感与出处）**，
+生产链方向是 `理论卷 → atom → 形式化`；倒过来写卷是把链反接。
+
+**为什么必须在合入前撤，而不是事后修**：第 1.2 条「卷与 atoms 不删是建设者纪律」，
+atom 一经落地即不可删。按第 7.8 条，不可逆面要事前硬门，不能靠事后勘正。
+
+**这不影响准入依据**：本模块的 `admission_basis` 是 `escape-witness`（`upper_fixed_prefix`
+与最小被移动值选出的固定相邻对换），与 atom 无关；`utility: none` 亦不需要 atom。
+无 atom 的冻结路径是 `ledger-align --add`，本仓既有判例。
+
+**未主张**：未主张该席有意冒领——它在本笔记里如实写明了摄入动作，是透明的；
+撤下的理由是链的方向，不是诚信。

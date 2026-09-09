@@ -1,9 +1,0 @@
-fingerprints:
-  raw_sha256: sha256:296127e0b63573701297f231e6beb2f0364309aca09386ea44485b4f1b6ea59a
-  normalized_sha256: sha256:296127e0b63573701297f231e6beb2f0364309aca09386ea44485b4f1b6ea59a
-cas_ref: sha256:296127e0b63573701297f231e6beb2f0364309aca09386ea44485b4f1b6ea59a
-coverage_gids:
-  - gid: D5/S1/Words/Compositions/ResidualPermutationSign.signed_residual_sum
-    target_statement_id: sha256:1d6ff519526035f4e08edcd627ccf0bd618dd8776c3e1a11c676a6eac4d73ab4
-receipts:
-  unresolved_subitems: []
