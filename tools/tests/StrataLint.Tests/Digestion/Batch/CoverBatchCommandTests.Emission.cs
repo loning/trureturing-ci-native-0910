@@ -29,12 +29,22 @@ public sealed partial class CoverBatchCommandTests
         LedgerLoadCounter ledger;
         ReportLoadCounter reports;
         CommandResult result;
-        using (frozen = new FrozenLoadCounter())
-        using (ledger = new LedgerLoadCounter())
-        using (reports = new ReportLoadCounter())
-            result = batch.RunProducers(input);
+        var discoveries = 0;
+        BatchClaimDefinition.Creating.Value = () => discoveries++;
+        try
+        {
+            using (frozen = new FrozenLoadCounter())
+            using (ledger = new LedgerLoadCounter())
+            using (reports = new ReportLoadCounter())
+                result = batch.RunProducers(input);
+        }
+        finally
+        {
+            BatchClaimDefinition.Creating.Value = null;
+        }
 
         output.WriteLine(result.Output + result.Error);
+        Assert.Equal(4, discoveries);
         Assert.Equal(partialFailure ? 1 : 0, result.ExitCode);
         Assert.Equal(partialFailure ? ["applied", "failed", "applied"] : ["applied", "applied"],
             Results(result).Select(item => item.Status).ToArray());
@@ -45,16 +55,16 @@ public sealed partial class CoverBatchCommandTests
                      "Generated/truth-graph.v1.json" })
         {
             Assert.NotEmpty(TemporaryFileSystem.File.ReadAllBytes(Path.Combine(batch.Root, path)));
-            Assert.Contains(path, result.Output, StringComparison.Ordinal);
+            Assert.Single(result.Output.Split('\n'), line => line.Contains(path, StringComparison.Ordinal));
         }
         Assert.Equal(1, reports.Loads);
         Assert.Equal(1, frozen.Catalogs);
         Assert.Equal(1, frozen.Indexes);
         Assert.Equal(1, ledger.BaselineLoads);
         Assert.Equal([1, 1, 1], ledger.CandidateSnapshotLoads);
-        output.WriteLine("COMPLETE_PRODUCERS synthetic_assembly=true report={0} catalog={1} index={2} baseline={3} candidate=[{4}]",
+        output.WriteLine("COMPLETE_PRODUCERS synthetic_assembly=true report={0} catalog={1} index={2} baseline={3} candidate=[{4}] discoveries={5}",
             reports.Loads, frozen.Catalogs, frozen.Indexes, ledger.BaselineLoads,
-            string.Join(',', ledger.CandidateSnapshotLoads));
+            string.Join(',', ledger.CandidateSnapshotLoads), discoveries);
         Assert.True(TemporaryFileSystem.File.Exists(reportPath));
 
         var graphPath = Path.Combine(batch.Root, "Generated/truth-graph.v1.json");
@@ -69,10 +79,13 @@ public sealed partial class CoverBatchCommandTests
     }
 
     [Theory]
-    [InlineData(FrozenPath)]
-    [InlineData("D5/S0/Carrier/Probe.lean")]
-    [InlineData(ProblemPath)]
-    public void FinalEmissionRejectsChangedAuthoritativeInputs(string changedPath)
+    [InlineData(FrozenPath, 3)]
+    [InlineData("D5/S0/Carrier/Probe.lean", 3)]
+    [InlineData(ProblemPath, 3)]
+    [InlineData(FrozenPath, 4)]
+    [InlineData("D5/S0/Carrier/Probe.lean", 4)]
+    [InlineData(ProblemPath, 4)]
+    public void FinalEmissionRejectsChangedAuthoritativeInputs(string changedPath, int discovery)
     {
         using var world = new BatchWorld { UseGitReader = true };
         WriteEmissionInputs(world.Root);
@@ -80,7 +93,7 @@ public sealed partial class CoverBatchCommandTests
         var calls = 0;
         BatchClaimDefinition.Creating.Value = () =>
         {
-            if (++calls == 3)
+            if (++calls == discovery)
                 TemporaryFileSystem.File.AppendAllText(Path.Combine(world.Root, changedPath), "\n");
         };
         try
@@ -88,12 +101,53 @@ public sealed partial class CoverBatchCommandTests
             var result = world.RunProducers(Row(First, Gid) + Row(Second, OtherGid));
 
             output.WriteLine(result.Output + result.Error);
+            output.WriteLine("AUTHORITATIVE_MUTATION path={0} trigger={1} discoveries={2}", changedPath, discovery, calls);
+            Assert.Equal(discovery, calls);
             Assert.Equal(1, result.ExitCode);
             Assert.Equal(["applied", "applied"], Results(result).Select(item => item.Status).ToArray());
             Assert.Contains("shared cover context changed: " + changedPath, result.Error, StringComparison.Ordinal);
             Assert.Single(world.Entry(First).Coverage);
             Assert.Single(world.Entry(Second).Coverage);
-            Assert.False(TemporaryFileSystem.File.Exists(Path.Combine(world.Root, "Generated/DAG.md")));
+            Assert.Equal(discovery == 4, TemporaryFileSystem.File.Exists(Path.Combine(world.Root, "Generated/DAG.md")));
+            if (discovery == 4)
+                Assert.Contains("Generated/DAG.md", result.Output, StringComparison.Ordinal);
+        }
+        finally
+        {
+            BatchClaimDefinition.Creating.Value = null;
+        }
+    }
+
+    [Fact]
+    public void FinalDagRejectsChangedCommittedLedger()
+    {
+        using var world = new BatchWorld { UseGitReader = true };
+        WriteEmissionInputs(world.Root);
+        world.WriteReportBundle();
+        var calls = 0;
+        string? changedPath = null;
+        BatchClaimDefinition.Creating.Value = () =>
+        {
+            if (++calls != 4) return;
+            changedPath = world.LedgerPaths().Single(path => path.EndsWith(Second + ".yaml", StringComparison.Ordinal));
+            TemporaryFileSystem.File.AppendAllText(changedPath, "# concurrent ledger edit\n");
+        };
+        try
+        {
+            var result = world.RunProducers(Row(First, Gid) + Row(Second, OtherGid));
+
+            output.WriteLine(result.Output + result.Error);
+            output.WriteLine("LEDGER_MUTATION trigger=4 discoveries={0}", calls);
+            Assert.Equal(4, calls);
+            Assert.NotNull(changedPath);
+            Assert.Equal(1, result.ExitCode);
+            Assert.Equal(["applied", "applied"], Results(result).Select(item => item.Status).ToArray());
+            Assert.Contains("ledger changed under us", result.Error, StringComparison.Ordinal);
+            Assert.Single(world.Entry(First).Coverage);
+            Assert.Single(world.Entry(Second).Coverage);
+            Assert.EndsWith("# concurrent ledger edit\n", TemporaryFileSystem.File.ReadAllText(changedPath), StringComparison.Ordinal);
+            Assert.NotEmpty(TemporaryFileSystem.File.ReadAllBytes(Path.Combine(world.Root, "Generated/DAG.md")));
+            Assert.Contains("Generated/DAG.md", result.Output, StringComparison.Ordinal);
         }
         finally
         {

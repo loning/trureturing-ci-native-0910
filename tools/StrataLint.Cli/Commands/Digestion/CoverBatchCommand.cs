@@ -164,10 +164,28 @@ internal static partial class CoverBatchCommand
         if (exit != 0) return new(false, output.ToString(), error.ToString());
         var dag = DagRenderCommand.Run(root, new(ReadEmittedSnapshot(root, session), session.Lean, session.Report), false,
             documentsAssembly, session.Document);
-        return new(dag.Success, output + dag.Output, error + dag.Error);
+        output.Write(dag.Output);
+        error.Write(dag.Error);
+        try
+        {
+            ReadEmittedInputs(root, session);
+        }
+        catch (Exception exception) when (exception is not OutOfMemoryException)
+        {
+            error.Write($"COVER_BATCH_EMIT_FAILED {exception.Message}\n");
+            return new(false, output.ToString(), error.ToString());
+        }
+        return new(dag.Success, output.ToString(), error.ToString());
     }
 
-    private static RepositorySnapshot ReadEmittedSnapshot(string root, CoverAtomCommand.Session session)
+    private static RepositorySnapshot ReadEmittedSnapshot(string root, CoverAtomCommand.Session session) =>
+        SnapshotDecoder.Decode(ReadEmittedInputs(root, session)) switch
+        {
+            SnapshotDecodeOutcome.Decoded decoded => decoded.Snapshot,
+            SnapshotDecodeOutcome.InfrastructureFailure failure => throw new InvalidOperationException(failure.Message),
+        };
+
+    private static RawRepositorySnapshot ReadEmittedInputs(string root, CoverAtomCommand.Session session)
     {
         var manifestFile = session.Current.Files[RepoPath.CreateKnown(FileMapLoader.RelativePath)];
         var manifest = FileMapLoader.Parse(manifestFile.RawBytes.AsSpan(), FileMapLoader.RelativePath);
@@ -176,10 +194,6 @@ internal static partial class CoverBatchCommand
         RequireSameInputs(Inputs(session.CurrentRaw), Inputs(raw),
             path => manifest.Match(path) is [{ Kind: FileMapKind.Generated }]);
         IngestCommand.RequireLedgerUnchanged(root, session.CurrentRaw);
-        return SnapshotDecoder.Decode(raw) switch
-        {
-            SnapshotDecodeOutcome.Decoded decoded => decoded.Snapshot,
-            SnapshotDecodeOutcome.InfrastructureFailure failure => throw new InvalidOperationException(failure.Message),
-        };
+        return raw;
     }
 }
