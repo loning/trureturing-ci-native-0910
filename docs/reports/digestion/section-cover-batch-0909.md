@@ -48,7 +48,7 @@ All have source_id `quantum-rh` and initial directory `residual-open`.
 | Group | Atom ID | Initial state | Result |
 | --- | --- | --- | --- |
 | A1 | `66fd622e5d54c25826af9d416db18df1d8eecf9c71288d80ff0460237e3e95d2` | residual-open | absorbed-closed; two edges |
-| A2 | `088d882f6a10249e981da5d77bc3bb5e53e75a5ee02313bdd7c879cb21e22413` | residual-open | full match; writer pending |
+| A2 | `088d882f6a10249e981da5d77bc3bb5e53e75a5ee02313bdd7c879cb21e22413` | residual-open | absorbed-closed; one edge |
 | A3 | `5f5912050d91b5f8998e6799d12c40e766fa4d65798ff890b506a56c3bc0ed3c` | residual-open | pending audit |
 | B1 | `c352d304105e02cbbcb0607e31a1e217adb85d4b344ba0d75c23ba4420dbf0e1` | residual-open | dossier pending; cover prohibited |
 | B2 | `7b2657006891568aa395dfd9fa14bde9d9d23d2ade0c449b00f7cdf5c616baec` | residual-open | dossier pending; cover prohibited |
@@ -175,7 +175,16 @@ Fidelity verdict: full match. Proposed use `proof_shape: bind-only`,
 `escape_witness: null`,
 `admission_basis: not-applicable(cover of an existing frozen declaration)`.
 The direct frozen dependency is the declaration GID above, with its module pin.
-Writer outcome remains pending at this audit checkpoint.
+Writer receipt: `make cover ATOM_ID=088d882f6a10249e981da5d77bc3bb5e53e75a5ee02313bdd7c879cb21e22413
+GID=D5/S3/Arith/GoldenResource5040PriceInterval.golden_resource_5040_unique_maximum_of_price_interval
+BASE=1bb54f920527c303ebaec4e5388d48fcbee0df04` returned 0, with
+`ledger_changed=true`. The atom moved from `residual-open` to `absorbed-closed`,
+with one coverage edge and no unresolved subitems. The canonical writer recorded
+declaration pin
+`sha256:56d1fe995397544a89849ab81bb95afd04df1b78fb4bb78fff0dc86b82fdb0f9`.
+The command reused the cached Lean report and changed zero blueprints.
+`git diff --check` returned 0. The full command log is retained in the attempt
+directory as `cover-a2.log`; command success is not a fidelity judgment.
 
 ## Nonclaims
 
