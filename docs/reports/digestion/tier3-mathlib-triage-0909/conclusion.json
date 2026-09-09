@@ -1,14 +1,61 @@
 {
   "verdict": "propose",
-  "screened_count": 50,
+  "screened_count": 75,
   "by_tier": {
-    "A": 0,
-    "B": 12,
-    "C": 38,
+    "A": 1,
+    "B": 17,
+    "C": 57,
     "D": 0,
     "E": 0
   },
-  "tierA": [],
+  "tierA": [
+    {
+      "atom_id": "7d5d9c72f7ad9abb794dd61d99e68ff5adc1271970f00e4a009b9e334680a0d2",
+      "title": "## 定理 M4：有限算术关系可以精确回读",
+      "bytes": 87,
+      "index": 75,
+      "tier": "A",
+      "claim": "n<=d 的实际有限 Jensen 系数回读 R_(n<-d)[P_d]=P_n。",
+      "reason": "展开实际定义后，coeff_monomial 提取权重系数，descFactorial_pos 供应 k<=n<=d 时分母非零，逐项 field_simp 即恢复 P_n；对任意实系数序列成立。",
+      "mathlib": [
+        {
+          "declaration": "Polynomial.coeff_monomial",
+          "file": "Mathlib/Algebra/Polynomial/Basic.lean",
+          "line": 581
+        },
+        {
+          "declaration": "Nat.descFactorial_pos",
+          "file": "Mathlib/Data/Nat/Factorial/Basic.lean",
+          "line": 374
+        }
+      ],
+      "source_context": [
+        130,
+        156,
+        11025,
+        11071
+      ],
+      "probe": "Readback75",
+      "searches": [
+        "polynomial-readback",
+        "third-bindings"
+      ],
+      "source_line": 11047,
+      "proof_shape": "bind-only",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": true,
+      "probe_exit": 0,
+      "probe_runs": [
+        {
+          "probe": "Readback75",
+          "exit": 0,
+          "log": "logs/Readback75.log.gz"
+        }
+      ]
+    }
+  ],
   "tierB": [
     {
       "atom_id": "0715d2f9078c88ee013814d101b0c36bdb33c5cf5ce76d58239e51cc6485df25",
@@ -42,7 +89,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "16ee2a6dfb3840e47529bdbd48187c9167a2230d63a5ac51826e62a979baf1ff",
@@ -67,7 +117,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "1e414ffb45d7fcaa9536a956298c4e291f91a2e310f112d2cf8419518caefd1a",
@@ -92,7 +145,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "1e9daffd76d1ac95768ad7e9737ce9069f71ca9d5406430f42768de16be0a86c",
@@ -121,7 +177,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "23e85e40204222cb3bee95c5c9072bd75f3796b82d41f908f8629d8a201137b9",
@@ -151,7 +210,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "2bc63109d666c92a11aa641dbeae45bc08e3f4f939bc5ce4406a75e5d86d03b6",
@@ -176,7 +238,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "2f9a49afd3fffe7f7744822c6adea7f922e808404a7654ca0c8fd4f80195d788",
@@ -202,7 +267,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "3342849ebfebb0ba8cd5217fe1a75e542e800c394bc9e9478978e025363fa770",
@@ -227,7 +295,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "3cefd6e75bf3146ba90cf7614b16b286751f3a36029a22cbba8e97a49ba911d3",
@@ -253,7 +324,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "409c425f66ec18a504f4d6304af1f43493cb5a92225344c4f79b342fd0f5eacd",
@@ -278,7 +352,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "4bf0743f24ceefdab6eae275b611c01646e5bf795de46dc68456a1d7ed269bf6",
@@ -304,7 +381,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "506ba2fa80720ba43ca7d89d6b8d9c39455747237809df8fd552367fc064f22c",
@@ -330,7 +410,166 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "51ecbc2e4c8976d219f4c2617007564164468c320acb88918b7ab6d848e61d79",
+      "title": "## 定理 Q5：条件读出的统一误差界",
+      "bytes": 117,
+      "index": 51,
+      "tier": "B",
+      "claim": "实际条件振幅与有限截断振幅的全 t 误差 <=2*tau_n(L)/Z_n。",
+      "reason": "概率测度的特征函数模 <=1 已库有；缺实际倾斜测度的内外截断混合恒等式、归一化和 supremum 绑定。",
+      "mathlib": [
+        {
+          "declaration": "MeasureTheory.norm_charFun_le_one",
+          "file": "Mathlib/MeasureTheory/Measure/CharacteristicFunction/Basic.lean",
+          "line": 175
+        }
+      ],
+      "source_context": [
+        19803,
+        19872
+      ],
+      "searches": [
+        "third-bindings",
+        "theta-analytic"
+      ],
+      "source_line": 19850,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "62ee996f8ec3b4c0ff8b4d9d182f2785eed2515aa9b326c2e160705c7abdef3f",
+      "title": "## 定理 L2：投影概率",
+      "bytes": 122,
+      "index": 59,
+      "tier": "B",
+      "claim": "Fock 群平均投影概率等于 exp(-r*N_q)*H_q(r) 且 <=1。",
+      "reason": "正交投影范数不增已库有；缺指定 Fock 相干态、酉群平均投影与 HCIZ 历史读数的完整相等式。",
+      "mathlib": [
+        {
+          "declaration": "Submodule.norm_starProjection_apply_le",
+          "file": "Mathlib/Analysis/InnerProductSpace/Projection/Basic.lean",
+          "line": 361
+        }
+      ],
+      "source_context": [
+        9120,
+        9220
+      ],
+      "searches": [
+        "third-bindings",
+        "special-polynomials"
+      ],
+      "source_line": 9183,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "69ae4d23bd64324ec6c5efe11686945d726482b842c45097e2e0e9360599cdb1",
+      "title": "## 定理 B5：重标定回返恒等式",
+      "bytes": 190,
+      "index": 63,
+      "tier": "B",
+      "claim": "实际均衡压缩的回返 R_d(v) 等于 q/Jensen 对数导数的指定分式。",
+      "reason": "块逆公式已给 11 角的 Schur 回返分母；缺实际均衡参考向量的迹平均、P_d 对数导数与该矩阵的匹配。",
+      "mathlib": [
+        {
+          "declaration": "Matrix.invOf_fromBlocks₂₂_eq",
+          "file": "Mathlib/LinearAlgebra/Matrix/SchurComplement.lean",
+          "line": 277
+        }
+      ],
+      "source_context": [
+        2280,
+        2368
+      ],
+      "searches": [
+        "schur",
+        "special-polynomials"
+      ],
+      "source_line": 2330,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "74c15d92cd745276176c9d4c66c4cdd5b7bf59fae5b937ae1e1a07186deca95b",
+      "title": "## 定理一：交换对称保护的奇偶相消",
+      "bytes": 142,
+      "index": 66,
+      "tier": "B",
+      "claim": "特定占据 (4,2,1,1) 历史调度保持 5/7 交换时，pi 振幅为零。",
+      "reason": "有限和的无固定点反号 involution 相消已库有；缺实际词交换保持合法历史且反转逆序奇偶的类型化绑定，不能把上文式12当已冻结前件。",
+      "mathlib": [
+        {
+          "declaration": "Finset.sum_involution (to_additive of prod_involution)",
+          "file": "Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean",
+          "line": 665
+        }
+      ],
+      "source_context": [
+        57308,
+        57359
+      ],
+      "searches": [
+        "q-combinatorics",
+        "third-bindings"
+      ],
+      "source_line": 57332,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "7bc4a56b9299f55e209695fa3689db283e8328893508c0a4473ed32dea18b33b",
+      "title": "## 定理 E5：实际谱留数的整数约束",
+      "bytes": 148,
+      "index": 74,
+      "tier": "B",
+      "claim": "D 在 -1/u0 有 m 重零点时，实际 S 的留数为 m*u0²。",
+      "reason": "Mathlib 已证明有限非零阶零点的 logDeriv 具有简单极点；缺留数系数 m、倒数坐标变换及实际 S 的定义绑定。",
+      "mathlib": [
+        {
+          "declaration": "meromorphicOrderAt_logDeriv_eq_neg_one",
+          "file": "Mathlib/Analysis/Meromorphic/Order.lean",
+          "line": 996
+        }
+      ],
+      "searches": [
+        "logderiv-residue",
+        "theta-analytic"
+      ],
+      "source_line": 4666,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     }
   ],
   "tierC": [
@@ -349,7 +588,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "04174c1260762c6fb3fe24cd51b93eea78714592b4cd71e927db335d5edf8b77",
@@ -366,7 +608,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "062d6f5a910eed117ab7596a2e34f1a6a0728de5e8599136b47689b29d2870c9",
@@ -383,7 +628,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "072eca25d260537060a5e1b2b7dada75dbf623eba8eebb4bad8c765d8ebe6749",
@@ -400,7 +648,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "0831062a074c8393d5e0d16a4caa4487d783311664ffa661ab52092973475c5b",
@@ -417,7 +668,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "083b7658fb28ffb6609e6c46923ebd4e8c9c27dc3813f06187a0aa23c398e7d4",
@@ -435,7 +689,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "087e3caa7c278b4ea58f06604daa8721ab5258f6c451a25ed8f2d0092d823ca0",
@@ -456,7 +713,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "0d2c6e9ed518bfcee93cc1f4b71877666e729b3db0f05d06a2b43bbf53e86984",
@@ -473,7 +733,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "0e1a7beb490fc5aece3b6e13b10c6523ab64fac627efd6b825dc5c5551af5eab",
@@ -491,7 +754,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "0e8d9e20c8a7ec0e0820053dc56a9dae075722a110b78a0ecee60b5cb202f2d8",
@@ -508,7 +774,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "1033c98f6c47c1c95ba84c013ed594e604e96b5061d49672f6a3333ff411cb3a",
@@ -526,7 +795,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "10f086b0306c55830d4a16268948883d503cc3e347c5ebb45d89be2a6927fe3a",
@@ -543,7 +815,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "15eb12aed71ec186edbcd3e877571bdd32780f55e1539a8ff1211975db8f51c3",
@@ -561,7 +836,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "183d1842d5f7033b150a150210195c78562694a2c239a984aea1f5b7f86ec009",
@@ -583,7 +861,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "19d4c054e92739f02edd10bc8c8cade6a616e273f45552e1f9e1da08359a6462",
@@ -601,7 +882,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "1ad5bec02ef18c7e44f7099ba5b17703e14dbfd047be51ab11ee29d6d17dfa0e",
@@ -619,7 +903,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "1ba55c6c1a84a3ff33ceebbcb3a7c7d52c48d18a1823c4354d954afe0d3aee38",
@@ -637,7 +924,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "1eecc9129a67c60825a86b1efaa93284267df6701e12127565d8873086de3021",
@@ -655,7 +945,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "207bdea6c00dc779749029d64849d7221c08cad532ac5d38069d8871e87b4d92",
@@ -673,7 +966,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "224b9dc2f29a8182291ff077025c0f1cf83c02aeb844e2893366013f04898914",
@@ -695,7 +991,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "247c5740e6ce2838bb73fce435941602825eace40b67c44c62f23f45796e0b04",
@@ -712,7 +1011,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "24e7f65c67cec1074a6af47cd138dda33f014adcc2b6d569e14823c62aadc6ea",
@@ -729,7 +1031,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "2664266b147343a4836824aae0348abd88a5ef821e178a073f2b6e8b8fe91a0d",
@@ -747,7 +1052,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "27065ff2e7fd688eaed358a1953fc8fec5b4a98870cdeee7317e43e4c228d6e6",
@@ -765,7 +1073,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "2bcdc03e5777fcc1c396e5b07b17101c3f52508fb80a62a55e3b96a0b66158f2",
@@ -783,7 +1094,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "2c37bff2d8f941ea92b5c037c21e6d179a2ab8fe3a67836b6ecb5b2e766793e7",
@@ -801,7 +1115,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "2fa59f238e0c5dfb86c347ac26b274ce1ed355e030ffbc580a98779ceef61e6a",
@@ -819,7 +1136,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "2fbed82e07d243d1005a8a1c09923c3aaa3d8b0a414ff7a9210cd5c6f2ed26e2",
@@ -837,7 +1157,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "33bd332c5190b7fb8bf6b6fde4e8863e2cbc32878b35713e4e42abc4c4582e8b",
@@ -854,7 +1177,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "34f85f5ef0ec8521296d78b1a195aa9330397b316945d3dae5f77744c60587eb",
@@ -872,7 +1198,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "352958cfd6f933764581834a39a2547c32c91c2871dfc88c0e6d915af186b804",
@@ -890,7 +1219,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "3b96c202fb8567eb58151de0b72315414794aa9b0003e2aecba521121fa0a819",
@@ -908,7 +1240,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "3ea6f6f717cf3b008eb7110a832936a14b2d2a332b6ee2abe42cb1146455f049",
@@ -926,7 +1261,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "4104d8727c10869ec5ae256646c45c0bc72bcb83febed83f36c94488bbd5a763",
@@ -944,7 +1282,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "42a6721fabfa0a316cd60251fdff5e3997dec865d18964539f6241a7c2dba3f9",
@@ -962,7 +1303,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "4ad8c850dca051f69ac5f8fc65592b377d32fca0fac5d5347fcc3c0ea2b7c153",
@@ -980,7 +1324,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "4dea51c9bf2a5ec929da7acfdeb7d4694ddb3effba5083d8d5e0519ebed7bfd6",
@@ -998,7 +1345,10 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     },
     {
       "atom_id": "4f1af385073cf374adf2837dcb61d6f03822ba385a3f589dacb3087c8b867246",
@@ -1016,7 +1366,408 @@
       "proof_shape": "not-assessed(no-complete-proof)",
       "direct_frozen_dependencies": [],
       "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)"
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "528a07b72b26ab9b7df6f3645a60c76eedd91f4489b30838ea8ccb310c386c9b",
+      "title": "## 定理二：模数进位—相消重数关系",
+      "bytes": 431,
+      "index": 52,
+      "tier": "C",
+      "claim": "多重集 q-生成函数在本原 d 次单位根处的零点重数等于余数进位数。",
+      "reason": "缺 q-多项阶乘的分圆因子重数与占据进位公式；自然数 multinomial 或一般单位根理论未给完整接口。",
+      "searches": [
+        "q-combinatorics",
+        "polynomial-readback"
+      ],
+      "source_line": 53440,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "578c45143001f9f9929455e22deef3c7cba964c4389ba0b9d79dd9371ed8f806",
+      "title": "### 定理十二：恢复分辨率不会降低负本征值总量",
+      "bytes": 113,
+      "index": 53,
+      "tier": "C",
+      "claim": "有限 Toeplitz 负谱总量随径向参数递增。",
+      "reason": "缺把径向 Poisson 平滑接成保迹正映射并控制负谱迹的收缩定理。",
+      "searches": [
+        "toeplitz",
+        "negative-spectrum-refined"
+      ],
+      "source_line": 67293,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "5918f6bd5a66f8b7eb15b4b1c505d54dfdf3b73d884b537a42b153c9270e3d4c",
+      "title": "## 定理一：径向接触不可能无限平缓",
+      "bytes": 380,
+      "index": 54,
+      "tier": "C",
+      "claim": "解析接触点的径向导数等于指定奇异积分，且 Gamma>=1/2。",
+      "reason": "缺边界 Poisson 生成元积分表示、触点处可积性与归一化常数下界。",
+      "searches": [
+        "toeplitz",
+        "real-calculus"
+      ],
+      "source_line": 65071,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "594f93cbc27b15032549c9271c41b100f049b61736e5e5d1fdbb8c90fb3cdda4",
+      "title": "## 推论：低频联合能量判据",
+      "bytes": 320,
+      "index": 55,
+      "tier": "C",
+      "claim": "RH 等价于 dyadic 尺度有限低频联合能量的一致有界性。",
+      "reason": "缺实际素数读数的离散 Fourier 能量恒等式、统一高频截断及原能量 RH 等价。",
+      "searches": [
+        "theta-analytic",
+        "discrete-winding"
+      ],
+      "source_line": 24588,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "59626bffd526d065fe29b4f63e40a4367886e380208787d0cf0fe4df9e169a9b",
+      "title": "## 定理二：单次试除的精确指令数",
+      "bytes": 213,
+      "index": 56,
+      "tier": "C",
+      "claim": "指定试除程序的接受/拒绝步骤数分别为 4M+2Q+2 与 6M+2Q+2。",
+      "reason": "缺此状态机完整运行轨迹与逐指令计数，不只是 M 除以 k 的商余关系。",
+      "searches": [
+        "trial-division"
+      ],
+      "source_line": 41654,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "5a2c25fc480f079e01ab62c81849c0487bae747b3674423d9bdd62f45ba8ae2f",
+      "title": "## 定理一：正配分函数的归一化边界恰好是 \\(\\lambda=T\\)",
+      "bytes": 125,
+      "index": 57,
+      "tier": "C",
+      "claim": "实际正配分函数有限当且仅当 lambda>T。",
+      "reason": "缺实际算术能量权重与 p-级数的双边比较，包括临界点发散；没有把泛用级数测试当作该模型结论。",
+      "searches": [
+        "theta-analytic",
+        "real-calculus"
+      ],
+      "source_line": 46706,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "5f07081bda1ac55ca035fd26826575c18e003849d50ee64a715d99ee9c802999",
+      "title": "## 定理 V4：固定实区间中的全阶拼接判据",
+      "bytes": 174,
+      "index": 58,
+      "tier": "C",
+      "claim": "任意固定正实开区间内所有有限实际 G 矩阵正半定等价于 RH。",
+      "reason": "缺区间采样正核的解析唯一延拓及实际零点位置的反向检测。",
+      "searches": [
+        "toeplitz",
+        "theta-analytic",
+        "negative-spectrum-refined"
+      ],
+      "source_line": 33407,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "62f3d7a538f73aad17058c82235f1c1b82a07a089f54ad53aa27094677675f61",
+      "title": "## 定理 N3：固定滤波器的定量稳定性",
+      "bytes": 452,
+      "index": 60,
+      "tier": "C",
+      "claim": "实际有限滤波二次型与极限误差 <=E_R(f)/d，负余量从指定阶数起保持。",
+      "reason": "缺本源每阶矩的 Cauchy 型误差及有限滤波系数求和的明确常数；末端线性负余量传递不是完整证明。",
+      "searches": [
+        "special-polynomials",
+        "negative-spectrum-refined"
+      ],
+      "source_line": 12065,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "63092dbf1c6ca5601c3853ad32183d153a5ba60589f537fa409f0581ade1df64",
+      "title": "## 定理 Q3：实际两模态判据",
+      "bytes": 171,
+      "index": 61,
+      "tier": "C",
+      "claim": "实际全部两模态条件读出非负等价于 RH。",
+      "reason": "缺广义 Laguerre 全阶实根判据与实际 theta 双模态读数的精确识别。",
+      "searches": [
+        "special-polynomials",
+        "theta-analytic"
+      ],
+      "source_line": 19420,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "692393217ace683f2485ba9cf02961c2290a83cb594513880aed0c55acd62466",
+      "title": "## 定理 M1：维数稀释界",
+      "bytes": 221,
+      "index": 62,
+      "tier": "C",
+      "claim": "前件 M5 下 Schur 平方系数有升阶乘稀释界，并给出 H_d 的几何级数上界。",
+      "reason": "缺 Schur 系数/分区和的维数依赖估计 L^(2k)/d升阶乘；几何求和不能供应该核心界。",
+      "searches": [
+        "special-polynomials",
+        "q-combinatorics"
+      ],
+      "source_line": 10380,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "72307ef5e33caa0d618146ecef4ad819f3ee4ebe2e55ebe5a6c226f5cd5a34e1",
+      "title": "## 定理一：周期筛选公式",
+      "bytes": 375,
+      "index": 64,
+      "tier": "C",
+      "claim": "q-多项式在本原单位根的值有余数 q-Lucas 公式，且零点重数是最低层进位。",
+      "reason": "缺多重集 q-Lucas 在单位根处的精确阶乘商及分圆重数公式。",
+      "searches": [
+        "q-combinatorics",
+        "polynomial-readback"
+      ],
+      "source_line": 61389,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "72f167014dbb653f2eec31560ed015c7e2c0d4140cb398121ad04c898e8b066f",
+      "title": "## 定理 J2：体积—残差恒等式",
+      "bytes": 84,
+      "index": 65,
+      "tier": "C",
+      "claim": "实际高斯历史对数体积导数等于两倍残差能量并非负。",
+      "reason": "缺高斯矩阵积分求导、log det 导数与反自伴残差的迹恒等式；Gram 正性不供应这条演化律。",
+      "searches": [
+        "gaussian-moments",
+        "negative-spectrum-refined"
+      ],
+      "source_line": 6474,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "7721167db127aee2407282ad63f0739c5d953cd1720752a4d67089f562f7f10b",
+      "title": "## 定理 I3：高斯历史残差逼近真实谱虚部",
+      "bytes": 216,
+      "index": 67,
+      "tier": "C",
+      "claim": "任意有限复矩阵的高斯历史残差在 beta 与 beta+sqrt(d(d-1))/(2T) 之间。",
+      "reason": "缺允许 Jordan 块的固定历史度量误差界与明确维数常数，不是通常酉谱不变性。",
+      "searches": [
+        "gaussian-moments",
+        "negative-spectrum-refined"
+      ],
+      "source_line": 5418,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "77c2008257f3b60bc946f7a241541d17e94ffbd08b19325833bb0612dc5b1af0",
+      "title": "## 定理 K3：历史体积上限与实根性等价",
+      "bytes": 125,
+      "index": 68,
+      "tier": "C",
+      "claim": "首一实多项式全实根等价于所有正 r 的归一历史体积 <=1。",
+      "reason": "缺 HCIZ/历史体积的大 r 指数率反向检测虚部，以及实根时的体积上界。",
+      "searches": [
+        "special-polynomials",
+        "negative-spectrum-refined"
+      ],
+      "source_line": 8075,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "781219f95a1fdbea17a70a99cd34033d8dcc9569251b578580b4da952a19bbfd",
+      "title": "### 定理六：每个接触点贡献的负区域与负总量",
+      "bytes": 302,
+      "index": 69,
+      "tier": "C",
+      "claim": "各解析触点贡献的负区密度及负积分有指定幂律与常数。",
+      "reason": "缺触点局部一致缩放后负区长度与积分极限的误差控制，尤其积分域随 delta 变化。",
+      "searches": [
+        "toeplitz",
+        "real-calculus"
+      ],
+      "source_line": 66179,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "783d413d2f102a6149222de31f25d081389f7d601c08e27fec9e339cf2f22c4c",
+      "title": "## 定理一：试除宏步骤",
+      "bytes": 175,
+      "index": 70,
+      "tier": "C",
+      "claim": "指定试除宏从入口 X(M,k) 精确到达余数状态 S(M,r,0,k-r;13)。",
+      "reason": "缺该具体状态机的循环不变式与终止轨迹；欧几里得商余定理本身不证明执行结果。",
+      "searches": [
+        "trial-division"
+      ],
+      "source_line": 41127,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "78f6a2108eaba02cfbe8c76ca6e12034335c4c1e4129bde2a2affd123bf56568",
+      "title": "## 定理四：有限历史的临界偏移具有同一个幂律",
+      "bytes": 137,
+      "index": 71,
+      "tier": "C",
+      "claim": "有限 Toeplitz 临界参数偏移与 (N+1)^(-2m*) 双边同阶。",
+      "reason": "缺临界小特征值估计和径向横截性一致连接，需两侧常数同时有效。",
+      "searches": [
+        "toeplitz",
+        "negative-spectrum-refined"
+      ],
+      "source_line": 65463,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "7a359a1aa118ffc5f3423e85e46ce5f615806e4b8c0a16998ec49691a0215817",
+      "title": "## 定理三：实际正性形成一个完整区间",
+      "bytes": 131,
+      "index": 72,
+      "tier": "C",
+      "claim": "实际正性参数恰为非退化闭区间 [0,a*] 且 a*=1 等价于 RH。",
+      "reason": "缺实际径向核的正性区间延续、端点闭性与 RH 双向识别。",
+      "searches": [
+        "toeplitz",
+        "theta-analytic"
+      ],
+      "source_line": 60133,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
+    },
+    {
+      "atom_id": "7afafe5a6e3e8435ddf051d6cf49c1c6ca223fa4c95dfe286f19c8f391ec33d5",
+      "title": "## 定理 L5：低阶自动上界",
+      "bytes": 228,
+      "index": 73,
+      "tier": "C",
+      "claim": "Schur 平方级数低阶系数有给定维数上界及自动通过阈值。",
+      "reason": "缺分区/Schur 多项式的统一系数估计；后续阈值整理不能覆盖这一数学缺项。",
+      "searches": [
+        "special-polynomials",
+        "q-combinatorics"
+      ],
+      "source_line": 9826,
+      "proof_shape": "not-assessed(no-complete-proof)",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": false,
+      "probe_exit": null,
+      "probe_runs": []
     }
   ],
   "tierD": [],
@@ -1027,39 +1778,31 @@
       "command": "make 'lean'",
       "exit": 0,
       "signal": null,
-      "log": "logs/baseline.log",
+      "log": "logs/baseline.log.gz",
       "started": "2026-09-09T05:04:06.216Z",
       "atoms": [],
       "indices": [],
-      "archived_probe": null
+      "archived_probe": null,
+      "log_encoding": "gzip"
+    },
+    {
+      "probe": "Readback75",
+      "command": "make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Readback75.lean'",
+      "exit": 0,
+      "signal": null,
+      "log": "logs/Readback75.log.gz",
+      "started": "2026-09-09T05:06:21.193Z",
+      "atoms": [
+        "7d5d9c72f7ad9abb794dd61d99e68ff5adc1271970f00e4a009b9e334680a0d2"
+      ],
+      "indices": [
+        75
+      ],
+      "archived_probe": "probes/Readback75.lean",
+      "log_encoding": "gzip"
     }
   ],
   "unscreened": [
-    "51ecbc2e4c8976d219f4c2617007564164468c320acb88918b7ab6d848e61d79",
-    "528a07b72b26ab9b7df6f3645a60c76eedd91f4489b30838ea8ccb310c386c9b",
-    "578c45143001f9f9929455e22deef3c7cba964c4389ba0b9d79dd9371ed8f806",
-    "5918f6bd5a66f8b7eb15b4b1c505d54dfdf3b73d884b537a42b153c9270e3d4c",
-    "594f93cbc27b15032549c9271c41b100f049b61736e5e5d1fdbb8c90fb3cdda4",
-    "59626bffd526d065fe29b4f63e40a4367886e380208787d0cf0fe4df9e169a9b",
-    "5a2c25fc480f079e01ab62c81849c0487bae747b3674423d9bdd62f45ba8ae2f",
-    "5f07081bda1ac55ca035fd26826575c18e003849d50ee64a715d99ee9c802999",
-    "62ee996f8ec3b4c0ff8b4d9d182f2785eed2515aa9b326c2e160705c7abdef3f",
-    "62f3d7a538f73aad17058c82235f1c1b82a07a089f54ad53aa27094677675f61",
-    "63092dbf1c6ca5601c3853ad32183d153a5ba60589f537fa409f0581ade1df64",
-    "692393217ace683f2485ba9cf02961c2290a83cb594513880aed0c55acd62466",
-    "69ae4d23bd64324ec6c5efe11686945d726482b842c45097e2e0e9360599cdb1",
-    "72307ef5e33caa0d618146ecef4ad819f3ee4ebe2e55ebe5a6c226f5cd5a34e1",
-    "72f167014dbb653f2eec31560ed015c7e2c0d4140cb398121ad04c898e8b066f",
-    "74c15d92cd745276176c9d4c66c4cdd5b7bf59fae5b937ae1e1a07186deca95b",
-    "7721167db127aee2407282ad63f0739c5d953cd1720752a4d67089f562f7f10b",
-    "77c2008257f3b60bc946f7a241541d17e94ffbd08b19325833bb0612dc5b1af0",
-    "781219f95a1fdbea17a70a99cd34033d8dcc9569251b578580b4da952a19bbfd",
-    "783d413d2f102a6149222de31f25d081389f7d601c08e27fec9e339cf2f22c4c",
-    "78f6a2108eaba02cfbe8c76ca6e12034335c4c1e4129bde2a2affd123bf56568",
-    "7a359a1aa118ffc5f3423e85e46ce5f615806e4b8c0a16998ec49691a0215817",
-    "7afafe5a6e3e8435ddf051d6cf49c1c6ca223fa4c95dfe286f19c8f391ec33d5",
-    "7bc4a56b9299f55e209695fa3689db283e8328893508c0a4473ed32dea18b33b",
-    "7d5d9c72f7ad9abb794dd61d99e68ff5adc1271970f00e4a009b9e334680a0d2",
     "8062498ed2ea8f74ddd34c3c2dec295a44f3074797e0634b52cbd2630b51459e",
     "87852ef96970dd58409cceccafe2fa235ed951e6c39b41869e0fca5ecb677246",
     "88517388478e9834b20004960ece45e5026828dc5fbb0a58206c141a37529a4b",
@@ -1884,7 +2627,8 @@
     "commits": [
       "c8ba70a54e9b859185515602015f630d89019ae9",
       "6009dcbe96888c3ca23ad3e331da2efec04b9452",
-      "dad8e18532ec0063093aad820e8bd4b4c8cf80dc"
+      "dad8e18532ec0063093aad820e8bd4b4c8cf80dc",
+      "e77cf4009e6801e994e5bfff59a6b124c61ae292"
     ],
     "branch": "lane/math/tier3-mathlib-triage-0909",
     "note": "Commits through the preceding checkpoint; final delivery envelope also records its containing report commit."

@@ -4,10 +4,27 @@
     "command": "make 'lean'",
     "exit": 0,
     "signal": null,
-    "log": "logs/baseline.log",
+    "log": "logs/baseline.log.gz",
     "started": "2026-09-09T05:04:06.216Z",
     "atoms": [],
     "indices": [],
-    "archived_probe": null
+    "archived_probe": null,
+    "log_encoding": "gzip"
+  },
+  {
+    "probe": "Readback75",
+    "command": "make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Readback75.lean'",
+    "exit": 0,
+    "signal": null,
+    "log": "logs/Readback75.log.gz",
+    "started": "2026-09-09T05:06:21.193Z",
+    "atoms": [
+      "7d5d9c72f7ad9abb794dd61d99e68ff5adc1271970f00e4a009b9e334680a0d2"
+    ],
+    "indices": [
+      75
+    ],
+    "archived_probe": "probes/Readback75.lean",
+    "log_encoding": "gzip"
   }
 ]

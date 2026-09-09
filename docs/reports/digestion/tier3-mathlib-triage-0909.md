@@ -54,69 +54,97 @@ pushed immediately, including failures. Report-only delivery: no PR.
 
 ## conclusion
 
-Screened: **50/150**. A=0, B=12, C=38, D=0, E=0.
+Screened: **75/150**. A=1, B=17, C=57, D=0, E=0.
 
 Structured result: [conclusion.json](tier3-mathlib-triage-0909/conclusion.json).
 Complete canonical atom reads (raw and normalized text, command, EXIT) are in `atoms-1.json` through `atoms-6.json` as collected. Reading ahead does not count as screening.
 
 All Mathlib paths below are relative to `.lake/packages/mathlib/`. Every listed declaration was opened locally. Full per-atom claims and decisions are in `decisions-*.json`.
 
-| # | atom_id | Title | Tier | Criterion / remaining mathematics | Local Mathlib declaration | Searches |
-| --- | --- | --- | --- | --- | --- | --- |
-| 1 | `028cb6a153eaec67ee356ef9571a406a6d9460c0092fbc031df4abab42884a85` | 定理十一：有限多边形绕数证书 | C | 缺带二阶导数/顶点误差预算的轮廓同伦和零点计数证书；通用路径理论不提供这条带常数的接口。 | none claimed | winding |
-| 2 | `04174c1260762c6fb3fe24cd51b93eea78714592b4cd71e927db335d5edf8b77` | 定理 S2：实际 theta 条件读数存在负区 | C | 缺实际 theta 核的负点存在性及其非零概率窗口；Jacobi theta 定义与变换不推出此符号结论。 | none claimed | theta-analytic |
-| 3 | `062d6f5a910eed117ab7596a2e34f1a6a0728de5e8599136b47689b29d2870c9` | 定理二十：交互阶数具有离散因果锥 | C | 缺完整交互投影分解下的幂带宽传播定理；需证明非零块路径满足阶数三角界，正文 t 是离散自然数。 | none claimed | bandwidth |
-| 4 | `0715d2f9078c88ee013814d101b0c36bdb33c5cf5ce76d58239e51cc6485df25` | 定理四：Toeplitz 矩阵是历史态的时钟约化密度矩阵 | B | 已具备酉搬运消去共同时间步的内积恒等式；缺本源历史态的偏迹、归一化和 r(i-j)=r(j-i) 的完整类型化连接。未将 Gram 子结论当作全偏迹证明。 | `LinearIsometryEquiv.inner_map_map` (Mathlib/Analysis/InnerProductSpace/LinearMap.lean:120); `LinearIsometryEquiv.inner_map_eq_flip` (Mathlib/Analysis/InnerProductSpace/LinearMap.lean:124) | partial-trace, first-bindings |
-| 5 | `072eca25d260537060a5e1b2b7dada75dbf623eba8eebb4bad8c765d8ebe6749` | 定理 N1：有限负证书 | C | 缺伴随矩阵迹平方的 Hermite 型实根判据；Hermite 正交多项式是同名异题。 | none claimed | special-polynomials |
-| 6 | `0831062a074c8393d5e0d16a4caa4487d783311664ffa661ab52092973475c5b` | 定理一：\(P\) 是一个四棱锥 | C | 缺此指定五点占据凸包的半空间及极点计算；一般凸包 API 不能直接给出这五个顶点。 | none claimed | convex-local |
-| 7 | `083b7658fb28ffb6609e6c46923ebd4e8c9c27dc3813f06187a0aa23c398e7d4` | 定理一：规范加一的最坏局部深度至少与编码跨度成正比 | C | 缺把局部传播半径连接到极端 Fibonacci 编码的算法深度下界；已有局部进位构造不是所有算法的下界。 | none claimed | convex-local, bandwidth |
-| 8 | `087e3caa7c278b4ea58f06604daa8721ab5258f6c451a25ed8f2d0092d823ca0` | 定理 B1：精确微分兼容关系 | C | 缺实际 q_d 系数与相邻阶缩放的统一导数恒等式；普通 Polynomial.derivative 不给跨阶系数关系。 | none claimed | special-polynomials |
-| 9 | `0d2c6e9ed518bfcee93cc1f4b71877666e729b3db0f05d06a2b43bbf53e86984` | 定理 L3：逐阶系数判据 | C | 缺平方级数系数的全阶实根刻画及反向检测非实谱的增长论证。 | none claimed | special-polynomials |
-| 10 | `0e1a7beb490fc5aece3b6e13b10c6523ab64fac627efd6b825dc5c5551af5eab` | 定理 K2：实根的历史体积上限 | C | 缺历史 Gram 行列式的非负 Laplace 表示及任意阶导数符号；指数函数正性不能代替体积表示。 | none claimed | special-polynomials, negative-spectrum-refined |
-| 11 | `0e8d9e20c8a7ec0e0820053dc56a9dae075722a110b78a0ecee60b5cb202f2d8` | 推论：系数增长率直接给出谱缺陷 | C | 缺 b_q,k 的精确指数型/增长率定理，不只是复数平方的代数分解。 | none claimed | special-polynomials |
-| 12 | `1033c98f6c47c1c95ba84c013ed594e604e96b5061d49672f6a3333ff411cb3a` | 定理 R5：筛选能量的精确公式 | C | 缺实际筛选态导数、动能形式和 theta 归一化常数之间的恒等式。 | none claimed | theta-analytic, gaussian-moments |
-| 13 | `10f086b0306c55830d4a16268948883d503cc3e347c5ebb45d89be2a6927fe3a` | 定理 P5：形状前件推出全部标量高斯矩上界 | C | 缺由本源形状前件到矩比较递推的积分不等式；上游 subGaussian 以另一种 MGF 前件起步。 | none claimed | gaussian-moments |
-| 14 | `15eb12aed71ec186edbcd3e877571bdd32780f55e1539a8ff1211975db8f51c3` | 定理一：前三阶在全局绝对收敛域内无零 | C | 缺此 F_r 的实际因子分解和各因子的无零界；riemannZeta 的无零定理只覆盖 zeta 因子。 | none claimed | theta-analytic, discrete-winding |
-| 15 | `16ee2a6dfb3840e47529bdbd48187c9167a2230d63a5ac51826e62a979baf1ff` | 定理五：固定分离度需要足够长的时间 | B | 已具备逐项 1-cos(x)<=x^2/2；缺对归一复相位平均的模平方展开和精确 N(N+2)/12 求和绑定，故未直接升级整条。 | `Real.one_sub_sq_div_two_le_cos` (Mathlib/Analysis/SpecialFunctions/Trigonometric/Bounds.lean:123) | gaussian-moments, first-bindings |
-| 16 | `183d1842d5f7033b150a150210195c78562694a2c239a984aea1f5b7f86ec009` | 定理 P1：有限尺度变化保留负方向，但可以任意压低其数值 | C | 缺无限负子空间由有限支撑逼近的指标等式及迹理想不等式；上文收缩界用 0<q<1，正文单独的 q>0 不足以支持全部范数句。 | none claimed | negative-spectrum, negative-spectrum-refined |
-| 17 | `19d4c054e92739f02edd10bc8c8cade6a616e273f45552e1f9e1da08359a6462` | 定理四：实际正性会在解析性失效之前先碰到边界 | C | 缺实际算术符号在解析半径之前失正的严格阈值证明。 | none claimed | toeplitz, theta-analytic |
-| 18 | `1ad5bec02ef18c7e44f7099ba5b17703e14dbfd047be51ab11ee29d6d17dfa0e` | 定理六：ξ 历史态的统一有效维数界 | C | 缺实际谱权重平方和界与无限支撑推出每一有限 Gram 满秩的结合；不认证小数 28.7548583457。 | none claimed | toeplitz, theta-analytic |
-| 19 | `1ba55c6c1a84a3ff33ceebbcb3a7c7d52c48d18a1823c4354d954afe0d3aee38` | 定理十八：有限历史形成负证书的一个必要条件 | C | 缺有限 Fourier 投影的集中度上界与该符号二次型表示的结合；需保持严格必要条件和 Haar 概率归一化。 | none claimed | toeplitz, negative-spectrum-refined |
-| 20 | `1e414ffb45d7fcaa9536a956298c4e291f91a2e310f112d2cf8419518caefd1a` | 推论 B1.1：高阶延拓是一项带常数的积分问题 | B | FTC 已给积分=端点差；仍缺 B5 的实际跨阶导数与 q_d(0)=(-1)^d*d!/d^d*a_d，不能把未冻结的源文前一结论当作可引用事实。 | `intervalIntegral.integral_eq_sub_of_hasDerivAt` (Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean:1148) | special-polynomials, first-bindings |
-| 21 | `1e9daffd76d1ac95768ad7e9737ce9069f71ca9d5406430f42768de16be0a86c` | 定理二：局部数据的受控整体拼接 | B | 高阶 Schwarz 引理直接给目标误差形状；仍缺源定义递推的全纯/映盘及前 N+1 阶 Taylor 匹配到 isLittleO 前提的绑定。 | `Complex.dist_le_mul_div_pow_of_mapsTo_ball_of_isLittleO` (Mathlib/Analysis/Complex/Schwarz.lean:146) | toeplitz, first-bindings |
-| 22 | `1eecc9129a67c60825a86b1efaa93284267df6701e12127565d8873086de3021` | 定理三：统一非退化界 | C | 缺特定算术系数 w(m)/D_m 的逐项估计及尾部常数 1/20；一般 zeta 求和不确定该常数。 | none claimed | theta-analytic, discrete-winding |
-| 23 | `207bdea6c00dc779749029d64849d7221c08cad532ac5d38069d8871e87b4d92` | 定理七：固定越界量下的负方向密度 | C | 缺该符号的 Szego 特征值分布与负半轴示性函数逼近，并须保留 N 后 delta 的极限次序。 | none claimed | toeplitz, negative-spectrum-refined |
-| 24 | `224b9dc2f29a8182291ff077025c0f1cf83c02aeb844e2893366013f04898914` | 定理 D2：正实现的最低读数失配 | C | 缺正谱回返到 Pick 核正性、采样误差到算子扰动范数的完整定量桥；通用谱理论不等于该读数界。 | none claimed | negative-spectrum-refined, toeplitz |
-| 25 | `23e85e40204222cb3bee95c5c9072bd75f3796b82d41f908f8629d8a201137b9` | 定理七：任意周期的离散绕行公式 | B | 多项式最高阶有限差分和超过次数归零已库有；缺 H_d 关于 prime-zeta 分支的多项式展开、最高系数 Theta_d W_d 及绕行步长的类型化识别。 | `Polynomial.fwdDiff_iter_degree_eq_factorial` (Mathlib/Algebra/Group/ForwardDiff.lean:266); `Polynomial.fwdDiff_iter_eq_zero_of_degree_lt` (Mathlib/Algebra/Group/ForwardDiff.lean:274) | discrete-winding, first-bindings |
-| 26 | `247c5740e6ce2838bb73fce435941602825eace40b67c44c62f23f45796e0b04` | 定理 S3：完整的算术展开 | C | 缺 theta 双核到带 D_k(t) 的 Bessel 变换及绝对收敛交换；本地 theta 定义不提供这条算术展开。 | none claimed | theta-analytic |
-| 27 | `24e7f65c67cec1074a6af47cd138dda33f014adcc2b6d569e14823c62aadc6ea` | 定理二：精确的历史奇偶筛选 | C | 缺 q-多项式在 -1 的零点消去与精确阶乘商；一般 involution 求和只覆盖相消情形。 | none claimed | q-combinatorics |
-| 28 | `2664266b147343a4836824aae0348abd88a5ef821e178a073f2b6e8b8fe91a0d` | 定理 E3：同样构造单调上界 | C | 缺本源 Stieltjes 表示、试探多项式最优化与嵌套子空间上界的连接；逆矩阵运算本身不是该单调界。 | none claimed | schur, toeplitz |
-| 29 | `27065ff2e7fd688eaed358a1953fc8fec5b4a98870cdeee7317e43e4c228d6e6` | 定理三：联合极限具有一条明确的过渡曲线 | C | 缺临界谱密度在该联合尺度下的极限及一致余项；连续分式传递只处理已知极限后的最后一步。 | none claimed | toeplitz, real-calculus |
-| 30 | `2bc63109d666c92a11aa641dbeae45bc08e3f4f939bc5ce4406a75e5d86d03b6` | 定理 B3：一步正延拓的精确判据 | B | 已有正主块下的 Schur 半正定等价；缺 q_d 与箭头矩阵特征多项式、留数符号和严格正根/正定条件的完整绑定。 | `Matrix.PosDef.fromBlocks₂₂` (Mathlib/LinearAlgebra/Matrix/PosDef.lean:582) | schur, special-polynomials |
-| 31 | `2bcdc03e5777fcc1c396e5b07b17101c3f52508fb80a62a55e3b96a0b66158f2` | 定理 T4：指数位移分解 | C | 缺本源 theta 密度的卷积/尾积分分解及概率归一化；通用指数分布不识别这些实际随机变量。 | none claimed | theta-analytic, real-calculus |
-| 32 | `2c37bff2d8f941ea92b5c037c21e6d179a2ab8fe3a67836b6ecb5b2e766793e7` | 定理二：首次越界具有一个明确的缩放形状 | C | 缺两参数 Taylor 余项的一致控制及负区端点定位；逐点 Taylor 公式不足以推出零点边界渐近。 | none claimed | toeplitz, real-calculus |
-| 33 | `2f9a49afd3fffe7f7744822c6adea7f922e808404a7654ca0c8fd4f80195d788` | 定理 P2：逐阶保真关系 | B | det_mul 提供有限合同的行列式分解；缺实际系数卷积恒等式、有限截断兼容、T_F 单位三角绑定及负惯性保持。 | `Matrix.det_mul` (Mathlib/LinearAlgebra/Matrix/Determinant/Basic.lean:138) | schur, negative-spectrum-refined, second-bindings |
-| 34 | `2fa59f238e0c5dfb86c347ac26b274ce1ed355e030ffbc580a98779ceef61e6a` | 推论：RH 等价于一个明确的二次抵消 | C | 缺实际素数响应能量的 RH 等价和对角主项计算；标题后的叙述不抹去正文明确的渐近等价断言。 | none claimed | theta-analytic, discrete-winding |
-| 35 | `2fbed82e07d243d1005a8a1c09923c3aaa3d8b0a414ff7a9210cd5c6f2ed26e2` | 定理五：解析接触边界上，Schur 余量仍有统一正下界 | C | 缺 Szego 预测误差/熵下界及有限阶零点的 log 可积连接；通用实积分不是该 Toeplitz 结论。 | none claimed | toeplitz, schur |
-| 36 | `3342849ebfebb0ba8cd5217fe1a75e542e800c394bc9e9478978e025363fa770` | 定理一：时间方向始终合法，另一切面可以经历秩临界 | B | cos²+sin²=1 与 S*=S,S²=I 可规范化得到酉性；缺重排后的奇异空间分解及 d²-1 重数，故整条不是 A。 | `Real.cos_sq_add_sin_sq` (Mathlib/Analysis/Complex/Trigonometric.lean:666) | unitary-involution, second-bindings |
-| 37 | `33bd332c5190b7fb8bf6b6fde4e8863e2cbc32878b35713e4e42abc4c4582e8b` | 推论：实际算术没有稳定的“二次能量中间态” | C | 缺实际算术能量的增长率/谱缺陷定理；形式上的渐近矛盾不能代替这两个前置数学结论。 | none claimed | theta-analytic |
-| 38 | `34f85f5ef0ec8521296d78b1a195aa9330397b316945d3dae5f77744c60587eb` | 定理 V2：对实际 \(A\)，全局收缩性与 RH 等价 | C | 缺实际 xi 响应的 Schur/Pick 表示与 RH 的双向桥；Schwarz 引理只在已有收缩前件下工作。 | none claimed | toeplitz, theta-analytic |
-| 39 | `352958cfd6f933764581834a39a2547c32c91c2871dfc88c0e6d915af186b804` | 定理 P4：任意半径的有限截断界 | C | 缺双指标解析系数的尾部平方求和与算子范数支配连接，特别是根号内 2R^-2N-R^-4N。 | none claimed | negative-spectrum-refined, toeplitz |
-| 40 | `3b96c202fb8567eb58151de0b72315414794aa9b0003e2aecba521121fa0a819` | 定理二：完整算术分解 | C | 缺本源历史权重按素数占据型分类的恒等式；一般 Dirichlet 级数 API 不给这些系数。 | none claimed | discrete-winding, theta-analytic |
-| 41 | `3cefd6e75bf3146ba90cf7614b16b286751f3a36029a22cbba8e97a49ba911d3` | 定理 T1：原函数是一个精确的尾积分 | B | 半无限 FTC 提供尾积分=无穷端点减有限端点；缺实际 g_+,Phi 的导数关系、可积性及无穷边界值。 | `MeasureTheory.integral_Ioi_of_hasDerivAt_of_tendsto` (Mathlib/MeasureTheory/Integral/IntegralEqImproper.lean:787) | real-calculus, second-bindings, theta-analytic |
-| 42 | `3ea6f6f717cf3b008eb7110a832936a14b2d2a332b6ee2abe42cb1146455f049` | 定理 I4：固定高斯历史协议的 RH 判据 | C | 缺实际有限多项式谱向 xi 零点的逼近，以及高斯残差与谱虚部的统一估计。 | none claimed | special-polynomials, gaussian-moments |
-| 43 | `409c425f66ec18a504f4d6304af1f43493cb5a92225344c4f79b342fd0f5eacd` | 定理 D4：三矩—端点兼容界 | B | Jensen 积分不等式支持 Stieltjes 下界步骤；缺实际测度与 M0,M1,M2 的绑定、重加权上界及全部分母正性。 | `ConvexOn.map_integral_le` (Mathlib/Analysis/Convex/Integral.lean:199) | real-calculus, second-bindings |
-| 44 | `4104d8727c10869ec5ae256646c45c0bc72bcb83febed83f36c94488bbd5a763` | 定理二：这条离散边界对应低温复零点 | C | 缺实际局部根分支的存在、指数余项以及该分支是完整配分函数零点的收敛域连接。 | none claimed | theta-analytic, winding |
-| 45 | `42a6721fabfa0a316cd60251fdff5e3997dec865d18964539f6241a7c2dba3f9` | 定理 O2：滤波器就是这个空间中的状态 | C | 缺实际 K 条目与 Q_infinity 的谱/系数表示恒等式；有限求和展开不能自行识别两个独立定义。 | none claimed | negative-spectrum-refined, special-polynomials |
-| 46 | `4ad8c850dca051f69ac5f8fc65592b377d32fca0fac5d5347fcc3c0ea2b7c153` | 定理 B2：删除一个均衡方向，得到低一阶的缩放模型 | C | 缺均衡谱压缩的导数特征多项式公式，以及本源 q_d 跨阶缩放兼容；一般子矩阵定理不足。 | none claimed | schur, special-polynomials |
-| 47 | `4bf0743f24ceefdab6eae275b611c01646e5bf795de46dc68456a1d7ed269bf6` | 定理 J3：严格平方下降律 | B | 导数非正推出单调不增已有标准接口；缺该实际能量导数的交换子平方恒等式及体积二阶导数关系。 | `antitoneOn_of_deriv_nonpos` (Mathlib/Analysis/Calculus/Deriv/MeanValue.lean:479) | real-calculus, second-bindings, negative-spectrum-refined |
-| 48 | `4dea51c9bf2a5ec929da7acfdeb7d4694ddb3effba5083d8d5e0519ebed7bfd6` | 定理十三：负方向数直接控制负总量的增长率 | C | 缺特定 Toeplitz 径向导数的负谱压缩不等式和奇异参数有限性；不能只用标量微分估计。 | none claimed | toeplitz, negative-spectrum-refined |
-| 49 | `4f1af385073cf374adf2837dcb61d6f03822ba385a3f589dacb3087c8b867246` | 推论：不再需要任意搜索观察度量 | C | 缺对非正规/不可对角化矩阵也成立的高斯残差定量逼近；一般谱半径公式不提供该固定构造。 | none claimed | negative-spectrum-refined, gaussian-moments |
-| 50 | `506ba2fa80720ba43ca7d89d6b8d9c39455747237809df8fd552367fc064f22c` | 推论：反例必能表现为某个有限条件读出的负值 | B | 有理数稠密已提供严格负邻域内选有理点的最后一步；缺非 RH 到有限 n 负读数的 Laguerre 等价及实际 R_n 连续性。 | `exists_rat_btwn` (Mathlib/Algebra/Order/Archimedean/Basic.lean:371) | special-polynomials, theta-analytic, second-bindings |
+| # | atom_id | Title | Tier | Criterion / remaining mathematics | Local Mathlib declaration | Probe / EXIT | Searches |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | `028cb6a153eaec67ee356ef9571a406a6d9460c0092fbc031df4abab42884a85` | 定理十一：有限多边形绕数证书 | C | 缺带二阶导数/顶点误差预算的轮廓同伦和零点计数证书；通用路径理论不提供这条带常数的接口。 | none claimed | not run | winding |
+| 2 | `04174c1260762c6fb3fe24cd51b93eea78714592b4cd71e927db335d5edf8b77` | 定理 S2：实际 theta 条件读数存在负区 | C | 缺实际 theta 核的负点存在性及其非零概率窗口；Jacobi theta 定义与变换不推出此符号结论。 | none claimed | not run | theta-analytic |
+| 3 | `062d6f5a910eed117ab7596a2e34f1a6a0728de5e8599136b47689b29d2870c9` | 定理二十：交互阶数具有离散因果锥 | C | 缺完整交互投影分解下的幂带宽传播定理；需证明非零块路径满足阶数三角界，正文 t 是离散自然数。 | none claimed | not run | bandwidth |
+| 4 | `0715d2f9078c88ee013814d101b0c36bdb33c5cf5ce76d58239e51cc6485df25` | 定理四：Toeplitz 矩阵是历史态的时钟约化密度矩阵 | B | 已具备酉搬运消去共同时间步的内积恒等式；缺本源历史态的偏迹、归一化和 r(i-j)=r(j-i) 的完整类型化连接。未将 Gram 子结论当作全偏迹证明。 | `LinearIsometryEquiv.inner_map_map` (Mathlib/Analysis/InnerProductSpace/LinearMap.lean:120); `LinearIsometryEquiv.inner_map_eq_flip` (Mathlib/Analysis/InnerProductSpace/LinearMap.lean:124) | not run | partial-trace, first-bindings |
+| 5 | `072eca25d260537060a5e1b2b7dada75dbf623eba8eebb4bad8c765d8ebe6749` | 定理 N1：有限负证书 | C | 缺伴随矩阵迹平方的 Hermite 型实根判据；Hermite 正交多项式是同名异题。 | none claimed | not run | special-polynomials |
+| 6 | `0831062a074c8393d5e0d16a4caa4487d783311664ffa661ab52092973475c5b` | 定理一：\(P\) 是一个四棱锥 | C | 缺此指定五点占据凸包的半空间及极点计算；一般凸包 API 不能直接给出这五个顶点。 | none claimed | not run | convex-local |
+| 7 | `083b7658fb28ffb6609e6c46923ebd4e8c9c27dc3813f06187a0aa23c398e7d4` | 定理一：规范加一的最坏局部深度至少与编码跨度成正比 | C | 缺把局部传播半径连接到极端 Fibonacci 编码的算法深度下界；已有局部进位构造不是所有算法的下界。 | none claimed | not run | convex-local, bandwidth |
+| 8 | `087e3caa7c278b4ea58f06604daa8721ab5258f6c451a25ed8f2d0092d823ca0` | 定理 B1：精确微分兼容关系 | C | 缺实际 q_d 系数与相邻阶缩放的统一导数恒等式；普通 Polynomial.derivative 不给跨阶系数关系。 | none claimed | not run | special-polynomials |
+| 9 | `0d2c6e9ed518bfcee93cc1f4b71877666e729b3db0f05d06a2b43bbf53e86984` | 定理 L3：逐阶系数判据 | C | 缺平方级数系数的全阶实根刻画及反向检测非实谱的增长论证。 | none claimed | not run | special-polynomials |
+| 10 | `0e1a7beb490fc5aece3b6e13b10c6523ab64fac627efd6b825dc5c5551af5eab` | 定理 K2：实根的历史体积上限 | C | 缺历史 Gram 行列式的非负 Laplace 表示及任意阶导数符号；指数函数正性不能代替体积表示。 | none claimed | not run | special-polynomials, negative-spectrum-refined |
+| 11 | `0e8d9e20c8a7ec0e0820053dc56a9dae075722a110b78a0ecee60b5cb202f2d8` | 推论：系数增长率直接给出谱缺陷 | C | 缺 b_q,k 的精确指数型/增长率定理，不只是复数平方的代数分解。 | none claimed | not run | special-polynomials |
+| 12 | `1033c98f6c47c1c95ba84c013ed594e604e96b5061d49672f6a3333ff411cb3a` | 定理 R5：筛选能量的精确公式 | C | 缺实际筛选态导数、动能形式和 theta 归一化常数之间的恒等式。 | none claimed | not run | theta-analytic, gaussian-moments |
+| 13 | `10f086b0306c55830d4a16268948883d503cc3e347c5ebb45d89be2a6927fe3a` | 定理 P5：形状前件推出全部标量高斯矩上界 | C | 缺由本源形状前件到矩比较递推的积分不等式；上游 subGaussian 以另一种 MGF 前件起步。 | none claimed | not run | gaussian-moments |
+| 14 | `15eb12aed71ec186edbcd3e877571bdd32780f55e1539a8ff1211975db8f51c3` | 定理一：前三阶在全局绝对收敛域内无零 | C | 缺此 F_r 的实际因子分解和各因子的无零界；riemannZeta 的无零定理只覆盖 zeta 因子。 | none claimed | not run | theta-analytic, discrete-winding |
+| 15 | `16ee2a6dfb3840e47529bdbd48187c9167a2230d63a5ac51826e62a979baf1ff` | 定理五：固定分离度需要足够长的时间 | B | 已具备逐项 1-cos(x)<=x^2/2；缺对归一复相位平均的模平方展开和精确 N(N+2)/12 求和绑定，故未直接升级整条。 | `Real.one_sub_sq_div_two_le_cos` (Mathlib/Analysis/SpecialFunctions/Trigonometric/Bounds.lean:123) | not run | gaussian-moments, first-bindings |
+| 16 | `183d1842d5f7033b150a150210195c78562694a2c239a984aea1f5b7f86ec009` | 定理 P1：有限尺度变化保留负方向，但可以任意压低其数值 | C | 缺无限负子空间由有限支撑逼近的指标等式及迹理想不等式；上文收缩界用 0<q<1，正文单独的 q>0 不足以支持全部范数句。 | none claimed | not run | negative-spectrum, negative-spectrum-refined |
+| 17 | `19d4c054e92739f02edd10bc8c8cade6a616e273f45552e1f9e1da08359a6462` | 定理四：实际正性会在解析性失效之前先碰到边界 | C | 缺实际算术符号在解析半径之前失正的严格阈值证明。 | none claimed | not run | toeplitz, theta-analytic |
+| 18 | `1ad5bec02ef18c7e44f7099ba5b17703e14dbfd047be51ab11ee29d6d17dfa0e` | 定理六：ξ 历史态的统一有效维数界 | C | 缺实际谱权重平方和界与无限支撑推出每一有限 Gram 满秩的结合；不认证小数 28.7548583457。 | none claimed | not run | toeplitz, theta-analytic |
+| 19 | `1ba55c6c1a84a3ff33ceebbcb3a7c7d52c48d18a1823c4354d954afe0d3aee38` | 定理十八：有限历史形成负证书的一个必要条件 | C | 缺有限 Fourier 投影的集中度上界与该符号二次型表示的结合；需保持严格必要条件和 Haar 概率归一化。 | none claimed | not run | toeplitz, negative-spectrum-refined |
+| 20 | `1e414ffb45d7fcaa9536a956298c4e291f91a2e310f112d2cf8419518caefd1a` | 推论 B1.1：高阶延拓是一项带常数的积分问题 | B | FTC 已给积分=端点差；仍缺 B5 的实际跨阶导数与 q_d(0)=(-1)^d*d!/d^d*a_d，不能把未冻结的源文前一结论当作可引用事实。 | `intervalIntegral.integral_eq_sub_of_hasDerivAt` (Mathlib/MeasureTheory/Integral/IntervalIntegral/FundThmCalculus.lean:1148) | not run | special-polynomials, first-bindings |
+| 21 | `1e9daffd76d1ac95768ad7e9737ce9069f71ca9d5406430f42768de16be0a86c` | 定理二：局部数据的受控整体拼接 | B | 高阶 Schwarz 引理直接给目标误差形状；仍缺源定义递推的全纯/映盘及前 N+1 阶 Taylor 匹配到 isLittleO 前提的绑定。 | `Complex.dist_le_mul_div_pow_of_mapsTo_ball_of_isLittleO` (Mathlib/Analysis/Complex/Schwarz.lean:146) | not run | toeplitz, first-bindings |
+| 22 | `1eecc9129a67c60825a86b1efaa93284267df6701e12127565d8873086de3021` | 定理三：统一非退化界 | C | 缺特定算术系数 w(m)/D_m 的逐项估计及尾部常数 1/20；一般 zeta 求和不确定该常数。 | none claimed | not run | theta-analytic, discrete-winding |
+| 23 | `207bdea6c00dc779749029d64849d7221c08cad532ac5d38069d8871e87b4d92` | 定理七：固定越界量下的负方向密度 | C | 缺该符号的 Szego 特征值分布与负半轴示性函数逼近，并须保留 N 后 delta 的极限次序。 | none claimed | not run | toeplitz, negative-spectrum-refined |
+| 24 | `224b9dc2f29a8182291ff077025c0f1cf83c02aeb844e2893366013f04898914` | 定理 D2：正实现的最低读数失配 | C | 缺正谱回返到 Pick 核正性、采样误差到算子扰动范数的完整定量桥；通用谱理论不等于该读数界。 | none claimed | not run | negative-spectrum-refined, toeplitz |
+| 25 | `23e85e40204222cb3bee95c5c9072bd75f3796b82d41f908f8629d8a201137b9` | 定理七：任意周期的离散绕行公式 | B | 多项式最高阶有限差分和超过次数归零已库有；缺 H_d 关于 prime-zeta 分支的多项式展开、最高系数 Theta_d W_d 及绕行步长的类型化识别。 | `Polynomial.fwdDiff_iter_degree_eq_factorial` (Mathlib/Algebra/Group/ForwardDiff.lean:266); `Polynomial.fwdDiff_iter_eq_zero_of_degree_lt` (Mathlib/Algebra/Group/ForwardDiff.lean:274) | not run | discrete-winding, first-bindings |
+| 26 | `247c5740e6ce2838bb73fce435941602825eace40b67c44c62f23f45796e0b04` | 定理 S3：完整的算术展开 | C | 缺 theta 双核到带 D_k(t) 的 Bessel 变换及绝对收敛交换；本地 theta 定义不提供这条算术展开。 | none claimed | not run | theta-analytic |
+| 27 | `24e7f65c67cec1074a6af47cd138dda33f014adcc2b6d569e14823c62aadc6ea` | 定理二：精确的历史奇偶筛选 | C | 缺 q-多项式在 -1 的零点消去与精确阶乘商；一般 involution 求和只覆盖相消情形。 | none claimed | not run | q-combinatorics |
+| 28 | `2664266b147343a4836824aae0348abd88a5ef821e178a073f2b6e8b8fe91a0d` | 定理 E3：同样构造单调上界 | C | 缺本源 Stieltjes 表示、试探多项式最优化与嵌套子空间上界的连接；逆矩阵运算本身不是该单调界。 | none claimed | not run | schur, toeplitz |
+| 29 | `27065ff2e7fd688eaed358a1953fc8fec5b4a98870cdeee7317e43e4c228d6e6` | 定理三：联合极限具有一条明确的过渡曲线 | C | 缺临界谱密度在该联合尺度下的极限及一致余项；连续分式传递只处理已知极限后的最后一步。 | none claimed | not run | toeplitz, real-calculus |
+| 30 | `2bc63109d666c92a11aa641dbeae45bc08e3f4f939bc5ce4406a75e5d86d03b6` | 定理 B3：一步正延拓的精确判据 | B | 已有正主块下的 Schur 半正定等价；缺 q_d 与箭头矩阵特征多项式、留数符号和严格正根/正定条件的完整绑定。 | `Matrix.PosDef.fromBlocks₂₂` (Mathlib/LinearAlgebra/Matrix/PosDef.lean:582) | not run | schur, special-polynomials |
+| 31 | `2bcdc03e5777fcc1c396e5b07b17101c3f52508fb80a62a55e3b96a0b66158f2` | 定理 T4：指数位移分解 | C | 缺本源 theta 密度的卷积/尾积分分解及概率归一化；通用指数分布不识别这些实际随机变量。 | none claimed | not run | theta-analytic, real-calculus |
+| 32 | `2c37bff2d8f941ea92b5c037c21e6d179a2ab8fe3a67836b6ecb5b2e766793e7` | 定理二：首次越界具有一个明确的缩放形状 | C | 缺两参数 Taylor 余项的一致控制及负区端点定位；逐点 Taylor 公式不足以推出零点边界渐近。 | none claimed | not run | toeplitz, real-calculus |
+| 33 | `2f9a49afd3fffe7f7744822c6adea7f922e808404a7654ca0c8fd4f80195d788` | 定理 P2：逐阶保真关系 | B | det_mul 提供有限合同的行列式分解；缺实际系数卷积恒等式、有限截断兼容、T_F 单位三角绑定及负惯性保持。 | `Matrix.det_mul` (Mathlib/LinearAlgebra/Matrix/Determinant/Basic.lean:138) | not run | schur, negative-spectrum-refined, second-bindings |
+| 34 | `2fa59f238e0c5dfb86c347ac26b274ce1ed355e030ffbc580a98779ceef61e6a` | 推论：RH 等价于一个明确的二次抵消 | C | 缺实际素数响应能量的 RH 等价和对角主项计算；标题后的叙述不抹去正文明确的渐近等价断言。 | none claimed | not run | theta-analytic, discrete-winding |
+| 35 | `2fbed82e07d243d1005a8a1c09923c3aaa3d8b0a414ff7a9210cd5c6f2ed26e2` | 定理五：解析接触边界上，Schur 余量仍有统一正下界 | C | 缺 Szego 预测误差/熵下界及有限阶零点的 log 可积连接；通用实积分不是该 Toeplitz 结论。 | none claimed | not run | toeplitz, schur |
+| 36 | `3342849ebfebb0ba8cd5217fe1a75e542e800c394bc9e9478978e025363fa770` | 定理一：时间方向始终合法，另一切面可以经历秩临界 | B | cos²+sin²=1 与 S*=S,S²=I 可规范化得到酉性；缺重排后的奇异空间分解及 d²-1 重数，故整条不是 A。 | `Real.cos_sq_add_sin_sq` (Mathlib/Analysis/Complex/Trigonometric.lean:666) | not run | unitary-involution, second-bindings |
+| 37 | `33bd332c5190b7fb8bf6b6fde4e8863e2cbc32878b35713e4e42abc4c4582e8b` | 推论：实际算术没有稳定的“二次能量中间态” | C | 缺实际算术能量的增长率/谱缺陷定理；形式上的渐近矛盾不能代替这两个前置数学结论。 | none claimed | not run | theta-analytic |
+| 38 | `34f85f5ef0ec8521296d78b1a195aa9330397b316945d3dae5f77744c60587eb` | 定理 V2：对实际 \(A\)，全局收缩性与 RH 等价 | C | 缺实际 xi 响应的 Schur/Pick 表示与 RH 的双向桥；Schwarz 引理只在已有收缩前件下工作。 | none claimed | not run | toeplitz, theta-analytic |
+| 39 | `352958cfd6f933764581834a39a2547c32c91c2871dfc88c0e6d915af186b804` | 定理 P4：任意半径的有限截断界 | C | 缺双指标解析系数的尾部平方求和与算子范数支配连接，特别是根号内 2R^-2N-R^-4N。 | none claimed | not run | negative-spectrum-refined, toeplitz |
+| 40 | `3b96c202fb8567eb58151de0b72315414794aa9b0003e2aecba521121fa0a819` | 定理二：完整算术分解 | C | 缺本源历史权重按素数占据型分类的恒等式；一般 Dirichlet 级数 API 不给这些系数。 | none claimed | not run | discrete-winding, theta-analytic |
+| 41 | `3cefd6e75bf3146ba90cf7614b16b286751f3a36029a22cbba8e97a49ba911d3` | 定理 T1：原函数是一个精确的尾积分 | B | 半无限 FTC 提供尾积分=无穷端点减有限端点；缺实际 g_+,Phi 的导数关系、可积性及无穷边界值。 | `MeasureTheory.integral_Ioi_of_hasDerivAt_of_tendsto` (Mathlib/MeasureTheory/Integral/IntegralEqImproper.lean:787) | not run | real-calculus, second-bindings, theta-analytic |
+| 42 | `3ea6f6f717cf3b008eb7110a832936a14b2d2a332b6ee2abe42cb1146455f049` | 定理 I4：固定高斯历史协议的 RH 判据 | C | 缺实际有限多项式谱向 xi 零点的逼近，以及高斯残差与谱虚部的统一估计。 | none claimed | not run | special-polynomials, gaussian-moments |
+| 43 | `409c425f66ec18a504f4d6304af1f43493cb5a92225344c4f79b342fd0f5eacd` | 定理 D4：三矩—端点兼容界 | B | Jensen 积分不等式支持 Stieltjes 下界步骤；缺实际测度与 M0,M1,M2 的绑定、重加权上界及全部分母正性。 | `ConvexOn.map_integral_le` (Mathlib/Analysis/Convex/Integral.lean:199) | not run | real-calculus, second-bindings |
+| 44 | `4104d8727c10869ec5ae256646c45c0bc72bcb83febed83f36c94488bbd5a763` | 定理二：这条离散边界对应低温复零点 | C | 缺实际局部根分支的存在、指数余项以及该分支是完整配分函数零点的收敛域连接。 | none claimed | not run | theta-analytic, winding |
+| 45 | `42a6721fabfa0a316cd60251fdff5e3997dec865d18964539f6241a7c2dba3f9` | 定理 O2：滤波器就是这个空间中的状态 | C | 缺实际 K 条目与 Q_infinity 的谱/系数表示恒等式；有限求和展开不能自行识别两个独立定义。 | none claimed | not run | negative-spectrum-refined, special-polynomials |
+| 46 | `4ad8c850dca051f69ac5f8fc65592b377d32fca0fac5d5347fcc3c0ea2b7c153` | 定理 B2：删除一个均衡方向，得到低一阶的缩放模型 | C | 缺均衡谱压缩的导数特征多项式公式，以及本源 q_d 跨阶缩放兼容；一般子矩阵定理不足。 | none claimed | not run | schur, special-polynomials |
+| 47 | `4bf0743f24ceefdab6eae275b611c01646e5bf795de46dc68456a1d7ed269bf6` | 定理 J3：严格平方下降律 | B | 导数非正推出单调不增已有标准接口；缺该实际能量导数的交换子平方恒等式及体积二阶导数关系。 | `antitoneOn_of_deriv_nonpos` (Mathlib/Analysis/Calculus/Deriv/MeanValue.lean:479) | not run | real-calculus, second-bindings, negative-spectrum-refined |
+| 48 | `4dea51c9bf2a5ec929da7acfdeb7d4694ddb3effba5083d8d5e0519ebed7bfd6` | 定理十三：负方向数直接控制负总量的增长率 | C | 缺特定 Toeplitz 径向导数的负谱压缩不等式和奇异参数有限性；不能只用标量微分估计。 | none claimed | not run | toeplitz, negative-spectrum-refined |
+| 49 | `4f1af385073cf374adf2837dcb61d6f03822ba385a3f589dacb3087c8b867246` | 推论：不再需要任意搜索观察度量 | C | 缺对非正规/不可对角化矩阵也成立的高斯残差定量逼近；一般谱半径公式不提供该固定构造。 | none claimed | not run | negative-spectrum-refined, gaussian-moments |
+| 50 | `506ba2fa80720ba43ca7d89d6b8d9c39455747237809df8fd552367fc064f22c` | 推论：反例必能表现为某个有限条件读出的负值 | B | 有理数稠密已提供严格负邻域内选有理点的最后一步；缺非 RH 到有限 n 负读数的 Laguerre 等价及实际 R_n 连续性。 | `exists_rat_btwn` (Mathlib/Algebra/Order/Archimedean/Basic.lean:371) | not run | special-polynomials, theta-analytic, second-bindings |
+| 51 | `51ecbc2e4c8976d219f4c2617007564164468c320acb88918b7ab6d848e61d79` | 定理 Q5：条件读出的统一误差界 | B | 概率测度的特征函数模 <=1 已库有；缺实际倾斜测度的内外截断混合恒等式、归一化和 supremum 绑定。 | `MeasureTheory.norm_charFun_le_one` (Mathlib/MeasureTheory/Measure/CharacteristicFunction/Basic.lean:175) | not run | third-bindings, theta-analytic |
+| 52 | `528a07b72b26ab9b7df6f3645a60c76eedd91f4489b30838ea8ccb310c386c9b` | 定理二：模数进位—相消重数关系 | C | 缺 q-多项阶乘的分圆因子重数与占据进位公式；自然数 multinomial 或一般单位根理论未给完整接口。 | none claimed | not run | q-combinatorics, polynomial-readback |
+| 53 | `578c45143001f9f9929455e22deef3c7cba964c4389ba0b9d79dd9371ed8f806` | 定理十二：恢复分辨率不会降低负本征值总量 | C | 缺把径向 Poisson 平滑接成保迹正映射并控制负谱迹的收缩定理。 | none claimed | not run | toeplitz, negative-spectrum-refined |
+| 54 | `5918f6bd5a66f8b7eb15b4b1c505d54dfdf3b73d884b537a42b153c9270e3d4c` | 定理一：径向接触不可能无限平缓 | C | 缺边界 Poisson 生成元积分表示、触点处可积性与归一化常数下界。 | none claimed | not run | toeplitz, real-calculus |
+| 55 | `594f93cbc27b15032549c9271c41b100f049b61736e5e5d1fdbb8c90fb3cdda4` | 推论：低频联合能量判据 | C | 缺实际素数读数的离散 Fourier 能量恒等式、统一高频截断及原能量 RH 等价。 | none claimed | not run | theta-analytic, discrete-winding |
+| 56 | `59626bffd526d065fe29b4f63e40a4367886e380208787d0cf0fe4df9e169a9b` | 定理二：单次试除的精确指令数 | C | 缺此状态机完整运行轨迹与逐指令计数，不只是 M 除以 k 的商余关系。 | none claimed | not run | trial-division |
+| 57 | `5a2c25fc480f079e01ab62c81849c0487bae747b3674423d9bdd62f45ba8ae2f` | 定理一：正配分函数的归一化边界恰好是 \(\lambda=T\) | C | 缺实际算术能量权重与 p-级数的双边比较，包括临界点发散；没有把泛用级数测试当作该模型结论。 | none claimed | not run | theta-analytic, real-calculus |
+| 58 | `5f07081bda1ac55ca035fd26826575c18e003849d50ee64a715d99ee9c802999` | 定理 V4：固定实区间中的全阶拼接判据 | C | 缺区间采样正核的解析唯一延拓及实际零点位置的反向检测。 | none claimed | not run | toeplitz, theta-analytic, negative-spectrum-refined |
+| 59 | `62ee996f8ec3b4c0ff8b4d9d182f2785eed2515aa9b326c2e160705c7abdef3f` | 定理 L2：投影概率 | B | 正交投影范数不增已库有；缺指定 Fock 相干态、酉群平均投影与 HCIZ 历史读数的完整相等式。 | `Submodule.norm_starProjection_apply_le` (Mathlib/Analysis/InnerProductSpace/Projection/Basic.lean:361) | not run | third-bindings, special-polynomials |
+| 60 | `62f3d7a538f73aad17058c82235f1c1b82a07a089f54ad53aa27094677675f61` | 定理 N3：固定滤波器的定量稳定性 | C | 缺本源每阶矩的 Cauchy 型误差及有限滤波系数求和的明确常数；末端线性负余量传递不是完整证明。 | none claimed | not run | special-polynomials, negative-spectrum-refined |
+| 61 | `63092dbf1c6ca5601c3853ad32183d153a5ba60589f537fa409f0581ade1df64` | 定理 Q3：实际两模态判据 | C | 缺广义 Laguerre 全阶实根判据与实际 theta 双模态读数的精确识别。 | none claimed | not run | special-polynomials, theta-analytic |
+| 62 | `692393217ace683f2485ba9cf02961c2290a83cb594513880aed0c55acd62466` | 定理 M1：维数稀释界 | C | 缺 Schur 系数/分区和的维数依赖估计 L^(2k)/d升阶乘；几何求和不能供应该核心界。 | none claimed | not run | special-polynomials, q-combinatorics |
+| 63 | `69ae4d23bd64324ec6c5efe11686945d726482b842c45097e2e0e9360599cdb1` | 定理 B5：重标定回返恒等式 | B | 块逆公式已给 11 角的 Schur 回返分母；缺实际均衡参考向量的迹平均、P_d 对数导数与该矩阵的匹配。 | `Matrix.invOf_fromBlocks₂₂_eq` (Mathlib/LinearAlgebra/Matrix/SchurComplement.lean:277) | not run | schur, special-polynomials |
+| 64 | `72307ef5e33caa0d618146ecef4ad819f3ee4ebe2e55ebe5a6c226f5cd5a34e1` | 定理一：周期筛选公式 | C | 缺多重集 q-Lucas 在单位根处的精确阶乘商及分圆重数公式。 | none claimed | not run | q-combinatorics, polynomial-readback |
+| 65 | `72f167014dbb653f2eec31560ed015c7e2c0d4140cb398121ad04c898e8b066f` | 定理 J2：体积—残差恒等式 | C | 缺高斯矩阵积分求导、log det 导数与反自伴残差的迹恒等式；Gram 正性不供应这条演化律。 | none claimed | not run | gaussian-moments, negative-spectrum-refined |
+| 66 | `74c15d92cd745276176c9d4c66c4cdd5b7bf59fae5b937ae1e1a07186deca95b` | 定理一：交换对称保护的奇偶相消 | B | 有限和的无固定点反号 involution 相消已库有；缺实际词交换保持合法历史且反转逆序奇偶的类型化绑定，不能把上文式12当已冻结前件。 | `Finset.sum_involution (to_additive of prod_involution)` (Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean:665) | not run | q-combinatorics, third-bindings |
+| 67 | `7721167db127aee2407282ad63f0739c5d953cd1720752a4d67089f562f7f10b` | 定理 I3：高斯历史残差逼近真实谱虚部 | C | 缺允许 Jordan 块的固定历史度量误差界与明确维数常数，不是通常酉谱不变性。 | none claimed | not run | gaussian-moments, negative-spectrum-refined |
+| 68 | `77c2008257f3b60bc946f7a241541d17e94ffbd08b19325833bb0612dc5b1af0` | 定理 K3：历史体积上限与实根性等价 | C | 缺 HCIZ/历史体积的大 r 指数率反向检测虚部，以及实根时的体积上界。 | none claimed | not run | special-polynomials, negative-spectrum-refined |
+| 69 | `781219f95a1fdbea17a70a99cd34033d8dcc9569251b578580b4da952a19bbfd` | 定理六：每个接触点贡献的负区域与负总量 | C | 缺触点局部一致缩放后负区长度与积分极限的误差控制，尤其积分域随 delta 变化。 | none claimed | not run | toeplitz, real-calculus |
+| 70 | `783d413d2f102a6149222de31f25d081389f7d601c08e27fec9e339cf2f22c4c` | 定理一：试除宏步骤 | C | 缺该具体状态机的循环不变式与终止轨迹；欧几里得商余定理本身不证明执行结果。 | none claimed | not run | trial-division |
+| 71 | `78f6a2108eaba02cfbe8c76ca6e12034335c4c1e4129bde2a2affd123bf56568` | 定理四：有限历史的临界偏移具有同一个幂律 | C | 缺临界小特征值估计和径向横截性一致连接，需两侧常数同时有效。 | none claimed | not run | toeplitz, negative-spectrum-refined |
+| 72 | `7a359a1aa118ffc5f3423e85e46ce5f615806e4b8c0a16998ec49691a0215817` | 定理三：实际正性形成一个完整区间 | C | 缺实际径向核的正性区间延续、端点闭性与 RH 双向识别。 | none claimed | not run | toeplitz, theta-analytic |
+| 73 | `7afafe5a6e3e8435ddf051d6cf49c1c6ca223fa4c95dfe286f19c8f391ec33d5` | 定理 L5：低阶自动上界 | C | 缺分区/Schur 多项式的统一系数估计；后续阈值整理不能覆盖这一数学缺项。 | none claimed | not run | special-polynomials, q-combinatorics |
+| 74 | `7bc4a56b9299f55e209695fa3689db283e8328893508c0a4473ed32dea18b33b` | 定理 E5：实际谱留数的整数约束 | B | Mathlib 已证明有限非零阶零点的 logDeriv 具有简单极点；缺留数系数 m、倒数坐标变换及实际 S 的定义绑定。 | `meromorphicOrderAt_logDeriv_eq_neg_one` (Mathlib/Analysis/Meromorphic/Order.lean:996) | not run | logderiv-residue, theta-analytic |
+| 75 | `7d5d9c72f7ad9abb794dd61d99e68ff5adc1271970f00e4a009b9e334680a0d2` | 定理 M4：有限算术关系可以精确回读 | A | 展开实际定义后，coeff_monomial 提取权重系数，descFactorial_pos 供应 k<=n<=d 时分母非零，逐项 field_simp 即恢复 P_n；对任意实系数序列成立。 | `Polynomial.coeff_monomial` (Mathlib/Algebra/Polynomial/Basic.lean:581); `Nat.descFactorial_pos` (Mathlib/Data/Nat/Factorial/Basic.lean:374) | Readback75: 0 | polynomial-readback, third-bindings |
 
 ## probe_runs
 
-- baseline: `make 'lean'`; EXIT=0; [log](tier3-mathlib-triage-0909/logs/baseline.log); atoms .
+Logs ending in `.gz` are losslessly compressed complete stdout/stderr, including the command and final EXIT. The external Make prerequisite checks the temporary file through the canonical cache writer; the root `lean` recipe then runs unchanged.
+
+- baseline: `make 'lean'`; EXIT=0; [log](tier3-mathlib-triage-0909/logs/baseline.log.gz); atoms .
+- Readback75: `make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Readback75.lean'`; EXIT=0; [log](tier3-mathlib-triage-0909/logs/Readback75.log.gz); atoms 7d5d9c72f7ad9abb794dd61d99e68ff5adc1271970f00e4a009b9e334680a0d2.
 
 ## search_receipts
 
@@ -175,31 +203,6 @@ The positive and negative controls share case-insensitivity, alternation, word b
 
 ## unscreened
 
-- `51ecbc2e4c8976d219f4c2617007564164468c320acb88918b7ab6d848e61d79`
-- `528a07b72b26ab9b7df6f3645a60c76eedd91f4489b30838ea8ccb310c386c9b`
-- `578c45143001f9f9929455e22deef3c7cba964c4389ba0b9d79dd9371ed8f806`
-- `5918f6bd5a66f8b7eb15b4b1c505d54dfdf3b73d884b537a42b153c9270e3d4c`
-- `594f93cbc27b15032549c9271c41b100f049b61736e5e5d1fdbb8c90fb3cdda4`
-- `59626bffd526d065fe29b4f63e40a4367886e380208787d0cf0fe4df9e169a9b`
-- `5a2c25fc480f079e01ab62c81849c0487bae747b3674423d9bdd62f45ba8ae2f`
-- `5f07081bda1ac55ca035fd26826575c18e003849d50ee64a715d99ee9c802999`
-- `62ee996f8ec3b4c0ff8b4d9d182f2785eed2515aa9b326c2e160705c7abdef3f`
-- `62f3d7a538f73aad17058c82235f1c1b82a07a089f54ad53aa27094677675f61`
-- `63092dbf1c6ca5601c3853ad32183d153a5ba60589f537fa409f0581ade1df64`
-- `692393217ace683f2485ba9cf02961c2290a83cb594513880aed0c55acd62466`
-- `69ae4d23bd64324ec6c5efe11686945d726482b842c45097e2e0e9360599cdb1`
-- `72307ef5e33caa0d618146ecef4ad819f3ee4ebe2e55ebe5a6c226f5cd5a34e1`
-- `72f167014dbb653f2eec31560ed015c7e2c0d4140cb398121ad04c898e8b066f`
-- `74c15d92cd745276176c9d4c66c4cdd5b7bf59fae5b937ae1e1a07186deca95b`
-- `7721167db127aee2407282ad63f0739c5d953cd1720752a4d67089f562f7f10b`
-- `77c2008257f3b60bc946f7a241541d17e94ffbd08b19325833bb0612dc5b1af0`
-- `781219f95a1fdbea17a70a99cd34033d8dcc9569251b578580b4da952a19bbfd`
-- `783d413d2f102a6149222de31f25d081389f7d601c08e27fec9e339cf2f22c4c`
-- `78f6a2108eaba02cfbe8c76ca6e12034335c4c1e4129bde2a2affd123bf56568`
-- `7a359a1aa118ffc5f3423e85e46ce5f615806e4b8c0a16998ec49691a0215817`
-- `7afafe5a6e3e8435ddf051d6cf49c1c6ca223fa4c95dfe286f19c8f391ec33d5`
-- `7bc4a56b9299f55e209695fa3689db283e8328893508c0a4473ed32dea18b33b`
-- `7d5d9c72f7ad9abb794dd61d99e68ff5adc1271970f00e4a009b9e334680a0d2`
 - `8062498ed2ea8f74ddd34c3c2dec295a44f3074797e0634b52cbd2630b51459e`
 - `87852ef96970dd58409cceccafe2fa235ed951e6c39b41869e0fca5ecb677246`
 - `88517388478e9834b20004960ece45e5026828dc5fbb0a58206c141a37529a4b`
@@ -281,6 +284,7 @@ The positive and negative controls share case-insensitivity, alternation, word b
 - `c8ba70a54e9b859185515602015f630d89019ae9`
 - `6009dcbe96888c3ca23ad3e331da2efec04b9452`
 - `dad8e18532ec0063093aad820e8bd4b4c8cf80dc`
+- `e77cf4009e6801e994e5bfff59a6b124c61ae292`
 
 Every listed checkpoint was pushed successfully. The final runner envelope includes the commit containing this final report (a commit cannot contain its own hash).
 
