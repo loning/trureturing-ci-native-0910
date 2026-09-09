@@ -282,3 +282,15 @@ unbounded multiplicity statement, and they are not frozen as finite instances.
   This task has no atom. As authorized in the brief, use its same canonical
   deposit-header-check and ledger-align --add writer, after make lean,
   make lean-report, and make emit. No fake atom or theory ingestion is used.
+
+## No-atom freeze
+
+- Canonical ledger-align --add EXIT=0, 8.798 seconds.
+- LEDGER_ALIGN selectors_considered=3941 changed=0 added=1 unchanged=3940 conflicts=0.
+- event_hash: sha256:18cbdd8c7c9bee9f2957abccab179dd0f8ca2b3073b13cd5adfa76fdbab6f4d2
+- module statement_id: sha256:2f0847709ba6564002b9f86e10c77ca2d0ce224ceade476ce3ec137e8f0d2b85
+- Included declarations: 28; prerequisite_frozen_node_ids: [].
+- State: Golden/Frozen/state/D5/S3/Arith/CounterSequences/LeadingCounter.lean.json.
+- This freezes the module only; no source_id, atom_id, or coverage transition is claimed.
+- Freeze log: attempt-1/freeze.log. All identity values above are read from
+  the canonical writer output, not manually invented or recomputed historical data.
