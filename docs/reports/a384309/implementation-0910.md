@@ -118,3 +118,21 @@ No theory volume or atom is being created for this task.
   EXIT=0. Initial errors were explicit argument order and negated-equality
   syntax; corrected against pinned source signatures. No sorry or new axiom.
   This file check is not the final project build or multiplicity proof.
+
+## Lean fragment 2: exact finite multiplicity
+
+- Hot-tree file check EXIT=0, no warnings. The target is now proved as
+  `leading_counter_multiplicity (k : ℕ) (hk : 0 < k)` with both Set.Finite
+  and ncard = 9 + (if k = 1 then 1 else 0).
+- successor_bijOn sends a predecessor index to the leading-digit counter
+  used there. Nat.count_injective proves injectivity; emit_nth and
+  all_digits_infinite prove surjectivity onto Fin 9. This proves both
+  finiteness and nine successor occurrences, without finite enumeration.
+- The public a function has a 0 = 0, a 1 = 1. Translating predecessor n
+  to sequence position n+2 isolates position 1, which contributes only for
+  k=1; positive k excludes the unused position 0.
+- a_recurrence verifies the actual one-based definition against counter,
+  whose Nat.count predicate uses a(i+1) for i<t, precisely positions 1..t.
+- Proof repair addressed dependent DecidablePred rewriting with simp,
+  explicit beta reduction for index arithmetic, and equality orientation.
+  No target was weakened. Full make lean and semantic axiom audit still pending.

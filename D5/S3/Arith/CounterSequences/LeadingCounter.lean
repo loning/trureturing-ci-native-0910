@@ -107,4 +107,75 @@ private theorem all_digits_infinite (d : Fin 9) : {i | digit (term i) = d}.Infin
     (fun n hn => positive_in_range n hn.1)
   exact h.mono (fun _ hn => hn.2)
 
+private theorem successor_bijOn (k : ℕ) (hk : 0 < k) :
+    Set.BijOn (fun n => digit (term n)) {n | term (n + 1) = k} Set.univ := by
+  refine ⟨fun _ _ => Set.mem_univ _, ?_, ?_⟩
+  · intro m hm n hn he
+    change digit (term m) = digit (term n) at he
+    have hrm := term_recurrence m
+    have hrn := term_recurrence n
+    simp only [← he, Nat.count_succ, ite_true] at hrn
+    rw [Nat.count_succ, if_pos rfl] at hrm
+    apply Nat.count_injective (p := fun i => digit (term i) = digit (term m)) rfl he.symm
+    change term (m + 1) = k at hm
+    change term (n + 1) = k at hn
+    omega
+  · intro d _
+    let n := Nat.nth (fun i => digit (term i) = d) (k - 1)
+    refine ⟨n, ?_, Nat.nth_mem_of_infinite (all_digits_infinite d) (k - 1)⟩
+    simpa [Nat.sub_add_cancel hk] using emit_nth d (all_digits_infinite d) (k - 1)
+
+private theorem successor_multiplicity (k : ℕ) (hk : 0 < k) :
+    {n | term (n + 1) = k}.Finite ∧ {n | term (n + 1) = k}.ncard = 9 := by
+  have h := successor_bijOn k hk
+  exact ⟨h.finite_iff_finite.mpr Set.finite_univ, by simpa using h.ncard_eq⟩
+
+/-- A384309, indexed from 1. The unused index 0 has value 0. -/
+def a : ℕ → ℕ
+  | 0 => 0
+  | n + 1 => term n
+
+/-- Number of positions j in 1,...,t whose term has leading digit d. -/
+def counter (d t : ℕ) : ℕ := Nat.count (fun i => leading10 (a (i + 1)) = d) t
+
+/-- Initial condition for the sequence. -/
+theorem a_one : a 1 = 1 := rfl
+
+/-- The current term is counted before the next term is read from its counter. -/
+theorem a_recurrence (t : ℕ) (ht : 0 < t) :
+    a (t + 1) = counter (leading10 (a t)) t := by
+  obtain ⟨n, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (Nat.ne_of_gt ht)
+  change term (n + 1) = Nat.count (fun i => leading10 (term i) = leading10 (term n)) (n + 1)
+  have he : (fun i => digit (term i) = digit (term n)) =
+      (fun i => leading10 (term i) = leading10 (term n)) := by
+    funext i
+    exact propext (digit_eq_iff (term_pos i) (term_pos n))
+  simpa only [he] using term_recurrence n
+
+/-- Every positive integer occurs at exactly nine positions, with one extra initial 1. -/
+theorem leading_counter_multiplicity (k : ℕ) (hk : 0 < k) :
+    {n | a n = k}.Finite ∧ {n | a n = k}.ncard = 9 + (if k = 1 then 1 else 0) := by
+  obtain ⟨hs, hc⟩ := successor_multiplicity k hk
+  let T : Set ℕ := (fun n => n + 2) '' {n | term (n + 1) = k}
+  have hTf : T.Finite := hs.image _
+  have hTc : T.ncard = 9 := by
+    rw [Set.ncard_image_of_injective _ (by intro m n h; exact Nat.add_right_cancel h), hc]
+  have h0 : 0 ∉ T := by rintro ⟨n, _, h⟩; change n + 2 = 0 at h; omega
+  have h1 : 1 ∉ T := by rintro ⟨n, _, h⟩; change n + 2 = 1 at h; omega
+  have hT (n : ℕ) : n + 2 ∈ T ↔ term (n + 1) = k := by simp [T]
+  have he : {n | a n = k} = if k = 1 then insert 1 T else T := by
+    ext n
+    rcases n with _ | (_ | n)
+    · by_cases h : k = 1 <;> simp [a, h, h0, hk.ne]
+    · change (a 1 = k) ↔ _
+      by_cases h : k = 1 <;> simp [a_one, h, h1, eq_comm]
+    · have hne : n + 2 ≠ 1 := by omega
+      by_cases h : k = 1 <;> simp [a, h, hne, hT, Nat.add_assoc]
+  rw [he]
+  by_cases h : k = 1
+  · simp only [h, ite_true]
+    exact ⟨hTf.insert 1, by rw [Set.ncard_insert_of_notMem h1 hTf, hTc]⟩
+  · simp only [h, if_false, Nat.add_zero]
+    exact ⟨hTf, hTc⟩
+
 end D5.S3.Arith.CounterSequences.LeadingCounter
