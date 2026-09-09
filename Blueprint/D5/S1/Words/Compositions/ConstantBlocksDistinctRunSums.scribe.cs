@@ -74,7 +74,7 @@ internal sealed class ConstantBlocksDistinctRunSumsDocument : IScribeDocumentDef
         Cdot, Sp, Call("snd", V("b"))));
     private static Formula Parts() => Lambda("b",
         Call("replicate", Call("snd", V("b")), Call("fst", V("b"))));
-    private static Formula PositiveBlocks() => Par(Seq(Forall, Sp, V("b"), Sp, In, Sp,
+    private static Formula PositiveBlocks() => Par(Seq(Forall, Sp, V("b"), Sp, InMacro, Sp,
         V("s"), Comma, Sp, D(0), Lt, Call("fst", V("b")), Sp, Land, Sp,
         D(0), Lt, Call("snd", V("b"))));
     private static Formula BlocksFormula() => Disp(All(V("m"), Multisets(), Seq(
