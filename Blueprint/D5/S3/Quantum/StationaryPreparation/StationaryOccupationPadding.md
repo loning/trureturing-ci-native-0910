@@ -4,7 +4,7 @@
 
 Finite padding isometries and the physical stationary occupation gate.
 
-For a finite tail alphabet I and natural capacities c, PaddingMemory(H,c) consists of a sink and pairs of a nonzero bounded tail with a head index in Fin(H+1). Each legal emission has the square root of its probability as its amplitude. The matrix maps each memory basis vector into the joint letter and memory space.
+For a finite tail alphabet I and natural capacities c, PaddingMemory(H,c) consists of a sink and pairs of a nonzero bounded tail with a head index in Fin(H+1). Each legal emission has the square root of its probability as its amplitude. The matrix maps each memory basis vector into the joint letter and memory space. Here coefficient(U,v,p)=(U v)(p) denotes the p coordinate of U(v).
 
 **Theorem 1.1 (Padding transition probabilities sum to one).**
 
@@ -32,7 +32,7 @@ Distinct predecessor states have disjoint legal emissions in the (letter, memory
 
 **Theorem 1.3 (The padding matrix is realized by one unitary).**
 
-$$\forall I \in Type,\; \left(Fintype\left(I\right) \land DecidableEq\left(I\right)\right) \Rightarrow \left(\forall H \in \mathbb{N},\; \forall c \in Function\left(I, \mathbb{N}\right),\; \exists U \in Unitary\left(Prod\left(Option\left(I\right), PaddingMemory\left(H, c\right)\right)\right),\; \forall j \in PaddingMemory\left(H, c\right),\; \forall i \in Option\left(I\right),\; \forall k \in PaddingMemory\left(H, c\right),\; coefficient\left(U, pair\left(basis\left(pair\left(none\left(\right), j\right)\right), pair\left(i, k\right)\right)\right) = paddingMatrix\left(H, c, pair\left(i, k\right), j\right)\right)$$
+$$\forall I \in Type,\; \left(Fintype\left(I\right) \land DecidableEq\left(I\right)\right) \Rightarrow \left(\forall H \in \mathbb{N},\; \forall c \in Function\left(I, \mathbb{N}\right),\; \exists U \in Unitary\left(Prod\left(Option\left(I\right), PaddingMemory\left(H, c\right)\right)\right),\; \forall j \in PaddingMemory\left(H, c\right),\; \forall i \in Option\left(I\right),\; \forall k \in PaddingMemory\left(H, c\right),\; coefficient\left(U, basis\left(pair\left(none\left(\right), j\right)\right), pair\left(i, k\right)\right) = paddingMatrix\left(H, c, pair\left(i, k\right), j\right)\right)$$
 
 *Proof.* Machine-checked in Lean as `D5/S3/Quantum/StationaryPreparation/StationaryOccupationPadding.padding_unitary_exists` (`✓ std3`). ∎
 
@@ -68,7 +68,7 @@ The final vector is the basis vector at the transported sink state.
 
 **Theorem 1.6 (Physical gate coefficients equal matrix entries).**
 
-$$\forall A \in Type,\; \left(Fintype\left(A\right) \land \left(DecidableEq\left(A\right) \land Nonempty\left(A\right)\right)\right) \Rightarrow \left(\forall a \in Multiset\left(A\right),\; \forall j \in Fin\left(proposedDimension\left(a\right)\right),\; \forall i \in A,\; \forall k \in Fin\left(proposedDimension\left(a\right)\right),\; coefficient\left(physicalGate\left(a\right), pair\left(basis\left(pair\left(maximalHead\left(a\right), j\right)\right), pair\left(i, k\right)\right)\right) = physicalMatrix\left(a, pair\left(i, k\right), j\right)\right)$$
+$$\forall A \in Type,\; \left(Fintype\left(A\right) \land \left(DecidableEq\left(A\right) \land Nonempty\left(A\right)\right)\right) \Rightarrow \left(\forall a \in Multiset\left(A\right),\; \forall j \in Fin\left(proposedDimension\left(a\right)\right),\; \forall i \in A,\; \forall k \in Fin\left(proposedDimension\left(a\right)\right),\; coefficient\left(physicalGate\left(a\right), basis\left(pair\left(maximalHead\left(a\right), j\right)\right), pair\left(i, k\right)\right) = physicalMatrix\left(a, pair\left(i, k\right), j\right)\right)$$
 
 *Proof.* Machine-checked in Lean as `D5/S3/Quantum/StationaryPreparation/StationaryOccupationPadding.physical_gate_coefficients` (`✓ std3`). ∎
 
