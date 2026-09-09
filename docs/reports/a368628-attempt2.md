@@ -100,3 +100,5 @@ Private `initial_echo` 修复后正式模块编译 EXIT=0、零 warning/error，
 第二次 emit EXIT=2 / 15.421s：list 成员须为 GID，`S1` 不是 GID。已读 `LibraryNoteCatalog.cs:218-228` 的实际 parser（`GidRef.Create(gid)`），将成员改为本模块完整 GID。前次把字段名当语义、只修 YAML 形状不够，此次按真源类型修正。
 
 `make emit` **EXIT=0 / 50.659s**，仅发射本模块一个 Blueprint（生成器 run-local manifest 未入索引）。`deposit-header-check --target … --protected-base f838f20236e5a723d0c025ef53a80a07483008fa` **EXIT=0 / 9.658s**。当前进入同一冻结 writer，选择既有直接前置 P 并 add 本模块，避免无关全库对齐；无 atom、无 cover。
+
+冻结成功：`ledger-align --selector <P module> --add <this module>` **EXIT=0 / 8.838s**，`selectors_considered=2 changed=0 added=1 unchanged=1 conflicts=0`。唯一新 Freeze 事件 `sha256:5ae7df099edd2b964f49c2545998be6c3c37328dfe633e7c1dc76fc5aae93b85`，对应本模块 state pin；既有前置未改。没有理论卷/atom/coverage 变更。
