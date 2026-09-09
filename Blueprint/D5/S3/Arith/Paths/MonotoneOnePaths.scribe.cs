@@ -1,4 +1,6 @@
 using static StrataLint.Scribe.DefinitionDsl;
+using static StrataLint.Scribe.FormulaDsl;
+using F = StrataLint.Scribe.FormulaDsl;
 
 namespace StrataLint.Scribe.Blueprint.D5.S3.Arith.Paths;
 
@@ -16,12 +18,13 @@ internal sealed class MonotoneOnePathsDocument : IScribeDocumentDefinition
                 DeclarationHandle.Create(
                     "D5/S3/Arith/Paths/MonotoneOnePaths.mean_monotone_one_paths"),
                 H("Mean number of paths"),
-                StatementSource.FromLean(),
+                StatementSource.FromAuthor(MeanFormula()),
                 AssessedProvenance.FromRepo(Source),
                 Blocks(
                     Paragraph(Text(
                         "For n at least 1, a binary matrix assigns a Boolean to each of its "
-                        + "n squared cells. Every matrix receives equal weight. The function "
+                        + "n squared cells. In the formula, M_n is the set of all such matrices "
+                        + "and choose is the binomial coefficient. Every matrix receives equal weight. The function "
                         + "pathCount counts paths from the top left to the bottom right whose "
                         + "visited cells are all true. Every step moves exactly one cell east "
                         + "or south; both endpoints are included.")),
@@ -39,4 +42,19 @@ internal sealed class MonotoneOnePathsDocument : IScribeDocumentDefinition
                         + "At n=1 the only path visits the single cell. The theorem makes no "
                         + "claim about the zero-size row or the full distribution of path counts."))),
                 DescribeRole.Theorem))));
+
+    private static Formula N() => F.Id("n");
+    private static Formula Call(string name, params Formula[] args) =>
+        new Formula.Apply(Seq(Operatorname, Grp(F.Id(name))), [.. args]);
+    private static Formula MeanFormula() => Disp(Seq(
+        Forall, Sp, N(), InMacro, Mathbb, Grp(F.Id("N")), Comma, Sp,
+        D(1), Le, N(), Sp, Implies, Sp,
+        new Formula.Fraction(
+            Seq(Sum, Underscore, Grp(F.Id("M"), InMacro, Mathcal, Grp(F.Id("M")),
+                Underscore, N()), Call("pathCount", F.Id("M"))),
+            new Formula.Power(D(2), Seq(N(), Cdot, N()))),
+        Sp, Eq, Sp,
+        new Formula.Fraction(
+            Call("choose", Seq(D(2), N(), Minus, D(2)), Seq(N(), Minus, D(1))),
+            new Formula.Power(D(2), Seq(D(2), N(), Minus, D(1)))));
 }

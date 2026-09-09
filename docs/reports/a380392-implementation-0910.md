@@ -190,3 +190,10 @@ make lean 的完整 LEAN_CACHE 收据：
 ```text
 LEAN_CACHE {"status":"present","worktree":"/Users/chronoai/trureturing-a380392","donor":null,"method":"none","reason":null,"stamp_miss":null,"pin_sha256":"sha256:6c4c682ffba051b5744fe7a75ccc99d7f3b20227b3b026f392f3315be0adaa4e","clonefile_errno":null,"clonefile_errnos":[],"clonefile_attempts":0,"clonefile_cleanup_error":null,"mathlib_missing_olean_files":0,"mathlib_missing_olean_samples":[],"archive_status":"not_attempted","archive_mode":null,"archive_skip_reason":"project olean state is warm","archive_reason":null,"archive_producer_commit_sha":null,"archive_workflow_run_id":null,"mathlib_olean_state":"warm","mathlib_olean_probe_error":null,"project_olean_state":"warm","project_olean_probe_error":null}
 ```
+
+## 发射首次失败与修复
+
+make emit 首次 EXIT=2，8.073 秒：StatementSource.FromLean 对该新声明返回
+missing:D5/S3/Arith/Paths/MonotoneOnePaths.mean_monotone_one_paths。
+阅读 StatementSource.Materialize 后，按其 Unprojectable 分支改用合法 FromAuthor，
+手写与 Lean 同义的正尺寸公式；没有改 Lean 定理、投影器或判官。先前自动投影的计划由此修正。
