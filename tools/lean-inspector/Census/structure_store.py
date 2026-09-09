@@ -14,7 +14,7 @@ import zlib
 
 from emission import parse_name_key
 from incremental import atomic_json
-from streaming import canonical, closure, digest
+from streaming import canonical, digest
 
 
 def wire_key(key):
@@ -49,7 +49,7 @@ class Store:
         self.dirty = set()
         self.frozen = {}
         self.graph = None
-        self.scope = functools.lru_cache(maxsize=1)(self._scope)
+        self.scope = functools.lru_cache(maxsize=32)(self._scope)
         self.owners = functools.lru_cache(maxsize=4096)(self._owners)
 
     def close(self):
@@ -104,7 +104,16 @@ class Store:
         if self.graph is None:
             self.graph = {m: json.loads(imports) for m, imports in
                           self.db.execute("SELECT name,imports FROM modules")}
-        return set(closure(self.graph, [module]))
+        visited, pending = set(), [module]
+        while pending:
+            owner = pending.pop()
+            if owner in visited:
+                continue
+            if owner not in self.graph:
+                raise ValueError("dependency_unresolved")
+            visited.add(owner)
+            pending.extend(self.graph[owner])
+        return visited
 
     def _owners(self, name):
         return self.db.execute("""SELECT d.module,m.library,d.hash,m.error FROM decl d
@@ -244,14 +253,14 @@ class Store:
                      "dependency_unresolved", "frozen_key_ambiguous"]
             entry["reason"] = next(reason for reason in order if reason in errors)
         hasher = hashlib.sha256(canonical([policy, root_hash]))
-        with gzip.open(token_path, "wb") as tokens:
+        with gzip.open(token_path, "wb", compresslevel=1) as tokens:
             for context, name, signature in self.db.execute("SELECT * FROM tokens ORDER BY context,name"):
                 line = canonical([context, name, json.loads(signature)])
                 tokens.write(line)
                 hasher.update(line)
         entry["cache_key"] = "sha256:" + hasher.hexdigest()
         # JSON lines are streamed later into each row's frontier array.
-        with gzip.open(frontier_path, "wb") as frontier:
+        with gzip.open(frontier_path, "wb", compresslevel=1) as frontier:
             current, provenance = None, []
             for name, module, library in self.db.execute("SELECT * FROM boundary ORDER BY name,module"):
                 if current is not None and name != current:

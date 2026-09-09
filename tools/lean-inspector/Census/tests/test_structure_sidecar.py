@@ -5,11 +5,19 @@ import json
 import pathlib
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from negative_fixtures import name_key
 
 
 class StructureSidecarTests(unittest.TestCase):
+    def test_publication_failure_is_a_receipt_not_a_census_rejection(self):
+        from structure import run_sidecar
+        with patch("structure.report_only", side_effect=OSError("publication unavailable")):
+            receipt = run_sidecar(pathlib.Path("repository"), pathlib.Path("run"), pathlib.Path("report"))
+        self.assertEqual(receipt["status"], "unavailable")
+        self.assertEqual(receipt["publication_error"], "publication unavailable")
+
     def test_sidecar_failure_keeps_census_bytes_and_success(self):
         from structure import report_only
         with tempfile.TemporaryDirectory() as root:

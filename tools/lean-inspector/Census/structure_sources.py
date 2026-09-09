@@ -97,35 +97,69 @@ def part_plan(manifest, hashes, reader, cache, mode):
     return result
 
 
-def split_summaries(source, plan):
-    """Stream each raw part to an atomic compressed cache file."""
+def split_summaries(source, plan, store, libraries):
+    """Cache and pack the cold reader stream together, without reopening parts."""
     target, temporary, destination = None, None, None
+    current, imports = None, set()
+    stats = dict(packed_declarations=0, value_walks=0, type_walks=0,
+                 value_name_incidences=0, type_name_incidences=0, stream_packed_modules=0)
 
     def finish():
         if target:
             target.close()
             temporary.replace(destination)
+
+    def finish_module():
+        if current is not None:
+            store.finish_module(current, digest([plan[current]["address"], libraries[current]]))
+            store.db.commit()
     try:
         with source.open("rb") as stream:
             for line in stream:
                 row = json.loads(line)
                 if "module" in row:
                     finish()
+                    if current != row["module"]:
+                        finish_module()
+                        current, imports = row["module"], set()
+                        stats["stream_packed_modules"] += 1
+                        store.remove_module(current)
+                    imports.update(row["imports"])
+                    store.module(current, imports, libraries[current])
                     destination = dict(plan[row["module"]]["parts"])[row["part"]]
                     temporary = destination.with_suffix(".tmp")
                     target = gzip.open(temporary, "wb", compresslevel=1)
                 if target is None:
                     raise ValueError("dependency_unresolved")
                 target.write(line)
+                if "name" in row:
+                    pack_declaration(store, current, row, libraries[current], stats)
         finish()
+        finish_module()
     finally:
         if target:
             target.close()
+    return stats
+
+
+def pack_declaration(store, module, row, library, stats):
+    stats["packed_declarations"] += 1
+    if library == "repository":
+        store.declaration(module, row["name"], row["kind"], row["value"], row["type"])
+        stats["value_walks"] += row["value"] is not None
+        stats["type_walks"] += 1
+        stats["value_name_incidences"] += len(row["value"] or [])
+        stats["type_name_incidences"] += len(row["type"])
+    else:
+        store.db.execute("INSERT OR REPLACE INTO decl VALUES (?,?,NULL,NULL,NULL,NULL)",
+                         (module, row["name"]))
 
 
 def pack(store, plans, libraries):
     prior = dict(store.db.execute("SELECT name,address FROM modules"))
-    hits = misses = declarations = value_walks = type_walks = value_names = type_names = 0
+    hits = misses = 0
+    stats = dict(packed_declarations=0, value_walks=0, type_walks=0,
+                 value_name_incidences=0, type_name_incidences=0)
     for module in sorted(set(prior) - set(plans)):
         store.remove_module(module)
     for module, plan in sorted(plans.items()):
@@ -144,31 +178,19 @@ def pack(store, plans, libraries):
                 imports.update(header["imports"])
                 store.module(module, imports, libraries[module])
                 for line in source:
-                    row = json.loads(line)
-                    declarations += 1
-                    if libraries[module] == "repository":
-                        store.declaration(module, row["name"], row["kind"], row["value"], row["type"])
-                        value_walks += row["value"] is not None
-                        type_walks += 1
-                        value_names += len(row["value"] or [])
-                        type_names += len(row["type"])
-                    else:
-                        # Upstream membership has no proof or type summary.
-                        store.db.execute("INSERT OR REPLACE INTO decl VALUES (?,?,NULL,NULL,NULL,NULL)",
-                                         (module, row["name"]))
+                    pack_declaration(store, module, json.loads(line), libraries[module], stats)
         store.finish_module(module, address)
         store.db.commit()
-    return {"pack_module_hits": hits, "pack_module_misses": misses, "packed_declarations": declarations,
-            "value_walks": value_walks, "type_walks": type_walks,
-            "value_name_incidences": value_names, "type_name_incidences": type_names}
+    return dict(stats, pack_module_hits=hits, pack_module_misses=misses)
 
 
-def synchronize(repository, directory, cache, store, measure):
+def synchronize(repository, directory, cache, store, measure, mark=lambda _: None):
     from native import build
     raw = cache / "raw"
     raw.mkdir(parents=True, exist_ok=True)
     reader = fingerprint(repository)
     started = time.monotonic()
+    mark("structure_upstream_input_hashing")
     external, upstream_hashes, libraries, stats = upstream_inputs(repository, directory, cache)
     timings = {"upstream_input_hashing": time.monotonic() - started}
     project, project_hashes = read(directory / "manifest.json"), read(directory / "olean-hashes.json")
@@ -190,12 +212,16 @@ def synchronize(repository, directory, cache, store, measure):
             output = directory / ("structure-" + mode + ".jsonl")
             measure([str(binary), str(path), str(output), mode], "structure_" + mode)
             started = time.monotonic()
-            split_summaries(output, plan)
-            timings[mode + "_raw_cache_write"] = time.monotonic() - started
+            mark("structure_" + mode + "_cache_and_pack")
+            for key, value in split_summaries(output, plan, store, libraries).items():
+                stats[key] = stats.get(key, 0) + value
+            timings[mode + "_cache_and_pack"] = time.monotonic() - started
         plans.update(plan)
     started = time.monotonic()
-    stats.update(pack(store, plans, libraries))
-    timings["raw_pack"] = time.monotonic() - started
+    mark("structure_raw_cache_restore")
+    for key, value in pack(store, plans, libraries).items():
+        stats[key] = stats.get(key, 0) + value
+    timings["raw_cache_restore"] = time.monotonic() - started
     for path, stamp in read(directory / "stamps.json").items():
         if file_stamp(path) != stamp:
             raise ValueError("dependency_unresolved")

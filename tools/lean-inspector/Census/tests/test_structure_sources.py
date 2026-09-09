@@ -10,11 +10,37 @@ from phases import write
 from streaming import digest
 from structure import axiom_readings, header, publish
 from structure_graph import analyse
-from structure_sources import file_digest, part_plan
+from structure_sources import file_digest, pack, part_plan, split_summaries
 from structure_store import Store
 
 
 class StructureSourceTests(unittest.TestCase):
+    def test_stream_pack_and_part_cache_restore_agree_on_private_override(self):
+        with tempfile.TemporaryDirectory() as scratch:
+            root = pathlib.Path(scratch)
+            raw = root / "raw.jsonl"
+            hashes = [["A", p, 1, p] for p in ["base", "server", "private"]]
+            plans = part_plan([["A", ["base", "server", "private"]]], hashes, "reader", root, "bodies")
+            records = [
+                {"module": "A", "part": "base", "imports": []},
+                {"name": name_key("h"), "kind": "opaque", "value": None, "type": []},
+                {"module": "A", "part": "server", "imports": []},
+                {"module": "A", "part": "private", "imports": []},
+                {"name": name_key("h"), "kind": "opaque", "value": [name_key("a")], "type": []}]
+            from streaming import canonical
+            raw.write_bytes(b"".join(canonical(r) for r in records))
+            stores = [Store(root / (n + ".sqlite")) for n in ["stream", "restore"]]
+            try:
+                stats = split_summaries(raw, plans, stores[0], {"A": "repository"})
+                self.assertEqual(stats["stream_packed_modules"], 1)
+                pack(stores[1], plans, {"A": "repository"})
+                self.assertEqual(stores[0].raw("A", name_key("h")), stores[1].raw("A", name_key("h")))
+                self.assertEqual(stores[0].raw("A", name_key("h"))[1], [name_key("a")])
+                self.assertEqual(stores[0].snapshot(), stores[1].snapshot())
+            finally:
+                for store in stores:
+                    store.close()
+
     def test_part_cache_binds_content_layout_reader_but_not_tree_path(self):
         hashes = [["A", "base", 3, "digest-a"], ["A", "server", 2, "digest-s"]]
         plan = lambda paths, values=hashes, reader="reader": part_plan(

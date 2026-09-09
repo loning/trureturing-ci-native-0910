@@ -9,8 +9,8 @@ import time
 
 from incremental import atomic_json
 from phases import read, write
-from streaming import canonical, digest
-from structure_sources import file_digest
+from streaming import canonical, digest, file_stamp
+from structure_sources import file_digest, fingerprint
 from structure_store import wire_key
 
 
@@ -107,7 +107,8 @@ def report_only(directory, operation):
                                          status="unavailable", reason=reason, readings=None,
                                          information="undetermined", escape="undetermined")))
         inputs = {"olean_part_manifest_sha256": digest(read(directory / "olean-hashes.json")),
-                  "reader_fingerprint": None, "ownership_fingerprint": None}
+                  "reader_fingerprint": fingerprint(pathlib.Path(__file__).resolve().parents[3]),
+                  "ownership_fingerprint": None}
         publish(directory, header(directory, inputs), rows)
         receipt = {"status": "unavailable", "error": str(error), "rows": len(request["keys"]),
                    "status_counts": {"complete": 0, "partial": 0, "unavailable": len(request["keys"])},
@@ -136,18 +137,23 @@ def produce(repository, directory, raw_report):
 
     try:
         mark("structure_sources")
-        inputs, stats, timings = synchronize(repository, directory, cache, store, measure)
+        inputs, stats, timings = synchronize(repository, directory, cache, store, measure, mark)
+        atomic_json(directory / "structure-sources.json", {"source_inputs": inputs, "cache": stats, "timings_s": timings})
         started = time.monotonic()
         mark("structure_axioms")
         keys = read(directory / "request.json")["keys"]
+        before = file_stamp(raw_report) if raw_report.is_file() else None
         axioms = axiom_readings(repository, raw_report, keys)
         inputs["axiom_report_sha256"] = file_digest(raw_report) if raw_report.is_file() else None
+        if before is not None and file_stamp(raw_report) != before:
+            raise ValueError("dependency_unresolved")
         timings["axiom_report_join"] = time.monotonic() - started
         core, _ = core_policy()
         mark("structure_projection")
         rows = directory / "structure-rows.jsonl"
         summary = analyse(store, keys, rows, [encoded_name(n) for n in core],
                           cache=cache / "projection", axioms=axioms, mark=mark)
+        inputs["projection_fingerprint"] = summary["projection_key"]
         started = time.monotonic()
         mark("structure_publication")
         publish(directory, header(directory, inputs), rows)
@@ -169,7 +175,12 @@ def run_sidecar(repository, directory, raw_report):
             directory / "logs", "structure", cwd=repository, budget_gb=3, wall_limit_s=1800,
             phase_path=directory / "structure-phase.txt")
         return read(directory / "structure-summary.json")
-    return report_only(directory, operation)
+    try:
+        return report_only(directory, operation)
+    except Exception as error:
+        # Even an unwritable sidecar destination cannot reject an already
+        # emitted census. The run receipt retains the publication failure.
+        return {"status": "unavailable", "publication_error": str(error)}
 
 
 if __name__ == "__main__":
@@ -177,4 +188,5 @@ if __name__ == "__main__":
     for name in ["repository", "directory", "raw_report"]:
         parser.add_argument(name, type=pathlib.Path)
     options = parser.parse_args()
-    produce(options.repository.resolve(), options.directory.resolve(), options.raw_report.resolve())
+    report_only(options.directory.resolve(), lambda: produce(
+        options.repository.resolve(), options.directory.resolve(), options.raw_report.resolve()))
