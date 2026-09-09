@@ -150,6 +150,13 @@ The boundary-count sequence is `[1,4,8,11,12,11,8,4,1]`.
 
 ## Current Claims And Limits
 
+Run 02 (`make lean`) exited 2. `unitary_rank` now passes with the standard
+three axioms. Remaining script errors concern the diagonal entry's
+`starRingEnd` spelling, a missing matrix coercion, and normalization of
+`Fin.castAdd` order comparisons. The first standalone Node script run exited 1
+because a closing `});` was omitted; this syntax error does not supersede the
+successful one-shot enumeration above and is being repaired before acceptance.
+
 No target clause has yet been proved or refuted. No new D5 module or public
 declaration exists, so `proof_shape`, `escape_witness`, `admission_basis`, and
 per-declaration utility are not yet applicable. No hypotheses have been added.

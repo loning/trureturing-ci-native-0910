@@ -50,6 +50,7 @@ const entropies = cutProbabilities.map(sectors => {
     assert.ok(p > 0);
     return p * Math.log(p);
   }));
+});
 assert.deepEqual(boundaries.map(xs => xs.length), [1, 4, 8, 11, 12, 11, 8, 4, 1]);
 
 // Rank is computed on the exact integer support matrix. A nonzero uniform
