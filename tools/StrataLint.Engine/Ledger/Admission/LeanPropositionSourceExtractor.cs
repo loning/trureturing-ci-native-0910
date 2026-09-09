@@ -686,7 +686,7 @@ internal sealed partial class LeanSourceCatalog
         int end) =>
         start < end && tokens[start].IsIdentifier ? tokens[start].Identifier : string.Empty;
 
-    private static IEnumerable<string> QualifiedIdentifiers(
+    internal static IEnumerable<string> QualifiedIdentifiers(
         ImmutableArray<LeanSourceToken> tokens)
     {
         for (var index = 0; index < tokens.Length; index++)

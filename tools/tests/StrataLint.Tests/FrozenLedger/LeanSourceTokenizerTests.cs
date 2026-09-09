@@ -18,10 +18,7 @@ public sealed class LeanSourceTokenizerTests
         Assert.Equal(3, tokens[^1].Column);
 
         // Exercise the existing dependency consumer with both scanner outputs.
-        var project = typeof(LeanSourceCatalog).GetMethod("QualifiedIdentifiers",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-        Assert.NotNull(project);
-        var identifiers = Assert.IsAssignableFrom<IEnumerable<string>>(project.Invoke(null, [tokens]));
+        var identifiers = LeanSourceCatalog.QualifiedIdentifiers(tokens);
         Assert.Equal(new[] { "t", name }, identifiers);
     }
 
