@@ -68,11 +68,18 @@ Search receipts (textual candidate discovery, not exhaustive semantic claims):
 - gh search code '"smooth" "5040" language:Lean' --limit 30: one algebraic
   geometry path, not opened. Search service is available; completeness unclaimed.
 
-A temporary example-only Lean probe is running through make lean. It attempts
+A temporary example-only Lean probe was run through make lean. It attempted
 direct single-point reuse, normalization and linarith only with sq_nonneg,
 then attempts the frozen checker at the universal product. No public theorem
-or admitted proof has been introduced. The probe will be removed after reading
+or admitted proof was introduced. The probe was removed after reading
 the actual diagnostics. Its log is attempt-1/bind-only-build.log.
+
+Result: exit 2, required target SevenSmoothBindProbe failed. The restricted
+linarith attempt failed to contradict robinDelta(product) <= 0. The frozen
+10080 log-log bracket has the wrong argument for the universal product.
+The single-instance checker application also hit the default recursion limit;
+no budget was changed. This is a failed bind-only attempt, not a proof that
+every possible bind-only proof is impossible. No RH premise is available or used.
 
 ## Current nonclaims
 
