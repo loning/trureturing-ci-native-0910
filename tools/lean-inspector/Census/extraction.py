@@ -44,13 +44,13 @@ def source_digest(repository):
     return digest([(str(p.relative_to(repository)), hashlib.sha256(p.read_bytes()).hexdigest()) for p in paths])
 
 
-def scan(repository, directory, binary):
+def scan(repository, directory, binary, cache=None):
     def read(name):
         return json.loads((directory / name).read_bytes())
     manifest, hashes = read("manifest.json"), read("olean-hashes.json")
     request, domain = read("request.json"), read("domain.json")
     names = digest(sorted(set(row[1] for row in request["keys"])))
-    plan = extraction_plan(manifest, hashes, repository / ".lake/build/census/index",
+    plan = extraction_plan(manifest, hashes, cache or repository / ".lake/build/census/index",
                            source_digest(repository), names)
     missing = directory / "missing-manifest.json"
     missing.write_bytes(canonical(plan["misses"]))
@@ -99,4 +99,5 @@ def scan(repository, directory, binary):
 
 
 if __name__ == "__main__":
-    scan(pathlib.Path(sys.argv[1]), pathlib.Path(sys.argv[2]), sys.argv[3])
+    scan(pathlib.Path(sys.argv[1]), pathlib.Path(sys.argv[2]), sys.argv[3],
+         pathlib.Path(sys.argv[4]) if len(sys.argv) == 5 else None)

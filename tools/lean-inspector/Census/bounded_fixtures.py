@@ -3,6 +3,7 @@
 import json
 import pathlib
 import shutil
+import sys
 
 from phases import read, write
 from resources import run
@@ -10,7 +11,7 @@ from streaming import canonical, closure
 from negative_fixtures import COMMAND, PREFIX, key, lean_env
 
 
-def non_evidence(repository, directory):
+def non_evidence(repository, directory, request=None):
     from native import build
     env = lean_env(repository)
     binary = build(repository, "scan.lean", env)
@@ -34,23 +35,38 @@ def main (args : List String) : IO Unit := do
     # the reader's maximum active working set; measure the actual index peak.
     manifest = read(directory / "manifest.json")
     ballast = folder / "Noise.olean"
-    write(folder / "request.json", {"keys": []})
-    write(folder / "manifest.json", manifest + [["Fixture.Noise", [str(ballast)]]])
     measurements = []
     for count in [0, 50000]:
         label = f"constants-{count}"
         run([shutil.which("lean", path=env["PATH"]), "--run", str(generator), str(ballast), str(count)],
             folder, label + "-generate", cwd=repository, env=env, budget_gb=None)
-        output = folder / (label + ".jsonl")
-        measurement = run([str(binary), str(folder / "manifest.json"), str(folder / "request.json"), str(output)],
+        # Exercise the complete production index, including compact ownership
+        # hashing in its parent process. Both arms use isolated cold caches.
+        arm = folder / label
+        arm.mkdir()
+        from streaming import file_stamp, hash_inputs
+        inputs = read(directory / "inputs.json") + [["Fixture.Noise", "base", str(ballast)]]
+        write(arm / "manifest.json", manifest + [["Fixture.Noise", [str(ballast)]]])
+        write(arm / "inputs.json", inputs)
+        write(arm / "stamps.json", {path: file_stamp(path) for _, _, path in inputs})
+        write(arm / "olean-hashes.json", read(directory / "olean-hashes.json") + hash_inputs(inputs[-1:]))
+        write(arm / "domain.json", dict(read(directory / "domain.json"), **{"Fixture.Noise": "Fixture/Noise.lean"}))
+        shutil.copyfile(request or directory / "request.json", arm / "request.json")
+        measurement = run([sys.executable, str(repository / "tools/lean-inspector/Census/extraction.py"),
+                           str(repository), str(arm), str(binary), str(arm / "cache")],
                           folder, label, cwd=repository, env=env, budget_gb=1)
-        records = [json.loads(line) for line in output.open()]
-        assert records[-1]["named"] == [] and records[-1]["owners"] == [], "streamNonEvidenceConstantBound"
+        output = arm / "index.jsonl"
+        for line in output.open():
+            last = json.loads(line)
+        assert last["named"] == [] and last["owners"] == [], "streamNonEvidenceConstantBound"
         measurements.append({"non_evidence_constants": count, "peak_rss_bytes": measurement["peak_rss_bytes"],
                              "wall_seconds": measurement["wall_seconds"], "index_bytes": output.stat().st_size})
-    assert (folder / "constants-0.jsonl").read_bytes() == (folder / "constants-50000.jsonl").read_bytes(), "streamNonEvidenceConstantBound"
+    import filecmp
+    assert filecmp.cmp(folder / "constants-0/index.jsonl", folder / "constants-50000/index.jsonl", shallow=False), "streamNonEvidenceConstantBound"
     result = {"name": "non_evidence_constants", "check": "streamNonEvidenceConstantBound", "status": "passed",
-              "baseline_modules": len(manifest), "measurements": measurements, "retained_bytes_identical": True}
+              "baseline_modules": len(manifest), "requested_keys": len(read(request or directory / "request.json")["keys"]),
+              "measurements": measurements, "retained_bytes_identical": True,
+              "peak_did_not_increase": measurements[1]["peak_rss_bytes"] <= measurements[0]["peak_rss_bytes"]}
     write(folder / "result.json", result)
     return result
 
@@ -98,3 +114,12 @@ def two_batches(repository, directory):
     assert all(e["receipt"]["environment_modules"] <= bound for e in record["executions"]), "streamTwoBatchBound"
     return {"name": "two_candidate_batches", "check": "streamTwoBatchBound", "status": "passed",
             "bound": bound, "count": 2, "environment_modules": [e["receipt"]["environment_modules"] for e in record["executions"]]}
+
+
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description="Measure non-evidence ballast against a completed census run")
+    parser.add_argument("--directory", required=True, type=pathlib.Path)
+    parser.add_argument("--request", type=pathlib.Path)
+    options = parser.parse_args()
+    print(json.dumps(non_evidence(pathlib.Path(__file__).resolve().parents[3], options.directory, options.request)))
