@@ -98,3 +98,35 @@ blocked = 实际 Lean 尝试的 goal/错误、路线与最锐剩余子命题。
   zizka2025a390871 符合 bibkey 文法；Verified locator 正文含 canonical URL 与 doi:null 说明。
 - Scribe 使用 FromAuthor 投影原签名的完整公式；FromRepo 标记本仓推导并引用 OEIS 猜想来源。
   未放治理判形词汇；未手改 Blueprint md。make lean-report 进行中，尚未 emit/deposit。
+
+## Kernel 回声与逐条判形
+
+- runner attempt-1/KernelAudit.lean 检查 EXIT=0；private statement_echo 精确复述用户目标，
+  private positive_control 以 kernel decide 核对 (12,9,6) 的等式与下界等号；不单独冻结有限实例。
+- #print axioms mersenne_gap_exponent_bounds 仅 [propext, Classical.choice, Quot.sound]。
+  Lean ConstantInfo.type/value 的 getUsedConstants 遍历得到 3286 个传递常量，
+  D5 常量全部在本模块，明确命中 gap_at_least_three 和 six_mul_le_pow_add_eight。
+  这是 Lean 语义 API 读数，不把文本匹配当依赖证明。
+
+唯一公开定理：D5/S3/Arith/Mersenne/GapExponentBounds.mersenne_gap_exponent_bounds。
+proof_shape: content；direct_frozen_dependencies: []（无 GID/statement_id 对）；
+escape_witness: six_mul_le_pow_add_eight（经 gap_at_least_three）；
+admission_basis: escape-witness。
+
+CLAUDE.md 3.2 四项对照：
+
+1. 依赖闭包内：上列 elaborate 后语义遍历明确命中两条 private theorem。
+2. 非投影可得：Mathlib 的对数夹逼并不提供该平方差的线性下界。
+   本地排除差 1/2，再比较 r² 和 (k−3)²，首次建立 6k≤2^m+8；
+   D5 冻结前置集合为空，不是某个已有指数界的实例化或投影。
+3. 非定义等价：该见证是不含 log 的线性 k/2^m 关系；主结论是两个整指数界，
+   两者不是定义展开、别名或重述。
+4. 活推导路径：主定理下界分支以该线性界与 2^t≤k 推导 4*2^t<2^m，
+   再用幂单调性。该 hlinear 由 omega 实际消费，未塞入被投影丢弃的合取分量；
+   去掉它，对数夹逼与平方和上界无法仅经绑定操作提供指数下界。
+   活路径判断为证明语义自查，不声称闭包遍历自动判定所有内容性质。
+
+全部声明均为无界符号推导，computational_content.kind=none；
+basis/consumer/instance/premises/result/claim 为 not-applicable(kind=none)。
+question_answered：用户预登记的 A390871 非 2 幂项指数双边界是否成立。
+未使用 sorry、自加 axiom 或 native_decide。
