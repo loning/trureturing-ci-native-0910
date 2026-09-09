@@ -52,7 +52,7 @@ clause excludes tier 1. For covered projections record `proof_shape: bind-only`,
 `escape_witness: null`, direct frozen dependencies, and screening-only admission
 basis. No source recompilation or independent theorem is required for screening.
 
-## Progress
+## Completion
 
 Screened: 164 / 164. frozen-covered: 8; frozen-partial: 6; needs-lean: 150; not-an-assertion: 0; unreadable: 0.
 
@@ -354,7 +354,7 @@ proof_shape: `bind-only`; escape_witness: `null`; admission_basis: `not-applicab
 | Atom clause | Lean binders | Lean assumptions | Lean conclusion | Label |
 | --- | --- | --- | --- | --- |
 | context G_N>0; G_(N+1)=[G_N,b;b*,d] | HP=C and HQ=C^N as real inner-product spaces; APP(z)=d*z; AQP(z)=b*z; AQQ(x)=G_N*x; AQQInv(x)=G_N^-1*x | hQQNonneg and hQQSymm from G_N>0; hQQInv from its inverse | hypotheses are satisfied with no extra restrictions; ordering is (z,x) instead of (x,z) | equivalent |
-| G_(N+1) positive semidefinite | forall z:C, x:C^N | source Hermitian block and G_N>0 | forall w, 0<=blockEnergy APP AQP AQQ w; energy = d\|z\|^2+2Re(conj(z)*b* x)+x*G_N x | equivalent |
+| G_(N+1) positive semidefinite | forall z:C, x:C^N | source Hermitian block and G_N>0 | forall w, 0<=blockEnergy APP AQP AQQ w; energy = d\|z\|^2+2Re(conj(z)*(b^* x))+x^*G_N x | equivalent |
 | delta_N:=d-b*G_N^-1*b >=0 | forall z:C in the reduced space | same; r=G_N^-1*(b*z) | schurEnergy(z)=d\|z\|^2-Re(r*G_N r)=(d-b*G_N^-1*b)\|z\|^2; all z nonnegative iff delta_N>=0 | equivalent |
 | (U13) both directions of iff | same blocks and all source vectors | hQQNonneg,hQQSymm,hQQInv already discharged by source G_N>0 | (exact_sticky_reduction ...).1 : (forall full vectors, energy>=0) iff (forall reduced vectors, energy>=0) | equivalent |
 
@@ -633,12 +633,24 @@ Counts are matching lines including comments in baseline D5 Lean files, unless a
 | S109 | `rg -n --glob '*.lean' '(?i)critical.*(toeplitz\|eigenvalue)\|toeplitz.*(asymptot\|power)\|symbol.*zero.*order' D5` | 1 |
 | S110 | `rg -n --glob '*.lean' '(?i)(weighted\|two.?point).*squared.*(min\|distance)\|minim.*(energy\|squared)\|parallel.*(resist\|energy)' D5` | 8 |
 | S111 | `rg -n --glob '*.lean' '(?i)wigner\|double.?copy\|two.?copy\|interference.*(gauss\|limit)' D5` | 86 |
+| R01 | `rg -n -F -e '定理 L1：非负平方展开' -e '定理 L4：平方级数的精确指数率' -e '定理十：不使用 RH' -e '定理八：历史绕行读数' -e '定理 J1：历史方差演化' -e '定理 T5：双副本补偿' -e '定理 O3：负特征值' docs/develop/theory/QUANTUM-RH.md` | 7 |
+| R02 | `rg -n -A 18 -F -e 'theorem golden_resource_5040_unique_maximum_of_price_interval' D5/S3/Arith/GoldenResource5040PriceInterval.lean` | 1 |
+| R03 | `rg -n -A 16 -F -e 'theorem sorted_positive_sum_product_classification' D5/S3/Arith/GoldenResource/FourFactorSumProductBalance.lean` | 1 |
+| R04 | `rg -n -A 19 -F -e 'theorem g1_explicit_coefficients' -e 'theorem g2_discriminant_bound' -e 'theorem discriminant_eq_output' -e 'theorem g3_nonnegative_roots' -e 'theorem g4_negative_product' -e 'theorem g4_negative_discriminant' -e 'theorem g4_parameter_range_sharp' -e 'theorem preservation_iff' D5/S3/Zeros/Convolution/GribinskiDegreeTwo.lean` | 8 |
 
 Full count collection for streaming receipts: `rg -n ... | node` consumes stdout, splits into matching lines, and emits the count and distinct paths. Final result.json retains collection commands and returned paths. Controls: C+2=1, C+3=4, C-=0, C-2=0.
 
+## Validation And Delivery
+
+At 2026-09-09T01:23:13Z, the structural audit found 164 unique supplied IDs, 164 classified rows, no unscreened IDs, and 28 tier-1 clause comparisons. Every recorded body matched its read-only CAS file; tier ordering and atom-ID ordering passed. Ten distinct state JSON files matched the reported module pins, and all cited declaration names were found in their modules. This checks report integrity, not mathematical fidelity.
+
+The five title-selected Gribinski/other groups are not new discoveries by count: tier 1 includes the supplied G1/G3/G4 precedents. There are eight full-match candidate atoms in total, not eight newly added coverage edges. Tier 4 is zero because each supplied body contains a truth-valued assertion; this does not certify its truth.
+
+The baseline-to-report diff contains only this report; git diff --check passed. Report checkpoints were pushed to origin/lane/math/section-cover-screen-0909. Exact pushed hashes, all classified records, pins, restrictions, controls, and search collection commands are published in the worker-owned result.json in the registered attempt directory. R01-R04 are navigation/signature reads, with context lines excluded from their matching counts.
+
 ## Limitations And Nonclaims
 
-- ASSUMED-UNVERIFIED: repository search is bounded; equivalent differently named theorems outside recorded hits may remain. Third-party pages and unlisted modules were not opened.
+- ASSUMED-UNVERIFIED: repository search is bounded; equivalent differently named theorems outside recorded hits may remain. Discovery lists do not establish that every returned module was read. Third-party pages and unexamined returned modules remain ASSUMED-UNVERIFIED.
 - ASSUMED-UNVERIFIED: no new Lean compilation, elaborated dependency audit, readiness run, or independent fidelity review. Existing frozen pins are read as recorded, not recomputed.
 - Source mathematical truth is not newly proved; a needs-lean row means an assertion without a matching frozen declaration found, and may also require source correction.
 - No cover, deposit, Lean edit, digestion-ledger edit, or PR.
