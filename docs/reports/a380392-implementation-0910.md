@@ -237,3 +237,13 @@ ASSUMED-UNVERIFIED：访问格注入及基数已由 Lean 内核验证。
 用户的 n=1..4 枚举读数仍归用户；本席只另做私有 n=1、n=2 全矩阵语义回声。
 外链未读部分及受限检索仍按前述 ASSUMED-UNVERIFIED，不由本地形式化补作阅读证明。
 独立评审席为 0，未声称多模型共识；本地检查不替代 PR 的远端 CI 判词。
+
+## PR 交付
+
+- PR：https://github.com/the-omega-institute/trureturing/pull/6711，base=dev。
+- 使用 make pr-open HEAD=lane/math/a380392 MESSAGE=<attempt-1/pr-message.md>，
+  WATCH_TIMEOUT_SECONDS=600；pr-create EXIT=0。创建时冻结提交为 6dd08e8e7a。
+- 分支已持续 commit/push；此节记录 PR 创建事实后也提交推送。
+- 按用户本次实施阶段定义，结果为“成”：一般定理 make lean EXIT=0、
+  无 sorry/私 axiom、PR 已开出。未合并；远端 required CI 创建后尚未齐备，
+  最终观察快照另存 runner result.json，不将开 PR 等同于 CI 全绿。
