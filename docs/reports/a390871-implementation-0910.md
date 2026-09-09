@@ -180,3 +180,12 @@ LEAN_CACHE {"status":"present","worktree":"/Users/chronoai/trureturing-a390871",
 - 原目标已 kernel 证明，非将结论替换为 4∣k。下界等号的阳性对照已核验。
   未主张用户 131/162/163 是本席重跑、全球文献完备性、优先权或多模型共识。
   未读外链仍为 ASSUMED-UNVERIFIED；本地全绿不冒称远端 CI 全绿或 PR 已合并。
+
+## PR 交付
+
+- PR：https://github.com/the-omega-institute/trureturing/pull/6728，base=dev，创建时冻结提交 07e68130c6。
+- make pr-open HEAD=lane/math/a390871 MESSAGE=<attempt-1/pr-message.md>
+  WATCH_TIMEOUT_SECONDS=600；pr-create EXIT=0，继续由 canonical watcher 观察 required checks。
+- 按用户指定实施阶段停止判据，“成”条件已满足：原目标 make lean EXIT=0、
+  无 sorry/私 axiom、PR 已开出。此表述不是主干已合并或远端 CI 已绿的声明。
+- 未启用 auto-merge；外层实施/评审流程继续。完整工具日志与最终观察快照随 runner result.json 发布。
