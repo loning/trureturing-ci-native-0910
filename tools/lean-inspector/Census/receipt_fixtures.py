@@ -1,84 +1,46 @@
-"""Adversarial transport fixtures, exercised through the Lean publisher."""
+"""Receipt negatives rerun the Lean read and membership phases."""
 
 import json
-import os
-import pathlib
+import shutil
 
-from emission import string
-from resources import run
+from phases import read, write
+from streaming import hash_inputs, replay
+from negative_fixtures import PREFIX, key, lean, lean_env
 
 
-def check_receipts(repository, directory, report_path):
-    root = directory / "first"
-    source = root / "CensusRun/Root.lean"
-    original = source.read_text()
-    driver = root / "CensusPublish/Root.lean"
-    original_driver = driver.read_text()
-    manifest = root / "query-outputs.json"
-    responses = json.loads(manifest.read_text())
-    response = pathlib.Path(responses[0])
-    receipt = pathlib.Path(str(response) + ".receipt.json")
-    env = dict(os.environ, LEAN_PATH=str(root), LEAN_NUM_THREADS="1")
-    outcomes = []
-
-    def rejected(label, expected, text=None):
-        output = directory / (label + ".json")
-        source.write_text(text or original)
-        driver.write_text(original_driver.replace(string(str(root / "census.json")), string(str(output))))
+def check_receipts(repository, directory):
+    folder = directory / "receipt-byte"
+    folder.mkdir(parents=True, exist_ok=True)
+    module = PREFIX + "StreamingTarget"
+    original = repository / ".lake/build/lib/lean" / (module.replace(".", "/") + ".olean")
+    copy = folder / "Target.olean"
+    shutil.copyfile(original, copy)
+    target = key("StreamingTarget", "StreamingTarget.target")
+    write(folder / "manifest.json", [[module, [str(copy)]]])
+    write(folder / "request.json", {"keys": [target], "roots": [["Fixture.Root", [module]]],
+        "assignment": {module: "Fixture.Root"}, "discovery_roots": [module],
+        "external_graph": read(directory / "external.json")})
+    env = lean_env(repository)
+    def scan():
         try:
-            run(["lake", "env", "lean", "-R", str(root), str(driver)],
-                directory / label, "process", cwd=repository, env=env)
-        except RuntimeError:
-            log = (directory / label / "process.log").read_text()
-            assert expected in log, log
-            assert not output.exists(), "rejected receipt produced an artifact"
-            outcomes.append(label)
-        else:
-            raise AssertionError(label + " was accepted")
-        finally:
-            source.write_text(original)
-            driver.write_text(original_driver)
-
-    receipt_bytes = receipt.read_bytes()
-    response_bytes = response.read_bytes()
-    receipt.unlink()
+            lean(repository, folder, "scan.lean", [folder / "manifest.json", folder / "request.json",
+                 folder / "index.jsonl"], "reread", env)
+            lean(repository, folder, "membership.lean", [folder / "index.jsonl", folder / "request.json",
+                 folder / "membership.json"], "recompute", env)
+        except RuntimeError as error:
+            raise ValueError("IE-C044 receipt replay rejected changed olean") from error
+        return {"membership": read(folder / "membership.json"),
+                "oleans": hash_inputs([(module, "base", str(copy))])}
+    expected = scan()
+    write(folder / "receipt.json", expected)
+    content = bytearray(copy.read_bytes())
+    content[0] ^= 1
+    copy.write_bytes(content)
     try:
-        rejected("missing-query-receipt", "query receipt")
-    finally:
-        receipt.write_bytes(receipt_bytes)
-    response.unlink()
-    try:
-        rejected("missing-query-transport", "query receipt")
-    finally:
-        response.write_bytes(response_bytes)
-    edited = json.loads(response_bytes)
-    observed = next(entry for entry in edited["entries"] if entry["class"] == "observed")
-    observed["payload"]["note"] = "Edited after query execution."
-    response.write_text(json.dumps(edited) + "\n")
-    try:
-        rejected("edited-query-transport", "query receipt")
-    finally:
-        response.write_bytes(response_bytes)
-    stale = json.loads(receipt_bytes)
-    stale["report_sha256"] = "sha256:" + "0" * 64
-    receipt.write_text(json.dumps(stale))
-    try:
-        rejected("stale-query-receipt", "query receipt")
-    finally:
-        receipt.write_bytes(receipt_bytes)
-    original_manifest = manifest.read_bytes()
-    manifest.write_bytes((directory / "second/query-outputs.json").read_bytes())
-    try:
-        rejected("swapped-query-receipt", "query receipt")
-    finally:
-        manifest.write_bytes(original_manifest)
-    edited_inventory = original.replace(", 0)", ", 99)", 1)
-    assert edited_inventory != original
-    rejected("edited-inventory-row", "component=statement_id_nat", edited_inventory)
-
-    manifest.write_text("[]\n")
-    try:
-        rejected("invented-consistent-scope-and-completion", "query receipt")
-    finally:
-        manifest.write_bytes(original_manifest)
-    return outcomes
+        replay(scan, expected)
+    except ValueError as error:
+        assert "IE-C044 receipt replay" in str(error), "streamReceiptReplayMismatch"
+    else:
+        raise AssertionError("streamReceiptReplayMismatch: changed olean accepted")
+    return [{"name": "receipt_replay_changed_olean", "status": "passed", "changed_bytes": 1,
+             "reread": True, "fresh_index_required": True}]

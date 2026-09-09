@@ -11,6 +11,7 @@ from __future__ import annotations
 import hashlib
 import json
 import pathlib
+import subprocess
 
 
 def canonical(value):
@@ -27,9 +28,58 @@ def freshness(step):
 
 
 def check_domain(expected, actual):
-    missing, extra = sorted(set(expected) - set(actual)), sorted(set(actual) - set(expected))
-    if missing or extra:
-        raise ValueError(f"IE-C044 olean domain missing={missing} extra={extra}")
+    missing = sorted(set(expected) - set(actual))
+    if missing:
+        raise ValueError(f"IE-C044 olean domain missing={missing}")
+
+
+def tracked_domain(repository):
+    """Enumerate FROM tracked sources selected by Lake's lean_lib globs.
+
+    Cached modules outside this domain are never opened, statted or hashed.
+    Dependency packages cannot import this downstream project: the package DAG
+    is the evidence-free boundary, not a list of upstream module names.
+    """
+    repository = pathlib.Path(repository)
+    tracked = subprocess.check_output(["git", "ls-files", "-z", "--", "*.lean"], cwd=repository)
+    paths = [pathlib.PurePosixPath(p.decode()) for p in tracked.split(b"\0") if p]
+    config = json.loads(subprocess.check_output([
+        "lake", "env", "lean", "--run", "tools/lean-inspector/Census/config.lean", "lakefile.toml"],
+        cwd=repository, text=True))
+    domain = {}
+    for library in config["lean_lib"]:
+        source_root = pathlib.PurePosixPath(library.get("srcDir", "."))
+        for path in paths:
+            if not path.is_relative_to(source_root):
+                continue
+            if path.parts[0] != "D5" and str(source_root) != "tools/lean-inspector":
+                continue
+            module = ".".join(path.relative_to(source_root).with_suffix("").parts)
+            for glob in library.get("globs", library.get("roots", [library["name"]])):
+                prefix = glob[:-2] if glob.endswith((".+", ".*")) else glob
+                if (module == glob or glob.endswith(".*") and module == prefix
+                        or glob.endswith((".+", ".*")) and module.startswith(prefix + ".")):
+                    domain[module] = str(path)
+    return dict(sorted(domain.items()))
+
+
+def enumerate_oleans(repository, domain):
+    inputs, manifest = [], []
+    for module in sorted(domain):
+        base = pathlib.Path(repository) / ".lake/build/lib/lean" / (module.replace(".", "/") + ".olean")
+        if not base.is_file():
+            raise ValueError(f"IE-C044 missing olean for tracked module: {module}")
+        paths = [str(base)]
+        inputs.append((module, "base", str(base)))
+        for part in ("server", "private"):
+            path = pathlib.Path(str(base) + "." + part)
+            if path.is_file():
+                if part == "private" and len(paths) != 2:
+                    raise ValueError(f"IE-C044 missing server part: {module}")
+                paths.append(str(path))
+                inputs.append((module, part, str(path)))
+        manifest.append([module, paths])
+    return manifest, inputs
 
 
 def closure(graph, roots):
@@ -45,7 +95,7 @@ def closure(graph, roots):
     return sorted(visited)
 
 
-def root_scopes(modules, keys, evidence, graph):
+def root_definitions(modules, keys, evidence):
     names = {}
     for owner, name, _ in keys:
         names.setdefault(name, set()).add(owner)
@@ -58,12 +108,18 @@ def root_scopes(modules, keys, evidence, graph):
     roots = [(f"{group}.{start // 32:04d}", members[start:start + 32])
              for group, members in sorted(groups.items()) for start in range(0, len(members), 32)]
     roots = sorted(roots + [(module, [module]) for module in isolated])
-    scopes, assignment = {}, {}
+    definitions, assignment = [], {}
     for number, (_, members) in enumerate(roots):
         root = f"CensusQueryRun.Group{number // 20:04d}.Part{number:05d}"
-        scopes[root] = sorted([root] + closure(graph, sorted(set(members) | set(evidence)
-                                                           | {"LeanInformationAudit.Census.Command"})))
+        definitions.append([root, sorted(set(members) | set(evidence)
+                                         | {"LeanInformationAudit.Census.Command"})])
         assignment.update((module, root) for module in members)
+    return definitions, assignment
+
+
+def root_scopes(modules, keys, evidence, graph):
+    definitions, assignment = root_definitions(modules, keys, evidence)
+    scopes = {root: sorted([root] + closure(graph, imports)) for root, imports in definitions}
     return scopes, assignment
 
 

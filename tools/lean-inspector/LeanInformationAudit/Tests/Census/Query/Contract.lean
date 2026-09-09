@@ -13,12 +13,12 @@ run_cmd liftTermElabM do
   let key : StatementKey := ⟨``target, "sha256:000000000000000000000000000000000000000000000000000000000000002a"⟩
   let mut missingScopeRejected := false
   try
-    let _ ← CensusQuery.buildIndex `MissingCensusModule
+    let _ ← CensusQuery.indexScope `MissingCensusModule
   catch error =>
     unless (← error.toMessageData.toString).contains "existing-module" do throw error
     missingScopeRejected := true
   unless missingScopeRejected do throwError "missingScopeRejected: query error became an observation"
-  let outside ← CensusQuery.buildIndex `LeanInformationAudit.Tests.Census.Query.Source
+  let outside ← CensusQuery.indexScope `LeanInformationAudit.Tests.Census.Query.Source
   let row ← CensusQuery.assess outside "fixture-head" key
   match row with
   | .observed value =>
@@ -27,7 +27,7 @@ run_cmd liftTermElabM do
         !value.importScope.modules.contains `LeanInformationAudit.Tests.Census.Query.Registration do
       throwError "outsideScopeObserved: registration leaked across the declared scope"
   | .certified _ => throwError "outsideScopeObserved: outside registration certified"
-  let included ← CensusQuery.buildIndex `LeanInformationAudit.Tests.Census.Query.Registration
+  let included ← CensusQuery.indexScope `LeanInformationAudit.Tests.Census.Query.Registration
   let registeredRow ← CensusQuery.assess included "fixture-head" key
   unless included.finite.any (fun entry => entry.theoremName == key.theoremName &&
       entry.registrationModuleName == `LeanInformationAudit.Tests.Census.Query.Registration) do
@@ -40,7 +40,7 @@ run_cmd liftTermElabM do
         value.importScope.modules.contains `LeanInformationAudit.Tests.Census.Query.Registration do
       throwError "registrationScopeIncluded: in-scope candidates were not returned"
   | .certified _ => throwError "registrationScopeIncluded: unsealed registration certified"
-  let inside ← CensusQuery.buildIndex `LeanInformationAudit.Tests.Census.Evidence
+  let inside ← CensusQuery.indexScope `LeanInformationAudit.Tests.Census.Evidence
   let finiteKey : StatementKey := ⟨``SealSuccess.idTheorem, "sha256:0000000000000000000000000000000000000000000000000000000000000015"⟩
   let row ← CensusQuery.assess inside "fixture-head" finiteKey
   unless row.className == "finite_occurrence" do

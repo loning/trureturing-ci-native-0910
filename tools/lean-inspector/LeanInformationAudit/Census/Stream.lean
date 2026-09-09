@@ -132,7 +132,9 @@ private unsafe def registryRecords (data : ModuleData) : Json := Id.run do
     ("registries", registryRecords data)]).compress
 
 /-- A noinline boundary releases all region-backed Name/Expr/JSON references
-before freeing parts in reverse dependency order. Parts are never loaded alone. -/
+before freeing parts in reverse dependency order. Parts are never loaded alone.
+J3's generated roots have no `module` declaration: Lean imports them at the
+private level, so all available parts and private import edges are in scope. -/
 @[noinline] private unsafe def readAndEmit (moduleName : String) (paths : Array String)
     (keys : Std.HashSet Name) (out : IO.FS.Handle) : IO (Array CompactedRegion) := do
   let parts ← readModuleDataParts (paths.map System.FilePath.mk)

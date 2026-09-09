@@ -14,7 +14,7 @@ def malformedEvidence : UnreachableElaborationEvidence (8 + 1 = 9) where
   explanation := "Deliberately missing the required failed obligation."
 
 run_cmd liftTermElabM do
-  let index ← CensusQuery.buildIndex `LeanInformationAudit.Tests.Census.Evidence
+  let index ← CensusQuery.indexScope `LeanInformationAudit.Tests.Census.Evidence
   let unreachable ← CensusQuery.assess index "fixture-head" ⟨``Evidence.closedNumerical, "sha256:000000000000000000000000000000000000000000000000000000000000002d"⟩
   match unreachable with
   | .certified (.unreachable value) =>
@@ -27,7 +27,7 @@ run_cmd liftTermElabM do
         value.comparisonStatement == ``Evidence.comparison do
       throwError "directBoundedWitness: wrong family or comparison"
   | _ => throwError "directBoundedWitness: complete direct evidence was downgraded"
-  let malformed ← CensusQuery.buildIndex (← getEnv).header.mainModule
+  let malformed ← CensusQuery.indexScope (← getEnv).header.mainModule
   let mut rejected := false
   try
     discard <| CensusQuery.assess malformed "fixture-head" ⟨``malformedTarget, "sha256:0000000000000000000000000000000000000000000000000000000000000044"⟩
