@@ -82,6 +82,132 @@ theorem no_small_successor (x d : ℕ) (hx : 0 < x) (hd : 0 < d ∧ d < 10) :
     have := Nat.digits.injective 10 he
     omega
 
+private def repeated (x : ℕ) : ℕ → ℕ
+  | 0 => x
+  | k + 1 => x + 10 ^ (Nat.digits 10 x).length * repeated x k
+
+private theorem repeated_digits (x k : ℕ) :
+    Nat.digits 10 (repeated x (k + 1)) =
+      Nat.digits 10 x ++ Nat.digits 10 (repeated x k) :=
+  (Nat.digits_append_digits (by norm_num : 0 < 10)).symm
+
+private theorem repeated_commute (x k : ℕ) :
+    Nat.digits 10 x ++ Nat.digits 10 (repeated x k) =
+      Nat.digits 10 (repeated x k) ++ Nat.digits 10 x := by
+  induction k with
+  | zero => rfl
+  | succ k ih =>
+    rw [repeated_digits]
+    calc
+      _ = Nat.digits 10 x ++
+          (Nat.digits 10 (repeated x k) ++ Nat.digits 10 x) := congrArg _ ih
+      _ = _ := (List.append_assoc _ _ _).symm
+
+private theorem repeated_lower (x k : ℕ) (hx : 0 < x) : k + 1 ≤ repeated x k := by
+  induction k with
+  | zero => exact hx
+  | succ k ih =>
+    have hp : 1 ≤ 10 ^ (Nat.digits 10 x).length := Nat.one_le_pow _ _ (by norm_num)
+    have := Nat.mul_le_mul_right (repeated x k) hp
+    simp only [repeated]
+    omega
+
+private theorem arbitrarily_large_successor (x bound : ℕ) (hx : 0 < x) :
+    ∃ y, bound < y ∧ Legal x y := by
+  let y := 10 ^ (Nat.digits 10 x).length * repeated x bound
+  have hr := repeated_lower x bound hx
+  have hp : 1 ≤ 10 ^ (Nat.digits 10 x).length := Nat.one_le_pow _ _ (by norm_num)
+  have hy : bound < y := by
+    have := Nat.mul_le_mul_right (repeated x bound) hp
+    dsimp [y]
+    omega
+  refine ⟨y, hy, (legal_reverse hx (by omega)).mpr ?_⟩
+  change (Nat.digits 10 (repeated x (bound + 1))).IsInfix _
+  rw [repeated_digits, repeated_commute]
+  dsimp [y]
+  rw [Nat.digits_base_pow_mul (by norm_num) (by omega)]
+  exact ⟨List.replicate (Nat.digits 10 x).length 0, [], by simp [List.append_assoc]⟩
+
+/-- The least positive unused successor satisfying the original substring rule. -/
+noncomputable def next (x : ℕ) (used : Finset ℕ) : ℕ :=
+  sInf {y | 0 < y ∧ y ∉ used ∧ Legal x y}
+
+private theorem next_spec (x : ℕ) (used : Finset ℕ) (hx : 0 < x) :
+    0 < next x used ∧ next x used ∉ used ∧ Legal x (next x used) := by
+  apply Nat.sInf_mem (s := {y | 0 < y ∧ y ∉ used ∧ Legal x y})
+  obtain ⟨y, hy, hl⟩ := arbitrarily_large_successor x (used.sup id) hx
+  refine ⟨y, by omega, ?_, hl⟩
+  intro hm
+  have := Finset.le_sup (f := id) hm
+  exact (not_le_of_gt hy) this
+
+private theorem next_le (x y : ℕ) (used : Finset ℕ)
+    (hy : 0 < y) (hu : y ∉ used) (hl : Legal x y) : next x used ≤ y :=
+  Nat.sInf_le ⟨hy, hu, hl⟩
+
+/-- Current term and all terms used so far; the initial state is (1,{1}). -/
+noncomputable def state : ℕ → ℕ × Finset ℕ
+  | 0 => (1, {1})
+  | k + 1 =>
+      let y := next (state k).1 (state k).2
+      (y, insert y (state k).2)
+
+/-- OEIS indexing starts at 1. Index 0 is the same initial value by convention. -/
+noncomputable def seq (n : ℕ) : ℕ := (state (n - 1)).1
+
+private theorem state_pos (k : ℕ) : 0 < (state k).1 := by
+  induction k with
+  | zero => decide
+  | succ k ih => exact (next_spec _ _ ih).1
+
+private theorem state_used (k : ℕ) :
+    (state k).2 = (Finset.range (k + 1)).image (fun i => (state i).1) := by
+  induction k with
+  | zero => simp [state]
+  | succ k ih => simp [state, Finset.range_add_one, ih]
+
+/-- At each step the term is the least positive unused legal successor. -/
+theorem sequence_greedy (k : ℕ) :
+    seq (k + 2) = sInf {y | 0 < y ∧
+      (∀ i ∈ Finset.range (k + 1), y ≠ seq (i + 1)) ∧ Legal (seq (k + 1)) y} := by
+  simp only [seq, Nat.add_sub_cancel, show k + 2 - 1 = k + 1 by omega, state, next]
+  rw [state_used]
+  congr 1
+  ext y
+  simp [eq_comm]
+
+/-- Every indexed term is positive. -/
+theorem sequence_pos (n : ℕ) : 0 < seq n := state_pos _
+
+/-- Every adjacent pair from the first term onwards satisfies decimal legality. -/
+theorem sequence_legal (n : ℕ) (hn : 1 ≤ n) : Legal (seq n) (seq (n + 1)) := by
+  obtain ⟨k, rfl⟩ := Nat.exists_eq_add_of_le hn
+  simpa [seq, state, Nat.add_comm, Nat.add_left_comm, Nat.add_assoc] using
+    (next_spec (state k).1 (state k).2 (state_pos k)).2.2
+
+/-- From the second term onwards A359482 has at least two decimal digits. -/
+theorem sequence_tail_ge_ten (n : ℕ) (hn : 2 ≤ n) : 10 ≤ seq n := by
+  by_contra h
+  have hl := sequence_legal (n - 1) (by omega)
+  rw [Nat.sub_add_cancel (by omega : 1 ≤ n)] at hl
+  exact no_small_successor (seq (n - 1)) (seq n) (sequence_pos _)
+    ⟨sequence_pos _, by omega⟩ hl
+
+/-- The missing positive integer 2 prevents surjectivity onto the positive integers. -/
+theorem not_positive_permutation : ¬ (∀ m : ℕ, 0 < m → ∃ n, 1 ≤ n ∧ seq n = m) := by
+  intro h
+  obtain ⟨n, hn, he⟩ := h 2 (by decide)
+  by_cases hfirst : n = 1
+  · subst n
+    norm_num [seq, state] at he
+  · have := sequence_tail_ge_ten n (by omega)
+    omega
+
 #print axioms no_small_successor
+#print axioms sequence_greedy
+#print axioms sequence_pos
+#print axioms sequence_legal
+#print axioms sequence_tail_ge_ten
+#print axioms not_positive_permutation
 
 end D5.S3.Arith.SumInConcatenation
