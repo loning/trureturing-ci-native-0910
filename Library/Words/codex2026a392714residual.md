@@ -338,339 +338,93 @@ DescribeRepositoryValidator.cs:85–98：元素由 GidRef.Create 解析并核对
 D5/S1/Words/Compositions/ResidualPermutationSign；这是同一元数据错误的精确修正，
 没有换问题、改判官或放宽门。
 
-<!-- lean-checkpoint -->
-## 当前已编译源码快照
+## 最终数学证明与逐声明账
 
-```lean
-import Mathlib.Algebra.BigOperators.Group.Finset.Basic
-import Mathlib.GroupTheory.Perm.Sign
-import Mathlib.Tactic
+唯一问题 S(a) 已获得无界 Lean 证明，适用于每个 n 与 Fin n 的每个排列 a；
+不需要 n>0，所以其正维度特化直接回答 brief。数值采用 a(i)+1，恒等排列的
+一基词正是 (1,…,n)。InResidual 原样使用严格左端与弱右端，未加强任何假设。
+正式代码见 [ResidualPermutationSign.lean](../../D5/S1/Words/Compositions/ResidualPermutationSign.lean)。
+此前提交中的源码快照保留发现路径；最终以 D5 源码为唯一实现。
 
-open scoped BigOperators
-open Classical
-namespace Residual
+一基证明如下。令 U(a)={b:每个 Bᵢ≤Aᵢ}，Rᵣ 为在 U(a) 中仍要求
+Aᵢ₋₁<Bᵢ 对全部 i>r 成立的符号和。对 0<r<n，Rᵣ₊₁ 比 Rᵣ 多出的坏子集
+满足 Bᵣ₊₁≤Aᵣ。交换 b 的第 r 与 r+1 位只改变长度 r 的前缀；它仍小于
+Bᵣ₊₁，故保持上界，后面的下界不变。固定交换反号、无不动点、二次还原，
+所以坏子集的符号和为零。r=0 的下界由正性自动成立，r≥n 无下界可删。
+因此 R₀=Rₙ=Σᵦ∈U(a)sign(b)。
 
-def prefixSum {n : ℕ} (p : Equiv.Perm (Fin n)) (k : ℕ) : ℕ :=
-  ∑ i : Fin n with i.val < k, ((p i).val + 1)
+若 a 非恒等，取首个错位 k，令 j>k 为值 k 出现的位置。a 在 k 之前各位固定；
+利用每步最小未用值，U(a) 中的 b 也在 k 之前各位固定。因此 bⱼ₋₁,bⱼ≥k。
+固定交换 b 的第 j−1 与 j 位后，唯一改变的前缀满足
+B′ⱼ₋₁=Bⱼ−bⱼ₋₁≤Aⱼ−k=Aⱼ₋₁。它保持 U(a)，所以整个上界类反号消去。
+若 a=id，同一最小未用值归纳强迫 b=id；其符号为 1。S(a) 得证。
 
-def Upper {n : ℕ} (a b : Equiv.Perm (Fin n)) : Prop :=
-  ∀ k : ℕ, k ≤ n → prefixSum b k ≤ prefixSum a k
+下表的 GID 公共前缀为 `D5/S1/Words/Compositions/ResidualPermutationSign.`。
+直接冻结依赖均为 **[]**，因此没有应填而漏填的既有 GID/statement_id 对；
+导入只来自钉版 Mathlib 与 Init。同批新引理不是 immutable base 上的冻结前置。
 
-def LowerFrom {n : ℕ} (a b : Equiv.Perm (Fin n)) (r : ℕ) : Prop :=
-  ∀ i : Fin n, r ≤ i.val → prefixSum a i.val < prefixSum b (i.val + 1)
+| 公开定理 | proof_shape | escape_witness | admission_basis | statement_id（sha256） |
+| --- | --- | --- | --- | --- |
+| lower_cut_removal | content | upper_swap_of_short 及该定理中的固定坏子集配对构造 | escape-witness | 12e207252609c7fcf0f89ad2c1bbfd3ac45f1210a5a4ca1e51f582096c65fdb5 |
+| upper_sum_vanish | content | upper_fixed_prefix；最小错位给出的固定交换构造 | escape-witness | 48347f2dbd0cdf46034363e2c2b56914c8b3ce26f33e99fa9c6d4c0bd54d5561 |
+| signed_residual_sum | content | lower_cut_removal 与 upper_sum_vanish | escape-witness | 1d6ff519526035f4e08edcd627ccf0bd618dd8776c3e1a11c676a6eac4d73ab4 |
 
-def signInt {n : ℕ} (p : Equiv.Perm (Fin n)) : ℤ := (Equiv.Perm.sign p : ℤ)
+### lower_cut_removal 的 §3.2 四项
 
+1. 声明内的坏子集闭包证明实际调用 upper_swap_of_short；展开后的常量边已读取。
+2. 新内容是 Bᵣ₊₁≤Aᵣ 时的邻位交换保持全部上界及剩余下界。Mathlib 的
+   sum_involution 要求调用者提供此闭包；sign_swap 只提供符号，均不直接给出本命题。
+3. upper_swap_of_short 是单个排列的条件闭包命题，结论为 Upper；既非 rowSum
+   相等的定义展开，也非其改名。整个坏子集配对亦符合 §3.2 允许的显式构造形态。
+4. 该闭包被传入 swap_sum_zero 的成员保持参数，所得 hbad=0 被代入有限和分割
+   等式。删去死项或展开局部 let 后这一步仍承重；没有从无关合取丢弃见证。
 
-@[simp] theorem prefixSum_zero {n} (p : Equiv.Perm (Fin n)) : prefixSum p 0 = 0 := by
-  simp [prefixSum]
+### upper_sum_vanish 的 §3.2 四项
 
-theorem prefixSum_step {n} (p : Equiv.Perm (Fin n)) (i : Fin n) :
-    prefixSum p (i.val + 1) = prefixSum p i.val + (p i).val + 1 := by
-  classical
-  have hset : (Finset.univ.filter fun j : Fin n => j.val < i.val + 1) =
-      insert i (Finset.univ.filter fun j : Fin n => j.val < i.val) := by
-    ext j
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_insert]
-    constructor
-    · intro h
-      by_cases hj : j = i
-      · exact Or.inl hj
-      · right; have : j.val ≠ i.val := fun e => hj (Fin.ext e); omega
-    · rintro (rfl | h) <;> omega
-  simp only [prefixSum, hset]
-  rw [Finset.sum_insert (by simp)]
-  omega
+1. 实际常量边 upper_sum_vanish → upper_fixed_prefix 已读取；其证明通过
+   最小未用值归纳建立公共固定前缀。
+2. 该归纳以及 j−1,j 的具体选择不由通用符号或有限和引理代入得到。
+   它们补齐了通用对合引理所缺的领域闭包前提。
+3. upper_fixed_prefix 断言 a 的固定前缀强迫 b 的同一前缀固定，结论不是符号和为零，
+   与公开定理无定义等价或别名关系。
+4. 它给出 bⱼ₋₁≥k，正用于唯一变化前缀的估计，并被成员闭包证明消费；
+   去掉此估计就无法完成现有对合的保持条件。不是填入未使用的旁支。
 
-theorem prefixSum_mono {n} (p : Equiv.Perm (Fin n)) {k l : ℕ} (h : k ≤ l) :
-    prefixSum p k ≤ prefixSum p l := by
-  classical
-  apply Finset.sum_le_sum_of_subset
-  intro i hi
-  simp only [Finset.mem_filter, Finset.mem_univ, true_and] at *
-  omega
+### signed_residual_sum 的 §3.2 四项
 
-theorem prefixSum_pos {n} (p : Equiv.Perm (Fin n)) (i : Fin n) :
-    0 < prefixSum p (i.val + 1) := by
-  rw [prefixSum_step]
-  omega
+1. 展开后的路径为主定理 → rowSum_eq_upper → lower_cut_removal，及
+   主定理 → upper_sum_vanish；审计读到两个路径。
+2. 两个引理在 immutable base 中均不存在，且各自通过上述新组合闭包得到；
+   已检索的 Mathlib 只有通用对合等接口，不给出这种区间保持。
+3. lower_cut_removal 比较相邻两个放宽集合，upper_sum_vanish 只涉及 U(a)
+   且要求 a 非恒等；两者均非原始 L(a) 恒等式的别名或定义展开。
+4. 前者被迭代用来替换原和，后者直接关闭非恒等分支。把私有辅助和局部绑定
+   展开后两个结论仍位于返回证明中，未被投影丢弃；只靠冻结前置的绑定操作不足。
 
+上述判形和活路径是实施者对源码与实际常量边的语义核对；不冒称 inspector
+自动裁决了新颖性或 §3.2 全部语义，也不冒充独立评审。
 
-theorem prefixSum_swap {n} (p : Equiv.Perm (Fin n)) (u v : Fin n)
-    (huv : v.val = u.val + 1) {k : ℕ} (hk : k ≠ v.val) :
-    prefixSum (p * Equiv.swap u v) k = prefixSum p k := by
-  classical
-  have hm (i : Fin n) : (Equiv.swap u v i).val < k ↔ i.val < k := by
-    by_cases hiu : i = u
-    · subst i; simp only [Equiv.swap_apply_left]; omega
-    · by_cases hiv : i = v
-      · subst i; simp only [Equiv.swap_apply_right]; omega
-      · simp [Equiv.swap_apply_of_ne_of_ne hiu hiv]
-  simpa only [prefixSum, Finset.sum_filter, Equiv.Perm.mul_apply, hm] using
-    (Equiv.sum_comp (Equiv.swap u v) fun i : Fin n =>
-      if i.val < k then (p i).val + 1 else 0)
+### 全部声明的 utility: none 理由
 
-theorem swap_twice {n} (p : Equiv.Perm (Fin n)) (u v : Fin n) :
-    (p * Equiv.swap u v) * Equiv.swap u v = p := by simp [mul_assoc]
+prefixSum、Upper、LowerFrom、signInt、rowSum、InResidual 六个定义给出任意 n
+的数学对象。三条公开定理给出无界符号和恒等式；所有私有声明处理任意排列的
+前缀、换位、固定位置或求和分割，均用于上述证明。没有有界枚举、checker/
+反射算法、待数值前提的 numeric-reduction，也没有固定参数的 certified-instance。
+所以对全部声明四类皆不命中，utility=none；其余计算性用途字段为
+not-applicable(kind=none)。研究探针没有进入 D5 或单独冻结。
 
-theorem swap_ne {n} (p : Equiv.Perm (Fin n)) (u v : Fin n) (h : u ≠ v) :
-    p * Equiv.swap u v ≠ p := by
-  intro he
-  have he' := congrArg (fun q : Equiv.Perm (Fin n) => q u) he
-  simp only [Equiv.Perm.mul_apply, Equiv.swap_apply_left] at he'
-  exact h (p.injective he').symm
+### 路线结算与下一层
 
-theorem signInt_swap {n} (p : Equiv.Perm (Fin n)) (u v : Fin n) (h : u ≠ v) :
-    signInt (p * Equiv.swap u v) = -signInt p := by
-  simp [signInt, Equiv.Perm.sign_mul, Equiv.Perm.sign_swap h]
+v1 子集状态递推只作诊断，没有把最大值插入路线展开成证明，不把“未发展”写成
+已被反例否决。v2 的有限多项式/行列式论证保留为纸面推导，未形式化其系数桥，
+不主张该附带恒等式获 kernel 验证。v3 的逐条下界删除加上界消去已经完整闭合，
+因此 S(a) 没有剩余子命题。本轮没有重试 Φ(n) 上的首个/最后合法交换或值对交换。
+下一层由研究线另立范围，先审查上一轮 Φ(n) 到 L(a) 的桥之忠实性，再决定形式化；
+本轮并未证明该桥，因而未主张解决 A392714 原猜想。
 
-theorem upper_swap_of_short {n} (a b : Equiv.Perm (Fin n)) (u v : Fin n)
-    (huv : v.val = u.val + 1) (hb : Upper a b)
-    (hshort : prefixSum b (v.val + 1) ≤ prefixSum a v.val) :
-    Upper a (b * Equiv.swap u v) := by
-  intro k hk
-  by_cases hkv : k = v.val
-  · subst k
-    have hmono := prefixSum_mono (b * Equiv.swap u v) (Nat.le_succ v.val)
-    rw [prefixSum_swap b u v huv (k := v.val + 1) (by omega)] at hmono
-    exact hmono.trans hshort
-  · rw [prefixSum_swap b u v huv hkv]
-    exact hb k hk
+## 发射诊断的后续精确修复
 
-
-theorem swap_sum_zero {n} (s : Finset (Equiv.Perm (Fin n))) (u v : Fin n)
-    (hne : u ≠ v) (hmem : ∀ b ∈ s, b * Equiv.swap u v ∈ s) :
-    ∑ b ∈ s, signInt b = 0 := by
-  classical
-  apply Finset.sum_involution (fun b _ => b * Equiv.swap u v)
-  · intro b hb; rw [signInt_swap b u v hne]; omega
-  · intro b hb hsign; exact swap_ne b u v hne
-  · exact hmem
-  · intro b hb; exact swap_twice b u v
-
-noncomputable def rowSum {n} (a : Equiv.Perm (Fin n)) (r : ℕ) : ℤ := by
-  classical
-  exact ∑ b : Equiv.Perm (Fin n) with Upper a b ∧ LowerFrom a b r, signInt b
-
-theorem lower_cut_removal {n} (a : Equiv.Perm (Fin n)) (r : ℕ) :
-    rowSum a r = rowSum a (r + 1) := by
-  classical
-  let s := Finset.univ.filter fun b : Equiv.Perm (Fin n) =>
-    Upper a b ∧ LowerFrom a b (r + 1)
-  let test := fun b : Equiv.Perm (Fin n) =>
-    ∀ i : Fin n, i.val = r → prefixSum a r < prefixSum b (r + 1)
-  have hgood : s.filter test = Finset.univ.filter
-      (fun b : Equiv.Perm (Fin n) => Upper a b ∧ LowerFrom a b r) := by
-    apply Finset.ext
-    intro b
-    dsimp only [s]
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and]
-    constructor
-    · rintro ⟨⟨hu, hl⟩, ht⟩
-      refine ⟨hu, fun i hi => ?_⟩
-      by_cases he : i.val = r
-      · simpa [he] using ht i he
-      · exact hl i (by omega)
-    · rintro ⟨hu, hl⟩
-      exact ⟨⟨hu, fun i hi => hl i (by omega)⟩, fun i hi => by
-        simpa [hi] using hl i (by omega)⟩
-  have hbad : ∑ b ∈ s.filter (fun b => ¬test b), signInt b = 0 := by
-    by_cases hr : r < n
-    · by_cases hr0 : r = 0
-      · subst r
-        apply Finset.sum_eq_zero
-        intro b hb
-        have ht := (Finset.mem_filter.mp hb).2
-        exact (ht (by intro i hi; simpa [hi] using prefixSum_pos b i)).elim
-      · let u : Fin n := ⟨r - 1, by omega⟩
-        let v : Fin n := ⟨r, hr⟩
-        have huv : v.val = u.val + 1 := by dsimp [u, v]; omega
-        apply swap_sum_zero _ u v (by intro he; have := congrArg Fin.val he; dsimp [u,v] at this; omega)
-        intro b hb
-        obtain ⟨hb, ht⟩ := Finset.mem_filter.mp hb
-        obtain ⟨hu, hl⟩ := (Finset.mem_filter.mp hb).2
-        have hshort : prefixSum b (r + 1) ≤ prefixSum a r := by
-          by_contra h
-          exact ht (by intro i hi; omega)
-        have hshort' : prefixSum (b * Equiv.swap u v) (r + 1) ≤ prefixSum a r := by
-          rw [prefixSum_swap b u v huv (by dsimp [v]; omega)]
-          exact hshort
-        apply Finset.mem_filter.mpr
-        refine ⟨?_, ?_⟩
-        · apply Finset.mem_filter.mpr
-          refine ⟨Finset.mem_univ _, upper_swap_of_short a b u v huv hu hshort, ?_⟩
-          intro i hi
-          rw [prefixSum_swap b u v huv (by dsimp [v]; omega)]
-          exact hl i hi
-        · intro h
-          have := h v rfl
-          omega
-    · apply Finset.sum_eq_zero
-      intro b hb
-      have ht := (Finset.mem_filter.mp hb).2
-      exact (ht (by intro i hi; have := i.isLt; omega)).elim
-  have he := Finset.sum_filter_add_sum_filter_not s test signInt
-  rw [hgood, hbad, add_zero] at he
-  exact he
-
-theorem rowSum_eq_upper {n} (a : Equiv.Perm (Fin n)) :
-    rowSum a 0 = ∑ b : Equiv.Perm (Fin n) with Upper a b, signInt b := by
-  classical
-  have hr : ∀ r, rowSum a 0 = rowSum a r := by
-    intro r
-    induction r with
-    | zero => rfl
-    | succ r ih => exact ih.trans (lower_cut_removal a r)
-  rw [hr n]
-  simp [rowSum, LowerFrom, show ∀ i : Fin n, ¬n ≤ i.val from fun i => by omega]
-
-
-theorem value_ge_of_fixed {n} (p : Equiv.Perm (Fin n)) {r : ℕ}
-    (hf : ∀ i : Fin n, i.val < r → p i = i) (i : Fin n) (hi : r ≤ i.val) :
-    r ≤ (p i).val := by
-  by_contra h
-  have hp := hf (p i) (by omega)
-  have he : p i = i := p.injective hp
-  rw [he] at h
-  omega
-
-theorem prefixSum_congr {n} (a b : Equiv.Perm (Fin n)) (k : ℕ)
-    (h : ∀ i : Fin n, i.val < k → a i = b i) : prefixSum a k = prefixSum b k := by
-  apply Finset.sum_congr rfl
-  intro i hi
-  rw [h i (Finset.mem_filter.mp hi).2]
-
-theorem upper_fixed_prefix {n} (a b : Equiv.Perm (Fin n)) (hu : Upper a b)
-    {r : ℕ} (ha : ∀ i : Fin n, i.val < r → a i = i) :
-    ∀ i : Fin n, i.val < r → b i = i := by
-  have aux : ∀ k, k ≤ r → ∀ i : Fin n, i.val < k → b i = i := by
-    intro k
-    induction k with
-    | zero => intro hk i hi; omega
-    | succ k ih =>
-      intro hk i hi
-      have hf := ih (by omega)
-      by_cases hik : i.val < k
-      · exact hf i hik
-      · have hik : i.val = k := by omega
-        have hai := ha i (by omega)
-        have hp : prefixSum b i.val = prefixSum a i.val := by
-          apply prefixSum_congr
-          intro j hj
-          rw [hf j (by omega), ha j (by omega)]
-        have hs := hu (i.val + 1) (by omega)
-        rw [prefixSum_step, prefixSum_step, hp, hai] at hs
-        have hg := value_ge_of_fixed b hf i (by omega)
-        exact Fin.ext (by omega)
-  exact aux r le_rfl
-
-theorem upper_identity {n} (b : Equiv.Perm (Fin n)) : Upper 1 b ↔ b = 1 := by
-  constructor
-  · intro hu
-    apply Equiv.ext
-    intro i
-    exact upper_fixed_prefix 1 b hu (r := n) (by simp) i i.isLt
-  · rintro rfl; intro k hk; exact le_rfl
-
-theorem exists_min_move {n} (a : Equiv.Perm (Fin n)) (ha : a ≠ 1) :
-    ∃ k j : Fin n, k.val < j.val ∧ a j = k ∧
-      ∀ i : Fin n, i.val < k.val → a i = i := by
-  let s := Finset.univ.filter fun i : Fin n => a i ≠ i
-  have hs : s.Nonempty := by
-    by_contra h
-    apply ha
-    apply Equiv.ext
-    intro i
-    by_contra hi
-    exact h ⟨i, Finset.mem_filter.mpr ⟨Finset.mem_univ _, by simpa using hi⟩⟩
-  let k := s.min' hs
-  have hk : a k ≠ k := (Finset.mem_filter.mp (Finset.min'_mem s hs)).2
-  have hf : ∀ i : Fin n, i.val < k.val → a i = i := by
-    intro i hi
-    by_contra hai
-    have hki := Finset.min'_le s i (by simp [s, hai])
-    have : k.val ≤ i.val := hki
-    omega
-  let j := a.symm k
-  have hj : a j = k := a.apply_symm_apply k
-  have hkj : k.val < j.val := by
-    by_contra h
-    by_cases he : j = k
-    · rw [he] at hj
-      exact hk hj
-    · have hlt : j.val < k.val := by
-        have : j.val ≠ k.val := fun e => he (Fin.ext e)
-        omega
-      have := hf j hlt
-      have : j = k := this.symm.trans hj
-      exact he this
-  exact ⟨k, j, hkj, hj, hf⟩
-
-theorem upper_sum_vanish {n} (a : Equiv.Perm (Fin n)) (ha : a ≠ 1) :
-    (∑ b : Equiv.Perm (Fin n) with Upper a b, signInt b) = 0 := by
-  obtain ⟨k, v, hkv, hav, hfix⟩ := exists_min_move a ha
-  let u : Fin n := ⟨v.val - 1, by omega⟩
-  have huv : v.val = u.val + 1 := by dsimp [u]; omega
-  apply swap_sum_zero _ u v (by intro he; have := congrArg Fin.val he; dsimp [u] at this; omega)
-  intro b hb
-  have hu := (Finset.mem_filter.mp hb).2
-  apply Finset.mem_filter.mpr
-  refine ⟨Finset.mem_univ _, ?_⟩
-  intro l hl
-  by_cases he : l = v.val
-  · subst l
-    have hfb := upper_fixed_prefix a b hu hfix
-    have hbu := value_ge_of_fixed b hfb u (by dsimp [u]; omega)
-    have hbv := hu (v.val + 1) (by omega)
-    rw [prefixSum_step a v, hav] at hbv
-    have hstep := prefixSum_step (b * Equiv.swap u v) v
-    rw [prefixSum_swap b u v huv (k := v.val + 1) (by omega)] at hstep
-    simp only [Equiv.Perm.mul_apply, Equiv.swap_apply_right] at hstep
-    omega
-  · rw [prefixSum_swap b u v huv he]
-    exact hu l hl
-
-
-/-- The one-based values are `a i + 1`; prefix arguments are lengths. -/
-def InResidual {n : ℕ} (a b : Equiv.Perm (Fin n)) : Prop :=
-  ∀ i : Fin n, prefixSum a i.val < prefixSum b (i.val + 1) ∧
-    prefixSum b (i.val + 1) ≤ prefixSum a (i.val + 1)
-
-theorem inResidual_iff {n} (a b : Equiv.Perm (Fin n)) :
-    InResidual a b ↔ Upper a b ∧ LowerFrom a b 0 := by
-  constructor
-  · intro h
-    refine ⟨?_, fun i _ => (h i).1⟩
-    intro k hk
-    by_cases hk0 : k = 0
-    · simp [hk0]
-    · let i : Fin n := ⟨k - 1, by omega⟩
-      have hi : i.val + 1 = k := by dsimp [i]; omega
-      simpa only [hi] using (h i).2
-  · rintro ⟨hu, hl⟩ i
-    exact ⟨hl i (by omega), hu (i.val + 1) (by omega)⟩
-
-/-- S(a): the signed residual sum is one for the identity and zero otherwise. -/
-theorem signed_residual_sum {n : ℕ} (a : Equiv.Perm (Fin n)) :
-    (∑ b : Equiv.Perm (Fin n) with InResidual a b, signInt b) =
-      if a = 1 then 1 else 0 := by
-  have hrow : (∑ b : Equiv.Perm (Fin n) with InResidual a b, signInt b) =
-      rowSum a 0 := by simp only [rowSum, inResidual_iff]
-  rw [hrow, rowSum_eq_upper]
-  by_cases ha : a = 1
-  · subst a
-    rw [if_pos rfl, Finset.sum_eq_single 1]
-    · simp [signInt]
-    · intro b hb hne
-      exact (hne ((upper_identity b).mp (Finset.mem_filter.mp hb).2)).elim
-    · intro h
-      exact (h (Finset.mem_filter.mpr ⟨Finset.mem_univ _, fun k hk => le_rfl⟩)).elim
-  · rw [if_neg ha]
-    exact upper_sum_vanish a ha
-
-#print axioms signed_residual_sum
-#print axioms lower_cut_removal
-#print axioms upper_sum_vanish
-
-end Residual
-```
+完整 GID 已消除所有 note/reference 错误；第三轮发射 EXIT=2，15.500327292 秒，
+新判词定位 residual-sign-prefixsum：LaTeX 控制词 le 紧接 j 会连成错误宏。
+统一给该文档公式序列的每两个 token 加 FormulaDsl.Sp，避免其它相同宏边界错误；
+Lean 源码不变。此项是公式渲染失败，与前两次 metadata 判词分开登记。
