@@ -104,5 +104,89 @@ private theorem queue_exhausts (p : ℕ) (hp : p.Prime)
     omega
   · exact Set.finite_Iic m
 
-#print axioms queue_exhausts
+
+
+private theorem prime_injective : Function.Injective prime :=
+  Nat.nth_injective Nat.infinite_setOfPred_prime
+
+private theorem omega_card (n : ℕ) : ω n = n.primeFactors.card := by
+  rw [ArithmeticFunction.cardDistinctFactors_apply, ← List.card_toFinset, Nat.toFinset_factors]
+
+private theorem q_two_of_prime {n : ℕ} (hp : (b n).Prime) : q n = 2 := by
+  simp [q, ArithmeticFunction.cardDistinctFactors_apply_prime hp, prime]
+
+private theorem q_appears (n : ℕ) : ∃ i, b i = q n := by
+  by_cases hu : q n ∈ (state n).2
+  · rw [used_eq] at hu
+    rcases Finset.mem_insert.mp hu with h | h
+    · exact ((prime_prime _).ne_one h).elim
+    · obtain ⟨i, _, hi⟩ := Finset.mem_image.mp h
+      exact ⟨i, hi⟩
+  · refine ⟨n + 1, Nat.le_antisymm ?_ ?_⟩
+    · exact step_le (prime_prime _).pos hu (dvd_refl _)
+    · exact Nat.le_of_dvd (step_spec n).1 (step_spec n).2.2
+
+private theorem finite_queues_of_finite_two (h : {n | q n = 2}.Finite) :
+    (Set.range q).Finite := by
+  apply (h.image b).subset
+  rintro p ⟨n, rfl⟩
+  obtain ⟨i, hi⟩ := q_appears n
+  refine ⟨i, q_two_of_prime ?_, hi⟩
+  rw [hi]
+  exact prime_prime _
+
+private theorem finite_counts_of_finite_queues (h : (Set.range q).Finite) :
+    (Set.range (fun n => ω (b n))).Finite := by
+  apply Set.Finite.of_injOn (f := fun r => prime (r - 1)) (t := Set.range q)
+  · rintro r ⟨n, rfl⟩
+    exact ⟨n, rfl⟩
+  · rintro r ⟨n, rfl⟩ s ⟨k, rfl⟩ he
+    change ω (b n) = ω (b k)
+    have he' := prime_injective he
+    change ω (b n) - 1 = ω (b k) - 1 at he'
+    have hn := ArithmeticFunction.cardDistinctFactors_pos.mpr (b_ge_two n)
+    have hk := ArithmeticFunction.cardDistinctFactors_pos.mpr (b_ge_two k)
+    omega
+  · exact h
+
+private theorem infinite_queue_of_finite_range (h : (Set.range q).Finite) :
+    ∃ p, p.Prime ∧ {n | q n = p}.Infinite := by
+  by_contra hn
+  push Not at hn
+  apply Set.infinite_univ (α := ℕ)
+  apply Set.Finite.of_finite_fibers q (by simpa using h)
+  rintro p ⟨n, _, rfl⟩
+  rw [Set.univ_inter]
+  change Set.Finite {k | q k = q n}
+  exact hn (q n) (prime_prime _)
+
+private theorem large_count_multiple (p K : ℕ) (hp : p.Prime) :
+    ∃ m, 0 < m ∧ p ∣ m ∧ K ≤ ω m := by
+  let S := (Finset.range K).image prime
+  have hS : ∀ x ∈ S, x.Prime := by
+    intro x hx
+    obtain ⟨i, _, rfl⟩ := Finset.mem_image.mp hx
+    exact prime_prime _
+  have hprod : 0 < ∏ x ∈ S, x := Finset.prod_pos (fun x hx => (hS x hx).pos)
+  refine ⟨p * ∏ x ∈ S, x, Nat.mul_pos hp.pos hprod, dvd_mul_right _ _, ?_⟩
+  have hsub : S ⊆ (p * ∏ x ∈ S, x).primeFactors := by
+    nth_rw 1 [← Nat.primeFactors_prod hS]
+    exact Nat.primeFactors_mono (dvd_mul_left _ _) (Nat.mul_pos hp.pos hprod).ne'
+  have hcard : S.card = K := by
+    rw [Finset.card_image_of_injective _ prime_injective, Finset.card_range]
+  rw [omega_card, ← hcard]
+  exact Finset.card_le_card hsub
+
+private theorem two_queue_infinite : {n | q n = 2}.Infinite := by
+  intro hfinite
+  have hq := finite_queues_of_finite_two hfinite
+  obtain ⟨K, hK⟩ := (finite_counts_of_finite_queues hq).bddAbove
+  obtain ⟨p, hp, hi⟩ := infinite_queue_of_finite_range hq
+  obtain ⟨m, hm, hd, hw⟩ := large_count_multiple p (K + 1) hp
+  obtain ⟨n, hn⟩ := queue_exhausts p hp hi hm hd
+  have hle := hK (Set.mem_range_self n)
+  rw [hn] at hle
+  omega
+
+#print axioms two_queue_infinite
 end D5.S3.Arith.OmegaGreedyPermutation
