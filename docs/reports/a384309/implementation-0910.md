@@ -98,3 +98,23 @@ No theory volume or atom is being created for this task.
   Lean files, its Blueprint mirror 56; choose a new CounterSequences subbucket
   (currently absent, 0 files). Library/Words recursively has 26 files.
   Report subbucket now contains 1 file (it was absent before creation).
+
+## Lean fragment 1: all digit classes occur infinitely
+
+- Canonical route returns D5/S3/Arith/CounterSequences/LeadingCounter.lean,
+  S3, generality I. Initial route calls rejected absolute manifest paths,
+  JSON nulls, missing required fields, and artifact="". After reading the
+  loader and using repository-relative JSON with artifact="lean" and empty
+  selector/tag, route EXIT=0. No routing rule was changed.
+- leading10 is literally `(Nat.digits 10 n).getLastD 0`; its positive-input
+  bounds come from Mathlib's last-digit and digit-bound theorems.
+- The orbit state contains the current term and nine counters. The proved
+  orbit_count identity identifies each counter with Nat.count over earlier
+  terms. term_recurrence includes the current term.
+- The planned all_digits_infinite argument is now checked by Lean: pigeonhole
+  gives one infinite fiber; emit_nth gives every positive integer in the term
+  range; powers 10^m*(d+1) supply infinitely many positive inputs per digit.
+- Hot-tree `lake env lean D5/S3/Arith/CounterSequences/LeadingCounter.lean`
+  EXIT=0. Initial errors were explicit argument order and negated-equality
+  syntax; corrected against pinned source signatures. No sorry or new axiom.
+  This file check is not the final project build or multiplicity proof.
