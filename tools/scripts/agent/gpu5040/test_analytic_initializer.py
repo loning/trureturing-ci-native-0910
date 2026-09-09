@@ -21,7 +21,7 @@ from tensor_core import (OccupationDP, RealIsometry, analytic_physical,
 from test_trial_history import RUNTIME
 
 
-RECIPE = Path(__file__).resolve().parents[4] / "Evidence/D5/Research/Gpu5040/analytic-d55.recipe.result.json"
+RECIPE = Path(__file__).resolve().parents[4] / "Evidence/D5/S3/Quantum/AnalyticD55Initializer.result.json"
 
 
 class AnalyticTests(unittest.TestCase):
@@ -34,10 +34,16 @@ class AnalyticTests(unittest.TestCase):
 
     def test_content_relocation_and_unused_seed_identity(self):
         spec, provenance = load_initializer(RECIPE)
+        self.assertEqual(3559, len(RECIPE.read_bytes()))
+        self.assertEqual("369cb45c5005ef2154ca844f3ad67726746ccb5067f04faf67d32bcff23a58a2",
+                         provenance["recipe_raw_sha256"])
         with tempfile.TemporaryDirectory() as temporary:
             relocated = Path(temporary) / "relocated.json"
             relocated.write_bytes(RECIPE.read_bytes())
-            self.assertEqual(spec, load_initializer(relocated)[0])
+            relocated_spec, relocated_provenance = load_initializer(relocated)
+            self.assertEqual(spec, relocated_spec)
+            self.assertEqual(provenance["recipe_raw_sha256"], relocated_provenance["recipe_raw_sha256"])
+            self.assertEqual(provenance["recipe_raw_utf8"], relocated_provenance["recipe_raw_utf8"])
             self.assertNotEqual(provenance["recipe_path"], load_initializer(relocated)[1]["recipe_path"])
         config = Config(dimensions=(55,))
         one = descriptor(config, 55, 5040, RUNTIME, spec, "a" * 64)

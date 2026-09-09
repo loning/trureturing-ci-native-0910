@@ -242,7 +242,7 @@ class LifecycleTests(unittest.TestCase):
         config = Config(dimensions=(55,), seed_steps=6, base_seed=0)
         self.before["config"].update(dimensions=[55], seed_steps=6, base_seed=0)
         spec = load_initializer(HERE.parents[3] /
-            "Evidence/D5/Research/Gpu5040/analytic-d55.recipe.result.json")[0]
+            "Evidence/D5/S3/Quantum/AnalyticD55Initializer.result.json")[0]
         desc = descriptor(config, 55, 0, RUNTIME, spec, "a" * 64)
         self.before.update(algorithm=ANALYTIC_ALGORITHM, runtime=RUNTIME,
                            trial={"identity": identity(desc), "descriptor": desc, "terminal": exhausted})

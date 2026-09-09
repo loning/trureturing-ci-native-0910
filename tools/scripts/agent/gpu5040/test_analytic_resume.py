@@ -13,7 +13,7 @@ import unittest
 import torch
 
 HERE = Path(__file__).resolve().parent
-RECIPE = HERE.parents[3] / "Evidence/D5/Research/Gpu5040/analytic-d55.recipe.result.json"
+RECIPE = HERE.parents[3] / "Evidence/D5/S3/Quantum/AnalyticD55Initializer.result.json"
 
 
 def sha(path):

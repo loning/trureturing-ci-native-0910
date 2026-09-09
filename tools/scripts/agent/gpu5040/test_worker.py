@@ -165,11 +165,17 @@ class WorkerTests(unittest.TestCase):
         from search_config import load_initializer
         self.config = Config(dimensions=(55,), seed_steps=2, batch_steps=1)
         spec = load_initializer(Path(__file__).resolve().parents[4] /
-            "Evidence/D5/Research/Gpu5040/analytic-d55.recipe.result.json")[0]
-        args = worker.parser().parse_args(["--initializer", "analytic-d55", "--max-steps", "2"])
+            "Evidence/D5/S3/Quantum/AnalyticD55Initializer.result.json")[0]
+        args = worker.parser().parse_args(["--initializer", "analytic-d55", "--max-steps", "2",
+                                           "--device", "cpu", "--precision", "float64"])
         first = SyntheticWorker(self.state, self.config, None, worker.StopRequest(), args, self.registry)
         self.assertEqual(0, self.run_worker(first))
         self.assertEqual([(55, 0)], first.initializations)
+        self.assertIsNone(args.initializer_recipe)
+        self.assertEqual("cpu", str(first.device))
+        self.assertEqual(str(Path(__file__).resolve().parents[4] /
+                             "Evidence/D5/S3/Quantum/AnalyticD55Initializer.result.json"),
+                         first.campaign.provenance["initializer_input"]["recipe_path"])
         status = json.loads((self.state / "status.json").read_text())
         self.assertEqual("exhausted", status["stop_reason"])
         self.assertEqual(2, status["session"]["completed_steps"])
@@ -183,6 +189,25 @@ class WorkerTests(unittest.TestCase):
         self.assertFalse(status["checkpoint_saved"])
         self.assertEqual(0, status["session"]["completed_steps"])
         self.assertEqual(spec, status["exhaustion"]["descriptor"]["initialization"])
+
+    def test_scientific_source_hash_accounts_for_all_six_members(self):
+        members = ("gpu_worker.py", "tensor_core.py", "search_config.py", "state_store.py",
+                   "search_session.py", "trial_history.py")
+        source = self.root / "scientific-source"
+        source.mkdir()
+        original = worker.source_hash()
+        for name in members:
+            (source / name).write_bytes((worker.ROOT / name).read_bytes())
+        with patch.object(worker, "ROOT", source):
+            self.assertEqual(original, worker.source_hash())
+            for name in members:
+                with self.subTest(member=name):
+                    path = source / name
+                    before = path.read_bytes()
+                    path.write_bytes(before + b"\n")
+                    self.assertNotEqual(original, worker.source_hash())
+                    path.write_bytes(before)
+            self.assertEqual(original, worker.source_hash())
 
     def test_source_mismatch_is_rejected_before_resume(self):
         first = self.create(steps=1)

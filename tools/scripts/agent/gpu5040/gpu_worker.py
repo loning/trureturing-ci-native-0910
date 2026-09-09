@@ -196,7 +196,7 @@ class Worker:
         if args.initializer_recipe or args.initializer == "analytic-d55":
             if args.initializer == "random":
                 raise ValueError("random initializer cannot consume an analytic recipe")
-            recipe = args.initializer_recipe or ROOT.parents[3] / "Evidence/D5/Research/Gpu5040/analytic-d55.recipe.result.json"
+            recipe = args.initializer_recipe or ROOT.parents[3] / "Evidence/D5/S3/Quantum/AnalyticD55Initializer.result.json"
             initialization, input_provenance = load_initializer(recipe)
         elif checkpoint:
             input_provenance = checkpoint.get("provenance", {}).get("initializer_input", {})

@@ -79,7 +79,7 @@ compatibility uses a separate schema version.
 
 `--initializer analytic-d55` selects one deterministic candidate with dimensions
 `[55]`. The complete declarative recipe lives in
-`Evidence/D5/Research/Gpu5040/analytic-d55.recipe.result.json`; an exact relocated
+`Evidence/D5/S3/Quantum/AnalyticD55Initializer.result.json`; an exact relocated
 copy can be supplied with `--initializer-recipe PATH`. Content is validated before
 claim or tensor allocation. Changed content is rejected by this baseline version.
 Raw input bytes and their path/hash are checkpoint provenance; the complete typed

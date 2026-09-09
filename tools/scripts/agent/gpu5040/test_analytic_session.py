@@ -14,7 +14,7 @@ from trial_history import Registry
 from test_trial_history import RUNTIME
 
 
-RECIPE = Path(__file__).resolve().parents[4] / "Evidence/D5/Research/Gpu5040/analytic-d55.recipe.result.json"
+RECIPE = Path(__file__).resolve().parents[4] / "Evidence/D5/S3/Quantum/AnalyticD55Initializer.result.json"
 
 
 class AnalyticSessionTests(unittest.TestCase):
