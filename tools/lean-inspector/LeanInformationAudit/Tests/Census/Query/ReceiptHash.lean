@@ -16,6 +16,6 @@ run_cmd do
   unless (checkReportBinding "fixture-head" actual report).isOk do
     throwError "receiptNativeBindingPositive: matching digest rejected"
   let changed ← CensusReceipt.hashReportBytes (bytes ++ " ")
-  unless (checkReportBinding "fixture-head" changed report).isError do
+  if (checkReportBinding "fixture-head" changed report).isOk then
     throwError "receiptNativeBindingMismatch: changed bytes accepted"
   logInfo "receiptNativeDigestMatches receiptNativeBindingPositive receiptNativeBindingMismatch"
