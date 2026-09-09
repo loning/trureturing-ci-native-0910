@@ -23,7 +23,7 @@ def check_chunks(repository, directory):
         "run_cmd do\n"
         f"  let env <- CensusProjection.elaborateFinalSource (<- IO.FS.readFile {string(str(source))})\n"
         f"    {string(str(source))} `CensusRun.Root {{}}\n"
-        "  liftTermElabM <| CensusProjection.checkFinalEnvironment env\n"
+        "  liftTermElabM <| CensusProjection.checkFinalEnvironment env (some `CensusRun.Root)\n"
         "  withEnv env <| liftTermElabM do\n"
         "    CensusManifest.bindEmittedManifest\n"
         "      { headSha := \"fixture-head\", reportSha256 := \"digest\", theorems := expectedRows }\n"
@@ -34,8 +34,8 @@ def check_chunks(repository, directory):
                  "decodeIds 100 CensusRun.reportKeys.chunk1, decodeIds 100 CensusRun.reportKeys.chunk0, decodeIds 5 CensusRun.reportKeys.chunk2"), False),
              ("wrongChunkArity", original.replace("decodeIds 100 CensusRun.reportKeys.chunk0",
                  "decodeIds 99 CensusRun.reportKeys.chunk0"), False),
-             ("chunkLiteralBinding", re.sub(r"(CensusRun.reportKeys.chunk0 : Nat := )(\d+)",
-                 lambda m: m[1] + str(int(m[2]) + 1), original, count=1), False)]
+             ("chunkLiteralBinding", re.sub(r"(CensusRun.reportKeys.chunk0 : Nat := )(0x[0-9a-f]+)",
+                 lambda m: m[1] + hex(int(m[2], 0) + 1), original, count=1), False)]
     outcomes = []
     try:
         for label, text, accepted in cases:

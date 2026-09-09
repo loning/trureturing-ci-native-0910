@@ -69,6 +69,8 @@ def pack_ids(values):
 
 
 def chunked_keys(declaration, keys):
+    # Hex numeral syntax is still a Nat literal in Lean. It avoids decimal
+    # conversion limits for these 25,600-bit values; no id is a JSON number.
     ordered = sorted(statement_nat(wire) for _, wire in keys)
     chunks = []
     definitions = []
@@ -76,7 +78,7 @@ def chunked_keys(declaration, keys):
         chunk = f"{declaration}.chunk{start // 100}"
         values = ordered[start:start + 100]
         chunks.append(f"decodeIds {len(values)} {chunk}")
-        definitions.append(f"noncomputable def {chunk} : Nat := {pack_ids(values)}\n")
+        definitions.append(f"noncomputable def {chunk} : Nat := 0x{pack_ids(values):x}\n")
     definitions.append(f"noncomputable def {declaration} : List Nat := "
                        + "List.flatten [" + ", ".join(chunks) + "]\n")
     return "".join(definitions)

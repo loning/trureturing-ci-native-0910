@@ -1,4 +1,4 @@
-import LeanInformationAudit.Census.Manifest
+import LeanInformationAudit.Tests.Census.Manifest.Published
 
 open Lean Meta Elab.Command LeanInformationAudit CensusManifest
 
@@ -17,3 +17,5 @@ run_cmd do
       pure false
     catch _ => pure true
     unless rejected do throwError "droppedFromBothSides: length conjunct accepted one missing id"
+
+run_cmd LeanInformationAudit.Tests.Census.Manifest.checkPublishedCertificate "certificateLengthConjunct"

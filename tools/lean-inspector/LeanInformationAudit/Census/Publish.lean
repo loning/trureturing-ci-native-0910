@@ -5,21 +5,63 @@ namespace LeanInformationAudit.CensusProjection
 
 open Lean Meta Elab Command DispositionCensus CensusManifest
 
-/-- The publication environment contains generic code and data types only. -/
-def checkFinalEnvironment (env : Environment) : CoreM Unit := do
-  unless (env.header.imports.map (·.module)).filter (· != `Init) == #[`LeanInformationAudit.Census.Certificate] do
+/-- Check the source boundary and the complete imported closure. A compiled
+source is loaded through its own module; only that exact module is excluded
+from the dependency closure, after its direct imports have been checked. -/
+def checkFinalEnvironment (env : Environment) (compiledRoot : Option Name := none) : CoreM Unit := do
+  let expected := #[compiledRoot.getD `LeanInformationAudit.Census.Certificate]
+  unless (env.header.imports.map (·.module)).filter (· != `Init) == expected do
     throwError "finalEnvironmentImports: final source must import only Census.Certificate"
   for module in env.header.moduleNames do
-    if module.getRoot != `Init && module != `LeanInformationAudit.Census.Certificate then
+    if module.getRoot != `Init && module != `LeanInformationAudit.Census.Certificate &&
+        some module != compiledRoot then
       throwError "finalEnvironmentImports: payload import {module}"
 
-/-- The frontend starts from the source's imports, independently of this IO driver. -/
+private def checkSourceImports (imports : Array Import) : IO Unit := do
+  unless (imports.map (·.module)).filter (· != `Init) == #[`LeanInformationAudit.Census.Certificate] do
+    throw <| IO.userError "finalEnvironmentImports: final source must import only Census.Certificate"
+
+/-- Compile in a separate Init-only process: the driver's Mathlib/Lean environment
+must not coexist with kernel reduction in one heap. Load only the resulting
+constructor trees for structural binding. The source and olean remain reviewable. -/
 def elaborateFinalSource (input : String) (fileName : String) (root : Name)
     (options : Options) : IO Environment := do
-  unsafe enableInitializersExecution
-  let some env ← Elab.runFrontend input options fileName root
-    | throw <| IO.userError "census certificate: final source failed elaboration"
-  return env
+  let input := input
+  let (imports, _, messages) ← Elab.parseImports input fileName
+  if messages.hasErrors then throw <| IO.userError "finalEnvironmentImports: invalid import header"
+  checkSourceImports imports
+  let source : System.FilePath := fileName
+  let directory := source.withExtension "compile"
+  let compiledSource := directory / (System.mkFilePath (root.components.map Name.toString)).withExtension "lean"
+  IO.FS.createDirAll compiledSource.parent.get!
+  IO.FS.writeFile compiledSource input
+  let target := compiledSource.withExtension "olean"
+  let result ← IO.Process.output {
+    cmd := "lake"
+    args := #["env", "lean", "-DmaxHeartbeats=0", "-DmaxRecDepth=4000",
+      "-R", directory.toString, "-o", target.toString, compiledSource.toString]
+    env := #[("LEAN_NUM_THREADS", some "1")] }
+  IO.FS.writeFile (source.withExtension "compiler.log") (result.stdout ++ result.stderr)
+  unless result.exitCode == 0 do
+    throw <| IO.userError s!"census certificate: final source failed elaboration: {result.stdout}{result.stderr}"
+  let (data, _) ← readModuleData target
+  checkSourceImports data.imports
+  -- Serialized output is the standalone compiler's environment, including its
+  -- kernel-checked theorem on the second pass, never the IO driver's environment.
+  IO.FS.writeBinFile (source.withExtension "olean") (← IO.FS.readBinFile target)
+  let previous ← searchPathRef.get
+  try
+    searchPathRef.set (directory :: previous)
+    importModules #[{ module := root }] options
+  finally
+    searchPathRef.set previous
+
+/-- Emit the actual proposition over ids, with a literal requested count.
+Reflexivity is cheaper than decide for equality of the independently bound chunks. -/
+def certificateSource (input : String) (ids reportIds certificate : Name) (requested : Nat) : String :=
+  input ++ "\ntheorem " ++ certificate.toString ++ " :\n  LeanInformationAudit.CensusKeyManifest.Certificate " ++
+    ids.toString ++ " " ++ toString requested ++ " " ++ reportIds.toString ++
+    " := by\n  exact ⟨by decide +kernel, by decide +kernel, rfl⟩\n"
 
 private def phase (destination label : String) : IO Unit :=
   IO.FS.writeFile (destination ++ ".phase") label
@@ -121,11 +163,12 @@ elab "#disposition_census" &"projection" &"root" root:ident &"source" sourcePath
   let (inventory, sources) ← liftTermElabM <| readRows paths selected head.getString reportSha.getString
   phase destination "manifest_compile"
   let options := ((← getOptions).erase `maxRecDepth).setBool `Elab.async false
-  let finalEnv ← elaborateFinalSource (← IO.FS.readFile sourcePath.getString)
-    sourcePath.getString root.getId options
-  liftTermElabM <| checkFinalEnvironment finalEnv
-  let imports := finalEnv.header.imports.map (·.module.toString)
-  let closure := finalEnv.header.moduleNames.map Name.toString
+  let input ← IO.FS.readFile sourcePath.getString
+  let finalEnv ← elaborateFinalSource input sourcePath.getString root.getId options
+  liftTermElabM <| checkFinalEnvironment finalEnv (some root.getId)
+  let (data, _) ← readModuleData ((System.FilePath.mk sourcePath.getString).withExtension "olean")
+  let imports := data.imports.map (·.module.toString)
+  let closure := finalEnv.header.moduleNames.filter (· != root.getId) |>.map Name.toString
   IO.FS.writeFile (destination ++ ".environment.json") ((Json.mkObj [
     ("imports", toJson imports), ("transitive_imports", toJson closure)]).pretty ++ "\n")
   phase destination "manifest_binding"
@@ -138,17 +181,17 @@ elab "#disposition_census" &"projection" &"root" root:ident &"source" sourcePath
     for path in paths do discard <| CensusReceipt.verify path report
   phase destination "certificate_compile_kernel"
   let certificateName := (← getCurrNamespace) ++ certificate.getId.eraseMacroScopes
-  let (proof, proposition) ← withEnv finalEnv <| liftTermElabM <| withOptions (fun _ => options) do
-    let proof ← certificateProof ids selected.theorems.size reportKeysExpr
-    let proposition ← mkAppM ``CensusKeyManifest.Certificate
-      #[ids, toExpr selected.theorems.size, reportKeysExpr]
-    return (proof, proposition)
-  let declaration := Declaration.thmDecl {
-    name := certificateName, levelParams := [], type := proposition, value := proof }
-  let staged ← match finalEnv.addDeclCore (Core.getMaxHeartbeats options).toUSize
-      (maxRecDepth.get options).toUSize declaration none true with
-    | .ok env => pure env
-    | .error error => throwError "{error.toMessageData options}"
+  let checkedPath := (System.FilePath.mk sourcePath.getString).withExtension "checked.lean"
+  let checkedInput := certificateSource input (manifestName.appendAfter "Keys") reportKeysName
+    certificateName selected.theorems.size
+  let staged ← elaborateFinalSource checkedInput checkedPath.toString root.getId options
+  liftTermElabM <| checkFinalEnvironment staged (some root.getId)
+  let proposition ← withEnv staged <| liftTermElabM do
+    let expected ← mkAppM ``CensusKeyManifest.Certificate #[ids, toExpr selected.theorems.size, reportKeysExpr]
+    let actual ← getConstInfo certificateName
+    unless actual matches .thmInfo _ do throwError "census certificate: expected a kernel theorem"
+    unless ← isDefEq actual.type expected do throwError "census certificate: incorrect proposition"
+    return actual.type
   let axioms ← withEnv staged <| collectAxioms certificateName
   unless axioms.all (#[`propext, `Classical.choice, `Quot.sound].contains ·) do
     throwError "census certificate: unapproved axioms {axioms}"
@@ -157,7 +200,8 @@ elab "#disposition_census" &"projection" &"root" root:ident &"source" sourcePath
     ("type", toJson typeText), ("axioms", toJson (axioms.map Name.toString))]
   let fields := summaryFields report inventory sources ++ [("certificate", certificateJson)]
   ofExcept <| checkCounts inventory (count inventory)
-  Lean.writeModule staged ((System.FilePath.mk sourcePath.getString).withExtension "olean")
+  IO.FS.writeBinFile ((System.FilePath.mk sourcePath.getString).withExtension "olean")
+    (← IO.FS.readBinFile (checkedPath.withExtension "olean"))
   if ← (System.FilePath.mk destination).pathExists then
     let same ← IO.Process.output { cmd := "/bin/test", args := #[reportPath.getString, "-ef", destination] }
     unless same.exitCode == 1 do throwError "census projection: output aliases report"

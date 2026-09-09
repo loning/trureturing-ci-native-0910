@@ -20,21 +20,25 @@ def main():
     contract = source_root / "LeanInformationAudit/Tests/Census/Manifest/Contract.lean"
     environment = contract.with_name("Environment.lean")
     cases = [
-        ("drop-ascending", manifest, contract, "certificateAscendingConjunct",
+        ("drop-ascending", publisher, contract, "certificateAscendingConjunct",
          lambda text: text.replace(
-             '  let proof ← mkAppM ``And.intro #[orderProof, tail]',
-             '  let proof := tail')),
-        ("drop-length", manifest, contract.with_name("Length.lean"), "certificateLengthConjunct",
+             '" :\\n  LeanInformationAudit.CensusKeyManifest.Certificate " ++', '" :\\n  " ++').replace(
+             'ids.toString ++ " " ++ toString requested ++ " " ++ reportIds.toString ++',
+             'ids.toString ++ ".length = " ++ toString requested ++ " ∧ " ++ ids.toString ++ " = " ++ reportIds.toString ++').replace(
+             'exact ⟨by decide +kernel, by decide +kernel, rfl⟩', 'exact ⟨by decide +kernel, rfl⟩')),
+        ("drop-length", publisher, contract.with_name("Length.lean"), "certificateLengthConjunct",
          lambda text: text.replace(
-             '  let tail ← mkAppM ``And.intro #[lengthProof, equalityProof]',
-             '  let tail := equalityProof')),
+             '" :\\n  LeanInformationAudit.CensusKeyManifest.Certificate " ++', '" :\\n  LeanInformationAudit.strictlyAscending " ++').replace(
+             'ids.toString ++ " " ++ toString requested ++ " " ++ reportIds.toString ++',
+             'ids.toString ++ " = true ∧ " ++ ids.toString ++ " = " ++ reportIds.toString ++').replace(
+             'exact ⟨by decide +kernel, by decide +kernel, rfl⟩', 'exact ⟨by decide +kernel, rfl⟩')),
         ("skip-chunk-recomputation", manifest, contract.with_name("Chunks.lean"), "chunkLiteralBinding",
          lambda text: text.replace(
              '    unless (.lit (.natVal value) : Expr) == .lit (.natVal packed) do',
              '    unless (.lit (.natVal value) : Expr) == .lit (.natVal value) do')),
         ("payload-import", publisher, environment, "finalEnvironmentImports",
-         lambda text: text.replace('Elab.runFrontend input options',
-             'Elab.runFrontend ("import LeanInformationAudit.DispositionCensus\\n" ++ input) options')),
+         lambda text: text.replace('  let input := input',
+             '  let input := "import LeanInformationAudit.DispositionCensus\\n" ++ input')),
     ]
     outcomes = []
     for label, source, fixture, expected, transform in cases:

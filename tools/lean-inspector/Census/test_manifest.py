@@ -1,6 +1,5 @@
 """Independent authorities for emitted kernel keys and report keys."""
 
-import re
 import unittest
 
 import emission
@@ -31,8 +30,8 @@ class ManifestTests(unittest.TestCase):
         report_keys = [("Fixture", "ns(n0,6:Report)", "sha256:" + format(1, "064x"))]
         source = emission.manifest_source(rows, report_keys, "head", "digest", "Root")
         before, after = source.split("def CensusRun.reportKeys.chunk", 1)
-        self.assertIn("CensusRun.manifestKeys.chunk0 : Nat := 0", before)
-        self.assertIn("0 : Nat := 1", after)
+        self.assertIn("CensusRun.manifestKeys.chunk0 : Nat := 0x0", before)
+        self.assertIn("0 : Nat := 0x1", after)
         self.assertNotIn('"Inventory"', source)
         self.assertNotIn('"Report"', source)
         self.assertNotIn(wire, source)
@@ -60,7 +59,7 @@ class ManifestTests(unittest.TestCase):
             for number, expected in enumerate((100, 100, 5)):
                 body = source.split(f"def CensusRun.{side}.chunk{number} :", 1)[1].split(
                     "noncomputable def", 1)[0]
-                packed = int(body.split(":=", 1)[1].split()[0])
+                packed = int(body.split(":=", 1)[1].split()[0], 0)
                 decoded = []
                 for _ in range(expected):
                     packed, digit = divmod(packed, 2 ** 256)
@@ -80,7 +79,7 @@ class ManifestTests(unittest.TestCase):
         self.assertEqual(emission.pack_ids([1, 0]), 1)
         source = emission.chunked_keys("Ids", [(["anonymous"], "sha256:" + "0" * 64)])
         self.assertIn("decodeIds 1 Ids.chunk0", source)
-        self.assertIn("Ids.chunk0 : Nat := 0", source)
+        self.assertIn("Ids.chunk0 : Nat := 0x0", source)
 
 
 if __name__ == "__main__":

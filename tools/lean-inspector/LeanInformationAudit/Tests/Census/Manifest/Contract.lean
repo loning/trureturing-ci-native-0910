@@ -1,4 +1,4 @@
-import LeanInformationAudit.Census.Manifest
+import LeanInformationAudit.Tests.Census.Manifest.Published
 
 open Lean Meta Elab.Command LeanInformationAudit DispositionCensus CensusManifest
 
@@ -69,3 +69,5 @@ example : strictlyAscending [0, 0] = false := by decide
 example : strictlyAscending [1, 0] = false := by decide
 example : decodeIds 2 (2 ^ 256) = [0, 1] := by decide +kernel
 example : decodeIds 2 1 = [1, 0] := by decide +kernel
+
+run_cmd LeanInformationAudit.Tests.Census.Manifest.checkPublishedCertificate "certificateAscendingConjunct"

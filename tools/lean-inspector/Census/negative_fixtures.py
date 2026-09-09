@@ -58,8 +58,8 @@ def check_manifest_negatives(repository, directory):
     rejected("duplicateIdDifferentName", "IE-C035", transport=duplicated)
     # Both 0 and 1 have valid distinct wire strings. Binding both to Nat 1 fails.
     rejected("sameNatDifferentWireRejected", "component=statement_id_nat",
-             text=re.sub(r"(CensusRun.manifestKeys.chunk0 : Nat := )(\d+)",
-                         lambda m: m[1] + str(int(m[2]) + 1), original, count=1))
+             text=re.sub(r"(CensusRun.manifestKeys.chunk0 : Nat := )(0x[0-9a-f]+)",
+                         lambda m: m[1] + hex(int(m[2], 0) + 1), original, count=1))
     for label, wire in [
             ("uppercaseIdentity", "sha256:" + "A" * 64),
             ("shortIdentity", "sha256:" + "0" * 63),
