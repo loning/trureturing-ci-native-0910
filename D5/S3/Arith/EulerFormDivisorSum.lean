@@ -165,5 +165,30 @@ private theorem joint_products_lt (F : Finset ℕ) (hne : F.Nonempty)
     norm_num at hA hB ⊢
     linarith
 
+private theorem normalized_sums_le (N : ℕ) (hn : N ≠ 0) :
+    (unitarySum N : ℚ) / N + (squarefreeSum N : ℚ) / N ≤
+      (∏ q ∈ N.primeFactors, (1 + 1 / (q : ℚ) ^ N.factorization q)) +
+      (∏ q ∈ N.primeFactors, ((q : ℚ) + 1) / (q : ℚ) ^ N.factorization q) := by
+  have hprod : (∏ q ∈ N.primeFactors, (q : ℚ) ^ N.factorization q) = N := by
+    exact_mod_cast (Nat.prod_primeFactors_pow_factorization hn).symm
+  apply add_le_add
+  · have hu : (unitarySum N : ℚ) ≤
+        ∏ q ∈ N.primeFactors, ((q : ℚ) ^ N.factorization q + 1) := by
+      exact_mod_cast unitarySum_le_product N hn
+    calc
+      _ ≤ (∏ q ∈ N.primeFactors, ((q : ℚ) ^ N.factorization q + 1)) / N :=
+        div_le_div_of_nonneg_right hu (by positivity)
+      _ = _ := by
+        rw [← hprod, ← prod_div_distrib]
+        apply prod_congr rfl
+        intro q hq
+        have hq0 : (q : ℚ) ^ N.factorization q ≠ 0 := by
+          exact pow_ne_zero _ (by exact_mod_cast (Nat.prime_of_mem_primeFactors hq).ne_zero)
+        rw [add_div, div_self hq0]
+  · apply le_of_eq
+    have hs : (squarefreeSum N : ℚ) = ∏ q ∈ N.primeFactors, ((q : ℚ) + 1) := by
+      exact_mod_cast squarefreeSum_eq_product N hn
+    rw [hs, ← hprod, prod_div_distrib]
+
 end
 end D5.S3.Arith.EulerFormDivisorSum
