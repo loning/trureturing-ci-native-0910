@@ -36,17 +36,9 @@ theorem encode_composition (f g : ℕ → ℚ) (hg : g 0 = 0) :
 
 def identity {R : Type*} [Zero R] [One R] (n : ℕ) : R := if n = 1 then 1 else 0
 
-@[simp] theorem encode_identity : encode (identity (R := ℚ)) = X := by
-  apply eCoeff_ext
-  simp [identity]
-
 def iterate {R : Type*} [CommSemiring R] (f : ℕ → R) : ℕ → ℕ → R
   | 0 => identity
   | k + 1 => composition f (iterate f k)
-
-@[simp] theorem iterate_zero_coeff {R : Type*} [CommSemiring R]
-    (f : ℕ → R) (hf : f 0 = 0) (k : ℕ) : iterate f k 0 = 0 := by
-  cases k <;> simp [iterate, identity, composition, hf]
 
 theorem iterate_congr {R : Type*} [CommSemiring R] {f g : ℕ → R} {n : ℕ}
     (h : ∀ i ≤ n, f i = g i) (k : ℕ) : iterate f k n = iterate g k n := by

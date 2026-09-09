@@ -50,15 +50,6 @@ theorem eCoeff_mul (f g : PowerSeries ℚ) (n : ℕ) :
 @[simp] theorem eCoeff_X (n : ℕ) : eCoeff (X : PowerSeries ℚ) n = if n = 1 then 1 else 0 := by
   by_cases h : n = 1 <;> simp [eCoeff, coeff_X, h]
 
-@[simp] theorem eCoeff_add (f g : PowerSeries ℚ) (n : ℕ) :
-    eCoeff (f + g) n = eCoeff f n + eCoeff g n := by simp [eCoeff, mul_add]
-
-@[simp] theorem eCoeff_sub (f g : PowerSeries ℚ) (n : ℕ) :
-    eCoeff (f - g) n = eCoeff f n - eCoeff g n := by simp [eCoeff, mul_sub]
-
-@[simp] theorem eCoeff_smul (c : ℚ) (f : PowerSeries ℚ) (n : ℕ) :
-    eCoeff (c • f) n = c * eCoeff f n := by simp [eCoeff]; ring
-
 /-- The integral chain-rule recurrence; the inner sequence has implicit constant term zero. -/
 def composition {R : Type*} [CommSemiring R] (f g : ℕ → R) : ℕ → R
   | 0 => f 0
@@ -120,11 +111,6 @@ def Natural (f : PowerSeries ℚ) : Prop := ∀ n, ∃ a : ℕ, eCoeff f n = a
 /-- Integral EGF coefficients, allowing subtraction and halving of even coefficients. -/
 def Integral (f : PowerSeries ℚ) : Prop := ∀ n, ∃ a : ℤ, eCoeff f n = a
 
-theorem Natural.integral {f : PowerSeries ℚ} (hf : Natural f) : Integral f := by
-  intro n
-  obtain ⟨a, ha⟩ := hf n
-  exact ⟨a, by simpa using ha⟩
-
 theorem natural_subst {f g : PowerSeries ℚ} (hf : Natural f) (hg : Natural g)
     (hz : constantCoeff g = 0) : Natural (f.subst g) := by
   classical
@@ -146,20 +132,5 @@ theorem integral_subst {f g : PowerSeries ℚ} (hf : Integral f) (hg : Integral 
   rw [eCoeff_composition f g hz]
   rw [funext ha, funext hb]
   exact (composition_map (Int.castRingHom ℚ) a b n).symm
-
-theorem natural_exp : Natural (exp ℚ) := fun n => ⟨1, by simp⟩
-
-theorem natural_X : Natural (X : PowerSeries ℚ) := by
-  intro n
-  refine ⟨if n = 1 then 1 else 0, ?_⟩
-  split_ifs <;> simp_all
-
-theorem natural_X_mul {f : PowerSeries ℚ} (hf : Natural f) : Natural (X * f) := by
-  intro n
-  cases n with
-  | zero => exact ⟨0, by simp⟩
-  | succ n =>
-    obtain ⟨a, ha⟩ := hf n
-    exact ⟨(n + 1) * a, by simp [ha]⟩
 
 end D5.S1.Recurrence.Residue.IntegralEGFComposition

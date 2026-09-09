@@ -113,7 +113,8 @@ private theorem composition_assoc (f g h : ℕ → ℤ) (hg : g 0 = 0) (hh : h 0
   rw [intSeries_composition _ _ hh, intSeries_composition _ _ hg,
     intSeries_composition _ _ (by simpa [composition] using hg),
     intSeries_composition _ _ hh]
-  exact subst_comp_subst_apply (.of_constantCoeff_zero (show constantCoeff (intSeries g) = 0 by simp [intSeries, hg]))
+  exact subst_comp_subst_apply
+    (.of_constantCoeff_zero (show constantCoeff (intSeries g) = 0 by simp [intSeries, hg]))
     (.of_constantCoeff_zero (show constantCoeff (intSeries h) = 0 by simp [intSeries, hh])) _
 
 private theorem composition_identity_right (f : ℕ → ℤ) : composition f identity = f := by
@@ -131,7 +132,8 @@ private theorem composition_identity_left (f : ℕ → ℤ) (hf : f 0 = 0) :
   have he : intSeries identity = X := by
     apply eCoeff_ext
     simp [intSeries, identity]
-  rw [he, subst_X (.of_constantCoeff_zero (show constantCoeff (intSeries f) = 0 by simp [intSeries, hf]))]
+  rw [he, subst_X (.of_constantCoeff_zero
+    (show constantCoeff (intSeries f) = 0 by simp [intSeries, hf]))]
 
 private theorem composition_linear_outer (f h g : ℕ → ℤ) (c : ℤ) (n : ℕ) :
     composition (fun j => f j + c * h j) g n =
