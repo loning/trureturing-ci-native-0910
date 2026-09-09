@@ -3,6 +3,9 @@
 产地：`lean4` skill；Codex implementation worker 单点实施、自查，独立评审席为 0。
 用户 brief 的分诊、枚举与对账是用户/分诊席读数，不冒作本席实测；外层 runner 的评审另计。
 
+当前结果：**成**。原签名已证明并冻结，`make lean` EXIT=0，PR #6728 已开出。
+以下按批次保留工作收据；早期“尚未”陈述只描述该批次当时的状态。
+
 ## 预登记
 
 第一档，目标严格为 brief 的 `mersenne_gap_exponent_bounds`，保留自然数加法等式
@@ -47,8 +50,9 @@ blocked = 实际 Lean 尝试的 goal/错误、路线与最锐剩余子命题。
   亦不提供平方差估计。未发现可直接消费的 D5 前置；不是按模块题名排除。
 - Mathlib 检索 Mersenne/gap/A390871，未见目标。LucasLehmer 的一般 Mersenne 公开接口
   包括严格单调、正性、奇性和模 4/8 余数；目标不等式未提供。
-  直接复用 Nat.pow_log_le_self、Nat.lt_pow_succ_log_self、Nat.le_log_of_pow_le、
-  Nat.log_lt_iff_lt_pow、幂单调性；源码签名已读，不重证对数夹逼。
+  已读 Nat.pow_log_le_self、Nat.lt_pow_succ_log_self、Nat.le_log_of_pow_le、
+  Nat.log_lt_iff_lt_pow、幂单调性的源码签名；最终直接复用前两条和幂单调性，
+  不重证对数夹逼。
 - curl 实际成功打开 OEIS A390871/internal，完整字段读过；revision 48 (2025-12-11)。
   指数界仍明确写 I conjecture；Israel 2025-12-01 两评注分别证明模 4 观察和因子构造，
   不是指数界。作者 Ctibor O. Zizka，2025-11-22。
@@ -189,3 +193,14 @@ LEAN_CACHE {"status":"present","worktree":"/Users/chronoai/trureturing-a390871",
 - 按用户指定实施阶段停止判据，“成”条件已满足：原目标 make lean EXIT=0、
   无 sorry/私 axiom、PR 已开出。此表述不是主干已合并或远端 CI 已绿的声明。
 - 未启用 auto-merge；外层实施/评审流程继续。完整工具日志与最终观察快照随 runner result.json 发布。
+
+## 冻结后本地准入收据
+
+- make gate BASE=3759149d0ea0884cb8a57fb950e3caddab007a38 GATE_ARGS=--skip-engineering
+  EXIT=0，102.092 秒；检查源码/冻结状态所在 HEAD 为 de53320e592f9ff96ea5edf60ac866bbb07e87fa。
+  admission、Scribe verify、filemap-conform 通过；新增 Blueprint 的 SL-022
+  protected-surface change 是已通过内容检查的提示，不是失败。
+- 此次本地门显式跳过 engineering-dotnet/test/selftest，不主张已在本地执行工程测试。
+  远端 admission workflow 34412127213 的工程检查和 canonical Lean report 尚在运行，
+  观察时无已报告失败；本节报告提交后的最新远端状态以 runner 最终快照为准。
+- 本节只补工作收据与更正检索接口的使用措辞，不改 Lean、Blueprint 或冻结身份。
