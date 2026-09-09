@@ -50,7 +50,7 @@ All have source_id `quantum-rh` and initial directory `residual-open`.
 | A1 | `66fd622e5d54c25826af9d416db18df1d8eecf9c71288d80ff0460237e3e95d2` | residual-open | absorbed-closed; two edges |
 | A2 | `088d882f6a10249e981da5d77bc3bb5e53e75a5ee02313bdd7c879cb21e22413` | residual-open | absorbed-closed; one edge |
 | A3 | `5f5912050d91b5f8998e6799d12c40e766fa4d65798ff890b506a56c3bc0ed3c` | residual-open | absorbed-closed; one edge |
-| B1 | `c352d304105e02cbbcb0607e31a1e217adb85d4b344ba0d75c23ba4420dbf0e1` | residual-open | dossier pending; cover prohibited |
+| B1 | `c352d304105e02cbbcb0607e31a1e217adb85d4b344ba0d75c23ba4420dbf0e1` | residual-open | residual-open; dossier only; needs a Lean bridge |
 | B2 | `7b2657006891568aa395dfd9fa14bde9d9d23d2ade0c449b00f7cdf5c616baec` | residual-open | dossier pending; cover prohibited |
 
 ## A1: G2 discriminant
@@ -231,6 +231,100 @@ The writer's declaration pin is
 `sha256:8ded602bc1d7c17f7e80f170c674f3785b55e2f3b00a5836c0e032d8ec7c5a8e`.
 It reused the same cached Lean report and changed zero blueprints.
 `git diff --check` returned 0; the only ledger delta at this checkpoint is A3.
+
+## B1: U1 positive stitching, dossier only
+
+Atom: `c352d304105e02cbbcb0607e31a1e217adb85d4b344ba0d75c23ba4420dbf0e1`.
+`make show-atom` returned 0 with the complete raw/normalized body and empty
+coverage. Its sole box, U13, says
+`G_(N+1) >= 0 iff delta_N := d - b^* G_N^(-1) b >= 0`.
+The directly read source context, `QUANTUM-RH.md:29550-29665`, fixes
+`G_N > 0` and `G_(N+1) = [G_N,b; b^*,d]`. Here `*` on vectors/matrices means
+conjugate transpose, and matrix nonnegativity means Hermitian positive
+semidefiniteness. The scalar d is real as a self-pairing. No new d>=0 premise is
+needed for the equivalence.
+
+Frozen candidate GID:
+`D5/S3/Weil/ZetaLinear/ExactStickyReduction.exact_sticky_reduction`.
+The actually read state file is
+`Golden/Frozen/state/D5/S3/Weil/ZetaLinear/ExactStickyReduction.lean.json`, pin
+`sha256:311ed2863e85f005429c5613aacc27d7980b6ceba46355745055ba29b96d7984`.
+The full frozen module was read with `git show origin/dev:`, including the
+definitions and the candidate signature through `:= by`. It quantifies over
+two real inner-product spaces HP,HQ and four real-linear maps APP,AQP,AQQ,AQQInv.
+Its exact hypotheses are:
+
+```text
+hQQNonneg : forall q, 0 <= inner Real (AQQ q) q
+hQQSymm   : forall x y, inner Real (AQQ x) y = inner Real x (AQQ y)
+hQQInv    : AQQ.comp AQQInv = LinearMap.id
+```
+
+Its conclusion is a conjunction. The first member is universal nonnegativity
+of `blockEnergy` iff universal nonnegativity of `schurEnergy`; the second is
+equality of `negativeIndex`. Neither member literally names a complex matrix
+or the scalar delta_N.
+
+The required transport, in order:
+
+1. Retain every source complex vector and every finite N. Set HP to Complex and
+   HQ to `EuclideanSpace Complex (Fin N)`, both regarded as real vector spaces
+   by scalar restriction. HP is one complex dimension, hence two real
+   dimensions. This does not mean replacing complex coordinates by real ones.
+   The Euclidean wrapper matters: the default norm on a bare function space is
+   not the required Euclidean norm.
+2. On HQ use `inner_R(u,v) = Re(sum_i conj(u_i)*v_i)`; on HP use
+   `inner_R(z,w) = Re(conj(z)*w)`. These are restrictions of the complex
+   Euclidean inner products. Squared norms are `sum_i |u_i|^2` and `|z|^2`.
+3. Choose `APP(z)=d*z`, `AQP(z)=b*z`, `AQQ(x)=G_N*x`, and
+   `AQQInv(x)=G_N^(-1)*x`. Matrix multiplication supplies complex-linear maps;
+   restrict their scalars to obtain the real-linear maps required by the
+   signature, without changing any underlying function.
+4. Derive `hQQNonneg` from `G_N>0` (at zero the energy is zero), `hQQSymm` from
+   Hermitian symmetry, and `hQQInv` from the finite-dimensional inverse
+   identity `G_N*G_N^(-1)=I`. Strict positive definiteness ensures invertibility.
+   These are consequences of the source setting, not extra assumptions.
+5. Swap source coordinates `(x,z)` to theorem coordinates `(z,x)`. This is a
+   bijection on the full carrier. Expansion of the frozen definition gives
+   `blockEnergy(z,x) = d*|z|^2 + 2*Re(conj(z)*(b^* x)) + x^* G_N x`.
+   This is the real value of `(x,z)^* G_(N+1) (x,z)`. Therefore universal
+   nonnegativity of this energy is exactly the left side of U13.
+6. Put `r=G_N^(-1)*(b*z)`. The frozen reduced energy is
+   `d*|z|^2 - inner_R(G_N*r,r)`. Since `G_N*r=b*z`,
+   `(G_N*r)^* r = (b*z)^* G_N^(-1) (b*z)
+   = |z|^2 * (b^* G_N^(-1) b)`. The inverse of a Hermitian invertible matrix is
+   Hermitian, so `beta=b^* G_N^(-1) b` is real. Taking real parts identifies
+   `schurEnergy(z) = (d-beta)*|z|^2 = delta_N*|z|^2`.
+7. Use only `(exact_sticky_reduction ...).1`. It gives both directions of the
+   equivalence between nonnegativity for every `(z,x)` and for every z after
+   the identifications above.
+8. Translate `forall z:Complex, 0 <= delta_N*|z|^2` to `0 <= delta_N`.
+   Necessity uses z=1. Sufficiency uses the nonnegativity of every norm square.
+   Reverse all identifications to recover both directions of U13, including
+   the zero-delta boundary.
+9. Do not use the second, `negativeIndex`, conjunct. Its definition measures
+   dimensions of real negative subspaces. It cannot simply be read as the
+   number of negative complex eigenvalues; realification changes dimensions.
+
+Clause classification: U13 is **equivalent after these transports**, not
+verbatim. Both iff directions and both non-strict inequalities are retained.
+All complex b,x,z, all real d, and the source finite positive-definite matrices
+remain in the quantifier domain. No real-coordinate restriction, d>=0 premise,
+or singular-matrix extension is inserted. The theorem's more general abstract
+spaces do not themselves certify the finite complex-matrix interpretation.
+
+Recommendation: **needs a Lean bridge**. The missing item is a typed, elaborated
+identification of complex Hermitian matrix positivity with the real energies,
+including the block swap, inverse premises and scalar reduction. The written
+transport gives no mathematical counterexample; it also supplies no checked
+bridge. Proposed reuse is `proof_shape: bind-only`, `escape_witness: null`,
+with the candidate GID and module pin above as the direct frozen dependency;
+`admission_basis: not-applicable(dossier only)`.
+
+No coverage operation was executed for this atom. Its migration is
+`residual-open -> residual-open`, with `coverage_gids: []`. No U14 realization,
+singular/pseudoinverse variant, complex inertia count, or global arithmetic/RH
+criterion is covered by this dossier.
 
 ## Nonclaims
 
