@@ -21,7 +21,7 @@ triage: anchor
 
 数值 `yes` 表示几十行代码可检验有意义的小参数，不能据有限实验证明全称；每段区分已运行的 DATA 对照与拟议验法。bind 是对钉版声明的只读检索判断，`none` 表示未找到可点名的一步声明，不承诺全库不存在；通用工具不等于目标已被证明。所有签名均为未编译伪签名。dispatch 按逃逸明确、阳性对照、文献 open 排序，同族共享依赖只派一席；建议本身不是逃逸已经成立。
 
-已分诊 **110/249** 条：dispatch 7，note-only 76，drop 27；文献 open 44，published 16，unknown 50。批次进行中，未覆盖条目尚不构成结论。
+已分诊 **125/249** 条：dispatch 8，note-only 88，drop 29；文献 open 55，published 18，unknown 52。批次进行中，未覆盖条目尚不构成结论。
 
 ## Verified locator
 
@@ -42,6 +42,7 @@ triage: anchor
 | [A390871](https://oeis.org/A390871) | 若k>8不是2的幂且k²−r²=2^m−1、r<k、m≤k，则floor(log₂k)+3≤m≤2floor(log₂k)+1。 | 1 | open | low | yes | dispatch |
 | [A384309](https://oeis.org/A384309) | 证明首位数字计数递推序列中每个正整数k恰出现9次，唯1出现10次。 | 1 | open | low | yes | dispatch |
 | [A390148](https://oeis.org/A390148) | 每个满足球面Descartes方程的本原正整数半径四元组，3-adic阶的多重集均为{0,e,e,e}，某e>0。 | 1 | open | med | yes | dispatch |
+| [A374911](https://oeis.org/A374911) | 由a(0)=1、a(n)=a(2^n mod n)+a(3^n mod n)定义的a满足a(n)=4当且仅当n=3或9。 | 1 | open | med | yes | dispatch |
 | [A386580](https://oeis.org/A386580) | 正规多重集有游程长度互异的排列，当且仅当各重数可取两两不交的严格分拆。 | 1 | unknown | med | yes | note-only |
 | [A386575](https://oeis.org/A386575) | 质因子多重集有互异游程长度的排列，当且仅当相应可分离不交严格分拆族数为正。 | 1 | unknown | med | yes | note-only |
 | [A381717](https://oeis.org/A381717) | 不能分成块和互异常值块的分拆，恰无游程和互异的排列。 | 1 | unknown | med | yes | note-only |
@@ -109,6 +110,18 @@ triage: anchor
 | [A389860](https://oeis.org/A389860) | 证明不存在使φ(x)=k恰有一个正整数解的k，即本序列a(1)=−1。 | 3 | open | low | yes | note-only |
 | [A387991](https://oeis.org/A387991) | 证明每个整数n≥3070均为四个i·p_i之和（正指标，可重复）。 | 3 | open | low | yes | note-only |
 | [A387790](https://oeis.org/A387790) | 证明每个n≥5340均可写为S(i)+S(j)+2S(k)，S(t)为前t素数和，i,j,k>0。 | 3 | open | low | yes | note-only |
+| [A384275](https://oeis.org/A384275) | 以“与前项及另一个早项共因子”定义的序列，等于“与前项共因子且不取前项一半”定义的序列。 | 1 | open | med | yes | note-only |
+| [A381949](https://oeis.org/A381949) | 对每个n>2，满足V(k^n)=n且k>1非完全幂的最小k均被5整除。 | 3 | open | med | yes | note-only |
+| [A381420](https://oeis.org/A381420) | 该相邻共因子且二进制1位数不同的贪心序列是正整数排列。 | 1 | open | low | yes | note-only |
+| [A381658](https://oeis.org/A381658) | 按示例的“每种值最多一个三项等差组”解释，值1出现的位置恰为A092482。 | out | unknown | med | yes | note-only |
+| [A381464](https://oeis.org/A381464) | 按页内最小未用自由赋值算法生成时，无前向赋值冲突且每次自由步a(k)-k≤2。 | 1 | open | low | yes | note-only |
+| [A380494](https://oeis.org/A380494) | 每步取前项数位和加1的最小未用倍数所成序列覆盖所有正整数。 | 1 | open | low | yes | note-only |
+| [A375567](https://oeis.org/A375567) | 除初值1及十进制首位1末位0的恒定情形外，指数comma过程总在有限步停止。 | 3 | open | low | yes | note-only |
+| [A379525](https://oeis.org/A379525) | 按首次出现取数位平方和、重复第k次取k倍的递推覆盖每个正整数。 | 1 | open | low | yes | note-only |
+| [A377992](https://oeis.org/A377992) | 每个n≥2，凡k的算术导数等于第n个primorial的算术导数，则k无立方素因子。 | 3 | open | low | yes | note-only |
+| [A376084](https://oeis.org/A376084) | 12位cryptarithmically unique primes总数恰为24。 | 2 | unknown | low | yes | note-only |
+| [A375281](https://oeis.org/A375281) | 相邻项不同ω且相邻乘积rad为primorial的贪心序列是正整数排列。 | 1 | open | low | yes | note-only |
+| [A374916](https://oeis.org/A374916) | 序列值域恰为{1}及被2、3、5中恰好一个整除的正整数。 | 1 | open | low | yes | note-only |
 | [A333561](https://oeis.org/A333561) | 令 a(0)=1、a(n)=Σ[j=0..2n] C(n+j−1,j)2^j，目标为所有 p≥5 素数及 n,k≥1 有 a(np^k)≡a(np^(k−1)) mod p^(3k)。 | 3 | open | med | yes | note-only |
 | [A333562](https://oeis.org/A333562) | 令 a(0)=1、a(n)=Σ[j=0..3n] C(n+j−1,j)2^j，目标为所有 p≥5 素数及 n,k≥1 有 a(np^k)≡a(np^(k−1)) mod p^(3k)。 | 3 | open | med | yes | note-only |
 | [A330607](https://oeis.org/A330607) | T(n,1)=#{x∈F₅ⁿ:Σxᵢ²=1} 等于 A071304(n)/A071304(n−1)，n≥2。 | 1 | unknown | med | yes | note-only |
@@ -139,6 +152,8 @@ triage: anchor
 | [A085104](https://oeis.org/A085104) | 选定断言每个Sophie Germain素数都不是Brazilian素数的真假；Brazilian素数为底b≥2、长度≥3的repunit素数。 | out | published | high | yes | drop |
 | [A398329](https://oeis.org/A398329) | 判定排除(1,0),(0,1)的互异二维向量分拆数a(n)是否渐近于A219554(n)/4。 | out | open | low | yes | drop |
 | [A395513](https://oeis.org/A395513) | 核查按A025487第n种素因子指数型定义的全局最大密度首次位置，尤其所报a(10)=36。 | out | unknown | low | yes | drop |
+| [A378838](https://oeis.org/A378838) | n≥2且n≡0或2 mod3时，n位非负整数数位平均等于数根的数量为1。 | out | published | low | yes | drop |
+| [A373390](https://oeis.org/A373390) | A373390是正整数排列。 | out | published | med | yes | drop |
 | [A333093](https://oeis.org/A333093) | 令 a(n)=Σ[j=0..n] n·C(n+2j,j)/(n+2j)（n≥1），目标为 p≥5 素数及 n,k≥1 时 a(np^k)≡a(np^(k−1)) mod p^(3k)。 | out | published | med | yes | drop |
 | [A308217](https://oeis.org/A308217) | f(n)=2n(n+1)+1模f(n+1)的最小正逆元为偶n时1+n/2，奇n时n²+7(n+1)/2。 | out | published | low | yes | drop |
 | [A324969](https://oeis.org/A324969) | 具有n个顶点且非叶terminal subtrees互异的rooted identity trees数量为n=1时1、n≥2时F(n−1)。 | out | published | med | yes | drop |
@@ -161,6 +176,8 @@ triage: anchor
 **A384309** — precise；证明首位数字计数递推序列中每个正整数k恰出现9次，唯1出现10次。 文献/裁决：主文2025年仅给猜想；A000030给首位定义，A248034是末位计数不同过程，没有目标证明。全称出现次数有九计数器的短组合逃逸。末k位项指标公式作为实验旁证，不混入本次目标；无限性只作为证明工具，所派结论为每个整数的精确有限重数。 bind low，疑似声明：Nat.digits、Nat.digits_of_lt（Data/Nat/Digits/Defs.lean:78、122）已读；计数器全遍历/恰九次定理none。注意Nat.digits小端与0=[]，正整数首位取最后一位。；钉版源码只读检索，非真实 bind 探针，未编译。。数值 yes：已运行：自行整数除10取首位、九计数器生成300000项，全DATA吻合；九计数器最低19999，完整层k=1..19998重数全为9+[k=1]；末1/2/3/4位项位置233/2393/23993/239993吻合。未运行：全称计数器无界证明及末位指标公式证明。 派席：数学：a1=1，c_d(t)=#{1≤j≤t:leading10(a_j)=d}，a_{t+1}=c_{leading10(a_t)}(t)；目标各k>0的出现位置集合有限，基数9+1_{k=1}。未编译Lean形：theorem leadingCounter_multiplicity (k : ℕ) (hk : 0<k) : Set.Finite {n | 1≤n ∧ leadingCounter n=k} ∧ Set.ncard {n | 1≤n ∧ leadingCounter n=k}=9+(if k=1 then 1 else 0)。拟议逃逸：九计数器每步某个加1，至少一条无界；该条输出遍历所有足够大整数，每首位有无限多此类值，迫九条均无界；每条依次输出1,2,...各一次，加初始1。停止：更新顺序/DATA不符、全访问桥无法成立或既有定理直接覆盖；不能把无界性假设化。完整xref与阳性对照见refs/method、preprobe01.md。 直接 A 号：A000030, A248034。
 
 **A390148** — precise；每个满足球面Descartes方程的本原正整数半径四元组，3-adic阶的多重集均为{0,e,e,e}，某e>0。 文献/裁决：主评论为2025年猜想；已读全部一跳，四个列序列和unique-values仅转述数据，A390583是系数2的圆版本，不能替代系数3的球加平面方程。只派3-adic子目标，p≡2mod3、重复数公式和任意长链均不并入。只有bfile外链，无文献证明被声称读过。 bind med，疑似声明：padicValNat.mul、padicValNat.div_of_dvd、padicValNat.pow（NumberTheory/Padics/PadicVal/Basic.lean:380、383、399）已读；未见该四元组局部分类定理。；钉版源码只读检索，非真实 bind 探针，未编译。。数值 yes：已运行：自行由1/r4的二次方程检查两根，r1≤80、r2≤3r1、r3≤4r1，得24个本原有序四元组，清分母检查及全DATA吻合，3阶目标无反例；阳性(1,3,3,3)、(3,3,7,21)、(3,4,12,12)。未运行：r1>80、其他素数及重复半径计数。 派席：数学：r:Fin4→ℕ正、gcd_i r_i=1、(Σ(1/r_i:ℚ))²=3Σ(1/r_i:ℚ)²，结论∃e>0，恰3个i有padicValNat 3(r_i)=e，余下一项阶0。未编译Lean形：theorem primitive_sphere_radii_v3 (r : Fin 4 → ℕ) (hpos : ∀ i, 0<r i) (hprim : gcd4 r=1) (hdesc : sphereDescartes r) : ∃ e : ℕ, 0<e ∧ (Finset.univ.filter (fun i => padicValNat 3 (r i)=e)).card=3 ∧ ∀ i, padicValNat 3 (r i)=0 ∨ padicValNat 3 (r i)=e。拟议逃逸：L=lcm半径，b_i=L/r_i且gcd b=1；由(Σb)²=3Σb²先知3|Σb，再得3|Σb²，故四项中恰三项是模3单位；转回半径最大3阶恰三次，本原性迫第四阶0。停止：本原清分母桥失败或发现直接既有证明，转note，不假设局部结论。全部xref及阳性对照见refs/method；预登记preprobe01.md。 直接 A 号：A001221, A079978, A289917, A388858, A389940, A390322, A390464, A390465, A390583。
+
+**A374911** — precise；由a(0)=1、a(n)=a(2^n mod n)+a(3^n mod n)定义的a满足a(n)=4当且仅当n=3或9。 文献/裁决：完整主条目将此明确提问，三个直接xref未给此分类证明；未将更强满射猜想拆成假设。主席复核路线：最小素因子排除n>1且2^n≡1 mod n；值3只能由0余数与1余数组成，迫n为正2幂。值4迫n=3^k、2^n mod n=2^j；阶2·3^(k−1)或LTE迫j为3^(k−1)的正倍数，k≥3与2^j<3^k矛盾。k=1,2直接算得3、9。公开文献未发现此全分类证明。 bind med，疑似声明：Mathlib/NumberTheory/Multiplicity.lean:390 padicValNat.pow_sub_pow，:377 padicValNat.pow_two_sub_one_ge；Data/Nat/GCD/Basic.lean:194 Nat.coprime_pow_left_iff。已读具名声明，仅源文检索，非真实bind探针。。数值 yes：已运行：自写pow模递推n0..200000，全部89项DATA吻合，值1仅0、值2仅1、值3恰正2幂，值4恰3、9；阳性a3=a9=4，a27=8。未运行：无限分类证明与Lean编译。 派席：数学：递推是按n严格下降的原始定义；目标∀n∈ℕ,a(n)=4↔n=3∨n=9。未编译Lean形：theorem a374911_eq_four (n : ℕ) : seq n = 4 ↔ n = 3 ∨ n = 9。seq须从递推定义，不以结论定义。逃逸：强归纳得a(n)=1↔n=0，a(n)=2↔n=1；排除n>1有2^n≡1 mod n（用n最小素因子和乘法阶），故a(n)=3↔n为正2幂。值4的2+2分支不可能；1+3迫n=3^k且2^n mod n=2^j<n。LTE应用4^((3^k−j)/2)−1给3^(k−1)|j；k≥3时2^(3^(k−1))≥3^k排除，k1/2直接核验。合族包括值2/3辅助分类，仅派此有限小值分类，不派满射。停止：递推良基性、余数1排除或LTE边界任一不闭合立即退note；不得假设主猜想。全xref：A000079,A015910,A066601。已执行阳性见numeric02-results.json，n≤200000及完整DATA，a3=a9=4。 直接 A 号：A000079, A015910, A066601。
 
 **A386580** — precise；正规多重集有游程长度互异的排列，当且仅当各重数可取两两不交的严格分拆。 文献/裁决：A239455仍称游程对应为猜想；A383708/A383710的Look-and-Say解释未提供任意块族可排列而不合并的证明。存在性方向还缺排列引理。 bind med，疑似声明：none。数值 yes：枚举n≤8的重数组合、所有游程字和不交严格分拆；DATA前9项全符，等价无反例。 直接 A 号：A000009, A000041, A025065, A032020, A047966, A048767, A072233, A098859, A116540, A130091, A239455, A242882, A320347, A326083, A351294, A381432, A382771, A382912, A382913, A383706, A383708, A383710, A386581。
 
@@ -296,6 +313,30 @@ triage: anchor
 
 **A387790** — precise；证明每个n≥5340均可写为S(i)+S(j)+2S(k)，S(t)为前t素数和，i,j,k>0。 文献/裁决：主条目及一跳A007504仍明确Sun2025猜想；A007504其他已证求和性质和渐近式都不能导出三项精确表示。未发现直接证明文献，未把作者计算到3×10^5当全称证明；无界表示属于深问题。 bind low，疑似声明：Nat.primeCounting及有限和基础可定义S；NumberTheory/PrimeCounting、Data/Nat/Prime与相关全树检索未见该精确表示定理。；钉版源码只读检索，非真实 bind 探针，未编译。。数值 yes：已运行：独立筛素数并累加S≤10000，枚举i≥j及k，完整DATA吻合；5340..10000无零，5339计数0。未运行：10000以后的全称表示证明。 直接 A 号：A000040, A007504。
 
+**A384275** — precise；以“与前项及另一个早项共因子”定义的序列，等于“与前项共因子且不取前项一半”定义的序列。 文献/裁决：2026-03-01新增替代定义明确说appears；完整一跳包括EKG/Enots Wolley/Yellowstone及A373390。后者排列证明不覆盖本题。候选集合局部不同，需首引入素数的不变量；未找到封闭逃逸。EKG外链论文未读证明，未借其结论降级。 bind med，疑似声明：Mathlib/Data/Nat/Find.lean:75 Nat.find_spec、:80 Nat.find_min；具名声明已读，仅最小候选基础，无该贪心遍历定理。源码检索，非真实bind探针。。数值 yes：已运行：两种独立贪心各2000项一致，全部66项DATA吻合，最小未现727。未运行：无界等价与排列证明。 直接 A 号：A064413, A098550, A336957, A373390。
+
+**A381949** — precise；对每个n>2，满足V(k^n)=n且k>1非完全幂的最小k均被5整除。 文献/裁决：已读MO487698接受答案全文：只示范同余1 mod100情形，最后明确一般倍数5结论为概率启发式。Ripà–Onnis2022 PDF p14式(16)是速度公式，不是所有n的最小化排除；其p5–6证明链未完整追到2021原文，不能标published。与A381460合族但n3基底25不合非完全幂限制。 bind med，疑似声明：none；全Mathlib检索 cryptarith/tetration/arithmetic.derivative/EKG/Yellowstone/forest.fire 无目标命中；只读源码，非真实bind探针。 最近基础为NumberTheory/Multiplicity.lean:390 padicValNat.pow_sub_pow（声明已读）。。数值 yes：已运行：自写2/5估值分类、完全幂指数gcd及逐k枚举，n1..10得2,7,55,5,95,95,385,95,1535,1535，全部对应DATA；速度公式复现A373387全部DATA。未运行：模塔独立交叉验证、n>10最小化及无界分类。 直接 A 号：A018247, A091663, A317905, A373387, A381460。
+
+**A381420** — precise；该相邻共因子且二进制1位数不同的贪心序列是正整数排列。 文献/裁决：主条目仅数值猜想；A381419声称另一互素变体是排列，但无页内证明且条件相反。完整读EKG和A093714，后者页内证明不能直接承受新增binary-weight约束。未打开EKG论文证明，不据存在文献降级；尚无迫遗漏数进入的不变量。 bind low，疑似声明：Mathlib/Data/Nat/GCD/Basic.lean:194 Nat.coprime_pow_left_iff、:201 Nat.coprime_pow_right_iff；已读声明。无对应贪心序列定理；源码检索，非真实bind探针。。数值 yes：已运行：自写gcd和bin计数贪心2000项，全部74项DATA吻合；最小未现127。未运行：对每个遗漏数的等待时间上界。 直接 A 号：A000120, A027748, A064413, A093714, A109451, A381419。
+
+**A381658** — vague；按示例的“每种值最多一个三项等差组”解释，值1出现的位置恰为A092482。 文献/裁决：标题“only one value of k”与示例“no other three terms”不等价；两模型第4项即分歧。按DATA吻合模型，选1是否合法只由既有1位置决定，目标几乎是两种贪心定义的投影，不能拔成新开放题。已打开Patel2026网页全文，Admissibility及Minimality内/跨block完整论证证明的是A092482闭式；无需也未声称其Lean编译。主comment的5在11、example的9..11三连2均与DATA冲突。 bind med，疑似声明：Mathlib/Data/Nat/Find.lean:75 Nat.find_spec、:80 Nat.find_min；具名声明已读，仅最小候选基础，无该贪心遍历定理。源码检索，非真实bind探针。。数值 yes：已运行：两模型比较；唯一三元组模型1000项复现全部120项DATA，1位置复现A092482全部57项；唯一公差模型第4项错误。未运行：修订后全称形式化。 直接 A 号：A092482, A229037, A381597, A381659, A381660。
+
+**A381464** — precise；按页内最小未用自由赋值算法生成时，无前向赋值冲突且每次自由步a(k)-k≤2。 文献/裁决：页内Fibonacci轨道解释自称conjecture，且明确尚需处理(k-c,k)的一般情况；A257794/A358793的线性倍增公式不能解决本题乘积轨道相交。所有一跳读完；Golden Sieve新论文链接仅相邻背景，未读且不作已证依据。应先证明互不相交与算法充分性，不能把a(a(n))=n a(n)当无冲突的先验。 bind low，疑似声明：Mathlib/Data/Nat/Find.lean:75 Nat.find_spec、:80 Nat.find_min；具名声明已读，仅最小候选基础，无该贪心遍历定理。源码检索，非真实bind探针。。数值 yes：已运行：自写稀疏字典预填n≤30000，全部65项DATA吻合，冲突0，自由增量最大2；30000个关系均核对。未运行：无限轨道碰撞排除。 直接 A 号：A000045, A000304, A099267, A257794, A358793。
+
+**A380494** — precise；每步取前项数位和加1的最小未用倍数所成序列覆盖所有正整数。 文献/裁决：主条目无证明，数位和文献不提供贪心可达性。完整读直接xref，其中A051855实际是阶乘四次加1素数，疑似无关错链，不能以其代替待证明依赖。example的a20=28为索引错误（DATA a19=28,a20=11）。 bind low，疑似声明：Mathlib/Data/Nat/Digits/Div.lean:28 Nat.modEq_nine_digits_sum、:48 Nat.nine_dvd_iff；已读声明。无具体数位动力系统定理；源码检索，非真实bind探针。。数值 yes：已运行：自写倍数游标贪心10000项，全部66项DATA吻合，最小未现41。未运行：遗漏值最终成为可选倍数的证明。 直接 A 号：A007953, A051855。
+
+**A375567** — precise；除初值1及十进制首位1末位0的恒定情形外，指数comma过程总在有限步停止。 文献/裁决：原comment仅提1…0却遗漏初值1；目标显式补边界。完整读A121805/A374725：加法comma论文不自动覆盖指数版，乘法版只有10000初值实验。加法论文未读，不标published；指数首位取决于巨大幂的log小数部，未有下降量。 bind low，疑似声明：Mathlib/Data/Nat/Digits/Div.lean:28 Nat.modEq_nine_digits_sum、:48 Nat.nine_dvd_iff；已读声明。无具体数位动力系统定理；源码检索，非真实bind探针。。数值 yes：已运行：自写逐j整数幂，初值1..40，上限20步且每次幂位数上界20000bit；18个可决定案例均与DATA吻合，22个达大小界记None而非反例。未运行：超界轨道、对数区间精确版本及无界终止。 直接 A 号：A121805, A374725。
+
+**A379525** — precise；按首次出现取数位平方和、重复第k次取k倍的递推覆盖每个正整数。 文献/裁决：完整主条目与一跳没有遍历证明；重复触发可以证明不能被有限值集合封住，但不能推出每个整数可达。A379551直接xref实际是素数的平方分拆，属于无关链；已读不伪造覆盖。数位平方和背景不提供此反馈过程的不变量。 bind low，疑似声明：Mathlib/Data/Nat/Digits/Div.lean:28 Nat.modEq_nine_digits_sum、:48 Nat.nine_dvd_iff；已读声明。无具体数位动力系统定理；源码检索，非真实bind探针。。数值 yes：已运行：计数器递推200000项，全部65项DATA吻合，47261个不同值，最小未现349。未运行：强于值域无界的满射证明。 直接 A 号：A003132, A379551。
+
+**A377992** — precise；每个n≥2，凡k的算术导数等于第n个primorial的算术导数，则k无立方素因子。 文献/裁决：原条目明确是A024451全部squarefree猜想的后果，而非独立已证。已完整读A024451及补集相关A048103：p^p-free是已述较弱性质，不能替代squarefree。已开Ufnarovski–Åhlander PDF p5 Thm9、p6完整AM-GM证明及Cor3，只证明有限枚举界D²/4，不证明本目标。 bind low，疑似声明：none；全Mathlib检索 cryptarith/tetration/arithmetic.derivative/EKG/Yellowstone/forest.fire 无目标命中；只读源码，非真实bind探针。。数值 yes：已运行：自写Leibniz导数筛，n2..4按D²/4完整枚举，三行[6]、[30,58]、[210,435,507]复现前6项DATA；均cubefree，507非squarefree。未运行：大n完整反导数及一般立方排除。 直接 A 号：A002110, A003415, A004709, A005117, A024451, A048103, A327978, A366890, A369240, A377987, A377993, A378209。
+
+**A376084** — precise；12位cryptarithmically unique primes总数恰为24。 文献/裁决：已打开Inosov–Vlasák arXiv2410.21427 PDF pp6–10；p7称>10^12的≥4不同数字未检，pp8–9表列24，OEIS却明确a12也依赖无≥4数字项。缺可重放的12位全模式排除证书，不能将表格或概率当完整证明。有限前沿可保留tier2，暂不派；无界渐近另直接out。 bind low，疑似声明：none；全Mathlib检索 cryptarith/tetration/arithmetic.derivative/EKG/Yellowstone/forest.fire 无目标命中；只读源码，非真实bind探针。。数值 yes：已运行：独立筛尽全部p<10^6，按首次出现数字编码分组，n1..6计数[0,1,0,0,0,0]复现DATA。未运行：12位各受限增长串全部注入赋值及素性/合数证书；至少需覆盖4..10种数字所有模式。 直接 A 号：A004022, A006879, A358497, A374238, A376918。
+
+**A375281** — precise；相邻项不同ω且相邻乘积rad为primorial的贪心序列是正整数排列。 文献/裁决：主条目仅猜排列。相同rad家族按序可由候选谓词不变得到，但不能保证每个家族被访问。完整一跳A033845/A007947等均仅算术背景，没有全局遍历论证。需建立遗漏家族被触发的公平性，不能直接套EKG。 bind low，疑似声明：Mathlib/Data/Nat/GCD/Basic.lean:194 Nat.coprime_pow_left_iff、:201 Nat.coprime_pow_right_iff；已读声明。无对应贪心序列定理；源码检索，非真实bind探针。。数值 yes：已运行：自写支持集合与不同ω判定，200项复现全部64项DATA，最小未现17。未运行：1000项搜索已中止；无界家族覆盖。 直接 A 号：A001221, A002110, A007947, A033845。
+
+**A374916** — precise；序列值域恰为{1}及被2、3、5中恰好一个整除的正整数。 文献/裁决：主comment已有LPF按2,3,5循环的局部解释，排除6/10/15倍数仅一方向；覆盖全部允许数仍为猜想。A374445的二项互素版本同样只有排列猜想。完整读A055932与补集A080259，仅定义互补，不证明动态覆盖；显式补初始1边界。 bind low，疑似声明：Mathlib/Data/Nat/GCD/Basic.lean:194 Nat.coprime_pow_left_iff、:201 Nat.coprime_pow_right_iff；已读声明。无对应贪心序列定理；源码检索，非真实bind探针。。数值 yes：已运行：200项，最大值1921535，全部58项DATA吻合，支持违规0；以缺少的素因子乘积为步长枚举，见numeric02-final.log。未运行：一般允许支持家族的访问界。 直接 A 号：A002110, A016789, A020639, A055932, A080259, A083720, A374445。
+
 **A333561** — precise；令 a(0)=1、a(n)=Σ[j=0..2n] C(n+j−1,j)2^j，目标为所有 p≥5 素数及 n,k≥1 有 a(np^k)≡a(np^(k−1)) mod p^(3k)。 文献/裁决：完整主条目及全部直接 A 引用指定五字段已读（mains01、refs01全部页）；A333560仍明确把各列强同余列为猜想；A119259普通 p 层结果与2026双和递推不能推出全部 np^k。主文新积分/代数GF亦非强同余证明；已查范围无目标证明，open仅限所查文献。与A333560/A333561/A333562合族，不重复派；缺逐层三倍赋值机制。 bind med，疑似声明：只读钉版 .lake/packages/mathlib；已读下述声明，未编译、非真实 bind 探针。Nat.modEq_iff_dvd，Mathlib/Data/Nat/ModEq.lean:111，将同余转换为整数差的整除；Nat.choose_mul_factorial_mul_factorial，Data/Nat/Choose/Basic.lean:140。全 Mathlib 搜 supercongruence 无目标声明；不把普通二项式接口当强同余。。数值 yes：已执行：numeric01.py 直接整数二项式求和，复现主 DATA 18 项；p∈{5,7,11,13},n=1..3,k=1..2且np^k≤400逐组取模均通过，详细参数在numeric01.json。未执行：一般 p-adic 分块证明、上千指标或独立组合模型；有限阳性不算开放推进。 直接 A 号：A001764, A062747, A119259, A333560, A333562, A370097。
 
 **A333562** — precise；令 a(0)=1、a(n)=Σ[j=0..3n] C(n+j−1,j)2^j，目标为所有 p≥5 素数及 n,k≥1 有 a(np^k)≡a(np^(k−1)) mod p^(3k)。 文献/裁决：完整主条目及全部直接 A 引用指定五字段已读（mains01、refs01全部页）；A333560仍明确把各列强同余列为猜想；A119259普通 p 层结果与2026双和递推不能推出全部 np^k。主文新积分/代数GF亦非强同余证明；已查范围无目标证明，open仅限所查文献。与A333560/A333561/A333562合族，不重复派；缺逐层三倍赋值机制。 bind med，疑似声明：只读钉版 .lake/packages/mathlib；已读下述声明，未编译、非真实 bind 探针。Nat.modEq_iff_dvd，Mathlib/Data/Nat/ModEq.lean:111，将同余转换为整数差的整除；Nat.choose_mul_factorial_mul_factorial，Data/Nat/Choose/Basic.lean:140。全 Mathlib 搜 supercongruence 无目标声明；不把普通二项式接口当强同余。。数值 yes：已执行：numeric01.py 直接整数二项式求和，复现主 DATA 16 项；p∈{5,7,11,13},n=1..3,k=1..2且np^k≤400逐组取模均通过，详细参数在numeric01.json。未执行：一般 p-adic 分块证明、上千指标或独立组合模型；有限阳性不算开放推进。 直接 A 号：A002293, A062752, A119259, A333560, A333561。
@@ -355,6 +396,10 @@ triage: anchor
 **A398329** — precise；判定排除(1,0),(0,1)的互异二维向量分拆数a(n)是否渐近于A219554(n)/4。 文献/裁决：这是无界渐近目标，按本轮规则直接排除。A219554指出Luthra旧渐近公式有错误并给修正式；已读全部一跳，未发现能直接推出删去两个因子后常数1/4的完整论证。Luthra原文未读，不据此标published。 bind low，疑似声明：none：Mathlib全树检索vector.partition未见该二维互异分拆渐近声明；附近仅有限计数基础Finset.card_image_le。；钉版源码只读检索，非真实 bind 探针，未编译。。数值 yes：已运行：独立二维0/1背包，逐个向量(i,j)且i+j>1处理，n=0..20与自身DATA全吻合。未运行：鞍点分析、渐近比值认证。 直接 A 号：A000009, A001055, A002774, A219554, A219585, A397646, A399303。
 
 **A395513** — precise；核查按A025487第n种素因子指数型定义的全局最大密度首次位置，尤其所报a(10)=36。 文献/裁决：无界density目标本即排除；另发现可直接反驳的DATA冲突：A025487(10)=32、signature=[5]，≤32与≤36都只有32一个该型整数，1/32>1/36，所以36不可能为最大处。此为本次原始反例，所查公开条目未见纠错，literature不伪标published。第9项7109105超出本次数值界导致前缀差异，不能称第9项反例。 bind low，疑似声明：none：全树prime.signature及Data/Nat/Factorization范围未见该全局密度声明；Nat.find_min是最小化基础，并不证明密度最大。；钉版源码只读检索，非真实 bind 探针，未编译。。数值 yes：已运行：k≤10000按独立factorint指数型统计前10型，前8项吻合；第9型界未及DATA所报点；第10型在32优于36，明确反例。未运行：全型无限密度极值；无需为已反驳第10项扩大界。 直接 A 号：A025487, A046523。
+
+**A378838** — precise；n≥2且n≡0或2 mod3时，n位非负整数数位平均等于数根的数量为1。 文献/裁决：Wu2024-12-12在主formula给出完整公开模9论证：平均k∈{1,…,9}，(n−1)k≡0 mod9；3∤(n−1)迫k=9，唯一全9。全部一跳无撤回或相反证明，n1单列10。这里依据实读页内论证，非“有人写过”。 bind low，疑似声明：Mathlib/Data/Nat/Digits/Div.lean:28 Nat.modEq_nine_digits_sum、:48 Nat.nine_dvd_iff；已读声明。无具体数位动力系统定理；源码检索，非真实bind探针。。数值 yes：已运行：自写数位和DP，首位非零且n1补0，n1..36全部DATA吻合；目标同余类均为1。未运行：Lean编译（禁止）。 直接 A 号：A007494, A010888, A378560, A378564, A378835, A378836, A378837。
+
+**A373390** — precise；A373390是正整数排列。 文献/裁决：已完整读Sloane2024-06-19页内六步证明及所有一跳（含范围展开A372079/A373788/A373789）：无限延拓、任意素数某倍数及无限倍数、裸素数出现，最后遗漏k迫尾部都与k共因子，与任意大素数出现冲突。有限前缀例外可避开；这是公开完整论证，故不把排列再派开放。素数顺序及引入倍数另仍猜想。 bind med，疑似声明：Mathlib/Data/Nat/GCD/Basic.lean:194 Nat.coprime_pow_left_iff、:201 Nat.coprime_pow_right_iff；已读声明。无对应贪心序列定理；源码检索，非真实bind探针。。数值 yes：已运行：自写gcd与累计prime-support贪心2000项，全部DATA逐项对照，见numeric02-results.json。未运行：页内证明的Lean形式化。 直接 A 号：A064413, A098550, A247942, A336957, A372072, A372073, A372078, A372079, A372080, A372081, A373786, A373787, A373788, A373789, A373790, A373791, A373880。
 
 **A333093** — precise；令 a(n)=Σ[j=0..n] n·C(n+2j,j)/(n+2j)（n≥1），目标为 p≥5 素数及 n,k≥1 时 a(np^k)≡a(np^(k−1)) mod p^(3k)。 文献/裁决：完整主条目及全部直接 A 引用指定五字段已读（mains01、refs01全部页）；关键一跳A333096指向Adamczewski arXiv:2608.11941 p.9 Appendix A.1。已打开实际公开证明源 adam333096-proof.txt，读定义1..57、定义差桥1940..1994、master_identity及末尾C2/oeis_333096_supercongruence_conjecture证明；其m:ℤ任意，取m=1，n/(n+j)C(n+2j−1,j)=n/(n+2j)C(n+2j,j)，正分母下完全对靶。不是仅凭论文摘要降级。源码4057行辅助引理未逐行全审、未编译，不声称本机内核复验；来源为公开 accepted proof。原OEIS附件a333093.pdf遭封禁未读，不能当证据。 bind med，疑似声明：只读钉版 .lake/packages/mathlib；已读下述声明，未编译、非真实 bind 探针。Nat.modEq_iff_dvd，Mathlib/Data/Nat/ModEq.lean:111，将同余转换为整数差的整除；Nat.choose_mul_factorial_mul_factorial，Data/Nat/Choose/Basic.lean:140。全 Mathlib 搜 supercongruence 无目标声明；不把普通二项式接口当强同余。。数值 yes：已执行：直接Catalan系数整数和复现全部23项DATA；同p,n,k范围np^k≤400强同余通过。未执行：公开Lean证明本地编译或全部4057行依赖审计；本席只判已有公开证明及数学映射。 直接 A 号：A000012, A000108, A001006, A001764, A005554, A025174, A099837, A100219, A333090, A333091, A333092, A333093, A333094, A333095, A333096, A333097, A372214, A372215。
 
