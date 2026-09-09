@@ -58,5 +58,21 @@
     ],
     "archived_probe": "probes/Schur89.lean",
     "log_encoding": "gzip"
+  },
+  {
+    "probe": "Disk90-v2",
+    "command": "make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Disk90-v2.lean'",
+    "exit": 0,
+    "signal": null,
+    "log": "logs/Disk90-v2.log.gz",
+    "started": "2026-09-09T05:21:40.415Z",
+    "atoms": [
+      "96902e5b1d0b9ac78c37f6c1f75fd1d5043bfd6c18f5e2451352b6fbc6977b46"
+    ],
+    "indices": [
+      90
+    ],
+    "archived_probe": "probes/Disk90-v2.lean",
+    "log_encoding": "gzip"
   }
 ]

@@ -54,7 +54,7 @@ pushed immediately, including failures. Report-only delivery: no PR.
 
 ## conclusion
 
-Screened: **100/150**. A=2, B=27, C=71, D=0, E=0.
+Screened: **100/150**. A=3, B=26, C=71, D=0, E=0.
 
 Structured result: [conclusion.json](tier3-mathlib-triage-0909/conclusion.json).
 Complete canonical atom reads (raw and normalized text, command, EXIT) are in `atoms-1.json` through `atoms-6.json` as collected. Reading ahead does not count as screening.
@@ -152,7 +152,7 @@ All Mathlib paths below are relative to `.lake/packages/mathlib/`. Every listed 
 | 87 | `90382ec6571adc1e9f8248f72b7b7a2bb916d5ade3bdbfc99e99b6477c208b34` | 推论：RH 强迫纯素数读出最终具有固定负余量 | C | 缺素数平方确定偏移、在线零点振荡常数与纯素数/素数幂读数差的实际解析估计。 | none claimed | not run | theta-analytic, discrete-winding |
 | 88 | `92536bbe2b763233c6c90f6e32152612b3a4c8316395ce3895a27051104157cb` | 定理 P3：这个转换不会随阶数变得任意病态 | C | 缺实际解析乘子 F,1/F 的系数范数与 Toeplitz 乘子算子之间的统一界，特别是有限截断逆的兼容性。 | none claimed | not run | toeplitz, negative-spectrum-refined |
 | 89 | `937abccd3570503c88aaac8b088e687e6f79db29ca9f67f887b72a028bd4f866` | 定理二：边界有效几何由 Schur 补唯一确定 | A | 直接实例化 schur_complement_eq₂₂，PosDef.isUnit 供应逆，PosSemidef 的二次型非负供应下界；代入 y=-C^-1 B*x 达到等号。探针验证 IsLeast，未只验证配方。 | `Matrix.schur_complement_eq₂₂` (Mathlib/LinearAlgebra/Matrix/Hermitian.lean:378); `Matrix.PosDef.isUnit` (Mathlib/LinearAlgebra/Matrix/PosDef.lean:507); `Matrix.PosSemidef.dotProduct_mulVec_nonneg` (Mathlib/LinearAlgebra/Matrix/PosDef.lean:305) | Schur89: 0 | finite-geometry, schur |
-| 90 | `96902e5b1d0b9ac78c37f6c1f75fd1d5043bfd6c18f5e2451352b6fbc6977b46` | 定理十五：一个反射零点对的负贡献区域，恰好是一个圆盘 | B | 平方非负、正分母比较与通分均已有接口；首版完整探针误用要求全局乘法保序的 mul_lt_mul_left，EXIT=2，尚未完成正确正乘子接口绑定，暂不计 A。 | `sq_nonneg` (Mathlib/Algebra/Order/Ring/Unbundled/Basic.lean:606); `div_lt_iff₀` (Mathlib/Algebra/Order/GroupWithZero/Basic.lean:1146); `mul_lt_mul_iff_right₀` (Mathlib/Algebra/Order/GroupWithZero/Defs.lean:286) | Disk90: 2 | finite-geometry |
+| 90 | `96902e5b1d0b9ac78c37f6c1f75fd1d5043bfd6c18f5e2451352b6fbc6977b46` | 定理十五：一个反射零点对的负贡献区域，恰好是一个圆盘 | A | 平方非负与零点排除给分母正性；field_simp/ring 通分，div_lt_iff₀ 与正乘子比较直接给圆盘等价。首版 EXIT=2 为接口误选，v2 换用 mul_lt_mul_iff_right₀ 后完整合取 EXIT=0；两版均归档。 | `sq_nonneg` (Mathlib/Algebra/Order/Ring/Unbundled/Basic.lean:606); `div_lt_iff₀` (Mathlib/Algebra/Order/GroupWithZero/Basic.lean:1146); `mul_lt_mul_iff_right₀` (Mathlib/Algebra/Order/GroupWithZero/Defs.lean:286) | Disk90: 2; Disk90-v2: 0 | finite-geometry |
 | 91 | `983c804dbd8a847852de8910fac6e9702a31040ec86415def14516a225851762` | 引理：小历史宽度下，行列式不会比 \(\exp[-O(d^2\log d)]\) 更小 | C | 缺合流 Vandermonde/导数 Gram 的统一定量下界；普通行列式非零不控制这个维数尺度。 | none claimed | not run | special-polynomials, gaussian-moments |
 | 92 | `9877043750157f00197144b87542162e34a7242d56d6533a857d4cb5822fd169` | 定理十六：负贡献圆盘的 Möbius 像 | B | 复倒数模平方公式已库有；仍需完整坐标配方、K>0 和模不等式双向转换的绑定，当前未用只验证中心公式替代整条。 | `Complex.normSq_inv` (Mathlib/Data/Complex/Basic.lean:750) | not run | finite-geometry, fourth-bindings |
 | 93 | `9907b45db0455394c6e8a00a5cd8ff4254b92dddb711777a18a6ab48d070c176` | 定理十四：负部分的精确产生率 | C | 缺移动负域的可微性、Poisson 奇异核积分交换及正负区抵消；标量非负性不能供应等式。 | none claimed | not run | toeplitz, negative-spectrum-refined, real-calculus |
@@ -172,6 +172,7 @@ Logs ending in `.gz` are losslessly compressed complete stdout/stderr, including
 - Readback75: `make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Readback75.lean'`; EXIT=0; [log](tier3-mathlib-triage-0909/logs/Readback75.log.gz); atoms 7d5d9c72f7ad9abb794dd61d99e68ff5adc1271970f00e4a009b9e334680a0d2.
 - Disk90: `make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Disk90.lean'`; EXIT=2; [log](tier3-mathlib-triage-0909/logs/Disk90.log.gz); atoms 96902e5b1d0b9ac78c37f6c1f75fd1d5043bfd6c18f5e2451352b6fbc6977b46.
 - Schur89: `make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Schur89.lean'`; EXIT=0; [log](tier3-mathlib-triage-0909/logs/Schur89.log.gz); atoms 937abccd3570503c88aaac8b088e687e6f79db29ca9f67f887b72a028bd4f866.
+- Disk90-v2: `make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Disk90-v2.lean'`; EXIT=0; [log](tier3-mathlib-triage-0909/logs/Disk90-v2.log.gz); atoms 96902e5b1d0b9ac78c37f6c1f75fd1d5043bfd6c18f5e2451352b6fbc6977b46.
 
 ## search_receipts
 
@@ -229,6 +230,8 @@ Full commands and untruncated hits: [search-receipts.json](tier3-mathlib-triage-
 | finite-geometry | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '(schur_complement_eq₂₂|div_neg_iff_of_pos_right|mul_neg_iff_of_pos_left|sub_conj|trace_conjTranspose_mul_self|trace_mul_self|inner.*trace|trace.*inner)' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 21 | 0 |
 | fourth-bindings | D5 | `rg '-n' '-i' '-P' '(coeff_rescale|rescale_coeff|det_vandermonde_ne_zero_iff|Unitary.star_mul_self|star_mul_self_of_mem|sum_mul_sq_le_sq_mul_sq|sum_mul_sq_le|cardFactors_mul|liouville_apply_mul|normSq_inv)' 'D5' '-g' '*.lean'` | 41 | 0 |
 | fourth-bindings | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '(coeff_rescale|rescale_coeff|det_vandermonde_ne_zero_iff|Unitary.star_mul_self|star_mul_self_of_mem|sum_mul_sq_le_sq_mul_sq|sum_mul_sq_le|cardFactors_mul|liouville_apply_mul|normSq_inv)' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 47 | 0 |
+| fifth-bindings | D5 | `rg '-n' '-i' '-P' '(sectionalCurvature|sectional.curvature|warped.product|WarpedProduct|exists_deriv_eq_zero|sum_roots.*sq|sum_roots_eq|coeff.*trace|trace.*coeff|posPart_sub_negPart|negPart_nonneg)' 'D5' '-g' '*.lean'` | 65 | 0 |
+| fifth-bindings | .lake/packages/mathlib/Mathlib | `rg '-n' '-i' '-P' '(sectionalCurvature|sectional.curvature|warped.product|WarpedProduct|exists_deriv_eq_zero|sum_roots.*sq|sum_roots_eq|coeff.*trace|trace.*coeff|posPart_sub_negPart|negPart_nonneg)' '.lake/packages/mathlib/Mathlib' '-g' '*.lean'` | 66 | 0 |
 
 The positive and negative controls share case-insensitivity, alternation, word boundaries and whitespace matching. The initial `negative-spectrum` query matched `registerTraceClass` (logging infrastructure); the refined word-boundary query excludes this false positive. Generic Caratheodory measure hits are not Toeplitz spectral theorems.
 
@@ -293,6 +296,7 @@ The positive and negative controls share case-insensitivity, alternation, word b
 - `e77cf4009e6801e994e5bfff59a6b124c61ae292`
 - `fcbe1bf4be3d38a2324acb6d7b392c46919c280b`
 - `134dc1f58721e6c7555355cc0d7c6e2f29100376`
+- `0bce26792dcc213354e1d279a96e52e44b711c98`
 
 Every listed checkpoint was pushed successfully. The final runner envelope includes the commit containing this final report (a commit cannot contain its own hash).
 

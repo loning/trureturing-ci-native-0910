@@ -2,8 +2,8 @@
   "verdict": "propose",
   "screened_count": 100,
   "by_tier": {
-    "A": 2,
-    "B": 27,
+    "A": 3,
+    "B": 26,
     "C": 71,
     "D": 0,
     "E": 0
@@ -101,6 +101,59 @@
           "probe": "Schur89",
           "exit": 0,
           "log": "logs/Schur89.log.gz"
+        }
+      ]
+    },
+    {
+      "atom_id": "96902e5b1d0b9ac78c37f6c1f75fd1d5043bfd6c18f5e2451352b6fbc6977b46",
+      "title": "### 定理十五：一个反射零点对的负贡献区域，恰好是一个圆盘",
+      "bytes": 434,
+      "index": 90,
+      "tier": "A",
+      "claim": "x,m>0 且排除配对零点时，反射配对有理贡献为指定分式，负性恰为圆盘不等式。",
+      "reason": "平方非负与零点排除给分母正性；field_simp/ring 通分，div_lt_iff₀ 与正乘子比较直接给圆盘等价。首版 EXIT=2 为接口误选，v2 换用 mul_lt_mul_iff_right₀ 后完整合取 EXIT=0；两版均归档。",
+      "mathlib": [
+        {
+          "declaration": "sq_nonneg",
+          "file": "Mathlib/Algebra/Order/Ring/Unbundled/Basic.lean",
+          "line": 606
+        },
+        {
+          "declaration": "div_lt_iff₀",
+          "file": "Mathlib/Algebra/Order/GroupWithZero/Basic.lean",
+          "line": 1146
+        },
+        {
+          "declaration": "mul_lt_mul_iff_right₀",
+          "file": "Mathlib/Algebra/Order/GroupWithZero/Defs.lean",
+          "line": 286
+        }
+      ],
+      "source_context": [
+        67711,
+        67792
+      ],
+      "probe": "Disk90-v2",
+      "searches": [
+        "finite-geometry"
+      ],
+      "source_line": 67730,
+      "proof_shape": "bind-only",
+      "direct_frozen_dependencies": [],
+      "escape_witness": null,
+      "admission_basis": "not-applicable(triage-only; no production or deposit)",
+      "probe_ran": true,
+      "probe_exit": 0,
+      "probe_runs": [
+        {
+          "probe": "Disk90",
+          "exit": 2,
+          "log": "logs/Disk90.log.gz"
+        },
+        {
+          "probe": "Disk90-v2",
+          "exit": 0,
+          "log": "logs/Disk90-v2.log.gz"
         }
       ]
     }
@@ -795,53 +848,6 @@
       "probe_ran": false,
       "probe_exit": null,
       "probe_runs": []
-    },
-    {
-      "atom_id": "96902e5b1d0b9ac78c37f6c1f75fd1d5043bfd6c18f5e2451352b6fbc6977b46",
-      "title": "### 定理十五：一个反射零点对的负贡献区域，恰好是一个圆盘",
-      "bytes": 434,
-      "index": 90,
-      "tier": "B",
-      "claim": "x,m>0 且排除配对零点时，反射配对有理贡献为指定分式，负性恰为圆盘不等式。",
-      "reason": "平方非负、正分母比较与通分均已有接口；首版完整探针误用要求全局乘法保序的 mul_lt_mul_left，EXIT=2，尚未完成正确正乘子接口绑定，暂不计 A。",
-      "mathlib": [
-        {
-          "declaration": "sq_nonneg",
-          "file": "Mathlib/Algebra/Order/Ring/Unbundled/Basic.lean",
-          "line": 606
-        },
-        {
-          "declaration": "div_lt_iff₀",
-          "file": "Mathlib/Algebra/Order/GroupWithZero/Basic.lean",
-          "line": 1146
-        },
-        {
-          "declaration": "mul_lt_mul_iff_right₀",
-          "file": "Mathlib/Algebra/Order/GroupWithZero/Defs.lean",
-          "line": 286
-        }
-      ],
-      "source_context": [
-        67711,
-        67792
-      ],
-      "searches": [
-        "finite-geometry"
-      ],
-      "source_line": 67730,
-      "proof_shape": "not-assessed(no-complete-proof)",
-      "direct_frozen_dependencies": [],
-      "escape_witness": null,
-      "admission_basis": "not-applicable(triage-only; no production or deposit)",
-      "probe_ran": true,
-      "probe_exit": 2,
-      "probe_runs": [
-        {
-          "probe": "Disk90",
-          "exit": 2,
-          "log": "logs/Disk90.log.gz"
-        }
-      ]
     },
     {
       "atom_id": "9877043750157f00197144b87542162e34a7242d56d6533a857d4cb5822fd169",
@@ -2489,6 +2495,22 @@
       ],
       "archived_probe": "probes/Schur89.lean",
       "log_encoding": "gzip"
+    },
+    {
+      "probe": "Disk90-v2",
+      "command": "make '-f' 'Makefile' '-f' '/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/probe.mk' 'lean' 'PROBE=/private/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/tier3-mathlib-triage-0909/attempt-1/Disk90-v2.lean'",
+      "exit": 0,
+      "signal": null,
+      "log": "logs/Disk90-v2.log.gz",
+      "started": "2026-09-09T05:21:40.415Z",
+      "atoms": [
+        "96902e5b1d0b9ac78c37f6c1f75fd1d5043bfd6c18f5e2451352b6fbc6977b46"
+      ],
+      "indices": [
+        90
+      ],
+      "archived_probe": "probes/Disk90-v2.lean",
+      "log_encoding": "gzip"
     }
   ],
   "unscreened": [
@@ -3343,6 +3365,38 @@
       ],
       "exit": 0,
       "line_match_count": 47
+    },
+    {
+      "id": "fifth-bindings",
+      "scope": "D5",
+      "program": "rg",
+      "args": [
+        "-n",
+        "-i",
+        "-P",
+        "(sectionalCurvature|sectional.curvature|warped.product|WarpedProduct|exists_deriv_eq_zero|sum_roots.*sq|sum_roots_eq|coeff.*trace|trace.*coeff|posPart_sub_negPart|negPart_nonneg)",
+        "D5",
+        "-g",
+        "*.lean"
+      ],
+      "exit": 0,
+      "line_match_count": 65
+    },
+    {
+      "id": "fifth-bindings",
+      "scope": ".lake/packages/mathlib/Mathlib",
+      "program": "rg",
+      "args": [
+        "-n",
+        "-i",
+        "-P",
+        "(sectionalCurvature|sectional.curvature|warped.product|WarpedProduct|exists_deriv_eq_zero|sum_roots.*sq|sum_roots_eq|coeff.*trace|trace.*coeff|posPart_sub_negPart|negPart_nonneg)",
+        ".lake/packages/mathlib/Mathlib",
+        "-g",
+        "*.lean"
+      ],
+      "exit": 0,
+      "line_match_count": 66
     }
   ],
   "mathlib_pin": {
@@ -3358,7 +3412,8 @@
       "dad8e18532ec0063093aad820e8bd4b4c8cf80dc",
       "e77cf4009e6801e994e5bfff59a6b124c61ae292",
       "fcbe1bf4be3d38a2324acb6d7b392c46919c280b",
-      "134dc1f58721e6c7555355cc0d7c6e2f29100376"
+      "134dc1f58721e6c7555355cc0d7c6e2f29100376",
+      "0bce26792dcc213354e1d279a96e52e44b711c98"
     ],
     "branch": "lane/math/tier3-mathlib-triage-0909",
     "note": "Commits through the preceding checkpoint; final delivery envelope also records its containing report commit."
