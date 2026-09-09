@@ -142,3 +142,12 @@ question_answered：用户预登记的 A390871 非 2 幂项指数双边界是否
 - six_mul_le_pow_add_eight statement_id=sha256:918cab237d7f4e9d24c44c11e977d63cdd79186aa5d56b96f6d22816fe73c5de。
 - git fetch origin dev 成功；开 PR 前再次对 origin/dev 的 D5/Blueprint 搜
   A390871、目标名、Mersenne gap/exponent，未命中；无重复目标。
+
+## Scribe 发射
+
+- make emit EXIT=0，54.783 秒；仅新增本题 1 个 Blueprint 投影。
+  已读输出公式，量词、非 2 幂条件、所有界与加法等式均忠实于 Lean 原签名。
+- git merge-tree --write-tree HEAD origin/dev EXIT=0，输出树
+  64a32609f7cca379183a75b03986b77c3705422d；不需追平无冲突的移动基线。
+- 当前 scribe-content-checks 的 projection 子项仅在相关 projection/producer delta 时唤醒；
+  本题无此 delta，故另显式执行 projections --check，随后运行用户要求的完整脚本。
