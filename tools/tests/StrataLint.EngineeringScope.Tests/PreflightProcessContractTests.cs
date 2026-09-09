@@ -6,6 +6,54 @@ namespace StrataLint.EngineeringScope.Tests;
 
 public sealed class PreflightProcessContractTests
 {
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("configured")]
+    public void PrCandidateRetainsSourceDonorInventoryAndExplicitSettings(string? donors)
+    {
+        using var fixture = new Fixture(File.ReadAllText(
+            Path.Combine(TestRepositoryLayout.FindRoot(), "tools/scripts/preflight.sh")));
+        fixture.Write(".gitignore", ".lake/\nbuild/\n");
+        fixture.Write("tools/scripts/ci-stage.sh", """
+            #!/bin/bash
+            set -euo pipefail
+            printf '%s\n' "$1" >> "$CONTRACT_CALLS"
+            if [[ "$1" == engineering ]]; then
+              git worktree list --porcelain -z > "$CONTRACT_INVENTORY"
+              printf 'DONORS_SET=%s\nDONORS_VALUE=%s\n' "${STRATALINT_LEAN_CACHE_DONORS+x}" "${STRATALINT_LEAN_CACHE_DONORS-}"
+            fi
+            """);
+        fixture.Commit();
+        var donor = fixture.AddDonor();
+        fixture.Write(".lake/marker", "source cache untouched");
+        TemporaryFileSystem.Directory.CreateDirectory(Path.Combine(donor, ".lake"));
+        TemporaryFileSystem.File.WriteAllText(Path.Combine(donor, ".lake/marker"), "donor cache untouched");
+        var head = fixture.Git("rev-parse", "HEAD").Trim();
+        var tree = fixture.Git("write-tree");
+        var inventory = fixture.Git("worktree", "list", "--porcelain", "-z");
+        var explicitDonors = donors == "configured" ? donor : donors;
+
+        var result = fixture.Preflight("pr", head, donors: explicitDonors);
+
+        Assert.True(result.Exit == 0, result.Text);
+        Assert.Equal(new[] { "engineering", "current", "delta" }, fixture.Calls());
+        Assert.Contains($"DONORS_SET={(explicitDonors is null ? "" : "x")}\nDONORS_VALUE={explicitDonors}\n",
+            result.Text, StringComparison.Ordinal);
+        AssertCandidateRemoved(result.Text);
+        Assert.Equal(inventory, fixture.Git("worktree", "list", "--porcelain", "-z"));
+        Assert.Equal(head, fixture.Git("rev-parse", "HEAD").Trim());
+        Assert.Equal(tree, fixture.Git("write-tree"));
+        Assert.Empty(fixture.Git("status", "--porcelain"));
+        Assert.Equal("source cache untouched", TemporaryFileSystem.File.ReadAllText(Path.Combine(fixture.Root, ".lake/marker")));
+        Assert.Equal("donor cache untouched", TemporaryFileSystem.File.ReadAllText(Path.Combine(donor, ".lake/marker")));
+        var originalRoots = WorktreeRoots(inventory);
+        var candidateRoots = WorktreeRoots(fixture.CandidateInventory());
+        Assert.All(originalRoots, root => Assert.True(candidateRoots.Contains(root, StringComparer.Ordinal),
+            $"Source donor root missing: {root}\nCandidate inventory:\n{string.Join("\n", candidateRoots)}"));
+        Assert.Equal(originalRoots.Length + 1, candidateRoots.Length);
+    }
+
     [Fact]
     public void FailedCurrentDiagnosticsSurvivePrCandidateCleanupWithoutSuccessfulEvidence()
     {
@@ -63,14 +111,15 @@ public sealed class PreflightProcessContractTests
         fixture.Git("checkout", "--detach", fork);
         fixture.Write("head-only", "candidate data");
         fixture.Commit();
+        var inventory = fixture.Git("worktree", "list", "--porcelain", "-z");
         var result = fixture.Preflight("pr", basis);
         Assert.True(result.Exit == 0, result.Text);
         Assert.Equal(new[] { "engineering", "current", "delta" }, fixture.Calls());
         Assert.Contains("merged=yes", result.Text, StringComparison.Ordinal);
         Assert.False(TemporaryFileSystem.File.Exists(Path.Combine(fixture.Root, "base-only")));
         Assert.Empty(fixture.Git("status", "--porcelain"));
-        var candidateLine = result.Text.Split('\n').Single(line => line.StartsWith("PREFLIGHT_CANDIDATE path=", StringComparison.Ordinal));
-        Assert.False(TemporaryFileSystem.Directory.Exists(candidateLine["PREFLIGHT_CANDIDATE path=".Length..]));
+        AssertCandidateRemoved(result.Text);
+        Assert.Equal(inventory, fixture.Git("worktree", "list", "--porcelain", "-z"));
     }
 
     [Theory]
@@ -96,7 +145,7 @@ public sealed class PreflightProcessContractTests
         using var fixture = new Fixture(File.ReadAllText(
             Path.Combine(TestRepositoryLayout.FindRoot(), "tools/scripts/preflight.sh")));
         var basis = fixture.Git("rev-parse", "HEAD").Trim();
-        fixture.FailStatus(statusExit);
+        fixture.FailGit("status", statusExit);
         var result = fixture.Preflight("pr", basis);
         Assert.True(result.Exit == 2,
             $"{result.Text}\nGit calls: {string.Join(",", fixture.GitCalls())}; stages: {string.Join(",", fixture.Calls())}");
@@ -105,6 +154,70 @@ public sealed class PreflightProcessContractTests
             result.Text, StringComparison.Ordinal);
         Assert.Equal(new[] { "status" }, fixture.GitCalls());
         Assert.Empty(fixture.Calls());
+    }
+
+    [Fact]
+    public void FailedCandidatePopulationUnregistersWorktreeBeforeAnyStage()
+    {
+        using var fixture = new Fixture(File.ReadAllText(
+            Path.Combine(TestRepositoryLayout.FindRoot(), "tools/scripts/preflight.sh")));
+        var basis = fixture.Git("rev-parse", "HEAD").Trim();
+        var inventory = fixture.Git("worktree", "list", "--porcelain", "-z");
+        fixture.FailGit("read-tree", 128);
+
+        var result = fixture.Preflight("pr", basis);
+
+        Assert.Equal(2, result.Exit);
+        Assert.Contains("read-tree observation failed", result.Error, StringComparison.Ordinal);
+        Assert.Contains("stage=merge-tree exit=2 raw_exit=128", result.Text, StringComparison.Ordinal);
+        Assert.Equal(new[] { "status", "merge-tree", "read-tree" }, fixture.GitCalls());
+        Assert.Empty(fixture.Calls());
+        Assert.Empty(fixture.TemporaryCandidates());
+        Assert.Equal(inventory, fixture.Git("worktree", "list", "--porcelain", "-z"));
+        Assert.Empty(fixture.Git("status", "--porcelain"));
+    }
+
+    [Theory]
+    [InlineData("engineering", "1", 1, 1)]
+    [InlineData("current", "19", 2, 2)]
+    [InlineData("delta", "3", 2, 3)]
+    [InlineData("current", "HUP", 2, 2)]
+    [InlineData("current", "INT", 2, 2)]
+    [InlineData("current", "TERM", 2, 2)]
+    public void PrFailureOrSignalUnregistersDirtyCandidate(string failedStage, string action, int expectedExit, int stageCount)
+    {
+        using var fixture = new Fixture(File.ReadAllText(
+            Path.Combine(TestRepositoryLayout.FindRoot(), "tools/scripts/preflight.sh")));
+        fixture.Write("tools/scripts/ci-stage.sh", $$"""
+            #!/bin/bash
+            set -euo pipefail
+            printf '%s\n' "$1" >> "$CONTRACT_CALLS"
+            mkdir -p .lake
+            printf 'candidate output\n' > .lake/marker
+            if [[ "$1" == {{failedStage}} ]]; then
+              case "$CONTRACT_EXIT" in
+                HUP|INT|TERM) kill -s "$CONTRACT_EXIT" "$PPID" ;;
+                *) exit "$CONTRACT_EXIT" ;;
+              esac
+            fi
+            """);
+        fixture.Commit();
+        var head = fixture.Git("rev-parse", "HEAD").Trim();
+        var inventory = fixture.Git("worktree", "list", "--porcelain", "-z");
+
+        var result = fixture.Preflight("pr", head, action);
+
+        Assert.True(result.Exit == expectedExit, result.Text);
+        Assert.Equal(new[] { "engineering", "current", "delta" }.Take(stageCount), fixture.Calls());
+        var signal = action is "HUP" or "INT" or "TERM";
+        Assert.Contains($"stage={failedStage} exit={expectedExit} raw_exit={(signal ? "2" : action)}",
+            result.Text, StringComparison.Ordinal);
+        if (signal) Assert.Contains("reason=interrupted", result.Text, StringComparison.Ordinal);
+        AssertCandidateRemoved(result.Text);
+        Assert.Equal(inventory, fixture.Git("worktree", "list", "--porcelain", "-z"));
+        Assert.Equal(head, fixture.Git("rev-parse", "HEAD").Trim());
+        Assert.Empty(fixture.Git("status", "--porcelain"));
+        Assert.False(TemporaryFileSystem.Directory.Exists(Path.Combine(fixture.Root, ".lake")));
     }
 
     [Fact]
@@ -135,12 +248,25 @@ public sealed class PreflightProcessContractTests
         Assert.Equal(new[] { "engineering" }, fixture.Calls());
     }
 
+    private static string[] WorktreeRoots(string inventory) => inventory.Split('\0')
+        .Where(field => field.StartsWith("worktree ", StringComparison.Ordinal))
+        .Select(field => field["worktree ".Length..]).ToArray();
+
+    private static void AssertCandidateRemoved(string output)
+    {
+        var candidate = output.Split('\n').Single(line => line.StartsWith("PREFLIGHT_CANDIDATE path=", StringComparison.Ordinal))
+            ["PREFLIGHT_CANDIDATE path=".Length..];
+        Assert.False(TemporaryFileSystem.Directory.Exists(candidate));
+        Assert.False(TemporaryFileSystem.Directory.Exists(Path.GetDirectoryName(candidate)!));
+    }
+
     private sealed class Fixture : IDisposable
     {
         private readonly string scratch = TemporaryFileSystem.Directory.CreateTempSubdirectory("preflight-contract-").FullName;
         internal string Root => Path.Combine(scratch, "repository");
         private string CallsPath => Path.Combine(scratch, "calls");
         private string GitCallsPath => Path.Combine(scratch, "git-calls");
+        private string InventoryPath => Path.Combine(scratch, "candidate-inventory");
         private string? gitBin;
         private string? realGit;
         internal Fixture(string preflightScript)
@@ -163,7 +289,13 @@ public sealed class PreflightProcessContractTests
             TemporaryFileSystem.File.WriteAllText(full, text);
         }
         internal void Commit() { Git("add", "."); Git("commit", "-qm", "fixture"); }
-        internal void FailStatus(int exit)
+        internal string AddDonor()
+        {
+            var donor = Path.Combine(scratch, "warm donor");
+            Git("worktree", "add", "--quiet", "--detach", donor, "HEAD");
+            return donor;
+        }
+        internal void FailGit(string command, int exit)
         {
             realGit = Run("/bin/bash", ["-c", "command -v git"]).Text.Trim();
             gitBin = Path.Combine(scratch, "bin");
@@ -171,14 +303,15 @@ public sealed class PreflightProcessContractTests
             var shim = Path.Combine(gitBin, "git");
             TemporaryFileSystem.File.WriteAllText(shim, $$"""
                 #!/bin/bash
-                case "$1" in
-                  status)
-                    printf 'status\n' >> "$CONTRACT_GIT_CALLS"
-                    printf 'status observation failed\n' >&2
-                    exit {{exit}}
-                    ;;
-                  merge-tree) printf 'merge-tree\n' >> "$CONTRACT_GIT_CALLS" ;;
+                command="$1"
+                if [[ "$command" == -C ]]; then command="$3"; fi
+                case "$command" in
+                  status|merge-tree|read-tree) printf '%s\n' "$command" >> "$CONTRACT_GIT_CALLS" ;;
                 esac
+                if [[ "$command" == {{command}} ]]; then
+                  printf '%s observation failed\n' "$command" >&2
+                  exit {{exit}}
+                fi
                 exec "$CONTRACT_REAL_GIT" "$@"
                 """);
             if (!OperatingSystem.IsWindows())
@@ -190,9 +323,14 @@ public sealed class PreflightProcessContractTests
             Assert.True(result.Exit == 0, result.Text);
             return result.Text;
         }
-        internal (int Exit, string Text, string Error) Preflight(string mode, string basis, string raw = "0")
+        internal (int Exit, string Text, string Error) Preflight(string mode, string basis, string raw = "0", string? donors = null)
         {
-            var environment = new Dictionary<string, string> { ["MODE"] = mode, ["BASE"] = basis, ["CONTRACT_CALLS"] = CallsPath, ["CONTRACT_EXIT"] = raw };
+            var environment = new Dictionary<string, string>
+            {
+                ["MODE"] = mode, ["BASE"] = basis, ["CONTRACT_CALLS"] = CallsPath, ["CONTRACT_EXIT"] = raw,
+                ["CONTRACT_INVENTORY"] = InventoryPath, ["TMPDIR"] = scratch,
+            };
+            if (donors is not null) environment["STRATALINT_LEAN_CACHE_DONORS"] = donors;
             if (gitBin is not null)
             {
                 environment["PATH"] = gitBin + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
@@ -203,9 +341,12 @@ public sealed class PreflightProcessContractTests
         }
         internal string[] Calls() => TemporaryFileSystem.File.Exists(CallsPath) ? TemporaryFileSystem.File.ReadAllText(CallsPath).Split('\n', StringSplitOptions.RemoveEmptyEntries) : [];
         internal string[] GitCalls() => TemporaryFileSystem.File.Exists(GitCallsPath) ? TemporaryFileSystem.File.ReadAllText(GitCallsPath).Split('\n', StringSplitOptions.RemoveEmptyEntries) : [];
+        internal string CandidateInventory() => TemporaryFileSystem.File.ReadAllText(InventoryPath);
+        internal string[] TemporaryCandidates() => Directory.GetDirectories(scratch, "ci-preflight.*");
         private (int Exit, string Text, string Error) Run(string executable, string[] args, Dictionary<string, string>? environment = null)
         {
             var start = new ProcessStartInfo(executable) { WorkingDirectory = Root, RedirectStandardOutput = true, RedirectStandardError = true };
+            start.Environment.Remove("STRATALINT_LEAN_CACHE_DONORS");
             foreach (var arg in args) start.ArgumentList.Add(arg);
             foreach (var pair in environment ?? []) start.Environment[pair.Key] = pair.Value;
             using var process = Process.Start(start)!;
