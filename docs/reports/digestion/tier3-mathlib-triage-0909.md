@@ -44,6 +44,16 @@ normal closure. Crossing into production Lean, cover, or deposit requires stop.
 Completed batches (normally 25 atoms) and each probe result are committed and
 pushed immediately, including failures. Report-only delivery: no PR.
 
+The last checkpoint before halfway (`d85d63b176`, 05:41:56 UTC) already had
+125 screened atoms, so the halfway stop did not trigger. The sixth batch
+completed all 150 at `b54b06ba7f`, 05:45:00 UTC; normal closure applies.
+
+Input metadata correction: `candidates.json` calls one field `bytes`, but all
+150 values equal Unicode character counts and none equals the raw UTF-8 byte
+count. The input is preserved. All 150 canonical raw texts, including their
+final newline, independently hash to their exact `atom_id`; this metadata
+mislabel does not change the units screened.
+
 ## Mathlib pin
 
 - `lean-toolchain`: `leanprover/lean4:v4.33.0`.
@@ -60,6 +70,8 @@ Structured result: [conclusion.json](tier3-mathlib-triage-0909/conclusion.json).
 Complete canonical atom reads (raw and normalized text, command, EXIT) are in `atoms-1.json` through `atoms-6.json` as collected. Reading ahead does not count as screening.
 
 All Mathlib paths below are relative to `.lake/packages/mathlib/`. Every listed declaration was opened locally. Full per-atom claims and decisions are in `decisions-*.json`.
+
+All seven A atoms have successful complete-claim probes. D=E=0: all 150 bodies contain explicit mathematical assertions, and their necessary context could be read. B/C are remaining obligations, not permission to build a module.
 
 | # | atom_id | Title | Tier | Criterion / remaining mathematics | Local Mathlib declaration | Probe / EXIT | Searches |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -128,7 +140,7 @@ All Mathlib paths below are relative to `.lake/packages/mathlib/`. Every listed 
 | 63 | `69ae4d23bd64324ec6c5efe11686945d726482b842c45097e2e0e9360599cdb1` | 定理 B5：重标定回返恒等式 | B | 块逆公式已给 11 角的 Schur 回返分母；缺实际均衡参考向量的迹平均、P_d 对数导数与该矩阵的匹配。 | `Matrix.invOf_fromBlocks₂₂_eq` (Mathlib/LinearAlgebra/Matrix/SchurComplement.lean:277) | not run | schur, special-polynomials |
 | 64 | `72307ef5e33caa0d618146ecef4ad819f3ee4ebe2e55ebe5a6c226f5cd5a34e1` | 定理一：周期筛选公式 | C | 缺多重集 q-Lucas 在单位根处的精确阶乘商及分圆重数公式。 | none claimed | not run | q-combinatorics, polynomial-readback |
 | 65 | `72f167014dbb653f2eec31560ed015c7e2c0d4140cb398121ad04c898e8b066f` | 定理 J2：体积—残差恒等式 | C | 缺高斯矩阵积分求导、log det 导数与反自伴残差的迹恒等式；Gram 正性不供应这条演化律。 | none claimed | not run | gaussian-moments, negative-spectrum-refined |
-| 66 | `74c15d92cd745276176c9d4c66c4cdd5b7bf59fae5b937ae1e1a07186deca95b` | 定理一：交换对称保护的奇偶相消 | B | 有限和的无固定点反号 involution 相消已库有；缺实际词交换保持合法历史且反转逆序奇偶的类型化绑定，不能把上文式12当已冻结前件。 | `Finset.sum_involution (to_additive of prod_involution)` (Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean:665) | not run | q-combinatorics, third-bindings |
+| 66 | `74c15d92cd745276176c9d4c66c4cdd5b7bf59fae5b937ae1e1a07186deca95b` | 定理一：交换对称保护的奇偶相消 | B | 有限和的无固定点反号 involution 相消已库有；sum_involution 由所引行 prod_involution 的 to_additive 生成。缺实际词交换保持合法历史且反转逆序奇偶的类型化绑定，不能把上文式12当已冻结前件。 | `Finset.sum_involution` (Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean:665) | not run | q-combinatorics, third-bindings |
 | 67 | `7721167db127aee2407282ad63f0739c5d953cd1720752a4d67089f562f7f10b` | 定理 I3：高斯历史残差逼近真实谱虚部 | C | 缺允许 Jordan 块的固定历史度量误差界与明确维数常数，不是通常酉谱不变性。 | none claimed | not run | gaussian-moments, negative-spectrum-refined |
 | 68 | `77c2008257f3b60bc946f7a241541d17e94ffbd08b19325833bb0612dc5b1af0` | 定理 K3：历史体积上限与实根性等价 | C | 缺 HCIZ/历史体积的大 r 指数率反向检测虚部，以及实根时的体积上界。 | none claimed | not run | special-polynomials, negative-spectrum-refined |
 | 69 | `781219f95a1fdbea17a70a99cd34033d8dcc9569251b578580b4da952a19bbfd` | 定理六：每个接触点贡献的负区域与负总量 | C | 缺触点局部一致缩放后负区长度与积分极限的误差控制，尤其积分域随 delta 变化。 | none claimed | not run | toeplitz, real-calculus |
@@ -176,7 +188,7 @@ All Mathlib paths below are relative to `.lake/packages/mathlib/`. Every listed 
 | 111 | `c24e34de0c01213d2344c494115a947d88276005c94863a848567f7031e10009` | 引理：实际有限谱有统一界 | C | 缺正系数 D 与所有 P_d 在同一小圆盘的统一支配及倒数多项式的根传递；norm<1 推非零只供应末步。 | none claimed | not run | special-polynomials, theta-analytic |
 | 112 | `c468d943aacd5d85352a7866613f53c2d6b6fd3e5a7c94cf9a5115a718abb0c9` | 定理 V5：实际全部两点矩阵正半定 | B | Schur 正性等价可以把两点矩阵降为标量行列式判据；缺实际 mu 正且递增、mu(b)/b 递减的 theta Turan/协方差分析。 | `Matrix.PosDef.fromBlocks₁₁` (Mathlib/LinearAlgebra/Matrix/PosDef.lean:563) | not run | schur, theta-analytic |
 | 113 | `c600e6828d8eeb65e865c4c7c465be9aa00cb5a30100be45cfcb26542c868b4d` | 定理 K4：固定宽度序列判据 | C | 缺统一小历史行列式下界与离线谱虚部检测在 d^4 窗口内的定量结合。 | none claimed | not run | special-polynomials, gaussian-moments |
-| 114 | `cd2ad7f9986ee06ef6a8ac86aa7834a19d836483eaa1475b57396f3ba7ae536a` | 推论：实根性向低阶传递 | B | 带重数的多项式 Rolle 计数已有，且冻结 P_d 降阶已核；仍缺 q_d 倒数缩放、正根域保存与塔上归纳/最小失败阶的完整绑定。 | `Polynomial.card_roots_le_derivative` (Mathlib/Analysis/Calculus/LocalExtr/Polynomial.lean:66) | not run | fifth-bindings, fifth-reweighting, frozen-jensen-path |
+| 114 | `cd2ad7f9986ee06ef6a8ac86aa7834a19d836483eaa1475b57396f3ba7ae536a` | 推论：实根性向低阶传递 | B | 带重数的多项式 Rolle 计数已有，且冻结 P_d 降阶已核；仍缺 q_d 倒数缩放、正根域保存与塔上归纳/最小失败阶的完整绑定。 | `Polynomial.card_roots_le_derivative` (Mathlib/Analysis/Calculus/LocalExtr/Polynomial.lean:63) | not run | fifth-bindings, fifth-reweighting, frozen-jensen-path |
 | 115 | `cf00b1802f9e0029835530f6cff45c04fc84ccaa1f13d1eadc540c1dc6259ba3` | 定理二：金字塔最大熵几何的曲率 | C | 缺该统计度量的 Levi-Civita/曲率计算及 warped-product 截面公式接口；不是把已知 f 的两个导数代入即可认证几何。 | none claimed | not run | fifth-bindings, convex-local |
 | 116 | `d434181a00c8203a60054490e976fdfcfe0f1b1c1fc42b9a2d58797aa0341a9d` | 推论：整个历史过程到底消除了多少？ | B | 半无限 FTC 可把耗散导数积分成端点差；缺实际平方下降律、无穷残差极限和谱平方和识别。 | `MeasureTheory.integral_Ioi_of_hasDerivAt_of_tendsto` (Mathlib/MeasureTheory/Integral/IntegralEqImproper.lean:787) | not run | real-calculus, gaussian-moments |
 | 117 | `d46f67d9701bbca5691908d2a1ff2d60f8cc946f10b5a1e91c784b83ad378bde` | 定理 M2：线性历史窗口的自动通过区域 | C | 缺实际 Schur 系数稀释界、S_d 到 S* 的定量控制及明确常数8；标量 exp 单调性不供应窗口。 | none claimed | not run | special-polynomials, gaussian-moments |
@@ -327,6 +339,7 @@ Frozen state JSON stores only `statement_id`; module names must be located throu
 - `04be1e7a603eeca9c364c70bd8c17be0530256d6`
 - `5408df1bd556f4426487cce03b82b5b239b82454`
 - `d85d63b1763bbd197a317496845b18d5f5de7dab`
+- `b54b06ba7fc5680a50e0c97cc3f742e90b3316f7`
 
 Every listed checkpoint was pushed successfully. The final runner envelope includes the commit containing this final report (a commit cannot contain its own hash).
 

@@ -843,10 +843,10 @@
       "index": 66,
       "tier": "B",
       "claim": "特定占据 (4,2,1,1) 历史调度保持 5/7 交换时，pi 振幅为零。",
-      "reason": "有限和的无固定点反号 involution 相消已库有；缺实际词交换保持合法历史且反转逆序奇偶的类型化绑定，不能把上文式12当已冻结前件。",
+      "reason": "有限和的无固定点反号 involution 相消已库有；sum_involution 由所引行 prod_involution 的 to_additive 生成。缺实际词交换保持合法历史且反转逆序奇偶的类型化绑定，不能把上文式12当已冻结前件。",
       "mathlib": [
         {
-          "declaration": "Finset.sum_involution (to_additive of prod_involution)",
+          "declaration": "Finset.sum_involution",
           "file": "Mathlib/Algebra/BigOperators/Group/Finset/Basic.lean",
           "line": 665
         }
@@ -1307,7 +1307,7 @@
         {
           "declaration": "Polynomial.card_roots_le_derivative",
           "file": "Mathlib/Analysis/Calculus/LocalExtr/Polynomial.lean",
-          "line": 66
+          "line": 63
         }
       ],
       "repository_leads": [
@@ -4949,6 +4949,8 @@
       "correction": "An initial content search returned zero because state JSON stores only statement_id; filename search and a JSON read confirm the frozen record."
     }
   ],
+  "verification": null,
+  "input_metadata_note": "The input bytes field measures Unicode characters, not UTF-8 bytes, for all 150 atoms. Canonical raw-text SHA-256 equals atom_id for every atom; input is preserved.",
   "mathlib_pin": {
     "lean": "leanprover/lean4:v4.33.0",
     "inputRev": "v4.33.0",
@@ -4969,7 +4971,8 @@
       "047b934232c4af2ade19c4c4c2aeba52bf60edb2",
       "04be1e7a603eeca9c364c70bd8c17be0530256d6",
       "5408df1bd556f4426487cce03b82b5b239b82454",
-      "d85d63b1763bbd197a317496845b18d5f5de7dab"
+      "d85d63b1763bbd197a317496845b18d5f5de7dab",
+      "b54b06ba7fc5680a50e0c97cc3f742e90b3316f7"
     ],
     "branch": "lane/math/tier3-mathlib-triage-0909",
     "note": "Commits through the preceding checkpoint; final delivery envelope also records its containing report commit."
@@ -4981,13 +4984,11 @@
     "The total duration was not supplied; 120 minutes is an explicitly disclosed working assumption."
   ],
   "nonclaims": [
-    "- No production Lean module has been created or edited.",
-    "- No `make cover`, `make deposit`, digestion mutation, freeze, or PR is performed.",
-    "- No exhaustive repository, Mathlib, third-party, or literature search is claimed.",
-    "- A search miss is not proof that Mathlib contains no equivalent statement.",
-    "- No proof, provability, research novelty, or new implication to RH is claimed",
-    "  for unprobed atoms or for B/C candidates.",
-    "- Temporary probes only test the statements explicitly printed in their files;",
-    "  a passed subclaim cannot certify a larger source assertion."
+    "No production Lean module has been created or edited.",
+    "No `make cover`, `make deposit`, digestion mutation, freeze, or PR is performed.",
+    "No exhaustive repository, Mathlib, third-party, or literature search is claimed.",
+    "A search miss is not proof that Mathlib contains no equivalent statement.",
+    "No proof, provability, research novelty, or new implication to RH is claimed for unprobed atoms or for B/C candidates.",
+    "Temporary probes only test the statements explicitly printed in their files; a passed subclaim cannot certify a larger source assertion."
   ]
 }
