@@ -89,7 +89,7 @@ internal sealed class ScribeTestMapStore(
 {
     private static readonly UTF8Encoding StrictUtf8 = new(false, true);
     private readonly Func<RepositorySnapshot, ScribeTestMap> deriveSnapshot =
-        derive ?? (snapshot => ScribeTestMapDeriver.DeriveSnapshot(snapshot, describeInputPaths));
+        derive ?? ScribeTestMapDeriver.DeriveSnapshot;
     private readonly ConcurrentQueue<ScribeTestMapCacheEvent> events = new();
 
     // Events are observational; ordering between Current and Baseline is not a contract.

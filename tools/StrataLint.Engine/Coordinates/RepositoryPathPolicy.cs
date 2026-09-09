@@ -16,8 +16,7 @@ internal static partial class RepositoryPathPolicy
     // 的 SL-000 拒绝(三条判词见 #5251)。故改由路径规则治理。
     internal const string SpecRootPath = "docs/develop/spec/";
     internal const string AssumptionRegistryPath = "D5/X_Assumptions/REGISTRY.md";
-    internal const string PrWorkflowPath = ".github/workflows/ci-pr.yml";
-    internal const string PushWorkflowPath = Trureturing.Truth.TruthReleasePushRunSelector.WorkflowPath;
+    internal const string WorkflowPath = ".github/workflows/ci.yml";
     // 缓存发布 workflow（#2542）。`.github` 下是白名单而非通配，新增控制工件必须在此具名登记。
     internal const string CachePublicationWorkflowPath =
         ".github/workflows/lean-cache-publish.yml";
@@ -145,13 +144,12 @@ internal static partial class RepositoryPathPolicy
             or "Library/queries.yaml" or AssumptionRegistryPath
             or "tools/tests/StrataLint.Tests/Fixtures/fixture-registry.yaml"
             or "Golden/values-kernels.toml"
-            or PrWorkflowPath
-            or PushWorkflowPath
+            or WorkflowPath
             or CachePublicationWorkflowPath
             or TruthReleasePublicationWorkflowPath
             or AnalysisFixturesWorkflowPath
-            or HarnessGatePath
             or ".github/CODEOWNERS"
+            or HarnessGatePath
             || value.StartsWith("tools/", StringComparison.Ordinal)
             || DigestionCasStore.IsCanonicalPath(value)
             || BackfillInventoryLoader.IsCanonicalPath(value)

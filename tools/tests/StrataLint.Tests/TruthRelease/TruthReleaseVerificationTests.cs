@@ -141,8 +141,9 @@ public sealed class TruthReleaseVerificationTests
               "trust": {
                 "commit_on_protected_dev": true,
                 "required_checks": [
-                  { "name": "engineering", "conclusion": "success" },
-                  { "name": "current", "conclusion": "success" }
+                  { "name": "Candidate harness engineering checks", "conclusion": "success" },
+                  { "name": "Canonical Lean report production", "conclusion": "success" },
+                  { "name": "Content-addressed dev baseline admission", "conclusion": "success" }
                 ]
               },
               "producer": {

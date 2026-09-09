@@ -36,7 +36,6 @@ public sealed class DependencyDirectionTests
             // unknown 桶里 —— 新身份撞 SL-003 棘轮。故名字不再穷举引用集,以下列表为准。
             [
                 "StrataLint.Engine",
-                "StrataLint.EngineeringScope",
                 "StrataLint.Scribe",
                 "StrataLint.Scribe.Documents",
                 "Tomlyn",
