@@ -41,8 +41,11 @@ def main():
     negatives.append(validate_control(repository, streaming))
     from bounded_fixtures import non_evidence, two_batches
     bounds = [non_evidence(repository, streaming), two_batches(repository, streaming)]
-    from tests.review_fixtures import colliding_owners
+    from tests.review_fixtures import colliding_owners, nested_scope, receipt_sensitivity, named_ballast
     bounds.append(colliding_owners(repository, streaming))
+    bounds.append(named_ballast(repository, streaming))
+    negatives.append(nested_scope(repository, streaming))
+    negatives.append(receipt_sensitivity(repository, streaming))
     from chunk_fixtures import check_chunks
     chunks = check_chunks(repository, directory)
     result = {"negative_fixtures": negatives, "lean_fixture_modules": cases, "retained_fixture_execution": "Lake lean_lib build",

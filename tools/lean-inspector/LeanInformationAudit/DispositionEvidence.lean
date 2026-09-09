@@ -59,7 +59,7 @@ def structuralProvenanceEntries (env : Environment) : Array StructuralProvenance
 private def failClass (key : StatementKey) (className invalid : String) : MetaM α :=
   throwError (classError key.theoremName className invalid)
 
-private def constant (key : StatementKey) (className field : String)
+private def checkedConstant (key : StatementKey) (className field : String)
     (name : Name) : MetaM Expr := do
   unless (← getEnv).contains name do
     failClass key className field
@@ -70,9 +70,15 @@ private def constant (key : StatementKey) (className field : String)
     failClass key className s!"{field}.axioms"
   mkConstWithFreshMVarLevels name
 
-private def typed (key : StatementKey) (className field : String)
+private def constant (modules : Array Name) (key : StatementKey) (className field : String)
+    (name : Name) : MetaM Expr := do
+  unless ← CensusOwnership.nameInScope (← getEnv) modules name do
+    failClass key className s!"{field}.root_membership"
+  checkedConstant key className field name
+
+private def typed (modules : Array Name) (key : StatementKey) (className field : String)
     (name : Name) (expected : Expr) : MetaM Expr := do
-  let value ← constant key className field name
+  let value ← constant modules key className field name
   unless ← isDefEq (← inferType value) expected do
     failClass key className field
   checkWithKernel value
@@ -135,29 +141,31 @@ private def validateFinite (modules : Array Name) (key : StatementKey)
   unless payload.realization == registration.realizationName do
     throwError (identityError key.theoremName "realization" registration.realizationName.toString
       payload.realization.toString)
+  for (field, name) in [("canonical_arena", payload.canonicalArena),
+      ("registration", payload.registration), ("realization", payload.realization),
+      ("law_arena", registration.arenaName)] do
+    discard <| constant modules key "finite_occurrence" field name
   let some sealed := finiteSealInScope? env modules key.theoremName payload.canonicalArena
     | failClass key "finite_occurrence" "maximal_catalog_seal"
-  let certificate ← constant key "finite_occurrence" "seal_certificate" sealed
+  let certificate ← constant modules key "finite_occurrence" "seal_certificate" sealed
   checkWithKernel certificate
   let lawArena ← mkConstWithFreshMVarLevels registration.arenaName
   let arena ← mkAppM ``PrimitiveLawArena.toArena #[lawArena]
-  let _ ← typed key "finite_occurrence" "nondegeneracy_certificate"
+  let _ ← typed modules key "finite_occurrence" "nondegeneracy_certificate"
     payload.nondegeneracyCertificate (← mkAppM ``Arena.Nondegenerate #[arena])
-  let _ ← typed key "finite_occurrence" "state_enumeration_certificate"
+  let _ ← typed modules key "finite_occurrence" "state_enumeration_certificate"
     payload.stateEnumerationCertificate (← mkAppM ``Arena.StateEnumeration #[arena])
 
-private def inRoot (env : Environment) (modules : Array Name) (name : Name) : Bool :=
-  env.contains name && modules.contains
-    ((env.getModuleIdxFor? name).map (env.header.moduleNames[·.toNat]!)
-      |>.getD env.header.mainModule)
+private def inRoot (env : Environment) (modules : Array Name) (name : Name) : IO Bool :=
+  CensusOwnership.nameInScope env modules name
 
 private def structuralRegistrations (modules : Array Name) : MetaM (Array (Name × Expr)) := do
   let mut result := #[]
   for (name, info) in (← getEnv).constants.toList do
-    if info.type.isAppOfArity ``StructuralRegistrationEvidence 6 &&
-        inRoot (← getEnv) modules name then
-      let registration ← mkConstWithFreshMVarLevels name
-      result := result.push (name, ← inferType registration)
+    if info.type.isAppOfArity ``StructuralRegistrationEvidence 6 then
+      if ← inRoot (← getEnv) modules name then
+        let registration ← mkConstWithFreshMVarLevels name
+        result := result.push (name, ← inferType registration)
   return result.qsort fun left right => left.1.toString < right.1.toString
 
 open Elab Command Term
@@ -180,9 +188,10 @@ elab "structural_theorem " theoremId:ident " in " lawArenaId:ident
     let lawArenaName ← liftCoreM <| realizeGlobalConstNoOverloadWithInfo lawArenaId
     let certificateName ← liftCoreM <| realizeGlobalConstNoOverloadWithInfo certificateId
     let entry ← liftTermElabM do
+      let modules := censusRootModules (← getEnv) (← getEnv).header.mainModule
       let key : StatementKey := ⟨theoremName, ""⟩
       let className := "structural_occurrence"
-      let lawArena ← constant key className "law_registration" lawArenaName
+      let lawArena ← constant modules key className "law_registration" lawArenaName
       let lawType ← inferType lawArena
       unless lawType.isAppOfArity ``StructuralPrimitiveLawArena 1 &&
           lawType.getAppArgs[0]!.isConst do
@@ -192,7 +201,7 @@ elab "structural_theorem " theoremId:ident " in " lawArenaId:ident
       for entry in structuralRegistry.getState before do
         if entry.canonicalArena == canonicalArena && entry.lawArenaConst != lawArenaName then
           failClass key className "realization.canonical_law_arena"
-      let _ ← typed key className "law.nondegeneracy" certificateName
+      let _ ← typed modules key className "law.nondegeneracy" certificateName
         (← mkAppM ``StructuralPrimitiveLawArena.Nondegenerate #[lawArena])
       let signature ← mkAppM ``StructuralPrimitiveLawArena.signature #[lawArena]
       let realizationType ← mkAppM ``StructuralPrimitiveRealization #[arena, signature]
@@ -217,7 +226,7 @@ elab "structural_theorem " theoremId:ident " in " lawArenaId:ident
       addAndCompile <| .thmDecl {
         name := theoremName, levelParams, type := statement, value := proof }
       let theoremConst := Lean.mkConst theoremName (levelParams.map Lean.Level.param)
-      let _ ← constant key className "theorem" theoremName
+      let _ ← constant modules key className "theorem" theoremName
       let unit ← mkAppM ``StructuralPrimitiveRealization.toTheoremUnit
         #[realizationConst, statement, theoremConst]
       let unitType ← instantiateMVars (← inferType unit)
@@ -351,7 +360,10 @@ private def validateStructuralProvenance (root : Name) (head : String) (modules 
     (key : StatementKey) (payload : StructuralOccurrenceDisposition key) : MetaM ProvenanceSource := do
   let className := "structural_occurrence"
   let env ← getEnv
-  let entries := (structuralRegistry.getState env).filter (·.theoremName == key.theoremName)
+  let occurrences := (structuralRegistry.getState env).filter (·.theoremName == key.theoremName)
+  let entries := occurrences.filter (fun entry => modules.contains entry.registrationModule)
+  if entries.isEmpty && !occurrences.isEmpty then
+    throwError (censusError head "root" s!"import-closure-containing:{key.theoremName}" root.toString)
   unless entries.size == 1 do failClass key className "realization.provenance"
   let entry := entries[0]!
   unless modules.contains entry.registrationModule &&
@@ -379,8 +391,8 @@ private def validateStructuralProvenance (root : Name) (head : String) (modules 
   for (field, name) in [("realization.law_arena", entry.lawArenaConst),
       ("realization", entry.realizationConst), ("realization.unit", entry.unitConst),
       ("realization.law_nondegeneracy", entry.certificateName)] do
-    let value ← constant key className field name
-    unless inRoot env modules name do failClass key className s!"{field}.root_membership"
+    let value ← constant modules key className field name
+    unless ← inRoot env modules name do failClass key className s!"{field}.root_membership"
     checkWithKernel value
   let lawArena ← mkConstWithFreshMVarLevels entry.lawArenaConst
   let lawType ← inferType lawArena
@@ -388,12 +400,12 @@ private def validateStructuralProvenance (root : Name) (head : String) (modules 
       lawType.getAppArgs[0]!.isConstOf entry.canonicalArena do
     failClass key className "realization.canonical_law_arena"
   for other in structuralRegistry.getState env do
-    if other.canonicalArena == entry.canonicalArena &&
+    if modules.contains other.registrationModule && other.canonicalArena == entry.canonicalArena &&
         other.lawArenaConst != entry.lawArenaConst then
       failClass key className "realization.canonical_law_arena"
-  let _ ← typed key className "realization.law_nondegeneracy" entry.certificateName
+  let _ ← typed modules key className "realization.law_nondegeneracy" entry.certificateName
     (← mkAppM ``StructuralPrimitiveLawArena.Nondegenerate #[lawArena])
-  let registration ← constant key className "registration" payload.registration
+  let registration ← constant modules key className "registration" payload.registration
   let registrationType ← inferType registration
   unless registrationType.isAppOfArity ``StructuralRegistrationEvidence 6 do
     failClass key className "registration"
@@ -406,9 +418,9 @@ private def validateStructural (root : Name) (head : String) (modules : Array Na
     (theoremProof statement : Expr) (payload : StructuralOccurrenceDisposition key) : MetaM ProvenanceSource := do
   let className := "structural_occurrence"
   let source ← validateStructuralProvenance root head modules key payload
-  unless inRoot (← getEnv) modules payload.registration do
+  unless ← inRoot (← getEnv) modules payload.registration do
     failClass key className "registration.root_membership"
-  let registration ← constant key className "registration" payload.registration
+  let registration ← constant modules key className "registration" payload.registration
   let registrationType ← inferType registration
   unless registrationType.isAppOfArity ``StructuralRegistrationEvidence 6 do
     failClass key className "registration"
@@ -427,9 +439,9 @@ private def validateStructural (root : Name) (head : String) (modules : Array Na
       ("canonical_catalog", catalogValue.constName!), ("realization", payload.realization),
       ("strictness_certificate", payload.strictnessCertificate),
       ("witness_certificate", payload.witnessCertificate)] do
-    if (← getEnv).contains name && !inRoot (← getEnv) modules name then
+    if (← getEnv).contains name && !(← inRoot (← getEnv) modules name) then
       failClass key className s!"{field}.root_membership"
-  let realized ← constant key className "realization" payload.realization
+  let realized ← constant modules key className "realization" payload.realization
   let realizationType ← inferType realized
   unless realizationType.isAppOfArity ``StructuralPrimitiveRealization 2 do
     failClass key className "realization"
@@ -447,7 +459,7 @@ private def validateStructural (root : Name) (head : String) (modules : Array Na
     unless (← getEnv).contains name do
       throwError s!"IE-C038 MissingStructuralWitness theorem={key.theoremName} \
 arena={payload.canonicalArena} missing={field}"
-    let value ← constant key className field name
+    let value ← constant modules key className field name
     unless ← isDefEq (← inferType value) expected do
       throwError s!"IE-C038 MissingStructuralWitness theorem={key.theoremName} \
 arena={payload.canonicalArena} missing={field}"
@@ -477,28 +489,28 @@ arena={payload.canonicalArena} missing={field}"
           catch _ => failClass key className "duplicate_catalog_index"
   return source
 
-private def validateBounded (key : StatementKey) (statement : Expr)
+private def validateBounded (modules : Array Name) (key : StatementKey) (statement : Expr)
     (payload : BoundedFiniteTruncationDisposition key) : MetaM Unit := do
   let className := "bounded_finite_truncation"
-  let family ← constant key className "truncation_family" payload.truncationFamily
+  let family ← constant modules key className "truncation_family" payload.truncationFamily
   let familyType ← inferType family
   unless familyType.isAppOfArity ``BoundedTruncationFamily 1 do
     failClass key className "truncation_family"
   unless ← isDefEq familyType.getAppArgs[0]! statement do
     failClass key className "truncation_family.statement"
   let approximation ← mkAppM ``BoundedTruncationFamily.approximation #[family, mkNatLit payload.bound]
-  let _ ← typed key className "comparison_statement" payload.comparisonStatement
+  let _ ← typed modules key className "comparison_statement" payload.comparisonStatement
     (← mkArrow statement approximation)
   match payload.certification with
   | .reportOnly => pure ()
   | .transferred theoremName =>
-    let _ ← typed key className "transfer_theorem" theoremName (← mkArrow approximation statement)
+    let _ ← typed modules key className "transfer_theorem" theoremName (← mkArrow approximation statement)
     pure ()
 
 private def validateUnreachable (modules : Array Name) (registrations : Array (Name × Expr))
     (key : StatementKey) (statement : Expr) (payload : UnreachableDisposition key) : MetaM Unit := do
   let className := "unreachable"
-  let evidence ← typed key className "evidence" payload.evidence
+  let evidence ← typed modules key className "evidence" payload.evidence
     (← mkAppM ``UnreachableElaborationEvidence #[statement])
   let evidence ← whnf evidence
   unless evidence.isAppOfArity ``UnreachableElaborationEvidence.mk 5 do
@@ -515,7 +527,7 @@ private def validateUnreachable (modules : Array Name) (registrations : Array (N
   unless obligationOption.isAppOfArity ``Option.some 2 do
     failClass key className "evidence.failed_obligation"
   let obligationName : Name ← reduceEval obligationOption.getAppArgs[1]!
-  let obligation ← constant key className "evidence.failed_obligation" obligationName
+  let obligation ← constant modules key className "evidence.failed_obligation" obligationName
   let obligationType ← inferType obligation
   let obligationArgs := obligationType.getAppArgs
   let candidateOption ← whnf args[2]!
@@ -547,7 +559,8 @@ private def validateUnreachable (modules : Array Name) (registrations : Array (N
   let recordedTheorem : Name ← reduceEval obligationArgs[0]!
   unless recordedTheorem == key.theoremName do failClass key className "evidence.theorem"
   checkWithKernel obligation
-  if (InformationRegistry.entries (← getEnv)).any (·.theoremName == key.theoremName) then
+  if (InformationRegistry.entries (← getEnv)).any (fun entry =>
+      entry.theoremName == key.theoremName && modules.contains entry.registrationModuleName) then
     failClass key className "registered_realization"
   if (structuralRegistry.getState (← getEnv)).any (fun entry =>
       entry.theoremName == key.theoremName && modules.contains entry.registrationModule) then
@@ -564,7 +577,7 @@ private def validateUnreachable (modules : Array Name) (registrations : Array (N
   | _ =>
     unless candidate.isAppOfArity ``Option.some 2 do failClass key className "candidate_arena"
     let name : Name ← reduceEval candidate.getAppArgs[1]!
-    let arena ← constant key className "candidate_arena" name
+    let arena ← constant modules key className "candidate_arena" name
     let type ← inferType arena
     unless type.isConstOf ``Arena || type.isConstOf ``StructuralArena ||
         type.isConstOf ``PrimitiveLawArena do failClass key className "candidate_arena"
@@ -597,7 +610,7 @@ private def validateObserved (head : String) (root : Name) (modules : Array Name
       if name == candidate then
         let registeredName : Name ← reduceEval type.getAppArgs[0]!
         registered := registeredName == key.theoremName
-    unless inRoot env modules candidate && (finite || structural || registered) do
+    unless (← inRoot env modules candidate) && (finite || structural || registered) do
       throwError (censusError head "candidates" "matching-registration-or-realization"
         candidate.toString)
 
@@ -615,7 +628,7 @@ def validateEvidenceSources (root : Name) (inventory : DispositionInventory)
   let mut sources := #[]
   for entry in inventory.sortedEntries do
     let key := entry.1
-    let theoremExpr ← constant key entry.2.className "theorem" key.theoremName
+    let theoremExpr ← checkedConstant key entry.2.className "theorem" key.theoremName
     unless (← getConstInfo key.theoremName).isTheorem do
       failClass key entry.2.className "theorem"
     let statement ← inferType theoremExpr
@@ -627,7 +640,7 @@ def validateEvidenceSources (root : Name) (inventory : DispositionInventory)
         let source ← validateStructural root inventory.headSha modules registrations
           key theoremExpr statement payload
         unless sources.contains source do sources := sources.push source
-      | .boundedFiniteTruncation payload => validateBounded key statement payload
+      | .boundedFiniteTruncation payload => validateBounded modules key statement payload
       | .unreachable payload =>
         unless ← CensusOwnership.theoremInScope env modules key.theoremName do
           throwError (censusError inventory.headSha "root"

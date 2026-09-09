@@ -31,7 +31,7 @@ info: rejected=true output-absent=true certificate-absent=true
 -/
 #guard_msgs in
 run_cmd do
-  expectRejectedCensus `LeanInformationAudit.Tests.Census.Evidence ``inventory
+  expectRejectedCensus (← getEnv).header.mainModule ``inventory
     `correctRootCoverage inventory
     (classError ``Evidence.structuralTheorem "unreachable" "registered_structural_realization")
 
