@@ -554,6 +554,16 @@ jobs:
           test -s "$scribe"
           /bin/bash "$GITHUB_WORKSPACE/candidate/tools/scripts/workflow/scribe-content-checks.sh" \
             "$report" "$scribe"
+      # TEMPORARY negative probe: close its trigger PR without merging this payload.
+      - name: Probe corrupt report cache recovery and exact reuse
+        if: github.event_name == 'pull_request'
+        env: { GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }
+        shell: bash
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/raw-lean-reports/corrupt-cache-probe"
+          mkdir "$evidence"
+          /bin/bash candidate/tools/scripts/workflow/report-cache-corrupt-probe.sh "$RUNNER_TEMP/raw-lean-reports/candidate-lean-report.json" "$evidence" 2>&1 | tee "$evidence/probe.log"
       - name: Upload raw Lean reports and producer logs
         if: always()
         uses: actions/upload-artifact@v4
