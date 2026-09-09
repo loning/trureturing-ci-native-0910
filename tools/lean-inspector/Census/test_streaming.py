@@ -20,12 +20,11 @@ class StreamingTests(unittest.TestCase):
             freshness(build)
         self.assertEqual(calls, [(["make", "lean"], "lake_freshness")])
 
-    def test_missing_and_extra_olean_fail_closed(self):
+    def test_missing_olean_fails_closed_and_untracked_cache_is_ignored(self):
         from streaming import check_domain
         with self.assertRaisesRegex(ValueError, "missing.*Fixture.B"):
             check_domain({"Fixture.A", "Fixture.B"}, {"Fixture.A"})
-        with self.assertRaisesRegex(ValueError, "extra.*Fixture.B"):
-            check_domain({"Fixture.A"}, {"Fixture.A", "Fixture.B"})
+        check_domain({"Fixture.A"}, {"Fixture.A", "Fixture.B"})
         check_domain({"Fixture.A"}, {"Fixture.A"})
 
     def test_ownership_collision_is_a_row_error(self):
