@@ -49,7 +49,7 @@ All have source_id `quantum-rh` and initial directory `residual-open`.
 | --- | --- | --- | --- |
 | A1 | `66fd622e5d54c25826af9d416db18df1d8eecf9c71288d80ff0460237e3e95d2` | residual-open | absorbed-closed; two edges |
 | A2 | `088d882f6a10249e981da5d77bc3bb5e53e75a5ee02313bdd7c879cb21e22413` | residual-open | absorbed-closed; one edge |
-| A3 | `5f5912050d91b5f8998e6799d12c40e766fa4d65798ff890b506a56c3bc0ed3c` | residual-open | full match; writer pending |
+| A3 | `5f5912050d91b5f8998e6799d12c40e766fa4d65798ff890b506a56c3bc0ed3c` | residual-open | absorbed-closed; one edge |
 | B1 | `c352d304105e02cbbcb0607e31a1e217adb85d4b344ba0d75c23ba4420dbf0e1` | residual-open | dossier pending; cover prohibited |
 | B2 | `7b2657006891568aa395dfd9fa14bde9d9d23d2ade0c449b00f7cdf5c616baec` | residual-open | dossier pending; cover prohibited |
 
@@ -223,7 +223,14 @@ Fidelity verdict: full match. Proposed use `proof_shape: bind-only`,
 `escape_witness: null`,
 `admission_basis: not-applicable(cover of an existing frozen declaration)`.
 The direct frozen dependency is the GID above with its recorded module pin.
-Writer outcome remains pending at this audit checkpoint.
+Writer receipt: `make cover-batch ATOMS=<attempt-1>/a3-cover.tsv
+BASE=1bb54f920527c303ebaec4e5388d48fcbee0df04` returned 0 and `status=applied`.
+The one-row TSV names only this atom and declaration. The atom migrated from
+`residual-open` to `absorbed-closed`, with one edge and no unresolved subitems.
+The writer's declaration pin is
+`sha256:8ded602bc1d7c17f7e80f170c674f3785b55e2f3b00a5836c0e032d8ec7c5a8e`.
+It reused the same cached Lean report and changed zero blueprints.
+`git diff --check` returned 0; the only ledger delta at this checkpoint is A3.
 
 ## Nonclaims
 
