@@ -1,3 +1,4 @@
+import LeanInformationAudit.Census.Stream
 import LeanInformationAudit.DispositionCensus
 
 namespace LeanInformationAudit.CensusQuery
@@ -36,34 +37,24 @@ structure Index where
   structural : Array StructuralProvenanceEntry
   named : Std.HashMap Name (Array Name)
 
-private def evidenceTypes : Array Name := #[
-  ``Arena.Nondegenerate, ``Arena.StateEnumeration, ``StructuralRegistrationEvidence,
-  ``StructuralCatalog.StructurallyLowersEscape, ``StructuralStrictnessCertificate,
-  ``BoundedTruncationFamily, ``UnreachableElaborationEvidence, ``AnalysisDisposition,
-  ``CensusAssessment]
-
-/-- Enumerate every constant and both persistent registries once. No caller can
-supply a completion flag or a candidate list. The index exists only after the
-entire traversal succeeds. Type heads define the named-evidence query domain;
-type equality and the census validator decide whether a candidate certifies. -/
-def buildIndex (root : Name) : MetaM Index := do
+/-- Fixture and elaborator queries enumerate ModuleData membership, including
+the current source's staged declarations. Production supplies the detached
+streamed index to the same assess function. -/
+def indexScope (root : Name) : MetaM Index := do
   let env ← getEnv
   let modules ← importClosure env root
   let members : Std.HashSet Name := Std.HashSet.ofArray modules
   let mut named : Std.HashMap Name (Array Name) := {}
-  for (name, info) in env.constants.toList do
-    unless members.contains (owningModule env name) do continue
-    let head := info.type.getAppFn.constName?.getD .anonymous
-    if evidenceTypes.contains head then
-      named := named.insert head ((named.getD head #[]).push name)
-    if info.isTheorem then
-      if let .forallE _ _ conclusion _ := info.type then
-        if conclusion.isAppOfArity ``BoundedTruncationFamily.approximation 3 &&
-            !conclusion.hasLooseBVars then
-          let head := ``BoundedTruncationFamily.approximation
-          named := named.insert head ((named.getD head #[]).push name)
-  for head in evidenceTypes.push ``BoundedTruncationFamily.approximation do
-    named := named.insert head ((named.getD head #[]).qsort Name.quickLt)
+  for moduleName in modules do
+    let data ← if moduleName == env.header.mainModule then mkModuleData env else do
+      let some index := env.getModuleIdx? moduleName
+        | throwError "census query: existing-module required: {moduleName}"
+      pure env.header.moduleData[index.toNat]!
+    for info in data.constants do
+      if let some head := CensusStream.indexedHead info then
+        named := named.insert head ((named.getD head #[]).push info.name)
+  for head in CensusStream.evidenceTypes.push CensusStream.approximationHead do
+    named := named.insert head ((named.getD head #[]).toList.eraseDups.toArray.qsort Name.quickLt)
   return {
     root, modules, named
     finite := (InformationRegistry.entries env).filter
@@ -83,16 +74,17 @@ private def matching (index : Index) (head : Name) (expected : Expr) : MetaM (Ar
 
 private def certified (index : Index) (head : String) (key : StatementKey)
     (value : AnalysisDisposition key) : MetaM (CensusAssessment key) := do
-  validateEvidence index.root ⟨head, #[⟨key, .certified value⟩]⟩
+  validateEvidence index.root ⟨head, #[⟨key, .certified value⟩]⟩ (some index.modules)
   return .certified value
 
 /-- Exhaustive within the declared query domain, never a mathematical classifier.
 Absence of the required named certificates leaves a diagnostic observation;
 errors from discovery or validation are propagated and never become observations. -/
-def assess (index : Index) (head : String) (key : StatementKey) : MetaM (CensusAssessment key) := do
+def assess (index : Index) (head : String) (key : StatementKey)
+    (recordedOwner : Option Name := none) : MetaM (CensusAssessment key) := do
   let env ← getEnv
-  let info ← getConstInfo key.theoremName
-  unless info.isTheorem && index.modules.contains (owningModule env key.theoremName) do
+  let owner := recordedOwner.getD (owningModule env key.theoremName)
+  unless ← CensusOwnership.recordedModuleContainsTheorem env index.modules owner key.theoremName do
     throwError "census query: theorem outside declared import scope: {key.theoremName}"
   let statement ← inferType (← mkConstWithFreshMVarLevels key.theoremName)
   let mut candidates := #[]
@@ -145,7 +137,7 @@ def assess (index : Index) (head : String) (key : StatementKey) : MetaM (CensusA
           let obligation ← whnf evidence.getAppArgs[4]!
           if obligation.isAppOfArity ``Option.some 2 then
             let obligationName : Name ← reduceEval obligation.getAppArgs[1]!
-            if env.contains obligationName then
+            if ← CensusOwnership.nameInScope env index.modules obligationName then
               let obligationType := (← getConstInfo obligationName).type
               if [``ClosedNumericalObligation, ``InfinitePrimitiveObligation,
                   ``UnfaithfulPrimitiveObligation].contains
@@ -189,7 +181,7 @@ def assess (index : Index) (head : String) (key : StatementKey) : MetaM (CensusA
   for value in dispositions do discard <| certified index head key value
   if let some value := dispositions[0]? then return .certified value
   return .observed {
-    owningModule := owningModule env key.theoremName
+    owningModule := owner
     root := index.root
     importScope := ⟨index.modules, true⟩
     queryCompleted := true

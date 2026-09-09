@@ -1,6 +1,46 @@
 """Emit pure Lean data from successful Lean query results, without importing targets."""
 
 import json
+import re
+
+
+def statement_nat(wire):
+    if not isinstance(wire, str) or not re.fullmatch(r"sha256:[0-9a-f]{64}", wire):
+        raise ValueError("IE-C036 component=statement_id_format")
+    value = int(wire[7:], 16)
+    if "sha256:" + format(value, "064x") != wire:
+        raise ValueError("IE-C036 component=statement_id_nat")
+    return value
+
+
+def parse_name_key(text):
+    data = text.encode("utf-8")
+
+    def parse(offset):
+        if data[offset:offset + 2] == b"n0":
+            return ["anonymous"], offset + 2
+        tag = data[offset:offset + 3]
+        if tag not in (b"ns(", b"nn("):
+            raise ValueError("invalid structured Name")
+        parent, offset = parse(offset + 3)
+        if data[offset:offset + 1] != b",":
+            raise ValueError("invalid Name separator")
+        end = offset + 1
+        while end < len(data) and 48 <= data[end] <= 57:
+            end += 1
+        value = int(data[offset + 1:end])
+        if tag == b"ns(":
+            if data[end:end + 1] != b":":
+                raise ValueError("invalid Name length")
+            value, end = data[end + 1:end + 1 + value].decode("utf-8"), end + 1 + value
+        if data[end:end + 1] != b")":
+            raise ValueError("invalid Name terminator")
+        return ["str" if tag == b"ns(" else "num", parent, value], end + 1
+
+    value, offset = parse(0)
+    if offset != len(data):
+        raise ValueError("trailing Name bytes")
+    return value
 
 
 def string(value):
@@ -18,55 +58,36 @@ def name(value):
     raise ValueError("invalid structured Lean name")
 
 
-def display(value):
-    if value == ["anonymous"]:
-        return ""
-    prefix = display(value[1])
-    return (prefix + "." if prefix else "") + str(value[2])
+def key_list(keys):
+    ordered = sorted(((key, statement_nat(wire)) for key, wire in keys), key=lambda item: item[1])
+    return "[\n" + ",\n".join(f"  ({name(key)}, {value})" for key, value in ordered) + "]"
 
 
-def array(values):
-    return "#[" + ", ".join(values) + "]"
+def chunked_keys(declaration, keys):
+    ordered = sorted(keys, key=lambda item: statement_nat(item[1]))
+    chunks = []
+    definitions = []
+    for start in range(0, len(ordered), 100):
+        chunk = f"{declaration}.chunk{start // 100}"
+        chunks.append(chunk)
+        definitions.append(f"noncomputable def {chunk} : List (Lean.Name × Nat) := "
+                           + key_list(ordered[start:start + 100]) + "\n")
+    definitions.append(f"noncomputable def {declaration} : List (Lean.Name × Nat) := "
+                       + "List.flatten [" + ", ".join(chunks) + "]\n")
+    return "".join(definitions)
 
 
-def row(value, scope):
-    key = f"(StatementKey.mk {name(value['theorem_name'])} {string(value['statement_id'])})"
-    payload = value["payload"]
-    kind = value["class"]
-    if kind == "observed":
-        fields = [name(payload["owning_module"]), name(payload["root"]), scope,
-                  "true" if payload["query_completed"] else "false",
-                  array(map(name, payload["candidates"])), string(payload["note"])]
-        assessment = "(.observed (AnalysisObservation.mk " + " ".join(fields) + "))"
-    else:
-        constructors = {
-            "finite_occurrence": ("finiteOccurrence", "FiniteOccurrenceDisposition", [
-                "canonical_arena", "registration", "realization", "nondegeneracy_certificate",
-                "state_enumeration_certificate"]),
-            "structural_occurrence": ("structuralOccurrence", "StructuralOccurrenceDisposition", [
-                "canonical_arena", "registration", "realization", "strictness_certificate",
-                "witness_certificate"]),
-        }
-        if kind in constructors:
-            case, constructor, fields = constructors[kind]
-            body = f"({constructor}.mk " + " ".join(name(payload[field]) for field in fields) + ")"
-        elif kind == "bounded_finite_truncation":
-            case = "boundedFiniteTruncation"
-            certification = payload["certification"]
-            status = (".reportOnly" if certification["kind"] == "report_only" else
-                      f"(.transferred {name(certification['transfer_theorem'])})")
-            body = (f"(BoundedFiniteTruncationDisposition.mk {name(payload['truncation_family'])} "
-                    f"{payload['bound']} {name(payload['comparison_statement'])} {status})")
-        elif kind == "unreachable":
-            case = "unreachable"
-            reasons = {"no_canonical_object_carrier": "noCanonicalObjectCarrier",
-                       "no_finite_primitive_bundle": "noFinitePrimitiveBundle",
-                       "no_faithful_primitive_realization": "noFaithfulPrimitiveRealization"}
-            body = f"(UnreachableDisposition.mk .{reasons[payload['reason']]} {name(payload['evidence'])})"
-        else:
-            raise ValueError(f"unknown census class: {kind}")
-        assessment = f"(.certified (.{case} {body}))"
-    return f"Sigma.mk {key} {assessment}"
+def manifest_source(rows, report_keys, head, digest, root):
+    root_name = ["anonymous"]
+    for part in root.split("."):
+        root_name = ["str", root_name, part]
+    inventory = chunked_keys("CensusRun.manifestKeys",
+                             ((row["theorem_name"], row["statement_id"]) for row in rows))
+    report = chunked_keys("CensusRun.reportKeys", ((parse_name_key(key), wire) for _, key, wire in report_keys))
+    return ("import LeanInformationAudit.Census.Certificate\nopen LeanInformationAudit\n"
+            + inventory + "noncomputable def CensusRun.manifest : CensusKeyManifest :=\n"
+            f"  {{ headSha := {string(head)}, reportSha256 := {string(digest)},\n"
+            f"    censusRoot := {name(root_name)}, keys := CensusRun.manifestKeys }}\n" + report)
 
 
 def write_module(directory, module, contents):
@@ -74,43 +95,3 @@ def write_module(directory, module, contents):
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(contents, encoding="utf-8")
     return path
-
-
-def module_pool(directory, module, results):
-    names = {json.dumps(value): value for result in results for value in result["scope"]["modules"]}
-    ordered = sorted(names)
-    indexes = {key: index for index, key in enumerate(ordered)}
-    parts = []
-    for start in range(0, len(ordered), 100):
-        number = start // 100
-        part = f"{module}.Group{number // 20:04d}.Names{number:05d}"
-        source = ("import Lean\n" + f"def {part}.names : Array Lean.Name :=\n  "
-                  + array(name(names[key]) for key in ordered[start:start + 100]) + "\n")
-        parts.append((part, write_module(directory, part, source)))
-    source = "".join(f"import {part}\n" for part, _ in parts)
-    source += f"def {module}.names : Array Lean.Name :=\n  "
-    source += " ++ ".join(part + ".names" for part, _ in parts) + "\n"
-    source += f"@[noinline] def {module}.get (index : Nat) : Lean.Name := {module}.names[index]!\n"
-    return parts + [(module, write_module(directory, module, source))], indexes
-
-
-def scope_module(directory, module, result, pool, indexes):
-    modules = string(json.dumps([indexes[json.dumps(value)] for value in result["scope"]["modules"]]))
-    contents = ("import LeanInformationAudit.Census.Publish\n" + f"import {pool}\n"
-                "open LeanInformationAudit\n"
-                f"private def {module}.indices : Array Nat :=\n"
-                f"  ((Lean.Json.parse {modules} >>= Lean.fromJson?).toOption.getD #[])\n"
-                f"opaque {module}.scope : ImportClosureScope :=\n"
-                f"  ImportClosureScope.mk ({module}.indices.map {pool}.get) true\n"
-                f"def {module}.record : CensusProjection.Scope :=\n"
-                f"  CensusProjection.Scope.mk {name(result['root'])} {module}.scope\n")
-    return write_module(directory, module, contents)
-
-
-def rows_module(directory, module, rows):
-    imports = sorted({scope for _, scope in rows})
-    contents = "".join(f"import {scope}\n" for scope in imports)
-    contents += "open LeanInformationAudit\n"
-    contents += f"def {module}.rows : Array (Sigma fun key : StatementKey => CensusAssessment key) := #[\n"
-    contents += ",\n".join("  " + row(value, scope + ".scope") for value, scope in rows) + "]\n"
-    return write_module(directory, module, contents)

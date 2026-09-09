@@ -1,28 +1,24 @@
 import LeanInformationAudit.Census.Publish
 
-open LeanInformationAudit
+open Lean LeanInformationAudit
 
 namespace LeanInformationAudit.Tests.Census.Query
 
-private def rows : DispositionInventory :=
-  { headSha := "head", entries := #[
-    Sigma.mk (StatementKey.mk `Absent.A "a")
-      (.observed (AnalysisObservation.mk `Absent `Scope
-        (ImportClosureScope.mk #[`Scope, `Absent] true) true #[] "")),
-    Sigma.mk (StatementKey.mk `Absent.A "b")
-      (.observed (AnalysisObservation.mk `Absent `Scope
-        (ImportClosureScope.mk #[`Scope, `Absent] true) true #[] ""))] }
+private def rows : CensusKeyManifest :=
+  ⟨"head", "digest", `Scope, [(`Absent.A, 0), (`Absent.A, 1)]⟩
 
 example : rows.ExactlyCovers "head" rows.keys.toFinset :=
-  CensusCoverage.of_sorted_ids rows "head" rows.keys rfl rfl (by decide)
+  CensusKeyManifest.exactlyCovers_of_certificate _ _ _ _ _
+    ⟨rfl, rfl, rfl, by decide, rfl⟩
 
-private def assembled : DispositionInventory :=
-  { rows with entries := CensusProjection.assemble #[#[rows.entries[0]!], #[], #[rows.entries[1]!]] }
+private def assembled : CensusKeyManifest :=
+  { rows with keys := [[(`Absent.A, 0)], [], [(`Absent.A, 1)]].flatten }
 
 example : assembled.ExactlyCovers "head" rows.keys.toFinset :=
-  CensusCoverage.of_sorted_ids assembled "head" rows.keys rfl (by decide) (by decide)
+  CensusKeyManifest.exactlyCovers_of_certificate _ _ _ _ _
+    ⟨rfl, rfl, rfl, by decide, rfl⟩
 
-example : !CensusCoverage.increasing ["a", "a"] := by decide
-example : !CensusCoverage.increasing ["b", "a"] := by decide
+example : !strictlyAscending [0, 0] := by decide
+example : !strictlyAscending [1, 0] := by decide
 
 end LeanInformationAudit.Tests.Census.Query

@@ -1,34 +1,26 @@
-import LeanInformationAudit.AnalysisDisposition
-import Mathlib.Data.List.Chain
+import Lean
+import LeanInformationAudit.Census.Certificate
+import Mathlib.Data.Finset.Card
 
-namespace LeanInformationAudit.CensusCoverage
+namespace LeanInformationAudit
 
-/-- Adjacent comparisons suffice for uniqueness in a strict total order. -/
-def increasing : List String -> Bool
-  | a :: b :: rest => decide (a < b) && increasing (b :: rest)
-  | _ => true
+open Lean
 
-private theorem increasing_chain (xs : List String) (h : increasing xs = true) :
-    xs.IsChain (fun a b => a < b) := by
-  induction xs with
-  | nil => simp
-  | cons a rest ih =>
-    cases rest with
-    | nil => simp
-    | cons b rest =>
-      simp only [increasing, Bool.and_eq_true, decide_eq_true_eq] at h
-      exact List.isChain_cons_cons.mpr (And.intro h.1 (ih h.2))
+instance : ToExpr CensusKeyManifest where
+  toTypeExpr := mkConst ``CensusKeyManifest
+  toExpr value := mkApp4 (mkConst ``CensusKeyManifest.mk) (toExpr value.headSha)
+    (toExpr value.reportSha256) (toExpr value.censusRoot) (toExpr value.keys)
 
-theorem of_sorted_ids (inventory : DispositionInventory) (head : String)
-    (keys : List StatementKey) (head_eq : inventory.headSha = head)
-    (keys_eq : inventory.keys = keys)
-    (ordered : increasing (keys.map StatementKey.statementId) = true) :
-    inventory.ExactlyCovers head keys.toFinset := by
-  have chain := increasing_chain _ ordered
-  have pairs := List.isChain_iff_pairwise.mp chain
-  have ids : (inventory.keys.map StatementKey.statementId).Nodup :=
-    keys_eq.symm ▸ pairs.imp (fun {a b} h eq => by subst b; exact String.lt_irrefl a h)
-  exact And.intro head_eq (And.intro (List.Nodup.of_map StatementKey.statementId ids)
-    (And.intro ids (congrArg List.toFinset keys_eq)))
+/-- The existing inventory accounting contract restated over Name × Nat.
+The hex-to-Nat correspondence is elaborator-validated, not a String-level theorem. -/
+def CensusKeyManifest.ExactlyCovers (m : CensusKeyManifest) (head : String)
+    (reportKeys : Finset (Name × Nat)) : Prop :=
+  m.headSha = head ∧ m.keys.Nodup ∧ (m.keys.map Prod.snd).Nodup ∧ m.keys.toFinset = reportKeys
 
-end LeanInformationAudit.CensusCoverage
+theorem CensusKeyManifest.exactlyCovers_of_certificate (m : CensusKeyManifest)
+    (head sha : String) (root : Name) (reportKeys : List (Name × Nat))
+    (h : m.Certificate head sha root reportKeys) : m.ExactlyCovers head reportKeys.toFinset := by
+  have ids := strictlyAscending_nodup _ h.2.2.2.1
+  exact ⟨h.1, List.Nodup.of_map Prod.snd ids, ids, congrArg List.toFinset h.2.2.2.2⟩
+
+end LeanInformationAudit

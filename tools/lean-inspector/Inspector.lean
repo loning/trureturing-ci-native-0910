@@ -9,46 +9,6 @@ import Lean.Meta
 
 open Lean
 
-structure ModuleInput where
-  moduleName : String
-  sourcePath : String
-  sourceSha256 : String
-
-structure DeclarationReport where
-  axioms : Array String
-  includeInStatement : Bool
-  kind : String
-  materialFile : String
-  name : String
-  nameKey : String
-
-structure UtilityInput where
-  modulePath : String
-  claimGid : String
-  claimModule : String
-  claimSelector : String
-  claimSourcePath : String
-  claimSourceSha256 : String
-  resultGid : String
-  resultModule : String
-  resultSelector : String
-  deriving FromJson
-
-structure RefutationReport where
-  claimGid : String
-  claimSourcePath : String
-  claimSourceSha256 : String
-  resultGid : String
-  isClosedNegation : Bool
-
-structure ModuleReport where
-  declarations : Array DeclarationReport
-  imports : Array String
-  moduleName : String
-  sourcePath : String
-  sourceSha256 : String
-  refutation : Option RefutationReport := none
-
 def atom (value : String) : String := s!"{value.utf8ByteSize}:{value}"
 
 partial def encodeName : Name → String
@@ -102,6 +62,46 @@ def encodeStatement (info : ConstantInfo) : String :=
       | some value => header ++ s!",value={encodeExpr value})"
       | none => header ++ ",value=missing)"
   | _ => header ++ ")"
+
+structure ModuleInput where
+  moduleName : String
+  sourcePath : String
+  sourceSha256 : String
+
+structure DeclarationReport where
+  axioms : Array String
+  includeInStatement : Bool
+  kind : String
+  materialFile : String
+  name : String
+  nameKey : String
+
+structure UtilityInput where
+  modulePath : String
+  claimGid : String
+  claimModule : String
+  claimSelector : String
+  claimSourcePath : String
+  claimSourceSha256 : String
+  resultGid : String
+  resultModule : String
+  resultSelector : String
+  deriving FromJson
+
+structure RefutationReport where
+  claimGid : String
+  claimSourcePath : String
+  claimSourceSha256 : String
+  resultGid : String
+  isClosedNegation : Bool
+
+structure ModuleReport where
+  declarations : Array DeclarationReport
+  imports : Array String
+  moduleName : String
+  sourcePath : String
+  sourceSha256 : String
+  refutation : Option RefutationReport := none
 
 def includeInStatement (name : Name) : ConstantInfo → Bool
   | .thmInfo _ => !(privateToUserName name).isInternalDetail
@@ -367,7 +367,44 @@ def parseArguments : List String → Except String
   | _ => .error
       "usage: Inspector.lean --output FILE --material-spool DIR [--utility-input FILE] MODULE SOURCE_PATH SOURCE_SHA256 [...]"
 
+/-- Read statement material only for requested Names in collision modules. No
+project module is imported: ModuleData parts are read and released one at a time. -/
+@[noinline] private unsafe def emitStatementIdentities (moduleName : String)
+    (paths : Array String) (keys : Std.HashSet String) (out : IO.FS.Stream) :
+    IO (Array CompactedRegion) := do
+  let parts ← readModuleDataParts (paths.map System.FilePath.mk)
+  let mut regions := #[]
+  for h : i in [:parts.size] do
+    let (data, region) := parts[i]
+    for info in data.constants do
+      let nameKey := encodeName info.name
+      unless keys.contains nameKey do continue
+      out.putStrLn (Json.mkObj [("module", toJson moduleName),
+        ("part", toJson (#["base", "server", "private"][i]!)),
+        ("name_key", toJson nameKey),
+        ("kind", toJson (if info.isTheorem then "theorem" else "other")),
+        ("statement_material", toJson (encodeStatement info))]).compress
+    regions := regions.push region
+  return regions
+
+private unsafe def statementIdentities (manifest request : String) : IO Unit := do
+  let modules ← IO.ofExcept <| (Json.parse (← IO.FS.readFile manifest) >>= fromJson?
+    (α := Array (String × Array String)))
+  let input ← IO.ofExcept <| Json.parse (← IO.FS.readFile request)
+  let rows ← IO.ofExcept <| input.getObjValAs? (Array (Array String)) "keys"
+  let keys := Std.HashSet.ofArray (rows.map (·[1]!))
+  let out ← IO.getStdout
+  for (moduleName, paths) in modules do
+    unless paths.size ≥ 1 && paths.size ≤ 3 do
+      throw <| IO.userError "expected a prefix of olean parts"
+    let regions ← emitStatementIdentities moduleName paths keys out
+    for region in regions.reverse do region.free
+    out.flush
+
 unsafe def main (args : List String) : IO Unit := do
+  if let ["--statement-identities", manifest, request] := args then
+    statementIdentities manifest request
+    return
   let (output, materialSpool, utilityInput, inputs) ← match parseArguments args with
     | .ok parsed => pure parsed
     | .error message => throw <| IO.userError message

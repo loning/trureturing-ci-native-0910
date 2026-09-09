@@ -24,13 +24,13 @@ def aliasedWitness : AliasedEvidence where
   failedObligation := some ``aliasObligation
 
 run_cmd liftTermElabM do
-  let index ← CensusQuery.buildIndex (← getEnv).header.mainModule
-  let privateRow ← CensusQuery.assess index "fixture-head" ⟨``privateTarget, "private-id"⟩
+  let index ← CensusQuery.indexScope (← getEnv).header.mainModule
+  let privateRow ← CensusQuery.assess index "fixture-head" ⟨``privateTarget, "sha256:0000000000000000000000000000000000000000000000000000000000000043"⟩
   match privateRow with
   | .certified (.unreachable value) =>
     unless value.evidence == ``privateWitness do throwError "privateDeclarationIncluded: wrong witness"
   | _ => throwError "privateDeclarationIncluded: private named evidence was excluded"
-  let aliasKey : StatementKey := ⟨``aliasTarget, "alias-id"⟩
+  let aliasKey : StatementKey := ⟨``aliasTarget, "sha256:0000000000000000000000000000000000000000000000000000000000000011"⟩
   validateEvidence index.root ⟨"fixture-head", #[⟨aliasKey,
     .certified (.unreachable ⟨.noCanonicalObjectCarrier, ``aliasedWitness⟩)⟩]⟩
   let aliasRow ← CensusQuery.assess index "fixture-head" aliasKey
