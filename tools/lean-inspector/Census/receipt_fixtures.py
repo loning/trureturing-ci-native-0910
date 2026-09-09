@@ -11,7 +11,7 @@ from resources import run
 
 def check_receipts(repository, directory, report_path):
     root = directory / "first"
-    source = root / "CensusRun/Root.lean"
+    source = root / "CensusRun/Bucket0.lean"
     original = source.read_text()
     driver = root / "CensusPublish/Root.lean"
     original_driver = driver.read_text()
@@ -73,7 +73,7 @@ def check_receipts(repository, directory, report_path):
         rejected("swapped-query-receipt", "query receipt")
     finally:
         manifest.write_bytes(original_manifest)
-    edited_inventory = re.sub(r"(CensusRun.manifestKeys.chunk0 : Nat := )(0x[0-9a-f]+)",
+    edited_inventory = re.sub(r"(CensusRun.Bucket0.manifestKeys.chunk0 : Nat := )(0x[0-9a-f]+)",
                               lambda match: match[1] + hex(int(match[2], 0) + 99), original, count=1)
     assert edited_inventory != original
     rejected("edited-inventory-row", "component=statement_id_nat", edited_inventory)
