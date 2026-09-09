@@ -5,12 +5,8 @@ using StrataLint.Engine;
 namespace StrataLint.Cli;
 
 /// <summary>
-/// 内容层的私有供给。依赖层有 `lake exe cache get` 这个公共供给，内容层没有 —— 本仓那
-/// 1408 个 olean 只有本仓有，无 donor 时它们此前只能从源码重编（#2729）。
-///
-/// 这里调的是 `lean-cache-publish.sh fetch`，它在解包前核验八类产地并对任一不符
-/// fail-closed（#2844）。本类型只负责**把它的判词读回来**，不自行判断可信与否：
-/// 归档是否可用由那个脚本判，这里判的只是「它说了什么」。
+/// Reads the optional same-partition Release seed receipt. Every outcome still
+/// enters normal Lake execution; neither a seed nor its absence is a verdict.
 /// </summary>
 internal enum LeanArchiveOutcome
 {
@@ -47,8 +43,10 @@ internal static class LeanArchiveFetch
     internal static LeanArchiveAttempt Run(
         string worktreeRoot,
         IWorktreeProcessRunner runner,
-        TimeSpan budget)
+        TimeSpan budget,
+        LeanCacheWriterGuard writerGuard)
     {
+        writerGuard.RequireOwnershipOf(Path.Combine(worktreeRoot, ".lake"));
         var script = ScriptPath(worktreeRoot);
         if (!File.Exists(script))
         {
@@ -66,7 +64,7 @@ internal static class LeanArchiveFetch
         {
             output = runner.Run(
                 "/bin/bash",
-                [script, "fetch", "--repository", worktreeRoot],
+                [script, "fetch", "--repository", worktreeRoot, "--writer-owned"],
                 worktreeRoot,
                 budget);
         }
@@ -138,6 +136,7 @@ internal static class LeanArchiveFetch
             var outcome = status switch
             {
                 "unpacked" => LeanArchiveOutcome.Unpacked,
+                "skipped" => LeanArchiveOutcome.NotAttempted,
                 "miss" => LeanArchiveOutcome.Miss,
                 "rejected" => LeanArchiveOutcome.Rejected,
                 _ => LeanArchiveOutcome.Failed,
@@ -154,7 +153,7 @@ internal static class LeanArchiveFetch
             // 这不是不信退出码，也不是只信退出码 —— 是要求两个独立信号一致。
             var consistent = outcome switch
             {
-                LeanArchiveOutcome.Unpacked => output.ExitCode == 0,
+                LeanArchiveOutcome.Unpacked or LeanArchiveOutcome.NotAttempted => output.ExitCode == 0,
                 LeanArchiveOutcome.Miss or LeanArchiveOutcome.Rejected => output.ExitCode != 0,
                 _ => true,
             };
@@ -175,7 +174,7 @@ internal static class LeanArchiveFetch
                 Text(root, "producer_commit_sha"),
                 Text(root, "workflow_run_id"),
                 outcome == LeanArchiveOutcome.Unpacked ? null : reason ?? status,
-                null);
+                outcome == LeanArchiveOutcome.NotAttempted ? reason : null);
         }
         catch (Exception exception) when (exception is JsonException
             or InvalidOperationException)

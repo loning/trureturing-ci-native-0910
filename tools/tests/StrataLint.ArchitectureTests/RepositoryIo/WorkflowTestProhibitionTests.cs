@@ -39,9 +39,6 @@ public sealed class WorkflowTestProhibitionTests
         {
             ["tools/tests/StrataLint.Tests/Admission/ReviewRegressionTests.Helpers.cs"] =
                 "在夹具仓内合成一份 workflow 喂 AdmissionTopology;不读本仓真实 workflow。",
-            ["tools/tests/StrataLint.Tests/Commands/LeanReport/LeanReportInputScriptTests.cs"] =
-                "生产脚本 lean-report-input.sh 自己解析 ci.yml(缺 job boundaries 即 SystemExit),"
-                + "夹具必须喂它;被测的是该脚本的 producer-paths 派生。",
         };
 
     private static readonly Regex WorkflowReference = new(

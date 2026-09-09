@@ -15,7 +15,9 @@ internal sealed partial class ProductionCliEnvironment
 
     private ScribeTestMapStore? TryCreateTestMapStore(
         string root,
-        out string? disabledOutcome)
+        out string? disabledOutcome,
+        Func<RepositorySnapshot, ScribeTestMap>? derive = null,
+        Func<IEnumerable<ScribeCompilationProject>, IReadOnlyList<string>>? describeInputPaths = null)
     {
         disabledOutcome = null;
         DirectoryScribeTestMapStorage storage;
@@ -31,7 +33,7 @@ internal sealed partial class ProductionCliEnvironment
 
         try
         {
-            return new ScribeTestMapStore(storage, DescribeTestMapEnvironment(), DeriveTestMap);
+            return new ScribeTestMapStore(storage, DescribeTestMapEnvironment(), derive ?? DeriveTestMap, describeInputPaths);
         }
         catch (Exception exception)
         {

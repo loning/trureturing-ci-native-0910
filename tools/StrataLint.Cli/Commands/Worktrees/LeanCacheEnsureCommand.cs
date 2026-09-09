@@ -6,29 +6,9 @@ namespace StrataLint.Cli;
 
 internal static partial class LeanCacheEnsureCommand
 {
-    private const string ColdBuildConsentVariable = "STRATALINT_ACCEPT_COLD_BUILD";
-
     private sealed record CacheState(
         OleanWarmthInspection Mathlib,
-        OleanWarmthInspection Project)
-    {
-        internal bool AllCold => !Mathlib.IsWarm && !Project.IsWarm;
-
-        internal bool HasProbeFailure => Mathlib.State == OleanWarmth.ProbeFailed
-            || Project.State == OleanWarmth.ProbeFailed;
-
-        internal string ProbeFailureDescription => string.Join(
-            "; ",
-            new[]
-            {
-                Mathlib.State == OleanWarmth.ProbeFailed
-                    ? $"mathlib: {Mathlib.Error ?? "unknown probe failure"}"
-                    : null,
-                Project.State == OleanWarmth.ProbeFailed
-                    ? $"project: {Project.Error ?? "unknown probe failure"}"
-                    : null,
-            }.Where(static detail => detail is not null));
-    }
+        OleanWarmthInspection Project);
 
     internal const string Usage = "USAGE: StrataLint worktree ensure-cache [--path DIR]";
     internal const string WriterUsage =
@@ -121,7 +101,7 @@ internal static partial class LeanCacheEnsureCommand
             cloner,
             guard,
             removePartial,
-            continueOnCacheGetFailure: false,
+            continueOnCacheGetFailure: true,
             stateProbe,
             out _);
     }
@@ -136,20 +116,17 @@ internal static partial class LeanCacheEnsureCommand
             arguments,
             runner,
             cloner,
-            FileSystemLeanCacheStateProbe.Instance,
-            Environment.GetEnvironmentVariable);
+            FileSystemLeanCacheStateProbe.Instance);
 
     internal static CommandResult RunWithWriter(
         string repositoryRoot,
         IReadOnlyList<string> arguments,
         IWorktreeProcessRunner runner,
         IDirectoryCloner cloner,
-        ILeanCacheStateProbe stateProbe,
-        Func<string, string?> readEnvironment)
+        ILeanCacheStateProbe stateProbe)
     {
         ArgumentNullException.ThrowIfNull(cloner);
         ArgumentNullException.ThrowIfNull(stateProbe);
-        ArgumentNullException.ThrowIfNull(readEnvironment);
         if (!TryParseWriter(repositoryRoot, arguments, out var root, out var command))
         {
             return new CommandResult(false, string.Empty, WriterUsage + "\n");
@@ -189,41 +166,10 @@ internal static partial class LeanCacheEnsureCommand
             removePartial: null,
             continueOnCacheGetFailure: true,
             stateProbe,
-            out var cacheState);
+            out _);
         if (!ensured.Success) return ensured;
 
         var receipt = ensured.Output;
-        if (cacheState is null)
-        {
-            return new CommandResult(
-                false,
-                receipt,
-                "cold-build guard did not receive a cache state from ensure\n");
-        }
-        if (cacheState.AllCold)
-        {
-            var consent = string.Equals(
-                readEnvironment(ColdBuildConsentVariable),
-                "1",
-                StringComparison.Ordinal);
-            if (!consent)
-            {
-                var refusal = cacheState.HasProbeFailure
-                    ? "COLD_BUILD_REFUSED cache warmth probe failed and was treated as cold (fail-closed): "
-                        + cacheState.ProbeFailureDescription
-                    : "COLD_BUILD_REFUSED mathlib and project olean caches are both cold.";
-                var target = ShellQuote(root);
-                return new CommandResult(
-                    false,
-                    receipt,
-                    refusal + "\n"
-                    + $"Fetch caches with: make -C {target} lean-cache-ensure\n"
-                    + "To accept this cold build once, run: "
-                    + $"{ColdBuildConsentVariable}=1 make -C {target} lean\n");
-            }
-            receipt = RecordColdBuildConsent(receipt);
-        }
-
         try
         {
             var invoked = runner.Run(
@@ -273,18 +219,15 @@ internal static partial class LeanCacheEnsureCommand
                 stampMiss = ReceiptStampMiss(stamp.State);
                 if (stamp.State == LeanCacheStampState.Match)
                 {
-                    // stamp 只表示**依赖层**身份。它 Match 而内容层是冷的，正是 CI 上
-                    // 「dependency cache 命中、project build cache 未命中」的形态：不在这里
-                    // 取内容层，后面的 producer 就会从源码重编（#2814 记的那条缺口）。
-                    //
-                    // 归档只在**内容层确实为冷且 build 根未被占用**时尝试；本机 donor 命中
-                    // 时根本走不到这里。取回失败一律降级为原样返回 present —— 慢，不是错。
+                    // A matching stamp identifies the partition, not completeness.
+                    // Release fallback may fill an empty project cache; Lake still
+                    // validates every restored trace during the normal build.
                     if (projectWarmth.State == OleanWarmth.Cold)
                     {
                         var contentRoot = stateProbe.InspectContentRoot(
                             Path.Combine(lake, "build"));
                         archive = contentRoot.Clear
-                            ? LeanArchiveFetch.Run(root, runner, ArchiveBudget)
+                            ? LeanArchiveFetch.Run(root, runner, ArchiveBudget, writerGuard)
                             : LeanArchiveAttempt.Skipped(
                                 contentRoot.Error ?? "content root already exists");
                         if (archive.Outcome == LeanArchiveOutcome.Unpacked)
@@ -503,50 +446,15 @@ internal static partial class LeanCacheEnsureCommand
                     ? selection.ProjectWarmth ?? projectWarmth
                     : projectWarmth;
 
-                // 内容层此刻若仍是冷的,就补它 —— 无论上一步是 cache get 还是整树 clone。
-                //
-                // 【这里曾写 `Strategy != "cloned"`,并断言「clone 那一路已经两层都有」,
-                //   那句话是假的】整树 clone 走的 `SelectDonor` 三参重载传的是
-                //   `requireProjectWarm: false`(`LeanWorktreePins.cs:488`),只有 missing-build
-                //   那条路径传 `true`。所以一个**内容层为冷**的 donor 照样会被整树克隆,
-                //   拿到的是 `.lake` 与依赖层、没有内容层 —— 而我据 `Strategy` 跳过了归档,
-                //   该补的场景不补,冷的仍然冷。评审席指出。
-                //
-                //   正解是**不看策略,看实际热度**:克隆之后重探一次,冷就补。策略是过程,
-                //   热度是结果,判据要挂在结果上。
-                //
-                // 顺序仍不能反:归档只供内容层,得先有 `.lake` 才有地方展开,故它接在
-                // provision 之后。
-                // 此处**不设** `contentRoot.Clear` 那道门,而入口二保留它 —— 两处的目标
-                // 性质不同。
-                //
-                //   到达这里的前提是 `.lake` 在**调用入口时不存在**(`:269` 的
-                //   `Directory.Exists` 与 `:467` 的 `File.Exists` 都已判否),且
-                //   `LeanCacheProvisioner` 发布前还会 `EnsureAbsent(target)`。故现在这棵
-                //   `.lake` 是**本次调用自己造的**,私有于这棵新 worktree;往里面 overlay
-                //   不可能改动 donor。
-                //
-                //   而 `contentRoot.Clear` 守的是「不覆盖**本次调用之前就存在**的内容」
-                //   (#2844 之前这条路上出过一次「为腾位置而删目标内容」的设计,已删)。
-                //   目标不曾预先存在时,那道门语义上是空的 —— 判据要挂在「调用入口时是否
-                //   已存在」,不挂在「此刻是否为空」。
-                //
-                //   【这里曾按 `Strategy != "cloned"` 判,并断言「clone 那一路两层都有」;
-                //     那句话是假的:整树 clone 传 `requireProjectWarm: false`
-                //     (`LeanWorktreePins.cs:488`),冷内容层的 donor 照样会被克隆。改按
-                //     实际热度判之后仍不取 —— 因为 clone 必然把 build 根填满,
-                //     `contentRoot.Clear` 在这条路上结构性地永不成立。评审席判定为本形。〕
-                // clone 会把 donor 的内容层整个搬来,故 provision **之后**的热度可能与之前
-                // 不同,必须重探 —— 但只在 clone 那一路重探。cache-get 只补依赖层,不改
-                // 内容层,provision 前那个读数仍然成立,再探一次是纯冗余
-                // (`OleanEnumerationFailuresAreReportedAsProbeFailures…` 钉住「每个根恰探
-                //  一次」,重复探测会让它红)。
+                // Cloning can change project warmth; dependency cache-get cannot.
+                // Probe a cloned cache again before attempting optional Release
+                // transport, whose installer preserves nonempty existing targets.
                 var warmthAfterProvision = provisioned.Strategy == "cloned"
                     ? stateProbe.ProbeOleans(ProjectOleanRoot(lake))
                     : finalProjectWarmth;
                 if (warmthAfterProvision.State == OleanWarmth.Cold)
                 {
-                    archive = LeanArchiveFetch.Run(root, runner, ArchiveBudget);
+                    archive = LeanArchiveFetch.Run(root, runner, ArchiveBudget, writerGuard);
                     if (archive.Outcome == LeanArchiveOutcome.Unpacked)
                     {
                         warmthAfterProvision = stateProbe.ProbeOleans(ProjectOleanRoot(lake));
@@ -655,36 +563,13 @@ internal static partial class LeanCacheEnsureCommand
     }
 
     /// <summary>
-    /// 归档取回的预算。
-    ///
-    /// 【这里曾直接沿用 provision 预算（3600s），那是错的】评审席指出并经亲验：本路径在
-    /// CI 上位于 `lean-inspect` job 内，而该 job 的 `timeout-minutes: 45`（2700s）。
-    /// 一个 3600s 的预算**大于它所在的整个 job**，即归档一旦挂住就能吃光全部预算，
-    /// 把「取不到就降级」变成「job 超时取消」。复用一个值不等于它在这个域里成立 ——
-    /// 我按复用选值，没把**外层容量**放进推导（「量腹而食」）。
-    ///
-    /// 现按 `C_i = min_j U_{i,j} - R_i` 取：唯一适用上限是 job 预算，具名保留是
-    /// 归档之后仍必须跑完的产出工作（Lean 报告生产），故
-    ///   archive ≤ job_budget − post_archive_reserve。
-    /// 两项都取自本仓既有真源，不新立裸数；比值向下取整到分钟。
+    /// Optional archive attempts retain the existing warm-path cap. The shared
+    /// stage deadline separately bounds normal production after a cache miss.
     /// </summary>
     private static TimeSpan ArchiveBudget =>
         TimeSpan.FromMinutes(
             LeanCacheBudgetPolicy.LeanInspectJobBudgetMinutes
                 - LeanCacheBudgetPolicy.PostArchiveReserveMinutes);
-
-    private static string RecordColdBuildConsent(string receipt)
-    {
-        const string prefix = "LEAN_CACHE ";
-        if (!receipt.StartsWith(prefix, StringComparison.Ordinal))
-        {
-            throw new InvalidOperationException("Lean cache receipt has an unexpected prefix");
-        }
-        var payload = JsonNode.Parse(receipt[prefix.Length..]) as JsonObject
-            ?? throw new InvalidOperationException("Lean cache receipt is not a JSON object");
-        payload["cold_build_consent"] = true;
-        return prefix + payload.ToJsonString() + "\n";
-    }
 
     private static string RecordCacheState(string receipt, CacheState cacheState)
     {
@@ -709,8 +594,6 @@ internal static partial class LeanCacheEnsureCommand
         OleanWarmth.ProbeFailed => "probe_failed",
         _ => throw new ArgumentOutOfRangeException(nameof(warmth), warmth, null),
     };
-
-    private static string ShellQuote(string value) => "'" + value.Replace("'", "'\"'\"'") + "'";
 
     private static string ProjectOleanRoot(string lake) =>
         Path.Combine(lake, "build", "lib", "lean");
