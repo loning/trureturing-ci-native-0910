@@ -1,6 +1,7 @@
 import Mathlib
 
-/- Semantic probes for A110037. These finite checks are not deposited results. -/
+/- Conditional A110037 derivation from explicit paper parity inputs.
+The concrete-count premise remains open; this report artifact is not deposited. -/
 namespace A110037Attempt2
 
 /-- A distinct partition is represented by its finite set of positive parts.
@@ -235,5 +236,22 @@ private theorem target_at_three :
 #print axioms parity_halving
 #print axioms parity_complement
 #print axioms signed_diff_of_parity
+
+run_cmd do
+  for (consumer, provider) in
+      [( ``parity_complement, ``complement_of_halving),
+       ( ``diff_four, ``parity_complement),
+       ( ``diff_four_one, ``parity_complement),
+       ( ``signed_diff_of_parity, ``diff_four),
+       ( ``signed_diff_of_parity, ``diff_four_one),
+       ( ``signed_diff_of_parity, ``diff_four_two),
+       ( ``signed_diff_of_parity, ``diff_four_three)] do
+    let some info := (← Lean.getEnv).checked.get.find? consumer
+      | throwError "Missing declaration: {consumer}"
+    let some value := info.value? (allowOpaque := true)
+      | throwError "Missing proof body: {consumer}"
+    unless value.getUsedConstants.contains provider do
+      throwError "Missing elaborated dependency: {consumer} -> {provider}"
+    Lean.logInfo m!"ELABORATED_DEPENDENCY {consumer} -> {provider}"
 
 end A110037Attempt2

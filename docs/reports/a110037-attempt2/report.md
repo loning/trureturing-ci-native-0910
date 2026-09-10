@@ -148,3 +148,54 @@ make lean-report EXIT=0，31.033秒，source-bound report 已产于
 make emit 首轮 EXIT=2，18.908秒；真实判词 invalid-doi：本仓 A12 要求 DOI/URL
 二选一，note frontmatter 同时列两者被拒。修为仅 DOI，Verified locator 正文
 仍保留 DOI 与访问 URL 的原文。此为叙事元数据修正，不是数学停止理由。
+
+修正后 make emit EXIT=0，51.389秒；emitted=0 changed blueprints，工作树无新增
+投影 diff。GitHub 额外检索 `"A088567" language:Lean`、`"nonsquashing" language:Lean`、
+`"A073089" language:Lean`，全部成功返回 []；不作全生态不存在的断言。
+
+## 声明级账目
+
+公开 D5 theorem 为0，无冻结候选；下面连报告中的私有结果也列出，避免把条件定理
+混成用户目标。所有行 direct_frozen_dependencies=[]（不存在可列的 GID/statement_id），
+钉版 mathlib 依赖不冒作冻结依赖。以下 admission_basis=null 表示不申请冻结。
+
+| 声明 | proof_shape | escape_witness | admission_basis |
+| --- | --- | --- | --- |
+| c_four, c_four_two, c_eight_three, c_eight_seven, c_sixteen_five, c_sixteen_thirteen, c_halving | bind-only | null | null |
+| complement_of_halving | content | 对所有正 r 的具名强归纳构造本身 | null |
+| parity_halving | bind-only | null | null |
+| parity_complement | content | complement_of_halving | null |
+| diff_four, diff_four_one | content | parity_complement | null |
+| diff_four_two, diff_four_three | bind-only | null | null |
+| signed_diff_of_parity | content，显式条件结果 | parity_complement | null |
+| zero_one, target_at_two, target_at_three | content，private有限回声 | 相应具体 kernel 计算 | null |
+| printed_odd_rule_false | content，private反驳 | n=1 的直接有限集合基数 | null |
+| signed_nonsquashing_diff（用户原目标） | null，未证明 | null | null |
+
+这里 c 分支和 parity_halving 是定义/输入的规范化；diff_four_two/three 只投影给定
+奇偶前置并规范化。不是用同文件有反例来让这些结果取得新模块准入。
+主目标拟议的 admission_basis 仍为 escape-witness，但尚未取得无条件证明，故未申请。
+
+对条件结果 signed_diff_of_parity 的具名见证 parity_complement 逐项核对第3.2条：
+1. 依赖闭包内：signed_diff_of_parity→diff_four/diff_four_one→parity_complement→
+   complement_of_halving，最后核验直接读取 elaborate 后 proof term 的常量依赖。
+2. 非投影可得：Corollary 4 输入仅含 B 的各分支，c 以独立递归定义；两者互补
+   是对任意正指标的强归纳结论，不能靠有限次实例化已有分支产生全称桥。
+3. 非定义等价：见证是正 r 上 B(4r)%2+c(4r+1)=1，结论是全部 n≥2 的有符号
+   相邻差分；左侧对象和右侧递归各自独立，见证不是结论的别名。
+4. 活推导路径：n≡0 与 n≡1 两支使用该互补关系分别消去 c 或计算奇项翻转；
+   它不在被投影丢弃的合取中，删去归纳桥则这两支失去对 c(4r+1) 的控制。
+   此项是证明项阅读与数学路径判断；常量依赖检测本身不冒作一般活性判官。
+
+对 complement_of_halving 本身采用第3.2条允许的“结论由具名非绑定构造直接产生”
+形态：strong_induction_on 是该构造，正偶数递归下降到 r/2、两个奇分支分别闭合；
+不另造只为准入的中间引理。计算性私有回声不作普通正向实例冻结；原文反驳的
+独立问题是 printedOddRule，目标差分不依赖它，本模块准入从未由它承担。
+
+## 未主张（当前交付边界）
+
+本席没有证明或反驳用户 n≥2 的原目标；没有证明具体 B 的 Sloane–Sellers 前置；
+没有证明原目标已在文献中解决。强归纳与四分支已闭合，不把它们说成数学失败。
+没有新增 D5、Blueprint、atom、coverage 或冻结状态片；没有 make deposit，
+因为未取得主定理的 kernel 证明。没有开 PR，不用报告/条件桥的 PR 冒作原目标完成。
+没有重建理论卷或反向摄入。所有未打开页面仍 ASSUMED-UNVERIFIED。
