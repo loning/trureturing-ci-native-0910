@@ -110,3 +110,11 @@ mathlib_missing_olean_files=0, mathlib_olean_state=warm, project_olean_state=war
 原报告 hash `66c733ba1c4b9d6586bb89eaefca7f3083f7827302c41b484a09b12550ec3fd9`。
 编译器指出本模块三处 whitespace warning；仅补空格和声明间距，
 因此按最终字节重跑 lean → lean-report，旧轮成功仍仅作为旧字节的历史收据。
+
+最终 Lean 字节的 `make lean` EXIT=0，11.308 s；本模块 whitespace warning 已消除。
+两份首轮/最终轮收据均保留，不把 72.072 s 说成最终增量成本。
+语义回声 `/tmp/A398189Echo.lean` 已编译：按定义 S(9,4)=112494，
+用公开定理推出估值1；端点 (1,1) 亦由公开定理推出估值0。回声不入冻结模块。
+开 PR 前再查 base：origin/dev=`45ca4ae3b012cb1f59ff74a84e845691a3f0c99c`，
+merge-tree 无冲突，合成树 `c709569368d43dd4b4936158bc4364c3454cec50`；
+本轮更新的 dev D5/Library/Blueprint 搜索未见目标重复。原构建基线未变更。
