@@ -5825,17 +5825,17 @@ Codex 实施席依这一已完成来源组织中文数学表述、适配连续�
 
 本节是 repo-derived 的 PR7 结算。它只讨论目标族 $q\circ F_B$；一般数值函数的复制表达力另列，不能由本节推出“复制不增加任何 q 表达力”。因 origin/dev 已在 §37 后追加 §§38–40，本批正文按当前最大编号续接为 §41；内容对应 brief 的 §38。
 
-### 41.1 定义 31：复制项语言与严格量词
+### 41.1 定义 34：复制项语言与严格量词
 
-**定义 31（复制项语言 $\operatorname{Ctx}^{\rm dup}$，repo-derived）。** 有限语法树的叶是输入变量 $X$ 或固定平衡参数（元语法记法，不增加原语），节点只使用原有 $\Sigma_{{\rm cau},t}$ 操作。整项至少出现一次 $X$；多次出现的 $X$ 是同一个输入。参数、谓词、平移、槽位和语法树均先于 $X$ 固定。失败严格传播，失败不被 $N$、空筛选或零因子挽救。令
+**定义 34（复制项语言 $\operatorname{Ctx}^{\rm dup}$，repo-derived）。** 有限语法树的叶是输入变量 $X$ 或固定平衡参数（元语法记法，不增加原语），节点只使用原有 $\Sigma_{{\rm cau},t}$ 操作。整项至少出现一次 $X$；多次出现的 $X$ 是同一个输入。参数、谓词、平移、槽位和语法树均先于 $X$ 固定。失败严格传播，失败不被 $N$、空筛选或零因子挽救。令
 \[
 E_q^{\rm dup}(B)\;:\Longleftrightarrow\;\exists\text{ 固定总项 }C\in\operatorname{Ctx}^{\rm dup}\ \forall X\in\mathcal B:\ q(C(X))=q(F_BX).
 \]
-这里“总项”要求每个子项对全部输入有定义。命题 58 只分类 $q\circ F_B$；例如 $X\mapsto q(X)^2$ 的复制表达力不在该断言范围内。证明使用原 $\Sigma_{{\rm cau},t}$，不加入 $F_B$、$\widehat M_P$、身份对角筛选或输入自适应参数。
+这里“总项”要求每个子项对全部输入有定义。命题 64 只分类 $q\circ F_B$；例如 $X\mapsto q(X)^2$ 的复制表达力不在该断言范围内。证明使用原 $\Sigma_{{\rm cau},t}$，不加入 $F_B$、$\widehat M_P$、身份对角筛选或输入自适应参数。
 
 ### 41.2 引理 5：总项正规化、复制多项式与单叶切片
 
-**引理 5（repo-derived）。** 设 $C$ 是定义 31 意义下的总复制项，并令 $r$ 为其输入叶数。
+**引理 5（repo-derived）。** 设 $C$ 是定义 34 意义下的总复制项，并令 $r$ 为其输入叶数。
 
 **A（严格定义域与正规化）。** 总项的每个子项对全部输入有定义。沿输入叶到子项根的路径，旧事件时间只加固定平移 $j$。若时间复合两侧都含输入叶，取 $\Omega=A=\varnothing$，左侧仅含时刻 $L+j_{\rm 左}$ 的孤立档案事件，右侧仅含时刻 $-L+j_{\rm 右}$ 的孤立档案事件；令 $L+j_{\rm 左}\ge -L+j_{\rm 右}$ 即违反守卫。若一侧含输入、另一侧是非空固定档案，任意推早或推晚同样制造失败：$\Omega=\varnothing\ne E=\varnothing$，不能把守卫当作空真。故变量相关的时间复合在总项中被排除。
 
@@ -5866,9 +5866,9 @@ q(C_i(X_t))=q(C_i(X_{t'}))\qquad(1\le i\le r).
 \]
 这里 $X_t$ 与 $X_{t'}$ 是同一对见证输入：唯一选中正点分别为 $e@(t,p)$、$e@(t',p)$；全部前缀见证的未选后继为 $d$，并置共同星形 $e\prec d$；加入时刻 $0$ 的共同孤立未选平衡点及两个共同非当前档案端点。$c$ 取全部前缀拉回见证时刻、固定平移后的下界，以及各非空首乘固定因子 $\min t[\Omega]$ 减累计平移的有限最小值。无乘积、空因子和非空因子三类分别由同位、空剖面和首乘同摘要处理；随后用命题 48 的后缀保摘要归纳。因所有 $C_i$ 同时使用同一对输入，结论不是把各自引理 4 阈值取最小而沿用不同见证。证毕。
 
-### 41.4 命题 58：OPEN-COPY 完整分类
+### 41.4 命题 64：OPEN-COPY 完整分类
 
-**命题 58（repo-derived，OPEN-COPY）。**
+**命题 64（repo-derived，OPEN-COPY）。**
 \[
 \forall B\subseteq K:\qquad E_q^{\rm dup}(B)\ \Longleftrightarrow\ \operatorname{Tail}(B),
 \]
@@ -5897,19 +5897,19 @@ L_B(X)=\sum_iq(C_i(X)).
 
 ### 41.5 反例 D17、D18：自乘对照与非总项切片失败
 
-**反例 D17（repo-derived，自乘子类，≤15 行）。** 对 $D_Q(X)=F_{\downarrow Q}(X\boxtimes X)$，有 $q(D_Q(nX))=n^2q(D_Q(X))$；该子类实现区域线性目标当且仅当 $B=\varnothing$。在两端无界的 $B_{\rm even}$ 上，$t=-4$ 的同属性正点复制 $n=1,2,3$ 读数为 $1,4,9$，目标为 $1,2,3$。一般有序来源的交叉项是 $\epsilon\epsilon'[m(a,a')+m(a',a)]$；仅当核对称时才为 $2\epsilon\epsilon'm$。对角子点精确属性为 $(t+1,2p,+1,\operatorname{pair}(r,r))$，其 $b^2=b$；旧档案保留两个父出现 $(0,e),(1,e)$，而新 $U_t$ 只有该单点，故保留时间不恢复原事件；同属性非对角项不能由属性隔离。另有 $X\boxplus(A(X)\boxplus N(A(X)))$ 的 $q$ 恒等于 $q(X)$，故终端线性不能逐个消灭自乘结点。$B_{d,R}$ 与 $B_{\rm drift}$ 仍由命题 58 判不可表达（前者及 $B_{\rm even}$ 两端无界；后者无下界、上界 $0$）。来源只取 $(\operatorname{leaf}(0),\operatorname{leaf}(1))$ 时，四个异来源选择读数为 $0,0,0,1$。这只否定自乘子类，不能替代命题 58 的任意项证明。
+**反例 D17（repo-derived，自乘子类，≤15 行）。** 对 $D_Q(X)=F_{\downarrow Q}(X\boxtimes X)$，有 $q(D_Q(nX))=n^2q(D_Q(X))$；该子类实现区域线性目标当且仅当 $B=\varnothing$。在两端无界的 $B_{\rm even}$ 上，$t=-4$ 的同属性正点复制 $n=1,2,3$ 读数为 $1,4,9$，目标为 $1,2,3$。一般有序来源的交叉项是 $\epsilon\epsilon'[m(a,a')+m(a',a)]$；仅当核对称时才为 $2\epsilon\epsilon'm$。对角子点精确属性为 $(t+1,2p,+1,\operatorname{pair}(r,r))$，其 $b^2=b$；旧档案保留两个父出现 $(0,e),(1,e)$，而新 $U_t$ 只有该单点，故保留时间不恢复原事件；同属性非对角项不能由属性隔离。另有 $X\boxplus(A(X)\boxplus N(A(X)))$ 的 $q$ 恒等于 $q(X)$，故终端线性不能逐个消灭自乘结点。$B_{d,R}$ 与 $B_{\rm drift}$ 仍由命题 64 判不可表达（前者及 $B_{\rm even}$ 两端无界；后者无下界、上界 $0$）。来源只取 $(\operatorname{leaf}(0),\operatorname{leaf}(1))$ 时，四个异来源选择读数为 $0,0,0,1$。这只否定自乘子类，不能替代命题 64 的任意项证明。
 
-**反例 D18（repo-derived，引理 5A 的必要性）。** 令 $Q=\{(0,+1,\operatorname{leaf}(0),1)\}$、$D(X)=F_{\downarrow Q}(X\mathbin{\triangleright}T_1X)$。取 $X=U_0$，则 $q(D(nX))=2n$，而两次单出现替换 $D_1,D_2$ 的读数为 $0,1$，且 $D(0)=0$，所以 $2\ne0+1$，切片公式对非总项失败。$D$ 在含时刻 $0$ 与 $3$ 的档案输入上守卫失败，故不在命题 58 的量词域内；$Q$ 的时间投影上下界均为 $1$。
+**反例 D18（repo-derived，引理 5A 的必要性）。** 令 $Q=\{(0,+1,\operatorname{leaf}(0),1)\}$、$D(X)=F_{\downarrow Q}(X\mathbin{\triangleright}T_1X)$。取 $X=U_0$，则 $q(D(nX))=2n$，而两次单出现替换 $D_1,D_2$ 的读数为 $0,1$，且 $D(0)=0$，所以 $2\ne0+1$，切片公式对非总项失败。$D$ 在含时刻 $0$ 与 $3$ 的档案输入上守卫失败，故不在命题 64 的量词域内；$Q$ 的时间投影上下界均为 $1$。
 
-### 41.6 命题 59：实现类数
+### 41.6 命题 65：实现类数
 
-**命题 59（repo-derived，实现类数）。** 给定命题 57 类型的 $(g,m,M)$，在历史同构 $\cong_h$ 下其实现在数满足：五条件任一失败时为 $0$；$g=0$ 且端点为 $(+\infty,-\infty)$ 时恰为 $1$ 个（空实现）；其余可实现三元组有 $\aleph_0$ 个。证明如下。命题 57 给出一个有限实现。对任意可实现非空剖面，在时刻 $m$ 追加任意多个孤立、非当前档案点；它们不改 $(g,m,M)$、摘要读数或 $q$，却改变 $|E|$，得到两两非同构实现。有限编码的有限集合全体可数，故上界为 $\aleph_0$。空当前区域而端点有限时，同样在端点档案中追加孤立点；其实现数仍为 $\aleph_0$。
+**命题 65（repo-derived，实现类数）。** 给定命题 57 类型的 $(g,m,M)$，在历史同构 $\cong_h$ 下其实现在数满足：五条件任一失败时为 $0$；$g=0$ 且端点为 $(+\infty,-\infty)$ 时恰为 $1$ 个（空实现）；其余可实现三元组有 $\aleph_0$ 个。证明如下。命题 57 给出一个有限实现。对任意可实现非空剖面，在时刻 $m$ 追加任意多个孤立、非当前档案点；它们不改 $(g,m,M)$、摘要读数或 $q$，却改变 $|E|$，得到两两非同构实现。有限编码的有限集合全体可数，故上界为 $\aleph_0$。空当前区域而端点有限时，同样在端点档案中追加孤立点；其实现数仍为 $\aleph_0$。
 
 D10 型机制的短注：取 $E=\Omega$，$r$ 个选中正点 $a@0$（$U=\{a,b\}$）、$s$ 个选中正点 $b@1$（$U=\{b\}$），以及 $r+s$ 个孤立未选负点 $c@0$。全部历史是无零行的 $r\times s$ 二部邻接矩阵在 $S_r\times S_s$ 下的轨道；时间上下界为 $0,1$。当 $r=s=2$ 时有 $9$ 张带标号图、$4$ 个轨道；函数型子类的类数是分拆数。本注只计该子类，不把一般 $g$ 的有限骨架轨道枚举列为本批目标。
 
 ### 41.7 边界与范围收束
 
-§36.7 原有的 OPEN-COPY open 文字由命题 58 完整结算；D17、D18 对自乘子类与非总项路线作具名的部分结算。引理 5 的多项式结论依赖严格总项；D18 说明删去该域后切片恒等式失效。命题 59 的 $\aleph_0$ 计数使用有限编码与历史同构，不能外推到无限档案。全文没有新增 Lean、axiom、判官或 schema；新推导均标 repo-derived，预期无新外部引用。
+§36.7 原有的 OPEN-COPY open 文字由命题 64 完整结算；D17、D18 对自乘子类与非总项路线作具名的部分结算。引理 5 的多项式结论依赖严格总项；D18 说明删去该域后切片恒等式失效。命题 65 的 $\aleph_0$ 计数使用有限编码与历史同构，不能外推到无限档案。全文没有新增 Lean、axiom、判官或 schema；新推导均标 repo-derived，预期无新外部引用。
 
 <a id="pr7-evidence"></a>
 
@@ -5935,7 +5935,7 @@ PR7 行逐字为：
 pr7_copy_expressibility: D10_control=1 D15_fiber=1 D15_q=1 D16_conditions=1 J_fiber=1 J_positive=1 U_rule_push=1 U_size_rule=1 collapse_controls=4 collapsed_profiles=4 distinct_actual_profiles=1 empty_endpoint_branches=6 empty_products=1 empty_realizations=3 enumerated_roundtrip=1 enumerated_states=1 first_product_fiber=1 formal_membership=1 global_rule=1 image_roundtrip=1 image_sets=1 mixed_q=1 mixed_summary=1 negative_inputs=1 old_archives=1 pair_push=1 pair_suffix=1 periodic_saturation=1 pullback_encoding=1 q_only_control=1 same_local_rows=1 saturation_empty_factor=1 saturation_endpoints=3 saturation_no_product=1 saturation_product=1 saturation_q=3 strict_failures=1 tail_q=3 target_controls=4 unsaturated_control=1 unselected_parents=1 required_pr6_keys=41 required_pr6_positive=1
 ```
 
-末行为 `ALL_FINITE_CHECKS_PASSED`。PR7 段首先用 41 个字面键构造 `REQUIRED_PR6_KEYS`，再检查其包含关系与正计数；PR7 自身也先检查字面键集包含，再检查全部计数为正。有限实验覆盖复制项、共同饱和、自乘与非总项反例、2×2 二部图 9 张／4 轨道及命题 59 的孤立档案点机制；有限读数不替代正文全称证明。
+末行为 `ALL_FINITE_CHECKS_PASSED`。PR7 段首先用 41 个字面键构造 `REQUIRED_PR6_KEYS`，再检查其包含关系与正计数；PR7 自身也先检查字面键集包含，再检查全部计数为正。有限实验覆盖复制项、共同饱和、自乘与非总项反例、2×2 二部图 9 张／4 轨道及命题 65 的孤立档案点机制；有限读数不替代正文全称证明。
 
 ### 42.3 ingest 收据
 
