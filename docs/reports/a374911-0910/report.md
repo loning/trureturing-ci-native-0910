@@ -4,7 +4,8 @@
 
 The target theorem and the unrestricted classifications of values one, two,
 and three are proved from the original guarded recursion. All local delivery
-gates passed and the module is frozen without an atom. PR creation is next.
+gates passed and the module is frozen without an atom. PR:
+https://github.com/the-omega-institute/trureturing/pull/6746 (open, not merged).
 The chronological checkpoints below preserve earlier pending states and failed
 attempts; this section and the final delivery receipt supersede those states.
 
@@ -341,3 +342,14 @@ route was replaced before its proof attempt; only the explicitly revised
 addition/two-adic route is verified. Unopened pages and the uncompiled dataset
 fragment remain `ASSUMED-UNVERIFIED`. The user-supplied measurements remain
 attributed measurements, not worker-produced numerical evidence.
+
+## PR delivery
+
+Created PR #6746 with `make pr-open HEAD=lane/math/a374911 MESSAGE=...`.
+The tool's canonical watcher owns the required-CI wait. Its terminal result
+is recorded in attempt-1/pr-open.log and the final worker result envelope;
+this commit records PR creation, not a claim of completed remote checks.
+No auto-merge was requested. The task's three-state completion criterion is
+met as **成**: the unrestricted theorem is proved from the specified recursion,
+`make lean` exited 0, there is no sorry/custom axiom, and the PR is open.
+Repository merge completion and independent review remain outside this claim.
