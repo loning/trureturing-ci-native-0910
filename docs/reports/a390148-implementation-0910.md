@@ -170,3 +170,21 @@ of completed proof, library exhaustiveness, build success or freeze yet.
   the rational coefficient-3 equation. All auxiliary lemmas remain private.
 - Required project build, report production, Scribe checks and freeze still
   pending; a file check is not reported as `make lean` success.
+
+## Project build and narrative
+
+- `make lean` EXIT=0, measured 60.290 seconds on this macOS ARM worktree;
+  12835 Lake jobs, target module built in 9.6 seconds. Baseline modules emitted
+  replayed warnings; the target emitted only the standard three-axiom report.
+  LEAN_CACHE: status=present, method=none, stamp_miss=null,
+  project_olean_state=warm, mathlib_olean_state=warm, missing mathlib oleans=0.
+  Full log and machine receipt are worker-owned files `lean.log` and `lean.json`
+  in the supplied attempt directory. Local elapsed time is not a CI estimate.
+- Added the canonical Scribe source and an attributed OEIS note. Library/Arith
+  is already at 48 files; Library/ArithUnits did not exist, so the new note uses
+  that registered domain (finite coprimality/residue structures). The note's
+  Verified locator section contains the literal url and doi frontmatter lines.
+  The mathematical proof is repo-derived, with OEIS acknowledged as the source
+  of the conjecture. No existing proof is falsely attributed to the OEIS entry.
+- `make lean-report` is in progress; Scribe compilation/emission and content
+  checks remain pending. No generated Blueprint markdown has been hand-edited.
