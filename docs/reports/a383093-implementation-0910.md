@@ -166,3 +166,12 @@
   此为私有见证，不作为单独公开/冻结结果。
 - git fetch origin dev 成功，origin/dev 仍为预登记 base 462d0a4368ba5a890c5eab619c82437baa88966f；
   D5 再查 A383093|A323774|capable.?partition|constant.?equal.?sum，无新增命中。
+
+## Scribe 发射
+
+- 首次 make emit EXIT=2，18.293 秒，命中 Formula emission rejected：Mid 后直接接 n
+  会生成错误宏 midn。已在 .scribe.cs 的 Mid 与 n 之间加 FormulaDsl.Sp；未手改 Markdown。
+- 修复后 make emit EXIT=0，61.214 秒；日志 runner attempt/make-emit-final.log。
+  仅本模块 Blueprint 新增；emit-values、filemap、dag 生成均完成。
+- 已读完整生成的 Blueprint：正整数范围、除数和公式、两侧定义、规范化及 Conjecture
+  来源标识均与 Lean/Library 一致。下一步为 scribe-content-checks 的机器内容检查。

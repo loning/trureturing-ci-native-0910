@@ -48,7 +48,7 @@ internal sealed class ConstantEqualSumDivisorIdentityDocument : IScribeDocumentD
     private static Formula IdentityFormula() => Disp(Seq(
         Forall, Sp, V("n"), InMacro, Mathbb, Grp(V("N")), Comma, Sp,
         D(0), Lt, V("n"), Sp, Implies, Sp,
-        Sum, Underscore, Grp(Seq(V("d"), Mid, V("n"))),
+        Sum, Underscore, Grp(Seq(V("d"), Mid, Sp, V("n"))),
         V("a"), Open, V("d"), Close, Sp, Eq, Sp,
         V("s"), Open, V("n"), Close));
 }
