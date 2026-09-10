@@ -91,3 +91,19 @@ even_exception 证明被排除族恰为单例尾部 {m}，并保留所有其余�
 公开 count_odd/count_even_step 均 content，直接冻结依赖为空；共同见证
 card_extension 在依赖闭包和活推导路径中，非已有投影、非递推结论的定义等价；
 准入拟为 escape-witness，最终账目在正式路径的 report 产生后补身份。
+
+## 正式落点与当场来源核对
+
+落点容量实测：D5/S1/Recurrence 直接文件24，Blueprint 同级直接文件48。
+新增两个模块需要四个镜像文件，会越 Blueprint 上限，故按同形地址新开
+Recurrence/Partitions 子桶；旧地址不迁。两个模块分别为 NonsquashingCounting
+与 NonsquashingPaperfold。正式代码复用 attempt 2 的证明项，未重新推导旧桥。
+
+重新 GET A110037/internal 与 A073089/internal 均 EXIT=0，全部 comment/formula/
+name/offset 字段已读。前者仍记录 Calderón 2025-08-19 的 n≥2 猜想，后者八分支
+与原独立定义一致。新 note 的 Verified locator 逐字包含 frontmatter URL。
+Library/Words 新 note 前直接文件31，不越48。未打开其他外链，ASSUMED-UNVERIFIED。
+
+首次 make lean EXIT=2 / 34.967秒，仅新增主模块有一个多余 rfl（此前 rw 已闭合）;
+主目标已产生标准三公理证明项，但不以错误退出报成功。移桶后格式化误拆 :=，
+第二次 EXIT=2 / 28.519秒；已恢复词法，未更改任何数学陈述或证明路线。
