@@ -4600,3 +4600,245 @@ INGEST residual_open_added=12 skipped_existing=281 coarse_fallbacks=0 open_genre
 ```
 
 本 §35 是固定检查点之后的正文追加，须在它最后一次改动之后再执行同一 ingest 命令并提交，使收据本身也进入上述链路。最终摄入的退出码、计数及提交、完整附录重跑的 `pr5_` 行与末行、逐节 commit SHA、最终两个纯插入 hunk、允许路径范围、同步／推送和干净状态，由 `/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/csa-pr5-impl-0910/attempt-1/result.json` 与 `implementation.log` 绑定记录，不用这里的固定 42／42 代替最终累计数。本批交付推送分支，不开 PR；三席评审、后续准入及未测数学边界不由实施收据预先判定。
+
+<a id="pr6-expressibility-pairing"></a>
+
+## 36. PR6 增补 O：q 层一致表达的完整分类、属性级配对与不下降配对
+
+本节接续 §34.6–34.7 的三个问题。以下定义、引理、命题、构造、反例及推论均为 repo-derived，只用卷内定义与已证结果，不作新颖性或优先权声明。载体仍为全部平衡表示 $\mathcal B$；完整乘积、严格增时和单孔上下文分别沿用定义 6、1、16。有限核验不替代任意有限上下文的证明。
+
+### 36.1 定义 28：判定对象、量词与 Tail
+
+**定义 28（单孔 q 表达与公共过去尾，repo-derived）。** 三个范围分别如下。
+
+在 $\Sigma_{\rm mix}$ 中，$\forall B\subseteq K$ 的 q 表达平凡成立：见证就是原语 $C=F_B$（也可用 $M_{B\times K}(\square,U_0)$）；这句话不算 §34.6 的推进。
+
+命题 55 的判定对象只取定义 16 的 $\Sigma_{{\rm cau},t}$ 单孔上下文：
+
+$$
+E_q(B)\ \Longleftrightarrow\
+\exists\,\text{固定有限 }C\in\operatorname{Ctx}_{\Sigma_{{\rm cau},t}}
+\ \forall X\in\mathcal B:\quad
+C(X)\text{ 有定义且 }q(C(X))=q(F_BX).
+\tag{O-QEXPR}
+$$
+
+所有旁参数、谓词、平移量与槽位在 $X$ 之前固定；实际孔恰有一个。允许在有限项中重复同一输入的 $\operatorname{Ctx}^{\rm dup}$（如 $X\boxtimes X$）**不是定义 16 的上下文**，其 q 表达问题另列于 §36.7。
+
+定义
+
+$$
+\operatorname{Tail}(B)\ \Longleftrightarrow\
+\exists c\in\mathbb Z\ \forall p\in\mathbb Z^3\
+\forall t,t'<c:\quad \mathbf1_B(t,p)=\mathbf1_B(t',p).
+\tag{O-TAIL}
+$$
+
+等价地，存在 $c\in\mathbb Z$、$S^-\subseteq\mathbb Z^3$ 及任意 $B_+\subseteq\{t\ge c\}\times\mathbb Z^3$，使
+$B=(\{t<c\}\times S^-)\cup B_+$。等价性由每个位置在 $t<c$ 上取共同真值直接给出；这里必须是一个对全部位置有效的 $c$。
+
+命题 53 的 $H_B$ 分类的是至 $\cong_h$ 的丰富输出表达；本节 Tail 分类的是 q 表达；在 $\Gamma_t$ 上语义下降仅指摘要决定输出摘要，不提供原语言的表达构造。三者各有量词与结论，不能互相替代。
+
+### 36.2 引理 4：总上下文的后继饱和与首乘塌缩
+
+**引理 4（后继饱和与首乘塌缩，repo-derived）。** 对每个在全部 $\mathcal B$ 上有定义的固定有限 $C\in\operatorname{Ctx}_{\Sigma_{{\rm cau},t}}$，存在 $c_C\in\mathbb Z$，使任意 $p\in\mathbb Z^3$ 及 $t,t'<c_C$ 都有下述两输入 $X_t,X_{t'}$：唯一选中事件是同来源正点 $e@(t,p)$、$e@(t',p)$，其余当前事件共同且未选，全部档案端点共同，并且
+
+$$
+q(C(X_t))=q(C(X_{t'})).
+\tag{O-SATURATION}
+$$
+
+量词次序为 $\forall C\ \exists c_C\ \forall p\ \forall t,t'<c_C\ \exists X_t,X_{t'}$；只有最后的输入见证可以依赖 $p,t,t'$。
+
+**证明。** 定义 16 把 $C$ 写成沿唯一孔的一条有限基本步骤链；总定义和严格失败传播保证每个前缀也对全部输入有定义。全部原语保留原输入的每个档案事件，其时刻只累计一个固定整数平移 $J$。若某步为 $\square\triangleright Z$ 且 $E_Z\ne\varnothing$，取原输入含任意晚的档案事件，即击破该步 $M<m_Z$；若为 $Z\triangleright\square$，取任意早的档案事件，击破 $M_Z<m$。这些输入可取空当前区域，因而合法平衡。故总上下文不含这种步骤。空档案参数的时间复合没有跨边，只增加可去的出现标签，对去身份操作及 q 无影响。
+
+还需区分空当前因子。若任何乘积使用固定参数 $\Omega_Z=\varnothing$，该步的当前区域与选择都为空。固定同一原情境而仅变 $A$ 时，所有步骤的情境本来就相同；该步后连选择也相同，后续确定操作永久失去对原选择的依赖。因此当 $B\ne\varnothing$ 时，这种上下文不能表达 $F_B$：在 $B$ 中取一正一负平衡反链，对比空选择与只选正点，目标 q 为 $0,1$。引理本身仍允许空因子，并在下面处理。
+
+现只看首次乘积之前的前缀；若无乘积，就看整个词。去掉空档案时间复合的标签后，这里只剩并行加固定参数、$N,F_S,F_L,F_{\downarrow Q},T_k$。设第 $i$ 个因果谓词为 $Q_i$，该步前原输入累计平移为 $j_i$，在原坐标取 $Q_i^0=\tau_{-j_i}[Q_i]$。对每个非空 $Q_i^0$ 选一个属性 $v_i$，空集不选；谓词个数有限，故只需有限个见证。选整数 $c_C$ 不大于 $0$ 和全部 $v_i$ 的时间。若首乘固定因子 $Z$ 的当前区域非空，再令
+
+$$
+c_C+J\le\min t_Z[\Omega_Z],
+\tag{O-COLLAPSE-BOUND}
+$$
+
+其中 $J$ 是首乘前原输入的累计平移。有限条件有共同整数解；它只由 $C$ 决定，与 $p,t,t'$ 无关。
+
+任给 $p,t,t'$，造同标识的两份有限情境。放唯一选中正点 $e$，来源固定为 $l_0$，只令其时刻分别为 $t,t'$；每个 $v_i$ 放一个未选当前点 $d_i$，属性恰为 $v_i$。只添 $e\prec d_i$，所以关系是已传递的星形；$t,t'<c_C\le t(v_i)$ 保证边严格增时。添共同的孤立未选当前点，时刻取 $0$、符号取所需的正或负，使当前总电荷为零。再添两个共同孤立的非当前档案点，其时刻严格包住两份当前时间，得到相同的有限 $m,M$。所有非 $e$ 事件的属性、标识、选择在两侧相同。
+
+前缀中每个非空 $Q_i$ 对 $e$ 都被对应 $d_i$ 命中，空 $Q_i$ 在两侧都不命中；平移过的见证仍在 $\Omega$，筛选只改选择，不删目标。空间与来源掩码相同，$N$ 同步。其他原输入事件无通向 $e$ 的路径，并行加入的固定分量也没有跨边，所以它们的 $U_t$、掩码与选择不受 $e$ 时刻影响。因此首乘前两侧的选择位、位置、符号、来源逐事件相同，唯一可能不同的当前属性是 $e$ 的时刻。
+
+这也是引理 3 位保持原则的响应形：在同一情境上改变一个输入位时，沿前缀的位差等于原位差乘 $(-1)^\nu\prod_i h_i$；$\nu$ 是取补次数，因果掩码为 $h_i=\mathbf1[U_t(e)\cap Q_i\ne\varnothing]$，空间／来源掩码同样逐位相乘。本构造让两输入对应事件的每个掩码相同，不需要假定其位响应非零。
+
+若无乘积，上述逐事件的同位与同符号立即给终端 q 相同。若有首乘且 $\Omega_Z\ne\varnothing$，(O-COLLAPSE-BOUND) 使每个含 $e$ 的新父对在两侧具有同一时间 $\max(t(e)+J,t_Z(f))+1=t_Z(f)+1$；无论孔在左还是右槽位，全部新当前属性与选择位逐对相同。定义 6 的新当前区域是反链，其 $U_t$ 为自身单点，旧 $U_t(e)$ 从此不进入当前剖面。若 $\Omega_Z=\varnothing$，两侧新剖面直接都为空。
+
+前缀中的并集与平移保持两侧共同的 $m,M$。首乘的新当前时间相同（或两侧都无新点），结合旧档案保留与命题 29 的端点公式，首乘后两侧 $H=(\Gamma_t,m,M)$ 相同。对剩余后缀应用命题 48 的逐基本步保摘要归纳，得到相同终端 q；总定义排除了终端失败。至此覆盖全部总有限单孔上下文及空因子情形。证毕。
+
+### 36.3 命题 55：单孔 q 表达的完整分类
+
+**命题 55（$\Sigma_{{\rm cau},t}$ 单孔 q 表达分类，repo-derived）。**
+
+$$
+\forall B\subseteq K:\qquad E_q(B)\ \Longleftrightarrow\ \operatorname{Tail}(B).
+\tag{O-CLASSIFICATION}
+$$
+
+**证明（充分性）。** 固定 Tail 的 $c$，任取整数 $k\le c-1$，定义
+
+$$
+\begin{aligned}
+Q_{B,k}&=\{(p,\epsilon,r,n):n\ge k+1,\ (n-1,p)\in B\},\\
+C_B(X)&=F_{\downarrow Q_{B,k}}(X\boxtimes T_k(U_0)).
+\end{aligned}
+\tag{O-CONSTRUCTION}
+$$
+
+其中 $\epsilon\in\{\pm1\},r\in T$ 任取。这也等于在 $n=k+1$ 层放全部 $p\in S^-$ 的属性，再放全部 $(p,\epsilon,r,t+1)$、$t\ge k+1,(t,p)\in B$。参数均在输入前固定，表达式是总单孔上下文。
+
+乘积选中的父对恰为 $(e,u_+)$、$e\in A_X$；子点位置与符号沿 $e$，时间为 $\max(t(e),k)+1$。当前区域为反链，因果筛选只检查子点自身。若 $t(e)>k$，检查恰为原单元 $(t(e),x(e))\in B$；若 $t(e)\le k$，检查为 $(k,x(e))\in B$，而 $t(e),k<c$，Tail 使其与原单元同真值。逐选中点作有符号有限和即得 q 等式，包括负点、负时刻及空选择。
+
+**证明（必要性）。** $B=\varnothing$ 时 Tail 成立，且 $F_\varnothing$ 可由空空间筛选实现，单列结束。其余情形取 (O-QEXPR) 的固定总上下文 $C$，应用引理 4。对任意 $p$ 及 $t,t'<c_C$，两输入都只选正点 $e$，故
+
+$$
+\mathbf1_B(t,p)=q(F_BX_t)=q(C(X_t))
+=q(C(X_{t'}))=q(F_BX_{t'})=\mathbf1_B(t',p).
+$$
+
+于是 $c=c_C$ 同时适用于全部位置，得到 Tail。这里没有用有限深度搜索承担任意有限 $C$ 的否定。证毕。
+
+**继承结算。** 命题 54 的时间有下界族恰是 Tail 正常形中 $S^-=\varnothing$ 的族；命题 53 的全部丰富可表达族也满足 Tail。D14 可取 $c=1,k=0,S^-=\{p,q\}$，仍无时间下界；其 q 表达成为本命题推论，而丰富输出不可表达性原样成立。§34.6 的一般单孔 q 分类 **由命题 55 结算**。Tail 对有限交封闭（取各阈值的最小值），故 $B\cap D$ 可按 (O-CONSTRUCTION) 重造上下文；不能把单纯 q 等式代入任意后续复合来证明这条结论。
+
+**H-A 的反例族（推论例，不占 D 编号）。** “$\Sigma_{{\rm cau},t}$ 中所有 $B$ 都 q 可表达”为假。对 $d\ge2$、$\varnothing\ne R\subsetneq\mathbb Z/d\mathbb Z$，
+$B_{d,R}=\{(t,p):t\bmod d\in R\}$ 在每条过去尾仍有两种真值，故不满足 Tail；空间限制的例子 $B_{\rm even}=\{(t,0):t\text{ 偶}\}$ 同样不可表达。给定任意 $c$，可在 $c$ 以下选择属于和不属于 $R$ 的时刻，这提供每个阈值的反证。
+
+另取
+
+$$
+B_{\rm drift}=\bigcup_{n\ge0}\bigl(\{t\le-n\}\times\{(n,0,0)\}\bigr).
+\tag{O-DRIFT}
+$$
+
+每位置分别最终恒定，但无公共 $c$：给定 $c$，取 $n\ge0$ 使 $-n+1<c$，在位置 $(n,0,0)$ 比较 $-n,-n+1$，真值为 $1,0$。其时间无下界、有上界 $0$。这反驳把 $\exists c\,\forall p$ 弱化为 $\forall p\,\exists c_p$；有限核验中的塌缩读数只作对照，否定由上述任意阈值论证和命题 55 承担。
+
+### 36.4 定义 29 与命题 56：属性级配对的保守扩签名
+
+**定义 29（属性级配对，repo-derived）。** 对固定 $P\subseteq\mathrm{Attr}_t\times\mathrm{Attr}_t$，令 $\widehat M_P(X,Y)$ 使用定义 6 的完整乘积情境，只选满足 $e\in A_X,f\in A_Y$ 且 $(\alpha_t(e),\alpha_t(f))\in P$ 的父对。定义
+$\Sigma_{\rm mix}^{\rm attr}=\Sigma_{\rm mix}\cup\{\widehat M_P:P\subseteq\mathrm{Attr}_t^2\}$。旧 $M_P$ 的参数类型仍是 $K\times K$，不改定义 24。
+
+**命题 56（属性配对闭包与观察核，repo-derived）。** 新操作总定义，逐父格的推送为
+
+$$
+((a,b,U),(a',b',U'))\longmapsto
+(a\diamond_t a',\,bb'\mathbf1_P(a,a'),\,\{a\diamond_t a'\}),
+\tag{O-ATTR-PAIR}
+$$
+
+推送系数为两父格系数之积，碰撞时相加；端点为
+$(\min(m_X,m_Y),\max(M_X,M_Y,\gamma(s_X,s_Y)))$，$s$ 由 $\Gamma_t$ 支撑恢复。并且
+
+$$
+\approx_{\Sigma_{\rm mix}^{\rm attr}}=\ker(\Gamma_t,m,M).
+\tag{O-ATTR-KERNEL}
+$$
+
+**证明。** 限制选择不改完整乘积的平衡或合法性，故操作总定义。固定两个父格，属性和位均固定，谓词真值固定；全部该格父对的符号和为两格系数之积，**系数已经含符号，不再乘 $\epsilon\epsilon'$**。父未选或 $P$ 假的对也生成当前事件，只进入 $b=0$ 行；不删 $\Omega$，不给系数或背景乘掩码。新事件无出边，所以 $U$ 是自身属性单点。旧档案保留，完整端点沿命题 29 更新。
+
+把 (O-ATTR-PAIR) 补入命题 48／52 的基本步表。对 $\widehat M_P(\square,Z)$ 与 $\widehat M_P(Z,\square)$ 分别按有序父格推送同一固定参数，均保摘要；$P$ 不对称也不交换槽位。对全部有限混合上下文归纳：恒等孔保摘要，基本步骤成功则输出同摘要，时间守卫由共同端点决定而同真值，内层失败则严格传播。终端 q 由选中行求和恢复，得到 $\ker(\Gamma_t,m,M)\subseteq\approx_{\Sigma_{\rm mix}^{\rm attr}}$。反向由 $\Sigma_{\rm mix}\subseteq\Sigma_{\rm mix}^{\rm attr}$ 与命题 52（亦可用命题 49 的子语言）给出。证毕。
+
+**拉回与连接。** 令 $\kappa(p,\epsilon,r,n)=(n,p)$。对旧类型 $P\subseteq K^2$ 取
+$P^\uparrow=\{(a,a'):(\kappa(a),\kappa(a'))\in P\}$，则 $\widehat M_{P^\uparrow}=M_P$ 是完整编码等式。#6684 的 $\Xi$ 核仍属于 $\Sigma_{\rm ts}^{\rm pair}$（及其子语言 $\Sigma_{\rm ts}$），不是本扩签名的核。
+
+在 $\Sigma_{\rm mix}^{\rm attr}$ 乃至 $\Sigma_{\rm mix}$ 中，令配对谓词查左父单元属于 $B$，右乘固定 $U_0$，便对任意 $B$ 得到 q 表达。**观察核不变，不等于固定表达资源相同。** 这正是命题 55 与命题 56 应保留的区别。§34.7 关于属性级配对闭包的未测项 **由命题 56 结算**；任意规则的下降边界如下。
+
+### 36.5 纤维下降判据、定义 30 与反例 D15
+
+对完整乘积上的任意选择规则 $R=R^{X,Y}$，固定输出属性 $c\in\mathrm{Attr}_t$，定义
+
+$$
+J_R^{X,Y}(c)=
+\sum_{\substack{e\in A_X,\ f\in A_Y\\
+\alpha_t(e)\diamond_t\alpha_t(f)=c}}
+\sigma(e)\sigma(f)\mathbf1_R(e,f).
+\tag{O-FIBER-COUNT}
+$$
+
+这里的规则可依赖整个输入，输出仍只限制所选父对。记 $\widehat W_{X\boxtimes Y}(c)$ 为按**完整属性**分组的当前背景符号和；它由两父 $\Gamma_t$ 的全部行卷积决定，不与定义 22 按 $K$ 分组的 $W$ 混型。输出 $\Gamma_t$ 在 $(c,1,\{c\})$ 行为 $J_R(c)$，在 $(c,0,\{c\})$ 行为 $\widehat W(c)-J_R(c)$，其余行零。
+
+所以有精确语义 iff：该规则在 $\Gamma_t$ 上下降，当且仅当逐 $c$ 的 $J_R$ 在两输入 $\Gamma_t$ 的共同纤维上恒定；即任意 $\Gamma_t(X)=\Gamma_t(X')$、$\Gamma_t(Y)=\Gamma_t(Y')$ 都有 $J_R^{X,Y}(c)=J_R^{X',Y'}(c)$。对 $(\Gamma_t,m,M)$ 下降则换成该摘要的纤维，端点已由完整乘积更新。必要性读选中行，充分性用上述两行重建。这是 repo-derived 的纤维判据，不承诺判定任意规则的算法。
+
+只比较 $\sum_cJ_R(c)$ 是严格较弱的 q 层条件。例如，若存在符号积为正的所选父对，就恰选一个：按先时间、后固定属性编码的全序，在左输入严格关系对数为奇数时取最小输出属性，偶数时取最大输出属性，同属性内再按固定出现编码选一个；无正号所选父对则选空。q 恒为“有正号所选父对”的指示值，由两父 $\Gamma_t$ 决定；但将下述 D15 两图分别与 $U_0$ 配对，关系对数为 $1,2$，被选子点时刻为 $1,2$，故同纤维上的 $J_R$ 不同。
+
+**自身属性谓词只是充分条件。** 规则 $R(e,f)\Longleftrightarrow U_t^X(e)\cap Q\ne\varnothing$ 等于 $F_{\downarrow Q}(X)\boxtimes Y$ 的选择；$R(e,f)\Longleftrightarrow |U_t^X(e)|>1$ 也可按父格直接推送。这两者依赖 $U$，仍下降。全局规则 $R(e,f)\Longleftrightarrow |\Omega_X|/2$ 为奇数也下降，因为 $|\Omega_X|=\sum|\Gamma_t(X)|$，但不是固定局部父格谓词：$U_0$ 与 $U_0\boxplus U_0$ 有相同的父格类型，准入真值却相反。候选中只问 $|\Omega_X|$ 奇偶的版本在平衡载体上恒偶，不能充作这个反例。
+
+**定义 30（同档案因果配对，repo-derived）。** 定义总一元新操作
+
+$$
+D_\prec(X)=X\boxtimes_{R_X}X,\qquad
+R_X=\{(e,f)\in\Omega_X^2:e\prec_X f\}.
+\tag{O-CAUSAL-PAIR}
+$$
+
+乘积仍完整，只选 $e,f\in A_X$ 且 $e\prec_Xf$ 的父对。这是**新原语的定义式**，不是定义 16 内的单孔上下文。若把二元 $M_\prec$ 解读为两份带标签旧档案之间的关系，则定义 6 根本没有这样的跨档案路径，选择恒空且下降；欲问别的跨档案因果谓词，必须另定其类型与关系来源。
+
+**反例 D15（同纤维上因果父对数不同，repo-derived）。** 取 $E=\Omega=\{e,b_1,b_2,n_1,n_2,n_3\}$，位置全零、来源全 $l_0$。$e@0,b_1@1,b_2@1$ 为选中正点，三个 $n_i@0$ 为孤立未选负点。$X$ 的关系只有 $e\prec b_1$；$Y$ 的关系为 $e\prec b_1,e\prec b_2$。两图均已传递且严格增时。写 $a_0=(0,+1,l_0,0)$、$a_1=(0,+1,l_0,1)$、$n_0=(0,-1,l_0,0)$，共同非零剖面恰为
+
+$$
+(a_0,1,\{a_0,a_1\})\mapsto1,\quad
+(a_1,1,\{a_1\})\mapsto2,\quad
+(n_0,0,\{n_0\})\mapsto-3.
+$$
+
+两侧 $m=0,M=1$，但 $q(D_\prec X)=1$、$q(D_\prec Y)=2$；两个贡献的输出属性同为 $a_0\diamond_t a_1$，所以 (O-FIBER-COUNT) 在同一摘要纤维也不恒定。$D_\prec$ 不在 $\Gamma_t$ 或 $(\Gamma_t,m,M)$ 上下降。
+
+新增边没有增添任何可达属性，因为插边前已有 $U_t(b_2)=\{a_1\}\subseteq U_t(e)$，且无其它非平凡路径；这不重犯 §28.5 D7／P3 的闭包泄漏。$\Gamma_t$ 记录每格事件数，但 $U_t$ 去重，忘掉的是同属性目标的入射重数。D10 原两图的 $D_\prec$ 读数均为 $2$，不能把原图原样充作 D15。
+
+### 36.6 命题 57 与 D16：完整实际像
+
+**命题 57（$\Gamma_t$ 及档案端点的完整实际像，repo-derived）。** 给定有限支撑整数剖面 $g$，格类型为 $(a,b,U)\in\mathrm{Attr}_t\times\{0,1\}\times\mathcal P_{\rm fin}(\mathrm{Attr}_t)$，以及定义 22 类型的 $m,M$。三元组 $(g,m,M)$ 是某 $X\in\mathcal B$ 的 $(\Gamma_t(X),m_X,M_X)$，当且仅当：
+
+1. 每个非零格满足 $\epsilon(a)g(a,b,U)>0$，即同格符号一致。
+2. $\sum_{a,b,U}g(a,b,U)=0$，即当前区域平衡。
+3. 每个非零格有 $a\in U$，且 $U\setminus\{a\}$ 中每个属性的时刻严格晚于 $a$。
+4. **后继见证：** 每个非零格 $(a,b,U)$ 及每个 $v\in U\setminus\{a\}$，都有非零格 $(v,b',V')$ 满足 $V'\subseteq U$。
+5. $g\ne0$ 时，$m,M$ 为有限整数且包住全部非零格自身属性的时刻；$g=0$ 时，端点可为空档案的 $(+\infty,-\infty)$，或非空档案的任意有限整数 $m\le M$。
+
+**证明（必要性）。** 同格符号由自身属性固定，系数为该符号乘事件数，得①，且 $g=0$ 当且仅当 $\Omega=\varnothing$。平衡给②；引理 2 给③。若 $v\in U_t(e)\setminus\{\alpha_t(e)\}$，存在当前 $d$ 使 $e\prec d$ 且 $\alpha_t(d)=v$。传递性给 $U_t(d)\subseteq U_t(e)$，$d$ 所属格非零，得④。档案有限且包含当前区域，给⑤。
+
+**证明（充分性与显式构造）。** 对每个非零格制造 $|g(a,b,U)|$ 个不同的当前事件副本，自身属性、选择位照抄，给每个副本指定目标集 $U_e=U$。在这些事件上定义
+
+$$
+e\prec f\ \Longleftrightarrow\
+t(a_e)<t(a_f)\ \land\ U_f\subseteq U_e.
+\tag{O-REALIZATION}
+$$
+
+严格增时保证反自反，时间不等式及集合包含的传递性保证关系传递。由③，$a_e\in U_e$；若 $e\prec f$，则 $a_f\in U_f\subseteq U_e$，故无额外可达属性。对每个 $v\in U_e\setminus\{a_e\}$，④提供一个有副本的格 $(v,b',V')$，③使 $t(v)>t(a_e)$，于是该副本可达。故实际 $U_t(e)$ 恰为指定 $U_e$。①使逐格有符号计数恰为 $g$，②给平衡。
+
+初取 $E=\Omega$；按⑤需要时补时刻 $m,M$ 的孤立非当前档案事件，即实现两端点而不改剖面。$g=0$ 时直接取空当前区域，按⑤取空档案或一／两个孤立档案点。全部构造是有限集合，适用定义 1 的编码。证毕。
+
+投影到第一坐标即给 $\Gamma_t$ 的全部实际像：满足①–④的 $g$ 总可选⑤的端点。构造的是**一个**实现，不承诺与产生该剖面的原输入历史同构，D10 的非唯一性保持。“当前区域是反链”只对刚生成的乘积输出成立，对应全部 $U=\{a\}$ 的子类；它**不是一般必要条件**，D10 即为反证，不在①–⑤之中。§34.7 的全实际像未测项由命题 57 结算。
+
+**反例 D16（缺少后继见证的形式剖面，repo-derived）。** 同位置零、同来源 $l_0$，取正属性 $a@0,b@1$ 和负属性 $c@2$，仅令
+
+$$
+g(a,1,\{a,b\})=1,\qquad
+g(b,1,\{b,c\})=1,\qquad
+g(c,0,\{c\})=-2,\qquad (m,M)=(0,2).
+$$
+
+①②③⑤均通过，但 $a$ 行的目标 $b$ 只有后继集 $\{b,c\}\nsubseteq\{a,b\}$ 的格，④失败。任何实现中 $a$ 到达一个 $b$，该 $b$ 又到达 $c$，传递性迫使 $c\in U_t(a)$，与所写 $U$ 矛盾。故仅有符号、平衡、唯一最早与端点条件不足。
+
+### 36.7 边界与 OPEN-COPY
+
+**OPEN-COPY。** 令 $\operatorname{Ctx}^{\rm dup}_{\Sigma_{{\rm cau},t}}$ 为使用同一原签名、固定参数、有限项及严格失败传播，但允许重复输入的项语言。精确问题为
+
+$$
+E_q^{\rm dup}(B)\ \Longleftrightarrow\
+\exists\,\text{固定总项 }C\in\operatorname{Ctx}^{\rm dup}_{\Sigma_{{\rm cau},t}}
+\ \forall X\in\mathcal B:\quad q(C(X))=q(F_BX).
+$$
+
+已证 $\operatorname{Tail}(B)\Rightarrow E_q^{\rm dup}(B)$，因为 (O-CONSTRUCTION) 的单孔项属于该扩张；反向以及 $\forall B\subseteq K:E_q^{\rm dup}(B)$ 均未证，记 open。引理 4 的首乘固定旁参数条件不适用于 $X\boxtimes X$，不得移贴单孔必要性。
+
+候选思路（worth 席，经 caller 转述；不作定理）：把输入并行复制 $n$ 份使 $\Gamma_t\mapsto n\Gamma_t$，尝试从目标 q 关于 $n$ 的一次多项式取一次部分，化为有限个单孔读数之差再用引理 4；此归约须独立核验，本批未证。
+
+命题 55 的域不含输入自适应参数、无限项或身份扩签名；命题 57 只给存在性，不给唯一性。D15 划出了新原语超出摘要的具体边界，没有把所有依赖关系的规则一概判为不下降。本批仅为普通 ZFC 推导和有限核验，不新增 Lean、axiom、判官或 schema。
