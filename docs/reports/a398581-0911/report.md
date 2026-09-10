@@ -39,6 +39,22 @@ The live comparison is: when `5x>=2k`, `25z<=2k(2k+5)`; when `l<=x` and `5x<=2k`
 
 Endpoint polynomial inequalities have been proved for residues 0 and 4; residues 3 and 2 use lower bounds `4W>=b(b+2)`, `3W>=b(b+1)` or `9W>=b(b+3)`. The remaining small parameter branches will be private deductions from the residual bound, splitting x only. They do not constitute a separate positive finite certificate or a claim of research progress.
 
+## Target kernel proof
+
+`bounds-6.log` EXIT=0 verified all five parameterized later-x bounds. `bounds-7.log` verified all three candidate constructions and the lexicographic comparison lemma; the small branches required explicit x bounds for `interval_cases`, subsequently added. `bounds-10.log` EXIT=0 verified `first_maximum_separation_mod_five` over naturals, with axioms exactly `[propext, Classical.choice, Quot.sound]`. No sorry, private axiom, or native_decide is used.
+
+The proved statement uses existence of any competing solution with larger z. A maximum-z solution in the user's premise supplies precisely that competitor, so no extra finiteness or maximum-attainment hypothesis is assumed. `IsLexFirst` spells out all three coordinates of the lexicographic order and includes membership in the positive strictly increasing integer-equation solution set.
+
+Additional supporting search: read all public declarations of D5 `OddSquareModuloEight` and `ModThreeNormObstruction`. The former is a natural odd-square divisibility wrapper, not the all-integer obstruction used here. The final proof directly reuses pinned Mathlib `Int.sq_mod_four_eq_one_of_odd` (and `Int.even_or_odd`) to rule out the residual-8 equality; it does not re-prove that odd-square theorem. No D5 frozen theorem is a direct dependency.
+
+### Declaration assessment
+
+Public theorem `first_maximum_separation_mod_five`: `proof_shape=content`; direct frozen dependencies `[]`; `admission_basis=escape-witness`; `computational_content.kind=none`. It quantifies over all natural parameters and solutions. Private finite x splits only close the small branches of that unbounded theorem.
+
+The named escape witness is `near_bound`, together with its live endpoint applications in `later_two_divisible`. Clause (i): these declarations occur in the elaborated chain through `first_maximal` to the public theorem; kernel axiom output confirms successful elaboration (a detailed constant-closure receipt will accompany formal inspection). Clause (ii): their interval and endpoint inequalities are new estimates, not instances or projections of frozen prerequisites (there are none). Clause (iii): the intermediate z bound has an endpoint inequality and residual premise, and is neither definitionally equal to nor a restatement of the modulo-five conclusion. Clause (iv): the q>=11, residue-2 divisible branch uses the bound to compare every later x with the constructed candidate; removing it leaves that branch unproved. The d>=2 obstruction at residual 8 is also actively used for its adjacent x. No irrelevant component is attached and discarded.
+
+Before the formal write, directory counts: D5/S3/Arith/Congruence=21 files; mirrored Blueprint bucket=42; Library/notes=23. Arith is registered at S3. Generality I and utility none describe the unbounded, fixed-numerator arithmetic theorem. Canonical route requested for EgyptianFiveFirstMaximum.
+
 ## Verification and remaining obligations
 
 No Lean attempt run yet. No theorem frozen. Build/cache receipts, exact declaration classifications, and final outcome will be appended after each completed unit.

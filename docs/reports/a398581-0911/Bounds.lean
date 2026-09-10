@@ -1,4 +1,5 @@
 import Mathlib.Tactic
+import Mathlib.NumberTheory.Multiplicity
 
 namespace A398581Probe
 
@@ -126,11 +127,13 @@ private theorem residual_eight_gap {k x y z : ℤ} (h : Sol k x y z)
   have he : (5 * x - k) * y - k * x = 1 := by omega
   have he' : k ^ 2 + 5 = 8 * (5 * y - k) := by nlinarith
   have hm : k ^ 2 % 8 = 3 := by omega
-  have ht : k ^ 2 % 8 = ((k % 8) * (k % 8)) % 8 := by
-    simpa [pow_two] using Int.mul_emod k k 8
-  have hlo := Int.emod_nonneg k (show (8 : ℤ) ≠ 0 by norm_num)
-  have hhi := Int.emod_lt_of_pos k (show (0 : ℤ) < 8 by norm_num)
-  interval_cases hr : k % 8 <;> norm_num [hr, hm] at ht
+  rcases Int.even_or_odd k with heven | hodd
+  · obtain ⟨t, ht⟩ := heven
+    have heq : k ^ 2 = 4 * t ^ 2 := by rw [ht]; ring
+    omega
+  · have := Int.sq_mod_four_eq_one_of_odd hodd
+    omega
+
 
 private theorem later_zero {q x y z : ℤ} (hq : 1 ≤ q) (h : Sol (5 * q) x y z)
     (hl : q + 2 ≤ x) : z ≤ q * (q + 1) * (q * (q + 1) + 1) := by
@@ -248,10 +251,405 @@ private theorem later_two_divisible {q x y z W : ℤ} (hq : 11 ≤ q)
           positivity
         nlinarith only [hend, hW]
 
-#print axioms later_zero
-#print axioms later_three
-#print axioms later_four
-#print axioms later_two_coprime
-#print axioms later_two_divisible
+private theorem small_2 {x y z : ℤ} (h : Sol 2 x y z) : z ≤ 1 := by
+  have hb := basic_bounds h
+  have hx := h.1
+  have hy := h.2.1
+  have hxl : 1 ≤ x := by omega
+  have hxu : x ≤ 1 := by omega
+  interval_cases x
+  · have he : 4 ≤ (5 * 1 - 2) * y - 2 * 1 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 4) he
+    norm_num at this
+    omega
+
+private theorem small_3 {x y z : ℤ} (h : Sol 3 x y z) : z ≤ 6 := by
+  have hb := basic_bounds h
+  have hx := h.1
+  have hy := h.2.1
+  have hxl : 1 ≤ x := by omega
+  have hxu : x ≤ 1 := by omega
+  interval_cases x
+  · have he : 1 ≤ (5 * 1 - 3) * y - 3 * 1 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 1) he
+    norm_num at this
+    omega
+
+private theorem small_8 {x y z : ℤ} (h : Sol 8 x y z) : z ≤ 72 := by
+  have hb := basic_bounds h
+  have hx := h.1
+  have hy := h.2.1
+  have hxl : 2 ≤ x := by omega
+  have hxu : x ≤ 4 := by omega
+  interval_cases x
+  · have he : 2 ≤ (5 * 2 - 8) * y - 8 * 2 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 2) he
+    norm_num at this
+    omega
+  · have he : 4 ≤ (5 * 3 - 8) * y - 8 * 3 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 4) he
+    norm_num at this
+    omega
+  · have he : 28 ≤ (5 * 4 - 8) * y - 8 * 4 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 28) he
+    norm_num at this
+    omega
+
+private theorem small_12 {x y z : ℤ} (h : Sol 12 x y z) : z ≤ 156 := by
+  have hb := basic_bounds h
+  have hx := h.1
+  have hy := h.2.1
+  have hxl : 3 ≤ x := by omega
+  have hxu : x ≤ 7 := by omega
+  interval_cases x
+  · have he : 3 ≤ (5 * 3 - 12) * y - 12 * 3 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 3) he
+    norm_num at this
+    omega
+  · have he : 8 ≤ (5 * 4 - 12) * y - 12 * 4 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 8) he
+    norm_num at this
+    omega
+  · have he : 18 ≤ (5 * 5 - 12) * y - 12 * 5 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 18) he
+    norm_num at this
+    omega
+  · have he : 54 ≤ (5 * 6 - 12) * y - 12 * 6 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 54) he
+    norm_num at this
+    omega
+  · have he : 100 ≤ (5 * 7 - 12) * y - 12 * 7 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 100) he
+    norm_num at this
+    omega
+
+private theorem small_27 {x y z : ℤ} (h : Sol 27 x y z) : z ≤ 2970 := by
+  have hb := basic_bounds h
+  have hx := h.1
+  have hy := h.2.1
+  have hxl : 6 ≤ x := by omega
+  have hxu : x ≤ 16 := by omega
+  interval_cases x
+  · have he : 3 ≤ (5 * 6 - 27) * y - 27 * 6 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 3) he
+    norm_num at this
+    omega
+  · have he : 3 ≤ (5 * 7 - 27) * y - 27 * 7 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 3) he
+    norm_num at this
+    omega
+  · have he : 5 ≤ (5 * 8 - 27) * y - 27 * 8 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 5) he
+    norm_num at this
+    omega
+  · have he : 9 ≤ (5 * 9 - 27) * y - 27 * 9 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 9) he
+    norm_num at this
+    omega
+  · have he : 6 ≤ (5 * 10 - 27) * y - 27 * 10 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 6) he
+    norm_num at this
+    omega
+  · have he : 39 ≤ (5 * 11 - 27) * y - 27 * 11 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 39) he
+    norm_num at this
+    omega
+  · have he : 105 ≤ (5 * 12 - 27) * y - 27 * 12 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 105) he
+    norm_num at this
+    omega
+  · have he : 181 ≤ (5 * 13 - 27) * y - 27 * 13 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 181) he
+    norm_num at this
+    omega
+  · have he : 267 ≤ (5 * 14 - 27) * y - 27 * 14 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 267) he
+    norm_num at this
+    omega
+  · have he : 363 ≤ (5 * 15 - 27) * y - 27 * 15 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 363) he
+    norm_num at this
+    omega
+  · have he : 469 ≤ (5 * 16 - 27) * y - 27 * 16 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 469) he
+    norm_num at this
+    omega
+
+private theorem small_42 {x y z : ℤ} (h : Sol 42 x y z) : z ≤ 16002 := by
+  have hb := basic_bounds h
+  have hx := h.1
+  have hy := h.2.1
+  have hxl : 9 ≤ x := by omega
+  have hxu : x ≤ 25 := by omega
+  interval_cases x
+  · have he : 3 ≤ (5 * 9 - 42) * y - 42 * 9 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 3) he
+    norm_num at this
+    omega
+  · have he : 4 ≤ (5 * 10 - 42) * y - 42 * 10 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 4) he
+    norm_num at this
+    omega
+  · have he : 6 ≤ (5 * 11 - 42) * y - 42 * 11 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 6) he
+    norm_num at this
+    omega
+  · have he : 18 ≤ (5 * 12 - 42) * y - 42 * 12 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 18) he
+    norm_num at this
+    omega
+  · have he : 6 ≤ (5 * 13 - 42) * y - 42 * 13 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 6) he
+    norm_num at this
+    omega
+  · have he : 28 ≤ (5 * 14 - 42) * y - 42 * 14 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 28) he
+    norm_num at this
+    omega
+  · have he : 30 ≤ (5 * 15 - 42) * y - 42 * 15 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 30) he
+    norm_num at this
+    omega
+  · have he : 12 ≤ (5 * 16 - 42) * y - 42 * 16 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 12) he
+    norm_num at this
+    omega
+  · have he : 60 ≤ (5 * 17 - 42) * y - 42 * 17 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 60) he
+    norm_num at this
+    omega
+  · have he : 156 ≤ (5 * 18 - 42) * y - 42 * 18 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 156) he
+    norm_num at this
+    omega
+  · have he : 262 ≤ (5 * 19 - 42) * y - 42 * 19 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 262) he
+    norm_num at this
+    omega
+  · have he : 378 ≤ (5 * 20 - 42) * y - 42 * 20 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 378) he
+    norm_num at this
+    omega
+  · have he : 504 ≤ (5 * 21 - 42) * y - 42 * 21 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 504) he
+    norm_num at this
+    omega
+  · have he : 640 ≤ (5 * 22 - 42) * y - 42 * 22 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 640) he
+    norm_num at this
+    omega
+  · have he : 786 ≤ (5 * 23 - 42) * y - 42 * 23 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 786) he
+    norm_num at this
+    omega
+  · have he : 942 ≤ (5 * 24 - 42) * y - 42 * 24 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 942) he
+    norm_num at this
+    omega
+  · have he : 1108 ≤ (5 * 25 - 42) * y - 42 * 25 := by omega
+    have := residual_bound h (by norm_num : (0 : ℤ) < 1108) he
+    norm_num at this
+    omega
+
+def First (k x y z : ℤ) : Prop :=
+  Sol k x y z ∧ ∀ u v w, Sol k u v w →
+    x < u ∨ x = u ∧ (y < v ∨ y = v ∧ z ≤ w)
+
+private theorem maximal_of_candidate {k x y z u v w : ℤ} (hfirst : First k x y z)
+    (hcan : Sol k u v w) (hu : 5 * (u - 1) ≤ k)
+    (hlater : ∀ a b c, Sol k a b c → u < a → c ≤ w) :
+    ∀ a b c, Sol k a b c → c ≤ z := by
+  have hb := basic_bounds hfirst.1
+  have hc := hfirst.2 u v w hcan
+  have hxu : x = u := by omega
+  subst u
+  have hW : w ≤ z := same_x_antitone hfirst.1 hcan (by omega)
+  intro a b c hs
+  have hc' := hfirst.2 a b c hs
+  by_cases he : x = a
+  · subst a
+    exact same_x_antitone hfirst.1 hs (by omega)
+  · exact le_trans (hlater a b c hs (by omega)) hW
+
+private theorem construct_one {k u B : ℤ} (hu : 0 < u) (huB : u ≤ B) (hB : 2 ≤ B)
+    (he : (5 * u - k) * B = k * u) : Sol k u (B + 1) (B * (B + 1)) := by
+  refine ⟨hu, by omega, ?_, ?_⟩
+  · nlinarith
+  · linear_combination (B + 1) ^ 2 * he
+
+private theorem construct_gap_one {k u v : ℤ} (hu : 0 < u) (huv : u < v)
+    (hb : 2 ≤ k * u) (he : (5 * u - k) * v = k * u + 1) :
+    Sol k u v (k * u * v) := by
+  refine ⟨hu, huv, ?_, ?_⟩
+  · nlinarith
+  · linear_combination k * u * v * he
+
+private theorem candidate_three {q : ℤ} (hq : 2 ≤ q) :
+    ∃ v w, Sol (5 * q + 3) (q + 1) v w ∧
+      ((5 * q + 3) * (q + 1)) * ((5 * q + 3) * (q + 1) + 2) ≤ 4 * w := by
+  let b := (5 * q + 3) * (q + 1)
+  have hb : 2 ≤ b := by dsimp [b]; nlinarith [sq_nonneg q]
+  by_cases heven : b % 2 = 0
+  · let B := b / 2
+    have hB : 2 * B = b := by dsimp [B]; omega
+    have hB2 : 2 ≤ B := by dsimp [b] at *; nlinarith [sq_nonneg q]
+    have huB : q + 1 ≤ B := by dsimp [b] at *; nlinarith [sq_nonneg q]
+    refine ⟨B + 1, B * (B + 1), construct_one (by omega) huB hB2 ?_, ?_⟩
+    · dsimp [b] at hB; nlinarith
+    · change b * (b + 2) ≤ 4 * (B * (B + 1))
+      nlinarith [hB]
+  · let v := (b + 1) / 2
+    have hv : 2 * v = b + 1 := by dsimp [v]; omega
+    have huv : q + 1 < v := by dsimp [b] at *; nlinarith [sq_nonneg q]
+    refine ⟨v, b * v, construct_gap_one (by omega) huv hb ?_, ?_⟩
+    · dsimp [b] at hv; nlinarith
+    · change b * (b + 2) ≤ 4 * (b * v)
+      nlinarith [sq_nonneg b]
+
+private theorem candidate_two_divisible {q : ℤ} (hq : 1 ≤ q)
+    (hr : ((5 * q + 2) * (q + 1)) % 3 = 0) :
+    ∃ v w, Sol (5 * q + 2) (q + 1) v w ∧
+      ((5 * q + 2) * (q + 1)) * ((5 * q + 2) * (q + 1) + 3) ≤ 9 * w := by
+  let b := (5 * q + 2) * (q + 1)
+  let B := b / 3
+  have hB : 3 * B = b := by dsimp [B, b]; omega
+  have hB2 : 2 ≤ B := by dsimp [b] at *; nlinarith [sq_nonneg q]
+  have huB : q + 1 ≤ B := by dsimp [b] at *; nlinarith [sq_nonneg q]
+  refine ⟨B + 1, B * (B + 1), construct_one (by omega) huB hB2 ?_, ?_⟩
+  · dsimp [b] at hB; nlinarith
+  · change b * (b + 3) ≤ 9 * (B * (B + 1))
+    nlinarith [hB]
+
+private theorem candidate_two_coprime {q : ℤ} (hq : 1 ≤ q)
+    (hr : ((5 * q + 2) * (q + 1)) % 3 = 2) :
+    ∃ v w, Sol (5 * q + 2) (q + 1) v w ∧
+      ((5 * q + 2) * (q + 1)) * ((5 * q + 2) * (q + 1) + 1) ≤ 3 * w := by
+  let b := (5 * q + 2) * (q + 1)
+  let v := (b + 1) / 3
+  have hb : 2 ≤ b := by dsimp [b]; nlinarith [sq_nonneg q]
+  have hv : 3 * v = b + 1 := by dsimp [v, b]; omega
+  have huv : q + 1 < v := by dsimp [b] at *; nlinarith [sq_nonneg q]
+  refine ⟨v, b * v, construct_gap_one (by omega) huv hb ?_, ?_⟩
+  · dsimp [b] at hv; nlinarith
+  · change b * (b + 1) ≤ 3 * (b * v)
+    nlinarith [hv]
+
+private theorem first_maximal {k x y z : ℤ} (hfirst : First k x y z) (hk : k % 5 ≠ 1) :
+    ∀ a b c, Sol k a b c → c ≤ z := by
+  have hb := basic_bounds hfirst.1
+  let q := k / 5
+  have hq : 0 ≤ q := by dsimp [q]; omega
+  have hres : k % 5 = 0 ∨ k % 5 = 2 ∨ k % 5 = 3 ∨ k % 5 = 4 := by omega
+  rcases hres with hr | hr | hr | hr
+  · have hke : k = 5 * q := by dsimp [q]; omega
+    rw [hke] at hfirst ⊢
+    have hq1 : 1 ≤ q := by omega
+    have hcan : Sol (5 * q) (q + 1) (q * (q + 1) + 1)
+        (q * (q + 1) * (q * (q + 1) + 1)) := by
+      apply construct_one (by omega) (by nlinarith [sq_nonneg q]) (by nlinarith [sq_nonneg q])
+      ring
+    apply maximal_of_candidate hfirst hcan (by omega)
+    intro a b c hs ha
+    exact later_zero hq1 hs (by omega)
+  · have hke : k = 5 * q + 2 := by dsimp [q]; omega
+    rw [hke] at hfirst ⊢
+    by_cases hq0 : q = 0
+    · rw [hq0] at hfirst
+      have hz := small_2 hfirst.1
+      have hx := hfirst.1.1
+      have hy := hfirst.1.2.1
+      have hzz := hfirst.1.2.2.1
+      omega
+    have hq1 : 1 ≤ q := by omega
+    have hmod : ((5 * q + 2) * (q + 1)) % 3 = 0 ∨
+        ((5 * q + 2) * (q + 1)) % 3 = 2 := by
+      have hqr : q % 3 = 0 ∨ q % 3 = 1 ∨ q % 3 = 2 := by omega
+      rcases hqr with hqr | hqr | hqr <;>
+        norm_num [Int.add_emod, Int.mul_emod, hqr]
+    rcases hmod with hmod | hmod
+    · by_cases hlarge : 11 ≤ q
+      · obtain ⟨v, w, hcan, hW⟩ := candidate_two_divisible hq1 hmod
+        apply maximal_of_candidate hfirst hcan (by omega)
+        intro a b c hs ha
+        exact later_two_divisible hlarge hs (by omega) hW
+      · have hqu : q ≤ 10 := by omega
+        interval_cases q <;> norm_num at hmod
+        all_goals norm_num at hfirst ⊢
+        · exact maximal_of_candidate hfirst (by norm_num [Sol] : Sol 12 3 13 156)
+            (by norm_num) (fun a b c hs _ => small_12 hs)
+        · exact maximal_of_candidate hfirst (by norm_num [Sol] : Sol 27 6 55 2970)
+            (by norm_num) (fun a b c hs _ => small_27 hs)
+        · exact maximal_of_candidate hfirst (by norm_num [Sol] : Sol 42 9 127 16002)
+            (by norm_num) (fun a b c hs _ => small_42 hs)
+    · obtain ⟨v, w, hcan, hW⟩ := candidate_two_coprime hq1 hmod
+      apply maximal_of_candidate hfirst hcan (by omega)
+      intro a b c hs ha
+      exact later_two_coprime hq1 hs (by omega) hW
+  · have hke : k = 5 * q + 3 := by dsimp [q]; omega
+    rw [hke] at hfirst ⊢
+    by_cases hlarge : 2 ≤ q
+    · obtain ⟨v, w, hcan, hW⟩ := candidate_three hlarge
+      apply maximal_of_candidate hfirst hcan (by omega)
+      intro a b c hs ha
+      exact later_three hlarge hs (by omega) hW
+    · have hqu : q ≤ 1 := by omega
+      interval_cases q <;> norm_num at hfirst ⊢
+      · exact maximal_of_candidate hfirst (by norm_num [Sol] : Sol 3 1 2 6)
+          (by norm_num) (fun a b c hs _ => small_3 hs)
+      · exact maximal_of_candidate hfirst (by norm_num [Sol] : Sol 8 2 9 72)
+          (by norm_num) (fun a b c hs _ => small_8 hs)
+  · have hke : k = 5 * q + 4 := by dsimp [q]; omega
+    rw [hke] at hfirst ⊢
+    have hcan : Sol (5 * q + 4) (q + 1) ((5 * q + 4) * (q + 1) + 1)
+        (((5 * q + 4) * (q + 1)) * ((5 * q + 4) * (q + 1) + 1)) := by
+      apply construct_one (by omega) (by nlinarith [sq_nonneg q]) (by nlinarith [sq_nonneg q])
+      ring
+    apply maximal_of_candidate hfirst hcan (by omega)
+    intro a b c hs ha
+    exact later_four hq hs (by omega)
+
+/-- Strictly increasing positive natural solutions of the integer equation. -/
+def IsSolution (k x y z : ℕ) : Prop :=
+  0 < x ∧ x < y ∧ y < z ∧ 5 * x * y * z = k * (y * z + x * z + x * y)
+
+/-- A solution preceding every other solution in the full lexicographic order. -/
+def IsLexFirst (k x y z : ℕ) : Prop :=
+  IsSolution k x y z ∧ ∀ u v w, IsSolution k u v w →
+    x < u ∨ x = u ∧ (y < v ∨ y = v ∧ z ≤ w)
+
+/-- If a solution has larger third coordinate than the lexicographically first solution,
+then the parameter is one modulo five. No converse or universal solvability is asserted. -/
+theorem first_maximum_separation_mod_five {k x y z : ℕ} (hfirst : IsLexFirst k x y z)
+    (hlarger : ∃ u v w, IsSolution k u v w ∧ z < w) : k % 5 = 1 := by
+  by_contra hne
+  have hf : First (k : ℤ) x y z := by
+    refine ⟨?_, ?_⟩
+    · have hs := hfirst.1
+      dsimp [IsSolution] at hs
+      dsimp [Sol]
+      exact_mod_cast hs
+    · intro a b c hs
+      have ha := le_of_lt hs.1
+      have hb := le_of_lt (lt_trans hs.1 hs.2.1)
+      have hc := le_of_lt (lt_trans hs.1 (lt_trans hs.2.1 hs.2.2.1))
+      lift a to ℕ using ha with a
+      lift b to ℕ using hb with b
+      lift c to ℕ using hc with c
+      have hn : IsSolution k a b c := by
+        dsimp [Sol] at hs
+        dsimp [IsSolution]
+        exact_mod_cast hs
+      exact_mod_cast hfirst.2 a b c hn
+  obtain ⟨a, b, c, hs, hc⟩ := hlarger
+  have hs' : Sol (k : ℤ) a b c := by
+    dsimp [IsSolution] at hs
+    dsimp [Sol]
+    exact_mod_cast hs
+  have hm : (k : ℤ) % 5 ≠ 1 := by exact_mod_cast hne
+  have hbound := first_maximal hf hm a b c hs'
+  have hcn : c ≤ z := by exact_mod_cast hbound
+  omega
+
+#print axioms first_maximum_separation_mod_five
 
 end A398581Probe
