@@ -11,12 +11,15 @@ import Mathlib.Data.ZMod.Basic
 import Mathlib.Tactic.FinCases
 import Mathlib.Tactic.LinearCombination
 import Mathlib.Tactic.NormNum
+
 open scoped BigOperators
+
 namespace D5.S3.Arith.Congruence.TruncatedExponentialTwoAdic
 
 private def H (n : ℕ) : ℕ → ℕ
   | 0 => 1
   | m + 1 => n ^ (m + 1) + (m + 1) * H n m
+
 /-- The natural-number factorial quotient sum of OEIS A398187; k indexes the truncation. -/
 def S (n k : ℕ) : ℕ :=
   ∑ j ∈ Finset.range (n - k + 1), (n - k).factorial / j.factorial * n ^ j
@@ -71,14 +74,13 @@ private lemma odd_pow (n m : ℕ) (hn : n % 2 = 1) :
   have hf : (n : ZMod 16)^4 = 1 := odd_four _ (by simpa [ZMod.val_natCast] using hn)
   exact pow_eq_pow_mod m hf
 
-
 private def P (x y : ZMod 16) : ZMod 16 :=
   x^6 + (y+6)*(x^5+(y+5)*(x^4+(y+4)*(x^3+(y+3)*(x^2+(y+2)*x))))
 
 private lemma large_table (x y : ZMod 16) (hx : x.val % 2 = 1)
-    (hk : (x-y-4).val ≠ 0) :
+    (hk : (x - y - 4).val ≠ 0) :
     (x^(y.val % 4) * P x y).val ≠ 0 ∧
-    padicValNat 2 (x^(y.val % 4) * P x y).val = padicValNat 2 (x-y-4).val := by
+    padicValNat 2 (x^(y.val % 4) * P x y).val = padicValNat 2 (x - y - 4).val := by
   revert hx hk
   fin_cases x <;> fin_cases y <;> decide +kernel
 
@@ -93,9 +95,9 @@ private lemma cast_h (n m : ℕ) : (H n m : ZMod 16) = R (n : ZMod 16) m := by
       Nat.cast_one, ih]
 
 private lemma small_table (x : ZMod 16) (m : Fin 6) (hx : x.val % 2 = 1)
-    (hk : (x-m.val+2).val ≠ 0) :
+    (hk : (x - m.val + 2).val ≠ 0) :
     (R x m).val ≠ 0 ∧
-    padicValNat 2 (R x m).val = padicValNat 2 (x-m.val+2).val := by
+    padicValNat 2 (R x m).val = padicValNat 2 (x - m.val + 2).val := by
   revert hx hk
   fin_cases x <;> fin_cases m <;> decide +kernel
 

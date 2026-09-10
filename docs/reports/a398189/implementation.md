@@ -105,3 +105,8 @@ dominating_theorem_search：本仓 → pin Mathlib → GitHub Lean/OEIS/指定�
 LEAN_CACHE：`status=present, method=none, stamp_miss=null, clonefile_attempts=0,
 mathlib_missing_olean_files=0, mathlib_olean_state=warm, project_olean_state=warm`。
 这次没有重新播种；最初显式 ensure 的 seeded/clonefile 收据见前文。
+
+首轮 `make lean-report` EXIT=0，增量计划 added=3/recheck=3；
+原报告 hash `66c733ba1c4b9d6586bb89eaefca7f3083f7827302c41b484a09b12550ec3fd9`。
+编译器指出本模块三处 whitespace warning；仅补空格和声明间距，
+因此按最终字节重跑 lean → lean-report，旧轮成功仍仅作为旧字节的历史收据。
