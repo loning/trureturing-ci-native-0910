@@ -176,3 +176,16 @@ utility=none：所有定理均为任意奇数阶的一般组合构造，不属�
 - 已启动 make deposit-uncovered，GID=主定理、BASE=固定 40 位 SHA。
   这是用户允许的无 atom 路径，canonical writer 内部执行 ledger-align --add；
   不运行 make ingest，不新增 theory/atom/backfill，也不制造自指 coverage。
+
+## 冻结
+
+- make deposit-uncovered EXIT=0，83.833 秒；内部 lean-report 命中相同输入缓存，
+  deposit-header-check 成功，emit 为 0 changed，ledger-align --add 成功：
+  selectors_considered=3952、changed=0、added=1、unchanged=3951、conflicts=0。
+- 新状态片 Golden/Frozen/state/D5/S1/Words/ParityCode/OddTopWeight.lean.json
+  模块 statement_id=sha256:088ebcae487f0abaf7a32d2fc1e0318eb2a84f752ad805bbec40ca688b6d3358。
+- 对应 accepted 事件为
+  9faa636507290b7ccdf15f2f20e529030970ef7c2230a170476d41313ee689e5.json。
+  主定理声明身份见上，模块身份与声明身份不混称。
+- 落地形态是冻结、未覆盖：reason=NO_ATOM；无 source_id/atom_id，也无消化状态迁移。
+- 已完成本地要求门序。下面开 PR；不主动合并，由外层 runner 按本 implementation brief 接手。
