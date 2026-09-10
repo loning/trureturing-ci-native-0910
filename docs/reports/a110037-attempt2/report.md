@@ -93,3 +93,28 @@ c_halving 均通过；complement_of_halving 由 strong_induction_on 对所有 r>
 
 这是条件无界推导，不能替换用户要求的无条件具体计数定理；三条数学路线均已推进，
 未把“未搜到现成定理”单独当作 blocked 结算，也未以有限实例声称部分进展。
+
+## 具体目标的 Lean 实例化尝试
+
+已把用户原签名逐字放入 runner 工件 InstantiationGap.lean，使用
+`apply signed_diff_of_parity (fun k => (nonsquashingDistinctPartitions k).card) ?_ n hn`
+后执行 `constructor`。EXIT=1，41.89秒，产生八个具体计数的未解 goal；
+完整原文在 attempt-2/instantiation-gap.log，未将该失败文件加入 D5 或当成通过项。
+例如首个 goal 精确为：
+
+```lean
+⊢ ∀ (m : ℕ), 0 < m →
+    (nonsquashingDistinctPartitions (2 * m + 1)).card % 2 =
+      ((nonsquashingDistinctPartitions (2 * m)).card % 2 + 1) % 2
+```
+
+最锐的缺口是闭合命题
+`SloaneSellersParity (fun k => (nonsquashingDistinctPartitions k).card)`。
+它的八个子句全部有论文出处；本席已证明其后续归纳与全部差分，并没有证明这八个
+具体计数子句。现存禁令“不重证公开 B 奇偶定理”使本席不能自行移植论文证明，
+而“无私 axiom”又不能用文献断言代替 kernel 证明项。具体 Lean 声明位置/移植授权
+的异步问题仍未获答复；不把无答复当授权。
+
+make lean EXIT=0，10.469秒，12840 jobs，本机 macOS ARM 热树。
+该命令只构建现存 D5 项目；报告目录 Bridge.lean 的通过凭独立热树检查，
+不是由本次 make lean 冒领。原始收据为 attempt-2/make-lean-receipt.json。
