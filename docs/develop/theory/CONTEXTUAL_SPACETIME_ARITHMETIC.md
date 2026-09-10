@@ -2737,19 +2737,59 @@ assert REQUIRED_PR6_KEYS <= set(pr6_counts.keys())
 assert all(pr6_counts[k] > 0 for k in REQUIRED_PR6_KEYS)
 
 PR7_KEYS = frozenset({
-    "tail_q", "collapse_controls", "target_controls", "collapsed_profiles",
-    "saturation_endpoints", "saturation_q", "saturation_no_product",
-    "saturation_empty_factor", "saturation_product", "periodic_saturation",
-    "unsaturated_control", "first_product_fiber", "pair_push", "empty_products",
-    "old_archives", "negative_inputs", "unselected_parents", "pair_suffix",
-    "pullback_encoding", "mixed_summary", "mixed_q", "strict_failures",
-    "D15_fiber", "D15_q", "D10_control", "U_rule_push", "J_positive",
-    "J_fiber", "U_size_rule", "global_rule", "same_local_rows",
-    "q_only_control", "image_roundtrip", "enumerated_states",
-    "formal_membership", "enumerated_roundtrip", "image_sets",
-    "distinct_actual_profiles", "D16_conditions", "empty_endpoint_branches",
-    "empty_realizations",
+    "archive_parity_rule_copy",
+    "cancelled_square_linear",
+    "copy_causal_q",
+    "copy_causal_summary",
+    "copy_d15_fiber",
+    "copy_empty_product",
+    "copy_first_product_profiles",
+    "copy_first_product_q",
+    "copy_first_product_summary",
+    "copy_negative_time_control",
+    "copy_old_archive_control",
+    "copy_periodic_saturation",
+    "copy_q_only_control",
+    "copy_region_controls",
+    "copy_same_local_rows",
+    "copy_strict_temporal_failure",
+    "copy_tail_q_bytes",
+    "copy_unsaturated_control",
+    "copy_unselected_parent_control",
+    "cubic_control",
+    "d15_d10_controls",
+    "d17_square_vs_linear",
+    "d18_guard_failure",
+    "d18_slice_failure",
+    "image_d16_witness_failure",
+    "image_empty_endpoint_branches",
+    "image_empty_realizations",
+    "image_roundtrip_57",
+    "labeled_graphs_2x2",
+    "no_zero_row_orbits_2x2",
+    "orbit_cover_2x2",
+    "orbit_partition_2x2",
+    "orbits_2x2",
+    "ordered_pair_negation_suffix",
+    "ordered_pair_push",
+    "ordered_source_cross",
+    "poly_interpolation_coefficients",
+    "poly_profile_bytes",
+    "poly_q_bytes",
+    "pullback_encoding_copy",
+    "selected_pair_fiber_copy",
+    "selected_pair_profile_copy",
+    "shared_saturation_empty_factor",
+    "shared_saturation_endpoints",
+    "shared_saturation_nonempty_factor",
+    "shared_saturation_pairs",
+    "shared_saturation_without_product",
+    "slice_linear_coefficient",
+    "slice_nonzero_constant",
+    "successor_pair_push_copy",
+    "successor_size_rule_copy",
 })
+assert PR7_KEYS.isdisjoint(REQUIRED_PR6_KEYS)
 pr7_counts = {name: 0 for name in PR7_KEYS}
 assert PR7_KEYS <= set(pr7_counts.keys())
 
@@ -2757,41 +2797,253 @@ def pr7_hit(name, amount=1):
     assert name in PR7_KEYS
     pr7_counts[name] += amount
 
+# repo-derived: 引理 5、D17、D18 的有限核验；有限读数不承担全称否定。
+def pr7_equal(actual, expected, name):
+    assert pr3_bytes(actual) == pr3_bytes(expected), (name, actual, expected)
+    pr7_hit(name)
+
+def pr7_copies(x, n):
+    # add tags every occurrence; n=0 has an empty archive, not just empty A.
+    out = empty
+    for _ in range(n):
+        out = add(out, x)
+    return out
+
+def pr7_number_leaves(term):
+    count = 0
+    def visit(node):
+        nonlocal count
+        op = node[0]
+        if op == "X":
+            leaf = ("X", count)
+            count += 1
+            return leaf
+        if op == "const":
+            return node
+        if op in ("add", "mul", "then"):
+            return op, visit(node[1]), visit(node[2])
+        assert op in ("N", "FS", "FL", "FQ", "T")
+        return (*node[:-1], visit(node[-1]))
+    numbered = visit(term)
+    return numbered, count
+
+def pr7_rich_eval(term, leaves):
+    op = term[0]
+    if op == "X":
+        return leaves[term[1]]
+    if op == "const":
+        return term[1]
+    if op in ("add", "mul", "then"):
+        left = pr7_rich_eval(term[1], leaves)
+        right = pr7_rich_eval(term[2], leaves)
+        if left is FAIL or right is FAIL:
+            return FAIL
+        return attempt(lambda: {"add": add, "mul": mul, "then": temporal}[op](left, right))
+    return pr5_rich_step(pr7_rich_eval(term[-1], leaves), term[:-1])
+
+def pr7_profile_polynomial(term, g):
+    # Coefficients live in the free profile group; they need not be realizable.
+    # Endpoints play no role. Only normalized total terms enter this recursion.
+    op = term[0]
+    if op == "X":
+        return [{}, g]
+    if op == "const":
+        return [pr4_profile(term[1])]
+    if op in ("add", "mul"):
+        left = pr7_profile_polynomial(term[1], g)
+        right = pr7_profile_polynomial(term[2], g)
+        if op == "add":
+            return [plus_c(left[i] if i < len(left) else {},
+                           right[i] if i < len(right) else {})
+                    for i in range(max(len(left), len(right)))]
+        out = [{} for _ in range(len(left) + len(right) - 1)]
+        for i, gi in enumerate(left):
+            for j, gj in enumerate(right):
+                out[i+j] = plus_c(out[i+j], pr4_profile_product(gi, gj))
+        return out
+    assert op in ("N", "FS", "FL", "FQ", "T")
+    return [pr5_summary_step((coefficient, None, None), term[:-1])[0]
+            for coefficient in pr7_profile_polynomial(term[-1], g)]
+
+def pr7_poly_at(coefficients, n):
+    out = {}
+    for degree, g in enumerate(coefficients):
+        out = plus_c(out, sparse({row: value*n**degree for row, value in g.items()}))
+    return out
+
+def pr7_lagrange(readings):
+    # Exact interpolation from the four measured values, independent of Γ_t.
+    assert len(readings) == 4
+    coefficients = [Fraction(0) for _ in readings]
+    for i, value in enumerate(readings):
+        basis, denominator = [Fraction(1)], 1
+        for j in range(4):
+            if j == i:
+                continue
+            expanded = [Fraction(0) for _ in range(len(basis)+1)]
+            for degree, coefficient in enumerate(basis):
+                expanded[degree] -= j*coefficient
+                expanded[degree+1] += coefficient
+            basis = expanded
+            denominator *= i-j
+        for degree, coefficient in enumerate(basis):
+            coefficients[degree] += Fraction(value, denominator)*coefficient
+    assert all(c.denominator == 1 for c in coefficients)
+    return [c.numerator for c in coefficients]
+
+pr7_X = ("X",)
+pr7_A = ("mul", pr7_X, pr7_X)
+pr7_Qodd = pr5_Set(lambda a: a[3] % 2 == 1)
+pr7_pair_sources = frozenset({("pair", pr3_l0, pr3_l0), ("pair", pr3_l0, pr3_l1)})
+# Six fixed terms, all parameters chosen before generating the inputs.
+pr7_terms = (
+    ("square", pr7_A),
+    ("fixed_middle", ("mul", ("mul", pr7_X, ("const", time_shift(pr3_U0, -2))), pr7_X)),
+    ("cancelled_square", ("add", pr7_X, ("add", pr7_A, ("N", pr7_A)))),
+    ("cubic", ("mul", pr7_A, pr7_X)),
+    ("nested_filters", ("T", -1, ("FQ", pr5_Qpositive,
+        ("FL", frozenset({pr3_l0, pr3_l1}), ("N", ("FS", frozenset({origin, v}),
+            ("T", 2, ("add", pr7_X, ("mul", pr7_X, ("const", pr3_U0)))))))))),
+    ("constant_offset", ("add", ("const", pr3_U0), ("T", 1, ("N", ("FQ", pr7_Qodd,
+        ("FS", frozenset({origin}), ("FL", pr7_pair_sources,
+            ("mul", ("T", -1, pr7_X), pr7_X)))))))),
+)
+pr7_rng = pr3_Random(2026091007)
+pr7_random_inputs = []
+for pr7_i in range(4):
+    pr7_events = {j: (pr7_rng.randrange(-5, 6), pr7_rng.choice((origin, v, h)), sign,
+                      pr7_rng.choice((pr3_l0, pr3_l1)))
+                  for j, sign in enumerate((1, -1))}
+    pr7_whole = frozenset(pr7_events)
+    for pr7_j in range(pr7_i % 3):
+        pr7_events[("archive", pr7_j)] = (pr7_rng.randrange(-8, 9), h, 1, pr3_l1)
+    pr7_edges = {(e, f) for e in pr7_events for f in pr7_events
+                 if pr7_events[e][0] < pr7_events[f][0] and pr7_rng.randrange(2)}
+    pr7_selected = frozenset(e for e in sorted(pr7_whole) if pr7_rng.randrange(2))
+    pr7_input = valid(Rich(pr7_events, closure(pr7_edges), pr7_whole, pr7_selected))
+    assert charge(pr7_input, pr7_input.w) == 0
+    pr7_random_inputs.append(pr7_input)
+assert len(pr7_random_inputs) == 4 and len(pr7_terms) == 6
+pr7_poly_inputs = [pr3_U0] + pr7_random_inputs
+for pr7_label, pr7_raw_term in pr7_terms:
+    pr7_term, pr7_r = pr7_number_leaves(pr7_raw_term)
+    for pr7_input in pr7_poly_inputs:
+        pr7_g = pr4_profile(pr7_input)
+        pr7_poly = pr7_profile_polynomial(pr7_term, pr7_g)
+        assert len(pr7_poly) <= 4  # All six chosen terms have degree at most 3.
+        pr7_qpoly = [pr5_summary_q((g, None, None)) for g in pr7_poly]
+        pr7_reads = []
+        for pr7_n in range(4):
+            pr7_nx = pr7_copies(pr7_input, pr7_n)
+            assert pr3_bytes(pr4_profile(pr7_nx)) == pr3_bytes(
+                sparse({row: pr7_n*value for row, value in pr7_g.items()}))
+            pr7_value = pr7_rich_eval(pr7_term, [pr7_nx]*pr7_r)
+            assert pr7_value is not FAIL
+            pr7_equal(pr4_profile(pr7_value), pr7_poly_at(pr7_poly, pr7_n), "poly_profile_bytes")
+            pr7_read = q(pr7_value)
+            pr7_equal(pr7_read, sum(c*pr7_n**d for d, c in enumerate(pr7_qpoly)), "poly_q_bytes")
+            pr7_reads.append(pr7_read)
+        pr7_interpolated = pr7_lagrange(pr7_reads)
+        pr7_equal(pr7_interpolated, pr7_qpoly + [0]*(4-len(pr7_qpoly)), "poly_interpolation_coefficients")
+        pr7_c0 = pr7_reads[0]
+        pr7_slice_sum = 0
+        for pr7_leaf in range(pr7_r):
+            pr7_leaves = [pr7_input if j == pr7_leaf else empty for j in range(pr7_r)]
+            pr7_slice = pr7_rich_eval(pr7_term, pr7_leaves)
+            assert pr7_slice is not FAIL
+            pr7_slice_sum += q(pr7_slice) - pr7_c0
+        pr7_equal(pr7_interpolated[1], pr7_slice_sum, "slice_linear_coefficient")
+        if pr7_label == "constant_offset":
+            assert pr7_c0 == 1  # The subtraction of C(0_empty) is exercised.
+            pr7_hit("slice_nonzero_constant")
+        if pr7_label == "cancelled_square":
+            assert pr7_reads == [n*q(pr7_input) for n in range(4)]
+            pr7_hit("cancelled_square_linear")
+        if pr7_label == "cubic" and q(pr7_input) != 0:
+            assert pr7_interpolated == [0, 0, 0, q(pr7_input)**3]
+            pr7_hit("cubic_control")
+
+# repo-derived D18: 定向切片失败与严格失败传播；有限读数不承担全称否定。
+pr7_d18_Q = frozenset({(origin, 1, pr3_l0, 1)})
+pr7_d18_term, pr7_d18_r = pr7_number_leaves(
+    ("FQ", pr7_d18_Q, ("then", pr7_X, ("T", 1, pr7_X))))
+assert pr7_d18_r == 2
+pr7_d18_reads = [q(pr7_rich_eval(pr7_d18_term, [pr7_copies(pr3_U0, n)]*2)) for n in range(4)]
+pr7_d18_slices = tuple(q(pr7_rich_eval(pr7_d18_term, leaves))
+                      for leaves in ([pr3_U0, empty], [empty, pr3_U0]))
+assert pr7_d18_reads == [0, 2, 4, 6] and pr7_d18_slices == (0, 1)
+assert pr7_lagrange(pr7_d18_reads)[1] == 2 != sum(pr7_d18_slices) - 2*pr7_d18_reads[0]
+pr7_hit("d18_slice_failure")
+pr7_d18_bad = valid(replace(pr3_U0, e={**pr3_U0.e, "late_archive": (3, origin, 1, pr3_l0)}))
+assert {event[0] for event in pr7_d18_bad.e.values()} == {0, 3}
+assert not guard(pr7_d18_bad, time_shift(pr7_d18_bad, 1))
+for pr7_failure_term in (pr7_d18_term, ("N", pr7_d18_term),
+                         ("FS", frozenset(), pr7_d18_term),
+                         ("mul", pr7_d18_term, ("const", empty))):
+    assert pr7_rich_eval(pr7_failure_term, [pr7_d18_bad]*2) is FAIL
+    pr7_hit("d18_guard_failure")
+
+# repo-derived D17: 自乘与有序来源的定向对照；有限读数不承担全称否定。
+pr7_d17_term, pr7_d17_r = pr7_number_leaves(("FQ", pr7_Qodd, pr7_A))
+pr7_Beven = pr5_Set(lambda cell: cell[0] % 2 == 0)
+pr7_d17_reads, pr7_d17_targets = [], []
+for pr7_n in (1, 2, 3):
+    pr7_nx = pr7_copies(unit_at(-4), pr7_n)
+    pr7_square = mul(pr7_nx, pr7_nx)
+    assert {pr7_square.e[e][0] for e in pr7_square.w} == {-3}
+    pr7_d17_reads.append(q(pr7_rich_eval(pr7_d17_term, [pr7_nx]*pr7_d17_r)))
+    pr7_d17_targets.append(q(pr5_region(pr7_nx, pr7_Beven)))
+assert pr7_d17_reads == [1, 4, 9] and pr7_d17_targets == [1, 2, 3]
+pr7_hit("d17_square_vs_linear")
+pr7_source1 = valid(replace(pr3_U0, e={e: (t, p, sign, pr3_l1)
+                                      for e, (t, p, sign, source) in pr3_U0.e.items()}))
+pr7_sources = add(pr3_U0, pr7_source1)
+pr7_positive_ids = sorted(pr7_sources.a)
+pr7_ordered_Q = pr5_Set(lambda a: a[2] == ("pair", pr3_l0, pr3_l1))
+pr7_ordered_reads = []
+for pr7_selection in ((), (pr7_positive_ids[0],), (pr7_positive_ids[1],), tuple(pr7_positive_ids)):
+    pr7_selected_sources = replace(pr7_sources, a=frozenset(pr7_selection))
+    pr7_ordered_reads.append(q(pr3_causal_filter(
+        mul(pr7_selected_sources, pr7_selected_sources), pr7_ordered_Q, True)))
+assert pr7_ordered_reads == [0, 0, 0, 1]
+pr7_hit("ordered_source_cross")
+
+
 # Copy-language q checks on Tail families and directed periodic controls.
 for pr7_B, pr7_c in pr6_tails[:3]:
     pr7_x = pr5_cases[0]
-    assert q(pr6_expression(pr7_x, pr7_B, pr7_c - 1)) == q(pr5_region(pr7_x, pr7_B))
-    pr7_hit("tail_q")
+    pr7_equal(q(pr6_expression(pr7_x, pr7_B, pr7_c - 1)),
+              q(pr5_region(pr7_x, pr7_B)), "copy_tail_q_bytes")
 for pr7_B, pr7_p, pr7_t, pr7_tt in pr6_controls:
     pr7_xs = [replace(unit_at(pr7_s), e={
         e: (n, pr7_p, s, r) for e, (n, p, s, r) in unit_at(pr7_s).e.items()
     }) for pr7_s in (pr7_t, pr7_tt)]
     assert tuple(q(mul(pr7_x, pr3_U0)) for pr7_x in pr7_xs) == (1, 1)
-    pr7_hit("collapse_controls")
+    pr7_hit("copy_first_product_q")
     assert tuple(q(pr5_region(pr7_x, pr7_B)) for pr7_x in pr7_xs) == (1, 0)
-    pr7_hit("target_controls")
+    pr7_hit("copy_region_controls")
     assert pr4_profile(mul(pr7_xs[0], pr3_U0)) == pr4_profile(mul(pr7_xs[1], pr3_U0))
-    pr7_hit("collapsed_profiles")
+    pr7_hit("copy_first_product_profiles")
 
 # The same saturated witness pair is used for all three factor cases.
 pr7_prefix = [("FQ", {(origin, 1, pr3_l0, 0)})]
-for pr7_factor, pr7_name in ((None, "saturation_no_product"),
-                              (empty, "saturation_empty_factor"),
-                              (unit_at(-4), "saturation_product")):
+for pr7_factor, pr7_name in ((None, "shared_saturation_without_product"),
+                              (empty, "shared_saturation_empty_factor"),
+                              (unit_at(-4), "shared_saturation_nonempty_factor")):
     pr7_sat_inputs = pr6_saturated(pr7_prefix, pr7_factor, origin)
     assert theta(pr7_sat_inputs[0])[1:3] == theta(pr7_sat_inputs[1])[1:3]
-    pr7_hit("saturation_endpoints")
+    pr7_hit("shared_saturation_endpoints")
     assert q(pr7_sat_inputs[0]) == q(pr7_sat_inputs[1])
-    pr7_hit("saturation_q")
+    pr7_hit("shared_saturation_pairs")
     pr7_hit(pr7_name)
 pr7_periodic = pr6_sat
 assert tuple(q(pr3_causal_filter(x, pr6_even_Q, True)) for x in pr7_periodic) == (1, 1)
-pr7_hit("periodic_saturation")
+pr7_hit("copy_periodic_saturation")
 assert tuple(q(pr3_causal_filter(replace(x, o=frozenset()), pr6_even_Q, True))
              for x in pr7_periodic) == (1, 0)
-pr7_hit("unsaturated_control")
+pr7_hit("copy_unsaturated_control")
 assert pr5_summary(mul(pr7_periodic[0], pr3_U0)) == pr5_summary(mul(pr7_periodic[1], pr3_U0))
-pr7_hit("first_product_fiber")
+pr7_hit("copy_first_product_summary")
 
 # Full ordered pair push, including empty/background/negative/unselected cases.
 pr7_P = pr5_all
@@ -2799,20 +3051,20 @@ pr7_pair_rich = pr6_pair(pr6_X, pr3_U0, pr7_P)
 pr7_pair_expected = pr6_push(pr4_profile(pr6_X), pr4_profile(pr3_U0),
                              lambda row, other: (row[0], other[0]) in pr7_P)
 assert pr4_profile(pr7_pair_rich) == pr7_pair_expected
-pr7_hit("pair_push")
+pr7_hit("ordered_pair_push")
 pr7_empty_pair = restricted_mul(empty, pr3_U0, lambda e, f: True)
 assert not pr7_empty_pair.w and q(pr7_empty_pair) == 0
-pr7_hit("empty_products")
+pr7_hit("copy_empty_product")
 assert old.e.keys() - old.w
-pr7_hit("old_archives")
+pr7_hit("copy_old_archive_control")
 assert any(t < 0 for t, p, s, r in unit_at(-1).e.values())
-pr7_hit("negative_inputs")
+pr7_hit("copy_negative_time_control")
 assert any(e not in pr6_X.a for e in pr6_X.w)
-pr7_hit("unselected_parents")
+pr7_hit("copy_unselected_parent_control")
 pr7_suffix_rich = pr5_rich_step(pr7_pair_rich, ("N",))
 pr7_suffix_state = pr5_summary_step(pr5_summary(pr7_pair_rich), ("N",))
 assert pr5_summary(pr7_suffix_rich) == pr7_suffix_state
-pr7_hit("pair_suffix")
+pr7_hit("ordered_pair_negation_suffix")
 
 # Pullback encoding and mixed strict propagation.
 pr7_cell_P = pr5_position_pair
@@ -2821,56 +3073,56 @@ pr7_attr_P = pr5_Set(lambda pair: ((pair[0][3], pair[0][0]),
 pr7_lifted = pr6_pair(pr6_X, pr3_U0, pr7_attr_P)
 pr7_direct_cells = pr5_pair(pr6_X, pr3_U0, pr7_cell_P)
 assert pr5_rich_bytes(pr7_lifted) == pr5_rich_bytes(pr7_direct_cells)
-pr7_hit("pullback_encoding")
+pr7_hit("pullback_encoding_copy")
 pr7_step = ("FQ", pr5_Qpositive)
 pr7_rich_mixed = pr5_rich_step(pr6_X, pr7_step)
 pr7_state_mixed = pr5_summary_step(pr5_summary(pr6_X), pr7_step)
 assert pr5_summary(pr7_rich_mixed) == pr7_state_mixed
 assert q(pr7_rich_mixed) == pr5_summary_q(pr7_state_mixed)
-pr7_hit("mixed_summary")
-pr7_hit("mixed_q")
+pr7_hit("copy_causal_summary")
+pr7_hit("copy_causal_q")
 try:
     temporal(unit_at(0), unit_at(0))
 except ValueError:
-    pr7_hit("strict_failures")
+    pr7_hit("copy_strict_temporal_failure")
 else:
     raise AssertionError("strict failure was not propagated")
 
 # D15/D10 controls and the U/J descent comparisons.
 assert pr5_summary(pr6_X) == pr5_summary(pr6_Y)
-pr7_hit("D15_fiber")
+pr7_hit("copy_d15_fiber")
 assert (q(pr6_D(pr6_X)), q(pr6_D(pr6_Y))) == (1, 2)
-pr7_hit("D15_q")
+pr7_hit("d15_d10_controls")
 assert (q(pr6_D(pr3_d5x)), q(pr6_D(pr3_d5y))) == (2, 2)
-pr7_hit("D10_control")
+pr7_hit("d15_d10_controls")
 pr7_Q = frozenset({pr3_alpha(pr6_X, "b1", True)})
 pr7_rule = lambda e, f: any(a in pr7_Q for a in pr3_U(pr6_X, e, True))
 pr7_direct = restricted_mul(pr6_X, pr3_U0, pr7_rule)
 pr7_push = pr6_push(pr4_profile(pr6_X), pr4_profile(pr3_U0),
                     lambda row, other: any(a in pr7_Q for a in row[2]))
 assert pr4_profile(pr7_direct) == pr7_push
-pr7_hit("U_rule_push")
+pr7_hit("successor_pair_push_copy")
 assert pr6_J(pr6_X, pr3_U0, pr7_rule) == {
     a: n for (a, b, U), n in pr7_push.items() if b
 }
-pr7_hit("J_positive")
+pr7_hit("selected_pair_profile_copy")
 assert pr6_J(pr6_X, pr3_U0, pr7_rule) == pr6_J(pr6_Y, pr3_U0,
                                                   lambda e, f: any(
                                                       a in pr7_Q for a in pr3_U(pr6_Y, e, True)))
-pr7_hit("J_fiber")
+pr7_hit("selected_pair_fiber_copy")
 pr7_size_rule = lambda e, f: len(pr3_U(pr6_X, e, True)) > 1
 assert pr4_profile(restricted_mul(pr6_X, pr3_U0, pr7_size_rule)) == pr6_push(
     pr4_profile(pr6_X), pr4_profile(pr3_U0), lambda row, other: len(row[2]) > 1)
-pr7_hit("U_size_rule")
+pr7_hit("successor_size_rule_copy")
 pr7_global_rule = lambda e, f: (len(pr6_X.w) // 2) % 2
 assert pr4_profile(restricted_mul(pr6_X, pr3_U0, pr7_global_rule)) == pr6_push(
     pr4_profile(pr6_X), pr4_profile(pr3_U0),
     lambda row, other: (len(pr6_X.w) // 2) % 2)
-pr7_hit("global_rule")
+pr7_hit("archive_parity_rule_copy")
 assert set(pr4_profile(pr3_U0)) == set(pr4_profile(add(pr3_U0, pr3_U0)))
-pr7_hit("same_local_rows")
+pr7_hit("copy_same_local_rows")
 assert tuple(q(z) for z in pr6_q_only) == (1, 1)
-pr7_hit("q_only_control")
+pr7_hit("copy_q_only_control")
 
 # Proposition 57 image round-trip and a finite 2x2 D10 orbit enumeration.
 pr7_a_pos = (origin, 1, pr3_l0, 0)
@@ -2878,14 +3130,14 @@ pr7_a_neg = (origin, -1, pr3_l0, 0)
 pr7_g = {(pr7_a_pos, 1, frozenset({pr7_a_pos})): 1,
          (pr7_a_neg, 0, frozenset({pr7_a_neg})): -1}
 assert pr5_summary(pr6_realize(pr7_g, 0, 0))[0] == pr7_g
-pr7_hit("image_roundtrip")
+pr7_hit("image_roundtrip_57")
 pr7_mats = []
 for pr7_bits in product((0, 1), repeat=4):
     pr7_matrix = (pr7_bits[:2], pr7_bits[2:])
     if all(any(row) for row in pr7_matrix):
         pr7_mats.append(pr7_matrix)
 assert len(pr7_mats) == 9
-pr7_hit("enumerated_states")
+pr7_hit("labeled_graphs_2x2")
 def pr7_orbit(matrix):
     return {
         tuple(tuple(matrix[rows[i]][cols[j]] for j in range(2)) for i in range(2))
@@ -2901,28 +3153,28 @@ for pr7_matrix in pr7_mats:
     pr7_orbits.append(pr7_orbit0)
 assert len(pr7_orbits) == 4
 assert all(all(any(row) for row in matrix) for orb in pr7_orbits for matrix in orb)
-pr7_hit("formal_membership")
+pr7_hit("no_zero_row_orbits_2x2")
 assert sum(len(orb) for orb in pr7_orbits) == 9
-pr7_hit("enumerated_roundtrip")
+pr7_hit("orbit_partition_2x2")
 assert len(pr7_seen) == 9
-pr7_hit("image_sets")
+pr7_hit("orbit_cover_2x2")
 assert len({frozenset(orb) for orb in pr7_orbits}) == 4
-pr7_hit("distinct_actual_profiles")
+pr7_hit("orbits_2x2")
 
 pr7_D16 = {(pr7_a_pos, 1, frozenset({pr7_a_pos, (origin, 1, pr3_l0, 1)})): 1,
            ((origin, 1, pr3_l0, 1), 1, frozenset({(origin, 1, pr3_l0, 1),
                                                   (origin, -1, pr3_l0, 2)})): 1,
            ((origin, -1, pr3_l0, 2), 0, frozenset({(origin, -1, pr3_l0, 2)})): -2}
 assert pr6_conditions(pr7_D16, 0, 2) == (True, True, True, False, True)
-pr7_hit("D16_conditions")
+pr7_hit("image_d16_witness_failure")
 for pr7_m, pr7_M, pr7_ok in ((None, None, True), (-2, -2, True),
                               (-3, 4, True), (None, 0, False),
                               (0, None, False), (1, 0, False)):
     assert all(pr6_conditions({}, pr7_m, pr7_M)) == pr7_ok
-    pr7_hit("empty_endpoint_branches")
+    pr7_hit("image_empty_endpoint_branches")
     if pr7_ok:
         assert pr5_summary(pr6_realize({}, pr7_m, pr7_M)) == ({}, pr7_m, pr7_M)
-        pr7_hit("empty_realizations")
+        pr7_hit("image_empty_realizations")
 
 assert PR7_KEYS <= set(pr7_counts.keys())
 assert all(pr7_counts[k] > 0 for k in PR7_KEYS)
