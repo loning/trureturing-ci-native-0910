@@ -19,3 +19,5 @@ theorem mirror_pair_involution (rho : ℂ) :
 #print axioms mirror_pair_involution
 
 end D5.S3.Zeros.MirrorPairIdentity
+
+-- Report-cache matched-baseline measurement: comment-only delta; restored after observation.
