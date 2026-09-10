@@ -51,3 +51,12 @@ lean-report、emit、Scribe 内容检查及 freeze 收据。
 - GitHub code search 实测可用：`Schenker language:Lean`、`A398189 language:Lean`、`"truncated exponential" language:Lean` 均 total_count=0。搜索范围无命中并不阻塞本地证明。
 - `make lean-cache-ensure`：`status=seeded, method=clonefile, clonefile_attempts=1, stamp_miss=null, mathlib_olean_state=warm, project_olean_state=warm`；原始收据 `/tmp/a398189-cache.log`。
 - 首次报告目录计数为48；已把本题报告放入独立任务子目录，未向已满的平桶继续添加文件。
+
+## 首个 Lean 单元
+
+热树 `lake env lean /tmp/A398189.lean`，修正 `Nat.div_self` 要求正数（而非非零）后 EXIT=0。
+已验证全称 `h_sum`（任意 n,m 的定义求和/递推等价）、`six_zero`（模16连续六因子为零）与 `six`（任意 n,m 的六步截断恒等式）。
+尚未得到目标估值公式；这不是把有限核对算作目标进展。
+检索更正：英文 `"truncated exponential" language:Lean` 实际 total_count=1，前段写0是并行结果到达前的记录错误。
+命中 `kim-em/hex-dev/HexTruncatedSeriesMathlib/Newton.lean` 的 `ofPowerSeries_exp`，已读声明及上下文；
+它陈述形式幂级数截断与可执行 exponential 的交换，不是整数截断和抵消/估值公式。
