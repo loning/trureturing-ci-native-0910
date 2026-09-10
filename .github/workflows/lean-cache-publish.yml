@@ -43,7 +43,7 @@ jobs:
   delta:
     name: delta
     needs: [resolve, push]
-    if: always()
+    if: always() && (needs.resolve.result != 'success' || needs.push.result != 'success' || !cancelled())
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 60
     env:

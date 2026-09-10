@@ -72,7 +72,7 @@ jobs:
   engineering:
     name: engineering
     needs: build
-    if: always()
+    if: always() && (needs.build.result != 'success' || !cancelled())
     env:
       CI_BUILD_ROUND: ${{ needs.build.outputs.round }}
     runs-on: ubuntu-24.04-arm
@@ -137,7 +137,7 @@ jobs:
   current:
     name: current
     needs: build
-    if: always()
+    if: always() && (needs.build.result != 'success' || !cancelled())
     runs-on: ubuntu-24.04-arm
     # Match the existing six-hour normal Lean envelope at the hosted job ceiling.
     # Setup, checks and transport also consume this job's time.
