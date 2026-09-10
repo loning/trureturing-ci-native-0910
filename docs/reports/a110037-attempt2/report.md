@@ -64,3 +64,10 @@ note 的 Verified locator 正文逐字含 doi 与 url 两行，收录 n=1 kernel
 D5/S1/Recurrence 递归计数为99（含子桶），如需落 Lean 须再按直接文件数选子桶。
 
 强归纳与 c 的分支已编码于 Bridge.lean，首轮热树检查已启动，尚未取得退出判词。
+
+首轮检查现已完成：`lake env lean docs/reports/a110037-attempt2/Bridge.lean` EXIT=0。
+c_four/c_four_two/c_eight_three/c_eight_seven/c_sixteen_five/c_sixteen_thirteen/
+c_halving 均通过；complement_of_halving 由 strong_induction_on 对所有 r>0 证明。
+这是无界归纳的条件数学结果，不是有限核对；仍不冒称具体 B 已满足输入。
+`#print axioms complement_of_halving` 仅 propext/Classical.choice/Quot.sound。
+首轮日志：attempt-2/bridge-first.log；本轮未采墙钟耗时，不填估算值。
