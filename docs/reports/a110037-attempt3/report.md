@@ -203,3 +203,26 @@ ASSUMED-UNVERIFIED：本轮未真正打开的外链与第三方页面，只沿�
 单 Codex worker 实施与自查，独立评审席0；未主张独立多模型复核。
 
 最终括号订正后 make emit EXIT=0 / 61.025375秒；make-emit-final-receipt.json。
+
+## 自动生成的公开 theorem 明细
+
+以下亦逐条计入首冻声明集合，不声称其为额外内容。各行 proof_shape=bind-only、
+escape_witness=null、基线直接冻结定理依赖=[]，伴随模块 admission_basis=escape-witness。
+结构投影义务与方向见前文；eq_def 的义务是独立递推接口，
+signed_nonsquashing_diff→c 分支引理→paperfoldVariant.eq_def。
+
+| GID（P 前缀如上） | statement_id |
+| --- | --- |
+| P.paperfoldVariant.eq_def | sha256:ba33f7e749c40a0ef495299104bc6a216cdc3db2629bf4c41114a59d31b14e90 |
+| P.SloaneSellersParity.sixteen_four | sha256:bd9477b1db5547292c572a5e9aa9941467d792fd7affdeda65bdefbd63c4ab3b |
+| P.SloaneSellersParity.sixteen_zero | sha256:3ead869f6e4e9fb2fc640275607fc91ea3f7b2ded4edf95355a0a60ce8dd865d |
+| P.SloaneSellersParity.sixteen_twelve | sha256:9b1f7000c03aa756aaeba61af5c6fcfa4c2dc8f18989d793595d94670c5ca3ce |
+| P.SloaneSellersParity.thirtytwo_eight | sha256:ccbd9110e5429febe60ab00f6c9264268b2af4cd19dd496f50b618e2e70cb2d9 |
+| P.SloaneSellersParity.thirtytwo_twentyfour | sha256:b9b6770400ae8e818b4f9b130cae12b20e8e05fdf1f4ede0a428a294ff3403b1 |
+| P.SloaneSellersParity.odd | sha256:d615e84b0a23e09ad0aa4851783f286d8fe31ba1202c79e7074be709347d869b |
+| P.SloaneSellersParity.eight_six | sha256:41bc65276c75241441078f158758649cb948e4db98116927b4c14a966d97a266 |
+| P.SloaneSellersParity.eight_two | sha256:112754547cefe8335f152ff9b5d38c5744b7f39a8d9d8ae264fcb07ecd3f4906 |
+
+计数模块 deposit-uncovered EXIT=0 / 82.623293秒；ledger-align --add 已写入
+Golden/Frozen/state/D5/S1/Recurrence/Partitions/NonsquashingCounting.lean.json。
+见 deposit-counting.log 与 deposit-counting-receipt.json；未生成或覆盖 atom。
