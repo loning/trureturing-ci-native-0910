@@ -224,3 +224,22 @@ unbounded theorem. All other utility fields are not-applicable(kind=none).
 
 Pre-Blueprint capacity check: Congruence has 40 files (adding source and emitted
 mirror gives 42); Library/Arith already has 48, so no new file will go there.
+
+## Publication source checkpoint
+
+Added a five-node Scribe source (definition and four classifications), plus
+two source notes in Library/ArithSums, whose prior capacity was 7 files.
+Both notes contain a Verified locator subsection with the exact frontmatter
+URL. A036236 is correctly identified as the least inverse of A015910, not
+the residue sequence itself. The proof's provenance is `repo-derived`, with
+acknowledgements for the source question and known arithmetic ingredients;
+there is no claim that the complete proof is literature-attested or globally
+novel. The production Scribe checker explicitly rejects suspected-novel nodes
+(DescribeContentGovernance.cs); `FromRepo` accurately records the proved
+repository derivation, while the bounded literature non-hit remains in this report.
+
+First `make lean`: EXIT=2, real 11.58 seconds. Its cache preflight compiled
+the concurrently added Scribe file and found CS1503: `D` expects a byte but
+`LevelFormula` accepted int. Changed that helper parameter to byte, matching
+all four constant call sites. This was a narrative-source compile failure
+before the Lean build, not a failed mathematical proof. Full build retry pending.
