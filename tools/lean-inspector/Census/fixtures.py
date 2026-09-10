@@ -58,11 +58,14 @@ def main():
     from Certificate.publication_fixtures import prepare_publication, check_publication_negatives
     prepare_publication(repository, directory)
     negatives.extend(check_publication_negatives(repository, directory))
+    from Structure.fixtures import check_structure
+    structure = check_structure(repository, directory)
     result = {"negative_fixtures": negatives, "lean_fixture_modules": cases, "retained_fixture_execution": "Lake lean_lib build",
               "certificate_chunk_binding": chunks, "bounded_fixtures": bounds, "query_scheduler": "retired",
               "retired_query_protocol_fixtures": RETIRED_QUERY_PROTOCOL_FIXTURES,
               "observed_theorem_absent_from_publication": True,
-              "artifact_determinism": True, "partial_certified_denominator": "passed"}
+              "artifact_determinism": True, "partial_certified_denominator": "passed",
+              "structure_fixtures": structure}
     (directory / "fixtures.json").write_text(json.dumps(result, indent=2) + "\n")
     print(json.dumps(result), flush=True)
 
