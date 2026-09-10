@@ -1,8 +1,8 @@
 # A390148: primitive spherical radii, 3-adic orders
 
 Current status: the exact requested theorem is proved, the project build and
-canonical report pass, and the module is frozen without an atom. Scribe content
-checks and PR delivery are the remaining steps. Sections below are chronological
+canonical report and Scribe content checks pass, and the module is frozen without
+an atom. PR delivery remains. Sections below are chronological
 receipts; early statements marked pending describe their time of writing.
 
 ## Provenance and scope
@@ -233,3 +233,19 @@ of completed proof, library exhaustiveness, build success or freeze yet.
   The event records `prerequisite_frozen_node_ids: []`.
 - No new theory source, ingestion atom, coverage edge, source-ledger rewrite,
   finite-instance freeze, sorry, private axiom or native_decide was introduced.
+
+## Scribe content checks before PR
+
+- Ran `bash tools/scripts/workflow/scribe-content-checks.sh
+  .lake/build/stratalint/raw-lean-report.json ""
+  462d0a4368ba5a890c5eab619c82437baa88966f` after emission and freeze.
+  EXIT=0, 25.156 seconds; complete log and receipt are `scribe-content.log/json`
+  in the worker attempt directory.
+- `describe-report --check`: classified 10413 nodes, red=0. Existing open nodes
+  and observations are reported by the tool; they are not claimed resolved here.
+- Real KaTeX `markdown-check`: judged=1, formula(s)=1, red=0, covering the new
+  generated Blueprint document. `projections --check` was not selected by the
+  script because no projection JSON or producer implementation changed; it is
+  not claimed as an independently executed check.
+- Current delivery commits, including the no-atom freeze, have been pushed to
+  `origin/lane/math/a390148`; PR creation is the next step.
