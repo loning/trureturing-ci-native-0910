@@ -1,3 +1,11 @@
+/- GID: D5/S1/Recurrence/Algebraic/SchroderIntegralEGF
+   generality: I
+   mirror-B: D5/B/S1/Recurrence/Algebraic/SchroderIntegralEGF
+   mirror-E: none(waiver:unbounded-symbolic-proof)
+   anchors: []
+   utility: none
+   digest: A338193 EGF coefficients equal Kurkov's two-index recurrence. -/
+
 import D5.S1.Recurrence.Residue.QuarticEGFFixedPoint
 import Mathlib.RingTheory.PowerSeries.Schroder
 import Mathlib.RingTheory.PowerSeries.NoZeroDivisors
@@ -6,23 +14,25 @@ open PowerSeries Finset
 open D5.S1.Recurrence.Residue.IntegralEGFComposition
 open D5.S1.Recurrence.Residue.QuarticEGFFixedPoint (encode eCoeff_encode eCoeff_ext)
 
-namespace A338193
+namespace D5.S1.Recurrence.Algebraic.SchroderIntegralEGF
 
+/-- Kurkov's three recurrences, constructed in naturals by degree then row index. -/
 def f : ℕ → ℕ → ℕ
   | _, 0 => 1
   | 0, m + 1 => f 0 m + (m + 1) * f 1 m
   | j + 1, m + 1 => f j (m + 1) + (m + 1) * (f (j + 1) m + f (j + 2) m)
 termination_by j m => (m, j)
 
-noncomputable def F (j : ℕ) : PowerSeries ℚ := encode (fun m => f j m)
-noncomputable def R : PowerSeries ℚ := largeSchroderSeries.map (Nat.castRingHom ℚ)
+private noncomputable def F (j : ℕ) : PowerSeries ℚ := encode (fun m => f j m)
+private noncomputable def R : PowerSeries ℚ := largeSchroderSeries.map (Nat.castRingHom ℚ)
 
 private theorem R_eq : R = 1 + X * R + X * R ^ 2 := by
   have h := congrArg (PowerSeries.map (Nat.castRingHom ℚ))
     largeSchroderSeries_eq_one_add_X_mul_largeSchroderSeries_add_X_mul_largeSchroderSeries_sq
   simpa only [map_add, map_one, map_mul, map_X, map_pow, R] using h
 
-private theorem R_zero : constantCoeff R = 1 := by simp [R, ← coeff_zero_eq_constantCoeff, coeff_map]
+private theorem R_zero : constantCoeff R = 1 := by
+  simp [R, ← coeff_zero_eq_constantCoeff, coeff_map]
 private theorem F_zero (j : ℕ) : constantCoeff (F j) = 1 := by simp [F, f]
 private theorem F_coeff (j m : ℕ) : eCoeff (F j) m = (f j m : ℚ) := eCoeff_encode _ _
 
@@ -44,6 +54,7 @@ private theorem model_row (j : ℕ) : F 0 * R ^ (j+1) = F 0 * R ^ j +
   rw [pow_succ, show j+2 = (j+1)+1 by omega, pow_succ, pow_succ]
   linear_combination F 0 * R ^ j * h
 
+/-- At each degree, induction along the rows identifies the entire infinite family. -/
 private theorem row_factor (j : ℕ) : F j = F 0 * R ^ j := by
   have h : ∀ m j, coeff m (F j) = coeff m (F 0 * R ^ j) := by
     intro m
@@ -62,7 +73,7 @@ private theorem row_factor (j : ℕ) : F j = F 0 * R ^ j := by
   ext m
   exact h m j
 
-noncomputable def B : PowerSeries ℚ := F 0 * (1 - X * R)
+private noncomputable def B : PowerSeries ℚ := F 0 * (1 - X * R)
 private theorem B_zero : constantCoeff B = 1 := by simp [B, F_zero]
 private theorem B_derivative : derivative ℚ B = F 0 := by
   have hb : B = F 0 - X * F 1 := by rw [row_factor 1]; simp only [pow_one, B]; ring
@@ -76,7 +87,7 @@ private theorem B_derivative : derivative ℚ B = F 0 := by
   push_cast
   ring
 
-noncomputable def D : PowerSeries ℚ := 1 - X * R
+private noncomputable def D : PowerSeries ℚ := 1 - X * R
 
 private theorem D_zero : constantCoeff D = 1 := by simp [D]
 private theorem D_quadratic : D ^ 2 - (1 + X) * D + 2 * X = 0 := by
@@ -111,7 +122,7 @@ private theorem algebraic_iff_linear (S : PowerSeries ℚ) (hS : constantCoeff S
     linear_combination -S^2 * D_quadratic +
       ((1+X)*D*S - 2*X*(D*derivative ℚ S+S)) * h
 
-noncomputable def primitive (S : PowerSeries ℚ) : PowerSeries ℚ :=
+private noncomputable def primitive (S : PowerSeries ℚ) : PowerSeries ℚ :=
   mk (fun n => if n = 0 then 0 else coeff (n-1) S / n)
 
 private theorem primitive_zero (S : PowerSeries ℚ) : constantCoeff (primitive S) = 0 := by
@@ -219,4 +230,4 @@ theorem egf_coeff_eq_f (n : ℕ) (hn : 1 ≤ n) :
 #print axioms egf_coeff_eq_f
 #print axioms original_exists_unique
 
-end A338193
+end D5.S1.Recurrence.Algebraic.SchroderIntegralEGF

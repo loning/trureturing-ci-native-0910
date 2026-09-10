@@ -167,3 +167,108 @@ compiler run was not a proof; only the subsequent clean run is claimed.
 Repository build/report/emission/freeze and Scribe checks have not yet run.
 The successful proof will now move from the reviewable snippet to the routed
 canonical module; no second mathematical source will remain in the final tree.
+
+## Canonical module and first repository build
+
+The successful source has moved to
+`D5/S1/Recurrence/Algebraic/SchroderIntegralEGF.lean`; the snippet is removed
+from the current tree and remains available in Git history. A source note
+and six Scribe descriptions accompany it. Source metadata was checked against
+%A: the original entry author is Vaclav Kotesovec (Oct 15 2020), and Kurkov's
+conjecture is the 2024 contribution. No author is inferred from neighboring
+examples.
+
+`make lean` EXIT=0, elapsed 66.759 seconds on this macOS ARM worktree.
+The log explicitly reports `Built D5.S1.Recurrence.Algebraic.SchroderIntegralEGF
+(5.1s)` and standard three-axiom closures for both target and uniqueness.
+`LEAN_CACHE`: `status=present`, `method=none`, `stamp_miss=null`, both layers
+warm. Two new-module long-line warnings remain to be shortened; existing
+unrelated-module warnings are outside this change. Canonical report production
+is in progress. Logs are in the runner attempt directory.
+
+## Public theorem accounting
+
+All three declarations below have `utility: none`: these are symbolic
+existence, uniqueness, and all-index coefficient theorems, not finite
+instances, enumerations, checkers, or numerical reductions.
+
+| Declaration | proof_shape | escape_witness | admission_basis |
+| --- | --- | --- | --- |
+| original_exists_unique | content | row_factor, on the existence proof's path through B_derivative and B_original | escape-witness |
+| A_original | bind-only | null | escape-witness at module level; companion to original_exists_unique and egf_coeff_eq_f |
+| egf_coeff_eq_f | content | row_factor, used by B_derivative and the original-equation comparison | escape-witness |
+
+The companion edges point consumer to prerequisite:
+`egf_coeff_eq_f -> A_original -> original_exists_unique`.
+No separate deposit is requested for the companion.
+
+For each content theorem, the named `row_factor` meets CLAUDE 3.2:
+1. Dependency closure: the proof reaches `B_derivative`, which uses
+   `row_factor 1`; existence reaches the same fact through `B_algebraic` and
+   `B_original`. Elaboration evidence will be saved below.
+2. Not a frozen projection: existing libraries provide the EGF calculus and
+   the Schroeder quadratic, but not this row identity. The new nested
+   induction uses the independently constructed Kurkov recurrence.
+3. Not definitionally equivalent: it identifies all row EGFs with powers of
+   the independent Schroeder series, rather than restating either existence
+   of the source solution or the boundary coefficient theorem.
+4. Live path: the equality for row 1 is required to turn the original
+   recurrence's boundary `F(0)-X*F(1)` into `B=F(0)*(1-X*R)`; no unused
+   conjunction or discarded proof component supplies it.
+
+Direct frozen source modules (current state pins, read rather than recomputed):
+- `D5/S1/Recurrence/Residue/IntegralEGFComposition`:
+  `sha256:7659badce7f3a2bb9681521c575cf07726e51bb3ba90baa36231036c4405e667`.
+- `D5/S1/Recurrence/Residue/QuarticEGFFixedPoint`:
+  `sha256:05c8ee2d2a8eb1624df659d6581634873aafdcda010603c06e252caa930a7454`.
+
+Exact outgoing declaration GIDs and statement identities will be extracted
+from the new canonical Lean report and the elaborated proofs, before freeze.
+
+## Final elaboration and report receipts
+
+The final `make lean` EXIT=0 in 22.647 seconds; the final `make lean-report`
+EXIT=0. Only the changed module was rechecked (`changed=1, recheck=1`).
+The final raw report SHA-256 is
+`51522b89d1b94cc06ea2a83bd11e1a3d4a6f97a6f39c52afe3ccd17369a1f4c6`.
+The helper script `/tmp/A338193Dependencies.lean` read Lean `ConstantInfo` proof
+bodies and walked module-local constants, stopping at frozen-module constants.
+It exited 0 and confirmed `row_factor` in both content theorem closures.
+This is closure evidence; the live-path argument is the explicit derivation
+in the preceding section, not a claim that reachability alone proves liveness.
+
+`docs/reports/a338193-declarations-0910.json` contains every public theorem's
+statement identity, standard axioms, shape, witness, and exact direct frozen
+GIDs plus their statement identities. These identities were read from the
+canonical report, not recomputed from frozen source. The direct set has eight
+constants (including definitions) from the two frozen EGF interface modules.
+
+Before PR, `git grep -P 'A338193|SchroderIntegralEGF|row_factor.*Schroder'
+origin/dev -- D5` returned no match.
+
+## Emission and local Scribe checkpoint
+
+`make emit` EXIT=0; the canonical Blueprint was generated from Scribe.
+The required script `scribe-content-checks.sh` ran with the exact base SHA
+and canonical report, EXIT=0 in 23.460 seconds. Its changed-path logic ran
+`describe-report --check` and `markdown-check` (one document, zero authored
+formulas, zero red results). `projections --check` was not triggered because
+this change does not touch its producer or fixture inputs. Two observations
+flag formula-like prose; they are observations, not hidden failing checks.
+A subsequent Scribe update will render the main equation as a formula.
+
+`A_original` remains a bind-only companion with `escape_witness=null`;
+its `admission_basis=escape-witness` is explicitly module-level, not a claim
+that the projection theorem supplies its own content witness.
+
+## Freeze checkpoint
+
+`make deposit-uncovered` EXIT=0 in 90.415 seconds. The required workflow
+reused the final canonical report, passed `deposit-header-check`, ran `emit`,
+and called `ledger-align --add`: added=1, changed=0, conflicts=0.
+It reported `PLAYBOOK_DEPOSIT_FROZEN_UNCOVERED ... reason=NO_ATOM`.
+The generated module state is
+`sha256:6abcaba5514ab9f30ec08304d3379cb1e039f81c44a0a445b5271ea65e051b15`;
+the new accepted event is
+`3c38008523c0b3d79676a68cbcfd1557f8d4e25e99e96ba68a12c2872f01adde.json`.
+No theory volume, atom, coverage edge, or hand-authored freeze state was made.
