@@ -31,8 +31,35 @@ public sealed partial class ProductionEnvironmentTests
         CheckAnonymousSource("decide", 0, prefix, modified, prepareContext: true);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void GitCliOrdinaryAttributeKeepsDirectNativeDecideRejection(bool genuineChar)
+    {
+        var prefix = "import Init\nattribute [simp] Nat.add_zero\n"
+            + (genuineChar ? "example : ')' =')' := by decide\n" : "");
+        CheckAnonymousSource("native_decide", 1, prefix, prepareContext: true, demandContext: false,
+            diagnosticLine: genuineChar ? 11 : 10);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void GitCliUnmodeledAttributeOnlyRefusesDemandedContext(bool genuineChar, bool native)
+    {
+        var prefix = "import Lean\nattribute [term_parser] Lean.Parser.Term.paren\n"
+            + (genuineChar ? "example : ')' =')' := by decide\n" : "");
+        var demanded = genuineChar && !native;
+        CheckAnonymousSource(native ? "native_decide" : "decide", genuineChar || native ? 1 : 0,
+            prefix, prepareContext: true, demandContext: demanded,
+            contextErrorLine: demanded ? 9 : null, diagnosticLine: genuineChar ? 11 : 10);
+    }
+
     private static void CheckAnonymousSource(string tactic, int expected, string prefix = "",
-        bool modified = false, bool prepareContext = false)
+        bool modified = false, bool prepareContext = false, bool demandContext = true,
+        int? contextErrorLine = null, int diagnosticLine = 8)
     {
         using var temporary = new TemporaryDirectory();
         var root = Path.Combine(temporary.Path, "repository");
@@ -61,7 +88,7 @@ public sealed partial class ProductionEnvironmentTests
             {
                 var target = Path.Combine(root, relative);
                 Directory.CreateDirectory(Path.GetDirectoryName(target)!);
-                File.Copy(Path.Combine(TestRepositoryLayout.FindRoot(), relative), target);
+                File.Copy(Path.Combine(TestRepositoryLayout.FindRoot(), relative), target, overwrite: true);
             }
             File.WriteAllText(Path.Combine(root, ".gitignore"), ".lake/\n");
         }
@@ -74,7 +101,8 @@ public sealed partial class ProductionEnvironmentTests
         Git("add", path);
         var gateway = new GitRepositoryGateway(root);
         var snapshot = Decode(gateway.ReadCurrent());
-        fixture.Reports[path] = new LeanFileReport(prefix.Length == 0 ? [] : ["Init"], []);
+        fixture.Reports[path] = new LeanFileReport(prefix.Length == 0 ? [] :
+            [prefix.StartsWith("import Lean\n", StringComparison.Ordinal) ? "Lean" : "Init"], []);
         var report = Path.Combine(temporary.Path, "report.json");
         RawLeanReportArtifact.WriteFile(report, snapshot, LeanAxiomReport.Create(fixture.Reports));
         Assert.Empty(RawLeanReportArtifact.ReadFile(report, snapshot).Files[RepoPath.CreateKnown(path)].Declarations);
@@ -83,20 +111,37 @@ public sealed partial class ProductionEnvironmentTests
         {
             QualifiedSourceContextFixture.EnsureCompilerCache();
             RunPreparation("compile", path);
+            Console.WriteLine($"SOURCE_ATTRIBUTE_COMPILE path={path} compile_errors=0 source_sha256="
+                + LeanSourceContextInput.SourceHash(snapshot.Files[RepoPath.CreateKnown(path)]));
             RunPreparation("first");
-            var context = LeanSourceContextInput.Load(File.ReadAllBytes(report + ".source-context.json"),
+            var bytes = File.ReadAllBytes(report + ".source-context.json");
+            using var bundle = System.Text.Json.JsonDocument.Parse(bytes);
+            Assert.Equal(demandContext ? 1 : 0, bundle.RootElement.GetProperty("files").GetArrayLength());
+            var context = LeanSourceContextInput.Load(bytes,
                 snapshot, Decode(gateway.ReadRevision(baseline)));
-            var parsed = context.GetFile(snapshot, RepoPath.CreateKnown(path), "current");
-            Assert.False(parsed.InitialEquality);
-            Assert.All(parsed.Commands, command => Assert.False(command.Equality));
+            if (contextErrorLine is { } errorLine)
+            {
+                var failure = Assert.Throws<LeanSourceExtractionException>(() =>
+                    context.GetFile(snapshot, RepoPath.CreateKnown(path), "current"));
+                Assert.Equal(errorLine, failure.Line);
+                Assert.Contains("cannot determine this attribute registration effect", failure.Message, StringComparison.Ordinal);
+            }
+            else if (demandContext)
+            {
+                var parsed = context.GetFile(snapshot, RepoPath.CreateKnown(path), "current");
+                Assert.False(parsed.InitialEquality);
+                Assert.All(parsed.Commands, command => Assert.False(command.Equality));
+            }
             Assert.Empty(context.MalformedRows);
         }
         var console = new BufferedConsole();
         var code = CliApplication.Run(["check", "--protected-base", baseline, "--candidate-lean-report", report],
             new ProductionCliEnvironment(root, gateway, new FakeLeanReportSource(null)), console);
         Assert.True(code == expected, console.Output + console.Error);
-        if (expected == 1)
-            Assert.Contains("NATIVE_DECIDE_SOURCE line=8", console.Output, StringComparison.Ordinal);
+        if (contextErrorLine is { } line)
+            Assert.Contains($"NATIVE_DECIDE_CONTEXT_ERROR line={line}", console.Output, StringComparison.Ordinal);
+        else if (expected == 1)
+            Assert.Contains($"NATIVE_DECIDE_SOURCE line={diagnosticLine}", console.Output, StringComparison.Ordinal);
         else Assert.DoesNotContain("NATIVE_DECIDE_SOURCE", console.Output, StringComparison.Ordinal);
 
         void RunPreparation(params string[] arguments)
@@ -106,6 +151,7 @@ public sealed partial class ProductionEnvironmentTests
                 BoundedProcessRunner.HangDetectionBudget, 4 * 1024 * 1024);
             Assert.True(run.ExitCode == 0, $"{arguments[0]}: " + Encoding.UTF8.GetString(run.StandardOutput)
                 + Encoding.UTF8.GetString(run.StandardError));
+            Console.WriteLine(Encoding.UTF8.GetString(run.StandardOutput));
         }
 
         string Git(params string[] arguments)

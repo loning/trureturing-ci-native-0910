@@ -15,6 +15,8 @@ public sealed class SourceContextProducerTests(SourceCompilerFixture compiler)
     [InlineData("test_errors_are_immediate_and_sticky")]
     [InlineData("test_registration_source_is_data_and_scope_is_measured")]
     [InlineData("test_option_wrapper_preserves_nested_command_scope")]
+    [InlineData("test_simp_attributes_do_not_elaborate_targets_or_change_tokens")]
+    [InlineData("test_unmodeled_attribute_is_a_located_error")]
     public void CurrentCompilerSourceContract(string contract)
     {
         if (contract != "test_import_visibility_matches_actual_importer")

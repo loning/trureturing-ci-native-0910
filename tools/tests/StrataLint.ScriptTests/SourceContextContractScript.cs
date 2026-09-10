@@ -169,6 +169,37 @@ internal static class SourceContextContractScript
                     self.assertIsNone(result["error"])
                     self.assertFalse(result["commands"][-1]["equality"])
 
+        def test_simp_attributes_do_not_elaborate_targets_or_change_tokens(self):
+            attributes = ["simp", "local simp", "scoped simp", "-simp", "simp, local simp", "simp 100"]
+            requests = []
+            for attribute in attributes:
+                # A declaration-free projection must not elaborate this protected proof,
+                # nor resolve its local theorem when interpreting the attribute effect.
+                source = ("import Init\nnamespace AttrScope\n"
+                          "theorem attr_control : True := by exact protectedProofMustNeverExecute\n"
+                          f"attribute [{attribute}] attr_control\nend AttrScope\n")
+                query = "import D5.AttrSource\nexample : ')' =')' := by decide\n"
+                requests.append(request_for(query, "projected", managed=[dict(
+                    module="D5.AttrSource", path="D5/AttrSource.lean", source=source)]))
+            results = self.query_requests(requests)
+            for attribute, result in zip(attributes, results):
+                with self.subTest(attribute=attribute):
+                    self.assertIsNone(result["error"])
+                    self.assertFalse(result["initialEquality"])
+                    self.assertFalse(result["commands"][-1]["equality"])
+                    self.assertEqual(0, result["projectedDeclarations"])
+                    self.assertEqual(0, result["elaboratedDeclarations"])
+
+        def test_unmodeled_attribute_is_a_located_error(self):
+            # term_parser is a real current-Lean registration handler. Mixing it
+            # with simp must not turn the entire attribute list into a known no-op.
+            for attribute in ["term_parser", "simp, term_parser", "-term_parser"]:
+                result = self.query("import Lean\n"
+                                    f"attribute [{attribute}] Lean.Parser.Term.paren\n"
+                                    "example : ')' =')' := by decide\n")
+                self.assertEqual(2, result["error"]["line"])
+                self.assertIn("cannot determine this attribute registration effect", result["error"]["message"])
+
         def test_registration_source_is_data_and_scope_is_measured(self):
             external = self.root / "ProbeExternal/Equality.lean"
             external.parent.mkdir(parents=True, exist_ok=True)
