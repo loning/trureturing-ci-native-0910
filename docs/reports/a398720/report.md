@@ -125,3 +125,14 @@ escape_witness: row_unique_zero（private），及其活前置 rows_saturated/ro
 全部 helper 为 private，不单独冻结普通实例；公开定义 ones/EvenRowsCols/weight 只建模。
 utility=none：所有定理均为任意奇数阶的一般组合构造，不属于四类计算性内容。
 其余用途字段 not-applicable(kind=none)。此判形为本席语义自查，不冒称机器或独立评审判词。
+
+## 全项目构建
+
+- make lean EXIT=0，实测 62.506 秒（macOS ARM，本工作树 clonefile 热缓存，含 donor
+  与当前树之间的增量构建；不是 CI 性能）。真实退出码与耗时由 subprocess 收据记录于
+  runner attempt/make-lean.receipt.json，原始日志 make-lean.log。
+- 构建等待时按实际进程核对：lake build 与 Lean 编译器在工作，不以静默判失败。
+- 开 PR 前再次 git fetch origin dev；git merge-tree --write-tree HEAD origin/dev
+  EXIT=0，树 OID 3cb756e1fee26499cd994cf449e1e4e57debec4b，无冲突。
+  对该次 origin/dev 的 D5 用 git grep -P 查 spcp_odd_top_weight/A398720/EvenRowsCols
+  无命中；未发现并发重复实现。没有迁移或复活 dev 上已删除模块。
