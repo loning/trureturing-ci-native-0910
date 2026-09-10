@@ -1,0 +1,149 @@
+# Disposable, unmerged GitHub-service probe; publish only to loning/trureturing-ci-native-0910.
+# Synthetic successful prerequisites, not actual compilation or checks; no stability credit.
+# Before predicates and first-step guards: 9b0088068a5ecb70cb0fdcf4678a77eee1095faf
+# ci-push.yml engineering; ci-pr.yml delta. This does not exercise reusable workflows.
+name: CI cancellation service probe (synthetic)
+
+on:
+  push:
+    branches: [lane/governance/ci-cancellation-service-probe-0910]
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Synthetic successful build prerequisite
+        run: echo "Synthetic success, no compilation or checks; job=$GITHUB_JOB workflow_sha=$GITHUB_WORKFLOW_SHA workflow_ref=$GITHUB_WORKFLOW_REF sha=$GITHUB_SHA ref=$GITHUB_REF"
+
+  resolve:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Synthetic successful resolve prerequisite
+        run: echo "Synthetic success, no compilation or checks; job=$GITHUB_JOB workflow_sha=$GITHUB_WORKFLOW_SHA workflow_ref=$GITHUB_WORKFLOW_REF sha=$GITHUB_SHA ref=$GITHUB_REF"
+
+  push:
+    needs: resolve
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Synthetic successful push prerequisite
+        run: echo "Synthetic success, no compilation or checks; job=$GITHUB_JOB workflow_sha=$GITHUB_WORKFLOW_SHA workflow_ref=$GITHUB_WORKFLOW_REF sha=$GITHUB_SHA ref=$GITHUB_REF"
+
+  before_engineering:
+    needs: build
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Require successful build
+        env:
+          BUILD_RESULT: ${{ needs.build.result }}
+        run: |
+          if [ "$BUILD_RESULT" != success ]; then
+            echo "::error::build result is $BUILD_RESULT; engineering did not run."
+            exit 1
+          fi
+      - name: Cancellation heartbeat (180s max)
+        run: |
+          echo "PROBE_START utc=$(date -u +%FT%TZ) job=$GITHUB_JOB workflow_sha=$GITHUB_WORKFLOW_SHA workflow_ref=$GITHUB_WORKFLOW_REF sha=$GITHUB_SHA ref=$GITHUB_REF run_id=$GITHUB_RUN_ID attempt=$GITHUB_RUN_ATTEMPT"
+          probe_started=$SECONDS
+          while (( SECONDS - probe_started < 180 )); do
+            echo "HEARTBEAT utc=$(date -u +%FT%TZ) job=$GITHUB_JOB elapsed_s=$((SECONDS - probe_started))"
+            remaining=$((180 - SECONDS + probe_started))
+            if (( remaining > 0 )); then
+              sleep "$((remaining < 5 ? remaining : 5))"
+            fi
+          done
+          echo "PROBE_FINISHED utc=$(date -u +%FT%TZ) job=$GITHUB_JOB"
+
+  after_engineering:
+    needs: build
+    if: always() && (needs.build.result != 'success' || !cancelled())
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Require successful build
+        env:
+          BUILD_RESULT: ${{ needs.build.result }}
+        run: |
+          if [ "$BUILD_RESULT" != success ]; then
+            echo "::error::build result is $BUILD_RESULT; engineering did not run."
+            exit 1
+          fi
+      - name: Cancellation heartbeat (180s max)
+        run: |
+          echo "PROBE_START utc=$(date -u +%FT%TZ) job=$GITHUB_JOB workflow_sha=$GITHUB_WORKFLOW_SHA workflow_ref=$GITHUB_WORKFLOW_REF sha=$GITHUB_SHA ref=$GITHUB_REF run_id=$GITHUB_RUN_ID attempt=$GITHUB_RUN_ATTEMPT"
+          probe_started=$SECONDS
+          while (( SECONDS - probe_started < 180 )); do
+            echo "HEARTBEAT utc=$(date -u +%FT%TZ) job=$GITHUB_JOB elapsed_s=$((SECONDS - probe_started))"
+            remaining=$((180 - SECONDS + probe_started))
+            if (( remaining > 0 )); then
+              sleep "$((remaining < 5 ? remaining : 5))"
+            fi
+          done
+          echo "PROBE_FINISHED utc=$(date -u +%FT%TZ) job=$GITHUB_JOB"
+
+  before_delta:
+    needs: [resolve, push]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Require successful prerequisites
+        env:
+          RESOLVE_RESULT: ${{ needs.resolve.result }}
+          PUSH_RESULT: ${{ needs.push.result }}
+        run: |
+          if [ "$RESOLVE_RESULT" != success ] || [ "$PUSH_RESULT" != success ]; then
+            echo "::error::resolve result is $RESOLVE_RESULT, push result is $PUSH_RESULT; delta did not run."
+            exit 1
+          fi
+      - name: Cancellation heartbeat (180s max)
+        run: |
+          echo "PROBE_START utc=$(date -u +%FT%TZ) job=$GITHUB_JOB workflow_sha=$GITHUB_WORKFLOW_SHA workflow_ref=$GITHUB_WORKFLOW_REF sha=$GITHUB_SHA ref=$GITHUB_REF run_id=$GITHUB_RUN_ID attempt=$GITHUB_RUN_ATTEMPT"
+          probe_started=$SECONDS
+          while (( SECONDS - probe_started < 180 )); do
+            echo "HEARTBEAT utc=$(date -u +%FT%TZ) job=$GITHUB_JOB elapsed_s=$((SECONDS - probe_started))"
+            remaining=$((180 - SECONDS + probe_started))
+            if (( remaining > 0 )); then
+              sleep "$((remaining < 5 ? remaining : 5))"
+            fi
+          done
+          echo "PROBE_FINISHED utc=$(date -u +%FT%TZ) job=$GITHUB_JOB"
+
+  after_delta:
+    needs: [resolve, push]
+    if: always() && (needs.resolve.result != 'success' || needs.push.result != 'success' || !cancelled())
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Require successful prerequisites
+        env:
+          RESOLVE_RESULT: ${{ needs.resolve.result }}
+          PUSH_RESULT: ${{ needs.push.result }}
+        run: |
+          if [ "$RESOLVE_RESULT" != success ] || [ "$PUSH_RESULT" != success ]; then
+            echo "::error::resolve result is $RESOLVE_RESULT, push result is $PUSH_RESULT; delta did not run."
+            exit 1
+          fi
+      - name: Cancellation heartbeat (180s max)
+        run: |
+          echo "PROBE_START utc=$(date -u +%FT%TZ) job=$GITHUB_JOB workflow_sha=$GITHUB_WORKFLOW_SHA workflow_ref=$GITHUB_WORKFLOW_REF sha=$GITHUB_SHA ref=$GITHUB_REF run_id=$GITHUB_RUN_ID attempt=$GITHUB_RUN_ATTEMPT"
+          probe_started=$SECONDS
+          while (( SECONDS - probe_started < 180 )); do
+            echo "HEARTBEAT utc=$(date -u +%FT%TZ) job=$GITHUB_JOB elapsed_s=$((SECONDS - probe_started))"
+            remaining=$((180 - SECONDS + probe_started))
+            if (( remaining > 0 )); then
+              sleep "$((remaining < 5 ? remaining : 5))"
+            fi
+          done
+          echo "PROBE_FINISHED utc=$(date -u +%FT%TZ) job=$GITHUB_JOB"
