@@ -4,7 +4,6 @@ authors: N. J. A. Sloane; James A. Sellers
 year: 2003
 title: On Non-Squashing Partitions
 doi: 10.48550/arXiv.math/0312418
-url: https://arxiv.org/abs/math/0312418
 claim: Theorem 2 gives the distinct non-squashing partition recurrence; Corollary 4 gives parity rules, with equation (21) restricted to odd n at least 3.
 strata_touched: []
 license: citation-only

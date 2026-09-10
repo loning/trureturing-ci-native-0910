@@ -144,3 +144,7 @@ D5 与 mathlib Combinatorics/NumberTheory，再逐条读命中公共面：
 make lean-report EXIT=0，31.033秒，source-bound report 已产于
 .lake/build/stratalint/raw-lean-report.json。候选报告不包含 docs/reports 的探针，
 其通过不扩大成主目标已证明的主张。
+
+make emit 首轮 EXIT=2，18.908秒；真实判词 invalid-doi：本仓 A12 要求 DOI/URL
+二选一，note frontmatter 同时列两者被拒。修为仅 DOI，Verified locator 正文
+仍保留 DOI 与访问 URL 的原文。此为叙事元数据修正，不是数学停止理由。
