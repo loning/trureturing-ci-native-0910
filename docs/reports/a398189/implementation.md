@@ -95,3 +95,13 @@ consumer/instance/premises/result/claim 均为 not-applicable(kind=none)。
 question_answered：本报告开头预登记的 A398189 奇 n、正 k 两分支，含模16例外边界。
 dominating_theorem_search：本仓 → pin Mathlib → GitHub Lean/OEIS/指定论文，not-found-in-searched-scope；
 已证背景与未读二级文献的边界见上。形态 deposit，无 source_id/atom_id，不做 cover。
+
+## 正式构建首轮
+
+`make lean` EXIT=0，72.072 s；本机 macOS ARM，pin 不变，双层热缓存。
+本模块增量构建行 `Built D5.S3.Arith.Congruence.TruncatedExponentialTwoAdic (7.8s)`；
+全项目 `Build completed successfully (12845 jobs)`。make receipt 在 runner attempt 的
+`make-lean.receipt.json`，完整原始日志 `make-lean.log`。
+LEAN_CACHE：`status=present, method=none, stamp_miss=null, clonefile_attempts=0,
+mathlib_missing_olean_files=0, mathlib_olean_state=warm, project_olean_state=warm`。
+这次没有重新播种；最初显式 ensure 的 seeded/clonefile 收据见前文。
