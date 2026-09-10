@@ -147,10 +147,11 @@ def analyse(store, keys, output, core, *, cache=None, axioms=None, mark=lambda _
     adj = [[identities[target] for target in entry["folded"]] for entry in entries]
     direct_adj = [[identities[target] for target in entry["direct"]] for entry in entries]
     depth, order, reverse = topology(adj)
-    direct_depth, direct_order, _ = topology(direct_adj)
+    direct_depth, _, direct_reverse = topology(direct_adj)
     cycles = cyclic_nodes(adj, reverse)
     failures = {i for i, entry in enumerate(entries) if entry["reason"] is not None}
     missing_depth = reachable(reverse, failures | cycles)
+    missing_direct_depth = reachable(direct_reverse, failures | cyclic_nodes(direct_adj, direct_reverse))
     potential = {identities[target] for entry in entries for target in entry["potential"]}
     missing_descendants = (set(range(len(keys))) if any(e["unbounded"] for e in entries)
                            else reachable(adj, potential | cycles))
@@ -209,7 +210,8 @@ def analyse(store, keys, output, core, *, cache=None, axioms=None, mark=lambda _
               "folded_edges": sum(map(len, adj)), "depth_histogram": dict(sorted(histogram.items(), key=lambda p: int(p[0]))),
               "support_positive": positive, "support_undetermined": len(keys) - positive,
               "empty_core_support_positive": empty_positive, "frontier_incidences": frontier_count,
-              "direct_depths": {keys[i][2]: direct_depth[i] for i in direct_order},
+              "direct_depths": {key[2]: None if i in missing_direct_depth else direct_depth[i]
+                                for i, key in enumerate(keys)},
               "self_edges": [keys[i][2] for i, targets in enumerate(adj) if i in targets],
               "collisions": {"keys": len(collision_keys), "groups": sum(n > 1 for n in names.values()),
                              "keys_readable": sum(i not in failures for i in collision_keys),

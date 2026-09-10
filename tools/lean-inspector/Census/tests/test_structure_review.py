@@ -15,6 +15,31 @@ from Structure.sources import file_digest
 
 
 class StructureReviewTests(unittest.TestCase):
+    def graph(self, declarations):
+        from Structure.graph import analyse
+        from Structure.store import Store
+        with tempfile.TemporaryDirectory() as scratch:
+            folder = pathlib.Path(scratch)
+            store = Store(folder / "store.sqlite")
+            keys = [("Fixture", name_key(n), n) for n in declarations]
+            try:
+                store.module("Fixture", [], "repository")
+                for name, value in declarations.items():
+                    store.declaration("Fixture", name_key(name), "theorem",
+                                      None if value is None else [name_key(n) for n in value])
+                rows = folder / "rows.jsonl"
+                summary = analyse(store, keys, rows, [], axioms={k[1:]: [] for k in keys})
+                return {r["statement_id"]: r for r in map(json.loads, rows.read_text().splitlines())}, summary
+            finally:
+                store.close()
+
+    def test_direct_depth_propagates_unreadable_prerequisite(self):
+        rows, summary = self.graph({"a": None, "b": ["a"], "c": []})
+        self.assertEqual(summary["direct_depths"], {"a": None, "b": None, "c": 0},
+                         "directDepthFailurePropagation")
+        self.assertEqual(rows["a"]["status"], "unavailable")
+        self.assertIsNone(rows["b"]["readings"]["frozen_dag_depth"])
+
     def test_regenerated_custom_report_supplies_sidecar_axioms(self):
         # Execute the production provenance branch and sidecar handoff. Other
         # census phases are deliberately outside this regression's input cone.
