@@ -5131,3 +5131,52 @@ $$
 候选思路（worth 席，经 caller 转述；不作定理）：把输入并行复制 $n$ 份使 $\Gamma_t\mapsto n\Gamma_t$，尝试从目标 q 关于 $n$ 的一次多项式取一次部分，化为有限个单孔读数之差再用引理 4；此归约须独立核验，本批未证。
 
 命题 55 的域不含输入自适应参数、无限项或身份扩签名；命题 57 只给存在性，不给唯一性。D15 划出了新原语超出摘要的具体边界，没有把所有依赖关系的规则一概判为不下降。本批仅为普通 ZFC 推导和有限核验，不新增 Lean、axiom、判官或 schema。
+
+<a id="pr6-evidence"></a>
+
+## 37. PR6 产地与核验收据
+
+### 37.1 产地、先验暴露与分工
+
+本批 skill 上下文为 consensus-rnd:sshx，阶段为 implementation。实施载体是一个 codex-cli worker（自报 GPT-6／Codex），按 caller 的六席收敛 brief 与 GoalArtifact 修订 R1-PR6 在分支 lane/theory/csa-upgrade-pr6-0910 实施；本席实际读取本机该 skill 的 SKILL.md、完整 CLAUDE.md 及指定卷文、附录，未另派子席，属于 repo-prior-exposed。
+
+**思考产地（caller brief 转述，未读取原始判词）：** 六席为 teleology、parsimony、fidelity、natural-ownership、proportional-containment、worth。teleology 使用 nyxid-oracle、company-chatgpt-pro 池，自报 GPT-6 Astra Pro；其余五席使用 codex-cli，自报 GPT-6／Codex，经仓内 dispatch.sh 负载门派发，其中四席曾在门内排队至他人负载回落。六席均为 revise，由 meta-judge 收敛至 R1-PR6。排队与模型身份是该次席位／caller 自报，不是本实施席对当时宿主的测量。
+
+各席均暴露 caller 候选计划，**非盲**；候选曾把 $\Sigma_{\rm mix}$、$\Sigma_{{\rm cau},t}$ 与复制孔三个范围混写，席位纠正后由 R1 分开。codex 有仓库先验暴露，oracle 的外部先验不受本席控制，不凭席数宣称先验独立。后续 architecture／quality／tests 三评审席的载体、模型、判词与分歧裁决由 caller **另记**；实施时未收到，不预报通过。
+
+**caller 亲验范围（仅转述 brief）：** 2026-09-10 07:58 核对 dev 上本卷零改动，基线本卷 4602 行、§1–§35。此后对本批的亲验与评审记录未提供。**本 worker 亲验范围：** 原文前提、开工及交付前 fetch／merge-tree、附录执行、ingest 与正文覆盖、追加字节及 git 读数；均为实施自查，不充作独立评审。
+
+开工基线为 462d0a4368ba5a890c5eab619c82437baa88966f，fetch 后 origin/dev 仍为该 SHA；merge-tree 退出 0，试合树 c02b4787ce9ff0cf96d03db1357874add67bc2b7。本卷未有并行尾追加，故续接定义 28–30、引理 4、命题 55–57、D15–D16、增补 O，不 rebase。§36 的 242 行提交为 b7fabcc68cde0c366365d239403079529b923a9f；附录初稿提交为 684487f7be64b35e05cc62f8154cd9f541f81fa3，周期饱和对照补充至 6479fb1da62726408424fb68aae2fc6a94ef41ae。
+
+**brief 更正：** 平衡使 $|\Omega_X|$ 恒偶，原“按其奇偶准入”的非局部例退化；改用 $|\Omega_X|/2$ 奇偶，保留所需的全局而可下降例。命题 57 显式先判三元组 $(g,m,M)$，再投影给 $\Gamma_t$ 的像；属性背景用 $\widehat W(c)$ 区分定义 22 的 $W(n,p)$；$B_{\rm even}$ 是周期族的空间限制例。以上均保持 R1 的结论范围，不改旧结算。
+
+本批形态为 **ingest**；链上一环是 source_id=contextual-spacetime-arithmetic 的新源文 → 新 atoms/sha256 对象 → 同源 residual-open。新推导均 repo-derived，无新外部引用；未作全球新颖性检索，不作优先权主张。不作 deposit／cover，不报告冻结或 absorbed。OPEN-COPY 及任意扩张的边界见 §36.7。
+
+### 37.2 附录实际核验
+
+本席实际运行下列原文命令，退出 **0**，stderr 为空，末行如下。新增 pr6_ 段共 **289 行**，只插在唯一 Python 块原末行打印之前；复用 Rich、pr3_／pr4_／pr5_ 的运算、剖面与规范字节函数。
+```sh
+sed -n '/^```python$/,/^```$/p' docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md | sed '1d;$d' | python3 -
+```
+```text
+pr6_expressibility_pairing: tail_q=4320 collapse_controls=4 target_controls=4 collapsed_profiles=4 saturation_endpoints=108 saturation_q=108 saturation_no_product=36 saturation_empty_factor=36 saturation_product=36 periodic_saturation=1 unsaturated_control=1 first_product_fiber=1 pair_push=800 empty_products=260 old_archives=640 negative_inputs=690 unselected_parents=8950 pair_suffix=2400 pullback_encoding=320 mixed_summary=3600 mixed_q=3600 strict_failures=720 D15_fiber=1 D15_q=1 D10_control=1 U_rule_push=6 J_positive=6 J_fiber=3 U_size_rule=4 global_rule=4 same_local_rows=1 q_only_control=1 image_roundtrip=64 enumerated_states=1280 formal_membership=1088 enumerated_roundtrip=704 image_sets=2 distinct_actual_profiles=670 D16_conditions=1 empty_endpoint_branches=6 empty_realizations=3 seed=2026091006 Tail_families=27 random_inputs=64 cases=80 periodic_and_drift=1,1/1,0 D15=1,2 D10=2,2 D16=1,1,1,0,1
+ALL_FINITE_CHECKS_PASSED
+```
+
+固定种子 2026091006 生成 24 个 Tail 谓词，连同 D14、空集、全集共 27 个，两个合法 k 遍历既有 64 份随机及 16 份定向输入。36 个随机小上下文分为无乘积、空因子、非空因子三组，各遍历三个位置；另以周期谓词对照有后继的 1/1 与删边后的 1/0，验证饱和见证的作用。属性配对核对两个槽位、非对称及符号／来源谓词、未选父、空区域、旧档案、负时刻、N／筛选续接与严格失败；P↑ 比较完整编码。J_R 的 U 依赖、全局计数与 q-only 对照分别核验。
+
+实际像核验包含 64 份直接生成的合法形式剖面往返；四事件族固定时间 (0,1,2,3) 与 (0,0,1,1)、符号 ++--、同位置同来源，穷举 1280 个图／选择组合和 1088 份形式候选，接受集与实际像逐个一致，去重实际剖面共 670 份。D16 逐项读数为 1,1,1,0,1；空档案与非空档案空当前区域端点分支另查。有限域计数不承担任意上下文或任意形式剖面的全称证明。预算原为计划而非机器门：正文 242 行在计划内，附录 289 行超过约 150 行的估量，用于保留要求的双路径计算、饱和负对照和完整枚举。
+
+### 37.3 ingest 检查点与最终工件
+
+首次摄入以 684487f7be64b35e05cc62f8154cd9f541f81fa3 为已提交输入，实际命令如下，退出 **0**、stderr 为空。
+```sh
+BASE=462d0a4368ba5a890c5eab619c82437baa88966f make ingest SOURCE="contextual-spacetime-arithmetic docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md"
+```
+```text
+INGEST residual_open_added=33 skipped_existing=289 coarse_fallbacks=0 open_genres=0 cas_objects_written=33 ledger_changed=true
+```
+
+该次新增 33 atoms／33 residual-open，提交 c91664f4f9f1476e3d54a9877431171da959f36c；逐行核对 §36 的 149 行非空、非标题、非锚点内容，遗漏 0。这是本收据与周期对照补充之前的固定检查点，不能充作最终摄入。首次覆盖结果存于本次 runner 的 ingest-1-coverage.json。
+
+本 §37 最后一次改动之后再以同一命令 ingest 并提交；最终计数、全部逐节提交、两个纯插入 hunk、旧文零字节改动、允许路径、干净状态与 push 由 /var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/csa-pr6-impl-0910/attempt-1/result.json 绑定记录，原始执行证据另存同目录。本批交付推送分支，不开 PR；评审、CI、合入和持续研究目标的完成不由实施收据预先判定。
