@@ -39,8 +39,10 @@ def benchmark(repository, report, directory):
         env=dict(os.environ, LEAN_NUM_THREADS="1"), phase_path=directory / "benchmark.phase")
     build = json.loads((directory / "CensusRun/Root.checked.build.json").read_text())
     result["build"] = build
-    result["whole_path_target_met"] = build["wall_s"] <= 180 and build["max_process_peak_rss_bytes"] <= 1024 ** 3
-    result["profile_required"] = build["wall_s"] > 360 or build["max_process_peak_rss_bytes"] > 2 * 1024 ** 3
+    result["compiler_build_target_met"] = build["wall_s"] <= 180 and build["max_process_peak_rss_bytes"] <= 1024 ** 3
+    result["compiler_build_profile_required"] = build["wall_s"] > 360 or build["max_process_peak_rss_bytes"] > 2 * 1024 ** 3
+    result["whole_path_target_met"] = result["wall_seconds"] <= 180 and result["peak_rss_bytes"] <= 1024 ** 3
+    result["profile_required"] = result["wall_seconds"] > 360 or result["peak_rss_bytes"] > 2 * 1024 ** 3
     (directory / "target.json").write_text(json.dumps(result, indent=2) + "\n")
     return result
 
