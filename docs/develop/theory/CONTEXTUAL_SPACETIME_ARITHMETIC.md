@@ -2810,7 +2810,7 @@ pr7_hit("negative_inputs")
 assert any(e not in pr6_X.a for e in pr6_X.w)
 pr7_hit("unselected_parents")
 pr7_suffix_rich = pr5_rich_step(pr7_pair_rich, ("N",))
-pr7_suffix_state = pr5_summary_step(pr5_summary(pr6_X), ("N",))
+pr7_suffix_state = pr5_summary_step(pr5_summary(pr7_pair_rich), ("N",))
 assert pr5_summary(pr7_suffix_rich) == pr7_suffix_state
 pr7_hit("pair_suffix")
 
