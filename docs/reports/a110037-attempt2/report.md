@@ -118,3 +118,29 @@ c_halving 均通过；complement_of_halving 由 strong_induction_on 对所有 r>
 make lean EXIT=0，10.469秒，12840 jobs，本机 macOS ARM 热树。
 该命令只构建现存 D5 项目；报告目录 Bridge.lean 的通过凭独立热树检查，
 不是由本次 make lean 冒领。原始收据为 attempt-2/make-lean-receipt.json。
+
+## 扩展 API 检索收尾
+
+按 superincreas、binary.partition、distinct/partition 两种次序及 suffix/sum 粗筛
+D5 与 mathlib Combinatorics/NumberTheory，再逐条读命中公共面：
+
+- TrimmedAlternatingPartitions 的 sumsFrom、trimmedSums 与两条公开 theorem，
+  其中通用 trimmedSums_nodup_iff_strict_tail 比较的是交错和与尾部严格递减，
+  并未给出每部件≥后缀总和的计数。
+- ZeroPrependedFirstSumsOddParts 的 IsZeroPrependedFirstSums 和两条基数 theorem，
+  描述前缀变换的像到奇部件/互异部件分拆，未提供本题限制的传递定理。
+- ConstantBlocksDistinctRunSums 的三个定义和两个公开 theorem，比较常值块和的
+  互异性与排列后的 run sums，未给本题后缀不等式。
+- SignedCatalanCubicSubstitutionModThree 的所有公开定义和 theorem 签名，
+  唯一一般解唯一性定理有特定三次幂级数方程前提；无二进制分拆计数桥。
+- 重新读 mathlib Partition.Glaisher 的全部公开面及 Basic 的 restricted、
+  countRestricted、distincts、partitionWithPartEquiv 接口。它们能支持将来移植，
+  但不能直接给当前八个 goal。没有根据文件题名排除它们。
+
+首个扩展 rg 命令误含不存在的 Mathlib/Data/Nat/Partition 路径，诊断已显示；
+随后在正确 Combinatorics/Enumerative/Partition 路径重查成功。未把坏路径零命中
+算作检索证据。关键词粗筛不冒充符号依赖证明。
+
+make lean-report EXIT=0，31.033秒，source-bound report 已产于
+.lake/build/stratalint/raw-lean-report.json。候选报告不包含 docs/reports 的探针，
+其通过不扩大成主目标已证明的主张。
