@@ -9,6 +9,7 @@
 import Mathlib.Algebra.GCDMonoid.Finset
 import Mathlib.NumberTheory.Padics.PadicVal.Basic
 import Mathlib.Data.ZMod.Basic
+import Mathlib.FieldTheory.Finite.Basic
 import Mathlib.Tactic
 
 set_option autoImplicit false
@@ -17,6 +18,8 @@ set_option relaxedAutoImplicit false
 namespace D5.S3.Arith.Descartes.PrimitiveSphereRadii
 
 open Finset
+
+private instance : Fact (Nat.Prime 3) := ⟨by decide⟩
 
 /-- The common gcd of the four radii; no pairwise coprimality is required. -/
 def gcd4 (r : Fin 4 → ℕ) : ℕ := univ.gcd r
@@ -77,5 +80,37 @@ private lemma curvature_equation (r : Fin 4 → ℕ) (hpos : ∀ i, 0 < r i)
     rw [hdesc]
     ring
   exact_mod_cast heq
+
+private lemma exists_three_unit (b : Fin 4 → ℕ) (hprim : gcd4 b = 1) :
+    ∃ i, ¬3 ∣ b i := by
+  by_contra! hall
+  have hd : 3 ∣ gcd4 b := Finset.dvd_gcd fun i _ => hall i
+  rw [hprim] at hd
+  norm_num at hd
+
+private lemma curvature_unit_count (b : Fin 4 → ℕ) (hprim : gcd4 b = 1)
+    (heq : (∑ i, b i) ^ 2 = 3 * ∑ i, b i ^ 2) :
+    (univ.filter fun i => ¬3 ∣ b i).card = 3 := by
+  have hsum : 3 ∣ ∑ i, b i :=
+    (show Nat.Prime 3 by decide).dvd_of_dvd_pow ⟨∑ i, b i ^ 2, heq⟩
+  obtain ⟨k, hk⟩ := hsum
+  have hsquares : 3 ∣ ∑ i, b i ^ 2 := ⟨k ^ 2, by nlinarith [heq]⟩
+  have hs : (∑ i, (b i : ZMod 3) ^ 2) = 0 := by
+    have h := (ZMod.natCast_eq_zero_iff (∑ i, b i ^ 2) 3).mpr hsquares
+    simpa only [Nat.cast_sum, Nat.cast_pow] using h
+  have hc : ((univ.filter fun i => ¬3 ∣ b i).card : ZMod 3) = 0 := by
+    rw [← Finset.sum_boole]
+    convert hs using 1
+    apply sum_congr rfl
+    intro i _
+    simpa only [Nat.reduceSub, ne_eq, ZMod.natCast_eq_zero_iff] using
+      (ZMod.pow_card_sub_one (b i : ZMod 3)).symm
+  have hd := (ZMod.natCast_eq_zero_iff _ 3).mp hc
+  have hle : (univ.filter fun i => ¬3 ∣ b i).card ≤ 4 :=
+    (card_filter_le _ _).trans (by simp)
+  obtain ⟨i, hi⟩ := exists_three_unit b hprim
+  have hpos : 0 < (univ.filter fun i => ¬3 ∣ b i).card :=
+    card_pos.mpr ⟨i, mem_filter.mpr ⟨mem_univ i, hi⟩⟩
+  omega
 
 end D5.S3.Arith.Descartes.PrimitiveSphereRadii

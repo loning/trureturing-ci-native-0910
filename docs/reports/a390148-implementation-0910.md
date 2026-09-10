@@ -118,3 +118,20 @@ of completed proof, library exhaustiveness, build success or freeze yet.
 - Additional Mathlib reuse: inspected `ZMod.pow_card_sub_one`; it gives the
   square indicator in characteristic 3 directly, so residue enumeration is
   unnecessary. The next unit will count the nonzero residues from the equation.
+
+## Lean unit 2: exactly three unit curvatures
+
+- Hot-tree file check EXIT=0. The general private lemma
+  `curvature_unit_count` takes only an arbitrary natural quadruple, gcd=1,
+  and the coefficient-3 equation; it proves exactly three coordinates are
+  not divisible by 3. No finite radius range or radius repetition is used.
+- Derivation: 3 divides the square of the sum, hence the sum itself. Writing
+  that sum as 3*k gives sum(b_i^2)=3*k^2, so its reduction modulo 3 is zero.
+  `ZMod.pow_card_sub_one` rewrites each square as its nonzero indicator;
+  `Finset.sum_boole` identifies the total with the unit-coordinate count.
+  The count is a positive multiple of 3 bounded by 4, hence equals 3.
+- Compiler repair: corrected the explicit witness for divisibility of the
+  square sum from 3*k^2 to k^2; explicitly unfolded `ne_eq` to rewrite the
+  cast-nonzero condition. The successful proof uses no enumeration.
+- This is the preregistered intermediate witness. Its application to the
+  positive primitive curvatures is the next step toward the radius theorem.
