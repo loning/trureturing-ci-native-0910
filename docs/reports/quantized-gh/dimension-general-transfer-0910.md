@@ -14,7 +14,7 @@ review and ordinary repository gates.
 
 The change appends the completed arbitrary-dimension paired-increment theorem
 as section 34 of
-[ARITHMETIC_BOUNDARY_QUANTIZATION.md](../develop/theory/ARITHMETIC_BOUNDARY_QUANTIZATION.md).
+[ARITHMETIC_BOUNDARY_QUANTIZATION.md](../../develop/theory/ARITHMETIC_BOUNDARY_QUANTIZATION.md).
 It gives the full positive one-corner analytical domain and an exact translation
 of both budgets and the entire feasible polytope. It bounds the actual radius
 change in two ways, proves the weighted argument displacement analytically, and
@@ -651,3 +651,60 @@ actual radii; check nonnegative square comparisons analytically; put both
 increments in the same interval before subtraction; retain every strict
 cutoff and closed endpoint. Hash/span/AST and make evidence concern source
 representation and preservation, not theorem proof.
+
+## Current placement — I20 / S23 / C58 (2026-09-10)
+
+This report now lives at docs/reports/quantized-gh/dimension-general-transfer-0910.md.
+The caller's conflict-free preview of original S23 HEAD with dev
+1b1bb6313e3331af8320c3c25677d38b1352e378 contained 53 direct report files;
+S19 had already observed SL-003 at 49 against admission limit 48.
+Moving S23's own report changes this tree's direct count from 38 to 37,
+with one report in quantized-gh and 70 reports overall. Inherited report
+relocations remain separate caller-owned work; no dev merge was performed here.
+
+All preceding commands, source-identity tables, inventories and handoff records
+are original I18 observations, including their old report address and ingest BASE.
+The exact originals remain at immutable commit
+fcb8ee7c1f42a4cab386cbf64114b3afbee359e9 and the caller's existing snapshots:
+the original source is 394284 bytes / 7571 LF, SHA256
+c15b9e6371968fe6a19c8cd6a1a45142a60af4696290da1a317359d0aaf71bde;
+the original report at docs/reports/dimension-general-transfer-0910.md is
+61054 bytes / 653 LF, SHA256
+2f81c1c77d82de715739243b1d3c2aa2a747ec8f130700f16be831ff2e66e7f8.
+The sole exception within this report's original body is its top backlink
+destination: ../develop/theory/ARITHMETIC_BOUNDARY_QUANTIZATION.md becomes
+../../develop/theory/ARITHMETIC_BOUNDARY_QUANTIZATION.md (three added bytes).
+All seven original TEXT payloads remain byte-exact, including the symbolic
+program/receipt/gate final LFs and the raw primary's excluded Markdown separator LF.
+There is one maintained report; its current identity belongs in the I20 envelope.
+
+The current source changes only the 34.21 report destination; its label and all
+mathematical text are unchanged. It is 394297 bytes / 7571 LF, SHA256
+06331627e46c9e19fbb784282b192d521cb953e4c9a34fb421f74c44c0655b9b.
+The complete 366276-byte inherited prefix is unchanged. Both current relative
+links were resolved to their actual files. After finalizing that source edit,
+I20 ran exactly once, exit 0, from the assigned worktree:
+
+`make ingest BASE=fcb8ee7c1f42a4cab386cbf64114b3afbee359e9 SOURCE=arithmetic-boundary-quantization`
+
+Actual complete spans 34.1–34.22 and inherited 33.22 have 23/23 whole-CAS
+byte-equal bindings, with equal raw/normalized fingerprints and cas_ref,
+no emitted children/chains and zero coverage gaps. The source ledger has 468
+entries: one new 2269-byte / 36-LF atom for 34.21,
+sha256:0215cfc7e259f4f71c33315cfb0b6d3877f083db9d7f0bf1be8c1e9884320eef.
+Its current span is [390136,392405); unchanged 34.22 now occupies
+[392405,394297). All offsets are zero-based, end-exclusive. The previous 34.21
+atom sha256:1c039b3a510feb1a3895634252c055ebd4242f7e4e28605592919f198fb9aff8
+remains as history. All 32156 prior CAS files, 32156 prior backfill YAML files,
+43 other digestion files, 69 other reports and 16 historical LF pairs are exact.
+Tracked-diff whitespace checking exited 0; the new whole-CAS no-index check
+exited 3 with one "new blank line at EOF" at line 36. That separator LF is part
+of the complete source span and the canonical bytes are preserved unchanged.
+
+I20 is a single Codex CLI implementation handoff under pinned
+consensus-rnd:sshx 1.0.0-beta.42, repo-prior-exposed. Mathematical program
+executions, historical ingest/certificate replays and new oracle calls are zero.
+This placement repair adds no mathematics or review vote and leaves the
+conditional 5040 boundary intact. Changes are unstaged; caller sealing,
+independent review and ordinary gates remain ahead of delivery after S22 MERGED.
+No MERGED delivery or termination of the standing goal is asserted here.

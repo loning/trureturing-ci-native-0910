@@ -7535,7 +7535,7 @@ completed 2026-09-09T23:55:45.528Z, original envelope SHA256
 e5d84e0dc8c6935b329694f3cf278151543a4ce4460cf0e1d42d4371cd5ce822.
 Its task-observed display was 6/Pro: invocation-display evidence only,
 not hidden serving identity or independent model-family diversity.
-The [single report](../../reports/dimension-general-transfer-0910.md)
+The [single report](../../reports/quantized-gh/dimension-general-transfer-0910.md)
 preserves the raw response as TEXT data, including etadmin and the
 historical C45 label, the exact symbolic program with final LF and SHA,
 and its original one-run receipt and preregistration.
