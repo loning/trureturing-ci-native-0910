@@ -120,3 +120,26 @@ exponential equations and congruences.
 Route command diagnostics were input errors, not mathematical blockers:
 absolute manifest paths are rejected, every field must be a string, and
 `artifact=lean` is required on plane F. The manifest is now corrected.
+
+## Lean checkpoint: original integral equation and unit bridge
+
+`lake env lean /tmp/A338193.lean` EXIT=0 for the expanded source. Four linter
+warnings (redundant change/simp arguments) will be removed before the final
+build. The following are now kernel-checked:
+
+- `Original` states the literal formal integral equation using the primitive
+  with zero constant term and the two inverse series from the source.
+- `original_iff_cleared` proves the integral/differential equivalence, including
+  the nonzero constant coefficient of its denominator derivative.
+- `original_iff_algebraic` proves equivalence to
+  `(1+X)*S*S' - 2*X*(S')^2 - S^2 = 0`, clearing denominators using proved
+  `S*S⁻¹=1` and cancellation by the nonzero series `S^3`.
+- `B_algebraic` proves B satisfies that polynomial equation.
+- `algebraic_iff_linear` identifies the constant-one branch with `D*S'=S`,
+  where `D=1-X*R`. The other factor has constant coefficient -1, so cannot
+  vanish. This is the unit/branch argument, not a branch assumption.
+
+The all-degree coefficient uniqueness proof and the final choice of A by
+`Original` alone are next. Route output is
+`D5/S1/Recurrence/Algebraic/SchroderIntegralEGF.lean`; its directory currently
+contains one file, below capacity. No canonical D5 file has been created yet.

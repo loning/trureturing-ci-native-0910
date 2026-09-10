@@ -76,4 +76,98 @@ private theorem B_derivative : derivative ℚ B = F 0 := by
   push_cast
   ring
 
+noncomputable def D : PowerSeries ℚ := 1 - X * R
+
+private theorem D_zero : constantCoeff D = 1 := by simp [D]
+private theorem D_quadratic : D ^ 2 - (1 + X) * D + 2 * X = 0 := by
+  dsimp [D]
+  linear_combination -X * R_eq
+
+private def Algebraic (S : PowerSeries ℚ) : Prop :=
+  (1 + X) * S * derivative ℚ S - 2 * X * (derivative ℚ S) ^ 2 - S ^ 2 = 0
+
+private theorem B_algebraic : Algebraic B := by
+  unfold Algebraic
+  rw [B_derivative]
+  change (1+X) * (F 0 * D) * F 0 - 2*X*(F 0)^2 - (F 0 * D)^2 = 0
+  linear_combination -(F 0)^2 * D_quadratic
+
+private theorem algebraic_iff_linear (S : PowerSeries ℚ) (hS : constantCoeff S = 1) :
+    Algebraic S ↔ D * derivative ℚ S = S := by
+  constructor
+  · intro h
+    have hz : (D * derivative ℚ S - S) *
+        (2*X*D*derivative ℚ S - D^2*S) = 0 := by
+      unfold Algebraic at h
+      linear_combination -D^2 * h - D * S * derivative ℚ S * D_quadratic
+    have hn : 2*X*D*derivative ℚ S - D^2*S ≠ 0 := by
+      intro he
+      have hc := congrArg constantCoeff he
+      simp [D_zero, hS] at hc
+    exact sub_eq_zero.mp ((mul_eq_zero.mp hz).resolve_right hn)
+  · intro h
+    have hD : D ≠ 0 := by intro hz; have := congrArg constantCoeff hz; simp [D_zero] at this
+    apply (mul_left_cancel₀ (pow_ne_zero 2 hD))
+    change D^2 * ((1+X)*S*derivative ℚ S - 2*X*(derivative ℚ S)^2-S^2) = D^2*0
+    linear_combination -S^2 * D_quadratic +
+      ((1+X)*D*S - 2*X*(D*derivative ℚ S+S)) * h
+
+noncomputable def primitive (S : PowerSeries ℚ) : PowerSeries ℚ :=
+  mk (fun n => if n = 0 then 0 else coeff (n-1) S / n)
+
+private theorem primitive_zero (S : PowerSeries ℚ) : constantCoeff (primitive S) = 0 := by
+  simp [primitive, ← coeff_zero_eq_constantCoeff]
+
+private theorem derivative_primitive (S : PowerSeries ℚ) : derivative ℚ (primitive S) = S := by
+  ext n
+  simp [primitive, coeff_derivative, Nat.cast_add, Nat.cast_one,
+    show (n : ℚ) + 1 ≠ 0 by positivity]
+
+/-- The original formal integral equation, with integral constant zero. -/
+def Original (S : PowerSeries ℚ) : Prop :=
+  constantCoeff S = 1 ∧ S = 1 + primitive
+    (derivative ℚ (X*S⁻¹) * (derivative ℚ (X*(S^2)⁻¹))⁻¹)
+
+private theorem original_iff_cleared (S : PowerSeries ℚ) (hS : constantCoeff S = 1) :
+    Original S ↔ derivative ℚ S * derivative ℚ (X*(S^2)⁻¹) = derivative ℚ (X*S⁻¹) := by
+  have hd : constantCoeff (derivative ℚ (X*(S^2)⁻¹)) ≠ 0 := by
+    simp [Derivation.leibniz, constantCoeff_inv, hS]
+  constructor
+  · intro h
+    have he := congrArg (derivative ℚ) h.2
+    simp only [map_add, derivative_one, derivative_primitive, zero_add] at he
+    exact (eq_mul_inv_iff_mul_eq hd).mp he
+  · intro h
+    refine ⟨hS, PowerSeries.derivative.ext ?_ ?_⟩
+    · simpa only [map_add, derivative_one, derivative_primitive, zero_add] using
+        (eq_mul_inv_iff_mul_eq hd).mpr h
+    · simp [hS, primitive_zero]
+
+private theorem original_iff_algebraic (S : PowerSeries ℚ) (hS : constantCoeff S = 1) :
+    Original S ↔ Algebraic S := by
+  rw [original_iff_cleared S hS]
+  have hSU : S * S⁻¹ = 1 := PowerSeries.mul_inv_cancel S (by simp [hS])
+  have hS0 : S ≠ 0 := by intro hz; have := congrArg constantCoeff hz; simp [hS] at this
+  have hN : derivative ℚ (X*S⁻¹) * S^2 = S - X*derivative ℚ S := by
+    simp only [Derivation.leibniz, derivative_X, derivative_inv', one_mul, smul_eq_mul]
+    calc
+      _ = S*(S*S⁻¹) - X*derivative ℚ S*(S*S⁻¹)^2 := by ring
+      _ = _ := by rw [hSU]; ring
+  have hQ : derivative ℚ (X*(S^2)⁻¹) * S^3 = S - 2*X*derivative ℚ S := by
+    rw [pow_two, PowerSeries.mul_inv_rev]
+    simp only [Derivation.leibniz, derivative_X, derivative_inv', one_mul, smul_eq_mul]
+    calc
+      _ = S*(S*S⁻¹)^2 - 2*X*derivative ℚ S*(S*S⁻¹)^3 := by ring
+      _ = _ := by rw [hSU]; ring
+  have he : (derivative ℚ S * derivative ℚ (X*(S^2)⁻¹) - derivative ℚ (X*S⁻¹)) * S^3 =
+      (1+X)*S*derivative ℚ S - 2*X*(derivative ℚ S)^2 - S^2 := by
+    calc
+      _ = derivative ℚ S * (derivative ℚ (X*(S^2)⁻¹)*S^3) -
+          S*(derivative ℚ (X*S⁻¹)*S^2) := by ring
+      _ = _ := by rw [hN, hQ]; ring
+  unfold Algebraic
+  rw [← he]
+  exact ⟨fun h => by rw [h, sub_self, zero_mul],
+    fun h => sub_eq_zero.mp ((mul_eq_zero.mp h).resolve_right (pow_ne_zero 3 hS0))⟩
+
 end A338193
