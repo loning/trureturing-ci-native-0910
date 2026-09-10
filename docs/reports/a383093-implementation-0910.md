@@ -97,3 +97,16 @@
   下一步将右侧改接独立的公共和/块值多重集定义，证明展开编码等价。
 - 编译修复：omega 不处理交换次序的乘积，改用 mul_comm；依赖 subtype 的 sum 改显式
   Finset.sum_subtype；pair projection 的 rewrite 改精确使用已有等式。无数学目标削弱。
+
+## Lean 片段 3：原始块系统与主定理
+
+- 模块热树 lake env lean EXIT=0，capable_divisor_sum 的 #print axioms 仅为
+  [propext, Classical.choice, Quot.sound]；无 sorry/私 axiom。
+- 左侧现在以 ∃D,b, D>0、b 的每个值为 D 的正除数、expand D b=m 直接定义存在性，
+  不是用另一侧计数生成。右侧独立以 (D,b) 的基数定义；b 的重数是相同块的次数，
+  每个 x 编成 D/x 个 x 的常值块，重量 D*b.card=n；n=0 单独计唯一空系统。
+- 私有 count_expand、mem_expand、sum_expand 验证此编码的重数、支撑与重量；
+  blocksOf/expand_blocksOf 与 expand_injective 证明任意算术可行编码都唯一还原块多重集。
+  encodeSystem 的双射把 encoded_divisor_sum 接回原始系统定义。
+- 先前一次编译错误为 Prod.ext rfl 过早推断两端相同；改 refine 后通过。
+- 唯一公开 theorem 是 capable_divisor_sum；两侧没有除数和定义。仍待项目构建与叙事/冻结/PR 门。
