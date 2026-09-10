@@ -6,6 +6,10 @@ import json
 import pathlib
 import sys
 
+
+if __package__ in (None, ""):
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+
 from resources import run
 
 
@@ -46,15 +50,15 @@ def main():
                   "pristine_sha256": hashlib.sha256(original).hexdigest(),
                   "mutant_sha256": hashlib.sha256(mutated).hexdigest()}
         (logs / "preregistration.json").write_text(json.dumps(record, indent=2) + "\n")
-        command = [sys.executable, "-m", "unittest", "-v", "test_review_fixes.ReviewFixTests." + method]
-        run(command, logs, "baseline", cwd=root)
+        command = [sys.executable, "-m", "unittest", "-v", "tests.test_review_fixes.ReviewFixTests." + method]
+        run(command, logs, "baseline", cwd=root.parent)
         record["baseline_exit_code"] = 0
         try:
             source.write_bytes(mutated)
-            run([sys.executable, "-m", "py_compile", str(source)], logs, "compile", cwd=root)
+            run([sys.executable, "-m", "py_compile", str(source)], logs, "compile", cwd=root.parent)
             record["compile_errors"] = 0
             try:
-                run(command, logs, "test", cwd=root)
+                run(command, logs, "test", cwd=root.parent)
             except RuntimeError:
                 log = (logs / "test.log").read_text()
                 assert expected in log and "FAILED (failures=1)" in log, log
@@ -69,7 +73,7 @@ def main():
             for cached in (root / "__pycache__").glob(source.stem + ".*.pyc"):
                 cached.unlink()
             (logs / "result.json").write_text(json.dumps(record, indent=2) + "\n")
-        run(command, logs, "restored", cwd=root)
+        run(command, logs, "restored", cwd=root.parent)
         record["restored_exit_code"] = 0
         (logs / "result.json").write_text(json.dumps(record, indent=2) + "\n")
         outcomes.append(record)

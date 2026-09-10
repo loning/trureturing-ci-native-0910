@@ -59,7 +59,7 @@ def elaborateFinalSource (input : String) (fileName : String) (root : Name)
   for _ in root.components do inputDirectory := inputDirectory.parent.get!
   let result ← IO.Process.output {
     cmd := "python3"
-    args := #[ (repository / "tools/lean-inspector/Census/buckets.py").toString,
+    args := #[ (repository / "tools/lean-inspector/Census/Certificate/buckets.py").toString,
       "--source", compiledSource.toString, "--root", root.toString,
       "--inputs", inputDirectory.toString, "--certificate-directory", certificateDirectory.toString ] ++
       (if dataOnly then #["--data-only"] else #[]) }

@@ -134,7 +134,7 @@ def bindBuckets (listName reportName : Name) (rows report : Array StatementKey) 
   let bound ← natConstant (scope ++ `leafBound) "bucket_leaf_bound"
   let repository ← IO.currentDir
   let configured ← IO.Process.output { cmd := "python3", args := #[
-    (repository / "tools/lean-inspector/Census/config.py").toString] }
+    (repository / "tools/lean-inspector/Census/Certificate/config.py").toString] }
   unless minBits ≤ 256 && bound > 0 && configured.exitCode == 0 &&
       configured.stdout.trimAscii.toString.toNat? == some bound do bindingError "bucket_leaf_bound"
   let sorted (keys : Array StatementKey) : MetaM (Array (Nat × StatementKey)) := do

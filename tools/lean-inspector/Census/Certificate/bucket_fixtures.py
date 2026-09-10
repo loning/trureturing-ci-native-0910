@@ -6,8 +6,13 @@ import pathlib
 import re
 import subprocess
 
-from emission import bucket_sources, manifest_source, write_module
-from test_buckets import authorities
+import sys
+
+if __package__ in (None, ""):
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+
+from Certificate.emission import bucket_sources, manifest_source, write_module
+from tests.test_buckets import authorities
 
 
 def check_bucket_negatives(repository, directory):
@@ -37,7 +42,7 @@ def check_bucket_negatives(repository, directory):
         output = directory / "bucket-negatives" / label
         for module, source in sources.items():
             write_module(output, module, source)
-        command = ["lake", "env", "python3", str(repository / "tools/lean-inspector/Census/buckets.py"),
+        command = ["lake", "env", "python3", str(repository / "tools/lean-inspector/Census/Certificate/buckets.py"),
             "--source", str(output / "CensusRun/Root.lean"), "--root", "CensusRun.Root", "--inputs", str(output),
             "--certificate-directory", str(repository / ".lake/build/lib/lean")]
         with (output / "process.log").open("w") as log:
@@ -59,4 +64,4 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", required=True, type=pathlib.Path)
     args = parser.parse_args()
-    check_bucket_negatives(pathlib.Path(__file__).resolve().parents[3], args.output.resolve())
+    check_bucket_negatives(pathlib.Path(__file__).resolve().parents[4], args.output.resolve())

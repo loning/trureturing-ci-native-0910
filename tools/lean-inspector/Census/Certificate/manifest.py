@@ -5,9 +5,14 @@ import hashlib
 import json
 import pathlib
 
-from emission import write_manifest, string, write_module
+import sys
+
+if __package__ in (None, ""):
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+
+from Certificate.emission import write_manifest, string, write_module
 from pipeline import frozen_keys
-from handoff import read as read_handoff
+from Certificate.handoff import read as read_handoff
 
 
 def emit(directory, report_path, census_path, receipt_path, prefix):

@@ -51,11 +51,11 @@ def main():
     bounds.append(named_ballast(repository, streaming))
     negatives.append(nested_scope(repository, streaming))
     negatives.append(receipt_sensitivity(repository, streaming))
-    from chunk_fixtures import check_chunks
+    from Certificate.chunk_fixtures import check_chunks
     chunks = check_chunks(repository, directory)
-    from bucket_fixtures import check_bucket_negatives
+    from Certificate.bucket_fixtures import check_bucket_negatives
     chunks.extend(check_bucket_negatives(repository, directory))
-    from publication_fixtures import prepare_publication, check_publication_negatives
+    from Certificate.publication_fixtures import prepare_publication, check_publication_negatives
     prepare_publication(repository, directory)
     negatives.extend(check_publication_negatives(repository, directory))
     result = {"negative_fixtures": negatives, "lean_fixture_modules": cases, "retained_fixture_execution": "Lake lean_lib build",

@@ -13,7 +13,11 @@ import pathlib
 import subprocess
 import sys
 
-from emission import write_manifest, string, write_module
+
+if __package__ in (None, ""):
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+
+from Certificate.emission import write_manifest, string, write_module
 from pipeline import frozen_keys
 from resources import run
 
@@ -71,7 +75,7 @@ def main():
     elif options.bindings:
         emit(options.report, options.bindings, options.directory)
     else:
-        repository = pathlib.Path(__file__).resolve().parents[3]
+        repository = pathlib.Path(__file__).resolve().parents[4]
         benchmark(repository, options.report.resolve(), options.directory.resolve())
 
 

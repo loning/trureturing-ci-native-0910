@@ -4,7 +4,7 @@ import json
 import os
 import re
 
-from emission import manifest_source, bucket_sources, name, string, write_module
+from Certificate.emission import manifest_source, bucket_sources, name, string, write_module
 from resources import run
 
 

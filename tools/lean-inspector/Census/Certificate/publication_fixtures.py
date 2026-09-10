@@ -6,7 +6,7 @@ import os
 import pathlib
 import re
 
-from emission import manifest_source, bucket_sources, string, write_module
+from Certificate.emission import manifest_source, bucket_sources, string, write_module
 from pipeline import frozen_keys
 from resources import run
 
@@ -41,7 +41,7 @@ def prepare_publication(repository, directory):
     import argparse
     from negative_fixtures import name_key, truth_export_identity
     from pipeline import execute
-    from manifest import emit
+    from Certificate.manifest import emit
     identity = truth_export_identity(repository, directory)
     source = "LeanInformationAudit.Tests.Census.Query.Observed"
     finite = "LeanInformationAudit.Tests.SealSuccess"
@@ -132,7 +132,7 @@ def check_publication_negatives(repository, directory, only=None):
         if report_data is not None:
             report_path.write_text(json.dumps(report_data) + "\n")
         if label != "observedRelabelledCertified" and (transport is not None or report_data is not None):
-            from publication_fixtures import reseal
+            from Certificate.publication_fixtures import reseal
             new_digest = reseal(response, receipt_path, report_path)
             driver.write_text(re.sub(r'receipt_digest "[^"]+"',
                 'receipt_digest ' + string(new_digest), driver.read_text()))

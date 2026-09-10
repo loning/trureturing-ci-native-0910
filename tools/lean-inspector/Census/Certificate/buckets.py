@@ -31,7 +31,7 @@ def measured_compile(source, target, directory, env):
 
 
 def build(source, root, inputs, certificate_directory, data_only=False):
-    repository = pathlib.Path(__file__).resolve().parents[3]
+    repository = pathlib.Path(__file__).resolve().parents[4]
     started = time.monotonic()
     directory = source
     for _ in root.split("."):

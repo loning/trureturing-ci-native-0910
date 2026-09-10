@@ -2,7 +2,13 @@
 
 import unittest
 
-import emission
+import pathlib
+import sys
+
+if __package__ in (None, ""):
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+
+from Certificate import emission
 
 
 def authorities(values):

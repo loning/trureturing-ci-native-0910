@@ -10,10 +10,15 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-import certificate_benchmark
-import emission
-import manifest
-from test_buckets import authorities
+import sys
+
+if __package__ in (None, ""):
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+
+from Certificate import certificate_benchmark
+from Certificate import emission
+from Certificate import manifest
+from tests.test_buckets import authorities
 
 
 def canonical(value):

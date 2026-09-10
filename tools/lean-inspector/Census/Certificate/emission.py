@@ -3,7 +3,7 @@
 import json
 import re
 
-from config import PREFIX_BITS, MAX_LEAF_IDS
+from Certificate.config import PREFIX_BITS, MAX_LEAF_IDS
 
 
 def statement_nat(wire):

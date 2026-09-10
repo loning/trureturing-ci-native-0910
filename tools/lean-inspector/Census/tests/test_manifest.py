@@ -2,7 +2,7 @@
 
 import unittest
 
-import emission
+from Certificate import emission
 
 
 class ManifestTests(unittest.TestCase):

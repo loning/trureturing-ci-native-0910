@@ -11,7 +11,7 @@ def readHandoff (census receipt digest : String) (report : FrozenReport) : IO (A
     let keys := directory / "keys.json"
     let repository ← IO.currentDir
     let result ← IO.Process.output { cmd := "python3", args := #[
-      (repository / "tools/lean-inspector/Census/handoff.py").toString,
+      (repository / "tools/lean-inspector/Census/Certificate/handoff.py").toString,
       "--census", census, "--receipt", receipt, "--digest", digest,
       "--head", report.headSha, "--report-sha", report.reportSha256, "--output", keys.toString] }
     unless result.exitCode == 0 do throw <| IO.userError result.stderr
@@ -26,7 +26,7 @@ def publish (census destination : String) (metadata : Json) : IO Unit :=
     IO.FS.writeFile certificate metadata.compress
     let repository ← IO.currentDir
     let result ← IO.Process.output { cmd := "python3", args := #[
-      (repository / "tools/lean-inspector/Census/handoff.py").toString,
+      (repository / "tools/lean-inspector/Census/Certificate/handoff.py").toString,
       "--census", census, "--certificate", certificate.toString, "--output", destination] }
     unless result.exitCode == 0 do throw <| IO.userError result.stderr
 

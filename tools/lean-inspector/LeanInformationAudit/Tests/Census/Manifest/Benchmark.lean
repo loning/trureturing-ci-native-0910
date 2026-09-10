@@ -17,7 +17,7 @@ elab "#census_certificate_benchmark" &"report" reportPath:str &"head" head:str
   IO.FS.writeFile bindings (toJson report.theorems).compress
   let repository ← IO.currentDir
   let emission ← IO.Process.output { cmd := "python3", args := #[
-    (repository / "tools/lean-inspector/Census/certificate_benchmark.py").toString,
+    (repository / "tools/lean-inspector/Census/Certificate/certificate_benchmark.py").toString,
     "--report", reportPath.getString, "--bindings", bindings.toString, "--directory", directory.getString] }
   unless emission.exitCode == 0 do throwError "emission failed: {emission.stderr}"
   let source := destination / "CensusRun/Root.lean"

@@ -128,7 +128,7 @@ class PipelineTests(unittest.TestCase):
             self.assertEqual(any(c[:2] == ["make", "truth-export"] for c in calls), exported)
 
     def test_manifest_excludes_scope_payloads(self):
-        import emission
+        from Certificate import emission
         first = ["str", ["anonymous"], "First"]
         second = ["str", ["anonymous"], "Second"]
         rows = [{"theorem_name": first, "statement_id": "sha256:" + format(1, "064x"),
