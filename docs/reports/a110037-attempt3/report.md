@@ -64,3 +64,14 @@ erase_max_parts 已经热树 kernel 检查，EXIT=0。后者证明任意 n>0 的
 参数问题，均已修复；未把错误恢复中的 sorryAx 当通过项。
 此单元是无界组合构造，非有限核对；基数双射和原目标尚未闭合。
 当前上述辅助 theorem 均 private，direct_frozen_dependencies=[]，不单独申请冻结。
+
+## 递推到八项奇偶：第二单元已验
+
+Parity.lean 已从 B(2)=1、正 m 的奇项增一和正偶项差分递推证明所有七条
+偶指标进展式。新的核心归纳结论是 B(4m+2)%2=(m+1)%2；继而得
+B(4m)%2=(m+B(2m))%2 (m>0)。由它们直接推出 8、16、32 进展式，
+两个 32 进展式均包含 m=0。第八项 odd 是奇项增一等式取模。
+这是真正尝试并完成递推之后的奇偶证明，尚待具体计数的递推双射闭合。
+热树 EXIT=0；parity-checked.log 的公理输出仅 propext/Quot.sound。
+首次错误为 proof-only section 参数未 include 和 0<m 的词法解析，已修复。
+当前这些 theorem 均 private，冻结依赖为空，不单独申请条件结果冻结。
