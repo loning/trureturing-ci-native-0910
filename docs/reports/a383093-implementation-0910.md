@@ -175,3 +175,13 @@
   仅本模块 Blueprint 新增；emit-values、filemap、dag 生成均完成。
 - 已读完整生成的 Blueprint：正整数范围、除数和公式、两侧定义、规范化及 Conjecture
   来源标识均与 Lean/Library 一致。下一步为 scribe-content-checks 的机器内容检查。
+
+## Scribe 内容门（PR 前本地实跑）
+
+- bash tools/scripts/workflow/scribe-content-checks.sh .lake/build/stratalint/raw-lean-report.json
+  "" 462d0a4368ba5a890c5eab619c82437baa88966f：EXIT=0，23.656 秒。
+  describe-report：red=0；markdown-check：judged=1、formula(s)=1、red=0（真 KaTeX）。
+  本次路径条件未触发 projections；另显式运行同一 Scribe 的 projections --check
+  --report .lake/build/stratalint/raw-lean-report.json：EXIT=0，10.854 秒。
+- 原始日志为 runner attempt/scribe-content-checks.log、scribe-projections-check.log。
+  describe-report 的既有 OPEN/OBSERVE 不冒称已解决；新增 note 没有 incomplete-library-locator。
