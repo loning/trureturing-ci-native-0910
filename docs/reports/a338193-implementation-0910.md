@@ -318,3 +318,10 @@ Final local sequence: `make lean` (22.647s, 0), `make lean-report` (56.186s, 0),
 `make deposit-uncovered` (90.415s, 0), resolution registration,
 `make emit` (65.541s, 0), local Scribe checks (24.655s, 0).
 Lean source was unchanged after its final successful build and freeze.
+
+The final report also records `OPEN projection ... reason=missing:` for the
+main theorem. Inspection of `StatementProjectionFixtureLoader.LoadStatements`
+shows this concerns membership in the two pinned presentation fixture files,
+not a missing Lean declaration or proof. The typed `FromAuthor` formula is
+permitted when this projection is unavailable; the gap is explicit. The
+formula passes KaTeX, but no automatic Lean-to-formula equivalence is claimed.
