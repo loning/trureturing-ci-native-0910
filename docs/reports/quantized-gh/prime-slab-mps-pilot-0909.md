@@ -21,7 +21,7 @@ source implementation/review, not independently approved GPU code. The live S13
 and S14/I9 targets and peer logs were not accessed. No merged S14 source is
 presupposed here. GH retains the user's literal label; no new definition is made.
 
-The constant input is [prime-slab-corner-order-0909.json](prime-slab-corner-order-0909.json),
+The constant input is [prime-slab-corner-order-0909.json](../prime-slab-corner-order-0909.json),
 an exact copy of the supplied 6,741-byte certificate, SHA-256
 `9d28055d5255580ed58274822359961483d1deecbb7b4e38ce497948a4808672`.
 Its 56 prime triples, primality, mask completeness, subset products and strict
@@ -207,3 +207,15 @@ was performed by this worker. The remaining **229,312 boxes / 5,732,800 raw rows
 hypothesis was used for pruning. This pilot establishes no all-prime truth, RH
 result, formal/Lean theorem, full campaign completion, or completion of the
 standing research goal.
+
+---
+
+## Placement and provenance — 2026-09-10 (C65)
+
+Current canonical paths are [docs/reports/quantized-gh/prime-slab-mps-pilot-0909.md](prime-slab-mps-pilot-0909.md) and [docs/reports/quantized-gh/prime-slab-mps-pilot-0909.json](prime-slab-mps-pilot-0909.json). The [constant input](../prime-slab-corner-order-0909.json) is unchanged. Moving the pair adds no direct `docs/reports` files under the recorded 48-file admission bound.
+
+Immutable inputs: the [original Markdown](https://github.com/the-omega-institute/trureturing/blob/e6d0a14439b0c13593ce70471d1aed05b2099811/docs/reports/prime-slab-mps-pilot-0909.md) and [original JSON](https://github.com/the-omega-institute/trureturing/blob/e6d0a14439b0c13593ce70471d1aed05b2099811/docs/reports/prime-slab-mps-pilot-0909.json) remain at the original report commit. The [original program entry point](https://github.com/the-omega-institute/trureturing/blob/2116fafbfeaa374ae3c40adede73229623c44bee/tools/scripts/agent/prime_slab_search.py), [Python/Metal helpers](https://github.com/the-omega-institute/trureturing/tree/2116fafbfeaa374ae3c40adede73229623c44bee/tools/scripts/agent/prime_slabs), [shared state-store source](https://github.com/the-omega-institute/trureturing/blob/2116fafbfeaa374ae3c40adede73229623c44bee/tools/scripts/agent/gpu5040/state_store.py) and [original constant input](https://github.com/the-omega-institute/trureturing/blob/2116fafbfeaa374ae3c40adede73229623c44bee/docs/reports/prime-slab-corner-order-0909.json) are pinned to the original program commit.
+
+The preceding body, commands, program/source/stream/checkpoint identities, results, failures, timings, resource limits and caller/worker/actual-PRO provenance are historical receipts of the original program. All 450 active negatives were CPU-certified; all 450 active GPU proposals remain indeterminate. The later corrected program has a different identity; this note does not attribute the historical stream to corrected-code execution.
+
+This Codex CLI I21 representation repair uses pinned `consensus-rnd:sshx` `1.0.0-beta.42` with repository prior exposed. The original 209-line body is preserved except one three-byte `../` insertion in its constant-input link; the summary bytes are exact. Only bounded byte, link, scope and directory-count checks were performed, with zero mathematical, test-suite, search or GPU executions. The original report's two approvals and one comment are prior-stage history. Fresh independent review of this representation and ordinary publication gates remain caller-owned; content delivery still waits for the corrected judge program to reach MERGED. This repair makes no new research, independent-review, CI-green or MERGED claim.
