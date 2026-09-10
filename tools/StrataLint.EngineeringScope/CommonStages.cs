@@ -197,32 +197,45 @@ internal sealed class CommonStages(string root, TextWriter output, CancellationT
         using var process = Process.Start(start) ?? throw new IOException("cannot start " + executable);
         using var timer = new CancellationTokenSource(timeout, clock);
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(deadlineCancellation, timer.Token);
+        using var drainCancellation = new CancellationTokenSource();
+        using var stdoutReader = process.StandardOutput;
+        using var stderrReader = process.StandardError;
         var stdoutText = new StringBuilder();
         var stderrText = new StringBuilder();
-        var stdout = Drain(process.StandardOutput, stdoutText, cancellation.Token);
-        var stderr = Drain(process.StandardError, stderrText, cancellation.Token);
+        var stdout = Drain(stdoutReader, stdoutText, drainCancellation.Token);
+        var stderr = Drain(stderrReader, stderrText, drainCancellation.Token);
+        var drains = Task.WhenAll(stdout, stderr);
         try
         {
             process.WaitForExitAsync(cancellation.Token).GetAwaiter().GetResult();
             processExited?.Invoke(process);
-            Task.WhenAll(stdout, stderr).WaitAsync(cancellation.Token).GetAwaiter().GetResult();
+            drains.WaitAsync(cancellation.Token).GetAwaiter().GetResult();
             cancellation.Token.ThrowIfCancellationRequested();
             return (process.ExitCode, Captured(stdoutText) + Captured(stderrText));
         }
         catch (OperationCanceledException)
         {
+            // Keep reading bytes emitted before the deadline while killing/reaping
+            // the producer. An inherited pipe can stay open after its parent exits,
+            // so the readers share the existing five-second cleanup bound.
+            drainCancellation.CancelAfter(TimeSpan.FromSeconds(5));
             try { if (!process.HasExited) process.Kill(entireProcessTree: true); }
             catch (InvalidOperationException) { } // Exit can race the kill.
-            // Reaping and cancelled readers cannot keep a failed stage from reporting.
-            using var cleanup = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             try
             {
-                Task.WhenAll(stdout, stderr, process.WaitForExitAsync(cleanup.Token))
-                    .WaitAsync(cleanup.Token).GetAwaiter().GetResult();
+                Task.WhenAll(drains, process.WaitForExitAsync(drainCancellation.Token)).GetAwaiter().GetResult();
             }
             catch (OperationCanceledException) { }
             return (124, Captured(stdoutText) + Captured(stderrText)
                 + "\nstage deadline exceeded: " + executable + "\n");
+        }
+        finally
+        {
+            // Join the actual collectors, including on exceptional exits; a timed
+            // wait alone could return with a collector still owning a pipe/buffer.
+            drainCancellation.Cancel();
+            try { drains.GetAwaiter().GetResult(); }
+            catch (OperationCanceledException) { }
         }
     }
 
