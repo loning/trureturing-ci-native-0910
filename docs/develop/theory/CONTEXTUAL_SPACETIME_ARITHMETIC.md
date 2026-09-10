@@ -2542,6 +2542,15 @@ for pr6_i in range(36):
             "saturation_empty_factor" if not pr6_factor.w else "saturation_product")
         pr6_counts[pr6_name] = pr6_counts.get(pr6_name, 0) + 1
 
+# A periodic query can see early times; the successor witness removes that difference.
+pr6_even_Q = pr5_Set(lambda a: a[3] % 2 == 0)
+pr6_sat = pr6_saturated([("FQ", {(origin, 1, pr3_l0, 0)})], pr3_U0, origin)
+pr6_equal(tuple(q(pr3_causal_filter(x, pr6_even_Q, True)) for x in pr6_sat),
+          (1, 1), "periodic_saturation")
+pr6_equal(tuple(q(pr3_causal_filter(replace(x, o=frozenset()), pr6_even_Q, True)) for x in pr6_sat),
+          (1, 0), "unsaturated_control")
+pr6_equal(*(pr5_summary(mul(x, pr3_U0)) for x in pr6_sat), "first_product_fiber")
+
 # Attribute pairing: ordered predicates, both slots, full background, and suffixes.
 pr6_asym = pr5_Set(lambda pair: pair[0][3] < pair[1][3])
 pr6_signed_source = pr5_Set(lambda pair: pair[0][1] != pair[1][1]
