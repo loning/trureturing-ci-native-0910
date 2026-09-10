@@ -15,6 +15,18 @@ The proposed escape witness is the integer comparison of the least solution agai
 - D5: `rg -n -i 'A398581|egyptian|unit.fraction|erdos.straus' D5`. No A398581 statement found. Read all declarations of `ErdosStrausModularWitnesses`, `ErdosStrausResidueReduction`, and `PrimaryPseudoperfectPorts`, including their general public interfaces. The first two concern numerator 4 existence/scaling; the third concerns prime reciprocal sums and prime-extension identities. None supplies ordered numerator-5 extremality or a general comparison for arbitrary three-denominator solutions. A prose-only `SingleContextVisibleRemainderDimension` match is unrelated.
 - Pinned mathlib and external search: pending. No search-complete claim.
 
+### Search and cache update
+
+Pinned mathlib same keyword query: only three fractional-ideal text matches, no ordered reciprocal-triple extremality theorem. Initial local query preceded cache materialization and returned missing-directory; it was rerun after successful ensure. GitHub code search `A398581` and `"Egyptian"`, both restricted to extension Lean and limit 20, returned `[]`. arXiv API `all:A398581` returned `totalResults=0`. These are bounded searches, not global absence claims.
+
+Opened and read all sequence content of `https://oeis.org/A398581/internal` with curl. It explicitly calls the target a conjecture, records the k=11 comparison, states residue-4 optimality for q>=1, and gives two sufficient infinite progressions inside residue 1. Its Python is finite enumeration, not an unbounded proof. Direct-reference downloads via Python urllib returned HTTP 403; a curl retry for A257843 succeeded, and complete text retrieval is being continued. The supplied triage review of those references remains attributed to the user until independently read.
+
+`make lean-cache-ensure` EXIT=0; `LEAN_CACHE`: status=seeded, method=clonefile, donor=/Users/chronoai/trureturing, clonefile_attempts=1, stamp_miss=null, project_olean_state=warm, mathlib_olean_state=warm, mathlib_missing_olean_files=0. Full receipt: attempt-1/cache.log in the runner artifact directory.
+
+### Route refinement before Lean probes
+
+For `a=5x-k`, `b=kx`, and `d=ay-b`, the equation implies `d>0` and `az=b+b²/d`. Thus a lower bound on d bounds z. The difficult residue-2 subcase has first residual a=3 with 3 dividing b, giving a candidate of size approximately b²/9. At the next x, a=8; d=1 would imply `k²=-5 (mod 8)`, impossible for a square. This proposed modular obstruction and the subsequent interval estimates are the refined escape witness, still ASSUMED-UNVERIFIED pending Lean.
+
 ## Verification and remaining obligations
 
 No Lean attempt run yet. No theorem frozen. Build/cache receipts, exact declaration classifications, and final outcome will be appended after each completed unit.
