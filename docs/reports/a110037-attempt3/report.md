@@ -49,3 +49,18 @@ pin_sha256=sha256:6c4c682ffba051b5744fe7a75ccc99d7f3b20227b3b026f392f3315be0adaa
 没有主张有限核对是研究进展、全球检索完备、首创性或多模型共识。
 未在本轮打开的外部页面为 ASSUMED-UNVERIFIED；先前阅读收据按历史引用。
 公开新增 theorem 当前为 0；逐声明账目随实际证明补入。
+
+## 最大部件分解：第一单元已验
+
+已阅读历史 PDF 提取 pages 6–8 的原文；Theorem 2 (14) 正是拟议累计和双射，
+等号边界仅排除尾部单例。Corollary 4 的 32 进展式将直接由递推证明，含 m=0。
+Mathlib card_bij、card_biUnion、max'_mem、le_max'、sum_erase_add 公共接口已读。
+
+Counting.lean 的 mem_parts、subset_parts、insert_parts、card_cumulative、
+erase_max_parts 已经热树 kernel 检查，EXIT=0。后者证明任意 n>0 的原分拆可
+删除最大部件，得到累计族 n/2 中尾部，再插入 n−尾部和重建原分拆。
+日志：attempt-3/counting-helpers.log；#print axioms erase_max_parts 仅标准三条。
+首两次编译错误是 id 的隐式函数推断、rfl 消去变量名与 sum_erase_add 的显式
+参数问题，均已修复；未把错误恢复中的 sorryAx 当通过项。
+此单元是无界组合构造，非有限核对；基数双射和原目标尚未闭合。
+当前上述辅助 theorem 均 private，direct_frozen_dependencies=[]，不单独申请冻结。
