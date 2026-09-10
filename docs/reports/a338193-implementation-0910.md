@@ -91,3 +91,32 @@ are `ASSUMED-UNVERIFIED` as worker observations. The full target remains open.
   Raw response: runner artifact `oeis-internal.html`.
 - Capacity: `find D5/S1/Recurrence/Residue -type f | wc -l` returned 11.
   Spec A5.1 confirms the literal header syntax `utility: none`.
+
+## Lean checkpoint: the infinite-row bridge is proved
+
+Warm-tree `lake env lean /tmp/A338193.lean` exited 0. The exact successful
+source is saved as `docs/reports/a338193-0910-snippets.lean` at this checkpoint.
+This is a symbolic proof for every degree and every row, not finite checking.
+It constructs `f` by well-founded recursion on `(m,j)` using exactly the
+three OEIS recurrences, encodes each row using the frozen EGF interface,
+proves the row series equation, and proves `row_factor` by degree-first and
+row-second induction. It then proves `B_derivative : derivative B = F 0`.
+No factorization assumption, target-based definition, sorry, or axiom is used.
+The original equation equivalence and uniqueness remain to be proved.
+
+Initial Lean attempts exposed two concrete interface errors: scalar
+multiplication had to be distributed without expanding the inner `X * (...)`,
+and the rational mapped constant coefficient needed `coeff_map` at degree 0.
+Both were repaired; the resulting compiler output is empty and exit is 0.
+
+Additional search: arXiv API `search_query=all:A338193` returned totalResults 0.
+GitHub's non-Mathlib `rwst/lean-code/unsorted/gf.lean` hit concerns OGFs of
+combinatorial classes, not this EGF or the row recurrence. Its full body was
+not read: no statement from that file is used (`ASSUMED-UNVERIFIED` beyond the
+read interface). D5's two linear ODE uniqueness hits are private, so cannot
+be imported as public API. Their public results concern distinct implicit
+exponential equations and congruences.
+
+Route command diagnostics were input errors, not mathematical blockers:
+absolute manifest paths are rejected, every field must be a string, and
+`artifact=lean` is required on plane F. The manifest is now corrected.
