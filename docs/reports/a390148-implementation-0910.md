@@ -1,8 +1,11 @@
 # A390148: primitive spherical radii, 3-adic orders
 
-Current status: the exact requested theorem is proved, the project build and
-canonical report and Scribe content checks pass, and the module is frozen without
-an atom. PR delivery remains. Sections below are chronological
+Current status: **成** under the implementation brief: the exact requested
+theorem is proved, the project build, canonical report and Scribe content checks
+pass, the module is frozen without an atom, and
+[PR #6739](https://github.com/the-omega-institute/trureturing/pull/6739) is open.
+CI is pending at this report commit; its subsequent result is recorded in the
+worker-owned completion artifacts. Sections below are chronological
 receipts; early statements marked pending describe their time of writing.
 
 ## Provenance and scope
@@ -249,3 +252,23 @@ of completed proof, library exhaustiveness, build success or freeze yet.
   not claimed as an independently executed check.
 - Current delivery commits, including the no-atom freeze, have been pushed to
   `origin/lane/math/a390148`; PR creation is the next step.
+
+## PR delivery and final scope
+
+- Opened https://github.com/the-omega-institute/trureturing/pull/6739 against
+  `dev` using `make pr-open HEAD=lane/math/a390148 MESSAGE=<attempt>/pr-message.md`.
+  Creation succeeded and the canonical watcher observed OPEN with two required
+  checks pending and one not yet reported. No CI success is inferred from that
+  snapshot. Auto-merge was not requested.
+- The only public theorem is the complete requested 3-adic result, with the
+  original positive-radius, common-gcd and coefficient-3 rational hypotheses.
+  There is no sorry or private axiom; the checked axiom closure is std3.
+- Final unclaimed scope: no other prime clause, repetition formula, arbitrary
+  chain, coefficient-2 circle result, global literature exhaustiveness, global
+  priority, independent review/consensus, or merge. The user's numerical probe
+  and triage remain attributed input. Pages not actually opened by this worker
+  remain ASSUMED-UNVERIFIED, as specified in the search receipts.
+- Runner-owned delivery contract: the worker publishes the full structured
+  result and completion sentinel by temporary-file atomic rename in
+  `/var/folders/wv/ht3wzsj138b4sxl3q4t0xdr40000gn/T/consensus-rnd/sshx/a390148-impl-0910/attempt-1`.
+  Those files will contain the final commit, PR and actual CI status at completion.
