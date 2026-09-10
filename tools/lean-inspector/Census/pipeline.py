@@ -260,17 +260,31 @@ def execute(options):
                     if not block:
                         break
             state["byte_identical"] = True
-        # The independent certificate lane owns the manifest/transport API. Its
-        # current publisher requires retired per-root query receipts and cannot
-        # consume a whole-stream receipt. These measured rows remain report-only.
-        state["publication"] = {"status": "blocked", "accounted": len(keys),
-            "reason": "certificate transport requires per-root receipts; whole-stream integration belongs to the certificate lane"}
         if not options.no_structure:
             from Structure.sidecar import run_sidecar
             # Only completed census bytes are inputs. Structural failures have
             # their own closed diagnostics and never change accounting status.
             os.environ.update(env)
             state["structure"] = run_sidecar(repository, directory, raw_report)
+        from Certificate.handoff import file_digest
+        census = directory / "census.json"
+        census_before_publication = file_digest(census)
+        step([sys.executable, str(repository / "tools/lean-inspector/Census/Certificate/manifest.py"),
+              "--directory", str(directory), "--report", str(report_path),
+              "--census", str(census), "--receipt", str(directory / "receipt.json"),
+              "--prefix", options.prefix], "certificate_manifest")
+        step([lean_binary, "-DmaxRecDepth=100000", "-DmaxHeartbeats=0",
+              str(directory / "CensusPublish/Root.lean")], "certificate_publication")
+        publication = directory / "publication.json"
+        census_after_publication = file_digest(census)
+        if census_after_publication != census_before_publication:
+            raise ValueError("certificate publication changed census.json")
+        if not publication.is_file():
+            raise ValueError("certificate publication did not produce publication.json")
+        state["publication"] = {"status": "published", "accounted": len(keys),
+            "artifact": str(publication), "census_json_unchanged_by_publication": True,
+            "census_sha256_before": census_before_publication,
+            "census_sha256_after": census_after_publication}
         print(json.dumps({"status": state["status"], "counts": state["counts"], "replay": state["replay"]}), flush=True)
         return 0 if state["status"] == "complete" else 2
     except BaseException as error:

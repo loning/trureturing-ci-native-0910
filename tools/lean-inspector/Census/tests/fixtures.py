@@ -6,6 +6,10 @@ import pathlib
 import tempfile
 import shutil
 import unittest
+import sys
+
+if __package__ in (None, ""):
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 from negative_fixtures import prepare, check_manifest_negatives, lean_env, validate_control
 from receipt_fixtures import check_receipts
@@ -23,8 +27,8 @@ def main():
     options = parser.parse_args()
     directory = pathlib.Path(options.output or tempfile.mkdtemp(prefix="census-fixtures-")).resolve()
     directory.mkdir(parents=True, exist_ok=True)
-    repository = pathlib.Path(__file__).resolve().parents[3]
-    suite = unittest.defaultTestLoader.discover(str(pathlib.Path(__file__).parent), pattern="test_*.py")
+    repository = pathlib.Path(__file__).resolve().parents[4]
+    suite = unittest.defaultTestLoader.discover(str(pathlib.Path(__file__).resolve().parents[1]), pattern="test_*.py")
     if not unittest.TextTestRunner().run(suite).wasSuccessful():
         raise SystemExit(1)
     run(["make", "lean-cache-ensure"], directory, "cache", cwd=repository, budget_gb=None)

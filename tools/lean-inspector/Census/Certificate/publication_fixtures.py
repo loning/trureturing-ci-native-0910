@@ -41,7 +41,7 @@ def prepare_publication(repository, directory):
     import argparse
     from negative_fixtures import name_key, truth_export_identity
     from pipeline import execute
-    from Certificate.manifest import emit
+    from Certificate.handoff import file_digest
     identity = truth_export_identity(repository, directory)
     source = "LeanInformationAudit.Tests.Census.Query.Observed"
     finite = "LeanInformationAudit.Tests.SealSuccess"
@@ -57,10 +57,14 @@ def prepare_publication(repository, directory):
     report_path.write_text(json.dumps(report) + "\n")
     root = directory / "first"
     assert execute(argparse.Namespace(output=str(root), fixture_truth_export=str(report_path),
-        lean_report=None, prefix="LeanInformationAudit", replay_of=None)) == 0
-    emit(root, report_path, root / "census.json", root / "receipt.json", "LeanInformationAudit")
-    run(["lake", "env", "lean", str(root / "CensusPublish/Root.lean")], directory, "publication",
-        cwd=repository, env=dict(os.environ, LEAN_PATH=str(root), LEAN_NUM_THREADS="1"))
+        lean_report=str(repository / ".lake/build/stratalint/raw-lean-report.json"),
+        prefix="LeanInformationAudit", replay_of=None, no_structure=False)) == 0
+    assert (root / "publication.json").is_file(), "wholeStreamPipelinePublication"
+    structure = json.loads((root / "census-structure.json").read_bytes())
+    assert structure["census_sha256"] == file_digest(root / "census.json"), "publicationPreservesCensusBytes"
+    assert len(structure["rows"]) == 2, "wholeStreamPipelineStructure"
+    state = json.loads((root / "run.json").read_bytes())
+    assert state["publication"]["census_json_unchanged_by_publication"], "publicationPreservesCensusBytes"
     original = json.loads((root / "census.json").read_bytes())
     published = json.loads((root / "publication.json").read_bytes())
     assert published["rows"] == original["rows"], "wholeStreamPublicationHandoff"
@@ -83,7 +87,8 @@ def prepare_publication(repository, directory):
         cwd=repository, env=dict(os.environ, LEAN_PATH=str(root), LEAN_NUM_THREADS="1"))
     partial = directory / "partial-certified"
     assert execute(argparse.Namespace(output=str(partial), fixture_truth_export=str(report_path),
-        lean_report=None, prefix=finite, replay_of=None)) == 2
+        lean_report=str(repository / ".lake/build/stratalint/raw-lean-report.json"),
+        prefix=finite, replay_of=None, no_structure=True)) == 2
     summary = json.loads((partial / "census.json.summary.json").read_bytes())
     assert summary["status"] == "partial" and summary["requested_keys"] == 2
     assert summary["counts"]["accounted"] == summary["counts"]["certified"] == 1
