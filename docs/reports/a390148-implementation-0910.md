@@ -135,3 +135,38 @@ of completed proof, library exhaustiveness, build success or freeze yet.
   cast-nonzero condition. The successful proof uses no enumeration.
 - This is the preregistered intermediate witness. Its application to the
   positive primitive curvatures is the next step toward the radius theorem.
+
+## Lean unit 3: complete requested theorem
+
+- Hot-tree file check EXIT=0 for the full `primitive_sphere_radii_v3` signature.
+  `#print axioms` reports exactly propext, Classical.choice and Quot.sound.
+  The source contains no sorry, axiom declaration, or native_decide.
+- Set e=v3(L). Positivity permits padicValNat.mul on curvature_i*radius_i=L.
+  Thus a curvature is a mod-3 unit exactly when its radius has valuation e.
+  The unit count gives three such radii. If e=0, the product valuation identity
+  would force all four to have valuation e, contradicting the count. The
+  complement of this three-element set is a singleton. Primitivity of the
+  radii supplies a radius not divisible by 3, which must be that singleton.
+- Compiler repair: added the predicate type to an intermediate Finset membership
+  proof so its implicit filter could be inferred. No hypothesis was strengthened.
+- Public theorems (exactly one): `primitive_sphere_radii_v3`.
+  proof_shape: content. Direct frozen dependencies: [] (only Mathlib imports).
+  escape_witness: private `curvature_unit_count`, the count-three conclusion
+  for primitive integer curvatures satisfying the coefficient-3 equation.
+  admission_basis: escape-witness.
+- Four conditions of CLAUDE.md 3.2: (i) the main theorem explicitly applies
+  curvature_unit_count; its elaborated proof is in the dependency closure;
+  (ii) no frozen predecessor supplies this count, and the Mathlib finite-field
+  power identity alone gives no count without the new Descartes divisibility
+  argument; (iii) the curvature unit count is neither definitionally equal to
+  nor a restatement of the radius valuation theorem; (iv) the resulting count
+  is consumed to establish both the three-element valuation fiber and e>0,
+  so it remains on the live derivation path after reduction.
+- utility: none. All quantified radii are unbounded. The theorem is not bounded
+  enumeration, a checker, a numerical reduction or a certified finite instance;
+  the modular indicator is an application of the general finite-field theorem.
+  Other utility fields: not-applicable(kind=none).
+- New definitions `gcd4` and `sphereDescartes` state precisely common gcd and
+  the rational coefficient-3 equation. All auxiliary lemmas remain private.
+- Required project build, report production, Scribe checks and freeze still
+  pending; a file check is not reported as `make lean` success.

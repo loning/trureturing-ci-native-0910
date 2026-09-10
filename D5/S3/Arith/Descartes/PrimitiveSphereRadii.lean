@@ -113,4 +113,55 @@ private lemma curvature_unit_count (b : Fin 4 → ℕ) (hprim : gcd4 b = 1)
     card_pos.mpr ⟨i, mem_filter.mpr ⟨mem_univ i, hi⟩⟩
   omega
 
+/-- In a positive primitive spherical Descartes quadruple, exactly three radii have
+the same positive 3-adic order, and the remaining radius has order zero. -/
+theorem primitive_sphere_radii_v3 (r : Fin 4 → ℕ)
+    (hpos : ∀ i, 0 < r i) (hprim : gcd4 r = 1) (hdesc : sphereDescartes r) :
+    ∃ e : ℕ, 0 < e
+      ∧ (univ.filter (fun i => padicValNat 3 (r i) = e)).card = 3
+      ∧ ∀ i, padicValNat 3 (r i) = 0 ∨ padicValNat 3 (r i) = e := by
+  let e := padicValNat 3 (commonMultiple r)
+  have hval (i : Fin 4) : padicValNat 3 (curvature r i) + padicValNat 3 (r i) = e := by
+    rw [← padicValNat.mul (curvature_pos r hpos i).ne' (hpos i).ne',
+      curvature_mul_radius]
+  have hunit (i : Fin 4) : ¬3 ∣ curvature r i ↔ padicValNat 3 (r i) = e := by
+    rw [dvd_iff_padicValNat_ne_zero (curvature_pos r hpos i).ne', not_not]
+    have := hval i
+    omega
+  have hcount : (univ.filter fun i => padicValNat 3 (r i) = e).card = 3 := by
+    have hc := curvature_unit_count (curvature r) (curvature_primitive r hpos)
+      (curvature_equation r hpos hdesc)
+    simpa only [hunit] using hc
+  have he : 0 < e := by
+    by_contra h
+    have he0 : e = 0 := by omega
+    have hall (i : Fin 4) : padicValNat 3 (r i) = e := by
+      have := hval i
+      omega
+    have hfilter : (univ.filter fun i => padicValNat 3 (r i) = e) = univ :=
+      filter_eq_self.mpr fun i _ => hall i
+    rw [hfilter] at hcount
+    norm_num at hcount
+  have hother : (univ.filter fun i => ¬padicValNat 3 (r i) = e).card = 1 := by
+    have h := card_filter_add_card_filter_not (s := univ)
+      (fun i => padicValNat 3 (r i) = e)
+    simp only [hcount, card_univ, Fintype.card_fin] at h
+    omega
+  obtain ⟨j, hj⟩ := card_eq_one.mp hother
+  have hindex (i : Fin 4) (hi : padicValNat 3 (r i) ≠ e) : i = j := by
+    have hm : i ∈ univ.filter (fun i => ¬padicValNat 3 (r i) = e) :=
+      mem_filter.mpr ⟨mem_univ i, hi⟩
+    rw [hj] at hm
+    exact mem_singleton.mp hm
+  obtain ⟨k, hk⟩ := exists_three_unit r hprim
+  have hk0 := padicValNat.eq_zero_of_not_dvd hk
+  have hkj : k = j := hindex k (by omega)
+  refine ⟨e, he, hcount, fun i => ?_⟩
+  by_cases hi : padicValNat 3 (r i) = e
+  · exact Or.inr hi
+  · have hik : i = k := (hindex i hi).trans hkj.symm
+    exact Or.inl (hik ▸ hk0)
+
+#print axioms primitive_sphere_radii_v3
+
 end D5.S3.Arith.Descartes.PrimitiveSphereRadii
