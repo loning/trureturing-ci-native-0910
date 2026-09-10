@@ -11,29 +11,23 @@ from pipeline import frozen_keys
 from resources import run
 
 
-def reseal(census_path, receipt_path, report_path):
+def reseal(rows_path, receipt_path, report_path):
     """Synthetic negative authorities; never used by publication itself."""
     import hashlib
     from streaming import canonical, digest
     receipt = json.loads(receipt_path.read_bytes())
-    census = json.loads(census_path.read_bytes())
     report = json.loads(report_path.read_bytes())
     report_sha = "sha256:" + hashlib.sha256(report_path.read_bytes()).hexdigest()
-    census.update(head_sha=report["source_commit"], report_sha256=report_sha)
-    compact = copy.deepcopy(census["rows"])
-    for row in compact:
-        if row["class"] == "observed":
-            row["payload"]["import_scope"] = None
-    row_sha = "sha256:" + hashlib.sha256(b"".join(canonical(row) for row in compact)).hexdigest()
+    row_sha = "sha256:" + hashlib.sha256(rows_path.read_bytes()).hexdigest()
     inputs = receipt["inputs"]
     inputs.update(head=report["source_commit"], export_sha256=report_sha)
     programs = dict(inputs["programs"])
     emitter = digest([(name, programs["tools/lean-inspector/Census/" + name][7:])
                       for name in ["phases.py", "emission_cache.py", "streaming.py"]])
     inputs["expanded_rows_cache_key"] = digest([row_sha, inputs["module_names"], inputs["scopes"], emitter])
+    inputs["rows"] = {"artifact": "rows.jsonl", "sha256": row_sha}
     receipt.update(digest=digest(inputs), rows_sha256=row_sha)
     receipt_path.write_bytes(canonical(receipt))
-    census_path.write_bytes(canonical(census))
     return receipt["digest"]
 
 
@@ -67,7 +61,8 @@ def prepare_publication(repository, directory):
     assert state["publication"]["census_json_unchanged_by_publication"], "publicationPreservesCensusBytes"
     original = json.loads((root / "census.json").read_bytes())
     published = json.loads((root / "publication.json").read_bytes())
-    assert published["rows"] == original["rows"], "wholeStreamPublicationHandoff"
+    assert len(original["rows"]) == state["publication"]["accounted"], "wholeStreamPublicationHandoff"
+    assert "rows" not in published, "publicationReadsCompactRows"
     assert published["query_receipt_digest"] == json.loads((root / "receipt.json").read_bytes())["digest"]
     assert published["certificate"]["axioms"] == ["propext"]
     probe = write_module(root, "Absent", "import Lean\nimport CensusRun.Root\nopen Lean Elab Command\n"
@@ -80,8 +75,14 @@ def prepare_publication(repository, directory):
     driver = (root / "CensusPublish/Root.lean").read_text()
     second_driver = write_module(root, "SecondPublication", driver.replace(
         string(str(root / "publication.json")), string(str(second))))
-    run(["lake", "env", "lean", str(second_driver)], directory / "second", "process",
-        cwd=repository, env=dict(os.environ, LEAN_PATH=str(root), LEAN_NUM_THREADS="1"))
+    expanded = root / "census.json"
+    held = root / "census.held"
+    expanded.rename(held)
+    try:
+        run(["lake", "env", "lean", str(second_driver)], directory / "second", "process",
+            cwd=repository, env=dict(os.environ, LEAN_PATH=str(root), LEAN_NUM_THREADS="1"))
+    finally:
+        held.rename(expanded)
     assert second.read_bytes() == (root / "publication.json").read_bytes(), "artifact_determinism"
     run(["lake", "env", "lean", str(probe)], directory / "second-absent", "process",
         cwd=repository, env=dict(os.environ, LEAN_PATH=str(root), LEAN_NUM_THREADS="1"))
@@ -111,11 +112,11 @@ def check_publication_negatives(repository, directory, only=None):
         return change(original if bundle is None else bundle, "CensusRun.Range8_0", transform)
     driver = root / "CensusPublish/Root.lean"
     original_driver = driver.read_text()
-    response = root / "census.json"
+    response = root / "rows.jsonl"
     receipt_path = root / "receipt.json"
     receipt_bytes = receipt_path.read_bytes()
     pristine = response.read_bytes()
-    data = json.loads(pristine)
+    data = {"rows": [json.loads(line) for line in pristine.splitlines()]}
     report_path = directory / "report.json"
     report_bytes = report_path.read_bytes()
     report = json.loads(report_bytes)
@@ -133,7 +134,8 @@ def check_publication_negatives(repository, directory, only=None):
             write_module(root, module, contents)
         driver.write_text(driver_text.replace(string(str(root / "publication.json")), string(str(output))))
         if transport is not None:
-            response.write_text(json.dumps(transport) + "\n")
+            from streaming import canonical
+            response.write_bytes(b"".join(canonical(row) for row in transport["rows"]))
         if report_data is not None:
             report_path.write_text(json.dumps(report_data) + "\n")
         if label != "observedRelabelledCertified" and (transport is not None or report_data is not None):

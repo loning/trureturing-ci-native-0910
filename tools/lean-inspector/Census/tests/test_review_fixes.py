@@ -18,6 +18,7 @@ if __package__ in (None, ""):
 from Certificate import certificate_benchmark
 from Certificate import emission
 from Certificate import manifest
+from Certificate import handoff
 from tests.test_buckets import authorities
 
 
@@ -49,14 +50,17 @@ def fixture(directory, rows=None, report_ids=None):
     emitter = digest([(path.rsplit("/", 1)[1], sha[7:]) for path, sha in programs])
     inputs = {"head": "fixture-head", "export_sha256": report_sha, "module_names": [],
         "scopes": [["Fixture", []]], "programs": programs,
+        "rows": {"artifact": "rows.jsonl", "sha256": rows_sha},
         "expanded_rows_cache_key": digest([rows_sha, [], [["Fixture", []]], emitter])}
     receipt = {"inputs": inputs, "digest": digest(inputs), "rows_sha256": rows_sha}
     census = dict(head_sha="fixture-head", report_sha256=report_sha,
         schema="lean-information-disposition-census", query_verification="lean_streaming_query", rows=j2)
     census_path, receipt_path = directory / "census.json", directory / "receipt.json"
     census_path.write_bytes(canonical(census))
+    rows_path = directory / "rows.jsonl"
+    rows_path.write_bytes(b"".join(canonical(row) for row in compact))
     receipt_path.write_bytes(canonical(receipt))
-    return report_path, census_path, receipt_path, rows
+    return report_path, rows_path, receipt_path, rows
 
 
 class ReviewFixTests(unittest.TestCase):
@@ -81,9 +85,9 @@ class ReviewFixTests(unittest.TestCase):
             self.assertIn(str(receipt), driver, "wholeStreamPublicationHandoff")
             self.assertNotIn(" receipts ", driver, "wholeStreamPublicationHandoff")
             original = census.read_bytes()
-            edited = json.loads(original)
-            edited["rows"][0]["payload"]["query_completed"] = False
-            census.write_bytes(canonical(edited))
+            edited = [json.loads(line) for line in original.splitlines()]
+            edited[0]["payload"]["query_completed"] = False
+            census.write_bytes(b"".join(canonical(row) for row in edited))
             with self.assertRaisesRegex(ValueError, "whole_stream_rows_binding",
                                         msg="wholeStreamRowsBinding"):
                 manifest.emit(directory / "edited", report, census, receipt, "Fixture")
@@ -94,6 +98,52 @@ class ReviewFixTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "whole_stream_receipt_digest",
                                         msg="wholeStreamReceiptDigest"):
                 manifest.emit(directory / "receipt-edit", report, census, receipt, "Fixture")
+
+    def test_publication_reads_compact_rows(self):
+        with tempfile.TemporaryDirectory() as temp:
+            directory = pathlib.Path(temp)
+            report, rows, receipt, _ = fixture(directory)
+            opens = []
+            original_open = pathlib.Path.open
+
+            def guarded_open(path, *args, **kwargs):
+                self.assertNotEqual(path.name, "census.json", "publicationReadsCompactRows")
+                if path == rows:
+                    opens.append(path)
+                return original_open(path, *args, **kwargs)
+
+            with patch.object(pathlib.Path, "open", guarded_open):
+                manifest.emit(directory / "out", report, rows, receipt, "Fixture")
+                handoff.publish(directory / "publication.json", {"certificate": {"name": "Fixture"}})
+            self.assertEqual(opens, [rows], "publicationReadsCompactRows")
+            driver = (directory / "out/CensusPublish/Root.lean").read_text()
+            self.assertNotIn("census.json", driver, "publicationReadsCompactRows")
+
+    def test_compact_rows_linear_decoding(self):
+        work = []
+        for size in [65536, 131072, 262144]:
+            with tempfile.TemporaryDirectory() as temp:
+                directory = pathlib.Path(temp)
+                rows, _ = authorities([1])
+                rows[0]["theorem_name"] = ["str", ["anonymous"], "T" * size]
+                report, compact, receipt, _ = fixture(directory, rows)
+                decoded = []
+                original_decode = json.JSONDecoder.raw_decode
+
+                def count_decode(decoder, text, idx=0):
+                    decoded.append(len(text))
+                    return original_decode(decoder, text, idx)
+
+                with patch.object(json.JSONDecoder, "raw_decode", count_decode):
+                    result, _ = handoff.read(compact, receipt,
+                        "sha256:" + hashlib.sha256(report.read_bytes()).hexdigest(), "fixture-head")
+                self.assertEqual(result[0]["theorem_name"], rows[0]["theorem_name"])
+                self.assertEqual(len(decoded), 2, "compactRowsLinearDecoding")
+                self.assertEqual(sum(decoded), len(compact.read_bytes()) + len(receipt.read_bytes()),
+                                 "compactRowsLinearDecoding")
+                work.append(sum(decoded))
+        self.assertLessEqual(work[1], 2 * work[0], "compactRowsLinearDecoding")
+        self.assertLessEqual(work[2], 2 * work[1], "compactRowsLinearDecoding")
 
     def test_inventory_duplicate_before_malformed_report_entrypoint(self):
         with tempfile.TemporaryDirectory() as temp:

@@ -21,7 +21,9 @@ def main():
     cases = [
         ("handoff-ignores-row-digest", "handoff.py", "test_whole_stream_publication_entrypoint",
          "wholeStreamRowsBinding",
-         '    if (rows_sha != receipt["rows_sha256"] or inputs["expanded_rows_cache_key"] !=\n'
+         '    if (rows_sha != receipt["rows_sha256"] or\n'
+         '            inputs.get("rows") != {"artifact": "rows.jsonl", "sha256": rows_sha} or\n'
+         '            inputs["expanded_rows_cache_key"] !=\n'
          '            digest([rows_sha, inputs["module_names"], inputs["scopes"], emitter])):\n'
          '        raise ValueError("IE-C044 whole_stream_rows_binding")\n', ''),
         ("emitter-codec-before-duplicates", "emission.py",
@@ -34,6 +36,13 @@ def main():
          'result["wall_seconds"]', 'build["wall_s"]'),
         ("range-ignores-leaf-bound", "emission.py", "test_adaptive_leaf_bound", "adaptiveLeafBound",
          'depth < b or max(len(inv), len(rep)) > max_leaf_ids', 'depth < b'),
+        ("handoff-opens-expanded", "handoff.py", "test_publication_reads_compact_rows",
+         "publicationReadsCompactRows",
+         '    keys = []', '    pathlib.Path(rows_path).with_name("census.json").read_bytes()\n    keys = []'),
+        ("handoff-decodes-line-twice", "handoff.py", "test_compact_rows_linear_decoding",
+         "compactRowsLinearDecoding",
+         '                row = json.loads(line)',
+         '                json.loads(line)\n                row = json.loads(line)'),
     ]
     outcomes = []
     for label, filename, method, expected, old, new in cases:

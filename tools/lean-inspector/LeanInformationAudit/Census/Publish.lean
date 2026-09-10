@@ -168,7 +168,7 @@ def summaryFields (report : FrozenReport) (inventory : DispositionInventory)
 claim is over ids; Name binding and handoff metadata are elaborator obligations. -/
 elab "#disposition_census" &"projection" &"root" root:ident &"source" sourcePath:str &"report" reportPath:str
     &"head" head:str &"report_sha256" reportSha:str &"prefix" selectionPrefix:str
-    &"manifest" manifestName:ident &"report_keys" reportKeysName:ident &"census" censusPath:str
+    &"manifest" manifestName:ident &"report_keys" reportKeysName:ident &"rows" rowsPath:str
     &"receipt" receiptPath:str &"receipt_digest" receiptDigest:str
     &"certificate" certificate:ident " output " outputPath:str : command => do
   let destination := outputPath.getString
@@ -178,7 +178,7 @@ elab "#disposition_census" &"projection" &"root" root:ident &"source" sourcePath
   let selected ← ofExcept <| selectReport report bytes selectionPrefix.getString
   let manifestName := manifestName.getId.eraseMacroScopes
   let reportKeysName := reportKeysName.getId.eraseMacroScopes
-  let rows ← CensusTransport.readHandoff censusPath.getString receiptPath.getString receiptDigest.getString report
+  let rows ← CensusTransport.readHandoff rowsPath.getString receiptPath.getString receiptDigest.getString report
   ofExcept <| checkIdentityInputs report.headSha report.theorems rows
   ofExcept <| checkReportBinding head.getString reportSha.getString report
   phase destination "certificate_compile_kernel"
@@ -219,7 +219,7 @@ elab "#disposition_census" &"projection" &"root" root:ident &"source" sourcePath
     let same ← IO.Process.output { cmd := "/bin/test", args := #[reportPath.getString, "-ef", destination] }
     unless same.exitCode == 1 do throwError "census projection: output aliases report"
   phase destination "json_emission"
-  CensusTransport.publish censusPath.getString destination <| Json.mkObj [
+  CensusTransport.publish destination <| Json.mkObj [
     ("certificate", certificateJson), ("query_receipt_digest", toJson receiptDigest.getString)]
   phase destination "certificate_compile_kernel"
   withEnv staged <| elabCommand (← `(command| #print axioms $(mkIdent certificateName)))

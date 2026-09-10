@@ -271,7 +271,7 @@ def execute(options):
         census_before_publication = file_digest(census)
         step([sys.executable, str(repository / "tools/lean-inspector/Census/Certificate/manifest.py"),
               "--directory", str(directory), "--report", str(report_path),
-              "--census", str(census), "--receipt", str(directory / "receipt.json"),
+              "--rows", str(directory / "rows.jsonl"), "--receipt", str(directory / "receipt.json"),
               "--prefix", options.prefix], "certificate_manifest")
         step([lean_binary, "-DmaxRecDepth=100000", "-DmaxHeartbeats=0",
               str(directory / "CensusPublish/Root.lean")], "certificate_publication")
