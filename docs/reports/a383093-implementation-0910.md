@@ -86,3 +86,14 @@
   m=t•u、D=t*lcm(u)、u capable；使用 Mathlib.exists_smul_of_dvd_count，未重证它。
   lcm_smul/canonical/admits_smul 同批通过。这是无界构造，非有限枚举进展。
 - 定义尚在组装：下一步为块多重集编码证明、重量与计数双射。主目标尚未证明。
+
+## Lean 片段 2：重量与计数双射
+
+- 当前模块热树 lake env lean EXIT=0。已构造从除数 d 上的 capable 分拆到
+  (n/d) 倍重数、公共和 (n/d)*L 的系统编码的映射，并证明 injective/surjective。
+- injective 使用支撑 lcm 不变先恢复缩放因子，再由重量恢复 d，最后取消非零 nsmul。
+  surjective 使用 normalize 及 t*u.sum=n；没有把目标除数和写入计数定义。
+- 私有 encoded_divisor_sum 已证明编码系统的 Nat.card 等于除数和；
+  下一步将右侧改接独立的公共和/块值多重集定义，证明展开编码等价。
+- 编译修复：omega 不处理交换次序的乘积，改用 mul_comm；依赖 subtype 的 sum 改显式
+  Finset.sum_subtype；pair projection 的 rewrite 改精确使用已有等式。无数学目标削弱。
