@@ -49,6 +49,11 @@ triage: anchor
 | [A398026](https://oeis.org/A398026) | 5-convex多联骨牌按半周长计数的生成函数等于条目给定的F_5。 | 3 | unknown | low | yes | note-only |
 | [A398027](https://oeis.org/A398027) | 6-convex多联骨牌按半周长计数的生成函数等于条目给定的F_6。 | 3 | unknown | low | yes | note-only |
 | [A398028](https://oeis.org/A398028) | 7-convex多联骨牌按半周长计数的生成函数等于条目给定的F_7。 | 3 | unknown | low | yes | note-only |
+| [A399456](https://oeis.org/A399456) | 任何平面定宽凸体的全等不重叠打包密度都不超过所给 Reuleaux 三角形密度。 | 3 | open | low | yes | note-only |
+| [A399385](https://oeis.org/A399385) | 奇阶 off-diagonally symmetric ASM 的个数等于条目给出的阶乘乘积。 | out | published | low | yes | drop |
+| [A399381](https://oeis.org/A399381) | a₋(n)=min{k>0:kn−1平方自由} 对所有n≥1存在且无界。 | out | published | med | yes | drop |
+| [A399382](https://oeis.org/A399382) | a₊(n)=min{k>0:kn+1平方自由} 的取值覆盖所有正整数。 | 1 | unknown | med | yes | note-only |
+| [A399369](https://oeis.org/A399369) | 正进位差相等且算术导数相等的不同整数对只有(28,16)。 | 3 | open | low | yes | note-only |
 
 ## 逐条证据
 
@@ -115,3 +120,23 @@ triage: anchor
 ### A398028
 
 精确目标：令c_k(n)计周长2n、只按平移等价的fixed k-convex多联骨牌；行列凸且任意两格间存在至多k次转弯的内部单调格路。固定k=7，∀n≥0,c_k(n)=[x^n]F_k(x)，其中 F_7(x)=x^2*(24*x^10 - 198*x^9 + 867*x^8 - 2476*x^7 + 4072*x^6 - 3896*x^5 + 2251*x^4 - 798*x^3 + 170*x^2 - 20*x + 1) / ((1-2*x) * (1-4*x)^2 * (2*x^2 - 4*x + 1) * (2*x^4 - 16*x^3 + 20*x^2 - 8*x + 1)) - x^4*(7*x^3 - 14*x^2 + 7*x - 1)^2 / ((1-4*x)^(3/2) * (1-2*x) * (2*x^2 - 4*x + 1) * (2*x^4 - 16*x^3 + 20*x^2 - 8*x + 1))，形式平方根取常数项1。文献裁决：完整读本条及全部直引；reader3打开 Conway–Guttmann https://arxiv.org/pdf/2606.13845v1 （EPTCS445，2026，pp74–86）§3.5及§4.2，正文和摘要仍称conjectured，条目后来却明确报告Prellberg已证明、正在审查；本轮搜索未取得该证明，故unknown、note-only。未取得的Prellberg证明页标ASSUMED-UNVERIFIED；不能因论文已发表就标published，也不能无视后来已证报告而派open席。bind-only 疑似声明：Mathlib `Polynomial.Chebyshev.T_add_two`、`U_add_two` 只给Chebyshev递推，`PowerSeries.coeff_mul` 只做代数系数运算；D5/Mathlib按polyomino和本组A号未见连到计数的具名声明（none限本次），low。数值方案实际逐条以精确代数级数展开给定F至x^24，n=0..24的25项DATA全吻合；这是公式回归，未独立枚举多联骨牌。便宜的独立核验应从小半周长B的行列区间形状枚举、路径方向DP做起，一次累积k=3..7；不把论文B=25报告的60CPU小时/800GB运行称便宜。拟议逃逸：先取得Prellberg证明并核对本k映射；正文通式Q₂的x²与本条特例和OEIS程序x⁴有排印差异，本目标明确取已列特例，不能静默替换。停止条件：取得覆盖本k的证明即published/drop，或独立计数差异先排除定义与排印问题；当前不派。相同k-convex生成函数家族五条合一组，若补来源只需一席，当前零派席。 xref 预检全部直接 A 号（完整读；占位另注）：A005436、A128611、A398024、A398025、A398026、A398027。
+
+### A399456
+
+精确目标：归一化宽为1，对任意定宽紧凸体K及局部有限、内部不相交的全等副本打包，圆盘面积占比的上极限≤D=2(π−√3)/(√15+√7−2√3)，并有已给Reuleaux构形达到D。文献裁决：完整读本条和全部直引；reader1下载 Resnikoff https://arxiv.org/pdf/1504.06733 ，摘要及pp32–33明确区分proves a certain packing density与conjecture maximum for any curve of constant width。故最大性仍open，不能因密度公式有证明就drop全目标。Wikipedia页面未打开，ASSUMED-UNVERIFIED。bind-only 疑似声明：Mathlib `Real.sq_sqrt` 只化简根式；D5/Mathlib按constant-width/Reuleaux/packing查未见此全类最优密度定理（none限本次），low。数值方案实际120位精度算D，90位DATA全部吻合；只验常数，未搜索任何凸体或打包。便宜的进一步探针是固定有限Fourier形状和格参数，解析算面积及支撑距离；它只测受限族，不能证全类最优。拟议逃逸：先找全类上界或精确超D反例；若改为格打包须另列受限目标，当前无短逃逸，note-only。停止条件：全类上界证明或严格反例；小数一致、一个最密候选构形不算完成。同族合派：独立一族、零当前席，常数的五个直引只是构成量。 xref 预检全部直接 A 号（完整读；占位另注）：A010465、A010469、A010472、A060708、A202473。
+
+### A399385
+
+精确目标：n≥0，阶2n+1的ASM（元素−1/0/1、每行列非零交替且总和1）满足转置对称且对角线上恰一个非零元，其个数=2^(n−1)(3n+2)!/(2n+1)!·∏_{i=1}^n(6i−2)!/(2n+2i+1)!；n=0按有理数2^(−1)解释。不是反对角线对称。文献裁决：完整读本条与两条直引；打开 Behrend–Fischer–Koutschan https://arxiv.org/pdf/2309.08446 ，主席亲核§8.7式(8.36)及由(8.23)、(8.21)、(8.22)、(8.26)给出的证明推导，正文明确此前Conj15已由Kumari Cor4.4证明。Kumari的EJC137(2026)104401出版元数据已核对，原期刊页 https://doi.org/10.1016/j.ejc.2026.104401 未全文打开，ASSUMED-UNVERIFIED；裁决承重为实际读到的BFK证明，而非元数据。bind-only 疑似声明：Mathlib `Nat.factorial_succ` 只给阶乘递推，D5/Mathlib按alternating-sign/OSASM未见目标计数声明（none限本次），low；已知文献证明仍须drop。数值方案实际精确有理阶乘乘积算n=0..13，14项DATA全等且分母均1；未独立枚举矩阵。便宜回归形态为相邻乘积比或有理约分，不能把公式展开当枚举证明。拟议逃逸：本公式无，不能随意借同文其他渐近猜想重派；停止条件是全目标公开证明已匹配。同族合派：ASM单例、零席。 xref 预检全部直接 A 号（完整读；占位另注）：A005156、A005163。
+
+### A399381
+
+精确目标：∀n≥1,∃k≥1,Squarefree(kn−1)，并∀M,∃n≥1,a₋(n)>M；自然数减法只在kn≥1使用，a₋(1)=2。文献裁决：完整读本条与直引，Robert Israel的2026-09-07评论已给Dirichlet存在性和CRT无界性证明：给j=1..M选互异且不除j的素数p_j，令jn≡1 modp_j²，所有前M候选都非平方自由。published在此指公开完整OEIS论证，不是期刊身份。所谓“many values”的移位相等不是全称猜想，原文自带a₋(26)=2<a₊(24)=3的反例。bind-only 疑似声明：Mathlib `Nat.chineseRemainderOfFinset`、`Nat.forall_exists_prime_gt_and_modEq`、`Nat.squarefree_iff_prime_squarefree` 是最近具名支撑；尚未找到本min目标exact声明，med，但文献证明已足够停止。数值方案实际共用平方因子筛，n=1..100000按k递增找到最小值（窗口内k≤7，搜索上限10没有未决），100项DATA全等；首现1..7的n为2、1、5、113、723、3553、62305。便宜形态一次标记p²倍数后O(1)查询，或直接用CRT构造无界见证，无需每个kn试除全部平方。拟议逃逸：当前存在/无界目标无；停止条件已触发，不能偷换为“每个值都出现”并称它也已由无界证明。同族合派：与A399382共用±平方自由族，当前本条零席。A399639预检取得完整JSON，但仅allocated for Aidan Markey、data为空；镜像404，数学条目不可读，ASSUMED-UNVERIFIED，不能声称已审读其数学内容，其余直引全读。 xref 预检全部直接 A 号（完整读；占位另注）：A005117、A007424、A008966、A399382、A399639。
+
+### A399382
+
+精确目标：∀K≥1,∃n≥1,a₊(n)=K，等价Kn+1平方自由且∀1≤j<K,jn+1非平方自由。文献裁决：完整读本条及直引，Greathouse的2026-08-28评论断言每个正值出现但没有给证明。A399381的Dirichlet存在性也覆盖+号；其CRT无界性不是满射性证明，不能将整条都说成未证，也不能把取值断言当已读证明。取值主目标证明身份unknown，绝非因“有人写过”而drop；移位many-values无精确量词且24/26有反例，不派。bind-only 疑似声明：`Nat.chineseRemainderOfFinset`、`Nat.forall_exists_prime_gt_and_modEq`（素数同余类定理）及平方自由判据最接近，med；不是看到mathlib有CRT就认定本满射目标已被一个声明支配。数值方案实际平方因子筛n≤100000，100项DATA全等；1..7首现n为1、3、24、49、6137、887、60923，未重跑来源到10^6的值8。便宜形态为与A399381共用筛，不逐数作昂贵分解。拟议逃逸候选：固定K，对j<K选互异素数p_j>K并CRT强制jn≡−1 modp_j²；检查Kn+1所处模K∏p_j²的剩余类互素后用Dirichlet令它为素数，从而强制最小值恰K。这是本轮提出、未编译的构造路线，尚未定位Greathouse断言的证明来源及是否被现成模式定理支配，故note-only。停止条件：取得该精确构造的公开证明即published/drop；若只剩CRT/Dirichlet绑定而无新数学义务则不派；无界或有限首现表不冒充满射。同族合派：±族如补来源共一组，本条不另派实施席。 xref 预检全部直接 A 号（完整读；占位另注）：A005117、A007424、A076986、A399381。
+
+### A399369
+
+精确目标：令R(n)把素因子指数按素数基数逐位进位（指数e_p≥p时将p的p份换成下一素数的一份，直到每位小于p），D(n)=n−R(n)=A376418(n)，δ(n)=Σ_{p^e∥n}e(n/p)。对1≤j<k且D(j)=D(k)>0，δ(j)=δ(k)⇒(k,j)=(28,16)。这保留原文such pair的正进位条件；若去掉>0，素数(3,2)就以D=0、δ=1反驳字面加强版。Conj1只比较A399370给的最大j，Conj2的正进位版本允许任何j，不可混同。文献裁决：完整读本条及所有直引，A379240明确说明Adamczewski arXiv2608.11941所述AI反例误读了A376418；reader1下载并读该PDF相关论述，不能将错误模型的反例记为本命题公开反驳。当前正进位目标未见证明，open。bind-only 疑似声明：Mathlib `Nat.factorization_mul` 是指数加法支撑，D5的primorial上界定理不处理此进位归一化；按本号及arithmetic-derivative/primorial检索无目标声明（none限本次），low。数值方案实际用最小素因子筛至100000、指数数组向下一素数进位，再按(D,δ)哈希存全部较小j；只发现(28,16)，两者(D,δ)=(7,32)。A399369得到4073项、前60项DATA全等，A376418与A003415前缀也全等。便宜形态是哈希碰撞，避免对每个k重扫所有j。拟议逃逸：按首次进位位数与导数变化给唯一性约束，尚无控制所有素数支持的短证据，note-only。停止条件：第二个正D碰撞即反驳；零纤维例子只反驳错误去域版本；有限无碰撞不立唯一性。同族合派：与A399370/A379240共用一族，原强弱目标最多共一探针、当前零席。 xref 预检全部直接 A 号（完整读；占位另注）：A003415、A100716、A376418、A379240、A399369、A399370。
