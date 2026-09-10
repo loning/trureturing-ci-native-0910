@@ -174,3 +174,53 @@ its proof has repeated steps that lose the minFac relation. It has not been
 compiled here and is `ASSUMED-UNVERIFIED`, not admitted as a usable library
 proof. The known mathematical prerequisite is attributed to A036236.
 Unopened search hits and fork copies remain `ASSUMED-UNVERIFIED`.
+
+## Main theorem checkpoint
+
+`a374911_eq_four (n : ℕ) : seq n = 4 ↔ n = 3 ∨ n = 9` passed the warm
+Lean check (EXIT=0). Log: attempt-1/main-theorem-check.log. All four public
+theorems have exactly `[propext, Classical.choice, Quot.sound]` as their
+printed axiom closure. The definition is still the guarded original recursion.
+The proof excludes left summand values one and two, forces n to be a positive
+power of three, and applies the higher-power exclusion above. The two reverse
+cases reduce privately in this theorem; no finite-instance declaration is
+exported. No full-project build, freeze or PR has yet been claimed.
+
+### Final declaration accounting
+
+All four public theorems have `proof_shape: content`,
+`direct_frozen_dependencies: []` (no imported D5 modules), and module
+`admission_basis: escape-witness`. The definition `seq` is the common recursive
+object, not a theorem. Its helper declarations are private.
+
+| Public theorem | Named escape_witness | Consumer → prerequisite |
+| --- | --- | --- |
+| `seq_eq_one` | `seq_pos`: positivity for every natural index by strong induction | `seq_eq_one → seq_pos` |
+| `seq_eq_two` | `seq_pos`: positivity forces both recursive summands to one | `seq_eq_two → seq_pos` (also through `seq_eq_one`) |
+| `seq_eq_three` | `two_pow_self_mod_ne_one`: smallest-prime/order exclusion for every n > 1 | `seq_eq_three → two_pow_self_mod_ne_one` |
+| `a374911_eq_four` | `three_pow_sub_one_eq_two_pow`: k > 0 and 3^k − 1 = 2^j force k = 1 or 2 | `a374911_eq_four → three_pow_sub_one_eq_two_pow` |
+
+CLAUDE 3.2 four-condition audit, individually applicable to the witnesses named
+in the table: (i) each is invoked in the elaborated proof's transitive constant
+closure; `seq_pos` is consumed in the arithmetic comparison, the order exclusion
+in the summand contradiction, and the final exponent restriction in the final
+case split. (ii) Positivity requires a new strong induction on the recursive
+function; the order exclusion constructs a least-prime contradiction; the
+exponent restriction combines parity, two-adic LTE and a new inductive growth
+bound. No frozen premise provides these facts by projection or instantiation.
+(iii) Positivity, a modular non-equality, and the mixed-power restriction are
+neither definitionally equal to their consuming classification nor restatements
+of it. (iv) The mentioned comparisons, contradiction and case split are live
+uses, with no discarded pair component or dead local fact; removing each named
+witness leaves the stated branch unsupported by mere rewriting of frozen facts.
+Mathlib's general results are cited directly; they supply arithmetic ingredients,
+not any of the recursive classifications.
+
+`utility: none`: every public theorem quantifies over all natural indices and
+classifies a level set. No public result is a bounded enumeration, checker,
+numeric reduction, or certified finite instance. The defining function is a
+well-founded recurrence; numerical reverse branches are local parts of the
+unbounded theorem. All other utility fields are not-applicable(kind=none).
+
+Pre-Blueprint capacity check: Congruence has 40 files (adding source and emitted
+mirror gives 42); Library/Arith already has 48, so no new file will go there.

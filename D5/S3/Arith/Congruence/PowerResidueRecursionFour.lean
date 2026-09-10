@@ -183,8 +183,50 @@ private theorem three_pow_sub_one_eq_two_pow {k j : ℕ} (hk : 0 < k)
     rw [hm, Nat.add_mod, Nat.mod_eq_zero_of_dvd hd] at hmod
     norm_num at hmod
 
+/-- The complete classification asked for in OEIS A374911. -/
+theorem a374911_eq_four (n : ℕ) : seq n = 4 ↔ n = 3 ∨ n = 9 := by
+  constructor
+  · intro hs
+    have hn : 1 < n := by
+      have hn₀ : n ≠ 0 := by intro h; simp [h, seq_zero] at hs
+      have hn₁ : n ≠ 1 := by intro h; simp [h, seq_one] at hs
+      omega
+    have hr := seq_rec (by omega : n ≠ 0)
+    have h₂ := seq_pos (2 ^ n % n)
+    have h₃ := seq_pos (3 ^ n % n)
+    have hl₁ : seq (2 ^ n % n) ≠ 1 := by
+      intro hl
+      obtain ⟨k, _, hk⟩ := (Nat.dvd_prime_pow Nat.prime_two).mp
+        (Nat.dvd_of_mod_eq_zero ((seq_eq_one _).mp hl))
+      have hkpos : 0 < k := by
+        by_contra h
+        have hz : k = 0 := by omega
+        simp only [hz, pow_zero] at hk
+        omega
+      have := (seq_eq_three n).mpr ⟨k, hkpos, hk⟩
+      omega
+    have hl₂ : seq (2 ^ n % n) ≠ 2 := by
+      intro hl
+      exact two_pow_self_mod_ne_one hn ((seq_eq_two _).mp hl)
+    have hl : seq (2 ^ n % n) = 3 := by omega
+    have hz := (seq_eq_one _).mp (show seq (3 ^ n % n) = 1 by omega)
+    obtain ⟨k, _, hk⟩ := (Nat.dvd_prime_pow Nat.prime_three).mp
+      (Nat.dvd_of_mod_eq_zero hz)
+    have hkpos : 0 < k := by
+      by_contra h
+      have hz : k = 0 := by omega
+      simp only [hz, pow_zero] at hk
+      omega
+    obtain ⟨j, _, hj⟩ := (seq_eq_three _).mp hl
+    rw [hk, two_pow_self_mod_three_pow] at hj
+    rcases three_pow_sub_one_eq_two_pow hkpos hj with h | h
+    · left; simpa [h] using hk
+    · right; simpa [h] using hk
+  · rintro (rfl | rfl) <;> norm_num [seq_rec, seq_zero]
+
 #print axioms seq_eq_one
 #print axioms seq_eq_two
 #print axioms seq_eq_three
+#print axioms a374911_eq_four
 
 end D5.S3.Arith.Congruence.PowerResidueRecursionFour
