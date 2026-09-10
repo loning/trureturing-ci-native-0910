@@ -226,3 +226,10 @@ signed_nonsquashing_diff→c 分支引理→paperfoldVariant.eq_def。
 计数模块 deposit-uncovered EXIT=0 / 82.623293秒；ledger-align --add 已写入
 Golden/Frozen/state/D5/S1/Recurrence/Partitions/NonsquashingCounting.lean.json。
 见 deposit-counting.log 与 deposit-counting-receipt.json；未生成或覆盖 atom。
+
+差分模块 deposit-uncovered EXIT=0 / 82.617218秒；ledger-align added=1、conflicts=0。
+两个模块均按 NO_ATOM 路径首冻，自动生成的 Freeze 事件与状态片一并提交。
+
+NonsquashingCounting 模块 pin=sha256:978be9cb51fc05c6ba2da4932ca0f8f598d2d56690823b89f7d7057488275680；Freeze event=sha256:6fae1b25abf98cb5e6448b5454008d2fc78cd5094cd258d5600dd872f0af17a0。
+
+NonsquashingPaperfold 模块 pin=sha256:ffa0bdff8e180811684e2595da191b7be46d327af4a4f04b3a1999756be53a26；Freeze event=sha256:133c77e3702a3a8e5304461bb0802cc516baf5a345c21e32e19fbedb789f4c59。
