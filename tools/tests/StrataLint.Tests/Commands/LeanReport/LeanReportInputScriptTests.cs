@@ -431,70 +431,27 @@ public sealed partial class LeanReportInputScriptTests
             Write(TestSourcePath, "// fixture\n");
             Write(BlueprintSourcePath, "// fixture\n");
             Write(ScribeSourcePath, "// fixture\n");
-            Write(
-                PairScriptPath,
-                File.ReadAllText(
-                    Path.Combine(
-                        TestRepositoryLayout.FindRoot(),
-                        "tools", "scripts", "lean-report-pair.sh"),
-                    Encoding.UTF8));
-            Write(
-                SupervisorScriptPath,
-                File.ReadAllText(
-                    Path.Combine(
-                        TestRepositoryLayout.FindRoot(),
-                        "tools", "scripts", "report", "report-supervisor.sh"),
-                    Encoding.UTF8));
-            Write(
-                CiBaselineScriptPath,
-                File.ReadAllText(
-                    Path.Combine(
-                        TestRepositoryLayout.FindRoot(),
-                        "tools", "scripts", "report", "lean-report-ci-baseline.sh"),
-                    Encoding.UTF8));
+            // Fixed synthetic inputs exercise the canonical producer's dependency walk.
+            Write(PairScriptPath,
+                "#!/usr/bin/env bash\n"
+                + "\"$SCRIPT_DIR/report/report-supervisor.sh\"\n"
+                + "\"$SCRIPT_DIR/report/lean-report-input.sh\"\n"
+                + "\"$SCRIPT_DIR/report/lean-report-cache.sh\"\n"
+                + "\"$REPO_ROOT/tools/scripts/worktree/lean-cache-ensure.sh\"\n");
+            Write(SupervisorScriptPath,
+                "#!/usr/bin/env bash\nsource \"$REPOSITORY_ROOT/tools/scripts/lib/resource-observation-lib.sh\"\n");
+            Write(CiBaselineScriptPath, "#!/usr/bin/env bash\n");
             Write(CacheEnsureScriptPath, "#!/usr/bin/env bash\n");
             Write("tools/scripts/report/lean-report-cache.sh", "#!/usr/bin/env bash\n");
-            Write(
-                CachePublishScriptPath,
-                File.ReadAllText(
-                    Path.Combine(
-                        TestRepositoryLayout.FindRoot(),
-                        "tools", "scripts", "worktree", "lean-cache-publish.sh"),
-                    Encoding.UTF8));
-            Write(
-                ResourceObservationLibraryPath,
-                File.ReadAllText(
-                    Path.Combine(
-                        TestRepositoryLayout.FindRoot(),
-                        "tools", "scripts", "lib", "resource-observation-lib.sh"),
-                    Encoding.UTF8));
+            Write(CachePublishScriptPath,
+                "#!/usr/bin/env bash\nsource \"$SCRIPT_DIR/lean-cache-input.sh\"\n");
+            Write(ResourceObservationLibraryPath, "#!/usr/bin/env bash\n");
             Write(ToolchainInstallerPath, "#!/usr/bin/env bash\n");
-            Write(
-                JudgeContentAddressPath,
-                File.ReadAllText(
-                    Path.Combine(
-                        TestRepositoryLayout.FindRoot(),
-                        "tools", "scripts", "workflow", "judge-content-address.sh"),
-                    Encoding.UTF8));
+            Write(JudgeContentAddressPath, "#!/usr/bin/env bash\n");
             Write(ScribeContentChecksPath, "#!/usr/bin/env bash\n");
-            Write(
-                WorkflowPath,
-                File.ReadAllText(
-                    Path.Combine(
-                        TestRepositoryLayout.FindRoot(),
-                        ".github", "workflows", "ci.yml"),
-                    Encoding.UTF8));
-            // Copied entrypoints can reach more scripts; retain the explicit synthetic inputs.
-            var sourceRoot = TestRepositoryLayout.FindRoot();
-            foreach (var path in Directory.EnumerateFiles(
-                Path.Combine(sourceRoot, "tools", "scripts"), "*.sh", SearchOption.AllDirectories))
-            {
-                var relative = Path.GetRelativePath(sourceRoot, path);
-                if (!File.Exists(Path.Combine(repository, relative)))
-                    Write(relative, File.ReadAllText(path, Encoding.UTF8));
-            }
-            Write(".github/scripts/harness-gate.sh", File.ReadAllText(
-                Path.Combine(sourceRoot, ".github", "scripts", "harness-gate.sh"), Encoding.UTF8));
+            Write(WorkflowPath,
+                $"jobs:\n  lean-inspect:\n    run: {ToolchainInstallerPath} {JudgeContentAddressPath}"
+                + $" {ScribeContentChecksPath} {CiBaselineScriptPath}\n  baseline-admission:\n");
             Write("Directory.Build.props", "<Project />\n");
             Write("Directory.Packages.props", "<Project />\n");
             Write(CliProjectPath, "<Project Sdk=\"Microsoft.NET.Sdk\" />\n");

@@ -99,7 +99,7 @@ public sealed class ReportCacheOmissionProbeTests
         Assert.Single(fixture.Calls);
         Assert.Contains("case=O3 restore=unchanged", Diagnostics(result));
         Assert.Contains("coverage=verified", Diagnostics(result));
-        Assert.Equal("rebuilt dependency", ScriptHarnessScratch.ReadScratchText(fixture.PathFor("other-output")));
+        Assert.Equal("rebuilt dependency", TemporaryFileSystem.File.ReadAllText(fixture.PathFor("other-output")));
         fixture.AssertRestored();
     }
 
@@ -170,12 +170,12 @@ public sealed class ReportCacheOmissionProbeTests
             foreach (var path in new[] { Cli + "StrataLint.dll", Cli + "StrataLint.runtimeconfig.json", Cli + "other.dll", TestDll })
             {
                 Write(path, "original " + path);
-                original.Add(PathFor(path), ScriptHarnessScratch.ReadScratchBytes(PathFor(path)));
+                original.Add(PathFor(path), TemporaryFileSystem.File.ReadAllBytes(PathFor(path)));
             }
             foreach (var suffix in new[] { "", ".sha256", ".input.attestation", ".provenance.json", ".materials.zip" })
             {
                 ScriptHarnessScratch.WriteScratchText(report + suffix, "seed " + suffix);
-                original.Add(report + suffix, ScriptHarnessScratch.ReadScratchBytes(report + suffix));
+                original.Add(report + suffix, TemporaryFileSystem.File.ReadAllBytes(report + suffix));
             }
             Stub(Path.Combine(bin, "git"), "if [[ \"${@: -1}\" == HEAD^1 ]]; then printf '%040d\\n' 1; else printf '%040d\\n' 1 2 3; fi");
             Stub(PathFor("tools/scripts/report/lean-report-input.sh"), "exit 0");
@@ -261,7 +261,7 @@ public sealed class ReportCacheOmissionProbeTests
             foreach (var (path, bytes) in original)
             {
                 if (!checkSeed && path.StartsWith(report, StringComparison.Ordinal)) continue;
-                Assert.Equal(bytes, ScriptHarnessScratch.ReadScratchBytes(path));
+                Assert.Equal(bytes, TemporaryFileSystem.File.ReadAllBytes(path));
             }
             var receipts = ScriptHarnessScratch.ReadScratchText(temporary, "evidence/omissions.txt");
             foreach (var name in new[] { "StrataLint.dll", "StrataLint.runtimeconfig.json", "StrataLint.EngineeringScope.Tests.dll" })
@@ -284,7 +284,7 @@ public sealed class ReportCacheOmissionProbeTests
             ScriptHarnessScratch.EnsureDirectory(Path.GetDirectoryName(path)!);
             ScriptHarnessScratch.WriteExecutableStub(path, body);
             // The real shell owners have no UTF-8 BOM before their shebang.
-            ScriptHarnessScratch.WriteScratchText(path, ScriptHarnessScratch.ReadScratchText(path));
+            ScriptHarnessScratch.WriteScratchText(path, TemporaryFileSystem.File.ReadAllText(path));
         }
 
         public void Dispose() => temporary.Dispose();
