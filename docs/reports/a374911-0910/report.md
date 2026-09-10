@@ -58,3 +58,51 @@ No all-natural classification, independent numerical verification, exhaustive
 literature search, successful build, freeze, PR, or independent review is claimed.
 Pages not actually opened are `ASSUMED-UNVERIFIED`. Finite checks will not be
 reported as progress on the unrestricted theorem.
+
+## Search and cache checkpoint
+
+- `make lean-cache-ensure` EXIT=0, real 18.70 seconds. `LEAN_CACHE`:
+  `status=seeded`, `method=clonefile`, donor `/Users/chronoai/trureturing`,
+  `clonefile_attempts=1`, `stamp_miss=null`, both project and Mathlib warm,
+  missing Mathlib oleans=0. Full log is in the attempt directory.
+- Manifest confirms Mathlib commit `db584cd6d46c92f209a44c0f1c829460d327499d`.
+- Read A091259's complete public API, the general affine-conjugacy and
+  invariant-set order signatures in CyclicPlaneTwelveMultiplierObstruction,
+  and all public theorem names in the minFac search hits. General lemmas there
+  concern divisor pairs, Jordan cototients, or invariant finite sets; no exact
+  primitive for this recurrence. Read GoldenCell5040Congruence in full: its
+  order-to-congruence helper is private, and its public theorem is the six-element
+  5040 cell. No reusable exact public hit was found in this searched scope.
+- Mathlib search/read hits: `Nat.coprime_of_lt_minFac`, `Nat.dvd_prime_pow`,
+  `ZMod.orderOf_dvd_card_sub_one`, `orderOf_dvd_iff_pow_eq_one`,
+  `padicValNat.pow_sub_pow`, `padicValNat.pow_add_pow`,
+  `padicValNat.pow_two_sub_one_ge`, `padicValNat_dvd_iff_le`,
+  `Nat.ModEq.pow_totient`, `Nat.totient_prime_pow_succ`. These will be reused.
+  The guessed Pseudoprime.lean path was absent; located and searched FermatPsp.lean.
+- Authenticated GitHub code search `A374911 language:Lean`: total_count=0.
+  arXiv API `all:A374911`: totalResults=0. This establishes network access and
+  bounded non-hits, not global absence.
+- Opened the full OEIS text entry A374911: it explicitly asks “Are 3 and 9 the
+  only solutions to a(n) = 4?” The original recurrence and zero case match.
+  Opened its three direct xrefs A000079, A015910, A066601. No target proof in
+  those entries. The first broad A000079 display was truncated; the missing
+  relevant links were read separately.
+- Followed A015910 to A036236, which explicitly gives Max Alekseyev's
+  smallest-prime-divisor proof of `2^n mod n ≠ 1` and Firoozbakht's formula
+  `2^(3^k) = 3^k - 1 (mod 3^k)`. These are known prerequisites, not novelty claims.
+- Opened Coons–Winning's “Powers of Two Modulo Powers of Three” landing page
+  linked from A000079. Its abstract concerns finer mod-six structure and
+  Stoneham normality. Full paper not yet read, `ASSUMED-UNVERIFIED`.
+- Spec A5.1 gives `utility: none` for a noncomputational general classification.
+  Arith is registered at S3; proposed Congruence bucket has 20 files before addition.
+
+## Preregistered route revision 2 (before Lean proof)
+
+The newly read A036236 formula shortens the proposed higher-power exclusion.
+Use the odd-prime **addition** LTE (`padicValNat.pow_add_pow`) to obtain
+`3^k ∣ 2^(3^k) + 1`, hence its remainder is `3^k - 1` for positive `k`.
+Then classify `3^k - 1 = 2^j` by parity/mod-eight and factorization (or the
+two-adic LTE already searched). This is a revision of the preregistered
+arithmetic witness, recorded before trying it. The original subtraction-LTE
+route remains unverified and is no longer the implementation plan. The user’s
+stop condition at smallest-prime exclusion or LTE remains in force.
