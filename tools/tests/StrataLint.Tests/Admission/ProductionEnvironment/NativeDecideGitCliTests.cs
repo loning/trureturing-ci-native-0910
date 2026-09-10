@@ -110,6 +110,7 @@ public sealed partial class ProductionEnvironmentTests
         RawLeanReportArtifact.WriteFile(report, snapshot, LeanAxiomReport.Create(fixture.Reports));
         Assert.Empty(RawLeanReportArtifact.ReadFile(report, snapshot).Files[RepoPath.CreateKnown(path)].Declarations);
         Assert.False(Directory.Exists(Path.Combine(root, ".lake")));
+        byte[]? preparedContext = null;
         if (prepareContext)
         {
             QualifiedSourceContextFixture.EnsureCompilerCache();
@@ -117,7 +118,28 @@ public sealed partial class ProductionEnvironmentTests
             Console.WriteLine($"SOURCE_ATTRIBUTE_COMPILE path={path} compile_errors=0 source_sha256="
                 + LeanSourceContextInput.SourceHash(snapshot.Files[RepoPath.CreateKnown(path)]));
             RunPreparation("first");
-            var bytes = File.ReadAllBytes(report + ".source-context.json");
+            preparedContext = File.ReadAllBytes(report + ".source-context.json");
+        }
+        // Observe every boundary before the acceptance assertion, including a
+        // located producer failure that preparation truthfully publishes at exit 0.
+        var input = preparedContext is null ? null : LeanSourceContextInput.Load(preparedContext,
+            snapshot, Decode(gateway.ReadRevision(baseline)));
+        LeanSourceFileContext? loaded = null;
+        var loaderError = input is not null && demandContext ? Record.Exception(() =>
+            loaded = input.GetFile(snapshot, RepoPath.CreateKnown(path), "current")) : null;
+        var console = new BufferedConsole();
+        var code = CliApplication.Run(["check", "--protected-base", baseline, "--candidate-lean-report", report],
+            new ProductionCliEnvironment(root, gateway, new FakeLeanReportSource(null)), console);
+        Console.WriteLine("SOURCE_ADMISSION_OBSERVATION " + System.Text.Json.JsonSerializer.Serialize(new {
+            path, modified, source = snapshot.Files[RepoPath.CreateKnown(path)].Text,
+            source_sha256 = LeanSourceContextInput.SourceHash(snapshot.Files[RepoPath.CreateKnown(path)]),
+            baseline, report_declarations = 0, producer = preparedContext is null ? null : Encoding.UTF8.GetString(preparedContext),
+            loader_error = loaderError?.Message, loader_commands = loaded?.Commands.Length,
+            cli_exit = code, cli_stdout = console.Output, cli_stderr = console.Error,
+        }));
+        Assert.True(code == expected, console.Output + console.Error);
+        if (preparedContext is { } bytes)
+        {
             using var bundle = System.Text.Json.JsonDocument.Parse(bytes);
             Assert.Equal(demandContext ? 1 : 0, bundle.RootElement.GetProperty("files").GetArrayLength());
             var context = LeanSourceContextInput.Load(bytes,
@@ -139,10 +161,6 @@ public sealed partial class ProductionEnvironmentTests
             }
             Assert.Empty(context.MalformedRows);
         }
-        var console = new BufferedConsole();
-        var code = CliApplication.Run(["check", "--protected-base", baseline, "--candidate-lean-report", report],
-            new ProductionCliEnvironment(root, gateway, new FakeLeanReportSource(null)), console);
-        Assert.True(code == expected, console.Output + console.Error);
         if (contextErrorLine is { } line)
             Assert.Contains($"NATIVE_DECIDE_CONTEXT_ERROR line={line}", console.Output, StringComparison.Ordinal);
         else if (expected == 1)
@@ -154,6 +172,12 @@ public sealed partial class ProductionEnvironmentTests
             var run = TestProcessRunner.Run("python3", ["-c", QualifiedSourceContextScripts.Preparation,
                 TestRepositoryLayout.FindRoot(), root, report, baseline, .. arguments], TestRepositoryLayout.FindRoot(),
                 BoundedProcessRunner.HangDetectionBudget, 4 * 1024 * 1024);
+            Console.WriteLine("SOURCE_PREPARATION_OBSERVATION " + System.Text.Json.JsonSerializer.Serialize(new {
+                operation = arguments[0], path, modified,
+                source_sha256 = LeanSourceContextInput.SourceHash(snapshot.Files[RepoPath.CreateKnown(path)]),
+                exit = run.ExitCode, stdout = Encoding.UTF8.GetString(run.StandardOutput),
+                stderr = Encoding.UTF8.GetString(run.StandardError),
+            }));
             Assert.True(run.ExitCode == 0, $"{arguments[0]}: " + Encoding.UTF8.GetString(run.StandardOutput)
                 + Encoding.UTF8.GetString(run.StandardError));
             Console.WriteLine(Encoding.UTF8.GetString(run.StandardOutput));

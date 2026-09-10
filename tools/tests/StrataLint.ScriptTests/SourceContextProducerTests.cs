@@ -83,6 +83,18 @@ public sealed class SourceContextProducerTests(SourceCompilerFixture compiler)
         => RunContract("test_simp_attributes_do_not_elaborate_targets_or_change_tokens");
 
     [Fact]
+    public void NotationExpansionStringsDoNotRegisterTokens()
+        => RunContract("test_notation_expansion_strings_do_not_register_tokens");
+
+    [Fact]
+    public void DeclarationTokensRetainCompilerLocality()
+        => RunContract("test_declaration_tokens_retain_compiler_locality");
+
+    [Fact]
+    public void InstanceAttributesPreserveTokensWithoutElaboratingProtectedTargets()
+        => RunContract("test_instance_attributes_do_not_elaborate_targets_or_change_tokens");
+
+    [Fact]
     public void UnmodeledAttributeProducesLocatedRefusal()
         => RunContract("test_unmodeled_attribute_is_a_located_error");
 
@@ -99,6 +111,7 @@ public sealed class SourceContextProducerTests(SourceCompilerFixture compiler)
         var root = compiler.Root;
         var result = TestProcessRunner.Run("python3", ["-c", SourceContextContractScript.Source, root, "ProducerContract." + contract], root,
             BoundedProcessRunner.HangDetectionBudget, 4 * 1024 * 1024);
+        Console.WriteLine(Encoding.UTF8.GetString(result.StandardOutput));
         Assert.True(result.ExitCode == 0, Encoding.UTF8.GetString(result.StandardOutput) + Encoding.UTF8.GetString(result.StandardError));
     }
 }
