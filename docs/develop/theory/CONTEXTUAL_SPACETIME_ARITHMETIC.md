@@ -5945,7 +5945,13 @@ pr7_copy_expressibility: D10_control=1 D15_fiber=1 D15_q=1 D16_conditions=1 J_fi
 BASE=17dcccc461dd1f0ebb584bdfce578c0c3525f25c make ingest SOURCE="contextual-spacetime-arithmetic docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md"
 ```
 
-退出码为 **0**，计数为 `residual_open_added=49 skipped_existing=306 coarse_fallbacks=0 open_genres=0 cas_objects_written=49 ledger_changed=true`，并由提交 `5d3b1ab09d` 入账。§42 写入后的最终摄入命令与计数将在本节提交后再次运行并以同一形态更新；该最终运行是正文最后一次改动之后的检查点。
+退出码为 **0**，计数为 `residual_open_added=49 skipped_existing=306 coarse_fallbacks=0 open_genres=0 cas_objects_written=49 ledger_changed=true`，并由提交 `5d3b1ab09d` 入账。§42 写入后的最终摄入命令为：
+
+```sh
+BASE=a3da3ff01faf5dc562f119227f53e17a668b1f55 make ingest SOURCE="contextual-spacetime-arithmetic docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md"
+```
+
+该命令退出码为 **0**，计数为 `residual_open_added=6 skipped_existing=322 coarse_fallbacks=0 open_genres=0 cas_objects_written=6 ledger_changed=true`。本段更新后还会再次运行同一命令，作为正文最后一次改动之后的最终检查点。
 
 ### 42.4 git 读数与边界
 
