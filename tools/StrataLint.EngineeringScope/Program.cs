@@ -1,3 +1,4 @@
+#error CI_SHARED_BUILD_FAILURE_PROBE_0910
 using System.Diagnostics;
 using System.Text.Json;
 using StrataLint.Engine;
