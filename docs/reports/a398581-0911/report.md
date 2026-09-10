@@ -31,6 +31,14 @@ Curl retries succeeded for all six direct sequence references A257843, A075248, 
 
 The first actual Lean attempt proved the integer bounds `0<k`, `k<5x<3k` and positivity of `(5x-k)y-kx`. Two following lemmas initially failed because ordering facts were left inside the `Sol` definition, and one `mul_pos` argument was an inequality rather than a positive difference; these are implementation errors, not mathematical obstructions. Log: attempt-1/bounds-1.log. The correction is being checked.
 
+## General comparison lemmas verified
+
+`bounds-2.log` EXIT=0 verified basic bounds, residual bound, and same-x antitonicity, standard three axioms only. The later `bounds-4.log` verified the near and far inequalities, with one subsequently corrected unknown lemma name (`Int.pow_emod`; use the existing `Int.mul_emod` instead).
+
+The live comparison is: when `5x>=2k`, `25z<=2k(2k+5)`; when `l<=x` and `5x<=2k`, a residual lower bound d and the endpoint bound `kl(kl+d)<=d(5l-k)W` imply `z<=W`. The near estimate uses the nonnegative product `k²(x-l)(k(x+l)-5xl+d)`, not a finite enumeration. Residual 8 excludes d=1 by the square residues modulo 8. These are private general proof helpers on the live path to the target, direct frozen dependencies `[]`, proposed admission `escape-witness`; no standalone freeze requested for them.
+
+Endpoint polynomial inequalities have been proved for residues 0 and 4; residues 3 and 2 use lower bounds `4W>=b(b+2)`, `3W>=b(b+1)` or `9W>=b(b+3)`. The remaining small parameter branches will be private deductions from the residual bound, splitting x only. They do not constitute a separate positive finite certificate or a claim of research progress.
+
 ## Verification and remaining obligations
 
 No Lean attempt run yet. No theorem frozen. Build/cache receipts, exact declaration classifications, and final outcome will be appended after each completed unit.
