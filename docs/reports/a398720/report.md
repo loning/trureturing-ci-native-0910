@@ -76,3 +76,18 @@ utility=none：无界量化的组合双射，非有限枚举、checker、数值�
 - dominating_theorem_search=not-found-in-searched-scope，维持第一档，有界检索不主张首创。
 - 检索中一条自写 rg 正则有 unclosed character class，已改简单词首正则重跑；
   一个候选 Mathlib 路径不存在，已按实际源码路径读取，未把命令错误当零命中。
+
+## Lean 片段 1：唯一零位
+
+- canonical route 返回 D5/S1/Words/ParityCode/OddTopWeight.lean，S1，generality G；
+  二维二进制字的奇偶约束采用已注册 Words 域，新 ParityCode 子桶原不存在、落入 1 文件；
+  Blueprint/Words 直属 20 文件、Library/Words 29 文件（find 实测）。
+- 已定义 ones（逐位 0/1 自然数和）、EvenRowsCols（逐行/列 Even）、weight（行和总和）。
+  定义均不含阶乘或计数结论。
+- 热树 #check 成功核对 Finset.sum_eq_sum_iff_of_le、sum_boole、Nat.card_congr、
+  Equiv.ofBijective、Finite.surjective_of_injective、Equiv.sum_comp 等签名。
+- 单文件 Lean EXIT=0，已证 ones_add_zeros、row_bound、rows_saturated、row_unique_zero。
+  第一编译在反向 sum_boole 的 Nat coercion 匹配和 hn.not_even 字段失败；
+  用显式自然数求和恒等式与 Nat.not_even_iff_odd 修复，未改假设或命题。
+  成功编译仅有 unnecessarySimpa 警告，已按建议简化为 simp，下一批验证。
+- 新中间命题 row_unique_zero 正是预登记见证；列转置、置换与反向构造尚待完成。
