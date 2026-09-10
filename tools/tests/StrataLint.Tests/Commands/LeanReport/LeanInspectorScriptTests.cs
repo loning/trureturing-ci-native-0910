@@ -176,7 +176,7 @@ public sealed class LeanInspectorScriptTests
 
         Assert.NotEqual(0, result.ExitCode);
         Assert.Contains("LEAN_INSPECTOR_FAILED phase=inspect", Encoding.UTF8.GetString(result.StandardError));
-        Assert.NotEqual("0", File.ReadAllText(output + ".logs/inspect.exit.log").Trim());
+        Assert.NotEqual("0", File.ReadAllText(Path.Combine(temporary.Path, "report.json.logs", "inspect.exit.log")).Trim());
         Assert.DoesNotContain("RAW_LEAN_REPORT", Encoding.UTF8.GetString(result.StandardOutput));
         foreach (var suffix in new[] { "", ".sha256", ".materials.zip", ".spool.json" })
             Assert.False(File.Exists(output + suffix), $"accepted output after {operation} failure: {suffix}");
