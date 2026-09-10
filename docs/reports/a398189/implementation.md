@@ -75,3 +75,23 @@ lean-report、emit、Scribe 内容检查及 freeze 收据。
 正式落点按 route 调整到 `D5/S3/Arith/Congruence/TruncatedExponentialTwoAdic`：
 Congruence 桶原有 Lean 21 / Blueprint 42 文件；Library/Arith 已满48，注记放 ArithSums（原9）。
 原 Arith 平桶的临时未冻结模块移走；未改任何已冻结模块。
+
+## 逐声明判形与用途
+
+- `D5/S3/Arith/Congruence/TruncatedExponentialTwoAdic.S`：定义，非定理，proof_shape 不适用；直接冻结依赖 `[]`；escape_witness `null`。自然除法的范围由 `h_sum` 中阶乘整除证明连接到递推。
+- `D5/S3/Arith/Congruence/TruncatedExponentialTwoAdic.odd_positive_branches`：`proof_shape: content`；直接冻结依赖 `[]`（无 D5 imports，因此无 GID/statement_id 对）；`escape_witness: six`；`admission_basis: escape-witness`。
+  见证逐项：① `six` 在 `odd_positive_branches → full_val → all_residues → six` 的已编译常量依赖中；
+  ② 任意 n,m 的模16六步抵消式由递推展开及连续六因子零式新建，冻结前置为空，不是冻结公式的实例/投影；
+  ③ 它是 ZMod16 中递推值与六项多项式的等式，既不是自然数估值结论的定义等价，也不是别名；
+  ④ m≥6 分支用它改写实际的 H 值，后续取 val 再用 val_mod 得精确估值，不是死项或丢弃分量。
+  奇 k 子句通过同一全称估值链和 k+2 奇性得到零；没有旁路只用 Legendre 公式。
+
+`utility: none`：唯一公开定理量化无上界的 n,k，新增内容是递推消尾、周期和全称提升；
+不是有界实例集合、检查器 API、附带未履行数值前提的归约或普通正向实例。
+有限环与短长度枚举全部 private，并在全称证明的实际分支内使用；不独立冻结、不作为数值范围推进。
+consumer/instance/premises/result/claim 均为 not-applicable(kind=none)。
+`generality: I` 的具体性是二进估值和模16，不主张推广到任意素数。
+
+question_answered：本报告开头预登记的 A398189 奇 n、正 k 两分支，含模16例外边界。
+dominating_theorem_search：本仓 → pin Mathlib → GitHub Lean/OEIS/指定论文，not-found-in-searched-scope；
+已证背景与未读二级文献的边界见上。形态 deposit，无 source_id/atom_id，不做 cover。
