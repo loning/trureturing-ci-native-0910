@@ -51,3 +51,16 @@ pin_sha256=sha256:6c4c682ffba051b5744fe7a75ccc99d7f3b20227b3b026f392f3315be0adaa
 未打开的页面和第三方链接均 ASSUMED-UNVERIFIED；用户有限读数不冒作本席新实测。
 公开 theorem 当前为 0；proof_shape/direct_frozen_dependencies/escape_witness/
 admission_basis 待实际证明后逐条记录，不用提前写的标签替代核验。
+
+## 第二批来源读数
+
+OEIS A110037/internal 完整条目已读：revision 9，2025-08-24；目标仍标 Conjecture，
+归属 Alan Michael Gómez Calderón，2025-08-19。A073089/internal 完整条目已读：
+revision 47，2021-03-13，独立八分支与用户一致。未打开其余链接，ASSUMED-UNVERIFIED。
+重新 GET arXiv abstract 成功，原页 metadata 核出题名 On Non-Squashing Partitions、
+作者 N. J. A. Sloane / James A. Sellers、日期 2003-12-22、DOI。
+Library/Words 落点创建前 find -type f | wc -l=30；新增 note 不触容量上限。
+note 的 Verified locator 正文逐字含 doi 与 url 两行，收录 n=1 kernel 见证与 n≥3 订正。
+D5/S1/Recurrence 递归计数为99（含子桶），如需落 Lean 须再按直接文件数选子桶。
+
+强归纳与 c 的分支已编码于 Bridge.lean，首轮热树检查已启动，尚未取得退出判词。
