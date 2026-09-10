@@ -601,3 +601,164 @@ caller 拥有 Git 暂存、封存、push、PR、独立评审和普通仓库门�
 S19 源实现可交审，但最终交付仍等待 S18 MERGED，本次未读取其活跃 review 结果或查询
 发布状态。不把本层本地固定核验、canonical ingest 成功或候选交回称为独立批准、
 MERGED、Lean 吸收或长期研究目标完成。
+
+
+## I19 / C57 relocation and CI repair (2026-09-10; representation only)
+
+This appendix is original I19 evidence from Codex CLI under the pinned
+`consensus-rnd:sshx 1.0.0-beta.42` worker contract, flight
+`qgh0910-i19-s19-report-capacity-repair`, attempt 1. Repository priors are exposed;
+no independent review verdict is claimed. All text above this heading is the
+unchanged historical I14 report, including its input identities and execution receipts.
+
+At repair base `20afad5e9e382df623b632aa16d2db24c2f7c9ab`, PR 6741 CI run
+`34422715687`, job `102702004122`, reported exactly:
+
+```text
+SL-003 docs/reports: directory contains 49 files (admission limit 48, repository tolerance 96; split per CLAUDE.md 8)
+RULE_REJECTED count=1
+```
+
+The supplied CI output is 739805 bytes, SHA256
+`5c82ca8062eaa30a43f314df1caad2d383a62986d7dce8b822d7f2e86898bd9d`.
+The move changes direct regular-file counts from 49 to 48 in `docs/reports`,
+and from 0 (absent directory) to 1 in `docs/reports/quantized-gh`.
+The 112 report files across all report subdirectories are retained; none unrelated moved.
+
+Historical identities: the original report is exactly the first 38210 bytes / 603 LF
+of this file, SHA256 `8bb7197f4931fdc2337ad7d900a514c588520d2ec48cd273cd69065d0e335db4`,
+Git blob `4df4e7e3769f10a650ef4f95d6cc5beae923da32` at the base's old root path.
+The original source is Git blob `66ad22043eb3ca83586f8b4ec8f1f87710fcbfe0`,
+286326 bytes / 5391 LF, SHA256
+`4856aba958844029d1c7150f610104d3652dcfd25139bdfb53e4346cd905db0a`.
+Both matched the supplied `s19-report-snapshot-0910.md` and
+`s19-source-snapshot-0910.md` byte for byte. These immutable blobs and historical
+snapshots are references; no second maintained source or report was added.
+
+Current source: 286339 bytes / 5391 LF, SHA256
+`59838eb016d5a88043e4f9ca4ffc3c999d85357762d078cf4f05168521ad0d18`. Its only edit is the section 30.20 Markdown destination;
+the label and every other byte match the original source after reversing that
+single replacement. The first 254298 bytes / 4743 LF remain exactly the S18 prefix,
+SHA256 `c5e1fa97fff5921fe5ba10d84b0268c884caab112fb32beed0c92027ee1aa3f5`.
+The current [theory source](../../develop/theory/ARITHMETIC_BOUNDARY_QUANTIZATION.md)
+resolves from this location. The report's earlier relative source link and earlier
+root-path extraction recipe describe its historical location at the immutable base.
+They were preserved verbatim and are superseded as live addresses by this appendix.
+
+Current repository-root extraction/execution recipe (documented, **not executed by I19**):
+
+```sh
+python3 - <<'PY'
+from pathlib import Path
+import subprocess
+import sys
+report = Path('docs/reports/quantized-gh/balanced-prime-235-all-slabs-0910.md').read_text()
+marker = '```python\n# S19_FIXED_CERTIFICATE_V1\n'
+code = '# S19_FIXED_CERTIFICATE_V1\n' + report.split(marker, 1)[1].split('\n```', 1)[0] + '\n'
+result = subprocess.run([sys.executable, '-'], input=code, text=True)
+raise SystemExit(result.returncode)
+PY
+```
+
+The embedded `S19_FIXED_CERTIFICATE_V1` payload remains 12418 bytes / 247 LF,
+SHA256 `478bbf361e446eaad6f834c084436ae7aa359f0f83977343be1c6e0c2a837276`.
+Only extraction bytes, syntax and structure were inspected. I19 performed **zero
+mathematical program executions**; the historical 69-check receipt above remains
+historical evidence, with no new mathematical or review claim.
+
+### I19 canonical run and complete current-unit bindings
+
+After the source reached the current identity above, I19 ran exactly once:
+
+```sh
+make ingest BASE=20afad5e9e382df623b632aa16d2db24c2f7c9ab SOURCE=arithmetic-boundary-quantization
+```
+
+Actual process exit: **0**; UTC start `2026-09-10T01:08:06.392218+00:00`,
+finish `2026-09-10T01:08:35.575145+00:00`. The source hash was identical before
+and after the command. The original output (125 bytes, SHA256
+`b0bd8cf9cb96b33266b16f202e90ec0ccdd0a31a5e36084d0dd67625658fafac`) was:
+
+```text
+INGEST residual_open_added=1 skipped_existing=247 coarse_fallbacks=0 open_genres=0 cas_objects_written=1 ledger_changed=true
+```
+
+Producer inputs are the unchanged candidate at the repair base: `tools` Git tree
+`8c4a68f7515e119a57fff7a9e23f9ba4e0e4762f`; root `Makefile` SHA256
+`b623554844bc4adc4eef9ba7d7176ea7f4ff08180f6be05f0603d8736ebe68a6`;
+`tools/scripts/ingest.sh` SHA256
+`2377f28ac22d099a0e2cd3264d55fd57dd5322c3565809b5fdcb7b266bd2070c`;
+`Meta/Digestion/backfill/arithmetic-boundary-quantization/source.toml` SHA256
+`0948618a915f39996a9612c7a2cc1ed2e832c9121a57819ba3db8714c625bade`,
+selecting `generic-v1`. The source Git blob identity is now
+`a75eb08b8c118c7bb85bec473a3bf04cdf0b354f` (computed identity; still unstaged).
+
+The one new atom is
+`09b239a66f1111ac5773805a1bcbe875a4974982ee20f26ea337ef808314e093`,
+2539 bytes / 32 LF, with two terminal LF. Its new YAML is 328 bytes / 7 LF,
+one terminal LF, SHA256
+`6b887fc13f08384d163a9fdb21bbc39b84cec0d252ea732a605f1665b0211909`.
+The two exact new paths are:
+
+```text
+Meta/Digestion/atoms/sha256/09b239a66f1111ac5773805a1bcbe875a4974982ee20f26ea337ef808314e093
+Meta/Digestion/backfill/arithmetic-boundary-quantization/residual-open/09b239a66f1111ac5773805a1bcbe875a4974982ee20f26ea337ef808314e093.yaml
+```
+
+The read-only byte audit checked each entire heading-to-next-heading unit,
+including trailing LF, against the actual CAS content and its source-owned YAML.
+All **21/21** units cover exactly **[254371,286339)**, **31968 bytes**, with zero
+gaps or overlaps. This is full-unit byte coverage, not merely a start-byte match.
+The earlier section-title range [254299,254371) is structural text outside these
+numbered units. The table below is current I19 evidence; the earlier table remains
+historical. Each raw/normalized fingerprint and cas_ref is `sha256:` plus its atom_id;
+all ordered chain children are empty. Only 30.20 produced new files.
+
+| Current unit | Full source byte span [start,end) | Current atom_id |
+| --- | --- | --- |
+| 30.1 | [254371,255468) | `4e5e5ab728ff95f50a0959fde254d9d6971f9e405fb815fbcde1750cc87ebc2e` |
+| 30.2 | [255468,257345) | `2a85fd23acfab932247e9a16a40fcea2387617bddf75062a481b70efbf487b90` |
+| 30.3 | [257345,258142) | `24f15d57c60f27aadae36b7efceae9452402016d72d15953cd8bd5cd6abfbbe8` |
+| 30.4 | [258142,261125) | `12abf6c1ec71422f9e2e4cbaf0ac343e7ac64c387b0727fa6b4c9c3b055807dd` |
+| 30.5 | [261125,262528) | `d1801ca9343edd8c56b6c9ec98c037397c9e4846a4896806a5eec7bcbb2e9984` |
+| 30.6 | [262528,263365) | `efd08fcac03638df546bc1e23dfe24722159cfa9fe964af51af7d6a3d61e8a8e` |
+| 30.7 | [263365,265061) | `fbb7454bcd639864dd7ee2f7cb7084b66e54443da1c2132a9ba3752029095b47` |
+| 30.8 | [265061,266669) | `85de9bcf507e4587a51685442261aad594a152b001f6e9fb693bd460e014b534` |
+| 30.9 | [266669,268748) | `ba19478e5c36a0a432aee475ee610c3c1f005049abcf48429ac091184dc81265` |
+| 30.10 | [268748,271246) | `4c3b28bb104c34d2aa90cef2187e93938ca3e9cbc53c501d8813958f5a99ab6d` |
+| 30.11 | [271246,272301) | `131c92c36bc569c0c2eb34316da497c6e85390e74a2a852a70aac0ecf32c99d1` |
+| 30.12 | [272301,273028) | `8c99b875d8c495a54e4ba055ba07c9d72efc29cc61315ae49a48852f6d7ab471` |
+| 30.13 | [273028,274387) | `daf515caf2d702d6b71f0ce60bb688edaeaacb608a4186dddb8109bed61851e2` |
+| 30.14 | [274387,275511) | `c956bdba50f15fc3417e937f12b49e3c2e39c028bb787db4fccb31233c5a7f49` |
+| 30.15 | [275511,277007) | `07f0567bd56ea68adb7523ec2330723357c1cf9a9e36704f22f95810878a68f7` |
+| 30.16 | [277007,277752) | `0d37d9cf790d80246833ea2af7ddf8368dc19df4960a6f29a6838670c5b74140` |
+| 30.17 | [277752,279312) | `5877dc4361a0fc02a74a764d446dae8e7415a053aebca1cd9f358acf0eeaa9ca` |
+| 30.18 | [279312,280152) | `d83d6cfb23548c6dc74ca6da4cd4e786cab805ea9e90df4da96585b210f8bff4` |
+| 30.19 | [280152,281491) | `e2759d04793e560260a6438f54d83891e3e19c5242076457af6aa016a2dd0362` |
+| 30.20 | [281491,284030) | `09b239a66f1111ac5773805a1bcbe875a4974982ee20f26ea337ef808314e093` |
+| 30.21 | [284030,286339) | `41d300e7a5f0f9881740937ed7ebe63480459a69e0e0ba4c118088e4975a6140` |
+
+All 32923 pre-repair CAS blobs, 32923 YAML entries, other digestion metadata,
+and 112 reports preserve their full historical bytes (this report via its exact
+38210-byte prefix at the new location). In particular, the old 30.20 atom
+`6af3687288e6ecd9421adf7286ea9cbe85d23c1f87e19113e41f22627f15c448`
+and YAML remain untouched. Both historical 29.22 LF variants named above survive.
+Current 30.1–30.20 have two terminal LF; 30.21 retains one LF and its original atom,
+with only its current offset shifted by 13 bytes. No CAS/YAML was manually edited.
+
+Verification commands and actual exits are recorded in I19's result envelope;
+the worker-owned `i19-coverage.json` records all full spans, CAS/YAML identities,
+and the original command receipt. Static extraction checks compared the old and
+current recipes byte for byte except for the Path literal, parsed syntax without
+execution, and confirmed identical certificate payloads and both current links.
+The original CI rejection is not replaced by a local CI-success claim. Caller owns
+sealing, fresh independent representation-repair review, required CI and PR 6741
+MERGED delivery; these remain open. No other target, scientific settlement or
+standing-goal completion was claimed. Final report identity belongs in result.json,
+not in a self-referential hash inside this report.
+
+I19's final audit wrapper first exited 1 after those byte checks: it wrongly required
+exit 0 from `git diff --no-index --check /dev/null` on the new report. Git returned
+1 with empty stdout/stderr (different files, no check diagnostics). The wrapper's
+expectation was corrected for this command; its actual rerun exit is in result.json.
+This audit-wrapper correction changed no source or canonical output and did not rerun ingest.

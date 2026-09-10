@@ -5358,7 +5358,7 @@ host exit 0 及纸面核验,包含那 34 项及额外的分支、eligibility、�
 它们是已完成的先行数学输入,不是本轮同轮 peer review,也不能合称为 primary 跑了 64 项。
 本实施把固定算式改成报告内不依赖绝对临时路径的自足证书并实际执行,
 原 caller 审计和程序不改。全部输入身份、逐单元映射、当前调用结果及检索收据见
-[balanced-prime-235-all-slabs-0910.md](../../reports/balanced-prime-235-all-slabs-0910.md)。
+[balanced-prime-235-all-slabs-0910.md](../../reports/quantized-gh/balanced-prime-235-all-slabs-0910.md)。
 
 **30.21 单一源/报告/摄入层与交付义务。** 本实施是 caller 提供的
 consensus-rnd:sshx 1.0.0-beta.42 runner 合约下的 I14,flight
