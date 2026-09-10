@@ -97,3 +97,24 @@ of completed proof, library exhaustiveness, build success or freeze yet.
   Blueprint/D5/S3/Arith has 58 including projections. Use a new Descartes child
   bucket (0 prior files). docs/reports has 47 direct files including this report.
   No lower AGENTS.md/CLAUDE.md was found under the edited content directories.
+
+## Lean unit 1: the primitive denominator bridge
+
+- Canonical route returned D5/S3/Arith/Descartes/PrimitiveSphereRadii.lean,
+  S3, generality I. Seven-line header uses `utility: none` in the specified slot.
+- Hot-tree `lake env lean D5/S3/Arith/Descartes/PrimitiveSphereRadii.lean`
+  EXIT=0. Proven: positive common multiple, positive integer curvatures,
+  curvature times radius equals L, gcd of all curvatures equals 1, and the
+  coefficient-3 equation transfers from rational reciprocals to naturals.
+- Primitivity proof uses no primitive-radius hypothesis: with d=gcd(L/r_i),
+  d divides L and each r_i divides L/d. Thus L divides L/d; positivity and
+  Nat.div_lt_self rule out d>1. The conjectured denominator bridge succeeds.
+- First compiler diagnostic was ambiguity between root `lcm_dvd` and
+  `Finset.lcm_dvd`; fixed with the exact namespace. The quotient divisibility
+  API also orders factors as d*r, handled by commutativity. No sorry or axiom.
+- Scalar rational bridge uses Nat.cast_div under the proved divisibility and
+  nonzero-radius premises, factors L squared through the sums, then casts back.
+  Every intermediate natural curvature is positive, excluding valuation-of-zero.
+- Additional Mathlib reuse: inspected `ZMod.pow_card_sub_one`; it gives the
+  square indicator in characteristic 3 directly, so residue enumeration is
+  unnecessary. The next unit will count the nonzero residues from the equation.
