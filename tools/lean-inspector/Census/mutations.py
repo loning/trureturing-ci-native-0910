@@ -34,6 +34,11 @@ def certificate_mutations(options):
         replacement = signature + ' :=\n  input ++ "\\npublic theorem " ++ certificate.toString ++ " : " ++\n    ' + proposition + ' ++ " := " ++\n    ' + proof + '\n'
         return text[:start] + replacement + text[end:]
 
+    def omit_chunk_recomputation(text):
+        start = text.index("    unless (.lit (.natVal value) : Expr) == .lit (.natVal packed) do")
+        end = text.index("  return keys", start)
+        return text[:start] + text[end:]
+
     cases = [
         ("drop-ascending", publisher, contract, "certificateAscendingConjunct",
          lambda text: omit_conjunct(text, "ascending")),
@@ -45,9 +50,7 @@ def certificate_mutations(options):
          lambda text: text.replace(
              '    if let some (k, b) := bucket then\n      unless (decodeIds chunk.length value).all (fun id => idPrefix b id == k) do\n        bindingError "bucket_prefix"\n', "")),
         ("skip-chunk-recomputation", manifest, contract.with_name("Chunks.lean"), "chunkLiteralBinding",
-         lambda text: text.replace(
-             '    unless (.lit (.natVal value) : Expr) == .lit (.natVal packed) do',
-             '    unless (.lit (.natVal value) : Expr) == .lit (.natVal value) do')),
+         omit_chunk_recomputation),
         ("payload-import", publisher, environment, "finalEnvironmentImports",
          lambda text: text.replace('  let input := input',
              '  let input := "import LeanInformationAudit.DispositionCensus\\n" ++ input')),

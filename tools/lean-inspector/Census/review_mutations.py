@@ -18,8 +18,8 @@ def main():
         ("handoff-ignores-row-digest", "handoff.py", "test_whole_stream_publication_entrypoint",
          "wholeStreamRowsBinding",
          '    if (rows_sha != receipt["rows_sha256"] or inputs["expanded_rows_cache_key"] !=\n'
-         '            digest([rows_sha, inputs["module_names"], inputs["scopes"], emitter])):',
-         '    if False:'),
+         '            digest([rows_sha, inputs["module_names"], inputs["scopes"], emitter])):\n'
+         '        raise ValueError("IE-C044 whole_stream_rows_binding")\n', ''),
         ("emitter-codec-before-duplicates", "emission.py",
          "test_inventory_duplicate_before_malformed_report_entrypoint", "inventoryDuplicateBeforeEmitterCodec",
          '    seen = set()\n    for _, _, wire in report_keys:',
