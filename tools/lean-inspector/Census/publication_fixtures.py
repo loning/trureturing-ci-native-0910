@@ -51,6 +51,8 @@ def prepare_publication(repository, directory):
         report["nodes"].append({"repo_path": module.replace(".", "/") + ".lean",
             "freeze_status": "frozen", "declarations": [{"kind": "theorem",
             "declaration_name_key": name_key(declaration), "statement_id": "sha256:" + format(number, "064x")}]})
+    report["nodes"].append({"repo_path": "LeanInformationAudit/Tests/Census/Evidence.lean",
+                            "freeze_status": "frozen", "declarations": []})
     report_path = directory / "report.json"
     report_path.write_text(json.dumps(report) + "\n")
     root = directory / "first"
@@ -70,6 +72,22 @@ def prepare_publication(repository, directory):
         "    throwError \"observed theorem imported by publication\"\n")
     run(["lake", "env", "lean", str(probe)], directory / "first-absent", "process",
         cwd=repository, env=dict(os.environ, LEAN_PATH=str(root), LEAN_NUM_THREADS="1"))
+    second = root / "publication-second.json"
+    driver = (root / "CensusPublish/Root.lean").read_text()
+    second_driver = write_module(root, "SecondPublication", driver.replace(
+        string(str(root / "publication.json")), string(str(second))))
+    run(["lake", "env", "lean", str(second_driver)], directory / "second", "process",
+        cwd=repository, env=dict(os.environ, LEAN_PATH=str(root), LEAN_NUM_THREADS="1"))
+    assert second.read_bytes() == (root / "publication.json").read_bytes(), "artifact_determinism"
+    run(["lake", "env", "lean", str(probe)], directory / "second-absent", "process",
+        cwd=repository, env=dict(os.environ, LEAN_PATH=str(root), LEAN_NUM_THREADS="1"))
+    partial = directory / "partial-certified"
+    assert execute(argparse.Namespace(output=str(partial), fixture_truth_export=str(report_path),
+        lean_report=None, prefix=finite, replay_of=None)) == 2
+    summary = json.loads((partial / "census.json.summary.json").read_bytes())
+    assert summary["status"] == "partial" and summary["requested_keys"] == 2
+    assert summary["counts"]["accounted"] == summary["counts"]["certified"] == 1
+    assert summary["counts"]["observed"] == 0 and summary["certified_complete"] is False
 
 
 def check_publication_negatives(repository, directory, only=None):

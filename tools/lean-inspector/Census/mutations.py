@@ -8,10 +8,7 @@ import pathlib
 from resources import run
 
 
-def certificate_mutations():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output", required=True, type=pathlib.Path)
-    options = parser.parse_args()
+def certificate_mutations(options):
     directory = options.output.resolve()
     repository = pathlib.Path(__file__).resolve().parents[3]
     source_root = repository / "tools/lean-inspector"
@@ -26,11 +23,11 @@ def certificate_mutations():
         original = text[start:end]
         heads = {
             "ascending": ('ids.toString ++ ".length = " ++ toString requested ++ " ∧ " ++ ids.toString ++ " = " ++ reportIds.toString',
-                          '"(by\\n  exact (LeanInformationAudit.certificate_of_buckets " ++ ids.getPrefix.toString ++ ".bucketFacts (requested := " ++ toString requested ++ ") (by decide +kernel)).2)\\n"'),
+                          '"(by\\n  exact (LeanInformationAudit.certificate_of_range " ++ ids.getPrefix.toString ++ ".facts).2)\\n"'),
             "length": ('"LeanInformationAudit.strictlyAscending " ++ ids.toString ++ " = true ∧ " ++ ids.toString ++ " = " ++ reportIds.toString',
-                       '"(by\\n  have h := LeanInformationAudit.certificate_of_buckets " ++ ids.getPrefix.toString ++ ".bucketFacts (requested := " ++ toString requested ++ ") (by decide +kernel)\\n  exact ⟨h.1, h.2.2⟩)\\n"'),
+                       '"(by\\n  have h := LeanInformationAudit.certificate_of_range " ++ ids.getPrefix.toString ++ ".facts\\n  exact ⟨h.1, h.2.2⟩)\\n"'),
             "equality": ('"LeanInformationAudit.strictlyAscending " ++ ids.toString ++ " = true ∧ " ++ ids.toString ++ ".length = " ++ toString requested',
-                         '"(by\\n  have h := LeanInformationAudit.certificate_of_buckets " ++ ids.getPrefix.toString ++ ".bucketFacts (requested := " ++ toString requested ++ ") (by decide +kernel)\\n  exact ⟨h.1, h.2.1⟩)\\n"'),
+                         '"(by\\n  have h := LeanInformationAudit.certificate_of_range " ++ ids.getPrefix.toString ++ ".facts\\n  exact ⟨h.1, h.2.1⟩)\\n"'),
         }
         proposition, proof = heads[family]
         signature = original[:original.index(" :=\n")]
@@ -74,14 +71,17 @@ def certificate_mutations():
         mutated = transform(original.decode()).encode()
         assert original != mutated, "mutation did not change production"
         target = repository / ".lake/build/lib/lean" / source.relative_to(source_root).with_suffix(".olean")
-        compiled_original = target.read_bytes()
+        compiled_original = {path: path.read_bytes() for path in target.parent.glob(target.stem + ".*")}
         logs = directory / label
         logs.mkdir(parents=True, exist_ok=False)
         record = {"mutation": label, "location": str(source.relative_to(repository)),
                   "expected_named_red": [expected], "expected_red_count": 1,
                   "pristine_sha256": hashlib.sha256(original).hexdigest(),
                   "mutant_sha256": hashlib.sha256(mutated).hexdigest()}
+        record["expected_written_before_running"] = True
         (logs / "preregistration.json").write_text(json.dumps(record, indent=2) + "\n")
+        run(["lake", "env", "lean", str(fixture)], logs, "baseline", cwd=repository)
+        record["baseline_exit_code"] = 0
         compile_command = ["lake", "env", "lean", "-R", str(source_root), "-o", str(target), str(source)]
         try:
             source.write_bytes(mutated)
@@ -100,9 +100,14 @@ def certificate_mutations():
                 raise AssertionError(label + " survived")
         finally:
             source.write_bytes(original)
-            target.write_bytes(compiled_original)
-            record["restored_byte_identical"] = source.read_bytes() == original and target.read_bytes() == compiled_original
+            for path, content in compiled_original.items():
+                path.write_bytes(content)
+            record["restored_byte_identical"] = source.read_bytes() == original and all(
+                path.read_bytes() == content for path, content in compiled_original.items())
             (logs / "result.json").write_text(json.dumps(record, indent=2) + "\n")
+        run(["lake", "env", "lean", str(fixture)], logs, "restored", cwd=repository)
+        record["restored_exit_code"] = 0
+        (logs / "result.json").write_text(json.dumps(record, indent=2) + "\n")
         outcomes.append(record)
     run(["lake", "env", "lean", str(contract)], directory, "restored-contract", cwd=repository)
     run(["lake", "env", "lean", str(environment)], directory, "restored-environment", cwd=repository)
@@ -128,9 +133,14 @@ from resources import run
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", required=True, type=pathlib.Path)
-    parser.add_argument("--fixtures", required=True, type=pathlib.Path)
+    parser.add_argument("--fixtures", type=pathlib.Path)
+    parser.add_argument("--certificate-only", action="store_true")
     parser.add_argument("--review-only", action="store_true")
     options = parser.parse_args()
+    if options.certificate_only:
+        return certificate_mutations(options)
+    if options.fixtures is None:
+        parser.error("--fixtures is required for query mutations")
     directory = options.output.resolve()
     repository = pathlib.Path(__file__).resolve().parents[3]
     source_root = repository / "tools/lean-inspector"

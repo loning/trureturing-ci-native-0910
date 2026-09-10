@@ -60,7 +60,15 @@ class ReviewFixTests(unittest.TestCase):
             directory = pathlib.Path(temp)
             report, census, receipt, _ = fixture(directory)
             try:
-                manifest.emit(directory / "out", report, census, receipt, "Fixture")
+                if len(inspect.signature(manifest.emit).parameters) == 4:
+                    # Run the original production generator successfully in the red control.
+                    response = directory / "partition.json"
+                    response.write_text(json.dumps({"entries": json.loads(census.read_bytes())["rows"]}))
+                    paths = directory / "paths.json"
+                    paths.write_text(json.dumps([str(response)]))
+                    manifest.emit(directory / "out", report, paths, "Fixture")
+                else:
+                    manifest.emit(directory / "out", report, census, receipt, "Fixture")
             except (TypeError, ValueError, KeyError) as error:
                 self.fail("wholeStreamPublicationHandoff: " + str(error))
             driver = (directory / "out/CensusPublish/Root.lean").read_text()
