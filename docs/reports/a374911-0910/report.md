@@ -273,3 +273,28 @@ Logs: attempt-1/make-lean-report.log and attempt-1/make-emit.log.
 The full-build `LEAN_CACHE` line additionally records `status=present`,
 `method=none`, `stamp_miss=null`, project/Mathlib `warm`, and zero missing
 Mathlib oleans. No cold bare Lake operation was used.
+
+## Scribe content checkpoint
+
+The exact requested `scribe-content-checks.sh` call against base
+24279623ef5253194f6c64ee3b3b627e62e3df50 exited 0 in 23.63 seconds:
+`DESCRIBE_STATUS ... nodes=10427 suspected_novel=0 ... red=0`, and
+`markdown: judged=1 formula(s)=5 red=0`. No locator failure occurred.
+The observations and existing OPEN projection messages are not assertions
+about this module or additional successful theorem claims. The wrapper's
+change selection did not require `projections --check`; that subcommand is
+also being run explicitly so all three named checks have local receipts.
+Log: attempt-1/scribe-content-checks.log.
+
+The canonical report's included statement IDs for the public classifications:
+
+| Theorem | statement_id |
+| --- | --- |
+| `seq_eq_one` | `sha256:e4cef3ff396927ef71e44f2084a8c78998f4d5196138289477a588a879d95674` |
+| `seq_eq_two` | `sha256:839399b039e4a4390497e695b563e85ab87d472c3a83a265332ca5af8be763ef` |
+| `seq_eq_three` | `sha256:ee69f334ca172cabc78035793dde2c35f49597ba74373ad0a2dccbaded2edaee` |
+| `a374911_eq_four` | `sha256:e966ef5d9b8179518c3c4faf341adbf26d48fb9aa4c9ef99c500983de8e97cf8` |
+
+The module report also includes private prerequisites and compiler-generated
+recursion equations; they are not extra public mathematical APIs or independent
+finite-instance freezes. The module has no direct frozen D5 prerequisite pairs.
