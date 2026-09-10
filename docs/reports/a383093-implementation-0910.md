@@ -114,7 +114,10 @@
 ## 项目构建与语义回声
 
 - make lean EXIT=0，实测 51.720 秒，Build completed successfully (12835 jobs)。
-  日志：runner attempt/make-lean.log；本模块无警告，日志其余长行警告来自既有模块。
+  日志：runner attempt/make-lean.log；本模块有两处长行警告，已折行；最终重跑通过（见下）。
+  其余长行警告来自既有模块。先前“本模块无警告”的记录有误，在此更正。
+- 首次 make lean-report EXIT=0，实测 97.718 秒；报告位于
+  .lake/build/stratalint/raw-lean-report.json。折行改变源码字节，最终构建后须重新生成。
 - 独立 Python 语义探针 n=1..25：左侧枚举所有分拆并直接检验公共和/重数整除；
   右侧枚举公共和 D 的除数多重集并展开真实块；没有从一侧生成另一侧计数。
   a(1..12)=[1,2,2,4,2,7,2,9,5,9,2,23]；s(1..8)=[1,3,3,7,3,12,3,16]；
@@ -143,3 +146,10 @@
   其它用途字段 not-applicable(kind=none)。
 - question_answered：用户预登记的 A383093 除数和猜想，保持 n>0。
 - dominating_theorem_search：not-found-in-searched-scope；范围与限制见各批检索收据。
+
+## 最终源码构建
+
+- 折行后 make lean EXIT=0，实测 23.505 秒；日志 runner attempt/make-lean-final.log。
+  本模块无长行警告，主定理公理仍仅 propext、Classical.choice、Quot.sound。
+- 再次自查全部 311 行源码：两侧独立对象定义、正性、展开/唯一恢复、lcm 规范化、
+  缩放双射和有限基数取和均在实际证明路径内。尚未冻结或开 PR。

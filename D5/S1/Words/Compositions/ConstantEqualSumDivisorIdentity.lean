@@ -119,7 +119,8 @@ private theorem expand_blocksOf {m : Multiset ℕ} {D : ℕ}
   · simp [Multiset.count_eq_zero_of_notMem hx]
 
 private theorem expand_injective {D : ℕ} (hD : 0 < D) {b c : Multiset ℕ}
-    (hb : ValidBlockValues D b) (hc : ValidBlockValues D c) (he : expand D b = expand D c) : b = c := by
+    (hb : ValidBlockValues D b) (hc : ValidBlockValues D c)
+    (he : expand D b = expand D c) : b = c := by
   apply Multiset.ext.mpr
   intro x
   by_cases hx : x ∈ b
@@ -296,7 +297,8 @@ private theorem encodeSystem_surjective (n : ℕ) :
   exact Prod.ext (Nat.Partition.ext he) rfl
 
 /-- OEIS A383093: the divisor sum of capable partition counts is A323774.
-The normalization divides multiplicities by D/lcm(support); neither count is defined by a divisor sum. -/
+The normalization divides multiplicities by D/lcm(support);
+neither count is defined by a divisor sum. -/
 theorem capable_divisor_sum (n : ℕ) (hn : 0 < n) :
     (∑ d ∈ n.divisors, capablePartitionCount d) = constantEqualSumSystemCount n := by
   rw [constantEqualSumSystemCount, if_neg hn.ne']
