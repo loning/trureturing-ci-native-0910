@@ -123,3 +123,7 @@ printed_odd_rule_false 保留为 private；0/1 totalization 和 odd m>0 域不�
 本轮临时 Counting/Parity 报告代码已迁入 D5 正式模块（历史提交保留），
 不保留第二份活证明真源。attempt 2 的 Bridge.lean 与报告原样保留。
 尚待 canonical report、Scribe、冻结和 PR；不提前报本轮“成”。
+
+Canonical make lean-report EXIT=0 / 78.220363秒；delta added=2/recheck=2，
+raw report SHA256=a2d0bb7aa5f236535f2261ff8f52e3f4ede0ebb844a2c48a34fcf084aed2ce3b。
+这次报告包含正式 D5 的两模块，已不再仅为 report 目录片段检查。
