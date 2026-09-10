@@ -120,3 +120,32 @@ The route command accepted Arith/Congruence/PowerResidueRecursionFour with
 generality I. Its first call rejected an absolute manifest path; retry used
 a repository-relative `.lake/a374911-route.json` and returned the canonical
 GID and seven-line skeleton.
+
+## Recursive classification checkpoint
+
+The warm file check of the routed module exited 0 with no warnings. `seq` is
+well-founded recursion on n, with both recursive calls guarded by n ≠ 0 and
+termination established by `Nat.mod_lt`. The unbounded theorems `seq_eq_one`,
+`seq_eq_two`, and `seq_eq_three` are proved; all three axiom outputs are exactly
+propext, Classical.choice, Quot.sound. Values one/two use strong-induction
+positivity and coprimality; value three uses the least-prime exclusion and
+Euler's totient theorem for every positive power of two. This is symbolic
+progress, not finite enumeration. Target value four is still outstanding.
+
+A first value-three check had one local nested `by`/semicolon scoping error
+at the k=0 contradiction (and therefore reported sorryAx on that failed
+declaration); it was repaired with a separate proof block. The successful
+second check has no sorryAx. Log: attempt-1/seq-three-check.log.
+
+Route refinement within revision 2, before trying the last Diophantine step:
+for even k, two-adic LTE gives j = 2 + v₂(k), hence 2^j ≤ 4k; compare with
+3^k - 1 > 4k for k ≥ 3. For odd k, reduce modulo four to force j=1.
+This supplies the stated parity/LTE alternative without factoring two
+adjacent prime powers. No implementation of this final step has yet run.
+
+Additional search: D5 arithmetic/Factorization and Mathlib NumberTheory
+searches for mixed two/three powers found factorization identities and
+polynomial Fermat–Catalan, not this integer exponential equation. Read the
+Coons–Winning introduction and main proposition in its downloaded TeX; it
+classifies bi-periodic subsets. The remainder of its proof and unrelated
+second-hop references are not claimed read.
