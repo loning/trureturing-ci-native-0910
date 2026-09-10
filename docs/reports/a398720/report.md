@@ -59,3 +59,20 @@ utility=none：无界量化的组合双射，非有限枚举、checker、数值�
 - 本席未重新打开 11 个 xref 全文与 Thompson/Patel–Hong PDF；其既有检查见
   Library/Words/oeis2026triage0910.md 的 A398720 段，是上游转述的有界文献结论，
   对本席亲验口径标 ASSUMED-UNVERIFIED。不声称穷尽编码文献。
+
+## 检索第 3 批：收口
+
+- GitHub code 搜索 A398720 language:Lean 与 EvenRowsCols language:Lean 均返回 []。
+  arXiv A398720 查询页明确 produced no results（原页存 runner attempt/arxiv-search.html）。
+- GitHub parity/matrix/Lean 粗筛命中 FormalRV/QEC/LDPCMatrix.lean，已在
+  c40ac65d72df7760a5e441ad7269e2ddedcc49c7 打开全文：List Bool 矩阵、xor、行组合、
+  稀疏度布尔检查及小例，无本目标计数或双射。其余粗筛为群/模形式/微分形式等邻词命中，
+  未逐页打开，标 ASSUMED-UNVERIFIED，不以该查询声称全生态无定理。
+- 新命中的 D5 MonomialDiagonalPreserving 全文公开面已读，只从给定置换定义 monomial
+  并证明保持对角矩阵；GraphPairingCriterion 全文给函数图的行列分离条件。
+  二者不提供从行列偶性与总重量导出的唯一零位置，未发现可直接消费的冻结前置。
+- Mathlib Stochastic 公开 API 为非负性、行列和、凸性、置换矩阵正向实例及转置/reindex；
+  未见本目标或 Bool 计数反向构造。直接使用有限和/有限集及置换基数 API。
+- dominating_theorem_search=not-found-in-searched-scope，维持第一档，有界检索不主张首创。
+- 检索中一条自写 rg 正则有 unclosed character class，已改简单词首正则重跑；
+  一个候选 Mathlib 路径不存在，已按实际源码路径读取，未把命令错误当零命中。
