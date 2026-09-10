@@ -43,12 +43,12 @@ mathlib_missing_olean_files=0。
 pin_sha256=sha256:6c4c682ffba051b5744fe7a75ccc99d7f3b20227b3b026f392f3315be0adaa4e。
 后续片段可用热树增量检查；正式门序仍用 make。
 
-## 未主张
+## 初始时点的未主张（由后续构建收据更新）
 
-当前尚未证明八个具体计数子句或无条件主目标，尚未冻结、尚未开 PR。
+本段记录开工时状态：当时尚未证明八个具体计数子句或无条件主目标，尚未冻结、尚未开 PR。
 没有主张有限核对是研究进展、全球检索完备、首创性或多模型共识。
 未在本轮打开的外部页面为 ASSUMED-UNVERIFIED；先前阅读收据按历史引用。
-公开新增 theorem 当前为 0；逐声明账目随实际证明补入。
+开工时公开新增 theorem 为 0；最终逐声明账目见后文。
 
 ## 最大部件分解：第一单元已验
 
@@ -127,3 +127,79 @@ printed_odd_rule_false 保留为 private；0/1 totalization 和 odd m>0 域不�
 Canonical make lean-report EXIT=0 / 78.220363秒；delta added=2/recheck=2，
 raw report SHA256=a2d0bb7aa5f236535f2261ff8f52e3f4ede0ebb844a2c48a34fcf084aed2ce3b。
 这次报告包含正式 D5 的两模块，已不再仅为 report 目录片段检查。
+
+
+## Scribe 与集成准备
+
+首轮 make emit EXIT=0 / 66.799955秒，两个正式镜像均生成；随后为八个
+量化子句加括号，避免合取作用域的阅读歧义，正在再发射最终投影。
+两篇 Scribe 均使用 typed Describe/StatementSource 与已核定位的 Library note。
+未新建 Problems、理论源卷或 atom；原独立定义的方向不变。
+2026-09-10 git fetch origin dev 成功，origin/dev=a3da3ff01f（完整 SHA 见 git）。
+git merge-tree --write-tree HEAD origin/dev EXIT=0，预览 tree=65ae35549b2dc09f0e8a22c41b1a0d973944e78f。
+此为合并可行性预检，未合并或宣称 CI 已绿。
+
+## 首冻逐声明账目
+
+比较基线为 82938786158c163b50350c14c948e63df61107a8；两模块均在此基线上未冻结。
+下表 C 指 D5/S1/Recurrence/Partitions/NonsquashingCounting，
+P 指 D5/S1/Recurrence/Partitions/NonsquashingPaperfold；所有 GID 由此前缀加点号展开。
+四条手写公开 theorem 均为 proof_shape=content、admission_basis=escape-witness。
+其余私有引理不独立申请义务或冻结。以下直接依赖指内联私有辅助后的公开定理边；
+基线既有冻结直接依赖均为空，同 PR 新冻边另明确列出。
+
+| 公开定理 GID | statement_id | 同 PR 新冻直接公开定理依赖 | escape_witness |
+| --- | --- | --- | --- |
+| C.count_odd | sha256:a054370ef34bea193eac5e382a4842e01757d090a4d69fa3e1eed53686d3aee4 | [] | C.card_extension + C.even_exception |
+| C.count_even_step | sha256:e2647ee7751140f0ac9981374a0e9c964a5be8c78108895a44bc18296f13559b | [] | C.card_extension + C.even_exception |
+| P.sloane_sellers_parity | sha256:a332571ad483d5422d4aea0570d87acf53eee5ea3de6103ca6349fa4609b7fa0 | C.count_odd、C.count_even_step（身份见上两行） | P.four_two + P.four |
+| P.signed_nonsquashing_diff | sha256:56a6f4568bd09e1842e78e68d6d6c38ae8fc8fdfb34d9821f58ea2218b881738 | P.sloane_sellers_parity（身份见上一行） | P.parity_complement + P.complement_of_halving |
+
+计数定义的公开输入身份：C.nonsquashingDistinctPartitions，
+statement_id=sha256:d57626962d92cee485a5339466a24e4b7c74678f109fef75bf5d171b22c6243d。
+它作为定义出现在两个模块的类型中，不冒充已提供计数结论的冻结定理。
+以上依赖为消费者→前置方向。计数模块无仓内 import，直接使用钉版 Mathlib 一般基数 API。
+主定理的旧桥处于本模块的私有证明链中，从未在基线冻结；本轮复用其已有证明项，
+所以不能把“源码末行是 exact”误判为仅实例化已冻结主结果。
+
+逐项对照第3.2条：
+
+- C.count_odd：i. odd_sum/even_sum 调用 card_extension，后者的双射证明含 erase_max_parts；
+  ii. 没有冻结前置提供该分拆族的基数双射；iii. 双射到过滤后的累计族不是奇偶相邻计数等式；
+  iv. 去掉它不能得到 odd_sum/even_sum，差一结论使用二者，非丢弃合取分量。
+- C.count_even_step：i. 两次 even_sum 均经 card_extension/even_exception；
+  ii. 冻结前置没有累计和公式；iii. 最大部件构造不是偶项差分的定义重述；
+  iv. 两个累计和等式实际进入 omega 消元，缺少它们便无差分结论。
+- P.sloane_sellers_parity：i. eight_two 等七个构造字段实际调用 four_two/four；
+  ii. count_odd/count_even_step 的实例化本身不提供所有 m 的模四规律，需新的归纳；
+  iii. four_two 是单个模四进展式，不等价于八字段结构；
+  iv. 归纳基于 b2，归纳步使用两次 step 与 odd，所得式实用于构造七字段。
+- P.signed_nonsquashing_diff：i. signed_diff_of_parity→diff_four/diff_four_one→
+  parity_complement→complement_of_halving，已 elaborate 的直接边由 run_cmd 断言；
+  ii. 冻结前置的计数或奇偶断言不含独立 c 的互补式，需要强归纳；
+  iii. 正 r 的 B(4r)%2+c(4r+1)=1 既不是所有 n 的带符号差分，也非定义等价；
+  iv. 该式在模四零、一分支实际用于整型差分推导，没有作为死项或弃置分量塞入。
+
+SloaneSellersParity 自动生成的八个投影 odd/eight_two/eight_six/sixteen_four/
+sixteen_twelve/sixteen_zero/thirtytwo_eight/thirtytwo_twentyfour 是具名伴随结果：
+proof_shape=bind-only，escape_witness=null，模块 admission_basis=escape-witness。
+义务是用户明确列出的八项输入接口；消费者→前置的边为
+signed_nonsquashing_diff→signed_diff_of_parity→各差分/折半分支→相应结构投影。
+定义、结构构造器及 Lean 自动生成的递推方程/归纳器不冒充额外手写公开定理。
+
+两个模块 utility=none：公开内容均为无界组合等式、归纳性质和符号恒等式，
+不是有界枚举、检查器、数值归约或已认证有限实例。私有 b2/边界回声只服务
+归纳初始化或源码语义核对，不单独作为正向实例冻结；printed_odd_rule_false
+是保留的私有印刷勘误见证，不能用它替其他内容取得用途依据。
+
+## 最终未主张与证据边界
+
+已证明八项奇偶事实及 n≥2 的无条件目标；未发现或主张目标反例。
+不主张全球检索完备、数学首创、OEIS 全部附带叙述已证，亦未向 OEIS 发送消息。
+没有私有 axiom、目标公理化、循环定义、native_decide 或公开有限枚举交付。
+#print axioms 与 canonical report 的四条手写 theorem 均只有
+propext、Classical.choice、Quot.sound；不把标准三条说成无任何公理。
+ASSUMED-UNVERIFIED：本轮未真正打开的外链与第三方页面，只沿用有出处的历史收据。
+单 Codex worker 实施与自查，独立评审席0；未主张独立多模型复核。
+
+最终括号订正后 make emit EXIT=0 / 61.025375秒；make-emit-final-receipt.json。
