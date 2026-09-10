@@ -1,5 +1,10 @@
 # A390148: primitive spherical radii, 3-adic orders
 
+Current status: the exact requested theorem is proved, the project build and
+canonical report pass, and the module is frozen without an atom. Scribe content
+checks and PR delivery are the remaining steps. Sections below are chronological
+receipts; early statements marked pending describe their time of writing.
+
 ## Provenance and scope
 
 Implementation by the Codex worker using the `lean4` skill, in the runner's
@@ -211,3 +216,20 @@ of completed proof, library exhaustiveness, build success or freeze yet.
   control word forall and identifier r (`\\forallr`). Added explicit Sp after
   all four quantifiers in the Scribe formula. The mathematical Lean source did
   not change. Emission after this repair is running; no claim of success yet.
+
+## Emission and freeze receipts
+
+- Repaired `make emit` EXIT=0, 61.459 seconds. Generated Blueprint mathematics
+  was inspected; no generated Markdown was edited by hand.
+- `make deposit-uncovered` EXIT=0, 96.897 seconds, with the exact starting base
+  above and GID
+  `D5/S3/Arith/Descartes/PrimitiveSphereRadii.primitive_sphere_radii_v3`.
+  The canonical target ran report, header check, emission, and `ledger-align
+  --add`; it returned `PLAYBOOK_DEPOSIT_FROZEN_UNCOVERED reason=NO_ATOM`.
+- Module frozen statement_id:
+  `sha256:fa7aaef171c6290060dd9d55c4c9c7025cf2ec5260ce11e2ad56e535970f4ac3`.
+  Freeze event:
+  `sha256:33b41a1e7d082e60b6a98003193f95e478a9028d1c125ef43d358aa93a6c8dfd`.
+  The event records `prerequisite_frozen_node_ids: []`.
+- No new theory source, ingestion atom, coverage edge, source-ledger rewrite,
+  finite-instance freeze, sorry, private axiom or native_decide was introduced.
