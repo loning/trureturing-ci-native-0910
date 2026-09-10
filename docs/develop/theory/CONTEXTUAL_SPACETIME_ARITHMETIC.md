@@ -6251,7 +6251,7 @@ D10 型机制的短注：取 $E=\Omega$，$r$ 个选中正点 $a@0$（$U=\{a,b\}
 
 ### 43.1 逐节提交与范围
 
-PR7 正文提交为 `6e736baf68`，附录初稿为 `028723247c`，附录修正为 `46e226bd02` 与 `2156d58427`，首次摄入提交为 `5d3b1ab09d`。随后合并最新 `origin/dev` 的提交为 `3ad8df08fb`，合并前 dev SHA 为 `17dcccc461`，合并后 dev SHA 为 `a3da3ff01f`。§1–§41 与顶部导航均未修改；本批只在唯一 Python 块末行打印之前插入 PR7 段，并在文档末尾追加 §42、§43。
+PR7 正文提交为 `6e736baf68`，附录初稿为 `028723247c`，附录修正为 `46e226bd02` 与 `2156d58427`，首次摄入提交为 `5d3b1ab09d`。fix1 的最终 head 为 `d1f6ae5be4f1c1b4d6660a11a5b1bdee17d17e6e`。本次 fix2 通过合并提交 `6627b9d2ec5778a6d5a68f1ccc4f041f9a9422f5` 合入 `origin/dev` 的 `f15ac1a9fbba26c28132990dd7d54cd8e1f64ad5`；同尾冲突按 dev 的 §41 勘误在前、本批正文在后解决。重编号提交为 `106fc6edab`；定义 34、命题 64/65、引理 5/6、D17/D18 与增补 P 不变。本批只在唯一 Python 块末行打印之前插入 PR7 段，并在 dev 全部正文之后追加 §42、§43。
 
 ### 43.2 附录命令与 stdout
 
@@ -6273,26 +6273,40 @@ pr7_copy_expressibility: archive_parity_rule_copy=1 cancelled_square_linear=5 co
 
 ### 43.3 ingest 收据
 
-首次摄入命令（合并后 dev 的当时 SHA）为：
+章节重编号使未合入的旧摄入产物作废。按 `git diff --name-only $(git merge-base origin/dev HEAD)..HEAD -- Meta/Digestion/atoms/sha256 Meta/Digestion/backfill/contextual-spacetime-arithmetic/residual-open` 列得 54 个路径，全部不在 dev 中；提交 `517bd5c008` 删除其中 27 个 CAS 与 27 个 `residual-open` YAML。fix1 原差分中另有 27 个 CAS 与 27 个 YAML 已在 dev 且 OID 相同，全部保留。旧摄入计数只属于旧正文，不作为本次定稿的摄入读数。
+
+在全部正文（含 §43.4）定稿并提交后执行：
 
 ```sh
-BASE=17dcccc461dd1f0ebb584bdfce578c0c3525f25c make ingest SOURCE="contextual-spacetime-arithmetic docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md"
+BASE=$(git merge-base origin/dev HEAD) make ingest SOURCE="contextual-spacetime-arithmetic docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md"
 ```
 
-退出码为 **0**，计数为 `residual_open_added=49 skipped_existing=306 coarse_fallbacks=0 open_genres=0 cas_objects_written=49 ledger_changed=true`，并由提交 `5d3b1ab09d` 入账。§43 写入后的最终摄入命令为：
-
-```sh
-BASE=a3da3ff01faf5dc562f119227f53e17a668b1f55 make ingest SOURCE="contextual-spacetime-arithmetic docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md"
-```
-
-该命令退出码为 **0**，计数为 `residual_open_added=6 skipped_existing=322 coarse_fallbacks=0 open_genres=0 cas_objects_written=6 ledger_changed=true`。在 §42 的 D17 细节补充后，按要求再次执行同一命令，退出码为 **0**，计数为 `residual_open_added=0 skipped_existing=328 coarse_fallbacks=0 open_genres=0 cas_objects_written=0 ledger_changed=false`；该次执行是 D17 修改后的最终检查点。
+本次基线为 `f15ac1a9fbba26c28132990dd7d54cd8e1f64ad5`。最终命令的退出码、`residual_open_added`、`skipped_existing`、`coarse_fallbacks`、`open_genres`、`cas_objects_written`、`ledger_changed`，连同摄入提交及最终 HEAD，写入本轮 `csa-pr7-fix2-0910/attempt-1` 的 worker-owned `result.json` 及其 `log_ref` 日志；不在摄入后回写本文，以保持最终源字节与摄入输入一致。
 
 ### 43.4 git 读数与边界
 
-相对最终合并后的 `origin/dev`，理论卷的差异只有两个纯插入 hunk；最终命令
+写入本次收据前的 HEAD 为 `517bd5c008`，`git merge-base origin/dev HEAD` 为 `f15ac1a9fbba26c28132990dd7d54cd8e1f64ad5`。本批定稿正文相对该 dev 的差异只有两个纯插入 hunk；命令
 
 ```sh
 git diff -U0 origin/dev..HEAD -- docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md | grep '^@@'
 ```
 
-应输出两个 `@@` 行，分别定位附录 PR7 段与文档末尾追加。允许的新增路径是本卷、`Meta/Digestion/atoms/sha256`、`Meta/Digestion/backfill/contextual-spacetime-arithmetic/residual-open`；不改旧定义、导航或其它理论正文。未完成项为：评审三席判词、CI 与合入仍由 caller 的后续流程负责，本实施席不预报其结果。
+输出为：
+
+```text
+@@ -2721,0 +2722,463 @@ print("pr6_expressibility_pairing: " + " ".join(f"{k}={v0}" for k, v0 in pr6_cou
+@@ -5691,0 +6155,158 @@ P2 初稿 `70463e7669a120e9fb180fadfb78bbe46ea6eaa1` 为 §§27–29，中间重
+```
+
+`grep -nE '^## 4[0-9]\.' docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md` 的读数为：
+
+```text
+6050:## 40. P2 的主数学来源、成熟框架与后续边界
+6078:## 41. P2 编号、来源与摄入归属勘误
+6156:## 42. PR7 增补 P：复制孔语言的 q 表达分类
+6248:## 43. PR7 产地与核验收据
+```
+
+`grep -oE '^\*\*(定义|命题|引理|反例) ?[0-9A-Z]+' docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md | sort | uniq -d` 的 stdout 为空。移除附录 PR7 插入段后，dev 全文字节是剩余正文的前缀；再移除尾部追加段，即逐字节还原 dev。附录插入发生在文件中间，因此原始文件不满足未经移除插入段的字节前缀关系。
+
+允许的新增路径是本卷、`Meta/Digestion/atoms/sha256`、`Meta/Digestion/backfill/contextual-spacetime-arithmetic/residual-open`；不改旧定义、导航或其它理论正文。未完成项为：评审三席判词、CI 与合入仍由 caller 的后续流程负责，本实施席不预报其结果。
