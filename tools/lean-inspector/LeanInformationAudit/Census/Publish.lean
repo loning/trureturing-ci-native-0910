@@ -29,9 +29,9 @@ private def checkSourceImports (imports : Array Import) (root : Name) : IO Unit 
       (fun m => m == `LeanInformationAudit.Census.Certificate || isBucketModule root m) do
     throw <| IO.userError "finalEnvironmentImports: final source must import only Census.Certificate"
 
-/-- Compile in a separate Init-only process: the driver's Mathlib/Lean environment
-must not coexist with kernel reduction in one heap. Load only the resulting
-constructor trees for structural binding. The source and olean remain reviewable. -/
+/-- Compile each bounded leaf and each two-child composition separately from the
+driver's Mathlib/Lean heap. Import the exported tree; the binder reads private
+leaf declarations one leaf at a time. The source and olean remain reviewable. -/
 def elaborateFinalSource (input : String) (fileName : String) (root : Name)
     (options : Options) (dataOnly : Bool := false) : IO Environment := do
   let input := input
@@ -45,9 +45,8 @@ def elaborateFinalSource (input : String) (fileName : String) (root : Name)
   let dataInput := String.intercalate "\n" <| (input.splitOn "\n").filter (!·.startsWith "public theorem ")
   IO.FS.writeFile compiledSource (if dataOnly then dataInput else input)
   let target := compiledSource.withExtension "olean"
-  -- The checked header permits exactly Init and Certificate. Resolve that
-  -- module once, then avoid probing every Mathlib/package path for each Init
-  -- import in both the compiler and the serialized-environment reader.
+  -- Resolve Certificate once, then avoid probing every Mathlib/package path
+  -- for each Init import in the compiler and exported-environment reader.
   let certificateModule := `LeanInformationAudit.Census.Certificate
   let mut certificateDirectory ← findOLean certificateModule
   for _ in certificateModule.components do
@@ -80,7 +79,11 @@ def elaborateFinalSource (input : String) (fileName : String) (root : Name)
   let previous ← searchPathRef.get
   try
     searchPathRef.set (directory :: finalSearchPath)
-    importModules #[{ module := root }] options (level := .exported)
+    -- Only Root exposes its private theorem. Children keep their exported
+    -- interfaces; Lean's serialized axiom closures avoid replaying their proofs.
+    unsafe enableInitializersExecution
+    return (← importModules #[{ module := root, importAll := true }] options
+      (loadExts := true) (level := .exported)).setExporting false
   finally
     searchPathRef.set previous
 
