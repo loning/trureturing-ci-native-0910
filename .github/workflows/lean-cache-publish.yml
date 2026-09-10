@@ -8,6 +8,12 @@ on:
   # stability and performance qualification; remove with the probe sources.
   workflow_dispatch:
     inputs:
+      probe_mode:
+        description: 'Disposable Linux selftest only, or replay after it passes'
+        required: true
+        type: choice
+        default: selftest-only
+        options: [selftest-only, replay-after-selftest]
       candidate_sha:
         description: 'Immutable incident merge M (40 hex)'
         required: true
@@ -113,7 +119,7 @@ jobs:
 
   delta-signal-probe:
     if: github.event_name == 'workflow_dispatch'
-    name: integration-only delta signal probe
+    name: integration-only signal probe (${{ inputs.probe_mode }})
     runs-on: ubuntu-24.04-arm
     # Same envelope as the existing delta job; instrumentation adds no budget.
     timeout-minutes: 60
@@ -149,29 +155,6 @@ jobs:
           printf '%s  %s\n' "$PROBE_SHA256" "$RUNNER_TEMP/delta-signal-probe.py" | sha256sum --check
           printf 'DELTA_PROBE_IDENTITY workflow=%s probe_sha256=%s candidate=%s base=%s upstream_run=%s upstream_attempt=%s artifact_id=%s\n' \
             "$PROBE_WORKFLOW_SHA" "$PROBE_SHA256" "$CANDIDATE_SHA" "$BASE_SHA" "$UPSTREAM_RUN" "$UPSTREAM_ATTEMPT" "$CURRENT_ARTIFACT_ID"
-      - name: Check out exactly M at the normal workspace root
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ env.CANDIDATE_SHA }}
-          fetch-depth: 0
-          persist-credentials: false
-      - name: Validate candidate checkout and first parent
-        run: |
-          python3 tools/scripts/workflow/ci.py checkout --repository "$GITHUB_WORKSPACE" --commit "$CANDIDATE_SHA"
-          test "$(git rev-parse HEAD^1)" = "$BASE_SHA"
-          test -z "$(git status --porcelain)"
-      - uses: actions/setup-dotnet@v4
-        with:
-          global-json-file: global.json
-      - uses: actions/download-artifact@v4
-        with:
-          github-token: ${{ github.token }}
-          run-id: ${{ inputs.upstream_run }}
-          artifact-ids: ${{ inputs.current_artifact_id }}
-          path: ${{ runner.temp }}/delta-probe-current
-          merge-multiple: true
-      - name: Validate original upstream current bundle using M
-        run: python3 tools/scripts/workflow/ci.py restore --repository "$GITHUB_WORKSPACE" --stage current --commit "$CANDIDATE_SHA" --run-id "$UPSTREAM_RUN" --run-attempt "$UPSTREAM_ATTEMPT" --archive "$RUNNER_TEMP/delta-probe-current/ci-current.tar.gz"
       - name: Prepare standard Linux diagnostic tools on this runner
         run: |
           if ! command -v strace >/dev/null || ! command -v vmstat >/dev/null || ! command -v stdbuf >/dev/null; then
@@ -180,8 +163,43 @@ jobs:
           fi
           strace -V
           vmstat -V
-          strace -I 1 -e trace=execve /bin/true
+      - name: Require disposable Linux entry and group signal cases
+        # W's test material only: no incident checkout, restore, build or judge.
+        # A failed/cancelled selftest holds every incident step below.
+        run: |
+          sha256sum tools/tests/StrataLint.ScriptTests/Fixtures/delta_signal_probe{,_old}.py
+          timeout 60s python3 -u tools/tests/StrataLint.ScriptTests/Fixtures/delta_signal_probe.py \
+            --linux-selftest "$RUNNER_TEMP/delta-signal-probe.py"
+      - name: Check out exactly M at the normal workspace root
+        if: inputs.probe_mode == 'replay-after-selftest'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.CANDIDATE_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate candidate checkout and first parent
+        if: inputs.probe_mode == 'replay-after-selftest'
+        run: |
+          python3 tools/scripts/workflow/ci.py checkout --repository "$GITHUB_WORKSPACE" --commit "$CANDIDATE_SHA"
+          test "$(git rev-parse HEAD^1)" = "$BASE_SHA"
+          test -z "$(git status --porcelain)"
+      - uses: actions/setup-dotnet@v4
+        if: inputs.probe_mode == 'replay-after-selftest'
+        with:
+          global-json-file: global.json
+      - uses: actions/download-artifact@v4
+        if: inputs.probe_mode == 'replay-after-selftest'
+        with:
+          github-token: ${{ github.token }}
+          run-id: ${{ inputs.upstream_run }}
+          artifact-ids: ${{ inputs.current_artifact_id }}
+          path: ${{ runner.temp }}/delta-probe-current
+          merge-multiple: true
+      - name: Validate original upstream current bundle using M
+        if: inputs.probe_mode == 'replay-after-selftest'
+        run: python3 tools/scripts/workflow/ci.py restore --repository "$GITHUB_WORKSPACE" --stage current --commit "$CANDIDATE_SHA" --run-id "$UPSTREAM_RUN" --run-attempt "$UPSTREAM_ATTEMPT" --archive "$RUNNER_TEMP/delta-probe-current/ci-current.tar.gz"
       - name: Trace delta processes and signals with live resource samples
+        if: inputs.probe_mode == 'replay-after-selftest'
         # Both streams go directly to the job log. No post step is needed to
         # recover emitted evidence if runner shutdown skips always()/uploads.
         run: |
@@ -190,7 +208,4 @@ jobs:
           printf '%s  %s\n' "$PROBE_SHA256" "$RUNNER_TEMP/delta-signal-probe.py" | sha256sum --check
           # Map an external sender PID without dumping process arguments/env.
           ps -eo pid,ppid,pgid,sid,comm
-          exec strace -I 1 -f -ttt -s 160 \
-            -e trace=%process,kill,tkill,tgkill,rt_sigqueueinfo,rt_tgsigqueueinfo \
-            -e signal=SIGHUP,SIGINT,SIGTERM,SIGKILL \
-            python3 -u "$RUNNER_TEMP/delta-signal-probe.py" "$BASE_SHA"
+          exec python3 -u "$RUNNER_TEMP/delta-signal-probe.py" "$BASE_SHA"
