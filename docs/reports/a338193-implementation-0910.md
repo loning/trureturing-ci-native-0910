@@ -143,3 +143,27 @@ The all-degree coefficient uniqueness proof and the final choice of A by
 `Original` alone are next. Route output is
 `D5/S1/Recurrence/Algebraic/SchroderIntegralEGF.lean`; its directory currently
 contains one file, below capacity. No canonical D5 file has been created yet.
+
+## Lean checkpoint: the complete target is proved
+
+Warm-tree `lake env lean /tmp/A338193.lean` EXIT=0, no warnings. Both
+`egf_coeff_eq_f` and `original_exists_unique` report exactly
+`[propext, Classical.choice, Quot.sound]`. The proof quantifies over every
+positive n. Uniqueness is proved by strong induction on the ordinary
+coefficient index, using the linear equation obtained from the original
+integral equation; the factor `(n+1 : ℚ)` is proved nonzero before cancellation.
+
+A is `Classical.choose original_exists_unique`, with selection predicate
+`Original` alone. This predicate contains the original integral equation and
+constant coefficient 1; it contains no f, F, R, B, or coefficient equality.
+The existence proof constructs B, and the final comparison uses the proved
+uniqueness theorem. The target is not installed in either definition.
+
+One intermediate uniqueness attempt rewrote S inside its own derivative,
+leaving the explicit goal `derivative (D * derivative S) = derivative S`.
+Restricting that rewrite to the right-hand side resolved it. The failed
+compiler run was not a proof; only the subsequent clean run is claimed.
+
+Repository build/report/emission/freeze and Scribe checks have not yet run.
+The successful proof will now move from the reviewable snippet to the routed
+canonical module; no second mathematical source will remain in the final tree.

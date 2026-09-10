@@ -108,7 +108,6 @@ private theorem algebraic_iff_linear (S : PowerSeries ℚ) (hS : constantCoeff S
   · intro h
     have hD : D ≠ 0 := by intro hz; have := congrArg constantCoeff hz; simp [D_zero] at this
     apply (mul_left_cancel₀ (pow_ne_zero 2 hD))
-    change D^2 * ((1+X)*S*derivative ℚ S - 2*X*(derivative ℚ S)^2-S^2) = D^2*0
     linear_combination -S^2 * D_quadratic +
       ((1+X)*D*S - 2*X*(D*derivative ℚ S+S)) * h
 
@@ -116,7 +115,7 @@ noncomputable def primitive (S : PowerSeries ℚ) : PowerSeries ℚ :=
   mk (fun n => if n = 0 then 0 else coeff (n-1) S / n)
 
 private theorem primitive_zero (S : PowerSeries ℚ) : constantCoeff (primitive S) = 0 := by
-  simp [primitive, ← coeff_zero_eq_constantCoeff]
+  simp [primitive]
 
 private theorem derivative_primitive (S : PowerSeries ℚ) : derivative ℚ (primitive S) = S := by
   ext n
@@ -149,13 +148,13 @@ private theorem original_iff_algebraic (S : PowerSeries ℚ) (hS : constantCoeff
   have hSU : S * S⁻¹ = 1 := PowerSeries.mul_inv_cancel S (by simp [hS])
   have hS0 : S ≠ 0 := by intro hz; have := congrArg constantCoeff hz; simp [hS] at this
   have hN : derivative ℚ (X*S⁻¹) * S^2 = S - X*derivative ℚ S := by
-    simp only [Derivation.leibniz, derivative_X, derivative_inv', one_mul, smul_eq_mul]
+    simp only [Derivation.leibniz, derivative_X, derivative_inv', smul_eq_mul]
     calc
       _ = S*(S*S⁻¹) - X*derivative ℚ S*(S*S⁻¹)^2 := by ring
       _ = _ := by rw [hSU]; ring
   have hQ : derivative ℚ (X*(S^2)⁻¹) * S^3 = S - 2*X*derivative ℚ S := by
     rw [pow_two, PowerSeries.mul_inv_rev]
-    simp only [Derivation.leibniz, derivative_X, derivative_inv', one_mul, smul_eq_mul]
+    simp only [Derivation.leibniz, derivative_X, derivative_inv', smul_eq_mul]
     calc
       _ = S*(S*S⁻¹)^2 - 2*X*derivative ℚ S*(S*S⁻¹)^3 := by ring
       _ = _ := by rw [hSU]; ring
@@ -169,5 +168,55 @@ private theorem original_iff_algebraic (S : PowerSeries ℚ) (hS : constantCoeff
   rw [← he]
   exact ⟨fun h => by rw [h, sub_self, zero_mul],
     fun h => sub_eq_zero.mp ((mul_eq_zero.mp h).resolve_right (pow_ne_zero 3 hS0))⟩
+
+private theorem original_unique (S T : PowerSeries ℚ) (hS : Original S) (hT : Original T) :
+    S = T := by
+  have hlS := (algebraic_iff_linear S hS.1).mp ((original_iff_algebraic S hS.1).mp hS)
+  have hlT := (algebraic_iff_linear T hT.1).mp ((original_iff_algebraic T hT.1).mp hT)
+  have hD : D⁻¹ * D = 1 := PowerSeries.inv_mul_cancel D (by simp [D_zero])
+  have heS : derivative ℚ S = D⁻¹ * S := by
+    conv_rhs => rw [← hlS, ← mul_assoc, hD, one_mul]
+  have heT : derivative ℚ T = D⁻¹ * T := by
+    conv_rhs => rw [← hlT, ← mul_assoc, hD, one_mul]
+  ext n
+  induction n using Nat.strong_induction_on with
+  | h n ih =>
+    cases n with
+    | zero => simpa [coeff_zero_eq_constantCoeff] using hS.1.trans hT.1.symm
+    | succ n =>
+      have hs : coeff n (D⁻¹*S) = coeff n (D⁻¹*T) := by
+        rw [coeff_mul, coeff_mul]
+        apply sum_congr rfl
+        intro ij hij
+        have hb := Finset.mem_antidiagonal.mp hij
+        rw [ih ij.2 (by omega)]
+      have hS' := congrArg (coeff n) heS
+      have hT' := congrArg (coeff n) heT
+      rw [coeff_derivative] at hS' hT'
+      exact mul_right_cancel₀ (by positivity : (n : ℚ)+1 ≠ 0)
+        (hS'.trans (hs.trans hT'.symm))
+
+private theorem B_original : Original B := (original_iff_algebraic B B_zero).mpr B_algebraic
+
+/-- The source integral equation has exactly one rational formal solution of constant term one. -/
+theorem original_exists_unique : ∃! S : PowerSeries ℚ, Original S :=
+  ⟨B, B_original, fun S hS => original_unique S B hS B_original⟩
+
+/-- A is chosen solely by the original integral equation and its initial condition. -/
+noncomputable def A : PowerSeries ℚ := Classical.choose original_exists_unique
+
+/-- The chosen series satisfies the original equation. -/
+theorem A_original : Original A := (Classical.choose_spec original_exists_unique).1
+
+/-- The OEIS conjecture, for every positive index, with factorial normalization. -/
+theorem egf_coeff_eq_f (n : ℕ) (hn : 1 ≤ n) :
+    (n.factorial : ℚ) * PowerSeries.coeff n A = (f 0 (n - 1) : ℚ) := by
+  have hBA : B = A := original_unique B A B_original A_original
+  obtain ⟨m, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (by omega : n ≠ 0)
+  change eCoeff A (m+1) = (f 0 m : ℚ)
+  rw [← hBA, ← eCoeff_derivative, B_derivative, F_coeff]
+
+#print axioms egf_coeff_eq_f
+#print axioms original_exists_unique
 
 end A338193
