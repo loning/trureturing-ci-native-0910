@@ -57,3 +57,37 @@ and inductive proof, and is not a finite computation or a certified instance.
 No proof, counterexample, integrality theorem, freeze, coverage, successful
 build, or PR is claimed at this checkpoint. Pages not opened by this worker
 are `ASSUMED-UNVERIFIED` as worker observations. The full target remains open.
+
+## Search checkpoint: exact reusable interfaces
+
+- Cache ensure EXIT=0: `status=seeded`, donor `/Users/chronoai/trureturing`,
+  `method=clonefile`, `clonefile_attempts=1`, `stamp_miss=null`,
+  `mathlib_olean_state=warm`, `project_olean_state=warm`.
+- Pinned Mathlib search for `schr[oö]der|schroeder|A338193` found
+  `Mathlib/RingTheory/PowerSeries/Schroder.lean` and
+  `Mathlib/Combinatorics/Enumerative/Schroder.lean`. Both files were read fully.
+  Exact reuse:
+  `PowerSeries.largeSchroderSeries` and
+  `PowerSeries.largeSchroderSeries_eq_one_add_X_mul_largeSchroderSeries_add_X_mul_largeSchroderSeries_sq`,
+  transported from naturals to rationals by the existing series map.
+  The header advertises a small series, but that file's body has no such
+  definition. `Nat.smallSchroder` exists with a shifted indexing convention;
+  the proof will use the exact large-series interface.
+- Read the full public surfaces of `IntegralEGFComposition`,
+  `QuarticEGFFixedPoint`, `PiecewiseConvolutionPowersOfFour`, and
+  `DyadicPowerRowClosedForm`. General reusable results are `eCoeff_derivative`,
+  `eCoeff_mul`, `eCoeff_X_mul`, `encode`, `eCoeff_encode`, `eCoeff_ext`.
+  The latter two modules have no applicable public general result for this
+  characteristic-zero differential/row problem; their private helper lemmas
+  were inspected too.
+- Third-party Lean ecosystem, authenticated GitHub code search:
+  `gh search code A338193 --language Lean --limit 25` returned `[]`.
+  `Schroder` returned Mathlib and copies plus unrelated Schroeder-Bernstein
+  uses. No independent A338193 formalization was found in this search scope.
+- Fetched and read `https://oeis.org/A338193/internal`. The entry states the
+  original integral equation and all three Kurkov recurrences exactly as in
+  the brief, and still labels the equality `Conjecture`, dated Oct 26 2024.
+  The Kotesovec one-dimensional recurrence is a separate formula.
+  Raw response: runner artifact `oeis-internal.html`.
+- Capacity: `find D5/S1/Recurrence/Residue -type f | wc -l` returned 11.
+  Spec A5.1 confirms the literal header syntax `utility: none`.
