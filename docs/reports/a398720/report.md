@@ -3,6 +3,10 @@
 产地：`lean4` skill；Codex implementation worker 单点实施、自查，零独立评审席。
 用户/分诊席的枚举与文献读数是转述，不冒作本席实测；外层 runner 的评审另计。
 
+当前 implementation 结果：**成**。原签名已证明并冻结，make lean EXIT=0；
+PR https://github.com/the-omega-institute/trureturing/pull/6744 已开出，base=dev，未合并。
+CI 在本条收据时仍运行，本文不主张 CI 三门已绿。以下各批次的“尚未”仅指该批次当时状态。
+
 ## 预登记
 
 第一档。目标严格为用户的 `spcp_odd_top_weight`，矩阵类型为
@@ -189,3 +193,17 @@ utility=none：所有定理均为任意奇数阶的一般组合构造，不属�
   主定理声明身份见上，模块身份与声明身份不混称。
 - 落地形态是冻结、未覆盖：reason=NO_ATOM；无 source_id/atom_id，也无消化状态迁移。
 - 已完成本地要求门序。下面开 PR；不主动合并，由外层 runner 按本 implementation brief 接手。
+
+
+## PR 与交付范围
+
+- make pr-open 已创建 PR #6744，state=OPEN、isDraft=false、baseRefName=dev；
+  创建时 head=bdf94227d52a2c3a24d1aa8c6f4d1bf453a92790。未设置 AUTO_MERGE。
+- question_answered：A398720 奇数阶边界项猜想，预登记见用户 brief 与本报告首节。
+  目标未改、无额外假设，采用 comment/DATA 的 n×n 对象；全称证明包含 n=1。
+- 本 implementation brief 的“成”门槛已达到；它不等于 PR 已合并或全部 CI 已绿。
+  CI 最后读数另列于 runner result.json，不以本地成功替代远端判词。
+- 未主张整个 SPCP 三角形、任意固定 k 公式或其他同族问题已解决；未主张全球文献穷尽
+  或首创性；未重算或冒领用户有限核对；未主张独立评审、未主动合并 PR。
+- runner 产物将原子写入 result.json 与 completion.sentinel；原始构建日志、收据、
+  module-report.json、proof-dependencies.lean/log 与主条目页面存同一 attempt 目录。
