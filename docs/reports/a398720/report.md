@@ -163,3 +163,16 @@ utility=none：所有定理均为任意奇数阶的一般组合构造，不属�
   row_unique_zero 的 statement_id=
   sha256:1d421a4b93d7b860b489e1402876eb2c09a72b541d777259b653882e7a9bbf0d。
 - 已启动用户指定 scribe-content-checks.sh，固定 base 24279623ef5253194f6c64ee3b3b627e62e3df50。
+
+## Scribe 内容门
+
+- 用户指定命令 bash tools/scripts/workflow/scribe-content-checks.sh
+  .lake/build/stratalint/raw-lean-report.json "" 24279623ef5253194f6c64ee3b3b627e62e3df50
+  EXIT=0，23.436 秒。describe-report 检查通过；真 KaTeX markdown-check
+  judged=1、formula(s)=1、red=0；Library locator 无 incomplete-library-locator 红。
+- 本次 delta 不含 Golden/Projection 变更，脚本按其现行条件不唤醒 projections；
+  另用同一 canonical Scribe 程序显式运行 projections --check --report
+  .lake/build/stratalint/raw-lean-report.json，EXIT=0。三子项均已在本地检查。
+- 已启动 make deposit-uncovered，GID=主定理、BASE=固定 40 位 SHA。
+  这是用户允许的无 atom 路径，canonical writer 内部执行 ledger-align --add；
+  不运行 make ingest，不新增 theory/atom/backfill，也不制造自指 coverage。
