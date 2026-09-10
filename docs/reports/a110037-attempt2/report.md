@@ -3,6 +3,11 @@
 产地：lean4 skill；Codex 主 worker 单点实施与自查；独立评审席 0。
 Runner 的后续独立评审不计入本席。本次用户 brief 为预登记输入。
 
+结算：**blocked（具体 B 的 kernel 前置与现有“不重证”约束冲突）**。
+不是 n=1 勘误导致停止：该勘误已记录并绕过。目标未翻，强归纳及四分支在显式
+文献前提下全部闭合；不能虚报其中一项数学失败。原目标仍无无条件 kernel 证明，
+不能报“成”。继续所需输入已明确为现成 Lean 声明，或允许移植论文前置的授权。
+
 ## 预登记与边界
 
 目标仍为 n≥2 的 signed_nonsquashing_diff。第一档：OEIS 的已发表猜想。
@@ -199,3 +204,42 @@ make emit 首轮 EXIT=2，18.908秒；真实判词 invalid-doi：本仓 A12 要�
 没有新增 D5、Blueprint、atom、coverage 或冻结状态片；没有 make deposit，
 因为未取得主定理的 kernel 证明。没有开 PR，不用报告/条件桥的 PR 冒作原目标完成。
 没有重建理论卷或反向摄入。所有未打开页面仍 ASSUMED-UNVERIFIED。
+
+## 最终检查与可恢复工件
+
+- Bridge.lean 最后含七条 elaborate 后依赖断言的检查：EXIT=0，40.504秒。
+  五组 #print axioms 全为标准三公理；七条 ELABORATED_DEPENDENCY 全部出现。
+  最后只调整文件说明注释，未改任何定义、陈述或证明项。
+- scribe-content-checks：EXIT=0，13.318秒；BASE 精确为
+  82938786158c163b50350c14c948e63df61107a8。实际执行 describe-report --check，
+  summary red=0。该 delta 没有 Blueprint/Projection 变化，故脚本没有执行
+  projections --check 或 markdown-check；不把路径判为无需执行冒称三项均真跑。
+  既有全库 Observe 不变成本题错误，原日志完整保留。
+- make lean EXIT=0 / 10.469秒；make lean-report EXIT=0 / 31.033秒；
+  make emit 修正轮 EXIT=0 / 51.389秒。未运行 make preflight 或冷树裸 lake。
+- 本轮新增仅 Library note、Bridge.lean 和本报告；attempt 1 工件仍在原目录。
+  每个已验证单元、检索批次和报告修正均 commit + push 到 lane/math/a110037。
+- runner 的 result.json 和 completion.sentinel 将由 worker 依次临时写入并原子改名。
+
+本轮 make lean 的 LEAN_CACHE 原始收据：
+
+```text
+LEAN_CACHE {"status":"present","worktree":"/Users/chronoai/trureturing-a110037","donor":null,"method":"none","reason":null,"stamp_miss":null,"pin_sha256":"sha256:6c4c682ffba051b5744fe7a75ccc99d7f3b20227b3b026f392f3315be0adaa4e","clonefile_errno":null,"clonefile_errnos":[],"clonefile_attempts":0,"clonefile_cleanup_error":null,"mathlib_missing_olean_files":0,"mathlib_missing_olean_samples":[],"archive_status":"not_attempted","archive_mode":null,"archive_skip_reason":"project olean state is warm","archive_reason":null,"archive_producer_commit_sha":null,"archive_workflow_run_id":null,"mathlib_olean_state":"warm","mathlib_olean_probe_error":null,"project_olean_state":"warm","project_olean_probe_error":null}
+```
+
+## 数学推导的可读对应
+
+以论文奇偶定理为已知数学前置，令 f(r)=B(4r)%2。r 偶数时用 (24) 的
+B(16s)≡B(8s)；r≡1/3 mod4 时分别配对 (23) 与两个 32 进展式，得 f(2r)=f(r)。
+奇 r 的两支与 c(16s+5)=1、c(16s+13)=0 互补，正偶数同时减半；强归纳即
+f(r)+c(4r+1)=1。令 ε=r%2，其后的计算如下（0/1项均视为整数）：
+
+| n | B(n)%2 | c(n)−c(n+1) | (-1)^(n/2) |
+| --- | --- | --- | --- |
+| 4r，r>0 | 1−c(4r+1) | 1−c(4r+1) | 1 |
+| 4r+1，r>0 | c(4r+1) | c(4r+1) | 1 |
+| 4r+2，r≥0 | 1−ε | ε−1 | −1 |
+| 4r+3，r≥0 | ε | −ε | −1 |
+
+这个表对应四条已核验私有 theorem，不是新增有限枚举。数学引用的合法性不改变
+Lean 的事实：仍须给具体直接计数提供 SloaneSellersParity 的证明项。
