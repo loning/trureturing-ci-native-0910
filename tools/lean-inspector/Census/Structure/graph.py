@@ -153,8 +153,11 @@ def analyse(store, keys, output, core, *, cache=None, axioms=None, mark=lambda _
     missing_depth = reachable(reverse, failures | cycles)
     missing_direct_depth = reachable(direct_reverse, failures | cyclic_nodes(direct_adj, direct_reverse))
     potential = {identities[target] for entry in entries for target in entry["potential"]}
+    # Consumers blocked by a cycle have no descendant bitset either. Their
+    # other prerequisites must not publish a complete undercount.
+    excluded = set(range(len(keys))) - set(order)
     missing_descendants = (set(range(len(keys))) if any(e["unbounded"] for e in entries)
-                           else reachable(adj, potential | cycles))
+                           else reachable(adj, potential | excluded))
     timings["depth_and_cycles"] = time.monotonic() - started
     started = time.monotonic()
     mark("structure_descendants")

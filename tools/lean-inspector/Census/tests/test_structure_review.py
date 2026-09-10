@@ -40,6 +40,14 @@ class StructureReviewTests(unittest.TestCase):
         self.assertEqual(rows["a"]["status"], "unavailable")
         self.assertIsNone(rows["b"]["readings"]["frozen_dag_depth"])
 
+    def test_cycle_excluded_consumer_cannot_publish_complete_zero(self):
+        rows, _ = self.graph({"a": ["a"], "x": ["a", "z"], "z": []})
+        self.assertEqual((rows["z"]["status"], rows["z"]["readings"]["descendant_subgraph_size"]),
+                         ("partial", None), "cycleExcludedConsumerDescendants")
+        self.assertEqual(rows["z"]["missing_fields"], ["descendant_subgraph_size"])
+        self.assertEqual(rows["a"]["reason"], "graph_cycle")
+        self.assertIsNone(rows["x"]["readings"]["frozen_dag_depth"])
+
     def test_regenerated_custom_report_supplies_sidecar_axioms(self):
         # Execute the production provenance branch and sidecar handoff. Other
         # census phases are deliberately outside this regression's input cone.
