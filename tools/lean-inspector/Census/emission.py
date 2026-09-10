@@ -151,7 +151,7 @@ def range_source(node, scope=None):
     if children:
         left, right = children
         for side in ["manifestKeys", "reportKeys"]:
-            body += f"@[expose] public noncomputable def {scope}.{side} : List Nat := {left}.{side} ++ {right}.{side}\n"
+            body += f"@[expose] public noncomputable def {scope}.{side} : List Nat := List.append {left}.{side} {right}.{side}\n"
         proof = f"range_join {left}.facts {right}.facts (by decide +kernel)"
     else:
         body += chunked_keys(scope + ".manifestKeys", node["inv"], public=True)

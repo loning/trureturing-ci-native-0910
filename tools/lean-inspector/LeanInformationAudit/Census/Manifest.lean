@@ -49,23 +49,31 @@ def packIds (ids : List Nat) : Nat :=
 unfolding of global definitions: cross-side aliases, moves, duplication, order
 and arity changes are rejected before publication. -/
 def bindChunkedKeys (listName : Name) (component : String)
-    (wire : Array StatementKey) (bucket : Option (Nat × Nat) := none) : MetaM (List Nat) := do
+    (wire : Array StatementKey) (bucket : Option (Nat × Nat) := none)
+    (declarations : Option (Array ConstantInfo) := none) : MetaM (List Nat) := do
+  let lookup (name : Name) : MetaM DefinitionVal := do
+    if let some declarations := declarations then
+      let some (.defnInfo value) := declarations.find? (·.name == name) | bindingError component
+      return value
+    getConstInfoDefn name
   let keys ← ofExcept <| canonicalKeys wire
   let keyArray := keys.toArray
   let chunkCount := (wire.size + 99) / 100
   let names ← (List.range chunkCount).mapM fun n => do
     let name := listName ++ .mkSimple ("chunk" ++ toString n)
-    return if (← getEnv).contains name then name else mkPrivateNameCore listName.getPrefix name
+    let present := if let some ds := declarations then ds.any (·.name == name)
+      else (← getEnv).contains name
+    return if present then name else mkPrivateNameCore listName.getPrefix name
   let decoded := names.zipIdx |>.map fun (name, n) =>
     mkApp2 (mkConst ``decodeIds) (mkNatLit (min 100 (wire.size - n * 100))) (mkConst name)
   let chunks ← mkListLit (toTypeExpr (List Nat)) decoded
   let expected ← mkAppM ``List.flatten #[chunks]
   -- List notation inserts local lets. Substitute only those lets; global
   -- definitions (including an alias to the other side) remain opaque.
-  let joined ← zetaReduce (← getConstInfoDefn listName).value (zetaDelta := false) (beta := false)
+  let joined ← zetaReduce (← lookup listName).value (zetaDelta := false) (beta := false)
   unless joined == expected do bindingError (component ++ "_binding")
   for n in [:chunkCount] do
-    let actual := (← getConstInfoDefn names[n]!).value
+    let actual := (← lookup names[n]!).value
     unless actual.isAppOfArity ``OfNat.ofNat 3 do bindingError component
     let .lit (.natVal value) := actual.getAppArgs[1]! | bindingError component
     unless actual == mkNatLit value do bindingError component
@@ -90,17 +98,24 @@ private def natConstant (name : Name) (component : String) : MetaM Nat := do
   unless value == mkNatLit n do bindingError component
   return n
 
-/-- The private leaf environment dies before the next leaf is opened. Only Unit
-escapes; no expression or Core/Meta state referring to its regions is retained. -/
-private unsafe def bindLeafIO (module scope : Name) (rows report : Array StatementKey)
-    (k b n : Nat) : IO Unit :=
-  withImportModules #[{ module }] {} fun env => do
+/-- Read just one leaf's serialized declarations. The existing exported Init
+environment supplies types; private Init imports are never reloaded per leaf.
+Only Unit escapes the fresh Meta state before the leaf's regions are freed. -/
+private unsafe def bindLeafIO (env : Environment) (module scope : Name)
+    (rows report : Array StatementKey) (k b n : Nat) : IO Unit := do
+  let path ← findOLean module
+  let levels : Array OLeanLevel := #[.exported, .server, .private]
+  let parts ← readModuleDataParts (levels.map (·.adjustFileName path))
+  try
+    let some (data, _) := parts[2]? | throw <| IO.userError "missing private leaf declarations"
+    let declarations := some data.constants
     let check : MetaM Unit := do
-      let inv ← bindChunkedKeys (scope ++ `manifestKeys) "manifest_keys" rows (some (k, b))
-      discard <| bindChunkedKeys (scope ++ `reportKeys) "report_keys" report (some (k, b))
-      let actual ← natConstant (scope ++ `n) "bucket_length"
-      unless actual == inv.length && actual == n do bindingError "bucket_length"
+      let inv ← bindChunkedKeys (scope ++ `manifestKeys) "manifest_keys" rows (some (k, b)) declarations
+      discard <| bindChunkedKeys (scope ++ `reportKeys) "report_keys" report (some (k, b)) declarations
+      unless inv.length == n do bindingError "bucket_length"
     discard <| check.run' |>.toIO { fileName := "<census-leaf-binding>", fileMap := default } { env }
+  finally
+    for (_, region) in parts do region.free
 
 private def rangeModule (scope : Name) (b k : Nat) : Name :=
   scope ++ .mkSimple ("Range" ++ toString b ++ "_" ++ toString k)
@@ -147,7 +162,8 @@ def bindBuckets (listName reportName : Name) (rows report : Array StatementKey) 
       bindingError "bucket_leaf_bound"
     if leaf then
       bindImports module #[`LeanInformationAudit.Census.Certificate]
-      unsafe bindLeafIO module node ((inv.extract il ih).map (·.2)) ((rep.extract rl rh).map (·.2)) k b n
+      unsafe bindLeafIO (← getEnv) module node
+        ((inv.extract il ih).map (·.2)) ((rep.extract rl rh).map (·.2)) k b n
     else
       match fuel with
       | 0 => bindingError "bucket_prefix_bits"
@@ -160,8 +176,8 @@ def bindBuckets (listName reportName : Name) (rows report : Array StatementKey) 
             `reportKeys, "report_keys")] do
           let expected ← mkAppM ``List.append #[mkConst (left ++ side), mkConst (right ++ side)]
           let joined ← zetaReduce (← getConstInfoDefn list).value (zetaDelta := false) (beta := false)
-          -- Notation introduces HAppend.hAppend, whose instance is canonical.
-          unless ← isDefEq joined expected do bindingError (component ++ "_binding")
+          -- Compare the canonical append graph without reducing either child.
+          unless joined == expected do bindingError (component ++ "_binding")
           let args := joined.getAppArgs
           unless args.size ≥ 2 && args[args.size - 2]! == mkConst (left ++ side) &&
               args[args.size - 1]! == mkConst (right ++ side) do bindingError (component ++ "_binding")
