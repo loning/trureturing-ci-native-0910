@@ -255,3 +255,11 @@ git diff --check EXIT=0；正式两模块内 sorry/axiom/native_decide 检索零
 origin/dev=c6502d134e1483b4a2142f2781cb65372d7b67a9，
 merge-tree EXIT=0，tree=e45ecc1ff228682863b8061652d02b4a20e9abc1。
 下一步仅开 PR 并等 required-CI 判词；主证明源码自 make lean 成功后未改。
+
+## PR 已创建
+
+PR https://github.com/the-omega-institute/trureturing/pull/6754，base=dev。
+make pr-open 已创建成功，正在同步等待三项 required checks；未启用 auto-merge。
+本次提交只追加 PR 定位，Lean/Blueprint/Library/冻结面均未变化。
+最终 CI 判词与交付 SHA 写入 runner attempt-3/result.json 及 pr-open-receipt.json，
+避免为重复记录同一检查而无限追加触发新 CI 的报告提交。
