@@ -177,7 +177,9 @@ jobs:
         run: dotnet restore candidate/tools/StrataLint.sln --locked-mode
       - name: Run candidate engineering tests with resource observation
         shell: bash
-        run: /bin/bash candidate/tools/scripts/workflow/engineering-test-execution-harness.sh "$GITHUB_WORKSPACE/candidate"
+        env: { PROBE_BUILD_OUTCOME: "${{ steps.build-candidate.outcome }}", PROBE_JUDGE_ADDRESS: "${{ steps.judge-address.outputs.address }}", PROBE_JUDGE_CACHE_HIT: "${{ steps.judge-cache.outputs.cache-hit }}" }
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == pull_request ]]; then /bin/bash candidate/tools/scripts/workflow/report-cache-corrupt-probe.sh --engineering-output-omission "$(mktemp -d "$RUNNER_TEMP/reportcache0910-engineering.XXXXXXXX")"; else /bin/bash candidate/tools/scripts/workflow/engineering-test-execution-harness.sh "$GITHUB_WORKSPACE/candidate"; fi
 
       - name: Run candidate selftest twice and compare bytes
         shell: bash
@@ -305,6 +307,7 @@ jobs:
             candidate/tools/**/obj
           key: stratalint-judge-binaries-v2-${{ runner.os }}-${{ steps.judge-address.outputs.runtime }}-${{ steps.judge-address.outputs.address }}
       - name: Build candidate tools before Lean report production
+        id: build-tools
         if: steps.judge-cache.outputs.cache-hit != 'true'
         shell: bash
         run: make -C candidate/tools dotnet
@@ -557,7 +560,7 @@ jobs:
       # TEMPORARY negative probe: close its trigger PR without merging this payload.
       - name: Probe corrupt report cache recovery and exact reuse
         if: github.event_name == 'pull_request'
-        env: { GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }
+        env: { GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}", PROBE_BUILD_OUTCOME: "${{ steps.build-tools.outcome }}", PROBE_JUDGE_ADDRESS: "${{ steps.judge-address.outputs.address }}", PROBE_JUDGE_CACHE_HIT: "${{ steps.judge-cache.outputs.cache-hit }}" }
         shell: bash
         run: |
           set -euo pipefail

@@ -493,6 +493,8 @@ public sealed partial class LeanReportInputScriptTests
                 if (!File.Exists(Path.Combine(repository, relative)))
                     Write(relative, File.ReadAllText(path, Encoding.UTF8));
             }
+            Write(".github/scripts/harness-gate.sh", File.ReadAllText(
+                Path.Combine(sourceRoot, ".github", "scripts", "harness-gate.sh"), Encoding.UTF8));
             Write("Directory.Build.props", "<Project />\n");
             Write("Directory.Packages.props", "<Project />\n");
             Write(CliProjectPath, "<Project Sdk=\"Microsoft.NET.Sdk\" />\n");
