@@ -37,9 +37,9 @@ public sealed partial class ProductionEnvironmentTests
     public void GitCliOrdinaryAttributeKeepsDirectNativeDecideRejection(bool genuineChar)
     {
         var prefix = "import Init\nattribute [simp] Nat.add_zero\n"
-            + (genuineChar ? "example : ')' =')' := by decide\n" : "");
-        CheckAnonymousSource("native_decide", 1, prefix, prepareContext: true, demandContext: false,
-            diagnosticLine: genuineChar ? 11 : 10);
+            + (genuineChar ? "example : True := by native_decide\nexample : ')' =')' := by decide\n" : "");
+        CheckAnonymousSource(genuineChar ? "decide" : "native_decide", 1, prefix,
+            prepareContext: true, demandContext: false, diagnosticLine: 10);
     }
 
     [Theory]
@@ -50,11 +50,14 @@ public sealed partial class ProductionEnvironmentTests
     public void GitCliUnmodeledAttributeOnlyRefusesDemandedContext(bool genuineChar, bool native)
     {
         var prefix = "import Lean\nattribute [term_parser] Lean.Parser.Term.paren\n"
+            // The certain token precedes the ambiguous Char, so both lexical
+            // projections reach it even if one cannot scan the following Char.
+            + (genuineChar && native ? "example : True := by native_decide\n" : "")
             + (genuineChar ? "example : ')' =')' := by decide\n" : "");
         var demanded = genuineChar && !native;
-        CheckAnonymousSource(native ? "native_decide" : "decide", genuineChar || native ? 1 : 0,
+        CheckAnonymousSource(native && !genuineChar ? "native_decide" : "decide", genuineChar || native ? 1 : 0,
             prefix, prepareContext: true, demandContext: demanded,
-            contextErrorLine: demanded ? 9 : null, diagnosticLine: genuineChar ? 11 : 10);
+            contextErrorLine: demanded ? 9 : null, diagnosticLine: 10);
     }
 
     private static void CheckAnonymousSource(string tactic, int expected, string prefix = "",
