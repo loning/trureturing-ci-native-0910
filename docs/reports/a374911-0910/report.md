@@ -106,3 +106,17 @@ two-adic LTE already searched). This is a revision of the preregistered
 arithmetic witness, recorded before trying it. The original subtraction-LTE
 route remains unverified and is no longer the implementation plan. The user’s
 stop condition at smallest-prime exclusion or LTE remains in force.
+
+## Critical arithmetic checkpoint
+
+The warm Lean check of `attempt-1/Critical.lean` exited 0. Both
+`two_pow_self_mod_ne_one` and `three_pow_dvd_two_pow_add_one` were kernel
+checked, with only propext, Classical.choice, Quot.sound. The smallest-prime
+exclusion and addition-LTE step both succeeded; the stopping condition did
+not trigger. They are saved as private helpers in the routed module. This
+checkpoint does not yet prove the sequence classification.
+
+The route command accepted Arith/Congruence/PowerResidueRecursionFour with
+generality I. Its first call rejected an absolute manifest path; retry used
+a repository-relative `.lake/a374911-route.json` and returned the canonical
+GID and seven-line skeleton.
