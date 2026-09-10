@@ -197,6 +197,7 @@ internal static class SourceContextContractScript
                 result = self.query("import Lean\n"
                                     f"attribute [{attribute}] Lean.Parser.Term.paren\n"
                                     "example : ')' =')' := by decide\n")
+                self.assertIsNotNone(result["error"])
                 self.assertEqual(2, result["error"]["line"])
                 self.assertIn("cannot determine this attribute registration effect", result["error"]["message"])
 
