@@ -6153,11 +6153,11 @@ P2 初稿 `70463e7669a120e9fb180fadfb78bbe46ea6eaa1` 为 §§27–29，中间重
 
 在合入稿 `8b56117` 的 581 个账目所引用的 CAS 中，以“编号与完整名称”检索，本节所列定义 31–33、命题 58–63 九项均无命中。因此旧 34/34 CAS/账目对只证明中间编号原料已入账，不能证明最终改号正文已全部摄入。当前完整 `contextual-spacetime-arithmetic` 源及本勘误的摄入状态，以 canonical `make ingest` 的新收据和对应新增 CAS/YAML 判定；旧 CAS/YAML 保留其历史原料身份，不改内容地址，也不改释为其他批次的同号结果。摄入仅记录参考文本，不构成新的数学证明、Lean 内核验证或持续研究总目标完成的声明。
 
-## 41. PR7 增补 P：复制孔语言的 q 表达分类
+## 42. PR7 增补 P：复制孔语言的 q 表达分类
 
-本节是 repo-derived 的 PR7 结算。它只讨论目标族 $q\circ F_B$；一般数值函数的复制表达力另列，不能由本节推出“复制不增加任何 q 表达力”。因 origin/dev 已在 §37 后追加 §§38–40，本批正文按当前最大编号续接为 §41；内容对应 brief 的 §38。
+本节是 repo-derived 的 PR7 结算。它只讨论目标族 $q\circ F_B$；一般数值函数的复制表达力另列，不能由本节推出“复制不增加任何 q 表达力”。因 origin/dev 已在 §37 后追加 §§38–41，本批正文按当前最大编号续接为 §42；内容对应 brief 的 §38。
 
-### 41.1 定义 34：复制项语言与严格量词
+### 42.1 定义 34：复制项语言与严格量词
 
 **定义 34（复制项语言 $\operatorname{Ctx}^{\rm dup}$，repo-derived）。** 有限语法树的叶是输入变量 $X$ 或固定平衡参数（元语法记法，不增加原语），节点只使用原有 $\Sigma_{{\rm cau},t}$ 操作。整项至少出现一次 $X$；多次出现的 $X$ 是同一个输入。参数、谓词、平移、槽位和语法树均先于 $X$ 固定。失败严格传播，失败不被 $N$、空筛选或零因子挽救。令
 \[
@@ -6165,7 +6165,7 @@ E_q^{\rm dup}(B)\;:\Longleftrightarrow\;\exists\text{ 固定总项 }C\in\operato
 \]
 这里“总项”要求每个子项对全部输入有定义。命题 64 只分类 $q\circ F_B$；例如 $X\mapsto q(X)^2$ 的复制表达力不在该断言范围内。证明使用原 $\Sigma_{{\rm cau},t}$，不加入 $F_B$、$\widehat M_P$、身份对角筛选或输入自适应参数。
 
-### 41.2 引理 5：总项正规化、复制多项式与单叶切片
+### 42.2 引理 5：总项正规化、复制多项式与单叶切片
 
 **引理 5（repo-derived）。** 设 $C$ 是定义 34 意义下的总复制项，并令 $r$ 为其输入叶数。
 
@@ -6190,7 +6190,7 @@ P_{C,X}(z)\in\mathbb Z[z],\qquad q(C(nX))=P_{C,X}(n).
 \]
 形式系数或剖面差未被声称可实现；本引理只给出代数值，不冒称存在更丰富的状态。证毕。
 
-### 41.3 引理 6：有限单孔族的共同饱和
+### 42.3 引理 6：有限单孔族的共同饱和
 
 **引理 6（repo-derived）。** 对任意有限总单孔上下文族 $C_1,\ldots,C_r$，存在共同 $c\le0$，使得任意 $p$ 及 $t,t'<c$ 均有
 \[
@@ -6198,7 +6198,7 @@ q(C_i(X_t))=q(C_i(X_{t'}))\qquad(1\le i\le r).
 \]
 这里 $X_t$ 与 $X_{t'}$ 是同一对见证输入：唯一选中正点分别为 $e@(t,p)$、$e@(t',p)$；全部前缀见证的未选后继为 $d$，并置共同星形 $e\prec d$；加入时刻 $0$ 的共同孤立未选平衡点及两个共同非当前档案端点。$c$ 取全部前缀拉回见证时刻、固定平移后的下界，以及各非空首乘固定因子 $\min t[\Omega]$ 减累计平移的有限最小值。无乘积、空因子和非空因子三类分别由同位、空剖面和首乘同摘要处理；随后用命题 48 的后缀保摘要归纳。因所有 $C_i$ 同时使用同一对输入，结论不是把各自引理 4 阈值取最小而沿用不同见证。证毕。
 
-### 41.4 命题 64：OPEN-COPY 完整分类
+### 42.4 命题 64：OPEN-COPY 完整分类
 
 **命题 64（repo-derived，OPEN-COPY）。**
 \[
@@ -6227,33 +6227,33 @@ L_B(X)=\sum_iq(C_i(X)).
 
 **范围边界。** 结论只对固定有限总项、原签名和全部平衡输入成立；输入自适应参数、无限项、身份查询、新配对原语及一般 $q$ 函数的复制表达力均在范围外。有限核验不替代上述全称证明。
 
-### 41.5 反例 D17、D18：自乘对照与非总项切片失败
+### 42.5 反例 D17、D18：自乘对照与非总项切片失败
 
 **反例 D17（repo-derived，自乘子类，≤15 行）。** 对 $D_Q(X)=F_{\downarrow Q}(X\boxtimes X)$，有 $q(D_Q(nX))=n^2q(D_Q(X))$；该子类实现区域线性目标当且仅当 $B=\varnothing$。在两端无界的 $B_{\rm even}$ 上，$t=-4$ 的同属性正点复制 $n=1,2,3$ 读数为 $1,4,9$，目标为 $1,2,3$。一般有序来源的交叉项是 $\epsilon\epsilon'[m(a,a')+m(a',a)]$；仅当核对称时才为 $2\epsilon\epsilon'm$。对角子点精确属性为 $(t+1,2p,+1,\operatorname{pair}(r,r))$，其 $b^2=b$；旧档案保留两个父出现 $(0,e),(1,e)$，而新 $U_t$ 只有该单点，故保留时间不恢复原事件；同属性非对角项不能由属性隔离。另有 $X\boxplus(A(X)\boxplus N(A(X)))$ 的 $q$ 恒等于 $q(X)$，故终端线性不能逐个消灭自乘结点。$B_{d,R}$ 与 $B_{\rm drift}$ 仍由命题 64 判不可表达（前者及 $B_{\rm even}$ 两端无界；后者无下界、上界 $0$）。来源只取 $(\operatorname{leaf}(0),\operatorname{leaf}(1))$ 时，四个异来源选择读数为 $0,0,0,1$。这只否定自乘子类，不能替代命题 64 的任意项证明。
 
 **反例 D18（repo-derived，引理 5A 的必要性）。** 令 $Q=\{(0,+1,\operatorname{leaf}(0),1)\}$、$D(X)=F_{\downarrow Q}(X\mathbin{\triangleright}T_1X)$。取 $X=U_0$，则 $q(D(nX))=2n$，而两次单出现替换 $D_1,D_2$ 的读数为 $0,1$，且 $D(0)=0$，所以 $2\ne0+1$，切片公式对非总项失败。$D$ 在含时刻 $0$ 与 $3$ 的档案输入上守卫失败，故不在命题 64 的量词域内；$Q$ 的时间投影上下界均为 $1$。
 
-### 41.6 命题 65：实现类数
+### 42.6 命题 65：实现类数
 
 **命题 65（repo-derived，实现类数）。** 给定命题 57 类型的 $(g,m,M)$，在历史同构 $\cong_h$ 下其实现在数满足：五条件任一失败时为 $0$；$g=0$ 且端点为 $(+\infty,-\infty)$ 时恰为 $1$ 个（空实现）；其余可实现三元组有 $\aleph_0$ 个。证明如下。命题 57 给出一个有限实现。对任意可实现非空剖面，在时刻 $m$ 追加任意多个孤立、非当前档案点；它们不改 $(g,m,M)$、摘要读数或 $q$，却改变 $|E|$，得到两两非同构实现。有限编码的有限集合全体可数，故上界为 $\aleph_0$。空当前区域而端点有限时，同样在端点档案中追加孤立点；其实现数仍为 $\aleph_0$。
 
 D10 型机制的短注：取 $E=\Omega$，$r$ 个选中正点 $a@0$（$U=\{a,b\}$）、$s$ 个选中正点 $b@1$（$U=\{b\}$），以及 $r+s$ 个孤立未选负点 $c@0$。全部历史是无零行的 $r\times s$ 二部邻接矩阵在 $S_r\times S_s$ 下的轨道；时间上下界为 $0,1$。当 $r=s=2$ 时有 $9$ 张带标号图、$4$ 个轨道；函数型子类的类数是分拆数。本注只计该子类，不把一般 $g$ 的有限骨架轨道枚举列为本批目标。
 
-### 41.7 边界与范围收束
+### 42.7 边界与范围收束
 
 §36.7 原有的 OPEN-COPY open 文字由命题 64 完整结算；D17、D18 对自乘子类与非总项路线作具名的部分结算。引理 5 的多项式结论依赖严格总项；D18 说明删去该域后切片恒等式失效。命题 65 的 $\aleph_0$ 计数使用有限编码与历史同构，不能外推到无限档案。全文没有新增 Lean、axiom、判官或 schema；新推导均标 repo-derived，预期无新外部引用。
 
 <a id="pr7-evidence"></a>
 
-## 42. PR7 产地与核验收据
+## 43. PR7 产地与核验收据
 
-本批产地三项为：`skill=consensus-rnd:sshx`；思考六席载体见 caller 的 rotation 记录；实施席为 `codex-cli`。评审三席由 caller 另记，本席未代报其判词。形态为 `ingest`；不报告冻结或 absorbed 状态。因 `origin/dev` 在开工后已追加 §§38–40，本批按“当前 dev 最大编号续接”落在 §41–§42；brief 所称 §38–§39 内容对应本批的 §41–§42。
+本批产地三项为：`skill=consensus-rnd:sshx`；思考六席载体见 caller 的 rotation 记录；实施席为 `codex-cli`。评审三席由 caller 另记，本席未代报其判词。形态为 `ingest`；不报告冻结或 absorbed 状态。因 `origin/dev` 在开工后已追加 §§38–41，本批按“当前 dev 最大编号续接”落在 §42–§43；brief 所称 §38–§39 内容对应本批的 §42–§43。
 
-### 42.1 逐节提交与范围
+### 43.1 逐节提交与范围
 
-PR7 正文提交为 `6e736baf68`，附录初稿为 `028723247c`，附录修正为 `46e226bd02` 与 `2156d58427`，首次摄入提交为 `5d3b1ab09d`。随后合并最新 `origin/dev` 的提交为 `3ad8df08fb`，合并前 dev SHA 为 `17dcccc461`，合并后 dev SHA 为 `a3da3ff01f`。§1–§40 与顶部导航均未修改；本批只在唯一 Python 块末行打印之前插入 PR7 段，并在文档末尾追加 §41、§42。
+PR7 正文提交为 `6e736baf68`，附录初稿为 `028723247c`，附录修正为 `46e226bd02` 与 `2156d58427`，首次摄入提交为 `5d3b1ab09d`。随后合并最新 `origin/dev` 的提交为 `3ad8df08fb`，合并前 dev SHA 为 `17dcccc461`，合并后 dev SHA 为 `a3da3ff01f`。§1–§41 与顶部导航均未修改；本批只在唯一 Python 块末行打印之前插入 PR7 段，并在文档末尾追加 §42、§43。
 
-### 42.2 附录命令与 stdout
+### 43.2 附录命令与 stdout
 
 实际执行命令（退出码 **0**，stderr 为空）为：
 
@@ -6271,7 +6271,7 @@ pr7_copy_expressibility: archive_parity_rule_copy=1 cancelled_square_linear=5 co
 
 本次修复的 repo-derived 有限核验取 6 个固定复制项：自乘、带固定时移单位的中间因子、平方消去项、三次项、嵌套筛选项与非零常数项；覆盖 $F_S,F_L,F_{\downarrow Q},N,T_k$。输入为 $U_0$ 加种子 `2026091007` 生成的 4 个随机平衡输入；对每项、每输入的 $n=0,1,2,3$，Rich 求值与 $\Gamma_t$ 线性／双线性推送多项式分别作 120 次完整剖面、120 次 q 规范字节比较。30 组读数独立作精确拉格朗日插值，并将一次系数与逐叶保留、其余换空档案的切片差和比较；其中非零常数项检查 5 次、非零三次系数检查 4 次。D18 检得 q 读数 `0,2,4,6`、两个单出现替换 `0,1`，并在档案时刻为 `0,3` 时检得守卫失败，连同 N、空筛选、零因子外壳共 4 次严格失败传播。D17 在 −4 时刻位置 0 的单位复制上，生成时间 −3 为奇数，检得自乘 `1,4,9` 对区域目标 `1,2,3`；只接受有序来源 `pair(leaf(0),leaf(1))` 的四个选择读 `0,0,0,1`。共同饱和、命题 57 实际像及 2×2 二部图 9 张／4 轨道的既有 PR7 检查仍执行。所有定向对照均为有限读数，有限读数不承担全称否定，也不替代正文全称证明。
 
-### 42.3 ingest 收据
+### 43.3 ingest 收据
 
 首次摄入命令（合并后 dev 的当时 SHA）为：
 
@@ -6279,15 +6279,15 @@ pr7_copy_expressibility: archive_parity_rule_copy=1 cancelled_square_linear=5 co
 BASE=17dcccc461dd1f0ebb584bdfce578c0c3525f25c make ingest SOURCE="contextual-spacetime-arithmetic docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md"
 ```
 
-退出码为 **0**，计数为 `residual_open_added=49 skipped_existing=306 coarse_fallbacks=0 open_genres=0 cas_objects_written=49 ledger_changed=true`，并由提交 `5d3b1ab09d` 入账。§42 写入后的最终摄入命令为：
+退出码为 **0**，计数为 `residual_open_added=49 skipped_existing=306 coarse_fallbacks=0 open_genres=0 cas_objects_written=49 ledger_changed=true`，并由提交 `5d3b1ab09d` 入账。§43 写入后的最终摄入命令为：
 
 ```sh
 BASE=a3da3ff01faf5dc562f119227f53e17a668b1f55 make ingest SOURCE="contextual-spacetime-arithmetic docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md"
 ```
 
-该命令退出码为 **0**，计数为 `residual_open_added=6 skipped_existing=322 coarse_fallbacks=0 open_genres=0 cas_objects_written=6 ledger_changed=true`。在 §41 的 D17 细节补充后，按要求再次执行同一命令，退出码为 **0**，计数为 `residual_open_added=0 skipped_existing=328 coarse_fallbacks=0 open_genres=0 cas_objects_written=0 ledger_changed=false`；该次执行是 D17 修改后的最终检查点。
+该命令退出码为 **0**，计数为 `residual_open_added=6 skipped_existing=322 coarse_fallbacks=0 open_genres=0 cas_objects_written=6 ledger_changed=true`。在 §42 的 D17 细节补充后，按要求再次执行同一命令，退出码为 **0**，计数为 `residual_open_added=0 skipped_existing=328 coarse_fallbacks=0 open_genres=0 cas_objects_written=0 ledger_changed=false`；该次执行是 D17 修改后的最终检查点。
 
-### 42.4 git 读数与边界
+### 43.4 git 读数与边界
 
 相对最终合并后的 `origin/dev`，理论卷的差异只有两个纯插入 hunk；最终命令
 
