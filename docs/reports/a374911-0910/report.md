@@ -149,3 +149,28 @@ polynomial Fermat–Catalan, not this integer exponential equation. Read the
 Coons–Winning introduction and main proposition in its downloaded TeX; it
 classifies bi-periodic subsets. The remainder of its proof and unrelated
 second-hop references are not claimed read.
+
+## Higher-power exclusion checkpoint
+
+The warm main-file check including `two_pow_self_mod_three_pow`,
+`three_pow_gt_linear`, and `three_pow_sub_one_eq_two_pow` exited 0.
+Log: attempt-1/arithmetic-check.log. Addition LTE gives the exact remainder;
+two-adic LTE and exponential growth exclude every even k ≥ 3, and reduction
+modulo four excludes every odd k ≥ 3. Both critical arithmetic boundaries
+have now passed Lean. Only assembly of the value-four theorem remains.
+
+Broadened searches read Mathlib Archive/Imo/Imo2025Q3.lean and
+Archive/Imo/Imo2005Q4.lean completely. The former has a similar local LTE
+bound in `fExample.apply_le`, but its public statement assumes `IsBonza f`;
+the latter treats a different sum sequence. Neither exports the needed
+standalone primitive. GitHub code query `"2 ^ n" "minFac" language:Lean`
+returned 21 matches. Read Compfiles `usa1982p4.lean` and `imo2000p5.lean`
+at 51c8803ed93c0a350d110fffe4c3804b473bba78: their public constructions
+and general congruence helpers supply no needed primitive beyond Mathlib.
+Read `putnam1972a5.lean` in shanjiaming/lean-pl-fix at
+229f898bd9bc4a7894cfadde622afe814590b8e9. It states the related integer
+nondivisibility result but is a raw proof dataset fragment, without imports;
+its proof has repeated steps that lose the minFac relation. It has not been
+compiled here and is `ASSUMED-UNVERIFIED`, not admitted as a usable library
+proof. The known mathematical prerequisite is attributed to A036236.
+Unopened search hits and fork copies remain `ASSUMED-UNVERIFIED`.

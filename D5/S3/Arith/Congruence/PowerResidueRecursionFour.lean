@@ -10,6 +10,7 @@ import Mathlib.NumberTheory.Multiplicity
 import Mathlib.FieldTheory.Finite.Basic
 import Mathlib.Tactic.NormNum
 import Mathlib.Tactic.LinearCombination
+import Mathlib.Tactic.Linarith
 
 
 namespace D5.S3.Arith.Congruence.PowerResidueRecursionFour
@@ -130,6 +131,57 @@ theorem seq_eq_three (n : ℕ) : seq n = 3 ↔ ∃ k : ℕ, 0 < k ∧ n = 2 ^ k 
     rw [seq_rec (by positivity : 2 ^ (t + 1) ≠ 0),
       Nat.mod_eq_zero_of_dvd (pow_dvd_pow 2 (Nat.le_of_lt (Nat.lt_two_pow_self))),
       three_pow_self_mod_two_pow, seq_zero, seq_one]
+
+private theorem two_pow_self_mod_three_pow (k : ℕ) :
+    2 ^ (3 ^ k) % (3 ^ k) = 3 ^ k - 1 := by
+  have hm : 0 < 3 ^ k := by positivity
+  have hr := Nat.mod_lt (2 ^ (3 ^ k)) hm
+  have hd := Nat.mod_eq_zero_of_dvd (three_pow_dvd_two_pow_add_one k)
+  have hd' : 3 ^ k ∣ 2 ^ (3 ^ k) % (3 ^ k) + 1 := by
+    apply Nat.dvd_of_mod_eq_zero
+    simpa only [Nat.add_mod, Nat.mod_mod] using hd
+  have := Nat.le_of_dvd (by omega : 0 < 2 ^ (3 ^ k) % (3 ^ k) + 1) hd'
+  omega
+
+private theorem three_pow_gt_linear {k : ℕ} (hk : 3 ≤ k) : 4 * k + 1 < 3 ^ k := by
+  induction k, hk using Nat.le_induction with
+  | base => norm_num
+  | succ k hk ih =>
+    rw [pow_succ]
+    nlinarith
+
+private theorem three_pow_sub_one_eq_two_pow {k j : ℕ} (hk : 0 < k)
+    (heq : 3 ^ k - 1 = 2 ^ j) : k = 1 ∨ k = 2 := by
+  have : Fact (Nat.Prime 2) := ⟨by decide⟩
+  by_contra h
+  have hk₃ : 3 ≤ k := by omega
+  have hg := three_pow_gt_linear hk₃
+  by_cases heven : Even k
+  · have hv := padicValNat.pow_two_sub_one (x := 3) (n := k)
+      (by decide) (by decide) (by omega) heven
+    have hv₄ : padicValNat 2 4 = 2 := by
+      change padicValNat 2 (2 ^ 2) = 2
+      exact padicValNat.prime_pow 2
+    norm_num [heq, hv₄] at hv
+    have hj : j = 2 + padicValNat 2 k := by omega
+    have hle : 2 ^ padicValNat 2 k ≤ k := Nat.le_of_dvd hk pow_padicValNat_dvd
+    have hbound : 2 ^ j ≤ 4 * k := by
+      rw [hj, pow_add]
+      exact Nat.mul_le_mul_left 4 hle
+    omega
+  · obtain ⟨t, ht⟩ := Nat.not_even_iff_odd.mp heven
+    have hm : 3 ^ k % 4 = 3 := by
+      rw [ht, pow_add, pow_mul]
+      norm_num [Nat.mul_mod, Nat.pow_mod]
+    have hp : 3 ^ k = 2 ^ j + 1 := by omega
+    have hj₂ : 2 ≤ j := by
+      by_contra h
+      have : j = 0 ∨ j = 1 := by omega
+      rcases this with rfl | rfl <;> norm_num at hp <;> omega
+    have hd : 4 ∣ 2 ^ j := pow_dvd_pow 2 hj₂
+    have hmod := congrArg (fun x : ℕ => x % 4) hp
+    rw [hm, Nat.add_mod, Nat.mod_eq_zero_of_dvd hd] at hmod
+    norm_num at hmod
 
 #print axioms seq_eq_one
 #print axioms seq_eq_two
