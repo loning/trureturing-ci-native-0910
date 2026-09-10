@@ -243,3 +243,18 @@ the concurrently added Scribe file and found CS1503: `D` expects a byte but
 `LevelFormula` accepted int. Changed that helper parameter to byte, matching
 all four constant call sites. This was a narrative-source compile failure
 before the Lean build, not a failed mathematical proof. Full build retry pending.
+
+## Full build checkpoint
+
+`make lean` retry EXIT=0, real 62.70 seconds (user 81.30, sys 43.30),
+12,838 jobs in this warm worktree. Log: attempt-1/make-lean-retry.log.
+The initial cache receipt remains the explicit successful `make lean-cache-ensure`
+receipt above; the canonical build used `lean-cache-run.sh` and its cache writer.
+The build output includes pre-existing warnings in other modules. The four
+A374911 theorem axiom closures are the standard set and the target file contains
+no `sorry`, private axiom, or `native_decide`.
+
+Before PR, fetched origin/dev and re-ran `git grep -P` over its D5 for
+`A374911|a374911_eq_four|PowerResidueRecursionFour`: no hit. The remote base is
+still 24279623ef5253194f6c64ee3b3b627e62e3df50. Local D5 search finds only
+this module. No competing exact implementation was found in either snapshot.
