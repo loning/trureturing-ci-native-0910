@@ -284,7 +284,7 @@ internal sealed class LeanReportTransportFixture : IDisposable
     // Explicit UTC input for publication abandonment; no elapsed real time.
     private const string PublicationClockStub = """
         import datetime, os, time
-        time.time = lambda: datetime.datetime.fromisoformat(os.environ.get('FIXTURE_NOW', '2026-09-09T00:00:00Z')).timestamp()
+        time.time = lambda: datetime.datetime.fromisoformat(os.environ.get('FIXTURE_NOW', '2026-09-09T00:00:00Z').replace('Z', '+00:00')).timestamp()
         """;
 
     // Inject elapsed IO time at subprocess.run's deadline boundary. The command
