@@ -2815,10 +2815,12 @@ assert pr5_summary(pr7_suffix_rich) == pr7_suffix_state
 pr7_hit("pair_suffix")
 
 # Pullback encoding and mixed strict propagation.
-pr7_lift = frozenset(((a[3], a[0]), (b[3], b[0]))
-                      for a in pr7_P for b in pr7_P)
-pr7_lifted = pr6_pair(pr6_X, pr3_U0, pr7_lift)
-assert pr5_rich_bytes(pr7_lifted) == pr5_rich_bytes(pr7_pair_rich)
+pr7_cell_P = pr5_position_pair
+pr7_attr_P = pr5_Set(lambda pair: ((pair[0][3], pair[0][0]),
+                                   (pair[1][3], pair[1][0])) in pr7_cell_P)
+pr7_lifted = pr6_pair(pr6_X, pr3_U0, pr7_attr_P)
+pr7_direct_cells = pr5_pair(pr6_X, pr3_U0, pr7_cell_P)
+assert pr5_rich_bytes(pr7_lifted) == pr5_rich_bytes(pr7_direct_cells)
 pr7_hit("pullback_encoding")
 pr7_step = ("FQ", pr5_Qpositive)
 pr7_rich_mixed = pr5_rich_step(pr6_X, pr7_step)
@@ -2909,8 +2911,8 @@ pr7_hit("distinct_actual_profiles")
 
 pr7_D16 = {(pr7_a_pos, 1, frozenset({pr7_a_pos, (origin, 1, pr3_l0, 1)})): 1,
            ((origin, 1, pr3_l0, 1), 1, frozenset({(origin, 1, pr3_l0, 1),
-                                                  (origin, 1, pr3_l0, 2)})): 1,
-           ((origin, 1, pr3_l0, 2), 0, frozenset({(origin, 1, pr3_l0, 2)})): -2}
+                                                  (origin, -1, pr3_l0, 2)})): 1,
+           ((origin, -1, pr3_l0, 2), 0, frozenset({(origin, -1, pr3_l0, 2)})): -2}
 assert pr6_conditions(pr7_D16, 0, 2) == (True, True, True, False, True)
 pr7_hit("D16_conditions")
 for pr7_m, pr7_M, pr7_ok in ((None, None, True), (-2, -2, True),
