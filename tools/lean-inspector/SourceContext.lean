@@ -105,6 +105,27 @@ def applyBuiltin (cmd : Syntax) : FrontendM Unit := do
       for name in declarationNamespaces cmd do
         unless name.isAnonymous do modifyEnv (·.registerNamespace (ns ++ name))
 
+inductive AttributeTokenEffect where
+  | unchanged
+  | unknown
+
+/- Lean.Meta.mkSimpAttr updates simplifier/simproc extensions. Its core `simp`
+   handler does not register parser tokens, for add, erase, or any attribute scope.
+   Check its identity in the current imported registry. Do not run elabAttr (which
+   expands attribute macros) or apply the handler to unelaborated source targets.
+   Other handlers remain unknown; their application time is not an effect guarantee. -/
+def attributeTokenEffect (env : Environment) (stx : Syntax) : AttributeTokenEffect := Id.run do
+  let name? := if stx.isOfKind ``Parser.Command.eraseAttr then
+      some stx[1].getId.eraseMacroScopes
+    else if stx.isOfKind ``Parser.Term.attrInstance then
+      if stx[1].isOfKind ``Parser.Attr.simp then some `simp
+      else if stx[1].isOfKind ``Parser.Attr.simple then some stx[1][0].getId.eraseMacroScopes
+      else none
+    else none
+  let some name := name? | return .unknown
+  let .ok impl := getAttributeImpl env name | return .unknown
+  return if name == `simp && impl.ref == ``Meta.simpExtension then .unchanged else .unknown
+
 /- Bounded declarative token registration. Only the token is projected; the old
    expansion target is neither inspected as executable code nor evaluated. -/
 partial def projectRegistration (cmd : Syntax) (scope? : Option Name := none) : FrontendM Unit := do
@@ -113,14 +134,18 @@ partial def projectRegistration (cmd : Syntax) (scope? : Option Name := none) : 
     return
   unless [``Parser.Command.mixfix, ``Parser.Command.notation, ``Parser.Command.syntax].contains cmd.getKind do
     if cmd.isOfKind ``Parser.Command.initialize || cmd.getKind.toString.endsWith ".run_cmd" then
-      runCommandElabM <| throwErrorAt cmd "source context cannot model a dynamic initializer registration effect"
+      runCommandElabM <| logErrorAt cmd "source context cannot model a dynamic initializer registration effect"
     else if (strings cmd).contains "='" &&
       ["Lean.Parser.Command.macro", "Lean.Parser.Command.elab", "Lean.Parser.Command.attribute"].contains cmd.getKind.toString then
-      runCommandElabM <| throwErrorAt cmd "source context cannot model this equality-token registration effect"
-    else if cmd.getKind.toString == "Lean.Parser.Command.attribute" then
-      runCommandElabM <| throwErrorAt cmd "source context cannot determine this attribute registration effect"
+      runCommandElabM <| logErrorAt cmd "source context cannot model this equality-token registration effect"
+    else if cmd.isOfKind ``Parser.Command.attribute then
+      runCommandElabM do
+        for attr in cmd[2].getSepArgs do
+          match attributeTokenEffect (← getEnv) attr with
+          | .unchanged => pure ()
+          | .unknown => logErrorAt attr "source context cannot determine this attribute registration effect"
     else if !(cmd.getKind.toString.startsWith "Lean.Parser.Command.") then
-      runCommandElabM <| throwErrorAt cmd "source context cannot determine this custom command registration effect"
+      runCommandElabM <| logErrorAt cmd "source context cannot determine this custom command registration effect"
     return
   unless (strings cmd).contains "='" do return
   let words := atoms cmd
