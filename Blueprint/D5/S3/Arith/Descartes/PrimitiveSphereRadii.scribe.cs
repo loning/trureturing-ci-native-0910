@@ -56,13 +56,13 @@ internal sealed class PrimitiveSphereRadiiDocument : IScribeDocumentDefinition
         var equation = Seq(Square(Par(SumI(reciprocal))), Eq,
             D(3), SumI(Square(Par(reciprocal))));
         var fiber = Seq(OpenBrace, V("i"), Colon, Val(), Eq, V("e"), CloseBrace);
-        var conclusion = Seq(Exists, V("e"), InMacro, Mathbb, Grp(V("N")), Comma,
+        var conclusion = Seq(Exists, Sp, V("e"), InMacro, Mathbb, Grp(V("N")), Comma,
             D(0), Lt, V("e"), Sp, Land, Sp,
             Lvert, fiber, Rvert, Eq, D(3), Sp, Land, Sp,
-            Forall, V("i"), Comma, Par(Seq(Val(), Eq, D(0), Sp, Lor, Sp, Val(), Eq, V("e"))));
-        return Disp(Seq(Forall, V("r"), Colon, Operatorname, Grp(V("Fin")), Par(D(4)),
+            Forall, Sp, V("i"), Comma, Par(Seq(Val(), Eq, D(0), Sp, Lor, Sp, Val(), Eq, V("e"))));
+        return Disp(Seq(Forall, Sp, V("r"), Colon, Operatorname, Grp(V("Fin")), Par(D(4)),
             To, Mathbb, Grp(V("N")), Comma,
-            Par(Seq(Par(Seq(Forall, V("i"), Comma, D(0), Lt, Ri())), Sp, Land, Sp,
+            Par(Seq(Par(Seq(Forall, Sp, V("i"), Comma, D(0), Lt, Ri())), Sp, Land, Sp,
                 Gcd, Par(V("r")), Eq, D(1), Sp, Land, Sp, equation)),
             Sp, Implies, Sp, conclusion));
     }

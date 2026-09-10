@@ -188,3 +188,26 @@ of completed proof, library exhaustiveness, build success or freeze yet.
   of the conjecture. No existing proof is falsely attributed to the OEIS entry.
 - `make lean-report` is in progress; Scribe compilation/emission and content
   checks remain pending. No generated Blueprint markdown has been hand-edited.
+
+## Report, semantic echo and first emission
+
+- `make lean-report` EXIT=0, 97.983 seconds. Canonical report:
+  `.lake/build/stratalint/raw-lean-report.json`. It includes exactly one public
+  authored theorem, primitive_sphere_radii_v3, statement_id
+  `sha256:09c88b6e978ed31186462778333f69017d9fba0cba726bc6badb8e54518b1886`.
+  All listed imports are Mathlib/Init, hence direct frozen prerequisites are [].
+- The private curvature_unit_count statement_id is
+  `sha256:ee17673c023abe39e40a70b2a2e726a9bd80a2883294a8fc904c03b59f990f52`.
+- Worker-owned `SemanticEcho.lean` checked the exact requested target type,
+  jointly verified all hypotheses for (1,3,3,3) and (12,12,39,52), and rejected
+  (1,1,1,1) for the coefficient-3 equation. EXIT=0, 7.122 seconds. These are
+  semantic probes only, not separately frozen instances or unbounded evidence.
+  This does not rerun or re-certify the orchestrator's 49-solution enumeration.
+- Lean's `ConstantInfo.value?.getUsedConstants` confirmed the direct elaborated
+  edge primitive_sphere_radii_v3 -> private curvature_unit_count. This is a
+  compiler semantic readout, not an inferred text-search dependency. The echo
+  also reports only propext, Classical.choice and Quot.sound.
+- First `make emit` EXIT=2, 19.447 seconds: the formula DSL rejected adjacent
+  control word forall and identifier r (`\\forallr`). Added explicit Sp after
+  all four quantifiers in the Scribe formula. The mathematical Lean source did
+  not change. Emission after this repair is running; no claim of success yet.
