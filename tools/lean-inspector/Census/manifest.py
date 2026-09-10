@@ -15,7 +15,11 @@ def emit(directory, report_path, census_path, receipt_path, prefix):
     report = json.loads(report_bytes)
     head = report["source_commit"]
     digest = "sha256:" + hashlib.sha256(report_bytes).hexdigest()
-    keys = [key for key in frozen_keys(report) if key[0] == prefix or key[0].startswith(prefix + ".")]
+    try:
+        all_keys = frozen_keys(report)
+    except ValueError as error:
+        raise ValueError("IE-C044 report: " + str(error)) from error
+    keys = [key for key in all_keys if key[0] == prefix or key[0].startswith(prefix + ".")]
     rows, receipt_digest = read_handoff(census_path, receipt_path, digest, head)
     path = write_manifest(directory, rows, keys, head, digest, "CensusRun.Root")
     driver = ("import LeanInformationAudit.Census.Publish\n"

@@ -15,6 +15,25 @@ def statement_nat(wire):
     return value
 
 
+def validate_identity_inputs(rows, report_keys):
+    """IE-C044 > IE-C035 > IE-C036, before Name decoding or literal packing."""
+    seen = set()
+    for _, _, wire in report_keys:
+        if wire in seen:
+            raise ValueError("IE-C044 component=frozen_keys duplicate statement identity")
+        seen.add(wire)
+    seen = set()
+    for row in rows:
+        wire = row["statement_id"]
+        if wire in seen:
+            raise ValueError("IE-C035 DuplicateAnalysisDisposition statement_id=" + wire)
+        seen.add(wire)
+    for _, _, wire in report_keys:
+        statement_nat(wire)
+    for row in rows:
+        statement_nat(row["statement_id"])
+
+
 def parse_name_key(text):
     data = text.encode("utf-8")
 
@@ -136,6 +155,7 @@ def manifest_source(rows, report_keys, head, digest, root, b=PREFIX_BITS):
 
 
 def write_manifest(directory, rows, report_keys, head, digest, root, b=PREFIX_BITS):
+    validate_identity_inputs(rows, report_keys)
     for module, source in bucket_sources(rows, report_keys, b).items():
         write_module(directory, module, source)
     return write_module(directory, root, manifest_source(rows, report_keys, head, digest, root, b))
