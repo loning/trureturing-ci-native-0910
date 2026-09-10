@@ -1,0 +1,16 @@
+### 42.2 附录命令与 stdout
+
+实际执行命令（退出码 **0**，stderr 为空）为：
+
+```sh
+sed -n '/^```python$/,/^```$/p' docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md | sed '1d;$d' | python3 -
+```
+
+PR7 行逐字为：
+
+```text
+pr7_copy_expressibility: D10_control=1 D15_fiber=1 D15_q=1 D16_conditions=1 J_fiber=1 J_positive=1 U_rule_push=1 U_size_rule=1 collapse_controls=4 collapsed_profiles=4 distinct_actual_profiles=1 empty_endpoint_branches=6 empty_products=1 empty_realizations=3 enumerated_roundtrip=1 enumerated_states=1 first_product_fiber=1 formal_membership=1 global_rule=1 image_roundtrip=1 image_sets=1 mixed_q=1 mixed_summary=1 negative_inputs=1 old_archives=1 pair_push=1 pair_suffix=1 periodic_saturation=1 pullback_encoding=1 q_only_control=1 same_local_rows=1 saturation_empty_factor=1 saturation_endpoints=3 saturation_no_product=1 saturation_product=1 saturation_q=3 strict_failures=1 tail_q=3 target_controls=4 unsaturated_control=1 unselected_parents=1 required_pr6_keys=41 required_pr6_positive=1
+```
+
+末行为 `ALL_FINITE_CHECKS_PASSED`。PR7 段首先用 41 个字面键构造 `REQUIRED_PR6_KEYS`，再检查其包含关系与正计数；PR7 自身也先检查字面键集包含，再检查全部计数为正。有限实验覆盖复制项、共同饱和、自乘与非总项反例、2×2 二部图 9 张／4 轨道及命题 59 的孤立档案点机制；有限读数不替代正文全称证明。
+
