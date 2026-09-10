@@ -25,7 +25,7 @@
   下一步逐条读命中组合模块的公开声明，并扩大同族词汇检索。
 - 尚未进行 Mathlib/第三方/OEIS 检索与 Lean 编译，不主张 search-complete。
 
-## 未主张
+## 未主张（开工时记录）
 
 未主张已证明、反驳、冻结、构建通过或开 PR。未主张全球不存在既有证明或首创性。
 未打开的外部页面为 ASSUMED-UNVERIFIED；有限枚举不作为一般定理的部分进展。
@@ -199,3 +199,21 @@
   模块 statement_id=sha256:254430127ee8a1507f96467f6f24c19db7d11b45efec016652b5300fbf6dcf15；
   prerequisite_frozen_node_ids=[]。以上直接读取新冻结记录，未重算历史账本。
 - 冻结后不再改 Lean 文件；下一步开 PR 并由 canonical pr-open 等待 required CI 判词。
+
+## PR 交付
+
+- PR：https://github.com/the-omega-institute/trureturing/pull/6740；state=OPEN，base=dev。
+  首次 PR head=f3f66fe7d5aa988bc284fafce064cd1a21c58f4e；autoMergeRequest=null。
+- 按用户三态判据已达“成”：主定理证明完成、make lean EXIT=0、无 sorry/私 axiom、PR 已开。
+  这不等于 CI 已绿或 PR 已合并；写入本条时两项 required check 正在运行，第三项尚待上游。
+  canonical make pr-open 正在同步等待最终 required-CI 判词，原始日志及最终退出码保存在
+  runner attempt/make-pr-open.log、make-pr-open-receipt.json，最终结构化结果在 result.json。
+- 当前无待证子命题。原先 ASSUMED-UNVERIFIED 的 lcm 规范化路线已经 Lean 验证；
+  来源检索中未打开的外部页面仍保持 ASSUMED-UNVERIFIED。
+
+## 最终未主张
+
+- 不主张 n=0 的除数和恒等式、全球首创或文献检索穷尽。
+- 不把有限枚举称为证明；不把用户/分诊席的独立核验或外层 runner 评审冒作本席结果。
+- 不主张同族所有条目均已形式化、原条目已有公开证明或本 PR 已合并。
+- 没有新增理论卷、atom、coverage、私 axiom、sorry、native_decide 或正向有限冻结实例。
