@@ -258,3 +258,18 @@ Before PR, fetched origin/dev and re-ran `git grep -P` over its D5 for
 `A374911|a374911_eq_four|PowerResidueRecursionFour`: no hit. The remote base is
 still 24279623ef5253194f6c64ee3b3b627e62e3df50. Local D5 search finds only
 this module. No competing exact implementation was found in either snapshot.
+
+## Report and projection checkpoint
+
+`make lean-report` EXIT=0, real 58.12 seconds. Canonical report SHA-256:
+`1516bcdde4c0c6bc721f94b0add1ac243f72f4110d2474922e2c7cdb28900948`.
+Its module record confirms only Mathlib/Init imports and the standard axiom
+set for each included theorem. Extract: attempt-1/module-lean-report.json.
+`make emit` EXIT=0, real 50.83 seconds; it generated exactly one changed
+Blueprint document. Read the entire emitted document and checked its four
+quantified classification formulas and the guarded recursive definition.
+Logs: attempt-1/make-lean-report.log and attempt-1/make-emit.log.
+
+The full-build `LEAN_CACHE` line additionally records `status=present`,
+`method=none`, `stamp_miss=null`, project/Mathlib `warm`, and zero missing
+Mathlib oleans. No cold bare Lake operation was used.
