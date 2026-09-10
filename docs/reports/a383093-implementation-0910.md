@@ -110,3 +110,36 @@
   encodeSystem 的双射把 encoded_divisor_sum 接回原始系统定义。
 - 先前一次编译错误为 Prod.ext rfl 过早推断两端相同；改 refine 后通过。
 - 唯一公开 theorem 是 capable_divisor_sum；两侧没有除数和定义。仍待项目构建与叙事/冻结/PR 门。
+
+## 项目构建与语义回声
+
+- make lean EXIT=0，实测 51.720 秒，Build completed successfully (12835 jobs)。
+  日志：runner attempt/make-lean.log；本模块无警告，日志其余长行警告来自既有模块。
+- 独立 Python 语义探针 n=1..25：左侧枚举所有分拆并直接检验公共和/重数整除；
+  右侧枚举公共和 D 的除数多重集并展开真实块；没有从一侧生成另一侧计数。
+  a(1..12)=[1,2,2,4,2,7,2,9,5,9,2,23]；s(1..8)=[1,3,3,7,3,12,3,16]；
+  不满足恒等式的 n 数量=0。systems(4) 的七项实际列在 semantic-probe.json。
+  这是语义回声，不是数学证明或单独冻结的正向有限实例。
+- 新 Library note 含 Verified locator，逐字包含 frontmatter 的 url 与 doi: null；
+  Scribe 仅陈述定义、归一化证明与数学结论，不含判形治理词汇。
+
+## 逐公开定理判形（候选最终证明）
+
+唯一公开 theorem：D5/S1/Words/Compositions/ConstantEqualSumDivisorIdentity.capable_divisor_sum。
+
+- proof_shape: content。
+- 直接冻结依赖（GID + statement_id）：[]。模块只导入钉版 Mathlib；其声明不计本仓冻结前置。
+- escape_witness: private normalize（D=tL 的系统重数除以 t、支撑不变且规范和为 L）。
+- admission_basis: escape-witness。
+- 第 3.2(i)：normalize → liftSystem_surjective → encoded_divisor_sum → capable_divisor_sum，
+  按“消费者 → 前置”写为 capable_divisor_sum → encoded_divisor_sum → liftSystem_surjective → normalize。
+  后续以当前 Lean report 确認公理闭包及声明身份。
+- 第 3.2(ii)：已有 lcm/整除与 exists_smul 引理不直接提供重数可除、保留支撑的可行性或系统逆映射；
+  normalize 中先新证 t∣count，再取消 t 得规范分拆。不是冻结前置的实例化/投影所得。
+- 第 3.2(iii)：normalize 是逐对象存在构造，结论非计数等式，非其定义等价/别名/重述。
+- 第 3.2(iv)：构造的 u 用作满射原像，参与 Equiv.ofBijective 的逆函数与 Nat.card_congr；
+  删除此构造后所给证明不能得到任意系统的原像。不是合取中被丢弃的死分量。
+- utility: none。全部公开定理均无界量化；无枚举、检查器、数值归约或认证有限实例。
+  其它用途字段 not-applicable(kind=none)。
+- question_answered：用户预登记的 A383093 除数和猜想，保持 n>0。
+- dominating_theorem_search：not-found-in-searched-scope；范围与限制见各批检索收据。
