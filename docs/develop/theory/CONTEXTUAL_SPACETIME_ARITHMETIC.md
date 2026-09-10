@@ -1761,6 +1761,964 @@ pr3_indegrees = tuple(sorted(sum((a, b) in z.o for a in z.e) for b in ("b1", "b2
 assert pr3_indegrees == ([1, 1], [0, 2])
 print(f"pr3_source: samples={len(pr3_samples)} updates={pr3_counts['source_updates']} witnesses={pr3_counts['source_witnesses']} brackets={len(pr3_bracket_left.e)},{len(pr3_bracket_right.e)} B1=distinct ordered_pair=distinct")
 print(f"pr3_causal: updates={pr3_counts['causal_updates']} product_antichains={pr3_counts['product_antichains']} targets=Omega bare_probes={pr3_counts['bare_probes']} P_plus={pr3_isolated[0]},{pr3_isolated[1]} legal_probes={pr3_counts['legal_probes']} mobius_profiles={pr3_counts['mobius_profiles']} mobius_coefficients={pr3_counts['mobius_coefficients']} bounded_contexts={pr3_counts['bounded_contexts']} B2_time={pr3_time_reads[0]},{pr3_time_reads[1]} strict_successor={pr3_J_reads[0]},{pr3_J_reads[1]} edge={pr3_edge_reads[0]},{pr3_edge_reads[1]} marginals={pr3_marginal_reads[0]},{pr3_marginal_reads[1]} redundant_insertions={pr3_counts['redundant_insertions']} timed_nonisomorphism=True")
+
+# PR4: temporal causal checks; PR1--PR3 and the Rich operations remain unchanged.
+pr4_counts = {name: 0 for name in (
+    "updates", "endpoint_updates", "earliest_rows", "product_antichains",
+    "guard_success", "strict_failures", "context_reads", "mobius_coefficients",
+    "mobius_profiles", "xi_paths", "forget_paths", "q_expression", "kernel_edges")}
+
+def pr4_equal(actual, expected, counter):
+    assert pr3_bytes(actual) == pr3_bytes(expected), (counter, actual, expected)
+    pr4_counts[counter] += 1
+
+def pr4_profile(x):
+    return pr3_profile(x, timed=True)
+
+def pr4_earliest(upper):
+    earliest_time = min(a[3] for a in upper)
+    first = [a for a in upper if a[3] == earliest_time]
+    assert len(first) == 1, upper
+    return first[0]
+
+def pr4_support_time(g):
+    return max((a[3] for a, b, upper in g), default=None)
+
+def pr4_shift_attr(a, k):
+    return (*a[:3], a[3] + k)
+
+def pr4_shift_profile(g, k):
+    return push_c(g, lambda row: (pr4_shift_attr(row[0], k), row[1],
+                  frozenset(pr4_shift_attr(a, k) for a in row[2])))
+
+def pr4_diamond(a, aa):
+    return (*pr3_diamond(a[:3], aa[:3]), max(a[3], aa[3]) + 1)
+
+def pr4_profile_product(g, gg):
+    result = {}
+    for (a, b, upper), value in g.items():
+        for (aa, bb, uu), other in gg.items():
+            joined = pr4_diamond(a, aa)
+            row = (joined, b * bb, frozenset((joined,)))
+            result[row] = result.get(row, 0) + value * other
+    return sparse(result)
+
+def pr4_xi_direct(x):
+    # Definition 22: independent traversal of Omega and A, not of a profile.
+    background, chosen = {}, {}
+    for e in x.w:
+        time, position, sign, source = x.e[e]
+        cell = (time, position)
+        background[cell] = background.get(cell, 0) + sign
+    for e in x.a:
+        time, position, sign, source = x.e[e]
+        cell = (time, position)
+        chosen[cell] = chosen.get(cell, 0) + sign
+    return (sparse(background), sparse(chosen),
+            min((event[0] for event in x.e.values()), default=None),
+            max((event[0] for event in x.e.values()), default=None),
+            max((x.e[e][0] for e in x.w), default=None))
+
+def pr4_xi_from_profile(g, m, M):
+    # The coefficient already includes sign; do not multiply it by a[1].
+    background, chosen = {}, {}
+    for (a, b, upper), value in g.items():
+        cell = (a[3], a[0])
+        background[cell] = background.get(cell, 0) + value
+        if b == 1:
+            chosen[cell] = chosen.get(cell, 0) + value
+    return sparse(background), sparse(chosen), m, M, pr4_support_time(g)
+
+def pr4_forget_time(g):
+    return push_c(g, lambda row: (row[0][:3], row[1],
+                                 frozenset(a[:3] for a in row[2])))
+
+def pr4_read_table(x, D):
+    readings = {}
+    for eta in (0, 1):
+        selected = x if eta == 1 else neg(x)
+        for Q in pr3_subsets(D):
+            readings[(eta, Q)] = q(pr3_causal_filter(selected, Q, timed=True))
+            pr4_counts["context_reads"] += 1
+    return readings
+
+def pr4_restore(D, readings):
+    # Inputs are the fixed finite query vocabulary and terminal context readings.
+    # No Rich state, profile function, own-attribute probe or product is consumed.
+    restored = {}
+    subsets = pr3_subsets(D)
+    for eta in (0, 1):
+        h0 = {W: readings[(eta, D)] - readings[(eta, D - W)] for W in subsets}
+        for upper in subsets:
+            coefficient = sum((-1) ** (len(upper) - len(W)) * h0[W]
+                              for W in pr3_subsets(upper))
+            if coefficient:
+                assert upper
+                a = pr4_earliest(upper)
+                assert coefficient * a[1] > 0
+                restored[(a, eta, upper)] = coefficient
+            pr4_counts["mobius_coefficients"] += 1
+    return restored
+
+pr4_rng = pr3_Random(2026091004)
+pr4_samples = []
+for pr4_i in range(64):
+    pr4_n = pr4_rng.choice((0, 2, 4, 6))
+    pr4_signs = [1] * (pr4_n // 2) + [-1] * (pr4_n // 2)
+    pr4_rng.shuffle(pr4_signs)
+    pr4_events = {j: (pr4_rng.randrange(-5, 5),
+                        pr4_rng.choice((origin, v, h)), sign,
+                        pr4_rng.choice((pr3_l0, pr3_l1, ("pair", pr3_l0, pr3_l1))))
+                  for j, sign in enumerate(pr4_signs)}
+    pr4_whole = frozenset(pr4_events)
+    for pr4_j in range(pr4_rng.randrange(3)):
+        pr4_events[("old", pr4_j)] = (pr4_rng.randrange(-7, 7), v, 1, ("leaf", 9))
+    pr4_edges = {(e, d) for e in pr4_events for d in pr4_events
+                 if pr4_events[e][0] < pr4_events[d][0] and pr4_rng.randrange(4) == 0}
+    pr4_chosen = frozenset(e for e in sorted(pr4_whole) if pr4_rng.randrange(2))
+    pr4_samples.append(valid(Rich(pr4_events, closure(pr4_edges), pr4_whole, pr4_chosen)))
+
+# Directed boundaries: empty archive; nonempty archive with empty Omega;
+# highest current time cancels in W and Z but is visible in Gamma_t support.
+pr4_archive_only = valid(Rich({"old": (-4, origin, 1, pr3_l0)},
+                              frozenset(), frozenset(), frozenset()))
+pr4_cancel_events = {"p": (-3, origin, 1, pr3_l0), "n": (-3, origin, -1, pr3_l0),
+                     "top+": (4, origin, 1, pr3_l0), "top-": (4, origin, -1, pr3_l0),
+                     "old_min": (-9, v, 1, pr3_l0), "old_max": (8, v, 1, pr3_l0)}
+pr4_cancel = valid(Rich(pr4_cancel_events, frozenset(),
+                        frozenset(("p", "n", "top+", "top-")), frozenset(("p",))))
+assert pr4_xi_direct(pr4_cancel) == ({}, {(-3, origin): 1}, -9, 8, 4)
+assert pr4_support_time(pr4_profile(pr4_cancel)) == 4
+
+# D11: one fixed context, different selections at negative own times.
+pr4_d11e = {e: (t0, origin, sign, pr3_l0)
+            for e, t0, sign in zip("abcd", (-2, -1, 0, 0), (1, 1, -1, -1))}
+pr4_d11x = valid(Rich(pr4_d11e, frozenset({("a", "b")}),
+                      frozenset(pr4_d11e), frozenset("a")))
+pr4_d11y = replace(pr4_d11x, a=frozenset("b"))
+pr4_d11_c = {(pr3_vp, 1, frozenset((pr3_vp,))): 1,
+             (pr3_vp, 0, frozenset((pr3_vp,))): 1,
+             (pr3_vm, 0, frozenset((pr3_vm,))): -2}
+assert pr3_profile(pr4_d11x) == pr3_profile(pr4_d11y) == pr4_d11_c
+assert pr3_rho_src(pr4_d11x) == pr3_rho_src(pr4_d11y) == ({}, {(origin, pr3_l0): 1})
+assert theta(pr4_d11x)[1:] == theta(pr4_d11y)[1:] == (-2, 0, 0)
+pr4_d11_W = {(-2, origin): 1, (-1, origin): 1, (0, origin): -2}
+assert pr4_xi_direct(pr4_d11x) == (pr4_d11_W, {(-2, origin): 1}, -2, 0, 0)
+assert pr4_xi_direct(pr4_d11y) == (pr4_d11_W, {(-1, origin): 1}, -2, 0, 0)
+assert pr4_profile(pr4_d11x) != pr4_profile(pr4_d11y)
+pr4_d11_reads = tuple(q(pr3_causal_filter(z, {(origin, 1, pr3_l0, -2)}, timed=True))
+                      for z in (pr4_d11x, pr4_d11y))
+assert pr4_d11_reads == (1, 0)
+pr4_common_k = min(theta(z)[1] for z in (pr4_d11x, pr4_d11y)) - 1
+pr4_shift_probe = tuple(q(pr3_causal_filter(mul(z, time_shift(pr3_U0, pr4_common_k)),
+                         {(origin, 1, ("pair", pr3_l0, pr3_l0), -1)}, timed=True))
+                        for z in (pr4_d11x, pr4_d11y))
+pr4_flat_probe = tuple(q(pr3_causal_filter(mul(z, pr3_U0),
+                        {(origin, 1, ("pair", pr3_l0, pr3_l0), 1)}, timed=True))
+                       for z in (pr4_d11x, pr4_d11y))
+assert pr4_shift_probe == (1, 0) and pr4_flat_probe == (1, 1)
+assert pr4_profile(mul(pr4_d11x, pr3_U0)) == pr4_profile(mul(pr4_d11y, pr3_U0))
+
+# D12: four input selections on the same balanced context; q expression below.
+pr4_d12 = valid(Rich({e: (t0, origin, sign, pr3_l0)
+                      for e, t0, sign in zip("abcd", (0, 1, 0, 0), (1, 1, -1, -1))},
+                     frozenset({("a", "b")}), frozenset("abcd"), frozenset("ab")))
+pr4_d12_family = [replace(pr4_d12, a=A) for A in pr3_subsets("ab")]
+
+# D1 and D5 retain their section 26 numbering; check both incomparability directions.
+pr4_d1e = {j: (t0, p, sign, pr3_l0) for j, (t0, p, sign) in enumerate(
+            ((0, origin, 1), (0, origin, -1), (1, v, 1), (1, v, -1)))}
+pr4_d1x = valid(Rich(pr4_d1e, frozenset(), frozenset(pr4_d1e), frozenset((0, 2))))
+pr4_d1y = valid(replace(pr4_d1x, e={j: (t0, v if p == origin else origin, sign, r)
+                                    for j, (t0, p, sign, r) in pr4_d1e.items()}))
+pr4_d5x = pr3_U0
+pr4_d5y = valid(replace(pr4_d5x, e={e: (t0, p, sign, pr3_l1 if e in pr4_d5x.a else r)
+                                    for e, (t0, p, sign, r) in pr4_d5x.e.items()}))
+pr4_cases = pr4_samples + [empty, pr4_archive_only, pr4_cancel, pr4_d11x, pr4_d11y,
+                           pr3_outside, pr3_d2y, causal, no_causal, pr3_d5x, pr3_d5y,
+                           pr4_d1x, pr4_d1y, pr4_d5x, pr4_d5y] + pr4_d12_family
+pr4_xi_cases = list(pr4_cases)
+
+def pr4_check_update(x, expected_g, expected_endpoints):
+    pr4_equal(pr4_profile(x), expected_g, "updates")
+    pr4_equal(theta(x)[1:], expected_endpoints, "endpoint_updates")
+    assert pr4_support_time(expected_g) == expected_endpoints[2]
+    pr4_xi_cases.append(x)
+
+for pr4_i, pr4_x in enumerate(pr4_cases):
+    assert charge(pr4_x, pr4_x.w) == 0
+    pr4_g = pr4_profile(pr4_x)
+    pr4_tx = theta(pr4_x)
+    pr4_D = frozenset(pr3_alpha(pr4_x, e, timed=True) for e in pr4_x.w)
+    assert pr3_V(pr4_g) == pr4_D
+    assert pr4_support_time(pr4_g) == pr4_tx[3]
+    for (pr4_a, pr4_b, pr4_upper), pr4_value in pr4_g.items():
+        assert pr4_a == pr4_earliest(pr4_upper) and pr4_value * pr4_a[1] > 0
+        pr4_counts["earliest_rows"] += 1
+    pr4_equal(pr4_restore(pr4_D, pr4_read_table(pr4_x, pr4_D)), pr4_g, "mobius_profiles")
+    pr4_S, pr4_L = {origin, h}, {pr3_l0, pr3_l1}
+    pr4_check_update(neg(pr4_x), push_c(pr4_g, lambda k: (k[0], 1-k[1], k[2])), pr4_tx[1:])
+    pr4_check_update(at(pr4_x, pr4_S),
+                     push_c(pr4_g, lambda k: (k[0], k[1]*int(k[0][0] in pr4_S), k[2])),
+                     pr4_tx[1:])
+    pr4_check_update(filt(pr4_x, lambda e: pr4_x.e[e][3] in pr4_L),
+                     push_c(pr4_g, lambda k: (k[0], k[1]*int(k[0][2] in pr4_L), k[2])),
+                     pr4_tx[1:])
+    for pr4_Q in pr3_subsets(pr4_D):
+        pr4_check_update(pr3_causal_filter(pr4_x, pr4_Q, timed=True),
+                         push_c(pr4_g, lambda k: (k[0], k[1]*int(bool(k[2] & pr4_Q)), k[2])),
+                         pr4_tx[1:])
+    for pr4_k in (-7, 0, 3):
+        pr4_check_update(time_shift(pr4_x, pr4_k), pr4_shift_profile(pr4_g, pr4_k),
+                         tuple(a+pr4_k if a is not None else None for a in pr4_tx[1:]))
+    pr4_y = pr4_cases[(pr4_i + 1) % len(pr4_cases)]
+    pr4_gy, pr4_ty = pr4_profile(pr4_y), theta(pr4_y)
+    for pr4_left, pr4_right in ((pr4_x, pr4_y), (pr4_y, pr4_x)):
+        pr4_gl, pr4_gr = pr4_profile(pr4_left), pr4_profile(pr4_right)
+        pr4_tl, pr4_tr = theta(pr4_left), theta(pr4_right)
+        pr4_check_update(add(pr4_left, pr4_right), plus_c(pr4_gl, pr4_gr),
+                         theta_add(pr4_tl, pr4_tr)[1:])
+        pr4_product = mul(pr4_left, pr4_right)
+        pr4_check_update(pr4_product, pr4_profile_product(pr4_gl, pr4_gr),
+                         theta_mul(pr4_tl, pr4_tr)[1:])
+        assert not any(e in pr4_product.w for e, d in pr4_product.o)
+        assert all(pr3_U(pr4_product, e, timed=True) ==
+                   {pr3_alpha(pr4_product, e, timed=True)} for e in pr4_product.w)
+        pr4_counts["product_antichains"] += 1
+        pr4_success = theta_guard(pr4_tl, pr4_tr)
+        pr4_out = attempt(lambda: temporal(pr4_left, pr4_right))
+        assert (pr4_out is not FAIL) == pr4_success
+        pr4_strict = observe((lambda z: temporal(z, pr4_right), neg,
+                               lambda z: pr3_causal_filter(z, set(), timed=True)), pr4_left, q)
+        if pr4_success:
+            pr4_check_update(pr4_out,
+                             plus_c(push_c(pr4_gl, lambda k: (k[0], k[1], k[2] | pr3_V(pr4_gr))),
+                                    pr4_gr), theta_add(pr4_tl, pr4_tr)[1:])
+            assert pr4_strict == ("ok", 0)
+            pr4_counts["guard_success"] += 1
+        else:
+            assert pr4_strict is FAIL
+            pr4_counts["strict_failures"] += 1
+    # A successful temporal step using the shifted target attributes on the right.
+    pr4_delay = 0 if pr4_tx[2] is None or pr4_ty[1] is None else pr4_tx[2] - pr4_ty[1] + 1
+    pr4_late = time_shift(pr4_y, pr4_delay)
+    pr4_glate = pr4_shift_profile(pr4_gy, pr4_delay)
+    pr4_check_update(temporal(pr4_x, pr4_late),
+                     plus_c(push_c(pr4_g, lambda k: (k[0], k[1], k[2] | pr3_V(pr4_glate))),
+                            pr4_glate), theta_add(pr4_tx, theta(pr4_late))[1:])
+    pr4_counts["guard_success"] += 1
+assert pr4_counts["guard_success"] > 0 and pr4_counts["strict_failures"] > 0
+
+# A common D can include attributes absent on either side, as in the pairwise proof.
+for pr4_left, pr4_right in ((pr4_d11x, pr4_d11y), (pr4_d1x, pr4_d1y), (empty, pr4_d5y)):
+    pr4_D = frozenset(pr3_alpha(z, e, timed=True) for z in (pr4_left, pr4_right) for e in z.w)
+    for pr4_x in (pr4_left, pr4_right):
+        pr4_equal(pr4_restore(pr4_D, pr4_read_table(pr4_x, pr4_D)),
+                   pr4_profile(pr4_x), "mobius_profiles")
+
+assert q(pr3_causal_filter(pr3_outside, {pr3_alpha(pr3_outside, "old", timed=True)}, timed=True)) == 0
+assert "c" not in pr3_d2y.a
+assert q(pr3_causal_filter(pr3_d2y, {pr3_alpha(pr3_d2y, "c", timed=True)}, timed=True)) == 1
+pr4_B2 = tuple(q(pr3_causal_filter(z, {(origin, 1, pr3_l0, 1)}, timed=True))
+                for z in (causal, no_causal))
+assert pr4_B2 == (2, 1)
+assert (pr4_profile(pr3_d5x), theta(pr3_d5x)[1:3]) == (pr4_profile(pr3_d5y), theta(pr3_d5y)[1:3])
+pr4_D10_indegrees = tuple(sorted(sum((e, b) in z.o for e in z.e) for b in ("b1", "b2"))
+                           for z in (pr3_d5x, pr3_d5y))
+assert pr4_D10_indegrees == ([1, 1], [0, 2])
+pr4_c_then_b = tuple(q(pr3_causal_filter(pr3_causal_filter(z, {pr3_alpha(z, "c")}),
+                                       {pr3_alpha(z, "b")})) for z in (pr3_d3x, pr3_d3y))
+assert pr4_c_then_b == (1, 0)
+
+class pr4_Qstar:
+    def __contains__(self, a):
+        return a[0] == origin and a[3] == 2
+
+for pr4_x in pr4_cases:
+    pr4_direct_q = q(filt(pr4_x, lambda e: (pr4_x.e[e][0], pr4_x.e[e][1]) == (1, origin)))
+    pr4_context_q = q(pr3_causal_filter(mul(pr4_x, pr3_U0), pr4_Qstar(), timed=True))
+    pr4_equal(pr4_context_q, pr4_direct_q, "q_expression")
+
+for pr4_x in pr4_xi_cases:
+    pr4_g = pr4_profile(pr4_x)
+    pr4_m, pr4_M = theta(pr4_x)[1:3]
+    pr4_equal(pr4_xi_from_profile(pr4_g, pr4_m, pr4_M), pr4_xi_direct(pr4_x), "xi_paths")
+    pr4_equal(pr4_forget_time(pr4_g), pr3_profile(pr4_x), "forget_paths")
+assert sum(pr4_xi_from_profile(pr4_profile(pr3_U0), 0, 0)[0].values()) == 0
+assert sum(a[1] * value for (a, b, upper), value in pr4_profile(pr3_U0).items()) == 2
+
+# Each tuple certifies a strict kernel edge: fine differs, coarse agrees.
+pr4_fine = lambda x: (pr4_profile(x), theta(x)[1:3])
+pr4_cau = lambda x: (pr3_profile(x), theta(x)[1:])
+pr4_src_time = lambda x: (pr3_rho_src(x), theta(x)[1:])
+pr4_zero_background = realize({origin: 1, v: -1}, {})
+for pr4_x, pr4_y, pr4_f, pr4_c in (
+        (causal, no_causal, pr4_fine, pr4_cau),
+        (pr3_d2x, pr3_d2y, pr4_cau, pr4_src_time),
+        (source7, source8, pr4_src_time, theta),
+        (pr3_U0, time_shift(pr3_U0, 1), theta, read_pair),
+        (empty, pr4_zero_background, read_pair, lambda x: read_pair(x)[1]),
+        (pr3_U0, spatial(pr3_U0, offset=1), lambda x: read_pair(x)[1], q),
+        (causal, no_causal, pr4_fine, pr4_xi_direct),
+        (pr4_d5x, pr4_d5y, pr4_fine, pr4_xi_direct),
+        (pr4_d1x, pr4_d1y, pr4_xi_direct, theta),
+        (pr3_U0, time_shift(pr3_U0, 1), pr4_src_time, pr3_rho_src),
+        (source7, source8, pr3_rho_src, read_pair),
+        (pr4_d1x, pr4_d1y, pr4_xi_direct, pr4_cau),
+        (pr4_d1x, pr4_d1y, pr4_xi_direct, pr4_src_time),
+        (pr4_d5x, pr4_d5y, pr4_cau, pr4_xi_direct),
+        (pr4_d5x, pr4_d5y, pr4_src_time, pr4_xi_direct),
+        (pr3_U0, time_shift(pr3_U0, 1), theta, pr3_rho_src),
+        (source7, source8, pr3_rho_src, theta)):
+    assert pr3_bytes(pr4_f(pr4_x)) != pr3_bytes(pr4_f(pr4_y))
+    pr4_equal(pr4_c(pr4_x), pr4_c(pr4_y), "kernel_edges")
+
+print(f"pr4_temporal_causal: random_samples={len(pr4_samples)} cases={len(pr4_cases)} updates={pr4_counts['updates']} endpoint_updates={pr4_counts['endpoint_updates']} earliest_rows={pr4_counts['earliest_rows']} product_antichains={pr4_counts['product_antichains']} guard_success={pr4_counts['guard_success']} strict_failures={pr4_counts['strict_failures']} context_reads={pr4_counts['context_reads']} mobius_profiles={pr4_counts['mobius_profiles']} mobius_coefficients={pr4_counts['mobius_coefficients']} xi_paths={pr4_counts['xi_paths']} forget_paths={pr4_counts['forget_paths']} kernel_edges={pr4_counts['kernel_edges']} D11={pr4_d11_reads[0]},{pr4_d11_reads[1]} D11_Z_times=-2,-1 common_k={pr4_common_k} shifted_probe={pr4_shift_probe[0]},{pr4_shift_probe[1]} fixed_U0={pr4_flat_probe[0]},{pr4_flat_probe[1]} q_expression={pr4_counts['q_expression']} B2={pr4_B2[0]},{pr4_B2[1]} D10_indegrees={pr4_D10_indegrees[0]},{pr4_D10_indegrees[1]} c_then_b={pr4_c_then_b[0]},{pr4_c_then_b[1]}")
+# PR5: mixed closure and expression checks; reuse Rich and timed PR3/PR4 helpers.
+pr5_counts = {name: 0 for name in (
+    "region_updates", "pair_updates", "endpoints", "unselected_parent_pairs",
+    "rejected_parent_pairs", "empty_products", "old_endpoint_products",
+    "negative_time_inputs", "asymmetric_slots", "context_steps", "context_q",
+    "ts_pair_contexts", "mix_contexts", "strict_failures", "rich_equalities",
+    "H_cases", "D13_choices", "D14_choices", "bit_maps", "q_expression", "D14_q")}
+
+def pr5_equal(actual, expected, counter):
+    assert pr3_bytes(actual) == pr3_bytes(expected), (counter, actual, expected)
+    pr5_counts[counter] += 1
+
+class pr5_Set:
+    # Fixed mathematical predicates, including infinite regions; no input X here.
+    def __init__(self, predicate):
+        self.predicate = predicate
+    def __contains__(self, item):
+        return self.predicate(item)
+
+def pr5_cell(x, e):
+    return x.e[e][0], x.e[e][1]
+
+def pr5_region(x, B):
+    return filt(x, lambda e: pr5_cell(x, e) in B)
+
+def pr5_pair(x, y, P):
+    return restricted_mul(x, y, lambda e, f: (pr5_cell(x, e), pr5_cell(y, f)) in P)
+
+def pr5_region_profile(g, B):
+    return push_c(g, lambda row: (row[0], row[1] * int((row[0][3], row[0][0]) in B), row[2]))
+
+def pr5_pair_profile(g, gg, P):
+    out = {}
+    for (a, b, upper), value in g.items():
+        for (aa, bb, uu), other in gg.items():
+            joined = pr4_diamond(a, aa)
+            selected = b * bb * int(((a[3], a[0]), (aa[3], aa[0])) in P)
+            row = (joined, selected, frozenset((joined,)))
+            # Coefficients already carry sign. P only changes the selection bit.
+            out[row] = out.get(row, 0) + value * other
+    return sparse(out)
+
+def pr5_summary(x):
+    return pr4_profile(x), *theta(x)[1:3]
+
+def pr5_summary_q(summary):
+    return sum(value for (a, b, upper), value in summary[0].items() if b)
+
+def pr5_rich_bytes(x):
+    # Complete encoded state, including event IDs, all attributes, order, Omega, A.
+    return x.e, x.o, x.w, x.a
+
+def pr5_summary_step(state, step):
+    if state is FAIL:
+        return FAIL
+    g, m, M = state
+    op, *args = step
+    if op == "N":
+        return push_c(g, lambda row: (row[0], 1-row[1], row[2])), m, M
+    if op in ("FB", "FS", "FL", "FQ"):
+        param, = args
+        if op == "FB":
+            return pr5_region_profile(g, param), m, M
+        def mask(row):
+            if op == "FS":
+                return row[0][0] in param
+            if op == "FL":
+                return row[0][2] in param
+            return any(a in param for a in row[2])
+        return push_c(g, lambda row: (row[0], row[1]*int(mask(row)), row[2])), m, M
+    if op == "T":
+        k, = args
+        return (pr4_shift_profile(g, k), m+k if m is not None else None,
+                M+k if M is not None else None)
+    slot, parameter, *predicate = args
+    left, right = (state, pr5_summary(parameter)) if slot == 0 else (pr5_summary(parameter), state)
+    gl, ml, Ml = left
+    gr, mr, Mr = right
+    if op == "then" and not (Ml is None or mr is None or Ml < mr):
+        return FAIL
+    if op in ("add", "then"):
+        updated_left = gl if op == "add" else push_c(
+            gl, lambda row: (row[0], row[1], row[2] | pr3_V(gr)))
+        return plus_c(updated_left, gr), lo(ml, mr), hi(Ml, Mr)
+    assert op in ("mul", "MP")
+    generated_max = gamma(pr4_support_time(gl), pr4_support_time(gr))
+    updated = pr4_profile_product(gl, gr) if op == "mul" else pr5_pair_profile(gl, gr, predicate[0])
+    return updated, lo(ml, mr), hi(Ml, Mr, generated_max)
+
+def pr5_rich_step(state, step):
+    if state is FAIL:
+        return FAIL
+    op, *args = step
+    if op == "N":
+        return neg(state)
+    if op == "FB":
+        return pr5_region(state, args[0])
+    if op == "FS":
+        return at(state, args[0])
+    if op == "FL":
+        return filt(state, lambda e: state.e[e][3] in args[0])
+    if op == "FQ":
+        return pr3_causal_filter(state, args[0], timed=True)
+    if op == "T":
+        return time_shift(state, args[0])
+    slot, parameter, *predicate = args
+    left, right = (state, parameter) if slot == 0 else (parameter, state)
+    if op == "MP":
+        return pr5_pair(left, right, predicate[0])
+    return attempt(lambda: {"add": add, "mul": mul, "then": temporal}[op](left, right))
+
+pr5_all = pr5_Set(lambda _: True)
+pr5_empty = frozenset()
+pr5_column = pr5_Set(lambda cell: cell[1] in {origin, v})
+pr5_past = pr5_Set(lambda cell: cell[0] <= -2)
+pr5_adjacent = pr5_Set(lambda cell: (cell[1] == origin and cell[0] <= 0)
+                                  or (cell[1] == v and cell[0] <= 1))
+pr5_gap2 = pr5_Set(lambda cell: (cell[1] == origin and cell[0] <= 0)
+                              or (cell[1] == v and cell[0] <= 2))
+pr5_single = frozenset({(1, origin)})
+pr5_checker = pr5_Set(lambda cell: (cell[0] + cell[1][0]) % 2 == 0)
+pr5_regions = (pr5_all, pr5_empty, pr5_column, pr5_past,
+               pr5_adjacent, pr5_gap2, pr5_single, pr5_checker)
+pr5_asymmetric = pr5_Set(lambda pair: pair[0][0] < pair[1][0])
+pr5_position_pair = pr5_Set(lambda pair: pair[0][1] == origin and pair[1][1] == v)
+pr5_predicates = (pr5_empty, pr5_all, pr5_asymmetric, pr5_position_pair)
+pr5_Qpositive = pr5_Set(lambda a: a[1] == 1)
+
+def pr5_Q(B):
+    return pr5_Set(lambda a: (a[3], a[0]) in B)
+
+def pr5_Qstar(B):
+    return pr5_Set(lambda a: (a[3]-1, a[0]) in B)
+
+pr5_rng = pr3_Random(2026091005)
+pr5_samples = []
+for pr5_i in range(64):
+    pr5_n = pr5_rng.choice((0, 2, 4, 6))
+    pr5_signs = [1]*(pr5_n//2) + [-1]*(pr5_n//2)
+    pr5_rng.shuffle(pr5_signs)
+    pr5_events = {j: (pr5_rng.randrange(-8, 6), pr5_rng.choice((origin, v, h)), sign,
+                      pr5_rng.choice((pr3_l0, pr3_l1, ("pair", pr3_l0, pr3_l1))))
+                   for j, sign in enumerate(pr5_signs)}
+    pr5_whole = frozenset(pr5_events)
+    for pr5_j in range(pr5_rng.randrange(3)):
+        pr5_events[("old", pr5_j)] = (pr5_rng.choice((-12, 10)), h, 1, ("leaf", 9))
+    pr5_edges = {(a, b) for a in pr5_events for b in pr5_events
+                 if pr5_events[a][0] < pr5_events[b][0] and pr5_rng.randrange(4) == 0}
+    pr5_chosen = frozenset(e for e in sorted(pr5_whole) if pr5_rng.randrange(2))
+    pr5_samples.append(valid(Rich(pr5_events, closure(pr5_edges), pr5_whole, pr5_chosen)))
+
+# D13 is parameterized, with negative-time instances distinct from the old D12.
+pr5_D13_reads = []
+for pr5_t1, pr5_t2, pr5_p in ((-4, -1, origin), (-2, 3, v), (4, 7, h)):
+    pr5_events = {e: (n, pr5_p, sign, pr3_l0)
+                  for e, n, sign in zip("abcd", (pr5_t1, pr5_t2, pr5_t1, pr5_t1), (1, 1, -1, -1))}
+    pr5_fixed = valid(Rich(pr5_events, frozenset({("a", "b")}), frozenset(pr5_events), frozenset()))
+    pr5_D13_family = [replace(pr5_fixed, a=A) for A in pr3_subsets("ab")]
+    pr5_B = frozenset({(pr5_t2, pr5_p)})
+    pr5_target = frozenset({pr3_alpha(pr5_fixed, "b", timed=True)})
+    pr5_reads = tuple(q(pr5_region(x, pr5_B)) for x in pr5_D13_family)
+    pr5_causal_reads = tuple(q(pr3_causal_filter(x, pr5_target, timed=True)) for x in pr5_D13_family)
+    assert pr5_reads == (0, 0, 1, 1) and pr5_causal_reads == (0, 1, 1, 2)
+    pr5_counts["D13_choices"] += len(pr5_D13_family)
+    pr5_D13_reads.append((pr5_reads, pr5_causal_reads))
+
+# D14: three individually identifiable positive points, plus three isolated negatives.
+pr5_d14_events = {"a": (1, origin, 1, pr3_l0), "b": (2, v, 1, pr3_l0),
+                   "c": (0, origin, 1, pr3_l0)}
+pr5_d14_events.update({e: (0, origin, -1, pr3_l0) for e in "xyz"})
+pr5_d14 = valid(Rich(pr5_d14_events, frozenset({("a", "b")}),
+                     frozenset(pr5_d14_events), frozenset()))
+pr5_D14_family = [replace(pr5_d14, a=A) for A in pr3_subsets("abc")]
+pr5_D14_reads, pr5_D14_causal = [], []
+for pr5_x in pr5_D14_family:
+    pr5_direct = pr5_region(pr5_x, pr5_gap2)
+    pr5_encoded = at(pr3_causal_filter(pr5_x, pr5_Q(pr5_gap2), timed=True), {origin, v})
+    assert pr5_direct.a == pr5_x.a & {"b", "c"}
+    assert pr5_encoded.a == pr5_x.a
+    pr5_D14_reads.append(q(pr5_direct))
+    pr5_D14_causal.append(q(pr5_encoded))
+    pr5_counts["D14_choices"] += 1
+assert pr5_D14_reads == [0, 0, 1, 1, 1, 1, 2, 2]
+assert pr5_D14_causal == [0, 1, 1, 1, 2, 2, 2, 3]
+assert (pr5_D14_reads[1], pr5_D14_causal[1]) == (0, 1)
+
+pr5_cases = pr5_samples + [empty, pr4_archive_only, pr4_cancel, pr3_outside,
+                           pr3_d5x, pr3_d5y, pr3_U0, unit_at(-3)] + pr5_D14_family
+for pr5_i, pr5_x in enumerate(pr5_cases):
+    assert charge(pr5_x, pr5_x.w) == 0
+    pr5_g, pr5_m, pr5_M = pr5_summary(pr5_x)
+    if any(event[0] < 0 for event in pr5_x.e.values()):
+        pr5_counts["negative_time_inputs"] += 1
+    for pr5_B in pr5_regions:
+        pr5_out = pr5_region(pr5_x, pr5_B)
+        pr5_equal(pr4_profile(pr5_out), pr5_region_profile(pr5_g, pr5_B), "region_updates")
+        pr5_equal(theta(pr5_out)[1:], theta(pr5_x)[1:], "endpoints")
+        assert (pr5_out.e, pr5_out.o, pr5_out.w) == (pr5_x.e, pr5_x.o, pr5_x.w)
+    pr5_y = pr5_cases[(pr5_i + 3) % len(pr5_cases)]
+    for pr5_left, pr5_right in ((pr5_x, pr5_y), (pr5_y, pr5_x)):
+        for pr5_P in pr5_predicates:
+            pr5_out = pr5_pair(pr5_left, pr5_right, pr5_P)
+            pr5_expected = pr5_summary_step(pr5_summary(pr5_left), ("MP", 0, pr5_right, pr5_P))
+            pr5_equal(pr4_profile(pr5_out), pr5_expected[0], "pair_updates")
+            pr5_equal(theta(pr5_out)[1:], (*pr5_expected[1:], pr4_support_time(pr5_expected[0])), "endpoints")
+            assert len(pr5_out.w) == len(pr5_left.w)*len(pr5_right.w)
+            assert len(pr5_out.e) == len(pr5_left.e)+len(pr5_right.e)+len(pr5_out.w)
+            assert not any(e in pr5_out.w for e, d in pr5_out.o)
+            assert all(pr3_U(pr5_out, e, timed=True) == {pr3_alpha(pr5_out, e, timed=True)}
+                       for e in pr5_out.w)
+            for pr5_e, pr5_f in product(pr5_left.w, pr5_right.w):
+                pr5_counts["unselected_parent_pairs"] += int(pr5_e not in pr5_left.a or pr5_f not in pr5_right.a)
+                pr5_counts["rejected_parent_pairs"] += int((pr5_cell(pr5_left, pr5_e), pr5_cell(pr5_right, pr5_f)) not in pr5_P)
+            pr5_counts["empty_products"] += int(not pr5_out.w)
+            pr5_counts["old_endpoint_products"] += int(any(
+                z.e[e][0] in theta(z)[1:3] for z in (pr5_left, pr5_right) for e in z.e.keys()-z.w))
+
+# A fixed asymmetric P distinguishes both slots; sources remain ordered as well.
+pr5_early, pr5_late = unit_at(-3), unit_at(2)
+assert (q(pr5_pair(pr5_early, pr5_late, pr5_asymmetric)),
+        q(pr5_pair(pr5_late, pr5_early, pr5_asymmetric))) == (1, 0)
+for pr5_slot in (0, 1):
+    pr5_step = ("MP", pr5_slot, pr5_late, pr5_asymmetric)
+    pr5_equal(pr5_summary(pr5_rich_step(pr5_early, pr5_step)),
+               pr5_summary_step(pr5_summary(pr5_early), pr5_step), "asymmetric_slots")
+
+# P=empty must retain the full background. Deleting rejected rows predicts 0, not 2.
+pr5_empty_pair = pr5_pair(pr3_U0, pr3_U0, pr5_empty)
+pr5_empty_g = pr5_pair_profile(pr4_profile(pr3_U0), pr4_profile(pr3_U0), pr5_empty)
+pr5_pair_negative_control = q(pr3_causal_filter(neg(pr5_empty_pair), pr5_Qpositive, timed=True))
+assert len(pr5_empty_pair.w) == 4 and pr5_empty_g and all(b == 0 for a, b, U in pr5_empty_g)
+assert sum(abs(value) for value in pr5_empty_g.values()) == 4
+assert pr5_pair_negative_control == 2
+pr5_wrong_g = {}  # The deliberately wrong update deletes every rejected pair.
+assert pr5_summary_q(pr5_summary_step(pr5_summary_step((pr5_wrong_g, 0, 1), ("N",)),
+                                     ("FQ", pr5_Qpositive))) == 0
+
+# All words/parameters are fixed before iterating X. Both binary slots are exercised.
+pr5_words = []
+for pr5_param in (pr3_U0, unit_at(-20), unit_at(20), pr4_archive_only, empty):
+    for pr5_slot in (0, 1):
+        pr5_words.append(("ts_pair_contexts", (("FB", pr5_checker), ("MP", pr5_slot, pr5_param, pr5_asymmetric),
+                          ("N",), ("T", -2), ("FB", pr5_past), ("add", 1-pr5_slot, pr3_U0),
+                          ("mul", pr5_slot, pr3_U0), ("then", 0, unit_at(30)))))
+        pr5_words.append(("mix_contexts", (("FQ", pr5_Qpositive), ("FB", pr5_gap2),
+                          ("MP", pr5_slot, pr5_param, pr5_position_pair), ("FL", pr5_all),
+                          ("T", 1), ("N",), ("FS", {origin, v}), ("FQ", pr5_Qpositive),
+                          ("then", pr5_slot, unit_at(30)), ("FB", pr5_empty))))
+for pr5_x in pr5_cases:
+    for pr5_kind, pr5_word in pr5_words:
+        pr5_rich, pr5_state = pr5_x, pr5_summary(pr5_x)
+        for pr5_step in pr5_word:
+            pr5_rich = pr5_rich_step(pr5_rich, pr5_step)
+            pr5_state = pr5_summary_step(pr5_state, pr5_step)
+            assert (pr5_rich is FAIL) == (pr5_state is FAIL)
+            if pr5_state is not FAIL:
+                pr5_equal(pr5_summary(pr5_rich), pr5_state, "context_steps")
+                pr5_equal(q(pr5_rich), pr5_summary_q(pr5_state), "context_q")
+                assert charge(pr5_rich, pr5_rich.w) == 0
+            else:
+                pr5_counts["strict_failures"] += 1
+        pr5_counts[pr5_kind] += 1
+for pr5_slot in (0, 1):
+    pr5_failing = ("then", pr5_slot, pr3_U0)
+    pr5_suffixes = (("N",), ("FB", pr5_empty), ("FQ", pr5_empty), ("mul", 0, empty),
+                    ("mul", 1, empty), ("MP", 0, empty, pr5_empty), ("MP", 1, empty, pr5_empty))
+    for pr5_suffix in pr5_suffixes:
+        pr5_ops = tuple(lambda z, step=step: pr5_rich_step(z, step) for step in (pr5_failing, pr5_suffix))
+        # Also use the original strict evaluator, whose failed temporal raises.
+        pr5_temporal_op = (lambda z: temporal(z, pr3_U0)) if pr5_slot == 0 else (lambda z: temporal(pr3_U0, z))
+        assert observe((pr5_temporal_op, pr5_ops[1]), pr3_U0, q) is FAIL
+        assert pr5_summary_step(pr5_summary_step(pr5_summary(pr3_U0), pr5_failing), pr5_suffix) is FAIL
+        pr5_counts["strict_failures"] += 1
+
+# Proposition 53: full Rich equality, never a profile+cardinality substitute for history.
+pr5_expressible = ((pr5_all, pr5_all), (pr5_empty, pr5_empty),
+                   (pr5_column, {origin, v}), (pr5_past, pr5_all), (pr5_adjacent, {origin, v}))
+for pr5_B, pr5_S in pr5_expressible:
+    for pr5_x in pr5_cases:
+        pr5_out = at(pr3_causal_filter(pr5_x, pr5_Q(pr5_B), timed=True), pr5_S)
+        pr5_equal(pr5_rich_bytes(pr5_out), pr5_rich_bytes(pr5_region(pr5_x, pr5_B)), "rich_equalities")
+
+# Exact small family: two positions, arbitrary membership on seven time blocks
+# (-infinity,-3], {-2}, {-1}, {0}, {1}, {2}, [3,+infinity).
+# Two representatives in each infinite tail expose strict-time witnesses there.
+pr5_times = (-4, -3, -2, -1, 0, 1, 2, 3, 4)
+pr5_blocks = (0, 0, 1, 2, 3, 4, 5, 6, 6)
+def pr5_H(matrix):
+    active = [p for p in range(len(matrix[0])) if any(row[p] for row in matrix)]
+    return all(not any(matrix[j]) or all(matrix[i][p] for p in active)
+               for i in range(len(matrix)) for j in range(i+1, len(matrix)))
+
+pr5_normal_forms = set()
+for pr5_S in pr3_subsets(range(2)):
+    pr5_normal_forms.add(tuple(tuple(p in pr5_S for p in range(2)) for t in pr5_times))
+    for pr5_top in range(-4, 5):
+        for pr5_R in pr3_subsets(pr5_S):
+            if pr5_R:
+                pr5_normal_forms.add(tuple(tuple((t < pr5_top and p in pr5_S) or
+                                      (t == pr5_top and p in pr5_R) for p in range(2)) for t in pr5_times))
+for pr5_bits in product((False, True), repeat=14):
+    pr5_matrix = tuple(tuple(pr5_bits[7*p+block] for p in range(2)) for block in pr5_blocks)
+    assert pr5_H(pr5_matrix) == (pr5_matrix in pr5_normal_forms)
+    pr5_counts["H_cases"] += 1
+for pr5_B, pr5_expected_H in ((pr5_column, True), (pr5_past, True), (pr5_adjacent, True),
+                              (pr5_gap2, False), (pr5_single, False), (pr5_empty, True)):
+    pr5_matrix = tuple(tuple((t, p) in pr5_B for p in (origin, v, h)) for t in pr5_times)
+    assert pr5_H(pr5_matrix) == pr5_expected_H
+
+# Finite bit-map closure is supplementary; the proof excludes arbitrary finite words.
+for pr5_size in (2, 3):
+    pr5_identity = (0, 1)*pr5_size
+    pr5_masks = {mask for mask in product((0, 1), repeat=pr5_size) if mask[0] >= mask[1]}
+    if pr5_size == 3:
+        pr5_masks |= {mask for mask in product((0, 1), repeat=3) if mask[0] == mask[2]}
+    pr5_maps, pr5_pending = {pr5_identity}, [pr5_identity]
+    while pr5_pending:
+        pr5_map = pr5_pending.pop()
+        pr5_next = {tuple(1-z for z in pr5_map)} | {
+            tuple(z*mask[i//2] for i, z in enumerate(pr5_map)) for mask in pr5_masks}
+        for pr5_map1 in pr5_next-pr5_maps:
+            pr5_maps.add(pr5_map1)
+            pr5_pending.append(pr5_map1)
+    assert (0, 0)+(0, 1)*(pr5_size-1) not in pr5_maps
+    assert all(f[:2] == (0, 1) for f in pr5_maps if f[2:] == (0, 1)*(pr5_size-1))
+    pr5_counts["bit_maps"] += len(pr5_maps)
+
+# Proposition 54: fixed lower bounds, no upper-bound or finite-region assumption.
+pr5_bounded_regions = ((pr5_empty, -5), (pr5_single, 1),
+    (frozenset({(-5, origin), (-2, v), (3, h)}), -5),
+    (pr5_Set(lambda cell: cell[0] >= -4 and cell[1] in {origin, v}), -4),
+    (pr5_Set(lambda cell: cell[0] >= -6 and (cell[0]+cell[1][0]) % 2 == 0), -6))
+for pr5_B, pr5_k0 in pr5_bounded_regions:
+    for pr5_k in (pr5_k0-1, pr5_k0-2, pr5_k0-7):
+        pr5_parameter, pr5_target = time_shift(pr3_U0, pr5_k), pr5_Qstar(pr5_B)
+        for pr5_x in pr5_cases:
+            pr5_equal(q(pr3_causal_filter(mul(pr5_x, pr5_parameter), pr5_target, timed=True)),
+                       q(pr5_region(pr5_x, pr5_B)), "q_expression")
+pr5_bad_B = frozenset({(0, origin)})
+pr5_bad_x = unit_at(-1)
+pr5_bad_bound = (q(pr5_region(pr5_bad_x, pr5_bad_B)),
+                 q(pr3_causal_filter(mul(pr5_bad_x, pr3_U0), pr5_Qstar(pr5_bad_B), timed=True)))
+assert pr5_bad_bound == (0, 1)
+
+# D14 is unbounded below, so its positive q expression is a separate direct check.
+pr5_D14_Q = pr5_Set(lambda a: (a[0] == origin and a[3] == 1)
+                              or (a[0] == v and a[3] in {1, 2, 3}))
+for pr5_x in pr5_cases:
+    pr5_equal(q(pr3_causal_filter(mul(pr5_x, pr3_U0), pr5_D14_Q, timed=True)),
+               q(pr5_region(pr5_x, pr5_gap2)), "D14_q")
+assert all(pr5_counts[k] > 0 for k in pr5_counts)
+print("pr5_mixed_closure: " + " ".join(f"{name}={value}" for name, value in pr5_counts.items())
+      + f" seed=2026091005 random_samples={len(pr5_samples)} cases={len(pr5_cases)}"
+      + " P_empty_Omega=4 P_empty_Gamma=nonempty P_empty_N_positive=2 wrong_deleted_rows=0"
+      + " D13=0,0,1,1/0,1,1,2 D14=0,0,1,1,1,1,2,2/0,1,1,1,2,2,2,3 bad_k=0,1")
+
+# PR6: fixed seed; finite experiments supplement the arbitrary-context proofs.
+pr6_rng = pr3_Random(2026091006)
+pr6_counts = {}
+
+def pr6_equal(actual, expected, name):
+    assert pr3_bytes(actual) == pr3_bytes(expected), (name, actual, expected)
+    pr6_counts[name] = pr6_counts.get(name, 0) + 1
+
+def pr6_pair(x, y, P):
+    return restricted_mul(x, y, lambda e, f:
+        (pr3_alpha(x, e, True), pr3_alpha(y, f, True)) in P)
+
+def pr6_push(g, gg, rule):
+    out = {}
+    for row, value in g.items():
+        for other, coefficient in gg.items():
+            a = pr4_diamond(row[0], other[0])
+            target = (a, row[1]*other[1]*int(rule(row, other)), frozenset({a}))
+            out[target] = out.get(target, 0) + value*coefficient
+    return sparse(out)
+
+def pr6_step(state, step, rich=False):
+    if state is FAIL or step[0] != "MAP":
+        return (pr5_rich_step if rich else pr5_summary_step)(state, step)
+    _, slot, parameter, P = step
+    if rich:
+        x, y = (state, parameter) if slot == 0 else (parameter, state)
+        return pr6_pair(x, y, P)
+    x, y = (state, pr5_summary(parameter)) if slot == 0 else (pr5_summary(parameter), state)
+    g = pr6_push(x[0], y[0], lambda row, other: (row[0], other[0]) in P)
+    return g, lo(x[1], y[1]), hi(x[2], y[2], gamma(pr4_support_time(x[0]), pr4_support_time(y[0])))
+
+def pr6_expression(x, B, k):
+    Q = pr5_Set(lambda a: a[3] >= k+1 and (a[3]-1, a[0]) in B)
+    return pr3_causal_filter(mul(x, time_shift(pr3_U0, k)), Q, True)
+
+# Tail predicates are fixed before traversing the 64 random and 16 directed inputs.
+pr6_tails = [(pr5_gap2, 1), (pr5_empty, -3), (pr5_all, 2)]
+for pr6_i in range(24):
+    pr6_c = pr6_rng.randrange(-6, 5)
+    pr6_S = frozenset(p for p in (origin, v, h) if pr6_rng.randrange(2))
+    pr6_d = pr6_rng.randrange(2, 6)
+    pr6_R = frozenset(r for r in range(pr6_d) if pr6_rng.randrange(2))
+    pr6_B = pr5_Set(lambda cell, c=pr6_c, S=pr6_S, d=pr6_d, R=pr6_R:
+        cell[1] in S if cell[0] < c else (cell[0]+sum(cell[1])) % d in R)
+    pr6_tails.append((pr6_B, pr6_c))
+for pr6_B, pr6_c in pr6_tails:
+    for pr6_k in (pr6_c-1, pr6_c-4):
+        for pr6_x in pr5_cases:
+            pr6_equal(q(pr6_expression(pr6_x, pr6_B, pr6_k)),
+                      q(pr5_region(pr6_x, pr6_B)), "tail_q")
+pr6_controls = []
+for pr6_d in (2, 3, 5):
+    pr6_controls.append((pr5_Set(lambda cell, d=pr6_d: cell[0] % d == 0),
+                         origin, -2*pr6_d, -2*pr6_d+1))
+pr6_drift = pr5_Set(lambda cell: cell[1][1:] == (0, 0) and cell[1][0] >= 0
+                    and cell[0] <= -cell[1][0])
+pr6_controls.append((pr6_drift, (3, 0, 0), -3, -2))
+for pr6_B, pr6_p, pr6_t, pr6_tt in pr6_controls:
+    pr6_inputs = [replace(unit_at(t), e={e: (n, pr6_p, s, r)
+                   for e, (n, p, s, r) in unit_at(t).e.items()}) for t in (pr6_t, pr6_tt)]
+    pr6_equal(tuple(q(mul(x, pr3_U0)) for x in pr6_inputs), (1, 1), "collapse_controls")
+    pr6_equal(tuple(q(pr5_region(x, pr6_B)) for x in pr6_inputs), (1, 0), "target_controls")
+    pr6_equal(*(pr4_profile(mul(x, pr3_U0)) for x in pr6_inputs), "collapsed_profiles")
+
+# Lemma 4: pull prefix witnesses back by cumulative shifts; c never depends on p.
+def pr6_saturated(prefix, factor, p):
+    witnesses, J = [], 0
+    for step in prefix:
+        if step[0] == "T":
+            J += step[1]
+        if step[0] == "FQ" and step[1]:
+            witnesses.append(pr4_shift_attr(sorted(step[1], key=repr)[0], -J))
+    c = min([0] + [a[3] for a in witnesses]
+            + ([min(factor.e[e][0] for e in factor.w)-J] if factor is not None and factor.w else []))
+    times = (c-2, c-1)
+    common = {("d", i): (a[3], a[0], a[1], a[2]) for i, a in enumerate(witnesses)}
+    balance = 1 + sum(a[1] for a in witnesses)
+    common.update({("n", i): (0, origin, -1 if balance > 0 else 1, pr3_l0)
+                   for i in range(abs(balance))})
+    whole = frozenset(common) | {"e"}
+    extremes = list(times) + [event[0] for event in common.values()]
+    common.update({"low": (min(extremes)-1, origin, 1, pr3_l0),
+                   "high": (max(extremes)+1, origin, 1, pr3_l0)})
+    edges = frozenset(("e", ("d", i)) for i in range(len(witnesses)))
+    return [valid(Rich(dict(common, e=(t, p, 1, pr3_l0)), edges, whole, frozenset({"e"}))) for t in times]
+
+for pr6_i in range(36):
+    pr6_Q = frozenset((pr6_rng.choice((origin, v)), pr6_rng.choice((-1, 1)),
+                      pr3_l0, pr6_rng.randrange(-3, 5)) for _ in range(pr6_i % 4))
+    pr6_prefix = [("T", pr6_rng.randrange(-3, 4)), ("FQ", pr6_Q), ("N",),
+                  ("add", pr6_i % 2, unit_at(2)), ("FS", {origin, v}),
+                  ("T", -1), ("FL", {pr3_l0}), ("FQ", pr6_Q), ("then", 0, empty)]
+    pr6_rng.shuffle(pr6_prefix)
+    pr6_factor = None if pr6_i % 3 == 0 else (empty if pr6_i % 3 == 1 else unit_at(-4))
+    pr6_word = pr6_prefix + ([] if pr6_factor is None else [("mul", pr6_i % 2, pr6_factor)])
+    pr6_word += [("N",), ("add", 1, pr3_U0), ("FQ", pr5_Qpositive), ("T", 2)]
+    for pr6_p in (origin, v, (7, -2, 1)):
+        pr6_inputs = pr6_saturated(pr6_prefix, pr6_factor, pr6_p)
+        pr6_equal(theta(pr6_inputs[0])[1:3], theta(pr6_inputs[1])[1:3], "saturation_endpoints")
+        pr6_outputs = []
+        for pr6_x in pr6_inputs:
+            assert charge(pr6_x, pr6_x.w) == 0
+            for pr6_step0 in pr6_word:
+                pr6_x = pr5_rich_step(pr6_x, pr6_step0)
+                assert pr6_x is not FAIL
+            pr6_outputs.append(q(pr6_x))
+        pr6_equal(*pr6_outputs, "saturation_q")
+        pr6_name = "saturation_no_product" if pr6_factor is None else (
+            "saturation_empty_factor" if not pr6_factor.w else "saturation_product")
+        pr6_counts[pr6_name] = pr6_counts.get(pr6_name, 0) + 1
+
+# A periodic query can see early times; the successor witness removes that difference.
+pr6_even_Q = pr5_Set(lambda a: a[3] % 2 == 0)
+pr6_sat = pr6_saturated([("FQ", {(origin, 1, pr3_l0, 0)})], pr3_U0, origin)
+pr6_equal(tuple(q(pr3_causal_filter(x, pr6_even_Q, True)) for x in pr6_sat),
+          (1, 1), "periodic_saturation")
+pr6_equal(tuple(q(pr3_causal_filter(replace(x, o=frozenset()), pr6_even_Q, True)) for x in pr6_sat),
+          (1, 0), "unsaturated_control")
+pr6_equal(*(pr5_summary(mul(x, pr3_U0)) for x in pr6_sat), "first_product_fiber")
+
+# Attribute pairing: ordered predicates, both slots, full background, and suffixes.
+pr6_asym = pr5_Set(lambda pair: pair[0][3] < pair[1][3])
+pr6_signed_source = pr5_Set(lambda pair: pair[0][1] != pair[1][1]
+                           and pair[0][2] == pr3_l0)
+for pr6_i, pr6_x in enumerate(pr5_cases):
+    pr6_y = pr5_cases[(pr6_i+3) % len(pr5_cases)]
+    pr6_attrs = sorted(pr3_V(pr4_profile(pr6_x)) | pr3_V(pr4_profile(pr6_y)), key=repr)
+    pr6_P = frozenset(pair for pair in product(pr6_attrs, repeat=2) if pr6_rng.randrange(2))
+    for pr6_P0 in (pr6_P, pr6_asym, pr6_signed_source, pr5_all, pr5_empty):
+        for pr6_slot in (0, 1):
+            pr6_step0 = ("MAP", pr6_slot, pr6_y, pr6_P0)
+            pr6_rich = pr6_step(pr6_x, pr6_step0, True)
+            pr6_state = pr6_step(pr5_summary(pr6_x), pr6_step0)
+            pr6_equal(pr5_summary(pr6_rich), pr6_state, "pair_push")
+            assert len(pr6_rich.w) == len(pr6_x.w)*len(pr6_y.w)
+            pr6_counts["empty_products"] = pr6_counts.get("empty_products", 0) + int(not pr6_rich.w)
+            pr6_counts["old_archives"] = pr6_counts.get("old_archives", 0) + int(bool(pr6_x.e.keys()-pr6_x.w or pr6_y.e.keys()-pr6_y.w))
+            pr6_counts["negative_inputs"] = pr6_counts.get("negative_inputs", 0) + int(any(t < 0 for z in (pr6_x, pr6_y) for t, p, s, r in z.e.values()))
+            pr6_counts["unselected_parents"] = pr6_counts.get("unselected_parents", 0) + sum(e not in pr6_x.a or f not in pr6_y.a for e, f in product(pr6_x.w, pr6_y.w))
+            for pr6_suffix in (("N",), ("FQ", pr5_Qpositive), ("FB", pr5_past)):
+                pr6_rich = pr5_rich_step(pr6_rich, pr6_suffix)
+                pr6_state = pr5_summary_step(pr6_state, pr6_suffix)
+                pr6_equal(pr5_summary(pr6_rich), pr6_state, "pair_suffix")
+    for pr6_P0 in pr5_predicates:
+        pr6_lift = pr5_Set(lambda pair, P=pr6_P0:
+            ((pair[0][3], pair[0][0]), (pair[1][3], pair[1][0])) in P)
+        pr6_equal(pr5_rich_bytes(pr6_pair(pr6_x, pr6_y, pr6_lift)),
+                  pr5_rich_bytes(pr5_pair(pr6_x, pr6_y, pr6_P0)), "pullback_encoding")
+pr6_words = [[("FQ", pr5_Qpositive), ("MAP", slot, param, pr6_signed_source), ("N",),
+              ("FB", pr5_gap2), ("MP", 1-slot, pr3_U0, pr5_asymmetric),
+              ("T", -2), ("then", slot, unit_at(15)), ("N",), ("FQ", pr5_empty)]
+             for param in (empty, pr4_archive_only, pr3_U0) for slot in (0, 1)]
+for pr6_word in pr6_words:
+    for pr6_x in pr5_cases:
+        pr6_rich, pr6_state = pr6_x, pr5_summary(pr6_x)
+        for pr6_step0 in pr6_word:
+            pr6_rich, pr6_state = pr6_step(pr6_rich, pr6_step0, True), pr6_step(pr6_state, pr6_step0)
+            assert (pr6_rich is FAIL) == (pr6_state is FAIL)
+            if pr6_state is FAIL:
+                pr6_counts["strict_failures"] = pr6_counts.get("strict_failures", 0) + 1
+            else:
+                pr6_equal(pr5_summary(pr6_rich), pr6_state, "mixed_summary")
+                pr6_equal(q(pr6_rich), pr5_summary_q(pr6_state), "mixed_q")
+
+# D15 and the fiber criterion; D10 has equal edge counts and is only a control.
+pr6_events = {e: (t, origin, sign, pr3_l0)
+              for e, t, sign in (("e", 0, 1), ("b1", 1, 1), ("b2", 1, 1),
+                                 ("n1", 0, -1), ("n2", 0, -1), ("n3", 0, -1))}
+pr6_X = valid(Rich(pr6_events, frozenset({("e", "b1")}), frozenset(pr6_events),
+                  frozenset({"e", "b1", "b2"})))
+pr6_Y = valid(replace(pr6_X, o=pr6_X.o | {("e", "b2")}))
+def pr6_D(x):
+    return restricted_mul(x, x, lambda e, f: (e, f) in x.o)
+
+def pr6_J(x, y, rule):
+    result = {}
+    for e, f in product(x.a, y.a):
+        if rule(e, f):
+            a = pr4_diamond(pr3_alpha(x, e, True), pr3_alpha(y, f, True))
+            result[a] = result.get(a, 0) + x.e[e][2]*y.e[f][2]
+    return sparse(result)
+
+pr6_equal(pr5_summary(pr6_X), pr5_summary(pr6_Y), "D15_fiber")
+pr6_equal((q(pr6_D(pr6_X)), q(pr6_D(pr6_Y))), (1, 2), "D15_q")
+pr6_equal((q(pr6_D(pr3_d5x)), q(pr6_D(pr3_d5y))), (2, 2), "D10_control")
+assert pr6_J(pr6_X, pr6_X, lambda e, f: (e, f) in pr6_X.o) != pr6_J(
+    pr6_Y, pr6_Y, lambda e, f: (e, f) in pr6_Y.o)
+for pr6_Q in (frozenset(), {pr3_alpha(pr6_X, "b1", True)}, pr5_Qpositive):
+    for pr6_z in (pr6_X, pr6_Y):
+        pr6_rule = lambda e, f: any(a in pr6_Q for a in pr3_U(pr6_z, e, True))
+        pr6_direct = restricted_mul(pr6_z, pr3_U0, pr6_rule)
+        pr6_expected = pr6_push(pr4_profile(pr6_z), pr4_profile(pr3_U0),
+                                lambda row, other: any(a in pr6_Q for a in row[2]))
+        pr6_equal(pr4_profile(pr6_direct), pr6_expected, "U_rule_push")
+        pr6_equal(pr6_J(pr6_z, pr3_U0, pr6_rule), {a: n for (a, b, U), n
+                    in pr6_expected.items() if b}, "J_positive")
+    pr6_equal(pr6_J(pr6_X, pr3_U0, lambda e, f: any(a in pr6_Q for a in pr3_U(pr6_X, e, True))),
+              pr6_J(pr6_Y, pr3_U0, lambda e, f: any(a in pr6_Q for a in pr3_U(pr6_Y, e, True))), "J_fiber")
+for pr6_z in (pr6_X, pr6_Y, pr3_U0, add(pr3_U0, pr3_U0)):
+    pr6_equal(pr4_profile(restricted_mul(pr6_z, pr3_U0, lambda e, f: len(pr3_U(pr6_z, e, True)) > 1)),
+              pr6_push(pr4_profile(pr6_z), pr4_profile(pr3_U0), lambda row, other: len(row[2]) > 1), "U_size_rule")
+    pr6_parity = (sum(abs(n) for n in pr4_profile(pr6_z).values())//2) % 2
+    pr6_equal(pr4_profile(restricted_mul(pr6_z, pr3_U0, lambda e, f: (len(pr6_z.w)//2) % 2)),
+              pr6_push(pr4_profile(pr6_z), pr4_profile(pr3_U0), lambda row, other: pr6_parity), "global_rule")
+pr6_equal(set(pr4_profile(pr3_U0)), set(pr4_profile(add(pr3_U0, pr3_U0))), "same_local_rows")
+pr6_q_only = []
+for pr6_z in (pr6_X, pr6_Y):
+    pr6_pairs = [(e, f) for e, f in product(pr6_z.a, pr3_U0.a) if pr6_z.e[e][2]*pr3_U0.e[f][2] == 1]
+    pr6_pairs.sort(key=lambda ef: (pr4_diamond(pr3_alpha(pr6_z, ef[0], True), pr3_alpha(pr3_U0, ef[1], True))[3], repr(ef)))
+    pr6_pair0 = pr6_pairs[0 if len(pr6_z.o) % 2 else -1]
+    pr6_q_only.append(restricted_mul(pr6_z, pr3_U0, lambda e, f: (e, f) == pr6_pair0))
+pr6_equal(tuple(q(z) for z in pr6_q_only), (1, 1), "q_only_control")
+assert pr4_profile(pr6_q_only[0]) != pr4_profile(pr6_q_only[1])
+
+# Proposition 57: five independent conditions, then an event realization.
+def pr6_conditions(g, m, M):
+    rows = list(sparse(g))
+    return (all(a[1]*g[a, b, U] > 0 for a, b, U in rows),
+            sum(g.values()) == 0,
+            all(a in U and all(v[3] > a[3] for v in U-{a}) for a, b, U in rows),
+            all(any(aa == v and V <= U for aa, bb, V in rows) for a, b, U in rows for v in U-{a}),
+            ((m is None and M is None) or (m is not None and M is not None and m <= M))
+            if not rows else (m is not None and M is not None and all(m <= a[3] <= M for a, b, U in rows)))
+
+def pr6_realize(g, m, M):
+    assert all(pr6_conditions(g, m, M))
+    assigned = [row for row, coefficient in g.items() for _ in range(abs(coefficient))]
+    events = {i: (a[3], a[0], a[1], a[2]) for i, (a, b, U) in enumerate(assigned)}
+    whole = frozenset(events)
+    chosen = frozenset(i for i, (a, b, U) in enumerate(assigned) if b)
+    edges = frozenset((i, j) for i, (a, b, U) in enumerate(assigned)
+                      for j, (aa, bb, V) in enumerate(assigned) if a[3] < aa[3] and V <= U)
+    if m is not None:
+        events.update({"low": (m, origin, 1, pr3_l0), "high": (M, origin, 1, pr3_l0)})
+    return valid(Rich(events, edges, whole, chosen))
+
+for pr6_i in range(64):
+    pr6_g = {}
+    for pr6_n in reversed(range(pr6_rng.randrange(7))):
+        pr6_a = (pr6_rng.choice((origin, v)), pr6_rng.choice((-1, 1)), pr3_l0, pr6_n-4)
+        pr6_U = frozenset({pr6_a}).union(*(U for a, b, U in pr6_g if pr6_rng.randrange(2)))
+        pr6_g[pr6_a, pr6_rng.randrange(2), pr6_U] = pr6_a[1]*pr6_rng.randrange(1, 4)
+    pr6_total = sum(pr6_g.values())
+    if pr6_total:
+        pr6_a = (h, -1 if pr6_total > 0 else 1, ("leaf", 99), 3)
+        pr6_g[pr6_a, 0, frozenset({pr6_a})] = -pr6_total
+    pr6_m, pr6_M = (-6, 5) if pr6_g or pr6_i % 2 else (None, None)
+    pr6_equal(pr5_summary(pr6_realize(pr6_g, pr6_m, pr6_M)), (pr6_g, pr6_m, pr6_M), "image_roundtrip")
+
+# Exhaust both formal target sets/selection bits and all forward-edge graphs.
+for pr6_times in ((0, 1, 2, 3), (0, 0, 1, 1)):
+    pr6_e = {i: (t, origin, 1 if i < 2 else -1, pr3_l0) for i, t in enumerate(pr6_times)}
+    pr6_base = Rich(pr6_e, frozenset(), frozenset(pr6_e), frozenset())
+    pr6_D0 = [pr3_alpha(pr6_base, i, True) for i in range(4)]
+    pr6_actual, pr6_accepted = set(), set()
+    for pr6_edges in pr3_subsets((i, j) for i, j in product(range(4), repeat=2) if pr6_times[i] < pr6_times[j]):
+        for pr6_A in pr3_subsets(range(4)):
+            pr6_z = valid(replace(pr6_base, o=closure(pr6_edges), a=pr6_A))
+            pr6_actual.add(pr3_bytes(pr4_profile(pr6_z)).decode())
+            pr6_counts["enumerated_states"] = pr6_counts.get("enumerated_states", 0) + 1
+    pr6_options = [[frozenset({a}) | U for U in pr3_subsets({v0 for v0 in pr6_D0 if v0[3] > a[3]})] for a in pr6_D0]
+    for pr6_Us in product(*pr6_options):
+        for pr6_bits in product((0, 1), repeat=4):
+            pr6_g = {}
+            for pr6_a, pr6_b, pr6_U in zip(pr6_D0, pr6_bits, pr6_Us):
+                pr6_row = (pr6_a, pr6_b, pr6_U)
+                pr6_g[pr6_row] = pr6_g.get(pr6_row, 0) + pr6_a[1]
+            pr6_ok = all(pr6_conditions(pr6_g, min(pr6_times), max(pr6_times)))
+            pr6_equal(pr6_ok, pr3_bytes(pr6_g).decode() in pr6_actual, "formal_membership")
+            if pr6_ok:
+                pr6_accepted.add(pr3_bytes(pr6_g).decode())
+                pr6_equal(pr4_profile(pr6_realize(pr6_g, min(pr6_times), max(pr6_times))), pr6_g, "enumerated_roundtrip")
+    pr6_equal(pr6_actual, pr6_accepted, "image_sets")
+    pr6_counts["distinct_actual_profiles"] = pr6_counts.get("distinct_actual_profiles", 0) + len(pr6_actual)
+pr6_a, pr6_b, pr6_c = [(origin, s, pr3_l0, t) for t, s in ((0, 1), (1, 1), (2, -1))]
+pr6_D16 = {(pr6_a, 1, frozenset({pr6_a, pr6_b})): 1,
+           (pr6_b, 1, frozenset({pr6_b, pr6_c})): 1, (pr6_c, 0, frozenset({pr6_c})): -2}
+pr6_equal(pr6_conditions(pr6_D16, 0, 2), (True, True, True, False, True), "D16_conditions")
+for pr6_m, pr6_M, pr6_ok in ((None, None, True), (-2, -2, True), (-3, 4, True),
+                             (None, 0, False), (0, None, False), (1, 0, False)):
+    pr6_equal(all(pr6_conditions({}, pr6_m, pr6_M)), pr6_ok, "empty_endpoint_branches")
+    if pr6_ok:
+        pr6_equal(pr5_summary(pr6_realize({}, pr6_m, pr6_M)), ({}, pr6_m, pr6_M), "empty_realizations")
+assert all(value > 0 for value in pr6_counts.values())
+print("pr6_expressibility_pairing: " + " ".join(f"{k}={v0}" for k, v0 in pr6_counts.items())
+      + " seed=2026091006 Tail_families=27 random_inputs=64 cases=80"
+      + " periodic_and_drift=1,1/1,0 D15=1,2 D10=2,2 D16=1,1,1,0,1")
+
 print("ALL_FINITE_CHECKS_PASSED")
 ```
 
@@ -3249,3 +4207,1405 @@ INGEST residual_open_added=93 skipped_existing=144 coarse_fallbacks=0 open_genre
 合并的字节核对保留了附录 PR3 插入：该段为 314 行代码及一行前导空行。含此插入的原始前缀与 dev 全文直接 `cmp` 退出 **1**，差异从附录 PR3 插入处开始；只剔除此已知插入后的前缀与 dev 全文 `cmp` 退出 **0**、stdout 为空。dev 的 §24–§26 共 416 行、27967 字节原样在前，PR3 的 §27–§31 紧随其后；原始前缀完全相同与保留附录插入不能同时成立，不将前者报告为通过。
 
 本节改写后再以同一摄入基线运行 canonical writer，使本次产地与收据文字也进入消化账。该补充摄入及最终累计 atom／backfill 数、附录原始 stdout、git 差分目录集、提交、推送与干净状态，由本次 runner 的 `result.json` 和所引日志记录；本节上述 93／93 明确只指固定检查点，不冒充最终累计数。
+
+<a id="pr4-temporal-causal"></a>
+
+## 32. PR4 增补 M：含时间属性的去身份因果语言
+
+本节闭合 §28.6–28.7 留下的含时间属性签名的观察核问题。载体仍为定义 3 的平衡表示 $\mathcal B$，档案乘法仍为定义 6，严格观察与全部有限单孔上下文仍为定义 16。以下 CSA 特定定义、推送、证明及见证均标 `repo-derived`，不作新颖性优先权声明；反演只复用 §28.4 已引 Rota (1964) 的有限布尔格公式及该处直接证明，不另立一般 Möbius 定理。
+
+### 32.1 定义 26：含时间属性、当前目标与剖面
+
+**定义 26（含时间属性的去身份因果剖面，repo-derived）。** 令
+
+$$
+\begin{aligned}
+\mathrm{Attr}_t&=\mathbb Z^3\times\{+1,-1\}\times T\times\mathbb Z,\\
+\alpha_t(e)&=(x(e),\sigma(e),\rho(e),t(e)),\\
+U_t^X(e)&=\{\alpha_t(d):d\in\Omega_X,\ e\preceq_X d\}\quad(e\in\Omega_X).
+\end{aligned}
+\tag{TCAU-U}
+$$
+
+$e\preceq d$ 仍指 $e=d$ 或 $e\prec d$。$U_t^X(e)$ 是有限非空属性集，同属性目标去重；目标严格限于 $\Omega_X$，不要求属于 $A_X$。对每个固定 $Q\subseteq\mathrm{Attr}_t$ 定义总操作
+
+$$
+F_{\downarrow Q}(C,A)
+=\bigl(C,\{e\in A:\exists d\in\Omega_C\quad
+ (\alpha_t(d)\in Q\ \land\ e\preceq d)\}\bigr).
+\tag{TCAU-F}
+$$
+
+它保持完整 $C$，只筛选当前选择。沿用 $b_X(e)=\mathbf1_{A_X}(e)$，定义有限支撑整数剖面
+
+$$
+\Gamma_t(X)(a,b,U)
+=\sum_{\substack{e\in\Omega_X\\
+ \alpha_t(e)=a,\ b_X(e)=b,\ U_t^X(e)=U}}\sigma(e),
+\quad
+(a,b,U)\in\mathrm{Attr}_t\times\{0,1\}\times\mathcal P_{\rm fin}(\mathrm{Attr}_t).
+\tag{TCAU-P}
+$$
+
+这里对 $\Omega_X$ 全体计数，未选事件进入 $b=0$ 行，$E_X\setminus\Omega_X$ 不进入任何行。指定
+
+$$
+\Sigma_{{\rm cau},t}
+=\Sigma_{\rm src}\cup\Sigma_{\rm st}
+ \cup\{F_{\downarrow Q}:Q\subseteq\mathrm{Attr}_t\}.
+\tag{TCAU-LANG}
+$$
+
+本节 $F_{\downarrow Q}$ 的参数类型是 $\mathrm{Attr}_t$；§28 的无时间因果筛选可由
+$Q\mapsto\varphi^{-1}[Q]=\{a_t:\varphi(a_t)\in Q\}$ 表示，其中
+$\varphi(p,\epsilon,r,n)=(p,\epsilon,r)$。因此旧因果上下文逐操作翻译后仍可使用；不把身份目标集合 $D\subset HF$ 加入语言。定义 23 的一般 $F_B$ 和定义 24 的 $M_P$ 也未作为原语并入（ARCH-R4-A1）。
+
+同格事件的符号已由 $a$ 的 $\epsilon$ 坐标固定，故非空格系数为 $\epsilon$ 乘其事件数，不会抵消。因此
+
+$$
+\begin{aligned}
+V_t(X)=\alpha_t[\Omega_X]
+ &=\{a:\exists b,U\ \Gamma_t(X)(a,b,U)\ne0\},\\
+s_X&=\max\{n:\exists p,\epsilon,r,b,U\quad
+ \Gamma_t(X)((p,\epsilon,r,n),b,U)\ne0\}.
+\end{aligned}
+\tag{TCAU-SUPPORT}
+$$
+
+第二行空支撑取 $-\infty$。与定义 22 的 $W,Z$ 不同，最高时刻的一正一负在这里分属不同属性格，不能共同消失；§26.1 D3 的隐形最高时刻也由此显现。$V_t,s$ 均非独立坐标，所需摘要写成 $(\Gamma_t,m,M)$。$m,M$ 仍为**全档案**端点，含非当前事件；只由当前剖面恢复这两个端点的断言已被 B3／D4 反驳。
+
+### 32.2 命题 48：推送更新与全部混合上下文的充分性
+
+**命题 48（含时间剖面的更新与充分性，repo-derived）。** 对非零格作下表的系数推送；若多个格映到同格，系数相加。写 $a=(p,\epsilon,r,n)$，并令
+
+$$
+\begin{aligned}
+a\diamond_t a'&=(p+p',\epsilon\epsilon',
+ \operatorname{pair}(r,r'),\max(n,n')+1),\\
+\tau_k(a)&=(p,\epsilon,r,n+k),\qquad
+\tau_k[U]=\{\tau_k(v):v\in U\}.
+\end{aligned}
+$$
+
+| 操作 | 剖面推送 |
+| --- | --- |
+| $X\boxplus Y$ | 两剖面逐格相加 |
+| $NX$ | $(a,b,U)\mapsto(a,1-b,U)$ |
+| $F_SX$ | $(a,b,U)\mapsto(a,b\mathbf1_S(p),U)$ |
+| $F_LX$ | $(a,b,U)\mapsto(a,b\mathbf1_L(r),U)$ |
+| $F_{\downarrow Q}X$ | $(a,b,U)\mapsto(a,b\mathbf1_{U\cap Q\ne\varnothing},U)$ |
+| $X\triangleright Y$，域为 $M_X<m_Y$ | 左格 $(a,b,U)\mapsto(a,b,U\cup V_t(Y))$，右格不变，再相加 |
+| $X\boxtimes Y$ | 格对 $((a,b,U),(a',b',U'))\mapsto(a\diamond_t a',bb',\{a\diamond_t a'\})$，系数相乘后推送 |
+| $T_kX$ | $(a,b,U)\mapsto(\tau_k(a),b,\tau_k[U])$ |
+
+端点更新直接引用命题 29，以 (TCAU-SUPPORT) 提供 $s_X,s_Y$：并集取 $\min(m_X,m_Y),\max(M_X,M_Y)$；乘积取 $\min(m_X,m_Y),\max(M_X,M_Y,\gamma(s_X,s_Y))$；补集与三个筛选不改端点；平移对有限端点加 $k$，保持哨兵。结论是
+
+$$
+\ker(\Gamma_t,m,M)\subseteq\approx_{\Sigma_{{\rm cau},t}}.
+\tag{TCAU-SUFF}
+$$
+
+**证明。** 并行没有跨边，故逐格相加。补集与筛选只改选择位；即使目标未选，仍在原 $U_t$ 中。时间复合把全部左档案连到全部右档案，每个左当前点因而新增全部右当前属性；右点没有新增后继。若右档案非空而 $\Omega_Y=\varnothing$，$V_t(Y)$ 为空，但守卫仍检查右档案。空档案时 $m=+\infty,M=-\infty$ 的规则恰使相应守卫空真，与命题 29 完全一致。
+
+乘法的新当前点只来自 $\Omega_X\times\Omega_Y$。**该次乘法结果的当前区域是反链，新当前点无出边**，故其 $U_t$ 是自身属性单点集；旧档案虽保留却不进 $\Gamma_t$。逐父格分组，符号乘法及选中位乘法给系数之积与 $bb'$，时间按 $\max(n,n')+1$ 推送。任一当前区域空时，新剖面为空而旧档案端点仍保留。此反链结论只针对该次结果，不延伸到之后再作时间串接的状态。$T_k$ 保持偏序但同时改变自身及每个当前目标的时刻，故必须同时平移 $a$ 与 $U$，不能沿用 §28.2 的“剖面不变”。以上整数公式也适用于负时刻。
+
+同摘要输入可由支撑取到相同的 $V_t,s$，所以全部更新与守卫只依赖摘要，成功结果仍是合法丰富表示的实际像。终端读数为
+$q(X)=\sum_{a,U}\Gamma_t(X)(a,1,U)$。现对定义 16 的**全部混合上下文**归纳：恒等孔保持摘要；任一基本操作的其余槽位在两侧使用同一个固定平衡参数，由上表与命题 29 同时成功或失败，成功时摘要相等。复合中内层失败则两侧严格失败，不能用后续补集、空筛选或零因子把失败改成正常零；内层成功则向外归纳，到终端给相同 $q$。这涵盖每个二元槽位和任意有限深度，没有用两种语言的核取交代替闭包证明。证毕。
+
+### 32.3 引理 2：最早元素与忘时见证 D11
+
+**引理 2（最早元素，repo-derived）。** 对每个 $e\in\Omega_X$，$U_t^X(e)$ 中时间坐标最小的元素唯一，且恰为 $\alpha_t(e)$。于是每个非零格 $(a,b,U)$ 满足 $a=\min_t(U)$，实际非零行可由 $(b,U)$ 唯一索引，且同格同号不抵消。
+
+**证明。** $e\preceq e$ 给 $\alpha_t(e)\in U_t^X(e)$；任何其它元素来自严格后继 $d$，由定义 1 有 $t(d)>t(e)$，故最早元素唯一。固定 $U$ 即固定自身属性及符号，再固定 $b$ 就固定整格，格系数为同号事件数之和。证毕。
+
+**不承重的隔离备注。** §28.3 的乘积隔离在本语言的必要性证明中不再需要。若仍使用它，比较双方应共用参数 $T_k(U_0)$，取 $k\le m-1$（两非空档案共有下端点 $m$ 时），从而新选中点时间为 $t(e)+1$，对原时间单射；端点未对齐时可取 $k\le\min(m_X,m_Y)-1$。固定 $U_0$ 会把所有负父时刻送到 $1$，不能用于区分那些自身时刻；附录只将共同 $k$ 与固定 $U_0$ 作为核验对照，不让它承担引理 2 或命题 49。
+
+**反例 D11（忘时后不可分的差测度见证，repo-derived）。** 令 $E=\Omega=\{a,b,c,d\}$，位置全 $0$、来源全 $l_0$，符号按序为 $+,+,-,-$，时间为 $-2,-1,0,0$，唯一严格边 $a\prec b$。$X$ 选 $\{a\}$，$Y$ 选 $\{b\}$，两者平衡。记 $v_+=(0,+1,l_0),v_-=(0,-1,l_0)$；按定义 25 逐事件算得
+
+| 事件 | 无时间自身属性 | 无时间后继属性集 | $b_X,b_Y$ | 符号 |
+| --- | --- | --- | --- | --- |
+| $a$ | $v_+$ | $\{v_+\}$（$a,b$ 同属性，去重） | $1,0$ | $+1$ |
+| $b$ | $v_+$ | $\{v_+\}$ | $0,1$ | $+1$ |
+| $c$ | $v_-$ | $\{v_-\}$ | $0,0$ | $-1$ |
+| $d$ | $v_-$ | $\{v_-\}$ | $0,0$ | $-1$ |
+
+故两对象的 $\Gamma_c$ 都只有
+
+$$
+(v_+,1,\{v_+\})\mapsto1,\quad
+(v_+,0,\{v_+\})\mapsto1,\quad
+(v_-,0,\{v_-\})\mapsto-2.
+$$
+
+两者还都有 $\rho_{\rm src}=(0,\delta_{(0,l_0)})$、$(m,M,s)=(-2,0,0)$，由命题 46 在 $\Sigma_{\rm cau}$ 下同核。写 $v_+[n]=(0,+1,l_0,n)$、$v_-[n]=(0,-1,l_0,n)$，含时间时 $U_t(a)=\{v_+[-2],v_+[-1]\}$、$U_t(b)=\{v_+[-1]\}$、$U_t(c)=U_t(d)=\{v_-[0]\}$。两正格的选中位交换，因而 $\Gamma_t(X)\ne\Gamma_t(Y)$；$Q=\{v_+[-2]\}$ 的合法读数为 $1,0$。定义 22 直接给
+
+$$
+W_X=W_Y=\delta_{(-2,0)}+\delta_{(-1,0)}-2\delta_{(0,0)},\qquad
+Z_X=\delta_{(-2,0)},\quad Z_Y=\delta_{(-1,0)}.
+$$
+
+所以 $\Xi$ 也不同。$a,b$ **同号**，不在单份剖面内抵消；被遗忘的是两对象剖面之差中的时间坐标。该例不复刻 B2 的添删因果边：这里固定同一个完整情境，只交换不同自身时刻的选择。附录复核全部读数。
+
+### 32.4 命题 49：命中读数直接反演与完整 iff
+
+**命题 49（含时间因果语言的精确观察核，repo-derived）。**
+
+$$
+\approx_{\Sigma_{{\rm cau},t}}=\ker(\Gamma_t,m,M).
+\tag{TCAU-EQ}
+$$
+
+**证明。** 充分性为命题 48。反向设 $X\approx_{\Sigma_{{\rm cau},t}}Y$，固定共同有限集 $D=V_t(X)\cup V_t(Y)$。每个实际 $U$ 是 $D$ 的非空子集。对 $\eta\in\{0,1\}$，取 $J_1=\mathrm{id},J_0=N$ 及合法上下文读数
+
+$$
+f_\eta^X(Q)=q(F_{\downarrow Q}(J_\eta X))
+=\sum_{\substack{e\in\Omega_X\\b_X(e)=\eta,\ U_t^X(e)\cap Q\ne\varnothing}}\sigma(e).
+\tag{TCAU-HIT}
+$$
+
+这里不需要位置筛选、来源筛选或乘积。对 $W\subseteq D$，令
+
+$$
+h_\eta^X(W)=f_\eta^X(D)-f_\eta^X(D\setminus W)
+=\sum_{\varnothing\ne U\subseteq W}
+ \Gamma_t(X)(\min_t(U),\eta,U).
+\tag{TCAU-ZETA}
+$$
+
+和式只对实际非零行解释 $\min_t$；其余 $U$ 的贡献约定为零，故不对任意形式子集假设最早元素唯一。第一项命中每个实际 $U$，第二项恰扣除不包含于 $W$ 的行；引理 2 说明同一个 $U$ 只能有一个自身属性。两次读数在**证明中**作整数相减，不增加复制孔或减读数原语。
+
+逐 $U\subseteq D$ 复用 §28.4 的 (CAU-MOB) 直接反演式：
+
+$$
+c_\eta^X(U)=\sum_{W\subseteq U}(-1)^{|U|-|W|}h_\eta^X(W).
+\tag{TCAU-MOB}
+$$
+
+该式恢复按 $(\eta,U)$ 索引的系数：代入 (TCAU-ZETA) 后每个实际 $U'\subseteq U$ 的系数仍为 §28.4 已核对的 $\mathbf1_{U'=U}$。非零的 $c_\eta^X(U)$ 由引理 2 确定唯一 $a=\min_t(U)$，于是恢复全部 $\Gamma_t$ 格；空子集系数为零。两对象的上下文读数全相同，所以反演逐格相同。若 $D=\varnothing$，两当前区域都为空、两剖面直接为空，不运行最早元素步骤。$D,Q,W$ 在这对对象的证明中固定，不是随输入改变的操作。
+
+最后，命题 30 的左右时间阈值探针属于 $\Sigma_{\rm st}\subseteq\Sigma_{{\rm cau},t}$，故恢复全档案端点 $m,M$，包含空档案哨兵；$s$ 已由 (TCAU-SUPPORT) 恢复。合并两方向即得 iff。证毕。
+
+与命题 23 同一像上函数图论证表明：任一对此语言充分的总读数 $h$ 都在 $h[\mathcal B]$ 上唯一恢复 $(\Gamma_t,m,M)$。这是核包含意义的最粗充分性，不是编码大小最优或任意集合谓词可计算的断言。一般量词由上述证明承担，附录只验证所列有限样本。
+
+### 32.5 命题 50：跨批因子映射、核偏序与分层表
+
+**命题 50（遗忘映射与严格核偏序，repo-derived）。** $\Xi$ 由 $\Gamma_t$ 沿自身的时间—位置单元边缘化：
+
+$$
+\begin{aligned}
+W_X(n,p)&=\sum_{\epsilon,r,b,U}
+ \Gamma_t(X)((p,\epsilon,r,n),b,U),\\
+Z_X(n,p)&=\sum_{\epsilon,r,U}
+ \Gamma_t(X)((p,\epsilon,r,n),1,U).
+\end{aligned}
+\tag{TCAU-TS}
+$$
+
+这里的单元恰为 #6684／定义 22 的 $K=\mathbb Z\times\mathbb Z^3$，背景取 $\Omega$、选择取 $A$，三个端点按原定义照搬（$s$ 由支撑取出）。**系数已经含符号，不再乘 $\epsilon$**。对 $U_0$，正确 $W$ 总和为 $0$；若重复乘符号则变成 $2$，与定义 22 不符。
+
+无时间剖面则是沿
+
+$$
+(a,b,U)\longmapsto(\varphi(a),b,\varphi[U])
+\tag{TCAU-FORGET}
+$$
+
+的系数推送，其中 $\varphi[U]$ 为**去重后的集合**。由此及已有边缘化，有严格主链
+
+$$
+\ker(\Gamma_t,m,M)
+\subsetneq\ker(\Gamma_c,m,M,s)
+\subsetneq\ker(\rho_{\rm src},m,M,s)
+\subsetneq\ker\Theta
+\subsetneq\ker\pi
+\subsetneq\ker z
+\subsetneq\ker q.
+\tag{TCAU-CHAIN}
+$$
+
+另外有
+
+$$
+\begin{gathered}
+\ker(\Gamma_t,m,M)\subsetneq\ker\Xi\subsetneq\ker\Theta,\\
+\ker(\rho_{\rm src},m,M,s)\subsetneq\ker\rho_{\rm src}\subsetneq\ker\pi,\\
+{=}\ \subsetneq\ {\cong_h}\ \subsetneq\ker(\Gamma_t,m,M).
+\end{gathered}
+\tag{TCAU-BRANCHES}
+$$
+
+$\ker\Xi$ 与 $\ker(\Gamma_c,m,M,s)$、$\ker(\rho_{\rm src},m,M,s)$ 分别不可比；$\ker\rho_{\rm src}$ 与 $\ker\Theta$ 也不可比。
+
+**证明（映射及包含）。** 将 (TCAU-P) 的有限事件和按 $(t(e),x(e))$ 重分组，背景及选择分别就是定义 22 的 $W,Z$；无需再加权。每个 $e$ 的 $\varphi[U_t^X(e)]=U_X(e)$，自身属性也沿 $\varphi$ 忘时，故有限推送为定义 25 的 $\Gamma_c$。对自身符号及后继集求和得 §27 的 $\rho_{\rm src}$，再沿来源求和得 $\pi$；携带端点即得 $\Theta$。$\Xi\to\Theta$ 为 (TS-SP)，$\pi\to z\to q$ 为既有投影；丢端点得到另一支链。历史同构逐事件保持属性、偏序、区域与选择，因而保持 $U_t$、剖面及端点，编码相等当然给历史同构。
+
+**证明（每条严格边与不可比的见证）。** 下表“相同”总在较粗核侧，“不同”总在较细核侧；只引用已有反例，不重新编号。
+
+| 严格边或两核比较 | 见证及方向 |
+| --- | --- |
+| $\Gamma_t,m,M\to\Gamma_c,m,M,s$ | B2：旧剖面及端点相同；含时间 $Q=\{(0,+1,l_0,1)\}$ 读 $2,1$，故 $\Gamma_t$ 不同。D11 另给固定情境的忘时见证 |
+| $\Gamma_c,m,M,s\to\rho_{\rm src},m,M,s$ | D7：来源双电荷及端点相同；负属性因果筛选读 $0,1$。D6 也可用；B1 不承担此边 |
+| $\rho_{\rm src},m,M,s\to\Theta$ | B1：同 $\Theta=((0,\delta_0),0,0,0)$，来源 $l_7/l_8$ 分开 |
+| $\Theta\to\pi$ | $U_0,T_1(U_0)$：同 $\pi=(0,\delta_0)$，端点分别全 $0$、全 $1$ |
+| $\pi\to z$ | §16 的 $0_\varnothing,B_\alpha$，$\alpha=\delta_0-\delta_v$：同 $z=0$，背景分别为 $0,\alpha$ |
+| $z\to q$ | $U_0$ 与其非零空间平移：同 $q=1$，$z=\delta_0,\delta_v$ |
+| $\Gamma_t,m,M\to\Xi$ | B2：同 $\Xi$，含时间因果读数 $2,1$；D5 还给同 $\Xi$ 而来源不同的见证 |
+| $\Xi\to\Theta$ | #6684／§26.1 D1：同 $\Theta$、同端点，联合单元 $(0,0)$ 的 $Z$ 为 $1,0$ |
+| $\Xi$ 对两条来源／无时间因果核：第一方向 | D1 的空偏序使每个无时间 $U$ 都是自身单点集；两位置各有一选中正点、一未选负点，故同 $\Gamma_c$、同 $\rho_{\rm src}$、同端点而异 $\Xi$ |
+| 同上：反方向 | D5：同 $\Xi$，来源 $l_0$ 读 $1,0$，故 $\rho_{\rm src}$ 不同，进而 $\Gamma_c$ 不同 |
+| $\rho_{\rm src},m,M,s\to\rho_{\rm src}$ | $U_0,T_1(U_0)$：同来源双电荷，端点不同 |
+| $\rho_{\rm src}\to\pi$ | B1：同空间双电荷，来源双电荷不同 |
+| $\rho_{\rm src}$ 与 $\Theta$ 不可比 | $U_0,T_1(U_0)$ 同前者异后者；B1 同后者异前者 |
+| 编码相等 $\to$ 历史同构 | §4 的非平凡事件重命名：历史同构而编码不同 |
+| 历史同构 $\to\Gamma_t,m,M$ | D10：同剖面、同端点，时刻 $1$ 上层入度多重集为 $\{1,1\}$ 与 $\{2,0\}$，历史不同构 |
+
+每行给出严格性或不包含所需的一对实际平衡表示，配合已证因子映射即完成偏序结算。证毕。
+
+下表追加 §18 的分层视图；“适用签名”只记已证观察核的语言，不借表新增任何代数律。
+
+| 层 | 所存信息 | 适用签名 | 遗忘内容 | 见证 |
+| --- | --- | --- | --- | --- |
+| 编码相等 | 全档案、属性、偏序、区域、选择及出现标签 | 本批运算的严格编码解释 | 无编码遗忘 | §4 重命名后仅同构 |
+| 历史同构 | 全部历史结构，容许保属性的出现重命名 | 本批去身份操作保同构；不称其观察核 | 出现标签 | D10 同剖面而不同构 |
+| $\ker(\Gamma_t,m,M)$ | 含时间自身属性、后继属性集、两选择位及全档案端点 | $\Sigma_{{\rm cau},t}$，命题 49 | 目标重数、入射关联及未记录的旧档案细节 | D10；B2 分开下一层 |
+| $\ker(\Gamma_c,m,M,s)$ | 无时间因果剖面及三个端点 | $\Sigma_{\rm cau}$，命题 46 | 属性行内的自身／目标时间 | B2、D11；D7 分开来源层 |
+| $\ker(\rho_{\rm src},m,M,s)$ | 来源—位置双电荷及端点 | $\Sigma_{\rm src}\cup\Sigma_{\rm st}$，命题 44 | 因果后继属性集、联合时间信息 | D7、D1 |
+| $\ker\Xi$（支链） | 时间—位置双电荷及三个端点 | $\Sigma_{\rm ts}$ 及 §25.3 指定扩展，命题 40–41 | 来源、因果关联 | D5、B2；与上两行不可比 |
+| $\ker\rho_{\rm src}$（支链） | 来源—位置双电荷 | $\Sigma_{\rm src}$，命题 43 | 因果、时间与档案端点 | $U_0,T_1(U_0)$；与 $\Theta$ 不可比 |
+| $\ker\Theta$ | 空间双电荷及三个端点 | $\Sigma_{\rm st}$，命题 30 | 来源、因果、联合单元信息 | B1、D1 |
+| $\ker\pi$ | 背景与选择的空间电荷 | $\Sigma_{\rm sp}$，命题 22 | 时间、来源与历史 | $U_0,T_1(U_0)$ |
+| $\ker z$ | 选择的空间电荷 | $\Sigma_z$，命题 22 | 背景电荷及上述历史 | §16 的 $B_\alpha$ |
+| $\ker q$ | 所选总电荷 | $\Sigma_{\rm arith}$，命题 22 | 空间分布及上述背景、历史 | $U_0$ 的非零空间平移 |
+
+**表达边界（ARCH-R4-A1）。** 从 $\Gamma_t$ 恢复 $\Xi$ 不等于存在保持完整 $C$ 的 $\Sigma_{{\rm cau},t}$ 上下文实现定义 23 的 $F_B$。柱集 $B=\mathbb Z\times S$ 时已有 $F_B=F_S$，故“所有 $F_B$ 都不可表达”为假。一般 $B$ 的可表达性分类**未测**：本批仅证明下一节的具名单元边界，没有给剩余 $B$ 的统一判据，亦未逐类反驳其可表达性。$M_P$ 同样不并入；含它的混合闭包在本批**未测**，不能从命题 41 或两核取交推出。
+
+### 32.6 历史上界与具名区域的表达边界
+
+由命题 49，D10 升级为“**全部 $\Sigma_{{\rm cau},t}$ 上下文不可区分，而历史不同构**”：两对象端点同为 $(m,M,s)=(0,1,1)$，§28.7 已给同 $\Gamma_t$ 及不同上层入度多重集，直接应用 iff。没有增加入度原语。$\Gamma_t$ 的全部实际像分类**未测**，因为本批只在实际像上证明更新和观察核，没有构造任意形式剖面的历史实现；物理解释、量子模型及 Lean 形式化也**未测**，本批仅含普通 ZFC 证明与有限核验。
+
+**命题 51（具名单元的丰富输出不可表达而 $q$ 读数可表达，repo-derived）。** 取
+$B=\{(1,0)\}\subseteq\mathbb Z\times\mathbb Z^3$。不存在固定的有限 $\Sigma_{{\rm cau},t}$ 单孔上下文 $C$，使对每个平衡表示 $X$ 都有定义且
+
+$$
+C(X)\cong_h F_B(X).
+\tag{TCAU-NONEXP}
+$$
+
+但对全部 $X\in\mathcal B$ 有合法的单孔 $q$ 表达式
+
+$$
+q(F_BX)=q\bigl(F_{\downarrow Q^*}(X\boxtimes U_0)\bigr),
+\qquad
+Q^*=\{(0,\epsilon,r,2):\epsilon\in\{+1,-1\},\ r\in T\}.
+\tag{TCAU-QEXP}
+$$
+
+**证明（丰富输出的结构限制）。** 假设 $C$ 满足 (TCAU-NONEXP)。所有允许操作都不减少档案基数；每个带非空档案固定参数的二元步骤都严格增加基数（定义 4–6），而 $F_B$ 保持原档案基数，后续步骤不能撤销增加。因此这种二元步骤不能出现。空档案参数的并行或时间复合只加可去除的标签，模历史同构可删；它们的时间守卫空真。空档案参数的乘法使当前区域变空，余下允许的一元操作及空档案二元步骤不能恢复非空区域，而 $F_B$ 从不改变 $\Omega$，故也不能出现。
+
+于是 $C$ 模历史同构只剩 $N,F_S,F_L,F_{\downarrow Q},T_k$ 的有限复合。其总时间平移必须为零：对任一非空有限档案，保时间的同构要求其最小时刻不变，而总平移 $k$ 使最小时刻增加 $k$。这些删步在去身份语言下合法：属性筛选与可达性均在历史同构下运输，不依赖被去掉的标签。
+
+**反例 D12（证明中的四事件选择族，repo-derived）。** 固定 $E=\Omega=\{a,b,c,d\}$，位置全 $0$、来源全 $l_0$，符号 $+,+,-,-$，时间 $0,1,0,0$，唯一严格边 $a\prec b$。令 $X_A$ 的选择为任意 $A\subseteq\{a,b\}$，两个负点孤立且未选。各步的累计平移在这四个输入上相同；每个位置／来源筛选对 $a,b$ 的掩码相等，每个因果筛选由 $U_t(a)\supseteq U_t(b)$ 给掩码 $d_a\ge d_b$，且这些掩码不依赖选择。
+
+总平移为零后，$a,b$ 分别是唯一的时刻 $0,1$ 正点，任何历史同构都必须固定它们。因此目标 $F_B(X_A)$ 要求 $b$ 的输出位等于任意输入位 $b_A$，$a$ 的输出位恒为零。若复合中某一步 $d_b=0$，该步就将 $b$ 的位清为常数，之后仅有取补和乘固定掩码，不能恢复对输入 $b_A$ 的依赖，矛盾。故每个筛选都有 $d_b=1$，继而 $d_a=1$。$b$ 的输出等于输入还迫使 $N$ 次数为偶数，于是 $a$ 的选择位也原样保留；取 $a\in A$ 即与恒删 $a$ 矛盾。这排除了任意长度的固定有限复合，而非仅检查某个深度。偶数次 $N$ 的结论是在排除清零掩码之后使用的。
+
+**证明（$q$ 层的正面表达式）。** $U_0$ 只选零位置、时刻 $0$、符号为正的点，新选中事件恰为 $(e,u_+)$，$e\in A_X$，其位置为 $x(e)$、符号仍为 $\sigma(e)$、时间为 $\max(t(e),0)+1$。乘积当前区域为反链，故 $F_{\downarrow Q^*}$ 恰按新事件自身属性筛选。对整数 $t(e)$，$\max(t(e),0)+1=2$ 当且仅当 $t(e)=1$；位置为零的条件也恰为 $x(e)=0$。有限求和即得 (TCAU-QEXP)，空区域时两边均为零。证毕。
+
+(TCAU-QEXP) 的乘积改变档案与当前区域，故不满足 (TCAU-NONEXP) 的丰富输出要求；两结论的观察层不同。柱集仍由 $F_S$ 完整表达；除本节具名 $B$ 和柱集外的一般区域分类仍为“未测”，不从此例推出所有非柱集不可表达。
+
+<a id="pr4-evidence"></a>
+
+## 33. PR4 本批产地与核验收据
+
+### 33.1 实施、先验暴露与思考输入
+
+本批属于 caller 的 `consensus-rnd:sshx` 流程，由一个 Codex 实施席以 `codex-cli` 载体在工作树 `/Users/auricstudio/trureturing-csa-upgrade-pr4-0910`、分支 `lane/theory/csa-upgrade-pr4-0910` 落地。该 worker 没有单独调用本地 skill，没有另派子席；输入是 caller 收敛 brief（含 R1-PR4）、完整 `CLAUDE.md`、既有卷文及前批有限核验，故为 `repo-prior-exposed`，不冒充盲推导或独立评审。
+
+原始基线是 `34d73f32f87c9a50af4890ffb5b141ce0af5110b`。开工实际执行 `git fetch origin dev && git merge-tree --write-tree origin/dev HEAD`，退出 0，试合树为 `a31ec0c72dcfff2c53206eaa0e3f1eca8903392c`；随后 `git merge origin/dev` 退出 0，以 fast-forward 合入 `49c7aecf0c64e27d43dc8bea8fd18ca438080c05`。两版卷字节相同，仍为 3251 行，最大编号为定义 25、命题 47、引理 1、反例 D10，故本批续为 §32–33、定义 26、命题 48–51、引理 2、D11–D12、增补 M，没有 rebase。
+
+**思考构成与判词摘要均据 caller／R1 记录转述**：六席中五席一致；`parsimony` 与 `natural-ownership` 给出最早元素及命中读数直接反演，`worth`、`teleology`、`proportional-containment` 要求将 D11 归为剖面之差的忘时见证并删去可选文献升级表。第六席的具体判词、各思考席模型与载体、原始投票工件未向本 worker 提供，未作独立核验，不据此宣称异模型共识。可选命题 51 的证明形态据 `natural-ownership` 方案；本席补明“保留 b 的任意输入位 ⇒ 不得出现清零掩码 ⇒ a 也不被筛除”的依赖步骤，再使用 N 的偶数性。
+
+本 worker 亲跑下列附录、ingest 与 git／字节核对；这些是实施自查，不是评审判词。caller 后续亲验、独立评审、CI 与合入结果均未向本席提供，记“未测”，本收据不预报它们。
+
+本批形态为 **ingest**：`contextual-spacetime-arithmetic` 源卷追加经 canonical writer 进入 atom CAS 及该源的 `residual-open` backfill。本批没有 deposit／cover；没有新增 Lean、axiom、判官、schema 或 tools，不报告新增冻结或已吸收状态。数学状态为 `repo-derived` 的普通 ZFC 推导加有限核验。
+
+文献仅内部复用 §28.4 已列的 Rota (1964) 反演来源（框架标签 `literature-attested`），不重复增加引文。写作时本席查询该已有 DOI 的 Crossref 元数据，HTTP 200，确认 DOI 与出版年 1964；原始响应及口径在 runner 的 `rota-crossref.json`、`literature-check.json`。该查询不等于通读原文，未升级 §31.1 的任何核读状态。全球新颖性检索与原文全文核读均为“未测”；本批只复用已给直接公式，不以文献全文为新增证明前提，不作优先权主张。
+
+### 33.2 附录实际命令与有限检查范围
+
+本席在上述工作树实际运行下列原文命令，退出码 **0**，stderr 为空；唯一 Python 块沿用 `Rich/add/mul/neg/temporal/filt` 及 `pr3_` 的 `timed=True` 辅助函数，新增段共 **313 行**，只插在原末行打印之前。
+
+```sh
+sed -n '/^```python$/,/^```$/p' docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md | sed '1d;$d' | python3 -
+```
+
+stdout 的 `pr4_` 行与最后一行原文为：
+
+```text
+pr4_temporal_causal: random_samples=64 cases=83 updates=2189 endpoint_updates=2189 earliest_rows=208 product_antichains=166 guard_success=121 strict_failures=128 context_reads=3548 mobius_profiles=89 mobius_coefficients=3548 xi_paths=2272 forget_paths=2272 kernel_edges=17 D11=1,0 D11_Z_times=-2,-1 common_k=-3 shifted_probe=1,0 fixed_U0=1,1 q_expression=83 B2=2,1 D10_indegrees=[1, 1],[0, 2] c_then_b=1,0
+ALL_FINITE_CHECKS_PASSED
+```
+
+计数均由执行累加。随机种子 `2026091004`，64 个随机平衡表示的当前区域大小取 0、2、4、6，当前时间取整数 −5 至 4，额外档案点数取 0、1、2，边按严格时标生成后取传递闭包，选择任意子集。加定向见证共 83 个输入；覆盖空档案、非空档案而空当前区域、负时刻、最高当前时刻在 W/Z 中抵消、未选目标、当前区域外目标及严格失败传播。更新同时比较剖面及三个端点；乘积只断言该次新当前区域反链与单点后继属性集。
+
+89 份反演核验为 83 个输入加三对对象各用共同 D 的六次恢复；恢复器只接收固定查询词汇 D 和终端上下文读数表，不接收 Rich 对象、不调用剖面函数。规范序列化后逐字节恢复两选择位的全部系数，并断言每个非零格的自身属性恰为 U 的唯一最早元素。Ξ 的 2272 次双路径比较，一条直接分别遍历 Ω/A，另一条只消费 Γ_t 系数及端点，两路不共用边缘化函数；另检查忘时推送的集合去重。83 次 q 表达式检查包含 D12 的四个选择输入，不代替命题 51 对全部有限上下文的否定证明。17 次核比较只核对具名见证的方向，不代替命题 50 的因子映射证明。
+
+原始 stdout/stderr 与命令退出码存于 runner 的 `appendix.stdout.log`、`appendix.stderr.log`、`appendix-receipt.json`。更强结论的边界仍按 §32.5–32.6：一般 F_B 分类、含 M_P 的混合闭包、Γ_t 全部实际像、物理模型和 Lean 均为“未测”，各项未测原因已在相应证明边界说明。
+
+### 33.3 ingest 与固定检查点的 git 读数
+
+首次摄入的已提交输入为 `7a21063aa1ae808ecd2ffc867063058fe5b80840`（§32 提交 `a6d73cfaa8`，附录提交 `7a21063aa1`），摄入基线固定为上述合入 dev SHA。实际命令：
+
+```sh
+BASE=49c7aecf0c64e27d43dc8bea8fd18ca438080c05 make ingest SOURCE="contextual-spacetime-arithmetic docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md"
+```
+
+退出码 **0**，stderr 为空；新增 **57 个 atom 与 57 个 residual-open backfill**，新增路径的 atom_id 两侧成对。stdout 原文：
+
+```text
+INGEST residual_open_added=57 skipped_existing=217 coarse_fallbacks=0 open_genres=0 cas_objects_written=57 ledger_changed=true
+```
+
+本次 114 个生成文件已提交为 `0fbf39866eb530d2756c2ddb5e3859503801806e`，内容检出 §32、定义 26、引理 2、命题 48–51、D11/D12 及 PR4 附录段。以下读数仅指该固定检查点，**截至本节追加之前**：
+
+| 读数口径 | 实测值 |
+| --- | --- |
+| 本卷相对摄入基线的增删 | +616／−0 行（§32 为 303 行，附录为 313 行） |
+| 本卷行数 | 3867 |
+| 新增 atom／backfill | 57／57 |
+| `git status --porcelain=v1` | 退出 0，stdout 为空 |
+| `git diff --shortstat 49c7aecf0c64e27d43dc8bea8fd18ca438080c05..0fbf39866eb530d2756c2ddb5e3859503801806e` | 115 files changed, 3864 insertions(+) |
+| `git diff --name-only` 的路径集合 | 本卷 + `Meta/Digestion/atoms/sha256` + `Meta/Digestion/backfill/contextual-spacetime-arithmetic/residual-open` |
+
+只追加的字节核对以基线本卷 **248728 字节** 为对象：去掉唯一新增 pr4_ 插入后的前缀逐字节等于基线全文，且只有一个 Python 块。它同时核对顶部导航与 §1–31；不将“未去掉附录插入的整段原始前缀相等”报告为通过。
+
+本节是上述固定检查点之后的正文追加，仍须以同一命令再运行 ingest，使本节产地与收据进入消化账；最终累计计数不以这里的 57／57 代替。正文最后改动之后的摄入、最终 HEAD、逐节提交、推送、试合及干净状态，由 runner 目录 `/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/csa-pr4-impl-0910/attempt-1` 的 `result.json` 与 `implementation.log` 绑定记录。本批按 brief 只交付推送分支，不开 PR；这不是持续研究目标、评审或仓库准入已完成的声明。
+
+<a id="pr5-mixed"></a>
+
+## 34. PR5 增补 N：混合语言闭包与区域筛选的表达性分类
+
+本节接续 §32 的 ARCH-R4-A1：先将定义 23 的区域筛选及定义 24 的配对选择加入含时间因果语言，证明混合闭包；再分类区域筛选在原语言中的丰富输出表达性。载体、单孔上下文、历史同构分别沿用定义 3、16、7。以下新增定义、引理、命题、反例及直接推论均为 `repo-derived`，没有新外部引用，不作 `suspected-novel` 或优先权声明；有限实验只核对所列实例，不替代全称证明。
+
+### 34.1 定义 27：混合语言与表达性量词
+
+**定义 27（混合语言与丰富输出表达性，repo-derived）。** 沿用 $K=\mathbb Z\times\mathbb Z^3$，令
+
+$$
+\Sigma_{\rm mix}=\Sigma_{{\rm cau},t}
+ \cup\{F_B:B\subseteq K\}
+ \cup\{M_P:P\subseteq K\times K\}.
+\tag{MIX-LANG}
+$$
+
+$F_B,M_P$ 分别严格使用定义 23、24 的函数：前者检查事件自身的时间—位置单元，后者只限制完整档案乘积的选择。依 #6684 的命名，$\Sigma_{\rm ts}$ **不含** $M_P$；含全部 $M_P$ 的是 §25.3 的 $\Sigma_{\rm ts}^{\rm pair}$。本节不改动这两个旧签名的名字或定义。
+
+载体仍为全部平衡表示 $\mathcal B$。上下文仍是定义 16 的恒等孔、全部固定丰富参数、每个二元操作的两个槽位及任意有限复合；任何基本步失败都严格向外传播。对一个预先指定的 $B$，称 $F_B$ 在 $\Sigma_{{\rm cau},t}$ 中可作**丰富输出表达**，当且仅当
+
+$$
+\exists\,\text{固定有限单孔上下文 }C_B\in\operatorname{Ctx}_{\Sigma_{{\rm cau},t}}
+\quad\forall X\in\mathcal B:\quad
+ C_B(X)\text{ 有定义且 }C_B(X)\cong_h F_B(X).
+\tag{MIX-HEXPR}
+$$
+
+$B$ 可以决定上下文、平移和全部参数，$X$ 不得决定它们；量词次序是 $\exists C_B\,\forall X$。三个问题分别是：**在 $\Gamma_t$ 上下降**，即存在由输入剖面确定输出剖面的语义算子；**固定上下文至 $\cong_h$ 表达**，即 (MIX-HEXPR)；**仅 $q$ 相等的表达**，即将同一量词中的历史同构换为 $q(C_B(X))=q(F_B(X))$。后两项要求原语言中的一个固定上下文，第一项没有该要求。命题 52、53、54 分别处理这些层次；命题 51／D12 已表明仅 $q$ 相等不能推出历史同构表达。
+
+### 34.2 命题 52：混合语言闭包
+
+**命题 52（混合语言的精确观察核，repo-derived）。** 对 $a=(p,\epsilon,r,n)$、$a'=(p',\epsilon',r',n')$，将下表两行接到命题 48 的八行更新表，仍采用该命题的 $a\diamond_t a'$、同格系数相加和端点约定：
+
+| 新操作 | 剖面格推送 | 推送系数 |
+| --- | --- | --- |
+| $F_BX$ | $(a,b,U)\mapsto(a,b\mathbf1_B(n,p),U)$ | 原系数不变 |
+| $M_P(X,Y)$ | $((a,b,U),(a',b',U'))\mapsto(a\diamond_t a',bb'\mathbf1_P((n,p),(n',p')),\{a\diamond_t a'\})$ | 两输入格的系数之积 |
+
+#### 当前背景、端点与扩签名归纳
+
+$F_B$ 保持完整情境 $C$，包括 $\Omega,U_t,m,M$；它的判据是**自身单元**是否在 $B$ 中，不是 $U\cap Q_B$ 是否非空。拒绝一个已选事件时，该事件进入 $b=0$ 行，不从 $\Gamma_t$ 删除。$M_P$ 对全部 $\Omega_X\times\Omega_Y$ 生成新当前事件，包括未选父事件构成的对和不满足 $P$ 的对；这些对仅有选中位 $0$。$P$ 可不对称，上表中的父单元顺序不能交换。谓词不乘到系数或 $\Omega$ 上，**系数已经含符号，不再乘 $\epsilon\epsilon'$**。
+
+$M_P$ 的完整情境沿定义 6 的乘积：旧档案保留但不进当前剖面；新当前事件无出边，故其 $U_t$ 为自身属性单点集。以支撑按 (TCAU-SUPPORT) 恢复 $s_X,s_Y$，置 $g=\gamma(s_X,s_Y)$，端点为
+
+$$
+(m,M,s)_{M_P(X,Y)}
+=(\min(m_X,m_Y),\max(M_X,M_Y,g),g).
+\tag{MIX-ENDPOINTS}
+$$
+
+这是命题 29 的完整乘积端点，含空区域和旧档案端点，不用被选父事件的最高时刻替代 $s$。结论为
+
+$$
+\approx_{\Sigma_{\rm mix}}=\ker(\Gamma_t,m,M).
+\tag{MIX-KERNEL}
+$$
+
+**证明（两种新增操作）。** $F_B$ 只筛选 $A$，所以总定义且保持 $\Omega$ 的平衡；同一剖面格的自身单元相同，选中位按表更新。多个格碰撞时将原有符号系数相加，恰等于逐事件分组。$M_P$ 使用合法平衡的完整乘积情境，限制选择不改变平衡，故亦总定义。固定两父格后，父属性、父选择位及 $P$ 的真假均固定；全部父对的新符号之和就是两个已带符号格系数的乘积。新点的属性为 $a\diamond_t a'$、选中位为表中乘积，且新点之间无严格边，得到第二行。未选父对及谓词不满足的对也在这个有限双和中。新点晚于父点，旧档案全部保留，所以端点仍为 (MIX-ENDPOINTS)，与定义 24 完全一致。
+
+**证明（扩签名后的逐步归纳）。** 令摘要 $H(X)=(\Gamma_t(X),m_X,M_X)$。$s$ 和 $V_t$ 可由剖面支撑恢复，终端读数为 $q(X)=\sum_{a,U}\Gamma_t(X)(a,1,U)$。命题 48 已给旧原语逐项的更新与 $\triangleright$ 守卫；本表为扩充后的同一张表补上两个基本步。若 $H(X)=H(Y)$，新增的一元步 $F_B$ 由同一 $B$ 推送同一剖面，保持端点；新增二元步 $M_P(\square,Z)$ 和 $M_P(Z,\square)$ 各自在两个输入位置上使用同一个固定参数 $Z\in\mathcal B$，按有序父格对推送，也给相同摘要。不能因 $P$ 不对称而漏掉一个槽位。
+
+现按定义 16 对**全部 $\Sigma_{\rm mix}$ 上下文**归纳。恒等孔保持摘要；任一基本步由上述扩充表决定成功输出摘要，唯一部分原语 $\triangleright$ 的守卫 $M_{\rm left}<m_{\rm right}$ 也由摘要决定，故两侧同步成功或失败。有限复合中，内层失败则两侧都严格失败，后接 $N$、空筛选或零因子不能把它变成正常零；内层成功则输出摘要相同，继续归纳外层。成功到终端时 $q$ 相等，故 $\ker H\subseteq\approx_{\Sigma_{\rm mix}}$。反向由 $\Sigma_{{\rm cau},t}\subseteq\Sigma_{\rm mix}$ 和命题 49 得 $\approx_{\Sigma_{\rm mix}}\subseteq\ker H$。这里消费的是命题 48 的**旧基本更新**并补证新基本步，没有把旧签名充分性直接改称新签名充分性，也没有用两旧核取交代替归纳。证毕。
+
+**推论（较小语言的核仍成立）。** 按定义 23、24、27 有
+
+$$
+\Sigma_{\rm ts}\subseteq\Sigma_{\rm ts}^{\rm pair}\subseteq\Sigma_{\rm mix},
+\qquad
+\approx_{\Sigma_{\rm mix}}=\ker(\Gamma_t,m,M)
+\subsetneq\ker\Xi
+=\approx_{\Sigma_{\rm ts}^{\rm pair}}
+=\approx_{\Sigma_{\rm ts}}.
+\tag{MIX-COMPARISON}
+$$
+
+最后两个核等式分别消费命题 41、40。严格性直接引用 §32.5 的 B2：同 $\Xi$、含时间因果读数 $2,1$；该处 D5 的来源见证也可用，不重新编号。#6684 的命题 40 没有被推翻，它刻画较小语言的较粗核，不能改称 $\Sigma_{\rm mix}$ 的核。ARCH-R4-A1 的“未证混合闭包”由命题 52 闭合。语义下降仍不推出 (MIX-HEXPR)，其失败区域由命题 53 和 D13–D14 给出；$\Gamma_t$ 恢复历史的更强断言仍由 D10 反驳。
+
+### 34.3 引理 3：保历史上下文的归约与位保持原则
+
+**引理 3（保历史归约与位保持，repo-derived）。** 设某固定有限 $\Sigma_{{\rm cau},t}$ 单孔上下文对全部输入满足 (MIX-HEXPR)，则有以下归约；前三步只用 $C_B(X)\cong_hF_B(X)$，对任意 $B$ 都成立。
+
+① 所有原语都不减档案基数。带非空档案固定参数的任一二元步骤，由定义 4–6 严格增加 $|E|$，后续不可减；而 $F_B$ 保持 $|E|$，故这种步骤不出现。空档案参数的 $\boxtimes$ 清空 $\Omega$；排除前类参数后，后续步骤不能恢复非空 $\Omega$，与任一非空当前区域输入的目标不符，故也不出现。空参数的 $\boxplus/\triangleright$ 只加可去标签，后者守卫空真；去身份原语在历史同构下运输，所以模 $\cong_h$ 可删去这些步骤。这里不要求 $B$ 非空：即使 $B=\varnothing$，目标仍保留原 $\Omega$。
+
+② 模历史同构只剩 $N,F_S,F_L,F_{\downarrow Q},T_k$ 的有限复合。总时移必须为 $0$：取非空有限档案，其最小时刻在目标中保持，而总时移 $k$ 会使它增加 $k$；保时间的历史同构迫使 $k=0$。
+
+③ 将每个因果谓词按该步之前的累计平移拉回原坐标：若累计时移为 $j$，把 $Q$ 换成 $\tau_j^{-1}[Q]$。空间和来源掩码不受时移影响。每个筛选掩码只依赖完整情境，不依赖 $A$；同一情境的全部选择输入上，累计平移也相同。因此在固定情境上，每个事件的选择位只经历一个有限词，基本变换恰为
+
+$$
+z\longmapsto1-z,\qquad z\longmapsto h_i z,
+\quad h_i\in\{0,1\},\quad h_i\text{ 与输入选择无关}.
+\tag{MIX-BIT}
+$$
+
+④ **位保持原则：** 若某个由属性唯一标认的事件，其输出位须等于任意输入位，则每个 $h_i=1$。因为任一次 $h_i=0$ 都使两个输入位的后续值相同，其后的取补与固定掩码不能恢复已经失去的依赖。**在排除全部清零掩码之后**，该事件才只经历取补，输出恒等因而迫使 $N$ 次数为偶数。先断言偶数次 $N$ 再排除清零不是本证明的次序。以上逐步论证同时证明全部结论。证毕。
+
+### 34.4 命题 53：区域筛选至历史同构的完整表达判据
+
+对任意 $B\subseteq K$ 记
+
+$$
+S_B=\{p:\exists t\ (t,p)\in B\},\qquad
+Q_B=\{(p,\epsilon,r,t):(t,p)\in B,\ \epsilon\in\{\pm1\},\ r\in T\}.
+$$
+
+定义条件
+
+$$
+H_B:\quad
+\forall p\in S_B\ \forall q\in\mathbb Z^3\ \forall t<s:\quad
+(s,q)\in B\ \Longrightarrow\ (t,p)\in B.
+\tag{MIX-H}
+$$
+
+**命题 53（丰富输出表达性的完整分类，repo-derived）。** 以下三项等价：
+
+1. 存在固定有限 $\Sigma_{{\rm cau},t}$ 单孔上下文，对全部 $X\in\mathcal B$ 有定义且输出与 $F_B(X)$ 历史同构。
+2. $H_B$ 成立。
+3. $B=\mathbb Z\times S$（含 $S=\varnothing$），或存在 $T_B\in\mathbb Z$、$\varnothing\ne R_B\subseteq S_B$ 使
+
+$$
+B=(\{t<T_B\}\times S_B)\cup(\{T_B\}\times R_B).
+\tag{MIX-NORMAL}
+$$
+
+条件成立时有**编码等式**，强于历史同构：
+
+$$
+F_B=F_{S_B}\circ F_{\downarrow Q_B}.
+\tag{MIX-ENCODE}
+$$
+
+**证明（2 ⇒ 1）。** 两个筛选都总定义且保持完整情境，参数只依赖 $B$。若已选事件 $e$ 的自身单元属于 $B$，则 $x(e)\in S_B$，且 $e$ 本身就是 $Q_B$ 中的当前见证，所以保留。反之，若 $e$ 被复合保留，则 $x(e)\in S_B$，并有 $d\in\Omega$ 满足 $e\preceq d$、$(t(d),x(d))\in B$。$d=e$ 时结论直接成立；$e\prec d$ 时由定义 1 有 $t(e)<t(d)$，由 $H_B$ 得 $(t(e),x(e))\in B$。因此两边选择逐事件相同，完整情境又不变，即得 (MIX-ENCODE)。目标 $d$ 可以未选，时刻可以为任意负整数，证明均未排除它们。
+
+**证明（1 ⇒ 2）。** $B=\varnothing$ 时由空间筛选 $F_\varnothing$ 实现，$H_B$ 空真，单列结束。以下设 $B\ne\varnothing$，应用引理 3。对每个 $(t,p)\in B$、每个来源 $r\in T$，取同单元、同来源、相反符号的一正一负平衡反链，$E=\Omega$。正负符号分别唯一标认两个事件；逐个变动目标事件的输入位，目标 $F_B$ 必须保留该位。由位保持原则，该事件在每一步的掩码都为 $1$。
+
+对这些反链逐属性量化，得到同一固定词的约束：每个空间掩码包含 $S_B$；每个来源掩码等于全部 $T$（用 $B$ 中任一单元并遍历全部来源）；每个拉回的因果谓词包含 $Q_B$（反链的 $U_t$ 恰为自身单点，遍历两种符号与全部来源）。全部清零已排除后，任一上述被保留事件还给出 $N$ 总次数为偶数。
+
+若 $H_B$ 失败，取 $p\in S_B$、$t<s$、$(s,q)\in B$ 而 $(t,p)\notin B$。造同来源的正事件 $a@(t,p)\prec b@(s,q)$，另加两个孤立未选负事件使当前区域平衡，取 $E=\Omega$，唯一严格边为 $a\prec b$。跨位置边合法：定义 1 只要求时间严格增加；等时严格边被该定义禁止，所以此处确实使用 $t<s$。$a$ 的每个空间掩码为 $1$，因为 $p\in S_B$；来源掩码全部为 $1$；每个拉回因果谓词都含 $\alpha_t(b)\in Q_B$，而 $U_t(a)$ 含该属性，故其因果掩码也为 $1$。偶数次 $N$ 于是原样保留 $a$ 的输入位。取只选 $a$ 的输入，输出仍选 $a$，但 $F_B$ 恒删它；$a$ 是其时刻唯一正点，总时移为零，历史同构不能换一个事件代它。矛盾。§34.5 的 D14 还给出包含必须保留的第三正点的六事件自足反证，不依赖把单一筛选的失败推广为全语言失败。
+
+**证明（2 ⇔ 3）。** 空集已属于柱集。设 $B\ne\varnothing$ 且 $H_B$ 成立。若时间投影无上界，则对每个 $p\in S_B$ 及每个整数 $t$，可取 $(s,q)\in B$ 且 $s>t$；条件迫使 $(t,p)\in B$，所以 $B=\mathbb Z\times S_B$。若时间投影有上界，它作为非空整数集有最大元 $T_B$。令 $R_B=\{p:(T_B,p)\in B\}\ne\varnothing$；$H_B$ 迫使全部活动位置含全部 $t<T_B$，最大性排除全部 $t>T_B$，恰得 (MIX-NORMAL)。反向，柱集在活动位置含全部时刻；正常形中若 $(s,q)\in B$ 且 $t<s$，则 $t<T_B$，故每个 $p\in S_B$ 都有 $(t,p)\in B$。两种形式均满足 $H_B$。证毕。
+
+**位置相关阈值推论。** 对各非空截面给定 $h(p)\in\mathbb Z\cup\{+\infty\}$，令 $B=\bigcup_p(\{t\le h(p)\}\times\{p\})$，其中 $h(p)=+\infty$ 表示全 $\mathbb Z$。该区域可表达，当且仅当所有非空截面都是全 $\mathbb Z$，或所有非空截面都是有限阈值且只取两个相邻值 $\tau-1,\tau$（可只取其中一个值，最大差 $\le1$）。空区域仍可表达。理由是 (MIX-NORMAL) 中顶层位置阈值为 $T_B$，其余活动位置为 $T_B-1$；反向这些形式直接满足条件。阈值差 $\ge2$ 的不可表达性见 D14；一列全 $\mathbb Z$、另一活动列阈值有限 $h(p)$ 时，取 $t=h(p)+1$，再在全列取 $s>t$，即构成 $H_B$ 的失败见证。不能把“每位置分别时间下闭”当成充分条件。
+
+**旧结论的结算与推论。** 命题 51／D12 的 $B=\{(1,0)\}$ 违反 $H_B$，是同位置特例。柱集的 $F_B=F_S$、全空间过去半轴 $B=\{t\le\tau\}\times\mathbb Z^3$ 的 $F_B=F_{\downarrow Q_\tau}$ 仍为编码等式，其中 $Q_\tau=\{a\in\mathrm{Attr}_t:a\text{ 的时间}\le\tau\}$；任意有限交满足 $F_{B_1\cap B_2}=F_{B_1}\circ F_{B_2}$，因为各筛选保持同一情境并逐位相乘。故这些原充分族保留为本判据的推论。§32.5 与 §32.6 的“一般 $F_B$ 可表达性未测”文字保持原样，其所指固定有限上下文至 $\cong_h$ 的分类**由命题 53 结算**，不重写旧批次的当时记录。
+
+**量化边界。** 本 iff 专指定义 16 的固定有限单孔上下文、定义 26 的 $\Sigma_{{\rm cau},t}$、定义 7 的 $\cong_h$。它不分类一般 $q$ 表达性，不扩张到复制孔、改变 $\Omega$ 的筛选、身份查询、输入自适应参数或未来扩签名；这些扩张不在证明域内，未测。$B$ 可任意无限，ZFC 中的参数存在也不承诺成员判定可计算。
+
+### 34.5 反例 D13、D14：时间逆序与跨位置阈值
+
+**反例 D13（同位置时间逆序的一般见证族，repo-derived）。** 设 $t_1<t_2$，同位置 $p$ 满足 $(t_2,p)\in B$、$(t_1,p)\notin B$。取 $E=\Omega=\{a,b,c,d\}$，来源均为 $r_0$，位置均为 $p$；$a,b$ 为时刻 $t_1,t_2$ 的正事件，$c,d$ 为时刻 $t_1$ 的孤立负事件，唯一严格边 $a\prec b$。只让 $A$ 遍历 $\varnothing,\{a\},\{b\},\{a,b\}$，负事件一直未选。解析读数为
+
+| $A$ | $\varnothing$ | $\{a\}$ | $\{b\}$ | $\{a,b\}$ |
+| --- | --- | --- | --- | --- |
+| $q(F_BX_A)$ | 0 | 0 | 1 | 1 |
+| $q(F_{\downarrow\{\alpha_t(b)\}}X_A)$ | 0 | 1 | 1 | 2 |
+
+#### 四个读数的证明边界
+
+这四个读数本身不证明全语言不可表达；承重的是引理 3 对任意有限词的位保持论证及命题 53。此处给的是任意 $t_1<t_2$ 与任意同位置逆序区域的见证模式，D12 保留旧编号作为其已知特例；附录取 $(-4,-1),(-2,3),(4,7)$ 三组时间，不将旧四事件实例另算一次新发现。
+
+#### 跨位置六事件反证
+
+**反例 D14（跨位置阈值差 2 的六事件自足族，repo-derived）。** 取 $p=(0,0,0)$、$q=(1,0,0)$，
+
+$$
+B=(\{t\le0\}\times\{p\})\cup(\{t\le2\}\times\{q\}).
+\tag{MIX-D14}
+$$
+
+虽然两个非空截面分别向下闭，$H_B$ 仍失败：$(2,q)\in B$、$1<2$，而 $(1,p)\notin B$。取三个同来源正事件 $a@(1,p)\prec b@(2,q)$、$c@(0,p)$，唯一严格边为 $a\prec b$；另加三个时刻 $0$、位置 $p$、同来源的孤立未选负事件，令 $E=\Omega$ 为全部六点。$A$ 遍历 $\{a,b,c\}$ 的全部八个子集。目标删 $a$、保 $b,c$；三个正点的时间—位置属性两两可区分，任何保属性历史同构都固定它们。
+
+假定一个上下文对这个族实现目标且满足全输入保历史要求，用引理 3 归约。保 $c$ 的任意位迫使每个空间掩码在 $p$ 处为 $1$，遂也在 $a$ 处为 $1$。保 $b$ 的任意位迫使每个来源掩码在共同来源处为 $1$，每个拉回因果掩码在 $b$ 处为 $1$；因为 $U_t(b)\subseteq U_t(a)$，后者也在 $a$ 处为 $1$。对被保留位排除清零之后，$N$ 次数为偶数。因此 $a$ 位仍原样保留，取 $A=\{a\}$ 即矛盾。**第三个必须保留的正点 $c$ 正是全上下文反证中强迫空间掩码保留 $p$ 的环节。**
+
+单一 $F_{\downarrow Q_B}$，即使随后接 $F_{S_B}$，会让 $a$ 通过未选的目标 $b$ 而保留。八个读数如下；仅一个筛选失败不能推出所有上下文失败，上段的有限词反证不可省略。
+
+| $A$ | $\varnothing$ | $a$ | $b$ | $c$ | $ab$ | $ac$ | $bc$ | $abc$ |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| $q(F_BX_A)$ | 0 | 0 | 1 | 1 | 1 | 1 | 2 | 2 |
+| $q(F_{S_B}F_{\downarrow Q_B}X_A)$ | 0 | 1 | 1 | 1 | 2 | 2 | 2 | 3 |
+
+#### 相邻阈值的正对照
+
+**正对照：**
+
+$$
+B'=(\{t\le0\}\times\{p\})\cup(\{t\le1\}\times\{q\})
+$$
+
+满足 $H_{B'}$，所以 $F_{B'}=F_{\{p,q\}}\circ F_{\downarrow Q_{B'}}$ 对全部输入精确实现，保持完整情境。整数严格时间下，不存在既在低阈值之外、又严格早于高阈值之内的中间时刻；这说明差 $1$ 与差 $2$ 的分界来自定义 1 的严格整数时标。
+
+### 34.6 命题 54：q 层一致表达的伴随结果
+
+**命题 54（有下界区域的固定 q 表达，repo-derived）。** 精确量词为
+
+$$
+\begin{aligned}
+\forall B\subseteq K\ \forall k_0\in\mathbb Z:\quad
+&\bigl[(\forall(\tau,p)\in B,\ \tau\ge k_0)\ \Longrightarrow\\
+&\quad\forall k\le k_0-1\ \forall X\in\mathcal B:\quad
+q(F_BX)=q\bigl(F_{\downarrow Q^*}(X\boxtimes T_k(U_0))\bigr)\bigr],\\
+Q^*&=\{(p,\epsilon,r,\tau+1):(\tau,p)\in B,
+                 \ \epsilon\in\{\pm1\},\ r\in T\}.
+\end{aligned}
+\tag{MIX-QEXPR}
+$$
+
+$B,k_0,k,Q^*$ 都在 $X$ 之前固定；不要求 $B$ 有限或有上界，也不声称该表达保持历史同构。
+
+**证明。** $T_k(U_0)$ 只选位置 $0$、符号正、时刻 $k$ 的点 $u_+$。乘积的新选中事件恰来自 $(e,u_+)$、$e\in A_X$，位置与符号沿 $e$，时间为 $\max(t(e),k)+1$。该次乘积当前区域为反链，故因果筛选只检查新点自身属性。若 $t(e)\ge k$，新时间为 $t(e)+1$，在这个范围内单射，$Q^*$ 恰检查 $(t(e),x(e))\in B$。若 $t(e)<k$，新时间为 $k+1\le k_0$，不等于任何目标时间 $\tau+1\ge k_0+1$，故被拒；原事件因 $t(e)<k<k_0$ 也不属于 $B$。逐选中事件的有符号有限和相等，空选择及负时刻均包含在内。$k$ 只依赖指定区域的下界，不依赖 $X$ 的最早时刻。证毕。
+
+**坏界反例（不另编号）。** 将条件放宽为 $k\le k_0$ 不成立：取 $B=\{(0,0)\}$、$k=k_0=0$，输入为只选时刻 $-1$ 正点的平衡 $U_{-1}$。目标 $q=0$；乘 $U_0$ 后该点时间成为 $1$，命中 $Q^*$，右式为 $1$。因此原命题的统一界 $k\le k_0-1$ 不能按此方式放宽。
+
+命题 53 判定不可作丰富输出表达的**有下界**区域仍可由本命题作固定 $q$ 表达，例如 D12 的单元区域。**D14 的 $B$ 没有时间下界，不能把它列作命题 54 的适用例。** 它也有固定 $q$ 表达，但由以下单独的直接计算给出：
+
+$$
+\begin{aligned}
+Q_{14}^*={}&\{(p,\epsilon,r,1):\epsilon\in\{\pm1\},r\in T\}\\
+ &\cup\{(q,\epsilon,r,j):\epsilon\in\{\pm1\},r\in T,j\in\{1,2,3\}\},\\
+q(F_BX)={}&q\bigl(F_{\downarrow Q_{14}^*}(X\boxtimes U_0)\bigr)
+\quad\text{对全部 }X\in\mathcal B.
+\end{aligned}
+\tag{MIX-D14-Q}
+$$
+
+这里 $p,q$ 固定为 D14 的两个位置。乘后时间 $\max(t,0)+1=1$ 当且仅当 $t\le0$；它属于 $\{1,2,3\}$ 当且仅当 $t\le2$。在当前反链上逐选中点检查位置与该时间条件，恰给 D14 两个截面，符号保持，故等式成立。这个具名无下界例的 $q$ 表达已结算，丰富输出不可表达性仍由 D14 保持。
+
+**open：** 时间无下界且不属于命题 53 丰富输出可表达族的区域，其**一般** $q$ 层分类（$\exists$ 固定有限 $C\ \forall X$）仍未测，本节没有给出覆盖这整个剩余类的判据。不能将所有无下界 $B$ 一概记为 open：命题 53 的可表达族已给 $q$ 表达，D14 也已由 (MIX-D14-Q) 单独结算。
+
+### 34.7 本批边界
+
+定义 24 的 $M_P$ 之外的其他配对操作**未测**：命题 52 的推送只处理固定有序父时间—位置单元谓词，没有处理任意来源、身份或因果配对。$\Gamma_t$ 的**全部实际像分类未测**：本批在实际丰富输入及其像上证明闭包和核，没有构造任意形式剖面的历史实现。历史恢复的更强结论由 §28.7／D10 反驳；超出定义 16 的上下文扩张及一般剩余区域的 $q$ 分类按 §34.4、§34.6 保留边界。
+
+附录 `pr5_` 段只作有限精确核验：新更新与事件计算逐字节比较，满足 $H_B$ 的编码式比较完整 `Rich` 状态，D13／D14、坏界和配对背景给定向对照；有限位掩码闭包是配套实验，不能替代引理 3 的任意有限词证明。本批没有新增 Lean 证明，不能称为 kernel-verified；普通 ZFC 推导、有限执行、后续评审与仓库准入是分别记账的事项。
+
+<a id="pr5-evidence"></a>
+
+## 35. PR5 产地与核验收据
+
+### 35.1 产地、先验暴露与亲验范围
+
+本批 skill 上下文为 **`consensus-rnd:sshx`**，阶段为 `implementation`。本实施席按 caller 的“六席收敛契约”在工作树 `/Users/auricstudio/trureturing-csa-upgrade-pr5-0910`、分支 `lane/theory/csa-upgrade-pr5-0910` 工作，并实际读取本机该 skill 的 `SKILL.md`、完整 `CLAUDE.md`、指定卷文与附录。没有将自身检查充作六席思考或三席评审。
+
+**思考产地（以下为 caller brief 转述，未读取各席原始判词）：** 六席为 `teleology`、`parsimony`、`fidelity`、`natural-ownership`、`proportional-containment`、`worth`。`fidelity` 载体为 `nyxid-oracle`，brief 记录模型为 **GPT-6 Astra Pro**；其余五席为 `codex-cli`，各自具体模型标识未提供。caller 记录 codex 席遇到 `dispatch.sh` 的负载门 `idle<20%`，因此直接经 runner 派发到分离只读检出；这就是该次旁路理由，不是本实施席对当时宿主负载的实测。六席均暴露 caller 候选计划，**非盲**；codex 席有仓库先验暴露，oracle 的外部先验不可由本席核定，不能据席数宣称先验独立或环境无记忆。各席逐票结果及原始完成工件未向本席提供，本收据只消费 caller 已给的收敛方案。
+
+**实施与评审分工：** 本批实施由一个 `codex-cli` worker 承担，未另派子工作者；它同样看到候选计划和仓库先验，属于 `repo-prior-exposed`。后续三席 `architecture`／`quality`／`tests` 的评审载体、模型、判词及分歧裁决由 caller **另记**；实施交付时未收到这些结果，不预报通过。brief 将 D14 列作有时间下界的例子与其区域公式冲突，本席在改动前指出该点，保留命题 54 原量词，并以 (MIX-D14-Q) 单独证明及核验 D14 的固定 $q$ 表达；其余主数学边界按收敛契约实施。
+
+**caller 亲验范围（仅转述已提供记录）：** brief 记载 2026-09-10 06:35 对 `origin/dev=95442f6d3d` 核对本卷零改动、无在飞 PR 触碰本卷。此后 caller 对本批证明、附录、ingest、提交或评审的亲验结果未向本席提供；本席不代其声明。**本 worker 亲验范围：** 开工 fetch／试合与 fast-forward、卷文 SHA256、原语及证明前提的原文核对、下列附录执行、canonical ingest、只追加字节检查、编号与最终 git 读数。前者为 caller 自报范围，后者为实施自查，二者不合算为独立评审。
+
+原始基线为 `3759149d0ea0884cb8a57fb950e3caddab007a38`。开工实际执行 `git fetch origin dev && git merge-tree --write-tree origin/dev HEAD`，退出 **0**，试合树为 `1d617412f68464c354f309cab594df6790c8e77e`；随后 `git merge origin/dev` 退出 **0**，fast-forward 到 `95442f6d3d6c3bb970029440d4e3a463aaec1993`，作为本批摄入基线。两版本卷字节相同，3935 行、SHA256 `54894115cd9c214a6ba131fe32ca8a2d0109a4c406733394a9060c6780968b04`，故续接定义 27、引理 3、命题 52–54、D13–D14、增补 N 与 §35，没有 rebase 或重编号。
+
+本批形态为 **ingest**；链上一环是 `source_id=contextual-spacetime-arithmetic` 的新增源文 → 新 `atoms/sha256` 对象 → 同源 `residual-open` backfill。新推导为 `repo-derived`，只依赖卷内既有定义与具名结果，没有新增外部引文；未作全球新颖性检索，不作优先权主张。本批未作 deposit／cover，不报告新增冻结或 absorbed；Lean、一般剩余 $q$ 分类、其他配对及全实际像的未测边界见 §34。
+
+### 35.2 附录实际命令与有限核验范围
+
+本席实际执行以下原文命令，退出 **0**，stderr 为空：
+
+```sh
+sed -n '/^```python$/,/^```$/p' docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md | sed '1d;$d' | python3 -
+```
+
+附录仅在原末行打印之前插入 **356 行** `pr5_` 段，复用 `Rich`、既有档案运算、`pr3_` 的 timed 筛选／剖面和 `pr4_` 的含时间辅助。stdout 的新增行和末行原文为：
+
+```text
+pr5_mixed_closure: region_updates=640 pair_updates=640 endpoints=1280 unselected_parent_pairs=7160 rejected_parent_pairs=5316 empty_products=208 old_endpoint_products=512 negative_time_inputs=61 asymmetric_slots=2 context_steps=13608 context_q=13608 ts_pair_contexts=800 mix_contexts=800 strict_failures=806 rich_equalities=400 H_cases=16384 D13_choices=12 D14_choices=8 bit_maps=52 q_expression=1200 D14_q=80 seed=2026091005 random_samples=64 cases=80 P_empty_Omega=4 P_empty_Gamma=nonempty P_empty_N_positive=2 wrong_deleted_rows=0 D13=0,0,1,1/0,1,1,2 D14=0,0,1,1,1,1,2,2/0,1,1,1,2,2,2,3 bad_k=0,1
+ALL_FINITE_CHECKS_PASSED
+```
+
+计数由执行累加。固定种子 `2026091005` 生成 64 份平衡状态，当前区域大小取 0、2、4、6，当前时刻取 −8 至 5，另取 0、1、2 个非当前档案点（时刻 −12 或 10），合法生成边取传递闭包，选择可为任意子集；加空档案、空当前区域、未选／非当前目标、D10、抵消、负时刻和 D14 族等定向输入，共 80 份。`unselected_parent_pairs`、`rejected_parent_pairs` 计的是多次配对实验中的父对出现数，非去重事件数。`old_endpoint_products` 计至少一个父档案有非当前端点的乘积实例；端点检查包含完整档案。非对称谓词在左右两槽位单列对照。$P=\varnothing,X=Y=U_0$ 的反例保留四个当前事件与非空 $\Gamma_t$，后接 $N$ 及正号因果筛选得 2，错误删行模型得 0。
+
+上下文词与全部参数在遍历输入之前固定，800 个 $\Sigma_{\rm ts}^{\rm pair}$、800 个 $\Sigma_{\rm mix}$ 实例将 $F_B,M_P$ 与旧原语交替；成功步独立比较逐事件状态的摘要及其 $q$ 和纯摘要更新路径。806 次严格失败含两个时间槽位及后接 $N$、空区域／因果筛选、左右零因子的定向对照，失败未被正常零吸收。
+
+400 次 (MIX-ENCODE) 检查覆盖全区域、空区域、柱集、过去半轴、D14 正对照的相邻阈值，比较完整 `Rich` 的 $(e,o,w,a)$：事件标识与所有属性、全部严格关系、当前区域、选择均规范序列化后逐字节相等。这里没有把“同剖面 + 同 $|E|$”充作历史同构证据，D10 的入射区别仍在完整字段中。D13 三组参数各查四个选择，D14 查全部八个选择；有限位映射闭包共 52 个映射只是配套检查，任意有限上下文的否定由引理 3 和命题 53 承担。
+
+正常形对照枚举两个位置上七个时间块的全部 $2^{14}=16384$ 个区域：$(-\infty,-3]$、五个单点 $-2,-1,0,1,2$、$[3,+\infty)$；两条无限尾各用两个代表时刻检查尾内严格关系。`pr5_H` 的条件矩阵与独立生成的柱集／单顶层正常形一致。该实验仅针对这个固定分块族，不能当作任意 ZFC 集合的可计算判定器。命题 54 的 1200 次 $q$ 比较含无限且无上界的有下界区域、负时刻和三个固定合法 $k$，坏界 $k=k_0$ 得 $(0,1)$；D14 的无下界区域另作 80 次 (MIX-D14-Q) 比较，不混入命题 54 的适用计数。
+
+### 35.3 摄入与追加边界的固定检查点
+
+以下读数固定在追加本收据之前，不用本节自指自己的最终摘要。两次 canonical ingest 均使用下列完整命令，均退出 **0**，stderr 均为空：
+
+```sh
+BASE=95442f6d3d6c3bb970029440d4e3a463aaec1993 make ingest SOURCE="contextual-spacetime-arithmetic docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md"
+```
+
+首次输入 HEAD 为 `074ea6b6ca60d0013ade8b3efb0e6c1df66be07b`，生成 **30 atoms／30 residual-open**，提交 `31dd372c12077da31ada29983172d103d4bd5053`；stdout 为：
+
+```text
+INGEST residual_open_added=30 skipped_existing=268 coarse_fallbacks=0 open_genres=0 cas_objects_written=30 ledger_changed=true
+```
+
+该次命令成功后，原文核对发现表格后的命题 52 证明、D14 完整反证及正对照没有全部进入 atoms；退出码不代替内容核对。本席只在新增 §34.2、§34.5 补上明确小标题，分别提交 `5b0cb519e83ada291f777f8b19ccbfb31deccd5e`、`113e4c1d6db2255463c716278dcdd6173c1b7c68`，没有手改、删除或修复已经生成的 CAS 对象或账目。
+
+第二次输入 HEAD 为 `113e4c1d6db2255463c716278dcdd6173c1b7c68`，生成 **12 atoms／12 residual-open**，提交 `bae7159e871dc22a57bddb1ba0a2d65518022d1e`；stdout 为：
+
+```text
+INGEST residual_open_added=12 skipped_existing=281 coarse_fallbacks=0 open_genres=0 cas_objects_written=12 ledger_changed=true
+```
+
+此检查点累计新增 **42 atoms／42 residual-open**。逐行核对 §34 至当时 EOF 的 **143 行非空、非标题、非锚点内容**，每行正文、公式或表格单元内容都能在至少一个新增 atom 中找到，遗漏 **0**；表格行仅去除末尾 Markdown `|` 后比较，因为实际 row atom 的字节边界止于该分隔符之前。全部 42 个 atom 的内容 SHA256 与文件名相符，且均有同源 residual-open。核验脚本与逐行 atom 索引位于本次 runner 目录的 `audit_source_ingest.py`、`ingest-2-coverage.json`。原始 CAS 切片保留段落末尾空行，通用 `git diff --check` 对此报 `new blank line at EOF`；没有为消除该诊断改写不可变 blob，正文的空白检查另行通过。
+
+在此期间 `origin/dev` 前进至 `d59adb46d4703e7fdc7ef7569c5c0919247cc87a`；本席再次 fetch／试合，退出均为 **0**，试合树 `8720ddcc8312b9852b5485b7e092963aa58635b6`。相对首次合入的 dev，本卷差异仍为空；`git merge --no-edit origin/dev` 以 merge commit `3ee29f1954874e4797ed72bc10271a22e9c4a9e9` 合入，不 rebase，摄入仍使用上列固定基线。
+
+追加本收据前的 HEAD 为 `bae7159e871dc22a57bddb1ba0a2d65518022d1e`，卷文 **4526 行／336985 字节**，SHA256 `850c525569a165d6fc5a6bc5f795204ea6562f45a6893e2133fd18b79f47023c`。去除附录唯一新增的 356 行后，现文的前 **296025 字节**与 3935 行基线全文逐字节相等；当时 §34 尾部新增 235 行，工作树干净。实际 `git diff -U0 origin/dev..HEAD -- docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md` 的 hunk 行为：
+
+```text
+@@ -2076,0 +2077,356 @@ print(f"pr4_temporal_causal: random_samples={len(pr4_samples)} cases={len(pr4_ca
+@@ -3935,0 +4292,235 @@ INGEST residual_open_added=57 skipped_existing=217 coarse_fallbacks=0 open_genre
+```
+
+本 §35 是固定检查点之后的正文追加，须在它最后一次改动之后再执行同一 ingest 命令并提交，使收据本身也进入上述链路。最终摄入的退出码、计数及提交、完整附录重跑的 `pr5_` 行与末行、逐节 commit SHA、最终两个纯插入 hunk、允许路径范围、同步／推送和干净状态，由 `/var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/csa-pr5-impl-0910/attempt-1/result.json` 与 `implementation.log` 绑定记录，不用这里的固定 42／42 代替最终累计数。本批交付推送分支，不开 PR；三席评审、后续准入及未测数学边界不由实施收据预先判定。
+
+<a id="pr6-expressibility-pairing"></a>
+
+## 36. PR6 增补 O：q 层一致表达的完整分类、属性级配对与不下降配对
+
+本节接续 §34.6–34.7 的三个问题。以下定义、引理、命题、构造、反例及推论均为 repo-derived，只用卷内定义与已证结果，不作新颖性或优先权声明。载体仍为全部平衡表示 $\mathcal B$；完整乘积、严格增时和单孔上下文分别沿用定义 6、1、16。有限核验不替代任意有限上下文的证明。
+
+### 36.1 定义 28：判定对象、量词与 Tail
+
+**定义 28（单孔 q 表达与公共过去尾，repo-derived）。** 三个范围分别如下。
+
+在 $\Sigma_{\rm mix}$ 中，$\forall B\subseteq K$ 的 q 表达平凡成立：见证就是原语 $C=F_B$（也可用 $M_{B\times K}(\square,U_0)$）；这句话不算 §34.6 的推进。
+
+命题 55 的判定对象只取定义 16 的 $\Sigma_{{\rm cau},t}$ 单孔上下文：
+
+$$
+E_q(B)\ \Longleftrightarrow\
+\exists\,\text{固定有限 }C\in\operatorname{Ctx}_{\Sigma_{{\rm cau},t}}
+\ \forall X\in\mathcal B:\quad
+C(X)\text{ 有定义且 }q(C(X))=q(F_BX).
+\tag{O-QEXPR}
+$$
+
+所有旁参数、谓词、平移量与槽位在 $X$ 之前固定；实际孔恰有一个。允许在有限项中重复同一输入的 $\operatorname{Ctx}^{\rm dup}$（如 $X\boxtimes X$）**不是定义 16 的上下文**，其 q 表达问题另列于 §36.7。
+
+定义
+
+$$
+\operatorname{Tail}(B)\ \Longleftrightarrow\
+\exists c\in\mathbb Z\ \forall p\in\mathbb Z^3\
+\forall t,t'<c:\quad \mathbf1_B(t,p)=\mathbf1_B(t',p).
+\tag{O-TAIL}
+$$
+
+等价地，存在 $c\in\mathbb Z$、$S^-\subseteq\mathbb Z^3$ 及任意 $B_+\subseteq\{t\ge c\}\times\mathbb Z^3$，使
+$B=(\{t<c\}\times S^-)\cup B_+$。等价性由每个位置在 $t<c$ 上取共同真值直接给出；这里必须是一个对全部位置有效的 $c$。
+
+命题 53 的 $H_B$ 分类的是至 $\cong_h$ 的丰富输出表达；本节 Tail 分类的是 q 表达；在 $\Gamma_t$ 上语义下降仅指摘要决定输出摘要，不提供原语言的表达构造。三者各有量词与结论，不能互相替代。
+
+### 36.2 引理 4：总上下文的后继饱和与首乘塌缩
+
+**引理 4（后继饱和与首乘塌缩，repo-derived）。** 对每个在全部 $\mathcal B$ 上有定义的固定有限 $C\in\operatorname{Ctx}_{\Sigma_{{\rm cau},t}}$，存在 $c_C\in\mathbb Z$，使任意 $p\in\mathbb Z^3$ 及 $t,t'<c_C$ 都有下述两输入 $X_t,X_{t'}$：唯一选中事件是同来源正点 $e@(t,p)$、$e@(t',p)$，其余当前事件共同且未选，全部档案端点共同，并且
+
+$$
+q(C(X_t))=q(C(X_{t'})).
+\tag{O-SATURATION}
+$$
+
+量词次序为 $\forall C\ \exists c_C\ \forall p\ \forall t,t'<c_C\ \exists X_t,X_{t'}$；只有最后的输入见证可以依赖 $p,t,t'$。
+
+**证明。** 定义 16 把 $C$ 写成沿唯一孔的一条有限基本步骤链；总定义和严格失败传播保证每个前缀也对全部输入有定义。全部原语保留原输入的每个档案事件，其时刻只累计一个固定整数平移 $J$。若某步为 $\square\triangleright Z$ 且 $E_Z\ne\varnothing$，取原输入含任意晚的档案事件，即击破该步 $M<m_Z$；若为 $Z\triangleright\square$，取任意早的档案事件，击破 $M_Z<m$。这些输入可取空当前区域，因而合法平衡。故总上下文不含这种步骤。空档案参数的时间复合没有跨边，只增加可去的出现标签，对去身份操作及 q 无影响。
+
+还需区分空当前因子。若任何乘积使用固定参数 $\Omega_Z=\varnothing$，该步的当前区域与选择都为空。固定同一原情境而仅变 $A$ 时，所有步骤的情境本来就相同；该步后连选择也相同，后续确定操作永久失去对原选择的依赖。因此当 $B\ne\varnothing$ 时，这种上下文不能表达 $F_B$：在 $B$ 中取一正一负平衡反链，对比空选择与只选正点，目标 q 为 $0,1$。引理本身仍允许空因子，并在下面处理。
+
+现只看首次乘积之前的前缀；若无乘积，就看整个词。去掉空档案时间复合的标签后，这里只剩并行加固定参数、$N,F_S,F_L,F_{\downarrow Q},T_k$。设第 $i$ 个因果谓词为 $Q_i$，该步前原输入累计平移为 $j_i$，在原坐标取 $Q_i^0=\tau_{-j_i}[Q_i]$。对每个非空 $Q_i^0$ 选一个属性 $v_i$，空集不选；谓词个数有限，故只需有限个见证。选整数 $c_C$ 不大于 $0$ 和全部 $v_i$ 的时间。若首乘固定因子 $Z$ 的当前区域非空，再令
+
+$$
+c_C+J\le\min t_Z[\Omega_Z],
+\tag{O-COLLAPSE-BOUND}
+$$
+
+其中 $J$ 是首乘前原输入的累计平移。有限条件有共同整数解；它只由 $C$ 决定，与 $p,t,t'$ 无关。
+
+任给 $p,t,t'$，造同标识的两份有限情境。放唯一选中正点 $e$，来源固定为 $l_0$，只令其时刻分别为 $t,t'$；每个 $v_i$ 放一个未选当前点 $d_i$，属性恰为 $v_i$。只添 $e\prec d_i$，所以关系是已传递的星形；$t,t'<c_C\le t(v_i)$ 保证边严格增时。添共同的孤立未选当前点，时刻取 $0$、符号取所需的正或负，使当前总电荷为零。再添两个共同孤立的非当前档案点，其时刻严格包住两份当前时间，得到相同的有限 $m,M$。所有非 $e$ 事件的属性、标识、选择在两侧相同。
+
+前缀中每个非空 $Q_i$ 对 $e$ 都被对应 $d_i$ 命中，空 $Q_i$ 在两侧都不命中；平移过的见证仍在 $\Omega$，筛选只改选择，不删目标。空间与来源掩码相同，$N$ 同步。其他原输入事件无通向 $e$ 的路径，并行加入的固定分量也没有跨边，所以它们的 $U_t$、掩码与选择不受 $e$ 时刻影响。因此首乘前两侧的选择位、位置、符号、来源逐事件相同，唯一可能不同的当前属性是 $e$ 的时刻。
+
+这也是引理 3 位保持原则的响应形：在同一情境上改变一个输入位时，沿前缀的位差等于原位差乘 $(-1)^\nu\prod_i h_i$；$\nu$ 是取补次数，因果掩码为 $h_i=\mathbf1[U_t(e)\cap Q_i\ne\varnothing]$，空间／来源掩码同样逐位相乘。本构造让两输入对应事件的每个掩码相同，不需要假定其位响应非零。
+
+若无乘积，上述逐事件的同位与同符号立即给终端 q 相同。若有首乘且 $\Omega_Z\ne\varnothing$，(O-COLLAPSE-BOUND) 使每个含 $e$ 的新父对在两侧具有同一时间 $\max(t(e)+J,t_Z(f))+1=t_Z(f)+1$；无论孔在左还是右槽位，全部新当前属性与选择位逐对相同。定义 6 的新当前区域是反链，其 $U_t$ 为自身单点，旧 $U_t(e)$ 从此不进入当前剖面。若 $\Omega_Z=\varnothing$，两侧新剖面直接都为空。
+
+前缀中的并集与平移保持两侧共同的 $m,M$。首乘的新当前时间相同（或两侧都无新点），结合旧档案保留与命题 29 的端点公式，首乘后两侧 $H=(\Gamma_t,m,M)$ 相同。对剩余后缀应用命题 48 的逐基本步保摘要归纳，得到相同终端 q；总定义排除了终端失败。至此覆盖全部总有限单孔上下文及空因子情形。证毕。
+
+### 36.3 命题 55：单孔 q 表达的完整分类
+
+**命题 55（$\Sigma_{{\rm cau},t}$ 单孔 q 表达分类，repo-derived）。**
+
+$$
+\forall B\subseteq K:\qquad E_q(B)\ \Longleftrightarrow\ \operatorname{Tail}(B).
+\tag{O-CLASSIFICATION}
+$$
+
+**证明（充分性）。** 固定 Tail 的 $c$，任取整数 $k\le c-1$，定义
+
+$$
+\begin{aligned}
+Q_{B,k}&=\{(p,\epsilon,r,n):n\ge k+1,\ (n-1,p)\in B\},\\
+C_B(X)&=F_{\downarrow Q_{B,k}}(X\boxtimes T_k(U_0)).
+\end{aligned}
+\tag{O-CONSTRUCTION}
+$$
+
+其中 $\epsilon\in\{\pm1\},r\in T$ 任取。这也等于在 $n=k+1$ 层放全部 $p\in S^-$ 的属性，再放全部 $(p,\epsilon,r,t+1)$、$t\ge k+1,(t,p)\in B$。参数均在输入前固定，表达式是总单孔上下文。
+
+乘积选中的父对恰为 $(e,u_+)$、$e\in A_X$；子点位置与符号沿 $e$，时间为 $\max(t(e),k)+1$。当前区域为反链，因果筛选只检查子点自身。若 $t(e)>k$，检查恰为原单元 $(t(e),x(e))\in B$；若 $t(e)\le k$，检查为 $(k,x(e))\in B$，而 $t(e),k<c$，Tail 使其与原单元同真值。逐选中点作有符号有限和即得 q 等式，包括负点、负时刻及空选择。
+
+**证明（必要性）。** $B=\varnothing$ 时 Tail 成立，且 $F_\varnothing$ 可由空空间筛选实现，单列结束。其余情形取 (O-QEXPR) 的固定总上下文 $C$，应用引理 4。对任意 $p$ 及 $t,t'<c_C$，两输入都只选正点 $e$，故
+
+$$
+\mathbf1_B(t,p)=q(F_BX_t)=q(C(X_t))
+=q(C(X_{t'}))=q(F_BX_{t'})=\mathbf1_B(t',p).
+$$
+
+于是 $c=c_C$ 同时适用于全部位置，得到 Tail。这里没有用有限深度搜索承担任意有限 $C$ 的否定。证毕。
+
+**继承结算。** 命题 54 的时间有下界族恰是 Tail 正常形中 $S^-=\varnothing$ 的族；命题 53 的全部丰富可表达族也满足 Tail。D14 可取 $c=1,k=0,S^-=\{p,q\}$，仍无时间下界；其 q 表达成为本命题推论，而丰富输出不可表达性原样成立。§34.6 的一般单孔 q 分类 **由命题 55 结算**。Tail 对有限交封闭（取各阈值的最小值），故 $B\cap D$ 可按 (O-CONSTRUCTION) 重造上下文；不能把单纯 q 等式代入任意后续复合来证明这条结论。
+
+**H-A 的反例族（推论例，不占 D 编号）。** “$\Sigma_{{\rm cau},t}$ 中所有 $B$ 都 q 可表达”为假。对 $d\ge2$、$\varnothing\ne R\subsetneq\mathbb Z/d\mathbb Z$，
+$B_{d,R}=\{(t,p):t\bmod d\in R\}$ 在每条过去尾仍有两种真值，故不满足 Tail；空间限制的例子 $B_{\rm even}=\{(t,0):t\text{ 偶}\}$ 同样不可表达。给定任意 $c$，可在 $c$ 以下选择属于和不属于 $R$ 的时刻，这提供每个阈值的反证。
+
+另取
+
+$$
+B_{\rm drift}=\bigcup_{n\ge0}\bigl(\{t\le-n\}\times\{(n,0,0)\}\bigr).
+\tag{O-DRIFT}
+$$
+
+每位置分别最终恒定，但无公共 $c$：给定 $c$，取 $n\ge0$ 使 $-n+1<c$，在位置 $(n,0,0)$ 比较 $-n,-n+1$，真值为 $1,0$。其时间无下界、有上界 $0$。这反驳把 $\exists c\,\forall p$ 弱化为 $\forall p\,\exists c_p$；有限核验中的塌缩读数只作对照，否定由上述任意阈值论证和命题 55 承担。
+
+### 36.4 定义 29 与命题 56：属性级配对的保守扩签名
+
+**定义 29（属性级配对，repo-derived）。** 对固定 $P\subseteq\mathrm{Attr}_t\times\mathrm{Attr}_t$，令 $\widehat M_P(X,Y)$ 使用定义 6 的完整乘积情境，只选满足 $e\in A_X,f\in A_Y$ 且 $(\alpha_t(e),\alpha_t(f))\in P$ 的父对。定义
+$\Sigma_{\rm mix}^{\rm attr}=\Sigma_{\rm mix}\cup\{\widehat M_P:P\subseteq\mathrm{Attr}_t^2\}$。旧 $M_P$ 的参数类型仍是 $K\times K$，不改定义 24。
+
+**命题 56（属性配对闭包与观察核，repo-derived）。** 新操作总定义，逐父格的推送为
+
+$$
+((a,b,U),(a',b',U'))\longmapsto
+(a\diamond_t a',\,bb'\mathbf1_P(a,a'),\,\{a\diamond_t a'\}),
+\tag{O-ATTR-PAIR}
+$$
+
+推送系数为两父格系数之积，碰撞时相加；端点为
+$(\min(m_X,m_Y),\max(M_X,M_Y,\gamma(s_X,s_Y)))$，$s$ 由 $\Gamma_t$ 支撑恢复。并且
+
+$$
+\approx_{\Sigma_{\rm mix}^{\rm attr}}=\ker(\Gamma_t,m,M).
+\tag{O-ATTR-KERNEL}
+$$
+
+**证明。** 限制选择不改完整乘积的平衡或合法性，故操作总定义。固定两个父格，属性和位均固定，谓词真值固定；全部该格父对的符号和为两格系数之积，**系数已经含符号，不再乘 $\epsilon\epsilon'$**。父未选或 $P$ 假的对也生成当前事件，只进入 $b=0$ 行；不删 $\Omega$，不给系数或背景乘掩码。新事件无出边，所以 $U$ 是自身属性单点。旧档案保留，完整端点沿命题 29 更新。
+
+把 (O-ATTR-PAIR) 补入命题 48／52 的基本步表。对 $\widehat M_P(\square,Z)$ 与 $\widehat M_P(Z,\square)$ 分别按有序父格推送同一固定参数，均保摘要；$P$ 不对称也不交换槽位。对全部有限混合上下文归纳：恒等孔保摘要，基本步骤成功则输出同摘要，时间守卫由共同端点决定而同真值，内层失败则严格传播。终端 q 由选中行求和恢复，得到 $\ker(\Gamma_t,m,M)\subseteq\approx_{\Sigma_{\rm mix}^{\rm attr}}$。反向由 $\Sigma_{\rm mix}\subseteq\Sigma_{\rm mix}^{\rm attr}$ 与命题 52（亦可用命题 49 的子语言）给出。证毕。
+
+**拉回与连接。** 令 $\kappa(p,\epsilon,r,n)=(n,p)$。对旧类型 $P\subseteq K^2$ 取
+$P^\uparrow=\{(a,a'):(\kappa(a),\kappa(a'))\in P\}$，则 $\widehat M_{P^\uparrow}=M_P$ 是完整编码等式。#6684 的 $\Xi$ 核仍属于 $\Sigma_{\rm ts}^{\rm pair}$（及其子语言 $\Sigma_{\rm ts}$），不是本扩签名的核。
+
+在 $\Sigma_{\rm mix}^{\rm attr}$ 乃至 $\Sigma_{\rm mix}$ 中，令配对谓词查左父单元属于 $B$，右乘固定 $U_0$，便对任意 $B$ 得到 q 表达。**观察核不变，不等于固定表达资源相同。** 这正是命题 55 与命题 56 应保留的区别。§34.7 关于属性级配对闭包的未测项 **由命题 56 结算**；任意规则的下降边界如下。
+
+### 36.5 纤维下降判据、定义 30 与反例 D15
+
+对完整乘积上的任意选择规则 $R=R^{X,Y}$，固定输出属性 $c\in\mathrm{Attr}_t$，定义
+
+$$
+J_R^{X,Y}(c)=
+\sum_{\substack{e\in A_X,\ f\in A_Y\\
+\alpha_t(e)\diamond_t\alpha_t(f)=c}}
+\sigma(e)\sigma(f)\mathbf1_R(e,f).
+\tag{O-FIBER-COUNT}
+$$
+
+这里的规则可依赖整个输入，输出仍只限制所选父对。记 $\widehat W_{X\boxtimes Y}(c)$ 为按**完整属性**分组的当前背景符号和；它由两父 $\Gamma_t$ 的全部行卷积决定，不与定义 22 按 $K$ 分组的 $W$ 混型。输出 $\Gamma_t$ 在 $(c,1,\{c\})$ 行为 $J_R(c)$，在 $(c,0,\{c\})$ 行为 $\widehat W(c)-J_R(c)$，其余行零。
+
+所以有精确语义 iff：该规则在 $\Gamma_t$ 上下降，当且仅当逐 $c$ 的 $J_R$ 在两输入 $\Gamma_t$ 的共同纤维上恒定；即任意 $\Gamma_t(X)=\Gamma_t(X')$、$\Gamma_t(Y)=\Gamma_t(Y')$ 都有 $J_R^{X,Y}(c)=J_R^{X',Y'}(c)$。对 $(\Gamma_t,m,M)$ 下降则换成该摘要的纤维，端点已由完整乘积更新。必要性读选中行，充分性用上述两行重建。这是 repo-derived 的纤维判据，不承诺判定任意规则的算法。
+
+只比较 $\sum_cJ_R(c)$ 是严格较弱的 q 层条件。例如，若存在符号积为正的所选父对，就恰选一个：按先时间、后固定属性编码的全序，在左输入严格关系对数为奇数时取最小输出属性，偶数时取最大输出属性，同属性内再按固定出现编码选一个；无正号所选父对则选空。q 恒为“有正号所选父对”的指示值，由两父 $\Gamma_t$ 决定；但将下述 D15 两图分别与 $U_0$ 配对，关系对数为 $1,2$，被选子点时刻为 $1,2$，故同纤维上的 $J_R$ 不同。
+
+**自身属性谓词只是充分条件。** 规则 $R(e,f)\Longleftrightarrow U_t^X(e)\cap Q\ne\varnothing$ 等于 $F_{\downarrow Q}(X)\boxtimes Y$ 的选择；$R(e,f)\Longleftrightarrow |U_t^X(e)|>1$ 也可按父格直接推送。这两者依赖 $U$，仍下降。全局规则 $R(e,f)\Longleftrightarrow |\Omega_X|/2$ 为奇数也下降，因为 $|\Omega_X|=\sum|\Gamma_t(X)|$，但不是固定局部父格谓词：$U_0$ 与 $U_0\boxplus U_0$ 有相同的父格类型，准入真值却相反。候选中只问 $|\Omega_X|$ 奇偶的版本在平衡载体上恒偶，不能充作这个反例。
+
+**定义 30（同档案因果配对，repo-derived）。** 定义总一元新操作
+
+$$
+D_\prec(X)=X\boxtimes_{R_X}X,\qquad
+R_X=\{(e,f)\in\Omega_X^2:e\prec_X f\}.
+\tag{O-CAUSAL-PAIR}
+$$
+
+乘积仍完整，只选 $e,f\in A_X$ 且 $e\prec_Xf$ 的父对。这是**新原语的定义式**，不是定义 16 内的单孔上下文。若把二元 $M_\prec$ 解读为两份带标签旧档案之间的关系，则定义 6 根本没有这样的跨档案路径，选择恒空且下降；欲问别的跨档案因果谓词，必须另定其类型与关系来源。
+
+**反例 D15（同纤维上因果父对数不同，repo-derived）。** 取 $E=\Omega=\{e,b_1,b_2,n_1,n_2,n_3\}$，位置全零、来源全 $l_0$。$e@0,b_1@1,b_2@1$ 为选中正点，三个 $n_i@0$ 为孤立未选负点。$X$ 的关系只有 $e\prec b_1$；$Y$ 的关系为 $e\prec b_1,e\prec b_2$。两图均已传递且严格增时。写 $a_0=(0,+1,l_0,0)$、$a_1=(0,+1,l_0,1)$、$n_0=(0,-1,l_0,0)$，共同非零剖面恰为
+
+$$
+(a_0,1,\{a_0,a_1\})\mapsto1,\quad
+(a_1,1,\{a_1\})\mapsto2,\quad
+(n_0,0,\{n_0\})\mapsto-3.
+$$
+
+两侧 $m=0,M=1$，但 $q(D_\prec X)=1$、$q(D_\prec Y)=2$；两个贡献的输出属性同为 $a_0\diamond_t a_1$，所以 (O-FIBER-COUNT) 在同一摘要纤维也不恒定。$D_\prec$ 不在 $\Gamma_t$ 或 $(\Gamma_t,m,M)$ 上下降。
+
+新增边没有增添任何可达属性，因为插边前已有 $U_t(b_2)=\{a_1\}\subseteq U_t(e)$，且无其它非平凡路径；这不重犯 §28.5 D7／P3 的闭包泄漏。$\Gamma_t$ 记录每格事件数，但 $U_t$ 去重，忘掉的是同属性目标的入射重数。D10 原两图的 $D_\prec$ 读数均为 $2$，不能把原图原样充作 D15。
+
+### 36.6 命题 57 与 D16：完整实际像
+
+**命题 57（$\Gamma_t$ 及档案端点的完整实际像，repo-derived）。** 给定有限支撑整数剖面 $g$，格类型为 $(a,b,U)\in\mathrm{Attr}_t\times\{0,1\}\times\mathcal P_{\rm fin}(\mathrm{Attr}_t)$，以及定义 22 类型的 $m,M$。三元组 $(g,m,M)$ 是某 $X\in\mathcal B$ 的 $(\Gamma_t(X),m_X,M_X)$，当且仅当：
+
+1. 每个非零格满足 $\epsilon(a)g(a,b,U)>0$，即同格符号一致。
+2. $\sum_{a,b,U}g(a,b,U)=0$，即当前区域平衡。
+3. 每个非零格有 $a\in U$，且 $U\setminus\{a\}$ 中每个属性的时刻严格晚于 $a$。
+4. **后继见证：** 每个非零格 $(a,b,U)$ 及每个 $v\in U\setminus\{a\}$，都有非零格 $(v,b',V')$ 满足 $V'\subseteq U$。
+5. $g\ne0$ 时，$m,M$ 为有限整数且包住全部非零格自身属性的时刻；$g=0$ 时，端点可为空档案的 $(+\infty,-\infty)$，或非空档案的任意有限整数 $m\le M$。
+
+**证明（必要性）。** 同格符号由自身属性固定，系数为该符号乘事件数，得①，且 $g=0$ 当且仅当 $\Omega=\varnothing$。平衡给②；引理 2 给③。若 $v\in U_t(e)\setminus\{\alpha_t(e)\}$，存在当前 $d$ 使 $e\prec d$ 且 $\alpha_t(d)=v$。传递性给 $U_t(d)\subseteq U_t(e)$，$d$ 所属格非零，得④。档案有限且包含当前区域，给⑤。
+
+**证明（充分性与显式构造）。** 对每个非零格制造 $|g(a,b,U)|$ 个不同的当前事件副本，自身属性、选择位照抄，给每个副本指定目标集 $U_e=U$。在这些事件上定义
+
+$$
+e\prec f\ \Longleftrightarrow\
+t(a_e)<t(a_f)\ \land\ U_f\subseteq U_e.
+\tag{O-REALIZATION}
+$$
+
+严格增时保证反自反，时间不等式及集合包含的传递性保证关系传递。由③，$a_e\in U_e$；若 $e\prec f$，则 $a_f\in U_f\subseteq U_e$，故无额外可达属性。对每个 $v\in U_e\setminus\{a_e\}$，④提供一个有副本的格 $(v,b',V')$，③使 $t(v)>t(a_e)$，于是该副本可达。故实际 $U_t(e)$ 恰为指定 $U_e$。①使逐格有符号计数恰为 $g$，②给平衡。
+
+初取 $E=\Omega$；按⑤需要时补时刻 $m,M$ 的孤立非当前档案事件，即实现两端点而不改剖面。$g=0$ 时直接取空当前区域，按⑤取空档案或一／两个孤立档案点。全部构造是有限集合，适用定义 1 的编码。证毕。
+
+投影到第一坐标即给 $\Gamma_t$ 的全部实际像：满足①–④的 $g$ 总可选⑤的端点。构造的是**一个**实现，不承诺与产生该剖面的原输入历史同构，D10 的非唯一性保持。“当前区域是反链”只对刚生成的乘积输出成立，对应全部 $U=\{a\}$ 的子类；它**不是一般必要条件**，D10 即为反证，不在①–⑤之中。§34.7 的全实际像未测项由命题 57 结算。
+
+**反例 D16（缺少后继见证的形式剖面，repo-derived）。** 同位置零、同来源 $l_0$，取正属性 $a@0,b@1$ 和负属性 $c@2$，仅令
+
+$$
+g(a,1,\{a,b\})=1,\qquad
+g(b,1,\{b,c\})=1,\qquad
+g(c,0,\{c\})=-2,\qquad (m,M)=(0,2).
+$$
+
+①②③⑤均通过，但 $a$ 行的目标 $b$ 只有后继集 $\{b,c\}\nsubseteq\{a,b\}$ 的格，④失败。任何实现中 $a$ 到达一个 $b$，该 $b$ 又到达 $c$，传递性迫使 $c\in U_t(a)$，与所写 $U$ 矛盾。故仅有符号、平衡、唯一最早与端点条件不足。
+
+### 36.7 边界与 OPEN-COPY
+
+**OPEN-COPY。** 令 $\operatorname{Ctx}^{\rm dup}_{\Sigma_{{\rm cau},t}}$ 为使用同一原签名、固定参数、有限项及严格失败传播，但允许重复输入的项语言。精确问题为
+
+$$
+E_q^{\rm dup}(B)\ \Longleftrightarrow\
+\exists\,\text{固定总项 }C\in\operatorname{Ctx}^{\rm dup}_{\Sigma_{{\rm cau},t}}
+\ \forall X\in\mathcal B:\quad q(C(X))=q(F_BX).
+$$
+
+已证 $\operatorname{Tail}(B)\Rightarrow E_q^{\rm dup}(B)$，因为 (O-CONSTRUCTION) 的单孔项属于该扩张；反向以及 $\forall B\subseteq K:E_q^{\rm dup}(B)$ 均未证，记 open。引理 4 的首乘固定旁参数条件不适用于 $X\boxtimes X$，不得移贴单孔必要性。
+
+候选思路（worth 席，经 caller 转述；不作定理）：把输入并行复制 $n$ 份使 $\Gamma_t\mapsto n\Gamma_t$，尝试从目标 q 关于 $n$ 的一次多项式取一次部分，化为有限个单孔读数之差再用引理 4；此归约须独立核验，本批未证。
+
+命题 55 的域不含输入自适应参数、无限项或身份扩签名；命题 57 只给存在性，不给唯一性。D15 划出了新原语超出摘要的具体边界，没有把所有依赖关系的规则一概判为不下降。本批仅为普通 ZFC 推导和有限核验，不新增 Lean、axiom、判官或 schema。
+
+<a id="pr6-evidence"></a>
+
+## 37. PR6 产地与核验收据
+
+### 37.1 产地、先验暴露与分工
+
+本批 skill 上下文为 consensus-rnd:sshx，阶段为 implementation。实施载体是一个 codex-cli worker（自报 GPT-6／Codex），按 caller 的六席收敛 brief 与 GoalArtifact 修订 R1-PR6 在分支 lane/theory/csa-upgrade-pr6-0910 实施；本席实际读取本机该 skill 的 SKILL.md、完整 CLAUDE.md 及指定卷文、附录，未另派子席，属于 repo-prior-exposed。
+
+**思考产地（caller brief 转述，未读取原始判词）：** 六席为 teleology、parsimony、fidelity、natural-ownership、proportional-containment、worth。teleology 使用 nyxid-oracle、company-chatgpt-pro 池，自报 GPT-6 Astra Pro；其余五席使用 codex-cli，自报 GPT-6／Codex，经仓内 dispatch.sh 负载门派发，其中四席曾在门内排队至他人负载回落。六席均为 revise，由 meta-judge 收敛至 R1-PR6。排队与模型身份是该次席位／caller 自报，不是本实施席对当时宿主的测量。
+
+各席均暴露 caller 候选计划，**非盲**；候选曾把 $\Sigma_{\rm mix}$、$\Sigma_{{\rm cau},t}$ 与复制孔三个范围混写，席位纠正后由 R1 分开。codex 有仓库先验暴露，oracle 的外部先验不受本席控制，不凭席数宣称先验独立。后续 architecture／quality／tests 三评审席的载体、模型、判词与分歧裁决由 caller **另记**；实施时未收到，不预报通过。
+
+**caller 亲验范围（仅转述 brief）：** 2026-09-10 07:58 核对 dev 上本卷零改动，基线本卷 4602 行、§1–§35。此后对本批的亲验与评审记录未提供。**本 worker 亲验范围：** 原文前提、开工及交付前 fetch／merge-tree、附录执行、ingest 与正文覆盖、追加字节及 git 读数；均为实施自查，不充作独立评审。
+
+开工基线为 462d0a4368ba5a890c5eab619c82437baa88966f，fetch 后 origin/dev 仍为该 SHA；merge-tree 退出 0，试合树 c02b4787ce9ff0cf96d03db1357874add67bc2b7。本卷未有并行尾追加，故续接定义 28–30、引理 4、命题 55–57、D15–D16、增补 O，不 rebase。§36 的 242 行提交为 b7fabcc68cde0c366365d239403079529b923a9f；附录初稿提交为 684487f7be64b35e05cc62f8154cd9f541f81fa3，周期饱和对照补充至 6479fb1da62726408424fb68aae2fc6a94ef41ae。
+
+**brief 更正：** 平衡使 $|\Omega_X|$ 恒偶，原“按其奇偶准入”的非局部例退化；改用 $|\Omega_X|/2$ 奇偶，保留所需的全局而可下降例。命题 57 显式先判三元组 $(g,m,M)$，再投影给 $\Gamma_t$ 的像；属性背景用 $\widehat W(c)$ 区分定义 22 的 $W(n,p)$；$B_{\rm even}$ 是周期族的空间限制例。以上均保持 R1 的结论范围，不改旧结算。
+
+本批形态为 **ingest**；链上一环是 source_id=contextual-spacetime-arithmetic 的新源文 → 新 atoms/sha256 对象 → 同源 residual-open。新推导均 repo-derived，无新外部引用；未作全球新颖性检索，不作优先权主张。不作 deposit／cover，不报告冻结或 absorbed。OPEN-COPY 及任意扩张的边界见 §36.7。
+
+### 37.2 附录实际核验
+
+本席实际运行下列原文命令，退出 **0**，stderr 为空，末行如下。新增 pr6_ 段共 **289 行**，只插在唯一 Python 块原末行打印之前；复用 Rich、pr3_／pr4_／pr5_ 的运算、剖面与规范字节函数。
+```sh
+sed -n '/^```python$/,/^```$/p' docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md | sed '1d;$d' | python3 -
+```
+```text
+pr6_expressibility_pairing: tail_q=4320 collapse_controls=4 target_controls=4 collapsed_profiles=4 saturation_endpoints=108 saturation_q=108 saturation_no_product=36 saturation_empty_factor=36 saturation_product=36 periodic_saturation=1 unsaturated_control=1 first_product_fiber=1 pair_push=800 empty_products=260 old_archives=640 negative_inputs=690 unselected_parents=8950 pair_suffix=2400 pullback_encoding=320 mixed_summary=3600 mixed_q=3600 strict_failures=720 D15_fiber=1 D15_q=1 D10_control=1 U_rule_push=6 J_positive=6 J_fiber=3 U_size_rule=4 global_rule=4 same_local_rows=1 q_only_control=1 image_roundtrip=64 enumerated_states=1280 formal_membership=1088 enumerated_roundtrip=704 image_sets=2 distinct_actual_profiles=670 D16_conditions=1 empty_endpoint_branches=6 empty_realizations=3 seed=2026091006 Tail_families=27 random_inputs=64 cases=80 periodic_and_drift=1,1/1,0 D15=1,2 D10=2,2 D16=1,1,1,0,1
+ALL_FINITE_CHECKS_PASSED
+```
+
+固定种子 2026091006 生成 24 个 Tail 谓词，连同 D14、空集、全集共 27 个，两个合法 k 遍历既有 64 份随机及 16 份定向输入。36 个随机小上下文分为无乘积、空因子、非空因子三组，各遍历三个位置；另以周期谓词对照有后继的 1/1 与删边后的 1/0，验证饱和见证的作用。属性配对核对两个槽位、非对称及符号／来源谓词、未选父、空区域、旧档案、负时刻、N／筛选续接与严格失败；P↑ 比较完整编码。J_R 的 U 依赖、全局计数与 q-only 对照分别核验。
+
+实际像核验包含 64 份直接生成的合法形式剖面往返；四事件族固定时间 (0,1,2,3) 与 (0,0,1,1)、符号 ++--、同位置同来源，穷举 1280 个图／选择组合和 1088 份形式候选，接受集与实际像逐个一致，去重实际剖面共 670 份。D16 逐项读数为 1,1,1,0,1；空档案与非空档案空当前区域端点分支另查。有限域计数不承担任意上下文或任意形式剖面的全称证明。预算原为计划而非机器门：正文 242 行在计划内，附录 289 行超过约 150 行的估量，用于保留要求的双路径计算、饱和负对照和完整枚举。
+
+### 37.3 ingest 检查点与最终工件
+
+首次摄入以 684487f7be64b35e05cc62f8154cd9f541f81fa3 为已提交输入，实际命令如下，退出 **0**、stderr 为空。
+```sh
+BASE=462d0a4368ba5a890c5eab619c82437baa88966f make ingest SOURCE="contextual-spacetime-arithmetic docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md"
+```
+```text
+INGEST residual_open_added=33 skipped_existing=289 coarse_fallbacks=0 open_genres=0 cas_objects_written=33 ledger_changed=true
+```
+
+该次新增 33 atoms／33 residual-open，提交 c91664f4f9f1476e3d54a9877431171da959f36c；逐行核对 §36 的 149 行非空、非标题、非锚点内容，遗漏 0。这是本收据与周期对照补充之前的固定检查点，不能充作最终摄入。首次覆盖结果存于本次 runner 的 ingest-1-coverage.json。
+
+本 §37 最后一次改动之后再以同一命令 ingest 并提交；最终计数、全部逐节提交、两个纯插入 hunk、旧文零字节改动、允许路径、干净状态与 push 由 /var/folders/7r/h8yjr2y927n8m2kh38c18n9w0000gp/T/consensus-rnd/sshx/csa-pr6-impl-0910/attempt-1/result.json 绑定记录，原始执行证据另存同目录。本批交付推送分支，不开 PR；评审、CI、合入和持续研究目标的完成不由实施收据预先判定。
+<a id="p2-cumulative"></a>
+
+## 38. P2/R3：累积表示与延迟校正结合式
+
+§25 已把默认档案乘法的两个电荷分量写成 $\mathcal L$ 上的 $\odot$。本节给出这一剖面运算的累积表示，下一节据此完整求解固定因子的剖面方程。沿用定义 22–23 的 $\mathcal L=\mathbb Z^{(\mathbb Z\times\mathbb Z^3)}$、整数时间、共同空间参考点 $0$ 及默认时间规则 $\max+1$；空间系数始终属于 §15、§19 的原卷积环 $R=\mathbb Z^{(\mathbb Z^3)}$，乘法仍为 $*$。以下字母 $d$ 表示剖面因子；空间维数固定为 $3$。对任意预先固定的有限空间维数 $m\ge1$，同样的有限和证明仍适用。
+
+### 34.1 有限时间序列与两尾条件
+
+**定义 31（剖面的累积表示）。** 对 $c\in\mathcal L$，令 $c_n\in R$ 为 $c_n(p)=c(n,p)$，并记有限时间支撑
+
+$$
+T(c)=\{n\in\mathbb Z:c_n\ne0\}.
+$$
+
+这样把 $c$ 识别为 $R$ 中的有限支撑时间序列 $(c_n)_{n\in\mathbb Z}$：只有有限多个时间分量非零，每个分量又只有有限空间支撑。反向，任何这样的时间序列也给出 $\mathcal L$ 的元素，因为有限多个有限空间支撑对应的时间—空间单元之并仍有限。
+
+定义累积算子及其目标类型为
+
+$$
+(Pc)(n)=C_n=\sum_{t\le n}c_t,
+\qquad
+\mathcal A(R)=
+\left\{C:\mathbb Z\to R:
+\begin{array}{l}
+\exists\,\ell,u\in\mathbb Z\ \exists\,B\in R,\\
+n<\ell\Longrightarrow C_n=0,\quad
+n\ge u\Longrightarrow C_n=B
+\end{array}
+\right\}.
+\tag{CUM-TYPE}
+$$
+
+两处蕴含均对所有 $n\in\mathbb Z$ 量化。左尾必须为零，右尾必须最终为同一常值；右尾的 $B$ 可以非零。因此 $\mathcal A(R)$ 不是有限支撑累积序列的集合，也不是全部 $R$ 值序列的集合。此处 $P$ 的类型是累积算子，区别于 §15 的空间读数像集合以及定义 24 的配对谓词。
+
+**命题 58（加法双射与差分逆）。** 逐时间相加使 $\mathcal A(R)$ 成为阿贝尔群，且
+
+$$
+P:\mathcal L\longrightarrow\mathcal A(R)
+\quad\text{是加法双射},\qquad
+(P^{-1}C)_n=C_n-C_{n-1}\quad(n\in\mathbb Z).
+\tag{CUM-INVERSE}
+$$
+
+**证明。** 对有限支撑 $c$，在最早非零时间以前 $C_n=0$，在最后非零时间以后 $C_n=\sum_t c_t\in R$；$c=0$ 时两个尾部都恒为零。因此 $Pc\in\mathcal A(R)$。对两个累积序列，取其左阈值的较小者、右阈值的较大者，便得到和的两个尾部；取负同样保持两尾条件。所以逐时间的加法、零和负号确实给出所述阿贝尔群。有限和还直接给 $P(c+d)=Pc+Pd$。
+
+反向，给定 $C\in\mathcal A(R)$，可把左阈值减小、右阈值增大而取 $\ell\le u$。置 $c_n=C_n-C_{n-1}$。当 $n<\ell$ 时相邻两项都为零；当 $n>u$ 时相邻两项都为 $B$。所以只有有限区间 $[\ell,u]\cap\mathbb Z$ 中的分量可能非零。每个差分都属于 $R$，且
+
+$$
+\operatorname{supp}(c)\subseteq
+\bigcup_{n\in[\ell,u]\cap\mathbb Z}
+\{n\}\times
+\bigl(\operatorname{supp}(C_n)\cup\operatorname{supp}(C_{n-1})\bigr).
+$$
+
+右边是有限多个有限集合之并，故确有 $c\in\mathcal L$，而不只是逐时间形式上可作差。对 $n\ge\ell$ 作有限望远镜求和，
+
+$$
+\sum_{t=\ell}^{n}(C_t-C_{t-1})=C_n-C_{\ell-1}=C_n;
+$$
+
+对 $n<\ell$ 两边均为零。因此 $P(P^{-1}C)=C$。另一方面，$Pc(n)-Pc(n-1)=c_n$，故 $P^{-1}(Pc)=c$。这同时证明双射、差分逆及单射性。证毕。
+
+由差分逆，累积序列的跳变位置恰为 $T(c)$，右尾常值为 $\sum_t c_t$。这给出 R3 的有限跳点表示：只需记录有限次跳变及最终常值，左尾按定义为零，无须实际存储整个无限累积序列。它是有限剖面的精确表示，并未放宽两个尾部条件。
+
+### 34.2 默认延迟乘法的累积与差分公式
+
+**命题 59（延迟一格的乘法公式）。** 对任意 $c,d\in\mathcal L$，写 $C=Pc,D=Pd$，则对所有 $n\in\mathbb Z$，
+
+$$
+P(c\odot d)(n)=C_{n-1}*D_{n-1}.
+\tag{CUM-DELAY}
+$$
+
+相应输出时间分量的两种差分表达式为
+
+$$
+\begin{aligned}
+(c\odot d)_n
+&=C_{n-1}*D_{n-1}-C_{n-2}*D_{n-2}\\
+&=c_{n-1}*D_{n-1}+C_{n-2}*d_{n-1}.
+\end{aligned}
+\tag{CUM-DIFFERENCE}
+$$
+
+**证明。** 累积输出时间不超过 $n$ 的全部项。由 (TS-PRODUCT)，两个父时间满足的条件恰为
+
+$$
+\max(a,b)+1\le n
+\quad\Longleftrightarrow\quad
+a\le n-1\ \text{且}\ b\le n-1.
+$$
+
+因此在 $R$ 中有有限双和等式
+
+$$
+\begin{aligned}
+P(c\odot d)(n)
+&=\sum_{\substack{a,b\in\mathbb Z\\\max(a,b)+1\le n}}c_a*d_b\\
+&=\sum_{a\le n-1}\sum_{b\le n-1}c_a*d_b\\
+&=\left(\sum_{a\le n-1}c_a\right)*
+  \left(\sum_{b\le n-1}d_b\right)
+=C_{n-1}*D_{n-1}.
+\end{aligned}
+$$
+
+这里非零项只来自 $T(c)\times T(d)$；每一空间卷积也只涉及有限支撑，故所有重排都是有限和重排。对 (CUM-DELAY) 在相邻输出时间 $n,n-1$ 作差，得到 (CUM-DIFFERENCE) 第一式。再加减 $C_{n-2}*D_{n-1}$，并用 $C_{n-1}-C_{n-2}=c_{n-1}$ 与 $D_{n-1}-D_{n-2}=d_{n-1}$，得到第二式。两个下标 $n-1,n-2$ 都来自默认输出延迟，不能改为无延迟的下标。证毕。
+
+### 34.3 无延迟辅助乘法及两个扭曲恒等式
+
+**定义 32（辅助乘法与平移）。** 定义 $\diamond:\mathcal L^2\to\mathcal L$ 为
+
+$$
+(c\diamond d)(n,r)=
+\sum_{\substack{(a,p)\in\operatorname{supp}(c),\ (b,q)\in\operatorname{supp}(d)\\
+\max(a,b)=n,\ p+q=r}}
+c(a,p)d(b,q),
+\qquad
+\alpha=\tau_1,\quad
+(\alpha c)(n,p)=c(n-1,p).
+\tag{CUM-AUX}
+$$
+
+辅助乘积的支撑包含于父支撑对的有限像，所以仍属 $\mathcal L$。$\diamond$ 只用于分析剖面代数，不替换默认 $\odot$，也不替换丰富乘法 $\boxtimes$；它的无延迟时间规则不作为定义 6 的新事件规则。
+
+本节的 $\diamond:\mathcal L^2\to\mathcal L$ 是无延迟剖面乘法，区别于 §28.2 的属性乘积 $\mathrm{Attr}^2\to\mathrm{Attr}$；本节 $\alpha=\tau_1$ 是剖面平移自同构，也区别于定义 25 的事件属性映射 $\alpha(e)$。下述交换与结合结论只指本节明确类型的剖面乘法。
+
+**命题 60（辅助结合律、平移自同构及延迟校正式）。** $\diamond$ 交换、结合并对整数双线性，$\alpha$ 是 $(\mathcal L,+,\diamond)$ 的自同构，且
+
+$$
+c\odot d=\alpha(c\diamond d).
+\tag{CUM-TWIST}
+$$
+
+对全部 $c,d,e\in\mathcal L$，默认剖面乘法还满足两个分别成立的恒等式
+
+$$
+(c\odot d)\odot\alpha(e)=\alpha(c)\odot(d\odot e),
+\tag{CUM-HOM}
+$$
+
+$$
+\alpha(c\odot d)=\alpha(c)\odot\alpha(d).
+\tag{CUM-MULTIPLICATIVE}
+$$
+
+**证明（辅助代数）。** 交换两个父支撑点保持 $\max(a,b)$ 和 $p+q$，整数系数相乘也交换，故 $\diamond$ 交换。对任意输出 $(n,r)$，展开两个括号的有限和，均得到
+
+$$
+\sum_{\substack{\max(a,b,t)=n\\p+q+s=r}}
+c(a,p)d(b,q)e(t,s).
+$$
+
+此和限制在三个输入有限支撑的笛卡尔积上。时间等式
+$\max(\max(a,b),t)=\max(a,\max(b,t))$、空间加法结合及整数乘法结合，使两种分组逐项对应，故 $\diamond$ 结合。把任一因子的和或整数倍代入有限和，逐项用整数分配律，得到两个变量的整数线性。
+
+$\alpha$ 保加法且有逆 $\tau_{-1}$。共同平移两个父时间时，
+
+$$
+\max(a+1,b+1)=\max(a,b)+1,
+$$
+
+位置与系数不动，有限和重索引便给
+$\alpha(c\diamond d)=\alpha(c)\diamond\alpha(d)$。所以它确为自同构。将辅助乘积的输出时间再加一，正好把条件 $\max(a,b)=n$ 变为 (TS-PRODUCT) 的默认条件，得到 (CUM-TWIST)。
+
+**证明（累积核对与单射）。** 由定义及有限和直接有
+
+$$
+P(c\diamond d)(n)=C_nD_n=C_n*D_n,
+\qquad
+P(\alpha c)(n)=C_{n-1}.
+\tag{CUM-AUX-TRANSFORM}
+$$
+
+此显示式中的并置乘法 $C_nD_n$ 明确指原空间卷积 $*$，不是对空间位置逐点相乘。第一式使用 $\max(a,b)\le n$ 等价于 $a,b\le n$；第二式把平移后的求和时间减一。
+
+记 $E=Pe$。用命题 59 两次，(CUM-HOM) 两边经 $P$ 后在每个整数 $n$ 分别为
+
+$$
+\begin{aligned}
+P\bigl((c\odot d)\odot\alpha(e)\bigr)(n)
+&=(C_{n-2}*D_{n-2})*E_{n-2},\\
+P\bigl(\alpha(c)\odot(d\odot e)\bigr)(n)
+&=C_{n-2}*(D_{n-2}*E_{n-2}).
+\end{aligned}
+$$
+
+原空间卷积的结合律使它们相等；命题 58 的单射性把累积等式带回剖面等式。最后独立核对乘法保持式：
+
+$$
+\begin{aligned}
+P\bigl(\alpha(c\odot d)\bigr)(n)
+&=P(c\odot d)(n-1)=C_{n-2}*D_{n-2},\\
+P\bigl(\alpha(c)\odot\alpha(d)\bigr)(n)
+&=P(\alpha c)(n-1)*P(\alpha d)(n-1)
+=C_{n-2}*D_{n-2}.
+\end{aligned}
+$$
+
+再次由 $P$ 单射得到 (CUM-MULTIPLICATIVE)。这个第二恒等式有自己的核对，不从“Hom-associative”一词推出。全部论证发生在整数模块和原空间卷积中，没有借用域上的除法或假设全域单位。证毕。
+
+### 34.4 普通结合律与完整档案的边界
+
+**反例 E1（默认乘法的普通括号仍有区别）。** 取
+$c=d=\delta_{(0,0)}$、$e=\delta_{(1,0)}$。由默认时间规则，
+
+$$
+(c\odot d)\odot e=\delta_{(2,0)},
+\qquad
+c\odot(d\odot e)=\delta_{(3,0)}.
+$$
+
+左边先在时间 $1$ 生成，再与时间 $1$ 合成至 $2$；右边先将 $0,1$ 合成至 $2$，再与 $0$ 合成至 $3$。这是命题 31 的非结合见证及命题 33 的树深度公式在剖面上的同一边界，不作为另一项独立发现。(CUM-HOM) 校正了所写平移，未把 $\odot$ 变为普通结合的环乘法。
+
+**反例 E2（剖面恒等式不能提升到完整 $\Xi$）。** 沿用命题 30 的 $U_t$：两个当前事件均在空间零点、时间 $t$，一正一负，只选正事件，$E=\Omega$ 且偏序为空。令 $X=U_0,Y=U_2,Z=U_4$，比较
+
+$$
+X_L=(X\boxtimes Y)\boxtimes T_1Z,
+\qquad
+X_R=T_1X\boxtimes(Y\boxtimes Z).
+$$
+
+左侧中间当前事件在时间 $3$，$T_1Z=U_5$，故最后当前事件都在 $6$；完整档案出现的时刻集合为 $\{0,2,3,5,6\}$。右侧 $T_1X=U_1$，中间 $Y\boxtimes Z$ 的当前事件在 $5$，最后也全在 $6$；完整档案时刻集合为 $\{1,2,4,5,6\}$。每个输入的当前剖面为零、所选剖面为一份单点质量；按命题 39，最终两侧均有 $W=0$、所选剖面 $\delta_{(6,0)}$、$M=s=6$，但
+
+$$
+\Xi(X_L)=(0,\delta_{(6,0)},0,6,6),
+\qquad
+\Xi(X_R)=(0,\delta_{(6,0)},1,6,6).
+$$
+
+档案最小时刻分别为 $0,1$。所以剖面上的延迟校正结合式不能提升为完整 $\Xi$ 恒等式，更不能据此断言丰富表示或完整档案相等。所选数据与完整档案数据的区别在这里仍有实际可见的后果。
+
+<a id="p2-fixed-factor"></a>
+
+## 39. P2/R4：固定因子剖面方程的核、像与可恢复域
+
+### 35.1 全部解的类型与两个尾部的构造
+
+**定义 33（固定因子映射及支撑下界）。** 对每个固定的 $d\in\mathcal L$，定义整数线性映射
+
+$$
+L_d:\mathcal L\to\mathcal L,\qquad L_d(c)=c\odot d.
+$$
+
+线性来自 (TS-PRODUCT) 的有限和对 $c$ 的整数线性，也可由命题 60 的 (CUM-TWIST) 得到。写 $D=Pd$，对输入 $c$、目标 $h\in\mathcal L$ 分别写 $C=Pc,H=Ph$。对所有 $n\in\mathbb Z$，主理想及支撑受限子群定义为
+
+$$
+D_nR=\{D_n*r:r\in R\}\subseteq R,\qquad
+\mathcal L_{\ge a}=\{c\in\mathcal L:\forall n<a,\ c_n=0\}
+\quad(a\in\mathbb Z).
+\tag{CUM-FACTOR-TYPE}
+$$
+
+主理想使用原空间卷积；$D_n=0$ 时 $D_nR=\{0\}$。$\mathcal L_{\ge a}$ 对剖面加法与负号封闭。这里不在时间乘法 $\odot$ 上假设整环性质。
+
+**命题 61（固定因子的完整核、像与全部解）。** 对任意固定 $d\in\mathcal L$，有
+
+$$
+\ker L_d=
+\{c\in\mathcal L:\forall n\in\mathbb Z,\quad
+D_n\ne0\Longrightarrow C_n=0\}.
+\tag{CUM-KERNEL}
+$$
+
+对任意目标 $h\in\mathcal L$，其像条件恰为
+
+$$
+h\in\operatorname{im}L_d
+\quad\Longleftrightarrow\quad
+\forall n\in\mathbb Z,\
+\begin{cases}
+H_{n+1}=0,&D_n=0,\\
+H_{n+1}\in D_nR,&D_n\ne0.
+\end{cases}
+\tag{CUM-IMAGE}
+$$
+
+当此条件成立时，全部解由下列累积序列恰好给出：在 $D_n\ne0$ 的每个位置，$C_n$ 是空间方程 $D_n*C_n=H_{n+1}$ 在 $R$ 中的唯一解；在 $D_n=0$ 的位置，可以自由取 $C_n\in R$，但这些自由值与其余值合成的整个序列必须属于 $\mathcal A(R)$。对所有满足这项两尾限制的选择，取
+
+$$
+c_n=C_n-C_{n-1}\qquad(n\in\mathbb Z)
+\tag{CUM-ALL-SOLUTIONS}
+$$
+
+便得到全部且仅有的解。若 (CUM-IMAGE) 不成立则无解。特别地，$d=0$ 时 $\ker L_0=\mathcal L$、$\operatorname{im}L_0=\{0\}$；目标为零时每个 $c\in\mathcal L$ 都是解，目标非零时无解。
+
+**证明（核、必要性及非零处唯一性）。** 命题 59 在输出时间 $n+1$ 给
+
+$$
+P(L_d(c))(n+1)=C_n*D_n=D_n*C_n
+\qquad(n\in\mathbb Z).
+\tag{CUM-EQUATION}
+$$
+
+这里等号的交换使用原空间卷积。由命题 58 的单射性，$L_d(c)=h$ 等价于所有这些值等于 $H_{n+1}$；输出下标必须是 $n+1$。
+
+命题 26 已证明原 $R$ 无零因子。因此 $D_n\ne0$ 时，$D_n*C_n=0$ 当且仅当 $C_n=0$；$D_n=0$ 时乘积恒为零，不限制该处 $C_n$。这给出 (CUM-KERNEL)。一般目标下，在 $D_n=0$ 处必须有 $H_{n+1}=0$；在 $D_n\ne0$ 处必须有 $H_{n+1}\in D_nR$，故像条件必要。若 $D_n\ne0$ 且有两个商 $r_1,r_2\in R$，则 $D_n*(r_1-r_2)=0$，命题 26 使 $r_1=r_2$；这正是命题 32 的空间方程唯一性。所用消去律只属于 $R$，没有移植到 $\odot$。
+
+**证明（像条件充分，明确构造左右尾部）。** 假设 (CUM-IMAGE)。因 $D,H\in\mathcal A(R)$，可取整数 $\ell<u$，使
+
+$$
+D_n=H_{n+1}=0\quad(n<\ell),\qquad
+D_n=D_\infty,\ H_{n+1}=H_\infty\quad(n\ge u)
+$$
+
+其中 $D_\infty,H_\infty\in R$ 为固定常值。在整个左尾 $n<\ell$ 令 $C_n=0$，于是逐点方程成立。
+
+对于右尾，若 $D_\infty\ne0$，像条件给出 $H_\infty\in D_\infty R$，故存在唯一 $Q_\infty\in R$ 使 $D_\infty*Q_\infty=H_\infty$。对全部 $n\ge u$ 取同一个 $C_n=Q_\infty$；因为因子与目标在右尾都恒定，唯一性保证所需商不随 $n$ 变化。若 $D_\infty=0$，像条件迫使 $H_\infty=0$，就在整个右尾令 $C_n=0$。两种右尾都已满足方程及最终常值条件。
+
+剩余只有 $\ell\le n<u$ 的有限多个整数。在其中 $D_n\ne0$ 处取像条件给出的唯一 $R$ 中商，在 $D_n=0$ 处取 $C_n=0$。如此构造的 $C$ 左尾为零、右尾为常值，每个中间值都属于 $R$，所以 $C\in\mathcal A(R)$。命题 58 的有限支撑证明保证其差分是 $\mathcal L$ 中的 $c$。逐点方程对全部整数都成立，(CUM-EQUATION) 及 $P$ 单射给出 $L_d(c)=h$。这里实际只处理两个常值尾部和有限中段，没有对无限多个不受约束的商作选择，也没有把 $R$ 嵌入某个域后作未说明的除法。
+
+**证明（全部解与 $d=0$ 情形）。** 任一实际解的累积序列必属于 $\mathcal A(R)$，并满足 (CUM-EQUATION) 的每个空间方程。因此非零 $D_n$ 处的值被唯一强制，零 $D_n$ 处只有 $R$ 类型及整个序列的两尾条件；反向任何满足这些要求的序列由命题 58 和同一逐点方程给出解。除 $\mathcal A(R)$ 的条件外，没有遗漏其他时间一致性约束。
+
+若 $d=0$，则 $D_n=0$ 对所有整数成立，像条件要求 $H_{n+1}=0$ 对所有整数成立，即 $H=0$；由 $P$ 单射这恰为 $h=0$。此时全部 $\mathcal A(R)$ 都可作解的累积序列，差分逆给全部 $\mathcal L$。核与像的特殊结论随之成立。证毕。
+
+### 35.2 全称像条件的有限段化
+
+**命题 62（共同跳点与两个常值尾段）。** 对给定 $d,h\in\mathcal L$，(CUM-IMAGE) 只需在 $D_n$ 与 $H_{n+1}$ 的共同常值段上各检查一次，包括左右两个常值尾段。它们的跳点包含于有限集合
+
+$$
+J=T(d)\cup(T(h)-1),\qquad
+T(h)-1=\{t-1:t\in T(h)\}.
+\tag{CUM-JUMPS}
+$$
+
+因此像条件归结为有限多个空间主理想成员条件，零主理想的成员条件就是目标为零。
+
+**证明。** 相邻差分恰为
+
+$$
+D_n-D_{n-1}=d_n,\qquad
+H_{n+1}-H_n=h_{n+1}.
+$$
+
+所以离开 $J$ 时，两项均无跳变。若 $J=\{j_1<\cdots<j_k\}$ 非空，则它们同时常值的分段可取
+
+$$
+n<j_1,\qquad
+j_i\le n<j_{i+1}\ (1\le i<k),\qquad
+n\ge j_k.
+$$
+
+每段中因子、目标及主理想都不变，故该段任一整数上的条件等价于整段条件。第一段是共同的零左尾，最后一段是共同的常值右尾，两段都纳入检查。若 $J=\varnothing$，则 $T(d)=T(h)=\varnothing$，两个剖面均为零，全部整数是一段，两个尾部也同为零。用 $D_nR=\{0\}$ 统一零分支，就得到有限多个 $H_{n+1}\in D_nR$ 条件。证毕。
+
+有限段化只消除了在时间轴上重复同一条件的需要。它不声称空间主理想成员问题有某个复杂度界，也不提供或宣称已经实现通用除法算法；所用空间条件仍是命题 32 的有限支撑解存在条件。
+
+### 35.3 支撑下界上的精确单射域与全域失败
+
+**命题 63（受限单射的充要条件及每个固定因子的全域失败）。** 对任意 $a\in\mathbb Z$、$d\in\mathcal L$，
+
+$$
+L_d|_{\mathcal L_{\ge a}}\text{ 单射}
+\quad\Longleftrightarrow\quad
+\forall n\ge a,\ D_n\ne0.
+\tag{CUM-INJECTIVE}
+$$
+
+特别地，当 $d=\delta_{(a,0)}$ 时，
+
+$$
+c\odot\delta_{(a,0)}=\tau_1c
+\qquad(c\in\mathcal L_{\ge a}).
+\tag{CUM-SHIFT-FACTOR}
+$$
+
+然而对每个 $d\in\mathcal L$，$L_d$ 在整个 $\mathcal L$ 上都不单射，即使 $\varepsilon d=1$ 也不能保证全域单射。
+
+**证明（受限单射的两方向）。** $\mathcal L_{\ge a}$ 是加法子群，故其上的整数线性映射单射等价于受限核只有零元。若所有 $n\ge a$ 的 $D_n$ 都非零，对受限核元，命题 61 迫使 $C_n=0$ 在 $n\ge a$ 成立；输入在 $a$ 以前没有分量，又使 $C_n=0$ 在 $n<a$ 成立。所以 $C=0$，由 $P$ 单射得 $c=0$。
+
+反向，若某个 $n\ge a$ 满足 $D_n=0$，取
+
+$$
+c=\delta_{(n,0)}-\delta_{(n+1,0)}\ne0.
+$$
+
+它属于 $\mathcal L_{\ge a}$，累积序列满足 $C_n=\delta_0$，而对全部 $j\ne n$ 有 $C_j=0$。因此只有这个单一位置的累积值非零，且恰在 $D_n=0$ 处，(CUM-KERNEL) 给出 $L_d(c)=0$。这提供一个非零受限核元，证明必要性，也覆盖 $d=0$ 时受限单射必失败的情形。
+
+对于单点因子 $d=\delta_{(a,0)}$，有 $D_n=0$ 在 $n<a$，$D_n=\delta_0\ne0$ 在 $n\ge a$，故满足所述单射条件。直接在 (TS-PRODUCT) 中看每个输入时间 $t\ge a$，有 $\max(t,a)+1=t+1$，空间位置加零，系数不变；有限求和得到 (CUM-SHIFT-FACTOR)。它在指定域上实现的是 $\tau_1$，不是恒等映射，不能称为单位；对于早于 $a$ 的输入，多个不同时间还会被合并到 $a+1$，故不作全域平移声明。
+
+**证明（每个固定因子都全域不单射）。** 若 $d=0$，$L_d$ 恒为零，而 $\mathcal L$ 含非零单点质量，故不单射。若 $d\ne0$，有限非空 $T(d)$ 有最早时间 $b=\min T(d)$。取
+
+$$
+c=\delta_{(b-1,0)}-\delta_{(b,0)}\ne0.
+$$
+
+它的累积剖面仅在 $b-1$ 为 $\delta_0$，而 $D_{b-1}=0$；命题 61 再给 $c\odot d=0$。于是 $L_d(c)=L_d(0)$ 且 $c\ne0$，完成全称结论。证毕。
+
+**反例 E3（增广为一仍不能消去时间因子）。** 具体取
+
+$$
+c=\delta_{(0,0)}-\delta_{(1,0)},\qquad
+d=\delta_{(2,0)}.
+$$
+
+两个因子均非零且 $\varepsilon d=1$；两个输入贡献分别经
+$\max(0,2)+1=3$ 与 $\max(1,2)+1=3$ 到达同一输出单元，符号相反，所以
+
+$$
+c\odot d=\delta_{(3,0)}-\delta_{(3,0)}=0.
+$$
+
+这明确排除了把 §19 的空间无零因子定理移植到时间剖面乘法的强断言。命题 63 给出的可恢复性必须连同支撑下界及每个 $D_n\ne0$ 的条件使用。
+
+<a id="p2-sources-boundaries"></a>
+
+## 40. P2 的主数学来源、成熟框架与后续边界
+
+### 36.1 已完成的主推理与既有结果复用
+
+本次 P2/R3–R4 的核心定义、命题、公开证明及所列边界反例来自已完成的 **GPT PRO** 主推理任务 **8a1e6a18-47e3-4d7e-b703-a33b93c4ef87**，模型 **GPT-6 Astra**，模式 **mode:chat**，完成时间 **2026-09-09T15:46:54.998+00:00**，对话为 [GPT PRO：CSA 新扩展主推理](https://chatgpt.com/c/6aa175d8-7ae0-83ec-9289-e9fc818fe147)。该主数学来源依据的稿件 pin 为 **74e9341e5e38615754f82e99430a257a21c5a26c**。它是数学来源的定位，不是本次包含 P1 的后来工程基线；首次追加的工程基线绑定为 **f2b448dacf2d8eb3581520f115f2d2619cd6af48**。
+
+本次重整以 `d59adb46d4703e7fdc7ef7569c5c0919247cc87a` 的 dev 文稿为固定工程基线，保留该基线全文，将首次 P2 的全部数学材料移至本文末尾：§27–29 改为 §38–36，定义 25–27 改为定义 31–29，命题 42–47 改为命题 58–57，并作本节与 §38.3 的类型及批次说明。此次机械重整由 Codex 实施；旧数学来源归属不变，旧候选的评审与核验收据不自动代表重整后候选已经通过评审或交付。
+
+Codex 实施席依这一已完成来源组织中文数学表述、适配连续编号并独立核对，未把核心数学归为 Codex 的新独立推导，也不兼任本次实施的独立评审席。R3 是成熟累积变换与代数扭曲框架在 CSA 有限整数剖面上的特化；R4 是该主推理给出的完整固定因子方程及可恢复域。两者作为本稿扩展归类为 repo-derived，不据此主张全球优先权。
+
+具体复用关系是：有限空间卷积、其结合交换及分配律沿用 §15；整性和非零空间因子的唯一性沿用命题 26、28；默认整数时间和树深度边界沿用命题 32–33；联合剖面类型、平移、默认乘积及丰富档案端点沿用定义 22–23、命题 39。命题 58–57 的公开证明承担双向无限整数时间链、两尾像条件、输出延迟及固定因子方程的特定结论，不以引用或有限样本代替这些证明。
+
+### 36.2 成熟文献的具体前提
+
+累积表示与 join 乘法的成熟背景见 Andreas Björklund、Thore Husfeldt、Petteri Kaski、Mikko Koivisto、Jesper Nederlof、Pekka Parviainen，*Fast Zeta Transforms for Lattices with Few Irreducibles*，Proceedings of the Twenty-Third Annual ACM-SIAM Symposium on Discrete Algorithms（SODA 2012），pp. 1436–1444，DOI [10.1137/1.9781611973099.113](https://doi.org/10.1137/1.9781611973099.113)，[作者公开的会议论文 PDF](https://thorehusfeldt.com/wp-content/uploads/2010/08/7c52e3293a74298f.pdf)。本次采用的已核读引文资料对应这份会议版本的 PDF 第 1–2 页：其前提是**有限格**与**系数域 $K$**，式 (1.1) 定义 $\zeta$ 变换，式 (1.2) 给出 Möbius 逆，式 (1.3) 明确通过变换后的逐点乘法表达 join 乘法，正文称 $\zeta$ 为代数同构。这里“逐点”是在变换后的格索引上。该来源并未直接陈述本稿的无限整数时间链、整数空间卷积系数、零左尾与最终常值右尾，亦未包含默认输出延迟；这些由命题 58–53 及 (CUM-AUX-TRANSFORM) 的有限和证明单独承担。上述页码不指向另行出版的 2015 年期刊版本。
+
+代数自同态扭曲的成熟背景见 Donald Yau，*Hom-algebras and homology*，[arXiv:0712.3515v3](https://arxiv.org/abs/0712.3515v3)，2009 年 8 月 6 日修订，[版本 PDF](https://arxiv.org/pdf/0712.3515v3)；arXiv 所列期刊出处为 *Journal of Lie Theory* 19（2009），409–421。已核读资料对应该版本：§2.1（PDF 第 2 页）固定特征零域；§2.3（第 3 页）的式 (2.3.2) 为 $(xy)\alpha(z)=\alpha(x)(yz)$，并明确一般 Hom-associative 定义本身不要求 $\alpha$ 保乘法。定理 2.4（第 3–4 页）、引理 2.5 及推论 2.6(1)（第 4 页）说明自同态扭曲 $\mu_\alpha=\alpha\circ\mu$ 的机制，并另行建立乘法保持式；定理的前提是自同态，不要求可逆。
+
+本稿的对应是 $\mu=\diamond$、$\alpha=\tau_1$、$\mu_\alpha=\odot$。$\tau_1$ 在当前整数剖面类型上确实可逆并保持 $\diamond$，由命题 60 自给证明；这一识别不是 Yau 文中直接陈述的 CSA 结论。尤其不能把文献的域上线性代数前提静默扩张到整数模块，也不能只援引 Hom-associativity 的名称来省掉 (CUM-MULTIPLICATIVE) 的证明。引文资料只说明来源可访问性、定位及假设，不充当本稿数学证明或正式评审结论。
+
+### 36.3 剖面方程与完整逆问题的区分
+
+命题 61 的目标严格是 $c\odot d=h$ 的**剖面方程**。即使分别解出 $W$ 与 $Z$ 两个分量的方程，也不能据此断言一个预先指定的完整 $\Xi$ 逆问题有解：输入背景仍须平衡，两个分量必须共同满足命题 37 的实际像与支撑范围条件，所指定的档案端点还必须满足命题 39 的更新式。分别存在剖面解，并未证明这些解能够同时满足同一丰富输入的支撑与端点约束。反例 E2 也说明剖面等式本身不保存完整档案摘要。
+
+这种带同时实际像条件及端点约束的逆问题仍是单独的后续主研究任务。本批 P2 不引入后续 P3/R5–R9 的依赖结构与严格联合响应或 JT 的新结果；这里的 P3 是后续研究批次，区别于前文已保留的 PR3/PR4 来源与因果章节。既有 $\mathbb Z/\mathbb Q/\mathbb R$ 接口、丰富默认操作、共同零参考点、背景与端点限制，以及所选数据和完整档案的区别继续有效。本节的普通数学证明与有限例子核对不构成 Lean 内核验证、物理或量子定律、PR 已交付或持续研究总目标完成的声明。
