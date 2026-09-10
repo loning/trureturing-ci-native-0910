@@ -75,3 +75,19 @@ B(4m)%2=(m+B(2m))%2 (m>0)。由它们直接推出 8、16、32 进展式，
 热树 EXIT=0；parity-checked.log 的公理输出仅 propext/Quot.sound。
 首次错误为 proof-only section 参数未 include 和 0<m 的词法解析，已修复。
 当前这些 theorem 均 private，冻结依赖为空，不单独申请条件结果冻结。
+
+## 具体计数递推：第三单元已验
+
+Counting.lean 的基数双射现已全闭合，热树 EXIT=0。
+日志 counting-recurrence-checked.log：count_odd 与 count_even_step 的 axiom
+闭包都仅 propext/Classical.choice/Quot.sound。
+
+count_odd：任意 m>0，B(2m+1)=B(2m)+1。
+count_even_step：任意 m>0，B(2(m+1))=B(2m)+B(m+1)。
+具体计数始终是原 powerset/filter 定义，没有使用递推重定义 B。
+odd_sum 与 even_sum 由 card_extension 活用插入/删除最大部件的双射得到；
+even_exception 证明被排除族恰为单例尾部 {m}，并保留所有其余等号边界。
+这补齐了 Parity.lean 的所有数学前提；下一步移入正式 D5 模块并实例化旧桥。
+公开 count_odd/count_even_step 均 content，直接冻结依赖为空；共同见证
+card_extension 在依赖闭包和活推导路径中，非已有投影、非递推结论的定义等价；
+准入拟为 escape-witness，最终账目在正式路径的 report 产生后补身份。
