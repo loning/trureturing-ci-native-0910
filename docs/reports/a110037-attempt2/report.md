@@ -71,3 +71,25 @@ c_halving 均通过；complement_of_halving 由 strong_induction_on 对所有 r>
 这是无界归纳的条件数学结果，不是有限核对；仍不冒称具体 B 已满足输入。
 `#print axioms complement_of_halving` 仅 propext/Classical.choice/Quot.sound。
 首轮日志：attempt-2/bridge-first.log；本轮未采墙钟耗时，不填估算值。
+
+## 无界桥与四差分分支已核验
+
+`SloaneSellersParity B` 是显式的八项 Prop 输入，不是 axiom、不是已有 theorem、
+也没有为具体 B 安装 instance。odd 字段只在 m>0 使用（n=2m+1≥3）。
+两个 32 进展式的 m=0 输入对应 Corollary 4 最后一句的二进制位表征；
+不把印刷 (24) 的 m>0 擅自去掉。
+
+- parity_halving：按 r 偶数或 r≡1/3 mod4，引用上述输入，得 B(8r)%2=B(4r)%2。
+- parity_complement：把 f(r)=B(4r)%2 送入已核验强归纳，得 r>0 时 f(r)+c(4r+1)=1。
+- diff_four、diff_four_one、diff_four_two、diff_four_three：四个分支全部通过。
+- signed_diff_of_parity：统一得对任意 n≥2 的差分式，但仍带 SloaneSellersParity B 前提。
+- 原来的 n=1 printed_odd_rule_false 和目标 n=2/3 私有回声保留并通过。
+
+第二轮 EXIT=1，35.38秒：diff_four 的整数 1 尚是 Nat.cast 1，linarith 未规范化；
+合并分支时 convert/congr 未把 n=4*(n/4)+i 改写进函数参数，omega 不会推函数同余。
+第三轮明确规范化 cast 1 并按指标等式改写，EXIT=0，14.88秒；所有新声明只含
+标准三公理。第二轮失败产生的 sorryAx 是编译器错误恢复项，不是已核验结果；
+第三轮完整日志不含 sorryAx。没有通过抬预算或加入 axiom 修复。
+
+这是条件无界推导，不能替换用户要求的无条件具体计数定理；三条数学路线均已推进，
+未把“未搜到现成定理”单独当作 blocked 结算，也未以有限实例声称部分进展。
