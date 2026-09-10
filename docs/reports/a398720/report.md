@@ -91,3 +91,37 @@ utility=none：无界量化的组合双射，非有限枚举、checker、数值�
   用显式自然数求和恒等式与 Nat.not_even_iff_odd 修复，未改假设或命题。
   成功编译仅有 unnecessarySimpa 警告，已按建议简化为 simp，下一批验证。
 - 新中间命题 row_unique_zero 正是预登记见证；列转置、置换与反向构造尚待完成。
+
+## Lean 片段 2：双射与原定理
+
+- 单文件 Lean EXIT=0，无警告；spcp_odd_top_weight 原签名已闭合。
+  #print axioms 输出恰 [propext, Classical.choice, Quot.sound]，没有 sorryAx 或私有 axiom。
+- 列唯一性由转置和 Finset.sum_comm 得到；零位函数由列唯一性为单射，
+  直接调用 Finite.surjective_of_injective 与 Equiv.ofBijective 构造置换。
+- permComplement σ i j = decide (σ i ≠ j)，其每行/列零集分别为 singleton σ(i)
+  与 singleton σ.symm(j)，从 ones_add_zeros 得到重量 n-1；Odd n 推出 Even(n-1)。
+  topWeightEquiv 的两侧逆律都已证明，再直接调用 Nat.card_congr 与 Fintype.card_perm。
+- 编译修复记录：simp 未自动把等式筛选集化为单点，补显式集合外延；
+  `ext i` 曾递归到 Fin.val 等式，改 Equiv.ext；宽泛 simp [eq_comm] 达到递归限制，
+  改 simp only 后 exact eq_comm；移除了一个 deprecated Equiv 引理名。
+  这些均是 Lean 目标修复，未改数学陈述或加强假设。
+- Library note 已写 Verified locator，正文逐字包含 url 与 doi 行；Scribe 叙事只写数学。
+  全项目 make 门、Scribe 内容检查、冻结和 PR 尚待执行。
+
+## 逐公开定理判形（实现后）
+
+唯一公开定理：D5/S1/Words/ParityCode/OddTopWeight.spcp_odd_top_weight。
+proof_shape: content；admission_basis: escape-witness；直接冻结依赖：[]（仅 import Mathlib）。
+escape_witness: row_unique_zero（private），及其活前置 rows_saturated/row_bound。
+第 3.2 条四项：
+1. 依赖闭包内：主定理 → topWeightEquiv → zeroPerm/zeroPerm_spec → row_unique_zero。
+   该调用链为 elaborated 证明所使用；稍后 canonical report 核对声明身份。
+2. 非投影可得：冻结前置为空；Mathlib 有比较和的等号条件，但没有给出
+   Odd n 与 EvenRowsCols、weight 假设下的逐行唯一零位置。row_bound 用奇偶不相容
+   排除满行，rows_saturated 将整体重量落实到每行，非只改写已有目标定理。
+3. 非定义等价：每行唯一零位是一个结构命题，既不是 Nat.card 等式，也非其定义展开。
+4. 活推导路径：zeroPerm 用该存在性选值、列版本证明单射；zeroPerm_spec 用唯一性
+   证明矩阵重建。删除这些证据后该置换及两侧逆律无法仅由绑定步骤获得。
+全部 helper 为 private，不单独冻结普通实例；公开定义 ones/EvenRowsCols/weight 只建模。
+utility=none：所有定理均为任意奇数阶的一般组合构造，不属于四类计算性内容。
+其余用途字段 not-applicable(kind=none)。此判形为本席语义自查，不冒称机器或独立评审判词。
