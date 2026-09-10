@@ -1,5 +1,13 @@
 # OEIS A374911 implementation record
 
+## Current result
+
+The target theorem and the unrestricted classifications of values one, two,
+and three are proved from the original guarded recursion. All local delivery
+gates passed and the module is frozen without an atom. PR creation is next.
+The chronological checkpoints below preserve earlier pending states and failed
+attempts; this section and the final delivery receipt supersede those states.
+
 ## Origin and scope
 
 2026-09-10. Skill: `lean4`; implementation by the Codex worker in the supplied
@@ -298,3 +306,38 @@ The canonical report's included statement IDs for the public classifications:
 The module report also includes private prerequisites and compiler-generated
 recursion equations; they are not extra public mathematical APIs or independent
 finite-instance freezes. The module has no direct frozen D5 prerequisite pairs.
+
+## Freeze receipt
+
+Explicit `projections --check` EXIT=0, real 7.31 seconds; its log is
+attempt-1/projections-check.log. Together with the wrapper receipt this covers
+all three requested Scribe subchecks locally before PR creation.
+
+`make deposit-uncovered` EXIT=0, real 83.70 seconds, using the immutable base
+and target declaration GID. This canonical no-atom wrapper ran lean-report,
+deposit-header-check, emit, and `ledger-align --add`. The latter reported
+`selectors_considered=3952 changed=0 added=1 unchanged=3951 conflicts=0`.
+The terminal receipt is `PLAYBOOK_DEPOSIT_FROZEN_UNCOVERED ... reason=NO_ATOM`.
+Log: attempt-1/make-deposit-uncovered.log.
+
+- Module: `D5/S3/Arith/Congruence/PowerResidueRecursionFour.lean`.
+- Frozen module statement_id:
+  `sha256:01e17f29d71e477eb733c3317b05e837a545493527b41ca198a0f13d58126e27`.
+- Freeze event_hash:
+  `sha256:866054aa89ab228b3b2807e8812291ad73d3e884d60513d9c47d2db77bf38d82`.
+- `prerequisite_frozen_node_ids: []` in the emitted event agrees with the
+  reported direct frozen dependencies.
+- No source_id, atom_id, ingestion or coverage edge: the result is frozen
+  and uncovered, with no claim of atom digestion.
+- Final bucket counts: D5 Congruence 21, Blueprint Congruence 42,
+  Library/ArithSums 9. `git diff --check` exited 0.
+
+## Final not-claimed scope
+
+No proof of surjectivity, classification of value five, independent numerical
+sweep, independent reviewer approval, global novelty, exhaustive literature
+search, merge, or atom digestion is claimed. The original subtraction-LTE
+route was replaced before its proof attempt; only the explicitly revised
+addition/two-adic route is verified. Unopened pages and the uncompiled dataset
+fragment remain `ASSUMED-UNVERIFIED`. The user-supplied measurements remain
+attributed measurements, not worker-produced numerical evidence.
