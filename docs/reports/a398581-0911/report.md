@@ -27,6 +27,10 @@ Opened and read all sequence content of `https://oeis.org/A398581/internal` with
 
 For `a=5x-k`, `b=kx`, and `d=ay-b`, the equation implies `d>0` and `az=b+b²/d`. Thus a lower bound on d bounds z. The difficult residue-2 subcase has first residual a=3 with 3 dividing b, giving a candidate of size approximately b²/9. At the next x, a=8; d=1 would imply `k²=-5 (mod 8)`, impossible for a square. This proposed modular obstruction and the subsequent interval estimates are the refined escape witness, still ASSUMED-UNVERIFIED pending Lean.
 
+Curl retries succeeded for all six direct sequence references A257843, A075248, A075249, A075250, A075251, A257839 and official b398581.txt. Their complete sequence texts were read; the b-file contains the advertised 86 lines and no proof. A257843/A257839 concern numerator 4. A075248 counts numerator-5 solutions; A075249–251 stop after their first solution (`cnt==0`), despite the maximal-z wording, so those programs cannot supply this theorem. No complete target proof was found in this checked scope. Links beyond those direct entries have not been opened and remain ASSUMED-UNVERIFIED.
+
+The first actual Lean attempt proved the integer bounds `0<k`, `k<5x<3k` and positivity of `(5x-k)y-kx`. Two following lemmas initially failed because ordering facts were left inside the `Sol` definition, and one `mul_pos` argument was an inequality rather than a positive difference; these are implementation errors, not mathematical obstructions. Log: attempt-1/bounds-1.log. The correction is being checked.
+
 ## Verification and remaining obligations
 
 No Lean attempt run yet. No theorem frozen. Build/cache receipts, exact declaration classifications, and final outcome will be appended after each completed unit.
