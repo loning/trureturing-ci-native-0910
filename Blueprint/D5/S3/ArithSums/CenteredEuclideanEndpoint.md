@@ -232,7 +232,7 @@ $$\forall k \in \mathbb{N}, 2 \le k \implies \forall x \in \mathbb{R}^{k}, \fora
 
 *Commentary.*
 
-Insert the nonnegative coordinate increments y_j-x_j one at a time. Finite induction gives endpoint order for each partial sum, and the sum over all coordinates reconstructs y. This can supply lower bounds on arithmetic boxes without imposing arithmetic restrictions on this theorem.
+Insert the nonnegative coordinate increments y_j-x_j one at a time. The insertion criterion for finite-set monotonicity orders the partial sums, and the sum over all coordinates reconstructs y. This can supply lower bounds on arithmetic boxes without imposing arithmetic restrictions on this theorem.
 
 The geometric ingredients are the real inner-product Cauchy-Schwarz bound, the squared norm expansion, the triangle inequality and its equality criterion. The equality criterion requires only the second vector to be nonzero; it does not exclude zero variance in x. No strict coordinate monotonicity is asserted.
 

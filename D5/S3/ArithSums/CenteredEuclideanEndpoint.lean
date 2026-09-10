@@ -8,6 +8,7 @@
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.Normed.Module.Ray
 import Mathlib.Algebra.BigOperators.Expect
+import Mathlib.Data.Finset.Interval
 import Mathlib.Tactic
 
 /-! # The centered Euclidean lower endpoint
@@ -253,22 +254,22 @@ theorem lower_add_single_eq_iff_translated (x : E k) (i : Fin k) (u : ℝ) (hu :
 theorem lower_le_of_pointwise_le (x y : E k) (hxy : ∀ j : Fin k, x j ≤ y j) :
     lower hk x ≤ lower hk y := by
   classical
-  have hprogress (s : Finset (Fin k)) :
-      lower hk x ≤ lower hk (x + ∑ j ∈ s, (y j - x j) • e j) := by
-    induction s using Finset.induction_on with
-    | empty => simp
-    | @insert i s hi ih =>
-      rw [Finset.sum_insert hi]
-      have hstep := lower_le_add_single hk
-        (x + ∑ j ∈ s, (y j - x j) • e j) i (y i - x i) (sub_nonneg.mpr (hxy i))
-      have he : x + ((y i - x i) • e i + ∑ j ∈ s, (y j - x j) • e j) =
-          (x + ∑ j ∈ s, (y j - x j) • e j) + (y i - x i) • e i := by abel
-      rw [he]
-      exact ih.trans hstep
+  have hprogress : Monotone (fun s : Finset (Fin k) =>
+      lower hk (x + ∑ j ∈ s, (y j - x j) • e j)) := by
+    apply Finset.monotone_iff_forall_le_insert.mpr
+    intro s i hi
+    rw [Finset.sum_insert hi]
+    have hstep := lower_le_add_single hk
+      (x + ∑ j ∈ s, (y j - x j) • e j) i (y i - x i) (sub_nonneg.mpr (hxy i))
+    have he : x + ((y i - x i) • e i + ∑ j ∈ s, (y j - x j) • e j) =
+        (x + ∑ j ∈ s, (y j - x j) • e j) + (y i - x i) • e i := by abel
+    rw [he]
+    exact hstep
   have hreconstruct : x + ∑ j : Fin k, (y j - x j) • e j = y := by
     apply PiLp.ext
     intro i
     simp [EuclideanSpace.single, Pi.single_apply]
-  simpa only [hreconstruct] using hprogress Finset.univ
+  simpa only [Finset.sum_empty, add_zero, hreconstruct] using
+    hprogress (Finset.empty_subset (Finset.univ : Finset (Fin k)))
 
 end D5.S3.ArithSums.CenteredEuclideanEndpoint

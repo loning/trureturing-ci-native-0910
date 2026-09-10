@@ -99,7 +99,7 @@ internal sealed class CenteredEuclideanEndpointDocument : IScribeDocumentDefinit
                 Statement(ImpliesTo(Paren(Seq(Quant("j"), Sub(X, J), Sp, Le, Sp, Sub(Y, J))),
                     Seq(L(X), Sp, Le, Sp, L(Y))), "x", "y"),
                 "Insert the nonnegative coordinate increments y_j-x_j one at a time. "
-                + "Finite induction gives endpoint order for each partial sum, and the sum "
+                + "The insertion criterion for finite-set monotonicity orders the partial sums, and the sum "
                 + "over all coordinates reconstructs y. This can supply lower bounds on "
                 + "arithmetic boxes without imposing arithmetic restrictions on this theorem."),
             Paragraph(Text("The geometric ingredients are the real inner-product Cauchy-Schwarz "
