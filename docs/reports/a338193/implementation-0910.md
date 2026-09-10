@@ -241,7 +241,7 @@ It exited 0 and confirmed `row_factor` in both content theorem closures.
 This is closure evidence; the live-path argument is the explicit derivation
 in the preceding section, not a claim that reachability alone proves liveness.
 
-`docs/reports/a338193-declarations-0910.json` contains every public theorem's
+`docs/reports/a338193/declarations-0910.json` contains every public theorem's
 statement identity, standard axioms, shape, witness, and exact direct frozen
 GIDs plus their statement identities. These identities were read from the
 canonical report, not recomputed from frozen source. The direct set has eight
@@ -325,3 +325,28 @@ shows this concerns membership in the two pinned presentation fixture files,
 not a missing Lean declaration or proof. The typed `FromAuthor` formula is
 permitted when this projection is unavailable; the gap is explicit. The
 formula passes KaTeX, but no automatic Lean-to-formula equivalence is claimed.
+
+## CI capacity failure and correction
+
+PR #6751 was opened at commit `5cabf6a06f207787bf0e51995c8cfcb18d02519e`.
+Run 34427683788 passed both Canonical Lean report production and Candidate
+harness engineering checks. Its admission gate failed with `SL-003`:
+`docs/reports` had 50 direct files against the admission limit of 48.
+The two new reports were mistakenly added at that already-full directory;
+the earlier capacity checks covered D5, Library and Problems but missed
+reports. This was an implementation packaging error, not a proof failure.
+
+Both reports now live under `docs/reports/a338193/`, leaving 48 files directly
+under `docs/reports` and two under the new subdirectory. No pre-existing
+report, frozen Lean module, or governance rule was changed. The report's
+internal link and the PR links follow the new paths. The separate `SL-022`
+Scribe surface diagnostic was also visible; the CI wrapper permits exit 3
+for that diagnostic alone, whereas the capacity rejection produced exit 1.
+
+The correction passed `make gate BASE=82938786158c163b50350c14c948e63df61107a8
+GATE_ARGS=--skip-engineering`, EXIT=0 in 112.278 seconds. This ran the cached
+Lean report producer and the actual admission/Scribe/filemap checks. It
+explicitly did not rerun engineering tests, which had passed in CI and whose
+inputs were unchanged by relocating reports. `SL-003` is now absent; only
+the permitted `SL-022` protected Scribe surface result remains. This command
+is the repository's local admission route, not `make preflight`.
