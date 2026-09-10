@@ -119,6 +119,72 @@ public sealed class LeanInspectorScriptTests
     private static ProcessOutput Run(string command, IReadOnlyList<string> arguments, string cwd) =>
         TestProcessRunner.Run(command, arguments, cwd, BoundedProcessRunner.HangDetectionBudget, 1024 * 1024);
 
+    [Theory]
+    [InlineData("open")]
+    [InlineData("write")]
+    [InlineData("flush")]
+    public void InspectorRejectsMaterialIoFailureAndRemovesSpool(string operation)
+    {
+        if (OperatingSystem.IsWindows()) return;
+        using var temporary = new TemporaryDirectory();
+        var repository = CreateRepository(temporary.Path);
+        File.Copy(Path.Combine(TestRepositoryLayout.FindRoot(), "lean-toolchain"), Path.Combine(repository, "lean-toolchain"), true);
+        Write(repository, "lakefile.toml", """
+            name = "spool_fault"
+            defaultTargets = ["Trureturing"]
+            [[lean_lib]]
+            name = "Trureturing"
+            roots = ["Trureturing", "D5"]
+            globs = ["Trureturing", "D5.+"]
+            """ + "\n");
+        Write(repository, "Trureturing.lean", "import D5.Probe\ndef literal : String := \""
+            + (operation == "write" ? new string('x', 65536) : "small") + "\"\n");
+        var fault = Path.Combine(temporary.Path, "fault.py");
+        // Apply the limit only after Lake has established the Lean environment.
+        // SIGXFSZ is ignored so native stdio returns EFBIG as an IO error. A
+        // small first material stays buffered until flush; the large literal
+        // crosses the write limit during putStr. No disk exhaustion is needed.
+        File.WriteAllText(fault, $$"""
+            import os, pathlib, resource, signal, sys
+            operation = "{{operation}}"
+            spool = pathlib.Path(sys.argv[sys.argv.index("--material-spool") + 1])
+            if operation == "open":
+                (spool / "0.statement").mkdir()
+            else:
+                signal.signal(signal.SIGXFSZ, signal.SIG_IGN)
+                limit = 8192 if operation == "write" else 0
+                resource.setrlimit(resource.RLIMIT_FSIZE, (limit, limit))
+            os.execvp(sys.argv[1], sys.argv[1:])
+            """ + "\n");
+        var lake = Path.Combine(temporary.Path, "fault-lake");
+        File.WriteAllText(lake, """
+            #!/usr/bin/env bash
+            set -euo pipefail
+            if [[ "$1" == env ]]; then
+              shift
+              exec lake env python3 "$FAULT_HELPER" "$@"
+            fi
+            exec lake "$@"
+            """ + "\n");
+        File.SetUnixFileMode(lake, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        var output = Path.Combine(temporary.Path, "report.json");
+        foreach (var suffix in new[] { "", ".sha256", ".materials.zip" })
+            File.WriteAllText(output + suffix, "stale bundle");
+
+        var result = Run("env", [$"LAKE_BIN={lake}", $"FAULT_HELPER={fault}",
+            Path.Combine(repository, InspectorScript), "--repository", repository, "--output", output], repository);
+
+        Assert.NotEqual(0, result.ExitCode);
+        Assert.Contains("LEAN_INSPECTOR_FAILED phase=inspect", Encoding.UTF8.GetString(result.StandardError));
+        Assert.NotEqual("0", File.ReadAllText(Path.Combine(temporary.Path, "report.json.logs", "inspect.exit.log")).Trim());
+        Assert.DoesNotContain("RAW_LEAN_REPORT", Encoding.UTF8.GetString(result.StandardOutput));
+        foreach (var suffix in new[] { "", ".sha256", ".materials.zip", ".spool.json" })
+            Assert.False(File.Exists(output + suffix), $"accepted output after {operation} failure: {suffix}");
+        Assert.False(Directory.Exists(output + ".material-spool"));
+        Assert.False(Directory.Exists(output + ".materials"));
+        Assert.False(File.Exists(output + ".logs/compact.exit.log"));
+    }
+
     private static string CreateRepository(string temporary)
     {
         var repository = Path.Combine(temporary, "repo");
