@@ -147,3 +147,19 @@ utility=none：所有定理均为任意奇数阶的一般组合构造，不属�
   project/mathlib 两层 warm；初次播种收据见第 2 批，二者口径不混用。
 - 已开始 make emit。第一次临时 Lean 常量遍历脚本 EXIT=0 但没有输出边，
   尚不能作为闭包读数，正在核对 ConstantInfo.value? 对 opaque 证明的读取语义。
+
+## 发射与证明依赖核对
+
+- make emit EXIT=0，52.975 秒；恰 1 篇 Blueprint 改变，生成的公式与数学叙事已读。
+  其余全局 Generated 投影均未进入 git 索引。
+- Lean 环境 API 的 ConstantInfo.value? 默认不返回 theorem/opaque 证明；
+  加 allowOpaque := true 后临时脚本 EXIT=0，实际打印主定理 → topWeightEquiv →
+  zeroPerm/zeroPerm_spec → row_unique_zero → rows_saturated → row_bound。
+  原脚本与边日志将存 runner attempt，取自本次编译环境，不是 grep 推断证明依赖。
+- canonical module report 中 imports 恰为 Init 与四个 Mathlib 模块，无 D5 冻结前置。
+  手写公开 theorem 仅 spcp_odd_top_weight，statement_id=
+  sha256:8a74ef05b4212a6907b6175b7becd3ba6cad3e7a5589bf17c0f02365a87a5bcc。
+  ones.eq_1/weight.eq_1 是编译器方程定理，include_in_statement=false，不另作交付声明。
+  row_unique_zero 的 statement_id=
+  sha256:1d421a4b93d7b860b489e1402876eb2c09a72b541d777259b653882e7a9bbf0d。
+- 已启动用户指定 scribe-content-checks.sh，固定 base 24279623ef5253194f6c64ee3b3b627e62e3df50。
