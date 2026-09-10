@@ -64,13 +64,19 @@ def prepare_publication(repository, directory):
     assert published["rows"] == original["rows"], "wholeStreamPublicationHandoff"
     assert published["query_receipt_digest"] == json.loads((root / "receipt.json").read_bytes())["digest"]
     assert published["certificate"]["axioms"] == ["propext"]
+    probe = write_module(root, "Absent", "import Lean\nimport CensusRun.Root\nopen Lean Elab Command\n"
+        "run_cmd do\n  if (<- getEnv).contains\n"
+        "      `LeanInformationAudit.Tests.Census.Query.Observed.independent then\n"
+        "    throwError \"observed theorem imported by publication\"\n")
+    run(["lake", "env", "lean", str(probe)], directory / "first-absent", "process",
+        cwd=repository, env=dict(os.environ, LEAN_PATH=str(root), LEAN_NUM_THREADS="1"))
 
 
 def check_publication_negatives(repository, directory, only=None):
     root = directory / "first"
     source = root / "CensusRun/Root.lean"
     original = {"CensusRun.Root": source.read_text()}
-    original.update({"CensusRun." + p.stem: p.read_text() for p in source.parent.glob("Bucket*.lean")})
+    original.update({"CensusRun." + p.stem: p.read_text() for p in source.parent.glob("Range*.lean")})
 
     def change(bundle, module, transform):
         return dict(bundle, **{module: transform(bundle[module])})
@@ -79,7 +85,7 @@ def check_publication_negatives(repository, directory, only=None):
         return change(original, "CensusRun.Root", transform)
 
     def bucket_change(transform, bundle=None):
-        return change(original if bundle is None else bundle, "CensusRun.Bucket0", transform)
+        return change(original if bundle is None else bundle, "CensusRun.Range8_0", transform)
     driver = root / "CensusPublish/Root.lean"
     original_driver = driver.read_text()
     response = root / "census.json"
@@ -150,16 +156,19 @@ def check_publication_negatives(repository, directory, only=None):
         "statement_id"] = "sha256:" + "0" * 63
     rejected("publisherInventoryDuplicateBeforeMalformedReport", "IE-C035",
              transport=duplicated, report_data=malformed_report)
-    wrong_nat = bucket_change(lambda text: re.sub(r"(CensusRun.Bucket0.manifestKeys.chunk0 : Nat := )(0x[0-9a-f]+)",
+    wrong_nat = bucket_change(lambda text: re.sub(r"(CensusRun.Range8_0.manifestKeys.chunk0 : Nat := )(0x[0-9a-f]+)",
                        lambda m: m[1] + hex(int(m[2], 0) + 1), text, count=1), source_for(deleted))
     rejected("publisherNatBeforeMissingRow", "component=statement_id_nat",
              text=wrong_nat, transport=deleted)
     # Both 0 and 1 have valid distinct wire strings. Binding both to Nat 1 fails.
     rejected("sameNatDifferentWireRejected", "component=statement_id_nat",
-             text=bucket_change(lambda text: re.sub(r"(CensusRun.Bucket0.manifestKeys.chunk0 : Nat := )(0x[0-9a-f]+)",
+             text=bucket_change(lambda text: re.sub(r"(CensusRun.Range8_0.manifestKeys.chunk0 : Nat := )(0x[0-9a-f]+)",
                          lambda m: m[1] + hex(int(m[2], 0) + 1), text, count=1)))
+    rejected("edited-inventory-row", "component=statement_id_nat",
+             text=bucket_change(lambda text: re.sub(r"(CensusRun.Range8_0.manifestKeys.chunk0 : Nat := )(0x[0-9a-f]+)",
+                         lambda m: m[1] + hex(int(m[2], 0) + 99), text, count=1)))
     rejected("idPlacedInWrongBucket", "component=bucket_prefix",
-             text=bucket_change(lambda text: re.sub(r"(CensusRun.Bucket0.manifestKeys.chunk0 : Nat := )(0x[0-9a-f]+)",
+             text=bucket_change(lambda text: re.sub(r"(CensusRun.Range8_0.manifestKeys.chunk0 : Nat := )(0x[0-9a-f]+)",
                          lambda m: m[1] + hex(int(m[2], 0) + 2 ** 248), text, count=1)))
     for label, wire in [
             ("uppercaseIdentity", "sha256:" + "A" * 64),
@@ -178,8 +187,8 @@ def check_publication_negatives(repository, directory, only=None):
     rejected("reflexiveReportNameRejected", "component=report_keys_binding", driver_text=original_driver.replace(
         "report_keys CensusRun.reportKeys", "report_keys CensusRun.manifestKeys"))
     rejected("wrongChunkArity", "component=report_keys_binding", text=bucket_change(lambda text: re.sub(
-        r"decodeIds (\d+) CensusRun.Bucket0.reportKeys.chunk0",
-        lambda m: f"decodeIds {int(m[1]) - 1} CensusRun.Bucket0.reportKeys.chunk0", text, count=1)))
+        r"decodeIds (\d+) CensusRun.Range8_0.reportKeys.chunk0",
+        lambda m: f"decodeIds {int(m[1]) - 1} CensusRun.Range8_0.reportKeys.chunk0", text, count=1)))
     relabelled = copy.deepcopy(data)
     certified = next(row for row in data["rows"] if row["class"] != "observed")
     relabelled["rows"][observed_index]["class"] = certified["class"]
@@ -194,9 +203,9 @@ def check_publication_negatives(repository, directory, only=None):
     outcomes.append({"name": "leadingZeroIdentity", "status": "preserved"})
     outcomes.append({"name": "noncomputableDataBound", "status": "accepted"})
     rejected("chunkMovedBetweenSides", "component=report_keys_binding", text=bucket_change(lambda text: re.sub(
-        r"decodeIds (\d+) CensusRun.Bucket0.reportKeys.chunk0", r"decodeIds \1 CensusRun.Bucket0.manifestKeys.chunk0", text)))
+        r"decodeIds (\d+) CensusRun.Range8_0.reportKeys.chunk0", r"decodeIds \1 CensusRun.Range8_0.manifestKeys.chunk0", text)))
     rejected("chunkDuplicatedBetweenSides", "component=report_keys_binding", text=bucket_change(lambda text: re.sub(
-        r"decodeIds (\d+) CensusRun.Bucket0.reportKeys.chunk0",
-        r"decodeIds \1 CensusRun.Bucket0.reportKeys.chunk0, decodeIds \1 CensusRun.Bucket0.manifestKeys.chunk0", text)))
+        r"decodeIds (\d+) CensusRun.Range8_0.reportKeys.chunk0",
+        r"decodeIds \1 CensusRun.Range8_0.reportKeys.chunk0, decodeIds \1 CensusRun.Range8_0.manifestKeys.chunk0", text)))
     (directory / "negative-fixtures.json").write_text(json.dumps(outcomes, indent=2) + "\n")
     return outcomes

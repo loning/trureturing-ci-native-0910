@@ -6,9 +6,10 @@ namespace LeanInformationAudit.CensusProjection
 open Lean Meta Elab Command DispositionCensus CensusManifest
 
 private def isBucketModule (root module : Name) : Bool :=
-  let suffix := module.toString.drop (root.getPrefix.toString.length + 7) |>.toString
-  module.toString.startsWith (root.getPrefix.toString ++ ".Bucket") &&
-    !suffix.isEmpty && suffix.toList.all Char.isDigit
+  let modulePrefix := root.getPrefix.toString ++ ".Range"
+  let suffix := (module.toString.drop modulePrefix.length).toString
+  module.toString.startsWith modulePrefix && !suffix.isEmpty &&
+    suffix.toList.all (fun c => c.isDigit || c == '_')
 
 /-- Check the source boundary and the complete imported closure. A compiled
 source is loaded through its own module; only that exact module is excluded
@@ -24,7 +25,7 @@ def checkFinalEnvironment (env : Environment) (compiledRoot : Option Name := non
 
 private def checkSourceImports (imports : Array Import) (root : Name) : IO Unit := do
   let names := (imports.map (·.module)).filter (· != `Init)
-  unless names.contains `LeanInformationAudit.Census.Certificate && names.all
+  unless !names.isEmpty && names.all
       (fun m => m == `LeanInformationAudit.Census.Certificate || isBucketModule root m) do
     throw <| IO.userError "finalEnvironmentImports: final source must import only Census.Certificate"
 
@@ -41,7 +42,7 @@ def elaborateFinalSource (input : String) (fileName : String) (root : Name)
   let directory := source.withExtension "compile"
   let compiledSource := directory / (System.mkFilePath (root.components.map Name.toString)).withExtension "lean"
   IO.FS.createDirAll compiledSource.parent.get!
-  let dataInput := (input.splitOn ("\npublic theorem " ++ root.getPrefix.toString ++ ".bucketFacts")).head!
+  let dataInput := String.intercalate "\n" <| (input.splitOn "\n").filter (!·.startsWith "public theorem ")
   IO.FS.writeFile compiledSource (if dataOnly then dataInput else input)
   let target := compiledSource.withExtension "olean"
   -- The checked header permits exactly Init and Certificate. Resolve that
@@ -79,7 +80,7 @@ def elaborateFinalSource (input : String) (fileName : String) (root : Name)
   let previous ← searchPathRef.get
   try
     searchPathRef.set (directory :: finalSearchPath)
-    importModules #[{ module := root }] options
+    importModules #[{ module := root }] options (level := .exported)
   finally
     searchPathRef.set previous
 
@@ -88,10 +89,7 @@ Reflexivity is cheaper than decide for equality of the independently bound chunk
 def certificateSource (input : String) (ids reportIds certificate : Name) (requested : Nat) : String :=
   input ++ "\npublic theorem " ++ certificate.toString ++ " :\n  LeanInformationAudit.CensusKeyManifest.Certificate " ++
     ids.toString ++ " " ++ toString requested ++ " " ++ reportIds.toString ++
-    " := by\n  exact ⟨LeanInformationAudit.strictlyAscending_flatten_of_ranges " ++
-    ids.getPrefix.toString ++ ".bucketFacts,\n    (LeanInformationAudit.length_flatten " ++
-    ids.getPrefix.toString ++ ".bucketFacts).trans (by decide +kernel),\n    congrArg List.flatten (LeanInformationAudit.bucket_congruence " ++
-    ids.getPrefix.toString ++ ".bucketFacts)⟩\n"
+    " := by\n  exact LeanInformationAudit.certificate_of_range " ++ ids.getPrefix.toString ++ ".facts\n"
 
 /-- A valid certificate needs one imported environment. Both the kernel theorem
 and its constructor graph are checked before publication. If its proof fails,
@@ -103,9 +101,19 @@ def elaborateBoundSource (input checkedInput : String) (source checked : System.
   let staged ← try elaborateFinalSource checkedInput checked.toString root options
     catch error => do
       let data ← elaborateFinalSource input source.toString root options (dataOnly := true)
-      check data
+      let previous ← searchPathRef.get
+      try
+        searchPathRef.set (source.withExtension "compile" :: previous)
+        check data
+      finally
+        searchPathRef.set previous
       throw error
-  check staged
+  let previous ← searchPathRef.get
+  try
+    searchPathRef.set (checked.withExtension "compile" :: previous)
+    check staged
+  finally
+    searchPathRef.set previous
   return staged
 
 /-- Keep all serialized module levels together. The private level is needed by
@@ -117,7 +125,7 @@ def copyFinalArtifacts (checked source : System.FilePath) (root : Name) : IO Uni
   let directory := checked.withExtension "compile" /
     System.mkFilePath (root.getPrefix.components.map Name.toString)
   for entry in ← directory.readDir do
-    if entry.fileName.startsWith "Bucket" && !entry.fileName.endsWith ".lean" &&
+    if entry.fileName.startsWith "Range" && !entry.fileName.endsWith ".lean" &&
         !entry.fileName.endsWith ".compiler.log" then
       IO.FS.writeBinFile (source.parent.get! / entry.fileName) (← IO.FS.readBinFile entry.path)
 

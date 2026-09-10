@@ -44,7 +44,21 @@ def build(source, root, inputs, certificate_directory, data_only=False):
     library = pathlib.Path(subprocess.check_output(["lean", "--print-prefix"], text=True).strip()) / "lib/lean"
     env = dict(os.environ, LEAN_NUM_THREADS="1",
                LEAN_PATH=os.pathsep.join(map(str, [directory, library, certificate_directory])))
-    modules = re.findall(r"^public import (CensusRun\.Bucket[0-9]+)$", source.read_text(), re.M)
+    def imports(text):
+        return re.findall(r"^public import (CensusRun\.Range[0-9]+_[0-9]+)$", text, re.M)
+    modules = []
+    visited = set()
+    def visit(module):
+        if module in visited:
+            return
+        visited.add(module)
+        text = (inputs / pathlib.Path(*module.split(".")).with_suffix(".lean")).read_text()
+        for child in imports(text):
+            visit(child)
+        modules.append(module)
+    for module in imports(source.read_text()):
+        visit(module)
+    addresses = {}
     result = {"cache_hits": 0, "cache_misses": 0, "processes": [], "buckets": [],
               "certificate_sha256": certificate_digest, "toolchain": toolchain,
               "data_only": data_only}
@@ -57,18 +71,22 @@ def build(source, root, inputs, certificate_directory, data_only=False):
                 text = re.sub(r"^public theorem .*\n", "", text, flags=re.M)
             # The canonical source is a deterministic encoding of the two
             # literal vectors, n, k and b, including their fixed proof template.
-            digest = hashlib.sha256(json.dumps([text, toolchain, certificate_digest],
+            digest = hashlib.sha256(json.dumps([text, toolchain, certificate_digest,
+                [addresses[child] for child in imports(text)]],
                                                separators=(",", ":")).encode()).hexdigest()
+            addresses[module] = digest
+            kind = "node" if imports(text) else "leaf"
             entry = cache / digest
             cached_source = entry / relative
             cached_target = cached_source.with_suffix(".olean")
             hit = (entry / "complete.json").is_file()
             result["cache_hits" if hit else "cache_misses"] += 1
-            result["buckets"].append({"module": module, "digest": digest, "cache_hit": hit})
+            result["buckets"].append({"module": module, "digest": digest, "cache_hit": hit, "kind": kind})
             if not hit:
                 cached_source.parent.mkdir(parents=True, exist_ok=True)
                 cached_source.write_text(text)
                 measurement = measured_compile(cached_source, cached_target, entry, env)
+                measurement.update(module=module, kind=kind)
                 result["processes"].append(measurement)
                 if measurement["exit_code"]:
                     raise RuntimeError(cached_source.with_suffix(".compiler.log").read_text())
@@ -83,7 +101,7 @@ def build(source, root, inputs, certificate_directory, data_only=False):
                     continue
                 shutil.copyfile(artifact, destination.parent / artifact.name)
         measurement = measured_compile(source, source.with_suffix(".olean"), directory, env)
-        measurement["module"] = root
+        measurement.update(module=root, kind="root")
         result["processes"].append(measurement)
         result["assembly_peak_rss_bytes"] = measurement["peak_rss_bytes"]
         if measurement["exit_code"]:
@@ -93,6 +111,12 @@ def build(source, root, inputs, certificate_directory, data_only=False):
         result["process_count"] = len(result["processes"])
         result["max_process_peak_rss_bytes"] = max(
             (item["peak_rss_bytes"] for item in result["processes"]), default=0)
+        for kind in ["leaf", "node", "root"]:
+            result[kind + "_peak_rss_bytes"] = max((p["peak_rss_bytes"] for p in result["processes"]
+                if p["kind"] == kind), default=0)
+        result["leaf_olean_bytes"] = [(directory / pathlib.Path(*p["module"].split(".")).with_suffix(".olean")).stat().st_size
+            for p in result["buckets"] if p["kind"] == "leaf" and
+            (directory / pathlib.Path(*p["module"].split(".")).with_suffix(".olean")).exists()]
         receipt.write_text(json.dumps(result, indent=2) + "\n")
     return result
 

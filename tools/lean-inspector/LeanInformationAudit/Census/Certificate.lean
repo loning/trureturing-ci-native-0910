@@ -161,4 +161,58 @@ theorem certificate_of_buckets {b k invs ns reps requested}
   ⟨strictlyAscending_flatten_of_ranges h, (length_flatten h).trans total,
     congrArg List.flatten (bucket_congruence h)⟩
 
+/-- Half-open bounds allow a binary range tree with bounded leaves. -/
+@[expose] def boundedRange (lo hi : Nat) : List Nat → Bool
+  | [] => true
+  | x :: xs => (decide (lo ≤ x) && decide (x < hi)) && boundedRange lo hi xs
+
+@[expose] def RangeCertificate (lo hi : Nat) (ids : List Nat) (n : Nat)
+    (report : List Nat) : Prop :=
+  strictlyAscending ids = true ∧ boundedRange lo hi ids = true ∧ ids.length = n ∧ ids = report
+
+private theorem bounded_member {lo hi : Nat} {xs : List Nat}
+    (h : boundedRange lo hi xs = true) {x : Nat} (hx : x ∈ xs) : lo ≤ x ∧ x < hi := by
+  induction xs with
+  | nil => cases hx
+  | cons y ys ih =>
+    have parts := Bool.and_eq_true_iff.mp h
+    rcases List.mem_cons.mp hx with eq | mem
+    · subst x
+      exact ⟨of_decide_eq_true (Bool.and_eq_true_iff.mp parts.1).1,
+        of_decide_eq_true (Bool.and_eq_true_iff.mp parts.1).2⟩
+    · exact ih parts.2 mem
+
+private theorem bounded_of_members {lo hi : Nat} {xs : List Nat}
+    (h : ∀ x ∈ xs, lo ≤ x ∧ x < hi) : boundedRange lo hi xs = true := by
+  induction xs with
+  | nil => rfl
+  | cons x xs ih =>
+    have head := h x (List.mem_cons_self)
+    exact Bool.and_eq_true_iff.mpr ⟨Bool.and_eq_true_iff.mpr
+      ⟨decide_eq_true head.1, decide_eq_true head.2⟩,
+      ih (fun y hy => h y (List.mem_cons_of_mem x hy))⟩
+
+/-- A node uses only the two child certificates and their adjacent bounds.
+No concrete id is decoded, compared, or counted by a composition process. -/
+theorem range_join {lo mid hi : Nat} {left right lreport rreport : List Nat} {ln rn : Nat}
+    (hl : RangeCertificate lo mid left ln lreport)
+    (hr : RangeCertificate mid hi right rn rreport)
+    (order : lo ≤ mid ∧ mid ≤ hi) :
+    RangeCertificate lo hi (left ++ right) (ln + rn) (lreport ++ rreport) := by
+  refine ⟨ascending_append hl.1 hr.1 ?_, bounded_of_members ?_, ?_, ?_⟩
+  · intro x hx y hy
+    exact Nat.lt_of_lt_of_le (bounded_member hl.2.1 hx).2 (bounded_member hr.2.1 hy).1
+  · intro x hx
+    rcases List.mem_append.mp hx with hx | hx
+    · have h := bounded_member hl.2.1 hx
+      exact ⟨h.1, Nat.lt_of_lt_of_le h.2 order.2⟩
+    · have h := bounded_member hr.2.1 hx
+      exact ⟨Nat.le_trans order.1 h.1, h.2⟩
+  · rw [List.length_append, hl.2.2.1, hr.2.2.1]
+  · rw [hl.2.2.2, hr.2.2.2]
+
+theorem certificate_of_range {lo hi : Nat} {ids report : List Nat} {n : Nat}
+    (h : RangeCertificate lo hi ids n report) : CensusKeyManifest.Certificate ids n report :=
+  ⟨h.1, h.2.2.1, h.2.2.2⟩
+
 end LeanInformationAudit

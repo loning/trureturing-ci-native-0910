@@ -11,14 +11,16 @@ from resources import run
 def check_chunks(repository, directory):
     root = directory / "chunks"
     rows = [{"theorem_name": ["str", ["anonymous"], "T"],
-             "statement_id": "sha256:" + format(n, "064x")} for n in range(205)]
+             "statement_id": "sha256:" + format(n, "064x")} for n in range(125)]
     keys = [("Fixture", "ns(n0,1:T)", row["statement_id"]) for row in rows]
-    assembly = manifest_source(rows, keys, "fixture-head", "digest", "CensusRun.Root", b=0)
-    original = bucket_sources(rows, keys, b=0)["CensusRun.Bucket0"]
+    assembly = manifest_source(rows, keys, "fixture-head", "digest", "CensusRun.Root", b=1)
+    original = bucket_sources(rows, keys, b=1)["CensusRun.Range1_0"]
     wire = "#[" + ",\n".join(
         f"StatementKey.mk {name(row['theorem_name'])} {string(row['statement_id'])}" for row in rows) + "]"
     source = write_module(root, "CensusRun.Root", assembly)
-    bucket = write_module(root, "CensusRun.Bucket0", original)
+    for module, contents in bucket_sources(rows, keys, b=1).items():
+        write_module(root, module, contents)
+    bucket = root / "CensusRun/Range1_0.lean"
     driver = write_module(root, "ChunkBinding", "import LeanInformationAudit.Census.Publish\n"
         "open Lean Elab Command LeanInformationAudit\n"
         f"def expectedRows : Array StatementKey := {wire}\n"
@@ -26,17 +28,18 @@ def check_chunks(repository, directory):
         f"  let env <- CensusProjection.elaborateFinalSource (<- IO.FS.readFile {string(str(source))})\n"
         f"    {string(str(source))} `CensusRun.Root {{}} (dataOnly := true)\n"
         "  liftTermElabM <| CensusProjection.checkFinalEnvironment env (some `CensusRun.Root)\n"
+        f"  searchPathRef.modify (fun paths => System.FilePath.mk {string(str(source.with_suffix('.compile')))} :: paths)\n"
         "  withEnv env <| liftTermElabM do\n"
         "    CensusManifest.bindEmittedManifest\n"
         "      { headSha := \"fixture-head\", reportSha256 := \"digest\", theorems := expectedRows }\n"
         "      `CensusRun.Root expectedRows `CensusRun.manifest `CensusRun.reportKeys\n")
-    ordered = "decodeIds 100 CensusRun.Bucket0.reportKeys.chunk0, decodeIds 100 CensusRun.Bucket0.reportKeys.chunk1, decodeIds 5 CensusRun.Bucket0.reportKeys.chunk2"
+    ordered = "decodeIds 100 CensusRun.Range1_0.reportKeys.chunk0, decodeIds 25 CensusRun.Range1_0.reportKeys.chunk1"
     cases = [("noncomputableMultiChunkBound", original, True),
              ("chunkReorderedBetweenSides", original.replace(ordered,
-                 "decodeIds 100 CensusRun.Bucket0.reportKeys.chunk1, decodeIds 100 CensusRun.Bucket0.reportKeys.chunk0, decodeIds 5 CensusRun.Bucket0.reportKeys.chunk2"), False),
-             ("wrongChunkArity", original.replace("decodeIds 100 CensusRun.Bucket0.reportKeys.chunk0",
-                 "decodeIds 99 CensusRun.Bucket0.reportKeys.chunk0"), False),
-             ("chunkLiteralBinding", re.sub(r"(CensusRun.Bucket0.reportKeys.chunk0 : Nat := )(0x[0-9a-f]+)",
+                 "decodeIds 25 CensusRun.Range1_0.reportKeys.chunk1, decodeIds 100 CensusRun.Range1_0.reportKeys.chunk0"), False),
+             ("wrongChunkArity", original.replace("decodeIds 100 CensusRun.Range1_0.reportKeys.chunk0",
+                 "decodeIds 99 CensusRun.Range1_0.reportKeys.chunk0"), False),
+             ("chunkLiteralBinding", re.sub(r"(CensusRun.Range1_0.reportKeys.chunk0 : Nat := )(0x[0-9a-f]+)",
                  lambda m: m[1] + hex(int(m[2], 0) + 1), original, count=1), False)]
     outcomes = []
     try:
@@ -53,7 +56,7 @@ def check_chunks(repository, directory):
             else:
                 assert accepted, label + " accepted"
             outcomes.append({"name": label, "status": "accepted" if accepted else "rejected",
-                             "keys": 205, "chunks_per_side": 3})
+                             "keys": 125, "chunks_per_side": 2})
     finally:
         bucket.write_text(original)
     (root / "fixtures.json").write_text(json.dumps(outcomes, indent=2) + "\n")

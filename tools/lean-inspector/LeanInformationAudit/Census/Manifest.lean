@@ -90,37 +90,87 @@ private def natConstant (name : Name) (component : String) : MetaM Nat := do
   unless value == mkNatLit n do bindingError component
   return n
 
-/-- Bind the join's constructor graph and recompute each bucket independently.
-No kernel reduction of the joined ids occurs here or in the assembly proof. -/
+/-- The private leaf environment dies before the next leaf is opened. Only Unit
+escapes; no expression or Core/Meta state referring to its regions is retained. -/
+private unsafe def bindLeafIO (module scope : Name) (rows report : Array StatementKey)
+    (k b n : Nat) : IO Unit :=
+  withImportModules #[{ module }] {} fun env => do
+    let check : MetaM Unit := do
+      let inv ← bindChunkedKeys (scope ++ `manifestKeys) "manifest_keys" rows (some (k, b))
+      discard <| bindChunkedKeys (scope ++ `reportKeys) "report_keys" report (some (k, b))
+      let actual ← natConstant (scope ++ `n) "bucket_length"
+      unless actual == inv.length && actual == n do bindingError "bucket_length"
+    discard <| check.run' |>.toIO { fileName := "<census-leaf-binding>", fileMap := default } { env }
+
+private def rangeModule (scope : Name) (b k : Nat) : Name :=
+  scope ++ .mkSimple ("Range" ++ toString b ++ "_" ++ toString k)
+
+private def bindImports (module : Name) (expected : Array Name) : MetaM Unit := do
+  let env ← getEnv
+  let some index := env.header.moduleNames.findIdx? (· == module) | bindingError "bucket_imports"
+  unless ((env.header.moduleData[index]!).imports.map (·.module)).filter (· != `Init) == expected do
+    bindingError "bucket_imports"
+
+/-- The driver holds the exported tree and the two key authorities. Private
+literal/proof pages are read one leaf at a time, never as a whole-tree import. -/
 def bindBuckets (listName reportName : Name) (rows report : Array StatementKey) : MetaM Unit := do
   let scope := listName.getPrefix
-  let b ← natConstant (scope ++ `prefixBits) "bucket_prefix_bits"
-  unless b ≤ 256 do bindingError "bucket_prefix_bits"
-  let names := (List.range (2 ^ b)).map (fun k => scope ++ .mkSimple ("Bucket" ++ toString k))
-  for (list, side, component) in [(listName, `manifestKeys, "manifest_keys"),
-      (reportName, `reportKeys, "report_keys")] do
-    let items ← mkListLit (toTypeExpr (List Nat)) (names.map (fun n => mkConst (n ++ side)))
-    let expected ← mkAppM ``List.flatten #[items]
-    let joined ← zetaReduce (← getConstInfoDefn list).value (zetaDelta := false) (beta := false)
-    unless joined == expected do bindingError (component ++ "_binding")
-  let mut invBuckets := Array.replicate (2 ^ b) (#[] : Array StatementKey)
-  let mut repBuckets := invBuckets
-  for row in rows do
-    let id ← ofExcept <| decodeStatementId row.theoremName row.statementId
-    let k := idPrefix b id
-    invBuckets := invBuckets.modify k (·.push row)
-  for row in report do
-    let id ← ofExcept <| decodeStatementId row.theoremName row.statementId
-    let k := idPrefix b id
-    repBuckets := repBuckets.modify k (·.push row)
-  let mut total := 0
-  for (name, k) in names.zipIdx do
-    let inv ← bindChunkedKeys (name ++ `manifestKeys) "manifest_keys" invBuckets[k]! (some (k, b))
-    discard <| bindChunkedKeys (name ++ `reportKeys) "report_keys" repBuckets[k]! (some (k, b))
-    let n ← natConstant (name ++ `n) "bucket_length"
-    unless n == inv.length do bindingError "bucket_length"
-    total := total + n
-  unless total == rows.size do bindingError "bucket_total"
+  let minBits ← natConstant (scope ++ `prefixBits) "bucket_prefix_bits"
+  let bound ← natConstant (scope ++ `leafBound) "bucket_leaf_bound"
+  let repository ← IO.currentDir
+  let configured ← IO.Process.output { cmd := "python3", args := #[
+    (repository / "tools/lean-inspector/Census/config.py").toString] }
+  unless minBits ≤ 256 && bound > 0 && configured.exitCode == 0 &&
+      configured.stdout.trimAscii.toString.toNat? == some bound do bindingError "bucket_leaf_bound"
+  let sorted (keys : Array StatementKey) : MetaM (Array (Nat × StatementKey)) := do
+    let pairs ← keys.mapM fun key => do
+      return (← ofExcept <| decodeStatementId key.theoremName key.statementId, key)
+    return pairs.qsort (fun a b => a.1 < b.1)
+  let inv ← sorted rows
+  let rep ← sorted report
+  let lower (keys : Array (Nat × StatementKey)) (start stop pivot : Nat) : Nat := Id.run do
+    let mut lo := start
+    let mut hi := stop
+    while lo < hi do
+      let mid := (lo + hi) / 2
+      if keys[mid]!.1 < pivot then lo := mid + 1 else hi := mid
+    return lo
+  let rec visit (fuel b k il ih rl rh : Nat) : MetaM Unit := do
+    let node := if b == 0 then scope else rangeModule scope b k
+    let module := if b == 0 then scope ++ `Root else node
+    unless (← natConstant (node ++ `k) "bucket_prefix") == k &&
+        (← natConstant (node ++ `b) "bucket_prefix") == b do bindingError "bucket_prefix"
+    let n ← natConstant (node ++ `n) "bucket_length"
+    unless n == ih - il do bindingError "bucket_length"
+    let leaf := b ≥ minBits && max (ih - il) (rh - rl) ≤ bound
+    unless (← natConstant (node ++ `leaf) "bucket_leaf_bound") == (if leaf then 1 else 0) do
+      bindingError "bucket_leaf_bound"
+    if leaf then
+      bindImports module #[`LeanInformationAudit.Census.Certificate]
+      unsafe bindLeafIO module node ((inv.extract il ih).map (·.2)) ((rep.extract rl rh).map (·.2)) k b n
+    else
+      match fuel with
+      | 0 => bindingError "bucket_prefix_bits"
+      | fuel + 1 =>
+        let left := rangeModule scope (b + 1) (k * 2)
+        let right := rangeModule scope (b + 1) (k * 2 + 1)
+        bindImports module #[left, right]
+        for (list, side, component) in [(if b == 0 then listName else node ++ `manifestKeys,
+            `manifestKeys, "manifest_keys"), (if b == 0 then reportName else node ++ `reportKeys,
+            `reportKeys, "report_keys")] do
+          let expected ← mkAppM ``List.append #[mkConst (left ++ side), mkConst (right ++ side)]
+          let joined ← zetaReduce (← getConstInfoDefn list).value (zetaDelta := false) (beta := false)
+          -- Notation introduces HAppend.hAppend, whose instance is canonical.
+          unless ← isDefEq joined expected do bindingError (component ++ "_binding")
+          let args := joined.getAppArgs
+          unless args.size ≥ 2 && args[args.size - 2]! == mkConst (left ++ side) &&
+              args[args.size - 1]! == mkConst (right ++ side) do bindingError (component ++ "_binding")
+        let pivot := (k * 2 + 1) * 2 ^ (255 - b)
+        let im := lower inv il ih pivot
+        let rm := lower rep rl rh pivot
+        visit fuel (b + 1) (k * 2) il im rl rm
+        visit fuel (b + 1) (k * 2 + 1) im ih rm rh
+  visit 256 0 0 0 inv.size 0 rep.size
 
 def bindEmittedManifest (report : FrozenReport) (root : Name) (rows : Array StatementKey)
     (manifestName reportKeysName : Name) : MetaM Unit := do

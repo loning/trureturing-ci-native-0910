@@ -15,30 +15,21 @@ def check_bucket_negatives(repository, directory):
     original = bucket_sources(rows, keys, b=2)
     original["CensusRun.Root"] = manifest_source(rows, keys, "fixture-head", "digest", "CensusRun.Root", b=2)
     theorem = ("\npublic theorem CensusRun.accountingCertificate : CensusKeyManifest.Certificate "
-        "CensusRun.manifestKeys 5 CensusRun.reportKeys := by\n"
-        "  exact ⟨strictlyAscending_flatten_of_ranges CensusRun.bucketFacts,\n"
-        "    (LeanInformationAudit.length_flatten CensusRun.bucketFacts).trans (by decide +kernel),\n"
-        "    congrArg List.flatten (bucket_congruence CensusRun.bucketFacts)⟩\n")
+        "CensusRun.manifestKeys 5 CensusRun.reportKeys := certificate_of_range CensusRun.facts\n")
     original["CensusRun.Root"] += theorem
     changed = dict(original)
-    changed["CensusRun.Bucket1"] = re.sub(r"(: Nat := )0x[0-9a-f]+", r"\g<1>0x0", changed["CensusRun.Bucket1"])
+    changed["CensusRun.Range2_1"] = re.sub(r"(: Nat := )0x[0-9a-f]+", r"\g<1>0x0", changed["CensusRun.Range2_1"])
     literal = dict(original)
-    literal["CensusRun.Bucket1"] = re.sub(r"(reportKeys.chunk0 : Nat := )(0x[0-9a-f]+)",
-        lambda m: m[1] + hex(int(m[2], 0) + 1), literal["CensusRun.Bucket1"])
+    literal["CensusRun.Range2_1"] = re.sub(r"(reportKeys.chunk0 : Nat := )(0x[0-9a-f]+)",
+        lambda m: m[1] + hex(int(m[2], 0) + 1), literal["CensusRun.Range2_1"])
     join = dict(original)
     join["CensusRun.Root"] = join["CensusRun.Root"].replace(
-        "strictlyAscending_flatten_of_ranges CensusRun.bucketFacts", "(by decide +kernel)")
+        "certificate_of_range CensusRun.facts", "(by decide +kernel)")
     missing = dict(original)
-    text = missing["CensusRun.Root"].replace("public import CensusRun.Bucket1\n", "")
-    for suffix in ["manifestKeys", "reportKeys"]:
-        text = text.replace("CensusRun.Bucket1." + suffix, "([] : List Nat)")
-    text = text.replace("CensusRun.Bucket1.n", "0")
-    for suffix in ["ascending", "range", "length", "equality"]:
-        text = text.replace("CensusRun.Bucket1." + suffix, "(by decide +kernel)")
-    missing["CensusRun.Root"] = text
+    missing["CensusRun.Root"] = missing["CensusRun.Root"].replace("public import CensusRun.Range1_0\n", "")
     cases = [("bucketJoinAccepted", original, True, None),
-             ("wrongBucketRangeTheorem", changed, False, "Bucket1"),
-             ("bucketLiteralEdited", literal, False, "Bucket1"),
+             ("wrongBucketRangeTheorem", changed, False, "CensusRun.Range2_1"),
+             ("bucketLiteralEdited", literal, False, "CensusRun.Range2_1"),
              ("joinLemmaRemoved", join, False, "CensusRun.Root"),
              ("bucketMissingFromAssembly", missing, False, "CensusRun.Root")]
     outcomes = []

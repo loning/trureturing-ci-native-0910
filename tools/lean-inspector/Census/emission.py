@@ -3,7 +3,7 @@
 import json
 import re
 
-from config import PREFIX_BITS
+from config import PREFIX_BITS, MAX_LEAF_IDS
 
 
 def statement_nat(wire):
@@ -105,53 +105,83 @@ def chunked_keys(declaration, keys, public=False):
     return "".join(definitions)
 
 
-def partition(keys, b):
-    if not isinstance(b, int) or not 0 <= b <= 256:
-        raise ValueError("prefix bits must be in [0, 256]")
-    buckets = [[] for _ in range(2 ** b)]
-    for key, wire in keys:
-        buckets[statement_nat(wire) >> (256 - b)].append((key, wire))
-    return buckets
+def range_tree(rows, report_keys, b=PREFIX_BITS, max_leaf_ids=MAX_LEAF_IDS):
+    if not isinstance(b, int) or not 0 <= b <= 256 or max_leaf_ids < 1:
+        raise ValueError("invalid prefix bits or leaf bound")
+    inventory = [(row["theorem_name"], row["statement_id"]) for row in rows]
+    report = [(parse_name_key(key), wire) for _, key, wire in report_keys]
+    nodes = {}
+
+    def split(inv, rep, depth, prefix):
+        module = f"CensusRun.Range{depth}_{prefix}"
+        node = dict(module=module, inv=inv, rep=rep, depth=depth, prefix=prefix, children=[])
+        if depth < b or max(len(inv), len(rep)) > max_leaf_ids:
+            if depth == 256:
+                raise ValueError("IE-C035 unsplittable duplicate identity range")
+            cut = (prefix * 2 + 1) << (255 - depth)
+            def halves(keys):
+                return ([key for key in keys if statement_nat(key[1]) < cut],
+                        [key for key in keys if statement_nat(key[1]) >= cut])
+            il, ir = halves(inv)
+            rl, rr = halves(rep)
+            node["children"] = [split(il, rl, depth + 1, prefix * 2),
+                                split(ir, rr, depth + 1, prefix * 2 + 1)]
+            # Internal nodes export only their two references and scalar metadata.
+            node["inv"], node["rep"] = [], []
+        node["count"] = len(inv)
+        nodes[module] = node
+        return module
+
+    split(inventory, report, 0, 0)
+    return nodes
 
 
-def bucket_sources(rows, report_keys, b=PREFIX_BITS):
-    inventory = partition(((row["theorem_name"], row["statement_id"]) for row in rows), b)
-    report = partition(((parse_name_key(key), wire) for _, key, wire in report_keys), b)
-    sources = {}
-    for k, (inv, rep) in enumerate(zip(inventory, report)):
-        module = f"CensusRun.Bucket{k}"
-        sources[module] = ("module\npublic import LeanInformationAudit.Census.Certificate\n"
-            "open LeanInformationAudit\n"
-            + chunked_keys(module + ".manifestKeys", inv, public=True)
-            + chunked_keys(module + ".reportKeys", rep, public=True)
-            + f"@[expose] public def {module}.n : Nat := {len(inv)}\n"
-            + f"public theorem {module}.ascending : strictlyAscending {module}.manifestKeys = true := by decide +kernel\n"
-            + f"public theorem {module}.range : inRange {k} {b} {module}.manifestKeys = true := by decide +kernel\n"
-            + f"public theorem {module}.length : {module}.manifestKeys.length = {module}.n := by decide +kernel\n"
-            + f"public theorem {module}.equality : {module}.manifestKeys = {module}.reportKeys := by rfl\n")
-    return sources
+def range_source(node, scope=None):
+    scope = scope or node["module"]
+    k, b = node["prefix"], node["depth"]
+    lo, hi = k << (256 - b), (k + 1) << (256 - b)
+    children = node["children"]
+    header = "module\n" + ("".join(f"public import {child}\n" for child in children)
+        if children else "public import LeanInformationAudit.Census.Certificate\n")
+    body = header + "open LeanInformationAudit\n"
+    body += f"@[expose] public def {scope}.n : Nat := {node['count']}\n"
+    body += f"@[expose] public def {scope}.k : Nat := {k}\n"
+    body += f"@[expose] public def {scope}.b : Nat := {b}\n"
+    body += f"@[expose] public def {scope}.leaf : Nat := {0 if children else 1}\n"
+    if children:
+        left, right = children
+        for side in ["manifestKeys", "reportKeys"]:
+            body += f"@[expose] public noncomputable def {scope}.{side} : List Nat := {left}.{side} ++ {right}.{side}\n"
+        proof = f"range_join {left}.facts {right}.facts (by decide +kernel)"
+    else:
+        body += chunked_keys(scope + ".manifestKeys", node["inv"], public=True)
+        body += chunked_keys(scope + ".reportKeys", node["rep"], public=True)
+        body += f"public theorem {scope}.ascending : strictlyAscending {scope}.manifestKeys = true := by decide +kernel\n"
+        body += f"public theorem {scope}.range : inRange {k} {b} {scope}.manifestKeys = true := by decide +kernel\n"
+        body += f"public theorem {scope}.length : {scope}.manifestKeys.length = {scope}.n := by decide +kernel\n"
+        body += f"public theorem {scope}.equality : {scope}.manifestKeys = {scope}.reportKeys := by rfl\n"
+        proof = f"⟨{scope}.ascending, (by decide +kernel), {scope}.length, {scope}.equality⟩"
+    body += f"public theorem {scope}.facts : RangeCertificate {lo} {hi} {scope}.manifestKeys {scope}.n {scope}.reportKeys := {proof}\n"
+    return body
 
 
-def manifest_source(rows, report_keys, head, digest, root, b=PREFIX_BITS):
+def bucket_sources(rows, report_keys, b=PREFIX_BITS, max_leaf_ids=MAX_LEAF_IDS):
+    return {module: range_source(node) for module, node in range_tree(rows, report_keys, b, max_leaf_ids).items()
+            if module != "CensusRun.Range0_0"}
+
+
+def manifest_source(rows, report_keys, head, digest, root, b=PREFIX_BITS, max_leaf_ids=MAX_LEAF_IDS):
     root_name = ["anonymous"]
     for part in root.split("."):
         root_name = ["str", root_name, part]
-    buckets = [f"CensusRun.Bucket{k}" for k in range(2 ** b)]
-    def refs(suffix):
-        return "[" + ", ".join(module + suffix for module in buckets) + "]"
-    proof = "\n".join(f"  BucketCertificates.cons {m}.ascending {m}.range {m}.length {m}.equality <|"
-                      for m in buckets) + f"\n  BucketCertificates.nil {2 ** b}\n"
-    return ("module\npublic import LeanInformationAudit.Census.Certificate\n"
-            + "".join(f"public import {module}\n" for module in buckets)
-            + "open LeanInformationAudit\n"
-            + f"@[expose] public def CensusRun.prefixBits : Nat := {b}\n"
-            + f"@[expose] public noncomputable def CensusRun.manifestKeys : List Nat := List.flatten {refs('.manifestKeys')}\n"
-            + f"@[expose] public noncomputable def CensusRun.reportKeys : List Nat := List.flatten {refs('.reportKeys')}\n"
-            + "@[expose] public noncomputable def CensusRun.manifest : CensusKeyManifest :=\n"
-            f"  {{ headSha := {string(head)}, reportSha256 := {string(digest)},\n"
-            f"    censusRoot := {name(root_name)}, keys := CensusRun.manifestKeys }}\n"
-            + f"public theorem CensusRun.bucketFacts : BucketCertificates {b} 0 "
-            + refs('.manifestKeys') + " " + refs('.n') + " " + refs('.reportKeys') + " :=\n" + proof)
+    tree = range_tree(rows, report_keys, b, max_leaf_ids)
+    scope = root.rsplit(".", 1)[0] if "." in root else root
+    body = range_source(tree["CensusRun.Range0_0"], scope)
+    return (body + f"@[expose] public def {scope}.prefixBits : Nat := {b}\n"
+        + f"@[expose] public def {scope}.leafBound : Nat := {max_leaf_ids}\n"
+        + f"@[expose] public noncomputable def {scope}.manifest : CensusKeyManifest :=\n"
+        + f"  {{ headSha := {string(head)}, reportSha256 := {string(digest)},\n"
+        + f"    censusRoot := {name(root_name)}, keys := {scope}.manifestKeys }}\n")
 
 
 def write_manifest(directory, rows, report_keys, head, digest, root, b=PREFIX_BITS):

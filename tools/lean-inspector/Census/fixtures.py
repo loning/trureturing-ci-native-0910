@@ -11,6 +11,11 @@ from negative_fixtures import prepare, check_manifest_negatives, lean_env, valid
 from receipt_fixtures import check_receipts
 from resources import run
 
+RETIRED_QUERY_PROTOCOL_FIXTURES = [
+    "missing-query-receipt", "missing-query-transport", "edited-query-transport",
+    "stale-query-receipt", "swapped-query-receipt", "invented-consistent-scope-and-completion",
+    "duplicate-evidence-imports", "input-flag",
+]
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -54,7 +59,9 @@ def main():
     prepare_publication(repository, directory)
     negatives.extend(check_publication_negatives(repository, directory))
     result = {"negative_fixtures": negatives, "lean_fixture_modules": cases, "retained_fixture_execution": "Lake lean_lib build",
-              "certificate_chunk_binding": chunks, "bounded_fixtures": bounds, "query_scheduler": "retired"}
+              "certificate_chunk_binding": chunks, "bounded_fixtures": bounds, "query_scheduler": "retired",
+              "retired_query_protocol_fixtures": RETIRED_QUERY_PROTOCOL_FIXTURES,
+              "observed_theorem_absent_from_publication": True}
     (directory / "fixtures.json").write_text(json.dumps(result, indent=2) + "\n")
     print(json.dumps(result), flush=True)
 

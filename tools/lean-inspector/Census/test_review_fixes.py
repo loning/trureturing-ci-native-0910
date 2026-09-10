@@ -120,6 +120,13 @@ class ReviewFixTests(unittest.TestCase):
                  for n in re.findall(r"\.n : Nat := (\d+)", source)]
         self.assertTrue(sizes, "adaptiveLeafBound")
         self.assertLessEqual(max(sizes), 128, "adaptiveLeafBound")
+        for source in sources.values():
+            imports = re.findall(r"^public import (.*)$", source, re.M)
+            if imports == ["LeanInformationAudit.Census.Certificate"]:
+                continue
+            self.assertEqual(len(imports), 2, "adaptiveTwoChildComposition")
+            self.assertNotIn("decodeIds", source, "adaptiveNodeHasNoPackedIds")
+            self.assertEqual(source.count("range_join"), 1, "adaptiveGenericJoin")
 
 
 if __name__ == "__main__":

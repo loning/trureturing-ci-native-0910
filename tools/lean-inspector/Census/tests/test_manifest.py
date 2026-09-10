@@ -28,9 +28,9 @@ class ManifestTests(unittest.TestCase):
         wire = "sha256:" + "0" * 64
         rows = [{"theorem_name": ["str", ["anonymous"], "Inventory"], "statement_id": wire}]
         report_keys = [("Fixture", "ns(n0,6:Report)", "sha256:" + format(1, "064x"))]
-        source = emission.bucket_sources(rows, report_keys)["CensusRun.Bucket0"]
-        before, after = source.split("def CensusRun.Bucket0.reportKeys.chunk", 1)
-        self.assertIn("CensusRun.Bucket0.manifestKeys.chunk0 : Nat := 0x0", before)
+        source = emission.bucket_sources(rows, report_keys)["CensusRun.Range8_0"]
+        before, after = source.split("def CensusRun.Range8_0.reportKeys.chunk", 1)
+        self.assertIn("CensusRun.Range8_0.manifestKeys.chunk0 : Nat := 0x0", before)
         self.assertIn("0 : Nat := 0x1", after)
         self.assertNotIn('"Inventory"', source)
         self.assertNotIn('"Report"', source)
@@ -47,17 +47,17 @@ class ManifestTests(unittest.TestCase):
         self.assertNotIn("DispositionCensus", first)
 
     def test_noncomputable_independent_chunks_are_bounded(self):
-        keys = [("Fixture", "ns(n0,1:T)", "sha256:" + format(n, "064x")) for n in range(205)]
+        keys = [("Fixture", "ns(n0,1:T)", "sha256:" + format(n, "064x")) for n in range(125)]
         rows = [{"theorem_name": emission.parse_name_key(key), "statement_id": wire}
                 for _, key, wire in keys]
-        source = emission.bucket_sources(rows, keys)["CensusRun.Bucket0"]
-        self.assertEqual(source.count("noncomputable def"), 8)
+        source = emission.bucket_sources(rows, keys)["CensusRun.Range8_0"]
+        self.assertEqual(source.count("noncomputable def"), 6)
         self.assertEqual(source.count("List.flatten"), 2)
         self.assertIn("import LeanInformationAudit.Census.Certificate\n", source)
         self.assertNotIn("Census.Publish", source)
         for side in ("manifestKeys", "reportKeys"):
-            for number, expected in enumerate((100, 100, 5)):
-                body = source.split(f"def CensusRun.Bucket0.{side}.chunk{number} :", 1)[1].split(
+            for number, expected in enumerate((100, 25)):
+                body = source.split(f"def CensusRun.Range8_0.{side}.chunk{number} :", 1)[1].split(
                     "noncomputable def", 1)[0]
                 packed = int(body.split(":=", 1)[1].split()[0], 0)
                 decoded = []
@@ -66,7 +66,7 @@ class ManifestTests(unittest.TestCase):
                     decoded.append(digit)
                 self.assertEqual(packed, 0)
                 self.assertEqual(decoded, list(range(number * 100, number * 100 + expected)))
-                self.assertIn(f"decodeIds {expected} CensusRun.Bucket0.{side}.chunk{number}", source)
+                self.assertIn(f"decodeIds {expected} CensusRun.Range8_0.{side}.chunk{number}", source)
         self.assertNotIn("Lean.Name × Nat", source)
         self.assertNotIn("List.Nodup", source)
 
