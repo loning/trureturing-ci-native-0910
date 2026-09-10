@@ -40,3 +40,14 @@ lean-report、emit、Scribe 内容检查及 freeze 收据。
 未主张 `k ≡ 14 mod 16` 例外公式；未主张有限核对证明全称；
 未主张 A063170 的已证性解决剩余目标；未主张已解决、已冻结、已开 PR 或已合并。
 所有未真正打开的外部页均为 ASSUMED-UNVERIFIED。
+
+## 第二批亲读收据
+
+- 已完整读 A398189 及其全部直接序列引用 A398187、A063170、A000120 的 internal 条目；主条目唯一论文链接的摘要入口亦打开。
+- Amdeberhan–Callan–Moll，Integers 13 (2013) A21，16 页全文已逐页提取阅读，另亲看第5页原图。§2 pp4–5 证明 k=0：奇 n 估值1；偶 n 估值 n-s₂(n)。Lemma 2.2 的式(2.11)–(2.14) 给正 j 项相对零项的严格估值差 s₂(j)+j v₂(n/2)>0；截到 n-k 并缩放后仍给所有偶 n 背景。§3–4 讨论 k=0 的奇素数估值，§5 为 Abel/树组合恒等式。未见奇 n、正 k 的目标公式证明。
+- 文献裁决（按 brief 原边界）：k=0 已证、所有偶 n 分支为已证背景；未因 A063170 已证而降低剩余目标档位。未打开直接引用条目所进一步引用的二级文献，均 ASSUMED-UNVERIFIED，不作为判据。
+- 本仓候选模块公开面：FactorialQuotientRecurrence 的 positivity/triple-product/Mathar recurrence 针对另一递推；FactorialProductSumCatalanParity 的一般系数消失、唯一性、模2函数方程与 Catalan support 不提供本截断和递推或估值。未发现可直接复用的目标/抵消引理。
+- 钉版 Mathlib `rg -i 'schenker|truncated.*exponential|A398189|A063170' Mathlib` 零命中；`PadicVal/Basic.lean` 提供 `padicValNat.eq_zero_of_not_dvd`、`padicValNat_dvd_iff_le` 等通用估值接口，不提供抵消。Lean pin 已对齐。
+- GitHub code search 实测可用：`Schenker language:Lean`、`A398189 language:Lean`、`"truncated exponential" language:Lean` 均 total_count=0。搜索范围无命中并不阻塞本地证明。
+- `make lean-cache-ensure`：`status=seeded, method=clonefile, clonefile_attempts=1, stamp_miss=null, mathlib_olean_state=warm, project_olean_state=warm`；原始收据 `/tmp/a398189-cache.log`。
+- 首次报告目录计数为48；已把本题报告放入独立任务子目录，未向已满的平桶继续添加文件。
