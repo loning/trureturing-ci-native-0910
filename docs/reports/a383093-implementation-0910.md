@@ -185,3 +185,17 @@
   --report .lake/build/stratalint/raw-lean-report.json：EXIT=0，10.854 秒。
 - 原始日志为 runner attempt/scribe-content-checks.log、scribe-projections-check.log。
   describe-report 的既有 OPEN/OBSERVE 不冒称已解决；新增 note 没有 incomplete-library-locator。
+
+## 冻结
+
+- make deposit-uncovered BASE=462d0a4368ba5a890c5eab619c82437baa88966f
+  GID=D5/S1/Words/Compositions/ConstantEqualSumDivisorIdentity.capable_divisor_sum：
+  EXIT=0，83.695 秒；日志 runner attempt/make-deposit-uncovered.log。
+- canonical 门序：lean-report（当前输入缓存命中）→ deposit-header-check → emit
+  → ledger-align --add；最终 reason=NO_ATOM。
+  LEDGER_ALIGN：changed=0、added=1、unchanged=3948、conflicts=0。
+- 仅新增本模块 accepted/state 两个文件；无 theory/atom/coverage 修改。
+  Freeze event_hash=sha256:2b6e7afd8babc047068c8daa85e00b22730aa6b9273aa93ff3c2381a52a25f2a；
+  模块 statement_id=sha256:254430127ee8a1507f96467f6f24c19db7d11b45efec016652b5300fbf6dcf15；
+  prerequisite_frozen_node_ids=[]。以上直接读取新冻结记录，未重算历史账本。
+- 冻结后不再改 Lean 文件；下一步开 PR 并由 canonical pr-open 等待 required CI 判词。
