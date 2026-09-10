@@ -131,6 +131,8 @@ public sealed partial class ProductionEnvironmentTests
             }
             else if (demandContext)
             {
+                Assert.Equal(System.Text.Json.JsonValueKind.Null,
+                    bundle.RootElement.GetProperty("files")[0].GetProperty("result").GetProperty("error").ValueKind);
                 var parsed = context.GetFile(snapshot, RepoPath.CreateKnown(path), "current");
                 Assert.False(parsed.InitialEquality);
                 Assert.All(parsed.Commands, command => Assert.False(command.Equality));
