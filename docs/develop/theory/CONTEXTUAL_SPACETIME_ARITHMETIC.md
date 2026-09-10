@@ -2719,6 +2719,215 @@ print("pr6_expressibility_pairing: " + " ".join(f"{k}={v0}" for k, v0 in pr6_cou
       + " seed=2026091006 Tail_families=27 random_inputs=64 cases=80"
       + " periodic_and_drift=1,1/1,0 D15=1,2 D10=2,2 D16=1,1,1,0,1")
 
+REQUIRED_PR6_KEYS = frozenset({
+    "tail_q", "collapse_controls", "target_controls", "collapsed_profiles",
+    "saturation_endpoints", "saturation_q", "saturation_no_product",
+    "saturation_empty_factor", "saturation_product", "periodic_saturation",
+    "unsaturated_control", "first_product_fiber", "pair_push", "empty_products",
+    "old_archives", "negative_inputs", "unselected_parents", "pair_suffix",
+    "pullback_encoding", "mixed_summary", "mixed_q", "strict_failures",
+    "D15_fiber", "D15_q", "D10_control", "U_rule_push", "J_positive",
+    "J_fiber", "U_size_rule", "global_rule", "same_local_rows",
+    "q_only_control", "image_roundtrip", "enumerated_states",
+    "formal_membership", "enumerated_roundtrip", "image_sets",
+    "distinct_actual_profiles", "D16_conditions", "empty_endpoint_branches",
+    "empty_realizations",
+})
+assert REQUIRED_PR6_KEYS <= set(pr6_counts.keys())
+assert all(pr6_counts[k] > 0 for k in REQUIRED_PR6_KEYS)
+
+PR7_KEYS = frozenset({
+    "tail_q", "collapse_controls", "target_controls", "collapsed_profiles",
+    "saturation_endpoints", "saturation_q", "saturation_no_product",
+    "saturation_empty_factor", "saturation_product", "periodic_saturation",
+    "unsaturated_control", "first_product_fiber", "pair_push", "empty_products",
+    "old_archives", "negative_inputs", "unselected_parents", "pair_suffix",
+    "pullback_encoding", "mixed_summary", "mixed_q", "strict_failures",
+    "D15_fiber", "D15_q", "D10_control", "U_rule_push", "J_positive",
+    "J_fiber", "U_size_rule", "global_rule", "same_local_rows",
+    "q_only_control", "image_roundtrip", "enumerated_states",
+    "formal_membership", "enumerated_roundtrip", "image_sets",
+    "distinct_actual_profiles", "D16_conditions", "empty_endpoint_branches",
+    "empty_realizations",
+})
+pr7_counts = {name: 0 for name in PR7_KEYS}
+assert PR7_KEYS <= set(pr7_counts.keys())
+
+def pr7_hit(name, amount=1):
+    assert name in PR7_KEYS
+    pr7_counts[name] += amount
+
+# Copy-language q checks on Tail families and directed periodic controls.
+for pr7_B, pr7_c in pr6_tails[:3]:
+    pr7_x = pr5_cases[0]
+    assert q(pr6_expression(pr7_x, pr7_B, pr7_c - 1)) == q(pr5_region(pr7_x, pr7_B))
+    pr7_hit("tail_q")
+for pr7_B, pr7_p, pr7_t, pr7_tt in pr6_controls:
+    pr7_xs = [replace(unit_at(pr7_s), e={
+        e: (n, pr7_p, s, r) for e, (n, p, s, r) in unit_at(pr7_s).e.items()
+    }) for pr7_s in (pr7_t, pr7_tt)]
+    assert tuple(q(mul(pr7_x, pr3_U0)) for pr7_x in pr7_xs) == (1, 1)
+    pr7_hit("collapse_controls")
+    assert tuple(q(pr5_region(pr7_x, pr7_B)) for pr7_x in pr7_xs) == (1, 0)
+    pr7_hit("target_controls")
+    assert pr4_profile(mul(pr7_xs[0], pr3_U0)) == pr4_profile(mul(pr7_xs[1], pr3_U0))
+    pr7_hit("collapsed_profiles")
+
+# The same saturated witness pair is used for all three factor cases.
+pr7_prefix = [("FQ", {(origin, 1, pr3_l0, 0)})]
+for pr7_factor, pr7_name in ((None, "saturation_no_product"),
+                              (empty, "saturation_empty_factor"),
+                              (unit_at(-4), "saturation_product")):
+    pr7_sat_inputs = pr6_saturated(pr7_prefix, pr7_factor, origin)
+    assert theta(pr7_sat_inputs[0])[1:3] == theta(pr7_sat_inputs[1])[1:3]
+    pr7_hit("saturation_endpoints")
+    assert q(pr7_sat_inputs[0]) == q(pr7_sat_inputs[1])
+    pr7_hit("saturation_q")
+    pr7_hit(pr7_name)
+pr7_periodic = pr6_sat
+assert tuple(q(pr3_causal_filter(x, pr6_even_Q, True)) for x in pr7_periodic) == (1, 1)
+pr7_hit("periodic_saturation")
+assert tuple(q(pr3_causal_filter(replace(x, o=frozenset()), pr6_even_Q, True))
+             for x in pr7_periodic) == (1, 0)
+pr7_hit("unsaturated_control")
+assert pr5_summary(mul(pr7_periodic[0], pr3_U0)) == pr5_summary(mul(pr7_periodic[1], pr3_U0))
+pr7_hit("first_product_fiber")
+
+# Full ordered pair push, including empty/background/negative/unselected cases.
+pr7_P = pr5_all
+pr7_pair_rich = pr6_pair(pr6_X, pr3_U0, pr7_P)
+pr7_pair_expected = pr6_push(pr4_profile(pr6_X), pr4_profile(pr3_U0),
+                             lambda row, other: (row[0], other[0]) in pr7_P)
+assert pr4_profile(pr7_pair_rich) == pr7_pair_expected
+pr7_hit("pair_push")
+pr7_empty_pair = restricted_mul(empty, pr3_U0, lambda e, f: True)
+assert not pr7_empty_pair.w and q(pr7_empty_pair) == 0
+pr7_hit("empty_products")
+assert old.e.keys() - old.w
+pr7_hit("old_archives")
+assert any(t < 0 for t, p, s, r in unit_at(-1).e.values())
+pr7_hit("negative_inputs")
+assert any(e not in pr6_X.a for e in pr6_X.w)
+pr7_hit("unselected_parents")
+pr7_suffix_rich = pr5_rich_step(pr7_pair_rich, ("N",))
+pr7_suffix_state = pr5_summary_step(pr5_summary(pr6_X), ("N",))
+assert pr5_summary(pr7_suffix_rich) == pr7_suffix_state
+pr7_hit("pair_suffix")
+
+# Pullback encoding and mixed strict propagation.
+pr7_lift = frozenset(((a[3], a[0]), (b[3], b[0]))
+                      for a in pr7_P for b in pr7_P)
+pr7_lifted = pr6_pair(pr6_X, pr3_U0, pr7_lift)
+assert pr5_rich_bytes(pr7_lifted) == pr5_rich_bytes(pr7_pair_rich)
+pr7_hit("pullback_encoding")
+pr7_step = ("FQ", pr5_Qpositive)
+pr7_rich_mixed = pr5_rich_step(pr6_X, pr7_step)
+pr7_state_mixed = pr5_summary_step(pr5_summary(pr6_X), pr7_step)
+assert pr5_summary(pr7_rich_mixed) == pr7_state_mixed
+assert q(pr7_rich_mixed) == pr5_summary_q(pr7_state_mixed)
+pr7_hit("mixed_summary")
+pr7_hit("mixed_q")
+try:
+    temporal(unit_at(0), unit_at(0))
+except ValueError:
+    pr7_hit("strict_failures")
+else:
+    raise AssertionError("strict failure was not propagated")
+
+# D15/D10 controls and the U/J descent comparisons.
+assert pr5_summary(pr6_X) == pr5_summary(pr6_Y)
+pr7_hit("D15_fiber")
+assert (q(pr6_D(pr6_X)), q(pr6_D(pr6_Y))) == (1, 2)
+pr7_hit("D15_q")
+assert (q(pr6_D(pr3_d5x)), q(pr6_D(pr3_d5y))) == (2, 2)
+pr7_hit("D10_control")
+pr7_Q = frozenset({pr3_alpha(pr6_X, "b1", True)})
+pr7_rule = lambda e, f: any(a in pr7_Q for a in pr3_U(pr6_X, e, True))
+pr7_direct = restricted_mul(pr6_X, pr3_U0, pr7_rule)
+pr7_push = pr6_push(pr4_profile(pr6_X), pr4_profile(pr3_U0),
+                    lambda row, other: any(a in pr7_Q for a in row[2]))
+assert pr4_profile(pr7_direct) == pr7_push
+pr7_hit("U_rule_push")
+assert pr6_J(pr6_X, pr3_U0, pr7_rule) == {
+    a: n for (a, b, U), n in pr7_push.items() if b
+}
+pr7_hit("J_positive")
+assert pr6_J(pr6_X, pr3_U0, pr7_rule) == pr6_J(pr6_Y, pr3_U0,
+                                                  lambda e, f: any(
+                                                      a in pr7_Q for a in pr3_U(pr6_Y, e, True)))
+pr7_hit("J_fiber")
+pr7_size_rule = lambda e, f: len(pr3_U(pr6_X, e, True)) > 1
+assert pr4_profile(restricted_mul(pr6_X, pr3_U0, pr7_size_rule)) == pr6_push(
+    pr4_profile(pr6_X), pr4_profile(pr3_U0), lambda row, other: len(row[2]) > 1)
+pr7_hit("U_size_rule")
+pr7_global_rule = lambda e, f: (len(pr6_X.w) // 2) % 2
+assert pr4_profile(restricted_mul(pr6_X, pr3_U0, pr7_global_rule)) == pr6_push(
+    pr4_profile(pr6_X), pr4_profile(pr3_U0),
+    lambda row, other: (len(pr6_X.w) // 2) % 2)
+pr7_hit("global_rule")
+assert set(pr4_profile(pr3_U0)) == set(pr4_profile(add(pr3_U0, pr3_U0)))
+pr7_hit("same_local_rows")
+assert tuple(q(z) for z in pr6_q_only) == (1, 1)
+pr7_hit("q_only_control")
+
+# Proposition 57 image round-trip and a finite 2x2 D10 orbit enumeration.
+pr7_a_pos = (origin, 1, pr3_l0, 0)
+pr7_a_neg = (origin, -1, pr3_l0, 0)
+pr7_g = {(pr7_a_pos, 1, frozenset({pr7_a_pos})): 1,
+         (pr7_a_neg, 0, frozenset({pr7_a_neg})): -1}
+assert pr5_summary(pr6_realize(pr7_g, 0, 0))[0] == pr7_g
+pr7_hit("image_roundtrip")
+pr7_mats = []
+for pr7_bits in product((0, 1), repeat=4):
+    pr7_matrix = (pr7_bits[:2], pr7_bits[2:])
+    if all(any(row) for row in pr7_matrix):
+        pr7_mats.append(pr7_matrix)
+assert len(pr7_mats) == 9
+pr7_hit("enumerated_states")
+def pr7_orbit(matrix):
+    return {
+        tuple(tuple(matrix[rows[i]][cols[j]] for j in range(2)) for i in range(2))
+        for rows in ((0, 1), (1, 0))
+        for cols in ((0, 1), (1, 0))
+    }
+pr7_orbits, pr7_seen = [], set()
+for pr7_matrix in pr7_mats:
+    if pr7_matrix in pr7_seen:
+        continue
+    pr7_orbit0 = pr7_orbit(pr7_matrix)
+    pr7_seen |= pr7_orbit0
+    pr7_orbits.append(pr7_orbit0)
+assert len(pr7_orbits) == 4
+assert all(all(any(row) for row in matrix) for orb in pr7_orbits for matrix in orb)
+pr7_hit("formal_membership")
+assert sum(len(orb) for orb in pr7_orbits) == 9
+pr7_hit("enumerated_roundtrip")
+assert len(pr7_seen) == 9
+pr7_hit("image_sets")
+assert len({frozenset(orb) for orb in pr7_orbits}) == 4
+pr7_hit("distinct_actual_profiles")
+
+pr7_D16 = {(pr7_a_pos, 1, frozenset({pr7_a_pos, (origin, 1, pr3_l0, 1)})): 1,
+           ((origin, 1, pr3_l0, 1), 1, frozenset({(origin, 1, pr3_l0, 1),
+                                                  (origin, 1, pr3_l0, 2)})): 1,
+           ((origin, 1, pr3_l0, 2), 0, frozenset({(origin, 1, pr3_l0, 2)})): -2}
+assert pr6_conditions(pr7_D16, 0, 2) == (True, True, True, False, True)
+pr7_hit("D16_conditions")
+for pr7_m, pr7_M, pr7_ok in ((None, None, True), (-2, -2, True),
+                              (-3, 4, True), (None, 0, False),
+                              (0, None, False), (1, 0, False)):
+    assert all(pr6_conditions({}, pr7_m, pr7_M)) == pr7_ok
+    pr7_hit("empty_endpoint_branches")
+    if pr7_ok:
+        assert pr5_summary(pr6_realize({}, pr7_m, pr7_M)) == ({}, pr7_m, pr7_M)
+        pr7_hit("empty_realizations")
+
+assert PR7_KEYS <= set(pr7_counts.keys())
+assert all(pr7_counts[k] > 0 for k in PR7_KEYS)
+print("pr7_copy_expressibility: " + " ".join(
+    f"{name}={pr7_counts[name]}" for name in sorted(PR7_KEYS)
+) + " required_pr6_keys=41 required_pr6_positive=1")
+
 print("ALL_FINITE_CHECKS_PASSED")
 ```
 
