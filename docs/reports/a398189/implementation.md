@@ -60,3 +60,8 @@ lean-report、emit、Scribe 内容检查及 freeze 收据。
 检索更正：英文 `"truncated exponential" language:Lean` 实际 total_count=1，前段写0是并行结果到达前的记录错误。
 命中 `kim-em/hex-dev/HexTruncatedSeriesMathlib/Newton.lean` 的 `ofPowerSeries_exp`，已读声明及上下文；
 它陈述形式幂级数截断与可执行 exponential 的交换，不是整数截断和抵消/估值公式。
+
+第二个已编译单元：`val_mod`、`odd_four`、`odd_pow`、`large_table` 全部 EXIT=0。
+`odd_pow` 直接使用 Mathlib `pow_eq_pow_mod`，未重建已有周期接口。
+`large_table` 为私有有限环引理，`decide +kernel` 经 kernel 归约，不用 native_decide；尚须全称提升。
+当前 Lean 源同步保留这些单元；无首次冻结，最终目标仍待完成。
