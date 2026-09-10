@@ -23,8 +23,7 @@ def file_digest(path):
 
 def fingerprint(repository):
     paths = ["Census/structure.lean", "LeanInformationAudit/Census/StructureReader.lean",
-             "LeanInformationAudit/DeclarationDependencies.lean", "LeanInformationAudit/NameWire.lean",
-             "Census/Structure/sources.py"]
+             "Inspector.lean", "Census/Structure/sources.py"]
     return digest([(p, file_digest(repository / "tools/lean-inspector" / p)) for p in paths] +
                   [("toolchain", (repository / "lean-toolchain").read_text())])
 
@@ -142,28 +141,11 @@ def split_summaries(source, plan, store, libraries):
     return stats
 
 
-def structured_name_key(value):
-    """Use the inspector's Name-key spelling for detached NameWire constructors.
-
-    This converts names only; statement identities are supplied by the existing
-    inspector subprocess and materials compactor through the census inventory.
-    """
-    if value == ["anonymous"]:
-        return "n0"
-    tag, parent, part = value
-    if tag == "str" and isinstance(part, str):
-        return f"ns({structured_name_key(parent)},{len(part.encode('utf-8'))}:{part})"
-    if tag == "num" and type(part) is int and part >= 0:
-        return f"nn({structured_name_key(parent)},{part})"
-    raise ValueError("invalid structured Lean name")
-
-
 def pack_declaration(store, module, row, library, stats):
     stats["packed_declarations"] += 1
-    name = structured_name_key(row["name"])
+    name = row["name"]
     if library == "repository":
-        values = None if row["value"] is None else [structured_name_key(n) for n in row["value"]]
-        store.declaration(module, name, row["kind"], values, [structured_name_key(n) for n in row["type"]])
+        store.declaration(module, name, row["kind"], row["value"], row["type"])
         stats["value_walks"] += row["value"] is not None
         stats["type_walks"] += 1
         stats["value_name_incidences"] += len(row["value"] or [])

@@ -23,11 +23,11 @@ class StructureSourceTests(unittest.TestCase):
             plans = part_plan([["A", ["base", "server", "private"]]], hashes, "reader", root, "bodies")
             records = [
                 {"module": "A", "part": "base", "imports": []},
-                {"name": ["str", ["anonymous"], "h"], "kind": "opaque", "value": None, "type": []},
+                {"name": name_key("h"), "kind": "opaque", "value": None, "type": []},
                 {"module": "A", "part": "server", "imports": []},
                 {"module": "A", "part": "private", "imports": []},
-                {"name": ["str", ["anonymous"], "h"], "kind": "opaque",
-                 "value": [["str", ["anonymous"], "a"]], "type": []}]
+                {"name": name_key("h"), "kind": "opaque",
+                 "value": [name_key("a")], "type": []}]
             from streaming import canonical
             raw.write_bytes(b"".join(canonical(r) for r in records))
             stores = [Store(root / (n + ".sqlite")) for n in ["stream", "restore"]]
@@ -48,8 +48,8 @@ class StructureSourceTests(unittest.TestCase):
             store = Store(pathlib.Path(scratch) / "names.sqlite")
             try:
                 store.module("A", [], "repository")
-                row = {"name": ["num", ["str", ["anonymous"], "é"], 7], "kind": "theorem",
-                       "value": [["str", ["anonymous"], "7"]], "type": [["anonymous"]]}
+                row = {"name": "nn(ns(n0,2:é),7)", "kind": "theorem",
+                       "value": ["ns(n0,1:7)"], "type": ["n0"]}
                 stats = dict(packed_declarations=0, value_walks=0, type_walks=0,
                              value_name_incidences=0, type_name_incidences=0)
                 pack_declaration(store, "A", row, "repository", stats)

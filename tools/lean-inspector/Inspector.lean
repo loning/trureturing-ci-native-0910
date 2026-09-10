@@ -121,18 +121,19 @@ def sortedUnique (values : Array String) : Array String :=
   (values.qsort (· < ·)).foldl (init := #[]) fun result value =>
     if result.back? == some value then result else result.push value
 
-/-- The constants whose axiom closures a declaration's own closure is the union
-of. Mirrors the per-kind traversal of `Lean.CollectAxioms.collect`: bodies (type
-and, where present, value/constructors) contribute their used constants. -/
-def declarationDependencies : ConstantInfo → Array Name
-  | .axiomInfo info => info.type.getUsedConstants
-  | .defnInfo info => info.type.getUsedConstants ++ info.value.getUsedConstants
-  | .thmInfo info => info.type.getUsedConstants ++ info.value.getUsedConstants
-  | .opaqueInfo info => info.type.getUsedConstants ++ info.value.getUsedConstants
-  | .quotInfo _ => #[]
-  | .ctorInfo info => info.type.getUsedConstants
-  | .recInfo info => info.type.getUsedConstants
-  | .inductInfo info => info.type.getUsedConstants ++ info.ctors.toArray
+/-- Single owner of dependency semantics for both axiom closure and structural
+extraction. Keep the type/constructor and optional value halves separate. -/
+def declarationDependencyParts (info : ConstantInfo) : Array Name × Option (Array Name) :=
+  let types := match info with
+    | .quotInfo _ => #[]
+    | .inductInfo value => value.type.getUsedConstants ++ value.ctors.toArray
+    | value => value.type.getUsedConstants
+  (types, (info.value? (allowOpaque := true)).map Expr.getUsedConstants)
+
+/-- The union consumed by the report's transitive axiom traversal. -/
+def declarationDependencies (info : ConstantInfo) : Array Name :=
+  let (types, values) := declarationDependencyParts info
+  types ++ values.getD #[]
 
 /-- Report-shared state for axiom-closure collection. `closure` memoizes the final
 sorted axiom set of every constant once its strongly connected component has been
@@ -401,7 +402,48 @@ private unsafe def statementIdentities (manifest request : String) : IO Unit := 
     for region in regions.reverse do region.free
     out.flush
 
+/-- Detach one module's used constants before freeing its compacted regions.
+Names use Inspector's existing constructor-preserving encoding. -/
+@[noinline] private unsafe def emitDependencies (moduleName : String) (paths : Array String)
+    (bodies : Bool) (out : IO.FS.Stream) : IO (Array CompactedRegion) := do
+  let parts ← readModuleDataParts (paths.map System.FilePath.mk)
+  let mut regions := #[]
+  for h : i in [:parts.size] do
+    let (data, region) := parts[i]
+    out.putStrLn (Json.mkObj [("module", toJson moduleName),
+      ("part", toJson (#["base", "server", "private"][i]!)),
+      ("imports", toJson (data.imports.map (·.module.toString)))]).compress
+    if bodies then
+      for info in data.constants do
+        let (types, values) := declarationDependencyParts info
+        out.putStrLn (Json.mkObj [("name", toJson (encodeName info.name)),
+          ("kind", toJson (kindOf info)),
+          ("value", toJson (values.map (·.map encodeName))),
+          ("type", toJson (types.map encodeName))]).compress
+    else
+      for name in data.constNames do
+        out.putStrLn (Json.mkObj [("name", toJson (encodeName name))]).compress
+    regions := regions.push region
+  return regions
+
+private unsafe def dependencies (manifest destination mode : String) : IO Unit := do
+  unless mode == "bodies" || mode == "names" do
+    throw <| IO.userError "expected bodies or names"
+  let modules ← IO.ofExcept <| (Json.parse (← IO.FS.readFile manifest) >>= fromJson?
+    (α := Array (String × Array String)))
+  let out ← if destination == "-" then IO.getStdout else
+    IO.FS.Stream.ofHandle <$> IO.FS.Handle.mk destination .write
+  for (moduleName, paths) in modules do
+    unless paths.size ≥ 1 && paths.size ≤ 3 do
+      throw <| IO.userError "missing_olean_part"
+    let regions ← emitDependencies moduleName paths (mode == "bodies") out
+    for region in regions.reverse do region.free
+    out.flush
+
 unsafe def main (args : List String) : IO Unit := do
+  if let ["--dependencies", manifest, destination, mode] := args then
+    dependencies manifest destination mode
+    return
   if let ["--statement-identities", manifest, request] := args then
     statementIdentities manifest request
     return
