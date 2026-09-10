@@ -1,6 +1,7 @@
 """Compiled proof-term fixtures for the native structural reader."""
 
 import json
+import unittest
 
 from native import build
 from negative_fixtures import lean_env, name_key
@@ -11,6 +12,12 @@ from Structure.store import Store
 
 
 def check_structure(repository, directory):
+    # These subprocess fixtures need the canonical warm build, unlike the
+    # Python-only tests discovered before cache ensure in the outer runner.
+    from Structure.inspector_fixtures import StructureInspectorTests
+    suite = unittest.defaultTestLoader.loadTestsFromTestCase(StructureInspectorTests)
+    if not unittest.TextTestRunner().run(suite).wasSuccessful():
+        raise AssertionError("inspector dependency fixtures")
     folder = directory / "structure"
     folder.mkdir(parents=True, exist_ok=True)
     env = lean_env(repository)
