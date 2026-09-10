@@ -5951,7 +5951,7 @@ BASE=17dcccc461dd1f0ebb584bdfce578c0c3525f25c make ingest SOURCE="contextual-spa
 BASE=a3da3ff01faf5dc562f119227f53e17a668b1f55 make ingest SOURCE="contextual-spacetime-arithmetic docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md"
 ```
 
-该命令退出码为 **0**，计数为 `residual_open_added=6 skipped_existing=322 coarse_fallbacks=0 open_genres=0 cas_objects_written=6 ledger_changed=true`。随后按要求在正文最后一次改动之后再次执行同一命令，退出码为 **0**，计数为 `residual_open_added=1 skipped_existing=327 coarse_fallbacks=0 open_genres=0 cas_objects_written=1 ledger_changed=true`；该次执行是最终检查点。
+该命令退出码为 **0**，计数为 `residual_open_added=6 skipped_existing=322 coarse_fallbacks=0 open_genres=0 cas_objects_written=6 ledger_changed=true`。在 §41 的 D17 细节补充后，按要求再次执行同一命令，退出码为 **0**，计数为 `residual_open_added=0 skipped_existing=328 coarse_fallbacks=0 open_genres=0 cas_objects_written=0 ledger_changed=false`；该次执行是 D17 修改后的最终检查点。
 
 ### 42.4 git 读数与边界
 
