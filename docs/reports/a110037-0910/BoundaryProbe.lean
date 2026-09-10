@@ -34,9 +34,17 @@ private theorem initial_counts :
     (List.range 13).map (fun n => (nonsquashingDistinctPartitions n).card) =
       [1, 1, 1, 2, 2, 3, 4, 5, 6, 7, 9, 10, 13] := by decide
 
+private theorem paperfold_small (n : ℕ) (hn : n ≤ 16) :
+    paperfoldVariant n =
+      [0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1].getD n 0 := by
+  interval_cases n <;> (rw [paperfoldVariant]; norm_num)
+  rw [paperfoldVariant]
+  norm_num
+
 private theorem initial_paperfold :
     (List.range 16).map (fun n => paperfoldVariant (n + 1)) =
-      [0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1] := by decide
+      [0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1] := by
+  norm_num [List.range_succ, paperfold_small]
 
 /-- Literal Corollary 4 (21), with the printed unrestricted odd-index quantifier. -/
 def printedOddRule : Prop :=
@@ -56,11 +64,17 @@ private theorem printed_odd_rule_false : ¬ printedOddRule := by
 
 private theorem target_at_two :
     (-1 : ℤ) ^ (2 / 2 : ℕ) * ((nonsquashingDistinctPartitions 2).card % 2 : ℕ) =
-      (paperfoldVariant 2 : ℤ) - paperfoldVariant 3 := by decide
+      (paperfoldVariant 2 : ℤ) - paperfoldVariant 3 := by
+  have h : (nonsquashingDistinctPartitions 2).card = 1 := by decide
+  rw [paperfold_small 2 (by decide), paperfold_small 3 (by decide)]
+  norm_num [h]
 
 private theorem target_at_three :
     (-1 : ℤ) ^ (3 / 2 : ℕ) * ((nonsquashingDistinctPartitions 3).card % 2 : ℕ) =
-      (paperfoldVariant 3 : ℤ) - paperfoldVariant 4 := by decide
+      (paperfoldVariant 3 : ℤ) - paperfoldVariant 4 := by
+  have h : (nonsquashingDistinctPartitions 3).card = 2 := by decide
+  rw [paperfold_small 3 (by decide), paperfold_small 4 (by decide)]
+  norm_num [h]
 
 #print axioms b_six
 #print axioms b_ten
