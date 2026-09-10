@@ -156,6 +156,18 @@ class PipelineTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "certified_complete"):
             self.program.validate_summary(summary, requested=1, accounted=1)
 
+    def test_publication_diagnostic_uses_the_result(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = pathlib.Path(temporary) / "publication.json"
+            self.assertEqual(self.program.publication_result(None), {"status": "not_requested"})
+            value = {"certificate": {"name": "CensusRun.accountingCertificate", "axioms": ["propext"]},
+                     "query_receipt_digest": "sha256:" + "c" * 64}
+            path.write_text(json.dumps(value))
+            result = self.program.publication_result(path)
+            self.assertEqual(result["status"], "published")
+            self.assertEqual(result["certificate"], value["certificate"])
+            self.assertEqual(result["query_receipt_digest"], value["query_receipt_digest"])
+
 
 if __name__ == "__main__":
     unittest.main()

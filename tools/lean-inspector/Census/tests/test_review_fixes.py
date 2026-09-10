@@ -145,6 +145,20 @@ class ReviewFixTests(unittest.TestCase):
         self.assertLessEqual(work[1], 2 * work[0], "compactRowsLinearDecoding")
         self.assertLessEqual(work[2], 2 * work[1], "compactRowsLinearDecoding")
 
+    def test_pipeline_prepares_without_reading_rows(self):
+        with tempfile.TemporaryDirectory() as temp:
+            directory = pathlib.Path(temp)
+            report, rows, receipt, _ = fixture(directory)
+            original_open = pathlib.Path.open
+
+            def guarded_open(path, *args, **kwargs):
+                self.assertNotIn(path.name, ["rows.jsonl", "census.json"], "publicationReadsCompactRows")
+                return original_open(path, *args, **kwargs)
+
+            with patch.object(pathlib.Path, "open", guarded_open):
+                manifest.prepare(directory / "out", report, rows, receipt, "Fixture")
+            self.assertIn(" generate ", (directory / "out/CensusPublish/Root.lean").read_text())
+
     def test_inventory_duplicate_before_malformed_report_entrypoint(self):
         with tempfile.TemporaryDirectory() as temp:
             directory = pathlib.Path(temp)

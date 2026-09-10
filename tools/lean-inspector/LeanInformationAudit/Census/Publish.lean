@@ -170,27 +170,31 @@ elab "#disposition_census" &"projection" &"root" root:ident &"source" sourcePath
     &"head" head:str &"report_sha256" reportSha:str &"prefix" selectionPrefix:str
     &"manifest" manifestName:ident &"report_keys" reportKeysName:ident &"rows" rowsPath:str
     &"receipt" receiptPath:str &"receipt_digest" receiptDigest:str
+    generate:(" generate")?
     &"certificate" certificate:ident " output " outputPath:str : command => do
   let destination := outputPath.getString
-  phase destination "manifest_binding"
+  phase destination "report_binding"
   let bytes ← IO.FS.readFile reportPath.getString
   let report ← parseReportDataIO bytes
   let selected ← ofExcept <| selectReport report bytes selectionPrefix.getString
   let manifestName := manifestName.getId.eraseMacroScopes
   let reportKeysName := reportKeysName.getId.eraseMacroScopes
+  phase destination "handoff_read_and_emission"
+  let source := System.FilePath.mk sourcePath.getString
   let rows ← CensusTransport.readHandoff rowsPath.getString receiptPath.getString receiptDigest.getString report
+    (if generate.isSome then some (source.parent.get!.parent.get!.toString,
+      reportPath.getString, selectionPrefix.getString) else none)
   ofExcept <| checkIdentityInputs report.headSha report.theorems rows
   ofExcept <| checkReportBinding head.getString reportSha.getString report
-  phase destination "certificate_compile_kernel"
+  phase destination "bucket_build_and_assembly"
   let options := ((← getOptions).erase `maxRecDepth).setBool `Elab.async false
   let input ← IO.FS.readFile sourcePath.getString
-  let source := System.FilePath.mk sourcePath.getString
   let checkedPath := source.withExtension "checked.lean"
   let certificateName := (← getCurrNamespace) ++ certificate.getId.eraseMacroScopes
   let checkedInput := certificateSource input (manifestName.appendAfter "Keys") reportKeysName
     certificateName selected.theorems.size
   let staged ← elaborateBoundSource input checkedInput source checkedPath root.getId options fun env => do
-    phase destination "manifest_binding"
+    phase destination "boundary_and_binding"
     liftTermElabM <| checkFinalEnvironment env (some root.getId)
     withEnv env <| liftTermElabM <| withOptions (fun _ => options) do
       bindEmittedManifest selected root.getId rows manifestName reportKeysName
@@ -201,7 +205,7 @@ elab "#disposition_census" &"projection" &"root" root:ident &"source" sourcePath
     ("imports", toJson imports), ("transitive_imports", toJson closure)]).pretty ++ "\n")
   let ids := mkConst (manifestName.appendAfter "Keys")
   let reportKeysExpr := mkConst reportKeysName
-  phase destination "certificate_compile_kernel"
+  phase destination "axioms"
   let proposition ← withEnv staged <| liftTermElabM do
     let expected ← mkAppM ``CensusKeyManifest.Certificate #[ids, toExpr selected.theorems.size, reportKeysExpr]
     let actual ← getConstInfo certificateName
@@ -216,12 +220,13 @@ elab "#disposition_census" &"projection" &"root" root:ident &"source" sourcePath
     ("type", toJson typeText), ("axioms", toJson (axioms.map Name.toString))]
   copyFinalArtifacts checkedPath (System.FilePath.mk sourcePath.getString) root.getId
   if ← (System.FilePath.mk destination).pathExists then
-    let same ← IO.Process.output { cmd := "/bin/test", args := #[reportPath.getString, "-ef", destination] }
-    unless same.exitCode == 1 do throwError "census projection: output aliases report"
+    for authority in [reportPath.getString, rowsPath.getString, receiptPath.getString] do
+      let same ← IO.Process.output { cmd := "/bin/test", args := #[authority, "-ef", destination] }
+      unless same.exitCode == 1 do throwError "census projection: output aliases handoff authority"
   phase destination "json_emission"
   CensusTransport.publish destination <| Json.mkObj [
     ("certificate", certificateJson), ("query_receipt_digest", toJson receiptDigest.getString)]
-  phase destination "certificate_compile_kernel"
+  phase destination "axioms"
   withEnv staged <| elabCommand (← `(command| #print axioms $(mkIdent certificateName)))
 
 end LeanInformationAudit.CensusProjection

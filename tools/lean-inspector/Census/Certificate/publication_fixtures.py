@@ -111,7 +111,9 @@ def check_publication_negatives(repository, directory, only=None):
     def bucket_change(transform, bundle=None):
         return change(original if bundle is None else bundle, "CensusRun.Range8_0", transform)
     driver = root / "CensusPublish/Root.lean"
-    original_driver = driver.read_text()
+    # These attacks supply edited reviewable sources. The production generate
+    # mode emits its sources during the single guarded compact-row handoff.
+    original_driver = driver.read_text().replace(" generate certificate ", " certificate ")
     response = root / "rows.jsonl"
     receipt_path = root / "receipt.json"
     receipt_bytes = receipt_path.read_bytes()
