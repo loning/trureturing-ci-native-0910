@@ -233,3 +233,25 @@ Golden/Frozen/state/D5/S1/Recurrence/Partitions/NonsquashingCounting.lean.json�
 NonsquashingCounting 模块 pin=sha256:978be9cb51fc05c6ba2da4932ca0f8f598d2d56690823b89f7d7057488275680；Freeze event=sha256:6fae1b25abf98cb5e6448b5454008d2fc78cd5094cd258d5600dd872f0af17a0。
 
 NonsquashingPaperfold 模块 pin=sha256:ffa0bdff8e180811684e2595da191b7be46d327af4a4f04b3a1999756be53a26；Freeze event=sha256:133c77e3702a3a8e5304461bb0802cc516baf5a345c21e32e19fbedb789f4c59。
+
+## 本地交付检查已完成
+
+bash tools/scripts/workflow/scribe-content-checks.sh
+.lake/build/stratalint/raw-lean-report.json ""
+82938786158c163b50350c14c948e63df61107a8：EXIT=0 / 23.757865秒。
+实际执行 describe-report --check、markdown-check（真 KaTeX）；
+markdown: judged=2 formula(s)=7 red=0。
+本 delta 未触及 Golden/Projection 或 Scribe producer，脚本未触发 projections --check；
+不把跳过说成执行过。Library 的在线 DOI OBSERVE 只是离线门的能力边界，
+本题引用的定位事实按前述当场阅读收据提供。完整日志 scribe-content-checks.log。
+
+git diff --check EXIT=0；正式两模块内 sorry/axiom/native_decide 检索零命中
+（rg 的无匹配退出1，非构建错误）。attempt 2 目录相对 dbc4935545b4 无差异。
+最终 diff 为17文件：两依赖模块、四个镜像、两个来源 note、四个冻结工件与
+五个保留的历次实施文件；超过p75=13是同一证明链和历史留存，不拆散数学依赖。
+未改 docs/develop/theory 或 Meta/Digestion。
+
+冻结后合并预检：HEAD=80f0c70f053af033e3ad45ae200c09a1dc56823f，
+origin/dev=c6502d134e1483b4a2142f2781cb65372d7b67a9，
+merge-tree EXIT=0，tree=e45ecc1ff228682863b8061652d02b4a20e9abc1。
+下一步仅开 PR 并等 required-CI 判词；主证明源码自 make lean 成功后未改。
