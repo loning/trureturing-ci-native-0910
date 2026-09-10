@@ -153,3 +153,16 @@
   本模块无长行警告，主定理公理仍仅 propext、Classical.choice、Quot.sound。
 - 再次自查全部 311 行源码：两侧独立对象定义、正性、展开/唯一恢复、lcm 规范化、
   缩放双射和有限基数取和均在实际证明路径内。尚未冻结或开 PR。
+
+## 最终 Lean report 与冻结前复查
+
+- make lean-report EXIT=0，实测 65.367 秒；日志 runner attempt/make-lean-report-final.log。
+  LEAN_CACHE=status:present, method:none, project_olean_state:warm, mathlib_olean_state:warm。
+- 主定理 statement_id=sha256:be6319a9b79b844435ef13c6697b64d6d5349220ef1557392d9a215b6485a67e；
+  公理闭包仅 Classical.choice、Quot.sound、propext。报告同时列出编译器生成的
+  expand.eq_1、constantEqualSumSystemCount.eq_1，它们 include_in_statement=false，
+  不是本席新增的公开数学结论；手写公开 theorem 仍仅 capable_divisor_sum。
+- normalize 的 statement_id=sha256:c27baac5262b322b9b97905fbe74cd8cc67d8280a6a766bb4d3c9eec214206ee。
+  此为私有见证，不作为单独公开/冻结结果。
+- git fetch origin dev 成功，origin/dev 仍为预登记 base 462d0a4368ba5a890c5eab619c82437baa88966f；
+  D5 再查 A383093|A323774|capable.?partition|constant.?equal.?sum，无新增命中。
