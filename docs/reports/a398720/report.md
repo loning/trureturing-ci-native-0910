@@ -136,3 +136,14 @@ utility=none：所有定理均为任意奇数阶的一般组合构造，不属�
   EXIT=0，树 OID 3cb756e1fee26499cd994cf449e1e4e57debec4b，无冲突。
   对该次 origin/dev 的 D5 用 git grep -P 查 spcp_odd_top_weight/A398720/EvenRowsCols
   无命中；未发现并发重复实现。没有迁移或复活 dev 上已删除模块。
+
+## Canonical Lean report
+
+- make lean-report EXIT=0，65.979 秒；delta 计划 changed=0、added=3、recheck=3，
+  含本模块与 donor 缺的两模块，未手搓全库报告。
+- raw report SHA256=d6193c94db65fa5320b029809a4727203f485062f6bf05b4ccf893a965d5e06f。
+  输入地址 182c0d1c84a725c2b2112baca7f34df1125f14db15bdfebac23fe7cabc63970e。
+- make lean 的缓存收据另为 status=present、method=none、stamp_miss=null、
+  project/mathlib 两层 warm；初次播种收据见第 2 批，二者口径不混用。
+- 已开始 make emit。第一次临时 Lean 常量遍历脚本 EXIT=0 但没有输出边，
+  尚不能作为闭包读数，正在核对 ConstantInfo.value? 对 opaque 证明的读取语义。
