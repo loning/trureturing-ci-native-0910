@@ -1,8 +1,17 @@
+/- GID: D5/S1/Recurrence/Partitions/NonsquashingCounting
+   generality: I
+   mirror-B: D5/B/S1/Recurrence/Partitions/NonsquashingCounting
+   mirror-E: none(waiver:unbounded-symbolic-proof)
+   anchors: []
+   utility: none
+   digest: Counting distinct non-squashing partitions by removing the largest part. -/
+
 import Mathlib
 
-namespace A110037Counting
+namespace D5.S1.Recurrence.Partitions.NonsquashingCounting
 open Finset
 
+/-- Distinct positive parts with each part at least the sum of all smaller parts. -/
 def nonsquashingDistinctPartitions (n : ℕ) : Finset (Finset ℕ) :=
   ((Icc 1 n).powerset).filter fun s =>
     s.sum id = n ∧ ∀ p ∈ s, (s.filter (fun q => q < p)).sum id ≤ p
@@ -248,4 +257,4 @@ theorem count_even_step (m : ℕ) (hm : 0 < m) :
 
 #print axioms count_odd
 #print axioms count_even_step
-end A110037Counting
+end D5.S1.Recurrence.Partitions.NonsquashingCounting
