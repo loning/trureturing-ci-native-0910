@@ -65,3 +65,13 @@ lean-report、emit、Scribe 内容检查及 freeze 收据。
 `odd_pow` 直接使用 Mathlib `pow_eq_pow_mod`，未重建已有周期接口。
 `large_table` 为私有有限环引理，`decide +kernel` 经 kernel 归约，不用 native_decide；尚须全称提升。
 当前 Lean 源同步保留这些单元；无首次冻结，最终目标仍待完成。
+
+## 目标证明闭合（正式门之前）
+
+`all_residues` 与 `full_val` 通过，把 m≥6 的六步式与 m<6 的短截断式覆盖全部参数；
+`odd_positive_branches` 同时证明 brief 两分支。热树文件编译 EXIT=0，
+`#print axioms` 仅 `[propext, Classical.choice, Quot.sound]`。
+完整落地门尚未运行，不把此文件级成功称作交付完成。
+正式落点按 route 调整到 `D5/S3/Arith/Congruence/TruncatedExponentialTwoAdic`：
+Congruence 桶原有 Lean 21 / Blueprint 42 文件；Library/Arith 已满48，注记放 ArithSums（原9）。
+原 Arith 平桶的临时未冻结模块移走；未改任何已冻结模块。
