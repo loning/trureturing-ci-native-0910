@@ -5910,3 +5910,49 @@ D10 型机制的短注：取 $E=\Omega$，$r$ 个选中正点 $a@0$（$U=\{a,b\}
 ### 41.7 边界与范围收束
 
 OPEN-COPY 已在原签名和全部平衡输入上结算。引理 5 的多项式结论依赖严格总项；D18 说明删去该域后切片恒等式失效。命题 59 的 $\aleph_0$ 计数使用有限编码与历史同构，不能外推到无限档案。全文没有新增 Lean、axiom、判官或 schema；新推导均标 repo-derived，预期无新外部引用。
+
+<a id="pr7-evidence"></a>
+
+## 42. PR7 产地与核验收据
+
+本批产地三项为：`skill=consensus-rnd:sshx`；思考六席载体见 caller 的 rotation 记录；实施席为 `codex-cli`。评审三席由 caller 另记，本席未代报其判词。形态为 `ingest`；不报告冻结或 absorbed 状态。因 `origin/dev` 在开工后已追加 §§38–40，本批按“当前 dev 最大编号续接”落在 §41–§42；brief 所称 §38–§39 内容对应本批的 §41–§42。
+
+### 42.1 逐节提交与范围
+
+PR7 正文提交为 `6e736baf68`，附录初稿为 `028723247c`，附录修正为 `46e226bd02` 与 `2156d58427`，首次摄入提交为 `5d3b1ab09d`。随后合并最新 `origin/dev` 的提交为 `3ad8df08fb`，合并前 dev SHA 为 `17dcccc461`，合并后 dev SHA 为 `a3da3ff01f`。§1–§40 与顶部导航均未修改；本批只在唯一 Python 块末行打印之前插入 PR7 段，并在文档末尾追加 §41、§42。
+
+### 42.2 附录命令与 stdout
+
+实际执行命令（退出码 **0**，stderr 为空）为：
+
+```sh
+sed -n '/^```python$/,/^```$/p' docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md | sed '1d;$d' | python3 -
+```
+
+PR7 行逐字为：
+
+```text
+pr7_copy_expressibility: D10_control=1 D15_fiber=1 D15_q=1 D16_conditions=1 J_fiber=1 J_positive=1 U_rule_push=1 U_size_rule=1 collapse_controls=4 collapsed_profiles=4 distinct_actual_profiles=1 empty_endpoint_branches=6 empty_products=1 empty_realizations=3 enumerated_roundtrip=1 enumerated_states=1 first_product_fiber=1 formal_membership=1 global_rule=1 image_roundtrip=1 image_sets=1 mixed_q=1 mixed_summary=1 negative_inputs=1 old_archives=1 pair_push=1 pair_suffix=1 periodic_saturation=1 pullback_encoding=1 q_only_control=1 same_local_rows=1 saturation_empty_factor=1 saturation_endpoints=3 saturation_no_product=1 saturation_product=1 saturation_q=3 strict_failures=1 tail_q=3 target_controls=4 unsaturated_control=1 unselected_parents=1 required_pr6_keys=41 required_pr6_positive=1
+```
+
+末行为 `ALL_FINITE_CHECKS_PASSED`。PR7 段首先用 41 个字面键构造 `REQUIRED_PR6_KEYS`，再检查其包含关系与正计数；PR7 自身也先检查字面键集包含，再检查全部计数为正。有限实验覆盖复制项、共同饱和、自乘与非总项反例、2×2 二部图 9 张／4 轨道及命题 59 的孤立档案点机制；有限读数不替代正文全称证明。
+
+### 42.3 ingest 收据
+
+首次摄入命令（合并后 dev 的当时 SHA）为：
+
+```sh
+BASE=17dcccc461dd1f0ebb584bdfce578c0c3525f25c make ingest SOURCE="contextual-spacetime-arithmetic docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md"
+```
+
+退出码为 **0**，计数为 `residual_open_added=49 skipped_existing=306 coarse_fallbacks=0 open_genres=0 cas_objects_written=49 ledger_changed=true`，并由提交 `5d3b1ab09d` 入账。§42 写入后的最终摄入命令与计数将在本节提交后再次运行并以同一形态更新；该最终运行是正文最后一次改动之后的检查点。
+
+### 42.4 git 读数与边界
+
+相对最终合并后的 `origin/dev`，理论卷的差异只有两个纯插入 hunk；最终命令
+
+```sh
+git diff -U0 origin/dev..HEAD -- docs/develop/theory/CONTEXTUAL_SPACETIME_ARITHMETIC.md | grep '^@@'
+```
+
+应输出两个 `@@` 行，分别定位附录 PR7 段与文档末尾追加。允许的新增路径是本卷、`Meta/Digestion/atoms/sha256`、`Meta/Digestion/backfill/contextual-spacetime-arithmetic/residual-open`；不改旧定义、导航或其它理论正文。未完成项为：评审三席判词、CI 与合入仍由 caller 的后续流程负责，本实施席不预报其结果。
