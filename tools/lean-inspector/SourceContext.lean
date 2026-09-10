@@ -34,11 +34,6 @@ partial def strings (stx : Syntax) : Array String :=
   | some s => #[s.trimAscii.toString]
   | none => stx.getArgs.flatMap strings
 
-partial def atoms (stx : Syntax) : Array String :=
-  match stx with
-  | .atom _ s => #[s]
-  | _ => stx.getArgs.flatMap atoms
-
 /- Export nested scope facts by running the actual parser scope operation. Its callback
    observes the inner context; the outer context is never substituted for that reading. -/
 partial def syntaxFacts (stx : Syntax) (c : ParserContext) : Json := Id.run do
@@ -109,22 +104,28 @@ inductive AttributeTokenEffect where
   | unchanged
   | unknown
 
-/- Lean.Meta.mkSimpAttr updates simplifier/simproc extensions. Its core `simp`
-   handler does not register parser tokens, for add, erase, or any attribute scope.
-   Check its identity in the current imported registry. Do not run elabAttr (which
+/- Core `simp` and `instance` update simplifier/simproc and instance extensions,
+   respectively, without registering parser tokens, for add, erase, or any scope.
+   Check their identities in the current imported registry. Do not run elabAttr (which
    expands attribute macros) or apply the handler to unelaborated source targets.
    Other handlers remain unknown; their application time is not an effect guarantee. -/
-def attributeTokenEffect (env : Environment) (stx : Syntax) : AttributeTokenEffect := Id.run do
+def attributeTokenEffect (env : Environment) (stx : Syntax) : IO AttributeTokenEffect := do
   let name? := if stx.isOfKind ``Parser.Command.eraseAttr then
       some stx[1].getId.eraseMacroScopes
     else if stx.isOfKind ``Parser.Term.attrInstance then
       if stx[1].isOfKind ``Parser.Attr.simp then some `simp
+      else if stx[1].isOfKind ``Parser.Attr.instance then some `instance
       else if stx[1].isOfKind ``Parser.Attr.simple then some stx[1][0].getId.eraseMacroScopes
       else none
     else none
   let some name := name? | return .unknown
   let .ok impl := getAttributeImpl env name | return .unknown
-  return if name == `simp && impl.ref == ``Meta.simpExtension then .unchanged else .unknown
+  if name == `simp && impl.ref == ``Meta.simpExtension then return .unchanged
+  -- Init-only sources inherit this builtin handler without importing its defining
+  -- module. Compare the compiler registry identity, not a generated private name.
+  if name == `instance && impl.ref == (← getBuiltinAttributeImpl `instance).ref then
+    return .unchanged
+  return .unknown
 
 /- Bounded declarative token registration. Only the token is projected; the old
    expansion target is neither inspected as executable code nor evaluated. -/
@@ -135,24 +136,26 @@ partial def projectRegistration (cmd : Syntax) (scope? : Option Name := none) : 
   unless [``Parser.Command.mixfix, ``Parser.Command.notation, ``Parser.Command.syntax].contains cmd.getKind do
     if cmd.isOfKind ``Parser.Command.initialize || cmd.getKind.toString.endsWith ".run_cmd" then
       runCommandElabM <| logErrorAt cmd "source context cannot model a dynamic initializer registration effect"
-    else if (strings cmd).contains "='" &&
-      ["Lean.Parser.Command.macro", "Lean.Parser.Command.elab", "Lean.Parser.Command.attribute"].contains cmd.getKind.toString then
+    else if [``Parser.Command.macro, ``Parser.Command.elab].contains cmd.getKind &&
+      (strings cmd[7]).contains "='" then
       runCommandElabM <| logErrorAt cmd "source context cannot model this equality-token registration effect"
     else if cmd.isOfKind ``Parser.Command.attribute then
       runCommandElabM do
         for attr in cmd[2].getSepArgs do
-          match attributeTokenEffect (← getEnv) attr with
+          match ← attributeTokenEffect (← getEnv) attr with
           | .unchanged => pure ()
           | .unknown => logErrorAt attr "source context cannot determine this attribute registration effect"
     else if !(cmd.getKind.toString.startsWith "Lean.Parser.Command.") then
       runCommandElabM <| logErrorAt cmd "source context cannot determine this custom command registration effect"
     return
-  unless (strings cmd).contains "='" do return
-  let words := atoms cmd
+  -- Parser.Syntax gives these commands a declaration-item field at index 7
+  -- and attrKind at index 2. Expansion terms, attributes and priority expressions
+  -- are separate fields; their strings/atoms are not registration facts.
+  unless (strings cmd[7]).contains "='" do return
   runCommandElabM do
     let ns ← getCurrNamespace
-    let kind := if words.contains "local" then AttributeKind.local
-      else if scope?.isSome || words.contains "scoped" then AttributeKind.scoped else AttributeKind.global
+    let kind ← if scope?.isSome then pure AttributeKind.scoped
+      else liftMacroM <| toAttributeKind cmd[2]
     modifyEnv fun env => parserExtension.addCore env (.token "='") kind (scope?.getD ns)
 
 partial def scan (project : Bool) (rows : Array Json := #[]) (commands : Array Syntax := #[]) :
