@@ -2430,6 +2430,286 @@ print("pr5_mixed_closure: " + " ".join(f"{name}={value}" for name, value in pr5_
       + " P_empty_Omega=4 P_empty_Gamma=nonempty P_empty_N_positive=2 wrong_deleted_rows=0"
       + " D13=0,0,1,1/0,1,1,2 D14=0,0,1,1,1,1,2,2/0,1,1,1,2,2,2,3 bad_k=0,1")
 
+# PR6: fixed seed; finite experiments supplement the arbitrary-context proofs.
+pr6_rng = pr3_Random(2026091006)
+pr6_counts = {}
+
+def pr6_equal(actual, expected, name):
+    assert pr3_bytes(actual) == pr3_bytes(expected), (name, actual, expected)
+    pr6_counts[name] = pr6_counts.get(name, 0) + 1
+
+def pr6_pair(x, y, P):
+    return restricted_mul(x, y, lambda e, f:
+        (pr3_alpha(x, e, True), pr3_alpha(y, f, True)) in P)
+
+def pr6_push(g, gg, rule):
+    out = {}
+    for row, value in g.items():
+        for other, coefficient in gg.items():
+            a = pr4_diamond(row[0], other[0])
+            target = (a, row[1]*other[1]*int(rule(row, other)), frozenset({a}))
+            out[target] = out.get(target, 0) + value*coefficient
+    return sparse(out)
+
+def pr6_step(state, step, rich=False):
+    if state is FAIL or step[0] != "MAP":
+        return (pr5_rich_step if rich else pr5_summary_step)(state, step)
+    _, slot, parameter, P = step
+    if rich:
+        x, y = (state, parameter) if slot == 0 else (parameter, state)
+        return pr6_pair(x, y, P)
+    x, y = (state, pr5_summary(parameter)) if slot == 0 else (pr5_summary(parameter), state)
+    g = pr6_push(x[0], y[0], lambda row, other: (row[0], other[0]) in P)
+    return g, lo(x[1], y[1]), hi(x[2], y[2], gamma(pr4_support_time(x[0]), pr4_support_time(y[0])))
+
+def pr6_expression(x, B, k):
+    Q = pr5_Set(lambda a: a[3] >= k+1 and (a[3]-1, a[0]) in B)
+    return pr3_causal_filter(mul(x, time_shift(pr3_U0, k)), Q, True)
+
+# Tail predicates are fixed before traversing the 64 random and 16 directed inputs.
+pr6_tails = [(pr5_gap2, 1), (pr5_empty, -3), (pr5_all, 2)]
+for pr6_i in range(24):
+    pr6_c = pr6_rng.randrange(-6, 5)
+    pr6_S = frozenset(p for p in (origin, v, h) if pr6_rng.randrange(2))
+    pr6_d = pr6_rng.randrange(2, 6)
+    pr6_R = frozenset(r for r in range(pr6_d) if pr6_rng.randrange(2))
+    pr6_B = pr5_Set(lambda cell, c=pr6_c, S=pr6_S, d=pr6_d, R=pr6_R:
+        cell[1] in S if cell[0] < c else (cell[0]+sum(cell[1])) % d in R)
+    pr6_tails.append((pr6_B, pr6_c))
+for pr6_B, pr6_c in pr6_tails:
+    for pr6_k in (pr6_c-1, pr6_c-4):
+        for pr6_x in pr5_cases:
+            pr6_equal(q(pr6_expression(pr6_x, pr6_B, pr6_k)),
+                      q(pr5_region(pr6_x, pr6_B)), "tail_q")
+pr6_controls = []
+for pr6_d in (2, 3, 5):
+    pr6_controls.append((pr5_Set(lambda cell, d=pr6_d: cell[0] % d == 0),
+                         origin, -2*pr6_d, -2*pr6_d+1))
+pr6_drift = pr5_Set(lambda cell: cell[1][1:] == (0, 0) and cell[1][0] >= 0
+                    and cell[0] <= -cell[1][0])
+pr6_controls.append((pr6_drift, (3, 0, 0), -3, -2))
+for pr6_B, pr6_p, pr6_t, pr6_tt in pr6_controls:
+    pr6_inputs = [replace(unit_at(t), e={e: (n, pr6_p, s, r)
+                   for e, (n, p, s, r) in unit_at(t).e.items()}) for t in (pr6_t, pr6_tt)]
+    pr6_equal(tuple(q(mul(x, pr3_U0)) for x in pr6_inputs), (1, 1), "collapse_controls")
+    pr6_equal(tuple(q(pr5_region(x, pr6_B)) for x in pr6_inputs), (1, 0), "target_controls")
+    pr6_equal(*(pr4_profile(mul(x, pr3_U0)) for x in pr6_inputs), "collapsed_profiles")
+
+# Lemma 4: pull prefix witnesses back by cumulative shifts; c never depends on p.
+def pr6_saturated(prefix, factor, p):
+    witnesses, J = [], 0
+    for step in prefix:
+        if step[0] == "T":
+            J += step[1]
+        if step[0] == "FQ" and step[1]:
+            witnesses.append(pr4_shift_attr(sorted(step[1], key=repr)[0], -J))
+    c = min([0] + [a[3] for a in witnesses]
+            + ([min(factor.e[e][0] for e in factor.w)-J] if factor is not None and factor.w else []))
+    times = (c-2, c-1)
+    common = {("d", i): (a[3], a[0], a[1], a[2]) for i, a in enumerate(witnesses)}
+    balance = 1 + sum(a[1] for a in witnesses)
+    common.update({("n", i): (0, origin, -1 if balance > 0 else 1, pr3_l0)
+                   for i in range(abs(balance))})
+    whole = frozenset(common) | {"e"}
+    extremes = list(times) + [event[0] for event in common.values()]
+    common.update({"low": (min(extremes)-1, origin, 1, pr3_l0),
+                   "high": (max(extremes)+1, origin, 1, pr3_l0)})
+    edges = frozenset(("e", ("d", i)) for i in range(len(witnesses)))
+    return [valid(Rich(dict(common, e=(t, p, 1, pr3_l0)), edges, whole, frozenset({"e"}))) for t in times]
+
+for pr6_i in range(36):
+    pr6_Q = frozenset((pr6_rng.choice((origin, v)), pr6_rng.choice((-1, 1)),
+                      pr3_l0, pr6_rng.randrange(-3, 5)) for _ in range(pr6_i % 4))
+    pr6_prefix = [("T", pr6_rng.randrange(-3, 4)), ("FQ", pr6_Q), ("N",),
+                  ("add", pr6_i % 2, unit_at(2)), ("FS", {origin, v}),
+                  ("T", -1), ("FL", {pr3_l0}), ("FQ", pr6_Q), ("then", 0, empty)]
+    pr6_rng.shuffle(pr6_prefix)
+    pr6_factor = None if pr6_i % 3 == 0 else (empty if pr6_i % 3 == 1 else unit_at(-4))
+    pr6_word = pr6_prefix + ([] if pr6_factor is None else [("mul", pr6_i % 2, pr6_factor)])
+    pr6_word += [("N",), ("add", 1, pr3_U0), ("FQ", pr5_Qpositive), ("T", 2)]
+    for pr6_p in (origin, v, (7, -2, 1)):
+        pr6_inputs = pr6_saturated(pr6_prefix, pr6_factor, pr6_p)
+        pr6_equal(theta(pr6_inputs[0])[1:3], theta(pr6_inputs[1])[1:3], "saturation_endpoints")
+        pr6_outputs = []
+        for pr6_x in pr6_inputs:
+            assert charge(pr6_x, pr6_x.w) == 0
+            for pr6_step0 in pr6_word:
+                pr6_x = pr5_rich_step(pr6_x, pr6_step0)
+                assert pr6_x is not FAIL
+            pr6_outputs.append(q(pr6_x))
+        pr6_equal(*pr6_outputs, "saturation_q")
+        pr6_name = "saturation_no_product" if pr6_factor is None else (
+            "saturation_empty_factor" if not pr6_factor.w else "saturation_product")
+        pr6_counts[pr6_name] = pr6_counts.get(pr6_name, 0) + 1
+
+# Attribute pairing: ordered predicates, both slots, full background, and suffixes.
+pr6_asym = pr5_Set(lambda pair: pair[0][3] < pair[1][3])
+pr6_signed_source = pr5_Set(lambda pair: pair[0][1] != pair[1][1]
+                           and pair[0][2] == pr3_l0)
+for pr6_i, pr6_x in enumerate(pr5_cases):
+    pr6_y = pr5_cases[(pr6_i+3) % len(pr5_cases)]
+    pr6_attrs = sorted(pr3_V(pr4_profile(pr6_x)) | pr3_V(pr4_profile(pr6_y)), key=repr)
+    pr6_P = frozenset(pair for pair in product(pr6_attrs, repeat=2) if pr6_rng.randrange(2))
+    for pr6_P0 in (pr6_P, pr6_asym, pr6_signed_source, pr5_all, pr5_empty):
+        for pr6_slot in (0, 1):
+            pr6_step0 = ("MAP", pr6_slot, pr6_y, pr6_P0)
+            pr6_rich = pr6_step(pr6_x, pr6_step0, True)
+            pr6_state = pr6_step(pr5_summary(pr6_x), pr6_step0)
+            pr6_equal(pr5_summary(pr6_rich), pr6_state, "pair_push")
+            assert len(pr6_rich.w) == len(pr6_x.w)*len(pr6_y.w)
+            pr6_counts["empty_products"] = pr6_counts.get("empty_products", 0) + int(not pr6_rich.w)
+            pr6_counts["old_archives"] = pr6_counts.get("old_archives", 0) + int(bool(pr6_x.e.keys()-pr6_x.w or pr6_y.e.keys()-pr6_y.w))
+            pr6_counts["negative_inputs"] = pr6_counts.get("negative_inputs", 0) + int(any(t < 0 for z in (pr6_x, pr6_y) for t, p, s, r in z.e.values()))
+            pr6_counts["unselected_parents"] = pr6_counts.get("unselected_parents", 0) + sum(e not in pr6_x.a or f not in pr6_y.a for e, f in product(pr6_x.w, pr6_y.w))
+            for pr6_suffix in (("N",), ("FQ", pr5_Qpositive), ("FB", pr5_past)):
+                pr6_rich = pr5_rich_step(pr6_rich, pr6_suffix)
+                pr6_state = pr5_summary_step(pr6_state, pr6_suffix)
+                pr6_equal(pr5_summary(pr6_rich), pr6_state, "pair_suffix")
+    for pr6_P0 in pr5_predicates:
+        pr6_lift = pr5_Set(lambda pair, P=pr6_P0:
+            ((pair[0][3], pair[0][0]), (pair[1][3], pair[1][0])) in P)
+        pr6_equal(pr5_rich_bytes(pr6_pair(pr6_x, pr6_y, pr6_lift)),
+                  pr5_rich_bytes(pr5_pair(pr6_x, pr6_y, pr6_P0)), "pullback_encoding")
+pr6_words = [[("FQ", pr5_Qpositive), ("MAP", slot, param, pr6_signed_source), ("N",),
+              ("FB", pr5_gap2), ("MP", 1-slot, pr3_U0, pr5_asymmetric),
+              ("T", -2), ("then", slot, unit_at(15)), ("N",), ("FQ", pr5_empty)]
+             for param in (empty, pr4_archive_only, pr3_U0) for slot in (0, 1)]
+for pr6_word in pr6_words:
+    for pr6_x in pr5_cases:
+        pr6_rich, pr6_state = pr6_x, pr5_summary(pr6_x)
+        for pr6_step0 in pr6_word:
+            pr6_rich, pr6_state = pr6_step(pr6_rich, pr6_step0, True), pr6_step(pr6_state, pr6_step0)
+            assert (pr6_rich is FAIL) == (pr6_state is FAIL)
+            if pr6_state is FAIL:
+                pr6_counts["strict_failures"] = pr6_counts.get("strict_failures", 0) + 1
+            else:
+                pr6_equal(pr5_summary(pr6_rich), pr6_state, "mixed_summary")
+                pr6_equal(q(pr6_rich), pr5_summary_q(pr6_state), "mixed_q")
+
+# D15 and the fiber criterion; D10 has equal edge counts and is only a control.
+pr6_events = {e: (t, origin, sign, pr3_l0)
+              for e, t, sign in (("e", 0, 1), ("b1", 1, 1), ("b2", 1, 1),
+                                 ("n1", 0, -1), ("n2", 0, -1), ("n3", 0, -1))}
+pr6_X = valid(Rich(pr6_events, frozenset({("e", "b1")}), frozenset(pr6_events),
+                  frozenset({"e", "b1", "b2"})))
+pr6_Y = valid(replace(pr6_X, o=pr6_X.o | {("e", "b2")}))
+def pr6_D(x):
+    return restricted_mul(x, x, lambda e, f: (e, f) in x.o)
+
+def pr6_J(x, y, rule):
+    result = {}
+    for e, f in product(x.a, y.a):
+        if rule(e, f):
+            a = pr4_diamond(pr3_alpha(x, e, True), pr3_alpha(y, f, True))
+            result[a] = result.get(a, 0) + x.e[e][2]*y.e[f][2]
+    return sparse(result)
+
+pr6_equal(pr5_summary(pr6_X), pr5_summary(pr6_Y), "D15_fiber")
+pr6_equal((q(pr6_D(pr6_X)), q(pr6_D(pr6_Y))), (1, 2), "D15_q")
+pr6_equal((q(pr6_D(pr3_d5x)), q(pr6_D(pr3_d5y))), (2, 2), "D10_control")
+assert pr6_J(pr6_X, pr6_X, lambda e, f: (e, f) in pr6_X.o) != pr6_J(
+    pr6_Y, pr6_Y, lambda e, f: (e, f) in pr6_Y.o)
+for pr6_Q in (frozenset(), {pr3_alpha(pr6_X, "b1", True)}, pr5_Qpositive):
+    for pr6_z in (pr6_X, pr6_Y):
+        pr6_rule = lambda e, f: any(a in pr6_Q for a in pr3_U(pr6_z, e, True))
+        pr6_direct = restricted_mul(pr6_z, pr3_U0, pr6_rule)
+        pr6_expected = pr6_push(pr4_profile(pr6_z), pr4_profile(pr3_U0),
+                                lambda row, other: any(a in pr6_Q for a in row[2]))
+        pr6_equal(pr4_profile(pr6_direct), pr6_expected, "U_rule_push")
+        pr6_equal(pr6_J(pr6_z, pr3_U0, pr6_rule), {a: n for (a, b, U), n
+                    in pr6_expected.items() if b}, "J_positive")
+    pr6_equal(pr6_J(pr6_X, pr3_U0, lambda e, f: any(a in pr6_Q for a in pr3_U(pr6_X, e, True))),
+              pr6_J(pr6_Y, pr3_U0, lambda e, f: any(a in pr6_Q for a in pr3_U(pr6_Y, e, True))), "J_fiber")
+for pr6_z in (pr6_X, pr6_Y, pr3_U0, add(pr3_U0, pr3_U0)):
+    pr6_equal(pr4_profile(restricted_mul(pr6_z, pr3_U0, lambda e, f: len(pr3_U(pr6_z, e, True)) > 1)),
+              pr6_push(pr4_profile(pr6_z), pr4_profile(pr3_U0), lambda row, other: len(row[2]) > 1), "U_size_rule")
+    pr6_parity = (sum(abs(n) for n in pr4_profile(pr6_z).values())//2) % 2
+    pr6_equal(pr4_profile(restricted_mul(pr6_z, pr3_U0, lambda e, f: (len(pr6_z.w)//2) % 2)),
+              pr6_push(pr4_profile(pr6_z), pr4_profile(pr3_U0), lambda row, other: pr6_parity), "global_rule")
+pr6_equal(set(pr4_profile(pr3_U0)), set(pr4_profile(add(pr3_U0, pr3_U0))), "same_local_rows")
+pr6_q_only = []
+for pr6_z in (pr6_X, pr6_Y):
+    pr6_pairs = [(e, f) for e, f in product(pr6_z.a, pr3_U0.a) if pr6_z.e[e][2]*pr3_U0.e[f][2] == 1]
+    pr6_pairs.sort(key=lambda ef: (pr4_diamond(pr3_alpha(pr6_z, ef[0], True), pr3_alpha(pr3_U0, ef[1], True))[3], repr(ef)))
+    pr6_pair0 = pr6_pairs[0 if len(pr6_z.o) % 2 else -1]
+    pr6_q_only.append(restricted_mul(pr6_z, pr3_U0, lambda e, f: (e, f) == pr6_pair0))
+pr6_equal(tuple(q(z) for z in pr6_q_only), (1, 1), "q_only_control")
+assert pr4_profile(pr6_q_only[0]) != pr4_profile(pr6_q_only[1])
+
+# Proposition 57: five independent conditions, then an event realization.
+def pr6_conditions(g, m, M):
+    rows = list(sparse(g))
+    return (all(a[1]*g[a, b, U] > 0 for a, b, U in rows),
+            sum(g.values()) == 0,
+            all(a in U and all(v[3] > a[3] for v in U-{a}) for a, b, U in rows),
+            all(any(aa == v and V <= U for aa, bb, V in rows) for a, b, U in rows for v in U-{a}),
+            ((m is None and M is None) or (m is not None and M is not None and m <= M))
+            if not rows else (m is not None and M is not None and all(m <= a[3] <= M for a, b, U in rows)))
+
+def pr6_realize(g, m, M):
+    assert all(pr6_conditions(g, m, M))
+    assigned = [row for row, coefficient in g.items() for _ in range(abs(coefficient))]
+    events = {i: (a[3], a[0], a[1], a[2]) for i, (a, b, U) in enumerate(assigned)}
+    whole = frozenset(events)
+    chosen = frozenset(i for i, (a, b, U) in enumerate(assigned) if b)
+    edges = frozenset((i, j) for i, (a, b, U) in enumerate(assigned)
+                      for j, (aa, bb, V) in enumerate(assigned) if a[3] < aa[3] and V <= U)
+    if m is not None:
+        events.update({"low": (m, origin, 1, pr3_l0), "high": (M, origin, 1, pr3_l0)})
+    return valid(Rich(events, edges, whole, chosen))
+
+for pr6_i in range(64):
+    pr6_g = {}
+    for pr6_n in reversed(range(pr6_rng.randrange(7))):
+        pr6_a = (pr6_rng.choice((origin, v)), pr6_rng.choice((-1, 1)), pr3_l0, pr6_n-4)
+        pr6_U = frozenset({pr6_a}).union(*(U for a, b, U in pr6_g if pr6_rng.randrange(2)))
+        pr6_g[pr6_a, pr6_rng.randrange(2), pr6_U] = pr6_a[1]*pr6_rng.randrange(1, 4)
+    pr6_total = sum(pr6_g.values())
+    if pr6_total:
+        pr6_a = (h, -1 if pr6_total > 0 else 1, ("leaf", 99), 3)
+        pr6_g[pr6_a, 0, frozenset({pr6_a})] = -pr6_total
+    pr6_m, pr6_M = (-6, 5) if pr6_g or pr6_i % 2 else (None, None)
+    pr6_equal(pr5_summary(pr6_realize(pr6_g, pr6_m, pr6_M)), (pr6_g, pr6_m, pr6_M), "image_roundtrip")
+
+# Exhaust both formal target sets/selection bits and all forward-edge graphs.
+for pr6_times in ((0, 1, 2, 3), (0, 0, 1, 1)):
+    pr6_e = {i: (t, origin, 1 if i < 2 else -1, pr3_l0) for i, t in enumerate(pr6_times)}
+    pr6_base = Rich(pr6_e, frozenset(), frozenset(pr6_e), frozenset())
+    pr6_D0 = [pr3_alpha(pr6_base, i, True) for i in range(4)]
+    pr6_actual, pr6_accepted = set(), set()
+    for pr6_edges in pr3_subsets((i, j) for i, j in product(range(4), repeat=2) if pr6_times[i] < pr6_times[j]):
+        for pr6_A in pr3_subsets(range(4)):
+            pr6_z = valid(replace(pr6_base, o=closure(pr6_edges), a=pr6_A))
+            pr6_actual.add(pr3_bytes(pr4_profile(pr6_z)).decode())
+            pr6_counts["enumerated_states"] = pr6_counts.get("enumerated_states", 0) + 1
+    pr6_options = [[frozenset({a}) | U for U in pr3_subsets({v0 for v0 in pr6_D0 if v0[3] > a[3]})] for a in pr6_D0]
+    for pr6_Us in product(*pr6_options):
+        for pr6_bits in product((0, 1), repeat=4):
+            pr6_g = {}
+            for pr6_a, pr6_b, pr6_U in zip(pr6_D0, pr6_bits, pr6_Us):
+                pr6_row = (pr6_a, pr6_b, pr6_U)
+                pr6_g[pr6_row] = pr6_g.get(pr6_row, 0) + pr6_a[1]
+            pr6_ok = all(pr6_conditions(pr6_g, min(pr6_times), max(pr6_times)))
+            pr6_equal(pr6_ok, pr3_bytes(pr6_g).decode() in pr6_actual, "formal_membership")
+            if pr6_ok:
+                pr6_accepted.add(pr3_bytes(pr6_g).decode())
+                pr6_equal(pr4_profile(pr6_realize(pr6_g, min(pr6_times), max(pr6_times))), pr6_g, "enumerated_roundtrip")
+    pr6_equal(pr6_actual, pr6_accepted, "image_sets")
+    pr6_counts["distinct_actual_profiles"] = pr6_counts.get("distinct_actual_profiles", 0) + len(pr6_actual)
+pr6_a, pr6_b, pr6_c = [(origin, s, pr3_l0, t) for t, s in ((0, 1), (1, 1), (2, -1))]
+pr6_D16 = {(pr6_a, 1, frozenset({pr6_a, pr6_b})): 1,
+           (pr6_b, 1, frozenset({pr6_b, pr6_c})): 1, (pr6_c, 0, frozenset({pr6_c})): -2}
+pr6_equal(pr6_conditions(pr6_D16, 0, 2), (True, True, True, False, True), "D16_conditions")
+for pr6_m, pr6_M, pr6_ok in ((None, None, True), (-2, -2, True), (-3, 4, True),
+                             (None, 0, False), (0, None, False), (1, 0, False)):
+    pr6_equal(all(pr6_conditions({}, pr6_m, pr6_M)), pr6_ok, "empty_endpoint_branches")
+    if pr6_ok:
+        pr6_equal(pr5_summary(pr6_realize({}, pr6_m, pr6_M)), ({}, pr6_m, pr6_M), "empty_realizations")
+assert all(value > 0 for value in pr6_counts.values())
+print("pr6_expressibility_pairing: " + " ".join(f"{k}={v0}" for k, v0 in pr6_counts.items())
+      + " seed=2026091006 Tail_families=27 random_inputs=64 cases=80"
+      + " periodic_and_drift=1,1/1,0 D15=1,2 D10=2,2 D16=1,1,1,0,1")
+
 print("ALL_FINITE_CHECKS_PASSED")
 ```
 
