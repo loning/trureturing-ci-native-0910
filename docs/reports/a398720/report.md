@@ -37,3 +37,25 @@ utility=none：无界量化的组合双射，非有限枚举、checker、数值�
 尚未主张证明、冻结、构建或 PR 已完成。未主张全球无已有证明或首创性。
 尚未打开的外部页面均为 ASSUMED-UNVERIFIED；用户 1/3/5 枚举及分诊的 66068
 自由赋值核对不是本席计算。不把有限核对称为一般定理的部分进展。
+
+## 检索第 2 批与缓存
+
+- make lean-cache-ensure EXIT=0：status=seeded、method=clonefile、donor=/Users/chronoai/trureturing、
+  clonefile_attempts=1、stamp_miss=null、project_olean_state=warm、mathlib_olean_state=warm，
+  archive_status=not_attempted。分支首个提交 129ce69141 已成功推送。
+- 钉版 Mathlib Data/Fintype/Perm.lean 全文已读，直接复用 Fintype.card_perm。
+  Data/Finset/Card 的 card_filter_add_card_filter_not、card_eq_one_iff_existsUnique
+  是拟用的零数分解与唯一性接口；Matrix/Permutation、Stochastic 公开面继续核对。
+- D5 选中相关公开接口逐项读取：EscapeCount 的 diagonal_landing_fixed 与
+  escaped_listing_card；FiniteSelfMapConjugacy 的两条一般共轭定理；MatchingEquiv 的
+  fiberToFactors、单射/满射、matchingMonomialFiberEquiv 和三条计数/系数定理；
+  DataProcessingEquality 的一般通道等号条件。均未提供本题的偶性/重量到零位置的桥。
+  GoldenFactorSecondOrderBinomialRigidity 的公开定理约束 goldenWord 前缀，不直接适用，
+  但其使用的 Mathlib sum_eq_sum_iff_of_le 可直接复用，继续定位上游。
+- 实际 curl 成功打开 A398720/internal，已读全部字段：revision #66 (2026-08-20)；
+  %C 明定 n×n、2k 个 1；%F 仍明确 Conjecture: T(n,n*(n-1)/2)=n! for n odd。
+  %e 各行 n=0..6 唯一对齐，n=1/3/5 行尾为 1/6/120；%O=0,8。
+  标题的 (n+1)^2 偏移不进入模型。原始页面存 runner attempt/oeis-internal.html。
+- 本席未重新打开 11 个 xref 全文与 Thompson/Patel–Hong PDF；其既有检查见
+  Library/Words/oeis2026triage0910.md 的 A398720 段，是上游转述的有界文献结论，
+  对本席亲验口径标 ASSUMED-UNVERIFIED。不声称穷尽编码文献。
