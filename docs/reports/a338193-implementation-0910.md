@@ -1,5 +1,9 @@
 # A338193 implementation, 2026-09-10
 
+Current mathematical result: the full all-index target and unique formal
+solution are proved and frozen. Earlier checkpoint sections below record
+their status at the time, not the final mathematical status.
+
 ## Provenance and scope
 
 Skill: `lean4`; implementation by the single Codex worker in the runner's
@@ -272,3 +276,45 @@ The generated module state is
 the new accepted event is
 `3c38008523c0b3d79676a68cbcfd1557f8d4e25e99e96ba68a12c2872f01adde.json`.
 No theory volume, atom, coverage edge, or hand-authored freeze state was made.
+
+## Resolution registration
+
+`Problems/oeis-a338193-egf-coefficients.md` records exactly Kurkov's positive-index
+coefficient conjecture. The main theorem's Scribe node has the typed
+`OpenProblemResolutionClaim` with `ResolutionKind.Proved`; its displayed
+formula is authored in the typed Formula DSL. The generated Markdown is
+produced by `make emit`, not edited directly.
+
+Capacity was checked before adding the dossier: `find Problems -type f | wc -l`
+returned 104. Canonical `Problems/*.md` are explicitly excluded from directory
+occupancy by `RepositoryRules.Structure.cs:IsDirectoryCapacityExcluded`,
+while their individual file length remains bounded. The D5 and Library
+folders have respectively 2 and 41 files after this change, below 48.
+
+## Final unclaimed scope
+
+This worker does not claim historical priority, an exhaustive absence of
+prior proofs, an analytic convergence theorem, asymptotics, or a new proof
+of Kotesovec's separate one-dimensional recurrence. The six one-hop source
+pages were not reopened by this worker; they are `ASSUMED-UNVERIFIED` as
+worker observations, with the user's reading explicitly supplied evidence.
+No independent adversarial review or merge is claimed. No new axiom, theory
+volume, atom, or positive finite-instance deposit is part of this change.
+The formal infinite-row factorization and coefficient uniqueness have been
+proved; neither is an unproved premise of a public theorem.
+
+## Final local content checks
+
+After resolution registration, `make emit` EXIT=0 in 65.541 seconds.
+The required `scribe-content-checks.sh` ran again against the exact base and
+canonical report, EXIT=0 in 24.655 seconds. `describe-report --check` reported
+`red=0` and emitted the A338193 `OPEN_PROBLEM_RESOLUTION` record for the exact
+main theorem. The actual KaTeX check reported
+`markdown: judged=1 formula(s)=1 red=0`. Its conditional projections test was
+not triggered. These are the final Scribe bytes submitted for review.
+
+Final local sequence: `make lean` (22.647s, 0), `make lean-report` (56.186s, 0),
+`make emit` (0), local Scribe checks (23.460s, 0),
+`make deposit-uncovered` (90.415s, 0), resolution registration,
+`make emit` (65.541s, 0), local Scribe checks (24.655s, 0).
+Lean source was unchanged after its final successful build and freeze.

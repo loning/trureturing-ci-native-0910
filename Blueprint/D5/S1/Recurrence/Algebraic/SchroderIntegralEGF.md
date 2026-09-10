@@ -70,11 +70,15 @@ Lean statement: `D5/S1/Recurrence/Algebraic/SchroderIntegralEGF.A_original`
 
 The chosen A satisfies the original integral equation and A(0)=1.
 
-**Remark 1.6 (The coefficient identity).**
+**Theorem 1.6 (The coefficient identity).**
 
-Lean statement: `D5/S1/Recurrence/Algebraic/SchroderIntegralEGF.egf_coeff_eq_f`
+$$\forall n \in \mathbb{N}, 1 \le n \implies n! [x^{n}]A = f\left(0, n-1\right)$$
 
-*Formalization.* `D5/S1/Recurrence/Algebraic/SchroderIntegralEGF.egf_coeff_eq_f` (`✓ std3`).
+*Proof.* Machine-checked in Lean as `D5/S1/Recurrence/Algebraic/SchroderIntegralEGF.egf_coeff_eq_f` (`✓ std3`). ∎
+
+*Resolves.* `Problems/oeis-a338193-egf-coefficients` (proved) by `D5/S1/Recurrence/Algebraic/SchroderIntegralEGF.egf_coeff_eq_f`.
+
+<!-- scribe-open-problem-resolution-v1 {"problem_slug":"oeis-a338193-egf-coefficients","declaration_gid":"D5/S1/Recurrence/Algebraic/SchroderIntegralEGF.egf_coeff_eq_f","resolution_kind":"proved"} -->
 
 *Source.* Repository-derived.
 

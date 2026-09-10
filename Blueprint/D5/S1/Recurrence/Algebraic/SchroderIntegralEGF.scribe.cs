@@ -1,4 +1,6 @@
 using static StrataLint.Scribe.DefinitionDsl;
+using static StrataLint.Scribe.FormulaDsl;
+using F = StrataLint.Scribe.FormulaDsl;
 
 namespace StrataLint.Scribe.Blueprint.D5.S1.Recurrence.Algebraic;
 
@@ -43,13 +45,25 @@ internal sealed class SchroderIntegralEGFDocument : IScribeDocumentDefinition
             Note("A_original", "The defining equation holds",
                 "The chosen A satisfies the original integral equation and A(0)=1.",
                 AssessedProvenance.FromRepo(Source)),
-            Note("egf_coeff_eq_f", "The coefficient identity",
+            Describe.Lean(DescribeId.Create("a338193-egf-coeff-eq-f"),
+                DeclarationHandle.Create(Prefix + "egf_coeff_eq_f"),
+                H("The coefficient identity"), StatementSource.FromAuthor(CoefficientIdentity()),
+                AssessedProvenance.FromRepo(Source), Blocks(Paragraph(Text(
                 "For every natural n at least one, n! times coefficient n of A equals "
                 + "f(0,n-1), viewed in the rationals. Uniqueness identifies A with B; "
                 + "differentiating shifts the EGF coefficient index by one, and "
                 + "B'=F(0) completes the comparison. Thus the identity also proves "
-                + "that every positive-index EGF coefficient is a natural number.",
-                AssessedProvenance.FromRepo(Source)))));
+                + "that every positive-index EGF coefficient is a natural number."))),
+                DescribeRole.Theorem, new OpenProblemResolutionClaim(
+                    ProblemSlugRef.Create("oeis-a338193-egf-coefficients"),
+                    ResolutionKind.Proved)))));
+
+    private static Formula CoefficientIdentity() => Disp(Seq(
+        Forall, Sp, F.Id("n"), Sp, InMacro, Sp, Mathbb, Grp(F.Id("N")), Comma, Sp,
+        D(1), Sp, Le, Sp, F.Id("n"), Sp, Implies, Sp,
+        F.Id("n"), Bang, Sp, OpenBracket, new Formula.Power(F.Id("x"), F.Id("n")),
+        CloseBracket, F.Id("A"), Sp, Eq, Sp,
+        new Formula.Apply(F.Id("f"), [D(0), Seq(F.Id("n"), Minus, D(1))])));
 
     private static DocumentBlock Note(string name, string title, string prose,
         AssessedProvenance provenance) => Describe.Remark(
