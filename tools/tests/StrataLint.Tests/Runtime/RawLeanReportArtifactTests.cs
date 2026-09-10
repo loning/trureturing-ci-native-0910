@@ -2,7 +2,7 @@ using System.Text;
 using System.Security.Cryptography;
 using System.IO.Compression;
 using System.Collections.Concurrent;
-using System.Reflection;
+using System.Runtime.CompilerServices;
 using StrataLint.Engine;
 
 namespace StrataLint.Tests;
@@ -148,10 +148,8 @@ public sealed class RawLeanReportArtifactTests
         // Inspect reachable material directly: GC timing and machine speed must
         // not decide whether full validation retains every expanded string.
         var archive = read.Target!;
-        const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
-        archive.GetType().GetMethod("ValidateAll", flags)!.Invoke(archive, null);
-        var cache = (ConcurrentDictionary<string, Lazy<string>>)archive.GetType()
-            .GetField("material", flags)!.GetValue(archive)!;
+        ValidateAllMaterials(archive);
+        var cache = MaterialCache(archive);
         Assert.Empty(cache);
 
         var value = read(address);
@@ -192,7 +190,7 @@ public sealed class RawLeanReportArtifactTests
         var materials = RawLeanReportArtifact.MaterialsPath(path);
         if (corruption == "truncated")
         {
-            var bytes = File.ReadAllBytes(materials);
+            var bytes = TemporaryFileSystem.File.ReadAllBytes(materials);
             File.WriteAllBytes(materials, bytes[..^8]);
         }
         else
@@ -350,6 +348,18 @@ public sealed class RawLeanReportArtifactTests
             report.Files.Single().Value.Declarations,
             declaration => declaration.Name == "term𝒪φ");
     }
+
+    // Fixed CLR member access keeps the observed object and operations explicit;
+    // it neither discovers members nor dispatches through a reflection wrapper.
+    private const string MaterialArchiveType =
+        "StrataLint.Engine.RawLeanReportArtifact+StatementMaterialArchive, StrataLint.Engine";
+
+    [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "ValidateAll")]
+    private static extern void ValidateAllMaterials([UnsafeAccessorType(MaterialArchiveType)] object archive);
+
+    [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "material")]
+    private static extern ref ConcurrentDictionary<string, Lazy<string>> MaterialCache(
+        [UnsafeAccessorType(MaterialArchiveType)] object archive);
 
     private static string WriteMaterialFixture(string path, string material)
     {
