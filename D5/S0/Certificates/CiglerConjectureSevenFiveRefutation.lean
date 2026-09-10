@@ -68,8 +68,8 @@ def claim : Prop :=
         -(k : ℤ) * (2 * (k : ℤ) - 3) * (2 * (n : ℤ) + 1) ^ (k - 1)
 
 set_option maxHeartbeats 2000000 in
-set_option maxRecDepth 10000 in
 -- The allowance covers 24 permutations and recursive Catalan/Cauchy coefficient evaluation.
+set_option maxRecDepth 10000 in
 /-- At k=n=1 the printed equality requires 1, while the two determinants sum to 2. -/
 theorem result : ¬ claim := by
   intro h
