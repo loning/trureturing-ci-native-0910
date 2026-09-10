@@ -13,6 +13,7 @@ from emission import parse_name_key
 from incremental import atomic_json
 from streaming import canonical, digest
 from Structure.store import wire_key
+from Structure.writing import jsonl_elements, object_prefix
 
 
 def topology(adj):
@@ -120,7 +121,8 @@ def analyse(store, keys, output, core, *, cache=None, axioms=None, mark=lambda _
     # reader caches have their own narrower fingerprint, independent of it.
     policy = digest([sorted(core), "first_frozen_hit_all_repository_declarations_stop_axiom",
                      [(p.name, p.read_text()) for p in [pathlib.Path(__file__),
-                       pathlib.Path(__file__).with_name("store.py")]]])
+                       pathlib.Path(__file__).with_name("store.py"),
+                       pathlib.Path(__file__).with_name("writing.py")]]])
     snapshot = digest([store.snapshot(), keys, policy, sorted((list(k), v) for k, v in axioms.items())])
     rows_cache = folder / (snapshot[7:] + ".rows.gz")
     summary_cache = folder / (snapshot[7:] + ".summary.json")
@@ -195,15 +197,12 @@ def analyse(store, keys, output, core, *, cache=None, axioms=None, mark=lambda _
                 histogram[str(depth[i])] += 1
             positive += readings["core_or_frozen_support"] is True
             empty_positive += entry["empty_core_support"] is True
-            # Neither frontier sets nor their JSON are retained across rows.
-            out.write(canonical(row)[:-2] + b',"readings":' + canonical(readings)[:-2] +
-                      b',"upstream_boundary_constants":[')
+            object_prefix(out, row)
+            out.write(b',"readings":')
+            object_prefix(out, readings)
+            out.write(b',"upstream_boundary_constants":[')
             with gzip.open(frontier, "rb") as source:
-                for number, line in enumerate(source):
-                    if number:
-                        out.write(b",")
-                    out.write(line.rstrip(b"\n"))
-                    frontier_count += 1
+                frontier_count += jsonl_elements(source, out)
             out.write(b"]}}\n")
     timings["row_emission"] = time.monotonic() - started
     names = collections.Counter(key[1] for key in keys)

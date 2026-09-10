@@ -12,6 +12,7 @@ from phases import read, write
 from streaming import canonical, digest, file_stamp
 from Structure.sources import file_digest, fingerprint
 from Structure.store import wire_key
+from Structure.writing import jsonl_elements, object_prefix
 
 
 def core_policy():
@@ -80,12 +81,9 @@ def publish(directory, fields, rows):
     path = directory / "census-structure.json"
     temporary = path.with_suffix(".json.tmp")
     with temporary.open("wb") as out, pathlib.Path(rows).open("rb") as source:
-        out.write(canonical(fields)[:-2] + b',"rows":[\n')
-        for number, line in enumerate(source):
-            if number:
-                out.write(b",\n")
-            # A frontier may be large; copy its line without decoding a DOM.
-            out.write(line.rstrip(b"\n"))
+        object_prefix(out, fields)
+        out.write(b',"rows":[\n')
+        jsonl_elements(source, out, b",\n")
         out.write(b"\n]}\n")
     temporary.replace(path)
 

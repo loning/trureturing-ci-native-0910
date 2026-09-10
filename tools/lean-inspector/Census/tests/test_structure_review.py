@@ -4,6 +4,8 @@ import argparse
 import ast
 import json
 import pathlib
+import subprocess
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -15,6 +17,18 @@ from Structure.sources import file_digest
 
 
 class StructureReviewTests(unittest.TestCase):
+    def test_large_single_frontier_publication_has_flat_rss(self):
+        probe = pathlib.Path(__file__).with_name("structure_frontier_probe.py")
+        results = [json.loads(subprocess.check_output([sys.executable, "-m", "tests.structure_frontier_probe", str(size)],
+                                                     cwd=probe.parent.parent, text=True))
+                   for size in [1, 128]]
+        print("FRONTIER_RSS " + json.dumps(results), flush=True)
+        self.assertLess(results[1]["rss_bytes"] - results[0]["rss_bytes"], 16 * 1024 ** 2,
+                        "boundedFrontierPublicationRSS")
+        for result in results:
+            self.assertEqual(result["reported_elements"], result["elements"])
+            self.assertGreater(result["artifact_bytes"], result["frontier_bytes"])
+
     def graph(self, declarations):
         from Structure.graph import analyse
         from Structure.store import Store
